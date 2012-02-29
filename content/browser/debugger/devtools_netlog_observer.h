@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,12 +68,11 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
  private:
   static DevToolsNetLogObserver* instance_;
 
-  explicit DevToolsNetLogObserver(net::NetLog* net_log);
+  DevToolsNetLogObserver();
   virtual ~DevToolsNetLogObserver();
 
   ResourceInfo* GetResourceInfo(uint32 id);
 
-  net::NetLog* net_log_;
   typedef base::hash_map<uint32, scoped_refptr<ResourceInfo> > RequestToInfoMap;
   typedef base::hash_map<uint32, int> RequestToEncodedDataLengthMap;
   typedef base::hash_map<uint32, uint32> HTTPStreamJobToSocketMap;

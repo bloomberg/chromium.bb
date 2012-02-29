@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,11 +63,14 @@ LoadTimingObserver::HTTPStreamJobRecord::HTTPStreamJobRecord()
 }
 
 LoadTimingObserver::LoadTimingObserver()
-    : ThreadSafeObserverImpl(net::NetLog::LOG_BASIC),
-      last_connect_job_id_(net::NetLog::Source::kInvalidId) {
+    : last_connect_job_id_(net::NetLog::Source::kInvalidId) {
 }
 
 LoadTimingObserver::~LoadTimingObserver() {
+}
+
+void LoadTimingObserver::StartObserving(net::NetLog* net_log) {
+  net_log->AddThreadSafeObserver(this, net::NetLog::LOG_BASIC);
 }
 
 LoadTimingObserver::URLRequestRecord*

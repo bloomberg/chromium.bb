@@ -278,7 +278,7 @@ class NetInternalsMessageHandler::IOThreadImpl
     : public base::RefCountedThreadSafe<
           NetInternalsMessageHandler::IOThreadImpl,
           BrowserThread::DeleteOnUIThread>,
-      public ChromeNetLog::ThreadSafeObserverImpl,
+      public net::NetLog::ThreadSafeObserver,
       public ConnectionTester::Delegate {
  public:
   // Type for methods that can be used as MessageHandler callbacks.
@@ -398,9 +398,6 @@ class NetInternalsMessageHandler::IOThreadImpl
   //
   // This is only read and written to on the UI thread.
   bool was_webui_deleted_;
-
-  // True if we have attached an observer to the NetLog already.
-  bool is_observing_log_;
 
   // Log entries that have yet to be passed along to Javascript page.  Non-NULL
   // when and only when there is a pending delayed task to call
@@ -758,12 +755,10 @@ NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
     const base::WeakPtr<NetInternalsMessageHandler>& handler,
     IOThread* io_thread,
     net::URLRequestContextGetter* context_getter)
-    : ThreadSafeObserverImpl(net::NetLog::LOG_ALL_BUT_BYTES),
-      handler_(handler),
+    : handler_(handler),
       io_thread_(io_thread),
       context_getter_(context_getter),
-      was_webui_deleted_(false),
-      is_observing_log_(false) {
+      was_webui_deleted_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -793,10 +788,8 @@ void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
 void NetInternalsMessageHandler::IOThreadImpl::Detach() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Unregister with network stack to observe events.
-  if (is_observing_log_) {
-    is_observing_log_ = false;
-    RemoveAsObserver();
-  }
+  if (net_log())
+    net_log()->RemoveThreadSafeObserver(this);
 
   // Cancel any in-progress connection tests.
   connection_tester_.reset();
@@ -810,14 +803,14 @@ void NetInternalsMessageHandler::IOThreadImpl::OnWebUIDeleted() {
 void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     const ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!is_observing_log_) << "notifyReady called twice";
+  DCHECK(!net_log()) << "notifyReady called twice";
 
   SendJavascriptCommand("receivedConstants",
                         NetInternalsUI::GetConstants());
 
   // Register with network stack to observe events.
-  is_observing_log_ = true;
-  AddAsObserver(io_thread_->net_log());
+  io_thread_->net_log()->AddThreadSafeObserver(this,
+                                               net::NetLog::LOG_ALL_BUT_BYTES);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
@@ -1347,7 +1340,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnSetLogLevel(
 
   DCHECK_GE(log_level, net::NetLog::LOG_ALL);
   DCHECK_LE(log_level, net::NetLog::LOG_BASIC);
-  SetLogLevel(static_cast<net::NetLog::LogLevel>(log_level));
+  net_log()->SetObserverLogLevel(
+      this, static_cast<net::NetLog::LogLevel>(log_level));
 }
 
 // Note that unlike other methods of IOThreadImpl, this function

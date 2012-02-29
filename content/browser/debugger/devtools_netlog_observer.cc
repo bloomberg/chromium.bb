@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,14 +24,10 @@ const size_t kMaxNumEntries = 1000;
 
 DevToolsNetLogObserver* DevToolsNetLogObserver::instance_ = NULL;
 
-DevToolsNetLogObserver::DevToolsNetLogObserver(net::NetLog* net_log)
-    : net::NetLog::ThreadSafeObserver(net::NetLog::LOG_ALL_BUT_BYTES),
-      net_log_(net_log) {
-  net_log_->AddThreadSafeObserver(this);
+DevToolsNetLogObserver::DevToolsNetLogObserver() {
 }
 
 DevToolsNetLogObserver::~DevToolsNetLogObserver() {
-  net_log_->RemoveThreadSafeObserver(this);
 }
 
 DevToolsNetLogObserver::ResourceInfo*
@@ -241,14 +237,19 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
 void DevToolsNetLogObserver::Attach() {
   DCHECK(!instance_);
   net::NetLog* net_log = content::GetContentClient()->browser()->GetNetLog();
-  if (net_log)
-    instance_ = new DevToolsNetLogObserver(net_log);
+  if (net_log) {
+    instance_ = new DevToolsNetLogObserver();
+    net_log->AddThreadSafeObserver(instance_, net::NetLog::LOG_ALL_BUT_BYTES);
+  }
 }
 
 void DevToolsNetLogObserver::Detach() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (instance_) {
+    // Safest not to do this in the destructor to maintain thread safety across
+    // refactorings.
+    instance_->net_log()->RemoveThreadSafeObserver(instance_);
     delete instance_;
     instance_ = NULL;
   }

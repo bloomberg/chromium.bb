@@ -19,75 +19,11 @@ class NetLogLogger;
 // ChromeNetLog is an implementation of NetLog that dispatches network log
 // messages to a list of observers.
 //
-// All methods are thread safe, with the exception that no ChromeNetLog or
-// ChromeNetLog::ThreadSafeObserverImpl functions may be called by an observer's
+// All methods are thread safe, with the exception that no NetLog or
+// NetLog::ThreadSafeObserver functions may be called by an observer's
 // OnAddEntry() method.  Doing so will result in a deadlock.
 class ChromeNetLog : public net::NetLog {
  public:
-  // Base class for observing the events logged by the network
-  // stack. This has some nice-to-have functionality for use by code
-  // within chrome/, but any net::NetLog::ThreadSafeObserver may be
-  // registered to observe the NetLog.
-  //
-  // This class uses composition rather than inheritance so that
-  // certain invariants can be maintained when subclasses of it are
-  // added as observers (through the AddAsObserver and
-  // RemoveAsObserver methods on this class).
-  class ThreadSafeObserverImpl {
-   public:
-    // Observers that need to see the full granularity of events can
-    // specify LOG_ALL.
-    explicit ThreadSafeObserverImpl(LogLevel log_level);
-    virtual ~ThreadSafeObserverImpl();
-
-    virtual void OnAddEntry(EventType type,
-                            const base::TimeTicks& time,
-                            const Source& source,
-                            EventPhase phase,
-                            EventParameters* params) = 0;
-
-    // These must be used instead of
-    // ChromeNetLog::Add/RemoveThreadSafeObserver to manage the
-    // association in this class with a given ChromeNetLog instance.
-    void AddAsObserver(ChromeNetLog* net_log);
-    void RemoveAsObserver();
-
-    void SetLogLevel(LogLevel log_level);
-
-   protected:
-    void AssertNetLogLockAcquired() const;
-
-   private:
-    class PassThroughObserver : public ThreadSafeObserver {
-     public:
-      PassThroughObserver(ThreadSafeObserverImpl* owner, LogLevel log_level);
-      virtual ~PassThroughObserver() {}
-      virtual void OnAddEntry(EventType type,
-                              const base::TimeTicks& time,
-                              const Source& source,
-                              EventPhase phase,
-                              EventParameters* params) OVERRIDE;
-
-      // Can only be called when actively observing a ChromeNetLog.
-      void SetLogLevel(LogLevel log_level);
-
-     private:
-      ThreadSafeObserverImpl* owner_;
-    };
-
-    friend class PassThroughObserver;
-
-    // ChromeNetLog currently being observed. Set by
-    // AddAsObserver/RemoveAsObserver.
-    ChromeNetLog* net_log_;
-
-    // The observer we register in AddAsObserver, that passes stuff
-    // through to us.
-    PassThroughObserver internal_observer_;
-
-    DISALLOW_COPY_AND_ASSIGN(ThreadSafeObserverImpl);
-  };
-
   ChromeNetLog();
   virtual ~ChromeNetLog();
 
@@ -99,22 +35,22 @@ class ChromeNetLog : public net::NetLog {
                         EventParameters* params) OVERRIDE;
   virtual uint32 NextID() OVERRIDE;
   virtual LogLevel GetLogLevel() const OVERRIDE;
+  virtual void AddThreadSafeObserver(ThreadSafeObserver* observer,
+                                     LogLevel log_level) OVERRIDE;
+  virtual void SetObserverLogLevel(ThreadSafeObserver* observer,
+                                   LogLevel log_level) OVERRIDE;
+  virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
 
   LoadTimingObserver* load_timing_observer() {
     return load_timing_observer_.get();
   }
 
  private:
-  // NetLog implementation
-  virtual void AddThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
-  virtual void RemoveThreadSafeObserver(ThreadSafeObserver* observer) OVERRIDE;
-
-  // Called whenever an observer is added or removed, or changes its log level.
-  // Must have acquired |lock_| prior to calling.
+  // Called whenever an observer is added or removed, or has its log level
+  // changed.  Must have acquired |lock_| prior to calling.
   void UpdateLogLevel();
 
-  // |lock_| protects access to |observers_| and, indirectly, to. Should not
-  // be acquired by observers.
+  // |lock_| protects access to |observers_|.
   base::Lock lock_;
 
   // Last assigned source ID.  Incremented to get the next one.

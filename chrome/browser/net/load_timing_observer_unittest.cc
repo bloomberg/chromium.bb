@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ using base::TimeDelta;
 using content::BrowserThread;
 using net::NetLog;
 
-// Serves to Identify the current thread as the IO thread.
+// Serves to identify the current thread as the IO thread.
 class LoadTimingObserverTest : public testing::Test {
  public:
   LoadTimingObserverTest() : io_thread_(BrowserThread::IO, &message_loop_) {

@@ -13,67 +13,11 @@
 #include "chrome/browser/net/net_log_logger.h"
 #include "chrome/common/chrome_switches.h"
 
-ChromeNetLog::ThreadSafeObserverImpl::ThreadSafeObserverImpl(LogLevel log_level)
-    : net_log_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(internal_observer_(this, log_level)) {
-}
-
-ChromeNetLog::ThreadSafeObserverImpl::~ThreadSafeObserverImpl() {
-  DCHECK(!net_log_);
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::AddAsObserver(
-    ChromeNetLog* net_log) {
-  DCHECK(!net_log_);
-  net_log_ = net_log;
-  net_log_->AddThreadSafeObserver(&internal_observer_);
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::RemoveAsObserver() {
-  DCHECK(net_log_);
-  net_log_->RemoveThreadSafeObserver(&internal_observer_);
-  net_log_ = NULL;
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::SetLogLevel(
-    net::NetLog::LogLevel log_level) {
-  DCHECK(net_log_);
-  base::AutoLock lock(net_log_->lock_);
-  internal_observer_.SetLogLevel(log_level);
-  net_log_->UpdateLogLevel();
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::AssertNetLogLockAcquired() const {
-  if (net_log_)
-    net_log_->lock_.AssertAcquired();
-}
-
-ChromeNetLog::ThreadSafeObserverImpl::PassThroughObserver::PassThroughObserver(
-    ChromeNetLog::ThreadSafeObserverImpl* owner,
-    net::NetLog::LogLevel log_level)
-    : net::NetLog::ThreadSafeObserver(log_level),
-      ALLOW_THIS_IN_INITIALIZER_LIST(owner_(owner)) {
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::PassThroughObserver::OnAddEntry(
-    net::NetLog::EventType type,
-    const base::TimeTicks& time,
-    const net::NetLog::Source& source,
-    net::NetLog::EventPhase phase,
-    net::NetLog::EventParameters* params) {
-  owner_->OnAddEntry(type, time, source, phase, params);
-}
-
-void ChromeNetLog::ThreadSafeObserverImpl::PassThroughObserver::SetLogLevel(
-    net::NetLog::LogLevel log_level) {
-  log_level_ = log_level;
-}
-
 ChromeNetLog::ChromeNetLog()
     : last_id_(0),
       base_log_level_(LOG_BASIC),
       effective_log_level_(LOG_BASIC),
-      load_timing_observer_(new LoadTimingObserver) {
+      load_timing_observer_(new LoadTimingObserver()) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Adjust base log level based on command line switch, if present.
   // This is done before adding any observers so the call to UpdateLogLevel when
@@ -89,20 +33,20 @@ ChromeNetLog::ChromeNetLog()
     }
   }
 
-  load_timing_observer_->AddAsObserver(this);
+  load_timing_observer_->StartObserving(this);
 
   if (command_line->HasSwitch(switches::kLogNetLog)) {
     net_log_logger_.reset(new NetLogLogger(
         command_line->GetSwitchValuePath(switches::kLogNetLog)));
-    net_log_logger_->AddAsObserver(this);
+    net_log_logger_->StartObserving(this);
   }
 }
 
 ChromeNetLog::~ChromeNetLog() {
-  load_timing_observer_->RemoveAsObserver();
-  if (net_log_logger_.get()) {
-    net_log_logger_->RemoveAsObserver();
-  }
+  // Remove the observers we own before we're destroyed.
+  RemoveThreadSafeObserver(load_timing_observer_.get());
+  if (net_log_logger_.get())
+    RemoveThreadSafeObserver(net_log_logger_.get());
 }
 
 void ChromeNetLog::AddEntry(EventType type,
@@ -128,16 +72,32 @@ net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
 }
 
 void ChromeNetLog::AddThreadSafeObserver(
-    net::NetLog::ThreadSafeObserver* observer) {
+    net::NetLog::ThreadSafeObserver* observer,
+    LogLevel log_level) {
   base::AutoLock lock(lock_);
+
   observers_.AddObserver(observer);
+  OnAddObserver(observer, log_level);
+  UpdateLogLevel();
+}
+
+void ChromeNetLog::SetObserverLogLevel(
+    net::NetLog::ThreadSafeObserver* observer,
+    LogLevel log_level) {
+  base::AutoLock lock(lock_);
+
+  DCHECK(observers_.HasObserver(observer));
+  OnSetObserverLogLevel(observer, log_level);
   UpdateLogLevel();
 }
 
 void ChromeNetLog::RemoveThreadSafeObserver(
     net::NetLog::ThreadSafeObserver* observer) {
   base::AutoLock lock(lock_);
+
+  DCHECK(observers_.HasObserver(observer));
   observers_.RemoveObserver(observer);
+  OnRemoveObserver(observer);
   UpdateLogLevel();
 }
 

@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_internals.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/ui/webui/media/media_internals_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -26,8 +27,7 @@ static const net::NetLog::EventType kNetEventTypeFilter[] = {
   net::NetLog::TYPE_HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
 };
 
-MediaInternalsProxy::MediaInternalsProxy()
-    : ThreadSafeObserverImpl(net::NetLog::LOG_ALL_BUT_BYTES) {
+MediaInternalsProxy::MediaInternalsProxy() {
   io_thread_ = g_browser_process->io_thread();
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -127,14 +127,14 @@ Value* MediaInternalsProxy::GetConstants() {
 void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   io_thread_->globals()->media.media_internals->AddObserver(this);
-  // TODO(scottfr): Get the passive log data as well.
-  AddAsObserver(io_thread_->net_log());
+  io_thread_->net_log()->AddThreadSafeObserver(this,
+                                               net::NetLog::LOG_ALL_BUT_BYTES);
 }
 
 void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   io_thread_->globals()->media.media_internals->RemoveObserver(this);
-  RemoveAsObserver();
+  io_thread_->net_log()->RemoveThreadSafeObserver(this);
 }
 
 void MediaInternalsProxy::GetEverythingOnIOThread() {

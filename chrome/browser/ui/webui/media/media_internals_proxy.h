@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,10 +10,10 @@
 #include "base/message_loop_helpers.h"
 #include "base/string16.h"
 #include "chrome/browser/media/media_internals_observer.h"
-#include "chrome/browser/net/chrome_net_log.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "net/base/net_log.h"
 
 class IOThread;
 class MediaInternalsMessageHandler;
@@ -32,7 +32,7 @@ class MediaInternalsProxy
       public base::RefCountedThreadSafe<
           MediaInternalsProxy,
           content::BrowserThread::DeleteOnUIThread>,
-      public ChromeNetLog::ThreadSafeObserverImpl,
+      public net::NetLog::ThreadSafeObserver,
       public content::NotificationObserver {
  public:
   MediaInternalsProxy();
@@ -54,7 +54,7 @@ class MediaInternalsProxy
   // MediaInternalsObserver implementation. Called on the IO thread.
   virtual void OnUpdate(const string16& update) OVERRIDE;
 
-  // ChromeNetLog::ThreadSafeObserver implementation. Callable from any thread:
+  // net::NetLog::ThreadSafeObserver implementation. Callable from any thread:
   virtual void OnAddEntry(net::NetLog::EventType type,
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,
