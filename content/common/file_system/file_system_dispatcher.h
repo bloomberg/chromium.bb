@@ -83,6 +83,10 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
   bool OpenFile(const GURL& file_path,
                 int file_flags,  // passed to FileUtilProxy::CreateOrOpen
                 fileapi::FileSystemCallbackDispatcher* dispatcher);
+
+  bool CreateSnapshotFile(const GURL& blod_url,
+                          const GURL& file_path,
+                          fileapi::FileSystemCallbackDispatcher* dispatcher);
  private:
   // Message handlers.
   void OnDidOpenFileSystem(int request_id,

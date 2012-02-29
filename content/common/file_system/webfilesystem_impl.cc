@@ -116,3 +116,14 @@ WebKit::WebFileWriter* WebFileSystemImpl::createFileWriter(
     const WebURL& path, WebKit::WebFileWriterClient* client) {
   return new WebFileWriterImpl(GURL(path), client);
 }
+
+void WebFileSystemImpl::createSnapshotFileAndReadMetadata(
+    const WebKit::WebURL& blobURL,
+    const WebKit::WebURL& path,
+    WebKit::WebFileSystemCallbacks* callbacks) {
+  FileSystemDispatcher* dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  dispatcher->CreateSnapshotFile(
+      GURL(blobURL), GURL(path),
+      new WebFileSystemCallbackDispatcher(callbacks));
+}

@@ -133,6 +133,12 @@ IPC_MESSAGE_CONTROL3(FileSystemHostMsg_OpenFile,
                      GURL /* file path */,
                      int /* file flags */)
 
+// WebFileSystem::createSnapshotFileAndReadMetadata() message.
+IPC_MESSAGE_CONTROL3(FileSystemHostMsg_CreateSnapshotFile,
+                     int /* request_id */,
+                     GURL /* blob_url */,
+                     GURL /* file_path */)
+
 // For Pepper's URL loader.
 IPC_SYNC_MESSAGE_CONTROL1_1(FileSystemHostMsg_SyncGetPlatformPath,
                             GURL /* file path */,

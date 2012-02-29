@@ -112,6 +112,8 @@ bool FileSystemDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_TouchFile, OnTouchFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_CancelWrite, OnCancel)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_OpenFile, OnOpenFile)
+    IPC_MESSAGE_HANDLER(FileSystemHostMsg_CreateSnapshotFile,
+                        OnCreateSnapshotFile)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_WillUpdate, OnWillUpdate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_DidUpdate, OnDidUpdate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_SyncGetPlatformPath,
@@ -305,7 +307,6 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
   operation->SyncGetPlatformPath(path, platform_path);
 }
 
-// TODO(kinuko,tzik): Add IPC plumbing to wire this.
 void FileSystemDispatcherHost::OnCreateSnapshotFile(
     int request_id, const GURL& blob_url, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
