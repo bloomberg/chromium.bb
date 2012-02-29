@@ -10,6 +10,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/events.h"
 
 namespace ash {
 
@@ -23,7 +24,7 @@ const int kModifierMask = (ui::EF_SHIFT_DOWN |
 bool AcceleratorDispatcher::Dispatch(const MSG& msg) {
   if (!associated_window_)
     return false;
-  if (!associated_window_->CanReceiveEvents())
+  if (!ui::IsNoopEvent(msg) && !associated_window_->CanReceiveEvents())
     return aura::Env::GetInstance()->GetDispatcher()->Dispatch(msg);
 
   if(msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
