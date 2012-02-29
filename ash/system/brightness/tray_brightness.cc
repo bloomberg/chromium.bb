@@ -20,7 +20,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
-namespace {
+namespace tray {
 
 class BrightnessView : public views::View,
                        public views::SliderListener {
@@ -35,13 +35,17 @@ class BrightnessView : public views::View,
     icon->SetImage(image.ToSkBitmap());
     AddChildView(icon);
 
-    views::Slider* slider = new views::Slider(this, views::Slider::HORIZONTAL);
+    slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
     // TODO(sad|davemoore):  There is currently no way to get the brightness
     // level of the system. So start with a random value.
     // http://crosbug.com/26935
-    slider->SetValue(0.8f);
-    slider->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
-    AddChildView(slider);
+    slider_->SetValue(0.8f);
+    slider_->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
+    AddChildView(slider_);
+  }
+
+  void SetBrightnessLevel(float percent) {
+    slider_->SetValue(percent);
   }
 
  private:
@@ -62,10 +66,12 @@ class BrightnessView : public views::View,
     }
   }
 
+  views::Slider* slider_;
+
   DISALLOW_COPY_AND_ASSIGN(BrightnessView);
 };
 
-}  // namespace
+}  // namespace tray
 
 namespace ash {
 namespace internal {
@@ -79,7 +85,8 @@ views::View* TrayBrightness::CreateTrayView() {
 }
 
 views::View* TrayBrightness::CreateDefaultView() {
-  return new BrightnessView;
+  brightness_view_.reset(new tray::BrightnessView);
+  return brightness_view_.get();
 }
 
 views::View* TrayBrightness::CreateDetailedView() {
@@ -91,9 +98,20 @@ void TrayBrightness::DestroyTrayView() {
 }
 
 void TrayBrightness::DestroyDefaultView() {
+  brightness_view_.reset();
 }
 
 void TrayBrightness::DestroyDetailedView() {
+}
+
+void TrayBrightness::OnBrightnessChanged(float percent, bool user_initiated) {
+  if (brightness_view_.get()) {
+    brightness_view_->SetBrightnessLevel(percent);
+    return;
+  }
+  if (!user_initiated)
+    return;
+  PopupDetailedView();
 }
 
 }  // namespace internal

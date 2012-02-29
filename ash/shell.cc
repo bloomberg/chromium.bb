@@ -247,6 +247,8 @@ Shell::Shell(ShellDelegate* delegate)
       accelerator_controller_(new AcceleratorController),
 #endif
       delegate_(delegate),
+      audio_controller_(NULL),
+      brightness_controller_(NULL),
       shelf_(NULL),
       window_mode_(MODE_OVERLAPPING),
       desktop_background_mode_(BACKGROUND_IMAGE),
@@ -381,12 +383,17 @@ void Shell::Init() {
     tray_.reset(new SystemTray());
     status_widget_->GetContentsView()->AddChildView(tray_.get());
 
-    tray_->AddTrayItem(new internal::TrayVolume());
-    tray_->AddTrayItem(new internal::TrayBrightness());
+    internal::TrayVolume* tray_volume = new internal::TrayVolume();
+    internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
+    audio_controller_ = tray_volume;
+    brightness_controller_ = tray_brightness;
+
+    tray_->AddTrayItem(tray_volume);
+    tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());
 
     if (delegate_.get())
-      tray_delegate_.reset(delegate_->CreateSystemTrayDelegate());
+      tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(tray_.get()));
     if (!tray_delegate_.get())
       tray_delegate_.reset(new DummySystemTrayDelegate());
   }

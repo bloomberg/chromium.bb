@@ -4,9 +4,15 @@
 
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 
+#include "ash/shell.h"
+#include "ash/system/audio/audio_controller.h"
+#include "ash/system/brightness/brightness_controller.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 
@@ -14,11 +20,21 @@ namespace chromeos {
 
 namespace {
 
-class SystemTrayDelegate : public ash::SystemTrayDelegate {
+class SystemTrayDelegate : public ash::SystemTrayDelegate,
+                           public AudioHandler::VolumeObserver,
+                           public PowerManagerClient::Observer {
  public:
-  SystemTrayDelegate() {}
-  virtual ~SystemTrayDelegate() {}
+  explicit SystemTrayDelegate(ash::SystemTray* tray) : tray_(tray) {
+    AudioHandler::GetInstance()->AddVolumeObserver(this);
+    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+  }
 
+  virtual ~SystemTrayDelegate() {
+    AudioHandler::GetInstance()->RemoveVolumeObserver(this);
+    DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
+  }
+
+  // Overridden from ash::SystemTrayDelegate.
   virtual void ShowSettings() OVERRIDE {
     BrowserList::GetLastActive()->OpenOptionsDialog();
   }
@@ -36,21 +52,39 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate {
   }
 
   virtual float VolumeLevel() OVERRIDE {
-    return AudioHandler::GetInstance()->GetVolumePercent() / 100.;
+    return AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
   }
 
   virtual void SetVolumeLevel(float level) OVERRIDE {
-    AudioHandler::GetInstance()->SetVolumePercent(level * 100.);
+    AudioHandler::GetInstance()->SetVolumePercent(level * 100.f);
   }
 
  private:
+  ash::SystemTray* tray_;
+
+  // Overridden from AudioHandler::VolumeObserver.
+  virtual void OnVolumeChanged() OVERRIDE {
+    float level = AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
+    ash::Shell::GetInstance()->audio_controller()->
+        OnVolumeChanged(level);
+  }
+
+  // Overridden from PowerManagerClient::Observer.
+  virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE {
+    ash::Shell::GetInstance()->brightness_controller()->
+        OnBrightnessChanged(level / 100.f, user_initiated);
+  }
+
+  // TODO(sad): Override more from PowerManagerClient::Observer here (e.g.
+  // PowerChanged, PowerButtonStateChanged etc.).
+
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };
 
 }  // namespace
 
-ash::SystemTrayDelegate* CreateSystemTrayDelegate() {
-  return new chromeos::SystemTrayDelegate();
+ash::SystemTrayDelegate* CreateSystemTrayDelegate(ash::SystemTray* tray) {
+  return new chromeos::SystemTrayDelegate(tray);
 }
 
 }  // namespace chromeos

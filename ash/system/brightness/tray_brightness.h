@@ -6,13 +6,19 @@
 #define ASH_SYSTEM_BRIGHTNESS_TRAY_BRIGHTNESS_H_
 #pragma once
 
+#include "ash/system/brightness/brightness_controller.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/compiler_specific.h"
+
+namespace tray {
+class BrightnessView;
+}
 
 namespace ash {
 namespace internal {
 
-class TrayBrightness : public SystemTrayItem {
+class TrayBrightness : public SystemTrayItem,
+                       public BrightnessController {
  public:
   TrayBrightness();
   virtual ~TrayBrightness();
@@ -25,6 +31,12 @@ class TrayBrightness : public SystemTrayItem {
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
+
+  // Overridden from BrightnessController.
+  virtual void OnBrightnessChanged(float percent,
+                                   bool user_initiated) OVERRIDE;
+
+  scoped_ptr<tray::BrightnessView> brightness_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBrightness);
 };

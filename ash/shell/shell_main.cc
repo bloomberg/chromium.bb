@@ -208,7 +208,8 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return launcher_delegate_;
   }
 
-  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() {
+  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
+      ash::SystemTray* tray) {
     return NULL;
   }
 

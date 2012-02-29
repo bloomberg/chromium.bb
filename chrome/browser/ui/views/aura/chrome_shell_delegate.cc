@@ -124,9 +124,10 @@ ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
   return delegate;
 }
 
-ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate() {
+ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate(
+    ash::SystemTray* tray) {
 #if defined(OS_CHROMEOS)
-  return chromeos::CreateSystemTrayDelegate();
+  return chromeos::CreateSystemTrayDelegate(tray);
 #else
   return NULL;
 #endif

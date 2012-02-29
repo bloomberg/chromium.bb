@@ -45,10 +45,14 @@ class VolumeView : public views::View,
     icon_->SetToggled(delegate->AudioMuted());
     AddChildView(icon_);
 
-    views::Slider* slider = new views::Slider(this, views::Slider::HORIZONTAL);
-    slider->SetValue(delegate->VolumeLevel());
-    slider->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
-    AddChildView(slider);
+    slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
+    slider_->SetValue(delegate->VolumeLevel());
+    slider_->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
+    AddChildView(slider_);
+  }
+
+  void SetVolumeLevel(float percent) {
+    slider_->SetValue(percent);
   }
 
  private:
@@ -74,6 +78,7 @@ class VolumeView : public views::View,
   }
 
   views::ToggleImageButton* icon_;
+  views::Slider* slider_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeView);
 };
@@ -115,6 +120,15 @@ void TrayVolume::DestroyDefaultView() {
 }
 
 void TrayVolume::DestroyDetailedView() {
+}
+
+void TrayVolume::OnVolumeChanged(float percent) {
+  if (volume_view_.get()) {
+    volume_view_->SetVolumeLevel(percent);
+    return;
+  }
+
+  PopupDetailedView();
 }
 
 }  // namespace internal

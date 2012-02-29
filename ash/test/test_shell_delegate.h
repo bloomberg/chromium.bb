@@ -32,7 +32,7 @@ class TestShellDelegate : public ShellDelegate {
       ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
-  virtual SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
+  virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* t) OVERRIDE;
 };
 
 }  // namespace test

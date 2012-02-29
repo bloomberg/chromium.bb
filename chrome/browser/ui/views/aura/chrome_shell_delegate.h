@@ -47,7 +47,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
-  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
+  virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
+      ash::SystemTray* tray) OVERRIDE;
 
  private:
   static ChromeShellDelegate* instance_;

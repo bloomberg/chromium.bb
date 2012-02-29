@@ -66,7 +66,8 @@ LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(
   return NULL;
 }
 
-SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
+SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate(
+    SystemTray* tray) {
   return NULL;
 }
 }  // namespace test

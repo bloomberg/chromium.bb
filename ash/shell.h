@@ -38,6 +38,8 @@ class Widget;
 namespace ash {
 
 class AcceleratorController;
+class AudioController;
+class BrightnessController;
 class Launcher;
 class NestedDispatcherController;
 class PowerButtonController;
@@ -188,6 +190,12 @@ class ASH_EXPORT Shell {
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
   }
+  AudioController* audio_controller() const {
+    return audio_controller_;
+  }
+  BrightnessController* brightness_controller() const {
+    return brightness_controller_;
+  }
 
   ShellDelegate* delegate() { return delegate_.get(); }
   SystemTrayDelegate* tray_delegate() { return tray_delegate_.get(); }
@@ -263,6 +271,10 @@ class ASH_EXPORT Shell {
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
+
+  // The audio and brightness controllers are not owner by the shell.
+  AudioController* audio_controller_;
+  BrightnessController* brightness_controller_;
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<internal::InputMethodEventFilter> input_method_filter_;
