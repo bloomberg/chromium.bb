@@ -147,7 +147,9 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindow(
 DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     RenderViewHost* inspected_rvh,
     DevToolsToggleAction action) {
-  return ToggleDevToolsWindow(inspected_rvh, false, action);
+  return ToggleDevToolsWindow(inspected_rvh,
+                              action == DEVTOOLS_TOGGLE_ACTION_INSPECT,
+                              action);
 }
 
 void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
