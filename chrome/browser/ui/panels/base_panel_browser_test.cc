@@ -333,34 +333,34 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   else
     EXPECT_TRUE(panel->auto_resizable());
 
+#if defined(OS_LINUX)
+  // On bots, we might have a simple window manager which always activates new
+  // windows, and can't always deactivate them. Keep track of the previously
+  // active window so we can activate that window back to ensure the new window
+  // is inactive.
+  Browser* last_active_browser_to_restore = NULL;
+  if (params.expected_active_state == SHOW_AS_INACTIVE &&
+      ui::GuessWindowManager() == ui::WM_ICE_WM) {
+    last_active_browser_to_restore = BrowserList::GetLastActive();
+    EXPECT_TRUE(last_active_browser_to_restore);
+    EXPECT_NE(last_active_browser_to_restore, panel->browser());
+  }
+#endif
+
   if (params.show_flag == SHOW_AS_ACTIVE) {
     panel->Show();
   } else {
-#if defined(OS_LINUX)
-    // On bots, we might have a simple window manager which always activates new
-    // windows, and can't always deactivate them. Activate previously active
-    // window back to ensure the new window is inactive.
-    // Skip this icewm logic if not waiting for full creation of panel
-    // as those tests aren't affected by which panel is activated.
-    if (params.wait_for_fully_created &&
-        ui::GuessWindowManager() == ui::WM_ICE_WM) {
-      Browser* last_active_browser = BrowserList::GetLastActive();
-      EXPECT_TRUE(last_active_browser);
-      EXPECT_NE(last_active_browser, panel->browser());
-      panel->ShowInactive();  // Shows as active anyways in icewm.
-      MessageLoopForUI::current()->RunAllPending();
-      // Restore focus where it was. It will deactivate the new panel.
-      last_active_browser->window()->Activate();
-    } else {
-      panel->ShowInactive();
-    }
-#else
     panel->ShowInactive();
-#endif
   }
 
   if (params.wait_for_fully_created) {
     MessageLoopForUI::current()->RunAllPending();
+
+#if defined(OS_LINUX)
+    // Restore focus where it was. It will deactivate the new panel.
+    if (last_active_browser_to_restore)
+      last_active_browser_to_restore->window()->Activate();
+#endif
     // More waiting, because gaining or losing focus may require inter-process
     // asynchronous communication, and it is not enough to just run the local
     // message loop to make sure this activity has completed.

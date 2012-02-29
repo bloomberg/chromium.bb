@@ -261,13 +261,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, UpdateDraggableStatus) {
   panel->Close();
 }
 
-// http://crbug.com/115619
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_CreateOverflowPanels CreateOverflowPanels
-#else
-#define MAYBE_CreateOverflowPanels DISABLED_CreateOverflowPanels
-#endif
-IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, MAYBE_CreateOverflowPanels) {
+IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CreateOverflowPanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   OverflowPanelStrip* overflow_strip =
