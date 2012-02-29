@@ -61,20 +61,26 @@ var timeutil = (function() {
    * @returns {String}
    */
   function dateToString(date) {
-    var dateStr =
-        date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
+    var dateStr = date.getFullYear() + '-' +
+                  zeroPad_(date.getMonth() + 1, 2) + '-' +
+                  zeroPad_(date.getDate(), 2);
 
-    // Prefix the milliseconds with enough zeros to make it three characters
-    // long.
-    var paddedMilliseconds = '' + date.getMilliseconds();
-    while (paddedMilliseconds.length < 3)
-      paddedMilliseconds = '0' + paddedMilliseconds;
+    var timeStr = zeroPad_(date.getHours(), 2) + ':' +
+                  zeroPad_(date.getMinutes(), 2) + ':' +
+                  zeroPad_(date.getSeconds(), 2) + '.' +
+                  zeroPad_(date.getMilliseconds(), 3);
 
-    var timeStr =
-        date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() +
-        '.' + paddedMilliseconds;
+    return dateStr + ' ' + timeStr;
+  }
 
-    return '[' + dateStr + '] ' + timeStr;
+  /**
+   * Prefixes enough zeros to |num| so that it has length |len|.
+   */
+  function zeroPad_(num, len) {
+    var str = num + '';
+    while (str.length < len)
+      str = '0' + str;
+    return str;
   }
 
   return {
