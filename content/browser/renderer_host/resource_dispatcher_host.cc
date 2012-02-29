@@ -82,7 +82,7 @@
 #include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_storage_controller.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -95,7 +95,7 @@ using content::ResourceThrottle;
 using content::ThrottlingResourceHandler;
 using content::WebContents;
 using content::WorkerServiceImpl;
-using webkit_blob::DeletableFileReference;
+using webkit_blob::ShareableFileReference;
 
 // ----------------------------------------------------------------------------
 
@@ -767,7 +767,7 @@ void ResourceDispatcherHost::OnDataDownloadedACK(int request_id) {
 }
 
 void ResourceDispatcherHost::RegisterDownloadedTempFile(
-    int child_id, int request_id, DeletableFileReference* reference) {
+    int child_id, int request_id, ShareableFileReference* reference) {
   registered_temp_files_[child_id][request_id] = reference;
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
       child_id, reference->path());
@@ -780,7 +780,7 @@ void ResourceDispatcherHost::RegisterDownloadedTempFile(
   // We do this when the file is deleted because the renderer can take a blob
   // reference to the temp file that outlives the url loaded that it was
   // loaded with to keep the file (and permissions) alive.
-  reference->AddDeletionCallback(
+  reference->AddFinalReleaseCallback(
       base::Bind(&RemoveDownloadFileFromChildSecurityPolicy,
                  child_id));
 }

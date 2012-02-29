@@ -53,7 +53,7 @@ class URLRequestJobFactory;
 }  // namespace net
 
 namespace webkit_blob {
-class DeletableFileReference;
+class ShareableFileReference;
 }
 
 class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
@@ -239,7 +239,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // no longer needed.
   void RegisterDownloadedTempFile(
       int child_id, int request_id,
-      webkit_blob::DeletableFileReference* reference);
+      webkit_blob::ShareableFileReference* reference);
   void UnregisterDownloadedTempFile(int child_id, int request_id);
 
   // Needed for the sync IPC message dispatcher macros.
@@ -456,7 +456,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Collection of temp files downloaded for child processes via
   // the download_to_file mechanism. We avoid deleting them until
   // the client no longer needs them.
-  typedef std::map<int, scoped_refptr<webkit_blob::DeletableFileReference> >
+  typedef std::map<int, scoped_refptr<webkit_blob::ShareableFileReference> >
       DeletableFilesMap;  // key is request id
   typedef std::map<int, DeletableFilesMap>
       RegisteredTempFiles;  // key is child process id

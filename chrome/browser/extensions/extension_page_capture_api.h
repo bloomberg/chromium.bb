@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 
 class FilePath;
 
@@ -56,7 +56,7 @@ class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
   FilePath mhtml_path_;
 
   // The file containing the MHTML.
-  scoped_refptr<webkit_blob::DeletableFileReference> mhtml_file_;
+  scoped_refptr<webkit_blob::ShareableFileReference> mhtml_file_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("pageCapture.saveAsMHTML")
 };

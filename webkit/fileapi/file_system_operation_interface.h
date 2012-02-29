@@ -8,7 +8,7 @@
 #include "base/file_util_proxy.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 
 namespace base {
 class Time;
@@ -20,7 +20,7 @@ class URLRequestContext;
 }  // namespace net
 
 namespace webkit_blob {
-class DeletableFileReference;
+class ShareableFileReference;
 }
 
 class GURL;
@@ -90,22 +90,21 @@ class FileSystemOperationInterface {
   // may want to download the file into a temporary snapshot file and then
   // return the metadata of the temporary file.
   //
-  // |deletable_file_ref| is used to manage the lifetime of the returned
+  // |file_ref| is used to manage the lifetime of the returned
   // snapshot file.  It can be set to let the chromium backend take
   // care of the life time of the snapshot file.  Otherwise (if the returned
-  // file is not a temporary file to be deleted) the implementation can just
+  // file does not require any handling) the implementation can just
   // return NULL.  In a more complex case, the implementaiton can manage
   // the lifetime of the snapshot file on its own (e.g. by its cache system)
   // but also can be notified via the reference when the file becomes no
   // longer necessary in the javascript world.
-  // Please see the comment for DeletableFileReference for details.
+  // Please see the comment for ShareableFileReference for details.
   //
   typedef base::Callback<void(
       base::PlatformFileError result,
       const base::PlatformFileInfo& file_info,
       const FilePath& platform_path,
-      const scoped_refptr<webkit_blob::DeletableFileReference>&
-          deletable_file_ref
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref
       )> SnapshotFileCallback;
 
   // Used for Write().

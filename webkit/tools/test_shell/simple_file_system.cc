@@ -152,7 +152,7 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     const WebURL& blobURL,
     const WebURL& path,
     WebFileSystemCallbacks* callbacks) {
-  // Not registering blobURL for this simplified version.
+  // TODO(michaeln): Register the blobURL with the blob storage contoller.
   GetNewOperation(path)->CreateSnapshotFile(
       path, SnapshotFileHandler(callbacks));
 }
@@ -260,6 +260,6 @@ void SimpleFileSystem::DidCreateSnapshotFile(
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
     const FilePath& platform_path,
-    const scoped_refptr<webkit_blob::DeletableFileReference>& deletable_ref) {
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   DidGetMetadata(callbacks, result, info, platform_path);
 }

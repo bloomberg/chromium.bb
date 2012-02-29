@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/blob/blob_export.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 
 namespace WebKit {
 class WebBlobData;
@@ -104,8 +104,8 @@ class BLOB_EXPORT BlobData : public base::RefCounted<BlobData> {
     items_.back().SetToBlob(blob_url, offset, length);
   }
 
-  void AttachDeletableFileReference(DeletableFileReference* reference) {
-    deletable_files_.push_back(reference);
+  void AttachShareableFileReference(ShareableFileReference* reference) {
+    shareable_files_.push_back(reference);
   }
 
   const std::vector<Item>& items() const { return items_; }
@@ -140,7 +140,7 @@ class BLOB_EXPORT BlobData : public base::RefCounted<BlobData> {
   std::string content_type_;
   std::string content_disposition_;
   std::vector<Item> items_;
-  std::vector<scoped_refptr<DeletableFileReference> > deletable_files_;
+  std::vector<scoped_refptr<ShareableFileReference> > shareable_files_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobData);
 };

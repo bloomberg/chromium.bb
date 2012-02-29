@@ -21,7 +21,7 @@ class GrowableIOBuffer;
 }
 
 namespace webkit_blob {
-class DeletableFileReference;
+class ShareableFileReference;
 }
 
 namespace content {
@@ -81,9 +81,9 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
   scoped_ptr<net::FileStream> file_stream_;
   bool write_callback_pending_;
 
-  // We create a DeletableFileReference for the temp file created as
-  // a result of the download.
-  scoped_refptr<webkit_blob::DeletableFileReference> deletable_file_;
+  // We create a ShareableFileReference that's deletable for the temp
+  // file created as  a result of the download.
+  scoped_refptr<webkit_blob::ShareableFileReference> deletable_file_;
 
   // True if OnRequestClosed() has already been called.
   bool request_was_closed_;

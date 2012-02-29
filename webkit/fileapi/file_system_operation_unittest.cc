@@ -13,7 +13,7 @@
 #include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -29,7 +29,7 @@ using quota::QuotaClient;
 using quota::QuotaManager;
 using quota::QuotaManagerProxy;
 using quota::StorageType;
-using webkit_blob::DeletableFileReference;
+using webkit_blob::ShareableFileReference;
 
 namespace fileapi {
 
@@ -170,8 +170,8 @@ class FileSystemOperationTest
   const std::vector<base::FileUtilProxy::Entry>& entries() const {
     return entries_;
   }
-  const DeletableFileReference* deletable_file_ref() const {
-    return deletable_file_ref_;
+  const ShareableFileReference* shareable_file_ref() const {
+    return shareable_file_ref_;
   }
 
   virtual void SetUp();
@@ -286,11 +286,11 @@ class FileSystemOperationTest
       base::PlatformFileError status,
       const base::PlatformFileInfo& info,
       const FilePath& platform_path,
-      const scoped_refptr<DeletableFileReference>& deletable_file_ref) {
+      const scoped_refptr<ShareableFileReference>& shareable_file_ref) {
     info_ = info;
     path_ = platform_path;
     status_ = status;
-    deletable_file_ref_ = deletable_file_ref;
+    shareable_file_ref_ = shareable_file_ref;
   }
 
   // For post-operation status.
@@ -298,7 +298,7 @@ class FileSystemOperationTest
   base::PlatformFileInfo info_;
   FilePath path_;
   std::vector<base::FileUtilProxy::Entry> entries_;
-  scoped_refptr<DeletableFileReference> deletable_file_ref_;
+  scoped_refptr<ShareableFileReference> shareable_file_ref_;
 
  private:
   scoped_ptr<LocalFileUtil> local_file_util_;
@@ -1059,9 +1059,9 @@ TEST_F(FileSystemOperationTest, TestCreateSnapshotFile) {
   EXPECT_FALSE(info().is_directory);
   EXPECT_EQ(PlatformPath(file_path), path());
 
-  // The FileSystemOpration implementation does not set the deletable
-  // file reference.
-  EXPECT_EQ(NULL, deletable_file_ref());
+  // The FileSystemOpration implementation does not create a
+  // shareable file reference.
+  EXPECT_EQ(NULL, shareable_file_ref());
 }
 
 }  // namespace fileapi

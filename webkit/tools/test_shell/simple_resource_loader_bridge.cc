@@ -62,7 +62,7 @@
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_dir_url_request_job.h"
 #include "webkit/fileapi/file_system_url_request_job.h"
@@ -81,7 +81,7 @@ using webkit_glue::ResourceLoaderBridge;
 using webkit_glue::ResourceResponseInfo;
 using net::StaticCookiePolicy;
 using net::HttpResponseHeaders;
-using webkit_blob::DeletableFileReference;
+using webkit_blob::ShareableFileReference;
 
 namespace {
 
@@ -330,8 +330,9 @@ class RequestProxy : public net::URLRequest::Delegate,
     if (download_to_file_) {
       FilePath path;
       if (file_util::CreateTemporaryFile(&path)) {
-        downloaded_file_ = DeletableFileReference::GetOrCreate(
-            path, base::MessageLoopProxy::current());
+        downloaded_file_ = ShareableFileReference::GetOrCreate(
+            path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+            base::MessageLoopProxy::current());
         file_stream_.OpenSync(
             path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE);
       }
@@ -660,7 +661,7 @@ class RequestProxy : public net::URLRequest::Delegate,
   // Support for request.download_to_file behavior.
   bool download_to_file_;
   net::FileStream file_stream_;
-  scoped_refptr<DeletableFileReference> downloaded_file_;
+  scoped_refptr<ShareableFileReference> downloaded_file_;
 
   // Size of our async IO data buffers
   static const int kDataSize = 16*1024;

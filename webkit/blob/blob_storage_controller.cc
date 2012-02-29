@@ -274,10 +274,10 @@ void BlobStorageController::AppendFileItem(
                                expected_modification_time);
 
   // It may be a temporary file that should be deleted when no longer needed.
-  scoped_refptr<DeletableFileReference> deletable_file =
-      DeletableFileReference::Get(file_path);
-  if (deletable_file)
-    target_blob_data->AttachDeletableFileReference(deletable_file);
+  scoped_refptr<ShareableFileReference> shareable_file =
+      ShareableFileReference::Get(file_path);
+  if (shareable_file)
+    target_blob_data->AttachShareableFileReference(shareable_file);
 }
 
 void BlobStorageController::IncrementBlobDataUsage(BlobData* blob_data) {

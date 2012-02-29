@@ -397,7 +397,7 @@
         '../../appcache/mock_appcache_storage_unittest.cc',
         '../../blob/blob_storage_controller_unittest.cc',
         '../../blob/blob_url_request_job_unittest.cc',
-        '../../blob/deletable_file_reference_unittest.cc',
+        '../../blob/shareable_file_reference_unittest.cc',
         '../../database/database_connections_unittest.cc',
         '../../database/database_quota_client_unittest.cc',
         '../../database/databases_table_unittest.cc',

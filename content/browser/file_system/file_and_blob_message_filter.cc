@@ -25,7 +25,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/blob/blob_storage_controller.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
@@ -478,7 +478,7 @@ void FileAndBlobMessageFilter::DidCreateSnapshot(
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
     const FilePath& platform_path,
-    const scoped_refptr<webkit_blob::DeletableFileReference>& unused) {
+    const scoped_refptr<webkit_blob::ShareableFileReference>& unused) {
   if (result != base::PLATFORM_FILE_OK) {
     Send(new FileSystemMsg_DidFail(request_id, result));
     return;
@@ -493,7 +493,7 @@ void FileAndBlobMessageFilter::DidCreateSnapshot(
   net::GetWellKnownMimeTypeFromExtension(extension, &mime_type);
 
   // Register the created file to the blob registry.
-  // Blob storage automatically finds and refs deletable files, so we don't
+  // Blob storage automatically finds and refs the file_ref, so we don't
   // need to do anything for the returned file reference (|unused|) here.
   BlobData::Item item;
   item.SetToFile(platform_path, 0, -1, base::Time());

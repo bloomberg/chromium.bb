@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
@@ -31,7 +31,7 @@ void GetMetadataForSnapshot(
     const base::PlatformFileInfo& file_info,
     const FilePath& platform_path) {
   // We don't want the third party to delete our local file, so just returning
-  // NULL as |deletable_file_reference|.
+  // NULL as |file_reference|.
   callback.Run(result, file_info, platform_path, NULL);
 }
 

@@ -22,6 +22,7 @@
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::WebContents;
+using webkit_blob::ShareableFileReference;
 
 // Error messages.
 const char* const kFileTooBigError = "The MHTML file generated is too big.";
@@ -37,6 +38,10 @@ PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() : tab_id_(0) {
 }
 
 PageCaptureSaveAsMHTMLFunction::~PageCaptureSaveAsMHTMLFunction() {
+  if (mhtml_file_.get()) {
+    BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE,
+                               mhtml_file_.release());
+  }
 }
 
 void PageCaptureSaveAsMHTMLFunction::SetTestDelegate(TestDelegate* delegate) {
@@ -86,12 +91,28 @@ void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool success = file_util::CreateTemporaryFile(&mhtml_path_);
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated, this,
                  success));
 }
 
 void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    if (success) {
+      // Setup a ShareableFileReference so the temporary file gets deleted
+      // once it is no longer used.
+      mhtml_file_ = ShareableFileReference::GetOrCreate(
+          mhtml_path_, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+    }
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated, this,
+                   success));
+    return;
+  }
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success) {
     ReturnFailure(kTemporaryFileError);
     return;
@@ -99,11 +120,6 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
 
   if (test_delegate_)
     test_delegate_->OnTemporaryFileCreated(mhtml_path_);
-
-  // Sets a DeletableFileReference so the temporary file gets deleted once it is
-  // no longer used.
-  mhtml_file_ = webkit_blob::DeletableFileReference::GetOrCreate(mhtml_path_,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 
   WebContents* web_contents = GetWebContents();
   if (!web_contents) {

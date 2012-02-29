@@ -36,7 +36,7 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace webkit_blob {
-class DeletableFileReference;
+class ShareableFileReference;
 }
 
 class FileAndBlobMessageFilter : public content::BrowserMessageFilter {
@@ -144,8 +144,7 @@ class FileAndBlobMessageFilter : public content::BrowserMessageFilter {
       base::PlatformFileError result,
       const base::PlatformFileInfo& info,
       const FilePath& platform_path,
-      const scoped_refptr<webkit_blob::DeletableFileReference>&
-          deletable_ref);
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   // Creates a new FileSystemOperationInterface based on |target_path|.
   fileapi::FileSystemOperationInterface* GetNewOperation(

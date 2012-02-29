@@ -16,9 +16,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
-#include "webkit/blob/deletable_file_reference.h"
+#include "webkit/blob/shareable_file_reference.h"
 
-using webkit_blob::DeletableFileReference;
+using webkit_blob::ShareableFileReference;
 
 namespace content {
 
@@ -161,8 +161,8 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     // file_stream_ (otherwise we will leak it).
     return;
   }
-  deletable_file_ = DeletableFileReference::GetOrCreate(
-      file_path,
+  deletable_file_ = ShareableFileReference::GetOrCreate(
+      file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   file_stream_.reset(new net::FileStream(file_handle.ReleaseValue(),
                                          base::PLATFORM_FILE_WRITE |
