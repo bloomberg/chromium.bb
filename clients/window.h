@@ -91,9 +91,6 @@ EGLDisplay
 display_get_egl_display(struct display *d);
 
 EGLConfig
-display_get_rgb_egl_config(struct display *d);
-
-EGLConfig
 display_get_argb_egl_config(struct display *d);
 
 int

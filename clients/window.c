@@ -65,11 +65,8 @@ struct display {
 	struct wl_shm *shm;
 	struct wl_data_device_manager *data_device_manager;
 	EGLDisplay dpy;
-	EGLConfig rgb_config;
 	EGLConfig argb_config;
-	EGLContext rgb_ctx;
 	EGLContext argb_ctx;
-	cairo_device_t *rgb_device;
 	cairo_device_t *argb_device;
 
 	int display_fd;
@@ -287,13 +284,8 @@ display_create_egl_window_surface(struct display *display,
 	data->display = display;
 	data->surface = surface;
 
-	if (flags & SURFACE_OPAQUE) {
-		config = display->rgb_config;
-		device = display->rgb_device;
-	} else {
-		config = display->argb_config;
-		device = display->argb_device;
-	}
+	config = display->argb_config;
+	device = display->argb_device;
 
 	data->window = wl_egl_window_create(surface,
 					    rectangle->width,
@@ -372,13 +364,8 @@ display_create_egl_image_surface(struct display *display,
 		return NULL;
 	}
 
-	if (flags & SURFACE_OPAQUE) {
-		data->device = display->rgb_device;
-		content = CAIRO_CONTENT_COLOR;
-	} else {
-		data->device = display->argb_device;
-		content = CAIRO_CONTENT_COLOR_ALPHA;
-	}
+	data->device = display->argb_device;
+	content = CAIRO_CONTENT_COLOR_ALPHA;
 
 	data->image = display->create_image(dpy, NULL,
 					    EGL_NATIVE_PIXMAP_KHR,
@@ -2827,17 +2814,6 @@ init_egl(struct display *d)
 		EGL_NONE
 	};
 
-	static const EGLint rgb_cfg_attribs[] = {
-		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PIXMAP_BIT,
-		EGL_RED_SIZE, 1,
-		EGL_GREEN_SIZE, 1,
-		EGL_BLUE_SIZE, 1,
-		EGL_ALPHA_SIZE, 0,
-		EGL_DEPTH_SIZE, 1,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
-		EGL_NONE
-	};
-
 #ifdef USE_CAIRO_GLESV2
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -2866,18 +2842,6 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-	if (!eglChooseConfig(d->dpy, rgb_cfg_attribs,
-			     &d->rgb_config, 1, &n) || n != 1) {
-		fprintf(stderr, "failed to choose rgb config\n");
-		return -1;
-	}
-
-	d->rgb_ctx = eglCreateContext(d->dpy, d->rgb_config,
-				      EGL_NO_CONTEXT, context_attribs);
-	if (d->rgb_ctx == NULL) {
-		fprintf(stderr, "failed to create context\n");
-		return -1;
-	}
 	d->argb_ctx = eglCreateContext(d->dpy, d->argb_config,
 				       EGL_NO_CONTEXT, context_attribs);
 	if (d->argb_ctx == NULL) {
@@ -2885,17 +2849,12 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->rgb_ctx)) {
+	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->argb_ctx)) {
 		fprintf(stderr, "failed to make context current\n");
 		return -1;
 	}
 
 #ifdef HAVE_CAIRO_EGL
-	d->rgb_device = cairo_egl_device_create(d->dpy, d->rgb_ctx);
-	if (cairo_device_status(d->rgb_device) != CAIRO_STATUS_SUCCESS) {
-		fprintf(stderr, "failed to get cairo egl device\n");
-		return -1;
-	}
 	d->argb_device = cairo_egl_device_create(d->dpy, d->argb_ctx);
 	if (cairo_device_status(d->argb_device) != CAIRO_STATUS_SUCCESS) {
 		fprintf(stderr, "failed to get cairo egl argb device\n");
@@ -2911,7 +2870,6 @@ fini_egl(struct display *display)
 {
 #ifdef HAVE_CAIRO_EGL
 	cairo_device_destroy(display->argb_device);
-	cairo_device_destroy(display->rgb_device);
 #endif
 
 	eglMakeCurrent(display->dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
@@ -3116,12 +3074,6 @@ display_create_data_source(struct display *display)
 }
 
 EGLConfig
-display_get_rgb_egl_config(struct display *d)
-{
-	return d->rgb_config;
-}
-
-EGLConfig
 display_get_argb_egl_config(struct display *d)
 {
 	return d->argb_config;
@@ -3149,9 +3101,7 @@ display_acquire_window_surface(struct display *display,
 		return -1;
 
 	if (!ctx) {
-		if (device == display->rgb_device)
-			ctx = display->rgb_ctx;
-		else if (device == display->argb_device)
+		if (device == display->argb_device)
 			ctx = display->argb_ctx;
 		else
 			assert(0);
@@ -3182,7 +3132,7 @@ display_release_window_surface(struct display *display,
 	if (!device)
 		return;
 
-	if (!eglMakeCurrent(display->dpy, NULL, NULL, display->rgb_ctx))
+	if (!eglMakeCurrent(display->dpy, NULL, NULL, display->argb_ctx))
 		fprintf(stderr, "failed to make context current\n");
 	cairo_device_release(device);
 #endif
