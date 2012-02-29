@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,13 +47,8 @@ std::string TestCase::MakeFailureMessage(const char* file,
 pp::VarPrivate TestCase::GetTestObject() {
   if (test_object_.is_undefined()) {
     pp::deprecated::ScriptableObject* so = CreateTestObject();
-    if (so) {
+    if (so)
       test_object_ = pp::VarPrivate(instance_, so);  // Takes ownership.
-      // CheckResourcesAndVars runs and looks for leaks before we've actually
-      // completely shut down. Ignore the instance object, since it's not a real
-      // leak.
-      IgnoreLeakedVar(test_object_.pp_var().value.as_id);
-    }
   }
   return test_object_;
 }
@@ -81,10 +76,6 @@ void TestCase::DidChangeView(const pp::View& view) {
 
 bool TestCase::HandleInputEvent(const pp::InputEvent& event) {
   return false;
-}
-
-void TestCase::IgnoreLeakedVar(int64_t id) {
-  ignored_leaked_vars_.insert(id);
 }
 
 #if !(defined __native_client__)
@@ -120,27 +111,31 @@ std::string TestCase::CheckResourcesAndVars() {
       errors += output.str();
     }
     */
-    const int kVarsToPrint = 100;
+    const uint32_t kVarsToPrint = 10;
     PP_Var vars[kVarsToPrint];
-    int found_vars = testing_interface_->GetLiveVars(vars, kVarsToPrint);
-    // This will undercount if we are told to ignore a Var which is then *not*
-    // leaked. Worst case, we just won't print the little "Test leaked" message,
-    // but we'll still print any non-ignored leaked vars we found.
-    int leaked_vars =
-        found_vars - static_cast<int>(ignored_leaked_vars_.size());
-    if (leaked_vars > 0) {
+    uint32_t leaked_vars = testing_interface_->GetLiveVars(vars, kVarsToPrint);
+    uint32_t tracked_vars = leaked_vars;
+#if !(defined __native_client__)
+    // Don't count test_object_ as a leak.
+    if (test_object_.pp_var().type > PP_VARTYPE_DOUBLE)
+      --leaked_vars;
+#endif
+    if (leaked_vars) {
       std::ostringstream output;
       output << "Test leaked " << leaked_vars << " vars (printing at most "
              << kVarsToPrint <<"):<p>";
       errors += output.str();
-    }
-    for (int i = 0; i < std::min(found_vars, kVarsToPrint); ++i) {
-      pp::Var leaked_var(pp::PASS_REF, vars[i]);
-      if (ignored_leaked_vars_.count(leaked_var.pp_var().value.as_id) == 0)
+      for (uint32_t i = 0; i < std::min(tracked_vars, kVarsToPrint); ++i) {
+        pp::Var leaked_var(pp::PASS_REF, vars[i]);
+#if (defined __native_client__)
         errors += leaked_var.DebugString() + "<p>";
+#else
+        if (!(leaked_var == test_object_))
+          errors += leaked_var.DebugString() + "<p>";
+#endif
+      }
     }
   }
   return errors;
 }
-
 

@@ -70,42 +70,12 @@ class PPAPITestBase : public UITest {
 
   void RunTest(const std::string& test_case) {
     scoped_refptr<TabProxy> tab = GetActiveTab();
-    ASSERT_TRUE(tab.get());
+    EXPECT_TRUE(tab.get());
+    if (!tab.get())
+      return;
     GURL url = GetTestFileUrl(test_case);
     EXPECT_TRUE(tab->NavigateToURLBlockUntilNavigationsComplete(url, 1));
     RunTestURL(tab, url);
-  }
-
-  // Run the test and reload. This can test for clean shutdown, including leaked
-  // instance object vars.
-  void RunTestAndReload(const std::string& test_case) {
-    scoped_refptr<TabProxy> tab = GetActiveTab();
-    ASSERT_TRUE(tab.get());
-    GURL url = GetTestFileUrl(test_case);
-    // Run the test the first time.
-    EXPECT_TRUE(tab->NavigateToURLBlockUntilNavigationsComplete(url, 1));
-    RunTestURL(tab, url);
-    // Now we'll clean up the cookies to prepare for reloading and running the
-    // test again. Look for the first cookie that isn't equal to "...". It
-    // will either be "PASS" or errors from the test.
-    int progress_number = 0;
-    std::string cookie_name, progress("...");
-    while (progress == "...") {
-      cookie_name = StringPrintf("PPAPI_PROGRESS_%d", progress_number);
-      progress = WaitUntilCookieNonEmpty(tab.get(), url, cookie_name.c_str(),
-                                         TestTimeouts::action_timeout_ms());
-      ++progress_number;
-    }
-    // If the first run passed, then delete the "PASS" cookie and reload. If we
-    // left the "PASS" cookie alone, RunTestURL would find it and assume we
-    // passed the test on the reload regardless of the actual result. If the
-    // first run failed, we let those errors take precedent and don't bother
-    // reloading and running the test again.
-    if (progress == "PASS") {
-      EXPECT_TRUE(tab->DeleteCookie(url, cookie_name));
-      EXPECT_TRUE(tab->Reload());
-      RunTestURL(tab, url);
-    }
   }
 
   void RunTestViaHTTP(const std::string& test_case) {
@@ -397,23 +367,10 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_InputEvent)
 // TODO(bbudge) Enable when input events are proxied correctly for NaCl.
 TEST_PPAPI_NACL_VIA_HTTP(DISABLED_InputEvent)
 
-TEST_PPAPI_IN_PROCESS(Instance_ExecuteScript);
-TEST_PPAPI_OUT_OF_PROCESS(Instance_ExecuteScript)
-// ExecuteScript isn't supported by NaCl.
-
-// We run and reload the RecursiveObjects test to ensure that the InstanceObject
-// (and others) are properly cleaned up after the first run.
-TEST_F(PPAPITest, Instance_RecursiveObjects) {
-  RunTestAndReload("Instance_RecursiveObjects");
-}
-// TODO(dmichael): Make it work out-process (or at least see whether we care).
-TEST_F(OutOfProcessPPAPITest, DISABLED_Instance_RecursiveObjects) {
-  RunTestAndReload("Instance_RecursiveObjects");
-}
-TEST_PPAPI_IN_PROCESS(Instance_TestLeakedObjectDestructors);
-TEST_PPAPI_OUT_OF_PROCESS(Instance_TestLeakedObjectDestructors);
-// ScriptableObjects aren't supported in NaCl, so Instance_RecursiveObjects and
-// Instance_TestLeakedObjectDestructors don't make sense for NaCl.
+TEST_PPAPI_IN_PROCESS(Instance)
+TEST_PPAPI_OUT_OF_PROCESS(Instance)
+// The Instance test is actually InstanceDeprecated which isn't supported
+// by NaCl.
 
 TEST_PPAPI_IN_PROCESS(Graphics2D)
 TEST_PPAPI_OUT_OF_PROCESS(Graphics2D)

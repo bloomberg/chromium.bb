@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,16 +102,18 @@ bool TestingInstance::HandleInputEvent(const pp::InputEvent& event) {
 }
 
 void TestingInstance::EvalScript(const std::string& script) {
-  SendTestCommand("EvalScript", script);
+  std::string message("TESTING_MESSAGE:EvalScript:");
+  message.append(script);
+  PostMessage(pp::Var(message));
 }
 
 void TestingInstance::SetCookie(const std::string& name,
                                 const std::string& value) {
-  SendTestCommand("SetCookie", name + "=" + value);
-}
-
-void TestingInstance::AddPostCondition(const std::string& script) {
-  SendTestCommand("AddPostCondition", script);
+  std::string message("TESTING_MESSAGE:SetCookie:");
+  message.append(name);
+  message.append("=");
+  message.append(value);
+  PostMessage(pp::Var(message));
 }
 
 void TestingInstance::LogTest(const std::string& test_name,
@@ -148,7 +150,7 @@ void TestingInstance::ExecuteTests(int32_t unused) {
   ReportProgress(kProgressSignal);
 
   // Clear the console.
-  SendTestCommand("ClearConsole");
+  PostMessage(pp::Var("TESTING_MESSAGE:ClearConsole"));
 
   if (!errors_.empty()) {
     // Catch initialization errors and output the current error string to
@@ -167,9 +169,7 @@ void TestingInstance::ExecuteTests(int32_t unused) {
 
   // Declare we're done by setting a cookie to either "PASS" or the errors.
   ReportProgress(errors_.empty() ? "PASS" : errors_);
-  SendTestCommand("DidExecuteTests");
-  // Note, DidExecuteTests unloads the plugin. We can't really do anthing after
-  // this point.
+  PostMessage(pp::Var("TESTING_MESSAGE:DidExecuteTests"));
 }
 
 TestCase* TestingInstance::CaseForTestName(const std::string& name) {
@@ -189,18 +189,6 @@ std::string TestingInstance::FilterForTestName(const std::string& name) {
     return name.substr(delim+1);
   return "";
 }
-
-void TestingInstance::SendTestCommand(const std::string& command) {
-  std::string msg("TESTING_MESSAGE:");
-  msg += command;
-  PostMessage(pp::Var(msg));
-}
-
-void TestingInstance::SendTestCommand(const std::string& command,
-                                      const std::string& params) {
-  SendTestCommand(command + ":" + params);
-}
-
 
 void TestingInstance::LogAvailableTests() {
   // Print out a listing of all tests.
@@ -238,7 +226,9 @@ void TestingInstance::LogError(const std::string& text) {
 }
 
 void TestingInstance::LogHTML(const std::string& html) {
-  SendTestCommand("LogHTML", html);
+  std::string message("TESTING_MESSAGE:LogHTML:");
+  message.append(html);
+  PostMessage(pp::Var(message));
 }
 
 void TestingInstance::ReportProgress(const std::string& progress_value) {
