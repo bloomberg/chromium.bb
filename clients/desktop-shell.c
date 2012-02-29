@@ -698,7 +698,7 @@ add_default_launcher(struct desktop *desktop)
 	wl_list_for_each(output, &desktop->outputs, link)
 		panel_add_launcher(output->panel,
 				   DATADIR "/weston/terminal.png",
-				   "/usr/bin/weston-terminal");
+				   BINDIR "/weston-terminal");
 }
 
 int main(int argc, char *argv[])

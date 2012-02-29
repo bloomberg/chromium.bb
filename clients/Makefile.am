@@ -48,6 +48,7 @@ noinst_LIBRARIES = libtoytoolkit.a
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
+	-DBINDIR='"$(bindir)"'			\
 	$(CLIENT_CFLAGS) $(CAIRO_EGL_CFLAGS)
 
 libtoytoolkit_a_SOURCES =			\
