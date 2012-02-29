@@ -89,6 +89,9 @@ class StatusBubbleViews::StatusView : public views::Label,
   }
 
   virtual ~StatusView() {
+    // Remove ourself as a delegate so that we don't get notified when
+    // animations end as a result of destruction.
+    set_delegate(NULL);
     Stop();
     CancelTimer();
   }
