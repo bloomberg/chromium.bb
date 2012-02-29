@@ -144,7 +144,13 @@ enum {
 }
 
 - (void)mouseExited:(NSEvent*)event {
-  [titlebar_view_ updateSettingsButtonVisibility:NO];
+  // We sometimes get an exit event from a tracking area that has
+  // already been removed. So we need this check.
+  NSPoint mouse = [NSEvent mouseLocation];
+  NSRect frame = [[self window] frame];
+  if (!NSMouseInRect(mouse, frame, NO)) {
+    [titlebar_view_ updateSettingsButtonVisibility:NO];
+  }
 }
 
 - (void)disableTabContentsViewAutosizing {
@@ -424,6 +430,12 @@ enum {
   // show or hide settings button accordingly.
   NSRect localBounds = frame;
   localBounds.origin = NSZeroPoint;
+
+  if (windowTrackingArea_.get()) {
+    [[[[self window] contentView] superview]
+       removeTrackingArea:windowTrackingArea_.get()];
+  }
+
   windowTrackingArea_.reset(
       [[CrTrackingArea alloc] initWithRect:localBounds
                                    options:(NSTrackingMouseEnteredAndExited |

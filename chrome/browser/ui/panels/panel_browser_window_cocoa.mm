@@ -92,6 +92,9 @@ void PanelBrowserWindowCocoa::ShowPanelInactive() {
   if (is_shown_) {
     return;
   }
+  // A call to SetPanelBounds() before showing it is required to set
+  // the panel frame properly.
+  SetPanelBoundsInstantly(bounds_);
   is_shown_ = true;
 
   NSRect finalFrame = ConvertCoordinatesToCocoa(bounds_);
@@ -114,7 +117,9 @@ void PanelBrowserWindowCocoa::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
 
 void PanelBrowserWindowCocoa::setBoundsInternal(const gfx::Rect& bounds,
                                                 bool animate) {
-  if (bounds_ == bounds)
+  // We will call SetPanelBoundsInstantly() once before showing the panel
+  // and it should set the panel frame correctly.
+  if (bounds_ == bounds && is_shown_)
     return;
 
   bounds_ = bounds;
