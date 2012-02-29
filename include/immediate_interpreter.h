@@ -72,6 +72,7 @@ class TapRecord {
 
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, ChangeTimeoutTest);
+  FRIEND_TEST(ImmediateInterpreterTest, ClickTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);

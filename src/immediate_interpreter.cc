@@ -610,9 +610,16 @@ bool ImmediateInterpreter::TwoFingersGesturing(
     return false;
 
   // Next, make sure distance between fingers isn't too great
-  if ((xdist * xdist + ydist * ydist) >
-      (two_finger_close_distance_thresh_.val_ *
-       two_finger_close_distance_thresh_.val_))
+  const float kMax2fDistThreshSq = two_finger_close_distance_thresh_.val_ *
+      two_finger_close_distance_thresh_.val_;
+  float dist_sq = xdist * xdist + ydist * ydist;
+  if (dist_sq > kMax2fDistThreshSq)
+    return false;
+
+  const float kMin2fDistThreshSq = tapping_finger_min_separation_.val_ *
+      tapping_finger_min_separation_.val_;
+  // Make sure distance between fingers isn't too small
+  if (dist_sq < kMin2fDistThreshSq)
     return false;
 
   // Next, if fingers are vertically aligned and one is in the bottom zone,

@@ -169,13 +169,13 @@ void ScrollUpTest(float pressure_a, float pressure_b) {
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     {0, 0, 0, 0, p_a, 0, 400, 900, 1},
-    {0, 0, 0, 0, p_b, 0, 405, 900, 2},
+    {0, 0, 0, 0, p_b, 0, 415, 900, 2},
 
     {0, 0, 0, 0, p_a, 0, 400, 800, 1},
-    {0, 0, 0, 0, p_b, 0, 405, 800, 2},
+    {0, 0, 0, 0, p_b, 0, 415, 800, 2},
 
     {0, 0, 0, 0, p_a, 0, 400, 700, 1},
-    {0, 0, 0, 0, p_b, 0, 405, 700, 2},
+    {0, 0, 0, 0, p_b, 0, 415, 700, 2},
   };
   HardwareState hardware_states[] = {
     // time, buttons, finger count, touch count, finger states pointer
@@ -236,13 +236,13 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     {0, 0, 0, 0, 20, 0, 400, 900, 1},
-    {0, 0, 0, 0, 20, 0, 405, 900, 2},
+    {0, 0, 0, 0, 20, 0, 415, 900, 2},
 
     {0, 0, 0, 0, 20, 0, 400, 800, 1},
-    {0, 0, 0, 0, 20, 0, 405, 800, 2},
+    {0, 0, 0, 0, 20, 0, 415, 800, 2},
 
     {0, 0, 0, 0, 20, 0, 400, 700, 1},
-    {0, 0, 0, 0, 20, 0, 405, 700, 2},
+    {0, 0, 0, 0, 20, 0, 415, 700, 2},
 
     {0, 0, 0, 0, 20, 0, 400, 600, 3},
   };
@@ -332,8 +332,8 @@ TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
-    10,  // right edge
-    10,  // bottom edge
+    100,  // right edge
+    100,  // bottom edge
     1,  // pixels/TP width
     1,  // pixels/TP height
     1,  // x screen DPI
@@ -349,13 +349,13 @@ TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest) {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     // one thumb, one finger (it seems)
     {0, 0, 0, 0, 24, 0, 3.0, 3, 3},
-    {0, 0, 0, 0, 58, 0, 3.5, 3, 4},
+    {0, 0, 0, 0, 58, 0, 13.5, 3, 4},
     // two big fingers, it turns out!
     {0, 0, 0, 0, 27, 0, 3.0, 6, 3},
-    {0, 0, 0, 0, 58, 0, 3.5, 6, 4},
+    {0, 0, 0, 0, 58, 0, 13.5, 6, 4},
     // they  move
     {0, 0, 0, 0, 27, 0, 3.0, 7, 3},
-    {0, 0, 0, 0, 58, 0, 3.5, 7, 4},
+    {0, 0, 0, 0, 58, 0, 13.5, 7, 4},
   };
   HardwareState hardware_states[] = {
     // time, buttons, finger count, touch count, finger states pointer
@@ -1426,6 +1426,12 @@ TEST(ImmediateInterpreterTest, WiggleSuppressTest) {
   }
 }
 
+struct ClickTestHardwareStateAndExpectations {
+  HardwareState hs;
+  unsigned expected_down;
+  unsigned expected_up;
+};
+
 TEST(ImmediateInterpreterTest, ClickTest) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {
@@ -1444,47 +1450,38 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     1  // is button pad
   };
   ii.SetHardwareProperties(hwprops);
+  EXPECT_FLOAT_EQ(10.0, ii.tapping_finger_min_separation_.val_);
 
   FingerState finger_states[] = {
     // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
     {0, 0, 0, 0, 10, 0, 50, 50, 1},
     {0, 0, 0, 0, 10, 0, 70, 50, 2},
+    // Fingers very close together - shouldn't right click
+    {0, 0, 0, 0, 10, 0, 50, 50, 1},
+    {0, 0, 0, 0, 10, 0, 55, 50, 2},
   };
-  HardwareState hardware_state[] = {
-    // time, buttons, finger count, touch count, finger states pointer
-    { 0,    0, 0, 0, NULL },
-    { 1,    1, 0, 0, NULL },
-    { 1.01, 1, 2, 3, &finger_states[0] },
-    { 3,    0, 0, 0, NULL },
-    { 4,    1, 0, 0, NULL },
-    { 4.01, 1, 2, 2, &finger_states[0] },
-    { 6,    0, 0, 0, NULL },
+  ClickTestHardwareStateAndExpectations records[] = {
+    { { 0,    0, 0, 0, NULL },              0, 0 },
+    { { 1,    1, 0, 0, NULL },              0, 0 },
+    { { 1.01, 1, 2, 3, &finger_states[0] }, GESTURES_BUTTON_RIGHT, 0 },
+    { { 3,    0, 0, 0, NULL },              0, GESTURES_BUTTON_RIGHT },
+    { { 4,    1, 0, 0, NULL },              0, 0 },
+    { { 4.01, 1, 2, 2, &finger_states[0] }, GESTURES_BUTTON_RIGHT, 0 },
+    { { 6,    0, 0, 0, NULL },              0, GESTURES_BUTTON_RIGHT },
+    { { 7,    1, 0, 0, NULL },              0, 0 },
+    { { 7.01, 1, 2, 2, &finger_states[2] }, 0, 0 },
+    { { 7.05, 1, 2, 2, &finger_states[2] }, GESTURES_BUTTON_LEFT, 0 },
+    { { 8,    0, 0, 0, NULL },              0, GESTURES_BUTTON_LEFT },
   };
 
-  for (size_t i = 0; i < arraysize(hardware_state); ++i) {
-    LOG(INFO) << "running i=" << i;
-    Gesture* result = ii.SyncInterpret(&hardware_state[i], NULL);
-    LOG(INFO) << "i="<< i << " res: " << (result != NULL);
-    switch (i) {
-      case 0:  // fallthrough
-      case 1:  // fallthrough
-      case 4:
-        EXPECT_FALSE(result);
-        break;
-      case 2:  // fallthrough
-      case 5:
-        ASSERT_TRUE(result);
-        EXPECT_EQ(kGestureTypeButtonsChange, result->type);
-        EXPECT_EQ(GESTURES_BUTTON_RIGHT, result->details.buttons.down);
-        EXPECT_EQ(0, result->details.buttons.up);
-        break;
-      case 3:  // fallthrough
-      case 6:
-        ASSERT_TRUE(result);
-        EXPECT_EQ(kGestureTypeButtonsChange, result->type);
-        EXPECT_EQ(GESTURES_BUTTON_RIGHT, result->details.buttons.up);
-        EXPECT_EQ(0, result->details.buttons.down);
-        break;
+  for (size_t i = 0; i < arraysize(records); ++i) {
+    Gesture* result = ii.SyncInterpret(&records[i].hs, NULL);
+    if (records[i].expected_down == 0 && records[i].expected_up == 0) {
+      EXPECT_EQ(static_cast<Gesture*>(NULL), result) << "i=" << i;
+    } else {
+      ASSERT_NE(static_cast<Gesture*>(NULL), result) << "i=" << i;
+      EXPECT_EQ(records[i].expected_down, result->details.buttons.down);
+      EXPECT_EQ(records[i].expected_up, result->details.buttons.up);
     }
   }
 }
