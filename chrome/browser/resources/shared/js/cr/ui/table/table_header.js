@@ -54,12 +54,18 @@ cr.define('cr.ui.table', function() {
         this.redraw();
         return;
       }
-      this.headerInner_.textContent = '';
-      for (var i = 0; i < cm.size; i++) {
+      for (var i = 0; i < cm.size; i++)
         headerCells[i].style.width = cm.getWidth(i) + '%';
-        this.headerInner_.appendChild(headerCells[i]);
+
+      var leftPercent = 0;
+      var splitters = this.querySelectorAll('.table-header-splitter');
+      var rtl = this.ownerDocument.defaultView.getComputedStyle(this)
+          .direction == 'rtl';
+      for (var i = 0; i < cm.size - 1; i++) {
+        leftPercent += cm.getWidth(i);
+        splitters[i].style.left = rtl ?
+            100 - leftPercent + '%' : leftPercent + '%';
       }
-      this.appendSplitters_();
     },
 
     /**
@@ -97,6 +103,8 @@ cr.define('cr.ui.table', function() {
       var cm = this.table_.columnModel;
 
       var leftPercent = 0;
+      var rtl = this.ownerDocument.defaultView.getComputedStyle(this)
+          .direction == 'rtl';
       for (var i = 0; i < cm.size - 1; i++) {
         leftPercent += cm.getWidth(i);
 
@@ -104,8 +112,6 @@ cr.define('cr.ui.table', function() {
         var splitter = new TableSplitter({table: this.table_});
         splitter.columnIndex = i;
 
-        var rtl = this.ownerDocument.defaultView.getComputedStyle(this).
-            direction == 'rtl';
         splitter.style.left = rtl ? 100 - leftPercent + '%' : leftPercent + '%';
 
         this.headerInner_.appendChild(splitter);
