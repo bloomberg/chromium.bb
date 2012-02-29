@@ -1,5 +1,4 @@
 if HAVE_PUBLICAN
-EXTRA_DIST = Wayland
 noinst_DATA = Wayland
 
 publican_sources = \
@@ -16,16 +15,31 @@ publican_sources = \
 	$(srcdir)/en-US/images/wayland.png  \
 	$(srcdir)/en-US/images/x-architecture.png
 
+# publican does not support out-of-tree builds and during make distcheck the
+# source tree is read-only so we can't chdir and/or dump the protocol there
+# copy the tree into _build, leaving a marker file to clean up after
+# distclean
+# See https://bugzilla.redhat.com/show_bug.cgi?id=798484 for the chmod
+copy-sources:
+	if ! test -e "en-US/"; then \
+		mkdir en-US/; \
+		touch en-US/need-distclean; \
+		cp -r $(srcdir)/en-US/* en-US; \
+		chmod u+w en-US/images; \
+	fi
 
 Wayland: docbook-xsl publican.cfg $(publican_sources)
-	publican build --lang en-US --format html,pdf
+	publican build --config=$(srcdir)/publican.cfg --lang en-US --format html,pdf
 
 # This must be run befor the publican run
-docbook-xsl: $(top_srcdir)/protocol/wayland.xml protocol-to-docbook.xsl
-	$(AM_V_GEN)$(XSLTPROC) protocol-to-docbook.xsl $(top_srcdir)/protocol/wayland.xml > $(srcdir)/en-US/Protocol.xml
+docbook-xsl: copy-sources $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-to-docbook.xsl
+	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-to-docbook.xsl $(top_srcdir)/protocol/wayland.xml > $(builddir)/en-US/Protocol.xml
 
 clean-local:
 	-rm -rf Wayland
+	if test -e "en-US/need-distclean"; then \
+		rm -rf en-US; \
+	fi
 
 install-data-local:
 	$(MKDIR_P) $(DESTDIR)$(docdir)
