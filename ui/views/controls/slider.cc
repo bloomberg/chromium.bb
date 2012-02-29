@@ -25,6 +25,10 @@ Slider::~Slider() {
 }
 
 void Slider::SetValue(float value) {
+  SetValueInternal(value, VALUE_CHANGED_BY_API);
+}
+
+void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   if (value < 0.0)
    value = 0.0;
   else if (value > 1.0)
@@ -34,7 +38,7 @@ void Slider::SetValue(float value) {
   float old_value = value_;
   value_ = value;
   if (listener_)
-    listener_->SliderValueChanged(this, value_, old_value);
+    listener_->SliderValueChanged(this, value_, old_value, reason);
   SchedulePaint();
 }
 
@@ -107,9 +111,11 @@ bool Slider::OnMouseDragged(const views::MouseEvent& event) {
   if (orientation_ == HORIZONTAL) {
     int amount = base::i18n::IsRTL() ? width() - inset.left() - event.x() :
                                        event.x() - inset.left();
-    SetValue(static_cast<float>(amount) / (width() - inset.width()));
+    SetValueInternal(static_cast<float>(amount) / (width() - inset.width()),
+                     VALUE_CHANGED_BY_USER);
   } else {
-    SetValue(1.0f - static_cast<float>(event.y()) / height());
+    SetValueInternal(1.0f - static_cast<float>(event.y()) / height(),
+                     VALUE_CHANGED_BY_USER);
   }
   return true;
 }

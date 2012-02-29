@@ -35,7 +35,8 @@ void SliderExample::CreateExampleView(View* container) {
 
 void SliderExample::SliderValueChanged(Slider* sender,
                                        float value,
-                                       float old_value) {
+                                       float old_value,
+                                       views::SliderChangeReason reason) {
   label_->SetText(ASCIIToUTF16(base::StringPrintf("%.3lf", value)));
 }
 

@@ -13,11 +13,17 @@ namespace views {
 
 class Slider;
 
+enum SliderChangeReason {
+  VALUE_CHANGED_BY_USER,  // value was changed by the user (by clicking, e.g.)
+  VALUE_CHANGED_BY_API,   // value was changed by a call to SetValue.
+};
+
 class VIEWS_EXPORT SliderListener {
  public:
   virtual void SliderValueChanged(Slider* sender,
                                   float value,
-                                  float old_value) = 0;
+                                  float old_value,
+                                  SliderChangeReason reason) = 0;
 
  protected:
   virtual ~SliderListener() {}
@@ -37,6 +43,8 @@ class VIEWS_EXPORT Slider : public View {
   void SetValue(float value);
 
  private:
+  void SetValueInternal(float value, SliderChangeReason reason);
+
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;

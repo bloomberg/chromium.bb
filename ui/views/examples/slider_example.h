@@ -28,7 +28,8 @@ class SliderExample : public ExampleBase, public SliderListener {
   // Overridden from SliderListener:
   virtual void SliderValueChanged(Slider* sender,
                                   float value,
-                                  float old_value) OVERRIDE;
+                                  float old_value,
+                                  views::SliderChangeReason reason) OVERRIDE;
 
   Slider* slider_;
   Label* label_;

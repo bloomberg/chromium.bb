@@ -52,7 +52,10 @@ class BrightnessView : public views::View,
   // Overridden from views:SliderListener.
   virtual void SliderValueChanged(views::Slider* sender,
                                   float value,
-                                  float old_value) OVERRIDE {
+                                  float old_value,
+                                  views::SliderChangeReason reason) OVERRIDE {
+    if (reason != views::VALUE_CHANGED_BY_USER)
+      return;
     // TODO(sad|davemoore): This isn't correct, since we are unable to pass on
     // the amount the brightness should be increased/decreased.
     // http://crosbug.com/26935
