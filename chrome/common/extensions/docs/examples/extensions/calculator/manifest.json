@@ -1,0 +1,17 @@
+{
+  "name": "Calculator (Platform App)",
+  "description": "Add numbers. Now includes subtraction!",
+  "manifest_version": 2,
+  "version": "1.0",
+  "app": {
+    "launch": {
+      "local_path": "calculator.html",
+      "container": "shell"
+    }
+  },
+  "platform_app": true,
+  "icons": {
+    "16": "icon_16.png",
+    "128": "icon_128.png"
+  }
+}
