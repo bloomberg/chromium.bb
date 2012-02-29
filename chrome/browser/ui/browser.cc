@@ -2595,9 +2595,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   // pref to be already initialized. Doing it here also saves us from having
   // to hard-code pref registration in the several unit tests that use
   // this preference.
-  prefs->RegisterBooleanPref(prefs::kConfirmToQuitEnabled,
-                             false,
-                             PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar,
                              true,
                              PrefService::UNSYNCABLE_PREF);

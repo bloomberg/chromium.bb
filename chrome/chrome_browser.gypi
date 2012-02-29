@@ -2763,6 +2763,7 @@
         'browser/ui/cocoa/confirm_bubble_controller.mm',
         'browser/ui/cocoa/confirm_bubble_view.h',
         'browser/ui/cocoa/confirm_bubble_view.mm',
+        'browser/ui/cocoa/confirm_quit.h',
         'browser/ui/cocoa/confirm_quit_panel_controller.h',
         'browser/ui/cocoa/confirm_quit_panel_controller.mm',
         'browser/ui/cocoa/constrained_html_delegate_mac.mm',

@@ -66,6 +66,7 @@
 #include "content/public/browser/render_process_host.h"
 
 #if defined(OS_MACOSX)
+#include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/browser/ui/cocoa/presentation_mode_prefs.h"
 #endif
 
@@ -152,6 +153,10 @@ void RegisterLocalState(PrefService* local_state) {
   policy::AutoEnrollmentClient::RegisterPrefs(local_state);
   policy::DeviceStatusCollector::RegisterPrefs(local_state);
 #endif
+
+#if defined(OS_MACOSX)
+  confirm_quit::RegisterLocalState(local_state);
+#endif
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {
@@ -194,6 +199,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
 #if defined(OS_MACOSX)
   PresentationModePrefs::RegisterUserPrefs(user_prefs);
+  confirm_quit::RegisterObsoleteUserPrefs(user_prefs);
 #endif
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::URLBlacklistManager::RegisterPrefs(user_prefs);

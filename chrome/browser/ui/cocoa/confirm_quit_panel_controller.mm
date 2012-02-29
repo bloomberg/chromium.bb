@@ -1,15 +1,22 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/QuartzCore.h>
 
+#import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
+
 #include "base/logging.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/cocoa/confirm_quit.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -35,6 +42,43 @@ namespace confirm_quit {
 
 void RecordHistogram(ConfirmQuitMetric sample) {
   UMA_HISTOGRAM_ENUMERATION("OSX.ConfirmToQuit", sample, kSampleCount);
+}
+
+void RegisterLocalState(PrefService* local_state) {
+  local_state->RegisterBooleanPref(prefs::kConfirmToQuitEnabled, false);
+}
+
+void RegisterObsoleteUserPrefs(PrefService* user_prefs) {
+  user_prefs->RegisterBooleanPref(prefs::kConfirmToQuitEnabled,
+                                  false,
+                                  PrefService::SYNCABLE_PREF);
+}
+
+void MigratePrefToLocalState() {
+  // If the preference has already been migrated, do nothing.
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state->HasPrefPath(prefs::kConfirmToQuitEnabled))
+    return;
+
+  DLOG(INFO) << "Migrating kConfirmToQuitEnabled to local state";
+
+  bool enable = false;
+
+  // Loop over each profile and see if any have confirm to quit enabled.
+  std::vector<Profile*> profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (std::vector<Profile*>::iterator it = profiles.begin();
+       it != profiles.end();
+       ++it) {
+    PrefService* prefs = (*it)->GetPrefs();
+    enable |= prefs->HasPrefPath(prefs::kConfirmToQuitEnabled) &&
+              prefs->GetBoolean(prefs::kConfirmToQuitEnabled);
+    prefs->ClearPref(prefs::kConfirmToQuitEnabled);
+  }
+
+  // Set the new preference, even if it's not enabled so that this logic does
+  // not run more than once.
+  local_state->SetBoolean(prefs::kConfirmToQuitEnabled, enable);
 }
 
 }  // namespace confirm_quit

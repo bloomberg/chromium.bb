@@ -45,6 +45,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/confirm_quit.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #import "chrome/browser/ui/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/history_menu_bridge.h"
@@ -342,7 +343,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)app {
   // Check if the preference is turned on.
-  const PrefService* prefs = [self lastProfile]->GetPrefs();
+  const PrefService* prefs = g_browser_process->local_state();
   if (!prefs->GetBoolean(prefs::kConfirmToQuitEnabled)) {
     confirm_quit::RecordHistogram(confirm_quit::kNoConfirm);
     return NSTerminateNow;
@@ -615,6 +616,9 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   if (!parsed_command_line.HasSwitch(switches::kEnableExposeForTabs)) {
     [tabposeMenuItem_ setHidden:YES];
   }
+
+  // TODO(rsesek): Remove from trunk when Mstone-20 goes to stable.
+  confirm_quit::MigratePrefToLocalState();
 }
 
 // This is called after profiles have been loaded and preferences registered.
@@ -1071,7 +1075,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       base::SysNSStringToUTF16(acceleratorString));
   [item setTitle:title];
 
-  const PrefService* prefService = [self lastProfile]->GetPrefs();
+  const PrefService* prefService = g_browser_process->local_state();
   bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
   [item setState:enabled ? NSOnState : NSOffState];
 }
@@ -1227,7 +1231,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 }
 
 - (IBAction)toggleConfirmToQuit:(id)sender {
-  PrefService* prefService = [self lastProfile]->GetPrefs();
+  PrefService* prefService = g_browser_process->local_state();
   bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
   prefService->SetBoolean(prefs::kConfirmToQuitEnabled, !enabled);
 }
