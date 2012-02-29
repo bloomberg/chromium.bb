@@ -42,13 +42,6 @@ Instance::Instance(PP_Instance instance) : pp_instance_(instance) {
 }
 
 Instance::~Instance() {
-  // Ensure that all per-instance objects have been removed. Generally, these
-  // objects should have their lifetime scoped to the instance, such as being
-  // instance members or even implemented by your instance sub-class directly.
-  //
-  // If they're not unregistered at this point, they will usually have a
-  // dangling reference to the instance, which can cause a crash later.
-  PP_DCHECK(interface_name_to_objects_.empty());
 }
 
 bool Instance::Init(uint32_t /*argc*/, const char* /*argn*/[],
