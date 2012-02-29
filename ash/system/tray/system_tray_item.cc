@@ -4,6 +4,8 @@
 
 #include "ash/system/tray/system_tray_item.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -15,7 +17,7 @@ SystemTrayItem::~SystemTrayItem() {
 }
 
 void SystemTrayItem::PopupDetailedView() {
-  NOTIMPLEMENTED();
+  Shell::GetInstance()->tray()->ShowDetailedView(this);
 }
 
 }  // namespace ash

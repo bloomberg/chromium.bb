@@ -110,8 +110,8 @@ views::View* TrayVolume::CreateDefaultView() {
 }
 
 views::View* TrayVolume::CreateDetailedView() {
-  NOTIMPLEMENTED();
-  return NULL;
+  volume_view_.reset(new tray::VolumeView);
+  return volume_view_.get();
 }
 
 void TrayVolume::DestroyTrayView() {
@@ -123,6 +123,7 @@ void TrayVolume::DestroyDefaultView() {
 }
 
 void TrayVolume::DestroyDetailedView() {
+  volume_view_.reset();
 }
 
 void TrayVolume::OnVolumeChanged(float percent) {

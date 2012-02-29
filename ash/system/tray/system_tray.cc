@@ -6,6 +6,7 @@
 
 #include "ash/shell/panel_window.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/wm/shadow_types.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -22,18 +23,24 @@ const int kPadding = 5;
 
 class SystemTrayBubble : public views::BubbleDelegateView {
  public:
-  explicit SystemTrayBubble(ash::SystemTray* tray)
+  SystemTrayBubble(ash::SystemTray* tray,
+                   std::vector<ash::SystemTrayItem*>& items,
+                   bool detailed)
       : views::BubbleDelegateView(tray, views::BubbleBorder::BOTTOM_RIGHT),
-        tray_(tray) {
+        tray_(tray),
+        items_(items),
+        detailed_(detailed) {
     set_margin(1);
   }
 
   virtual ~SystemTrayBubble() {
-    std::vector<ash::SystemTrayItem*> items = tray_->items();
-    for (std::vector<ash::SystemTrayItem*>::iterator it = items.begin();
-        it != items.end();
+    for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
+        it != items_.end();
         ++it) {
-      (*it)->DestroyDefaultView();
+      if (detailed_)
+        (*it)->DestroyDetailedView();
+      else
+        (*it)->DestroyDefaultView();
     }
   }
 
@@ -43,12 +50,12 @@ class SystemTrayBubble : public views::BubbleDelegateView {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
           0, 0, 1));
 
-    std::vector<ash::SystemTrayItem*> items = tray_->items();
-    for (std::vector<ash::SystemTrayItem*>::iterator it = items.begin();
-        it != items.end();
+    for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
+        it != items_.end();
         ++it) {
-      views::View* view = (*it)->CreateDefaultView();
-      if (it != items.begin())
+      views::View* view = detailed_ ? (*it)->CreateDetailedView() :
+                                      (*it)->CreateDefaultView();
+      if (it != items_.begin())
         view->set_border(views::Border::CreateSolidSidedBorder(
               1, 0, 0, 0, SkColorSetARGB(25, 0, 0, 0)));
       AddChildView(view);
@@ -56,6 +63,8 @@ class SystemTrayBubble : public views::BubbleDelegateView {
   }
 
   ash::SystemTray* tray_;
+  std::vector<ash::SystemTrayItem*> items_;
+  bool detailed_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubble);
 };
@@ -72,7 +81,7 @@ SystemTray::SystemTray()
 }
 
 SystemTray::~SystemTray() {
-  for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
+  for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
       it != items_.end();
       ++it) {
     (*it)->DestroyTrayView();
@@ -93,15 +102,29 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
   NOTIMPLEMENTED();
 }
 
+void SystemTray::ShowDetailedView(SystemTrayItem* item) {
+  if (popup_)
+    popup_->Close();
+  popup_ = NULL;
+
+  std::vector<SystemTrayItem*> items;
+  items.push_back(item);
+  ShowItems(items, true);
+}
+
+void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
+  CHECK(!popup_);
+  SystemTrayBubble* bubble = new SystemTrayBubble(this, items, detailed);
+  popup_ = views::BubbleDelegateView::CreateBubble(bubble);
+  popup_->AddObserver(this);
+  bubble->Show();
+}
+
 bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
-  if (popup_) {
+  if (popup_)
     popup_->Show();
-  } else {
-    SystemTrayBubble* bubble = new SystemTrayBubble(this);
-    popup_ = views::BubbleDelegateView::CreateBubble(bubble);
-    popup_->AddObserver(this);
-    bubble->Show();
-  }
+  else
+    ShowItems(items_, false);
   return true;
 }
 

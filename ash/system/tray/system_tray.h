@@ -29,9 +29,14 @@ class ASH_EXPORT SystemTray : public views::View,
   // Removes an existing tray item.
   void RemoveTrayItem(SystemTrayItem* item);
 
+  // Shows details of a particular item.
+  void ShowDetailedView(SystemTrayItem* item);
+
   const std::vector<SystemTrayItem*>& items() const { return items_; }
 
  private:
+  void ShowItems(std::vector<SystemTrayItem*>& items, bool details);
+
   // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 

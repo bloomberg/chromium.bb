@@ -93,8 +93,8 @@ views::View* TrayBrightness::CreateDefaultView() {
 }
 
 views::View* TrayBrightness::CreateDetailedView() {
-  NOTIMPLEMENTED();
-  return NULL;
+  brightness_view_.reset(new tray::BrightnessView);
+  return brightness_view_.get();
 }
 
 void TrayBrightness::DestroyTrayView() {
@@ -105,6 +105,7 @@ void TrayBrightness::DestroyDefaultView() {
 }
 
 void TrayBrightness::DestroyDetailedView() {
+  brightness_view_.reset();
 }
 
 void TrayBrightness::OnBrightnessChanged(float percent, bool user_initiated) {
