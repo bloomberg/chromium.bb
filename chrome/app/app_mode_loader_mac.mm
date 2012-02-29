@@ -86,9 +86,6 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
       [info_plist objectForKey:app_mode::kCrAppModeShortcutIDKey]);
   CHECK(info->app_mode_id.size()) << "couldn't get app shortcut ID";
 
-  info->app_mode_short_name = SysNSStringToUTF16(
-      [info_plist objectForKey:app_mode::kCrAppModeShortcutShortNameKey]);
-
   info->app_mode_name = SysNSStringToUTF16(
       [info_plist objectForKey:app_mode::kCrAppModeShortcutNameKey]);
 

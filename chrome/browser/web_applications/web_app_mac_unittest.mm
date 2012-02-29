@@ -30,16 +30,18 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
  public:
   explicit WebAppShortcutCreatorMock(
       const ShellIntegration::ShortcutInfo& shortcut_info)
-      : WebAppShortcutCreator(FilePath(), shortcut_info,
+      : WebAppShortcutCreator(FilePath("/fake/path"), shortcut_info,
             UTF8ToUTF16("fake.cfbundleidentifier")) {
   }
 
   MOCK_CONST_METHOD1(GetDestinationPath, FilePath(const FilePath&));
+  MOCK_CONST_METHOD1(RevealGeneratedBundleInFinder, void(const FilePath&));
 };
 
 ShellIntegration::ShortcutInfo GetShortcutInfo() {
   ShellIntegration::ShortcutInfo info;
   info.extension_id = "extension_id";
+  info.extension_path = FilePath("/fake/extension/path");
   info.title = ASCIIToUTF16("Shortcut Title");
   info.url = GURL("http://example.com/");
   return info;
@@ -53,7 +55,7 @@ namespace web_app {
 // * The plist still isn't filled in correctly.
 // * WebAppShortcutCreator::CreateShortcut() opens a Finder window which it
 //   shouldn't be doing when run from a unit test.
-TEST(WebAppShortcutCreatorTest, DISABLED_CreateShortcut) {
+TEST(WebAppShortcutCreatorTest, CreateShortcut) {
   ScopedTempDir scoped_temp_dir;
   EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   FilePath dst_path = scoped_temp_dir.path().Append("a.app");
@@ -62,6 +64,8 @@ TEST(WebAppShortcutCreatorTest, DISABLED_CreateShortcut) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(info);
   EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
       .WillRepeatedly(Return(dst_path));
+  EXPECT_CALL(shortcut_creator, RevealGeneratedBundleInFinder(dst_path));
+
   EXPECT_TRUE(shortcut_creator.CreateShortcut());
   EXPECT_TRUE(file_util::PathExists(dst_path));
 
@@ -86,7 +90,7 @@ TEST(WebAppShortcutCreatorTest, DISABLED_CreateShortcut) {
   }
 }
 
-TEST(WebAppShortcutCreatorTest, DISABLED_CreateFailure) {
+TEST(WebAppShortcutCreatorTest, CreateFailure) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(GetShortcutInfo());
   EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
       .WillRepeatedly(Return(FilePath("/non-existant/path/")));

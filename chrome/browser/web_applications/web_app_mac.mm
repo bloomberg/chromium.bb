@@ -80,9 +80,8 @@ bool WebAppShortcutCreator::CreateShortcut() {
     return false;
   }
 
-  [[NSWorkspace sharedWorkspace]
-      selectFile:base::mac::FilePathToNSString(dst_path)
-      inFileViewerRootedAtPath:nil];
+  RevealGeneratedBundleInFinder(dst_path);
+
   return true;
 }
 
@@ -108,24 +107,46 @@ FilePath WebAppShortcutCreator::GetDestinationPath(
 bool WebAppShortcutCreator::UpdatePlist(const FilePath& app_path) const {
   NSString* plist_path = base::mac::FilePathToNSString(
       app_path.Append("Contents").Append("Info.plist"));
-  NSMutableDictionary* dict =
-      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
 
-  [dict setObject:GetBundleIdentifier(dict)
-           forKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)];
-  [dict setObject:base::SysUTF8ToNSString(info_.extension_id)
-           forKey:app_mode::kCrAppModeShortcutIDKey];
-  [dict setObject:base::SysUTF16ToNSString(info_.title)
-           forKey:app_mode::kCrAppModeShortcutNameKey];
-  [dict setObject:base::SysUTF8ToNSString(info_.url.spec())
-           forKey:app_mode::kCrAppModeShortcutURLKey];
-  [dict setObject:base::mac::FilePathToNSString(user_data_dir_)
-           forKey:app_mode::kCrAppModeUserDataDirKey];
-  [dict setObject:base::mac::FilePathToNSString(info_.extension_path)
-           forKey:app_mode::kCrAppModeExtensionPathKey];
-  [dict setObject:base::SysUTF16ToNSString(chrome_bundle_id_)
-           forKey:app_mode::kBrowserBundleIDKey];
-  return [dict writeToFile:plist_path atomically:YES];
+  NSString* extension_id = base::SysUTF8ToNSString(info_.extension_id);
+  NSString* extension_title = base::SysUTF16ToNSString(info_.title);
+  NSString* extension_url = base::SysUTF8ToNSString(info_.url.spec());
+  NSString* chrome_bundle_id = base::SysUTF16ToNSString(chrome_bundle_id_);
+  NSDictionary* replacement_dict =
+      [NSDictionary dictionaryWithObjectsAndKeys:
+          extension_id, app_mode::kShortcutIdPlaceholder,
+          extension_title, app_mode::kShortcutNamePlaceholder,
+          extension_url, app_mode::kShortcutURLPlaceholder,
+          chrome_bundle_id, app_mode::kShortcutBrowserBundleIDPlaceholder,
+          nil];
+
+  NSMutableDictionary* plist =
+      [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
+  NSArray* keys = [plist allKeys];
+
+  // 1. Fill in variables.
+  for (id key in keys) {
+    NSString* value = [plist valueForKey:key];
+    if (![value isKindOfClass:[NSString class]] || [value length] < 2)
+      continue;
+
+    // Remove leading and trailing '@'s.
+    NSString* variable =
+        [value substringWithRange:NSMakeRange(1, [value length] - 2)];
+
+    NSString* substitution = [replacement_dict valueForKey:variable];
+    if (substitution)
+      [plist setObject:substitution forKey:key];
+  }
+
+  // 2. Fill in other values.
+  [plist setObject:GetBundleIdentifier(plist)
+            forKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)];
+  [plist setObject:base::mac::FilePathToNSString(user_data_dir_)
+            forKey:app_mode::kCrAppModeUserDataDirKey];
+  [plist setObject:base::mac::FilePathToNSString(info_.extension_path)
+            forKey:app_mode::kCrAppModeExtensionPathKey];
+  return [plist writeToFile:plist_path atomically:YES];
 }
 
 bool WebAppShortcutCreator::UpdateIcon(const FilePath& app_path) const {
@@ -171,6 +192,13 @@ NSString* WebAppShortcutCreator::GetBundleIdentifier(NSDictionary* plist) const
           stringByReplacingOccurrencesOfString:placeholder
                                     withString:extension_id];
   return bundle_id;
+}
+
+void WebAppShortcutCreator::RevealGeneratedBundleInFinder(
+    const FilePath& generated_bundle) const {
+  [[NSWorkspace sharedWorkspace]
+                    selectFile:base::mac::FilePathToNSString(generated_bundle)
+      inFileViewerRootedAtPath:nil];
 }
 
 }  // namespace

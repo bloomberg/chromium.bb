@@ -4,8 +4,6 @@
 <dict>
        <key>CFBundleDevelopmentRegion</key>
        <string>en</string>
-       <key>CFBundleDisplayName</key>
-       <string>@APP_MODE_SHORTCUT_SHORT_NAME@</string>
        <key>CFBundleSignature</key>
        <string>????</string>
        <key>CFBundleExecutable</key>
@@ -22,12 +20,12 @@
        <string>APPL</string>
        <key>CrAppModeShortcutID</key>
        <string>@APP_MODE_SHORTCUT_ID@</string>
-       <key>CrAppModeShortcutShortName</key>
-       <string>@APP_MODE_SHORTCUT_SHORT_NAME@</string>
        <key>CrAppModeShortcutName</key>
        <string>@APP_MODE_SHORTCUT_NAME@</string>
        <key>CrAppModeShortcutURL</key>
        <string>@APP_MODE_SHORTCUT_URL@</string>
+       <key>CrBundleIdentifier</key>
+       <string>@APP_MODE_BROWSER_BUNDLE_ID@</string>
        <key>LSFileQuarantineEnabled</key>
        <true/>
        <key>LSMinimumSystemVersion</key>

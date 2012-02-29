@@ -23,10 +23,7 @@ extern NSString* const kBrowserBundleIDKey;
 // Key for the shortcut ID.
 extern NSString* const kCrAppModeShortcutIDKey;
 
-// Key for the app's shortcut name.
-extern NSString* const kCrAppModeShortcutShortNameKey;
-
-// Key for the app's unrestricted name.
+// Key for the app's name.
 extern NSString* const kCrAppModeShortcutNameKey;
 
 // Key for the app's URL.
@@ -42,9 +39,12 @@ extern NSString* const kCrAppModeExtensionPathKey;
 // system using this key.
 extern NSString* const kLastRunAppBundlePathPrefsKey;
 
-// Placeholder used in the Info.plist, meant to be replaced by the extension
-// shortcut ID.
-extern NSString* const kShortcutIdPlaceholder;
+// Placeholders used in the app mode loader bundle' Info.plist:
+extern NSString* const kShortcutIdPlaceholder; // Extension shortcut ID.
+extern NSString* const kShortcutNamePlaceholder; // Extension name.
+extern NSString* const kShortcutURLPlaceholder;
+// Bundle ID of the Chrome browser bundle.
+extern NSString* const kShortcutBrowserBundleIDPlaceholder;
 
 // Current major/minor version numbers of |ChromeAppModeInfo| (defined below).
 const unsigned kCurrentChromeAppModeInfoMajorVersion = 1;
@@ -83,9 +83,6 @@ struct ChromeAppModeInfo {
   // Short ID string, preferably derived from |app_mode_short_name|. Should be
   // safe for the file system.
   std::string app_mode_id;  // Required: v1.0
-
-  // Short (e.g., one-word) UTF8-encoded name for the shortcut.
-  string16 app_mode_short_name;  // Optional: v1.0
 
   // Unrestricted (e.g., several-word) UTF8-encoded name for the shortcut.
   string16 app_mode_name;  // Optional: v1.0

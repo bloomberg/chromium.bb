@@ -65,6 +65,10 @@ class WebAppShortcutCreator {
   // be used for creating the app bundle.
   NSString* GetBundleIdentifier(NSDictionary* plist) const;
 
+  // Show the bundle we just generated in the Finder.
+  virtual void RevealGeneratedBundleInFinder(
+      const FilePath& generated_bundle) const;
+
   // Information about the app.
   ShellIntegration::ShortcutInfo info_;
 
