@@ -31,6 +31,7 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -43,10 +44,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "unicode/coll.h"
-
-#if defined(OS_MACOSX)
-#include "content/browser/mach_broker_mac.h"
-#endif
 
 using content::BrowserThread;
 using content::OpenURLParams;
@@ -710,8 +707,8 @@ void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
 #if !defined(OS_MACOSX)
         base::ProcessMetrics::CreateProcessMetrics(process);
 #else
-        base::ProcessMetrics::CreateProcessMetrics(process,
-                                                   MachBroker::GetInstance());
+        base::ProcessMetrics::CreateProcessMetrics(
+            process, content::BrowserChildProcessHost::GetPortProvider());
 #endif
 
     metrics_map_[process] = pm;

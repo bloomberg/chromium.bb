@@ -25,16 +25,13 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_request_details.h"
+#include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/rect.h"
-
-#if defined(OS_MACOSX)
-#include "content/browser/mach_broker_mac.h"
-#endif
 
 using content::DownloadItem;
 using content::OpenURLParams;
@@ -598,7 +595,7 @@ base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
 #else
     process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(
         handle,
-        MachBroker::GetInstance()));
+        content::BrowserChildProcessHost::GetPortProvider()));
 #endif
   }
 

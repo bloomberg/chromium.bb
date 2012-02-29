@@ -30,6 +30,8 @@
 
 #if defined(OS_WIN)
 #include "base/synchronization/waitable_event.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/mach_broker_mac.h"
 #endif
 
 using content::BrowserChildProcessHostDelegate;
@@ -61,6 +63,12 @@ BrowserChildProcessHost* BrowserChildProcessHost::Create(
     BrowserChildProcessHostDelegate* delegate) {
   return new BrowserChildProcessHostImpl(type, delegate);
 }
+
+#if defined(OS_MACOSX)
+base::ProcessMetrics::PortProvider* BrowserChildProcessHost::GetPortProvider() {
+  return MachBroker::GetInstance();
+}
+#endif
 
 }  // namespace content
 

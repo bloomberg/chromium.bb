@@ -92,7 +92,7 @@ class CONTENT_EXPORT URLFetcher {
   static URLFetcher* Create(int id,
                             const GURL& url,
                             RequestType request_type,
-                            content::URLFetcherDelegate* d);
+                            URLFetcherDelegate* d);
 
   // Cancels all existing URLFetchers.  Will notify the URLFetcherDelegates.
   // Note that any new URLFetchers created while this is running will not be
