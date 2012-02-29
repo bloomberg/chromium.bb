@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
@@ -182,8 +181,9 @@ class GDataService : public base::SupportsWeakPtr<GDataService>,
 // This calls provides documents feed service calls.
 class DocumentsService : public GDataService {
  public:
-  // Get Singleton instance of DocumentsService.
-  static DocumentsService* GetInstance();
+  // DocumentsService is usually owned and created by GDataFileSystem.
+  DocumentsService();
+  virtual ~DocumentsService();
 
   // GDataService override.
   virtual void Initialize(Profile* profile) OVERRIDE;
@@ -218,10 +218,6 @@ class DocumentsService : public GDataService {
                     ResumeUploadCallback callback);
 
  private:
-  // TODO(zelidrag): Get rid of singleton here and make this service lifetime
-  // associated with the Profile down the road.
-  friend struct DefaultSingletonTraits<DocumentsService>;
-
   // Used to queue callers of InitiateUpload when document feed is not ready.
   struct InitiateUploadCaller {
     InitiateUploadCaller(InitiateUploadCallback in_callback,
@@ -249,9 +245,6 @@ class DocumentsService : public GDataService {
 
     GURL url;
   };
-
-  DocumentsService();
-  virtual ~DocumentsService();
 
   // GDataService overrides.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;

@@ -305,7 +305,9 @@ GDataFileSystem::FindFileParams::~FindFileParams() {
 // GDataFileSystem class implementatsion.
 
 GDataFileSystem::GDataFileSystem(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      documents_service_(new DocumentsService) {
+  documents_service_->Initialize(profile_);
   root_.reset(new GDataDirectory(NULL));
   root_->set_file_name(kGDataRootDirectory);
 }
@@ -410,7 +412,7 @@ void GDataFileSystem::UnsafeFindFileByPath(
 void GDataFileSystem::RefreshFeedOnUIThread(const GURL& feed_url,
     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DocumentsService::GetInstance()->GetDocuments(feed_url, callback);
+  documents_service_->GetDocuments(feed_url, callback);
 }
 
 void GDataFileSystem::RemoveOnUIThread(
@@ -425,7 +427,7 @@ void GDataFileSystem::RemoveOnUIThread(
 
     return;
   }
-  DocumentsService::GetInstance()->DeleteDocument(document_url, callback);
+  documents_service_->DeleteDocument(document_url, callback);
 }
 
 GURL GDataFileSystem::GetDocumentUrlFromPath(const FilePath& file_path) {

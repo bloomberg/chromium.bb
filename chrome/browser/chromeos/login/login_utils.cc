@@ -915,7 +915,6 @@ void LoginUtilsImpl::StartSignedInServices(
   static bool initialized = false;
   if (!initialized) {
     initialized = true;
-    gdata::DocumentsService::GetInstance()->Initialize(user_profile);
     // Pass the updated passphrase to the sync service for use in decrypting
     // data encrypted with the user's GAIA password.
     ProfileSyncService* sync_service =

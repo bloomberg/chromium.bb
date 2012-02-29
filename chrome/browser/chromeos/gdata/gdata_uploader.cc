@@ -116,6 +116,9 @@ void GDataUploader::UploadFile(const GURL& file_url) {
 
   // Open the file asynchronously.
   //
+  // TODO(achuith): DocumentsService is no longer a singleton but owned by
+  // GDataFileSystem owned by Profile. Need to rethink about lifetime.
+  //
   // DocumentsService is a singleton, and the lifetime of GDataUploader
   // is tied to DocumentsService, so it's safe to use base::Unretained here,
   // since the thread task queues are shut down before singleton destruction.
@@ -145,6 +148,9 @@ void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
     return;
   }
 
+  // TODO(achuith): DocumentsService is no longer a singleton but owned by
+  // GDataFileSystem owned by Profile. Need to rethink about lifetime.
+  //
   // DocumentsService is a singleton, and the lifetime of GDataUploader
   // is tied to DocumentsService, so it's safe to use base::Unretained here,
   // since the thread task queues are shut down before singleton destruction.
@@ -207,6 +213,9 @@ void GDataUploader::UploadNextChunk(
     DCHECK(size_remaining > kUploadChunkSize);
 
   upload_file_info->start_range = end_range_received + 1;
+  // TODO(achuith): DocumentsService is no longer a singleton but owned by
+  // GDataFileSystem owned by Profile. Need to rethink about lifetime.
+  //
   // DocumentsService is a singleton, and the lifetime of GDataUploader
   // is tied to DocumentsService, so it's safe to use base::Unretained here,
   // since the thread task queues are shut down before singleton destruction.
@@ -269,6 +278,9 @@ void GDataUploader::ReadCompletionCallback(
   upload_file_info->end_range = upload_file_info->start_range +
                                bytes_read - 1;
 
+  // TODO(achuith): DocumentsService is no longer a singleton but owned by
+  // GDataFileSystem owned by Profile. Need to rethink about lifetime.
+  //
   // DocumentsService is a singleton, and the lifetime of GDataUploader
   // is tied to DocumentsService, so it's safe to use base::Unretained here,
   // since the thread task queues are shut down before singleton destruction.

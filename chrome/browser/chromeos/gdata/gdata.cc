@@ -17,6 +17,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/net/browser_url_util.h"
@@ -819,11 +820,6 @@ void GDataService::Observe(int type,
 
 //=============================== DocumentsService =============================
 
-// static.
-DocumentsService* DocumentsService::GetInstance() {
-  return Singleton<DocumentsService>::get();
-}
-
 DocumentsService::DocumentsService()
     : get_documents_started_(false),
       uploader_(new GDataUploader(this)) {
@@ -833,7 +829,11 @@ DocumentsService::~DocumentsService() {
 }
 
 void DocumentsService::Initialize(Profile* profile) {
-  uploader_->Initialize(profile);
+  // TODO(satorux,achuith): GDataUploader depends on DownloadStatusUpdater
+  // which is not present in unit tests. Solve the dependency issue more
+  // cleanly.
+  if (g_browser_process->download_status_updater())
+    uploader_->Initialize(profile);
   GDataService::Initialize(profile);
 }
 

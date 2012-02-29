@@ -18,6 +18,7 @@
 
 namespace gdata {
 
+class DocumentsService;
 class GDataDirectory;
 class GDataFile;
 
@@ -251,6 +252,10 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
   // UI thread as required by gdata library (UrlFetcher).
   void StartDirectoryRefresh(const FindFileParams& params);
 
+  // Returns the documents service for this file system.
+  // TODO(satorux): Should stop exposing this. crosbug.com/27050.
+  DocumentsService* documents_service() { return documents_service_.get(); }
+
  private:
   friend class base::RefCountedThreadSafe<GDataFileSystem>;
   friend class GDataFileSystemFactory;
@@ -316,6 +321,9 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
 
   // The profile hosts the GDataFileSystem.
   Profile* profile_;
+
+  // The document service for the GDataFileSystem.
+  scoped_ptr<DocumentsService> documents_service_;
 };
 
 // Singleton that owns all GDataFileSystems and associates them with

@@ -1272,7 +1272,10 @@ bool AddMountFunction::RunImpl() {
       break;
     }
     case chromeos::MOUNT_TYPE_GDATA: {
-      gdata::DocumentsService* service = gdata::DocumentsService::GetInstance();
+      gdata::GDataFileSystem* file_system =
+          gdata::GDataFileSystemFactory::GetForProfile(profile_);
+      // TODO(satorux): DocumentsService should not be used directly.
+      gdata::DocumentsService* service = file_system->documents_service();
       if (service->IsFullyAuthenticated()) {
         AddGDataMountPoint();
         RaiseGDataMountEvent(gdata::HTTP_SUCCESS, service->oauth2_auth_token());
