@@ -320,9 +320,9 @@ class SyncManager::SyncInternal
 
   void RequestNudge(const tracked_objects::Location& nudge_location);
 
-  void RequestNudgeForDataType(
+  void RequestNudgeForDataTypes(
       const tracked_objects::Location& nudge_location,
-      const ModelType& type);
+      ModelTypeSet type);
 
   TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
 
@@ -1803,10 +1803,8 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
       "CALCULATE_CHANGES called with unapplied old changes.";
 
   // The mutated model type, or UNSPECIFIED if nothing was mutated.
-  syncable::ModelType mutated_model_type = syncable::UNSPECIFIED;
+  syncable::ModelTypeSet mutated_model_types;
 
-  // Find the first real mutation.  We assume that only a single model
-  // type is mutated per transaction.
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
   for (syncable::EntryKernelMutationMap::const_iterator it =
@@ -1824,19 +1822,18 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
     }
 
     // Found real mutation.
-    if (mutated_model_type == syncable::UNSPECIFIED) {
-      mutated_model_type = model_type;
-      break;
+    if (model_type != syncable::UNSPECIFIED) {
+      mutated_model_types.Put(model_type);
     }
   }
 
   // Nudge if necessary.
-  if (mutated_model_type != syncable::UNSPECIFIED) {
+  if (!mutated_model_types.Empty()) {
     if (weak_handle_this_.IsInitialized()) {
       weak_handle_this_.Call(FROM_HERE,
-                             &SyncInternal::RequestNudgeForDataType,
+                             &SyncInternal::RequestNudgeForDataTypes,
                              FROM_HERE,
-                             mutated_model_type);
+                             mutated_model_types);
     } else {
       NOTREACHED();
     }
@@ -1930,20 +1927,21 @@ TimeDelta SyncManager::SyncInternal::GetNudgeDelayTimeDelta(
   return NudgeStrategy::GetNudgeDelayTimeDelta(model_type, this);
 }
 
-void SyncManager::SyncInternal::RequestNudgeForDataType(
+void SyncManager::SyncInternal::RequestNudgeForDataTypes(
     const tracked_objects::Location& nudge_location,
-    const ModelType& type) {
+    ModelTypeSet types) {
   if (!scheduler()) {
     NOTREACHED();
     return;
   }
 
-  base::TimeDelta nudge_delay = NudgeStrategy::GetNudgeDelayTimeDelta(type,
-                                                                      this);
-  syncable::ModelTypeSet types(type);
+  // TODO(lipalani) : Calculate the nudge delay based on all types.
+  base::TimeDelta nudge_delay = NudgeStrategy::GetNudgeDelayTimeDelta(
+      types.First().Get(),
+      this);
   scheduler()->ScheduleNudge(nudge_delay,
                              browser_sync::NUDGE_SOURCE_LOCAL,
-                             ModelTypeSet(type),
+                             types,
                              nudge_location);
 }
 

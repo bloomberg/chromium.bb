@@ -183,6 +183,8 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
       DropNudgeWhileExponentialBackOff);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, SaveNudge);
+  FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
+                           SaveNudgeWhileTypeThrottled);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinueNudge);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, DropPoll);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest, ContinuePoll);

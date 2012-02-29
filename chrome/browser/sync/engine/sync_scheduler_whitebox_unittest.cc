@@ -18,8 +18,11 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 namespace browser_sync {
-using sessions::SyncSessionContext;
 using browser_sync::Syncer;
+using sessions::SyncSession;
+using sessions::SyncSessionContext;
+using sessions::SyncSourceInfo;
+using sync_pb::GetUpdatesCallerInfo;
 
 class SyncSchedulerWhiteboxTest : public testing::Test {
  public:
@@ -93,15 +96,21 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
 
   SyncScheduler::JobProcessDecision CreateAndDecideJob(
       SyncScheduler::SyncSessionJob::SyncSessionJobPurpose purpose) {
-    struct SyncScheduler::SyncSessionJob job;
-    job.purpose = purpose;
-    job.scheduled_start = TimeTicks::Now();
+    SyncSession* s = scheduler_->CreateSyncSession(SyncSourceInfo());
+    SyncScheduler::SyncSessionJob job(purpose, TimeTicks::Now(),
+         make_linked_ptr(s),
+         false,
+         FROM_HERE);
     return DecideOnJob(job);
   }
 
+  SyncSessionContext* context() { return context_; }
+
+ protected:
+  scoped_ptr<SyncScheduler> scheduler_;
+
  private:
   MessageLoop message_loop_;
-  scoped_ptr<SyncScheduler> scheduler_;
   scoped_ptr<MockConnectionManager> connection_;
   SyncSessionContext* context_;
   scoped_ptr<FakeModelSafeWorkerRegistrar> registrar_;
@@ -118,6 +127,33 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudge) {
   SyncScheduler::JobProcessDecision decision =
       CreateAndDecideJob(SyncScheduler::SyncSessionJob::NUDGE);
 
+  EXPECT_EQ(decision, SyncScheduler::SAVE);
+}
+
+TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
+  InitializeSyncerOnNormalMode();
+
+  syncable::ModelTypeSet types;
+  types.Put(syncable::BOOKMARKS);
+
+  // Mark bookmarks as throttled.
+  context()->SetUnthrottleTime(types,
+      base::TimeTicks::Now() + base::TimeDelta::FromHours(2));
+
+  syncable::ModelTypePayloadMap types_with_payload;
+  types_with_payload[syncable::BOOKMARKS] = "";
+
+  SyncSourceInfo info(GetUpdatesCallerInfo::LOCAL, types_with_payload);
+  SyncSession* s = scheduler_->CreateSyncSession(info);
+
+  // Now schedule a nudge with just bookmarks and the change is local.
+  SyncScheduler::SyncSessionJob job(SyncScheduler::SyncSessionJob::NUDGE,
+                                    TimeTicks::Now(),
+                                    make_linked_ptr(s),
+                                    false,
+                                    FROM_HERE);
+
+  SyncScheduler::JobProcessDecision decision = DecideOnJob(job);
   EXPECT_EQ(decision, SyncScheduler::SAVE);
 }
 

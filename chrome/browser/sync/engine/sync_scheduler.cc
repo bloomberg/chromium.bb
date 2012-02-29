@@ -364,6 +364,23 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideOnJob(
       job.purpose == SyncSessionJob::CLEANUP_DISABLED_TYPES)
     return CONTINUE;
 
+  // See if our type is throttled.
+  syncable::ModelTypeSet throttled_types =
+      session_context_->GetThrottledTypes();
+  if (job.purpose == SyncSessionJob::NUDGE &&
+      job.session->source().updates_source == GetUpdatesCallerInfo::LOCAL) {
+    syncable::ModelTypeSet requested_types;
+    for (ModelTypePayloadMap::const_iterator i =
+         job.session->source().types.begin();
+         i != job.session->source().types.end();
+         ++i) {
+      requested_types.Put(i->first);
+    }
+
+    if (!requested_types.Empty() && throttled_types.HasAll(requested_types))
+      return SAVE;
+  }
+
   if (wait_interval_.get())
     return DecideWhileInWaitInterval(job);
 
