@@ -41,6 +41,9 @@ class SessionRestoreUITest : public UITest {
 
     clear_profile_ = false;
 
+    // Clear launch_arguments so that the URL arg doesn't get added on restart.
+    launch_arguments_ = CommandLine(launch_arguments_.GetProgram());
+
     launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
                                         base::IntToString(expected_tab_count));
     UITest::SetUp();

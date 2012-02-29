@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
@@ -81,6 +82,20 @@ void PyUITestBase::SetUp() {
 
 void PyUITestBase::TearDown() {
   UITestBase::TearDown();
+}
+
+void PyUITestBase::SetLaunchSwitches() {
+  // Clear the homepage because some of the pyauto tests don't work correctly
+  // if a URL argument is passed.
+  std::string homepage_original;
+  std::swap(homepage_original, homepage_);
+
+  UITestBase::SetLaunchSwitches();
+
+  // However, we *do* want the --homepage switch.
+  std::swap(homepage_original, homepage_);
+  launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
+
 }
 
 void PyUITestBase::NavigateToURL(const char* url_string) {
