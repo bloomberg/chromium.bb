@@ -454,6 +454,10 @@ pid_t ZygoteHostImpl::GetPid() const {
   return pid_;
 }
 
+pid_t ZygoteHostImpl::GetSandboxHelperPid() const {
+  return RenderSandboxHostLinux::GetInstance()->pid();
+}
+
 int ZygoteHostImpl::GetSandboxStatus() const {
   if (have_read_sandbox_status_word_)
     return sandbox_status_;

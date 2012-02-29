@@ -31,7 +31,11 @@ class ZygoteHost {
     kSandboxSeccomp = 1 << 3,  // seccomp sandbox active.
   };
 
+  // Returns the pid of the Zygote process.
   virtual pid_t GetPid() const = 0;
+
+  // Returns the pid of the Sandbox Helper process.
+  virtual pid_t GetSandboxHelperPid() const = 0;
 
   // Returns an int which is a bitmask of kSandbox* values. Only valid after
   // the first render has been forked.

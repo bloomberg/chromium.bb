@@ -63,7 +63,6 @@ include_rules = [
   "+content/browser/renderer_host/dummy_resource_handler.h",
   "+content/browser/renderer_host/mock_render_process_host.h",
   "+content/browser/renderer_host/render_process_host_browsertest.h",
-  "+content/browser/renderer_host/render_sandbox_host_linux.h",
   "+content/browser/renderer_host/render_view_host.h",
   "+content/browser/renderer_host/render_view_host_factory.h",
   "+content/browser/renderer_host/render_widget_host.h",

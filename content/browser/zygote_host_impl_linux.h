@@ -51,6 +51,7 @@ class CONTENT_EXPORT ZygoteHostImpl : public content::ZygoteHost {
 
   // ZygoteHost implementation:
   virtual pid_t GetPid() const OVERRIDE;
+  virtual pid_t GetSandboxHelperPid() const OVERRIDE;
   virtual int GetSandboxStatus() const OVERRIDE;
   virtual void AdjustRendererOOMScore(base::ProcessHandle process_handle,
                                       int score) OVERRIDE;

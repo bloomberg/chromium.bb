@@ -32,7 +32,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/public/browser/zygote_host_linux.h"
 #endif
 
@@ -157,7 +156,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   const pid_t zygote_pid = content::ZygoteHost::GetInstance()->GetPid();
-  const pid_t sandbox_helper_pid = RenderSandboxHostLinux::GetInstance()->pid();
+  const pid_t sandbox_helper_pid =
+      content::ZygoteHost::GetInstance()->GetSandboxHelperPid();
 #endif
 
   ProcessData* const chrome_browser = ChromeBrowser();
