@@ -147,6 +147,9 @@ class UI_EXPORT RenderText {
   bool insert_mode() const { return insert_mode_; }
   void ToggleInsertMode();
 
+  SkColor cursor_color() const { return cursor_color_; }
+  void set_cursor_color(SkColor color) { cursor_color_ = color; }
+
   bool focused() const { return focused_; }
   void set_focused(bool focused) { focused_ = focused; }
 
@@ -404,6 +407,9 @@ class UI_EXPORT RenderText {
   // The cursor visibility and insert mode.
   bool cursor_visible_;
   bool insert_mode_;
+
+  // The color used for the cursor.
+  SkColor cursor_color_;
 
   // The focus state of the text.
   bool focused_;

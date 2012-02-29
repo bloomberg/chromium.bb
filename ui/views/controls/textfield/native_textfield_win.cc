@@ -247,6 +247,11 @@ void NativeTextfieldWin::UpdateBackgroundColor() {
   CRichEditCtrl::SetBackgroundColor(bg_color_);
 }
 
+void NativeTextfieldWin::UpdateCursorColor() {
+  if (!textfield_->use_default_cursor_color())
+    NOTIMPLEMENTED();
+}
+
 void NativeTextfieldWin::UpdateReadOnly() {
   SendMessage(m_hWnd, EM_SETREADONLY, textfield_->read_only(), 0);
   UpdateAccessibleState(STATE_SYSTEM_READONLY, textfield_->read_only());

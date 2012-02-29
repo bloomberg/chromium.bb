@@ -50,6 +50,9 @@ namespace {
 // Text color for read only.
 const SkColor kReadonlyTextColor = SK_ColorDKGRAY;
 
+// Default "system" color for text cursor.
+const SkColor kDefaultCursorColor = SK_ColorBLACK;
+
 // Parameters to control cursor blinking.
 const int kCursorVisibleTimeMs = 800;
 const int kCursorInvisibleTimeMs = 500;
@@ -392,6 +395,10 @@ void NativeTextfieldViews::UpdateBackgroundColor() {
   // TODO(oshima): Background has to match the border's shape.
   set_background(
       Background::CreateSolidBackground(textfield_->background_color()));
+  SchedulePaint();
+}
+
+void NativeTextfieldViews::UpdateCursorColor() {
   SchedulePaint();
 }
 
@@ -834,6 +841,10 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
       SkColorGetA(textfield_->background_color()) != 0xFF);
   GetRenderText()->set_cursor_visible(is_drop_cursor_visible_ ||
       (is_cursor_visible_ && !model_->HasSelection()));
+  GetRenderText()->set_cursor_color(
+      textfield_->use_default_cursor_color() ?
+          kDefaultCursorColor :
+          textfield_->cursor_color());
   // Draw the text, cursor, and selection.
   GetRenderText()->Draw(canvas);
   canvas->Restore();

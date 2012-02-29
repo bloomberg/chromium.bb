@@ -19,12 +19,8 @@
 
 namespace {
 
-// Color settings for text, backgrounds and cursor.
-// These are tentative, and should be derived from theme, system
-// settings and current settings.
-// TODO(oshima): Change this to match the standard chrome
-// before dogfooding textfield views.
-const SkColor kCursorColor = SK_ColorBLACK;
+// Default color used for the cursor.
+const SkColor kDefaultCursorColor = SK_ColorBLACK;
 
 #ifndef NDEBUG
 // Check StyleRanges invariant conditions: sorted and non-overlapping ranges.
@@ -617,6 +613,7 @@ RenderText::RenderText()
       cursor_enabled_(true),
       cursor_visible_(false),
       insert_mode_(true),
+      cursor_color_(kDefaultCursorColor),
       focused_(false),
       composition_range_(ui::Range::InvalidRange()),
       fade_head_(false),
@@ -860,9 +857,9 @@ void RenderText::DrawCursor(Canvas* canvas) {
   if (cursor_enabled() && cursor_visible() && focused()) {
     const Rect& bounds = GetUpdatedCursorBounds();
     if (bounds.width() != 0)
-      canvas->FillRect(bounds, kCursorColor);
+      canvas->FillRect(bounds, cursor_color_);
     else
-      canvas->DrawRect(bounds, kCursorColor);
+      canvas->DrawRect(bounds, cursor_color_);
   }
 }
 

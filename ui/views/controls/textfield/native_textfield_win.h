@@ -72,6 +72,7 @@ class NativeTextfieldWin
   virtual void UpdateBorder() OVERRIDE;
   virtual void UpdateTextColor() OVERRIDE;
   virtual void UpdateBackgroundColor() OVERRIDE;
+  virtual void UpdateCursorColor() OVERRIDE;
   virtual void UpdateReadOnly() OVERRIDE;
   virtual void UpdateFont() OVERRIDE;
   virtual void UpdateIsObscured() OVERRIDE;

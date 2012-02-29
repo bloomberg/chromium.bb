@@ -126,6 +126,14 @@ class VIEWS_EXPORT Textfield : public View {
   }
   void UseDefaultBackgroundColor();
 
+  // Gets/Sets the color to be used for the cursor.
+  SkColor cursor_color() const { return cursor_color_; }
+  void SetCursorColor(SkColor color);
+
+  // Gets/Sets whether we use the system's default color for the cursor.
+  bool use_default_cursor_color() const { return use_default_cursor_color_; }
+  void UseDefaultCursorColor();
+
   // Gets/Sets the font used when rendering the text within the Textfield.
   const gfx::Font& font() const { return font_; }
   void SetFont(const gfx::Font& font);
@@ -269,23 +277,23 @@ class VIEWS_EXPORT Textfield : public View {
   // Whether the border is drawn.
   bool draw_border_;
 
-  // The text color to be used when painting the Textfield, provided
-  // |use_default_text_color_| is set to false.
+  // Text color.  Only used if |use_default_text_color_| is false.
   SkColor text_color_;
 
-  // When true, the system text color for Textfields is used when painting this
-  // Textfield. When false, the value of |text_color_| determines the
-  // Textfield's text color.
+  // Should we use the system text color instead of |text_color_|?
   bool use_default_text_color_;
 
-  // The background color to be used when painting the Textfield, provided
-  // |use_default_background_color_| is set to false.
+  // Background color.  Only used if |use_default_background_color_| is false.
   SkColor background_color_;
 
-  // When true, the system background color for Textfields is used when painting
-  // this Textfield. When false, the value of |background_color_| determines the
-  // Textfield's background color.
+  // Should we use the system background color instead of |background_color_|?
   bool use_default_background_color_;
+
+  // Cursor color.  Only used if |use_default_cursor_color_| is false.
+  SkColor cursor_color_;
+
+  // Should we use the system cursor color instead of |cursor_color_|?
+  bool use_default_cursor_color_;
 
   // TODO(beng): remove this once NativeTextfieldWin subclasses
   //             NativeControlWin.

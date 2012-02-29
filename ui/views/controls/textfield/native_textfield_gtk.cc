@@ -151,6 +151,11 @@ void NativeTextfieldGtk::UpdateBackgroundColor() {
   gtk_widget_modify_base(native_view(), GTK_STATE_NORMAL, &gdk_color);
 }
 
+void NativeTextfieldGtk::UpdateCursorColor() {
+  if (!textfield_->use_default_cursor_color())
+    NOTIMPLEMENTED();
+}
+
 void NativeTextfieldGtk::UpdateReadOnly() {
   if (!native_view())
     return;

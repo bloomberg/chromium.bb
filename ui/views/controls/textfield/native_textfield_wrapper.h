@@ -65,6 +65,9 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // Updates the background color used when painting the native text field.
   virtual void UpdateBackgroundColor() = 0;
 
+  // Updates the cursor color used when painting the native text field.
+  virtual void UpdateCursorColor() = 0;
+
   // Updates the read-only state of the native text field.
   virtual void UpdateReadOnly() = 0;
 
