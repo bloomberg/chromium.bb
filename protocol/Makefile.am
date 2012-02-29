@@ -1,7 +1,8 @@
 if HAVE_XSLTPROC
-doc_DATA = wayland.html wayland-protocol.css
+dist_doc_DATA = wayland.html wayland-protocol.css wayland.xml
 
-wayland.html: wayland.xml protocol.xsl
-	$(AM_V_GEN)$(XSLTPROC) protocol.xsl wayland.xml > $@
+wayland.html: $(srcdir)/wayland.xml $(srcdir)/protocol.xsl
+	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol.xsl $(srcdir)/wayland.xml > $@
 
+CLEANFILES = wayland.html
 endif
