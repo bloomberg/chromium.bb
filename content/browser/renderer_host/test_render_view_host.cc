@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/browser/browser_url_handler.h"
-#include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/test_backing_store.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
@@ -50,20 +49,6 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->was_within_same_page = false;
   params->is_post = false;
   params->content_state = webkit_glue::CreateHistoryStateForURL(GURL(url));
-}
-
-void SimulateUpdateRect(RenderWidgetHost* widget,
-                        TransportDIB::Id bitmap,
-                        const gfx::Rect& rect) {
-  ViewHostMsg_UpdateRect_Params params;
-  params.bitmap_rect = rect;
-  params.view_size = params.bitmap_rect.size();
-  params.copy_rects.push_back(params.bitmap_rect);
-  params.flags = 0;
-  params.bitmap = bitmap;
-
-  ViewHostMsg_UpdateRect msg(1, params);
-  static_cast<RenderWidgetHostImpl*>(widget)->OnMessageReceived(msg);
 }
 
 TestRenderViewHost* TestRenderViewHost::GetPendingForController(
@@ -434,32 +419,4 @@ void RenderViewHostTestHarness::TearDown() {
   // Release the browser context on the UI thread.
   message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
   message_loop_.RunAllPending();
-}
-
-TestRenderWidgetHostViewWithBackingStoreSkia::
-~TestRenderWidgetHostViewWithBackingStoreSkia() {
-  delete rwh_;
-}
-
-RenderWidgetHost*
-TestRenderWidgetHostViewWithBackingStoreSkia::GetRenderWidgetHost() const {
-  return rwh_;
-}
-
-BackingStore* TestRenderWidgetHostViewWithBackingStoreSkia::AllocBackingStore(
-    const gfx::Size& size) {
-  return new BackingStoreSkia(rwh_, size);
-}
-
-// static
-TestRenderWidgetHostViewWithBackingStoreSkia*
-TestRenderWidgetHostViewWithBackingStoreSkia::Construct(
-    content::RenderProcessHost* process,
-    int routing_id) {
-  RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(process, routing_id);
-  TestRenderWidgetHostViewWithBackingStoreSkia* rwhv =
-      new TestRenderWidgetHostViewWithBackingStoreSkia(rwh);
-  // Painting will be skipped if there's no view.
-  rwh->SetView(rwhv);
-  return rwhv;
 }

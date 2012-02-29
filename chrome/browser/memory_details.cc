@@ -16,10 +16,9 @@
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
+#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/browser/renderer_host/backing_store_manager.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -415,7 +414,7 @@ void MemoryDetails::UpdateHistograms() {
     }
   }
   UMA_HISTOGRAM_MEMORY_KB("Memory.BackingStore",
-                          BackingStoreManager::MemorySize() / 1024);
+                          RenderWidgetHost::BackingStoreMemorySize() / 1024);
 
   UMA_HISTOGRAM_COUNTS_100("Memory.ProcessCount",
       static_cast<int>(browser.processes.size()));

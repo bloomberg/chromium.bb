@@ -48,7 +48,6 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -1625,9 +1624,15 @@ bool CaptureVisibleTabFunction::RunImpl() {
 
   // If a backing store is cached for the tab we want to capture,
   // and it can be copied into a bitmap, then use it to generate the image.
-  BackingStore* backing_store = render_view_host->GetBackingStore(false);
-  if (backing_store && CaptureSnapshotFromBackingStore(backing_store))
+  // This may fail if we can not copy a backing store into a bitmap.
+  // For example, some uncommon X11 visual modes are not supported by
+  // CopyFromBackingStore().
+  skia::PlatformCanvas temp_canvas;
+  if (render_view_host->CopyFromBackingStore(&temp_canvas)) {
+    VLOG(1) << "captureVisibleTab() got image from backing store.";
+    SendResultFromBitmap(skia::GetTopDevice(temp_canvas)->accessBitmap(false));
     return true;
+  }
 
   // Ask the renderer for a snapshot of the tab.
   TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
@@ -1637,25 +1642,6 @@ bool CaptureVisibleTabFunction::RunImpl() {
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
   wrapper->snapshot_tab_helper()->CaptureSnapshot();
 
-  return true;
-}
-
-// Build the image of a tab's contents out of a backing store.
-// This may fail if we can not copy a backing store into a bitmap.
-// For example, some uncommon X11 visual modes are not supported by
-// CopyFromBackingStore().
-bool CaptureVisibleTabFunction::CaptureSnapshotFromBackingStore(
-    BackingStore* backing_store) {
-
-  skia::PlatformCanvas temp_canvas;
-  if (!backing_store->CopyFromBackingStore(gfx::Rect(backing_store->size()),
-                                           &temp_canvas)) {
-    return false;
-  }
-  VLOG(1) << "captureVisibleTab() got image from backing store.";
-
-  SendResultFromBitmap(
-      skia::GetTopDevice(temp_canvas)->accessBitmap(false));
   return true;
 }
 

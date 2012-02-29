@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/thumbnail_score.h"
-#include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -60,10 +60,10 @@ static const int kThumbnailHeight = 132;
 
 static const char kThumbnailHistogramName[] = "Thumbnail.ComputeMS";
 
-// Creates a downsampled thumbnail for the given backing store. The returned
-// bitmap will be isNull if there was an error creating it.
-SkBitmap GetBitmapForBackingStore(
-    BackingStore* backing_store,
+// Creates a downsampled thumbnail for the given RenderWidgetHost's backing
+// store. The returned bitmap will be isNull if there was an error creating it.
+SkBitmap GetBitmapForRenderWidgetHost(
+    RenderWidgetHost* render_widget_host,
     int desired_width,
     int desired_height,
     int options,
@@ -76,8 +76,7 @@ SkBitmap GetBitmapForBackingStore(
   // allocation and we can tolerate failure here, so give up if the allocation
   // fails.
   skia::PlatformCanvas temp_canvas;
-  if (!backing_store->CopyFromBackingStore(gfx::Rect(backing_store->size()),
-                                           &temp_canvas))
+  if (!render_widget_host->CopyFromBackingStore(&temp_canvas))
     return result;
   const SkBitmap& bmp_with_scrollbars =
       skia::GetTopDevice(temp_canvas)->accessBitmap(false);
@@ -200,17 +199,13 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
                                         gfx::Size page_size,
                                         gfx::Size desired_size) {
   if (prefer_backing_store) {
-    BackingStore* backing_store = renderer->GetBackingStore(false);
-    if (backing_store) {
-      // We were able to find a non-null backing store for this renderer, so
-      // we'll go with it.
-      SkBitmap first_try = GetBitmapForBackingStore(backing_store,
-                                                    desired_size.width(),
-                                                    desired_size.height(),
-                                                    kNoOptions,
-                                                    NULL);
+    // We were able to find a non-null backing store for this renderer, so
+    // we'll go with it.
+    SkBitmap first_try = GetBitmapForRenderWidgetHost(
+        renderer, desired_size.width(), desired_size.height(), kNoOptions,
+        NULL);
+    if (!first_try.isNull()) {
       callback.Run(first_try);
-
       return;
     }
     // Now, if the backing store didn't exist, we will still try and
@@ -275,18 +270,8 @@ SkBitmap ThumbnailGenerator::GetThumbnailForRendererWithOptions(
     RenderWidgetHost* renderer,
     int options,
     ClipResult* clip_result) const {
-  BackingStore* backing_store = renderer->GetBackingStore(false);
-  if (!backing_store) {
-    // When we have no backing store, there's no choice in what to use. We
-    // have to return the empty thumbnail.
-    return SkBitmap();
-  }
-
-  return GetBitmapForBackingStore(backing_store,
-                                  kThumbnailWidth,
-                                  kThumbnailHeight,
-                                  options,
-                                  clip_result);
+  return GetBitmapForRenderWidgetHost(
+      renderer, kThumbnailWidth, kThumbnailHeight, options, clip_result);
 }
 
 void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(

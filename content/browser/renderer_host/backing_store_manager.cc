@@ -262,21 +262,6 @@ void BackingStoreManager::RemoveAllBackingStores() {
 }
 
 // static
-bool BackingStoreManager::ExpireBackingStoreForTest(RenderWidgetHost* host) {
-  BackingStoreCache* cache = large_cache;
-
-  BackingStoreCache::iterator it = cache->Peek(host);
-  if (it == cache->end()) {
-    cache = small_cache;
-    it = cache->Peek(host);
-    if (it == cache->end())
-      return false;
-  }
-  ExpireBackingStoreAt(cache, it);
-  return true;
-}
-
-// static
 size_t BackingStoreManager::MemorySize() {
   if (!large_cache)
     return 0;

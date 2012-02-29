@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/backing_store_manager.h"
+#include "content/browser/renderer_host/render_widget_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "net/proxy/proxy_resolver.h"
@@ -85,7 +85,7 @@ void MemoryPurger::PurgeAll() {
 // static
 void MemoryPurger::PurgeBrowser() {
   // Dump the backing stores.
-  BackingStoreManager::RemoveAllBackingStores();
+  RenderWidgetHost::RemoveAllBackingStores();
 
   // Per-profile cleanup.
   scoped_refptr<PurgeMemoryIOHelper> purge_memory_io_helper(

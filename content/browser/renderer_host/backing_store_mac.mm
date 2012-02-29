@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 // Mac Backing Stores:
@@ -188,6 +189,19 @@ void BackingStoreMac::ScrollBackingStore(int dx, int dy,
                          bitmap_image);
       CGContextRestoreGState(cg_bitmap_);
     }
+  }
+}
+
+void BackingStoreMac::CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
+                                                      CGContextRef context) {
+  gfx::ScopedCGContextSaveGState CGContextSaveGState(context);
+  CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
+  if (cg_layer_) {
+    CGContextDrawLayerInRect(context, dest_rect, cg_layer_);
+  } else {
+    base::mac::ScopedCFTypeRef<CGImageRef> image(
+        CGBitmapContextCreateImage(cg_bitmap_));
+    CGContextDrawImage(context, dest_rect, image);
   }
 }
 

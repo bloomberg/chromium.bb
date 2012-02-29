@@ -164,11 +164,11 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
 
   virtual ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  virtual bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-  virtual void SendResultFromBitmap(const SkBitmap& screen_capture);
+  bool CaptureSnapshotFromBackingStore(BackingStore* backing_store);
+  void SendResultFromBitmap(const SkBitmap& screen_capture);
 
   content::NotificationRegistrar registrar_;
 

@@ -37,6 +37,9 @@ class BackingStoreMac : public BackingStore {
                                   const gfx::Rect& clip_rect,
                                   const gfx::Size& view_size) OVERRIDE;
 
+  void CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
+                                       CGContextRef context);
+
  private:
   // Creates a CGLayer associated with its owner view's window's graphics
   // context, sized properly for the backing store.  Returns NULL if the owner

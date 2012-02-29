@@ -29,7 +29,6 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/renderer_host/backing_store_mac.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -267,23 +266,6 @@ void ThumbnailLoader::LoadThumbnail() {
   return bottomOffset;
 }
 
-- (void)drawBackingStore:(BackingStoreMac*)backing_store
-                  inRect:(CGRect)destRect
-                 context:(CGContextRef)context {
-  // TODO(thakis): Add a sublayer for each accelerated surface in the rwhv.
-  // Until then, accelerated layers (CoreAnimation NPAPI plugins, compositor)
-  // won't show up in tabpose.
-  gfx::ScopedCGContextSaveGState CGContextSaveGState(context);
-  CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
-  if (backing_store->cg_layer()) {
-    CGContextDrawLayerInRect(context, destRect, backing_store->cg_layer());
-  } else {
-    base::mac::ScopedCFTypeRef<CGImageRef> image(
-        CGBitmapContextCreateImage(backing_store->cg_bitmap()));
-    CGContextDrawImage(context, destRect, image);
-  }
-}
-
 - (void)drawInContext:(CGContextRef)context {
   RenderWidgetHost* rwh = contents_->web_contents()->GetRenderViewHost();
   // NULL if renderer crashed.
@@ -311,10 +293,7 @@ void ThumbnailLoader::LoadThumbnail() {
   // a) there's no backing store or
   // b) the backing store's size doesn't match our required size and
   // c) we didn't already send a thumbnail request to the renderer.
-  BackingStoreMac* backing_store =
-      (BackingStoreMac*)rwh->GetBackingStore(/*force_create=*/false);
-  bool draw_backing_store =
-      backing_store && backing_store->size() == desiredThumbSize;
+  bool draw_backing_store = rwh->GetBackingStoreSize() == desiredThumbSize;
 
   // Next weirdness: The destination rect. If the layer is |fullSize_| big, the
   // destination rect is (0, bottomOffset), (fullSize_.width, topOffset). But we
@@ -345,7 +324,10 @@ void ThumbnailLoader::LoadThumbnail() {
 
   if (draw_backing_store) {
     // Backing store 'cache' hit!
-    [self drawBackingStore:backing_store inRect:destRect context:context];
+    // TODO(thakis): Add a sublayer for each accelerated surface in the rwhv.
+    // Until then, accelerated layers (CoreAnimation NPAPI plugins, compositor)
+    // won't show up in tabpose.
+    rwh->CopyFromBackingStoreToCGContext(destRect, context);
   } else if (thumbnail_) {
     // No cache hit, but the renderer returned a thumbnail to us.
     gfx::ScopedCGContextSaveGState CGContextSaveGState(context);

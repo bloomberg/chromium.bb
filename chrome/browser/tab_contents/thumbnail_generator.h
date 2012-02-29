@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
 #include "base/timer.h"
-#include "content/browser/renderer_host/backing_store.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -22,6 +22,10 @@ class GURL;
 class Profile;
 class RenderWidgetHost;
 class SkBitmap;
+
+namespace gfx {
+class Size;
+}
 
 namespace history {
 class TopSites;

@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/process.h"
-#include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -63,15 +62,10 @@ class BackingStoreManager {
   static void RemoveBackingStore(RenderWidgetHost* host);
 
   // Removes all backing stores.
-  CONTENT_EXPORT static void RemoveAllBackingStores();
-
-  // Expires the given backing store. This emulates something getting evicted
-  // from the cache for the purpose of testing. Returns true if the host was
-  // removed, false if it wasn't found.
-  CONTENT_EXPORT static bool ExpireBackingStoreForTest(RenderWidgetHost* host);
+  static void RemoveAllBackingStores();
 
   // Current size in bytes of the backing store cache.
-  CONTENT_EXPORT static size_t MemorySize();
+  static size_t MemorySize();
 
  private:
   // Not intended for instantiation.

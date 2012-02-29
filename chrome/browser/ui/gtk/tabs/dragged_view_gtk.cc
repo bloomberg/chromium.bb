@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/renderer_host/backing_store_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -399,16 +398,17 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
   gtk_widget_get_allocation(widget, &allocation);
 
   // Draw the render area.
-  BackingStore* backing_store = drag_data_->GetSourceWebContents()->
-      GetRenderViewHost()->GetBackingStore(false);
-  if (backing_store && !attached_) {
+  if (!attached_) {
+    RenderWidgetHost* render_widget_host = drag_data_->GetSourceWebContents()->
+      GetRenderViewHost();
+
     // This leaves room for the border.
-    static_cast<BackingStoreGtk*>(backing_store)->PaintToRect(
-        gfx::Rect(kDragFrameBorderSize, tab_height,
-                  allocation.width - kTwiceDragFrameBorderSize,
-                  allocation.height - tab_height -
-                  kDragFrameBorderSize),
-        GDK_DRAWABLE(gtk_widget_get_window(widget)));
+    gfx::Rect dest_rect(kDragFrameBorderSize, tab_height,
+                        allocation.width - kTwiceDragFrameBorderSize,
+                        allocation.height - tab_height -
+                        kDragFrameBorderSize);
+    render_widget_host->CopyFromBackingStoreToGtkWindow(
+        dest_rect, GDK_DRAWABLE(gtk_widget_get_window(widget)));
   }
 
   cairo_t* cr = gdk_cairo_create(gtk_widget_get_window(widget));

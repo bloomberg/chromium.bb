@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -996,15 +995,10 @@ bool AeroPeekManager::GetTabPreview(int tab_id, SkBitmap* preview) {
   if (!render_view_host)
     return false;
 
-  BackingStore* backing_store = render_view_host->GetBackingStore(false);
-  if (!backing_store)
-    return false;
-
   // Create a copy of this BackingStore image.
   // This code is just copied from "thumbnail_generator.cc".
   skia::PlatformCanvas canvas;
-  if (!backing_store->CopyFromBackingStore(gfx::Rect(backing_store->size()),
-                                           &canvas))
+  if (!render_view_host->CopyFromBackingStore(&canvas))
     return false;
 
   const SkBitmap& bitmap = skia::GetTopDevice(canvas)->accessBitmap(false);

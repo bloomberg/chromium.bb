@@ -38,6 +38,12 @@
 #include "webkit/glue/webpreferences.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
+#if defined(TOOLKIT_GTK)
+#include "content/browser/renderer_host/backing_store_gtk.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/renderer_host/backing_store_mac.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -95,6 +101,16 @@ const RenderWidgetHost* RenderWidgetHost::FromIPCChannelListener(
     const IPC::Channel::Listener* listener) {
   return static_cast<const RenderWidgetHost*>(
       static_cast<const RenderWidgetHostImpl*>(listener));
+}
+
+// static
+void RenderWidgetHost::RemoveAllBackingStores() {
+  BackingStoreManager::RemoveAllBackingStores();
+}
+
+// static
+size_t RenderWidgetHost::BackingStoreMemorySize() {
+  return BackingStoreManager::MemorySize();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -460,10 +476,46 @@ void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
   view_->SetIsLoading(is_loading);
 }
 
+bool RenderWidgetHostImpl::CopyFromBackingStore(skia::PlatformCanvas* output) {
+  BackingStore* backing_store = GetBackingStore(false);
+  if (!backing_store)
+    return false;
+
+  return backing_store->CopyFromBackingStore(
+      gfx::Rect(backing_store->size()), output);
+}
+
+#if defined(TOOLKIT_GTK)
+bool RenderWidgetHostImpl::CopyFromBackingStoreToGtkWindow(
+    const gfx::Rect& dest_rect, GdkWindow* target) {
+  BackingStore* backing_store = GetBackingStore(false);
+  if (!backing_store)
+    return false;
+  (static_cast<BackingStoreGtk*>(backing_store))->PaintToRect(
+      dest_rect, target);
+  return true;
+}
+#elif defined(OS_MACOSX)
+gfx::Size RenderWidgetHostImpl::GetBackingStoreSize() {
+  BackingStore* backing_store = GetBackingStore(false);
+  return backing_store ? backing_store->size() : gfx::Size();
+}
+
+bool RenderWidgetHostImpl::CopyFromBackingStoreToCGContext(
+    const CGRect& dest_rect, CGContextRef target) {
+  BackingStore* backing_store = GetBackingStore(false);
+  if (!backing_store)
+    return false;
+  (static_cast<BackingStoreMac*>(backing_store))->
+      CopyFromBackingStoreToCGContext(dest_rect, target);
+  return true;
+}
+#endif
+
 void RenderWidgetHostImpl::PaintAtSize(TransportDIB::Handle dib_handle,
-                                   int tag,
-                                   const gfx::Size& page_size,
-                                   const gfx::Size& desired_size) {
+                                       int tag,
+                                       const gfx::Size& page_size,
+                                       const gfx::Size& desired_size) {
   // Ask the renderer to create a bitmap regardless of whether it's
   // hidden, being resized, redrawn, etc.  It resizes the web widget
   // to the page_size and then scales it to the desired_size.

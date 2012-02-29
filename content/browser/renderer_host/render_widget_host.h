@@ -18,6 +18,7 @@
 #include "base/property_bag.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/page_zoom.h"
@@ -28,6 +29,12 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
+
+#if defined(TOOLKIT_GTK)
+#include "ui/base/x/x11_util.h"
+#elif defined(OS_MACOSX)
+#include "skia/ext/platform_device.h"
+#endif
 
 class BackingStore;
 struct EditCommand;
@@ -48,6 +55,10 @@ class RenderWidgetHostViewPort;
 
 namespace gfx {
 class Rect;
+}
+
+namespace skia {
+class PlatformCanvas;
 }
 
 namespace ui {
@@ -97,13 +108,19 @@ class CONTENT_EXPORT RenderWidgetHost {
                            const gfx::Size& page_size,
                            const gfx::Size& desired_size) = 0;
 
-  // Get access to the widget's backing store.  If a resize is in progress,
-  // then the current size of the backing store may be less than the size of
-  // the widget's view.  If you pass |force_create| as true, then the backing
-  // store will be created if it doesn't exist. Otherwise, NULL will be returned
-  // if the backing store doesn't already exist. It will also return NULL if the
-  // backing store could not be created.
-  virtual BackingStore* GetBackingStore(bool force_create) = 0;
+  // Copies the contents of the backing store into the given (uninitialized)
+  // PlatformCanvas. Returns true on success, false otherwise.
+  virtual bool CopyFromBackingStore(skia::PlatformCanvas* output) = 0;
+
+#if defined(TOOLKIT_GTK)
+  // Paint the backing store into the target's |dest_rect|.
+  virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
+                                               GdkWindow* target) = 0;
+#elif defined(OS_MACOSX)
+  virtual gfx::Size GetBackingStoreSize() = 0;
+  virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
+                                               CGContextRef target) = 0;
+#endif
 
   // Returns true if this is a RenderViewHost, false if not.
   virtual bool IsRenderView() const = 0;
@@ -127,6 +144,12 @@ class CONTENT_EXPORT RenderWidgetHost {
       IPC::Channel::Listener* listener);
   static const RenderWidgetHost* FromIPCChannelListener(
       const IPC::Channel::Listener* listener);
+
+  // Free all backing stores used for rendering to drop memory usage.
+  static void RemoveAllBackingStores();
+
+  // Returns the size of all the backing stores used for rendering
+  static size_t BackingStoreMemorySize();
 
  protected:
   // Created during construction but initialized during Init*(). Therefore, it
@@ -300,12 +323,27 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Indicates if the page has finished loading.
   void SetIsLoading(bool is_loading);
 
+  virtual bool CopyFromBackingStore(skia::PlatformCanvas* output) OVERRIDE;
+#if defined(TOOLKIT_GTK)
+  virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
+                                               GdkWindow* target) OVERRIDE;
+#elif defined(OS_MACOSX)
+  virtual gfx::Size GetBackingStoreSize() OVERRIDE;
+  virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
+                                               CGContextRef target) OVERRIDE;
+#endif
   virtual void PaintAtSize(TransportDIB::Handle dib_handle,
                            int tag,
                            const gfx::Size& page_size,
                            const gfx::Size& desired_size) OVERRIDE;
 
-  virtual BackingStore* GetBackingStore(bool force_create) OVERRIDE;
+  // Get access to the widget's backing store.  If a resize is in progress,
+  // then the current size of the backing store may be less than the size of
+  // the widget's view.  If you pass |force_create| as true, then the backing
+  // store will be created if it doesn't exist. Otherwise, NULL will be returned
+  // if the backing store doesn't already exist. It will also return NULL if the
+  // backing store could not be created.
+  BackingStore* GetBackingStore(bool force_create);
 
   // Allocate a new backing store of the given size. Returns NULL on failure
   // (for example, if we don't currently have a RenderWidgetHostView.)
