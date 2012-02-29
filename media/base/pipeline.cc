@@ -107,11 +107,6 @@ void Pipeline::Stop(const PipelineStatusCB& stop_callback) {
   base::AutoLock auto_lock(lock_);
   CHECK(running_) << "Media pipeline isn't running";
 
-  if (video_decoder_) {
-    video_decoder_->PrepareForShutdownHack();
-    video_decoder_ = NULL;
-  }
-
   // Stop the pipeline, which will set |running_| to false on our behalf.
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StopTask, this, stop_callback));
@@ -756,6 +751,11 @@ void Pipeline::StopTask(const PipelineStatusCB& stop_callback) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   DCHECK(!IsPipelineStopPending());
   DCHECK_NE(state_, kStopped);
+
+  if (video_decoder_) {
+    video_decoder_->PrepareForShutdownHack();
+    video_decoder_ = NULL;
+  }
 
   if (state_ == kStopped) {
     // Already stopped so just run callback.
