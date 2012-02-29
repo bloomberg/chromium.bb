@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 
@@ -177,6 +178,7 @@ bool AutofillDownloadManager::StartRequest(
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->SetRequestContext(request_context);
   fetcher->SetUploadData("text/plain", form_xml);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->Start();
   return true;
 }

@@ -30,6 +30,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/hunspell/google/bdict.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -284,6 +285,7 @@ void SpellCheckHostImpl::DownloadDictionary() {
   fetcher_.reset(content::URLFetcher::Create(url, content::URLFetcher::GET,
                                 weak_ptr_factory_.GetWeakPtr()));
   fetcher_->SetRequestContext(request_context_getter_);
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   tried_to_download_ = true;
   fetcher_->Start();
   request_context_getter_ = NULL;

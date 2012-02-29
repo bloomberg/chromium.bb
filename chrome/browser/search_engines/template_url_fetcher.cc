@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------
@@ -100,6 +101,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   }
 
   url_fetcher_->SetRequestContext(fetcher->profile()->GetRequestContext());
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   url_fetcher_->Start();
 }
 

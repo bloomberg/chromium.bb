@@ -31,6 +31,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/locid.h"
@@ -200,7 +201,7 @@ void FeedbackUtil::SendFeedback(Profile* profile,
       post_url, content::URLFetcher::POST,
       new FeedbackUtil::PostCleanup(profile, post_body, previous_delay));
   fetcher->SetRequestContext(profile->GetRequestContext());
-
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->SetUploadData(std::string(kProtBufMimeType), *post_body);
   fetcher->Start();
 }

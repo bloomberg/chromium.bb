@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
+#include "net/base/load_flags.h"
 
 using content::BrowserThread;
 
@@ -213,6 +214,7 @@ void Toolbar5Importer::GetAuthenticationFromServer() {
   token_fetcher_ = content::URLFetcher::Create(
       url, content::URLFetcher::GET, this);
   token_fetcher_->SetRequestContext(request_context_getter_.get());
+  token_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   token_fetcher_->Start();
 }
 
@@ -247,6 +249,7 @@ void Toolbar5Importer::GetBookmarkDataFromServer(const std::string& response) {
   data_fetcher_ = content::URLFetcher::Create(
       url, content::URLFetcher::GET, this);
   data_fetcher_->SetRequestContext(request_context_getter_.get());
+  data_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   data_fetcher_->Start();
 }
 

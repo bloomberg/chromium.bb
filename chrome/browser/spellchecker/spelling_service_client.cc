@@ -16,6 +16,7 @@
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher.h"
+#include "net/base/load_flags.h"
 #include "unicode/uloc.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -93,6 +94,7 @@ bool SpellingServiceClient::RequestTextCheck(
       url, content::URLFetcher::POST, this));
   fetcher_->SetRequestContext(context);
   fetcher_->SetUploadData("application/json", request);
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->Start();
   tag_ = tag;
   callback_ = callback;

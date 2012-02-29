@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -190,6 +191,7 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
       GURL(alternate_nav_url_), content::URLFetcher::HEAD, this));
   fetcher_->SetRequestContext(
       controller_->GetBrowserContext()->GetRequestContext());
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->Start();
 }
 

@@ -32,6 +32,7 @@
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -446,6 +447,7 @@ content::URLFetcher* SearchProvider::CreateSuggestFetcher(
       content::URLFetcher::GET,
       this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher->Start();
   return fetcher;
 }

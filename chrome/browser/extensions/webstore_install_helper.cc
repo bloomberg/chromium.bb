@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/common/url_fetcher.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -60,6 +61,7 @@ void WebstoreInstallHelper::Start() {
     url_fetcher_.reset(content::URLFetcher::Create(
         icon_url_, content::URLFetcher::GET, this));
     url_fetcher_->SetRequestContext(context_getter_);
+    url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
 
     url_fetcher_->Start();
     // We'll get called back in OnURLFetchComplete.
