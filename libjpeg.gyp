@@ -193,6 +193,7 @@
                   '-DMSVC',
                   '-Iwin/'
                 ],
+                'yasm_output_filter': [],
               },
             }],
             [ 'OS=="mac"', {
@@ -206,6 +207,14 @@
                   '-DMACHO',
                   '-Imac/'
                 ],
+                # On Mac, jsimdext.inc contains a "SECTION SEG_CONST". This file
+                # is included by all .asm file, and most files contain another
+                # "SECTION SEG_CONST". SEG_CONST is ".rodata align=16" on mac,
+                # which leads to
+                # "warning: section flags ignored on section redeclaration"
+                # warnings on all .asm files. This script filters out this
+                # warning.
+                'yasm_output_filter': ['./yasm-filter.sh'],
               },
             }],
             [ 'OS=="linux"', {
@@ -239,6 +248,7 @@
                       '-DELF',
                       '-Ilinux/'
                     ],
+                    'yasm_output_filter': [],
                   }],
                 ],
               },
@@ -255,6 +265,7 @@
                     '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(object_suffix)',
                   ],
                   'action': [
+                    '<@(yasm_output_filter)',
                     '<(yasm_path)',
                     '<(yasm_format)',
                     '<@(yasm_flags)',
