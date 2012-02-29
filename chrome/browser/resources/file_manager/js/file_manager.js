@@ -681,6 +681,8 @@ FileManager.prototype = {
         ary[i].style.display = 'none';
     }
 
+    this.filePopup_ = null;
+
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, localStrings.templateData);
   };
@@ -1346,6 +1348,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onPopState_ = function(event) {
     // TODO(serya): We should restore selected items here.
+    this.closeFilePopup_();
     this.setupCurrentDirectory_();
   };
 
@@ -1398,21 +1401,56 @@ FileManager.prototype = {
     if (location.hash) {
       // Location hash has the highest priority.
       var path = decodeURI(location.hash.substr(1));
+
+      // In the FULL_PAGE mode if the path points to a file we should invoke
+      // the default action after selecting it.
+      if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
+        // To prevent the file list flickering for a moment before the action
+        // is executed we hide it under a white div.
+        var shade = this.document_.createElement('div');
+        shade.className = 'overlay-pane';
+        shade.style.backgroundColor = 'white';
+        this.document_.body.appendChild(shade);
+        function removeShade() { shade.parentNode.removeChild(shade) }
+
+        function onResolve(baseName, leafName, exists) {
+          if (!exists || leafName == '') {
+            // Non-existent file or a directory. Remove the shade immediately.
+            removeShade();
+          }
+        }
+
+        // TODO(kaznacheev): refactor dispatchDefaultTask to accept an array
+        // of urls instead of a selection. This will remove the need to wait
+        // until the selection is done.
+        var self = this;
+        function onFileSelected() {
+          self.dispatchDefaultTask_();
+          setTimeout(removeShade, 1000);
+        }
+        this.directoryModel_.setupPath(path, onResolve, onFileSelected);
+        return;
+      }
+
       this.directoryModel_.setupPath(path);
       return;
-    } else if (this.params_.defaultPath) {
-      var pathResolvedCallback;
+    }
+
+    if (this.params_.defaultPath) {
+      var path = this.params_.defaultPath;
       if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-        pathResolvedCallback = function(basePath, leafName) {
+        this.directoryModel_.setupPath(path, function(basePath, leafName) {
           this.filenameInput_.value = leafName;
           this.selectDefaultPathInFilenameInput_();
-        }.bind(this);
+        }.bind(this));
+        return;
       }
-      this.directoryModel_.setupPath(this.params_.defaultPath,
-                                     pathResolvedCallback);
-    } else {
-      this.directoryModel_.setupDefaultPath();
+
+      this.directoryModel_.setupPath(path);
+      return;
     }
+
+    this.directoryModel_.setupDefaultPath();
   };
 
   /**
@@ -2420,6 +2458,21 @@ FileManager.prototype = {
     return undefined;
   };
 
+  FileManager.prototype.openFilePopup_ = function(popup) {
+    this.closeFilePopup_();
+    this.filePopup_ = popup;
+    this.dialogDom_.appendChild(this.filePopup_);
+    this.filePopup_.focus();
+  };
+
+  FileManager.prototype.closeFilePopup_ = function() {
+    if (this.filePopup_) {
+      this.dialogDom_.removeChild(this.filePopup_);
+      this.filePopup_ = null;
+      this.refocus();
+    }
+  };
+
   FileManager.prototype.getAllUrlsInCurrentDirectory_ = function() {
     var urls = [];
     var dm = this.directoryModel_.fileList;
@@ -2454,6 +2507,12 @@ FileManager.prototype = {
       selectedUrl = urls[0];
     }
 
+    var dirPath = this.directoryModel_.currentEntry.fullPath;
+
+    // Push a temporary state which will be replaced every time an individual
+    // item is selected in the Gallery.
+    this.updateLocation_(false /*push*/, dirPath);
+
     galleryFrame.onload = function() {
       self.document_.title = str('GALLERY');
       galleryFrame.contentWindow.ImageUtil.metrics = metrics;
@@ -2463,20 +2522,17 @@ FileManager.prototype = {
           self.directoryModel_.currentEntry,
           urls,
           selectedUrl,
-          function () {
-            // TODO(kaznacheev): keep selection.
-            self.dialogDom_.removeChild(galleryFrame);
-            self.document_.title = self.directoryModel_.currentEntry.fullPath;
-            self.refocus();
+          function(name) {
+            self.updateLocation_(true /*replace*/, dirPath + '/' + name);
           },
+          function () { history.back(1) },
           self.metadataProvider_,
           shareActions,
           str);
     };
 
     galleryFrame.src = 'js/image_editor/gallery.html';
-    this.dialogDom_.appendChild(galleryFrame);
-    galleryFrame.focus();
+    this.openFilePopup_(galleryFrame);
   };
 
   /**
@@ -3092,6 +3148,24 @@ FileManager.prototype = {
   };
 
   /**
+   * Update the location in the address bar.
+   *
+   * @param {boolean} replace True if the history state should be replaced,
+   *                          false if pushed.
+   * @param {string} path Path to be put in the address bar after the hash.
+   */
+  FileManager.prototype.updateLocation_ = function(replace, path) {
+    var location = document.location.origin + document.location.pathname + '#' +
+                   encodeURI(path);
+    //TODO(kaznacheev): Fix replaceState for component extensions. Currently it
+    //does not replace the content of the address bar.
+    if (replace)
+      history.replaceState(undefined, path, location);
+    else
+      history.pushState(undefined, path, location);
+  },
+
+  /**
    * Update the UI when the current directory changes.
    *
    * @param {cr.Event} event The directory-changed event.
@@ -3107,12 +3181,7 @@ FileManager.prototype = {
     this.lastLabelClick_ = null;
 
     var dirEntry = event.newDirEntry;
-    var location = document.location.origin + document.location.pathname + '#' +
-                   encodeURI(dirEntry.fullPath);
-    if (event.initial)
-      history.replaceState(undefined, dirEntry.fullPath, location);
-    else
-      history.pushState(undefined, dirEntry.fullPath, location);
+    this.updateLocation_(event.initial, dirEntry.fullPath);
 
     this.checkFreeSpace_(this.getCurrentDirectory());
 

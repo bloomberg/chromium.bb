@@ -19,14 +19,17 @@ RibbonClient.prototype.closeImage = function(item) {};
  * Image gallery for viewing and editing image files.
  *
  * @param {HTMLDivElement} container
+ * @param {function(string)} nameChangeCallback Called every time a selected
+ *   item name changes (on rename and on selection change).
  * @param {function} closeCallback
  * @param {MetadataProvider} metadataProvider
  * @param {Array.<Object>} shareActions
  */
-function Gallery(container, closeCallback, metadataProvider, shareActions,
-    displayStringFunction) {
+function Gallery(container, nameChangeCallback, closeCallback, metadataProvider,
+                 shareActions, displayStringFunction) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
+  this.nameChangeCallback_ = nameChangeCallback;
   this.closeCallback_ = closeCallback;
   this.metadataProvider_ = metadataProvider;
 
@@ -44,12 +47,12 @@ function Gallery(container, closeCallback, metadataProvider, shareActions,
 
 Gallery.prototype = { __proto__: RibbonClient.prototype };
 
-Gallery.open = function(parentDirEntry, items, selectedItem,
+Gallery.open = function(parentDirEntry, items, selectedItem, nameChangeCallback,
    closeCallback, metadataProvider, shareActions, displayStringFunction) {
   var container = document.querySelector('.gallery');
   ImageUtil.removeChildren(container);
-  var gallery = new Gallery(container, closeCallback, metadataProvider,
-      shareActions, displayStringFunction);
+  var gallery = new Gallery(container, nameChangeCallback, closeCallback,
+      metadataProvider, shareActions, displayStringFunction);
   gallery.load(parentDirEntry, items, selectedItem);
 };
 
@@ -328,13 +331,21 @@ Gallery.prototype.onActionExecute_ = function(action) {
   this.saveChanges_(action.execute.bind(action, [url]));
 };
 
-Gallery.prototype.updateFilename_ = function() {
-  var item = this.ribbon_.getSelectedItem();
-  if (!item)
-    return;
+Gallery.prototype.updateFilename_ = function(opt_url) {
+  var fullName;
 
-  var fullName = item.getCopyName() ||
-      ImageUtil.getFullNameFromUrl(item.getUrl());
+  var item = this.ribbon_.getSelectedItem();
+  if (item) {
+    fullName = item.getCopyName() ||
+               ImageUtil.getFullNameFromUrl(item.getUrl());
+  } else if (opt_url) {
+    fullName = ImageUtil.getFullNameFromUrl(opt_url);
+  } else {
+    return;
+  }
+
+  this.nameChangeCallback_(fullName);
+
   var displayName = ImageUtil.getFileNameFromFullName(fullName);
   this.filenameEdit_.value = displayName;
   this.filenameText_.textContent = displayName;
@@ -453,13 +464,7 @@ Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
   this.imageChanges_ = -1;
 
   var item = this.ribbon_.getSelectedItem();
-  if (item) {
-    this.updateFilename_();
-  } else {
-    var displayName = ImageUtil.getFileNameFromUrl(content);
-    this.filenameEdit_.value = displayName;
-    this.filenameText_.textContent = displayName;
-  }
+  this.updateFilename_(content);
 
   var self = this;
   function loadDone(loadType) {

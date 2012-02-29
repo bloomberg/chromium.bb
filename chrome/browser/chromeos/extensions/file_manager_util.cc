@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,6 +46,14 @@ using content::UserMetricsAction;
 
 #define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
+
+const char kFileBrowserGalleryTaskId[] = "gallery";
+const char kFileBrowserMountArchiveTaskId[] = "mount-archive";
+
+// TODO(kaznacheev): Move this declaration to file_browser_handler_util.h once
+// it is created.
+bool GetDefaultFileBrowserHandler(
+    Profile* profile, const GURL& url, const FileBrowserHandler** handler);
 
 namespace file_manager_util {
 namespace {
@@ -335,13 +344,13 @@ void ViewRemovableDrive(const FilePath& dir) {
   browser->ShowSingletonTabRespectRef(GURL(url));
 }
 
-void ViewFolder(const FilePath& dir) {
+void OpenFileBrowser(const FilePath& full_path) {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
 
   FilePath virtual_path;
-  if (!ConvertFileToRelativeFileSystemPath(browser->profile(), dir,
+  if (!ConvertFileToRelativeFileSystemPath(browser->profile(), full_path,
                                            &virtual_path)) {
     return;
   }
@@ -353,8 +362,45 @@ void ViewFolder(const FilePath& dir) {
   browser->ShowSingletonTabRespectRef(GURL(url));
 }
 
+void ViewFolder(const FilePath& dir) {
+  OpenFileBrowser(dir);
+}
+
+bool TryOpeningFileBrowser(const FilePath& full_path) {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return false;
+
+  GURL url;
+  if (!ConvertFileToFileSystemUrl(browser->profile(), full_path,
+      GetFileBrowserExtensionUrl().GetOrigin(), &url))
+    return false;
+
+  const FileBrowserHandler* handler;
+  if (!GetDefaultFileBrowserHandler(browser->profile(), url, &handler))
+    return false;
+
+  if (handler->extension_id() == kFileBrowserDomain) {
+    std::string task_id = handler->id();
+    // Only two of the built-in File Browser tasks require opening the File
+    // Browser tab. Others just end up calling TryViewingFile.
+    if (task_id == kFileBrowserGalleryTaskId ||
+        task_id == kFileBrowserMountArchiveTaskId) {
+      OpenFileBrowser(full_path);
+      return true;
+    }
+  } else {
+    // For now we are opening the File Browser which in turn invokes
+    // the default action. This can be avoided.
+    // TODO(kaznacheev): Do what ExecuteTasksFileBrowserFunction does.
+    OpenFileBrowser(full_path);
+    return true;
+  }
+  return false;
+}
+
 void ViewFile(const FilePath& full_path, bool enqueue) {
-  if (!TryViewingFile(full_path)) {
+  if (!TryOpeningFileBrowser(full_path) && !TryViewingFile(full_path)) {
     Browser* browser = BrowserList::GetLastActive();
     if (!browser)
       return;

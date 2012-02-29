@@ -525,7 +525,7 @@ DirectoryModel.prototype = {
     this.dispatchEvent(e);
   },
 
-  setupPath: function(path, opt_pathResolveCallback) {
+  setupPath: function(path, opt_pathResolveCallback, opt_fileSelectCallback) {
     // Split the dirname from the basename.
     var ary = path.match(/^(?:(.*)\/)?([^\/]*)$/);
     var autoSelect = this.selectIndex.bind(this, this.autoSelectIndex_);
@@ -538,29 +538,36 @@ DirectoryModel.prototype = {
     var baseName = ary[1];
     var leafName = ary[2];
 
-    function callBack() {
+    function resolveCallback(exists) {
       if (opt_pathResolveCallback)
-        opt_pathResolveCallback(baseName, leafName);
+        opt_pathResolveCallback(baseName, leafName, exists);
     }
 
     function onLeafFound(baseDirEntry, leafEntry) {
       if (leafEntry.isDirectory) {
         baseName = path;
         leafName = '';
-        callBack();
+        resolveCallback(true);
         this.changeDirectoryEntry_(leafEntry, autoSelect, true);
         return;
       }
 
-      callBack();
+      resolveCallback(true);
       // Leaf is an existing file, cd to its parent directory and select it.
       this.changeDirectoryEntry_(baseDirEntry,
-                                 this.selectEntry.bind(this, leafEntry.name),
-                                 true);
+                                 function() {
+                                   this.selectEntry(leafEntry.name);
+                                   if (opt_fileSelectCallback)
+                                     opt_fileSelectCallback();
+                                 }.bind(this),
+                                 false /*HACK*/);
+      // TODO(kaznacheev): Fix history.replaceState for the File Browser and
+      // change the last parameter back to |true|. Passing |false| makes things
+      // less ugly for now.
     }
 
     function onLeafError(baseDirEntry, err) {
-      callBack();
+      resolveCallback(false);
       // Usually, leaf does not exist, because it's just a suggested file name.
       if (err != FileError.NOT_FOUND_ERR)
         console.log('Unexpected error resolving default leaf: ' + err);
@@ -568,7 +575,7 @@ DirectoryModel.prototype = {
     }
 
     var onBaseError = function(err) {
-      callBack();
+      resolveCallback(false);
       console.log('Unexpected error resolving default base "' +
                   baseName + '": ' + err);
       if (path != '/' + DirectoryModel.DOWNLOADS_DIRECTORY) {

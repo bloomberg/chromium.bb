@@ -633,6 +633,22 @@ bool RemoveFileWatchBrowserFunction::PerformFileWatchOperation(
   return true;
 }
 
+bool GetDefaultFileBrowserHandler(
+    Profile* profile, const GURL& url, const FileBrowserHandler** handler) {
+  std::vector<GURL> file_urls;
+  file_urls.push_back(url);
+
+  LastUsedHandlerList common_tasks;
+  if (!FindCommonTasks(profile, file_urls, &common_tasks))
+    return false;
+
+  if (common_tasks.size() == 0)
+    return false;
+
+  *handler = common_tasks[0].handler;
+  return true;
+}
+
 bool GetFileTasksFileBrowserFunction::RunImpl() {
   ListValue* files_list = NULL;
   if (!args_->GetList(0, &files_list))
