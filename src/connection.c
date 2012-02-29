@@ -269,7 +269,8 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 		msg.msg_flags = 0;
 
 		do {
-			len = sendmsg(connection->fd, &msg, MSG_NOSIGNAL);
+			len = sendmsg(connection->fd, &msg,
+				      MSG_NOSIGNAL | MSG_DONTWAIT);
 		} while (len < 0 && errno == EINTR);
 
 		if (len == -1 && errno == EPIPE) {
@@ -326,13 +327,14 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 	return connection->in.head - connection->in.tail;
 }
 
-void
+int
 wl_connection_write(struct wl_connection *connection,
 		    const void *data, size_t count)
 {
 	if (connection->out.head - connection->out.tail +
 	    count > ARRAY_LENGTH(connection->out.data))
-		wl_connection_data(connection, WL_CONNECTION_WRITABLE);
+		if (wl_connection_data(connection, WL_CONNECTION_WRITABLE))
+			return -1;
 
 	wl_buffer_put(&connection->out, data, count);
 
@@ -343,17 +345,22 @@ wl_connection_write(struct wl_connection *connection,
 				   connection->data);
 		connection->write_signalled = 1;
 	}
+
+	return 0;
 }
 
-static void
+static int
 wl_connection_queue(struct wl_connection *connection,
 		    const void *data, size_t count)
 {
 	if (connection->out.head - connection->out.tail +
 	    count > ARRAY_LENGTH(connection->out.data))
-		wl_connection_data(connection, WL_CONNECTION_WRITABLE);
+		if (wl_connection_data(connection, WL_CONNECTION_WRITABLE))
+			return -1;
 
 	wl_buffer_put(&connection->out, data, count);
+
+	return 0;
 }
 
 static int
@@ -734,22 +741,24 @@ wl_closure_invoke(struct wl_closure *closure,
 	ffi_call(&closure->cif, func, &result, closure->args);
 }
 
-void
+int
 wl_closure_send(struct wl_closure *closure, struct wl_connection *connection)
 {
 	uint32_t size;
 
 	size = closure->start[1] >> 16;
-	wl_connection_write(connection, closure->start, size);
+
+	return wl_connection_write(connection, closure->start, size);
 }
 
-void
+int
 wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection)
 {
 	uint32_t size;
 
 	size = closure->start[1] >> 16;
-	wl_connection_queue(connection, closure->start, size);
+
+	return wl_connection_queue(connection, closure->start, size);
 }
 
 void

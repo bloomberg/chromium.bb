@@ -203,7 +203,10 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 		abort();
 	}
 
-	wl_closure_send(closure, proxy->display->connection);
+	if (wl_closure_send(closure, proxy->display->connection)) {
+		fprintf(stderr, "Error sending request: %m\n");
+		abort();
+	}
 
 	if (wl_debug)
 		wl_closure_print(closure, &proxy->object, true);

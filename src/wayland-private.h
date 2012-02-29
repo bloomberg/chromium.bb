@@ -65,7 +65,7 @@ void wl_connection_destroy(struct wl_connection *connection);
 void wl_connection_copy(struct wl_connection *connection, void *data, size_t size);
 void wl_connection_consume(struct wl_connection *connection, size_t size);
 int wl_connection_data(struct wl_connection *connection, uint32_t mask);
-void wl_connection_write(struct wl_connection *connection, const void *data, size_t count);
+int wl_connection_write(struct wl_connection *connection, const void *data, size_t count);
 
 struct wl_closure *
 wl_connection_vmarshal(struct wl_connection *connection,
@@ -81,9 +81,9 @@ wl_connection_demarshal(struct wl_connection *connection,
 void
 wl_closure_invoke(struct wl_closure *closure,
 		  struct wl_object *target, void (*func)(void), void *data);
-void
+int
 wl_closure_send(struct wl_closure *closure, struct wl_connection *connection);
-void
+int
 wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection);
 void
 wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send);
