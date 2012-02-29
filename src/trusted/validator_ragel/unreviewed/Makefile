@@ -238,42 +238,42 @@ check-decoder: outdirs $(BINUTILS_STAMP) $(OBJD)/one-instruction-x86_32.dot \
 	  --nthreads=`cat /proc/cpuinfo | grep processor | wc -l` -- \
 	  "$(OUT)/test/test_dfa-x86_64" "$(FAST_TMP_FOR_TEST)"
 
-# The list of tests having both .hex and .rval files, acquired by
-# scanning native_client/src/trusted/validator_x86/testdata/64/.
-# TODO(pasko): automate the process of scanning
-HEX_TESTS=3DNow add_cs_gs_prefix add_mult_prefix addrex addrex2 add_rsp_r15 \
-    AhNotSubRsp ambig-segment bad66 bsf-mask bsr-mask bt call_aligned call-ex \
-    call_not_aligned call_not_aligned_16 change-subregs cmpxchg cpuid \
-    data66prefix direct-call-16 direct-call-32 direct-cond-jump-16 \
-    direct-cond-jump-32 direct-jump-16 direct-jump-32 dup-prefix extensions \
-    fpu fs_use hlt inc67 incno67 indirect_jmp_masked indirect_jmp_not_masked \
-    invalid_base invalid_base_store invalid_width_index jmp-16 jump_atomic \
-    jump_outside lea lea-add-rsp lea-rsp legacy maskmov_test mmx \
-    mov-esi-nop-use mov_esp_add_rsp_r15 mov-lea-rbp mov-lea-rbp-bad-1 \
-    mov-lea-rbp-bad-2 mov-lea-rbp-bad-3 mov-lea-rbp-bad-4 mov-lea-rbp-bad-5 \
-    mov-lea-rsp movlps-ex mov_rbp_2_rsp movsbw movs_test mv_ebp_add_rbp_r15 \
-    mv_ebp_alone nacl_illegal nops pop-rbp prefix-2 prefix-3 prefix-single \
-    push-memoff rbp67 rdmsr read_const_ptr rep_tests rex_invalid rex_not_last \
-    rip67 rip-relative segment_assign segment_store sse stack_regs stosd \
-    stosd67 stosd-bad stosdno67 strings stubseq sub-add-rsp sub-rsp test_alias \
-    test_insts ud2 valid_and_store valid_base_only valid_lea_store wrmsr x87
+include ncval_tests.txt
 
 # Converts existing validator tests in testdata/64 and produces golden files
 # that can be used to compare with the DFA-based validator.
 .PHONY: convert-testdata
 convert-testdata:
 	ln -sfn ../../validator_x86/testdata
-	(for tst in $(HEX_TESTS); do \
+	(for tst in $(CONVERTIBLE_TESTS64); do \
 	  python parse_hex.py testdata/64/$$tst.rval ; \
 	done) || /bin/true
+	(for tst in $(CONVERTIBLE_TESTS32); do \
+	  python parse_hex.py testdata/32/$$tst.nval ; \
+	done) || /bin/true
 	mv testdata/64/*.val.ref golden/
+	mv testdata/32/*.val.ref golden/32
+
+CHECK_NCVAL_DEPS=outdirs $(BINUTILS_STAMP) $(OBJD)/validator-test \
+    $(OBJD)/decoder-test
 
 .PHONY: check-ncval
-check-ncval: outdirs $(BINUTILS_STAMP) $(OBJD)/validator-test \
-    $(OBJD)/decoder-test
+check-ncval: check-ncval32 check-ncval64
+
+.PHONY: check-ncval32
+check-ncval32: $(CHECK_NCVAL_DEPS)
+	$(MAKE) check-ncval-impl TEST_ARCH=x86-32
+
+.PHONY: check-ncval64
+check-ncval64: $(CHECK_NCVAL_DEPS)
+	$(MAKE) check-ncval-impl TEST_ARCH=x86-64
+
+.PHONY: check-ncval-impl
+check-ncval-impl:
 	ln -sfn ../../validator_x86/testdata
 	$(PYTHON2X) run_ncval_tests.py \
 	  --decoder="$(OBJD)/decoder-test" \
 	  --validator="$(OBJD)/validator-test" \
 	  --gas="$(GAS)" \
-	  --tmp="$(OUT)/test/"
+	  --tmp="$(OUT)/test/" \
+	  --arch="$(TEST_ARCH)"

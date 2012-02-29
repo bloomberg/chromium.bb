@@ -33,13 +33,13 @@ def WriteFile(filename, data):
 
 def ReadFile(filename):
   try:
-    file = open(filename, 'r')
+    f = open(filename, 'r')
   except IOError, e:
     print >> sys.stderr, ('Error reading file %s: %s' %
                           (filename, e.strerror))
     return None
-  contents = file.read()
-  file.close()
+  contents = f.read()
+  f.close()
   return contents
 
 
@@ -189,11 +189,12 @@ class InstByteSequence:
 class TestRunner:
   """Knows about naming tests, files, placement of golden files, etc."""
 
-  def __init__(self, tmpdir, gas, decoder, validator):
+  def __init__(self, tmpdir, gas, decoder, validator, bits):
     self.tmp = tmpdir
     self.gas = gas
     self.decoder = decoder
     self.validator = validator
+    self.bits = bits
 
   def CheckDecoder(self, asm, hexfile):
     """Test if we are decoding correctly.
@@ -209,11 +210,11 @@ class TestRunner:
     Returns:
         True iff the test passes.
     """
-    basename = os.path.basename(hexfile[:-4])
+    basename = os.path.basename(hexfile[:-4]) + ('_%d' % self.bits)
     asmfile = os.path.join(self.tmp, basename + '.all.s')
     objfile = os.path.join(self.tmp, basename + '.o')
     WriteFile(asmfile, asm)
-    gas_cmd = [self.gas, asmfile, '-o', objfile]
+    gas_cmd = [self.gas, '--%d' % self.bits, asmfile, '-o', objfile]
     if subprocess.call(gas_cmd) != 0:
       PrintError('assembler failed to execute command: %s' % gas_cmd)
       return False
@@ -239,12 +240,14 @@ class TestRunner:
           error_offset: The offset of the first instruction that the validator
               rejected.
     """
-    asmfile = os.path.basename(hexfile[:-4]) + ('_part%03d.s' % run_id)
+    asmfile = (os.path.basename(hexfile[:-4]) +
+        ('_%d' % self.bits) + ('_part%03d.s' % run_id))
     asmfile = os.path.join(self.tmp, asmfile)
     WriteFile(asmfile, asm)
     basename = asmfile[:-2]
     objfile = basename + '.o'
-    if subprocess.call([self.gas, asmfile, '-o', objfile]) != 0:
+    gas_cmd = [self.gas, '--%d' % self.bits, asmfile, '-o', objfile]
+    if subprocess.call(gas_cmd) != 0:
       return (False, None)
     validator_process = subprocess.Popen([self.validator, objfile],
                                          stdout=subprocess.PIPE)
@@ -275,8 +278,10 @@ class TestRunner:
       for msg in msg_list:
         output += 'offset 0x%x: %s\n' % (off, msg)
     basename = os.path.basename(hexfile[:-4])
-    output_file = os.path.join(self.tmp , basename + '.val.out')
+    output_file = os.path.join(self.tmp , basename + '_%d.val.out' % self.bits)
     WriteFile(output_file, output)
+    if self.bits == 32:
+      basename = os.path.join('32', basename)
     golden_file = os.path.join('golden', basename + '.val.ref')
     golden = ReadFile(golden_file)
     if output == golden:
@@ -301,7 +306,10 @@ class TestRunner:
     Returns:
         True iff the test passes.
     """
-    hexfile = 'testdata/64/%s.hex' % test
+    if self.bits == 64:
+      hexfile = 'testdata/64/%s.hex' % test
+    else:
+      hexfile = 'testdata/32/%s.hex' % test
     if not os.path.exists(hexfile):
       PrintError('%s: no such file' % hexfile)
       return False
@@ -362,65 +370,46 @@ class TestRunner:
     return True
 
 
+def GetTestsForArch(list_file, bits):
+  """Extract the list of test from the given file according to architecture.
+  Args:
+      list_file: path to file containing test lists in the form of key=value
+      bits: an integer either 32 or 64
+  Returns:
+      a list of strings, where each element is a test name
+  """
+  bits_str = str(bits)
+  ret = []
+  for line in open(list_file, 'r').readlines():
+    tests_m = re.match(r'^[^#a-zA-Z0-9_]*TESTS(32|64)\s*(\+?)=\s*([^#]+)',
+                       line.rstrip())
+    if not tests_m or tests_m.group(1) != bits_str:
+      continue
+    if tests_m.group(2) == '+':
+      ret += string.split(tests_m.group(3), ' ')
+    else:
+      ret = string.split(tests_m.group(3), ' ')
+  return ret
+
+
 def Main():
   parser = optparse.OptionParser()
-  parser.add_option(
-      '-t', '--tests', dest='tests',
-# new validator allows unaligned calls:
-#      default='call_not_aligned',
-#      default='call_not_aligned_16',
-# reports error on instruction that follows the xchg esp, ebp, replacing it does
-#   not help causing an infinite loop
-#      default='stack_regs',
-#      default='mov-lea-rbp-bad-1',
-#      default='mov-lea-rbp-bad-2',
-#      default='mov-lea-rbp-bad-3',
-#      default='mov-lea-rbp-bad-4',
-#      default='mv_ebp_alone',
-# the @ expansion is not yet parsed:
-#      default='call0',
-#      default='call1',
-#      default='call_long',
-#      default='call_short',
-#      default='jmp0',
-#      default='jump_not_atomic',
-#      default='jump_not_atomic_1',
-#      default='jump_overflow',
-#      default='jump_underflow',
-#      default='mv_ebp_add_crossing',
-#      default='return',
-#      default='segment_aligned',
-#      default='segment_not_aligned',
-#      default='update-rsp',
-# needs a tiny fix in old validator input file:
-#      default='legacy',
-# http://code.google.com/p/nativeclient/issues/detail?id=2529
-#      default='maskmov_test',
-# http://code.google.com/p/nativeclient/issues/detail?id=2603
-#      default='bsf-mask',
-#      default='bsr-mask',
-# http://code.google.com/p/nativeclient/issues/detail?id=2606
-#      default='extensions',
-# http://code.google.com/p/nativeclient/issues/detail?id=2607
-#      default='indirect_jmp_masked',
-#      default='jump_atomic',
-# super-instruction crosses boundary, small instruction does not:
-#      default='fpu',
-# have .hex, but not .rval:
-#      default='data66prefix,rdmsr,stubseq,test_alias,test_insts,wrmsr',
-# need more investigation:
-#      default='jump_outside,mmx,movs_test,prefix-2,prefix-single,strings,sse',
-# these tests pass:
-      default='3DNow,add_cs_gs_prefix,add_mult_prefix,addrex,AhNotSubRsp,bt,call_aligned,call-ex,cmpxchg,cpuid,dup-prefix,hlt,incno67,indirect_jmp_not_masked,invalid_base,invalid_base_store,invalid_width_index,jmp-16,lea,lea-add-rsp,lea-rsp,mov-esi-nop-use,mov_esp_add_rsp_r15,mov-lea-rbp,mov-lea-rsp,movlps-ex,mov_rbp_2_rsp,movsbw,mv_ebp_add_rbp_r15,nops,pop-rbp,prefix-3,push-memoff,rbp67,read_const_ptr,rep_tests,rex_invalid,rex_not_last,rip-relative,segment_assign,stosd,stosd67,stosd-bad,stosdno67,sub-add-rsp,sub-rsp,ud2,valid_and_store,valid_base_only,valid_lea_store,x87,add_rsp_r15,addrex2,ambig-segment,bad66,fs_use,inc67,mov-lea-rbp-bad-5,nacl_illegal,rip67,segment_store,change-subregs,ambig-segment',
-      help='a comma-separated list of tests')
   parser.add_option(
       '-a', '--gas', dest='gas',
       default=None,
       help='path to assembler')
   parser.add_option(
+      '-c', '--arch', dest='arch',
+      default='x86-64',
+      help='x86-32 or x86-64')
+  parser.add_option(
       '-d', '--decoder', dest='decoder',
       default=None,
       help='path to decoder')
+  parser.add_option(
+      '-l', '--test_list', dest='test_lst_file',
+      default='ncval_tests.txt',
+      help='a file describing two lists of tests: for x86-32 and x86-64')
   parser.add_option(
       '-v', '--validator', dest='validator',
       default=None,
@@ -436,9 +425,16 @@ def Main():
       not opt.decoder or
       not opt.validator):
     parser.error('invalid arguments')
+  if opt.arch == 'x86-64':
+    bits = 64
+  elif opt.arch == 'x86-32':
+    bits = 32
+  else:
+    parser.error('invalid --arch value')
   no_failures = True
-  tester = TestRunner(opt.tmp, opt.gas, opt.decoder, opt.validator)
-  for tst in string.split(opt.tests, ','):
+  tester = TestRunner(opt.tmp, opt.gas, opt.decoder, opt.validator, bits)
+  tests = GetTestsForArch(opt.test_lst_file, bits)
+  for tst in tests:
     if tester.RunTest(tst):
       print '%s: PASS' % tst
     else:
