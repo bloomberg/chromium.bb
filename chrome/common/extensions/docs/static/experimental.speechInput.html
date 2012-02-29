@@ -107,6 +107,6 @@ function recognitionSucceeded(result) {
 }
 
 chrome.experimental.speechInput.onError.addListener(recognitionFailed);
-chrome.experimental.speechInput.onResult.addListener(recognitionSucceded);
+chrome.experimental.speechInput.onResult.addListener(recognitionSucceeded);
 chrome.experimental.speechInput.start({ "language": "en" }, checkStart);
 </pre>
