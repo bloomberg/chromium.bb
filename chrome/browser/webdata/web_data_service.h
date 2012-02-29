@@ -395,7 +395,8 @@ class WebDataService
   // Adds a default web intent service entry.
   void AddDefaultWebIntentService(const DefaultWebIntentService& service);
 
-  // Adds a default web intent service entry.
+  // Removes a default web intent service entry. Removes entries matching
+  // the |action|, |type|, and |url_pattern| of |service|.
   void RemoveDefaultWebIntentService(const DefaultWebIntentService& service);
 
   // Get a list of all web intent service defaults for the given |action|.

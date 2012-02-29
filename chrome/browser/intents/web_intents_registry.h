@@ -14,6 +14,8 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "webkit/glue/web_intent_service_data.h"
 
+struct DefaultWebIntentService;
+
 // Handles storing and retrieving of web intents services in the web database.
 // The registry provides filtering logic to retrieve specific types of services.
 class WebIntentsRegistry
@@ -34,6 +36,13 @@ class WebIntentsRegistry
     virtual void OnIntentsQueryDone(
         QueryID query_id,
         const IntentServiceList& services) = 0;
+
+    // Notifies the observer that a request for intents default service
+    // has been completed. If no default is found, the |default_service|
+    // service_url field will be empty.
+    virtual void OnIntentsDefaultsQueryDone(
+        QueryID query_id,
+        const DefaultWebIntentService& default_service) = 0;
 
    protected:
     virtual ~Consumer() {}
@@ -68,6 +77,22 @@ class WebIntentsRegistry
       const webkit_glue::WebIntentServiceData& service,
       const base::Callback<void(bool)>& callback);
 
+  // Record the given default service entry.
+  virtual void RegisterDefaultIntentService(
+      const DefaultWebIntentService& default_service);
+
+  // Delete the given default service entry. Deletes entries matching
+  // the |action|, |type|, and |url_pattern| of |default_service|.
+  virtual void UnregisterDefaultIntentService(
+      const DefaultWebIntentService& default_service);
+
+  // Requests the best default intent service for the given invocation
+  // parameters.
+  QueryID GetDefaultIntentService(const string16& action,
+                                  const string16& type,
+                                  const GURL& invoking_url,
+                                  Consumer* consumer);
+
  protected:
   // Make sure that only WebIntentsRegistryFactory can create an instance of
   // WebIntentsRegistry.
@@ -79,6 +104,8 @@ class WebIntentsRegistry
   virtual ~WebIntentsRegistry();
 
  private:
+   const Extension* ExtensionForURL(const std::string& url);
+
    struct IntentsQuery;
 
   // Maps web data requests to intents queries.
@@ -89,6 +116,11 @@ class WebIntentsRegistry
   virtual void OnWebDataServiceRequestDone(
       WebDataService::Handle h,
       const WDTypedResult* result) OVERRIDE;
+
+  // Delegate for defaults requests from OnWebDataServiceRequestDone.
+  virtual void OnWebDataServiceDefaultsRequestDone(
+      WebDataService::Handle h,
+      const WDTypedResult* result);
 
   // Map for all in-flight web data requests/intent queries.
   QueryMap queries_;

@@ -6,7 +6,10 @@
 
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/extensions/extension_set.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 
 namespace {
@@ -44,6 +47,24 @@ struct WebIntentsRegistry::IntentsQuery {
   // The MIME type that was requested for this service query.
   // Suppports wild cards.
   string16 type_;
+
+  // The url of the invoking page.
+  GURL url_;
+
+  // Create a new IntentsQuery for services with the specified action/type.
+  IntentsQuery(QueryID id, Consumer* consumer,
+               const string16& action, const string16& type)
+      : query_id_(id), consumer_(consumer), action_(action), type_(type) {}
+
+  // Create a new IntentsQuery for all intent services or for existence checks.
+  IntentsQuery(QueryID id, Consumer* consumer)
+      : query_id_(id), consumer_(consumer), type_(ASCIIToUTF16("*")) {}
+
+  // Create a new IntentsQuery for default services.
+  IntentsQuery(QueryID id, Consumer* consumer,
+               const string16& action, const string16& type, const GURL& url)
+      : query_id_(id), consumer_(consumer),
+        action_(action), type_(type), url_(url) {}
 };
 
 WebIntentsRegistry::WebIntentsRegistry() : next_query_id_(0) {}
@@ -67,6 +88,10 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
     WebDataService::Handle h,
     const WDTypedResult* result) {
   DCHECK(result);
+  if (result->GetType() == WEB_INTENTS_DEFAULTS_RESULT) {
+    OnWebDataServiceDefaultsRequestDone(h, result);
+    return;
+  }
   DCHECK(result->GetType() == WEB_INTENTS_RESULT);
 
   QueryMap::iterator it = queries_.find(h);
@@ -109,16 +134,74 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   delete query;
 }
 
+const Extension* WebIntentsRegistry::ExtensionForURL(const std::string& url) {
+  const ExtensionSet* extensions = extension_service_->extensions();
+  if (!extensions)
+    return NULL;
+
+  // Use the unsafe ExtensionURLInfo constructor: we don't care if the extension
+  // is running or not.
+  GURL gurl(url);
+  ExtensionURLInfo info(gurl);
+  return extensions->GetExtensionOrAppByURL(info);
+}
+
+void WebIntentsRegistry::OnWebDataServiceDefaultsRequestDone(
+    WebDataService::Handle h,
+    const WDTypedResult* result) {
+  QueryMap::iterator it = queries_.find(h);
+  DCHECK(it != queries_.end());
+
+  IntentsQuery* query(it->second);
+  DCHECK(query);
+  queries_.erase(it);
+
+  std::vector<DefaultWebIntentService> services = static_cast<
+      const WDResult<std::vector<DefaultWebIntentService> >*>(result)->
+          GetValue();
+
+  DefaultWebIntentService default_service;
+  std::vector<DefaultWebIntentService>::iterator iter(services.begin());
+  for (; iter != services.end(); ++iter) {
+    if (!MimeTypesAreEqual(iter->type, query->type_)) {
+      continue;
+    }
+    if (!iter->url_pattern.MatchesURL(query->url_)) {
+      continue;
+    }
+    const Extension* extension = ExtensionForURL(iter->service_url);
+    if (extension != NULL &&
+        !extension_service_->IsExtensionEnabled(extension->id())) {
+      continue;
+    }
+
+    // Found a match. If it is better than default_service, use it.
+    // Currently the metric is that if the new value is user-set,
+    // prefer it. If the present value is suppressed, prefer it.
+    // If the new value has a more specific pattern, prefer it.
+    if (default_service.user_date <= 0 && iter->user_date >= 0)
+      default_service = *iter;
+    else if (default_service.suppression > 0 && iter->suppression <= 0)
+      default_service = *iter;
+    else if (default_service.url_pattern.match_all_urls() &&
+             !iter->url_pattern.match_all_urls())
+      default_service = *iter;
+    else if (iter->url_pattern < default_service.url_pattern)
+      default_service = *iter;
+  }
+
+  query->consumer_->OnIntentsDefaultsQueryDone(query->query_id_,
+                                               default_service);
+  delete query;
+}
+
 WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentServices(
     const string16& action, const string16& mimetype, Consumer* consumer) {
   DCHECK(consumer);
   DCHECK(wds_.get());
 
-  IntentsQuery* query = new IntentsQuery;
-  query->query_id_ = next_query_id_++;
-  query->consumer_ = consumer;
-  query->action_ = action;
-  query->type_ = mimetype;
+  IntentsQuery* query =
+      new IntentsQuery(next_query_id_++, consumer, action, mimetype);
   query->pending_query_ = wds_->GetWebIntentServices(action, this);
   queries_[query->pending_query_] = query;
 
@@ -130,10 +213,7 @@ WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentServices(
   DCHECK(consumer);
   DCHECK(wds_.get());
 
-  IntentsQuery* query = new IntentsQuery;
-  query->query_id_ = next_query_id_++;
-  query->consumer_ = consumer;
-  query->type_ = ASCIIToUTF16("*");
+  IntentsQuery* query = new IntentsQuery(next_query_id_++, consumer);
   query->pending_query_ = wds_->GetAllWebIntentServices(this);
   queries_[query->pending_query_] = query;
 
@@ -168,6 +248,10 @@ class ServiceCheckConsumer : public WebIntentsRegistry::Consumer {
     callback_.Run(false);
   }
 
+  virtual void OnIntentsDefaultsQueryDone(
+      WebIntentsRegistry::QueryID query_id,
+      const DefaultWebIntentService& default_service) {}
+
  private:
   base::Callback<void(bool)> callback_;
   WebIntentServiceData service_;
@@ -176,12 +260,36 @@ class ServiceCheckConsumer : public WebIntentsRegistry::Consumer {
 WebIntentsRegistry::QueryID WebIntentsRegistry::IntentServiceExists(
     const WebIntentServiceData& service,
     const base::Callback<void(bool)>& callback) {
-  IntentsQuery* query = new IntentsQuery;
-  query->query_id_ = next_query_id_++;
-  query->type_ = ASCIIToUTF16("*");
-  query->consumer_ = new ServiceCheckConsumer(service, callback);
+  IntentsQuery* query = new IntentsQuery(
+      next_query_id_++, new ServiceCheckConsumer(service, callback));
   query->pending_query_ = wds_->GetWebIntentServicesForURL(
       UTF8ToUTF16(service.service_url.spec()), this);
+  queries_[query->pending_query_] = query;
+
+  return query->query_id_;
+}
+
+void WebIntentsRegistry::RegisterDefaultIntentService(
+    const DefaultWebIntentService& default_service) {
+  DCHECK(wds_.get());
+  wds_->AddDefaultWebIntentService(default_service);
+}
+
+void WebIntentsRegistry::UnregisterDefaultIntentService(
+    const DefaultWebIntentService& default_service) {
+  DCHECK(wds_.get());
+  wds_->RemoveDefaultWebIntentService(default_service);
+}
+
+WebIntentsRegistry::QueryID WebIntentsRegistry::GetDefaultIntentService(
+    const string16& action,
+    const string16& type,
+    const GURL& invoking_url,
+    Consumer* consumer) {
+  IntentsQuery* query =
+      new IntentsQuery(next_query_id_++, consumer, action, type, invoking_url);
+  query->pending_query_ =
+      wds_->GetDefaultWebIntentServicesForAction(action, this);
   queries_[query->pending_query_] = query;
 
   return query->query_id_;

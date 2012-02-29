@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 
 WebIntentsTreeNode::WebIntentsTreeNode()
@@ -152,6 +153,11 @@ void WebIntentsModel::OnIntentsQueryDone(
   }
 
   NotifyObserverEndBatch();
+}
+
+void WebIntentsModel::OnIntentsDefaultsQueryDone(
+    WebIntentsRegistry::QueryID query_id,
+    const DefaultWebIntentService& default_service) {
 }
 
 void WebIntentsModel::NotifyObserverBeginBatch() {

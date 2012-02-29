@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "ui/base/models/tree_node_model.h"
 
 class WebIntentsRegistry;
+struct DefaultWebIntentService;
 
 // The tree structure is a TYPE_ROOT node with title="",
 // children are TYPE_ORIGIN nodes with title=origin, whose
@@ -104,6 +105,10 @@ class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode>,
   virtual void OnIntentsQueryDone(
       WebIntentsRegistry::QueryID query_id,
       const std::vector<webkit_glue::WebIntentServiceData>& services) OVERRIDE;
+
+  virtual void OnIntentsDefaultsQueryDone(
+      WebIntentsRegistry::QueryID query_id,
+      const DefaultWebIntentService& default_service) OVERRIDE;
 
  private:
   // Loads the data model from the WebIntentsRegistry.

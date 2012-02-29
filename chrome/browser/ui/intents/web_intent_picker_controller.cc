@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/intents/cws_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -287,6 +288,11 @@ void WebIntentPickerController::OnIntentsQueryDone(
   }
 
   AsyncOperationFinished();
+}
+
+void WebIntentPickerController::OnIntentsDefaultsQueryDone(
+    WebIntentsRegistry::QueryID,
+    const DefaultWebIntentService& default_service) {
 }
 
 void WebIntentPickerController::OnFaviconDataAvailable(

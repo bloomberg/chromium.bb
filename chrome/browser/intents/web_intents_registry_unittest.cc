@@ -9,6 +9,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -127,6 +128,16 @@ class TestConsumer: public WebIntentsRegistry::Consumer {
      MessageLoop::current()->Quit();
    }
 
+   virtual void OnIntentsDefaultsQueryDone(
+       WebIntentsRegistry::QueryID id,
+       const DefaultWebIntentService& default_service) {
+     DCHECK(id == expected_id_);
+     default_ = default_service;
+
+     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+     MessageLoop::current()->Quit();
+   }
+
    // Wait for the UI message loop to terminate - happens when OnIntesQueryDone
    // is invoked.
    void WaitForData() {
@@ -139,6 +150,9 @@ class TestConsumer: public WebIntentsRegistry::Consumer {
 
    // Result data from callback.
    std::vector<webkit_glue::WebIntentServiceData> services_;
+
+   // Result default data from callback.
+   DefaultWebIntentService default_;
 };
 
 TEST_F(WebIntentsRegistryTest, BasicTests) {
@@ -326,4 +340,58 @@ TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeMatching) {
   EXPECT_EQ(services[1], consumer.services_[1]);
   EXPECT_EQ(services[2], consumer.services_[2]);
   EXPECT_EQ(services[3], consumer.services_[3]);
+}
+
+TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
+  DefaultWebIntentService default_service;
+  default_service.action = ASCIIToUTF16("share");
+  default_service.type = ASCIIToUTF16("type/*");
+  // Values here are just dummies to test for preservation.
+  default_service.user_date = 1;
+  default_service.suppression = 4;
+  default_service.service_url = "service_url";
+  registry_.RegisterDefaultIntentService(default_service);
+
+  TestConsumer consumer;
+
+  // Test we can retrieve default entries by action.
+  consumer.expected_id_ = registry_.GetDefaultIntentService(
+      ASCIIToUTF16("share"),
+      ASCIIToUTF16("type/plain"),
+      GURL("http://www.google.com/"),
+      &consumer);
+
+  consumer.WaitForData();
+
+  EXPECT_EQ("service_url", consumer.default_.service_url);
+  EXPECT_EQ(1, consumer.default_.user_date);
+  EXPECT_EQ(4, consumer.default_.suppression);
+
+  // Test that no action match means we don't retrieve any
+  // default entries.
+  consumer.default_ = DefaultWebIntentService();
+  ASSERT_EQ("", consumer.default_.service_url);
+  consumer.expected_id_ = registry_.GetDefaultIntentService(
+      ASCIIToUTF16("no-share"),
+      ASCIIToUTF16("type/plain"),
+      GURL("http://www.google.com/"),
+      &consumer);
+
+  consumer.WaitForData();
+
+  EXPECT_EQ("", consumer.default_.service_url);
+
+  // Test that no type match means we don't retrieve any
+  // default entries (they get filtered out).
+  consumer.default_ = DefaultWebIntentService();
+  ASSERT_EQ("", consumer.default_.service_url);
+  consumer.expected_id_ = registry_.GetDefaultIntentService(
+      ASCIIToUTF16("share"),
+      ASCIIToUTF16("notype/plain"),
+      GURL("http://www.google.com/"),
+      &consumer);
+
+  consumer.WaitForData();
+
+  EXPECT_EQ("", consumer.default_.service_url);
 }

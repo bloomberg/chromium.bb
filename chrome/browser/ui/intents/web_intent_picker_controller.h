@@ -22,6 +22,7 @@
 #include "webkit/glue/web_intent_reply_data.h"
 
 class Browser;
+struct DefaultWebIntentService;
 class GURL;
 class TabContentsWrapper;
 class WebIntentPicker;
@@ -91,6 +92,11 @@ class WebIntentPickerController : public content::NotificationObserver,
   virtual void OnIntentsQueryDone(
       WebIntentsRegistry::QueryID,
       const std::vector<webkit_glue::WebIntentServiceData>& services) OVERRIDE;
+
+  // Called when the WebIntentsRegistry returns responses to a defaults request.
+  virtual void OnIntentsDefaultsQueryDone(
+      WebIntentsRegistry::QueryID,
+      const DefaultWebIntentService& default_service) OVERRIDE;
 
   // Called when FaviconData is returned from the FaviconService.
   void OnFaviconDataAvailable(FaviconService::Handle handle,
