@@ -376,6 +376,16 @@ var util = {
   },
 
   /**
+   * Remove a file or a directory.
+   */
+  removeFileOrDirectory: function(entry, onSuccess, onError) {
+    if (entry.isDirectory)
+      entry.removeRecursively(onSuccess, onError);
+    else
+      entry.remove(onSuccess, onError);
+  },
+
+  /**
    * Lookup tables used by bytesToSi.
    */
   units_: ['B', 'KB', 'MB', 'GB', 'TB', 'PB'],

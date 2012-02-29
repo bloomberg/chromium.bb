@@ -13,18 +13,36 @@ var harness = {
 
     util.installFileErrorToString();
 
-    var self = this;
-
     function onFilesystem(filesystem) {
       console.log('Filesystem found.');
-      self.filesystem = filesystem;
-      util.getOrCreateDirectory(filesystem.root, '/Downloads', function () {});
-      util.getOrCreateDirectory(filesystem.root, '/removable', function () {});
-      util.getOrCreateDirectory(filesystem.root, '/removable/disk1',
-          function () {});
-      util.getOrCreateDirectory(filesystem.root, '/removable/disk2',
-          function () {});
+      harness.filesystem = filesystem;
+      chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
+        var roots = ['/Downloads', '/removable', '/archives'];
+        for (var i = 0; i != mountPoints.length; i++) {
+          roots.push(mountPoints[i].mountPath);
+        }
+        createRoots(roots);
+      });
+    }
 
+    function createRoots(roots) {
+      if (roots.length == 0) {
+        loadUI();
+        return;
+      }
+      var root = roots.shift();
+      util.getOrCreateDirectory(harness.filesystem.root, root,
+          function(dir) {
+            console.log('Created/found', dir.fullPath);
+            createRoots(roots);
+          },
+          function(err) {
+            console.log('Error creating ' + root + ':' + err.toString());
+            createRoots(roots);
+          });
+    }
+
+    function loadUI() {
       var iframe = document.getElementById('dialog');
       iframe.setAttribute('src', 'main.html' + document.location.search);
     }
@@ -71,16 +89,15 @@ var harness = {
    */
   onClearClick: function() {
     util.forEachDirEntry(this.filesystem.root, function(dirEntry) {
-      if (!dirEntry)
-        return console.log('Filesystem reset.');
-
-      console.log('Remove: ' + dirEntry.name);
-
-      if (dirEntry.isDirectory) {
-        dirEntry.removeRecursively();
-      } else {
-        dirEntry.remove();
+      if (!dirEntry) {
+        console.log('Filesystem reset.');
+        harness.init();
+        return;
       }
+      util.removeFileOrDirectory(
+          dirEntry,
+          util.flog('Removed ' + dirEntry.name),
+          util.flog('Error deleting ' + dirEntry.name));
     });
   },
 
@@ -118,14 +135,10 @@ var harness = {
     var currentDest = null;
     var importCount = 0;
 
-    var self = this;
-
     function onWriterCreated(writer) {
       writer.onerror = util.flog('Error writing: ' + currentDest.fullPath);
       writer.onwriteend = function() {
         console.log('Wrote: ' + currentDest.fullPath);
-        //console.log(writer);
-        //console.log(currentDest);
         ++importCount;
         processNextFile();
       };
@@ -152,7 +165,7 @@ var harness = {
       currentSrc = files.shift();
       var destPath = harness.fileManager.getCurrentDirectory() + '/' +
           currentSrc.name.replace(/\^\^/g, '/');
-      util.getOrCreateFile(self.filesystem.root, destPath, onFileFound,
+      util.getOrCreateFile(harness.filesystem.root, destPath, onFileFound,
                            util.flog('Error finding path: ' + destPath));
     }
 

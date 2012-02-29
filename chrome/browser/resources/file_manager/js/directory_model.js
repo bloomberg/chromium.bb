@@ -386,15 +386,10 @@ DirectoryModel.prototype = {
         onComplete();
       }.bind(null, entry);
 
-      if (entry.isFile) {
-        entry.remove(
-            onSuccess,
-            util.flog('Error deleting file: ' + entry.fullPath, onComplete));
-      } else {
-        entry.removeRecursively(
-            onSuccess,
-            util.flog('Error deleting folder: ' + entry.fullPath, onComplete));
-      }
+      util.removeFileOrDirectory(
+          entry,
+          onSuccess,
+          util.flog('Error deleting ' + entry.fullPath, onComplete));
     }
     onComplete();
   },

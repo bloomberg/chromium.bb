@@ -11,9 +11,11 @@ MockEventSource.prototype.addListener = function(listener) {
 };
 
 MockEventSource.prototype.notify = function(var_args) {
-  for (var i = 0; i != this.listeners_.length; i++) {
-    this.listeners_[i].apply(null, arguments);
-  }
+  setTimeout(function(args) {
+    for (var i = 0; i != this.listeners_.length; i++) {
+      this.listeners_[i].apply(null, args);
+    }
+  }.bind(this, arguments), 0);
 };
 
 /**
@@ -159,36 +161,103 @@ chrome.fileBrowserPrivate = {
    */
   onDiskChanged: new MockEventSource(),
 
+  mountPoints_: [
+    {
+      mountPath: '/removable/disk1-writeable',
+      type: 'device'
+    },
+    {
+      mountPath: '/removable/disk2-readonly',
+      type: 'device'
+    },
+    {
+      mountPath: '/removable/disk3-unsupported',
+      type: 'device',
+      mountCondition: 'unsupported_filesystem'
+    },
+    {
+      mountPath: '/removable/disk4-unknown',
+      type: 'device',
+      mountCondition: 'unknown_filesystem'
+    }
+  ],
+
+  fsPrefix_: 'filesystem:file:///persistent',
+
+  archiveCount_: 0,
+
+  getMountPoints: function(callback) {
+    callback([].concat(chrome.fileBrowserPrivate.mountPoints_));
+  },
+
+
   addMount: function(source, type, options) {
-    chrome.fileBrowserPrivate.onDiskChanged.notify({
-      eventType: 'added',
-      volumeInfo: {
-        devicePath: source,
-        type: type,
-        mountPath: '/'
-      }
+    chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
+      var path =
+          (type == 'gdata') ?
+          '/gdata' :
+          ('/archive/archive' + (++chrome.fileBrowserPrivate.archiveCount_));
+      util.getOrCreateDirectory(filesystem.root, path, function() {
+          chrome.fileBrowserPrivate.mountPoints_.push({
+            mountPath: path,
+            type: type
+          });
+          chrome.fileBrowserPrivate.onMountCompleted.notify({
+            eventType: 'mount',
+            status: 'success',
+            mountType: type,
+            authToken: 'dummy',
+            mountPath: path,
+            sourceUrl: source
+          });
+          console.log('Created a mock mount at ' + path);
+        },
+        util.flog('Error creating a mock mount at ' + path));
     });
   },
 
-  getMountPoints: function(callback) {
-    // This will work in harness.
-    var path = 'filesystem:file:///persistent/media';
-    callback([{mountPath: path, type: 'file'}]);
-  },
-
   removeMount: function(mountPoint) {
-    console.log('unmounted: ' + mountPoint);
-    chrome.fileBrowserPrivate.onDiskChanged.notify({
-      eventType: 'removed',
-      volumeInfo: {
-        devicePath: '',
-        type: '',
-        mountPath: mountPoint
+    for (var i = 0; i != chrome.fileBrowserPrivate.mountPoints_.length; i++) {
+      if (mountPoint == (chrome.fileBrowserPrivate.fsPrefix_ +
+          chrome.fileBrowserPrivate.mountPoints_[i].mountPath)) {
+        chrome.fileBrowserPrivate.mountPoints_.splice(i, 1);
+        break;
       }
+    }
+    function notify() {
+      chrome.fileBrowserPrivate.onMountCompleted.notify({
+        eventType: 'unmount',
+        status: 'success',
+        mountPoint: mountPoint,
+        sourceUrl: mountPoint
+      });
+    }
+    webkitResolveLocalFileSystemURL(mountPoint, function(entry) {
+      util.removeFileOrDirectory(entry,
+          util.flog('Deleted a mock mount at ' + entry.fullPath, notify),
+          util.flog('Error deleting a mock mount at' + entry.fullPath, notify));
     });
   },
 
   getSizeStats: function() {},
+
+  getVolumeMetadata: function(url, callback) {
+    var metadata = {};
+    function urlStartsWith(path) {
+      return url.indexOf(chrome.fileBrowserPrivate.fsPrefix_ + path) == 0;
+    }
+    if (urlStartsWith('/removable')) {
+      metadata.deviceType = 'usb';
+      if (urlStartsWith('/removable/disk2')) {
+        metadata.isReadOnly = true;
+      }
+    } else if (urlStartsWith('/gdata')) {
+      metadata.deviceType = 'network';
+    } else {
+      metadata.deviceType = 'file';
+    }
+    callback(metadata);
+  },
 
   /**
    * Return localized strings.
@@ -202,6 +271,9 @@ chrome.fileBrowserPrivate = {
       WEB_FONT_SIZE: '84%',
 
       FILE_IS_DIRECTORY: 'Folder',
+
+      GDATA_DIRECTORY_LABEL: 'GData',
+      ENABLE_GDATA: '1',
 
       ROOT_DIRECTORY_LABEL: 'Files',
       DOWNLOADS_DIRECTORY_LABEL: 'Downloads',

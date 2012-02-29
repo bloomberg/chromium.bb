@@ -121,7 +121,7 @@ FileCopyManager.prototype.getStatus = function() {
     completedItems: 0,  // Files + Directories
     completedFiles: 0,
     completedDirectories: 0,
-    completedBytes: 0,
+    completedBytes: 0
   };
 
   for (var i = 0; i < this.copyTasks_.length; i++) {
@@ -345,12 +345,8 @@ FileCopyManager.prototype.serviceNextTask_ = function(
     }
 
     for (var i = 0; i < task.originalEntries.length; i++) {
-      var entry = task.originalEntries[i];
-      if (entry.isDirectory) {
-        entry.removeRecursively(onEntryDeleted, onFilesystemError);
-      } else {
-        entry.remove(onEntryDeleted, onFilesystemError);
-      }
+      util.removeFileOrDirectory(
+          task.originalEntries[i], onEntryDeleted, onFilesystemError);
     }
   }
 

@@ -409,9 +409,6 @@ FileManager.prototype = {
                    str('SIZE_TB'),
                    str('SIZE_PB')];
 
-    if (str('ENABLE_GDATA') == '1')
-      this.initGData_();
-
     metrics.startInterval('Load.FileSystem');
 
     var self = this;
@@ -525,7 +522,9 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.onFileChanged.addListener(
         this.onFileChanged_.bind(this));
 
-    var self = this;
+    // We should initialize Gdata after we subscribed to onMountCompleted.
+    if (str('ENABLE_GDATA') == '1')
+      this.initGData_();
 
     // The list of callbacks to be invoked during the directory rescan after
     // all paste tasks are complete.
