@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="8000275528373650868">Google Chrome vajab operatsioonisüsteemi Windows Vista või Windows XP hoolduspaketiga SP2 või uuem.</translation>
+<translation id="8485767968786176057">Sel juhul ei ühti sertifikaadis olev aadress veebisaidi aadressiga, mida brauser avada üritas. Lahknevuse üks võimalik põhjus on asjaolu, et sidet häirib ründaja, kes esitab muu veebisaidi sertifikaadi. Teine võimalik põhjus on see, et server on seatud esitama sama sertifikaadi mitme veebisaidi, sealhulgas ka külastatava saidi kohta, kuigi sertifikaat ei kehti kõikide veebisaitide jaoks. Google Chrome võib kinnitada, et jõudsite aadressile &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, kuid ei saa tõendada, et see on sama sait mis &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mida proovisite avada. Jätkamisel ei otsi Chrome enam nimede lahknevusi.</translation>
 <translation id="5430073640787465221">Teie eelistuste fail on rikutud või kehtetu. Google Chrome ei saa teie seadeid taastada.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
 <translation id="5453904507266736060">Luba Google Chrome'i töötamine taustal</translation>
@@ -11,18 +12,24 @@
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
 <translation id="1065672644894730302">Teie eelistusi ei saa lugeda. Mõned funktsioonid ei pruugi saadaval olla ja eelistuste muudatusi ei salvestata.</translation>
 <translation id="7781002470561365167">Saadaval on uus Google Chrome'i versioon.</translation>
+<translation id="1484802885942301358">Google Chrome on ajakohane (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Käivitage Google Chrome</translation>
+<translation id="4738120821427858478">Teie muudatused jõustuvad järgmine kord, kui Google Chrome OS-i taaskäivitate.</translation>
 <translation id="4891791193823137474">Luba Google Chrome'i töötamine taustal</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome impordib nüüd lemmikud/järjehoidjad.</translation>
 <translation id="1761870329818521071">Töötava Google Chrome Frame'iga sama versiooni ei saa installida. Sulgege Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="2040709530900803995">Google Chrome'i renderdaja</translation>
+<translation id="3140883423282498090">Teie muudatused jõustuvad järgmine kord, kui avate Google Chrome'i.</translation>
+<translation id="1872436416934435136">Google Chrome'i ei värskendata enam, kuna teie operatsioonisüsteem on vananenud.</translation>
 <translation id="5339639696978861456">Chrome Frame on värskendatud. Taaskäivitage brauser. Chrome'i versioon: <ph name="TODO_0001"/>, Chrome Frame'i versioon: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Teenusetingimused</translation>
+<translation id="6862759394142635932">Kui sulgete praegu Google Chrome'i, siis tühistatakse allalaadimine.</translation>
 <translation id="1779550429052479749">Süsteemist leiti Google Chrome'i või Google Chrome Frame'i konfliktne install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="3555616473548901994">Desinstallimine on lõpetatud.</translation>
 <translation id="8556340503434111824">Saadaval on uus Google Chrome'i versioon ja see on senistest kiireim.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
+<translation id="4727256538826447736">Püüdsite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas aegunud sertifikaadi. Saadaval ei ole teavet, mis näitaks, kas sertifikaati on pärast aegumist rikutud. Seetõttu ei saa Google Chrome garanteerida, et suhtlete aadressiga &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mitte ründajaga.</translation>
 <translation id="3080151273017101988">Jätka taustal olevate rakenduste tööd, kui Google Chrome on suletud</translation>
 <translation id="4149882025268051530">Installijal ei õnnestunud arhiivi lahti pakkida. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="6989339256997917931">Google Chrome'i on värskendatud, aga te pole seda kasutanud vähemalt 30 päeva.</translation>
@@ -37,54 +44,63 @@
 <translation id="3487814320513494737">Chrome'i uut vahelehte on muudetud. Liikuge jaotiste vahel, klõpsates nendel siltidel. Chrome peab teie eelistused järgmine kord meeles.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome'i renderdaja</translation>
-<translation id="8446794773162156990">Google Chrome'i ei toimi korralikult</translation>
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Saadaval on uus ja turvalisem Google Chrome'i versioon.</translation>
 <translation id="5037239767309817516">Muudatuse rakendamiseks sulgege kõik Google Chrome'i aknad ja taaskäivitage Chrome.</translation>
 <translation id="7451721381978275812">Kehtetud argumendid. Google Chrome Frame'i ei saa valmisrežiimil installida ilma ka Google Chrome'i installimata.</translation>
+<translation id="5727432509906037972">Kas soovite Google Chrome'ist väljuda, kui allalaadimine on pooleli?</translation>
+<translation id="1367236238006776563">Laiendus „<ph name="EXTENSION_NAME"/>” on Chrome'i lisatud.</translation>
 <translation id="4585888816441913908">Selles arvutis on Google Chrome'i ja Google Chrome Frame'i uuem versioon. Kui tarkvara ei tööta, siis desinstallige nii Google Chrome kui ka Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="6368958679917195344">Chrome OS on võimalik tänu <ph name="BEGIN_LINK_CROS_OSS"/>avatud lähtekoodiga lisatarkvarale<ph name="END_LINK_CROS_OSS"/>.</translation>
-<translation id="4357846314885556934">Google Chrome'i ei toimi korralikult</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3215326788962391210">Püüdsite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas sertifikaadi, mille väljaandjat teie arvuti operatsioonisüsteem ei usalda. See võib tähendada, et server lõi ise turvamandaadid, mille identiteediteabele ei saa Google Chrome tugineda, või ründaja häirib teie sidet.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome ei sulgunud õigesti. Eelnevalt avatud lehekülgede uuesti avamiseks klõpsake &quot;Taasta&quot;.</translation>
+<translation id="2783467918276328046">Vaadake Chrome'i sisselogimise <ph name="BEGIN_LINK"/>muid eeliseid<ph name="END_LINK"/>.</translation>
 <translation id="2580411288591421699">Töötava Google Chrome'i versiooniga sama versiooni ei saa installida. Sulgege Google Chrome ja proovige uuesti.</translation>
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>
 <translation id="5170938038195470297">Teie profiili ei saa kasutada, kuna see pärineb Google Chrome'i uuemast versioonist.
 
 Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või kasutage Chrome'i uuemat versiooni.</translation>
-<translation id="6009537148180854585">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid serveri esitatud sert sisaldab vigu. Google Chrome ei saa kasutada vigadega serti ega kinnitada saidi identiteeti, millega proovisite ühendust luua. Teie ühendus pole turvaline ning te ei tohiks jätkata.</translation>
 <translation id="8738921060445980047">Tundmatu versioon.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="2748463065602559597">Vaatate turvalist Google Chrome'i lehte.</translation>
+<translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> on Chrome'i lisatud.</translation>
 <translation id="9073088951656332330">Ei leitud ühtegi Google Chrome'i ega Google Chrome Frame'i installi, mida värskendada.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Hoiatus:<ph name="END_BOLD"/> Google Chrome ei saa laiendustel teie sirvimisajaloo salvestamist takistada. Selle laienduse keelamiseks inkognito-režiimis tühistage see valik.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="3904146009066562368">Saadaval on Google Chrome'i uus versioon.</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="2044287590254833138">Google Chrome'i tööriistariba</translation>
 <translation id="5074344184765391290">Chrome'i Plug-In Host</translation>
-<translation id="6481075104394517441">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas veel mitte kehtiva serdi. Serdi usaldusväärsuse kohta andmed puuduvad. Google Chrome ei saa tagada, et teie suhtluspartneriks on &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ja mitte ründaja. Veenduge, et teie arvuti kellaaeg ja ajavöönd on õiged. Kui need pole õiged, parandage need ja värskendage seda lehekülge. Kui need on õiged, ei tohiks te jätkata.</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
 <translation id="595871952790078940">Chrome'i utiliit</translation>
 <translation id="2874156562296220396">Google Chrome'i on teinud võimalikuks avatud lähtekoodiga <ph name="BEGIN_LINK_CHROMIUM"/>Chromiumi<ph name="END_LINK_CHROMIUM"/> projekt ja muu <ph name="BEGIN_LINK_OSS"/>avatud lähtekoodiga tarkvara<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7855730255114109580">Google Chrome on ajakohane</translation>
 <translation id="3847841918622877581">Google Chrome võib teie sirvimiskogemuse täiustamiseks kasutada veebiteenuseid.</translation>
 <translation id="7436949144778751379">Google Chrome nõuab Windows XP-d või uuemat operatsioonisüsteemi. Mõned funktsioonid ei pruugi töötada.</translation>
-<translation id="7938170099933661772">Kui sisseehitatud PDF-vaataja on keelatud, ei saa Google Chrome printimise eelvaadet näidata. Eelvaate nägemiseks külastage aadressi <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, lubage „Chrome'i PDF-vaataja” ja proovige uuesti.</translation>
 <translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="2290095356545025170">Olete kindel, et soovite Google Chrome'i desinstallida?</translation>
+<translation id="4273752058983339720">Google Chrome on seadistatud arvuti käivitamisel automaatselt avanema.</translation>
+<translation id="1104959162601287462">Teave &amp;Chrome OS-i kohta</translation>
 <translation id="5941830788786076944">Tee Google Chrome vaikebrauseriks</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i abil helistada!</translation>
 <translation id="3612333635265770873">Samanimeline moodul on teadaolevalt Google Chrome'iga vastuolus.</translation>
-<translation id="2679385451463308372">Prindi süsteemidialoogi abil ...</translation>
+<translation id="61852838583753520">Värskenda &amp;Chrome OS-i</translation>
 <translation id="6650142020817594541">Sait soovitab Google Chrome Frame'i (on juba installitud).</translation>
-<translation id="4127951844153999091">Sellisel juhul ei kattu serdis kirjas olev aadress veebisaidi aadressiga, millele teie brauser minna üritas. Üks võimalik põhjus võib olla ründajas, kes teie suhtlust ümber suunab, esitades muu veebisaidi serti, mis võib põhjustada nimetatud erinemist. Teine võimalik põhjus on, et server on seatud sama serdi saatmisele mitme erineva veebisaidi puhul, sealhulgas veebisaidi puhul, mida te üritate külastada, isegi kui see sert ei ole kõikide nende veebisaitide puhul kehtiv. Google Chrome oskab kindlasti öelda, et te jõudsite lehele &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, kuid ei suuda kinnitada, et see on sama leht kui &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuhu te kavatsesite jõuda. Jätkamise korral ei kontrolli Chrome enam järgnevaid nimede mittekattumisi. Üldiselt on parem sellest punktist mitte edasi minna.</translation>
+<translation id="4535984553437295350">Värskendamise lõpuleviimiseks taaskäivitage Google Chrome</translation>
 <translation id="2712549016134575851">Tuvastatud on konflikt teise installitud rakendusega.</translation>
 <translation id="5577648424992741236">Selles arvutis on juba Google Chrome Frame'i uuem versioon. Kui tarkvara ei tööta, desinstallige Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="7018032895891496381">Google Chrome kasutab teie vaikeotsingumootorit, mis praegu on <ph name="PAGE_TITLE"/>. Soovite jätkata sama vaikeotsingumootori kasutamist?</translation>
+<translation id="6326175484149238433">Eemalda Chrome'ist</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="870251953148363156">Värskenda &amp;Google Chrome'i</translation>
+<translation id="147599965395609989">Google Chrome on värskendatud</translation>
 <translation id="1399397803214730675">Selles arvutis on juba Google Chrome'i uuem versioon. Kui tarkvara ei tööta, desinstallige Google Chrome ja proovige uuesti.</translation>
+<translation id="2827900704927383772">Kas soovite Google Chrome'ist väljuda, kui <ph name="DOWNLOAD_COUNT"/> allalaadimist on pooleli?</translation>
 <translation id="3444832043240812445">Lehel näidatakse vaid teavet hiljutiste krahhide kohta, kui olete <ph name="BEGIN_LINK"/>krahhide aruandluse lubanud<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ei reageeri. Kas soovite kohe taaskäivitada?</translation>
 <translation id="5318056482164160049">Google Chrome'i pistikprogrammi host</translation>
@@ -92,6 +108,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="5046764976540625289">Välju Chrome'ist</translation>
 <translation id="2925521875688282191">Muudatuse rakendamiseks logige Chrome OS-ist välja ja uuesti sisse.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
+<translation id="2680623880102270805">Google Chrome ei saa luua rakenduse otseteed, kuna praegust töölauakeskkonda ei saa määratleda.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=et<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Interneti-brauser</translation>
 <translation id="2189123953385179981">Google ChromeOS ei toeta väliste rakenduste käivitamist, et hallata rakenduse <ph name="SCHEME"/> linke. Soovitud link on <ph name="PROTOLINK"/>.</translation>
@@ -101,10 +118,15 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="2769762047821873045">Google Chrome ei ole vaikebrauser.</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
 <translation id="3335672657969596251">Google Chrome ei toeta <ph name="OS_NAME"/>.</translation>
+<translation id="2666187591945638709">Google Chrome on värskendatud versioonile <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Sel moodulil on teadaolev vastuolu Google Chrome'iga.</translation>
+<translation id="4892299120052124303">Kui sulgete praegu Google Chrome'i, siis tühistatakse need allalaadimised.</translation>
+<translation id="2084710999043359739">Chrome'i lisamine</translation>
 <translation id="4084877369264707540">Google Chrome Frame on juba installitud ja kõigile arvuti kasutajatele saadaval. Kui soovite installida Google Chrome Frame'i kasutaja tasemel, siis tuleb kõigepealt desinstallida süsteemi tasemel versioon, mille installis administraator.</translation>
 <translation id="3360895254066713204">Chrome'i abistaja</translation>
+<translation id="3451115285585441894">Chrome'i lisamine ...</translation>
 <translation id="1001534784610492198">Installija arhiiv on rikutud või kehtetu. Palun laadige Google Chrome uuesti alla.</translation>
+<translation id="2246246234298806438">Google Chrome ei saa kuvada printimise eelvaadet, kui sisseehitatud PDF-vaatur puudub.</translation>
 <translation id="6626317981028933585">Kahjuks pole teie Mozilla Firefoxi seaded saadaval samal ajal kui brauser töötab. Nende seadete Google Chrome'i importimiseks salvestage oma töö ja sulgege kõik Firefoxi aknad. Siis klõpsake Jätka.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">Google Chrome on veebibrauser, mis käitab veebilehti ja rakendusi välgukiirusel. See on kiire, töökindel ja lihtsalt kasutatav. Veebi sirvimine on turvalisem tänu Google Chrome'i sisseehitatud pahavara- ja andmepüügivastasele kaitsele.</translation>
@@ -112,12 +134,14 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="3336524238463733095">Google Chrome'i või Google Chrome Frame'i saa värskendada, kuna Google'i värskenduse grupireeglite seadetes on lahknevus. Seadke grupireeglite redigeerija abil rakenduse Google Chrome Binaries värskendusreeglite alistus ja proovige uuesti. Vaadake üksikasju aadressilt http://goo.gl/uJ9gV.</translation>
 <translation id="6049075767726609708">Administraator on installinud Google Chrome'i sellesse süsteemi ja see on saadaval kõigile kasutajatele. Süsteemitasandi Google Chrome asendab nüüd teie kasutajatasandi installi.</translation>
 <translation id="7123348595797445166">Proovi seda (juba installitud)</translation>
+<translation id="4338032231047635328">Püüdsite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid serveri esitatud sertifikaat sisaldab vigu. Google Chrome ei saa kasutada vigadega sertifikaati ega saa kinnitada soovitud saidi identiteeti.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="9189723490960700326">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas aegunud serdi. Puuduvad andmed serdi turvalisuse ohustamise kohta pärast selle aegumist. Google Chrome ei suuda usaldusväärselt tagada, et teie suhtluspartneriks on &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ja mitte ründaja. Te ei tohiks jätkata.</translation>
+<translation id="1847321074516120686">Chrome'i automaatse täitmise seaded</translation>
 <translation id="7106741999175697885">Tegumihaldur - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome impordib asukohast <ph name="BROWSER_COMPONENT"/> järgnevat:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Installimisel ilmnes operatsioonisüsteemi viga. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="5495581687705680288">Google Chrome'i laaditud moodulid</translation>
-<translation id="1144950271450340860">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas serdi, mille väljaandjat teie arvuti operatsioonisüsteem ei usalda. See võib tähendada, et server on loonud oma turvatunnused, millele Google Chrome ei saa identiteediandmete puhul toetuda, või ründaja võib üritada teie suhtlust suunata. Te ei tohiks jätkata, &lt;strong&gt;eriti&lt;/strong&gt;, kui te pole seda hoiatust selle saidi puhul varem näinud.</translation>
+<translation id="4086010630946365132">Püüdsite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid serveri esitatud sertifikaat ei kehti veel. Saadaval ei ole teavet, mis näitaks, et sertifikaati võib usaldada. Google Chrome ei saa garanteerida, et suhtlete saidiga &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mitte ründajaga. Veenduge, et teie arvuti kell ja ajavöönd on õiged. Vastasel korral lahendage probleemid ja värskendage lehte.</translation>
+<translation id="8129812357326543296">Teave &amp;Google Chrome'i kohta</translation>
 </translationbundle>

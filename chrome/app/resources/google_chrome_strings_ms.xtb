@@ -1,4 +1,142 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="8000275528373650868">Google Chrome memerlukan Windows Vista atau Windows XP dengan SP2 atau lebih tinggi.</translation>
+<translation id="8485767968786176057">Dalam kes ini, alamat yang disenaraikan dalam sijil tidak sepadan dengan alamat tapak web yang penyemak imbas anda cuba lawati. Satu kemungkinan sebabnya ialah komunikasi anda dipintas oleh penyerang yang memberikan sijil untuk tapak web yang berbeza, yang akan menyebabkan ketakserasian. Sebab lain yang mungkin ialah pelayan disediakan untuk mengembalikan sijil yang sama untuk berbilang tapak web, termasuk yang anda cuba lawati, walaupun sijil tersebut tidak sah untuk semua tapak web tersebut. Google Chrome boleh menjamin bahawa anda mencapai &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, tetapi tidak dapat mengesahkan bahawa ia tapak yang sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang anda ingin capai. Jika anda teruskan, Chrome tidak akan menyemak lebih lanjut untuk nama yang tidak sepadan.</translation>
+<translation id="5430073640787465221">Fail pilihan anda rosak atau tidak sah. Google Chrome tidak dapat mengembalikan tetapan anda.</translation>
+<translation id="6676384891291319759">Akses Internet</translation>
+<translation id="5453904507266736060">Biarkan Google Chrome Dijalankan Di Latar Belakang</translation>
+<translation id="2383457833405848421">Mengenai Chrome Frame...</translation>
+<translation id="386202838227397562">Sila tutup semua tetingkap Google Chrome dan cuba semula.</translation>
+<translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
+<translation id="7400722733683201933">Mengenai Google Chrome</translation>
+<translation id="1065672644894730302">Pilihan anda tidak dapat dibaca. Beberapa ciri mungkin tidak tersedia dan perubahan terhadap pilihan tidak akan disimpan.</translation>
+<translation id="7781002470561365167">Terdapat versi Google Chrome baharu yang tersedia.</translation>
+<translation id="1484802885942301358">Google Chrome adalah yang terkini (<ph name="VERSION"/>)</translation>
+<translation id="7101265395643981223">Mulakan Google Chrome</translation>
+<translation id="4738120821427858478">Perubahan anda akan berkuat kuasa apabila anda memulakan semula Google Chrome OS pada masa hadapan.</translation>
+<translation id="4891791193823137474">Biarkan Google Chrome dijalankan di latar belakang</translation>
+<translation id="2879385160622431163">Google Chrome Semerta</translation>
+<translation id="2370289711218562573">Google Chrome kini mengimport Kegemaran/Penanda Halaman.</translation>
+<translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame sama yang sedang dijalankan. Sila tutup Google Chrome Frame dan cuba semula.</translation>
+<translation id="2040709530900803995">Pemapar Google Chrome</translation>
+<translation id="3140883423282498090">Perubahan anda akan berkuat kuasa apabila anda melancarkan semula Google Chrome pada masa hadapan.</translation>
+<translation id="1872436416934435136">Google Chrome tidak lagi dikemas kini kerana sistem pengendalian anda usang.</translation>
+<translation id="5339639696978861456">Chrome Frame telah dikemas kini. Sila lancarkan semula penyemak imbas anda. Versi Chrome: <ph name="TODO_0001"/>, Versi Chrome Frame: <ph name="TODO_0002"/></translation>
+<translation id="4281844954008187215">Syarat Perkhidmatan</translation>
+<translation id="6862759394142635932">Jika anda menutup Google Chrome sekarang, muat turun ini akan dibatalkan.</translation>
+<translation id="1779550429052479749">Pemasangan Google Chrome atau Google Chrome Frame yang bercanggah dijumpai pada sistem. Sila nyahpasangnya dan cuba semula.</translation>
+<translation id="3555616473548901994">Selesai nyahpasang.</translation>
+<translation id="8556340503434111824">Terdapat versi baharu Google Chrome yang tersedia, dan ia lebih pantas daripada biasa.</translation>
+<translation id="4728575227883772061">Pemasangan gagal disebabkan ralat tidak dinyatakan. Jika Google Chrome kini dijalankan, sila tutupnya dan cuba semula.</translation>
+<translation id="4727256538826447736">Anda cuba untuk mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan memberikan sijil yang tamat tempoh. Tiada maklumat tersedia untuk menunjukkan sama ada sijil tersebut telah terjejas sejak tamat tempohnya. Ini bermakna Google Chrome tidak dapat menjamin bahawa anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukannya penyerang.</translation>
+<translation id="3080151273017101988">Terus menjalankan apl latar belakang apabia Google Chrome ditutup</translation>
+<translation id="4149882025268051530">Pemasang gagal untuk nyahmampat arkib. Sila muat turun Google Chrome semula.</translation>
+<translation id="6989339256997917931">Google Chrome telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
+<translation id="5744005218040929396">Kemudahan Google Chrome</translation>
+<translation id="1682634494516646069">Google Chrome tidak dapat membaca atau menulis pada direktori datanya: <ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="4343226815564935778">Direktori pemasangan Google Chrome kelihatan sedang digunakan. Sila but semula komputer anda dan cuba semula.</translation>
+<translation id="8227755444512189073">Google Chrome perlu melancarkan aplikasi luaran untuk mengendalikan <ph name="SCHEME"/> pautan. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
+<translation id="8290100596633877290">Whoa! Google Chrome telah mengalami nahas. Lancarkan semula sekarang?</translation>
+<translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
+<translation id="3487814320513494737">Halaman Tab Baharu Chrome telah dibentuk semula. Beralih di antara bahagian dengan mengklik label ini. Chrome akan mengingati keutamaan anda pada kali berikutnya.</translation>
+<translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="2653935705142821164">Pemapar Chrome</translation>
+<translation id="3889417619312448367">Nyahpasang Google Chrome</translation>
+<translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Terdapat versi Google Chrome baharu yang lebih selamat tersedia.</translation>
+<translation id="5037239767309817516">Sila tutup semua tetingkap dan lancarkannya semula untuk perubahan ini berkesan.</translation>
+<translation id="7451721381978275812">Argumen tidak sah. Google Chrome Frame tidak dapat dipasang dalam mod sedia tanpa memasang Google Chrome juga.</translation>
+<translation id="5727432509906037972">Adakah anda mahu keluar dari Google Chrome sedangkan muat turun sedang dijalankan?</translation>
+<translation id="1367236238006776563">Pelanjutan &quot;<ph name="EXTENSION_NAME"/>&quot; telah ditambahkan pada Chrome.</translation>
+<translation id="4585888816441913908">Komputer ini mempunyai versi Google Chrome dan Google Chrome Frame lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang kedua-dua Google Chrome dan Google Chrome Frame dan cuba semula.</translation>
+<translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS"/>perisian sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3215326788962391210">Anda cuba untuk mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan memberikan sijil yang dikeluarkan oleh entiti yang tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin bermakna bahawa pelayan telah menghasilkan bukti kelayakan keselamatan miliknya sendiri, yang Google Chrome tidak boleh harapkan untuk mendapatkan maklumat identiti, atau penyerang mungkin cuba untuk memintas komunikasi anda.</translation>
+<translation id="4331809312908958774">OS Chrome</translation>
+<translation id="1195935957447623558">Google Chrome tidak ditutup dengan betul. Untuk buka semula halaman yang anda telah buka, klik Pulihkan.</translation>
+<translation id="2783467918276328046">Lihat <ph name="BEGIN_LINK"/>lagi faedah<ph name="END_LINK"/> apabila log masuk ke Chrome.</translation>
+<translation id="2580411288591421699">Tidak dapat memasang versi Google Chrome yang sama yang kini dijalankan. Sila tutup Google Chrome dan cuba semula.</translation>
+<translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
+<translation id="5170938038195470297">Profil anda tidak boleh digunakan kerana ia adalah dari versi Google Chrome yang lebih baharu. Beberapa ciri mungkin tidak tersedia. Sila tetapkan direktori profil lain atau gunakan versi Chrome yang lebih baharu.</translation>
+<translation id="8738921060445980047">Versi tidak diketahui.</translation>
+<translation id="2485422356828889247">Nyahpasang</translation>
+<translation id="2748463065602559597">Anda melihat halaman Google Chrome yang selamat.</translation>
+<translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> telah ditambahkan pada Chrome.</translation>
+<translation id="9073088951656332330">Tiada pemasangan Google Chrome atau Google Chrome Frame dijumpai untuk kemas kini.</translation>
+<translation id="1759842336958782510">Chrome</translation>
+<translation id="3904146009066562368">Versi baharu Google Chrome tersedia</translation>
+<translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
+<translation id="2044287590254833138">Bar Alat Google Chrome</translation>
+<translation id="5074344184765391290">Chrome Plug-In Host</translation>
+<translation id="8862326446509486874">Anda tidak mempunyai hak wajar untuk pemasangan peringkat sistem. Cuba jalankan pemasang semula sebagai Pentadbir.</translation>
+<translation id="595871952790078940">Chrome Utility</translation>
+<translation id="2874156562296220396">Google Chrome berjaya dilaksanakan melalui projek sumber terbuka <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> dan <ph name="BEGIN_LINK_OSS"/>perisian sumber terbuka<ph name="END_LINK_OSS"/> yang lain.</translation>
+<translation id="7855730255114109580">Google Chrome adalah yang terkini</translation>
+<translation id="3847841918622877581">Google Chrome boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
+<translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau seterusnya. Beberapa ciri mungkin tidak berfungsi.</translation>
+<translation id="6757767188268205357">Jangan ganggu saya</translation>
+<translation id="2290095356545025170">Adakah anda pasti anda mahu menyahpasang Google Chrome?</translation>
+<translation id="4273752058983339720">Google Chrome dikonfigurasi untuk dilancarkan secara automatik apabila anda memulakan komputer anda.</translation>
+<translation id="1104959162601287462">Mengenai &amp;Chrome OS</translation>
+<translation id="5941830788786076944">Jadikan Google Chrome penyemak imbas lalai</translation>
+<translation id="4990567037958725628">Google Chrome Canary</translation>
+<translation id="4561051373932531560">Google Chrome membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
+<translation id="3612333635265770873">Modul dengan nama yang sama telah diketahui bercanggah dengan Google Chrome.</translation>
+<translation id="61852838583753520">Kemas kini &amp;Chrome OS</translation>
+<translation id="6650142020817594541">Tapak ini mencadangkan Google Chrome Frame (sudah dipasang).</translation>
+<translation id="4535984553437295350">Lancarkan semula Google Chrome untuk selesai mengemas kini</translation>
+<translation id="2712549016134575851">Percanggahan dengan aplikasi lain yang dipasang telah dikesan.</translation>
+<translation id="5577648424992741236">Komputer ini telah mempunyai versi terbaru Google Chrome Frame. Jika perisian tidak berfungsi, sila nyahpasang Google Chrome Frame dan cuba semula.</translation>
+<translation id="7018032895891496381">Google Chrome menggunakan enjin carian lalai anda, yang kini ditetapkan ke <ph name="PAGE_TITLE"/>. Adakah anda mahu menyimpan enjin carian lalai anda?</translation>
+<translation id="6326175484149238433">Alih keluar dari Chrome</translation>
+<translation id="7161904924553537242">Selamat Datang ke Google Chrome</translation>
+<translation id="8669527147644353129">Pembantu Google Chrome</translation>
+<translation id="870251953148363156">Kemas kini &amp;Google Chrome</translation>
+<translation id="147599965395609989">Google Chrome telah dikemas kini</translation>
+<translation id="1399397803214730675">Komputer ini mempunyai versi Google Chrome paling terkini. Jika perisian tidak berfungsi, sila nyahpasang Google Chrome dan cuba semula.</translation>
+<translation id="2827900704927383772">Adakah anda mahu keluar dari Google Chrome sedangkan <ph name="DOWNLOAD_COUNT"/> muat turun sedang dijalankan?</translation>
+<translation id="3444832043240812445">Halaman ini hanya menunjukkan maklumat mengenai nahas terkini anda jika anda <ph name="BEGIN_LINK"/>mendayakan laporan nahas<ph name="END_LINK"/>.</translation>
+<translation id="8614913330719544658">Google Chrome tidak responsif. Lancarkan semula sekarang?</translation>
+<translation id="5318056482164160049">Hos Pemalam Google Chrome</translation>
+<translation id="6126631249883707068">Adakah anda mahu Google Chrome menyimpan kata laluan anda?</translation>
+<translation id="5046764976540625289">Keluar Daripada Chrome</translation>
+<translation id="2925521875688282191">Sila log keluar daripada OS Chrome dan log masuk semula supaya perubahan ini berkesan.</translation>
+<translation id="9039578207253536065">Pekerja Google Chrome</translation>
+<translation id="2680623880102270805">Google Chrome tidak dapat membuat pintasan aplikasi kerana ia tidak dapat menentukan persekitaran semasa desktop.</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
+<translation id="8865765905101981392">Penyemak Imbas Internet</translation>
+<translation id="2189123953385179981">Google ChromeOS tidak menyokong pelancaran aplikasi dalaman untuk mengendalikan pautan <ph name="SCHEME"/>. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
+<translation id="711654979569750606">Hak Cipta © 2006-2011 Google Inc. Hak Cipta Terpelihara.</translation>
+<translation id="8205111949707227942">Pilihan: Bantu jadikan OS Chrome lebih baik dengan menghantar laporan statistik penggunaan dan nahas secara automatik ke Google.</translation>
+<translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
+<translation id="2769762047821873045">Google Chrome adalah bukan penyemak imbas lalai anda.</translation>
+<translation id="7825851276765848807">Gagal pemasangan disebabkan ralat yang tidak dinyatakan. Sila muat turun semula Google Chrome.</translation>
+<translation id="3335672657969596251">Google Chrome tidak menyokong <ph name="OS_NAME"/>.</translation>
+<translation id="2666187591945638709">Google Chrome telah dikemas kini kepada <ph name="VERSION"/></translation>
+<translation id="5334545119300433702">Modul ini diketahui bercanggah dengan Google Chrome.</translation>
+<translation id="4892299120052124303">Jika anda menutup Google Chrome sekarang, muat turun ini akan dibatalkan.</translation>
+<translation id="2084710999043359739">Tambahkan pada Chrome</translation>
+<translation id="4084877369264707540">Google Chrome Frame telah dipasang dan boleh didapati oleh semua pengguna komputer ini. Jika anda mahu memasang Google Chrome Frame di peringkat pengguna, anda mesti terlebih dahulu menyahpasang versi peringkat sistem yang dipasang oleh pentadbir.</translation>
+<translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="3451115285585441894">Menambahkan pada Chrome...</translation>
+<translation id="1001534784610492198">Arkib pemasang rosak atau tidak sah. Sila muat turun Google Chrome semula.</translation>
+<translation id="2246246234298806438">Google Chrome tidak dapat memaparkan pratonton cetakan apabila pemapar PDF terbina dalam tiada.</translation>
+<translation id="6626317981028933585">Malangnya, tetapan Mozilla Firefox anda tidak tersedia semasa penyemak imbas tersebut dijalankan. Untuk mengimport tetapan tersebut ke Google Chrome, simpan kerja anda dan tutup semua tetingkap Firefox. Kemudian klik Teruskan.</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
+<translation id="1698376642261615901">Google Chrome ialah penyemak imbas web yang menjalankan halaman web dan aplikasi dengan kelajuan kilat. Ia pantas, stabil dan mudah digunakan. Semak imbas web dengan lebih selamat dengan perlindungan daripada perisian berniat jahat dan pancingan data yang terbina dalam Google Chrome.</translation>
+<translation id="3419750618886995598">Kemas Kini Chrome Frame.</translation>
+<translation id="3336524238463733095">Google Chrome atau Google Chrome Frame tidak boleh dikemas kini disebabkan oleh tetapan  Dasar Kumpulan Kemas Kini Google yang tidak tekal. Gunakan Editor Dasar Kumpulan untuk menetapkan penolakan dasar kemas kini untuk aplikasi Binari Google Chrome dan cuba lagi; lihat http://goo.gl/uJ9gV untuk mendapatkan butiran.</translation>
+<translation id="6049075767726609708">Pentadbir telah memasang Google Chrome pada sistem ini, dan ia adalah tersedia untuk semua pengguna. Google Chrome peringkat sistem akan menggantikan pemasangan peringkat pengguna anda sekarang.</translation>
+<translation id="7123348595797445166">Cubanya (sudah dipasang)</translation>
+<translation id="4338032231047635328">Anda cuba untuk mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi sijil yang diberikan pelayan mengandungi ralat. Google Chrome tidak boleh menggunakan sijil dengan ralat dan tidak dapat mengesahkan identiti tapak yang anda cuba untuk menyambung.</translation>
+<translation id="3870154837782082782">Google Inc.</translation>
+<translation id="1847321074516120686">Tetapan Auto Isi Chrome</translation>
+<translation id="7106741999175697885">Pengurus Tugas - Google Chrome</translation>
+<translation id="8449380764213232436">Google Chrome kini mengimport item berikut daripada <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="852884188147941900">Pekerja Chrome</translation>
+<translation id="3396977131400919238">Ralat sistem pengendalian berlaku semasa pemasangan. Sila muat turun Google Chrome semula.</translation>
+<translation id="5495581687705680288">Modul dimuatkan ke dalam Google Chrome</translation>
+<translation id="4086010630946365132">Anda cuba untuk mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan memberikan sijil yang masih belum sah. Tiada maklumat tersedia untuk menunjukkan sama ada sijil tersebut boleh dipercayai. Google Chrome tidak dapat menjamin yang anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan dengan penyerang. Anda perlu memastikan bahawa jam dan zon waktu anda ditetapkan dengan betul pada komputer anda. Jika tidak, anda perlu membetulkan mana-mana isu dan memuatkan semula halaman ini.</translation>
+<translation id="8129812357326543296">Mengenai &amp;Google Chrome</translation>
 </translationbundle>

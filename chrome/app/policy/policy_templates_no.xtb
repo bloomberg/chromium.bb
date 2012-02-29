@@ -29,12 +29,14 @@
 <translation id="3214164532079860003">Denne retningslinjen tvinger startsiden til å bli importert fra nåværende standard nettleser hvis den er aktivert. Hvis retningslinjen er deaktivert, importeres ikke startsiden. Hvis retningslinjen ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
 <translation id="2908277604670530363">Maksimalt antall samtidige tilkoblinger til proxytjeneren</translation>
+<translation id="7298195798382681320">Anbefalt</translation>
 <translation id="1438955478865681012">Konfigurerer utvidelsesrelaterte retningslinjer. Brukeren får ikke installerte utvidelser som står på sperrelisten med mindre de også står på godkjenningslisten. Du kan også tvinge <ph name="PRODUCT_NAME"/> til å installere utvidelser automatisk, ved å spesifisere dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Sperrelisten prioriteres over listen over tvungne utvidelser.</translation>
 <translation id="8668394701842594241">Angir en liste over programtillegg som er aktivert i <ph name="PRODUCT_NAME"/>, og forhindrer brukerne i å endre denne innstillingen.
 
       Jokertegnene * og ? kan brukes til å samsvare sekvenser av vilkårlige tegn. Tegnet * samsvarer med et vilkårlig antall tegn, mens tegnet ? angir et valgfritt enkeltstående tegn, dvs. ingen tegn eller ett tegn. Nødutgangtegnet er \, så for å matche tegn som faktisk er et * eller et ?, setter du en \ foran dem.
 
       Den angitte listen over programtillegg brukes alltid i <ph name="PRODUCT_NAME"/> hvis programtilleggene har blitt installert. Programtilleggene er merket som aktivert i about:plugins, og brukerne kan ikke deaktivere dem. Vær oppmerksom på at denne retningslinjen overstyrer både DisabledPlugins og DisabledPluginsExceptions. Hvis denne retningslinjen ikke angis, kan brukeren deaktivere alle programtillegg som er installert i systemet.</translation>
+<translation id="5255162913209987122">Kan anbefales</translation>
 <translation id="7331962793961469250">Når innstillingen er True, vil ikke reklamer for programmer fra Chrome Nettmarked vises på siden Ny fane.
 
       Hvis dette alternativet settes til False, eller hvis det ikke angis noe for dette alternativet, vises reklamer for programmer fra Chrome Nettbutikk på siden Ny fane</translation>
@@ -126,9 +128,11 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="3915395663995367577">Nettadresse til en .pac-fil for mellomtjener</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
 <translation id="7683777542468165012">Dynamisk oppdatering av retningslinje</translation>
+<translation id="8987262643142408725">Deaktiver splitting av SSL-oppføringer</translation>
 <translation id="4529945827292143461">Tilpass listen over nettadressemønstre som alltid skal gjengis av vertsnettleseren. Hvis denne retningslinjen ikke er angitt, vil standardgjengivelsen brukes for alle nettsteder sånn som det er angitt av retningslinjen ChromeFrameRendererSettings.
 
           Se http://www.chromium.org/developers/how-tos/chrome-frame-getting-started for eksempelmønstre.</translation>
+<translation id="8044493735196713914">Rapportering av oppstartsmodus for enhet</translation>
 <translation id="1942957375738056236">Du kan angi nettadressen til proxytjeneren her.
 
           Denne retningslinjen iverksettes bare hvis du har valgt manuelle proxytjenerinnstillinger under «Velg hvordan proxytjenerinnstillinger skal angis».
@@ -201,6 +205,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
+<translation id="8391419598427733574">Operativsystem for rapportering og fastvareversjon for registrerte enheter. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om eget operativsystem og fastvareversjon med jevne mellomrom. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke versjonsinformasjon rapportert.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
 <translation id="5883015257301027298">Standardinnstilling for informasjonskapsler</translation>
 <translation id="3413139738214204027">Konfigurerer standard startsidenettadresse i <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre det.
@@ -241,6 +246,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis denne innstillingen ikke angis, kan brukerne selv velge om de vil bruke funksjonen.</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="3964909636571393861">Gir tilgang til en liste over nettadresser</translation>
+<translation id="3450318623141983471">Rapportér tilstanden til enhetens utviklerbryter ved oppstart. Hvis retningslinjene ikke er angitt eller deaktivert, rapporteres ikke tilstanden til utviklerbryteren.</translation>
 <translation id="9102979059463597405">Aktiver opprinnelsesbunden TLS-sertifikatutvidelse</translation>
 <translation id="6022948604095165524">Handling ved oppstart</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
@@ -261,6 +267,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="2646290749315461919">Gjør at du kan angi om nettsteder tillates å spore brukernes fysiske posisjon. Sporing av brukernes fysiske posisjon kan tillates som standard, nektes som standard, eller brukeren kan blir spurt hver gang et nettsted ber om den fysiske posisjonen. Hvis denne retningslinjen ikke angis, brukes AskGeolocation, og brukeren kan endre på dette.</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
 <translation id="2959898425599642200">Regler for å omgå mellomtjener</translation>
+<translation id="1098794473340446990">Rapportér aktivitetstider for enhet. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om hvilke tidsperioder en bruker er aktiv på enheten. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke aktivitetstider registrert eller rapportert.</translation>
 <translation id="7337941689192402544">Angi brukerdatakatalog for <ph name="PRODUCT_NAME"/></translation>
 <translation id="896575211736907134">Tvungen inkognitomodus.</translation>
 <translation id="6641981670621198190">Deaktiver støtte for programmeringsgrensesnitt for 3D-grafikk</translation>
@@ -330,6 +337,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="6244210204546589761">Nettadresser som skal åpnes ved oppstart</translation>
 <translation id="7468416082528382842">Plassering i Windows-register:</translation>
 <translation id="1808715480127969042">Blokkér informasjonskapsler på disse nettstedene</translation>
+<translation id="7340034977315324840">Rapportering av aktivitetstider for enhet</translation>
 <translation id="267596348720209223">Angir tegnkodingen som støttes av søkeleverandøren. Kodingene er kodesidenavn som UTF-8, GB2312 og ISO-8859-1. De prøves i oppgitt rekkefølge.
 
           Denne retningslinjen er valgfri. Hvis den ikke er angitt, vil standarden brukes, som er UTF-8.
@@ -352,6 +360,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte katalogen uansett om brukeren har angitt en eller aktivert flagget for å bli med om nedlastingsposisjon hver gang.
 
       Hvis denne retningslinjen ikke angis, brukes standard nedlastingskatalog, og brukeren kan endre på dette.</translation>
+<translation id="5761030451068906335">Konfigurerer innstillinger for mellomtjener i <ph name="PRODUCT_NAME"/>. Disse retningslinjene er ikke klare for bruk ennå, så vi ber deg om ikke å bruke dem.</translation>
 <translation id="8344454543174932833">Importer bokmerker fra standard nettleser ved første kjøring</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="5826047473100157858">Angir om brukeren kan åpne sider i inkognitomodus i <ph name="PRODUCT_NAME"/>.
@@ -361,6 +370,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Hvis dette er deaktivert, kan ikke sider åpnes i inkognitomodus.
 
       Hvis dette er angitt til Tvunget, kan sider åpnes BARE i inkognitomodus.</translation>
+<translation id="5085647276663819155">Deaktiver forhåndsvisning av utskrift</translation>
 <translation id="2030905906517501646">Søkeord for standard søkeleverandør</translation>
 <translation id="2949818985084413317">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får angi øktbegrensede informasjonskapsler.
 
@@ -407,6 +417,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="5378985487213287085">Gjør at du kan angi om nettstedene får vise skrivebordvarsler. Visning av skrivebordvarsler kan tillates som standard, nektes som standard, eller brukeren kan bli spurt hver gang et nettsted vil vise slike.
 
           Hvis denne retningslinjen ikke angis, brukes AskNotification, og brukeren kan endre på dette.</translation>
+<translation id="3744263630913802110">Operativsystem for rapportering og fastvareversjon.</translation>
 <translation id="6908640907898649429">Konfigurerer standard søkeleverandør. Du kan angi hvilken søkeleverandør brukeren får som standard, eller velge å deaktivere standardsøk.</translation>
 <translation id="389421284571827139">Gjør at du kan angi proxytjeneren <ph name="PRODUCT_NAME"/> skal bruke, og hindre brukerne i å endre mellomtjenerinnstillinger.
 
@@ -428,6 +439,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder fra retningslinjen DefaultPopupsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="1530812829012954197">Alltid gjengi følgende nettadressemønstre i vertsnettleseren</translation>
+<translation id="8288507390252297611">Deaktiver forhåndsvisning av utskrift. Denne innstillingen brukes for å tvinge frem bruk av systemdialogen for utskrift i stedet for forhåndsvisning av utskrift.</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
 <translation id="6190022522129724693">Standardinnstillinger for forgrunnsvinduer</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
@@ -448,6 +460,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="7202926611616207807">Lar alle nettsteder angi lokale data.</translation>
 <translation id="3034580675120919256">Gjør at du kan angi om nettsteder får kjøre JavaScript. Kjøring av JavaScript kan tillates for alle nettsteder, eller nektes for alle nettsteder.
           Hvis denne retningslinjen ikke angis, brukes AllowJavaScript, og brukeren kan endre på dette.</translation>
+<translation id="3195451902035818945">Angir hvorvidt splitting av SSL-oppføringer skal være deaktivert. Splitting av oppføringer er en problemløsning for en svakhet i SSL 3.0 og TLS 1.0, men kan føre til kompatibilitetsproblemer med enkelte HTTPS-tjenere og mellomtjenere. Hvis disse retningslinjene ikke angis, eller er deaktivert, blir splitting av oppføringer tatt i bruk for SSL/TLS-tilkoblinger som bruker «CBC ciphersuites» (kombinasjonssystem for sikkerhet).</translation>
 <translation id="5868414965372171132">Nettverkskonfigurasjon på brukernivå</translation>
 <translation id="5493552890659553833">Aktiverer søkeforslag i søkefeltet til <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre på dette.
 
@@ -469,6 +482,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="24485093530245771">Angi diskbufferens størrelse i MB</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
+<translation id="3547954654003013442">Innstillinger for mellomtjener</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME"/>.
 
       Hvis du aktiverer denne innstillingen, vises alltid Startside-knappen.
@@ -595,13 +609,6 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
 <translation id="4906194810004762807">Oppdateringsfrekvens for enhetsinnstilling</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
 <translation id="5511702823008968136">Aktiver bokmerkerad</translation>
-<translation id="1775332090152062460">Deaktiverer bruk av SPDY-protokollen i <ph name="PRODUCT_NAME"/>.
-
-      Hvis denne retningslinjen er aktivert, vil ikke SPDY-protokollen være tilgjengelig i <ph name="PRODUCT_NAME"/>.
-
-      Deaktivering av denne retningslinjen tillater bruk av SPDY.
-
-      Hvis denne retningslinjen ikke angis, vil SPDY være tilgjengelig, men brukeren har mulighet til å endre på dette.</translation>
 <translation id="7848840259379156480">Lar deg konfigurere standard HTML-gjengivelse når <ph name="PRODUCT_FRAME_NAME"/> er installert. Standardinnstillingen er å tillate vertsnettleseren å foreta gjengivelsen. Du kan eventuelt overstyre dette og la <ph name="PRODUCT_FRAME_NAME"/> gjengi HTML-sider som standard.</translation>
 <translation id="9142678351429467783">Aktiverer utskrift i <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre denne innstillingen.
 
@@ -635,6 +642,13 @@ Nødutgangtegnet er \, så for å samsvare med tegn som faktisk er et * eller et
       Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte katalogen uansett om brukeren har angitt  «--user-data-dir»-flagget eller ikke.
 
       Hvis denne retningslinjen ikke angis, brukes standard profilbane, og brukeren kan overstyre det med «--user-data-dir»-kommandolinjeflagget.</translation>
+<translation id="7381326101471547614">Deaktiverer bruk av SPDY-protokollen i <ph name="PRODUCT_NAME"/>.
+
+      Hvis disse retningslinjene er aktivert, blir ikke SPDY-protokollen tilgjengelig i <ph name="PRODUCT_NAME"/>.
+
+      Deaktivering av disse retningslinjene tillater bruk av SPDY.
+
+      Hvis disse retningslinjene ikke angis, blir SPDY tilgjengelig.</translation>
 <translation id="1583248206450240930">Bruk <ph name="PRODUCT_FRAME_NAME"/> som standard</translation>
 <translation id="1047128214168693844">Ikke la noen nettsteder spore brukernes fysiske plassering</translation>
 <translation id="4101778963403261403">Konfigurerer standard startsidetype i <ph name="PRODUCT_NAME"/> og hindrer brukere fra å endre innstillingene for startsiden. Startsiden kan enten spesifiseres som en nettadresse du angir, eller være siden Ny fane.

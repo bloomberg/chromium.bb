@@ -35,6 +35,7 @@
       Als dit beleid niet is ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
 <translation id="2908277604670530363">Maximaal aantal gelijktijdige verbindingen met de proxyserver</translation>
+<translation id="7298195798382681320">Aanbevolen</translation>
 <translation id="1438955478865681012">Hiermee wordt extensiegerelateerd beleid geconfigureerd. De gebruiker mag geen extensies installeren die op de zwarte lijst staan, tenzij ze ook op de witte lijst staan. U kunt ook instellen dat <ph name="PRODUCT_NAME"/> extensies automatisch installeert, door deze te specificeren in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Voor de lijst met automatisch geïnstalleerde extensies heeft de zwarte lijst voorrang op de witte lijst.</translation>
 <translation id="8668394701842594241">Hiermee wordt een lijst met plug-ins gespecificeerd die zijn ingeschakeld in <ph name="PRODUCT_NAME"/> en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -45,6 +46,7 @@
       Houd er rekening mee dat dit beleid voorrang heeft op zowel DisabledPlugins als DisabledPluginsExceptions.
 
       Als dit beleid niet wordt ingesteld, kan de gebruiker alle plug-ins verwijderen die op het systeem zijn geïnstalleerd.</translation>
+<translation id="5255162913209987122">Kan worden aanbevolen</translation>
 <translation id="7331962793961469250">Wanneer dit is ingesteld op 'True', worden promoties voor apps van de Chrome Web Store niet weergegeven op de pagina 'Nieuw tabblad'.
 
       Als u deze optie instelt op 'False' of deze niet instelt, worden promoties voor apps van de Chrome Web Store wel op de pagina 'Nieuw tabblad' weergegeven.</translation>
@@ -162,11 +164,13 @@
 <translation id="3915395663995367577">URL naar een PAC-bestand voor de proxy</translation>
 <translation id="1022361784792428773">Id's van extensies die de gebruiker niet mag installeren (of '*' voor alle extensies)</translation>
 <translation id="7683777542468165012">Beleid dynamisch vernieuwen</translation>
+<translation id="8987262643142408725">Splitsen van SSL-records uitschakelen</translation>
 <translation id="4529945827292143461">Hiermee kunt u de lijst aanpassen van URL-patronen die altijd door de hostbrowser moeten worden verwerkt.
 
          Als dit beleid niet is ingesteld, wordt de standaardrenderer gebruikt voor alle sites die door het beleid 'ChromeFrameRendererSettings' zijn gespecificeerd.
 
           Ga voor voorbeeldpatronen naar http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8044493735196713914">Opstartmodus van apparaat melden</translation>
 <translation id="1942957375738056236">U kunt de URL van de proxyserver hier opgeven.
 
           Dit beleid wordt alleen van kracht als u handmatige proxyinstellingen heeft geselecteerd bij 'Kies hoe u proxyserverinstellingen wilt opgeven'.
@@ -249,6 +253,8 @@
 <translation id="8992176907758534924">Niet toestaan dat sites afbeeldingen weergeven</translation>
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME"/> inschakelen</translation>
 <translation id="8704831857353097849">Lijst met uitgeschakelde plug-ins</translation>
+<translation id="8391419598427733574">De OS- en firmwareversie van aangemelde apparaten melden.
+Als deze instelling op 'True' wordt ingesteld, melden de aangemelde apparaten regelmatig de OS- en firmwareversie. Als deze instelling niet wordt ingesteld of op 'False' wordt ingesteld, wordt geen versie-informatie gemeld.</translation>
 <translation id="467449052039111439">Een lijst met URL's openen</translation>
 <translation id="5883015257301027298">Standaardinstelling voor cookies</translation>
 <translation id="3413139738214204027">Hiermee wordt de URL van de standaard startpagina in <ph name="PRODUCT_NAME"/> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
@@ -293,6 +299,7 @@
       Als u deze instelling niet instelt, kan de gebruiker ervoor kiezen deze functie wel of niet te gebruiken.</translation>
 <translation id="9035964157729712237">Extensie-id's die zijn vrijgesteld van de zwarte lijst</translation>
 <translation id="3964909636571393861">Toegang verlenen aan een lijst met URL's</translation>
+<translation id="3450318623141983471">De status van de schakelaar voor de ontwikkelaarsmodus van het apparaat bij starten melden. Als het beleid niet is ingesteld, of is ingesteld op 'False', wordt de status van de schakelaar voor de ontwikkelaarsmodus niet gemeld.</translation>
 <translation id="9102979059463597405">Extensie voor systeemeigen TLS-certificaten inschakelen</translation>
 <translation id="6022948604095165524">Actie bij starten</translation>
 <translation id="7625444193696794922">Hiermee wordt het releasekanaal gespecificeerd waarmee dit apparaat moet worden vergrendeld.</translation>
@@ -335,6 +342,8 @@
           Als dit beleid niet wordt ingesteld, wordt 'AskGeolocation' gebruikt en kan de gebruiker dit wijzigen.</translation>
 <translation id="5770738360657678870">Ontwikkelaarskanaal (mogelijk instabiel)</translation>
 <translation id="2959898425599642200">Regels voor proxyomzeiling</translation>
+<translation id="1098794473340446990">Perioden van apparaatgebruik melden.
+Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waarin een gebruiker het apparaat gebruikt. Als deze instelling niet is ingesteld of op 'False' is ingesteld, worden perioden van apparaatgebruik niet geregistreerd of gemeld.</translation>
 <translation id="7337941689192402544">Directory voor gebruikersgegevens voor <ph name="PRODUCT_NAME"/> instellen</translation>
 <translation id="896575211736907134">Incognitomodus afgedwongen.</translation>
 <translation id="6641981670621198190">Ondersteuning voor API's voor 3D-beelden uitschakelen</translation>
@@ -430,6 +439,7 @@
 <translation id="6244210204546589761">URL's die worden geopend bij starten</translation>
 <translation id="7468416082528382842">Locatie van Windows-register:</translation>
 <translation id="1808715480127969042">Cookies blokkeren op deze sites</translation>
+<translation id="7340034977315324840">Tijdsduur van apparaatgebruik melden</translation>
 <translation id="267596348720209223">Hiermee worden de tekencoderingen gespecificeerd die door de zoekprovider worden ondersteund. Deze coderingen zijn codepaginanamen zoals UTF-8, GB2312 en ISO-8859-1. Ze worden getest in de volgorde waarin ze worden opgegeven.
 
           Dit beleid is optioneel. Als het beleid niet wordt ingesteld, wordt de standaardcodering (UTF-8) gebruikt.
@@ -456,6 +466,7 @@
       Als u dit beleid instelt, gebruikt <ph name="PRODUCT_NAME"/> de opgegeven directory, ongeacht of de gebruiker een directory heeft gespecificeerd of heeft aangegeven telkens te willen worden gevraagd wat de downloadlocatie moet zijn.
 
       Als dit beleid niet wordt ingesteld, wordt de standaarddirectory voor het downloaden van bestanden gebruikt en kan de gebruiker dit wijzigen.</translation>
+<translation id="5761030451068906335">Hiermee configureert u de proxyinstellingen voor <ph name="PRODUCT_NAME"/>. Dit beleid is nog niet klaar voor gebruik, gebruik het dus niet.</translation>
 <translation id="8344454543174932833">Bladwijzers importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="1019101089073227242">Gegevensdirectory voor gebruiker instellen</translation>
 <translation id="5826047473100157858">Geeft aan of de gebruiker pagina's in de incognitomodus mag openen in <ph name="PRODUCT_NAME"/>.
@@ -465,6 +476,7 @@
       Als 'Uitgeschakeld' is geselecteerd, mogen pagina's niet worden geopend in de incognitomodus.
 
       Als 'Afgedwongen' is geselecteerd, mogen pagina's ALLEEN worden geopend in de incognitomodus.</translation>
+<translation id="5085647276663819155">Afdrukvoorbeeld uitschakelen</translation>
 <translation id="2030905906517501646">Zoekwoord voor standaardzoekprovider</translation>
 <translation id="2949818985084413317">Hiermee kunt u een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die sessiecookies mogen instellen.
 
@@ -512,6 +524,7 @@
 <translation id="5378985487213287085">Hiermee kunt u instellen of websites bureaubladmeldingen mogen weergeven. Het weergeven van bureaubladmeldingen kan standaard worden toegestaan of geweigerd, of de gebruiker kan een melding te zien krijgen wanneer een website bureaubladmeldingen wil weergeven.
 
           Als dit beleid niet wordt ingesteld, wordt 'AskNotifications' gebruikt en kan de gebruiker dit aanpassen.</translation>
+<translation id="3744263630913802110">De OS- en firmwareversie melden.</translation>
 <translation id="6908640907898649429">Hiermee wordt de standaardzoekprovider geconfigureerd. U kunt de standaardzoekprovider specificeren die de gebruiker gaat gebruiken, of u kunt ervoor kiezen de standaardzoekfunctie uit te schakelen.</translation>
 <translation id="389421284571827139">Hiermee kunt u de proxyserver specificeren die door <ph name="PRODUCT_NAME"/> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
 
@@ -539,6 +552,7 @@
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultPopupsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
+<translation id="8288507390252297611">Afdrukvoorbeeld uitschakelen. Deze instelling zorgt ervoor dat het automatische dialoogvenster voor afdrukken wordt gebruikt in plaats van Afdrukvoorbeeld.</translation>
 <translation id="913195841488580904">Toegang blokkeren voor een lijst met URL's</translation>
 <translation id="6190022522129724693">Standaardinstelling voor pop-ups</translation>
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
@@ -560,6 +574,8 @@
 <translation id="3034580675120919256">Hiermee kunt u instellen of JavaScript op websites mag worden uitgevoerd. Het uitvoeren van JavaScript kan voor alle websites worden toegestaan of voor alle websites worden geweigerd.
 
           Als dit beleid niet wordt ingesteld, wordt 'AllowJavaScript' gebruikt en kan de gebruiker dit aanpassen.</translation>
+<translation id="3195451902035818945">Geeft aan of het splitsen van SSL-records moet worden uitgeschakeld. Het splitsen van records is een tijdelijke oplossing voor een fout in SSL 3.0 en TLS 1.0, maar kan compatibiliteitsproblemen met bepaalde HTTPS-servers en -proxy's veroorzaken.
+Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het splitsen van records gebruikt bij SSL-/TLS-verbindingen die gebruikmaken van CBC-coderingssuites.</translation>
 <translation id="5868414965372171132">Netwerkconfiguratie op gebruikersniveau</translation>
 <translation id="5493552890659553833">Hiermee worden zoeksuggesties in de omnibox van <ph name="PRODUCT_NAME"/> ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
@@ -581,6 +597,7 @@
 <translation id="602728333950205286">Instant-URL voor standaardzoekprovider</translation>
 <translation id="24485093530245771">Grootte van schijfcache in MB instellen</translation>
 <translation id="1675002386741412210">Ondersteund op:</translation>
+<translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="4482640907922304445">Hiermee wordt de knop 'Startpagina' weergegeven in de werkbalk van <ph name="PRODUCT_NAME"/>.
 
       Als u deze instelling inschakelt, wordt de knop 'Startpagina' altijd weergegeven.
@@ -729,13 +746,6 @@
 
           Als deze instelling is uitgeschakeld en uitgaande UDP-verbindingen worden gefilterd door de firewall, kan dit apparaat alleen verbinding maken met hosts binnen het lokale netwerk.</translation>
 <translation id="5511702823008968136">Bladwijzerbalk inschakelen</translation>
-<translation id="1775332090152062460">Hiermee wordt het gebruik van het SPDY-protocol in <ph name="PRODUCT_NAME"/> uitgeschakeld.
-
-      Als dit beleid is ingeschakeld, is het SPDY-protocol niet beschikbaar in <ph name="PRODUCT_NAME"/>.
-
-      Als u dit beleid instelt op uitgeschakeld, kan het SPDY-protocol worden gebruikt.
-
-      Als dit beleid niet wordt ingesteld, is het SPDY-protocol beschikbaar maar kan de gebruiker dit wijzigen.</translation>
 <translation id="7848840259379156480">Hiermee kunt u de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME"/> is geïnstalleerd.
           De standaardinstelling is om de hostbrowser de rendering te laten regelen, maar
           u kunt dit aanpassen en <ph name="PRODUCT_FRAME_NAME"/> HTML-pagina's standaard laten renderen.</translation>
@@ -784,6 +794,7 @@
       Als u dit beleid instelt, gebruikt <ph name="PRODUCT_NAME"/> deze directory, ongeacht of de gebruiker de optie voor '--user-data-dir' heeft ingesteld.
 
       Als dit beleid niet wordt ingesteld, wordt het standaard profielpad gebruikt en kan de gebruiker dit negeren via de optie voor '--user-data-dir'.</translation>
+<translation id="7381326101471547614">Hiermee wordt het gebruik van het SPDY-protocol in <ph name="PRODUCT_NAME"/> uitgeschakeld. Als dit beleid is ingeschakeld, is het SPDY-protocol niet beschikbaar in <ph name="PRODUCT_NAME"/>. Als u dit beleid instelt op uitgeschakeld, kan het SPDY-protocol worden gebruikt. Als dit beleid niet wordt ingesteld, is het SPDY-protocol beschikbaar.</translation>
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME"/> standaard gebruiken</translation>
 <translation id="1047128214168693844">Niet toestaan dat sites de fysieke locatie van gebruikers bijhouden</translation>
 <translation id="4101778963403261403">Hiermee wordt het type standaard startpagina in <ph name="PRODUCT_NAME"/> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen. De startpagina kan worden ingesteld op een URL die u specificeert, of op de pagina 'Nieuw tabblad'.

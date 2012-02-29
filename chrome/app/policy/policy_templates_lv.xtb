@@ -39,6 +39,7 @@
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
 <translation id="5469825884154817306">Bloķē attēlus šajās vietnēs</translation>
 <translation id="2908277604670530363">Maksimālais vienlaikus iespējamais savienojumu skaits ar starpniekserveri</translation>
+<translation id="7298195798382681320">Ieteicams</translation>
 <translation id="1438955478865681012">Konfigurē ar paplašinājumiem saistītās politikas. Lietotājs nedrīkst instalēt melnajā sarakstā ietvertos paplašinājumus, ja tie nav ietverti baltajā sarakstā. Var arī piespiedu kārtā likt, lai <ph name="PRODUCT_NAME"/> automātiski instalē paplašinājumus, norādot tos sarakstā <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Melnajam sarakstam ir prioritāte pār piespiedu paplašinājumiem.</translation>
 <translation id="8668394701842594241">Norāda produktā <ph name="PRODUCT_NAME"/> iespējoto spraudņu sarakstu un neļauj lietotājiem mainīt šo iestatījumu.
 
@@ -49,6 +50,7 @@
       Ņemiet vērā, ka šī politika ignorē gan politiku DisabledPlugins, gan DisabledPluginsExceptions.
 
       Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru datorā instalēto spraudni.</translation>
+<translation id="5255162913209987122">Var ieteikt</translation>
 <translation id="7331962793961469250">Ja ir iestatīta vērtība Patiess, jaunas cilnes lapā netiek rādītas Chrome interneta veikala lietotņu reklāmas.
 
       Ja šai opcijai ir iestatīta vērtība Aplams vai tā vispār nav iestatīta, jaunas cilnes lapā tiek rādītas Chrome interneta veikala lietotņu reklāmas.</translation>
@@ -166,11 +168,13 @@
 <translation id="3915395663995367577">URL uz starpniekservera .pac failu</translation>
 <translation id="1022361784792428773">Paplašinājumu ID numuri, kurus lietotājam nav atļauts instalēt (vai *, lai iestatītu visus)</translation>
 <translation id="7683777542468165012">Dinamiskā politikas atsvaidzināšana</translation>
+<translation id="8987262643142408725">Atspējot SSL ieraksta sadalīšanu</translation>
 <translation id="4529945827292143461">Pielāgo URL rakstu sarakstu, kas vienmēr jārenderē saimniekdatora pārlūkam.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantots politikā ChromeFrameRendererSettings norādītais noklusējuma renderētājs.
 
           Rakstu piemērus skatiet vietnē: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8044493735196713914">Ziņot par ierīces sāknēšanas režīmu</translation>
 <translation id="1942957375738056236">Šeit varat norādīt starpniekservera URL.
 
           Šī politika ir spēkā tikai tad, ja iestatījumā Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi ir atlasīti manuālie starpniekserveru iestatījumi.
@@ -249,6 +253,9 @@
 <translation id="8992176907758534924">Neatļaut nevienai vietnei rādīt attēlus</translation>
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Atspējoto spraudņu saraksts</translation>
+<translation id="8391419598427733574">Ziņot par reģistrēto ierīču OS un programmaparatūras versiju.
+
+      Ja šī iestatījuma statuss ir Patiess, reģistrētās ierīces ik pa laikam ziņos par OS un programmaparatūras versiju. Ja šis iestatījums nav iestatīts vai tam piešķirts statuss Aplami, informācija par versiju netiek ziņota.</translation>
 <translation id="467449052039111439">Atvērt vietrāžu URL sarakstu</translation>
 <translation id="5883015257301027298">Noklusējuma sīkfailu iestatījums</translation>
 <translation id="3413139738214204027">Konfigurē <ph name="PRODUCT_NAME"/> noklusējuma sākumlapas URL un neļauj lietotājiem to mainīt.
@@ -293,6 +300,7 @@
       Ja šis iestatījums nav iestatīts, lietotājs var izlemt, vai lietot šo funkciju.</translation>
 <translation id="9035964157729712237">Paplašinājumu ID numuri, kas noņemami no melnā saraksta</translation>
 <translation id="3964909636571393861">Ļauj piekļūt vietrāžu URL sarakstam</translation>
+<translation id="3450318623141983471">Ziņot par ierīces izstrādes slēdža statusu sāknēšanas brīdī. Ja politika nav iestatīta vai tai piešķirts statuss Aplami, netiks ziņots par izstrādes slēdža stāvokli.</translation>
 <translation id="9102979059463597405">Iespējot TLS ar izcelsmi saistīto sertifikātu paplašinājumu</translation>
 <translation id="6022948604095165524">Darbība startēšanas brīdī</translation>
 <translation id="7625444193696794922">Norāda atbrīvošanas kanālu, pie kura jābūt piesaistītai šai ierīcei.</translation>
@@ -337,6 +345,7 @@
           Ja šī politika nav iestatīta, tiks lietota politika AskGeolocation un lietotājs to varēs mainīt.</translation>
 <translation id="5770738360657678870">Izstrādātāju versija (var būt nestabila)</translation>
 <translation id="2959898425599642200">Starpniekserveru apiešanas kārtulas</translation>
+<translation id="1098794473340446990">Ziņot par ierīces darbības laikiem. Ja iestatījuma statuss ir Patiess, reģistrētās ierīces ziņo par laika posmiem, kad lietotājs darbojas ierīcē. Ja iestatījums nav iestatīts vai tam piešķirts statuss Aplami, ierīces darbības laiki netiek ierakstīti un ziņoti.</translation>
 <translation id="7337941689192402544">Iestatīt <ph name="PRODUCT_NAME"/> lietotāju datu direktoriju</translation>
 <translation id="896575211736907134">Inkognito režīms piespiedu kārtā.</translation>
 <translation id="6641981670621198190">Atspējo 3D grafikas API atbalstu</translation>
@@ -428,6 +437,7 @@
 <translation id="6244210204546589761">URL, kas jāatver startēšanas brīdī</translation>
 <translation id="7468416082528382842">Windows reģistra atrašanās vieta:</translation>
 <translation id="1808715480127969042">Bloķē sīkfailus šajās vietnēs</translation>
+<translation id="7340034977315324840">Ziņot par ierīces darbības laikiem</translation>
 <translation id="267596348720209223">Norāda meklētājprogrammas atbalstītos rakstzīmju kodējumus. Kodējumi ir kodu lapu nosaukumi, piemēram, UTF-8, GB2312 un ISO-8859-1. Tie tiek izmēģināti ievadītajā secībā.
 
           Šī politika ir neobligāta. Ja tā nav iestatīta, tiks lietots noklusējums: UTF-8.
@@ -454,6 +464,7 @@
       Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME"/> lietos norādīto direktoriju neatkarīgi no tā, vai lietotājs ir norādījis šādu direktoriju vai iespējojis karogu, lai katru reizi tiktu rādīta uzvedne lejupielādes vietas norādīšanai.
 
       Ja šī politika nav iestatīta, tiks lietots noklusējuma lejupielāžu direktorijs un lietotājs to varēs mainīt.</translation>
+<translation id="5761030451068906335">Konfigurē pakalpojuma <ph name="PRODUCT_NAME"/> starpniekservera iestatījumus. Šī politika nav vēl gatava lietošanai; nelietojiet to.</translation>
 <translation id="8344454543174932833">Grāmatzīmju importēšana no noklusējuma pārlūka pirmajā palaišanas reizē</translation>
 <translation id="1019101089073227242">Iestata lietotāja datu direktoriju</translation>
 <translation id="5826047473100157858">Norāda, vai lietotājs ar <ph name="PRODUCT_NAME"/> var atvērt lapas inkognito režīmā.
@@ -463,6 +474,7 @@
       Ja tiek atlasīta vērtība Atspējots, lapas nevar atvērt inkognito režīmā.
 
       Ja tiek atlasīta vērtība Piespiedu, lapas var atvērt TIKAI inkognito režīmā.</translation>
+<translation id="5085647276663819155">Atspējot drukas priekšskatījumu</translation>
 <translation id="2030905906517501646">Noklusējuma meklētājprogrammas atslēgvārds</translation>
 <translation id="2949818985084413317">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts iestatīt tikai vienas sesijas sīkfailus.
 
@@ -510,6 +522,7 @@
 <translation id="5378985487213287085">Ļauj iestatīt, vai vietnēm ir atļauts attēlot darbvirsmas paziņojumus. Darbvirsmas paziņojumu attēlošana var tikt atļauta pēc noklusējuma, noraidīta pēc noklusējuma vai lietotājam var tikt vaicāts katru reizi, kad vietne vēlas rādīt darbvirsmas paziņojumus.
 
           Ja šī politika nav iestatīta, tiks lietota politika AskNotifications un lietotājs to varēs mainīt.</translation>
+<translation id="3744263630913802110">Ziņot par OS un programmaparatūras versiju.</translation>
 <translation id="6908640907898649429">Konfigurē noklusējuma meklētājprogrammu. Var norādīt noklusējuma meklētājprogrammu, kas jāizmanto lietotājam, vai atspējot noklusējuma meklēšanu.</translation>
 <translation id="389421284571827139">Ļauj norādīt <ph name="PRODUCT_NAME"/> izmantoto starpniekserveri un neļauj lietotājiem mainīt starpniekserveru iestatījumus.
 
@@ -537,6 +550,7 @@
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPopupsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="1530812829012954197">Norādītās URL struktūras vienmēr tiek renderētas ar saimniekdatora pārlūku</translation>
+<translation id="8288507390252297611">Atspējot drukas priekšskatījumu. Šis iestatījums tiek izmantots, lai piespiestu izmantot sistēmas drukas dialoglodziņu, nevis drukas priekšskatījumu.</translation>
 <translation id="913195841488580904">Bloķēt piekļuvi vietrāžu URL sarakstam</translation>
 <translation id="6190022522129724693">Noklusējuma uznirstošo logu iestatījums</translation>
 <translation id="847472800012384958">Neļaut nevienai vietnei rādīt uznirstošos logus</translation>
@@ -558,6 +572,7 @@
 <translation id="3034580675120919256">Ļauj iestatīt, vai vietnēm ir atļauts izpildīt JavaScript. JavaScript izpilde var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika AllowJavaScript un lietotājs to varēs mainīt.</translation>
+<translation id="3195451902035818945">Norāda, vai SSL ieraksta sadalīšana ir jāatspējo. Ieraksta sadalīšana ir risinājums, lai apietu SSL 3.0 un TLS 1.0 trūkumus, bet var izraisīt saderības problēmas ar dažiem HTTPS serveriem un starpniekserveriem. Ja politika nav iestatīta vai tai piešķirts statuss Aplami, ieraksta sadalīšana tiks izmantota SSL/TLS savienojumiem, kas izmanto CBC šifra komplektus.</translation>
 <translation id="5868414965372171132">Lietotāja līmeņa tīkla konfigurācija</translation>
 <translation id="5493552890659553833">Ļauj <ph name="PRODUCT_NAME"/> universālajā lodziņā rādīt meklēšanas ieteikumus un neļauj lietotājiem mainīt šo iestatījumu.
 
@@ -579,6 +594,7 @@
 <translation id="602728333950205286">Noklusējuma meklētājprogrammas dinamisko mekl. rezultātu URL</translation>
 <translation id="24485093530245771">Iestatīt diska kešatmiņas lielumu megabaitos</translation>
 <translation id="1675002386741412210">Saderīga ar:</translation>
+<translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
 <translation id="4482640907922304445"><ph name="PRODUCT_NAME"/> rīkjoslā rāda pogu Sākums.
 
       Ja šis iestatījums ir iespējots, poga Sākums vienmēr tiek rādīta.
@@ -727,13 +743,6 @@
 
           Ja šis iestatījums ir atspējots un ugunsmūris filtrē izejošos UDP savienojumus, dators var izveidot savienojumus tikai ar lokālā tīkla saimniekdatoriem.</translation>
 <translation id="5511702823008968136">Iespējo grāmatzīmju joslu</translation>
-<translation id="1775332090152062460">Atspējo SPDY protokola lietošanu produktā <ph name="PRODUCT_NAME"/>.
-
-      Ja šī politika ir iespējota, SPDY protokols nebūs pieejams produktā <ph name="PRODUCT_NAME"/>.
-
-      Atspējojot šo politiku, SPDY lietošana būs atļauta.
-
-      Ja šī politika nav iestatīta, SPDY būs pieejams, bet lietotājs to varēs mainīt.</translation>
 <translation id="7848840259379156480">Ļauj konfigurēt noklusējuma HTML renderētāju, ja ir instalēts produkts <ph name="PRODUCT_FRAME_NAME"/>.
       Atbilstoši noklusējuma iestatījumam renderēšanu izpilda saimniekdatora pārlūks, taču
       pēc izvēles šo iestatījumu var ignorēt un likt, lai HTML lappuses pēc noklusējuma tiktu renderētas produktā <ph name="PRODUCT_FRAME_NAME"/>.</translation>
@@ -780,6 +789,13 @@
       Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME"/> lietos norādīto direktoriju neatkarīgi no tā, vai lietotājs ir norādījis karogu --user-data-dir.
 
       Ja šī politika nav iestatīta, tiks lietots noklusējuma profila ceļš un lietotājs to varēs ignorēt, izmantojot komandrindas karogu --user-data-dir.</translation>
+<translation id="7381326101471547614">Atspējo SPDY protokola lietošanu pakalpojumā <ph name="PRODUCT_NAME"/>.
+
+      Ja šī politika ir iespējota, SPDY protokols nav pieejams pakalpojumā <ph name="PRODUCT_NAME"/>.
+
+      Atspējojot šo politiku, SPDY lietošana būs atļauta.
+
+      Ja šī politika nav iestatīta, SPDY būs pieejams.</translation>
 <translation id="1583248206450240930">Pēc noklusējuma lietot <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="1047128214168693844">Neatļaut nevienai vietnei izsekot lietotāju fizisko atrašanās vietu</translation>
 <translation id="4101778963403261403">Konfigurē <ph name="PRODUCT_NAME"/> noklusējuma sākumlapas veidu un neļauj lietotājiem mainīt sākumlapas preferences. Par sākumlapu var tikt iestatīts šeit norādītais URL vai Jaunas cilnes lapa.

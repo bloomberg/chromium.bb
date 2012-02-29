@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="8000275528373650868">Google Chrome requires Windows Vista or Windows XP with SP2 or higher.</translation>
+<translation id="8485767968786176057">In this case, the address listed in the certificate does not match the address of the website that your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one you are attempting to visit, even though that certificate is not valid for all of those websites. Google Chrome can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, but cannot verify that that is the same site as &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; which you intended to reach. If you proceed, Chrome will not check for any further name mismatches.</translation>
 <translation id="5430073640787465221">Your preferences file is corrupt or invalid.
 
 Google Chrome is unable to recover your settings.</translation>
@@ -15,18 +16,24 @@ Google Chrome is unable to recover your settings.</translation>
 
 Some features may be unavailable and changes to preferences won't be saved.</translation>
 <translation id="7781002470561365167">There is a new version of Google Chrome available.</translation>
+<translation id="1484802885942301358">Google Chrome is up to date (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Start Google Chrome</translation>
+<translation id="4738120821427858478">Your changes will take effect the next time you restart the Google Chrome OS.</translation>
 <translation id="4891791193823137474">Let Google Chrome run in the background</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome is now importing Favourites/Bookmarks.</translation>
 <translation id="1761870329818521071">Cannot install the same Google Chrome Frame version that is currently running. Please close Google Chrome Frame and try again.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="3140883423282498090">Your changes will take effect the next time you relaunch Google Chrome.</translation>
+<translation id="1872436416934435136">Google Chrome is no longer updating because your operating system is obsolete.</translation>
 <translation id="5339639696978861456">Chrome Frame has been updated. Please relaunch your browser. Chrome version: <ph name="TODO_0001"/>, Chrome Frame version: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Terms of Service</translation>
+<translation id="6862759394142635932">If you close Google Chrome now, this download will be cancelled.</translation>
 <translation id="1779550429052479749">A conflicting installation of Google Chrome or Google Chrome Frame was found on the system. Please uninstall it and try again.</translation>
 <translation id="3555616473548901994">Uninstallation complete.</translation>
 <translation id="8556340503434111824">There's a new version of Google Chrome available and it's faster than ever.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
+<translation id="4727256538826447736">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiry. This means that Google Chrome cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker.</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
@@ -41,54 +48,63 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3487814320513494737">Chrome's New Tab page has been remodelled. Switch between sections by clicking these labels. Chrome will remember your preference for next time.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
-<translation id="8446794773162156990">Google Chrome is misbehaving</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="5037239767309817516">Please close all Google Chrome windows and relaunch it for this change to take effect.</translation>
 <translation id="7451721381978275812">Invalid arguments. Google Chrome Frame cannot be installed in ready mode without also installing Google Chrome.</translation>
+<translation id="5727432509906037972">Do you want to exit Google Chrome with a download in progress?</translation>
+<translation id="1367236238006776563">The extension &quot;<ph name="EXTENSION_NAME"/>&quot; has been added to Chrome.</translation>
 <translation id="4585888816441913908">This computer already has a more recent version of Google Chrome and Google Chrome Frame. If the software is not working, please uninstall both Google Chrome and Google Chrome Frame and try again.</translation>
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open-source software<ph name="END_LINK_CROS_OSS"/>.</translation>
-<translation id="4357846314885556934">Google Chrome is Misbehaving</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3215326788962391210">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate issued by an entity that is not trusted by your computer's operating system. This may mean that the server has generated its own security credentials, which Google Chrome cannot rely on for identity information, or an attacker may be trying to intercept your communications.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome didn't shut down correctly. To reopen the pages that you had open, click Restore.</translation>
+<translation id="2783467918276328046">See <ph name="BEGIN_LINK"/>more benefits<ph name="END_LINK"/> of signing in to Chrome.</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="5170938038195470297">Your profile cannot be used because it is from a newer version of Google Chrome.
 
 Some features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
-<translation id="6009537148180854585">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented contains errors. Google Chrome cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to. Your connection is not secure and you should not proceed.</translation>
 <translation id="8738921060445980047">Unknown version.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="2748463065602559597">You are viewing a secure Google Chrome page.</translation>
+<translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> has been added to Chrome.</translation>
 <translation id="9073088951656332330">No installation of Google Chrome or Google Chrome Frame found to update.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Warning:<ph name="END_BOLD"/> Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="3904146009066562368">A new version of Google Chrome is available</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="6481075104394517441">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Google Chrome cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. You should ensure that your clock and time zone are set correctly on your computer. If they are not, you should correct any issues and refresh this page. If they are correct, you should not proceed.</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project and other <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7855730255114109580">Google Chrome is up to date</translation>
 <translation id="3847841918622877581">Google Chrome may use web services to improve your browsing experience.</translation>
 <translation id="7436949144778751379">Google Chrome requires Windows XP or later. Some features may not work.</translation>
-<translation id="7938170099933661772">Google Chrome cannot show the print preview when the built-in PDF viewer is disabled. In order to see the preview, please visit <ph name="BEGIN_LINK"/>chrome://plug-ins<ph name="END_LINK"/>, enable the &quot;Chrome PDF Viewer&quot; and try again.</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
+<translation id="4273752058983339720">Google Chrome is configured to automatically launch when you start your computer.</translation>
+<translation id="1104959162601287462">About the &amp;Chrome OS</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3612333635265770873">A module with the same name has been known to conflict with Google Chrome.</translation>
-<translation id="2679385451463308372">Print using system dialogue…</translation>
+<translation id="61852838583753520">Update the &amp;Chrome OS</translation>
 <translation id="6650142020817594541">This site recommends Google Chrome Frame (already installed).</translation>
-<translation id="4127951844153999091">In this case, the address listed in the certificate does not match the address of the website that your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one that you are attempting to visit, even though that certificate is not valid for all of those websites. Google Chrome can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, but cannot verify that it is the same site as &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; which you intended to reach. If you proceed, Chrome will not check for any further name mismatches. In general, it is best not to proceed past this point.</translation>
+<translation id="4535984553437295350">Relaunch Google Chrome to finish updating</translation>
 <translation id="2712549016134575851">A conflict with another installed application has been detected.</translation>
 <translation id="5577648424992741236">This computer already has a more recent version of Google Chrome Frame. If the software is not working, please uninstall Google Chrome Frame and download it again.</translation>
 <translation id="7018032895891496381">Google Chrome uses your default search engine, which is currently set to <ph name="PAGE_TITLE"/>. Do you want to keep your default search engine?</translation>
+<translation id="6326175484149238433">Remove from Chrome</translation>
 <translation id="7161904924553537242">Welcome to Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="870251953148363156">Update &amp;Google Chrome</translation>
+<translation id="147599965395609989">Google Chrome has been updated</translation>
 <translation id="1399397803214730675">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and try again.</translation>
+<translation id="2827900704927383772">Do you want to exit Google Chrome with <ph name="DOWNLOAD_COUNT"/> downloads in progress?</translation>
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
@@ -96,6 +112,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="5046764976540625289">Exit Chrome</translation>
 <translation id="2925521875688282191">Please sign out of Chrome OS and sign in again for this change to take effect.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
+<translation id="2680623880102270805">Google Chrome cannot create an application shortcut because it cannot determine the current desktop environment.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
 <translation id="2189123953385179981">Google ChromeOS does not support launching an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
@@ -105,10 +122,15 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="3335672657969596251">Google Chrome does not support <ph name="OS_NAME"/>.</translation>
+<translation id="2666187591945638709">Google Chrome has been updated to <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">This module is known to conflict with Google Chrome.</translation>
+<translation id="4892299120052124303">If you close Google Chrome now, these downloads will be cancelled.</translation>
+<translation id="2084710999043359739">Add to Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame is already installed and available to all users of this computer. If you want to install Google Chrome Frame at the user level, you must first uninstall the system-level version installed by an administrator.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="3451115285585441894">Adding to Chrome...</translation>
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
+<translation id="2246246234298806438">Google Chrome cannot show the print preview when the built-in PDF viewer is missing.</translation>
 <translation id="6626317981028933585">Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.</translation>
@@ -116,12 +138,14 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="3336524238463733095">Google Chrome or Google Chrome Frame cannot be updated due to inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again; see http://goo.gl/uJ9gV for details.</translation>
 <translation id="6049075767726609708">An administrator has installed Google Chrome on this system, and it is available for all users. The system-level Google Chrome will replace your user-level installation now.</translation>
 <translation id="7123348595797445166">Try it (already installed)</translation>
+<translation id="4338032231047635328">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented contains errors. Google Chrome cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="9189723490960700326">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented an expired certificate. No information is available to indicate whether that certificate has been compromised since its expiry. This means that Google Chrome cannot guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. You should not proceed.</translation>
+<translation id="1847321074516120686">Chrome Auto-fill settings</translation>
 <translation id="7106741999175697885">Task Manager - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome is now importing the following items from <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">An operating system error occurred during installation. Please download Google Chrome again.</translation>
 <translation id="5495581687705680288">Modules loaded into Google Chrome</translation>
-<translation id="1144950271450340860">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate issued by an entity that is not trusted by your computer's operating system. This may mean that the server has generated its own security credentials, which Google Chrome cannot rely on for identity information, or an attacker may be trying to intercept your communications. You should not proceed, &lt;strong&gt;especially&lt;/strong&gt; if you have never seen this warning before for this site.</translation>
+<translation id="4086010630946365132">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Google Chrome cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. You should ensure that your clock and time zone are set correctly on your computer. If they are not, you should correct any issues and refresh this page.</translation>
+<translation id="8129812357326543296">About &amp;Google Chrome</translation>
 </translationbundle>

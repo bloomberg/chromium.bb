@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="8000275528373650868">För Google Chrome krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
+<translation id="8485767968786176057">I det här fallet överensstämmer inte adressen i certifikatet med webbplatsen som webbläsaren försökte öppna. Det kan bero på att kommunikationen har kapats av en bedragare som anger ett certifikat för en annan webbplats, vilket orsakar konflikten. En annan orsak kan vara att servern är konfigurerad för att returnera samma certifikat till flera webbplatser, inklusive den som du försöker besöka, trots att certifikatet inte är giltigt för alla dessa webbplatser. Google Chrome kan intyga att du har öppnat &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, men kan inte bekräfta att det är webbplatsen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; som du ville besöka. Om du fortsätter kommer inte Chrome att söka efter eventuella nya namnkonflikter.</translation>
 <translation id="5430073640787465221">Inställningsfilen är skadad eller ogiltig.
 
 Google Chrome kan inte återställa dina inställningar.</translation>
@@ -15,18 +16,24 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 
 Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>
 <translation id="7781002470561365167">Det finns en ny version av Google Chrome tillgänglig.</translation>
+<translation id="1484802885942301358">Google Chrome behöver inte uppdateras (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Starta Google Chrome</translation>
+<translation id="4738120821427858478">Ändringarna börjar gälla nästa gång du startar Google Chrome OS.</translation>
 <translation id="4891791193823137474">Låt Google Chrome köras i bakgrunden</translation>
 <translation id="2879385160622431163">Google Chrome Instant</translation>
 <translation id="2370289711218562573">Google Chrome importerar favoriter/bokmärken.</translation>
 <translation id="1761870329818521071">Det går inte att installera samma version av Google Chrome Frame som redan körs. Stäng Google Chrome Frame och försök igen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
+<translation id="3140883423282498090">Ändringarna börjar gälla nästa gång du startar Google Chrome.</translation>
+<translation id="1872436416934435136">Google Chrome uppdateras inte längre eftersom operativsystemet är inaktuellt.</translation>
 <translation id="5339639696978861456">Chrome Frame har uppdaterats. Starta om webbläsaren. Version av Chrome: <ph name="TODO_0001"/>, version av Chrome Frame: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Användarvillkor</translation>
+<translation id="6862759394142635932">Om du stänger Google Chrome nu avbryts hämtningen.</translation>
 <translation id="1779550429052479749">Det finns en annan installation av Google Chrome eller Google Chrome Frame på datorn. Avinstallera den och försök igen.</translation>
 <translation id="3555616473548901994">Avinstallation slutförd.</translation>
 <translation id="8556340503434111824">Det finns en ny version av Google Chrome och den är snabbare än någonsin.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
+<translation id="4727256538826447736">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern angav ett utgånget certifikat. Det finns ingen information om huruvida certifikatet har äventyrats sedan det utgått. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en bedragare.</translation>
 <translation id="3080151273017101988">Fortsätt köra bakgrundsappar när Google Chrome avslutas</translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Hämta Google Chrome igen.</translation>
 <translation id="6989339256997917931">Chrome har uppdaterats men du har inte använt det på över 30 dagar.</translation>
@@ -41,54 +48,63 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3487814320513494737">Sidan Ny flik i Chrome har gjorts om. Växla mellan avsnitt genom att klicka på etiketterna. Chrome kommer ihåg inställningen till nästa gång.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
-<translation id="8446794773162156990">Google Chrome uppför sig inte</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
 <translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
 <translation id="5037239767309817516">Stäng alla fönster i Google Chrome och starta om så att ändringen genomförs.</translation>
 <translation id="7451721381978275812">Ogiltiga argument. Google Chrome Frame kan inte installeras i klarläge utan att Google Chrome också installeras.</translation>
+<translation id="5727432509906037972">Vill du avsluta Google Chrome medan en hämtning pågår?</translation>
+<translation id="1367236238006776563">Tillägget <ph name="EXTENSION_NAME"/> har lagts till i Chrome.</translation>
 <translation id="4585888816441913908">Datorn har redan en mer aktuell version av Google Chrome och Google Chrome Frame. Om programmet inte fungerar avinstallerar du både Google Chrome och Google Chrome Frame och försöker igen.</translation>
 <translation id="6368958679917195344">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS"/>öppen källkod<ph name="END_LINK_CROS_OSS"/>.</translation>
-<translation id="4357846314885556934">Google Chrome uppför sig inte</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3215326788962391210">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;, men servern angav ett certifikat som har utfärdats av en enhet som inte är betrodd av datorns operativsystem. Detta kan innebära att servern har skapat egna säkerhetsuppgifter som Google Chrome inte kan lita på angående identitetsuppgifter eller att en bedragare försöker hindra din kommunikation.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome stängdes inte av på rätt sätt. Klicka på Återställ om du åter vill öppna de tidigare öppna sidorna.</translation>
+<translation id="2783467918276328046">Visa <ph name="BEGIN_LINK"/>fler fördelar<ph name="END_LINK"/> med att logga in på Chrome.</translation>
 <translation id="2580411288591421699">Det går inte att installera samma version av Google Chrome som redan körs. Stäng Google Chrome och försök igen.</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>
 <translation id="5170938038195470297">Profilen kan inte användas eftersom den tillhör en nyare version av Google Chrome.
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om du vill använda en nyare version av Chrome.</translation>
-<translation id="6009537148180854585">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men certifikatet som servern angav innehåller fel. Google Chrome kan inte använda ett certifikat som innehåller fel och kan inte validera identiteten för webbplatsen som du försöker öppna. Anslutningen är inte säker och du bör inte fortsätta.</translation>
 <translation id="8738921060445980047">Okänd version.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
 <translation id="2748463065602559597">Du tittar på en säker Google Chrome-sida.</translation>
+<translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> har lagts till i Chrome.</translation>
 <translation id="9073088951656332330">Det finns ingen installation av Google Chrome eller Google Chrome Frame att uppdatera.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Varning!<ph name="END_BOLD"/> Google Chrome kan inte förhindra tillägg från att registrera din webbhistorik. Om du vill inaktivera det här tillägget i inkognitoläge avmarkerar du detta tillval.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="3904146009066562368">En ny version av Google Chrome finns tillgänglig.</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="2044287590254833138">Verktygsfältet Google Chrome</translation>
 <translation id="5074344184765391290">Plugin-värd för Chrome</translation>
-<translation id="6481075104394517441">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men certifikatet som servern angav är inte giltigt ännu. Det finns ingen information om huruvida certifikatet är tillförlitligt. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Kontrollera att klockan och tidszonen är korrekt angivna på datorn. I annat fall bör du korrigera dem och uppdatera den här sidan. Fortsätt inte om de är korrekta.</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome fungerar tack vare det öppna källkodsprojektet <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> och andra <ph name="BEGIN_LINK_OSS"/>program med öppen källkod<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7855730255114109580">Google Chrome behöver inte uppdateras</translation>
 <translation id="3847841918622877581">Google Chrome kan använda webbtjänster för att förbättra din upplevelse när du surfar.</translation>
 <translation id="7436949144778751379">För Google Chrome krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
-<translation id="7938170099933661772">Google Chrome kan inte visa förhandsgranskningen när PDF-läsaren är inaktiverad. Om du vill visa förhandsgranskningen besöker du <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, aktiverar Chromes PDF-läsare och försöker igen.</translation>
 <translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
+<translation id="4273752058983339720">Google Chrome är konfigurerad för att starta automatiskt när du startar datorn.</translation>
+<translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="5941830788786076944">Använd Google Chrome som standardwebbläsare</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">I Google Chrome kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="3612333635265770873">En modul med samma namn har tidigare varit i konflikt med Google Chrome.</translation>
-<translation id="2679385451463308372">Skriv ut via systemets dialogruta ...</translation>
+<translation id="61852838583753520">Uppdatera &amp;Chrome OS</translation>
 <translation id="6650142020817594541">Webbplatsen rekommenderar Google Chrome Frame (redan installerat)</translation>
-<translation id="4127951844153999091">I det här fallet överensstämmer inte adressen i certifikatet med adressen på webbplatsen som webbläsaren försökte besöka. Det kan bero på att kommunikationen har kapats av en bedragare som anger ett certifikat för en annan webbplats, vilket orsakar konflikten. En annan orsak kan vara att servern är inställd för att returnera samma certifikat till flera webbplatser, inklusive den som du försöker besöka, trots att certifikatet inte är giltigt för alla dessa webbplatser. Google Chrome kan intyga att du nått &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, men kan inte bekräfta att det är webbplatsen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; som du vill komma till. Om du fortsätter kommer inte Chrome att söka efter eventuella nya namnkonflikter. I allmänhet är det bäst att inte fortsätta med åtgärden.</translation>
+<translation id="4535984553437295350">Starta Google Chrome igen för att avsluta uppdateringen</translation>
 <translation id="2712549016134575851">En konflikt med ett annat installerat program har upptäckts.</translation>
 <translation id="5577648424992741236">Det finns redan en senare version av Google Chrome Frame på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome Frame och försöker igen.</translation>
 <translation id="7018032895891496381">Google Chrome använder din standardsökmotor, som för närvarande är <ph name="PAGE_TITLE"/>. Vill du behålla din standardsökmotor?</translation>
+<translation id="6326175484149238433">Ta bort från Chrome</translation>
 <translation id="7161904924553537242">Välkommen till Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
+<translation id="870251953148363156">Uppdatera &amp;Google Chrome</translation>
+<translation id="147599965395609989">Google Chrome har uppdaterats</translation>
 <translation id="1399397803214730675">Det finns redan en senare version av Google Chrome på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome och försöker igen.</translation>
+<translation id="2827900704927383772">Vill du avsluta Google Chrome medan <ph name="DOWNLOAD_COUNT"/> hämtningar pågår?</translation>
 <translation id="3444832043240812445">Du måste <ph name="BEGIN_LINK"/>aktivera kraschrapportering<ph name="END_LINK"/> för att information om de senaste krascherna ska visas på den här sidan.</translation>
 <translation id="8614913330719544658">Google Chrome svarar inte. Vill du starta om nu?</translation>
 <translation id="5318056482164160049">Plugin-värd för Google Chrome</translation>
@@ -96,6 +112,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 <translation id="5046764976540625289">Avsluta Chrome</translation>
 <translation id="2925521875688282191">Den här ändringen träder inte i kraft förrän du loggat ut från Chrome OS och sedan loggar in igen.</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
+<translation id="2680623880102270805">Det går inte att skapa en genväg till programmet i Google Chrome eftersom den aktuella skrivbordsmiljön inte kan fastställas.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Webbläsare</translation>
 <translation id="2189123953385179981">Google ChromeOS stöder inte att ett externt program startas för att hantera <ph name="SCHEME"/>-länkar. Den begärda länken är <ph name="PROTOLINK"/>.</translation>
@@ -105,10 +122,15 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 <translation id="2769762047821873045">Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Hämta Google Chrome igen.</translation>
 <translation id="3335672657969596251">Google Chrome saknar stöd för <ph name="OS_NAME"/>.</translation>
+<translation id="2666187591945638709">Google Chrome har uppdaterats till <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Den här modulen har tidigare varit i konflikt med Google Chrome.</translation>
+<translation id="4892299120052124303">Om du stänger Google Chrome nu avbryts hämtningen.</translation>
+<translation id="2084710999043359739">Lägg till i Chrome</translation>
 <translation id="4084877369264707540">Google Chrome Frame är redan installerat och tillgängligt för alla användare på den här datorn. Om du vill installera Google Chrome Frame på användarnivå måste du först avinstallera den version som installerats på systemnivå av en administratör.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
+<translation id="3451115285585441894">Lägger till i Chrome ...</translation>
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Hämta Google Chrome igen.</translation>
+<translation id="2246246234298806438">Förhandsgranskningen av utskriften kan inte visas i Google Chrome eftersom den inbyggda PDF-läsaren saknas.</translation>
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">Google Chrome är en webbläsare som kör webbsidor och program med ljusets hastighet. Den är snabb, stabil och lätt att använda. Surfa säkrare med Google Chrome, som har inbyggt skydd mot skadlig programvara och nätfiske.</translation>
@@ -116,12 +138,14 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog om d
 <translation id="3336524238463733095">Google Chrome eller Google Chrome Frame kan inte uppdateras eftersom grupprincipinställningarna för Google Update inte är konsekventa. Använd Principeditorn för att ange en åsidosättning för grupprinciper för programmet Google Chrome Binaries och försök igen. Mer information finns på http://goo.gl/uJ9gV.</translation>
 <translation id="6049075767726609708">En administratör har installerat Google Chrome på systemet så att det är tillgängligt för alla användare. Systemnivåversionen av Google Chrome ersätter nu installationen på användarnivå.</translation>
 <translation id="7123348595797445166">Testa den (redan installerad)</translation>
+<translation id="4338032231047635328">Du försökte öppna &lt;strong&gt; <ph name="DOMAIN"/> &lt;/ strong&gt;, men certifikatet som servern angav innehåller fel. Google Chrome kan inte använda ett certifikat som innehåller fel eller godkänna identiteten för webbplatsen som du har försökt ansluta till.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
-<translation id="9189723490960700326">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men servern angav ett utgånget certifikat. Det finns ingen information om huruvida certifikatet har äventyrats sedan det utgått. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Du bör inte fortsätta.</translation>
+<translation id="1847321074516120686">Inställningar för Autofyll i Chrome</translation>
 <translation id="7106741999175697885">Aktivitetshanteraren - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome importerar följande objekt från <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Ett operativsystemsfel inträffade under installationen. Hämta Google Chrome igen.</translation>
 <translation id="5495581687705680288">Moduler som är inlästa i Google Chrome</translation>
-<translation id="1144950271450340860">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men certifikatet som angavs av servern har utfärdats av en myndighet som inte är tillförlitlig enligt datorns operativsystem. Detta kan innebära att servern har genererat egna säkerhetsuppgifter som Google Chrome inte kan använda som identitetsinformation, eller att en angripare försöker hindra kommunikationen. Fortsätt inte, &lt;strong&gt;i synnerhet inte&lt;/strong&gt; om du aldrig har sett den här varningen tidigare på webbplatsen.</translation>
+<translation id="4086010630946365132">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;, men servern angav ett certifikat som ännu inte är giltigt. Det finns ingen information som antyder att certifikatet är tillförlitligt. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt; <ph name="DOMAIN2"/> &lt;/ strong&gt; och inte en bedragare. Du bör se till att klockan och tidszonen är rätt inställda på din dator. Om de inte är det bör du justera dem och uppdatera den här sidan.</translation>
+<translation id="8129812357326543296">Om &amp;Google Chrome</translation>
 </translationbundle>

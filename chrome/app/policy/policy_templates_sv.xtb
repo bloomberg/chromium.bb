@@ -39,6 +39,7 @@
       Om policyn inte ställs in kan användaren tillfrågas om han eller hon vill importera, eller så kan importen göras automatiskt.</translation>
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="2908277604670530363">Högsta antalet samtidiga anslutningar till proxyservern</translation>
+<translation id="7298195798382681320">Rekommenderas</translation>
 <translation id="1438955478865681012">Konfigurerar tilläggsrelaterade policyer. Användaren får inte installera svartlistade tillägg om de inte tas med i vitlistan. Du kan också tvinga <ph name="PRODUCT_NAME"/> att installera tillägg automatiskt genom att ange dem i <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Svartlistan åsidosätter listan med påtvingade tillägg.</translation>
 <translation id="8668394701842594241">Policyn anger en lista med plugin-program som är aktiverade i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
@@ -49,6 +50,7 @@
       Observera att den här policyn åsidosätter både DisabledPlugins och DisabledPluginsExceptions.
 
       Om den här policyn inte ställs in kan användaren inaktivera alla plugin-program som finns på datorn.</translation>
+<translation id="5255162913209987122">Kan rekommenderas</translation>
 <translation id="7331962793961469250">När värdet är True visas inte kampanjer för appar i Chrome Web Store på sidan Ny flik.
 
       Om inställningen är False eller inte anges visas kampanjer för appar i Chrome Web Store på sidan Ny flik</translation>
@@ -166,11 +168,13 @@
 <translation id="3915395663995367577">Webbadress till en PAC-proxyfil</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
 <translation id="7683777542468165012">Dynamisk policyuppdatering</translation>
+<translation id="8987262643142408725">Inaktivera delade SSL-poster</translation>
 <translation id="4529945827292143461">Policyn anpassar listan med webbadressmönster som alltid ska renderas av värdwebbläsaren.
 
           Om policyn inte ställs in används standardrenderaren för alla webbplatser enligt specifikationen i policyn ChromeFrameRendererSettings.
 
           Exempel på mönster finns på http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8044493735196713914">Rapportera omstartsläge för enhet</translation>
 <translation id="1942957375738056236">Här kan du ange proxyserverns webbadress.
 
           Den här policyn används bara om du har valt manuella proxyinställningar under Välj hur inställningar för proxyserver ska anges.
@@ -253,6 +257,7 @@
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
 <translation id="262740370354162807">Aktivera sändning av dokument till <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
+<translation id="8391419598427733574">Rapportera version av operativsystem och fast programvara för registrerade enheter. Om inställningen är False kommer registrerade enheter regelbundet att rapportera versionen av operativsystemet och den fasta programvaran. Om inställningen inte är angiven eller inställd på False kommer versionsinformationen inte att rapporteras.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
 <translation id="5883015257301027298">Standardinställning för cookies</translation>
 <translation id="3413139738214204027">Policyn konfigurerar adressen för standardstartsidan i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar den.
@@ -297,6 +302,7 @@
       Om du inte anger inställningen kan användarna välja om de vill använda funktionen eller inte.</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="3964909636571393861">Ger åtkomst till en lista med webbadresser</translation>
+<translation id="3450318623141983471">Rapportera läget för enhetens utvecklarväljare vid uppstart. Om policyn inte är angiven eller inställd på False kommer läget för utvecklarväljaren inte att rapporteras.</translation>
 <translation id="9102979059463597405">Aktivera TLS-ursprungsbundna certifikattillägg</translation>
 <translation id="6022948604095165524">Åtgärd vid start</translation>
 <translation id="7625444193696794922">Policyn anger vilken versionskanal som enheten ska låsas till.</translation>
@@ -341,6 +347,7 @@
           Om policyn inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
 <translation id="2959898425599642200">Regler för proxybypass</translation>
+<translation id="1098794473340446990">Rapportera aktivitetstider för enhet. Om inställningen är True kommer registrerade enheter att rapportera tidsperioder när en användare är aktiv på enheten. Om inställningen inte är angiven eller inställd på False kommer enhetens aktivitetstider inte att registreras eller rapporteras.</translation>
 <translation id="7337941689192402544">Ställ in användardatakatalog för <ph name="PRODUCT_NAME"/></translation>
 <translation id="896575211736907134">Tvingat inkognitoläge.</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
@@ -436,6 +443,7 @@
 <translation id="6244210204546589761">Webbadresser att öppna vid start</translation>
 <translation id="7468416082528382842">Windows-registerplats:</translation>
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
+<translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
 <translation id="267596348720209223">Policyn anger vilka teckenkodningar som stöds av sökleverantören. Kodningar är kodsidenamn som UTF-8, GB2312 och ISO-8859-1. De testas i den ordning som de anges.
 
           Policyn är valfri. Om den inte anges används standarden UTF-8.
@@ -462,6 +470,7 @@
       Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den katalog som anges oavsett om användaren har angett en eller aktiverat flaggan om att bli frågad om hämtning varje gång.
 
       Om den här policyn inte anges används standardkatalogen för hämtning och användaren kan ändra inställningen.</translation>
+<translation id="5761030451068906335">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME"/>. Använd inte policyn. Den är inte redo ännu.</translation>
 <translation id="8344454543174932833">Importera bokmärken från standardwebbläsaren första gången den körs</translation>
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
 <translation id="5826047473100157858">Policyn anger om användaren får öppna sidor i inkognitoläge i <ph name="PRODUCT_NAME"/>.
@@ -471,6 +480,7 @@
       Om policyn är inaktiverad kan sidor inte öppnas i inkognitoläge.
 
       Om tvingat läge är valt kan sidor BARA öppnas i inkognitoläge.</translation>
+<translation id="5085647276663819155">Inaktivera förhandsgranskning av utskrift</translation>
 <translation id="2030905906517501646">Sökord för standardsökleverantör</translation>
 <translation id="2949818985084413317">Policyn gör att du kan ställa in en lista med webbadressmönster som anger webbplatser som får ställa in sessionscookies.
 
@@ -518,6 +528,7 @@
 <translation id="5378985487213287085">Policyn gör att du kan ange om webbplatser får visa meddelanden på skrivbordet. Meddelanden på skrivbordet kan vara tillåtet som standard, otillåtet som standard eller så kan användaren tillfrågas varje gång en webbplats försöker visa meddelanden på skrivbordet.
 
           Om policyn inte anges används AskNotifications och användaren kan ändra inställningen.</translation>
+<translation id="3744263630913802110">Rapportera version av operativsystem och fast programvara.</translation>
 <translation id="6908640907898649429">Konfigurerar standardsökleverantör. Du kan ange vilken standardsökleverantör som ska användas eller inaktivera standardsökning.</translation>
 <translation id="389421284571827139">Policyn gör att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar proxyinställningar.
 
@@ -545,6 +556,7 @@
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
+<translation id="8288507390252297611">Inaktivera förhandsgranskning av utskrift. Inställningen används för att systemets dialogruta Skriv ut ska användas istället för förhandsgranskning av utskrift.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="6190022522129724693">Standardinställning för popup-fönster</translation>
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
@@ -566,6 +578,9 @@
 <translation id="3034580675120919256">Policyn gör att du kan ange om webbplatser får köra JavaScript. Du kan tillåta JavaScript på alla webbplatser eller blockera JavaScript på alla webbplatser.
 
           Om policyn inte anges används AllowJavaScript och användaren kan ändra inställningen.</translation>
+<translation id="3195451902035818945">Anger om delade SSL-poster ska inaktiveras. Delade poster är ett sätt att komma runt en svaghet i SSL 3.0 och TLS 1.0, men funktionen kan orsaka kompatibilitetsproblem med vissa HTTPS-servrar och proxyservrar.
+
+      Om policyn inte är angiven eller inställd på False kommer delade poster att användas på SSL/TLS-anslutningar som använder CBC-krypteringsmetoder.</translation>
 <translation id="5868414965372171132">Nätverkskonfiguration på användarnivå</translation>
 <translation id="5493552890659553833">Policyn aktiverar sökförslag i adressfältet i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
@@ -587,6 +602,7 @@
 <translation id="602728333950205286">Dynamisk webbadress för standardsökleverantör</translation>
 <translation id="24485093530245771">Ange storlek för enhetens cachestorlek i MB</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
+<translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="4482640907922304445">Policyn visar knappen Startsida i verktygsfältet i <ph name="PRODUCT_NAME"/>.
 
       Om du aktiverar inställningen visas alltid knappen Startsida.
@@ -735,13 +751,6 @@
 
           Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras av brandväggen kan den här datorn bara ansluta till värddatorer inom det lokala nätverket.</translation>
 <translation id="5511702823008968136">Aktivera bokmärkesfältet</translation>
-<translation id="1775332090152062460">Inaktiverar användning av SPDY-protokollet i <ph name="PRODUCT_NAME"/>.
-
-      Om den här policyn är aktiverad är SPDY-protokollet inte tillgängligt i <ph name="PRODUCT_NAME"/>.
-
-      Om den här policyn inaktiveras kan SPDY användas.
-
-      Om den här policyn inte anges kan SPDY användas men användaren kan ändra inställningen.</translation>
 <translation id="7848840259379156480">Innebär att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME"/> är installerat.
       Standardinställningen är att låta värdwebbläsaren utföra renderingen, men du
       kan välja att åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME"/> rendera HTML-sidor som standard.</translation>
@@ -788,6 +797,13 @@
       Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den angivna katalogen oavsett om användaren har angett flaggan --user-data-dir eller inte.
 
       Om den här policyn inte anges används standardprofilens sökväg och användaren kan åsidosätta den med kommandoradsflaggan --user-data-dir.</translation>
+<translation id="7381326101471547614">Inaktiverar användning av SPDY-protokollet i <ph name="PRODUCT_NAME"/>.
+
+      Om den här policyn är aktiverad är SPDY-protokollet inte tillgängligt i <ph name="PRODUCT_NAME"/>.
+
+      Om den här policyn inaktiveras kan SPDY användas.
+
+      Om den här policyn inte anges kommer SPDY att bli tillgängligt.</translation>
 <translation id="1583248206450240930">Använd <ph name="PRODUCT_FRAME_NAME"/> som standard</translation>
 <translation id="1047128214168693844">Tillåt inte att någon webbplats spårar användarnas fysiska plats</translation>
 <translation id="4101778963403261403">Policyn konfigurerar standardstartsidans typ i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningar för startsidan. Startsidan kan vara inställd på en webbadress du anger eller på sidan Ny flik.

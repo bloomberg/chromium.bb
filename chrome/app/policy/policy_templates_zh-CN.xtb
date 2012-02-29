@@ -18,8 +18,10 @@
 <translation id="3214164532079860003">如果启用此政策，就会强制从当前默认浏览器导入主页。如果停用此政策，就不会导入主页。如果未设置此政策，系统就会询问用户是否导入主页，或者系统自动进行导入。</translation>
 <translation id="5469825884154817306">在这些网站上阻止图片</translation>
 <translation id="2908277604670530363">可同时连接到代理服务器的连接数上限</translation>
+<translation id="7298195798382681320">推荐</translation>
 <translation id="1438955478865681012">配置关于扩展程序的政策。用户无法安装列入黑名单的扩展程序（除非相应程序列入了白名单）。您也可以在“<ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>”中指定某些扩展程序，从而强制“<ph name="PRODUCT_NAME"/>”自动安装这些扩展程序。黑名单的优先级高于强制安装的扩展程序列表。</translation>
 <translation id="8668394701842594241">指定在 <ph name="PRODUCT_NAME"/>中启用的插件的列表，并禁止用户更改此设置。可使用通配符“*”和“?”匹配任意字符序列。“*”可匹配任意数量的字符，而“?”可指定单个可选的字符，即匹配零个或一个字符。转义字符为“\”，因此要匹配实际的“*”、“?”或“\”字符，您可以在这些字符前加上“\”。列表中指定的插件如果已安装，就会始终在 <ph name="PRODUCT_NAME"/>中使用。这些插件在“about:plugins”中标记为“已启用”，而且用户无法停用它们。请注意，此政策可替换 DisabledPlugins 和 DisabledPluginsExceptions 这两者。如果未设置此政策，用户就可以停用系统中安装的任何插件。</translation>
+<translation id="5255162913209987122">可推荐</translation>
 <translation id="7331962793961469250">设置为“True”时，新标签页中不会显示 Chrome 网上应用店应用程序的推广内容。如果将此选项设置为“False”或不做任何设置，新标签页中就会显示 Chrome 网上应用店应用程序的推广内容。</translation>
 <translation id="7271085005502526897">首次运行时，从默认浏览器导入主页</translation>
 <translation id="6036523166753287175">支持通过远程访问主机穿越防火墙</translation>
@@ -66,7 +68,9 @@
 <translation id="3915395663995367577">代理 .pac 文件的网址</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
 <translation id="7683777542468165012">动态政策刷新</translation>
+<translation id="8987262643142408725">停用 SSL 记录分割</translation>
 <translation id="4529945827292143461">自定义应始终由托管浏览器呈现的网址格式的列表。如果未设置此政策，系统将按照“ChromeFrameRendererSettings”政策的规定，对所有网站使用默认呈现器。要查看示例格式，请访问 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
+<translation id="8044493735196713914">报告设备引导模式</translation>
 <translation id="1942957375738056236">您可以在此指定代理服务器的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看更多选项和详细示例，请访问：<ph name="PROXY_HELP_URL"/></translation>
 <translation id="8642088216849640113">启用 <ph name="PRODUCT_NAME"/>的安全浏览功能，并禁止用户更改此设置。如果您启用了此设置，就会始终使用安全浏览功能。如果您停用了此设置，就永远不会使用安全浏览功能。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="2711603272213076156">允许调用文件选择对话框。</translation>
@@ -98,6 +102,9 @@
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
+<translation id="8391419598427733574">报告注册设备的操作系统和固件版本。
+
+     如果将此设置设为 True，注册设备就会定期报告操作系统和固件版本。如果未配置此设置或设为 False，就不会报告版本信息。</translation>
 <translation id="467449052039111439">打开网址列表</translation>
 <translation id="5883015257301027298">默认 Cookie 设置</translation>
 <translation id="3413139738214204027">在 <ph name="PRODUCT_NAME"/>中配置默认主页网址，并禁止用户更改此设置。您可将主页类型设置为此处指定的网址，也可以设置为新标签页。如果您选择了新标签页，就会忽略此政策。如果您启用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改自己的主页网址，但是仍可以选择新标签页作为主页。如果既没有设置此政策，也没有设置 HomepageIsNewTabPage，用户就可以自行选择主页。</translation>
@@ -112,6 +119,9 @@
 <translation id="8170878842291747619">在 <ph name="PRODUCT_NAME"/>中启用集成的 Google 翻译服务。如果您启用了此设置，<ph name="PRODUCT_NAME"/>将显示一个集成的工具栏，以便在合适的情况下帮助用户翻译网页。如果您停用了此设置，系统就不会显示翻译栏。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未进行设置，用户就可以自行决定是否使用此功能。</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
 <translation id="3964909636571393861">允许访问网址列表</translation>
+<translation id="3450318623141983471">报告设备的 dev 开关在引导时的状态。
+
+      如果未配置此设置或设为 False，就不会报告 dev 开关的状态。</translation>
 <translation id="9102979059463597405">启用 TLS 来源绑定证书扩展程序</translation>
 <translation id="6022948604095165524">启动时的操作</translation>
 <translation id="7625444193696794922">指定该设备应锁定到的发布渠道。</translation>
@@ -124,6 +134,9 @@
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
 <translation id="5770738360657678870">开发人员版（可能不稳定）</translation>
 <translation id="2959898425599642200">代理绕过规则</translation>
+<translation id="1098794473340446990">报告设备活动时间。
+
+      如果将此设置设为 True，注册设备就会报告用户使用此设备的时间段。如果未配置此设置或设为 False，就不会记录或报告设备活动时间。</translation>
 <translation id="7337941689192402544">设置“<ph name="PRODUCT_NAME"/>”用户数据目录</translation>
 <translation id="896575211736907134">强制使用隐身模式。</translation>
 <translation id="6641981670621198190">停用对 3D 图形 API 的支持</translation>
@@ -162,6 +175,7 @@
 <translation id="6244210204546589761">启动时打开的网址</translation>
 <translation id="7468416082528382842">Windows 注册表位置：</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
+<translation id="7340034977315324840">报告设备活动时间</translation>
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2745445908503591390">在浏览器关闭时清除网站数据</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
@@ -170,9 +184,13 @@
 <translation id="717221064259627503">配置 <ph name="PRODUCT_NAME"/>用于在磁盘上存储缓存文件的目录。如果您设置了此政策，那么无论用户是否指定“--disk-cache-dir”标记，<ph name="PRODUCT_NAME"/>都会使用提供的目录。如果未设置此政策，系统将使用默认缓存目录，并允许用户通过“--disk-cache-dir”命令行标记替换此目录。</translation>
 <translation id="2312134445771258233">允许您配置在启动时载入的页面。除非您在“启动时的操作”中选择“打开网址列表”，否则系统会忽略“启动时打开的网址”列表中的内容。</translation>
 <translation id="2538628396238281971">配置 <ph name="PRODUCT_NAME"/>用于下载文件的目录。如果您设置了此政策，那么无论用户是否指定某个目录，也无论用户是否启用在每次下载时都提示下载位置的标记，<ph name="PRODUCT_NAME"/>都会使用提供的目录。如果未设置此政策，系统将使用默认下载目录，并允许用户更改此目录。</translation>
+<translation id="5761030451068906335">配置 <ph name="PRODUCT_NAME"/>的代理设置。
+
+      此政策尚未做好投入使用的准备，请勿使用。</translation>
 <translation id="8344454543174932833">首次运行时，从默认浏览器导入书签</translation>
 <translation id="1019101089073227242">设置用户数据目录</translation>
 <translation id="5826047473100157858">指定用户是否可以在 <ph name="PRODUCT_NAME"/>中以隐身模式打开网页。如果选择“已启用”或未设置此政策，则允许以隐身模式打开网页。如果选择“已停用”，则不能以隐身模式打开网页。如果选择“强制”，则只能以隐身模式打开网页。</translation>
+<translation id="5085647276663819155">停用打印预览</translation>
 <translation id="2030905906517501646">默认搜索服务提供商关键字</translation>
 <translation id="2949818985084413317">可让您设置网址格式的列表，这些网址格式用于指定允许设置仅限会话期间使用的 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7393895128271703858">此政策已弃用，请改用 DefaultJavaScriptSetting。在 <ph name="PRODUCT_NAME"/>中启用 JavaScript，并禁止用户更改此设置。如果已启用或未配置此设置，网页就可以使用 JavaScript。如果停用此设置，网页就无法使用 JavaScript。如果未设置此政策，系统将使用默认值（即启用）并允许用户更改此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
@@ -189,6 +207,7 @@
 <translation id="13356285923490863">政策名称</translation>
 <translation id="557658534286111200">启用或停用书签修改功能</translation>
 <translation id="5378985487213287085">可让您设置是否允许网站显示桌面通知。默认情况下，可以允许或拒绝显示桌面通知，也可以在每次网站要显示桌面通知时询问用户。如果未设置此政策，系统将使用“AskNotifications”并允许用户更改此设置。</translation>
+<translation id="3744263630913802110">报告操作系统和固件版本。</translation>
 <translation id="6908640907898649429">配置默认搜索服务提供商。您可以指定用户会使用的默认搜索服务提供商，或选择停用默认搜索。</translation>
 <translation id="389421284571827139">可让您指定 <ph name="PRODUCT_NAME"/>使用的代理服务器，并禁止用户更改代理设置。如果您选择从不使用代理服务器，而总是直接连接，就会忽略其他所有选项。如果您选择自动检测代理服务器，就会忽略其他所有选项。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/>。如果您启用了此设置， <ph name="PRODUCT_NAME"/>就会忽略通过命令行指定的所有代理相关选项。如果未设置此政策，用户就可以自行选择代理设置。</translation>
 <translation id="681446116407619279">支持的身份验证方案</translation>
@@ -197,6 +216,9 @@
 <translation id="3793095274466276777">在“<ph name="PRODUCT_NAME"/>”中配置默认浏览器检查，并禁止用户更改此设置。如果您启用了此设置，则“<ph name="PRODUCT_NAME"/>”在启动时总是会检查自己是否为默认浏览器，并会自动注册（如果可以）。如果此设置已停用，则“<ph name="PRODUCT_NAME"/>”永远不会检查自己是否为默认浏览器，并会禁止用户设置此选项。如果此设置未配置，则“<ph name="PRODUCT_NAME"/>”会让用户控制是否将它设为默认浏览器，并控制是否在它不是默认浏览器的情况下显示用户通知。</translation>
 <translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="1530812829012954197">总是通过托管浏览器呈现以下网址格式</translation>
+<translation id="8288507390252297611">停用打印预览。
+
+      使用此设置可强制使用系统打印对话框，而不是打印预览。</translation>
 <translation id="913195841488580904">阻止访问网址列表</translation>
 <translation id="6190022522129724693">默认弹出式窗口设置</translation>
 <translation id="847472800012384958">不允许任何网站显示弹出式窗口</translation>
@@ -212,6 +234,9 @@
 <translation id="3823029528410252878">在 <ph name="PRODUCT_NAME"/>中停用浏览器历史记录保存功能，并禁止用户更改此设置。如果启用此设置，系统就不会保存浏览记录。如果停用或未配置此设置，系统就会保存浏览记录。</translation>
 <translation id="7202926611616207807">允许所有网站设置本地数据。</translation>
 <translation id="3034580675120919256">可让您设置是否允许网站运行 JavaScript。可以针对所有网站允许或拒绝运行 JavaScript。如果未设置此政策，系统将使用“AllowJavaScript”并允许用户更改此设置。</translation>
+<translation id="3195451902035818945">指定是否应停用 SSL 记录分割。记录分割是针对 SSL 3.0 和 TLS 1.0 中的弱点采用的解决方法，但是会导致有关某些 HTTPS 服务器和代理出现兼容性问题。
+
+      如果未设置此政策或将其设为 False，就会对采用 CBC 密码套件的 SSL/TLS 连接使用记录分割。</translation>
 <translation id="5868414965372171132">用户级网络配置</translation>
 <translation id="5493552890659553833">在 <ph name="PRODUCT_NAME"/>的多功能框中启用搜索建议功能，并禁止用户更改此设置。如果您启用了此设置，系统就会使用搜索建议功能。如果您停用了此设置，系统就不会使用搜索建议功能。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
@@ -221,6 +246,7 @@
 <translation id="602728333950205286">默认搜索服务提供商的即搜即得网址</translation>
 <translation id="24485093530245771">设置磁盘缓存大小 (MB)</translation>
 <translation id="1675002386741412210">支持的环境：</translation>
+<translation id="3547954654003013442">代理设置</translation>
 <translation id="4482640907922304445">在 <ph name="PRODUCT_NAME"/>的工具栏上显示“主页”按钮。如果您启用了此设置，则会始终显示“主页”按钮。如果您停用了此设置，则从不显示“主页”按钮。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改或替换此设置。如果未设置此政策，用户就可以选择是否显示“主页”按钮。</translation>
 <translation id="7547044444554936129">启用 <ph name="PRODUCT_NAME"/>的即搜即得功能，并禁止用户更改此设置。如果您启用了此设置，就会启用 <ph name="PRODUCT_NAME"/>即搜即得功能。如果您停用了此设置，就会停用 <ph name="PRODUCT_NAME"/>即搜即得功能。如果您启用或停用了此设置，用户就无法更改或替换此设置。如果未进行此设置，用户就可以决定是否使用此功能。</translation>
 <translation id="3264793472749429012">默认搜索服务提供商的编码</translation>
@@ -276,7 +302,6 @@
 <translation id="4906194810004762807">设备策略的更新频率</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
 <translation id="5511702823008968136">启用书签栏</translation>
-<translation id="1775332090152062460">禁止在 <ph name="PRODUCT_NAME"/>中使用 SPDY 协议。如果启用了此政策，就无法在 <ph name="PRODUCT_NAME"/>中使用 SPDY 协议。如果停用了此政策，就可以使用 SPDY 协议。如果未设置此政策，就可以使用 SPDY 协议，不过用户也可以更改此设置。</translation>
 <translation id="7848840259379156480">可让您配置安装“<ph name="PRODUCT_FRAME_NAME"/>”时默认使用的 HTML 呈现器。默认设置是允许托管浏览器进行呈现，但您可以选择替换此设置，并默认让“<ph name="PRODUCT_FRAME_NAME"/>”呈现 HTML 页面。</translation>
 <translation id="9142678351429467783">在 <ph name="PRODUCT_NAME"/>中启用打印功能，并禁止用户更改此设置。如果已启用或未配置此设置，用户就可以进行打印。如果已停用此设置，用户就无法通过 <ph name="PRODUCT_NAME"/>进行打印。用户可通过扳手菜单、扩展程序、JavaScript 应用程序等停用打印功能。打印时，系统仍有可能通过绕过 <ph name="PRODUCT_NAME"/>的插件进行打印。例如某些 Flash 应用程序在自身的右键菜单中提供了打印选项，这些选项是不会停用的。如果未设置此政策，就会启用此设置，不过用户也可以更改此设置。</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用程序宣传信息</translation>
@@ -290,6 +315,13 @@
 <translation id="1310699457130669094">您可以在此指定代理 .pac 文件的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看详细示例，请访问：<ph name="PROXY_HELP_URL"/></translation>
 <translation id="3406810703404235731">企业的网上应用店网址</translation>
 <translation id="7782879802219764346">配置 <ph name="PRODUCT_NAME"/>将用于存储用户数据的目录。如果您设置了此政策，那么无论用户是否指定“--user-data-dir”标记，<ph name="PRODUCT_NAME"/>都会使用提供的目录。如果未设置此政策，系统将使用默认个人资料路径，并允许用户通过“--user-data-dir”命令行标记替换此路径。</translation>
+<translation id="7381326101471547614">禁止在 <ph name="PRODUCT_NAME"/>中使用 SPDY 协议。
+
+      如果启用了此政策，就无法在 <ph name="PRODUCT_NAME"/>中使用 SPDY 协议。
+
+      如果停用了此政策，就可以使用 SPDY 协议。
+
+      如果未设置此政策，就可以使用 SPDY 协议。</translation>
 <translation id="1583248206450240930">默认情况下使用“<ph name="PRODUCT_FRAME_NAME"/>”</translation>
 <translation id="1047128214168693844">不允许任何网站跟踪用户的地理位置</translation>
 <translation id="4101778963403261403">在 <ph name="PRODUCT_NAME"/>中配置默认主页的类型，并禁止用户更改主页偏好设置。您既可以将主页设为指定的网址，也可以将其设为新标签页。如果您启用了此设置，系统就会始终使用新标签页作为主页，并忽略主页网址。如果您停用了此设置，那么除非将用户的主页设为“chrome://newtab”，否则主页永远不会是新标签页。如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME"/>中更改自己的主页类型。如果未设置此政策，用户就可以自行选择是否将新标签页作为主页。</translation>

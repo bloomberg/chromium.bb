@@ -39,6 +39,7 @@ Si elle est désactivée, la page d'accueil n'est pas importée.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
 <translation id="2908277604670530363">Nombre maximal de connexions simultanées au serveur proxy</translation>
+<translation id="7298195798382681320">Recommandé</translation>
 <translation id="1438955478865681012">Configure les règles relatives aux extensions. L'utilisateur n'est pas autorisé à installer les extensions inscrites sur la liste noires, sauf si elles figurent sur la liste blanche. Vous pouvez également forcer <ph name="PRODUCT_NAME"/> à installer des extensions. Pour ce faire, dressez la liste de ces extensions dans <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. La liste noire est prioritaire sur la liste des extensions dont l'installation est forcée.</translation>
 <translation id="8668394701842594241">Répertorie les plug-ins activés dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre. 
 
@@ -49,6 +50,7 @@ La liste de plug-ins indiquée est toujours utilisée dans <ph name="PRODUCT_NAM
 Notez que cette règle remplace à la fois &quot;DisabledPlugins&quot; et &quot;DisabledPluginsExceptions&quot;. 
 
 Si cette règle n'est pas configurée, l'utilisateur peut désactiver n'importe quel plug-in installé sur le système.</translation>
+<translation id="5255162913209987122">Peut être recommandée</translation>
 <translation id="7331962793961469250">Si cette option est définie sur &quot;True&quot;, les publicités pour les applications Chrome Web Store ne s'affichent pas sur la page Nouvel onglet.
 
 Si elle est définie sur &quot;False&quot; ou si elle n'est pas configurée, ces publicités s'affichent sur la page Nouvel onglet.</translation>
@@ -127,7 +129,7 @@ Si cette règle n'est pas configurée, Google Sync est disponible et l'utilisate
 
       Les paramètres de page d'accueil de l'utilisateur ne sont complètement verrouillés que si vous définissez la page &quot;Nouvel onglet&quot; ou une URL spécifique comme page d'accueil. Si vous ne précisez pas l'URL de la page d'accueil, l'utilisateur est toujours en mesure de définir la page d'accueil sur la page &quot;Nouvel onglet&quot; au moyen de la valeur &quot;chrome://newtab&quot;.</translation>
 <translation id="2231817271680715693">Importer l'historique de navigation du navigateur par défaut à la première exécution</translation>
-<translation id="1353966721814789986">Pages de démarrage</translation>
+<translation id="1353966721814789986">Pages d'accueil</translation>
 <translation id="5564962323737505851">Configure le gestionnaire de mots de passe. Si le gestionnaire de mots de passe est activé, vous pouvez activer ou désactiver la stratégie permettant à l'utilisateur d'afficher en texte clair les mots de passe enregistrés.</translation>
 <translation id="4668325077104657568">Paramètres d'images par défaut</translation>
 <translation id="7161193985878519056">Mode navigation privée désactivé</translation>
@@ -166,12 +168,14 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
 <translation id="1022361784792428773">Identifiants d'extension que l'utilisateur ne doit pas être autorisé à installer (ou * pour tous)</translation>
 <translation id="7683777542468165012">Actualisation dynamique des stratégies</translation>
+<translation id="8987262643142408725">Désactiver le fractionnement des enregistrements SSL</translation>
 <translation id="4529945827292143461">Personnalisez la liste des formats d'URL qui doivent toujours être affichés par le navigateur hôte. 
 
 
 Si cette règle n'est pas configurée, le moteur de rendu par défaut sera utilisé pour tous les sites, tel que spécifié par la règle &quot;ChromeFrameRendererSettings&quot;. 
 
 Pour voir des exemples de format, accédez à http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8044493735196713914">Indiquer le mode de démarrage de l'appareil</translation>
 <translation id="1942957375738056236">Vous pouvez spécifier ici l'URL du serveur proxy. 
 
 Cette règle ne prend effet que si vous avez sélectionné les paramètres de proxy manuels dans l'option &quot;Sélectionner le mode de spécification des paramètres de serveur proxy&quot;. 
@@ -254,6 +258,7 @@ Si cette règle n'est pas configurée, <ph name="PRODUCT_FRAME_NAME"/> utilise l
 <translation id="8992176907758534924">Interdire à tous les sites d'afficher des images</translation>
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Liste des plug-ins désactivés</translation>
+<translation id="8391419598427733574">Indiquer la version du système d'exploitation et du micrologiciel des appareils inscrits. Si ce paramètre est défini sur &quot;True&quot;, la version du système d'exploitation et celle du micrologiciel sont régulièrement communiquées par les appareils inscrits. Si ce paramètre n'est pas défini, ou s'il est défini sur &quot;False&quot;, ces informations ne sont pas transmises.</translation>
 <translation id="467449052039111439">Ouvrir une liste d'URL</translation>
 <translation id="5883015257301027298">Paramètre de cookies par défaut</translation>
 <translation id="3413139738214204027">Configure l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de la modifier. 
@@ -298,6 +303,7 @@ Dans les deux cas, les utilisateurs ne peuvent pas le modifier ou le remplacer d
 Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette fonction ou non.</translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
 <translation id="3964909636571393861">Permet d'accéder à une liste d'URL.</translation>
+<translation id="3450318623141983471">Indiquer l'état de l'interrupteur du mode développeur au moment du démarrage. Si la règle n'est pas définie, ou si elle est définie sur &quot;False&quot;, l'état de l'interrupteur du mode développeur n'est pas communiqué.</translation>
 <translation id="9102979059463597405">Activer l'extension TLS pour les certificats liés à l'origine</translation>
 <translation id="6022948604095165524">Action au démarrage</translation>
 <translation id="7625444193696794922">Indique le canal de distribution sur lequel cet appareil devrait être verrouillé.</translation>
@@ -342,6 +348,7 @@ Si la règle n'est pas définie, l'utilisateur peut décider s'il souhaite être
 Si cette règle n'est pas configurée, le paramètre &quot;AskGeolocation&quot; est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="5770738360657678870">Version en développement (peut être instable)</translation>
 <translation id="2959898425599642200">Règles de contournement de proxy</translation>
+<translation id="1098794473340446990">Indiquer les périodes d'activité de l'appareil. Si ce paramètre est défini sur &quot;True&quot;, les périodes durant lesquelles l'appareil inscrit est utilisé sont régulièrement communiquées par celui-ci. Si ce paramètre n'est pas défini, ou s'il est défini sur &quot;False&quot;, les périodes d'activité ne sont ni enregistrées, ni communiquées.</translation>
 <translation id="7337941689192402544">Définir le répertoire de données utilisateur pour <ph name="PRODUCT_NAME"/></translation>
 <translation id="896575211736907134">Mode navigation privée forcé</translation>
 <translation id="6641981670621198190">Désactiver la prise en charge des API 3D graphics</translation>
@@ -413,11 +420,11 @@ Si cette règle n'est pas configurée, le paramètre est activé.</translation>
 <translation id="8451988835943702790">Utiliser la page &quot;Nouvel onglet&quot; comme page d'accueil</translation>
 <translation id="8469342921412620373">Permet l'utilisation d'un moteur de recherche par défaut. 
 
-Si vous activez ce paramètre, une recherche par défaut est effectuée lorsque l'utilisateur saisit un texte autre qu'une URL dans le champ polyvalent. 
+Si vous activez ce paramètre, une recherche par défaut est effectuée lorsque l'utilisateur saisit un texte autre qu'une URL dans l'Omnibox. 
 
 Vous pouvez spécifier le moteur de recherche par défaut à utiliser en définissant le reste des règles de recherche par défaut. Si ces dernières ne sont pas configurées, l'utilisateur peut sélectionner le moteur par défaut.
 
-Si vous désactivez ce paramètre, aucune recherche n'est effectuée lorsque l'utilisateur entre un texte autre qu'une URL dans le champ polyvalent. 
+Si vous désactivez ce paramètre, aucune recherche n'est effectuée lorsque l'utilisateur entre un texte autre qu'une URL dans l'Omnibox. 
 
 Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME"/>. 
 
@@ -432,6 +439,7 @@ Cette règle n'est prise en compte que si la règle &quot;DefaultSearchProviderE
 <translation id="6244210204546589761">URL à ouvrir au démarrage</translation>
 <translation id="7468416082528382842">Emplacement dans le registre Windows :</translation>
 <translation id="1808715480127969042">Bloquer les cookies sur ces sites</translation>
+<translation id="7340034977315324840">Indiquer les périodes d'activité de l'appareil</translation>
 <translation id="267596348720209223">Spécifie les codages de caractères compatibles avec le moteur de recherche. Les codages sont des noms de page de code, comme UTF-8, GB2312 et ISO-8859-1. Ils sont testés dans l'ordre indiqué. 
 
 Cette règle est facultative. Si elle n'est pas configurée, la valeur par défaut UTF-8 est utilisée. 
@@ -458,6 +466,7 @@ Si cette règle n'est pas configurée, le répertoire de cache par défaut sera 
 Si vous définissez cette règle, <ph name="PRODUCT_NAME"/> utilisera le répertoire indiqué, que l'utilisateur ait ou non spécifié un répertoire ou qu'il ait ou non activé l'option d'invite systématique à indiquer un emplacement de téléchargement. 
 
 Si cette règle n'est pas configurée, le répertoire de téléchargement par défaut sera utilisé et l'utilisateur sera en mesure de le modifier.</translation>
+<translation id="5761030451068906335">Configurer les paramètres de proxy pour <ph name="PRODUCT_NAME"/>. Cette règle n'est pas encore prête, veuillez donc ne pas l'utiliser pour le moment.</translation>
 <translation id="8344454543174932833">Importer les favoris du navigateur par défaut à la première exécution</translation>
 <translation id="1019101089073227242">Définir le répertoire de données utilisateur</translation>
 <translation id="5826047473100157858">Indique si l'utilisateur peut ouvrir des pages en mode navigation privée dans <ph name="PRODUCT_NAME"/>. 
@@ -467,6 +476,7 @@ Si l'option &quot;Activé&quot; est sélectionnée ou si la règle n'est pas con
 Si l'option &quot;Désactivé&quot; est sélectionnée, les pages ne peuvent pas être ouvertes en mode navigation privée. 
 
 Si l'option &quot;Forcé&quot; est sélectionnée, les pages peuvent être ouvertes UNIQUEMENT en mode navigation privée.</translation>
+<translation id="5085647276663819155">Désactiver l'aperçu avant impression</translation>
 <translation id="2030905906517501646">Mot clé du moteur de recherche par défaut</translation>
 <translation id="2949818985084413317">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à définir des cookies uniquement pour la session. 
 
@@ -515,6 +525,7 @@ Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur 
 <translation id="5378985487213287085">Permet de définir si les sites Web sont autorisés à afficher des notifications de bureau. L'affichage des notifications de bureau peut être autorisé par défaut, refusé par défaut, ou l'utilisateur peut recevoir un message chaque fois qu'un site veut afficher des notifications de bureau. 
 
 Si cette règle n'est pas configurée, le paramètre &quot;AskNotifications&quot; est utilisé et l'utilisateur est en mesure de le modifier.</translation>
+<translation id="3744263630913802110">Indiquer la version du système d'exploitation et du micrologiciel</translation>
 <translation id="6908640907898649429">Configure le moteur de recherche par défaut. Vous pouvez définir le moteur de recherche par défaut dont se servira l'utilisateur ou choisir de désactiver le moteur de recherche par défaut.</translation>
 <translation id="389421284571827139">Permet de spécifier le serveur proxy utilisé par <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les paramètres du proxy. 
 
@@ -542,6 +553,7 @@ Le fait de ne pas définir ces règles permet aux utilisateurs de sélectionner 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle &quot;DefaultPopupsSetting&quot;, si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
+<translation id="8288507390252297611">Désactiver l'aperçu avant impression. Ce paramètre sert à forcer l'utilisation de la boîte de dialogue du système d'impression, au lieu de l'aperçu avant impression.</translation>
 <translation id="913195841488580904">Bloquer l'accès à une liste d'URL</translation>
 <translation id="6190022522129724693">Paramètre de fenêtres pop-up par défaut</translation>
 <translation id="847472800012384958">Interdire à tous les sites d'afficher des fenêtres pop-up</translation>
@@ -563,8 +575,9 @@ S'il est désactivé ou s'il n'est pas configuré, l'historique de navigation es
 <translation id="3034580675120919256">Permet de définir si les sites Web sont autorisés à exécuter JavaScript. L'exécution de JavaScript peut être soit autorisée pour tous les sites, soit refusée pour tous les sites. 
 
 Si cette règle n'est pas configurée, le paramètre &quot;AllowJavaScript&quot; est utilisé et l'utilisateur est en mesure de le modifier.</translation>
+<translation id="3195451902035818945">Indiquer si le fractionnement des enregistrements SSL doit être désactivé. Le fractionnement des enregistrements est une solution de contournement appliquée en raison d'une vulnérabilité des protocoles SSL 3.0 et TLS 1.0. Il peut toutefois entraîner des problèmes de compatibilité avec certains serveurs et proxys HTTPS. Si la règle n'est pas définie, ou si elle est définie sur &quot;False&quot;, le fractionnement des enregistrements sera utilisé pour les connexions SSL/TLS qui utilisent les suites de chiffrement CBC.</translation>
 <translation id="5868414965372171132">Configuration réseau au niveau de l'utilisateur</translation>
-<translation id="5493552890659553833">Active les suggestions de recherche dans le champ polyvalent de <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre. 
+<translation id="5493552890659553833">Active les suggestions de recherche dans l'Omnibox de <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ce paramètre. 
 
 Si vous activez ce paramètre, les suggestions de recherche sont utilisées. 
 
@@ -573,7 +586,7 @@ Si vous le désactivez, les suggestions de recherche ne sont jamais utilisées.
 Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME"/>.
 
  Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisateur est en mesure de le modifier.</translation>
-<translation id="8711086062295757690">Indique le mot clé qui est le raccourci utilisé dans le champ polyvalent pour déclencher la recherche de ce moteur.
+<translation id="8711086062295757690">Indique le mot clé qui est le raccourci utilisé dans l'Omnibox pour déclencher la recherche de ce moteur.
 
 Cette règle est facultative. Si elle n'est pas configurée, aucun mot clé n'active le moteur de recherche. 
 
@@ -584,6 +597,7 @@ Cette règle n'est prise en compte que si la règle &quot;DefaultSearchProviderE
 <translation id="602728333950205286">URL de recherche instantanée du moteur de recherche par défaut</translation>
 <translation id="24485093530245771">Définir la taille du cache disque en mégaoctets</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
+<translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="4482640907922304445">Affiche le bouton &quot;Accueil&quot; sur la barre d'outils <ph name="PRODUCT_NAME"/>. 
 
 Si vous activez ce paramètre, le bouton &quot;Accueil&quot; est toujours affiché. 
@@ -732,13 +746,6 @@ Si ce paramètre est activé, cette machine peut découvrir et se connecter à d
 
 Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine peut uniquement se connecter aux machines hôte au sein du réseau local.</translation>
 <translation id="5511702823008968136">Activer le barre de favoris</translation>
-<translation id="1775332090152062460">Désactive l'utilisation du protocole SPDY dans <ph name="PRODUCT_NAME"/>. 
-
-Si cette règle est activée, le protocole SPDY ne sera pas disponible dans <ph name="PRODUCT_NAME"/>. 
-
-La désactivation de cette règle permet l'utilisation de SPDY. 
-
-Si cette règle n'est pas configurée, SPDY est disponible, mais l'utilisateur est en mesure de modifier cette situation.</translation>
 <translation id="7848840259379156480">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME"/> est installé.
       Le paramétrage par défaut de cette stratégie autorise le navigateur hôte à effectuer le rendu. Toutefois, vous pouvez
       remplacer ce paramétrage pour que <ph name="PRODUCT_FRAME_NAME"/> assure le rendu des pages HTML pages par défaut.</translation>
@@ -785,6 +792,7 @@ Pour voir plus d'options et des exemples détaillés, accédez à l'adresse :
 Si vous définissez cette règle, <ph name="PRODUCT_NAME"/> va utiliser le répertoire indiqué, que l'utilisateur ait ou non spécifié l'indicateur &quot;–user–data–dir&quot;. 
 
 Si cette règle n'est pas configurée, le chemin d'accès du profil par défaut sera utilisé et l'utilisateur sera en mesure de le remplacer à l'aide de l'indicateur de ligne de commande &quot;–user–data–dir&quot;.</translation>
+<translation id="7381326101471547614">Désactiver l'utilisation du protocole SPDY dans <ph name="PRODUCT_NAME"/>. Si cette règle est activée, le protocole SPDY ne sera pas disponible dans <ph name="PRODUCT_NAME"/>. La désactivation de cette règle permet l'utilisation du protocole SPDY. En outre, si cette règle n'est pas définie, le protocole SPDY sera disponible.</translation>
 <translation id="1583248206450240930">Utiliser <ph name="PRODUCT_FRAME_NAME"/> par défaut</translation>
 <translation id="1047128214168693844">Interdire à tous les sites de suivre la position géographique des utilisateurs</translation>
 <translation id="4101778963403261403">Configure le type de la page d'accueil par défaut dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier les préférences de la page d'accueil. La page d'accueil peut être définie soit sur une URL que vous spécifiez, soit sur la page Nouvel onglet. 

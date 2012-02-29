@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="8000275528373650868">„Google Chrome“ reikalinga „Windows Vista“ arba „Windows XP“ operacinė sistema su SP2 arba naujesniu pakeitimų paketu.</translation>
+<translation id="8485767968786176057">Šiuo atveju sertifikate pateiktas adresas neatitinka svetainės, kurią naršyklė bandė pasiekti, adreso. Tai galėjo įvykti, nes užpuolikas perima ryšį ir pateikia skirtingos svetainės sertifikatą, o tai ir lemia neatitikimą. Kita galima priežastis yra ta, kad serveris nustatytas tą patį sertifikatą pateikti daugeliui svetainių, taip pat ir tai, kurioje bandote apsilankyti, net jei ir tas sertifikatas negalioja visoms svetainėms. „Google Chrome“ užtikrina, kad pasiekėte &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, bet negali patvirtinti, kad tai ta pati svetainė kaip ir &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kurią ketinote pasiekti. Jei tęsite toliau, „Chrome“ netikrins jokių būsimų vardų neatitikimų.</translation>
 <translation id="5430073640787465221">Nuostatų failas sugadintas ar netinkamas.
 
 „Google Chrome“ negali atkurti nustatymų.</translation>
@@ -15,18 +16,24 @@
 
 Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išsaugoti.</translation>
 <translation id="7781002470561365167">Galima nauja „Google Chrome“ versija.</translation>
+<translation id="1484802885942301358">„Google Chrome“ yra naujausios versijos (<ph name="VERSION"/>)</translation>
 <translation id="7101265395643981223">Paleiskite „Google Chrome“</translation>
+<translation id="4738120821427858478">Pakeitimai įsigalios kitą kartą iš naujo paleidus „Google Chrome“ OS.</translation>
 <translation id="4891791193823137474">Paleisti „Google Chrome“ fone</translation>
 <translation id="2879385160622431163">„Google Chrome“ intuityvioji paieška</translation>
 <translation id="2370289711218562573">„Google Chrome“ dabar importuoja mėgstamiausius / žymas.</translation>
 <translation id="1761870329818521071">Negalima įdiegti tos pačios „Google Chrome“ rėmelio versijos, kuri dabar paleista. Uždarykite „Google Chrome“ rėmelį ir bandykite dar kartą.</translation>
 <translation id="2040709530900803995">„Google Chrome“ atvaizdavimo priemonė</translation>
+<translation id="3140883423282498090">Pakeitimai įsigalios kitą kartą iš naujo paleidus „Google Chrome“.</translation>
+<translation id="1872436416934435136">„Google Chrome“ nebeatnaujinama, nes operacinė sistema yra pasenusi.</translation>
 <translation id="5339639696978861456">„Chrome Frame“ buvo atnaujinta. Paleiskite naršyklę iš naujo. „Chrome“ versija: <ph name="TODO_0001"/>, „Chrome Frame“ versija: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">Paslaugų teikimo sąlygos</translation>
+<translation id="6862759394142635932">Jei dabar uždarysite „Google Chrome“, šis atsisiuntimas bus atšauktas.</translation>
 <translation id="1779550429052479749">Sistemoje nustatyta prieštaringa „Google Chrome“ arba „Google Chrome“ rėmelio įdiegtis. Pašalinkite ir bandykite dar kartą.</translation>
 <translation id="3555616473548901994">Pašalinimas baigtas.</translation>
 <translation id="8556340503434111824">Galima nauja „Google Chrome“ versija, kuri greitesnė nei bet kada.</translation>
 <translation id="4728575227883772061">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Google Chrome“, uždarykite ir pabandykite iš naujo.</translation>
+<translation id="4727256538826447736">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris pateikė sertifikatą, kurio galiojimo laikas pasibaigęs. Kol kas nėra informacijos, padėsiančios nustatyti, ar šis sertifikatas buvo pažeistas dar prieš galiojimo laiko pasibaigimą. Tai reiškia, jog „Google Chrome“ negali užtikrinti, kad užmezgėte ryšį su &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, o ne su užpuoliku.</translation>
 <translation id="3080151273017101988">Uždarius „Google Chrome“ toliau leisti fono programas</translation>
 <translation id="4149882025268051530">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="6989339256997917931">„Google Chrome“ atnaujinta, tačiau jos nenaudojote mažiausiai 30 dienų.</translation>
@@ -41,54 +48,63 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3487814320513494737">Pakeistas „Chrome“ naujo skirtuko puslapis. Perjungti skiltis galite spustelėdami šias etiketes. „Chrome“ įsimins jūsų nuostatą kitam kartui.</translation>
 <translation id="1697213158865901863">„Google Chrome Frame“</translation>
 <translation id="2653935705142821164">„Chrome“ atvaizdavimo priemonė</translation>
-<translation id="8446794773162156990">„Google Chrome“ veikia netinkamai:</translation>
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/>– „Google Chrome“</translation>
 <translation id="3089968997497233615">Galima nauja, saugesnė „Google Chrome“ versija.</translation>
 <translation id="5037239767309817516">Uždarykite visus „Google Chrome“ langus ir paleiskite iš naujo, kad įsigaliotų šis pakeitimas.</translation>
 <translation id="7451721381978275812">Netinkami argumentai. „Google Chrome“ rėmelio negalima įdiegti parengties režimu taip pat neįdiegus „Google Chrome“.</translation>
+<translation id="5727432509906037972">Ar norite išeiti iš „Google Chrome“, kol vykdomas atsisiuntimas?</translation>
+<translation id="1367236238006776563">Plėtinys „<ph name="EXTENSION_NAME"/>“ buvo pridėtas į „Chrome“.</translation>
 <translation id="4585888816441913908">Kompiuteryje jau yra naujesnės „Google Chrome“ ir „Google Chrome Frame“ versijos. Jei programinė įranga neveikia, pašalinkite „Google Chrome“ bei „Google Chrome Frame“ ir bandykite dar kartą.</translation>
 <translation id="6368958679917195344">„Chrome“ OS galima naudojant papildomą <ph name="BEGIN_LINK_CROS_OSS"/>atvirojo šaltinio programinę įrangą<ph name="END_LINK_CROS_OSS"/>.</translation>
-<translation id="4357846314885556934">„Google Chrome“ veikia netinkamai</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3215326788962391210">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris pateikė subjekto, kuriuo nepasitiki kompiuterio operacinė sistema, išduotą sertifikatą. Tai gali reikšti, kad serveris sukūrė savus saugumo kredencialus, kuriais „Google Chrome“, tikrindama tapatybės informaciją, negali pasitikėti, arba užpuolikas mėgina perimti ryšį.</translation>
 <translation id="4331809312908958774">„Chrome“ OS</translation>
 <translation id="1195935957447623558">„Google Chrome“ išsijungė netinkamai. Jei norite pakartotinai atidaryti puslapius, kurie buvo atidaryti, paspauskite „Atkurti&quot;.</translation>
+<translation id="2783467918276328046">Žr. daugiau prisijungimo prie „Chrome“ <ph name="BEGIN_LINK"/>pranašumų<ph name="END_LINK"/>.</translation>
 <translation id="2580411288591421699">Negalima įdiegti tos pačios „Google Chrome“ versijos, kuri dabar paleista. Uždarykite „Google Chrome“ ir bandykite dar kartą.</translation>
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
 <translation id="5170938038195470297">Jūsų profilio negalima naudoti, nes jis iš naujesnės „Google Chrome“ versijos.
 
 Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalogą arba naudokite naujesnės versijos „Chrome“.</translation>
-<translation id="6009537148180854585">Jūs bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serverio pateiktame sertifikate aptikta klaidų. „Google Chrome“ negali naudoti klaidingo sertifikato ir negali patvirtinti svetainės, prie kurios  bandėte prisijungti, tapatybės. Jūsų ryšys nesaugus, todėl tęsti neturėtumėte.</translation>
 <translation id="8738921060445980047">Nežinoma versija.</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
 <translation id="2748463065602559597">Žiūrite saugų „Google Chrome“ puslapį.</translation>
+<translation id="7185038942300673794">„<ph name="EXTENSION_NAME"/>“ pridėtas į „Chrome“.</translation>
 <translation id="9073088951656332330">Nerasta „Google Chrome“ ar „Google Chrome Frame“ įdiegties, kad būtų galima atnaujinti.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>Įspėjimas:<ph name="END_BOLD"/> „Google Chrome“ negali neleisti plėtiniams įrašyti jūsų naršymo istorijos. Jei norite neleisti šio plėtinio „inkognito“ režimu, panaikinkite šios parinkties žymėjimą.</translation>
 <translation id="1759842336958782510">„Chrome“</translation>
+<translation id="3904146009066562368">Yra nauja „Google Chrome“ versija</translation>
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="2044287590254833138">„Google Chrome“ įrankių juosta</translation>
 <translation id="5074344184765391290">„Chrome“ papildinio priegloba</translation>
-<translation id="6481075104394517441">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tačiau serveris pateikė sertifikatą, kuris dar negalioja. Kol kas nėra informacijos, patvirtinančios, kad šis sertifikatas patikimas. „Google Chrome“ negali tvirtai užtikrinti, kad bendraujate su &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, o ne užpuolėju. Turėtumėte įsitikinti, kad jūsų kompiuteryje tinkamai nustatytas laikas ir laiko zona. Jei jie nustatyti neteisingai, ištaisykite klaidas ir perkraukite šį puslapį. Jeigu jie nustatyti teisingai, kitų veiksmų atlikti neturėtumėte.</translation>
 <translation id="8862326446509486874">Neturite reikiamų teisių sistemai įdiegti. Pamėginkite įdiegimo priemonę dar kartą paleisti kaip administratorius.</translation>
 <translation id="595871952790078940">„Chrome“ paslaugų programa</translation>
 <translation id="2874156562296220396">„Google Chrome“ sukurta pasitelkus atvirojo kodo projektą <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ir kitą <ph name="BEGIN_LINK_OSS"/>atvirojo kodo programinę įrangą<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7855730255114109580">„Google Chrome“ yra naujausios versijos</translation>
 <translation id="3847841918622877581">„Google Chrome“ gali naudoti žiniatinklio paslaugas naršymo kokybei pagerinti.</translation>
 <translation id="7436949144778751379">„Google Chrome“ reikia „Windows XP“ ar naujesnės versijos. Gali neveikti kai kurios funkcijos.</translation>
-<translation id="7938170099933661772">„Google Chrome“ negalima rodyti spaudinio peržiūros, kai neleidžiama įtaisytoji PDF žiūryklė. Jei norite peržiūrėti, apsilankykite <ph name="BEGIN_LINK"/>$1<ph name="END_LINK"/>, įgalinkite parinktį „Chrome“ PDF žiūryklė“ ir bandykite dar kartą.</translation>
 <translation id="6757767188268205357">Netrukdykite</translation>
 <translation id="2290095356545025170">Ar tikrai norite pašalinti „Google Chrome“?</translation>
+<translation id="4273752058983339720">„Google Chrome“ sukonfigūruota taip, kad paleidus kompiuterį automatiškai paleidžiama ir „Google Chrome“.</translation>
+<translation id="1104959162601287462">Apie „&amp;Chrome“ OS</translation>
 <translation id="5941830788786076944">Padarykite „Google Chrome“ numatytąja naršykle</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Naudodami „Google Chrome“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="3612333635265770873">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Google Chrome“.</translation>
-<translation id="2679385451463308372">Spausdinkite naudodami sistemos dialogo langą...</translation>
+<translation id="61852838583753520">Atnaujinti „&amp;Chrome“ OS</translation>
 <translation id="6650142020817594541">Šioje svetainėje rekomenduojamas „Google Chrome“ rėmelis (jau įdiegtas).</translation>
-<translation id="4127951844153999091">Šiuo atveju sertifikate nurodytas adresas neatitinka tinklalapio, į kurį bandė nukreipti jūsų naršyklė, adreso.  Viena iš galimų priežasčių – jūsų perduodamą ryšį perėmė kompiuterių piratas ir pateikė kitos svetainės sertifikatą, siekdamas jus suklaidinti. Kita galima priežastis – serveris nustatytas keletui tinklalapių, įskaitant jūsų lankomą, pateikti tą patį sertifikatą, nors šis sertifikatas ir netinka naudoti su visais šiais tinklalapiais. „Google Chrome“ gali užtikrinti, kad pasiekėte &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, bet negali patikrinti, ar tai yra ta pati svetainė &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kurią norėjote pasiekti. Jei tęsite, „Chrome“ nebetikrins, ar yra ir daugiau neatitikimų pavadinimuose. Paprastai tokiu atveju siūloma toliau nebetęsti.</translation>
+<translation id="4535984553437295350">Paleiskite „Google Chrome“ iš naujo, kad būtų užbaigtas naujinimas</translation>
 <translation id="2712549016134575851">Aptiktas prieštaravimas su kita įdiegta programa.</translation>
 <translation id="5577648424992741236">Kompiuteryje jau įdiegta naujesnė „Google Chrome“ rėmelio versija. Jei programinė įranga neveikia, pašalinkite „Google Chrome“ rėmelį ir bandykite dar kartą.</translation>
 <translation id="7018032895891496381">„Google Chrome“ naudoja numatytąjį paieškos variklį, kuris šiuo metu nustatytas į·„<ph name="PAGE_TITLE"/>“. Ar norite išlaikyti numatytąjį paieškos variklį?</translation>
+<translation id="6326175484149238433">Pašalinti iš „Chrome“</translation>
 <translation id="7161904924553537242">Sveiki atvykę į „Google Chrome“</translation>
 <translation id="8669527147644353129">„Google Chrome“ pagalbos priemonė</translation>
+<translation id="870251953148363156">Atnaujinti „&amp;Google Chrome“</translation>
+<translation id="147599965395609989">„Google Chrome“ atnaujinta</translation>
 <translation id="1399397803214730675">Kompiuteryje jau yra naujausia „Google Chrome“ versija. Jei programinė įranga neveikia, pašalinkite „Google Chrome“ ir bandykite dar kartą.</translation>
+<translation id="2827900704927383772">Ar norite išeiti iš „Google Chrome“, kol vykdomi (-a) <ph name="DOWNLOAD_COUNT"/> atsisiuntimai (-ų)?</translation>
 <translation id="3444832043240812445">Šiame puslapyje rodoma informacija apie paskutines strigtis, jei <ph name="BEGIN_LINK"/>įgalinote strigčių ataskaitų teikimą<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">„Google Chrome“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="5318056482164160049">„Google Chrome“ papildinio priegloba</translation>
@@ -96,6 +112,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="5046764976540625289">Išeiti iš „Chrome“</translation>
 <translation id="2925521875688282191">Atsijunkite nuo „Chrome OS“ ir prisijunkite iš naujo, kad šis keitimas būtų pritaikytas.</translation>
 <translation id="9039578207253536065">„Google Chrome“ darbuotojas</translation>
+<translation id="2680623880102270805">„Google Chrome“ negali sukurti programos šaukinio, nes negali nustatyti dabartinės darbalaukio aplinkos.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Interneto naršyklė</translation>
 <translation id="2189123953385179981">„Google Chrome“ operacinė sistema nepalaiko išorinės programos, skirtos tvarkyti <ph name="SCHEME"/> nuorodas, paleidimo. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK"/>.</translation>
@@ -105,10 +122,15 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="2769762047821873045">„Google Chrome“ nėra numatytoji naršyklė.</translation>
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="3335672657969596251">„Google Chrome“ nepalaiko <ph name="OS_NAME"/>.</translation>
+<translation id="2666187591945638709">„Google Chrome“ atnaujinta į <ph name="VERSION"/></translation>
 <translation id="5334545119300433702">Šis modulis žinomas kaip prieštaraujantis „Google Chrome“.</translation>
+<translation id="4892299120052124303">Jei dabar uždarysite „Google Chrome“, šie atsisiuntimai bus atšaukti.</translation>
+<translation id="2084710999043359739">Pridėti į „Chrome“</translation>
 <translation id="4084877369264707540">„Google Chrome“ rėmelis jau įdiegtas ir pasiekiamas visiems šio kompiuterio naudotojams. Jei norite įdiegti „Google Chrome“ rėmelį savo naudotojo lygiu, pirmiausia turite pašalinti administratoriaus įdiegtą sistemos lygio versiją.</translation>
 <translation id="3360895254066713204">„Chrome“ pagalbos priemonė</translation>
+<translation id="3451115285585441894">Pridedama prie „Chrome“...</translation>
 <translation id="1001534784610492198">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Google Chrome“ dar kartą.</translation>
+<translation id="2246246234298806438">„Google Chrome“ negali rodyti spaudinio peržiūros, kai nėra integruotos PDF žiūryklės.</translation>
 <translation id="6626317981028933585">Deja, „Mozilla Firefox“ nustatymai negalimi tol, kol ši naršyklė nebus paleista. Norėdami importuoti šiuos nustatymus į „Google Chrome“, išsaugokite savo darbą ir uždarykite visus „Firefox“ langus. Spustelėkite Tęsti.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="1698376642261615901">„Google Chrome“ yra žiniatinklio naršyklė, kuri akimirksniu paleidžia tinklalapius ir programas. Ji greita, stabili ir lengvai naudojama. Naršykite žiniatinklį saugiau – „Google Chrome“ įdiegta apsauga nuo kenkėjiškų programų ir sukčiavimo.</translation>
@@ -116,12 +138,14 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="3336524238463733095">Negalima atnaujinti „Google Chrome“ ar „Google Chrome“ rėmelio dėl nesuderinamų „Google“ naujinių grupės politikos nustatymų. Naudokite grupės politikos redagavimo priemonę, kad nustatytumėte „Google Chrome“ dvejetainės programos naujinių politikos pakeitimą, ir bandykite dar kartą; jei reikia išsamios informacijos, žr. šiuo adresu: http://goo.gl/uJ9gV.</translation>
 <translation id="6049075767726609708">Administratorius šioje sistemoje jau įdiegė „Google Chrome“ ir ji prieinama visiems naudotojams. Sistemos lygio „Google Chrome“ pakeis naudotojo lygio diegimą.</translation>
 <translation id="7123348595797445166">Išbandykite (jau įdiegta)</translation>
+<translation id="4338032231047635328">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serverio pateiktame sertifikate yra klaidų. „Google Chrome“ negali naudoti sertifikato su klaidomis ir patvirtinti svetainės, su kuria bandėte užmegzti ryšį, tapatybės.</translation>
 <translation id="3870154837782082782">„Google Inc.“</translation>
-<translation id="9189723490960700326">Bandėte prisijungti prie &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tačiau serveris pateikė nebegaliojantį sertifikatą. Kol kas nėra informacijos, padėsiančios nustatyti, ar šis sertifikatas prieš galiojimo nutraukimą buvo pavogtas. Tai reiškia, kad „Google Chrome“ negali užtikrinti, jog bendraujate su &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, o ne užpuolėju. Kitų veiksmų atlikti neturėtumėte.</translation>
+<translation id="1847321074516120686">„Chrome“ automatinio pildymo nustatymai</translation>
 <translation id="7106741999175697885">Užduočių tvarkyklė – „Google Chrome“</translation>
 <translation id="8449380764213232436">„Google Chrome“ dabar importuoja toliau pateikiamus elementus iš <ph name="BROWSER_COMPONENT"/>:</translation>
 <translation id="852884188147941900">„Chrome“ darbuotojas</translation>
 <translation id="3396977131400919238">Diegimo metu įvyko operacinės sistemos klaida. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="5495581687705680288">Į „Google Chrome“ įkelti moduliai</translation>
-<translation id="1144950271450340860">Jūs bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tačiau serveris pateikė sertifikatą, kurį išdavė subjektas, kuriuo nepasitiki jūsų kompiuterio operacinė sistema. Tai gali reikšti, kad serveris sugeneravo paties saugos įgaliojimus, kuriais „Google Chrome“ negali remtis dėl tapatybės informacijos, arba gali būti, kad užpuolėjas mėgina „atkirsti“ jūsų ryšius. Jūs neturėtumėte tęsti šios veiklos, &lt;strong&gt;especially&lt;/strong&gt; jei anksčiau šioje svetainėje nesate matę tokio įspėjimo.</translation>
+<translation id="4086010630946365132">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bet serveris pateikė jau negaliojantį sertifikatą. Kol kas nėra informacijos, patvirtinančios, kad šis sertifikatas patikimas. „Google Chrome“ negali užtikrinti, kad užmezgėte ryšį su &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, o ne su užpuoliku. Įsitikinkite, kad kompiuteryje tinkamai nustatytas laikas ir laiko juosta. Jei ne, panaikinkite bet kokias problemas ir atnaujinkite šį puslapį.</translation>
+<translation id="8129812357326543296">Apie „&amp;Google Chrome“</translation>
 </translationbundle>

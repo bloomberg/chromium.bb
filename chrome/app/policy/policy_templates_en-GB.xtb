@@ -39,6 +39,7 @@
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
 <translation id="2908277604670530363">Maximum number of concurrent connections to the proxy server</translation>
+<translation id="7298195798382681320">Recommended</translation>
 <translation id="1438955478865681012">Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME"/> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. The blacklist takes precedence over the list of forced extensions.</translation>
 <translation id="8668394701842594241">Specifies a list of plug-ins that are enabled in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
@@ -49,6 +50,7 @@
       Note that this policy overrides both DisabledPlug-ins and DisabledPlug-insExceptions.
 
       If this policy is left unset, the user can disable any plug-in installed on the system.</translation>
+<translation id="5255162913209987122">Can be Recommended</translation>
 <translation id="7331962793961469250">When set to True, promotions for Chrome Web Store apps will not appear on the new tab page.
 
       Setting this option to False or leaving it unset will make the promotions for Chrome Web Store apps appear on the new tab page</translation>
@@ -166,11 +168,13 @@ Disabling this setting is equivalent to leaving it unconfigured. The user will s
 <translation id="3915395663995367577">URL to a proxy .pac file</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
 <translation id="7683777542468165012">Dynamic Policy Refresh</translation>
+<translation id="8987262643142408725">Disable SSL record splitting</translation>
 <translation id="4529945827292143461">Customise the list of URL patterns that should always be rendered by the host browser.
 
           If this policy is not set, the default renderer will be used for all sites as specified by the 'ChromeFrameRendererSettings' policy.
 
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="1942957375738056236">You can specify the URL of the proxy server here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -251,6 +255,9 @@ Disabling this setting is equivalent to leaving it unconfigured. The user will s
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
+<translation id="8391419598427733574">Report OS and firmware version of enrolled devices.
+
+      If this setting is set to True, enrolled devices will report the OS and firmware version periodically. If this setting is not set or set to False, version info will not be reported.</translation>
 <translation id="467449052039111439">Open a list of URLs</translation>
 <translation id="5883015257301027298">Default cookies setting</translation>
 <translation id="3413139738214204027">Configures the default home page URL in <ph name="PRODUCT_NAME"/> and prevents users from changing it.
@@ -295,6 +302,9 @@ Disabling this setting is equivalent to leaving it unconfigured. The user will s
       If this setting is left unset the user can decide to use this function or not.</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="3964909636571393861">Allows access to a list of URLs</translation>
+<translation id="3450318623141983471">Report the state of the device's dev switch at boot.
+
+      If the policy is not set, or set to false, the state of the dev switch will not be reported.</translation>
 <translation id="9102979059463597405">Enable TLS origin-bound certificates extension</translation>
 <translation id="6022948604095165524">Action on start-up</translation>
 <translation id="7625444193696794922">Specifies the release channel that this device should be locked to.</translation>
@@ -339,6 +349,9 @@ Disabling this setting is equivalent to leaving it unconfigured. The user will s
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.</translation>
 <translation id="5770738360657678870">Dev channel (may be unstable)</translation>
 <translation id="2959898425599642200">Proxy bypass rules</translation>
+<translation id="1098794473340446990">Report device activity times.
+
+      If this setting is set to True, enrolled devices will report time periods when a user is active on the device. If this setting is not set or set to False, device activity times will not be recorded or reported.</translation>
 <translation id="7337941689192402544">Set <ph name="PRODUCT_NAME"/> user data directory</translation>
 <translation id="896575211736907134">Incognito mode forced.</translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
@@ -430,6 +443,7 @@ Disabling this setting is equivalent to leaving it unconfigured. The user will s
 <translation id="6244210204546589761">URLs to open on start-up</translation>
 <translation id="7468416082528382842">Windows registry location:</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
+<translation id="7340034977315324840">Report device activity times</translation>
 <translation id="267596348720209223">Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
           This policy is optional. If not set, the default will be used which is UTF-8.
@@ -456,6 +470,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless whether the user has specified one or enabled the flag to be prompted for download location every time.
 
       If this policy is left unset, the default download directory will be used and the user will be able to change it.</translation>
+<translation id="5761030451068906335">Configures the proxy settings for <ph name="PRODUCT_NAME"/>.
+
+      This policy isn't ready for usage yet, please don't use it.</translation>
 <translation id="8344454543174932833">Import bookmarks from default browser on first run</translation>
 <translation id="1019101089073227242">Set user data directory</translation>
 <translation id="5826047473100157858">Specifies whether the user may open pages in Incognito mode in <ph name="PRODUCT_NAME"/>.
@@ -465,6 +482,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If 'Disabled' is selected, pages may not be opened in Incognito mode.
 
       If 'Forced' is selected, pages may be opened ONLY in Incognito mode.</translation>
+<translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
 <translation id="2949818985084413317">Allows you to set a list of url patterns that specify sites which are allowed to set session only cookies.
 
@@ -512,6 +530,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="5378985487213287085">Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.
 
           If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.</translation>
+<translation id="3744263630913802110">Report OS and firmware version.</translation>
 <translation id="6908640907898649429">Configures the default search provider. You can specify the default search provider that the user will use or choose to disable default search.</translation>
 <translation id="389421284571827139">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME"/> and prevents users from changing proxy settings.
 
@@ -539,6 +558,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultPop-upsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
+<translation id="8288507390252297611">Disable print preview.
+
+      This setting is used to force the use of the system print dialogue instead of print preview.</translation>
 <translation id="913195841488580904">Block access to a list of URLs</translation>
 <translation id="6190022522129724693"> setting</translation>
 <translation id="847472800012384958">Do not allow any site to show pop-ups</translation>
@@ -560,6 +582,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="3034580675120919256">Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'AllowJavaScript' will be used and the user will be able to change it.</translation>
+<translation id="3195451902035818945">Specifies whether SSL record splitting should be disabled. Record splitting is a workaround for a weakness in SSL 3.0 and TLS 1.0 but can cause compatibility issues with some HTTPS servers and proxies.
+
+      If the policy is not set, or is set to false, then record splitting will be used on SSL/TLS connections which use CBC cipher suites.</translation>
 <translation id="5868414965372171132">User-level network configuration</translation>
 <translation id="5493552890659553833">Enables search suggestions in <ph name="PRODUCT_NAME"/>'s Omnibox and prevents users from changing this setting.
 
@@ -581,6 +606,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="24485093530245771">Set disk cache size in megabytes</translation>
 <translation id="1675002386741412210">Supported on:</translation>
+<translation id="3547954654003013442">Proxy settings</translation>
 <translation id="4482640907922304445">Shows the Home button on <ph name="PRODUCT_NAME"/>'s toolbar.
 
       If you enable this setting, the Home button is always shown.
@@ -729,13 +755,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
 <translation id="5511702823008968136">Enable Bookmark Bar</translation>
-<translation id="1775332090152062460">Disables use of the SPDY protocol in <ph name="PRODUCT_NAME"/>.
-
-      If this policy is enabled the SPDY protocol will not be available in <ph name="PRODUCT_NAME"/>.
-
-      Setting this policy to disabled will allow the usage of SPDY.
-
-      If this policy is left unset, SPDY will be available but the user will be able to change it.</translation>
 <translation id="7848840259379156480">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME"/> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME"/> render HTML pages by default.</translation>
@@ -778,6 +797,13 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If you set this policy, <ph name="PRODUCT_NAME"/> will use the provided directory regardless of whether the user has specified the '--user-data-dir' flag or not.
 
       If this policy is left not set the default profile path will be used and the user will be able to override it with the '--user-data-dir' command line flag.</translation>
+<translation id="7381326101471547614">Disables use of the SPDY protocol in <ph name="PRODUCT_NAME"/>.
+
+      If this policy is enabled the SPDY protocol will not be available in <ph name="PRODUCT_NAME"/>.
+
+      Setting this policy to disabled will allow the usage of SPDY.
+
+      If this policy is left not set, SPDY will be available.</translation>
 <translation id="1583248206450240930">Use <ph name="PRODUCT_FRAME_NAME"/> by default</translation>
 <translation id="1047128214168693844">Do not allow any site to track the users' physical location</translation>
 <translation id="4101778963403261403">Configures the type of the default home page in <ph name="PRODUCT_NAME"/> and prevents users from changing home page preferences. The home page can either be set to a URL you specify or set to the New Tab Page.

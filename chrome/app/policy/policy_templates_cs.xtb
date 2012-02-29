@@ -39,6 +39,7 @@
      Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí domovskou stránku importovat, nebo může import probíhat automaticky.</translation>
 <translation id="5469825884154817306">Blokovat obrázky na těchto stránkách</translation>
 <translation id="2908277604670530363">Maximální počet současných připojení k serveru proxy</translation>
+<translation id="7298195798382681320">Doporučeno</translation>
 <translation id="1438955478865681012">Slouží ke konfiguraci zásad souvisejících s rozšířeními. Uživatel není oprávněn instalovat rozšíření na černé listině, pokud nejsou uvedena na bílé listině. V aplikaci <ph name="PRODUCT_NAME"/> můžete také vynutit automatickou instalaci rozšíření, a to tím, že rozšíření zadáte do seznamu <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Černá listina má vyšší prioritu než seznam vynucených rozšíření.</translation>
 <translation id="8668394701842594241">Určuje seznam aktivovaných pluginů aplikace <ph name="PRODUCT_NAME"/> a brání uživatelům, aby toto nastavení změnili.
 
@@ -49,6 +50,7 @@
       Tato zásada přepisuje zásady DisabledPlugins a DisabledPluginsExceptions.
 
       Pokud zásadu nenastavíte, mohou uživatelé deaktivovat jakékoliv pluginy nainstalované v systému.</translation>
+<translation id="5255162913209987122">Doporučuje se</translation>
 <translation id="7331962793961469250">Je-li nastavena možnost True, na stránce Nová karta se nezobrazí propagace aplikací z Internetového obchodu Chrome.
 
       Je-li nastavena možnost False, nebo není-li možnost nastavena, propagace aplikací z Internetového obchodu Chrome se na stránce Nová karta zobrazí</translation>
@@ -166,11 +168,13 @@
 <translation id="3915395663995367577">Adresa URL souboru PAC serveru proxy</translation>
 <translation id="1022361784792428773">ID rozšíření, která by uživatelé neměli instalovat (* znamená, že se černá listina týká všech rozšíření)</translation>
 <translation id="7683777542468165012">Dynamická aktualizace zásad</translation>
+<translation id="8987262643142408725">Zakázat dělení záznamů protokolu SSL</translation>
 <translation id="4529945827292143461">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit hostitelský prohlížeč.
 
           Pokud není zásada nastavena, bude pro všechny webové stránky použit výchozí vykreslovací modul, jak je určeno zásadou ChromeFrameRendererSettings.
 
           Ukázkové vzory naleznete na stránce http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8044493735196713914">Hlásit režim spuštění zařízení</translation>
 <translation id="1942957375738056236">Zde můžete zadat adresu URL serveru proxy.
 
           Tato zásada bude použita pouze v případě, že jste v části „Zvolte způsob konfigurace nastavení serveru proxy“ zvolili ruční nastavení serveru proxy. 
@@ -255,6 +259,9 @@
 <translation id="8992176907758534924">Nepovolit zobrazení obrázků žádným webovým stránkám</translation>
 <translation id="262740370354162807">Povolí odesílání dokumentů do služby <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Seznam deaktivovaných pluginů</translation>
+<translation id="8391419598427733574">Hlásí verzi operačního systému a firmwaru v registrovaných zařízeních.
+
+      Pokud je zásada nastavena na hodnotu True, budou registrovaná zařízení pravidelně hlásit verzi operačního systému a firmwaru. Pokud nastavena není, nebo je nastavena na hodnotu False, informace o verzi se hlásit nebudou.</translation>
 <translation id="467449052039111439">Otevřít seznam adres URL</translation>
 <translation id="5883015257301027298">Výchozí nastavení souborů cookie</translation>
 <translation id="3413139738214204027">Slouží ke konfiguraci adresy URL výchozí domovské stránky v aplikaci <ph name="PRODUCT_NAME"/> a brání uživatelům, aby tuto adresu změnili.
@@ -299,6 +306,9 @@
       Pokud nastavení neupravíte, mohou si uživatelé vybrat, zda bude funkci používat, či nikoliv.</translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata z černé listiny</translation>
 <translation id="3964909636571393861">Umožňuje přístup do seznamu adres URL</translation>
+<translation id="3450318623141983471">Hlásí stav přepínače režimu pro vývojáře při spuštění zařízení.
+
+     Pokud zásada není nastavena, nebo je nastavena na hodnotu False, stav přepínače režimu pro vývojáře se hlásit nebude.</translation>
 <translation id="9102979059463597405">Povolí rozšíření certifikátů TLS typu origin-bound</translation>
 <translation id="6022948604095165524">Akce při spuštění</translation>
 <translation id="7625444193696794922">Určuje, jaký kanál verzí by měl být v zařízení nastaven a uzamčen.</translation>
@@ -343,6 +353,9 @@
          Není-li zásada nastavena, bude použita zásada AskGeolocation a uživatel ji bude moci změnit.</translation>
 <translation id="5770738360657678870">Verze pro vývojáře (mohou být nestabilní)</translation>
 <translation id="2959898425599642200">Pravidla vynechání serveru proxy</translation>
+<translation id="1098794473340446990">Hlásí časy aktivity zařízení.
+
+      Pokud je zásada nastavena na hodnotu True, budou registrovaná zařízení pravidelně hlásit časová období, kdy uživatel zařízení aktivně používá. Pokud nastavena není, nebo je nastavena na hodnotu False, informace o časech aktivity zařízení se hlásit nebudou.</translation>
 <translation id="7337941689192402544">Nastavit adresář uživatelských dat modulu <ph name="PRODUCT_NAME"/></translation>
 <translation id="896575211736907134">Anonymní režim je povinný.</translation>
 <translation id="6641981670621198190">Deaktivovat podporu rozhraní API pro 3D grafiku</translation>
@@ -433,6 +446,7 @@
 <translation id="6244210204546589761">Adresy URL otevírané při spuštění</translation>
 <translation id="7468416082528382842">Umístění v registru systému Windows:</translation>
 <translation id="1808715480127969042">Blokovat soubory cookie na těchto stránkách</translation>
+<translation id="7340034977315324840">Hlásit časy aktivity zařízení</translation>
 <translation id="267596348720209223">Určuje kódování znaků podporovaná poskytovatelem vyhledávání. Kódování jsou názvy stránek kódů, například UTF-8, GB2312 nebo ISO-8859-1. Budou vyzkoušena v uvedeném pořadí.
 
           Tato zásada je nepovinná. Pokud není nastavena, použije se výchozí kódování UTF-8.
@@ -460,6 +474,9 @@
       Pokud tuto zásadu nastavíte, použije aplikace <ph name="PRODUCT_NAME"/> zadaný adresář i v případě, že uživatel zadal jiný adresář nebo zvolil, že chce pokaždé zobrazit výzvu k zadání umístění stahovaného souboru.
 
       Pokud tuto zásadu nenastavíte, použije se výchozí adresář pro stahování a uživatelé jej budou moci změnit.</translation>
+<translation id="5761030451068906335">Nakonfiguruje nastavení serveru proxy pro službu <ph name="PRODUCT_NAME"/>.
+
+      Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.</translation>
 <translation id="8344454543174932833">Importování záložek z výchozího prohlížeče při prvním spuštění</translation>
 <translation id="1019101089073227242">Nastavit adresář uživatelských dat</translation>
 <translation id="5826047473100157858">Určuje, zda uživatel může v aplikaci <ph name="PRODUCT_NAME"/> otevřít stránky v anonymním režimu. 
@@ -469,6 +486,7 @@
      Je-li zvolena možnost Zakázáno, stránky nelze otevřít v anonymním režimu. 
 
      Je-li zvolena možnost Povinné, stránky lze otevřít POUZE v anonymním režimu.</translation>
+<translation id="5085647276663819155">Deaktivovat náhled tisku</translation>
 <translation id="2030905906517501646">Klíčové slovo výchozího poskytovatele vyhledávání</translation>
 <translation id="2949818985084413317">Umožňuje nastavit seznam vzorů adres URL stránek, které mohou nastavovat soubory cookie pouze pro relaci.
 
@@ -516,6 +534,7 @@
 <translation id="5378985487213287085">Umožňuje nastavit, zda mohou webové stránky zobrazovat oznámení na ploše. Zobrazování oznámení na ploše lze nakonfigurovat tak, že bude ve výchozím nastavení povoleno nebo zakázáno. Také lze nastavit, že se při každém pokusu webových stránek o zobrazení oznámení na ploše zobrazí uživateli výzva.
 
           Pokud tuto zásadu nenastavíte, použije se zásada AskNotifications a uživatelé ji budou moci změnit.</translation>
+<translation id="3744263630913802110">Hlásit verzi operačního systému a firmwaru</translation>
 <translation id="6908640907898649429">Slouží ke konfiguraci výchozího poskytovatele vyhledávání. Můžete uživatelům zvolit výchozího poskytovatele vyhledávání nebo výchozí vyhledávání deaktivovat.</translation>
 <translation id="389421284571827139">Umožňuje zadat server proxy, který bude aplikací <ph name="PRODUCT_NAME"/> používán, a brání uživatelům měnit nastavení serveru proxy.
 
@@ -543,6 +562,9 @@
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultPopupsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="1530812829012954197">Následující vzory adres URL vykreslit vždy v hostitelském prohlížeči</translation>
+<translation id="8288507390252297611">Deaktivuje náhled tisku.
+
+      Toto nastavení slouží k vynucení použití systémového dialogového okna tisku místo náhledu tisku.</translation>
 <translation id="913195841488580904">Blokování přístupu k seznamu adres URL</translation>
 <translation id="6190022522129724693">Výchozí nastavení vyskakovacích oken</translation>
 <translation id="847472800012384958">Nepovolit zobrazení vyskakovacích oken žádným webovým stránkám</translation>
@@ -564,6 +586,9 @@
 <translation id="3034580675120919256">Umožňuje nastavit, zda mohou webové stránky spouštět JavaScript. Spouštění JavaScriptu lze buď povolit pro všechny weby, nebo naopak pro všechny weby zakázat.
 
          Pokud zásadu nenastavíte, použije se zásada AllowJavaScript a uživatelé ji budou moci změnit.</translation>
+<translation id="3195451902035818945">Určuje, zda by mělo být dělení záznamů protokolu SSL zakázáno. Dělení záznamů je náhradní řešení pro slabé stránky protokolů SSL 3.0 a TLS 1.0. U některých serverů HTTPS a serverů proxy však může způsobit problémy s kompatibilitou.
+
+      Pokud zásada není nastavena, nebo je nastavena na hodnotu False, použije se dělení záznamů u připojení SSL/TLS, která používají šifrovací nástroje CBC.</translation>
 <translation id="5868414965372171132">Konfigurace sítě na úrovni uživatele</translation>
 <translation id="5493552890659553833">Aktivuje v adresním řádku aplikace <ph name="PRODUCT_NAME"/> funkci návrhů pro vyhledávání a brání uživatelům, aby toto nastavení změnili.
 
@@ -585,6 +610,7 @@
 <translation id="602728333950205286">Adresa URL dynamického vyhledávání výchozího poskytovatele vyhledávání</translation>
 <translation id="24485093530245771">Nastaví velikost mezipaměti na disku v megabajtech.</translation>
 <translation id="1675002386741412210">Podpora:</translation>
+<translation id="3547954654003013442">Nastavení serveru proxy</translation>
 <translation id="4482640907922304445">Zobrazí na liště aplikace <ph name="PRODUCT_NAME"/> tlačítko Domovská stránka.
 
       Pokud toto nastavení aktivujete, tlačítko Domovská stránka se bude vždy zobrazovat.
@@ -733,13 +759,6 @@
 
           Pokud je toto nastavení vypnuto a odchozí připojení UDP jsou filtrována bránou firewall, může se tento počítač připojit pouze k hostitelským počítačům v místní síti.</translation>
 <translation id="5511702823008968136">Aktivovat panel záložek</translation>
-<translation id="1775332090152062460">Zakáže v aplikaci <ph name="PRODUCT_NAME"/> použití protokolu SPDY.
-
-      Pokud je zásada aktivní, nebude protokol SPDY v aplikaci <ph name="PRODUCT_NAME"/> k dispozici.
-
-      Pokud zásadu deaktivujete, umožníte využívání protokolu SPDY.
-
-      Pokud zásadu nenastavíte, bude protokol SPDY k dispozici, ale uživatelé budou moci nastavení změnit.</translation>
 <translation id="7848840259379156480">Umožňuje konfigurovat modul vykreslení obsahu HTML, pokud je nainstalován plugin <ph name="PRODUCT_FRAME_NAME"/>.
       Ve výchozím nastavení vykresluje obsah hostitelský prohlížeč, toto nastavení však můžete přepsat a namísto toho vykreslovat stránky HTML pomocí pluginu <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="9142678351429467783">Aktivuje v aplikaci <ph name="PRODUCT_NAME"/> funkci tisku a brání uživatelům, aby toto nastavení změnili. 
@@ -787,6 +806,13 @@
       Pokud tuto zásadu nastavíte, bude aplikace <ph name="PRODUCT_NAME"/> používat zadaný adresář nezávisle na tom, zda uživatel zadal příznak „--user-data-dir“, či nikoli.
 
       Pokud zásadu nenastavíte, použije se výchozí profil a uživatelé jej budou moci přepsat zadáním příznaku „--user-data-dir“ do příkazového řádku.</translation>
+<translation id="7381326101471547614">Zakáže v aplikaci <ph name="PRODUCT_NAME"/> použití protokolu SPDY.
+
+      Pokud je zásada aktivní, nebude protokol SPDY v aplikaci <ph name="PRODUCT_NAME"/> k dispozici.
+
+      Pokud zásadu deaktivujete, umožníte využívání protokolu SPDY. 
+
+      Pokud zásadu nenastavíte, bude protokol SPDY k dispozici.</translation>
 <translation id="1583248206450240930">Ve výchozím nastavení používat plugin <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="1047128214168693844">Nepovolovat sledování fyzické polohy žádným webovým stránkám</translation>
 <translation id="4101778963403261403">Slouží ke konfiguraci typu výchozí domovské stránky v aplikaci <ph name="PRODUCT_NAME"/> a brání uživatelům, aby nastavení domovské stránky měnili. Jako domovskou stránku lze nastavit adresu URL, kterou zadáte, nebo stránku Nová karta.

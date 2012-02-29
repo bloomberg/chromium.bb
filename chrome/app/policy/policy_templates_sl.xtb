@@ -39,6 +39,7 @@
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj jo uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="5469825884154817306">Blokiranje slik na teh mestih</translation>
 <translation id="2908277604670530363">Največje dovoljeno število hkratnih povezav s strežnikom proxy</translation>
+<translation id="7298195798382681320">Priporočeni</translation>
 <translation id="1438955478865681012">Nastavi pravilnike, povezane z razširitvami. Uporabniku ne sme namestiti razširitev na seznamu prepovedanih, razen če so na seznamu dovoljenih. Vsilite lahko tudi, da <ph name="PRODUCT_NAME"/> samodejno namesti razširitve, če jih navedete v <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Seznam prepovedanih ima prednost pred seznamom vsiljenih razširitev.</translation>
 <translation id="8668394701842594241">Določa seznam vtičnikov, ki so omogočeni v brskalniku <ph name="PRODUCT_NAME"/>, in prepreči uporabnikom spreminjanje te nastavitve.
 
@@ -49,6 +50,7 @@
       Ta pravilnik preglasi pravilnika »DisabledPlugins« in »DisabledPluginsExceptions«.
 
       Če ta pravilnik ni nastavljen, lahko uporabnik onemogoči kateri koli vtičnik, nameščen v sistemu.</translation>
+<translation id="5255162913209987122">Lahko se priporoča</translation>
 <translation id="7331962793961469250">Ko je pravilnik nastavljen na »True«, se promocije za programe iz Spletne trgovine Chrome ne bodo prikazale na strani novega zavihka.
 
       Če to možnost nastavite na »False« ali je ne nastavite, se bodo promocije za programe iz Spletne trgovine Chrome prikazovale na strani novega zavihka</translation>
@@ -166,11 +168,13 @@
 <translation id="3915395663995367577">URL za datoteko .pac v proxyju</translation>
 <translation id="1022361784792428773">ID-ji razširitev, katerih namestitev je treba uporabniku preprečiti (ali * za vse)</translation>
 <translation id="7683777542468165012">Dinamična osvežitev pravilnika</translation>
+<translation id="8987262643142408725">Onemogoči delitev zapisa SSL</translation>
 <translation id="4529945827292143461">Prilagodi seznam vzorcev URL-jev, ki naj jih vedno upodobi gostiteljski brskalnik.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta, določena s pravilnikom »ChromeFrameRendererSettings«, uporabljen privzeti upodabljalnik.
 
           Primere vzorcev si lahko ogledate na http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
+<translation id="8044493735196713914">Pošiljanje podatkov o načinu zagona naprave</translation>
 <translation id="1942957375738056236">Tu lahko določite URL strežnika proxy.
 
           Ta pravilnik velja samo, če ste pod »Izberite, kako določiti nastavitve strežnika proxy« izbrali ročne nastavitve.
@@ -255,6 +259,9 @@
 <translation id="8992176907758534924">Nobenemu spletnemu mestu ne dovoli prikaza slik</translation>
 <translation id="262740370354162807">Omogoča pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
+<translation id="8391419598427733574">Pošiljanje podatkov o različicah operacijskega sistema in vdelane programske opreme včlanjenih naprav.
+
+      Če je nastavitev nastavljena na »True«, bodo včlanjene naprave redno pošiljale podatke o različicah operacijskega sistema in vdelane programske opreme. Če nastavitev ni nastavljena ali je nastavljena na »False«, se podatki o različici ne bodo pošiljali.</translation>
 <translation id="467449052039111439">Odpri seznam URL-jev</translation>
 <translation id="5883015257301027298">Privzeta nastavitev piškotkov</translation>
 <translation id="3413139738214204027">Konfigurira URL privzete domače strani v brskalniku <ph name="PRODUCT_NAME"/> in preprečuje uporabnikom njegovo spreminjanje.
@@ -299,6 +306,9 @@
       Če nastavitev pustite nespremenjeno, se lahko uporabnik odloči, ali bo uporabljal to funkcijo ali ne.</translation>
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
 <translation id="3964909636571393861">Omogoča dostop do seznama spletnih naslovov</translation>
+<translation id="3450318623141983471">Pošiljanje podatkov o stanju stikala za razvijalce naprave ob zagonu..
+
+      Če pravilnik ni nastavljen ali je nastavljen na »False«, se podatki o stanju stikala za razvijalce ne pošiljajo.</translation>
 <translation id="9102979059463597405">Omogoči razširitev za potrdila, izvorno vezana na TLS</translation>
 <translation id="6022948604095165524">Dejanje ob zagonu</translation>
 <translation id="7625444193696794922">Določa kanal za izdajo, na katerega naj bo zaklenjena ta naprava.</translation>
@@ -341,6 +351,9 @@
           Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »AskGeolocation« in uporabnik ga bo lahko spremenil.</translation>
 <translation id="5770738360657678870">Različica za razvijalce (lahko je nestabilna)</translation>
 <translation id="2959898425599642200">Pravila, kdaj se obide proxy</translation>
+<translation id="1098794473340446990">Pošiljanje podatkov o času dejavnosti v napravi.
+
+      Če je nastavitev nastavljena na »True«, včlanjene naprave pošiljajo podatke o času, ko je uporabnik aktiven v napravi. Če nastavitev ni nastavljena ali je nastavljena na »False«, se čas dejavnosti v napravi ne beleži in se ne pošiljajo podatki o času dejavnosti.</translation>
 <translation id="7337941689192402544">Nastavi imenik uporabniških podatkov za <ph name="PRODUCT_NAME"/></translation>
 <translation id="896575211736907134">Način brez beleženja zgodovine vsiljen.</translation>
 <translation id="6641981670621198190">Onemogoči podporo za vmesnike API za 3D-grafiko</translation>
@@ -430,6 +443,7 @@
 <translation id="6244210204546589761">URL-ji, ki naj se odprejo ob zagonu</translation>
 <translation id="7468416082528382842">Lokacija registra sistema Windows:</translation>
 <translation id="1808715480127969042">Blokiraj piškotke na teh mestih</translation>
+<translation id="7340034977315324840">Pošiljanje podatkov o času dejavnosti v napravi</translation>
 <translation id="267596348720209223">Določa kodiranja znakov, ki jih podpira ponudnik iskanja. Kodiranja so imena kodnih strani, na primer UTF-8, GB2312 in ISO-8859-1. Poskusi uporabe potekajo po navedenem vrstnem redu.
 
           Ta pravilnik je izbiren. Če ni nastavljen, bo uporabljena privzeta nastavitev, ki je UTF-8.
@@ -456,6 +470,9 @@
       Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME"/> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil ali omogočil zastavico za poziv k navedbi lokacije pri vsakem prenosu.
 
       Če ta pravilnik ni nastavljen, bo uporabljen privzeti imenik in uporabnik bo lahko to spremenil.</translation>
+<translation id="5761030451068906335">Določi nastavitve proxyja za <ph name="PRODUCT_NAME"/>.
+
+      Ta pravilnik še ni primeren za uporabo, zato ga ne uporabljajte.</translation>
 <translation id="8344454543174932833">Uvoz zaznamkov privzetega brskalnika ob prvem zagonu</translation>
 <translation id="1019101089073227242">Nastavitev imenika za uporabniške podatke</translation>
 <translation id="5826047473100157858">Določa, ali lahko uporabnik v brskalniku <ph name="PRODUCT_NAME"/> odpre strani v načinu brez beleženja zgodovine.
@@ -465,6 +482,7 @@
       Če je izbrano »Onemogočeno«, strani ni mogoče odpirati v načinu brez beleženja zgodovine.
 
       Če je izbrano »Vsiljeno«, je mogoče strani odpirati SAMO v načinu brez beleženja zgodovine.</translation>
+<translation id="5085647276663819155">Onemogoči predogled tiskanja</translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="2949818985084413317">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim je dovoljeno nastavljati piškotke samo za trenutno sejo.
 
@@ -512,6 +530,7 @@
 <translation id="5378985487213287085">Omogoča nastavitev, ali lahko spletna mesta prikažejo obvestila na namizju. Prikazovanje obvestil na namizju je lahko privzeto dovoljeno, privzeto zavrnjeno ali pa je uporabnik vprašan, ko želi spletno mesti prikazati obvestilo na namizju.
 
           Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »AskNotifications« in uporabnik bo lahko to spremenil.</translation>
+<translation id="3744263630913802110">Pošiljanje podatkov o različici operacijskega sistema in vdelane programske opreme.</translation>
 <translation id="6908640907898649429">Nastavi privzeti iskalnik. Določite lahko privzeti iskalnik, ki ga bo uporabil uporabnik, ali onemogočite privzeti iskalnik.</translation>
 <translation id="389421284571827139">Omogoča nastavitev strežnika proxy, ki ga uporablja <ph name="PRODUCT_NAME"/>, in preprečuje uporabnikom spreminjanje nastavitev strežnika proxy.
 
@@ -539,6 +558,9 @@
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPopupsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="1530812829012954197">Vedno upodobi te vzorce URL-jev v gostiteljskem brskalniku</translation>
+<translation id="8288507390252297611">Onemogoči predogled tiskanja.
+
+      S to nastavitvijo se namesto predogleda tiskanja uporabi sistemsko pogovorno okno za tiskanje.</translation>
 <translation id="913195841488580904">Blokiranje dostopa do seznama spletnih naslovov</translation>
 <translation id="6190022522129724693">Privzeta nastavitev pojavnih oken</translation>
 <translation id="847472800012384958">Nobenemu mestu ne dovoli prikaza pojavnih oken</translation>
@@ -560,6 +582,9 @@
 <translation id="3034580675120919256">Omogoča nastavitev, ali lahko spletna mesta izvajajo JavaScript. Izvajanje JavaScripta je lahko dovoljeno ali zavrnjeno za vsa spletna mesta.
 
           Če ta pravilnik ni nastavljen, bo omogočen pravilnik »AllowJavaScript«, uporabnik pa ga bo lahko spremenil.</translation>
+<translation id="3195451902035818945">Določa, ali se delitev zapisa SSL onemogoči. Delitev zapisa je rešitev za pomanjkljivost v SSL 3.0 in TLS 1.0, vendar lahko pri nekaterih strežnikih HTTPS in proxyjih pride do težav z združljivostjo.
+
+     Če pravilnik ni določen ali je nastavljen na »False«, se delitev zapisa uporabi pri povezavah SSL/TLS, ki uporabljajo zbirko šifre CBC.</translation>
 <translation id="5868414965372171132">Konfiguracija omrežja na ravni uporabnika</translation>
 <translation id="5493552890659553833">Omogoča predloge za iskanje v naslovni vrstici brskalnika <ph name="PRODUCT_NAME"/> in preprečuje uporabnikom spreminjanje te nastavitve.
 
@@ -581,6 +606,7 @@
 <translation id="602728333950205286">Privzeti URL iskalnika za dinamično iskanje</translation>
 <translation id="24485093530245771">Nastavi velikost predpomnilnika diska v megabajtih</translation>
 <translation id="1675002386741412210">Na voljo podpora za:</translation>
+<translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="4482640907922304445">Pokaže gumb za domačo stran v orodni vrstici brskalnika <ph name="PRODUCT_NAME"/>.
 
       Če to nastavitev omogočite, bo gumb za domačo stran vedno prikazan.
@@ -729,13 +755,6 @@
 
           Če je ta nastavitev onemogočena in izhodne povezave UDP filtrira požarni zid, se bo lahko ta računalnik povezal samo z gostiteljskimi računalniki znotraj lokalnega omrežja.</translation>
 <translation id="5511702823008968136">Omogoči vrstico z zaznamki</translation>
-<translation id="1775332090152062460">Onemogoči uporabo protokola SPDY v programu <ph name="PRODUCT_NAME"/>.
-
-      Če je ta pravilnik omogočen, protokol SPDY v programu <ph name="PRODUCT_NAME"/> ne bo na voljo.
-
-      Če je pravilnik onemogočen, bo uporaba protokola SPDY na voljo.
-
-      Če pravilnik ni nastavljen, bo protokol SPDY na voljo, vendar uporabnik tega ne bo mogel spremeniti.</translation>
 <translation id="7848840259379156480">Omogoča nastavitev privzetega upodabljalnika HTML-ja, ko je nameščen <ph name="PRODUCT_FRAME_NAME"/>. Privzeta nastavitev je, da upodabljanje izvaja gostiteljski brskalnik, vendar lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME"/> privzeto upodablja strani HTML.</translation>
 <translation id="9142678351429467783">Omogoča tiskanje v programu <ph name="PRODUCT_NAME"/> in uporabnikom preprečuje spreminjanje te nastavitve.
 
@@ -782,6 +801,13 @@
       Če ta pravilnik nastavite, bo <ph name="PRODUCT_NAME"/> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--user-data-dir«.
 
       Če tega pravilnika ne nastavite, bo uporabljen privzeti imenik za predpomnilnik in bo lahko uporabnik to spremenil z zastavico »--user-data-dir« v ukazni vrstici.</translation>
+<translation id="7381326101471547614">Onemogoči uporabo protokola SPDY v programu <ph name="PRODUCT_NAME"/>.
+
+      Če je ta pravilnik omogočen, protokol SPDY v programu <ph name="PRODUCT_NAME"/> ne bo na voljo.
+
+      Če je pravilnik onemogočen, bo uporaba protokola SPDY na voljo.
+
+      Če pravilnik ni nastavljen, bo protokol SPDY na voljo.</translation>
 <translation id="1583248206450240930">Privzeto uporabi <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="1047128214168693844">Nobenemu mestu ne dovoli spremljanja fizične lokacije uporabnika</translation>
 <translation id="4101778963403261403">Konfigurira vrsto privzete domače strani v brskalniku <ph name="PRODUCT_NAME"/> in prepreči uporabnikom spreminjanje nastavitev domače strani. Domača stran je lahko nastavljena na URL, ki ga določite, ali na stran novega zavihka.
