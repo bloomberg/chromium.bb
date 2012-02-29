@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
@@ -90,9 +91,13 @@ struct AutocompleteMatch {
                     int relevance,
                     bool deletable,
                     Type type);
+  AutocompleteMatch(const AutocompleteMatch& match);
   ~AutocompleteMatch();
 
   // Converts |type| to a string representation.  Used in logging and debugging.
+  AutocompleteMatch& operator=(const AutocompleteMatch& match);
+
+  // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(Type type);
 
   // Converts |type| to a resource identifier for the appropriate icon for this
@@ -104,6 +109,7 @@ struct AutocompleteMatch {
                            const AutocompleteMatch& elem2);
 
   // Comparison functions for removing matches with duplicate destinations.
+  // Destinations are compared using |stripped_destination_url|.
   static bool DestinationSortFunc(const AutocompleteMatch& elem1,
                                   const AutocompleteMatch& elem2);
   static bool DestinationsEqual(const AutocompleteMatch& elem1,
@@ -132,6 +138,18 @@ struct AutocompleteMatch {
   // from external sources (such as extensions) before assigning to |contents|
   // or |description|.
   static string16 SanitizeString(const string16& text);
+
+  // Copies the destination_url with "www." stripped off to
+  // |stripped_destination_url|.  This method is invoked internally by the
+  // AutocompleteController and does not normally need to be invoked.
+  void ComputeStrippedDestinationURL();
+
+  // Gets the selected keyword or keyword hint for this match. Returns
+  // true if |keyword| represents a keyword hint, or false if |keyword|
+  // represents a selected keyword. (|keyword| will always be set [though
+  // possibly to the empty string], and you cannot have both a selected keyword
+  // and a keyword hint simultaneously.)
+  bool GetKeyword(string16* keyword) const;
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
@@ -165,6 +183,9 @@ struct AutocompleteMatch {
   // It may be empty if there is no possible navigation.
   GURL destination_url;
 
+  // The destination URL with "www." stripped off for better dupe finding.
+  GURL stripped_destination_url;
+
   // The main text displayed in the address bar dropdown.
   string16 contents;
   ACMatchClassifications contents_class;
@@ -184,6 +205,22 @@ struct AutocompleteMatch {
 
   // Type of this match.
   Type type;
+
+  // Set with a keyword provider match if this match can show a keyword hint.
+  // For example, if this is a SearchProvider match for "www.amazon.com",
+  // |associated_keyword| could be a KeywordProvider match for "amazon.com".
+  scoped_ptr<AutocompleteMatch> associated_keyword;
+
+  // For matches that correspond to valid substituting keywords ("search
+  // engines" that aren't the default engine, or extension keywords), this
+  // is the keyword.  If this is set, then when displaying this match, the
+  // edit will use the "keyword mode" UI that shows a blue
+  // "Search <engine name>" chit before the user's typing.  This should be
+  // set for any match that's an |associated_keyword| of a match in the main
+  // result list, as well as any other matches in the main result list that
+  // are direct keyword matches (e.g. if the user types in a keyword name and
+  // some search terms directly).
+  string16 keyword;
 
   // Indicates the TemplateURL the match originated from. This is set for
   // keywords as well as matches for the default search provider.

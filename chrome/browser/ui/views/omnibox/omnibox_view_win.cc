@@ -689,16 +689,22 @@ void OmniboxViewWin::SetUserText(const string16& text,
   ScopedFreeze freeze(this, GetTextObjectModel());
   model_->SetUserText(text);
   saved_selection_for_focus_change_.cpMin = -1;
-  SetWindowTextAndCaretPos(display_text, display_text.length());
-  if (update_popup)
-    UpdatePopup();
-  TextChanged();
+  SetWindowTextAndCaretPos(display_text, display_text.length(), update_popup,
+      true);
 }
 
 void OmniboxViewWin::SetWindowTextAndCaretPos(const string16& text,
-                                              size_t caret_pos) {
+                                              size_t caret_pos,
+                                              bool update_popup,
+                                              bool notify_text_changed) {
   SetWindowText(text.c_str());
   PlaceCaretAt(caret_pos);
+
+  if (update_popup)
+    UpdatePopup();
+
+  if (notify_text_changed)
+    TextChanged();
 }
 
 void OmniboxViewWin::SetForcedQuery() {
@@ -738,9 +744,8 @@ void OmniboxViewWin::SelectAll(bool reversed) {
 void OmniboxViewWin::RevertAll() {
   ScopedFreeze freeze(this, GetTextObjectModel());
   ClosePopup();
-  model_->Revert();
   saved_selection_for_focus_change_.cpMin = -1;
-  TextChanged();
+  model_->Revert();
 }
 
 void OmniboxViewWin::UpdatePopup() {
@@ -835,8 +840,7 @@ void OmniboxViewWin::OnTemporaryTextMaybeChanged(const string16& display_text,
   // text and then arrowed to another entry with the same text, we'd still want
   // to move the caret.
   ScopedFreeze freeze(this, GetTextObjectModel());
-  SetWindowTextAndCaretPos(display_text, display_text.length());
-  TextChanged();
+  SetWindowTextAndCaretPos(display_text, display_text.length(), false, true);
 }
 
 bool OmniboxViewWin::OnInlineAutocompleteTextMaybeChanged(
@@ -2096,17 +2100,17 @@ bool OmniboxViewWin::OnKeyDownOnlyWritable(TCHAR key,
     }
 
     case VK_TAB: {
-      if (model_->is_keyword_hint()) {
+      const bool shift_pressed = GetKeyState(VK_SHIFT) < 0;
+      if (model_->is_keyword_hint() && !shift_pressed) {
         // Accept the keyword.
         ScopedFreeze freeze(this, GetTextObjectModel());
         model_->AcceptKeyword();
-      } else if (!IsCaretAtEnd()) {
-        ScopedFreeze freeze(this, GetTextObjectModel());
-        OnBeforePossibleChange();
-        PlaceCaretAt(GetTextLength());
-        OnAfterPossibleChange();
+      } else if (shift_pressed &&
+                 model_->popup_model()->selected_line_state() ==
+                    AutocompletePopupModel::KEYWORD) {
+        model_->ClearKeyword(GetText());
       } else {
-        model_->CommitSuggestedText(true);
+        model_->OnUpOrDownKeyPressed(shift_pressed ? -count : count);
       }
       return true;
     }

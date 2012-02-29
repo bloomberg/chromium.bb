@@ -173,7 +173,8 @@ void AutocompleteEditModel::FinalizeInstantQuery(
   if (skip_inline_autocomplete) {
     const string16 final_text = input_text + suggest_text;
     view_->OnBeforePossibleChange();
-    view_->SetWindowTextAndCaretPos(final_text, final_text.length());
+    view_->SetWindowTextAndCaretPos(final_text, final_text.length(), false,
+        false);
     view_->OnAfterPossibleChange();
   } else if (popup_->IsOpen()) {
     SearchProvider* search_provider =
@@ -406,7 +407,8 @@ void AutocompleteEditModel::Revert() {
   is_keyword_hint_ = false;
   has_temporary_text_ = false;
   view_->SetWindowTextAndCaretPos(permanent_text_,
-                                  has_focus_ ? permanent_text_.length() : 0);
+                                  has_focus_ ? permanent_text_.length() : 0,
+                                  false, true);
   NetworkActionPredictor* network_action_predictor =
       NetworkActionPredictorFactory::GetForProfile(profile_);
   if (network_action_predictor)
@@ -416,6 +418,8 @@ void AutocompleteEditModel::Revert() {
 void AutocompleteEditModel::StartAutocomplete(
     bool has_selected_text,
     bool prevent_inline_autocomplete) const {
+  ClearPopupKeywordMode();
+
   bool keyword_is_selected = KeywordIsSelected();
   popup_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
   // We don't explicitly clear AutocompletePopupModel::manually_selected_match,
@@ -618,28 +622,49 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
 bool AutocompleteEditModel::AcceptKeyword() {
   DCHECK(is_keyword_hint_ && !keyword_.empty());
 
-  view_->OnBeforePossibleChange();
-  view_->SetWindowTextAndCaretPos(string16(), 0);
+  autocomplete_controller_->Stop(false);
   is_keyword_hint_ = false;
-  view_->OnAfterPossibleChange();
-  just_deleted_text_ = false;  // OnAfterPossibleChange() erroneously sets this
-                               // since the edit contents have disappeared.  It
-                               // doesn't really matter, but we clear it to be
-                               // consistent.
+
+  if (popup_->IsOpen())
+    popup_->SetSelectedLineState(AutocompletePopupModel::KEYWORD);
+  else
+    StartAutocomplete(false, true);
+
+  // Ensure the current selection is saved before showing keyword mode
+  // so that moving to another line and then reverting the text will restore
+  // the current state properly.
+  view_->OnTemporaryTextMaybeChanged(
+      DisplayTextFromUserText(CurrentMatch().fill_into_edit),
+      !has_temporary_text_);
+  has_temporary_text_ = true;
+
   content::RecordAction(UserMetricsAction("AcceptedKeywordHint"));
   return true;
 }
 
 void AutocompleteEditModel::ClearKeyword(const string16& visible_text) {
-  view_->OnBeforePossibleChange();
+  autocomplete_controller_->Stop(false);
+  ClearPopupKeywordMode();
+
   const string16 window_text(keyword_ + visible_text);
-  view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length());
-  keyword_.clear();
-  is_keyword_hint_ = false;
-  view_->OnAfterPossibleChange();
-  just_deleted_text_ = true;  // OnAfterPossibleChange() fails to clear this
-                              // since the edit contents have actually grown
-                              // longer.
+
+  // Only reset the result if the edit text has changed since the
+  // keyword was accepted, or if the popup is closed.
+  if (just_deleted_text_ || !visible_text.empty() || !popup_->IsOpen()) {
+    view_->OnBeforePossibleChange();
+    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
+        false, false);
+    keyword_.clear();
+    is_keyword_hint_ = false;
+    view_->OnAfterPossibleChange();
+    just_deleted_text_ = true;  // OnAfterPossibleChange() fails to clear this
+                                // since the edit contents have actually grown
+                                // longer.
+  } else {
+    is_keyword_hint_ = true;
+    view_->SetWindowTextAndCaretPos(window_text.c_str(), keyword_.length(),
+        false, true);
+  }
 }
 
 const AutocompleteResult& AutocompleteEditModel::result() const {
@@ -902,8 +927,9 @@ void AutocompleteEditModel::OnResultChanged(bool default_match_changed) {
       // can be many of these as a user types an initial series of characters,
       // the OS DNS cache could suffer eviction problems for minimal gain.
 
-      is_keyword_hint = popup_->GetKeywordForMatch(*match, &keyword);
+      is_keyword_hint = match->GetKeyword(&keyword);
     }
+
     popup_->OnResultChanged();
     OnPopupDataChanged(inline_autocomplete_text, NULL, keyword,
                        is_keyword_hint);
@@ -934,6 +960,12 @@ void AutocompleteEditModel::InternalSetUserText(const string16& text) {
 
 bool AutocompleteEditModel::KeywordIsSelected() const {
   return !is_keyword_hint_ && !keyword_.empty();
+}
+
+void AutocompleteEditModel::ClearPopupKeywordMode() const {
+  if (popup_->IsOpen() &&
+      popup_->selected_line_state() == AutocompletePopupModel::KEYWORD)
+    popup_->SetSelectedLineState(AutocompletePopupModel::NORMAL);
 }
 
 string16 AutocompleteEditModel::DisplayTextFromUserText(
@@ -1035,7 +1067,9 @@ bool AutocompleteEditModel::ShouldAllowExactKeywordMatch(
                  TRIM_LEADING, &keyword);
 
   // Only allow exact keyword match if |keyword| represents a keyword hint.
-  return keyword.length() && popup_->GetKeywordForText(keyword, &keyword);
+  return keyword.length() &&
+      !autocomplete_controller_->keyword_provider()->
+          GetKeywordForText(keyword).empty();
 }
 
 bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,

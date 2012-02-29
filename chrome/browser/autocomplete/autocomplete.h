@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
@@ -678,8 +679,12 @@ class AutocompleteController : public ACProviderListener {
   void set_search_provider(SearchProvider* provider) {
     search_provider_ = provider;
   }
+  void set_keyword_provider(KeywordProvider* provider) {
+    keyword_provider_ = provider;
+  }
 #endif
   SearchProvider* search_provider() const { return search_provider_; }
+  KeywordProvider* keyword_provider() const { return keyword_provider_; }
 
   // Getters
   const AutocompleteInput& input() const { return input_; }
@@ -691,10 +696,19 @@ class AutocompleteController : public ACProviderListener {
   virtual void OnProviderUpdate(bool updated_matches);
 
  private:
+  friend class AutocompleteProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest,
+                           RedundantKeywordsIgnoredInResult);
+
   // Updates |result_| to reflect the current provider state.  Resets timers and
   // fires notifications as necessary.  |is_synchronous_pass| is true only when
   // Start() is calling this to get the synchronous result.
   void UpdateResult(bool is_synchronous_pass);
+
+  // Updates |result| to populate each match's |associated_keyword| if that
+  // match can show a keyword hint.  |result| should be sorted by
+  // relevance before this is called.
+  void UpdateAssociatedKeywords(AutocompleteResult* result);
 
   // For each group of contiguous matches from the same TemplateURL, show the
   // provider name as a description on the first match in the group.

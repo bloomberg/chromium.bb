@@ -756,7 +756,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // Keyword should also be accepted by typing an ideographic space.
     omnibox_view->OnBeforePossibleChange();
     omnibox_view->SetWindowTextAndCaretPos(text + WideToUTF16(L"\x3000"),
-                                        text.length() + 1);
+                                        text.length() + 1, false, false);
     omnibox_view->OnAfterPossibleChange();
     ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
     ASSERT_EQ(text, omnibox_view->model()->keyword());
@@ -771,7 +771,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     // Keyword shouldn't be accepted by pressing space with a trailing
     // whitespace.
     omnibox_view->SetWindowTextAndCaretPos(
-        text + char16(' '), text.length() + 1);
+        text + char16(' '), text.length() + 1, false, false);
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
     ASSERT_EQ(text, omnibox_view->model()->keyword());
@@ -808,7 +808,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     omnibox_view->OnBeforePossibleChange();
     omnibox_view->model()->on_paste();
     omnibox_view->SetWindowTextAndCaretPos(text + ASCIIToUTF16(" bar"),
-                                        text.length() + 4);
+                                        text.length() + 4, false, false);
     omnibox_view->OnAfterPossibleChange();
     ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
     ASSERT_TRUE(omnibox_view->model()->keyword().empty());
@@ -1022,59 +1022,137 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(omnibox_view->IsSelectAll());
   }
 
-  void TabMoveCursorToEndTest() {
+  void TabAcceptKeyword() {
     OmniboxView* omnibox_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
-    omnibox_view->SetUserText(ASCIIToUTF16("Hello world"));
+    string16 text = ASCIIToUTF16(kSearchKeyword);
 
-    // Move cursor to the beginning.
+    // Trigger keyword hint mode.
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
+    ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, omnibox_view->model()->keyword());
+    ASSERT_EQ(text, omnibox_view->GetText());
+
+    // Trigger keyword mode by tab.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
+    ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, omnibox_view->model()->keyword());
+    ASSERT_TRUE(omnibox_view->GetText().empty());
+
+    // Revert to keyword hint mode.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
+    ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, omnibox_view->model()->keyword());
+    ASSERT_EQ(text, omnibox_view->GetText());
+
+    // The location bar should still have focus.
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                             location_bar_focus_view_id_));
+
+    // Trigger keyword mode by tab.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
+    ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, omnibox_view->model()->keyword());
+    ASSERT_TRUE(omnibox_view->GetText().empty());
+
+    // Revert to keyword hint mode with SHIFT+TAB.
 #if defined(OS_MACOSX)
-    // Home doesn't work on Mac trybot.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACKTAB, 0));
 #else
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_HOME, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
 #endif
+    ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, omnibox_view->model()->keyword());
+    ASSERT_EQ(text, omnibox_view->GetText());
 
-    size_t start, end;
-    omnibox_view->GetSelectionBounds(&start, &end);
-    EXPECT_EQ(0U, start);
-    EXPECT_EQ(0U, end);
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                             location_bar_focus_view_id_));
+  }
 
-    // Pressing tab should move cursor to the end.
+  void TabTraverseResultsTest() {
+    OmniboxView* omnibox_view = NULL;
+    ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    ASSERT_TRUE(popup_model);
+
+    // Input something to trigger results.
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kDesiredTLDKeys));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_TRUE(popup_model->IsOpen());
+
+    size_t old_selected_line = popup_model->selected_line();
+    EXPECT_EQ(0U, old_selected_line);
+
+    // Move down the results.
+    for (size_t size = popup_model->result().size();
+         popup_model->selected_line() < size - 1;
+         old_selected_line = popup_model->selected_line()) {
+      ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
+      ASSERT_LT(old_selected_line, popup_model->selected_line());
+    }
+
+    // Don't move past the end.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
+    ASSERT_EQ(old_selected_line, popup_model->selected_line());
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                             location_bar_focus_view_id_));
 
-    omnibox_view->GetSelectionBounds(&start, &end);
-    EXPECT_EQ(omnibox_view->GetText().size(), start);
-    EXPECT_EQ(omnibox_view->GetText().size(), end);
+    // Move back up the results.
+    for (; popup_model->selected_line() > 0U;
+         old_selected_line = popup_model->selected_line()) {
+      ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
+      ASSERT_GT(old_selected_line, popup_model->selected_line());
+    }
+
+    // Don't move past the beginning.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
+    ASSERT_EQ(0U, popup_model->selected_line());
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                             location_bar_focus_view_id_));
+
+    const TestHistoryEntry kHistoryFoo = {
+      "http://foo/", "Page foo", kSearchText, 1, 1, false
+    };
+
+    // Add a history entry so "foo" gets multiple matches.
+    ASSERT_NO_FATAL_FAILURE(
+        AddHistoryEntry(kHistoryFoo, Time::Now() - TimeDelta::FromHours(1)));
+
+    // Load results.
+    ASSERT_NO_FATAL_FAILURE(omnibox_view->SelectAll(false));
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+
+    // Trigger keyword mode by tab.
+    string16 text = ASCIIToUTF16(kSearchKeyword);
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
+    ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, omnibox_view->model()->keyword());
+    ASSERT_TRUE(omnibox_view->GetText().empty());
 
     // The location bar should still have focus.
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                              location_bar_focus_view_id_));
 
-    // Select all text.
-    omnibox_view->SelectAll(true);
-    EXPECT_TRUE(omnibox_view->IsSelectAll());
-    omnibox_view->GetSelectionBounds(&start, &end);
-    EXPECT_EQ(0U, start);
-    EXPECT_EQ(omnibox_view->GetText().size(), end);
-
-    // Pressing tab should move cursor to the end.
+    // Pressing tab again should move to the next result and clear keyword
+    // mode.
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-
-    omnibox_view->GetSelectionBounds(&start, &end);
-    EXPECT_EQ(omnibox_view->GetText().size(), start);
-    EXPECT_EQ(omnibox_view->GetText().size(), end);
+    ASSERT_EQ(1U, omnibox_view->model()->popup_model()->selected_line());
+    ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_NE(text, omnibox_view->model()->keyword());
 
     // The location bar should still have focus.
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                              location_bar_focus_view_id_));
 
-    // Pressing tab when cursor is at the end should change focus.
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
+    // Moving back up should not show keyword mode.
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
+    ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(text, omnibox_view->model()->keyword());
 
-    ASSERT_FALSE(ui_test_utils::IsViewFocused(browser(),
-                                              location_bar_focus_view_id_));
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                             location_bar_focus_view_id_));
   }
 
   void PersistKeywordModeOnTabSwitch() {
@@ -1195,9 +1273,16 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
   DeleteItemTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabMoveCursorToEnd) {
-  TabMoveCursorToEndTest();
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabAcceptKeyword) {
+  TabAcceptKeyword();
 }
+
+#if !defined(OS_MACOSX)
+// Mac intentionally does not support this behavior.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabTraverseResultsTest) {
+  TabTraverseResultsTest();
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
                        PersistKeywordModeOnTabSwitch) {

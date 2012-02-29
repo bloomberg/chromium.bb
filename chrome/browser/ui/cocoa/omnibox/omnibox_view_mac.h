@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,9 @@ class OmniboxViewMac : public OmniboxView,
                            const string16& display_text,
                            bool update_popup) OVERRIDE;
   virtual void SetWindowTextAndCaretPos(const string16& text,
-                                        size_t caret_pos) OVERRIDE;
+                                        size_t caret_pos,
+                                        bool update_popup,
+                                        bool notify_text_changed) OVERRIDE;
   virtual void SetForcedQuery() OVERRIDE;
   virtual bool IsSelectAll() OVERRIDE;
   virtual bool DeleteAtEndPressed() OVERRIDE;
@@ -163,6 +165,9 @@ class OmniboxViewMac : public OmniboxView,
   // any selection.  Named to be consistent with GTK and Windows,
   // though here we cannot really do the in-place operation they do.
   void EmphasizeURLComponents();
+
+  // Internally invoked whenever the text changes in some way.
+  void TextChanged();
 
   // Calculates text attributes according to |display_text| and applies them
   // to the given |as| object.

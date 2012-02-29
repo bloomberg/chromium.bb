@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,7 @@ bool operator<(const KeyCodeMap& a, const KeyCodeMap& b) {
 const KeyCodeMap kKeyCodesMap[] = {
   { VKEY_BACK /* 0x08 */, kVK_Delete, kBackspaceCharCode },
   { VKEY_TAB /* 0x09 */, kVK_Tab, kTabCharCode },
+  { VKEY_BACKTAB /* 0x0A */, 0x21E4, '\031' },
   { VKEY_CLEAR /* 0x0C */, kVK_ANSI_KeypadClear, kClearCharCode },
   { VKEY_RETURN /* 0x0D */, kVK_Return, kReturnCharCode },
   { VKEY_SHIFT /* 0x10 */, kVK_Shift, 0 },
