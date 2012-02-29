@@ -51,17 +51,16 @@ class NET_EXPORT FileStreamPosix {
   base::PlatformFile GetPlatformFileForTesting();
 
  private:
-  // Called when the file_ is opened asynchronously. |file| contains the
-  // platform file opened. |result| contains the result as a network error
-  // code.
-  void OnOpened(base::PlatformFile *file, int* result);
-
   // Called when the file_ is closed asynchronously.
   void OnClosed();
 
   // Called when Read() or Write() is completed (used only for POSIX).
   // |result| contains the result as a network error code.
   void OnIOComplete(int* result);
+
+  // Waits until the in-flight async open/close/read/write operation is
+  // complete.
+  void WaitForIOCompletion();
 
   base::PlatformFile file_;
   int open_flags_;

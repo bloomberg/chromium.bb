@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "base/synchronization/waitable_event.h"
 #include "net/base/completion_callback.h"
 #include "net/base/file_stream_whence.h"
 #include "net/base/net_export.h"
@@ -52,13 +53,15 @@ class NET_EXPORT FileStreamWin {
   class AsyncContext;
   friend class AsyncContext;
 
-  // Called when the file_ is opened asynchronously. |file| contains the
-  // platform file opened. |result| contains the result as a network error
-  // code.
-  void OnOpened(base::PlatformFile *file, int* result);
+  // Called when the file_ is opened asynchronously. |result| contains the
+  // result as a network error code.
+  void OnOpened(int* result);
 
   // Called when the file_ is closed asynchronously.
   void OnClosed();
+
+  // Waits until the in-flight async open/close operation is complete.
+  void WaitForIOCompletion();
 
   // This member is used to support asynchronous reads.  It is non-null when
   // the FileStreamWin was opened with PLATFORM_FILE_ASYNC.
@@ -71,6 +74,7 @@ class NET_EXPORT FileStreamWin {
   net::BoundNetLog bound_net_log_;
   base::WeakPtrFactory<FileStreamWin> weak_ptr_factory_;
   CompletionCallback callback_;
+  scoped_ptr<base::WaitableEvent> on_io_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(FileStreamWin);
 };

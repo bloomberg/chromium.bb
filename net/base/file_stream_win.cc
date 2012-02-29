@@ -62,9 +62,9 @@ int RecordAndMapError(int error,
 void OpenFile(const FilePath& path,
               int open_flags,
               bool record_uma,
-              const net::BoundNetLog& bound_net_log,
               base::PlatformFile* file,
-              int* result) {
+              int* result,
+              const net::BoundNetLog& bound_net_log) {
   bound_net_log.BeginEvent(
       net::NetLog::TYPE_FILE_STREAM_OPEN,
       make_scoped_refptr(
@@ -84,6 +84,18 @@ void OpenFile(const FilePath& path,
   }
 }
 
+// Opens a file using OpenFile() and signals the completion.
+void OpenFileAndSignal(const FilePath& path,
+                       int open_flags,
+                       bool record_uma,
+                       base::PlatformFile* file,
+                       int* result,
+                       base::WaitableEvent* on_io_complete,
+                       const net::BoundNetLog& bound_net_log) {
+  OpenFile(path, open_flags, record_uma, file, result, bound_net_log);
+  on_io_complete->Signal();
+}
+
 // Closes a file with some network logging.
 void CloseFile(base::PlatformFile file,
                const net::BoundNetLog& bound_net_log) {
@@ -96,6 +108,15 @@ void CloseFile(base::PlatformFile file,
   if (!base::ClosePlatformFile(file))
     NOTREACHED();
   bound_net_log.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
+}
+
+// Closes a file with CloseFile() and signals the completion.
+void CloseFileAndSignal(base::PlatformFile* file,
+                        base::WaitableEvent* on_io_complete,
+                        const net::BoundNetLog& bound_net_log) {
+  CloseFile(*file, bound_net_log);
+  *file = base::kInvalidPlatformFileValue;
+  on_io_complete->Signal();
 }
 
 }  // namespace
@@ -222,18 +243,21 @@ FileStreamWin::FileStreamWin(
 
 FileStreamWin::~FileStreamWin() {
   if (auto_closed_) {
-    if (async_context_.get()) {
-      // Block until the last read/write operation is complete, if needed.
-      // This is needed to close the file safely.
-      // TODO(satorux): Remove the blocking logic. crrev.com/115067
+    if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
+      // Block until the in-flight open/close operation is complete.
+      // TODO(satorux): Ideally we should not block. crbug.com/115067
+      WaitForIOCompletion();
+      // Block until the last read/write operation is complete.
       async_context_.reset();
 
       // Close the file in the background.
-      const bool posted = base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&CloseFile, file_, bound_net_log_),
-          true /* task_is_slow */);
-      DCHECK(posted);
+      if (IsOpen()) {
+        const bool posted = base::WorkerPool::PostTask(
+            FROM_HERE,
+            base::Bind(&CloseFile, file_, bound_net_log_),
+            true /* task_is_slow */);
+        DCHECK(posted);
+      }
     } else {
       CloseSync();
     }
@@ -246,14 +270,19 @@ void FileStreamWin::Close(const CompletionCallback& callback) {
   DCHECK(callback_.is_null());
   callback_ = callback;
 
-  // Make sure we don't have a request in flight. Unlike CloseSync(), don't
-  // abort existing asynchronous operations, as it'd block.
-  DCHECK(async_context_.get());
-  DCHECK(async_context_->callback().is_null());
+  DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
 
+  DCHECK(!on_io_complete_.get());
+  on_io_complete_.reset(new base::WaitableEvent(
+      false  /* manual_reset */, false  /* initially_signaled */));
+
+  // Passing &file_ to a thread pool looks unsafe but it's safe here as the
+  // destructor ensures that the close operation is complete with
+  // WaitForIOCompletion(). See also the destructor.
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&CloseFile, file_, bound_net_log_),
+      base::Bind(&CloseFileAndSignal, &file_, on_io_complete_.get(),
+                 bound_net_log_),
       base::Bind(&FileStreamWin::OnClosed, weak_ptr_factory_.GetWeakPtr()),
       true /* task_is_slow */);
   DCHECK(posted);
@@ -267,8 +296,10 @@ void FileStreamWin::CloseSync() {
   if (file_ != base::kInvalidPlatformFileValue)
     CancelIo(file_);
 
-  // TODO(satorux): Remove this once all async clients are migrated to use
-  // Close(). crbug.com/114783
+  // TODO(satorux): Replace this with a DCHECK(open_flags & ASYNC) once this
+  // once all async clients are migrated to use Close(). crbug.com/114783
+  WaitForIOCompletion();
+  // Block until the last read/write operation is complete.
   async_context_.reset();
 
   if (file_ != base::kInvalidPlatformFileValue) {
@@ -281,7 +312,7 @@ void FileStreamWin::CloseSync() {
 }
 
 int FileStreamWin::Open(const FilePath& path, int open_flags,
-                     const CompletionCallback& callback) {
+                        const CompletionCallback& callback) {
   if (IsOpen()) {
     DLOG(FATAL) << "File is already open!";
     return ERR_UNEXPECTED;
@@ -293,16 +324,21 @@ int FileStreamWin::Open(const FilePath& path, int open_flags,
   open_flags_ = open_flags;
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
 
-  base::PlatformFile* file =
-      new base::PlatformFile(base::kInvalidPlatformFileValue);
+  DCHECK(!on_io_complete_.get());
+  on_io_complete_.reset(new base::WaitableEvent(
+      false  /* manual_reset */, false  /* initially_signaled */));
+
+  // Passing &file_ to a thread pool looks unsafe but it's safe here as the
+  // destructor ensures that the open operation is complete with
+  // WaitForIOCompletion().  See also the destructor.
   int* result = new int(OK);
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&OpenFile, path, open_flags, record_uma_, bound_net_log_,
-                 file, result),
+      base::Bind(&OpenFileAndSignal,
+                 path, open_flags, record_uma_, &file_, result,
+                 on_io_complete_.get(), bound_net_log_),
       base::Bind(&FileStreamWin::OnOpened,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(file),
                  base::Owned(result)),
       true /* task_is_slow */);
   DCHECK(posted);
@@ -318,7 +354,7 @@ int FileStreamWin::OpenSync(const FilePath& path, int open_flags) {
   open_flags_ = open_flags;
 
   int result = OK;
-  OpenFile(path, open_flags_, record_uma_, bound_net_log_, &file_, &result);
+  OpenFile(path, open_flags_, record_uma_, &file_, &result, bound_net_log_);
   if (result != OK)
     return result;
 
@@ -626,12 +662,14 @@ void FileStreamWin::OnClosed() {
 
   CompletionCallback temp = callback_;
   callback_.Reset();
+
+  // Reset this before Run(). Run() should not issue a new async operation
+  // here, but just to keep it consistent with OnOpened().
+  on_io_complete_.reset();
   temp.Run(OK);
 }
 
-void FileStreamWin::OnOpened(base::PlatformFile* file, int* result) {
-  file_ = *file;
-
+void FileStreamWin::OnOpened(int* result) {
   if (*result == OK) {
     async_context_.reset(new AsyncContext(bound_net_log_));
     if (record_uma_)
@@ -642,7 +680,17 @@ void FileStreamWin::OnOpened(base::PlatformFile* file, int* result) {
 
   CompletionCallback temp = callback_;
   callback_.Reset();
+
+  // Reset this before Run() as Run() may issue a new async operation.
+  on_io_complete_.reset();
   temp.Run(*result);
+}
+
+void FileStreamWin::WaitForIOCompletion() {
+  if (on_io_complete_.get()) {
+    on_io_complete_->Wait();
+    on_io_complete_.reset();
+  }
 }
 
 }  // namespace net

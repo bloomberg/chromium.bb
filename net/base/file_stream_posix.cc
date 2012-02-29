@@ -92,6 +92,18 @@ void OpenFile(const FilePath& path,
   }
 }
 
+// Opens a file using OpenFile() and then signals the completion.
+void OpenFileAndSignal(const FilePath& path,
+                       int open_flags,
+                       bool record_uma,
+                       base::PlatformFile* file,
+                       int* result,
+                       base::WaitableEvent* on_io_complete,
+                       const net::BoundNetLog& bound_net_log) {
+  OpenFile(path, open_flags, record_uma, file, result, bound_net_log);
+  on_io_complete->Signal();
+}
+
 // Closes a file with some network logging.
 void CloseFile(base::PlatformFile file,
                const net::BoundNetLog& bound_net_log) {
@@ -102,6 +114,15 @@ void CloseFile(base::PlatformFile file,
   if (!base::ClosePlatformFile(file))
     NOTREACHED();
   bound_net_log.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
+}
+
+// Closes a file with CloseFile() and signals the completion.
+void CloseFileAndSignal(base::PlatformFile* file,
+                        base::WaitableEvent* on_io_complete,
+                        const net::BoundNetLog& bound_net_log) {
+  CloseFile(*file, bound_net_log);
+  *file = base::kInvalidPlatformFileValue;
+  on_io_complete->Signal();
 }
 
 // ReadFile() is a simple wrapper around read() that handles EINTR signals and
@@ -124,16 +145,16 @@ void ReadFile(base::PlatformFile file,
   *result = res;
 }
 
-// Helper function used for FileStreamPosix::Read().
-void ReadFileFromIOBuffer(base::PlatformFile file,
-                          scoped_refptr<IOBuffer> buf,
-                          int buf_len,
-                          bool record_uma,
-                          int* result,
-                          base::WaitableEvent* on_complete,
-                          const net::BoundNetLog& bound_net_log) {
+// Reads a file using ReadFile() and signals the completion.
+void ReadFileAndSignal(base::PlatformFile file,
+                       scoped_refptr<IOBuffer> buf,
+                       int buf_len,
+                       bool record_uma,
+                       int* result,
+                       base::WaitableEvent* on_io_complete,
+                       const net::BoundNetLog& bound_net_log) {
   ReadFile(file, buf->data(), buf_len, record_uma, result, bound_net_log);
-  on_complete->Signal();
+  on_io_complete->Signal();
 }
 
 // WriteFile() is a simple wrapper around write() that handles EINTR signals and
@@ -155,16 +176,16 @@ void WriteFile(base::PlatformFile file,
   *result = res;
 }
 
-// Helper function used for FileStreamPosix::Write().
-void WriteFileToIOBuffer(base::PlatformFile file,
-                         scoped_refptr<IOBuffer> buf,
-                         int buf_len,
-                         bool record_uma,
-                         int* result,
-                         base::WaitableEvent* on_complete,
-                         const net::BoundNetLog& bound_net_log) {
+// Writes a file using WriteFile() and signals the completion.
+void WriteFileAndSignal(base::PlatformFile file,
+                        scoped_refptr<IOBuffer> buf,
+                        int buf_len,
+                        bool record_uma,
+                        int* result,
+                        base::WaitableEvent* on_io_complete,
+                        const net::BoundNetLog& bound_net_log) {
   WriteFile(file, buf->data(), buf_len, record_uma, result, bound_net_log);
-  on_complete->Signal();
+  on_io_complete->Signal();
 }
 
 // FlushFile() is a simple wrapper around fsync() that handles EINTR signals and
@@ -212,16 +233,18 @@ FileStreamPosix::FileStreamPosix(
 FileStreamPosix::~FileStreamPosix() {
   if (auto_closed_) {
     if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
-      // Block until the last read/write operation is complete, if needed.
-      // This is needed to close the file safely.
-      // TODO(satorux): Remove the blocking logic.
-      if (on_io_complete_.get())
-        on_io_complete_->Wait();
-      const bool posted = base::WorkerPool::PostTask(
-          FROM_HERE,
-          base::Bind(&CloseFile, file_, bound_net_log_),
-          true /* task_is_slow */);
-      DCHECK(posted);
+      // Block until the last open/close/read/write operation is complete.
+      // TODO(satorux): Ideally we should not block. crbug.com/115067
+      WaitForIOCompletion();
+
+      // Close the file in the background.
+      if (IsOpen()) {
+        const bool posted = base::WorkerPool::PostTask(
+            FROM_HERE,
+            base::Bind(&CloseFile, file_, bound_net_log_),
+            true /* task_is_slow */);
+        DCHECK(posted);
+      }
     } else {
       CloseSync();
     }
@@ -235,28 +258,35 @@ void FileStreamPosix::Close(const CompletionCallback& callback) {
   DCHECK(callback_.is_null());
 
   callback_ = callback;
+
+  DCHECK(!on_io_complete_.get());
+  on_io_complete_.reset(new base::WaitableEvent(
+      false  /* manual_reset */, false  /* initially_signaled */));
+
+  // Passing &file_ to a thread pool looks unsafe but it's safe here as the
+  // destructor ensures that the close operation is complete with
+  // WaitForIOCompletion(). See also the destructor.
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&CloseFile, file_, bound_net_log_),
-      base::Bind(&FileStreamPosix::OnClosed, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&CloseFileAndSignal, &file_, on_io_complete_.get(),
+                 bound_net_log_),
+      base::Bind(&FileStreamPosix::OnClosed,
+                 weak_ptr_factory_.GetWeakPtr()),
       true /* task_is_slow */);
+
   DCHECK(posted);
 }
 
 void FileStreamPosix::CloseSync() {
-  // Abort any existing asynchronous operations.
+  // TODO(satorux): Replace the following async stuff with a
+  // DCHECK(open_flags & ASYNC) once once all async clients are migrated to
+  // use Close(). crbug.com/114783
 
-  // TODO(satorux): Replace this with a DCHECK once once all async clients
-  // are migrated to use Close(). crbug.com/114783
-  //
-  // DCHECK(!(open_flags_ & base::PLATFORM_FILE_ASYNC));
+  // Abort any existing asynchronous operations.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  // Block until the last read/write operation is complete, if needed.
-  // This is needed to close the file safely.
-  if (on_io_complete_.get()) {
-    on_io_complete_->Wait();
-    on_io_complete_.reset();  // So the destructor won't be stuck.
-  }
+  // Block until the last open/read/write operation is complete.
+  // TODO(satorux): Ideally we should not block. crbug.com/115067
+  WaitForIOCompletion();
 
   CloseFile(file_, bound_net_log_);
   file_ = base::kInvalidPlatformFileValue;
@@ -275,16 +305,21 @@ int FileStreamPosix::Open(const FilePath& path, int open_flags,
   open_flags_ = open_flags;
   DCHECK(open_flags_ & base::PLATFORM_FILE_ASYNC);
 
-  base::PlatformFile* file =
-      new base::PlatformFile(base::kInvalidPlatformFileValue);
+  DCHECK(!on_io_complete_.get());
+  on_io_complete_.reset(new base::WaitableEvent(
+      false  /* manual_reset */, false  /* initially_signaled */));
+
+  // Passing &file_ to a thread pool looks unsafe but it's safe here as the
+  // destructor ensures that the open operation is complete with
+  // WaitForIOCompletion(). See also the destructor.
   int* result = new int(OK);
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&OpenFile, path, open_flags, record_uma_, file, result,
-                 bound_net_log_),
-      base::Bind(&FileStreamPosix::OnOpened,
+      base::Bind(&OpenFileAndSignal,
+                 path, open_flags, record_uma_, &file_, result,
+                 on_io_complete_.get(), bound_net_log_),
+      base::Bind(&FileStreamPosix::OnIOComplete,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(file),
                  base::Owned(result)),
       true /* task_is_slow */);
   DCHECK(posted);
@@ -378,7 +413,7 @@ int FileStreamPosix::Read(
       false  /* manual_reset */, false  /* initially_signaled */));
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&ReadFileFromIOBuffer, file_, buf, buf_len,
+      base::Bind(&ReadFileAndSignal, file_, buf, buf_len,
                  record_uma_, result, on_io_complete_.get(), bound_net_log_),
       base::Bind(&FileStreamPosix::OnIOComplete,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -443,7 +478,7 @@ int FileStreamPosix::Write(
       false  /* manual_reset */, false  /* initially_signaled */));
   const bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&WriteFileToIOBuffer, file_, buf, buf_len,
+      base::Bind(&WriteFileAndSignal, file_, buf, buf_len,
                  record_uma_, result, on_io_complete_.get(), bound_net_log_),
       base::Bind(&FileStreamPosix::OnIOComplete,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -534,27 +569,24 @@ base::PlatformFile FileStreamPosix::GetPlatformFileForTesting() {
 
 void FileStreamPosix::OnClosed() {
   file_ = base::kInvalidPlatformFileValue;
-
-  CompletionCallback temp = callback_;
-  callback_.Reset();
-  temp.Run(OK);
-}
-
-void FileStreamPosix::OnOpened(base::PlatformFile* file, int* result) {
-  file_ = *file;
-
-  CompletionCallback temp = callback_;
-  callback_.Reset();
-  temp.Run(*result);
+  int result = OK;
+  OnIOComplete(&result);
 }
 
 void FileStreamPosix::OnIOComplete(int* result) {
   CompletionCallback temp_callback = callback_;
   callback_.Reset();
 
-  // Reset this earlier than Run() as Run() may end up calling Read/Write().
+  // Reset this before Run() as Run() may issue a new async operation.
   on_io_complete_.reset();
   temp_callback.Run(*result);
+}
+
+void FileStreamPosix::WaitForIOCompletion() {
+  if (on_io_complete_.get()) {
+    on_io_complete_->Wait();
+    on_io_complete_.reset();
+  }
 }
 
 }  // namespace net
