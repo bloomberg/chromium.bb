@@ -308,23 +308,10 @@ def GetPreferredTrySlaves(project, change):
   only_objc_files = all(f.endswith(('.mm', '.m')) for f in affected_files)
   if only_objc_files:
     return ['mac_rel']
-  preferred = ['win_rel', 'linux_rel', 'mac_rel']
+  preferred = ['win_rel', 'linux_rel', 'mac_rel', 'android']
   if any(f.endswith(('.h', '.cc', '.cpp', '.cxx')) for f in affected_files):
     preferred.append('linux_clang')
   aura_re = '_aura[^/]*[.][^/]*'
   if any(re.search(aura_re, f) for f in affected_files):
     preferred.append('linux_chromeos')
-  # For bringup (staging of upstream work) we must be careful to not
-  # overload Android infrastructure.  Keeping Android try decisions in a
-  # single location (instead of adding conditionals in base/, net/, ...)
-  # will help us avoid doing so.  For example, we are starting off with
-  # 2 trybots (compared against ~45 for Mac and Linux).
-  # If any file matches something compiled on the main waterfall
-  # android builder, use the android try server.
-  android_re_list = ('^base/', '^ipc/', '^net/', '^sql/', '^jingle/',
-                     '^build/common.gypi$')
-  for f in affected_files:
-    if any(re.search(r, f) for r in android_re_list):
-      preferred.append('android')
-      break
   return preferred
