@@ -27,7 +27,7 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_NACL)
 #include "base/eintr_wrapper.h"
 #include "ipc/ipc_channel_posix.h"
 #endif

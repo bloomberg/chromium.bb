@@ -281,6 +281,7 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
 }
 
 void InterfaceList::AddFlashInterfaces() {
+#if !defined(OS_NACL)
   AddProxy(API_ID_PPB_FLASH, &ProxyFactory<PPB_Flash_Proxy>);
   AddPPB(PPB_FLASH_INTERFACE_11_0, API_ID_PPB_FLASH,
          PPB_Flash_Proxy::GetInterface11());
@@ -328,6 +329,7 @@ void InterfaceList::AddFlashInterfaces() {
   AddPPB(PPB_FLASH_NETCONNECTOR_INTERFACE_0_2, API_ID_PPB_FLASH_NETCONNECTOR,
          thunk::GetPPB_Flash_NetConnector_0_2_Thunk());
 #endif
+#endif  // !defined(OS_NACL)
 }
 
 void InterfaceList::AddProxy(ApiID id,

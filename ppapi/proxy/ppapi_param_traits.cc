@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -192,7 +192,7 @@ void ParamTraits<PP_ObjectProperty>::Log(const param_type& p, std::string* l) {
 }
 
 // PPBFlash_DrawGlyphs_Params --------------------------------------------------
-
+#if !defined(OS_NACL)
 // static
 void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Write(
     Message* m,
@@ -244,6 +244,7 @@ bool ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Read(
       ParamTraits<std::vector<PP_Point> >::Read(m, iter, &r->glyph_advances) &&
       r->glyph_indices.size() == r->glyph_advances.size();
 }
+#endif  // !defined(OS_NACL)
 
 // static
 void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Log(

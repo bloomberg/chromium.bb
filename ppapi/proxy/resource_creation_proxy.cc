@@ -148,6 +148,7 @@ PP_Resource ResourceCreationProxy::CreateFileSystem(
   return PPB_FileSystem_Proxy::CreateProxyResource(instance, type);
 }
 
+#if !defined(OS_NACL)
 PP_Resource ResourceCreationProxy::CreateFlashMenu(
     PP_Instance instance,
     const PP_Flash_Menu* menu_data) {
@@ -163,6 +164,7 @@ PP_Resource ResourceCreationProxy::CreateFlashNetConnector(
     PP_Instance instance) {
   return PPB_Flash_NetConnector_Proxy::CreateProxyResource(instance);
 }
+#endif  // !defined(OS_NACL)
 
 PP_Resource ResourceCreationProxy::CreateGraphics2D(PP_Instance instance,
                                                     const PP_Size& size,
@@ -268,6 +270,7 @@ PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
   return 0;
 }
 
+#if !defined(OS_NACL)
 PP_Resource ResourceCreationProxy::CreateTCPServerSocketPrivate(
     PP_Instance instance) {
   // TODO (ygorshenin): implement this
@@ -278,6 +281,7 @@ PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(
     PP_Instance instance) {
   return PPB_TCPSocket_Private_Proxy::CreateProxyResource(instance);
 }
+#endif  // !defined(OS_NACL)
 
 PP_Resource ResourceCreationProxy::CreateTransport(PP_Instance instance,
                                                    const char* name,
@@ -286,10 +290,12 @@ PP_Resource ResourceCreationProxy::CreateTransport(PP_Instance instance,
   return 0;
 }
 
+#if !defined(OS_NACL)
 PP_Resource ResourceCreationProxy::CreateUDPSocketPrivate(
     PP_Instance instance) {
   return PPB_UDPSocket_Private_Proxy::CreateProxyResource(instance);
 }
+#endif  // !defined(OS_NACL)
 
 PP_Resource ResourceCreationProxy::CreateURLLoader(PP_Instance instance) {
   return PPB_URLLoader_Proxy::CreateProxyResource(instance);
