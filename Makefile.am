@@ -1,4 +1,4 @@
-SUBDIRS = src protocol
+SUBDIRS = src protocol doc
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 

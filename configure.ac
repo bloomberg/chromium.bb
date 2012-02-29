@@ -51,8 +51,13 @@ fi
 AC_PATH_PROG(XSLTPROC, xsltproc)
 AM_CONDITIONAL([HAVE_XSLTPROC], [test $XSLTPROC != ""])
 
+AC_PATH_PROG(PUBLICAN, publican)
+AM_CONDITIONAL([HAVE_PUBLICAN], [test $PUBLICAN != ""])
+
 AC_CONFIG_FILES([Makefile
 		 wayland-scanner.m4
+		 doc/Makefile
+		 doc/Wayland/Makefile
 		 src/Makefile
 		 src/wayland-server.pc
 		 src/wayland-client.pc
