@@ -91,6 +91,10 @@ class SplitCorrectingFilterInterpreter : public Interpreter {
   void Dump(const HardwareState& hwstate) const;
 
   scoped_ptr<Interpreter> next_;
+
+  // We only enable on non-T5R2 pads
+  bool enabled_;
+
   set<short, kMaxFingers> last_tracking_ids_;
   UnmergedContact unmerged_[kMaxFingers];
   MergedContact merged_[kMaxFingers / 2 + 1];

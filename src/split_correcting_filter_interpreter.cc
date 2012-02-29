@@ -13,21 +13,24 @@ namespace gestures {
 // Takes ownership of |next|:
 SplitCorrectingFilterInterpreter::SplitCorrectingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
-    : merge_max_separation_(prop_reg, "Split Merge Max Separation", 15.0) {
+    : enabled_(true),
+      merge_max_separation_(prop_reg, "Split Merge Max Separation", 15.0) {
   next_.reset(next);
 }
 
 Gesture* SplitCorrectingFilterInterpreter::SyncInterpret(HardwareState* hwstate,
                                                          stime_t* timeout) {
   // Update internal state
-  RemoveMissingUnmergedContacts(*hwstate);
-  MergeFingers(*hwstate);
-  UnmergeFingers(*hwstate);
-  UpdateUnmergedLocations(*hwstate);
-  SetLastTrackingIds(*hwstate);
+  if (enabled_) {
+    RemoveMissingUnmergedContacts(*hwstate);
+    MergeFingers(*hwstate);
+    UnmergeFingers(*hwstate);
+    UpdateUnmergedLocations(*hwstate);
+    SetLastTrackingIds(*hwstate);
 
-  // Use internal state to update hwstate
-  UpdateHwState(hwstate);
+    // Use internal state to update hwstate
+    UpdateHwState(hwstate);
+  }
   return next_->SyncInterpret(hwstate, timeout);
 }
 
@@ -38,6 +41,7 @@ Gesture* SplitCorrectingFilterInterpreter::HandleTimer(stime_t now,
 
 void SplitCorrectingFilterInterpreter::SetHardwareProperties(
     const HardwareProperties& hwprops) {
+  enabled_ = !hwprops.supports_t5r2 && !hwprops.support_semi_mt;
   next_->SetHardwareProperties(hwprops);
 }
 

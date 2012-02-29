@@ -49,10 +49,24 @@ struct InputEventWithExpectations {
 
 namespace {
 
-void DoTest(InputEventWithExpectations* events, size_t events_len) {
+void DoTest(InputEventWithExpectations* events, size_t events_len, bool t5r2) {
   SplitCorrectingFilterInterpreterTestInterpreter* base_interpreter
       = new SplitCorrectingFilterInterpreterTestInterpreter;
   SplitCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  HardwareProperties hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    1,  // res_x
+    1,  // res_y
+    133,  // screen_x_dpi
+    133,  // screen_y_dpi
+    5,  // max finger cnt
+    t5r2 ? 2 : 5,  // max touch cnt
+    t5r2 ? 1 : 0,  // supports_t5r2
+    0,   // support_semi_mt
+    1  // is_button_pad
+  };
+  interpreter.SetHardwareProperties(hwprops);
 
   for (size_t i = 0; i < events_len; i++) {
     InputEventWithExpectations* event = &events[i];
@@ -76,6 +90,22 @@ void DoTest(InputEventWithExpectations* events, size_t events_len) {
 }
 
 }  // namespace {}
+
+// Test that this doesn't do anything on T5R2 pads
+TEST(SplitCorrectingFilterInterpreterTest, T5R2Test) {
+  InputEventWithExpectations events[] = {
+    {{{ 0, 0, 0, 0, 112.380295, 0, 94.333336, 23.600000, 3087 },
+      { 0, 0, 0, 0, 0, 0, 0, 0, -1 },
+      { 0, 0, 0, 0, 0, 0, 0, 0, -1 }},
+     { 3087, -1 }},
+    {{{ 0, 0, 0, 0, 114.320663, 0, 93.750000, 26.600000, 3087 },
+      { 0, 0, 0, 0, 102.678452, 0, 92.833336, 17.100000, 3088 },
+      { 0, 0, 0, 0, 0, 0, 0, 0, -1 }},
+     { 3087, 3088 }},
+  };
+
+  DoTest(events, arraysize(events), true);
+}
 
 // Tests that close fingers that are scrolling don't get incorrectly merged.
 TEST(SplitCorrectingFilterInterpreterTest, TwoFingerScrollTest) {
@@ -150,7 +180,7 @@ TEST(SplitCorrectingFilterInterpreterTest, TwoFingerScrollTest) {
      { 3135, -1 }}
   };
 
-  DoTest(events, arraysize(events));
+  DoTest(events, arraysize(events), false);
 }
 
 // Tests that a thumb-edge gets correctly merged to a single contact
@@ -634,7 +664,7 @@ TEST(SplitCorrectingFilterInterpreterTest, ThumbDragTest) {
      { 3087, -1 }},
   };
 
-  DoTest(events, arraysize(events));
+  DoTest(events, arraysize(events), false);
 }
 
 // Two thumb-edges as the same time
@@ -1222,7 +1252,7 @@ TEST(SplitCorrectingFilterInterpreterTest, DualThumbsTest) {
      { 3111, -1 }},
   };
 
-  DoTest(events, arraysize(events));
+  DoTest(events, arraysize(events), false);
 }
 
 // Thumb edge dragging, and mid-way through a normal finger is added
@@ -1574,7 +1604,7 @@ TEST(SplitCorrectingFilterInterpreterTest, ThumbEdgePlusFingerTest) {
      { 3351,-1 }}
   };
 
-  DoTest(events, arraysize(events));
+  DoTest(events, arraysize(events), false);
 }
 
 }  // namespace gestures
