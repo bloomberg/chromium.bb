@@ -26,14 +26,15 @@ class SingleTestRunner(BaseTestRunner):
     performance_test: Whether or not performance test(s).
     cleanup_test_files: Whether or not to cleanup test files on device.
     tool: Name of the Valgrind tool.
+    shard_index: index number of the shard on which the test suite will run.
     dump_debug_info: Whether or not to dump debug information.
   """
 
   def __init__(self, device, test_suite, gtest_filter, test_arguments, timeout,
                rebaseline, performance_test, cleanup_test_files, tool,
-               dump_debug_info=False,
+               shard_index, dump_debug_info=False,
                fast_and_loose=False):
-    BaseTestRunner.__init__(self, device)
+    BaseTestRunner.__init__(self, device, shard_index)
     self._running_on_emulator = self.device.startswith('emulator')
     self._gtest_filter = gtest_filter
     self._test_arguments = test_arguments
@@ -265,8 +266,8 @@ class SingleTestRunner(BaseTestRunner):
                                                          failed_results),
                                                     list(failed_results))
 
-  def _RunTestsForSuiteInternal(self):
-    """Runs all tests (in rebaseline mode, run each test in isolation).
+  def RunTests(self):
+    """Runs all tests (in rebaseline mode, runs each test in isolation).
 
     Returns:
       A TestResults object.
@@ -279,6 +280,7 @@ class SingleTestRunner(BaseTestRunner):
                              ':'.join(['*.' + x + '*' for x in
                                      self.test_package.GetDisabledPrefixes()]))
       self.RunTestsWithFilter()
+    return self.test_results
 
   def SetUp(self):
     """Sets up necessary test enviroment for the test suite."""
@@ -296,7 +298,6 @@ class SingleTestRunner(BaseTestRunner):
 
   def TearDown(self):
     """Cleans up the test enviroment for the test suite."""
-    super(SingleTestRunner, self).TearDown()
     self.test_package.tool.CleanUpEnvironment()
     if self.test_package.cleanup_test_files:
       self.adb.RemovePushedFiles()
@@ -304,16 +305,4 @@ class SingleTestRunner(BaseTestRunner):
       self.dump_debug_info.StopRecordingLog()
     if self.test_package.performance_test:
       self.adb.TearDownPerformanceTest()
-
-  def RunTests(self):
-    """Runs the tests and cleans up the files once finished.
-
-    Returns:
-      A TestResults object.
-    """
-    self.SetUp()
-    try:
-      self._RunTestsForSuiteInternal()
-    finally:
-      self.TearDown()
-    return self.test_results
+    super(SingleTestRunner, self).TearDown()

@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,12 +19,17 @@ TEST_SYNC_SERVER_PORT = 8003
 
 
 class BaseTestRunner(object):
-  """Base class for running tests on a single device."""
+  """Base class for running tests on a single device.
 
-  def __init__(self, device):
+  A subclass should implement RunTests() with no parameter, so that calling
+  the Run() method will set up tests, run them and tear them down.
+  """
+
+  def __init__(self, device, shard_index):
     """
       Args:
         device: Tests will run on the device of this ID.
+        shard_index: Index number of the shard on which the test suite will run.
     """
     self.device = device
     self.adb = android_commands.AndroidCommands(device=device)
@@ -41,16 +46,27 @@ class BaseTestRunner(object):
     self.forwarder_base_url = ('http://localhost:%d' %
         self._forwarder_device_port)
     self.flags = FlagChanger(self.adb)
+    self.shard_index = shard_index
 
-  def RunTests(self):
-    # TODO(bulach): this should actually do SetUp / RunTestsInternal / TearDown.
-    # Refactor the various subclasses to expose a RunTestsInternal without
-    # any params.
-    raise NotImplementedError
+  def Run(self):
+    """Calls subclass functions to set up tests, run them and tear them down.
+
+    Returns:
+      Test results returned from RunTests().
+    """
+    self.SetUp()
+    try:
+      return self.RunTests()
+    finally:
+      self.TearDown()
 
   def SetUp(self):
     """Called before tests run."""
     pass
+
+  def RunTests(self):
+    """Runs the tests. Need to be overridden."""
+    raise NotImplementedError
 
   def TearDown(self):
     """Called when tests finish running."""
