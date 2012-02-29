@@ -175,11 +175,6 @@ BrowserAccessibilityWin* BrowserAccessibility::toBrowserAccessibilityWin() {
   return static_cast<BrowserAccessibilityWin*>(this);
 }
 
-std::string BrowserAccessibility::ToString() {
-  // TODO(dtseng): Implement this and human readable role strings.
-  return "";
-}
-
 BrowserAccessibilityWin::BrowserAccessibilityWin()
     : ia_role_(0),
       ia_state_(0),

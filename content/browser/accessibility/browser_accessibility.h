@@ -193,10 +193,6 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibilityWin* toBrowserAccessibilityWin();
 #endif
 
-  // A string representation of this node.
-  // TODO(dtseng): Move to test only library.
-  std::string ToString();
-
   // Retrieve the value of a bool attribute from the bool attribute
   // map and returns true if found.
   bool GetBoolAttribute(WebAccessibility::BoolAttribute attr, bool* value)
