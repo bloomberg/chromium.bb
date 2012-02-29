@@ -1,7 +1,11 @@
 Name: yasm
 URL: http://www.tortall.net/projects/yasm/
 Version: 1.1.0
+With these patches merged:
+* https://github.com/yasm/yasm/commit/a2cbb10ee1b90b73647667ac849c74d65761d412
+
 License File: source/patched-yasm/COPYING
+Security Critical: no
 
 See also the yasm.gyp file for a description of the yasm build process.
 
