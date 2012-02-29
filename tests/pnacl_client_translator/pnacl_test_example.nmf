@@ -3,6 +3,6 @@
     "x86-32": {"url": "non_existent.nexe"},
     "x86-64": {"url": "non_existent.nexe"},
     "arm":    {"url": "non_existent.nexe"},
-    "portable":  {"url": "pnacl_test_example.pexe"}
+    "portable": {"pnacl-translate" : {"url": "pnacl_test_example.pexe"} }
   }
 }

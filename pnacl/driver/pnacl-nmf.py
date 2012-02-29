@@ -61,7 +61,7 @@ NMF_PATTERNS = [
   ( '(.*)',      "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
-def get_help():
+def get_help(argv):
   return """
 NaCl Manifest Generator for PNaCl.
 

@@ -1392,13 +1392,12 @@ def GetMainProgramFromManifest(env, manifest):
   obj = json.load(manifest_file)
   manifest_file.close()
   program_dict = obj['program']
-  if env.Bit('bitcode'):
-    # For Pnacl we are not yet always using the 'portable' key in the manifest.
-    # Sometimes we translate to a native nexe for testing.
-    if 'portable' in program_dict.keys():
-      return (program_dict['portable']['url'], True)
-    # otherwise, fall through to nexe case.
-  return (program_dict[env.subst('${TARGET_FULLARCH}')]['url'], False)
+  # Only some scons browser tests for pnacl use 'portable' right now,
+  # so check portable first.
+  if env.Bit('bitcode') and 'portable' in program_dict:
+    return program_dict['portable']['pnacl-translate']['url'], True
+  else:
+    return program_dict[env.subst('${TARGET_FULLARCH}')]['url'], False
 
 manifest_map = {}
 
@@ -1406,9 +1405,12 @@ manifest_map = {}
 def GeneratedManifestNode(env, manifest):
   manifest = env.subst(manifest)
   manifest_base_name = os.path.basename(manifest)
-  main_program, is_portable = GetMainProgramFromManifest(env, manifest)
+  main_program, is_bitcode = GetMainProgramFromManifest(env, manifest)
   result = env.File('${STAGING_DIR}/' + manifest_base_name)
-  if not env.Bit('nacl_glibc'):
+  # Always generate the manifest for nacl_glibc and pnacl pexes.
+  # For nacl_glibc, generating the mapping of shared libraries is non-trivial.
+  # For pnacl, the manifest currently hosts a sha for the pexe.
+  if not env.Bit('nacl_glibc') and not is_bitcode:
     if manifest_base_name not in manifest_map:
       env.Install('${STAGING_DIR}', manifest)
       manifest_map[manifest_base_name] = main_program
@@ -1420,14 +1422,15 @@ def GeneratedManifestNode(env, manifest):
       raise Exception("Two manifest files with the same name")
     return result
   manifest_map[manifest_base_name] = main_program
-  if is_portable:
+  if is_bitcode:
     nmf_node = env.Command(
         result,
         ['${GENNMF}',
-         env.File('${STAGING_DIR}/' + os.path.basename(main_program))],
+         env.File('${STAGING_DIR}/' + os.path.basename(main_program)),
+         manifest],
         # Generate a flat url scheme to simplify file-staging.
-        '${SOURCES[0]} -L${NACL_SDK_LIB} -L${LIB_DIR} ' +
-        ' --flat-url-scheme ${SOURCES[1]} -o ${TARGET}')
+        '${SOURCES[0]} ${SOURCES[1]} -L${NACL_SDK_LIB} -L${LIB_DIR} ' +
+        ' --flat-url-scheme --base-nmf ${SOURCES[2]} -o ${TARGET}')
   else:
     # Run sel_ldr on the nexe to trace the NEEDED libraries.
     lib_list_node = env.Command(

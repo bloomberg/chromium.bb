@@ -1,5 +1,5 @@
 {
   "program": {
-    "portable":  {"url": "non_existent.pexe"}
+    "portable": {"pnacl-translate": {"url": "non_existent.pexe"} }
   }
 }
