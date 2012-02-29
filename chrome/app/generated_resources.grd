@@ -1307,7 +1307,7 @@ are declared in build/common.gypi.
       <!-- Search Engine Settings -->
       <message name="IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE"
                desc="Title of the search engines window">
-        Search Engines
+        Search engines
       </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN"
                desc="Title of the keyword column in the search engines editor">
@@ -1345,18 +1345,10 @@ are declared in build/common.gypi.
                desc="Text of the edit button in the search engines editor">
         Edit...
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON"
-                 desc="In Title Case: Text of the button that makes the selected endint the default search engine">
-          Make Default
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON"
-                 desc="In sentence case: Text of the button that makes the selected endint the default search engine">
-          Make default
-        </message>
-      </if>
+      <message name="IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON"
+               desc="Text of the button that makes the selected endint the default search engine">
+        Make default
+      </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE"
                desc="Text of the window title when editing a search engine">
         Edit Search Engine
@@ -2344,16 +2336,9 @@ are declared in build/common.gypi.
                desc="In the download view, 'Pause' link text">
         Pause
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="In Title Case: Title of the button in the download page that triggers a search">
-          Search Downloads
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="Title of the button in the download page that triggers a search">
-          Search downloads
-        </message>
-      </if>
+      <message name="IDS_DOWNLOAD_SEARCH_BUTTON" desc="Title of the button in the download page that triggers a search">
+        Search downloads
+      </message>
       <message name="IDS_DOWNLOAD_SEARCHRESULTSFOR" desc="Format string for search results">
         Search results for '<ph name="SEARCH_STRING">$1</ph>'
       </message>
@@ -5808,22 +5793,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE" desc="Title for 'Passwords and exceptions dialog'">
         Passwords
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE" desc="Title for 'Saved passwords' tab">
-          Saved passwords
-        </message>
-        <message name="IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE" desc="Title for 'Never saved' tab">
-          Never saved
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE" desc="Title for 'Saved passwords' tab">
-          Saved Passwords
-        </message>
-        <message name="IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE" desc="Title for 'Never saved' tab">
-          Never Saved
-        </message>
-      </if>
+      <message name="IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE" desc="Title for 'Saved passwords' tab">
+        Saved passwords
+      </message>
+      <message name="IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE" desc="Title for 'Never saved' tab">
+        Never saved
+      </message>
       <message name="IDS_PASSWORDS_PAGE_SEARCH_PASSWORDS" desc="Placeholder text shown in password table search box">
         Search passwords
       </message>
@@ -5854,16 +5829,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PASSWORDS_PAGE_VIEW_NO_EXCEPTIONS_DESCRIPTION" desc="Text for passwords page view when there are no password exceptions to show.">
         Sites which never save passwords will appear here.
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON" desc="In sentence case: Passwords page view's 'Remove all' button text">
-          Remove all
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON" desc="In Title Case: Passwords page view's 'Remove all' button text">
-          Remove All
-        </message>
-      </if>
+      <message name="IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON" desc="Passwords page view's 'Remove all' button text">
+        Remove all
+      </message>
 
       <!-- Confirm MessageBox Dialog -->
       <message name="IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL" desc="Confirm MessageBox Dialog's 'Yes' button text">
@@ -5883,7 +5851,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Import Settings Dialog -->
       <message name="IDS_IMPORT_SETTINGS_TITLE" desc="Dialog title for import dialog">
-        Import Bookmarks and Settings
+        Import bookmarks and settings
       </message>
       <message name="IDS_IMPORT_FROM_LABEL" desc="Label before profile select combo box">
         From:
@@ -6060,20 +6028,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_FEEDBACK_NO_SAVED_SCREENSHOTS_HELP" desc="Message shown when no screenshots are available for selection">
         You can select saved screenshots from here. Currently there are no screenshots available. You can press Ctrl + the "Overview Mode" key together to take a screenshot. The last three screenshots that you have taken will appear here.
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_FEEDBACK_SEND_REPORT" desc="In sentence case: Text for OK button on dialog">
-          Send feedback
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for the send report button on dialog">
-          Send Feedback
-        </message>
-      </if>
+      <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
+        Send feedback
+      </message>
 
       <!-- Clear Browsing Data -->
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
-        Clear Browsing Data
+        Clear browsing data
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_LABEL" desc="Label at the top of the client area of the dialog, preceding the period combo box">
         Obliterate the following items from:
@@ -6099,16 +6060,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for Autofill">
         Clear saved Autofill form data
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="In Title Case: Text for OK button on dialog">
-          Clear Browsing Data
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="In sentence case: Text for OK button on dialog">
-          Clear browsing data
-        </message>
-      </if>
+      <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Title for OK button on dialog">
+        Clear browsing data
+      </message>
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
         Adobe Flash Player storage settings...
       </message>
@@ -6133,13 +6087,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Content Settings dialog data -->
       <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">
-        Content Settings
+        Content settings
       </message>
       <message name="IDS_COOKIES_TAB_LABEL" desc="Label for Cookies tab on Content Settings dialog">
         Cookies
       </message>
       <message name="IDS_COOKIES_HEADER" desc="Header for cookie exception management page on Content Settings dialog">
-        Cookie and Site Data Exceptions
+        Cookie and site data exceptions
       </message>
       <message name="IDS_COOKIES_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing cookies and other site data to be stored on your computer.">
         Allow local data to be set (recommended)
@@ -6193,7 +6147,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Images
       </message>
       <message name="IDS_IMAGES_HEADER" desc="Header for image exception management page on Content Settings dialog">
-        Image Exceptions
+        Image exceptions
       </message>
       <message name="IDS_IMAGES_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing all images to be loaded.">
         Show all images (recommended)
@@ -6205,10 +6159,10 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Pop-ups
       </message>
       <message name="IDS_POPUP_HEADER" desc="Header for popup exception management page on Content Settings dialog">
-        Pop-up Exceptions
+        Pop-up exceptions
       </message>
       <message name="IDS_POPUP_SETTING_LABEL" desc="A label on top of Pop-up Windows tab on Content Settings dialog">
-        Pop-up Settings:
+        Pop-up settings:
       </message>
       <message name="IDS_POPUP_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing pop-up windows in the browser.">
         Allow all sites to show pop-ups
@@ -6220,7 +6174,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Plug-ins
       </message>
       <message name="IDS_PLUGIN_HEADER" desc="Header for plugin exception management page on Content Settings dialog">
-        Plug-in Exceptions
+        Plug-in exceptions
       </message>
       <message name="IDS_PLUGIN_SETTING_LABEL" desc="A label on top of Plug-Ins tab on Content Settings dialog">
         When I encounter plug-ins on a site:
@@ -6241,7 +6195,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         JavaScript
       </message>
       <message name="IDS_JAVASCRIPT_HEADER" desc="Label for JavaScript exception management page on Content Settings dialog">
-        JavaScript Exceptions
+        JavaScript exceptions
       </message>
       <message name="IDS_JS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing JavaScript use on any site.">
         Allow all sites to run JavaScript (recommended)
@@ -6284,13 +6238,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
     </message>
 
     <message name="IDS_HANDLER_OPTIONS_WINDOW_TITLE" desc="The title of the window that lets a user change what handlers they have registered for various protocols / mimetypes.">
-      Protocol Handlers
+      Protocol handlers
     </message>
       <message name="IDS_GEOLOCATION_TAB_LABEL" desc="Label for Geolocation tab on Content Settings dialog">
         Location
       </message>
       <message name="IDS_GEOLOCATION_HEADER" desc="Label for Geolocation exception management page on Content Settings dialog">
-        Geolocation Exceptions
+        Geolocation exceptions
       </message>
       <message name="IDS_GEOLOCATION_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites access to geolocation data.">
         Allow all sites to track my physical location
@@ -6302,13 +6256,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Do not allow any site to track my physical location
       </message>
       <message name="IDS_GEOLOCATION_EXCEPTION_TITLE" desc="Title for geolocation exceptions dialog">
-        Location Exceptions
+        Location exceptions
       </message>
       <message name="IDS_NOTIFICATIONS_TAB_LABEL" desc="Label for Notifications tab on Content Settings dialog">
         Notifications
       </message>
       <message name="IDS_NOTIFICATIONS_HEADER" desc="Label for Notifications exception management page on Content Settings dialog">
-        Notifications Exceptions
+        Notifications exceptions
       </message>
       <message name="IDS_NOTIFICATIONS_SETTINGS_BUTTON" desc="Label for the Settings button for Notifications tab of Content Settings dialog.">
         Settings...
@@ -6326,13 +6280,13 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Fullscreen
       </message>
       <message name="IDS_FULLSCREEN_HEADER" desc="Header for fullscreen exception management page on Content Settings dialog">
-        Fullscreen Exceptions
+        Fullscreen exceptions
       </message>
       <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
         Site
       </message>
       <message name="IDS_EXCEPTIONS_PATTERN_HEADER" desc="A column header for the pattern column of the cookie/image/javascript/plugins exceptions dialog">
-        Hostname Pattern
+        Hostname pattern
       </message>
       <message name="IDS_EXCEPTIONS_ACTION_HEADER" desc="A column header for the action column of the cookie/image/javascript/plugins exceptions dialog">
         Behavior
@@ -6347,7 +6301,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Remove
       </message>
       <message name="IDS_EXCEPTIONS_REMOVEALL_BUTTON" desc="A button in exception dialogs for removing all exception rules.">
-        Remove All
+        Remove all
       </message>
       <message name="IDS_EXCEPTIONS_ALLOW_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is allowed for a given domain">
         Allow
@@ -6377,10 +6331,10 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         embedded on any other site
       </message>
       <message name="IDS_MOUSE_LOCK_TAB_LABEL" desc="Label for Mouse Lock tab on Content Settings dialog">
-        Mouse Cursor
+        Mouse cursor
       </message>
       <message name="IDS_MOUSE_LOCK_HEADER" desc="Label for Mouse Lock exception management page on Content Settings dialog">
-        Mouse Cursor Exceptions
+        Mouse cursor exceptions
       </message>
       <message name="IDS_MOUSE_LOCK_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites ability to disable the mouse cursor.">
         Allow all sites to disable the mouse cursor
@@ -6392,39 +6346,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Do not allow any site to disable the mouse cursor
       </message>
 
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
-          Manage Exceptions...
-        </message>
-        <message name="IDS_COOKIES_SHOW_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing cookies and other stored site data.">
-          All Cookies and Site Data...
-        </message>
-        <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
-          Manage Handlers...
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
-          Manage exceptions...
-        </message>
-        <message name="IDS_COOKIES_SHOW_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing cookies and other stored site data.">
-          All cookies and site data...
-        </message>
-        <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
-          Manage handlers...
-        </message>
-      </if>
-
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_INTENTS_MANAGE_BUTTON" desc="">
-          Manage Intents...
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_INTENTS_MANAGE_BUTTON" desc="">
-          Manage intents...
-        </message>
-      </if>
+      <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
+        Manage exceptions...
+      </message>
+      <message name="IDS_COOKIES_SHOW_COOKIES_BUTTON" desc="A button in the Content Settings dialog for showing cookies and other stored site data.">
+        All cookies and site data...
+      </message>
+      <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
+        Manage handlers...
+      </message>
+      <message name="IDS_INTENTS_MANAGE_BUTTON" desc="The title of the button that opens the intents management dialog.">
+        Manage intents...
+      </message>
 
       <!-- Automatic updates -->
       <if expr="is_macosx">
@@ -6463,12 +6396,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
         Updates are disabled by the administrator
       </message>
-      <if expr="pp_ifdef('_google_chrome') and pp_ifdef('use_titlecase')">
-        <message name="IDS_REPORT_AN_ISSUE " desc="Text of the button which allows the user to report an issue with Chrome.">
-          Report an Issue
-        </message>
-      </if>
-      <if expr="pp_ifdef('_google_chrome') and not pp_ifdef('use_titlecase')">
+      <if expr="pp_ifdef('_google_chrome')">
         <message name="IDS_REPORT_AN_ISSUE " desc="Text of the button which allows the user to report an issue with Chrome.">
           Report an issue
         </message>
@@ -7918,42 +7846,23 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
 
       <!-- Font settings -->
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE" desc="Title that appears in the Fonts and Encoding subpage">
-        Fonts and Encoding
+        Fonts and encoding
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="In Title Case: Label of the Standard font section of the Fonts and Encoding subpage">
-          Standard Font
-        </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="In Title Case: Label of the Serif font section of the Fonts and Encoding subpage">
-          Serif Font
-        </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="In Title Case: Label of the Sans-serif font section of the Fonts and Encoding subpage">
-          Sans-Serif Font
-        </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="In Title Case: Label of the Fixed-width font section of the Fonts and Encoding subpage">
-          Fixed-width Font
-        </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="In Title Case: Label of the Minimum font size section of the Fonts and Encoding subpage">
-          Minimum Font Size
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="In sentence case: Label of the Standard font section of the Fonts and Encoding subpage">
-          Standard font
-        </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="In sentence case: Label of the Serif font section of the Fonts and Encoding subpage">
-          Serif font
-        </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="In sentence case: Label of the Sans-serif font section of the Fonts and Encoding subpage">
-          Sans-serif font
-        </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="In sentence case: Label of the Fixed-width font section of the Fonts and Encoding subpage">
-          Fixed-width font
-        </message>
-        <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="In sentence case: Label of the Minimum font size section of the Fonts and Encoding subpage">
-          Minimum font size
-        </message>
-      </if>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_STANDARD_LABEL" desc="Label of the Standard font section of the Fonts and Encoding subpage">
+        Standard font
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Label of the Serif font section of the Fonts and Encoding subpage">
+        Serif font
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="Label of the Sans-serif font section of the Fonts and Encoding subpage">
+        Sans-serif font
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the Fixed-width font section of the Fonts and Encoding subpage">
+        Fixed-width font
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Label of the Minimum font size section of the Fonts and Encoding subpage">
+        Minimum font size
+      </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE" desc="Label of the Encoding section of the Fonts and Encoding subpage">
         Encoding
       </message>
@@ -7975,7 +7884,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Languages
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AND_INPUT_DIALOG_TITLE">
-        Languages and Input
+        Languages and input
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
         Languages
@@ -8045,7 +7954,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_SETTINGS_TITLE"
                desc="The label for the virtual keyboard manager page">
-        On-Screen Keyboard Settings
+        On-screen keyboard settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_LAYOUT_COLUMN_TITLE"
                desc="The label for the virtual keyboard manager page">
@@ -8053,7 +7962,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_VIRTUAL_KEYBOARD_KEYBOARD_COLUMN_TITLE"
                desc="The label for the virtual keyboard manager page">
-        On-Screen Keyboard
+        On-screen keyboard
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DEFAULT_VIRTUAL_KEYBOARD"
                desc="The label for a default virtual keyboard in a drop down menu">
@@ -8192,13 +8101,13 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Basics
       </message>
       <message name="IDS_OPTIONS_CONTENT_TAB_LABEL" desc="The title of the Personal Stuff tab">
-        Personal Stuff
+        Personal stuff
       </message>
       <message name="IDS_OPTIONS_ADVANCED_TAB_LABEL" desc="The title of the Under the Hood tab">
-        Under the Hood
+        Under the hood
       </message>
       <message name="IDS_OPTIONS2_ADVANCED_TAB_LABEL" desc="The title of the Advanced settings tab">
-        Advanced Settings
+        Advanced settings
       </message>
       <message name="IDS_OPTIONS_TAB_TITLE" desc="The format of the title on the browser tab for an options subpage, e.g. Settings - Basics">
         <ph name="OPTIONS_TITLE">$1<ex>Settings</ex></ph> - <ph name="SUBPAGE_TITLE">$2<ex>Under the Hood</ex></ph>
@@ -8284,17 +8193,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Check for update
       </message>
 
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
-          On startup
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="In Title Case: The title of the startup group">
-          On Startup
-        </message>
-      </if>
+      <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
+        On startup
+      </message>
       <message name="IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB" desc="The label of the 'Show home page' startup option radio button">
         Open the home page
       </message>
@@ -8325,58 +8226,27 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog">
         Enter URL...
       </message>
-
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="In Title Case: The title of the dialog where the user chooses the set of pages that will be shown at startup">
-          Startup Pages
-        </message>
-        <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In Title Case: The label of the 'Use Current' button for the custom startup urls list">
-          Use Current Pages
-        </message>
-        <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="In Title Case: The label of the 'Manage search engines' button">
-          Manage Search Engines...
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="In sentence case: The title of the dialog where the user chooses the set of pages that will be shown at startup">
-          Startup pages
-        </message>
-        <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="In sentence case: The label of the 'Use Current' button for the custom startup urls list">
-          Use current pages
-        </message>
-        <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="In sentence case: The label of the 'Manage search engines' button">
-          Manage search engines...
-        </message>
-      </if>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home page group">
-          Home page
-        </message>
-        <message name="IDS_OPTIONS2_HOMEPAGE_TITLE" desc="The title of the home page overlay">
-          Home page
-        </message>
-        <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
-          Toolbar
-        </message>
-        <message name="IDS_OPTIONS2_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
-          Toolbar appearance
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="In Title Case: The title of the home page group">
-          Home Page
-        </message>
-        <message name="IDS_OPTIONS2_HOMEPAGE_TITLE" desc="In Title Case: The title of the home page overlay">
-          Home Page
-        </message>
-        <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="In Title Case: The title of the toolbar group">
-          Toolbar
-        </message>
-        <message name="IDS_OPTIONS2_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
-          Toolbar Appearance
-        </message>
-      </if>
+      <message name="IDS_OPTIONS2_STARTUP_PAGES_DIALOG_TITLE" desc="The title of the dialog where the user chooses the set of pages that will be shown at startup">
+        Startup pages
+      </message>
+      <message name="IDS_OPTIONS_STARTUP_USE_CURRENT" desc="The label of the 'Use Current' button for the custom startup urls list">
+        Use current pages
+      </message>
+      <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES" desc="The label of the 'Manage search engines' button">
+        Manage search engines...
+      </message>
+      <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home page group">
+        Home page
+      </message>
+      <message name="IDS_OPTIONS2_HOMEPAGE_TITLE" desc="The title of the home page overlay">
+        Home page
+      </message>
+      <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
+        Toolbar
+      </message>
+      <message name="IDS_OPTIONS2_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
+        Toolbar appearance
+      </message>
       <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
         Use the New Tab page
       </message>
@@ -8398,18 +8268,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR" desc="The label of the 'Show bookmarks bar' checkbox">
         Always show the bookmarks bar
       </message>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
-          Search
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="In Title Case: The title of the default search engine group">
-          Search
-        </message>
-      </if>
-
+      <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
+        Search
+      </message>
       <message name="IDS_SEARCH_ENGINE_ADD_NEW_NAME_PLACEHOLDER" desc="Placeholder text for name before the user adds a new search engine" >
         Add a new search engine
       </message>
@@ -8419,17 +8280,9 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_SEARCH_ENGINE_ADD_NEW_URL_PLACEHOLDER" desc="Placeholder text for URL before the user adds a new search engine" >
         URL with %s in place of query
       </message>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="The title of the default browser group">
-          Default browser
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="In Title Case: The title of the default browser group">
-          Default Browser
-        </message>
-      </if>
+      <message name="IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME" desc="The title of the default browser group">
+        Default browser
+      </message>
       <message name="IDS_OPTIONS_DEFAULTBROWSER_DEFAULT" desc="The text displayed when Chrome is not the default browser">
         The default browser is currently <ph name="BROWSER_NAME">$1<ex>Firefox</ex></ph>.
       </message>
@@ -8452,35 +8305,15 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my computer
         </message>
       </if>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_ADVANCED_BUTTON_TITLE" desc="The title of the advanced options button">
-          Advanced settings...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_ADVANCED_BUTTON_TITLE" desc="In Title Case: The title of the advanced options button">
-          Advanced Settings...
-        </message>
-      </if>
-
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="In Title Case: The label of the 'Use Chrome as default' browser button">
-          Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> My Default Browser
-        </message>
-        <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
-          Downloads
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="In sentence case: The label of the 'Use Chrome as default' browser button">
-          Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
-        </message>
-        <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="In Title Case: The title of the download location group">
-          Downloads
-        </message>
-      </if>
-
+      <message name="IDS_OPTIONS_ADVANCED_BUTTON_TITLE" desc="The title of the advanced options button">
+        Advanced settings...
+      </message>
+      <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chrome as default' browser button">
+        Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
+      </message>
+      <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
+        Downloads
+      </message>
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON" desc="The label of the 'Change...' button">
         Change...
       </message>
@@ -8493,39 +8326,21 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION" desc="The 'Ask for save location before downloading' checkbox label">
         Ask where to save each file before downloading
       </message>
-
       <message name="IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY" desc="The information label for the 'Clear auto-opening settings' button">
         You have chosen to open certain file types automatically after downloading.
       </message>
-
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="In Title Case: The label of the 'Reset always open files' button">
-          Clear Auto-opening Settings
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="In sentence case: The label of the 'Reset always open files' button">
-          Clear auto-opening settings
-        </message>
-      </if>
-
+      <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="The label of the 'Reset always open files' button">
+        Clear auto-opening settings
+      </message>
       <message name="IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL" desc="The label for the Language section">
         Change how <ph name="APP_NAME">$1<ex>Chrome</ex></ph> handles and displays languages
       </message>
       <message name="IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE" desc="The label of the check-box that enables page translate">
         Offer to translate pages that aren't in a language I read
       </message>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="The title of the 'Passwords and forms' group">
-          Passwords and forms
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="In Title Case: The title of the 'Passwords and Forms' group">
-          Passwords and Forms
-        </message>
-      </if>
+      <message name="IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME" desc="The title of the 'Passwords and forms' group">
+        Passwords and forms
+      </message>
       <message name="IDS_OPTIONS_PASSWORD_MANAGER_ENABLE" desc="The label of the password manager checkbox">
         Offer to save passwords I enter on the web.
       </message>
@@ -8538,38 +8353,21 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK" desc="The label of the 'Manage saved passwords' link">
         Manage saved passwords
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="In Title Case: The label of the 'Manage saved passwords' button">
-          Manage Saved Passwords...
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="In sentence case: The label of the 'Manage saved passwords' button">
-          Manage saved passwords...
-        </message>
-      </if>
+      <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="The label of the 'Manage saved passwords' button">
+        Manage saved passwords...
+      </message>
       <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
           On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.
       </message>
       <message name="IDS_OPTIONS_PASSWORDS_AUTOLOGIN" desc="The label of the 'autologinEnabled' checkbox">
         Offer to sign into Google sites automatically with this account
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form Autofill group">
-          Form autofill
-        </message>
-        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="The title of the 'Passwords' group">
-          Passwords
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="In Title Case: The title of the form Autofill group">
-          Form Autofill
-        </message>
-        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="In Title Case: The title of the 'Passwords' group">
-          Passwords
-        </message>
-      </if>
+      <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form Autofill group">
+        Form autofill
+      </message>
+      <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="The title of the 'Passwords' group">
+        Passwords
+      </message>
       <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
         Do you want Chrome to save this credit card information for completing web forms?
       </message>
@@ -8597,37 +8395,21 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK" desc="The label of the 'Manage Autofill settings' link">
         Manage Autofill settings
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS" desc="The label of the 'Manage Autofill settings' button">
-          Manage Autofill settings...
-        </message>
-        <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new Autofill address.">
-          Add new street address...
-        </message>
-        <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new Autofill credit card.">
-          Add new credit card...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS" desc="In Title Case: The label of the 'Manage Autofill Settings' button">
-          Manage Autofill Settings...
-        </message>
-        <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="In Title Case: The label of the button that adds a new Autofill address.">
-          Add New Street Address...
-        </message>
-        <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="In Title Case: The label of the button that adds a new Autofill credit card.">
-          Add New Credit Card...
-        </message>
-      </if>
-
-      <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
-        Autofill Settings
+      <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS" desc="The label of the 'Manage Autofill settings' button">
+        Manage Autofill settings...
       </message>
-
+      <message name="IDS_AUTOFILL_ADD_ADDRESS_BUTTON" desc="The label of the button that adds a new Autofill address.">
+        Add new street address...
+      </message>
+      <message name="IDS_AUTOFILL_ADD_CREDITCARD_BUTTON" desc="The label of the button that adds a new Autofill credit card.">
+        Add new credit card...
+      </message>
+      <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
+        Autofill settings
+      </message>
       <message name="IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK" desc="Checkbox label to enable Address Book on Mac.">
         Include addresses from my Address Book card
       </message>
-
       <message name="IDS_AUTOFILL_CC_AMEX" desc="American Express credit card name, for use as an image's 'alt' attribute.">
         American Express
       </message>
@@ -8652,47 +8434,24 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name, for use as an image's 'alt' attribute.">
         Visa
       </message>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="In sentence case: The name of the Addresses group of the Autofill dialog.">
-          Addresses
-        </message>
-        <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="In sentence case: The name of the Credit Cards group of the Autofill dialog.">
-          Credit cards
-        </message>
-        <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="In sentence case: The caption on the edit Autofill address dialog.">
-          Edit address
-        </message>
-        <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="In sentence case: The caption on the edit Autofill address dialog for the new entry.">
-          Add an address
-        </message>
-        <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="In sentence case: The caption on the edit Autofill credit card dialog.">
-          Edit credit card
-        </message>
-        <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="In sentence case: The caption on the edit Autofill credit card dialog the new entry.">
-          Add a credit card
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="In Title Case: The name of the Addresses group of the Autofill dialog.">
-          Addresses
-        </message>
-        <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="In Title Case: The name of the Credit Cards group of the Autofill dialog.">
-          Credit Cards
-        </message>
-        <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="In Title Case: The caption on the edit Autofill address dialog.">
-          Edit Address
-        </message>
-        <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="In Title Case: The caption on the edit Autofill address dialog for the new entry.">
-          Add an Address
-        </message>
-        <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="In Title Case: The caption on the edit Autofill credit card dialog.">
-          Edit Credit Card
-        </message>
-        <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="In Title Case: The caption on the edit Autofill credit card dialog the new entry.">
-          Add a Credit Card
-        </message>
-      </if>
+      <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the Autofill dialog.">
+        Addresses
+      </message>
+      <message name="IDS_AUTOFILL_CREDITCARDS_GROUP_NAME" desc="IThe name of the Credit Cards group of the Autofill dialog.">
+        Credit cards
+      </message>
+      <message name="IDS_AUTOFILL_EDIT_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog.">
+        Edit address
+      </message>
+      <message name="IDS_AUTOFILL_ADD_ADDRESS_CAPTION" desc="The caption on the edit Autofill address dialog for the new entry.">
+        Add an address
+      </message>
+      <message name="IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog.">
+        Edit credit card
+      </message>
+      <message name="IDS_AUTOFILL_ADD_CREDITCARD_CAPTION" desc="The caption on the edit Autofill credit card dialog the new entry.">
+        Add a credit card
+      </message>
       <message name="IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses on the Mac.">
         , '''
       </message>
@@ -8825,36 +8584,21 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_AUTOFILL_FEEDBACK_POPULAR_FORM_MESSAGE" desc="Feedback message template used when a popular Autofill form is found.">
         The form signature <ph name="FORM_SIGNATURE">$1<ex>15146752457155269744</ex></ph> is for <ph name="FORM_URL">$2<ex>http://www.facebook.com</ex></ph>.
       </message>
-
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
-          Appearance
-        </message>
-        <message name="IDS_THEMES_GROUP_NAME" desc="In sentence case: The title of the themes group">
-          Themes
-        </message>
-        <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
-          Reset to default theme
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_APPEARANCE_GROUP_NAME" desc="In Title Case: The title of the appearance group">
-          Appearance
-        </message>
-        <message name="IDS_THEMES_GROUP_NAME" desc="In Title Case: The title of the themes group">
-          Themes
-        </message>
-        <message name="IDS_THEMES_RESET_BUTTON" desc="In title case: The button to reset your theme">
-          Reset To Default Theme
-        </message>
-      </if>
-
+      <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
+        Appearance
+      </message>
+      <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
+        Themes
+      </message>
+      <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
+        Reset to default theme
+      </message>
       <if expr="is_posix and not is_macosx">
         <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
-          Use GTK+ Theme
+          Use GTK+ theme
         </message>
         <message name="IDS_THEMES_SET_CLASSIC" desc="The button to choose the classic windows theme in GTK">
-          Use Classic Theme
+          Use Classic theme
         </message>
         <message name="IDS_SHOW_WINDOW_DECORATIONS" desc="The label of a radio button in the options dialog for using the system title bar and borders.">
           Use system title bar and borders
@@ -8898,16 +8642,16 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
-        Enable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> Connector
+        Enable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> connector
       </message>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
         You have registered your printers with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> using the account <ph name="EMAIL">$2<ex>foo@bar.com</ex></ph>
       </message>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON" desc="The label of the cloud print connector configure button when it has been set up.">
-        Disable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> Connector
+        Disable <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> connector
       </message>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_MANAGE_BUTTON" desc="The label of the link item for the cloud print management URL.">
-        Manage Print Settings...
+        Manage print settings...
       </message>
       <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON" desc="The label of the cloud connector configure button while it is being set up.">
         Enabling...
@@ -8932,23 +8676,12 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_MANAGE_DATA_DESCRIPTION" desc="The title of the 'Manage your data' label.">
         Manage your data
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
-          Browsing data
-        </message>
-        <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In sentence case: Label for the import data button.">
-          Import bookmarks and settings...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="In Title Case: The title of the 'Browsing data' group.">
-          Browsing Data
-        </message>
-        <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="In Title Case: Label for the import data button.">
-          Import Bookmarks and Settings...
-        </message>
-      </if>
-
+      <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
+        Browsing data
+      </message>
+      <message name="IDS_OPTIONS_IMPORT_DATA_BUTTON" desc="Label for the import data button.">
+        Import bookmarks and settings...
+      </message>
       <message name="IDS_OPTIONS_CONTROLLED_SETTING_APPLY_RECOMMENDATION" desc="Link text displayed in the controlled settings bubble for applying the recommendation.">
         Apply recommendation
       </message>
@@ -8977,7 +8710,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
 
       <!-- Options search page strings. -->
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
-        Search Results
+        Search results
       </message>
       <message name="IDS_OPTIONS_SEARCH_PAGE_NO_MATCHES" desc="Text description of a search that has no results.">
         No matches were found.
@@ -8986,7 +8719,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Can't find what you're looking for?
       </message>
       <message name="IDS_OPTIONS_SEARCH_PAGE_HELP_TITLE" desc="Help link for a search that has no results.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> help
       </message>
       <message name="IDS_OPTIONS_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on ChromeOS.">
         Search settings
@@ -9074,7 +8807,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
 
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE" desc="The title of the redesigned Cookies Window that lets you manage cookies, storage quota for websites and other permissions per-website">
-        Cookies and Site Data
+        Cookies and site data
       </message>
       <message name="IDS_COOKIES_SEARCH_COOKIES" desc="Placeholder text shown in the search box in the Cookies Window">
         Search cookies
@@ -9083,7 +8816,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Remove
       </message>
       <message name="IDS_COOKIES_REMOVE_ALL_LABEL" desc="The label of the 'Remove All' button in the Cookies Window">
-        Remove All
+        Remove all
       </message>
       <message name="IDS_COOKIES_COOKIE_NAME_LABEL" desc="The Cookie Name label">
         Name:
@@ -9098,10 +8831,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Path:
       </message>
       <message name="IDS_COOKIES_COOKIE_SENDFOR_LABEL" desc="The Cookie Send For label">
-        Send For:
+        Send for:
       </message>
       <message name="IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL" desc="The Cookie Accessible to Script label">
-        Accessible to Script:
+        Accessible to script:
       </message>
       <message name="IDS_COOKIES_COOKIE_CREATED_LABEL" desc="The Cookie Created label">
         Created:
@@ -9118,10 +8851,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Site
       </message>
       <message name="IDS_INTENTS_SERVICE_DATA_COLUMN_HEADER" desc="Label for the Service Data column in the intents manager page.">
-        Service Data
+        Service data
       </message>
       <message name="IDS_INTENTS_REMOVE_INTENT_BUTTON" desc="Text on the button to remove an intent.">
-        Remove Intent
+        Remove intent
       </message>
 
       <!-- Mac users do not close their browser; they quit it. -->
@@ -9155,7 +8888,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Site
       </message>
       <message name="IDS_COOKIES_DATA_COLUMN_HEADER" desc="The label of the Locally Stored Data header in the Cookies table">
-        Locally Stored Data
+        Locally stored data
       </message>
       <message name="IDS_COOKIES_SINGLE_COOKIE" desc="The text displayed when there is one cookie in the Cookies table">
         1 cookie
@@ -9188,10 +8921,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Cookies
       </message>
       <message name="IDS_COOKIES_APPLICATION_CACHES" desc="Label for folder under which a list of application caches (name of an HTML standard) are stored">
-        Application Caches
+        Application caches
       </message>
       <message name="IDS_COOKIES_APPLICATION_CACHE" desc="The text shown when there is an Application Cache (name of an HTML standard) in the Cookies table">
-        Application Cache
+        Application cache
       </message>
       <message name="IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL" desc="The Manifest label (manifest is a URL specified by the application cache)">
         Manifest:
@@ -9200,37 +8933,37 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Size:
       </message>
       <message name="IDS_COOKIES_DATABASE_STORAGE" desc="The text shown when there is either Web Database or Indexed Database Storage (names of HTML standards) in the Cookies table">
-        Database Storage
+        Database storage
       </message>
       <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of an HTML standard) are displayed">
-        Web Databases
+        Web databases
       </message>
       <message name="IDS_COOKIES_WEB_DATABASE_NAME" desc="Label for the name of an individual web databases (name of an HTML standard) are displayed">
-        Database Name:
+        Database name:
       </message>
       <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of an HTML standard)">
-        Local Storage
+        Local storage
       </message>
       <message name="IDS_COOKIES_SESSION_STORAGE" desc="Label for session storage (name of an HTML standard)">
-        Session Storage
+        Session storage
       </message>
       <message name="IDS_COOKIES_INDEXED_DB" desc="The text shown when there is an Indexed Database (name of an HTML standard) in the Cookies table">
-        Indexed Database
+        Indexed database
       </message>
       <message name="IDS_COOKIES_INDEXED_DBS" desc="Label for Indexed Databases (name of an HTML standard)">
-        Indexed Databases
+        Indexed databases
       </message>
       <message name="IDS_COOKIES_FILE_SYSTEM" desc="The text shown when there is a file system (name of an HTML standard) in the Cookies table">
-        File System
+        File system
       </message>
       <message name="IDS_COOKIES_FILE_SYSTEMS" desc="Label for the folder under which a list of file systems (name of an HTML standard) are displayed">
-        File Systems
+        File systems
       </message>
       <message name="IDS_COOKIES_FILE_SYSTEM_TEMPORARY_USAGE_LABEL" desc="Label for a temporary file system's disk usage.">
-        Temporary Storage:
+        Temporary storage:
       </message>
       <message name="IDS_COOKIES_FILE_SYSTEM_PERSISTENT_USAGE_LABEL" desc="Label for a persistent file system's disk usage.">
-        Persistent Storage:
+        Persistent storage:
       </message>
       <message name="IDS_COOKIES_FILE_SYSTEM_USAGE_NONE" desc="Value displayed when no file system of a particular type exists.">
         None
@@ -9607,32 +9340,18 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
           Enable These Features...
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
-          Add new user
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="In Title Case. The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
-          Add New User
-        </message>
-      </if>
+      <message name="IDS_PROFILES_CREATE_BUTTON_LABEL" desc="The label that appears on the profile create button in the options dialog to allow a user to create a new profile.">
+        Add new user
+      </message>
       <message name="IDS_PROFILES_MANAGE_BUTTON_LABEL" desc="The label that appears on the profile manage button in the options dialog to allow a user to manage their profile.">
         Edit...
       </message>
       <message name="IDS_PROFILES_DELETE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user to delete their profile.">
         Delete...
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
-          Delete this user
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="In Title Case. The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
-          Delete This User
-        </message>
-      </if>
+      <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
+        Delete this user
+      </message>
       <message name="IDS_PROFILES_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
         Using Chrome profile <ph name="USER_EMAIL_ADDRESS">
           $1<ex>foo@gmail.com</ex>
@@ -9956,40 +9675,21 @@ The following application will be launched if you accept this request:
         <ph name="SAVED_FILES">$1<ex>5</ex></ph> / <ph name="TOTAL_FILES">$2<ex>13</ex></ph> files
       </message>
 
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON" desc="Text for content settings button in Privacy options">
-          Content settings...
-        </message>
-        <message name="IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON" desc="Text for clear browsing data dialog in Privacy options">
-          Clear browsing data...
-        </message>
-        <message name="IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON" desc="The label of the 'Customize fonts' button">
-          Customize fonts...
-        </message>
-        <message name="IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON" desc="The label of the 'Configure proxy settings' button">
-          Change proxy settings...
-        </message>
-        <message name="IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON" desc="The label of the 'Manage Certificates' button">
-          Manage certificates...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON" desc="In Title Case: Text for content settings button in Privacy options">
-          Content Settings...
-        </message>
-        <message name="IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON" desc="In Title Case: Text for clear browsing data dialog in Privacy options">
-          Clear Browsing Data...
-        </message>
-        <message name="IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON" desc="In Title Case: The label of the 'Customize fonts' button">
-          Customize Fonts...
-        </message>
-        <message name="IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON" desc="In Title Case: The label of the 'Configure proxy settings' button">
-          Change Proxy Settings...
-        </message>
-        <message name="IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON" desc="The label of the 'Manage Certificates' button">
-          Manage Certificates...
-        </message>
-      </if>
+      <message name="IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON" desc="Text for content settings button in Privacy options">
+        Content settings...
+      </message>
+      <message name="IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON" desc="Text for clear browsing data dialog in Privacy options">
+        Clear browsing data...
+      </message>
+      <message name="IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON" desc="The label of the 'Customize fonts' button">
+        Customize fonts...
+      </message>
+      <message name="IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON" desc="The label of the 'Configure proxy settings' button">
+        Change proxy settings...
+      </message>
+      <message name="IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON" desc="The label of the 'Manage Certificates' button">
+        Manage certificates...
+      </message>
 
       <message name="IDS_OPTIONS_DISABLE_WEB_SERVICES" desc="The text in the options panel describes that we can disable web services.">
         You may optionally disable these services.
@@ -10039,22 +9739,16 @@ The following application will be launched if you accept this request:
       <message name="IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM" desc="The label of the 'Custom' option">
         Custom
       </message>
-      <if expr="not pp_ifdef('use_titlecase') and not is_macosx">
+      <if expr="not is_macosx">
         <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages and Spell-checker' panel.">
           Languages and spell-checker settings...
         </message>
       </if>
-      <if expr="pp_ifdef('use_titlecase') and not is_macosx">
-        <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages and Spell-checker' panel.">
-          Languages and Spell-checker Settings...
-        </message>
-      </if>
       <if expr="is_macosx">
         <message name="IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON" desc="Button title for invoking the 'Languages' panel.">
-          Language Settings...
+          Language settings...
         </message>
       </if>
-
       <if expr="not is_macosx">
         <message name="IDS_OPTIONS_ENABLE_SPELLCHECK" desc="The documentation string of the 'Enable spellcheck' option">
           Enable spell checking
@@ -10095,7 +9789,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Privacy
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT">
-        Web Content
+        Web content
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY">
         HTTPS/SSL
@@ -10110,7 +9804,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Languages
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND">
-        Background Apps
+        Background apps
       </message>
 
       <!-- Multiple download warning-->
@@ -10692,26 +10386,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <!-- Sync strings -->
 
       <!-- Sync options dialog strings -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
-          Sign in
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="In Title Case: The name of the sync group in the options dialog.">
-          Sign in
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_OPTIONS_SELECT_DATATYPES" desc="In sentence case: The select option that allows the user to select which datatypes to sync.">
-          Choose what to sync
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_OPTIONS_SELECT_DATATYPES" desc="In Title Case: The select option that allows the user to select which datatypes to sync.">
-          Choose What to Sync
-        </message>
-      </if>
+      <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
+        Sign in
+      </message>
+      <message name="IDS_SYNC_OPTIONS_SELECT_DATATYPES" desc="The select option that allows the user to select which datatypes to sync.">
+        Choose what to sync
+      </message>
       <message name="IDS_SYNC_OPTIONS_SELECT_EVERYTHING" desc="The select option that selects all features to be synced.">
         Everything
       </message>
@@ -10725,16 +10405,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any computer. You'll also be automatically signed in to your favorite Google services.
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
-          Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="In Title Case. The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
-          Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-        </message>
-      </if>
+      <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
+        Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>
+      </message>
       <message name="IDS_SYNC_SETUP_ERROR" desc="The message displayed when an unspecified but unrecoverable error occurs during sync setup.">
         An error occurred while trying to set up sync.
       </message>
@@ -10853,39 +10526,18 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
         Advanced...
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
-          Advanced sync settings...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
-          Advanced Sync Settings...
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
-          Disconnect your Google Account...
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="In title case: the text to display on the button to indicate stop syncing functionality.">
-          Disconnect Your Google Account...
-        </message>
-      </if>
+      <message name="IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
+        Advanced sync settings...
+      </message>
+      <message name="IDS_SYNC_STOP_SYNCING_BUTTON_LABEL" desc="The text to display on the button to indicate stop syncing functionality.">
+        Disconnect your Google Account...
+      </message>
       <message name="IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL" desc="The text to display on the button to confirm the user wishes to stop syncing.">
         Disconnect account
       </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="The title of the dialog that explains what 'stop syncing' means.">
-          Disconnect your Google Account
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="In title case: the title of the dialog that explains what 'stop syncing' means.">
-          Disconnect Your Google Account
-        </message>
-      </if>
+      <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="The title of the dialog that explains what 'stop syncing' means.">
+        Disconnect your Google Account
+      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
           By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, changes to your data on this mobile device will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;</ph>.
@@ -10996,18 +10648,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </if>
 
       <!-- Customize Sync dialog -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="In title case: the title of the Customize page of the sync setup dialog.">
-          Advanced sync settings
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="The title of the Customize page of the sync setup dialog.">
-          Advanced Sync Settings
-        </message>
-      </if>
-      <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="In title case: The title of the 'Confirm Sync Settings' page of the customize sync dialog.">
-        Confirm Sync Settings
+      <message name="IDS_SYNC_SETUP_CONFIGURE_TITLE" desc="The title of the Customize page of the sync setup dialog.">
+        Advanced sync settings
+      </message>
+      <message name="IDS_SYNC_CONFIRM_SYNC_PREFERENCES" desc="The title of the 'Confirm Sync Settings' page of the customize sync dialog.">
+        Confirm sync settings
       </message>
       <message name="IDS_SYNC_SYNC_EVERYTHING" desc="The text of the OK button of the 'Confirm Sync Settings' page of the customize sync dialog.">
         OK, sync everything
@@ -11061,16 +10706,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Encryption tab of the configure sync dialog -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE" desc="Title of the section containing the data types to encrypt.">
-          Encrypted data types
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE" desc="In title case: the title of the section containing the data types to encrypt.">
-          Encrypted Data Types
-        </message>
-      </if>
+      <message name="IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE" desc="Title of the section containing the data types to encrypt.">
+        Encrypted data types
+      </message>
       <message name="IDS_SYNC_ENCRYPT_SENSITIVE_DATA" desc="Text of the radio that when selected causes sync to encrypt sensitive data.">
         Encrypt passwords
       </message>
@@ -11083,17 +10721,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Enter your Google Account password first,
         <ph name="LINE_BREAK">&lt;br /&gt;</ph>
         not an application specific password.
-     </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="Title of the section containing sync passphrase preferences.">
-          Encryption passphrase
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="In title case: the title of the section containing sync passphrase preferences.">
-          Encryption Passphrase
-        </message>
-      </if>
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_SECTION_TITLE" desc="Title of the section containing sync passphrase preferences.">
+        Encryption passphrase
+      </message>
       <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
         <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt your data using either your Google password or your own passphrase.
       </message>
@@ -11114,16 +10745,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Passphrase dialog strings -->
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
-          Enter your sync passphrase
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="In title case: title for the dialog where the user enters the passphrase.">
-          Enter Your Sync Passphrase
-        </message>
-      </if>
+      <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
+        Enter your sync passphrase
+      </message>
       <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters the passphrase.">
         You already have data that is encrypted with a passphrase. Please enter it below.
       </message>
@@ -11185,16 +10809,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
         </message>
       </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
-          Sign in with your Google Account
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SETUP_TITLE" desc="In title case: The title of the Sync Setup overlay.">
-          Sign in With Your Google Account
-        </message>
-      </if>
+      <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
+        Sign in with your Google Account
+      </message>
       <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
         Sign in with your
       </message>
@@ -12631,10 +12248,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Connecting
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_CONNECTED">
-        Not Connected
+        Not connected
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE">
-        Add Bluetooth Device
+        Add bluetooth device
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT">
         Connect
@@ -12694,7 +12311,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Enable virtual keyboard
       </message>
       <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layout label.">
-        Keyboard Layout:
+        Keyboard layout:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_CONNECT" desc="In the settings tab, the text on the button to connect to a network.">
         Connect
@@ -12973,7 +12590,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Sign in
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings Internet options, the label for connection status.">
-        Connection Status:
+        Connection status:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USE_DHCP" desc="In settings Internet options, the label for use DHCP.">
         Use DHCP
@@ -13021,16 +12638,16 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Show password
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE" desc="In settings Internet options, Title of the overlay when the user is connected.">
-        Connection Details
+        Connection details
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings Internet options, Title of the overlay when the user is not connected and can.">
         Connect to network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_PSK" desc="In settings Internet options, a string specifying L2TP/IPsec + PSK.">
-        L2TP/IPsec + Pre-shared key
+        L2TP/IPsec + pre-shared key
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_L2TP_IPSEC_USER_CERT" desc="In settings Internet options, a string specifying L2TP/IPsec + User Certificate.">
-        L2TP/IPsec + User certificate
+        L2TP/IPsec + user certificate
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN" desc="In settings Internet options, a string specifying OpenVPN.">
         OpenVPN
@@ -13088,7 +12705,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_NETWORK_CHOOSE_MOBILE_NETWORK" desc="Title of the window for choosing mobile network.">
-        Choose a Mobile Network
+        Choose a mobile network
       </message>
       <message name="IDS_NETWORK_SCANNING_FOR_MOBILE_NETWORKS" desc="Text which appears while scanning for mobile networks.">
         Scanning for networks.
@@ -13140,7 +12757,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         PRL version:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN" desc="Cellular device APN label under network details in chrome:settings/internet.">
-        Access Point Name:
+        Access point name:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME" desc="Cellular device APN user name label under network details in chrome:settings/internet.">
         User name:
@@ -13164,7 +12781,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Change PIN
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_TITLE" desc="Cellular device change PIN dialog title in chrome:settings/internet.">
-        Change SIM Card PIN
+        Change SIM card PIN
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_MESSAGE" desc="Cellular device change PIN dialog message in chrome:settings/internet.">
         Please enter old and new PIN.
@@ -13202,7 +12819,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <message name="IDS_SIM_UNLOCK_ENTER_PIN_TITLE" desc="Title of the SIM card unlock dialog in chrome:sim-unlock.">
-        Enter SIM Card PIN
+        Enter SIM card PIN
       </message>
       <message name="IDS_SIM_ENTER_PIN_MESSAGE" desc="Message on the the SIM card dialog asking to enter PIN in chrome:sim-unlock.">
         Please enter PIN.
@@ -13244,7 +12861,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         You have entered the incorrect PIN Unlocking Key too many times. Your SIM card is permanently disabled.
       </message>
       <message name="IDS_SIM_UNLOCK_SIM_DISABLED_TITLE" desc="Title shown when there're not PUK tries left and SIM card is disabled.">
-        SIM Card Disabled
+        SIM card disabled
       </message>
       <message name="IDS_SIM_UNLOCK_SIM_DISABLED_MESSAGE" desc="Message shown when there're not PUK tries left and SIM card is disabled.">
         This SIM card is disabled and cannot be used. Please contact your service provider for a replacement.
@@ -13280,7 +12897,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE"
                desc="The title for the Chewing input settings dialog. Please note that 'Chewing' here is name of an input method and not 'an act of biting and grinding with the teeth'.">
-        Chewing Input Settings
+        Chewing input settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_AUTO_SHIFT_CUR"
                desc="The checkbox label for a Chewing input method preference">
@@ -13327,7 +12944,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE"
                desc="The combobox description for the Chewing keyboard type">
-        Keyboard Type
+        Keyboard type
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_KEYBOARD_TYPE_DEFAULT"
                desc="The combobox value for the Chewing keyboard type">
@@ -13372,7 +12989,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS"
                desc="The combobox description for the Chewing selection keys">
-        Selection Keys
+        Selection keys
       </message>
       <message translateable="false"
                name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SEL_KEYS_1234567890"
@@ -13431,7 +13048,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE"
                desc="The title for the Hangul input settings dialog">
-        Hangul Input Settings
+        Hangul input settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_KEYBOARD_2_SET"
                desc="The keyboard layout name for Korean input. (Dubeol-sik)">
@@ -13455,7 +13072,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE"
                desc="The title for the Pinyin input settings dialog">
-        Pinyin Input Settings
+        Pinyin input settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_CORRECT_PINYIN"
                desc="The checkbox label for a Pinyin input method preference">
@@ -13529,11 +13146,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE"
                desc="The title for the Mozc Japanese input settings dialog">
-        Japanese Input Settings
+        Japanese input settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD"
                desc="The combobox description for the Mozc input method preference">
-        Input Method
+        Input method
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD_ROMAN"
                desc="The combobox value for the Mozc input method preference">
@@ -15411,49 +15028,26 @@ Battery full
     </if>
 
     <!-- Manage Profile Dialog -->
-    <if expr="pp_ifdef('use_titlecase')">
-      <message name="IDS_PROFILES_MANAGE_TITLE" desc="In Title Case: Title of the manage profile dialog">
-        Edit User
-      </message>
-      <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="In Title Case: Label next to the profile name text field.">
-        Name:
-      </message>
-      <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="In Title Case: Label next to the profile avatar icon chooser.">
-        Icon:
-      </message>
-    </if>
-    <if expr="not pp_ifdef('use_titlecase')">
-      <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
-        Edit user
-      </message>
-      <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="Label next to the profile name text field.">
-        Name:
-      </message>
-      <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label next to the profile avatar icon chooser.">
-        Icon:
-      </message>
-    </if>
+    <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
+      Edit user
+    </message>
+    <message name="IDS_PROFILES_MANAGE_NAME_LABEL" desc="Label next to the profile name text field.">
+      Name:
+    </message>
+    <message name="IDS_PROFILES_MANAGE_ICON_LABEL" desc="Label next to the profile avatar icon chooser.">
+      Icon:
+    </message>
     <message name="IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR" desc="error bubble displayed when the user is attempting to rename a profile to a name that is used.">
       Whoops, this name is already in use!
     </message>
 
     <!-- Delete Profile Dialog -->
-    <if expr="pp_ifdef('use_titlecase')">
-      <message name="IDS_PROFILES_DELETE_TITLE" desc="In Title Case: Title of the delete profile dialog">
-        Delete User
-      </message>
-      <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="In Title Case: The text to display on the button to confirm deleting the profile.">
-        Delete
-      </message>
-    </if>
-    <if expr="not pp_ifdef('use_titlecase')">
-      <message name="IDS_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog">
-        Delete user
-      </message>
-      <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the profile.">
-        Delete
-      </message>
-    </if>
+    <message name="IDS_PROFILES_DELETE_TITLE" desc="Title of the delete profile dialog">
+      Delete user
+    </message>
+    <message name="IDS_PROFILES_DELETE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the profile.">
+      Delete
+    </message>
     <if expr="pp_ifdef('android')">
       <message name="IDS_PROFILES_DELETE_MESSAGE" desc="Message explaining to the user what will happen if they delete this profile">
         Are you sure you want to delete "<ph name="PROFILE_NAME">$1<ex>New User</ex></ph>" and all the data associated with it from this mobile device? This cannot be undone!

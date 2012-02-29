@@ -197,16 +197,9 @@ Chrome supports. -->
       <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT_NO_LOGO" desc="The format for titles displayed when the window has no distributor logo displayed">
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
       </message>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
-          Get Help With Using Chrome
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
-          Get help with using Chrome
-        </message>
-      </if>
+      <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
+        Get help with using Chrome
+      </message>
       <message name="IDS_ABOUT_VERSION_COMPANY_NAME" desc="Company name on the about pages">
         Google Inc.
       </message>
