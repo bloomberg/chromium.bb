@@ -15,14 +15,11 @@ import sys
 import StringIO
 import tempfile
 
-# Want to use correct version of libraries even when executed through symlink.
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
-import chromite.bin.chrome_set_ver as chrome_set_ver
-import chromite.lib.cros_build_lib as cros_lib
 import chromite.buildbot.constants as constants
 import chromite.buildbot.manifest_version as manifest_version
 import chromite.buildbot.repository as repository
+import chromite.lib.cros_build_lib as cros_lib
+import chromite.scripts.chrome_set_ver as chrome_set_ver
 
 _CHROMIUM_ROOT = 'chromium'
 _CHROMIUM_SRC_ROOT = os.path.join(_CHROMIUM_ROOT, 'src')

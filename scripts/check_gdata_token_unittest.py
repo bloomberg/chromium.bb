@@ -17,7 +17,7 @@ import gdata.service
 import gdata.spreadsheet.service as gdata_ss_service
 import mox
 
-import chromite.bin.check_gdata_token as cgt
+import chromite.scripts.check_gdata_token as cgt
 import chromite.lib.cros_build_lib as build_lib
 import chromite.lib.cros_test_lib as test_lib
 import chromite.lib.gdata_lib as gdata_lib

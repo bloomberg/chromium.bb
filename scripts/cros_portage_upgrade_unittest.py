@@ -23,8 +23,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.lib.cros_test_lib as test_lib
 import chromite.lib.upgrade_table as utable
-import chromite.bin.cros_portage_upgrade as cpu
-import chromite.bin.parallel_emerge as parallel_emerge
+import chromite.scripts.cros_portage_upgrade as cpu
+import chromite.scripts.parallel_emerge as parallel_emerge
 import portage.package.ebuild.config as portcfg
 import portage.tests.resolver.ResolverPlayground as respgnd
 

@@ -11,10 +11,8 @@ import optparse
 import os
 import sys
 
-
-sys.path.insert(0, os.path.abspath(__file__ + '/../..'))
-import lib.cros_build_lib as cros_build_lib
-import buildbot.constants as constants
+import chromite.lib.cros_build_lib as cros_build_lib
+import chromite.buildbot.constants as constants
 
 # Some sanity checks first.
 if not cros_build_lib.IsInsideChroot():

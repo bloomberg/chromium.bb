@@ -11,9 +11,6 @@ import os
 import shutil
 import sys
 
-ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.insert(0, ROOT)
-
 import chromite.buildbot.constants as constants
 import chromite.lib.cros_build_lib as build_lib
 import chromite.lib.operation as operation
