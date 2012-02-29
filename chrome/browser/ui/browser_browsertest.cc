@@ -1089,7 +1089,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   EXPECT_TRUE(new_model->IsTabPinned(1));
   EXPECT_FALSE(new_model->IsTabPinned(2));
 
-  EXPECT_EQ(browser()->profile()->GetHomePage(),
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
       new_model->GetTabContentsAt(2)->web_contents()->GetURL());
 
   EXPECT_TRUE(

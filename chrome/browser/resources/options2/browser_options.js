@@ -24,8 +24,11 @@ cr.define('options', function() {
     // State variables.
     syncSetupCompleted: false,
 
+    showHomeButton_: false,
+    homePageIsNtp_: false,
+
     /**
-     * An autocomplete list that can be attached to the homepage URL text field
+     * An autocomplete list that can be attached to the home page URL text field
      * during editing.
      * @type {HTMLElement}
      * @private
@@ -44,6 +47,7 @@ cr.define('options', function() {
      */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
+      var self = this;
 
       window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
@@ -78,9 +82,17 @@ cr.define('options', function() {
       };
 
       // Appearance section.
-      $('change-home-page').onclick = function(event) {
-        OptionsPage.navigateToPage('homePageOverlay');
-      };
+      $('home-page-select').addEventListener(
+          'change', this.onHomePageSelectChange_.bind(this));
+
+      ['browser.show_home_button',
+          'homepage',
+          'homepage_is_newtabpage'].forEach(function(pref) {
+        Preferences.getInstance().addEventListener(
+            pref,
+            self.onHomePagePrefChanged_.bind(self));
+      });
+
       $('themes-gallery').onclick = function(event) {
         window.open(localStrings.getString('themesGalleryURL'));
       };
@@ -138,7 +150,6 @@ cr.define('options', function() {
 
       // Text fields may change widths when the window changes size, so make
       // sure the suggestion list stays in sync.
-      var self = this;
       window.addEventListener('resize', function() {
         self.autocompleteList_.syncWidthToInput();
       });
@@ -374,12 +385,88 @@ cr.define('options', function() {
     },
 
     /**
-     * Sets the label for the 'Show Home page' input.
-     * @param {string} label The HTML of the input label.
+     * Returns the <option> element with the given |value|.
+     * @param {string} value One of 'none', 'ntp', 'url', 'choose'.
+     * @return {HTMLOptionElement} the specified <option> element.
+     */
+    getHomePageOption_: function(value) {
+      var select = $('home-page-select');
+      return select.querySelector('option[value=' + value + ']');
+    },
+
+    /**
+     * Selects the <option> element with the given |value|.
      * @private
      */
-    updateHomePageLabel_: function(label) {
-      $('home-page-label').innerHTML = label;
+    selectHomePageOption_: function(value) {
+      var select = $('home-page-select');
+      var option = this.getHomePageOption_(value);
+      if (!option.selected)
+        option.selected = true;
+    },
+
+    /**
+     * Event listener for the |change| event on the homepage <select> element.
+     * @private
+     */
+    onHomePageSelectChange_: function() {
+      var option = $('home-page-select').value;
+      if (option == 'choose') {
+        OptionsPage.navigateToPage('homePageOverlay');
+        return;
+      }
+
+      var showHomeButton = (option != 'none');
+      Preferences.setBooleanPref('browser.show_home_button', showHomeButton);
+
+      if (option == 'ntp')
+        Preferences.setBooleanPref('homepage_is_newtabpage', true);
+      else if (option == 'url')
+        Preferences.setBooleanPref('homepage_is_newtabpage', false);
+    },
+
+    /**
+     * Event listener called when any homepage-related preferences change.
+     * @private
+     */
+    onHomePagePrefChanged_: function(event) {
+      switch (event.type) {
+        case 'homepage':
+          this.getHomePageOption_('url').textContent = event.value['value'];
+          break;
+        case 'browser.show_home_button':
+          this.showHomeButton_ = event.value['value'];
+          break;
+        case 'homepage_is_newtabpage':
+          this.homePageIsNtp_ = event.value['value'];
+          break;
+        default:
+          console.error('Unexpected pref change event:', event.type);
+      }
+      this.updateHomePageSelector();
+    },
+
+    /**
+     * Updates the homepage <select> element to have the appropriate option
+     * selected.
+     */
+    updateHomePageSelector: function() {
+      if (this.showHomeButton_) {
+        if (this.homePageIsNtp_)
+          this.selectHomePageOption_('ntp');
+        else
+          this.selectHomePageOption_('url');
+      } else {
+        this.selectHomePageOption_('none');
+      }
+    },
+
+    /**
+     * Sets the home page selector to the 'url' option.Called when user clicks
+     * OK in the "Choose another..." dialog.
+     */
+    homePageSelectUrl: function() {
+      this.selectHomePageOption_('url');
     },
 
    /**
@@ -648,7 +735,6 @@ cr.define('options', function() {
     'updateAccountPicture',
     'updateAutocompleteSuggestions',
     'updateAutoLaunchState',
-    'updateHomePageLabel',
     'updateManagedBannerVisibility',
     'updateSearchEngines',
     'updateSyncState',

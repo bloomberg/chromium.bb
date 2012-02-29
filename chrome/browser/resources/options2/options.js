@@ -104,7 +104,7 @@ function load() {
   }
   OptionsPage.registerOverlay(HomePageOverlay.getInstance(),
                               BrowserOptions.getInstance(),
-                              [$('change-home-page')]);
+                              [$('home-page-select')]);
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),

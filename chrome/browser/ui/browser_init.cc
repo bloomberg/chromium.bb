@@ -1174,11 +1174,16 @@ Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
     // specified on the command line. Filter out any urls that are to be
     // restored by virtue of having been previously pinned.
     AddUniqueURLs(pref.urls, &tabs);
-  } else if (pref.type == SessionStartupPref::DEFAULT && !tabs.empty()) {
+  } else if (pref.type == SessionStartupPref::HOMEPAGE && !tabs.empty()) {
     // Make sure the home page is opened even if there are pinned tabs.
     std::vector<GURL> urls;
     AddStartupURLs(&urls);
     UrlsToTabs(urls, &tabs);
+  } else if (pref.type == SessionStartupPref::DEFAULT) {
+    Tab tab;
+    tab.is_pinned = false;
+    tab.url = GURL(chrome::kChromeUINewTabURL);
+    tabs.push_back(tab);
   }
 
   if (tabs.empty())
