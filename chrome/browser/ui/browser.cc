@@ -518,7 +518,9 @@ Browser* Browser::CreateForApp(Type type,
   DCHECK(type != TYPE_TABBED);
   DCHECK(!app_name.empty());
 
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
+  // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
+  // Android build.
+#if (!defined(OS_CHROMEOS) || defined(USE_AURA)) && !defined(OS_ANDROID)
   if (type == TYPE_PANEL &&
       !PanelManager::ShouldUsePanels(
           web_app::GetExtensionIdFromApplicationName(app_name))) {
@@ -4587,12 +4589,12 @@ void Browser::ShowFirstRunBubble() {
 // Browser, protected:
 
 BrowserWindow* Browser::CreateBrowserWindow() {
-  bool create_panel = false;
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
-  create_panel = is_type_panel();
-#endif
-  if (create_panel)
+  // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
+  // Android build.
+#if (!defined(OS_CHROMEOS) || defined(USE_AURA)) && !defined(OS_ANDROID)
+  if (is_type_panel())
     return PanelManager::GetInstance()->CreatePanel(this);
+#endif
 
   return BrowserWindow::CreateBrowserWindow(this);
 }
