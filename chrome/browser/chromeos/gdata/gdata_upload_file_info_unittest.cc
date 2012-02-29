@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -24,10 +24,6 @@ TEST(GDataUploadFileInfoTest, GetContentRangeHeader) {
   EXPECT_EQ("Content-Range: bytes 123456-234567/345678",
             upload_file_info.GetContentRangeHeader());
 
-  SetRange(&upload_file_info, 1234567890123, 2345678901234, 3456789012345);
-  EXPECT_EQ("Content-Range: bytes 1234567890123-2345678901234/3456789012345",
-            upload_file_info.GetContentRangeHeader());
-
   SetRange(&upload_file_info, 0, 512, -1);
   EXPECT_EQ("Content-Range: bytes 0-512/*",
             upload_file_info.GetContentRangeHeader());
@@ -36,11 +32,11 @@ TEST(GDataUploadFileInfoTest, GetContentRangeHeader) {
 TEST(GDataUploadFileInfoTest, GetContentTypeAndLengthHeaders) {
   gdata::UploadFileInfo upload_file_info;
   upload_file_info.content_type = "image/jpeg";
-  upload_file_info.content_length = 3456789012345;
+  upload_file_info.content_length = 34567890;
 
   std::vector<std::string> headers =
       upload_file_info.GetContentTypeAndLengthHeaders();
   ASSERT_EQ(2u, headers.size());
   EXPECT_EQ("X-Upload-Content-Type: image/jpeg", headers[0]);
-  EXPECT_EQ("X-Upload-Content-Length: 3456789012345", headers[1]);
+  EXPECT_EQ("X-Upload-Content-Length: 34567890", headers[1]);
 }
