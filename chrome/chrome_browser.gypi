@@ -2605,6 +2605,7 @@
         'browser/ui/android/certificate_viewer.cc',
         'browser/ui/android/extensions/extension_view_android.cc',
         'browser/ui/android/extensions/extension_view_android.h',
+        'browser/ui/android/select_file_dialog_android.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog_queue.cc',
