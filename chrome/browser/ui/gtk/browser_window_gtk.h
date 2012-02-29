@@ -135,8 +135,6 @@ class BrowserWindowGtk : public BrowserWindow,
                                   bool already_bookmarked) OVERRIDE;
   virtual bool IsDownloadShelfVisible() const OVERRIDE;
   virtual DownloadShelf* GetDownloadShelf() OVERRIDE;
-  virtual void ShowCollectedCookiesDialog(
-      TabContentsWrapper* tab_contents) OVERRIDE;
   virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE;
   virtual void UserChangedTheme() OVERRIDE;
   virtual int GetExtraRenderViewHeight() const OVERRIDE;

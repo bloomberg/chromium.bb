@@ -493,10 +493,6 @@ DownloadShelf* Panel::GetDownloadShelf() {
   return tabbed_browser->window()->GetDownloadShelf();
 }
 
-void Panel::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
-  NOTIMPLEMENTED();
-}
-
 void Panel::ConfirmBrowserCloseWithPendingDownloads() {
   NOTIMPLEMENTED();
 }

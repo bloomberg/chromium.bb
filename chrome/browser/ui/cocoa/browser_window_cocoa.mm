@@ -23,7 +23,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
-#import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
 #import "chrome/browser/ui/cocoa/html_dialog_window_controller.h"
@@ -439,12 +438,6 @@ bool BrowserWindowCocoa::IsDownloadShelfVisible() const {
 DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
   DownloadShelfController* shelfController = [controller_ downloadShelf];
   return [shelfController bridge];
-}
-
-void BrowserWindowCocoa::ShowCollectedCookiesDialog(
-    TabContentsWrapper* wrapper) {
-  // Deletes itself on close.
-  new CollectedCookiesMac(GetNativeHandle(), wrapper);
 }
 
 // We allow closing the window here since the real quit decision on Mac is made

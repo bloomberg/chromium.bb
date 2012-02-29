@@ -49,7 +49,6 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
-#include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/ui/gtk/create_application_shortcuts_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/download/download_in_progress_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/download/download_shelf_gtk.h"
@@ -1076,11 +1075,6 @@ DownloadShelf* BrowserWindowGtk::GetDownloadShelf() {
     download_shelf_.reset(new DownloadShelfGtk(browser_.get(),
                                                render_area_vbox_));
   return download_shelf_.get();
-}
-
-void BrowserWindowGtk::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
-  // Deletes itself on close.
-  new CollectedCookiesGtk(GetNativeHandle(), wrapper);
 }
 
 void BrowserWindowGtk::UserChangedTheme() {

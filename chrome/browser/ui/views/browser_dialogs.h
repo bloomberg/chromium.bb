@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,10 +84,6 @@ void EditSearchEngine(gfx::NativeWindow parent,
                       const TemplateURL* template_url,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile);
-
-// Shows the collected cookies dialog box.
-void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContentsWrapper* tab_contents);
 
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,

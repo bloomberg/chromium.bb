@@ -1169,10 +1169,6 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
 #endif
 }
 
-void BrowserView::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
-  browser::ShowCollectedCookiesDialog(GetNativeHandle(), wrapper);
-}
-
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressDialogView* view =
       new DownloadInProgressDialogView(browser_.get());

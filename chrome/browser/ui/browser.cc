@@ -4043,7 +4043,7 @@ void Browser::ShowContentSettingsPage(ContentSettingsType content_type) {
 }
 
 void Browser::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
-  window()->ShowCollectedCookiesDialog(wrapper);
+  browser::ShowCollectedCookiesDialog(window()->GetNativeHandle(), wrapper);
 }
 
 bool Browser::ShouldAddNavigationToHistory(

@@ -220,9 +220,6 @@ class BrowserWindow : public BaseWindow {
   // Returns the DownloadShelf.
   virtual DownloadShelf* GetDownloadShelf() = 0;
 
-  // Shows the collected cookies dialog box.
-  virtual void ShowCollectedCookiesDialog(TabContentsWrapper* tab_contents) = 0;
-
   // Shows the confirmation dialog box warning that the browser is closing with
   // in-progress downloads.
   // This method should call Browser::InProgressDownloadResponse once the user
