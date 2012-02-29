@@ -289,3 +289,13 @@ function netErrorToString(netError) {
     return str;
   return 'ERR_' + str;
 }
+
+/**
+ * Returns a string representation of |family|.
+ */
+function addressFamilyToString(family) {
+  var str = getKeyWithValue(AddressFamily, family);
+  // All the address family start with ADDRESS_FAMILY_*.
+  // Strip that prefix since it is redundant and only clutters the output.
+  return str.replace(/^ADDRESS_FAMILY_/, '');
+}

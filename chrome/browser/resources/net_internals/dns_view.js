@@ -81,7 +81,7 @@ var DnsView = (function() {
 
       var family = hostResolverInfo.default_address_family;
       addTextNode($(DnsView.DEFAULT_FAMILY_SPAN_ID),
-                  getKeyWithValue(AddressFamily, family));
+                  addressFamilyToString(family));
 
       var ipv6Disabled = (family == AddressFamily.ADDRESS_FAMILY_IPV4);
       setNodeDisplay($(DnsView.IPV6_DISABLED_SPAN_ID), ipv6Disabled);
@@ -117,7 +117,7 @@ var DnsView = (function() {
 
         var familyCell = addNode(tr, 'td');
         addTextNode(familyCell,
-                    getKeyWithValue(AddressFamily, e.address_family));
+                    addressFamilyToString(e.address_family));
 
         var addressesCell = addNode(tr, 'td');
 

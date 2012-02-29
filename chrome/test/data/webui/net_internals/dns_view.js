@@ -15,7 +15,7 @@ GEN_INCLUDE(['net_internals_test.js']);
  */
 function checkDisplay(hostResolverInfo) {
   var family = hostResolverInfo.default_address_family;
-  expectEquals(getKeyWithValue(AddressFamily, family),
+  expectEquals(addressFamilyToString(family),
                $(DnsView.DEFAULT_FAMILY_SPAN_ID).innerText);
   expectEquals(family == AddressFamily.ADDRESS_FAMILY_IPV4,
                NetInternalsTest.isDisplayed($(DnsView.IPV6_DISABLED_SPAN_ID)));
