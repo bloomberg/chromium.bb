@@ -351,8 +351,10 @@ extern const char kMetricsClientID[];
 extern const char kMetricsSessionID[];
 extern const char kMetricsClientIDTimestamp[];
 extern const char kMetricsReportingEnabled[];
-extern const char kMetricsInitialLogs[];
-extern const char kMetricsOngoingLogs[];
+extern const char kMetricsInitialLogsXml[];
+extern const char kMetricsInitialLogsProto[];
+extern const char kMetricsOngoingLogsXml[];
+extern const char kMetricsOngoingLogsProto[];
 
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];

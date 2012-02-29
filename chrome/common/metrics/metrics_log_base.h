@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
+#include "chrome/common/metrics/proto/chrome_user_metrics_extension.pb.h"
 #include "content/public/common/page_transition_types.h"
 
 class GURL;
@@ -28,6 +29,24 @@ class MetricsLogBase {
                  int session_id,
                  const std::string& version_string);
   virtual ~MetricsLogBase();
+
+  // Computes the MD5 hash of the given string.
+  // Fills |base64_encoded_hash| with the hash, encoded in base64.
+  // Fills |numeric_hash| with the first 8 bytes of the hash.
+  static void CreateHashes(const std::string& string,
+                           std::string* base64_encoded_hash,
+                           uint64* numeric_hash);
+
+  // Get the GMT buildtime for the current binary, expressed in seconds since
+  // Januray 1, 1970 GMT.
+  // The value is used to identify when a new build is run, so that previous
+  // reliability stats, from other builds, can be abandoned.
+  static int64 GetBuildTime();
+
+  // Convenience function to return the current time at a resolution in seconds.
+  // This wraps base::TimeTicks, and hence provides an abstract time that is
+  // always incrementing for use in measuring time durations.
+  static int64 GetCurrentTime();
 
   // Records a user-initiated action.
   void RecordUserAction(const char* key);
@@ -64,10 +83,12 @@ class MetricsLogBase {
   // record.  They can only be called after CloseLog() has been called.
   // GetEncodedLog returns false if buffer_size is less than
   // GetEncodedLogSize();
-  int GetEncodedLogSize();
-  bool GetEncodedLog(char* buffer, int buffer_size);
-  // Returns an empty string on failure.
-  std::string GetEncodedLogString();
+  int GetEncodedLogSizeXml();
+  bool GetEncodedLogXml(char* buffer, int buffer_size);
+
+  // Fills |encoded_log| with the protobuf representation of the record.  Can
+  // only be called after CloseLog() has been called.
+  void GetEncodedLogProto(std::string* encoded_log);
 
   // Returns the amount of time in seconds that this log has been in use.
   int GetElapsedSeconds();
@@ -77,19 +98,6 @@ class MetricsLogBase {
   void set_hardware_class(const std::string& hardware_class) {
     hardware_class_ = hardware_class;
   }
-
-  // Creates an MD5 hash of the given value, and returns hash as a byte
-  // buffer encoded as a std::string.
-  static std::string CreateHash(const std::string& value);
-
-  // Return a base64-encoded MD5 hash of the given string.
-  static std::string CreateBase64Hash(const std::string& string);
-
-  // Get the GMT buildtime for the current binary, expressed in seconds since
-  // Januray 1, 1970 GMT.
-  // The value is used to identify when a new build is run, so that previous
-  // reliability stats, from other builds, can be abandoned.
-  static int64 GetBuildTime();
 
  protected:
   class XmlWrapper;
@@ -155,6 +163,9 @@ class MetricsLogBase {
   XmlWrapper* xml_wrapper_;
 
   int num_events_;  // the number of events recorded in this log
+
+  // Stores the protocol buffer representation for this log.
+  metrics::ChromeUserMetricsExtension uma_proto_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MetricsLogBase);

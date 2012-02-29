@@ -22,6 +22,17 @@ class MetricsLogManager {
   MetricsLogManager();
   ~MetricsLogManager();
 
+  // Stores both XML and protocol buffer serializations for a log.
+  struct SerializedLog {
+   public:
+    // Exposed to reduce code churn as we transition from the XML pipeline to
+    // the protocol buffer pipeline.
+    bool empty() const;
+
+    std::string xml;
+    std::string proto;
+  };
+
   // Takes ownership of |log|, and makes it the current_log.
   // This should only be called if there is not a current log.
   void BeginLoggingWithLog(MetricsLogBase* log);
@@ -36,12 +47,24 @@ class MetricsLogManager {
   // Note that this returns true even if compressing the log text failed.
   bool has_staged_log() const;
 
-  // The compressed text of the staged log. Empty if there is no staged log,
-  // or if compression of the staged log failed.
-  const std::string& staged_log_text() { return compressed_staged_log_text_; }
+  // Returns true if there is a protobuf log that needs to be uploaded.
+  // In the case that an XML upload needs to be re-issued due to a previous
+  // failure, |has_staged_log()| will return true while this returns false.
+  bool has_staged_log_proto() const;
 
-  // Discards the staged log.
+  // The text of the staged log, in compressed XML or protobuf format. Empty if
+  // there is no staged log, or if compression of the staged log failed.
+  const SerializedLog& staged_log_text() const {
+    return staged_log_text_;
+  }
+
+  // Discards the staged log (both the XML and the protobuf data).
   void DiscardStagedLog();
+
+  // Discards the protobuf data in the staged log.
+  // This is useful to prevent needlessly re-issuing successful protobuf uploads
+  // due to XML upload failures.
+  void DiscardStagedLogProto();
 
   // Closes and discards |current_log|.
   void DiscardCurrentLog();
@@ -91,13 +114,13 @@ class MetricsLogManager {
 
     // Serializes |logs| to persistent storage, replacing any previously
     // serialized logs of the same type.
-    virtual void SerializeLogs(const std::vector<std::string>& logs,
+    virtual void SerializeLogs(const std::vector<SerializedLog>& logs,
                                LogType log_type) = 0;
 
     // Populates |logs| with logs of type |log_type| deserialized from
     // persistent storage.
     virtual void DeserializeLogs(LogType log_type,
-                                 std::vector<std::string>* logs) = 0;
+                                 std::vector<SerializedLog>* logs) = 0;
   };
 
   // Sets the serializer to use for persisting and loading logs; takes ownership
@@ -115,8 +138,8 @@ class MetricsLogManager {
   void LoadPersistedUnsentLogs();
 
  private:
-  // Compresses staged_log_ and stores the result in
-  // compressed_staged_log_text_.
+  // Compresses |staged_log_| and stores the result in
+  // |compressed_staged_xml_log_text_|.
   void CompressStagedLog();
 
   // Compresses the text in |input| using bzip2, store the result in |output|.
@@ -130,21 +153,25 @@ class MetricsLogManager {
 
   // The log that we are currently transmiting, or about to try to transmit.
   // Note that when using StageNextStoredLogForUpload, this can be NULL while
-  // compressed_staged_log_text_ is non-NULL.
+  // |compressed_staged_xml_log_text_| is non-NULL.
   scoped_ptr<MetricsLogBase> staged_log_;
 
   // Helper class to handle serialization/deserialization of logs for persistent
   // storage. May be NULL.
   scoped_ptr<LogSerializer> log_serializer_;
 
-  // The compressed text of the staged log, ready for upload to the server.
-  std::string compressed_staged_log_text_;
+  // The text representations of the staged log, ready for upload to the server.
+  // The first item in the pair is the compressed XML representation; the second
+  // is the protobuf representation.
+  SerializedLog staged_log_text_;
 
   // Logs from a previous session that have not yet been sent.
+  // The first item in each pair is the XML representation; the second item is
+  // the protobuf representation.
   // Note that the vector has the oldest logs listed first (early in the
   // vector), and we'll discard old logs if we have gathered too many logs.
-  std::vector<std::string> unsent_initial_logs_;
-  std::vector<std::string> unsent_ongoing_logs_;
+  std::vector<SerializedLog> unsent_initial_logs_;
+  std::vector<SerializedLog> unsent_ongoing_logs_;
 
   size_t max_ongoing_log_store_size_;
 
