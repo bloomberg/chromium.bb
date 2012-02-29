@@ -1829,36 +1829,13 @@ void ExtensionService::OnAllExternalProvidersReady() {
 void ExtensionService::IdentifyAlertableExtensions() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Build up the lists of extensions that require acknowledgment.
-  // If this is the first time, grandfather extensions that would have
-  // caused notification.
+  // Build up the lists of extensions that require acknowledgment. If this is
+  // the first time, grandfather extensions that would have caused
+  // notification.
   extension_global_error_.reset(new ExtensionGlobalError(this));
-  bool needs_alert = false;
-  for (ExtensionSet::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    const Extension* e = *iter;
-    if (Extension::IsExternalLocation(e->location())) {
-      if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
-        extension_global_error_->AddExternalExtension(e->id());
-        needs_alert = true;
-      }
-    }
-    if (extension_prefs_->IsExtensionBlacklisted(e->id())) {
-      if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(e->id())) {
-        extension_global_error_->AddBlacklistedExtension(e->id());
-        needs_alert = true;
-      }
-    }
-    if (extension_prefs_->IsExtensionOrphaned(e->id())) {
-      if (!extension_prefs_->IsOrphanedExtensionAcknowledged(e->id())) {
-        extension_global_error_->AddOrphanedExtension(e->id());
-        needs_alert = true;
-      }
-    }
-  }
 
   bool did_show_alert = false;
-  if (needs_alert) {
+  if (PopulateExtensionGlobalError(extension_global_error_.get())) {
     if (extension_prefs_->SetAlertSystemFirstRun()) {
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
       Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
@@ -1876,6 +1853,36 @@ void ExtensionService::IdentifyAlertableExtensions() {
 
   if (!did_show_alert)
     extension_global_error_.reset();
+}
+
+bool ExtensionService::PopulateExtensionGlobalError(
+    ExtensionGlobalError* extension_global_error) {
+  bool needs_alert = false;
+  for (ExtensionSet::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    const Extension* e = *iter;
+    if (Extension::IsExternalLocation(e->location())) {
+      if (!e->is_hosted_app()) {
+        if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
+          extension_global_error->AddExternalExtension(e->id());
+          needs_alert = true;
+        }
+      }
+    }
+    if (extension_prefs_->IsExtensionBlacklisted(e->id())) {
+      if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(e->id())) {
+        extension_global_error->AddBlacklistedExtension(e->id());
+        needs_alert = true;
+      }
+    }
+    if (extension_prefs_->IsExtensionOrphaned(e->id())) {
+      if (!extension_prefs_->IsOrphanedExtensionAcknowledged(e->id())) {
+        extension_global_error->AddOrphanedExtension(e->id());
+        needs_alert = true;
+      }
+    }
+  }
+  return needs_alert;
 }
 
 void ExtensionService::HandleExtensionAlertClosed() {

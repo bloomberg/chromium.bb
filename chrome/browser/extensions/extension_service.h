@@ -532,6 +532,14 @@ class ExtensionService
   // extensions.
   void IdentifyAlertableExtensions();
 
+  // Given an ExtensionGlobalError alert, populates it with any extensions that
+  // need alerting. Returns true if the alert should be displayed at all.
+  //
+  // This method takes the extension_global_error argument rather than using
+  // the member variable to make it easier to test the method in isolation.
+  bool PopulateExtensionGlobalError(
+      ExtensionGlobalError* extension_global_error);
+
   // Marks alertable extensions as acknowledged, after the user presses the
   // accept button.
   void HandleExtensionAlertAccept();

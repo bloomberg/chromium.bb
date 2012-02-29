@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_global_error.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
@@ -98,6 +99,7 @@ const char* const good0 = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 const char* const good1 = "hpiknbiabeeppbpihjehijgoemciehgk";
 const char* const good2 = "bjafgdebaacbbbecmhlhpofkepfkgcpa";
 const char* const good_crx = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+const char* const hosted_app = "kbmnembihfiondgfjekmnmcbddelicoi";
 const char* const page_action = "obcimlgaoabeegjmmpldobjndiealpln";
 const char* const theme_crx = "iamefpfkojoapidjnbafmgkgncegbkad";
 const char* const theme2_crx = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
@@ -4825,4 +4827,43 @@ TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
   // Now that the extension is installed, sync request should fail
   // because the extension is already installed.
   ASSERT_FALSE(AddPendingSyncInstall());
+}
+
+TEST_F(ExtensionServiceTest, AlertableExtensionHappyPath) {
+  InitializeEmptyExtensionService();
+  scoped_ptr<ExtensionGlobalError> extension_global_error(
+      new ExtensionGlobalError(service_));
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_,
+                                Extension::EXTERNAL_PREF,
+                                0);
+  AddMockExternalProvider(provider);
+
+  // Should return false, meaning there aren't any extensions that the user
+  // needs to know about.
+  ASSERT_FALSE(service_->PopulateExtensionGlobalError(
+      extension_global_error.get()));
+
+  // This is a normal extension, installed normally.
+  // This should NOT trigger an alert.
+  set_extensions_enabled(true);
+  FilePath path = data_dir_.AppendASCII("good.crx");
+  InstallCRX(path, INSTALL_NEW);
+
+  // Another normal extension, but installed externally.
+  // This SHOULD trigger an alert.
+  provider->UpdateOrAddExtension(page_action, "1.0.0.0",
+                                 data_dir_.AppendASCII("page_action.crx"));
+
+  // A hosted app, installed externally.
+  // This should NOT trigger an alert.
+  provider->UpdateOrAddExtension(hosted_app, "1.0.0.0",
+                                 data_dir_.AppendASCII("hosted_app.crx"));
+
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+
+  ASSERT_TRUE(service_->PopulateExtensionGlobalError(
+      extension_global_error.get()));
+  ASSERT_EQ(1u, extension_global_error->get_external_extension_ids()->size());
 }
