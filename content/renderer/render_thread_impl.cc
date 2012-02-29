@@ -721,11 +721,19 @@ base::WaitableEvent* RenderThreadImpl::GetShutDownEvent() {
 scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
     uint32 size) {
   base::SharedMemoryHandle handle;
-  if (!ChildThread::Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
-      size,
-      &handle))) {
+  bool success;
+  IPC::Message* message =
+      new ChildProcessHostMsg_SyncAllocateSharedMemory(size, &handle);
+
+  // Allow calling this from the compositor thread.
+  if (MessageLoop::current() == message_loop())
+    success = ChildThread::Send(message);
+  else
+    success = sync_message_filter()->Send(message);
+
+  if (!success)
     return scoped_ptr<base::SharedMemory>();
-  }
+
   if (!base::SharedMemory::IsHandleValid(handle))
     return scoped_ptr<base::SharedMemory>();
   return scoped_ptr<base::SharedMemory>(new base::SharedMemory(handle, false));
@@ -734,10 +742,17 @@ scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
 int32 RenderThreadImpl::CreateViewCommandBuffer(
       int32 surface_id, const GPUCreateCommandBufferConfig& init_params) {
   int32 route_id = MSG_ROUTING_NONE;
-  ChildThread::Send(new GpuHostMsg_CreateViewCommandBuffer(
+  IPC::Message* message = new GpuHostMsg_CreateViewCommandBuffer(
       surface_id,
       init_params,
-      &route_id));
+      &route_id);
+
+  // Allow calling this from the compositor thread.
+  if (MessageLoop::current() == message_loop())
+    ChildThread::Send(message);
+  else
+    sync_message_filter()->Send(message);
+
   return route_id;
 }
 

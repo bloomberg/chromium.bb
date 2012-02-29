@@ -11,7 +11,6 @@
 #include "base/shared_memory.h"
 #include "base/stl_util.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/child_thread.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"

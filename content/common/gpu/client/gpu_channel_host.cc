@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/child_thread.h"
 #include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "googleurl/src/gurl.h"
