@@ -320,8 +320,7 @@ class Rietveld(object):
         m = re.search(r'(50\d) Server Error', msg)
         if m:
           # Fake an HTTPError exception. Cheezy. :(
-          raise urllib2.HTTPError(
-              request_path, m.group(1), e.args[0], None, None)
+          raise urllib2.HTTPError(request_path, m.group(1), msg, None, None)
         old_error_exit(msg)
       upload.ErrorExit = trap_http_500
 
