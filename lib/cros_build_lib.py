@@ -500,6 +500,11 @@ def Print(message, debug_level=DebugLevel.INFO, flush=False):
     assert False, 'Invalid debug level'
 
 
+def PrintBuildbotLink(text, url):
+  """Prints out a link to buildbot."""
+  print '\n@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text, 'url': url }
+
+
 def ListFiles(base_dir):
   """Recurively list files in a directory.
 

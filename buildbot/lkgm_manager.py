@@ -31,11 +31,6 @@ class PromoteCandidateException(Exception):
   pass
 
 
-def PrintLink(text, url):
-  """Prints out a link to buildbot."""
-  print '\n@@@STEP_LINK@%(text)s@%(url)s@@@' % { 'text': text, 'url': url }
-
-
 def _SyncGitRepo(local_dir):
   """"Clone Given git repo
   Args:
@@ -451,8 +446,12 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           review = review_match.group(1)
           _, _, change_number = review.rpartition('/')
           if current_committer != 'chrome-bot':
-            PrintLink('CHUMP %s:%s' % (current_author, change_number), review)
+            cros_lib.PrintBuildbotLink(
+                'CHUMP %s:%s' % (current_author, change_number),
+                review)
           elif self.build_type != constants.PALADIN_TYPE:
             # Suppress re-printing changes we tried ourselves on paladin
             # builders since they are redundant.
-            PrintLink('%s:%s' % (current_author, change_number), review)
+            cros_lib.PrintBuildbotLink(
+                '%s:%s' % (current_author, change_number),
+                review)

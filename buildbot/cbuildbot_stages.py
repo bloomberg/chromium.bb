@@ -139,7 +139,11 @@ class PatchChangesStage(bs.BuilderStage):
     self.local_patches = local_patches
 
   def _PerformStage(self):
-    for patch in self.gerrit_patches + self.local_patches:
+    for patch in self.gerrit_patches:
+      cros_lib.PrintBuildbotLink(str(patch), patch.url)
+      patch.Apply(self._build_root)
+
+    for patch in self.local_patches:
       patch.Apply(self._build_root)
 
     if self.local_patches:

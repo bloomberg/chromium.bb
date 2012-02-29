@@ -431,7 +431,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.manager.incr_type = 'build'
     self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    self.mox.StubOutWithMock(lkgm_manager, 'PrintLink')
+    self.mox.StubOutWithMock(cros_lib, 'PrintBuildbotLink')
 
     fake_revision = '1234567890'
     fake_project_handler = self.mox.CreateMock(cros_lib.ManifestHandler)
@@ -452,10 +452,10 @@ class LKGMManagerTest(mox.MoxTestBase):
                          '%s..HEAD' % fake_revision],
                         print_cmd=False, redirect_stdout=True,
                         cwd=self.tmpdir + '/fake/path').AndReturn(fake_result)
-    lkgm_manager.PrintLink('CHUMP fake:1234',
-                           'http://gerrit.chromium.org/gerrit/1234')
-    lkgm_manager.PrintLink('fake:1235',
-                           'http://gerrit.chromium.org/gerrit/1235')
+    cros_lib.PrintBuildbotLink('CHUMP fake:1234',
+                               'http://gerrit.chromium.org/gerrit/1234')
+    cros_lib.PrintBuildbotLink('fake:1235',
+                               'http://gerrit.chromium.org/gerrit/1235')
     self.mox.ReplayAll()
     self.manager._GenerateBlameListSinceLKGM()
     self.mox.VerifyAll()

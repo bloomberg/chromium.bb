@@ -395,7 +395,7 @@ class ValidationPool(object):
           # We applied the change successfully.
           changes_applied.add(change)
           changes_list.append(change)
-          lkgm_manager.PrintLink(str(change), change.url)
+          cros_build_lib.PrintBuildbotLink(str(change), change.url)
           if self.is_master:
             self.HandleApplied(change)
 
