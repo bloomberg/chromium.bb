@@ -865,14 +865,9 @@ WL_EXPORT void
 weston_output_damage(struct weston_output *output)
 {
 	struct weston_compositor *compositor = output->compositor;
-	struct weston_surface *es;
 
-	if (wl_list_empty(&compositor->surface_list))
-		return;
-
-	es = container_of(compositor->surface_list.next,
-			  struct weston_surface, link);
-	pixman_region32_union(&es->damage, &es->damage, &output->region);
+	pixman_region32_union(&compositor->damage,
+			      &compositor->damage, &output->region);
 	weston_compositor_schedule_repaint(compositor);
 }
 
