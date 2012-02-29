@@ -39,9 +39,9 @@ struct CONTENT_EXPORT MediaStreamDevice {
   std::string name;
 };
 
-typedef std::vector<MediaStreamDevice> MediaStreamDeviceArray;
+typedef std::vector<MediaStreamDevice> MediaStreamDevices;
 
-typedef std::map<MediaStreamDeviceType, MediaStreamDeviceArray>
+typedef std::map<MediaStreamDeviceType, MediaStreamDevices>
     MediaStreamDeviceMap;
 
 // Represents a request for media streams (audio/video).

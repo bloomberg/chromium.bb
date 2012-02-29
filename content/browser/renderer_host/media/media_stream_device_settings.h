@@ -64,7 +64,7 @@ class CONTENT_EXPORT MediaStreamDeviceSettings
   // the requester. An empty list of devices means that access has been denied.
   // This method must be called on the IO thread.
   void PostResponse(const std::string& label,
-                    const content::MediaStreamDeviceArray& devices);
+                    const content::MediaStreamDevices& devices);
 
   // Used for testing only. This function is called to use faked UI, which is
   // needed for server based tests. The first non-opened device(s) will be

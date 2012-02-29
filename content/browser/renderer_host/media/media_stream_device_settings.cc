@@ -39,7 +39,7 @@ class ResponseCallbackHelper
   }
 
   void PostResponse(const std::string& label,
-                    const content::MediaStreamDeviceArray& devices) {
+                    const content::MediaStreamDevices& devices) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
@@ -214,7 +214,7 @@ void MediaStreamDeviceSettings::AvailableDevices(
 
 void MediaStreamDeviceSettings::PostResponse(
     const std::string& label,
-    const content::MediaStreamDeviceArray& devices) {
+    const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   SettingsRequests::iterator req = requests_.find(label);
@@ -224,7 +224,7 @@ void MediaStreamDeviceSettings::PostResponse(
   if (devices.size() > 0) {
     // Build a list of "full" device objects for the accepted devices.
     StreamDeviceInfoArray deviceList;
-    for (content::MediaStreamDeviceArray::const_iterator dev = devices.begin();
+    for (content::MediaStreamDevices::const_iterator dev = devices.begin();
          dev != devices.end(); ++dev) {
       DeviceMap::iterator subList = req->second->devices_full.find(dev->type);
       DCHECK(subList != req->second->devices_full.end());

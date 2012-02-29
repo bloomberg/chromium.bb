@@ -66,7 +66,7 @@ class BrowserContext;
 class ResourceContext;
 class WebUIControllerFactory;
 
-typedef base::Callback< void(const content::MediaStreamDeviceArray&) >
+typedef base::Callback< void(const content::MediaStreamDevices&) >
     MediaResponseCallback;
 
 // Embedder API (or SPI) for participating in browser logic, to be implemented

@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -58,6 +59,7 @@
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
@@ -1063,17 +1065,46 @@ void ChromeContentBrowserClient::RequestMediaAccessPermission(
     const content::MediaResponseCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  content::MediaStreamDeviceArray devices;
+  WebContents* contents = tab_util::GetWebContentsByID(
+      request->render_process_id, request->render_view_id);
+  if (!contents) {
+    // Abort, if the tab was closed after the request was made but before we
+    // got to this point.
+    callback.Run(content::MediaStreamDevices());
+    return;
+  }
+
+  TabContentsWrapper* tab =
+      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  DCHECK(tab);
+
+  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  InfoBarDelegate* old_infobar = NULL;
+  for (size_t i = 0; i < infobar_helper->infobar_count() && !old_infobar; ++i) {
+    old_infobar =
+        infobar_helper->GetInfoBarDelegateAt(i)->AsMediaStreamInfobarDelegate();
+  }
+
+#if defined(TOOLKIT_VIEWS)
+  InfoBarDelegate* infobar = new MediaStreamInfoBarDelegate(infobar_helper,
+                                                            request,
+                                                            callback);
+  if (old_infobar)
+    infobar_helper->ReplaceInfoBar(old_infobar, infobar);
+  else
+    infobar_helper->AddInfoBar(infobar);
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
+  // TODO(macourteau): UI is not implemented yet for Linux and OS X. Fallback to
+  // the default behaviour and allow access to the first device of each
+  // requested type.
+  content::MediaStreamDevices devices;
   for (content::MediaStreamDeviceMap::const_iterator it =
        request->devices.begin(); it != request->devices.end(); ++it) {
     devices.push_back(*it->second.begin());
   }
 
-  // TODO(macourteau): This is temporary. The base::Callback object will be
-  // passed to the Infobar, which will Run it with the request's label and the
-  // list of accepted devices (if any), or an empty list of devices if the user
-  // has denied the request.
   callback.Run(devices);
+#endif  // TOOLKIT_VIEWS
 }
 
 void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
