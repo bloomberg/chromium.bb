@@ -163,6 +163,11 @@ enum {
 
 struct screenshooter;
 
+struct weston_layer {
+	struct wl_list surface_list;
+	struct wl_list link;
+};
+
 struct weston_compositor {
 	struct wl_shm *shm;
 	struct weston_xserver *wxs;
@@ -181,8 +186,12 @@ struct weston_compositor {
 	/* There can be more than one, but not right now... */
 	struct wl_input_device *input_device;
 
+	struct weston_layer fade_layer;
+	struct weston_layer cursor_layer;
+
 	struct wl_list output_list;
 	struct wl_list input_device_list;
+	struct wl_list layer_list;
 	struct wl_list surface_list;
 	struct wl_list binding_list;
 	struct wl_list animation_list;
@@ -267,6 +276,7 @@ struct weston_surface {
 	pixman_region32_t input;
 	int32_t pitch;
 	struct wl_list link;
+	struct wl_list layer_link;
 	struct wl_list buffer_link;
 	struct weston_shader *shader;
 	GLfloat color[4];
@@ -372,6 +382,9 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 	     int x, int y, int touch_type);
 
 void
+weston_layer_init(struct weston_layer *layer, struct wl_list *below);
+
+void
 weston_output_finish_frame(struct weston_output *output, int msecs);
 void
 weston_output_damage(struct weston_output *output);
@@ -422,6 +435,9 @@ weston_surface_create(struct weston_compositor *compositor);
 void
 weston_surface_configure(struct weston_surface *surface,
 			 GLfloat x, GLfloat y, int width, int height);
+
+void
+weston_surface_restack(struct weston_surface *surface, struct wl_list *below);
 
 void
 weston_surface_set_position(struct weston_surface *surface,

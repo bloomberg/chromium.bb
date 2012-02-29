@@ -42,6 +42,12 @@ struct wl_shell {
 	struct weston_compositor *compositor;
 	struct weston_shell shell;
 
+	struct weston_layer fullscreen_layer;
+	struct weston_layer panel_layer;
+	struct weston_layer toplevel_layer;
+	struct weston_layer background_layer;
+	struct weston_layer lock_layer;
+
 	struct {
 		struct weston_process process;
 		struct wl_client *client;
@@ -56,7 +62,6 @@ struct wl_shell {
 
 	struct shell_surface *lock_surface;
 	struct wl_listener lock_surface_listener;
-	struct wl_list hidden_surface_list;
 
 	struct wl_list backgrounds;
 	struct wl_list panels;
@@ -545,11 +550,15 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	center_on_output(surface, output);
 
 	if (!shsurf->fullscreen.black_surface)
-		shsurf->fullscreen.black_surface = create_black_surface(surface->compositor,
-									output->x, output->y,
-									output->current->width, output->current->height);
-	wl_list_remove(&shsurf->fullscreen.black_surface->link);
-	wl_list_insert(&surface->link, &shsurf->fullscreen.black_surface->link);
+		shsurf->fullscreen.black_surface =
+			create_black_surface(surface->compositor,
+					     output->x, output->y,
+					     output->current->width,
+					     output->current->height);
+
+	wl_list_remove(&shsurf->fullscreen.black_surface->layer_link);
+	wl_list_insert(&surface->layer_link,
+		       &shsurf->fullscreen.black_surface->layer_link);
 	shsurf->fullscreen.black_surface->output = output;
 
 	switch (shsurf->fullscreen.type) {
@@ -580,22 +589,17 @@ shell_stack_fullscreen(struct shell_surface *shsurf)
 {
 	struct weston_surface *surface = shsurf->surface;
 	struct wl_shell *shell = shell_surface_get_shell(shsurf);
-	struct wl_list *list;
 
-	wl_list_remove(&surface->link);
-	wl_list_remove(&shsurf->fullscreen.black_surface->link);
+	wl_list_remove(&surface->layer_link);
+	wl_list_remove(&shsurf->fullscreen.black_surface->layer_link);
 
-	if (shell->locked) {
-		wl_list_insert(&shell->hidden_surface_list, &surface->link);
-		wl_list_insert(&surface->link, &shsurf->fullscreen.black_surface->link);
-	} else {
-		list = weston_compositor_top(surface->compositor);
-		wl_list_insert(list, &surface->link);
-		wl_list_insert(&surface->link, &shsurf->fullscreen.black_surface->link);
+	wl_list_insert(&shell->fullscreen_layer.surface_list,
+		       &surface->layer_link);
+	wl_list_insert(&surface->layer_link,
+		       &shsurf->fullscreen.black_surface->layer_link);
 
-		weston_surface_damage(surface);
-		weston_surface_damage(shsurf->fullscreen.black_surface);
-	}
+	weston_surface_damage(surface);
+	weston_surface_damage(shsurf->fullscreen.black_surface);
 }
 
 static void
@@ -902,12 +906,12 @@ show_screensaver(struct wl_shell *shell, struct shell_surface *surface)
 	struct wl_list *list;
 
 	if (shell->lock_surface)
-		list = &shell->lock_surface->surface->link;
+		list = &shell->lock_surface->surface->layer_link;
 	else
-		list = &shell->compositor->surface_list;
+		list = &shell->lock_layer.surface_list;
 
-	wl_list_remove(&surface->surface->link);
-	wl_list_insert(list, &surface->surface->link);
+	wl_list_remove(&surface->surface->layer_link);
+	wl_list_insert(list, &surface->surface->layer_link);
 	surface->surface->output = surface->output;
 	weston_surface_damage(surface->surface);
 }
@@ -915,8 +919,8 @@ show_screensaver(struct wl_shell *shell, struct shell_surface *surface)
 static void
 hide_screensaver(struct wl_shell *shell, struct shell_surface *surface)
 {
-	wl_list_remove(&surface->surface->link);
-	wl_list_init(&surface->surface->link);
+	wl_list_remove(&surface->surface->layer_link);
+	wl_list_init(&surface->surface->layer_link);
 	surface->surface->output = NULL;
 }
 
@@ -937,7 +941,7 @@ desktop_shell_set_background(struct wl_client *client,
 	wl_list_for_each(priv, &shell->backgrounds, link) {
 		if (priv->output == output_resource->data) {
 			priv->surface->output = NULL;
-			wl_list_remove(&priv->surface->link);
+			wl_list_remove(&priv->surface->layer_link);
 			wl_list_remove(&priv->link);
 			break;
 		}
@@ -975,7 +979,7 @@ desktop_shell_set_panel(struct wl_client *client,
 	wl_list_for_each(priv, &shell->panels, link) {
 		if (priv->output == output_resource->data) {
 			priv->surface->output = NULL;
-			wl_list_remove(&priv->surface->link);
+			wl_list_remove(&priv->surface->layer_link);
 			wl_list_remove(&priv->link);
 			break;
 		}
@@ -1035,8 +1039,6 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 static void
 resume_desktop(struct wl_shell *shell)
 {
-	struct weston_surface *surface;
-	struct wl_list *list;
 	struct shell_surface *tmp;
 
 	wl_list_for_each(tmp, &shell->screensaver.surfaces, link)
@@ -1044,21 +1046,12 @@ resume_desktop(struct wl_shell *shell)
 
 	terminate_screensaver(shell);
 
-	wl_list_for_each(surface, &shell->hidden_surface_list, link)
-		weston_surface_assign_output(surface);
-
-	if (wl_list_empty(&shell->backgrounds)) {
-		list = &shell->compositor->surface_list;
-	} else {
-		struct shell_surface *background;
-		background = container_of(shell->backgrounds.prev,
-					  struct shell_surface, link);
-		list = background->surface->link.prev;
-	}
-
-	if (!wl_list_empty(&shell->hidden_surface_list))
-		wl_list_insert_list(list, &shell->hidden_surface_list);
-	wl_list_init(&shell->hidden_surface_list);
+	wl_list_remove(&shell->lock_layer.link);
+	wl_list_insert(&shell->compositor->cursor_layer.link,
+		       &shell->fullscreen_layer.link);
+	wl_list_insert(&shell->fullscreen_layer.link,
+		       &shell->panel_layer.link);
+	wl_list_insert(&shell->panel_layer.link, &shell->toplevel_layer.link);
 
 	shell->locked = false;
 	weston_compositor_repick(shell->compositor);
@@ -1380,7 +1373,6 @@ activate(struct weston_shell *base, struct weston_surface *es,
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct weston_compositor *compositor = shell->compositor;
-	struct wl_list *list;
 
 	weston_surface_activate(es, device, time);
 
@@ -1389,35 +1381,23 @@ activate(struct weston_shell *base, struct weston_surface *es,
 
 	switch (get_shell_surface_type(es)) {
 	case SHELL_SURFACE_BACKGROUND:
-		/* put background back to bottom */
-		wl_list_remove(&es->link);
-		wl_list_insert(compositor->surface_list.prev, &es->link);
-		break;
 	case SHELL_SURFACE_PANEL:
-		/* already put on top */
+	case SHELL_SURFACE_LOCK:
 		break;
+
 	case SHELL_SURFACE_SCREENSAVER:
 		/* always below lock surface */
-		if (shell->lock_surface) {
-			wl_list_remove(&es->link);
-			wl_list_insert(&shell->lock_surface->surface->link,
-				       &es->link);
-		}
+		if (shell->lock_surface)
+			weston_surface_restack(es,
+					       &shell->lock_surface->surface->layer_link);
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
 		/* should on top of panels */
 		break;
 	default:
-		if (!shell->locked) {
-			list = weston_compositor_top(compositor);
-
-			/* bring panel back to top */
-			struct shell_surface *panel;
-			wl_list_for_each(panel, &shell->panels, link) {
-				wl_list_remove(&panel->surface->link);
-				wl_list_insert(list, &panel->surface->link);
-			}
-		}
+		weston_surface_restack(es,
+				       &shell->toplevel_layer.surface_list);
+		break;
 	}
 }
 
@@ -1448,9 +1428,6 @@ static void
 lock(struct weston_shell *base)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
-	struct wl_list *surface_list = &shell->compositor->surface_list;
-	struct weston_surface *cur;
-	struct weston_surface *tmp;
 	struct weston_input_device *device;
 	struct shell_surface *shsurf;
 	struct weston_output *output;
@@ -1466,28 +1443,15 @@ lock(struct weston_shell *base)
 
 	shell->locked = true;
 
-	/* Move all surfaces from compositor's list to our hidden list,
-	 * except the background. This way nothing else can show or
-	 * receive input events while we are locked. */
+	/* Hide all surfaces by removing the fullscreen, panel and
+	 * toplevel layers.  This way nothing else can show or receive
+	 * input events while we are locked. */
 
-	if (!wl_list_empty(&shell->hidden_surface_list)) {
-		fprintf(stderr,
-		"%s: Assertion failed: hidden_surface_list is not empty.\n",
-								__func__);
-	}
-
-	wl_list_for_each_safe(cur, tmp, surface_list, link) {
-		/* skip input device sprites, cur->surface is uninitialised */
-		if (cur->surface.resource.client == NULL)
-			continue;
-
-		if (get_shell_surface_type(cur) == SHELL_SURFACE_BACKGROUND)
-			continue;
-
-		cur->output = NULL;
-		wl_list_remove(&cur->link);
-		wl_list_insert(shell->hidden_surface_list.prev, &cur->link);
-	}
+	wl_list_remove(&shell->panel_layer.link);
+	wl_list_remove(&shell->toplevel_layer.link);
+	wl_list_remove(&shell->fullscreen_layer.link);
+	wl_list_insert(&shell->compositor->cursor_layer.link,
+		       &shell->lock_layer.link);
 
 	launch_screensaver(shell);
 
@@ -1555,23 +1519,13 @@ map(struct weston_shell *base, struct weston_surface *surface,
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct weston_compositor *compositor = shell->compositor;
-	struct wl_list *list;
 	struct shell_surface *shsurf;
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
-	int do_configure;
 	int panel_height = 0;
 
 	shsurf = get_shell_surface(surface);
 	if (shsurf)
 		surface_type = shsurf->type;
-
-	if (shell->locked) {
-		list = &shell->hidden_surface_list;
-		do_configure = 0;
-	} else {
-		list = weston_compositor_top(compositor);
-		do_configure = 1;
-	}
 
 	surface->geometry.width = width;
 	surface->geometry.height = height;
@@ -1615,19 +1569,19 @@ map(struct weston_shell *base, struct weston_surface *surface,
 	switch (surface_type) {
 	case SHELL_SURFACE_BACKGROUND:
 		/* background always visible, at the bottom */
-		wl_list_insert(compositor->surface_list.prev, &surface->link);
-		do_configure = 1;
+		wl_list_insert(&shell->background_layer.surface_list,
+			       &surface->layer_link);
 		break;
 	case SHELL_SURFACE_PANEL:
 		/* panel always on top, hidden while locked */
-		wl_list_insert(list, &surface->link);
+		wl_list_insert(&shell->panel_layer.surface_list,
+			       &surface->layer_link);
 		break;
 	case SHELL_SURFACE_LOCK:
 		/* lock surface always visible, on top */
-		wl_list_insert(&compositor->surface_list, &surface->link);
-
+		wl_list_insert(&shell->lock_layer.surface_list,
+			       &surface->layer_link);
 		weston_compositor_wake(compositor);
-		do_configure = 1;
 		break;
 	case SHELL_SURFACE_SCREENSAVER:
 		/* If locked, show it. */
@@ -1638,32 +1592,20 @@ map(struct weston_shell *base, struct weston_surface *surface,
 			if (!shell->lock_surface)
 				compositor->state = WESTON_COMPOSITOR_IDLE;
 		}
-		do_configure = 0;
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
-		do_configure = 1;
-		break;
 	case SHELL_SURFACE_NONE:
-		do_configure = 0;
 		break;
 	default:
-		/* everything else just below the panel */
-		if (!wl_list_empty(&shell->panels)) {
-			struct shell_surface *panel =
-				container_of(shell->panels.prev,
-					     struct shell_surface, link);
-			wl_list_insert(&panel->surface->link, &surface->link);
-		} else {
-			wl_list_insert(list, &surface->link);
-		}
+		wl_list_insert(&shell->toplevel_layer.surface_list,
+			       &surface->layer_link); 
+		break;
 	}
 
-	if (do_configure) {
-		weston_surface_assign_output(surface);
-		weston_compositor_repick(compositor);
-		if (surface_type == SHELL_SURFACE_MAXIMIZED)
-			surface->output = shsurf->output;
-	}
+	weston_surface_assign_output(surface);
+	weston_compositor_repick(compositor);
+	if (surface_type == SHELL_SURFACE_MAXIMIZED)
+		surface->output = shsurf->output;
 
 	switch (surface_type) {
 	case SHELL_SURFACE_TOPLEVEL:
@@ -2054,10 +1996,16 @@ shell_init(struct weston_compositor *ec)
 	shell->shell.configure = configure;
 	shell->shell.destroy = shell_destroy;
 
-	wl_list_init(&shell->hidden_surface_list);
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);
 	wl_list_init(&shell->screensaver.surfaces);
+
+	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
+	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
+	weston_layer_init(&shell->toplevel_layer, &shell->panel_layer.link);
+	weston_layer_init(&shell->background_layer,
+			  &shell->toplevel_layer.link);
+	wl_list_init(&shell->lock_layer.surface_list);
 
 	shell_configuration(shell);
 

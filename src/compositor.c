@@ -211,6 +211,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	wl_list_init(&surface->surface.resource.destroy_listener_list);
 
 	wl_list_init(&surface->link);
+	wl_list_init(&surface->layer_link);
 	wl_list_init(&surface->buffer_link);
 
 	surface->surface.resource.client = NULL;
@@ -600,6 +601,7 @@ weston_surface_unmap(struct weston_surface *surface)
 	weston_surface_damage_below(surface);
 	surface->output = NULL;
 	wl_list_remove(&surface->link);
+	wl_list_remove(&surface->layer_link);
 	weston_compositor_repick(surface->compositor);
 	weston_compositor_schedule_repaint(surface->compositor);
 }
@@ -808,37 +810,15 @@ out:
 	pixman_region32_fini(&repaint);
 }
 
-WL_EXPORT struct wl_list *
-weston_compositor_top(struct weston_compositor *compositor)
-{
-	struct weston_input_device *input_device;
-	struct wl_list *list;
-
-	input_device = (struct weston_input_device *) compositor->input_device;
-
-	/* Insert below pointer */
-	list = &compositor->surface_list;
-	if (compositor->fade.surface &&
-	    list->next == &compositor->fade.surface->link)
-		list = list->next;
-	if (list->next == &input_device->sprite->link)
-		list = list->next;
-	if (input_device->drag_surface &&
-	    list->next == &input_device->drag_surface->link)
-		list = list->next;
-
-	return list;
-}
-
-static void
-weston_surface_raise(struct weston_surface *surface)
+WL_EXPORT void
+weston_surface_restack(struct weston_surface *surface, struct wl_list *below)
 {
 	struct weston_compositor *compositor = surface->compositor;
-	struct wl_list *list = weston_compositor_top(compositor);
 
-	wl_list_remove(&surface->link);
-	wl_list_insert(list, &surface->link);
+	wl_list_remove(&surface->layer_link);
+	wl_list_insert(below, &surface->layer_link);
 	weston_compositor_repick(compositor);
+	weston_surface_damage_below(surface);
 	weston_surface_damage(surface);
 }
 
@@ -912,6 +892,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es;
+	struct weston_layer *layer;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
 	pixman_region32_t opaque, new_damage, output_damage;
@@ -925,10 +906,14 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		output->border.top + output->border.bottom;
 	glViewport(0, 0, width, height);
 
-	wl_list_for_each(es, &ec->surface_list, link)
-		/* Update surface transform now to avoid calling it ever
-		 * again from the repaint sub-functions. */
-		weston_surface_update_transform(es);
+	/* Rebuild the surface list and update surface transforms up front. */
+	wl_list_init(&ec->surface_list);
+	wl_list_for_each(layer, &ec->layer_list, link) {
+		wl_list_for_each(es, &layer->surface_list, layer_link) {
+			weston_surface_update_transform(es);
+			wl_list_insert(ec->surface_list.prev, &es->link);
+		}
+	}
 
 	if (output->assign_planes)
 		/*
@@ -1003,6 +988,13 @@ weston_output_finish_frame(struct weston_output *output, int msecs)
 }
 
 WL_EXPORT void
+weston_layer_init(struct weston_layer *layer, struct wl_list *below)
+{
+	wl_list_init(&layer->surface_list);
+	wl_list_insert(below, &layer->link);
+}
+
+WL_EXPORT void
 weston_compositor_schedule_repaint(struct weston_compositor *compositor)
 {
 	struct weston_output *output;
@@ -1041,7 +1033,8 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 		surface = weston_surface_create(compositor);
 		weston_surface_configure(surface, 0, 0, 8192, 8192);
 		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.0);
-		wl_list_insert(&compositor->surface_list, &surface->link);
+		wl_list_insert(&compositor->fade_layer.surface_list,
+			       &surface->layer_link);
 		weston_surface_assign_output(surface);
 		compositor->fade.surface = surface;
 		pixman_region32_init(&surface->input);
@@ -1489,7 +1482,6 @@ WL_EXPORT void
 weston_surface_activate(struct weston_surface *surface,
 			struct weston_input_device *device, uint32_t time)
 {
-	weston_surface_raise(surface);
 	wl_input_device_set_keyboard_focus(&device->input_device,
 					   &surface->surface, time);
 	wl_data_device_set_keyboard_focus(&device->input_device);
@@ -1814,13 +1806,14 @@ input_device_attach(struct wl_client *client,
 
 	if (!buffer_resource && device->sprite->output) {
 		wl_list_remove(&device->sprite->link);
+		wl_list_remove(&device->sprite->layer_link);
 		device->sprite->output = NULL;
 		return;
 	}
 
 	if (!device->sprite->output) {
-		wl_list_insert(&compositor->surface_list,
-			       &device->sprite->link);
+		wl_list_insert(&compositor->cursor_layer.surface_list,
+			       &device->sprite->layer_link);
 		weston_surface_assign_output(device->sprite);
 	}
 
@@ -1924,8 +1917,8 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 
 	if (device->drag_surface->output == NULL &&
 	    device->drag_surface->buffer) {
-		wl_list_insert(&device->sprite->link,
-			       &device->drag_surface->link);
+		wl_list_insert(&device->sprite->layer_link,
+			       &device->drag_surface->layer_link);
 		weston_surface_assign_output(device->drag_surface);
 		empty_region(&device->drag_surface->input);
 	}
@@ -2270,6 +2263,7 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 		ec->bind_display(ec->display, ec->wl_display);
 
 	wl_list_init(&ec->surface_list);
+	wl_list_init(&ec->layer_list);
 	wl_list_init(&ec->input_device_list);
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
@@ -2277,6 +2271,9 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
+
+	weston_layer_init(&ec->fade_layer, &ec->layer_list);
+	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
 
 	ec->screenshooter = screenshooter_create(ec);
 
