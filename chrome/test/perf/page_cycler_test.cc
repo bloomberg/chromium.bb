@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,29 +118,26 @@ void PopulateBufferCache(const FilePath& test_dir) {
 }
 
 class PageCyclerTest : public UIPerfTest {
- protected:
-  bool print_times_only_;
-  int num_test_iterations_;
  public:
-  PageCyclerTest()
-      : print_times_only_(false) {
+  PageCyclerTest() : print_times_only_(false),
+                     num_test_iterations_(kTestIterations) {
     show_window_ = true;
     dom_automation_enabled_ = true;
 
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-    num_test_iterations_ = kTestIterations;
-
     if (parsed_command_line.HasSwitch(switches::kPageCyclerIterations)) {
       std::string str = parsed_command_line.GetSwitchValueASCII(
           switches::kPageCyclerIterations);
       base::StringToInt(str, &num_test_iterations_);
     }
+  }
+
+  virtual void SetLaunchSwitches() OVERRIDE {
+    UIPerfTest::SetLaunchSwitches();
 
     // Expose garbage collection for the page cycler tests.
     launch_arguments_.AppendSwitchASCII(switches::kJavaScriptFlags,
                                         "--expose_gc");
-    // Make sure we don't get variations due to out-of-date plug-in blocking.
-    launch_arguments_.AppendSwitch(switches::kAllowOutdatedPlugins);
   }
 
   virtual FilePath GetDataPath(const char* name) {
@@ -259,6 +256,12 @@ class PageCyclerTest : public UIPerfTest {
   void RunTest(const char* graph, const char* name, bool use_http) {
     RunTestWithSuffix(graph, name, use_http, "");
   }
+
+ protected:
+  bool print_times_only_;
+
+ private:
+  int num_test_iterations_;
 };
 
 class PageCyclerReferenceTest : public PageCyclerTest {

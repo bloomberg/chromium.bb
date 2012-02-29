@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -286,7 +286,7 @@ class UITestBase {
 
   // Extra command-line switches that need to be passed to the browser are
   // added in this function. Add new command-line switches here.
-  void SetLaunchSwitches();
+  virtual void SetLaunchSwitches();
 
   // Called by the ProxyLauncher just before the browser is launched, allowing
   // setup of the profile for the runtime environment..
