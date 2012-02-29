@@ -22,7 +22,6 @@ from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import cbuildbot_results as results_lib
-from chromite.buildbot import cgroup as cgroups
 from chromite.buildbot import constants
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
@@ -30,6 +29,7 @@ from chromite.buildbot import remote_try
 from chromite.buildbot import repository
 from chromite.buildbot import tee
 
+from chromite.lib import cgroups
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import sudo
 
