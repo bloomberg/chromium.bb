@@ -124,8 +124,7 @@ void GetRoundRectPath(const gfx::Rect rect,
                       int corner_radius,
                       SkPath* path) {
   // Add 0.5 pixel padding so that antialias paint does not touch extra pixels.
-  GetRoundRectPathWithPadding(rect, corner_radius, SkIntToScalar(1) / 2,
-                              path);
+  GetRoundRectPathWithPadding(rect, corner_radius, SK_ScalarHalf, path);
 }
 
 void GetGradientPaintForRect(const gfx::Rect& rect,

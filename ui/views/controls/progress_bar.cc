@@ -57,8 +57,7 @@ void AddRoundRectPath(int x, int y,
                       int w, int h,
                       int corner_radius,
                       SkPath* path) {
-  static const SkScalar half = SkIntToScalar(1) / 2;
-  AddRoundRectPathWithPadding(x, y, w, h, corner_radius, half, path);
+  AddRoundRectPathWithPadding(x, y, w, h, corner_radius, SK_ScalarHalf, path);
 }
 
 void FillRoundRect(gfx::Canvas* canvas,
