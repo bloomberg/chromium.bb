@@ -150,6 +150,7 @@ class CONTENT_EXPORT PluginProcessHost
 #endif
 
   virtual bool CanShutdown() OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   void CancelRequests();
 

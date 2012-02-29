@@ -30,6 +30,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_switches.h"
@@ -346,6 +347,10 @@ void PluginProcessHost::OnChannelError() {
 
 bool PluginProcessHost::CanShutdown() {
   return sent_requests_.empty();
+}
+
+void PluginProcessHost::OnProcessCrashed(int exit_code) {
+  PluginServiceImpl::GetInstance()->RegisterPluginCrash(info_.path);
 }
 
 void PluginProcessHost::CancelRequests() {

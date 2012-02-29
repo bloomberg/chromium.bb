@@ -9,13 +9,16 @@
 #define CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_
 #pragma once
 
+#include <map>
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/waitable_event_watcher.h"
+#include "base/time.h"
 #include "build/build_config.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -94,6 +97,7 @@ class CONTENT_EXPORT PluginServiceImpl
   virtual void SetFilter(content::PluginServiceFilter* filter) OVERRIDE;
   virtual content::PluginServiceFilter* GetFilter() OVERRIDE;
   virtual void ForcePluginShutdown(const FilePath& plugin_path) OVERRIDE;
+  virtual bool IsPluginUnstable(const FilePath& plugin_path) OVERRIDE;
   virtual void RefreshPlugins() OVERRIDE;
   virtual void AddExtraPluginPath(const FilePath& path) OVERRIDE;
   virtual void AddExtraPluginDir(const FilePath& path) OVERRIDE;
@@ -134,6 +138,9 @@ class CONTENT_EXPORT PluginServiceImpl
 
   // Cancels opening a channel to a NPAPI plugin.
   void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);
+
+  // Used to monitor plug-in stability.
+  void RegisterPluginCrash(const FilePath& plugin_path);
 
  private:
   friend struct DefaultSingletonTraits<PluginServiceImpl>;
@@ -227,6 +234,9 @@ class CONTENT_EXPORT PluginServiceImpl
 #if defined(OS_POSIX)
   scoped_refptr<PluginLoaderPosix> plugin_loader_;
 #endif
+
+  // Used to detect if a given plug-in is crashing over and over.
+  std::map<FilePath, std::vector<base::Time> > crash_times_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginServiceImpl);
 };
