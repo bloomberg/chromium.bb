@@ -1010,6 +1010,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ash::switches::kAuraPanelManager,
       ash::switches::kAuraWindowAnimationsDisabled,
       switches::kUIEnablePartialSwap,
+      switches::kUIUseGPUProcess,
 #endif
       switches::kUseGL,
       switches::kUserDataDir,
