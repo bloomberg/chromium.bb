@@ -70,11 +70,21 @@ Gallery.prototype.initDom_ = function(shareActions) {
   // Clean up after the previous instance of Gallery.
   this.container_.removeAttribute('editing');
   this.container_.removeAttribute('tools');
+
+  // The removeEventListener calls below are required to prevent memory leaks in
+  // gallery_demo.html where the Gallery is re-created in the same iframe.
+  // It is safe to remove these calls once gallery_demo.html is retired.
   if (window.galleryKeyDown) {
     doc.body.removeEventListener('keydown', window.galleryKeyDown);
   }
   if (window.galleryMouseMove) {
     doc.body.removeEventListener('mousemove', window.galleryMouseMove);
+  }
+  if (window.galleryUnload) {
+    window.removeEventListener('unload', window.galleryUnload);
+  }
+  if (window.top.galleryTopUnload) {
+    window.top.removeEventListener('unload', window.top.galleryTopUnload);
   }
 
   window.galleryKeyDown = this.onKeyDown_.bind(this);
@@ -82,6 +92,14 @@ Gallery.prototype.initDom_ = function(shareActions) {
 
   window.galleryMouseMove = this.onMouseMove_.bind(this);
   doc.body.addEventListener('mousemove', window.galleryMouseMove);
+
+  window.galleryUnload = this.onUnload_.bind(this);
+  window.addEventListener('unload', window.galleryUnload);
+
+  // We need to listen to the top window 'unload' because the Gallery iframe
+  // does not get notified if the tab is closed.
+  window.top.galleryTopUnload = this.onTopUnload_.bind(this);
+  window.top.addEventListener('unload', window.top.galleryTopUnload);
 
   this.closeButton_ = doc.createElement('div');
   this.closeButton_.className = 'close tool dimmable';
@@ -491,6 +509,22 @@ Gallery.prototype.closeImage = function(item) {
 
 Gallery.prototype.isShowingVideo_ = function() {
   return !!this.imageView_.getVideo();
+};
+
+Gallery.prototype.saveVideoPosition_ = function() {
+  if (this.isShowingVideo_() && this.mediaControls_.isPlaying()) {
+    this.mediaControls_.savePosition();
+  }
+};
+
+Gallery.prototype.onUnload_ = function() {
+  this.saveVideoPosition_();
+  window.top.removeEventListener('unload', window.top.galleryTopUnload);
+  window.top.galleryTopUnload = null;
+};
+
+Gallery.prototype.onTopUnload_ = function() {
+  this.saveVideoPosition_();
 };
 
 Gallery.prototype.isEditing_ = function() {

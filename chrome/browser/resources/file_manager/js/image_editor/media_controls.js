@@ -692,12 +692,25 @@ function VideoControls(containerElement, onMediaError,
     this.stateIcon_ = this.createControl(
         'playback-state-icon', opt_stateIconParent);
   }
+
+  this.resumePositions_ = new TimeLimitedMap(
+      'VideoResumePosition',
+      VideoControls.RESUME_POSITIONS_CAPACITY,
+      VideoControls.RESUME_POSITION_LIFETIME);
 }
+
+VideoControls.RESUME_POSITIONS_CAPACITY = 100;
+VideoControls.RESUME_POSITION_LIFETIME = 30 * 24 * 60 * 60 * 1000;  // 30 days.
+VideoControls.RESUME_MARGIN = 0.03;
+// Ignore the tail margin for videos shorter than 5 minutes.
+VideoControls.RESUME_TAIL_MARGIN_THRESHOLD = 5 * 60;
+VideoControls.RESUME_REWIND = 5;  // Rewind 5 seconds back when resuming.
 
 VideoControls.prototype = { __proto__: MediaControls.prototype };
 
 VideoControls.prototype.onMediaComplete = function() {
   this.onMediaPlay_(false);  // Just update the UI.
+  this.savePosition();  // This will effectively forget the position.
 };
 
 VideoControls.prototype.togglePlayStateWithFeedback = function(e) {
@@ -735,6 +748,145 @@ VideoControls.prototype.togglePlayStateWithFeedback = function(e) {
       delay(hideStatusIcon, 1000);  /* Twice the animation duration. */
     });
   });
+};
+
+VideoControls.prototype.onMediaDuration_ = function() {
+  MediaControls.prototype.onMediaDuration_.apply(this, arguments);
+  if (this.media_.duration && this.media_.seekable) {
+    var position = this.resumePositions_.getValue(this.media_.src);
+    if (position) {
+      this.media_.currentTime = position;
+    }
+  }
+};
+
+VideoControls.prototype.togglePlayState = function(e) {
+  if (this.isPlaying()) {
+    // User gave the Pause command.
+    this.savePosition();
+  }
+  MediaControls.prototype.togglePlayState.apply(this, arguments);
+};
+
+VideoControls.prototype.savePosition = function() {
+  if (!this.media_.duration)
+    return;
+
+  var ratio = this.media_.currentTime / this.media_.duration;
+  if (ratio < VideoControls.RESUME_MARGIN ||
+      (this.media_.duration >= VideoControls.RESUME_TAIL_MARGIN_THRESHOLD &&
+      ratio > (1 - VideoControls.RESUME_MARGIN))) {
+    // We are too close to the beginning or the end.
+    // Remove the resume position so that next time we start from the beginning.
+    this.resumePositions_.removeValue(this.media_.src);
+  } else {
+    this.resumePositions_.setValue(this.media_.src, Math.floor(Math.max(0,
+        this.media_.currentTime - VideoControls.RESUME_REWIND)));
+  }
+};
+
+/**
+ *  TimeLimitedMap is persistent timestamped key-value storage backed by
+ *  HTML5 local storage.
+ *
+ *  It is not designed for frequent access. In order to avoid costly
+ *  localStorage iteration all data is kept in a single localStorage item.
+ *  There is no in-memory caching, so concurrent access is OK.
+ *
+ *  @param {string} localStorageKey A key in the local storage.
+ *  @param {number} capacity Maximim number of items. If exceeded, oldest items
+ *                           are removed.
+ *  @param {number} lifetime Maximim time to keep an item (in milliseconds).
+ */
+function TimeLimitedMap(localStorageKey, capacity, lifetime) {
+  this.localStorageKey_ = localStorageKey;
+  this.capacity_ = capacity;
+  this.lifetime_ = lifetime;
+}
+
+/**
+ * @param {string} key
+ * @return {string} value
+ */
+TimeLimitedMap.prototype.getValue = function(key) {
+  var map = this.read_();
+  var entry = map[key];
+  return entry && entry.value;
+};
+
+/**
+ * @param {string} key
+ * @param {string} value
+ */
+TimeLimitedMap.prototype.setValue = function(key, value) {
+  var map = this.read_();
+  map[key] = { value: value, timestamp: Date.now() };
+  this.cleanup_(map);
+  this.write_(map);
+};
+
+/**
+ * @param {string} key
+ */
+TimeLimitedMap.prototype.removeValue = function(key) {
+  var map = this.read_();
+  if (!(key in map))
+    return;  // Nothing to do.
+
+  delete map[key];
+  this.cleanup_(map);
+  this.write_(map);
+};
+
+/**
+ * @return {Object} A map of timestamped key-value pairs.
+ */
+TimeLimitedMap.prototype.read_ = function() {
+  var json = localStorage[this.localStorageKey_];
+  if (json) {
+    try {
+      return JSON.parse(json);
+    } catch(e) {
+      // The localStorage item somehow got messed up, start fresh.
+    }
+  }
+  return {};
+};
+
+/**
+ * @param {Object} map A map of timestamped key-value pairs.
+ */
+TimeLimitedMap.prototype.write_ = function(map) {
+  localStorage[this.localStorageKey_] = JSON.stringify(map);
+};
+
+/**
+ * Remove over-capacity and obsolete items.
+ *
+ * @param {Object} map A map of timestamped key-value pairs.
+ */
+TimeLimitedMap.prototype.cleanup_ = function(map) {
+  // Sort keys by ascending timestamps.
+  var keys = [];
+  for (var key in map) {
+    keys.push(key);
+  }
+  keys.sort(function(a, b) { return map[a].timestamp > map[b].timestamp });
+
+  var cutoff = Date.now() - this.lifetime_;
+
+  var obsolete = 0;
+  while (obsolete < keys.length &&
+         map[keys[obsolete]].timestamp < cutoff) {
+    obsolete++;
+  }
+
+  var overCapacity = Math.max(0, keys.length - this.capacity_);
+
+  var itemsToDelete = Math.max(obsolete, overCapacity);
+  for (var i = 0; i != itemsToDelete; i++) {
+    delete map[keys[i]];
+  }
 };
 
 
