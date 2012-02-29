@@ -363,18 +363,18 @@ class SimpleBuilder(Builder):
         steps.append(vm_test_stage.Run)
         if self.build_config['chrome_tests']:
           steps.append(chrome_test_stage.Run)
-
+        if self.options.archive:
+          for suite in self.build_config['hw_tests']:
+            hw_test_stage = self._GetStageInstance(
+                stages.HWTestStage,
+                board,
+                archive_stage=archive_stage,
+                suite=suite)
+            steps.append(hw_test_stage.Run)
       steps += [unit_test_stage.Run, prebuilts_stage.Run]
       # Run the steps in parallel. If any exceptions occur, RunParallelSteps
       # will combine them into a single BackgroundException and throw it.
       background.RunParallelSteps(steps)
-
-      # TODO(sosa); Move this to run in parallel with other stages once issues
-      # are fixed.
-      if self.options.archive:
-        for suite in self.build_config['hw_tests']:
-          self._RunStage(stages.HWTestStage, board,
-                         archive_stage=archive_stage, suite=suite)
 
       return True
 
