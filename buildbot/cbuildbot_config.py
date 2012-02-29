@@ -352,6 +352,8 @@ paladin = _config(
   overlays='public',
   prebuilts=True,
   manifest_version=True,
+  trybot_list=True,
+  description='Combined PFQ/CQ',
 )
 
 incremental = _config(
@@ -375,6 +377,8 @@ full.add_config('chromiumos-sdk',
   boards=['x86-generic', 'arm-generic', 'amd64-generic', 'amd64-host'],
   build_type=constants.CHROOT_BUILDER_TYPE,
   use_sdk=False,
+  trybot_list=True,
+  description='Build the SDK and all the cross-compilers',
 )
 
 _config.add_raw_config('refresh-packages',
