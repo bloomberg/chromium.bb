@@ -14,7 +14,7 @@
 #define MAYBE_Infobars DISABLED_Infobars
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Infobars) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Infobars) {
   // TODO(finnur): Remove once infobars are no longer experimental (bug 39511).
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);

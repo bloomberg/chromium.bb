@@ -245,6 +245,6 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   WaitForTabsAndPopups(browser(), 1, 1, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpener) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpener) {
   ASSERT_TRUE(RunExtensionTest("window_open/opener")) << message_;
 }
