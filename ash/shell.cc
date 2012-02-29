@@ -195,7 +195,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowHelp() OVERRIDE {
   }
 
-  virtual bool AudioMuted() OVERRIDE {
+  virtual bool IsAudioMuted() const OVERRIDE {
     return muted_;
   }
 
@@ -203,7 +203,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     muted_ = muted;
   }
 
-  virtual float VolumeLevel() OVERRIDE {
+  virtual float GetVolumeLevel() const OVERRIDE {
     return volume_;
   }
 

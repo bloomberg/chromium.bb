@@ -43,7 +43,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     BrowserList::GetLastActive()->ShowHelpTab();
   }
 
-  virtual bool AudioMuted() OVERRIDE {
+  virtual bool IsAudioMuted() const OVERRIDE {
     return AudioHandler::GetInstance()->IsMuted();
   }
 
@@ -51,7 +51,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return AudioHandler::GetInstance()->SetMuted(muted);
   }
 
-  virtual float VolumeLevel() OVERRIDE {
+  virtual float GetVolumeLevel() const OVERRIDE {
     return AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
   }
 

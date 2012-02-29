@@ -42,11 +42,11 @@ class VolumeView : public views::View,
 
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    icon_->SetToggled(delegate->AudioMuted());
+    icon_->SetToggled(delegate->IsAudioMuted());
     AddChildView(icon_);
 
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
-    slider_->SetValue(delegate->VolumeLevel());
+    slider_->SetValue(delegate->GetVolumeLevel());
     slider_->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
     AddChildView(slider_);
   }
@@ -63,11 +63,11 @@ class VolumeView : public views::View,
     CHECK(sender == icon_);
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    delegate->SetAudioMuted(!delegate->AudioMuted());
+    delegate->SetAudioMuted(!delegate->IsAudioMuted());
 
     // TODO(sad): Should the icon auto-update its state when mute/unmute happens
     // above?
-    icon_->SetToggled(delegate->AudioMuted());
+    icon_->SetToggled(delegate->IsAudioMuted());
   }
 
   // Overridden from views:SliderListener.
