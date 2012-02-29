@@ -60,7 +60,8 @@ void TapRecord::Update(const HardwareState& hwstate,
                        const set<short, kMaxTapFingers>& removed,
                        const set<short, kMaxFingers>& dead) {
   Log("Updating TapRecord.");
-  if (!t5r2_ && hwstate.finger_cnt != hwstate.touch_cnt) {
+  if (!t5r2_ && (hwstate.finger_cnt != hwstate.touch_cnt ||
+                 prev_hwstate.finger_cnt != prev_hwstate.touch_cnt)) {
     // switch to T5R2 mode
     t5r2_ = true;
     t5r2_touched_size_ = touched_.size();

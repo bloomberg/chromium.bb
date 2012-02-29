@@ -1061,6 +1061,12 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {{ 1.02, 0, 2, 5, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
     {{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
+    // 3f letting go, shouldn't tap at all
+    {{ 0.00, 0, 2, 3, &fs[0] },  -1, MkSet(91, 92), 0, 0, kFTB, false },  // 157
+    {{ 1.01, 0, 2, 3, &fs[0] },  -1, MkSet(91, 92), 0, 0, kIdl, false },
+    {{ 1.02, 0, 0, 2, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
+    {{ 1.03, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), 0, 0, kIdl, false },
+    {{ 1.04, 0, 0, 0, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
   };
   const size_t kSlowDoubleTapStartIndex = 114;
   const size_t kT5R2TestFirstIndex = 119;
