@@ -438,6 +438,7 @@ class Session {
       Point* location);
   Error* PostBrowserStartInit();
   Error* InitForWebsiteTesting();
+  Error* SetPrefs();
 
   scoped_ptr<InMemoryLog> session_log_;
   Logger logger_;

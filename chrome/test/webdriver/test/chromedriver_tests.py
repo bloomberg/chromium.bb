@@ -295,6 +295,21 @@ class DesiredCapabilitiesTest(ChromeDriverTest):
     # Will timeout if infobar appears.
     driver.execute_async_script('waitForGeo(arguments[0])')
 
+  def testPrefs(self):
+    """Test that chromedriver can set user preferences."""
+    driver = self.GetNewDriver({
+      'chrome.noWebsiteTestingDefaults': True,
+      'chrome.prefs': {
+        'profile.default_content_settings': {
+          'geolocation': 1
+        },
+      }
+    })
+    driver.get(self.GetTestDataUrl() + '/content_setting_test.html')
+    driver.set_script_timeout(10)
+    # Will timeout if infobar appears.
+    driver.execute_async_script('waitForGeo(arguments[0])')
+
 
 class DetachProcessTest(ChromeDriverTest):
 

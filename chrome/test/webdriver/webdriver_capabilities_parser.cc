@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,8 +38,10 @@ Capabilities::Capabilities()
     : command(CommandLine::NO_PROGRAM),
       detach(false),
       load_async(false),
+      local_state(new DictionaryValue()),
       native_events(false),
-      no_website_testing_defaults(false) {
+      no_website_testing_defaults(false),
+      prefs(new DictionaryValue()) {
   log_levels[LogType::kDriver] = kAllLogLevel;
 }
 
@@ -101,7 +103,9 @@ Error* CapabilitiesParser::Parse() {
     parser_map["chrome.detach"] = &CapabilitiesParser::ParseDetach;
     parser_map["chrome.extensions"] = &CapabilitiesParser::ParseExtensions;
     parser_map["chrome.loadAsync"] = &CapabilitiesParser::ParseLoadAsync;
+    parser_map["chrome.localState"] = &CapabilitiesParser::ParseLocalState;
     parser_map["chrome.nativeEvents"] = &CapabilitiesParser::ParseNativeEvents;
+    parser_map["chrome.prefs"] = &CapabilitiesParser::ParsePrefs;
     parser_map["chrome.profile"] = &CapabilitiesParser::ParseProfile;
     parser_map["chrome.switches"] = &CapabilitiesParser::ParseArgs;
     parser_map["chrome.noWebsiteTestingDefaults"] =
@@ -113,7 +117,9 @@ Error* CapabilitiesParser::Parse() {
     parser_map["detach"] = &CapabilitiesParser::ParseDetach;
     parser_map["extensions"] = &CapabilitiesParser::ParseExtensions;
     parser_map["loadAsync"] = &CapabilitiesParser::ParseLoadAsync;
+    parser_map["localState"] = &CapabilitiesParser::ParseLocalState;
     parser_map["nativeEvents"] = &CapabilitiesParser::ParseNativeEvents;
+    parser_map["prefs"] = &CapabilitiesParser::ParsePrefs;
     parser_map["profile"] = &CapabilitiesParser::ParseProfile;
     parser_map["noWebsiteTestingDefaults"] =
         &CapabilitiesParser::ParseNoWebsiteTestingDefaults;
@@ -214,6 +220,14 @@ Error* CapabilitiesParser::ParseLoadAsync(const Value* option) {
   return NULL;
 }
 
+Error* CapabilitiesParser::ParseLocalState(const Value* option) {
+  const base::DictionaryValue* local_state;
+  if (!option->GetAsDictionary(&local_state))
+    return CreateBadInputError("localState", Value::TYPE_DICTIONARY, option);
+  caps_->local_state.reset(local_state->DeepCopy());
+  return NULL;
+}
+
 Error* CapabilitiesParser::ParseLoggingPrefs(const base::Value* option) {
   const DictionaryValue* logging_prefs;
   if (!option->GetAsDictionary(&logging_prefs))
@@ -242,6 +256,14 @@ Error* CapabilitiesParser::ParseLoggingPrefs(const base::Value* option) {
 Error* CapabilitiesParser::ParseNativeEvents(const Value* option) {
   if (!option->GetAsBoolean(&caps_->native_events))
     return CreateBadInputError("nativeEvents", Value::TYPE_BOOLEAN, option);
+  return NULL;
+}
+
+Error* CapabilitiesParser::ParsePrefs(const Value* option) {
+  const base::DictionaryValue* prefs;
+  if (!option->GetAsDictionary(&prefs))
+    return CreateBadInputError("prefs", Value::TYPE_DICTIONARY, option);
+  caps_->prefs.reset(prefs->DeepCopy());
   return NULL;
 }
 

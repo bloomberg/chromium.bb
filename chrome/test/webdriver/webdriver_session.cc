@@ -1262,6 +1262,8 @@ Error* Session::SetPreference(
         pref,
         value,
         &error));
+    if (error)
+      error->AddDetails("Failed to set user pref '" + pref + "'");
   } else {
     RunSessionTask(base::Bind(
         &Automation::SetLocalStatePreference,
@@ -1269,6 +1271,8 @@ Error* Session::SetPreference(
         pref,
         value,
         &error));
+    if (error)
+      error->AddDetails("Failed to set local state pref '" + pref + "'");
   }
   return error;
 }
@@ -1824,6 +1828,8 @@ Error* Session::PostBrowserStartInit() {
   Error* error = NULL;
   if (!capabilities_.no_website_testing_defaults)
     error = InitForWebsiteTesting();
+  if (!error)
+    error = SetPrefs();
   if (error)
     return error;
 
@@ -1861,6 +1867,28 @@ Error* Session::InitForWebsiteTesting() {
       "profile.default_content_settings",
       true /* is_user_pref */,
       default_content_settings);
+}
+
+Error* Session::SetPrefs() {
+  DictionaryValue::key_iterator iter = capabilities_.prefs->begin_keys();
+  for (; iter != capabilities_.prefs->end_keys(); ++iter) {
+    Value* value;
+    capabilities_.prefs->GetWithoutPathExpansion(*iter, &value);
+    Error* error = SetPreference(*iter, true /* is_user_pref */,
+                                 value->DeepCopy());
+    if (error)
+      return error;
+  }
+  iter = capabilities_.local_state->begin_keys();
+  for (; iter != capabilities_.local_state->end_keys(); ++iter) {
+    Value* value;
+    capabilities_.local_state->GetWithoutPathExpansion(*iter, &value);
+    Error* error = SetPreference(*iter, false /* is_user_pref */,
+                                 value->DeepCopy());
+    if (error)
+      return error;
+  }
+  return NULL;
 }
 
 }  // namespace webdriver

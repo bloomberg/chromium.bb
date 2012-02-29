@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/test/webdriver/webdriver_logging.h"
 
 namespace base {
@@ -46,6 +47,11 @@ struct Capabilities {
   // Whether Chrome should not block when loading.
   bool load_async;
 
+  // Local state preferences to apply after Chrome starts but during session
+  // initialization. These preferences apply to all profiles in the user
+  // data directory that Chrome is running in.
+  scoped_ptr<base::DictionaryValue> local_state;
+
   // The minimum level to log for each log type.
   LogLevel log_levels[LogType::kNum];
 
@@ -59,6 +65,10 @@ struct Capabilities {
   // If this is set to true, ChromeDriver will not modify Chrome's default
   // behavior.
   bool no_website_testing_defaults;
+
+  // Profile-level preferences to apply after Chrome starts but during session
+  // initialization.
+  scoped_ptr<base::DictionaryValue> prefs;
 
   // Path to a custom profile to use.
   FilePath profile;
@@ -90,9 +100,11 @@ class CapabilitiesParser {
   Error* ParseDetach(const base::Value* option);
   Error* ParseExtensions(const base::Value* option);
   Error* ParseLoadAsync(const base::Value* option);
+  Error* ParseLocalState(const base::Value* option);
   Error* ParseLoggingPrefs(const base::Value* option);
   Error* ParseNativeEvents(const base::Value* option);
   Error* ParseNoProxy(const base::Value* option);
+  Error* ParsePrefs(const base::Value* option);
   Error* ParseProfile(const base::Value* option);
   Error* ParseProxy(const base::Value* option);
   Error* ParseProxyAutoDetect(const base::DictionaryValue* options);
