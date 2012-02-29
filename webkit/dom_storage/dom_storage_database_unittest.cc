@@ -14,10 +14,8 @@
 
 namespace dom_storage {
 
-DomStorageDatabase::DomStorageDatabase()
-    : db_(NULL),
-      failed_to_open_(false),
-      tried_to_recreate_(false) {
+DomStorageDatabase::DomStorageDatabase() {
+  Init();
 }
 
 void CreateV1Table(sql::Connection* db) {

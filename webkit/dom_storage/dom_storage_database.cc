@@ -27,17 +27,20 @@ sql::ErrorDelegate* GetErrorHandlerForDomStorageDatabase() {
 namespace dom_storage {
 
 DomStorageDatabase::DomStorageDatabase(const FilePath& file_path)
-    : file_path_(file_path),
-      db_(NULL),
-      failed_to_open_(false),
-      tried_to_recreate_(false),
-      known_to_be_empty_(false) {
+    : file_path_(file_path) {
   // Note: in normal use we should never get an empty backing path here.
   // However, the unit test for this class defines another constructor
   // that will bypass this check to allow an empty path that signifies
   // we should operate on an in-memory database for performance/reliability
   // reasons.
   DCHECK(!file_path_.empty());
+  Init();
+}
+
+void DomStorageDatabase::Init() {
+  failed_to_open_ = false;
+  tried_to_recreate_ = false;
+  known_to_be_empty_ = false;
 }
 
 DomStorageDatabase::~DomStorageDatabase() {

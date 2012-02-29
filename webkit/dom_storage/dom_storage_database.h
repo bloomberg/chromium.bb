@@ -102,6 +102,9 @@ class DomStorageDatabase {
   DomStorageDatabase();
 #endif
 
+  // Initialization code shared between the two constructors of this class.
+  void Init();
+
   // Path to the database on disk.
   FilePath file_path_;
   scoped_ptr<sql::Connection> db_;
