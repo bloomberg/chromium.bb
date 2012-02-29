@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/font_list_async.h"
+#include "content/public/browser/font_list_async.h"
 
 #include "base/bind.h"
 #include "base/values.h"
@@ -15,30 +15,24 @@ namespace {
 
 // Just executes the given callback with the parameter.
 void ReturnFontListToOriginalThread(
-    const base::Callback<void(scoped_refptr<FontListResult>)>& callback,
-    scoped_refptr<FontListResult> result) {
-  callback.Run(result);
+    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback,
+    scoped_ptr<base::ListValue> result) {
+  callback.Run(result.Pass());
 }
 
 void GetFontListOnFileThread(
     BrowserThread::ID calling_thread_id,
-    const base::Callback<void(scoped_refptr<FontListResult>)>& callback) {
-  scoped_refptr<FontListResult> result(new FontListResult);
-  result->list.reset(GetFontList_SlowBlocking());
+    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
+  scoped_ptr<base::ListValue> result(GetFontList_SlowBlocking());
   BrowserThread::PostTask(calling_thread_id, FROM_HERE,
-      base::Bind(&ReturnFontListToOriginalThread, callback, result));
+      base::Bind(&ReturnFontListToOriginalThread, callback,
+                 base::Passed(&result)));
 }
 
 }  // namespace
 
-FontListResult::FontListResult() {
-}
-
-FontListResult::~FontListResult() {
-}
-
 void GetFontListAsync(
-    const base::Callback<void(scoped_refptr<FontListResult>)>& callback) {
+    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
   BrowserThread::ID id;
   bool well_known_thread = BrowserThread::GetCurrentThreadIdentifier(&id);
   DCHECK(well_known_thread)

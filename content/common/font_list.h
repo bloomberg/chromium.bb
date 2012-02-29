@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_FONT_LIST_H_
 #define CONTENT_COMMON_FONT_LIST_H_
 
+#include "base/memory/scoped_ptr.h"
+
 namespace base {
 class ListValue;
 }
@@ -21,7 +23,7 @@ namespace content {
 //
 // Most callers will want to use the GetFontListAsync function in
 // content/browser/font_list_async.h which does an asynchronous call.
-base::ListValue* GetFontList_SlowBlocking();
+scoped_ptr<base::ListValue> GetFontList_SlowBlocking();
 
 }  // namespace content
 

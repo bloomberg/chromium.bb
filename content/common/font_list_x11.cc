@@ -14,8 +14,8 @@
 
 namespace content {
 
-ListValue* GetFontList_SlowBlocking() {
-  ListValue* font_list = new ListValue;
+scoped_ptr<ListValue> GetFontList_SlowBlocking() {
+  scoped_ptr<ListValue> font_list(new ListValue);
 
   PangoFontMap* font_map = ::pango_cairo_font_map_get_default();
   PangoFontFamily** families = NULL;
@@ -37,7 +37,7 @@ ListValue* GetFontList_SlowBlocking() {
     font_list->Append(font_item);
   }
 
-  return font_list;
+  return font_list.Pass();
 }
 
 }  // namespace content

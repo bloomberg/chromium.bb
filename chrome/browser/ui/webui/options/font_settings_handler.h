@@ -6,9 +6,13 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_FONT_SETTINGS_HANDLER_H_
 #pragma once
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "content/browser/font_list_async.h"
+
+namespace base {
+class ListValue;
+}
 
 // Font settings overlay page UI handler.
 class FontSettingsHandler : public OptionsPageUIHandler {
@@ -31,7 +35,7 @@ class FontSettingsHandler : public OptionsPageUIHandler {
  private:
   void HandleFetchFontsData(const ListValue* args);
 
-  void FontsListHasLoaded(scoped_refptr<content::FontListResult> list);
+  void FontsListHasLoaded(scoped_ptr<base::ListValue> list);
 
   void SetUpStandardFontSample();
   void SetUpSerifFontSample();

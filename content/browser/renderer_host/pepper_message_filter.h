@@ -14,12 +14,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/time.h"
-#include "content/browser/font_list_async.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/stream_socket.h"
 #include "ppapi/c/pp_stdint.h"
 
+class ListValue;
 class PepperTCPServerSocket;
 class PepperTCPSocket;
 class PepperUDPSocket;
@@ -175,7 +175,7 @@ class PepperMessageFilter : public content::BrowserMessageFilter {
 
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,
-                               scoped_refptr<content::FontListResult> result);
+                               scoped_ptr<base::ListValue> result);
 
   uint32 GenerateSocketID();
 

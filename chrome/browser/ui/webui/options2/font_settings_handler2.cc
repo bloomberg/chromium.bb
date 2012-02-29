@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/options2/font_settings_utils2.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/font_list_async.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
@@ -108,7 +109,7 @@ void FontSettingsHandler::HandleFetchFontsData(const ListValue* args) {
 }
 
 void FontSettingsHandler::FontsListHasLoaded(
-    scoped_refptr<content::FontListResult> list) {
+    scoped_ptr<base::ListValue> list) {
   ListValue encoding_list;
   const std::vector<CharacterEncoding::EncodingInfo>* encodings;
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
@@ -146,7 +147,7 @@ void FontSettingsHandler::FontsListHasLoaded(
   selected_values.Append(Value::CreateStringValue(font_encoding_.GetValue()));
 
   web_ui()->CallJavascriptFunction("FontSettings.setFontsData",
-                                   *list->list.get(), encoding_list,
+                                   *list.get(), encoding_list,
                                    selected_values);
 }
 

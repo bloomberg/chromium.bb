@@ -12,9 +12,9 @@
 
 namespace content {
 
-ListValue* GetFontList_SlowBlocking() {
+scoped_ptr<ListValue> GetFontList_SlowBlocking() {
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
-  ListValue* font_list = new ListValue;
+  scoped_ptr<ListValue> font_list(new ListValue);
   NSFontManager* fontManager = [[[NSFontManager alloc] init] autorelease];
   NSArray* fonts = [fontManager availableFontFamilies];
   for (NSString* family_name in fonts) {
@@ -27,7 +27,7 @@ ListValue* GetFontList_SlowBlocking() {
     font_item->Append(Value::CreateStringValue(loc_family));
     font_list->Append(font_item);
   }
-  return font_list;
+  return font_list.Pass();
 }
 
 }  // namespace content

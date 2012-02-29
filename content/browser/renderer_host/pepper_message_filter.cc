@@ -13,7 +13,6 @@
 #include "base/process_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
-#include "content/browser/font_list_async.h"
 #include "content/browser/renderer_host/pepper_tcp_server_socket.h"
 #include "content/browser/renderer_host/pepper_tcp_socket.h"
 #include "content/browser/renderer_host/pepper_udp_socket.h"
@@ -22,6 +21,7 @@
 #include "content/common/pepper_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/font_list_async.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
@@ -648,13 +648,11 @@ void PepperMessageFilter::OnTCPServerAccept(uint32 real_socket_id) {
 
 void PepperMessageFilter::GetFontFamiliesComplete(
     IPC::Message* reply_msg,
-    scoped_refptr<content::FontListResult> result) {
-  ListValue* input = result->list.get();
-
+    scoped_ptr<base::ListValue> result) {
   std::string output;
-  for (size_t i = 0; i < input->GetSize(); i++) {
-    ListValue* cur_font;
-    if (!input->GetList(i, &cur_font))
+  for (size_t i = 0; i < result->GetSize(); i++) {
+    base::ListValue* cur_font;
+    if (!result->GetList(i, &cur_font))
       continue;
 
     // Each entry in the list is actually a list of (font name, localized name).
