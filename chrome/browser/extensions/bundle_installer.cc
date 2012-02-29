@@ -187,7 +187,7 @@ string16 BundleInstaller::GetHeadingTextFor(Item::State state) const {
   return l10n_util::GetStringUTF16(msg_id);
 }
 
-#if !defined(TOOLKIT_GTK)
+#if defined(OS_MACOSX)
 // static
 void BundleInstaller::ShowInstalledBubble(
     const BundleInstaller* bundle, Browser* browser) {
