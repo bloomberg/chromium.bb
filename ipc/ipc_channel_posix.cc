@@ -479,280 +479,47 @@ bool Channel::ChannelImpl::Connect() {
 }
 
 bool Channel::ChannelImpl::ProcessIncomingMessages() {
-  ssize_t bytes_read = 0;
-
-  struct msghdr msg = {0};
-  struct iovec iov = {input_buf_, Channel::kReadBufferSize};
-
-  msg.msg_iovlen = 1;
-  msg.msg_control = input_cmsg_buf_;
-
   for (;;) {
-    msg.msg_iov = &iov;
+    if (pipe_ == -1)
+      return false;
 
-    if (bytes_read == 0) {
-      if (pipe_ == -1)
-        return false;
+    const char* p = NULL;
+    const char* end = NULL;
+    if (!ReadDataFromPipe(&p, &end))
+      return false;  // Pipe error.
+    if (!p)
+      return true;  // No data waiting.
 
-      // Read from pipe.
-      // recvmsg() returns 0 if the connection has closed or EAGAIN if no data
-      // is waiting on the pipe.
-#if defined(IPC_USES_READWRITE)
-      if (fd_pipe_ >= 0) {
-        bytes_read = HANDLE_EINTR(read(pipe_, input_buf_,
-                                       Channel::kReadBufferSize));
-        msg.msg_controllen = 0;
-      } else
-#endif  // IPC_USES_READWRITE
-      {
-        msg.msg_controllen = sizeof(input_cmsg_buf_);
-        bytes_read = HANDLE_EINTR(recvmsg(pipe_, &msg, MSG_DONTWAIT));
-      }
-      if (bytes_read < 0) {
-        if (errno == EAGAIN) {
-          return true;
-#if defined(OS_MACOSX)
-        } else if (errno == EPERM) {
-          // On OSX, reading from a pipe with no listener returns EPERM
-          // treat this as a special case to prevent spurious error messages
-          // to the console.
-          return false;
-#endif  // OS_MACOSX
-        } else if (errno == ECONNRESET || errno == EPIPE) {
-          return false;
-        } else {
-          PLOG(ERROR) << "pipe error (" << pipe_ << ")";
-          return false;
-        }
-      } else if (bytes_read == 0) {
-        // The pipe has closed...
-        return false;
-      }
-    }
-    DCHECK(bytes_read);
-
-    CloseClientFileDescriptor();
-
-    // a pointer to an array of |num_wire_fds| file descriptors from the read
-    const int* wire_fds = NULL;
-    unsigned num_wire_fds = 0;
-
-    // walk the list of control messages and, if we find an array of file
-    // descriptors, save a pointer to the array
-
-    // This next if statement is to work around an OSX issue where
-    // CMSG_FIRSTHDR will return non-NULL in the case that controllen == 0.
-    // Here's a test case:
-    //
-    // int main() {
-    // struct msghdr msg;
-    //   msg.msg_control = &msg;
-    //   msg.msg_controllen = 0;
-    //   if (CMSG_FIRSTHDR(&msg))
-    //     printf("Bug found!\n");
-    // }
-    if (msg.msg_controllen > 0) {
-      // On OSX, CMSG_FIRSTHDR doesn't handle the case where controllen is 0
-      // and will return a pointer into nowhere.
-      for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg); cmsg;
-           cmsg = CMSG_NXTHDR(&msg, cmsg)) {
-        if (cmsg->cmsg_level == SOL_SOCKET &&
-            cmsg->cmsg_type == SCM_RIGHTS) {
-          const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
-          DCHECK_EQ(0U, payload_len % sizeof(int));
-          wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
-          num_wire_fds = payload_len / 4;
-
-          if (msg.msg_flags & MSG_CTRUNC) {
-            LOG(ERROR) << "SCM_RIGHTS message was truncated"
-                       << " cmsg_len:" << cmsg->cmsg_len
-                       << " fd:" << pipe_;
-            for (unsigned i = 0; i < num_wire_fds; ++i)
-              if (HANDLE_EINTR(close(wire_fds[i])) < 0)
-                PLOG(ERROR) << "close " << i;
-            return false;
-          }
-          break;
-        }
-      }
-    }
-
-    // Process messages from input buffer.
-    const char *p;
-    const char *end;
-    if (input_overflow_buf_.empty()) {
-      p = input_buf_;
-      end = p + bytes_read;
-    } else {
-      if (input_overflow_buf_.size() > (kMaximumMessageSize - bytes_read)) {
-        input_overflow_buf_.clear();
-        LOG(ERROR) << "IPC message is too big";
-        return false;
-      }
-      input_overflow_buf_.append(input_buf_, bytes_read);
-      p = input_overflow_buf_.data();
-      end = p + input_overflow_buf_.size();
-    }
-
-    // A pointer to an array of |num_fds| file descriptors which includes any
-    // fds that have spilled over from a previous read.
-    const int* fds = NULL;
-    unsigned num_fds = 0;
-    unsigned fds_i = 0;  // the index of the first unused descriptor
-
-    if (input_overflow_fds_.empty()) {
-      fds = wire_fds;
-      num_fds = num_wire_fds;
-    } else {
-      if (num_wire_fds > 0) {
-        const size_t prev_size = input_overflow_fds_.size();
-        input_overflow_fds_.resize(prev_size + num_wire_fds);
-        memcpy(&input_overflow_fds_[prev_size], wire_fds,
-               num_wire_fds * sizeof(int));
-      }
-      fds = &input_overflow_fds_[0];
-      num_fds = input_overflow_fds_.size();
-    }
-
+    // Dispatch all complete messages in the data buffer.
     while (p < end) {
       const char* message_tail = Message::FindNext(p, end);
       if (message_tail) {
         int len = static_cast<int>(message_tail - p);
         Message m(p, len);
-        const uint16 header_fds = m.header()->num_fds;
-        if (header_fds) {
-          // the message has file descriptors
-          const char* error = NULL;
-          if (header_fds > num_fds - fds_i) {
-            // the message has been completely received, but we didn't get
-            // enough file descriptors.
-#if defined(IPC_USES_READWRITE)
-            char dummy;
-            struct iovec fd_pipe_iov = { &dummy, 1 };
-            msg.msg_iov = &fd_pipe_iov;
-            msg.msg_controllen = sizeof(input_cmsg_buf_);
-            ssize_t n = HANDLE_EINTR(recvmsg(fd_pipe_, &msg, MSG_DONTWAIT));
-            if (n == 1 && msg.msg_controllen > 0) {
-              for (struct cmsghdr* cmsg = CMSG_FIRSTHDR(&msg); cmsg;
-                   cmsg = CMSG_NXTHDR(&msg, cmsg)) {
-                if (cmsg->cmsg_level == SOL_SOCKET &&
-                    cmsg->cmsg_type == SCM_RIGHTS) {
-                  const unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
-                  DCHECK_EQ(0U, payload_len % sizeof(int));
-                  wire_fds = reinterpret_cast<int*>(CMSG_DATA(cmsg));
-                  num_wire_fds = payload_len / 4;
+        if (!PopulateMessageFileDescriptors(&m))
+          return false;
 
-                  if (msg.msg_flags & MSG_CTRUNC) {
-                    LOG(ERROR) << "SCM_RIGHTS message was truncated"
-                               << " cmsg_len:" << cmsg->cmsg_len
-                               << " fd:" << pipe_;
-                    for (unsigned i = 0; i < num_wire_fds; ++i)
-                      if (HANDLE_EINTR(close(wire_fds[i])) < 0)
-                        PLOG(ERROR) << "close " << i;
-                    return false;
-                  }
-                  break;
-                }
-              }
-              if (input_overflow_fds_.empty()) {
-                fds = wire_fds;
-                num_fds = num_wire_fds;
-              } else {
-                if (num_wire_fds > 0) {
-                  const size_t prev_size = input_overflow_fds_.size();
-                  input_overflow_fds_.resize(prev_size + num_wire_fds);
-                  memcpy(&input_overflow_fds_[prev_size], wire_fds,
-                         num_wire_fds * sizeof(int));
-                }
-                fds = &input_overflow_fds_[0];
-                num_fds = input_overflow_fds_.size();
-              }
-            }
-            if (header_fds > num_fds - fds_i)
-#endif  // IPC_USES_READWRITE
-              error = "Message needs unreceived descriptors";
-          }
-
-          if (header_fds >
-              FileDescriptorSet::kMaxDescriptorsPerMessage) {
-            // There are too many descriptors in this message
-            error = "Message requires an excessive number of descriptors";
-          }
-
-          if (error) {
-            LOG(WARNING) << error
-                         << " channel:" << this
-                         << " message-type:" << m.type()
-                         << " header()->num_fds:" << header_fds
-                         << " num_fds:" << num_fds
-                         << " fds_i:" << fds_i;
-#if defined(CHROMIUM_SELINUX)
-            LOG(WARNING) << "In the case of SELinux this can be caused when "
-                            "using a --user-data-dir to which the default "
-                            "policy doesn't give the renderer access to. ";
-#endif  // CHROMIUM_SELINUX
-            // close the existing file descriptors so that we don't leak them
-            for (unsigned i = fds_i; i < num_fds; ++i)
-              if (HANDLE_EINTR(close(fds[i])) < 0)
-                PLOG(ERROR) << "close " << i;
-            input_overflow_fds_.clear();
-            // abort the connection
-            return false;
-          }
-
-          m.file_descriptor_set()->SetDescriptors(
-              &fds[fds_i], header_fds);
-          fds_i += header_fds;
-        }
         DVLOG(2) << "received message on channel @" << this
                  << " with type " << m.type() << " on fd " << pipe_;
-        if (IsHelloMessage(&m)) {
-          // The Hello message contains only the process id.
-          void *iter = NULL;
-          int pid;
-          if (!m.ReadInt(&iter, &pid)) {
-            NOTREACHED();
-          }
-#if defined(IPC_USES_READWRITE)
-          if (mode_ & MODE_SERVER_FLAG) {
-            // With IPC_USES_READWRITE, the Hello message from the client to the
-            // server also contains the fd_pipe_, which  will be used for all
-            // subsequent file descriptor passing.
-            DCHECK_EQ(m.file_descriptor_set()->size(), 1U);
-            base::FileDescriptor descriptor;
-            if (!m.ReadFileDescriptor(&iter, &descriptor)) {
-              NOTREACHED();
-            }
-            fd_pipe_ = descriptor.fd;
-            CHECK(descriptor.auto_close);
-          }
-#endif  // IPC_USES_READWRITE
-          listener_->OnChannelConnected(pid);
-        } else {
+        if (IsHelloMessage(&m))
+          HandleHelloMessage(m);
+        else
           listener_->OnMessageReceived(m);
-        }
         p = message_tail;
       } else {
         // Last message is partial.
         break;
       }
-      input_overflow_fds_ = std::vector<int>(&fds[fds_i], &fds[num_fds]);
-      fds_i = 0;
-      fds = vector_as_array(&input_overflow_fds_);
-      num_fds = input_overflow_fds_.size();
     }
     input_overflow_buf_.assign(p, end - p);
-    input_overflow_fds_ = std::vector<int>(&fds[fds_i], &fds[num_fds]);
 
-    // When the input data buffer is empty, the overflow fds should be too. If
-    // this is not the case, we probably have a rogue renderer which is trying
-    // to fill our descriptor table.
-    if (input_overflow_buf_.empty() && !input_overflow_fds_.empty()) {
+    // When the input data buffer is empty, the fds should be too. If this is
+    // not the case, we probably have a rogue renderer which is trying to fill
+    // our descriptor table.
+    if (input_overflow_buf_.empty() && !input_fds_.empty()) {
       // We close these descriptors in Close()
       return false;
     }
-
-    bytes_read = 0;  // Get more data.
   }
 }
 
@@ -1006,12 +773,7 @@ void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
   }
 
   // Close any outstanding, received file descriptors.
-  for (std::vector<int>::iterator
-       i = input_overflow_fds_.begin(); i != input_overflow_fds_.end(); ++i) {
-    if (HANDLE_EINTR(close(*i)) < 0)
-      PLOG(ERROR) << "close";
-  }
-  input_overflow_fds_.clear();
+  ClearInputFDs();
 }
 
 // static
@@ -1041,9 +803,9 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
       // We already have a connection. We only handle one at a time.
       // close our new descriptor.
       if (HANDLE_EINTR(shutdown(new_pipe, SHUT_RDWR)) < 0)
-        PLOG(ERROR) << "shutdown " << pipe_name_;
+        DPLOG(ERROR) << "shutdown " << pipe_name_;
       if (HANDLE_EINTR(close(new_pipe)) < 0)
-        PLOG(ERROR) << "close " << pipe_name_;
+        DPLOG(ERROR) << "close " << pipe_name_;
       listener_->OnChannelDenied();
       return;
     }
@@ -1053,12 +815,12 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
       // Verify that the IPC channel peer is running as the same user.
       uid_t client_euid;
       if (!GetClientEuid(&client_euid)) {
-        LOG(ERROR) << "Unable to query client euid";
+        DLOG(ERROR) << "Unable to query client euid";
         ResetToAcceptingConnectionState();
         return;
       }
       if (client_euid != geteuid()) {
-        LOG(WARNING) << "Client euid is not authorised";
+        DLOG(WARNING) << "Client euid is not authorised";
         ResetToAcceptingConnectionState();
         return;
       }
@@ -1175,6 +937,203 @@ bool Channel::ChannelImpl::IsHelloMessage(const Message* m) const {
   return m->routing_id() == MSG_ROUTING_NONE && m->type() == HELLO_MESSAGE_TYPE;
 }
 
+bool Channel::ChannelImpl::ReadDataFromPipe(const char** buffer_begin,
+                                            const char** buffer_end) {
+  struct msghdr msg = {0};
+
+  struct iovec iov = {input_buf_, Channel::kReadBufferSize};
+  msg.msg_iov = &iov;
+  msg.msg_iovlen = 1;
+
+  msg.msg_control = input_cmsg_buf_;
+
+  // recvmsg() returns 0 if the connection has closed or EAGAIN if no data
+  // is waiting on the pipe.
+  ssize_t bytes_read = 0;
+#if defined(IPC_USES_READWRITE)
+  if (fd_pipe_ >= 0) {
+    bytes_read = HANDLE_EINTR(read(pipe_, input_buf_,
+                                   Channel::kReadBufferSize));
+    msg.msg_controllen = 0;
+  } else
+#endif  // IPC_USES_READWRITE
+  {
+    msg.msg_controllen = sizeof(input_cmsg_buf_);
+    bytes_read = HANDLE_EINTR(recvmsg(pipe_, &msg, MSG_DONTWAIT));
+  }
+  if (bytes_read < 0) {
+    if (errno == EAGAIN) {
+      *buffer_begin = *buffer_end = NULL;  // Signal no data was read.
+      return true;
+#if defined(OS_MACOSX)
+    } else if (errno == EPERM) {
+      // On OSX, reading from a pipe with no listener returns EPERM
+      // treat this as a special case to prevent spurious error messages
+      // to the console.
+      return false;
+#endif  // OS_MACOSX
+    } else if (errno == ECONNRESET || errno == EPIPE) {
+      return false;
+    } else {
+      PLOG(ERROR) << "pipe error (" << pipe_ << ")";
+      return false;
+    }
+  } else if (bytes_read == 0) {
+    // The pipe has closed...
+    return false;
+  }
+  DCHECK(bytes_read);
+
+  CloseClientFileDescriptor();
+
+  // Read any file descriptors from the message.
+  if (!ExtractFileDescriptorsFromMsghdr(&msg))
+    return false;
+
+  // Possibly combine with the overflow buffer to make a larger buffer.
+  if (input_overflow_buf_.empty()) {
+    *buffer_begin = input_buf_;
+    *buffer_end = *buffer_begin + bytes_read;
+  } else {
+    if (input_overflow_buf_.size() > (kMaximumMessageSize - bytes_read)) {
+      input_overflow_buf_.clear();
+      LOG(ERROR) << "IPC message is too big";
+      return false;
+    }
+    input_overflow_buf_.append(input_buf_, bytes_read);
+    *buffer_begin = input_overflow_buf_.data();
+    *buffer_end = *buffer_begin + input_overflow_buf_.size();
+  }
+  return true;
+}
+
+#if defined(IPC_USES_READWRITE)
+bool Channel::ChannelImpl::ReadFileDescriptorsFromFDPipe() {
+  char dummy;
+  struct iovec fd_pipe_iov = { &dummy, 1 };
+
+  struct msghdr msg = { 0 };
+  msg.msg_iov = &fd_pipe_iov;
+  msg.msg_iovlen = 1;
+  msg.msg_control = input_cmsg_buf_;
+  msg.msg_controllen = sizeof(input_cmsg_buf_);
+  ssize_t bytes_received = HANDLE_EINTR(recvmsg(fd_pipe_, &msg, MSG_DONTWAIT));
+
+  if (bytes_received != 1)
+    return true;  // No message waiting.
+
+  if (!ExtractFileDescriptorsFromMsghdr(&msg))
+    return false;
+  return true;
+}
+#endif
+
+bool Channel::ChannelImpl::PopulateMessageFileDescriptors(Message* msg) {
+  uint16 header_fds = msg->header()->num_fds;
+  if (!header_fds)
+    return true;  // Nothing to do.
+
+  // The message has file descriptors.
+  const char* error = NULL;
+  if (header_fds > input_fds_.size()) {
+    // The message has been completely received, but we didn't get
+    // enough file descriptors.
+#if defined(IPC_USES_READWRITE)
+    if (!ReadFileDescriptorsFromFDPipe())
+      return false;
+    if (header_fds > input_fds_.size())
+#endif  // IPC_USES_READWRITE
+      error = "Message needs unreceived descriptors";
+  }
+
+  if (header_fds > FileDescriptorSet::kMaxDescriptorsPerMessage)
+    error = "Message requires an excessive number of descriptors";
+
+  if (error) {
+    LOG(WARNING) << error
+                 << " channel:" << this
+                 << " message-type:" << msg->type()
+                 << " header()->num_fds:" << header_fds;
+#if defined(CHROMIUM_SELINUX)
+    LOG(WARNING) << "In the case of SELinux this can be caused when "
+                    "using a --user-data-dir to which the default "
+                    "policy doesn't give the renderer access to. ";
+#endif  // CHROMIUM_SELINUX
+    // Abort the connection.
+    ClearInputFDs();
+    return false;
+  }
+
+  msg->file_descriptor_set()->SetDescriptors(&input_fds_.front(),
+                                             header_fds);
+  input_fds_.erase(input_fds_.begin(), input_fds_.begin() + header_fds);
+  return true;
+}
+
+bool Channel::ChannelImpl::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
+  // Check that there are any control messages. On OSX, CMSG_FIRSTHDR will
+  // return an invalid non-NULL pointer in the case that controllen == 0.
+  if (msg->msg_controllen == 0)
+    return true;
+
+  for (cmsghdr* cmsg = CMSG_FIRSTHDR(msg);
+       cmsg;
+       cmsg = CMSG_NXTHDR(msg, cmsg)) {
+    if (cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_RIGHTS) {
+      unsigned payload_len = cmsg->cmsg_len - CMSG_LEN(0);
+      DCHECK_EQ(0U, payload_len % sizeof(int));
+      const int* file_descriptors = reinterpret_cast<int*>(CMSG_DATA(cmsg));
+      unsigned num_file_descriptors = payload_len / 4;
+      input_fds_.insert(input_fds_.end(),
+                        file_descriptors,
+                        file_descriptors + num_file_descriptors);
+
+      // Check this after adding the FDs so we don't leak them.
+      if (msg->msg_flags & MSG_CTRUNC) {
+        ClearInputFDs();
+        return false;
+      }
+
+      return true;
+    }
+  }
+
+  // No file descriptors found, but that's OK.
+  return true;
+}
+
+void Channel::ChannelImpl::ClearInputFDs() {
+  while (!input_fds_.empty()) {
+    if (HANDLE_EINTR(close(input_fds_.front())) < 0)
+      PLOG(ERROR) << "close ";
+    input_fds_.pop_front();
+  }
+}
+
+void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
+  // The Hello message contains only the process id.
+  void *iter = NULL;
+  int pid;
+  if (!msg.ReadInt(&iter, &pid))
+    NOTREACHED();
+
+#if defined(IPC_USES_READWRITE)
+  if (mode_ & MODE_SERVER_FLAG) {
+    // With IPC_USES_READWRITE, the Hello message from the client to the
+    // server also contains the fd_pipe_, which  will be used for all
+    // subsequent file descriptor passing.
+    DCHECK_EQ(msg.file_descriptor_set()->size(), 1U);
+    base::FileDescriptor descriptor;
+    if (!msg.ReadFileDescriptor(&iter, &descriptor)) {
+      NOTREACHED();
+    }
+    fd_pipe_ = descriptor.fd;
+    CHECK(descriptor.auto_close);
+  }
+#endif  // IPC_USES_READWRITE
+  listener_->OnChannelConnected(pid);
+}
+
 void Channel::ChannelImpl::Close() {
   // Close can be called multiple time, so we need to make sure we're
   // idempotent.
@@ -1187,7 +1146,7 @@ void Channel::ChannelImpl::Close() {
   }
   if (server_listen_pipe_ != -1) {
     if (HANDLE_EINTR(close(server_listen_pipe_)) < 0)
-      PLOG(ERROR) << "close " << server_listen_pipe_;
+      DPLOG(ERROR) << "close " << server_listen_pipe_;
     server_listen_pipe_ = -1;
     // Unregister libevent for the listening socket and close it.
     server_listen_connection_watcher_.StopWatchingFileDescriptor();

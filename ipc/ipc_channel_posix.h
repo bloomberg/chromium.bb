@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,6 +81,48 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   void QueueHelloMessage();
   bool IsHelloMessage(const Message* m) const;
 
+  // Reads data from the "regular" (non FD) pipe into the input buffers. The
+  // two output params will identify the data received.
+  //
+  // On success, returns true. If there is no data waiting, the pointers will
+  // both be set to NULL. Otherwise, they'll indicate the data read. This will
+  // be inside the input_buf_ for short messages, and for long messages will
+  // automatically spill into the input_overflow_buf_. When in non-READWRITE
+  // mode this will also load any handles from the message into input_fds_.
+  //
+  // On failure, returns false. This means there was some kind of pipe error
+  // and we should not continue.
+  bool ReadDataFromPipe(const char** begin, const char** end);
+
+#if defined(IPC_USES_READWRITE)
+  // Reads the next message from the fd_pipe_ and appends them to the
+  // input_fds_ queue. Returns false if there was a message receiving error.
+  // True means there was a message and it was processed properly, or there was
+  // no messages.
+  bool ReadFileDescriptorsFromFDPipe();
+#endif
+
+  // Loads the required file desciptors into the given message. Returns true
+  // on success. False means a fatal channel error.
+  //
+  // This will read from the input_fds_ and read more handles from the FD
+  // pipe if necessary.
+  bool PopulateMessageFileDescriptors(Message* msg);
+
+  // Finds the set of file descriptors in the given message.  On success,
+  // appends the descriptors to the input_fds_ member and returns true
+  //
+  // Returns false if the message was truncated. In this case, any handles that
+  // were sent will be closed.
+  bool ExtractFileDescriptorsFromMsghdr(msghdr* msg);
+
+  // Closes all handles in the input_fds_ list and clears the list. This is
+  // used to clean up handles in error conditions to avoid leaking the handles.
+  void ClearInputFDs();
+
+  // Handles the first message sent over the pipe which contains setup info.
+  void HandleHelloMessage(const Message& msg);
+
   // MessageLoopForIO::Watcher implementation.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
@@ -128,8 +170,13 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // Messages to be sent are queued here.
   std::queue<Message*> output_queue_;
 
-  // We read from the pipe into this buffer
+  // We read from the pipe into this buffer. Managed by ReadDataFromPipe, do
+  // not access directly outside that function.
   char input_buf_[Channel::kReadBufferSize];
+
+  // Large messages that span multiple pipe buffers, get built-up using
+  // this buffer.
+  std::string input_overflow_buf_;
 
   // We assume a worst case: kReadBufferSize bytes of messages, where each
   // message has no payload and a full complement of descriptors.
@@ -137,18 +184,24 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
       (Channel::kReadBufferSize / sizeof(IPC::Message::Header)) *
       FileDescriptorSet::kMaxDescriptorsPerMessage;
 
-  // This is a control message buffer large enough to hold kMaxReadFDs
+  // Buffer size for file descriptors used for recvmsg. On Mac the CMSG macros
+  // don't seem to be constant so we have to pick a "large enough" value.
 #if defined(OS_MACOSX)
-  // TODO(agl): OSX appears to have non-constant CMSG macros!
-  char input_cmsg_buf_[1024];
+  static const size_t kMaxReadFDBuffer = 1024;
 #else
-  char input_cmsg_buf_[CMSG_SPACE(sizeof(int) * kMaxReadFDs)];
+  static const size_t kMaxReadFDBuffer = CMSG_SPACE(sizeof(int) * kMaxReadFDs);
 #endif
 
-  // Large messages that span multiple pipe buffers, get built-up using
-  // this buffer.
-  std::string input_overflow_buf_;
-  std::vector<int> input_overflow_fds_;
+  // Temporary buffer used to receive the file descriptors from recvmsg.
+  // Code that writes into this should immediately read them out and save
+  // them to input_fds_, since this buffer will be re-used anytime we call
+  // recvmsg.
+  char input_cmsg_buf_[kMaxReadFDBuffer];
+
+  // File descriptors extracted from messages coming off of the channel. The
+  // handles may span messages and come off different channels from the message
+  // data (in the case of READWRITE), and are processed in FIFO here.
+  std::deque<int> input_fds_;
 
   // True if we are responsible for unlinking the unix domain socket file.
   bool must_unlink_;
