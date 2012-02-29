@@ -406,6 +406,7 @@ Pong::BallDirection Pong::RightPaddleNextMove() const {
 
 void Pong::UpdateScoreDisplay() {
   if (file_io_ == NULL)
+    PostMessage(pp::Var("Could not save score (incognito?)."));
     return;  //  Since we cant't save the score to file, do nothing and return.
   size_t message_length = 18 + (player_score_ ? log(player_score_) : 1) + 1
       + (computer_score_ ? log(computer_score_) : 1) + 1;

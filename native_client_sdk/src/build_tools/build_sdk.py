@@ -441,8 +441,7 @@ def main(args):
   if options.archive and (options.examples or options.skip_tar):
     parser.error('Incompatible arguments with archive.')
 
-  # TODO(noelallen): Remove force build to 18...
-  pepper_ver = str(int(build_utils.ChromeMajorVersion()) - 1)
+  pepper_ver = str(int(build_utils.ChromeMajorVersion()))
   clnumber = lastchange.FetchVersionInfo(None).revision
   if options.release:
     pepper_ver = options.release

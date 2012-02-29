@@ -13,12 +13,10 @@
 # These variables store project specific settings for the project name
 # build flags, files to copy or install.  In the examples it is typically
 # only the list of sources and project name that will actually change and
-# the rest of the makefile is boilerplate for defining build rules.
 #
 PROJECT:=geturl
 LDFLAGS:=-lppapi_cpp -lppapi
 CXX_SOURCES:=$(PROJECT).cc geturl_handler.cc
-
 
 #
 # Get pepper directory for toolchain and includes.
@@ -72,5 +70,4 @@ $(PROJECT)_x86_64.nexe : $(x86_64_OBJS)
 .PHONY: RUN 
 RUN: all
 	python ../httpd.py
-
 

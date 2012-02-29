@@ -15,9 +15,9 @@
 # only the list of sources and project name that will actually change and
 # the rest of the makefile is boilerplate for defining build rules.
 #
-PROJECT:=tumbler
+PROJECT:=fullscreen_tumbler
 LDFLAGS:=-lppapi_gles2 -lppapi_cpp -lppapi
-CXX_SOURCES:=$(PROJECT).cc
+CXX_SOURCES:=tumbler.cc
 CXX_SOURCES+=transforms.cc shader_util.cc opengl_context.cc tumbler_module.cc
 CXX_SOURCES+=scripting_bridge.cc cube.cc
 

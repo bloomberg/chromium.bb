@@ -16,7 +16,7 @@
 # the rest of the makefile is boilerplate for defining build rules.
 #
 PROJECT:=dlopen
-WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -pedantic -Werror
+WARNINGS:=-Wno-long-long -Wall
 CXXFLAGS:=-g -O0 -pthread -std=gnu++98 $(WARNINGS)
 LDFLAGS:=-g -ldl -lppapi_cpp -lppapi
 
@@ -119,7 +119,7 @@ lib64/libeightball.so: eightball_x86_64.o | lib64
 # objdump.  Pass in the (-L) paths to the default library toolchains so that we
 # can find those libraries and have it automatically copy the files (-s) to
 # the target directory for us.
-NEXES:=dlopen_x86_32.nexe dlopen_x86_32.nexe
+NEXES:=dlopen_x86_32.nexe dlopen_x86_64.nexe
 NEXES+=lib32/libeightball.so lib64/libeightball.so
 NMF_ARGS:=-D $(TC_PATH)/x86_64-nacl/bin/objdump
 NMF_PATHS:=-L $(TC_PATH)/x86_64-nacl/lib32 -L $(TC_PATH)/x86_64-nacl/lib64

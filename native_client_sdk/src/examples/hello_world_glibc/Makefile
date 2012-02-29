@@ -23,7 +23,7 @@ NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
 #
 # Turns on warnings (-Wxxx), builds with zero optimization (-O0) and adds debug
 # information (-g) for correctness and ease of debugging.
-WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic 
+WARNINGS:=-Wno-long-long -Wall
 CFLAGS:=-pthread -O0 -g $(WARNINGS)
 
 
