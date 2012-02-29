@@ -213,6 +213,11 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     return NULL;
   }
 
+  virtual bool GetOverrideWindowMode(
+      ash::Shell::WindowMode* window_mode) OVERRIDE {
+    return false;
+  }
+
  private:
   // Used to update Launcher. Owned by main.
   WindowWatcher* watcher_;

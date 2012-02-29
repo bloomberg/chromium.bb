@@ -6,6 +6,7 @@
 #define ASH_TEST_ASH_TEST_BASE_H_
 #pragma once
 
+#include "ash/shell.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_helper.h"
@@ -23,6 +24,9 @@ class AshTestBase : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
  protected:
+  // Overridden by test cases to specify what window mode to run the shell in.
+  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode);
+
   void RunAllPendingInMessageLoop();
 
  private:

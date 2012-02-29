@@ -5,13 +5,14 @@
 #include "ash/wm/toplevel_layout_manager.h"
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/window.h"
@@ -21,7 +22,7 @@ namespace ash {
 
 namespace {
 
-class ToplevelLayoutManagerTest : public aura::test::AuraTestBase {
+class ToplevelLayoutManagerTest : public test::AshTestBase {
  public:
   ToplevelLayoutManagerTest() : layout_manager_(NULL) {}
   virtual ~ToplevelLayoutManagerTest() {}
@@ -31,19 +32,18 @@ class ToplevelLayoutManagerTest : public aura::test::AuraTestBase {
   }
 
   virtual void SetUp() OVERRIDE {
-    aura::test::AuraTestBase::SetUp();
+    test::AshTestBase::SetUp();
     Shell::GetRootWindow()->screen()->set_work_area_insets(
         gfx::Insets(1, 2, 3, 4));
     Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
-    container_.reset(new aura::Window(NULL));
-    container_->Init(ui::Layer::LAYER_NOT_DRAWN);
-    container_->SetBounds(gfx::Rect(0, 0, 500, 500));
+    aura::Window* default_container = Shell::GetInstance()->GetContainer(
+        internal::kShellWindowId_DefaultContainer);
     layout_manager_ = new internal::ToplevelLayoutManager();
-    container_->SetLayoutManager(layout_manager_);
+    default_container->SetLayoutManager(layout_manager_);
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
-    return aura::test::CreateTestWindowWithBounds(bounds, container_.get());
+    return aura::test::CreateTestWindowWithBounds(bounds, NULL);
   }
 
   // Returns widget owned by its parent, so doesn't need scoped_ptr<>.
@@ -57,10 +57,8 @@ class ToplevelLayoutManagerTest : public aura::test::AuraTestBase {
   }
 
  private:
-  // Owned by |container_|.
+  // Owned by the default container.
   internal::ToplevelLayoutManager* layout_manager_;
-
-  scoped_ptr<aura::Window> container_;
 
   DISALLOW_COPY_AND_ASSIGN(ToplevelLayoutManagerTest);
 };

@@ -4,8 +4,10 @@
 
 #include "ash/wm/root_window_event_filter.h"
 
+#include "ash/ime/input_method_event_filter.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/window_util.h"
@@ -23,28 +25,8 @@
 #include "ui/gfx/screen.h"
 
 namespace ash {
-namespace test {
 
-class RootWindowEventFilterTest : public aura::test::AuraTestBase {
- public:
-  RootWindowEventFilterTest() {
-    Shell::GetRootWindow()->SetEventFilter(new internal::RootWindowEventFilter);
-
-    Shell::GetRootWindow()->set_id(
-        internal::kShellWindowId_DefaultContainer);
-    activation_controller_.reset(new internal::ActivationController);
-    activation_controller_->set_default_container_for_test(
-        Shell::GetRootWindow());
-  }
-  virtual ~RootWindowEventFilterTest() {
-    Shell::GetRootWindow()->SetEventFilter(NULL);
-  }
-
- private:
-  scoped_ptr<internal::ActivationController> activation_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(RootWindowEventFilterTest);
-};
+typedef test::AshTestBase RootWindowEventFilterTest;
 
 class NonFocusableDelegate : public aura::test::TestWindowDelegate {
  public:
@@ -78,6 +60,12 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
 };
 
 TEST_F(RootWindowEventFilterTest, Focus) {
+  // The IME event filter interferes with the basic key event propagation we
+  // attempt to do here, so we remove it.
+  Shell::TestApi shell_test(Shell::GetInstance());
+  Shell::GetInstance()->RemoveRootWindowEventFilter(
+      shell_test.input_method_event_filter());
+
   aura::RootWindow* root_window = Shell::GetRootWindow();
   root_window->SetBounds(gfx::Rect(0, 0, 510, 510));
 
@@ -151,8 +139,8 @@ TEST_F(RootWindowEventFilterTest, Focus) {
   EXPECT_EQ(w12.get(), w12->GetFocusManager()->GetFocusedWindow());
 
   // Set the focus to w123, but make the w1 not activatable.
-  TestActivationDelegate *activation_delegate = new
-      TestActivationDelegate(false);
+  test::TestActivationDelegate *activation_delegate = new
+      test::TestActivationDelegate(false);
   w123->Focus();
   EXPECT_EQ(w123.get(), w12->GetFocusManager()->GetFocusedWindow());
   aura::client::SetActivationDelegate(w1.get(), activation_delegate);
@@ -182,12 +170,12 @@ TEST_F(RootWindowEventFilterTest, Focus) {
 TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
   aura::RootWindow* root_window = Shell::GetRootWindow();
 
-  TestActivationDelegate d1;
+  test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
       &wd, -1, gfx::Rect(10, 10, 50, 50), NULL));
   d1.SetWindow(w1.get());
-  TestActivationDelegate d2;
+  test::TestActivationDelegate d2;
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
       &wd, -1, gfx::Rect(70, 70, 50, 50), NULL));
   d2.SetWindow(w2.get());
@@ -294,12 +282,12 @@ TEST_F(RootWindowEventFilterTest, ActivateOnMouse) {
 TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   aura::RootWindow* root_window = Shell::GetRootWindow();
 
-  TestActivationDelegate d1;
+  test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> w1(aura::test::CreateTestWindowWithDelegate(
       &wd, -1, gfx::Rect(10, 10, 50, 50), NULL));
   d1.SetWindow(w1.get());
-  TestActivationDelegate d2;
+  test::TestActivationDelegate d2;
   scoped_ptr<aura::Window> w2(aura::test::CreateTestWindowWithDelegate(
       &wd, -2, gfx::Rect(70, 70, 50, 50), NULL));
   d2.SetWindow(w2.get());
@@ -383,8 +371,8 @@ TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
   aura::Window::ConvertPointToWindow(window->parent(), root_window, &point2);
   aura::MouseEvent move2(ui::ET_MOUSE_MOVED, point2, point2, 0x0);
 
-  // Cursor starts as null.
-  EXPECT_EQ(aura::kCursorNull, root_window->last_cursor());
+  // Cursor starts as a pointer (set during Shell::Init()).
+  EXPECT_EQ(aura::kCursorPointer, root_window->last_cursor());
 
   // Resize edges and corners show proper cursors.
   window_delegate.set_hittest_code(HTBOTTOM);
@@ -437,7 +425,7 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
   transform.ConcatTranslate(size.width(), 0);
   root_window->SetTransform(transform);
 
-  TestActivationDelegate d1;
+  test::TestActivationDelegate d1;
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> w1(
       CreateTestWindowWithDelegate(&wd, 1, gfx::Rect(0, 10, 50, 50), NULL));
@@ -470,6 +458,12 @@ TEST_F(RootWindowEventFilterTest, TransformActivate) {
 }
 
 TEST_F(RootWindowEventFilterTest, AdditionalFilters) {
+  // The IME event filter interferes with the basic key event propagation we
+  // attempt to do here, so we remove it.
+  Shell::TestApi shell_test(Shell::GetInstance());
+  Shell::GetInstance()->RemoveRootWindowEventFilter(
+      shell_test.input_method_event_filter());
+
   aura::RootWindow* root_window = Shell::GetRootWindow();
 
   // Creates a window and make it active
@@ -575,5 +569,4 @@ TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
   EXPECT_TRUE(root_window->cursor_shown());
 }
 
-}  // namespace test
 }  // namespace ash

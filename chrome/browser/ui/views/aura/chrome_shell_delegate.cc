@@ -132,3 +132,8 @@ ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate(
   return NULL;
 #endif
 }
+
+bool ChromeShellDelegate::GetOverrideWindowMode(
+    ash::Shell::WindowMode* window_mode) {
+  return false;
+}

@@ -5,12 +5,13 @@
 #include "ash/wm/base_layout_manager.h"
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "ash/test/ash_test_base.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/window.h"
@@ -19,29 +20,26 @@ namespace ash {
 
 namespace {
 
-class BaseLayoutManagerTest : public aura::test::AuraTestBase {
+class BaseLayoutManagerTest : public test::AshTestBase {
  public:
   BaseLayoutManagerTest() {}
   virtual ~BaseLayoutManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    aura::test::AuraTestBase::SetUp();
+    test::AshTestBase::SetUp();
     Shell::GetRootWindow()->screen()->set_work_area_insets(
         gfx::Insets(1, 2, 3, 4));
     Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
-    container_.reset(new aura::Window(NULL));
-    container_->Init(ui::Layer::LAYER_NOT_DRAWN);
-    container_->SetBounds(gfx::Rect(0, 0, 500, 500));
-    container_->SetLayoutManager(new internal::BaseLayoutManager());
+    aura::Window* default_container = Shell::GetInstance()->GetContainer(
+        internal::kShellWindowId_DefaultContainer);
+    default_container->SetLayoutManager(new internal::BaseLayoutManager);
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
-    return aura::test::CreateTestWindowWithBounds(bounds, container_.get());
+    return aura::test::CreateTestWindowWithBounds(bounds, NULL);
   }
 
  private:
-  scoped_ptr<aura::Window> container_;
-
   DISALLOW_COPY_AND_ASSIGN(BaseLayoutManagerTest);
 };
 

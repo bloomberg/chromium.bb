@@ -239,6 +239,14 @@ internal::RootWindowLayoutManager* Shell::TestApi::root_window_layout() {
   return shell_->root_window_layout_;
 }
 
+internal::InputMethodEventFilter* Shell::TestApi::input_method_event_filter() {
+  return shell_->input_method_filter_.get();
+}
+
+internal::WorkspaceController* Shell::TestApi::workspace_controller() {
+  return shell_->workspace_controller_.get();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
 
@@ -353,7 +361,8 @@ void Shell::Init() {
 
   // Window mode must be set before computing containers or layout managers.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  window_mode_ = ComputeWindowMode(command_line);
+  if (!delegate_.get() || !delegate_->GetOverrideWindowMode(&window_mode_))
+    window_mode_ = ComputeWindowMode(command_line);
 
   aura::RootWindow* root_window = GetRootWindow();
   root_window->SetCursor(aura::kCursorPointer);

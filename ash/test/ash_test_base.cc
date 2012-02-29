@@ -26,7 +26,11 @@ void AshTestBase::SetUp() {
   helper_.SetUp();
 
   // Creates Shell and hook with Desktop.
-  ash::Shell::CreateInstance(new TestShellDelegate);
+  TestShellDelegate* delegate = new TestShellDelegate;
+  Shell::WindowMode window_mode = Shell::MODE_OVERLAPPING;
+  if (GetOverrideWindowMode(&window_mode))
+    delegate->SetOverrideWindowMode(window_mode);
+  ash::Shell::CreateInstance(delegate);
 
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);
@@ -40,6 +44,10 @@ void AshTestBase::TearDown() {
   Shell::DeleteInstance();
 
   helper_.TearDown();
+}
+
+bool AshTestBase::GetOverrideWindowMode(Shell::WindowMode* window_mode) {
+  return false;
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

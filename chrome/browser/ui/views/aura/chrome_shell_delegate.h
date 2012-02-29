@@ -49,6 +49,8 @@ class ChromeShellDelegate : public ash::ShellDelegate {
       ash::LauncherModel* model) OVERRIDE;
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
       ash::SystemTray* tray) OVERRIDE;
+  virtual bool GetOverrideWindowMode(
+      ash::Shell::WindowMode* window_mode) OVERRIDE;
 
  private:
   static ChromeShellDelegate* instance_;

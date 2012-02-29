@@ -300,7 +300,6 @@
         'wm/window_modality_controller_unittest.cc',
         'wm/workspace/workspace_manager_unittest.cc',
         'wm/workspace/workspace_window_resizer_unittest.cc',
-        'wm/workspace_controller_unittest.cc',
 
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',

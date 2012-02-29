@@ -15,10 +15,17 @@
 namespace ash {
 namespace test {
 
-TestShellDelegate::TestShellDelegate() {
+TestShellDelegate::TestShellDelegate()
+    : override_window_mode_(false),
+      window_mode_(Shell::MODE_OVERLAPPING) {
 }
 
 TestShellDelegate::~TestShellDelegate() {
+}
+
+void TestShellDelegate::SetOverrideWindowMode(Shell::WindowMode window_mode) {
+  override_window_mode_ = true;
+  window_mode_ = window_mode;
 }
 
 views::Widget* TestShellDelegate::CreateStatusArea() {
@@ -70,5 +77,14 @@ SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate(
     SystemTray* tray) {
   return NULL;
 }
+
+bool TestShellDelegate::GetOverrideWindowMode(Shell::WindowMode* window_mode) {
+  if (override_window_mode_) {
+    *window_mode = window_mode_;
+    return true;
+  }
+  return false;
+}
+
 }  // namespace test
 }  // namespace ash

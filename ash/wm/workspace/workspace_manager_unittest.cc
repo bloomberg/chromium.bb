@@ -6,15 +6,16 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
@@ -24,28 +25,10 @@ using aura::Window;
 namespace ash {
 namespace internal {
 
-class WorkspaceManagerTest : public aura::test::AuraTestBase {
+class WorkspaceManagerTest : public test::AshTestBase {
  public:
-  WorkspaceManagerTest() : layout_manager_(NULL) {
-    Shell::GetRootWindow()->set_id(
-        internal::kShellWindowId_DefaultContainer);
-    activation_controller_.reset(new internal::ActivationController);
-    activation_controller_->set_default_container_for_test(
-        Shell::GetRootWindow());
-  }
+  WorkspaceManagerTest() {}
   virtual ~WorkspaceManagerTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    aura::test::AuraTestBase::SetUp();
-    manager_.reset(new WorkspaceManager(viewport()));
-    layout_manager_ = new WorkspaceLayoutManager(manager_.get());
-    viewport()->SetLayoutManager(layout_manager_);
-  }
-
-  virtual void TearDown() OVERRIDE {
-    manager_.reset();
-    aura::test::AuraTestBase::TearDown();
-  }
 
   aura::Window* CreateTestWindowUnparented() {
     aura::Window* window = new aura::Window(NULL);
@@ -60,12 +43,13 @@ class WorkspaceManagerTest : public aura::test::AuraTestBase {
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::Layer::LAYER_TEXTURED);
-    window->SetParent(viewport());
+    window->SetParent(GetViewport());
     return window;
   }
 
-  aura::Window* viewport() {
-    return Shell::GetRootWindow();
+  aura::Window* GetViewport() {
+    return Shell::GetInstance()->GetContainer(
+        internal::kShellWindowId_DefaultContainer);
   }
 
   const std::vector<Workspace*>& workspaces() const {
@@ -88,12 +72,27 @@ class WorkspaceManagerTest : public aura::test::AuraTestBase {
     return manager_->FindBy(window);
   }
 
-  scoped_ptr<WorkspaceManager> manager_;
+  // Overridden from AshTestBase:
+  virtual void SetUp() OVERRIDE {
+    test::AshTestBase::SetUp();
+    Shell::TestApi shell_test(Shell::GetInstance());
+    manager_ = shell_test.workspace_controller()->workspace_manager();
+    manager_->set_grid_size(0);
+  }
+  virtual void TearDown() OVERRIDE {
+    manager_ = NULL;
+    test::AshTestBase::TearDown();
+  }
 
-  // Owned by viewport().
-  WorkspaceLayoutManager* layout_manager_;
+ protected:
+  internal::WorkspaceManager* manager_;
 
  private:
+  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode) OVERRIDE {
+    *window_mode = Shell::MODE_MANAGED;
+    return true;
+  }
+
   scoped_ptr<internal::ActivationController> activation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManagerTest);
@@ -310,7 +309,7 @@ TEST_F(WorkspaceManagerTest, OpenNewWindowsMaximized) {
   // SHOW_STATE_DEFAULT should end up maximized.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DEFAULT);
   w1->SetBounds(gfx::Rect(50, 51, 52, 53));
-  w1->SetParent(viewport());
+  w1->SetParent(GetViewport());
   // Maximized state and bounds should be set as soon as w1 is added to the
   // parent.
   EXPECT_TRUE(wm::IsWindowMaximized(w1.get()));
@@ -340,7 +339,7 @@ TEST_F(WorkspaceManagerTest, OpenNewWindowsMaximized) {
   // false.
   w3->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DEFAULT);
   w3->SetBounds(gfx::Rect(70, 71, 72, 73));
-  w3->SetParent(viewport());
+  w3->SetParent(GetViewport());
   w3->Show();
   EXPECT_EQ(gfx::Rect(70, 71, 72, 73), w3->bounds());
   EXPECT_EQ(ui::SHOW_STATE_NORMAL,
@@ -354,7 +353,7 @@ TEST_F(WorkspaceManagerTest, SnapToGrid) {
   // Verify snap to grid when bounds are set before parented.
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   w1->SetBounds(gfx::Rect(1, 6, 25, 30));
-  w1->SetParent(viewport());
+  w1->SetParent(GetViewport());
   EXPECT_EQ(gfx::Rect(0, 8, 24, 32), w1->bounds());
 }
 

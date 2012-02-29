@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/shell.h"
 #include "base/callback.h"
 #include "base/string16.h"
 
@@ -89,6 +90,11 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a system-tray delegate. Shell takes ownership of the delegate.
   virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* tray) = 0;
+
+  // Returns true if the delegate wants to override the window mode. Used only
+  // by testing. Returning false causes the shell to determine the default.
+  // TODO(beng): This can probably be removed once we only have one window mode.
+  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode) = 0;
 };
 
 }  // namespace ash

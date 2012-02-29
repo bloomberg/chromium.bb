@@ -12,7 +12,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_event_filter.h"
 #include "ui/aura/test/test_windows.h"
@@ -26,23 +25,14 @@ DISABLED_TestInputMethodKeyEventPropagation
 #endif
 
 namespace ash {
-namespace test {
 
-typedef aura::test::AuraTestBase InputMethodEventFilterTestWithoutShell;
-typedef AshTestBase InputMethodEventFilterTest;
+typedef test::AshTestBase InputMethodEventFilterTest;
 
 // Tests if InputMethodEventFilter adds a window property on its construction.
-TEST_F(InputMethodEventFilterTestWithoutShell, TestInputMethodProperty) {
+TEST_F(InputMethodEventFilterTest, TestInputMethodProperty) {
   aura::RootWindow* root_window = Shell::GetRootWindow();
-  scoped_ptr<internal::RootWindowEventFilter> root_filter(
-      new internal::RootWindowEventFilter);
-  EXPECT_FALSE(
-      root_window->GetProperty(aura::client::kRootWindowInputMethodKey));
-  internal::InputMethodEventFilter ime_filter;
-  root_filter->AddFilter(&ime_filter);
   EXPECT_TRUE(
       root_window->GetProperty(aura::client::kRootWindowInputMethodKey));
-  root_filter->RemoveFilter(&ime_filter);
 }
 
 // Tests if InputMethodEventFilter dispatches a ui::ET_TRANSLATED_KEY_* event to
@@ -87,5 +77,4 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   window.reset();
 }
 
-}  // namespace test
 }  // namespace ash

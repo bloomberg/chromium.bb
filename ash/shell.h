@@ -101,6 +101,8 @@ class ASH_EXPORT Shell {
 
     WindowMode ComputeWindowMode(CommandLine* cmd) const;
     internal::RootWindowLayoutManager* root_window_layout();
+    internal::InputMethodEventFilter* input_method_event_filter();
+    internal::WorkspaceController* workspace_controller();
 
    private:
     Shell* shell_;  // not owned
