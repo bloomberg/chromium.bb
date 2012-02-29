@@ -403,7 +403,6 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       fullscreen_(false),
       force_hidden_count_(0),
       lock_updates_count_(0),
-      saved_window_style_(0),
       ignore_window_pos_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(ignore_pos_changes_factory_(this)),
       last_monitor_(NULL),

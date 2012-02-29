@@ -615,9 +615,6 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // If this is greater than zero, the widget should be locked against updates.
   int lock_updates_count_;
 
-  // The window styles of the window before updates were locked.
-  DWORD saved_window_style_;
-
   // When true, this flag makes us discard incoming SetWindowPos() requests that
   // only change our position/size.  (We still allow changes to Z-order,
   // activation, etc.)
