@@ -12,9 +12,10 @@ import sys
 import urlparse
 
 from chromite.buildbot import constants
+from chromite.lib import cgroups
 from chromite.lib import cros_build_lib
-from chromite.lib import sudo
 from chromite.lib import locking
+from chromite.lib import sudo
 
 cros_build_lib.STRICT_SUDO = True
 
@@ -325,29 +326,29 @@ Action taken is the following:
   lock_path = os.path.join(lock_path,
                            '.%s_lock' % os.path.basename(chroot_path))
   with sudo.SudoKeepAlive():
-    _CreateLockFile(lock_path)
-    with locking.FileLock(lock_path, 'chroot lock') as lock:
+    with cgroups.ContainChildren('cros_sdk'):
+      _CreateLockFile(lock_path)
+      with locking.FileLock(lock_path, 'chroot lock') as lock:
+        if options.delete:
+          lock.write_lock()
+          DeleteChroot(chroot_path)
+          sys.exit(0)
 
-      if options.delete:
-        lock.write_lock()
-        DeleteChroot(chroot_path)
-        sys.exit(0)
+        # Print a suggestion for replacement, but not if running just --enter.
+        if os.path.exists(chroot_path) and not options.replace and \
+            (options.bootstrap or options.download):
+          print "Chroot already exists. Run with --replace to re-create."
 
-      # Print a suggestion for replacement, but not if running just --enter.
-      if os.path.exists(chroot_path) and not options.replace and \
-          (options.bootstrap or options.download):
-        print "Chroot already exists. Run with --replace to re-create."
-
-      # Chroot doesn't exist or asked to replace.
-      if not os.path.exists(chroot_path) or options.replace:
-        lock.write_lock()
-        if options.bootstrap:
-          BootstrapChroot(chroot_path, options.sdk_url,
-                          options.replace)
-        else:
-          CreateChroot(options.sdk_url, sdk_version,
-                       chroot_path, options.replace)
-      if options.enter:
-        lock.read_lock()
-        EnterChroot(chroot_path, options.chrome_root,
-                    options.chrome_root_mount, remaining_arguments)
+        # Chroot doesn't exist or asked to replace.
+        if not os.path.exists(chroot_path) or options.replace:
+          lock.write_lock()
+          if options.bootstrap:
+            BootstrapChroot(chroot_path, options.sdk_url,
+                            options.replace)
+          else:
+            CreateChroot(options.sdk_url, sdk_version,
+                         chroot_path, options.replace)
+        if options.enter:
+          lock.read_lock()
+          EnterChroot(chroot_path, options.chrome_root,
+                      options.chrome_root_mount, remaining_arguments)
