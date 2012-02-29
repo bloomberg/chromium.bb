@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/tab_closeable_state_watcher.h"
 
 #include "base/file_path.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
@@ -36,6 +37,14 @@ class TabCloseableStateWatcherTest : public InProcessBrowserTest {
     other_url_ = ui_test_utils::GetTestUrl(
         FilePath(FilePath::kCurrentDirectory),
         FilePath(FILE_PATH_LITERAL("title2.html")));
+  }
+
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
+    // Make sure the first run sentinel file exists before running these tests,
+    // since some of them depend on not running during the first run.
+    // TODO(bauerb): set the first run flag instead of creating a sentinel file.
+    first_run::CreateSentinel();
+    return InProcessBrowserTest::SetUpUserDataDirectory();
   }
 
  protected:

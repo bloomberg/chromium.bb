@@ -4,6 +4,7 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -60,7 +61,17 @@ class BrowserListObserverImpl : public BrowserList::Observer {
 
 }  // namespace
 
-typedef InProcessBrowserTest SessionRestoreTest;
+class SessionRestoreTest : public InProcessBrowserTest {
+ protected:
+  virtual bool SetUpUserDataDirectory() OVERRIDE {
+    // Make sure the first run sentinel file exists before running these tests,
+    // since some of them customize the session startup pref whose value can
+    // be different than the default during the first run.
+    // TODO(bauerb): set the first run flag instead of creating a sentinel file.
+    first_run::CreateSentinel();
+    return InProcessBrowserTest::SetUpUserDataDirectory();
+  }
+};
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 // Crashes on Linux Views: http://crbug.com/39476
