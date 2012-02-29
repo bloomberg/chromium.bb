@@ -345,23 +345,6 @@ full = _config(
   git_sync=True,
 )
 
-pfq = _config(
-  important=True,
-  uprev=True,
-  overlays='public',
-  manifest_version=True,
-  trybot_list=True,
-)
-
-commit_queue = _config(
-  important=True,
-  build_type=constants.COMMIT_QUEUE_TYPE,
-  uprev=True,
-  overlays='public',
-  prebuilts=False,
-  manifest_version=True,
-)
-
 paladin = _config(
   important=True,
   build_type=constants.PALADIN_TYPE,
@@ -399,19 +382,6 @@ _config.add_raw_config('refresh-packages',
   build_type=constants.REFRESH_PACKAGES_TYPE,
 )
 
-pfq.add_config('x86-generic-pre-flight-queue',
-  boards=['x86-generic'],
-  master=True,
-  push_overlays='public',
-  description='x86-generic PFQ',
-)
-
-pfq.add_config('arm-tegra2-bin',
-  arm,
-  boards=['tegra2'],
-  description='arm-tegra2 PFQ',
-)
-
 incremental.add_config('x86-generic-incremental',
   boards=['x86-generic'],
 )
@@ -445,26 +415,6 @@ paladin.add_config('amd64-generic-paladin',
   amd64,
   boards=['amd64-generic'],
   paladin_builder_name='amd64 generic paladin',
-)
-
-commit_queue.add_config('x86-generic-commit-queue',
-  boards=['x86-generic'],
-  master=True,
-  paladin_builder_name='x86 generic commit queue',
-)
-
-commit_queue.add_config('arm-tegra2-commit-queue',
-  arm,
-  boards=['tegra2'],
-  paladin_builder_name='tegra2 commit queue',
-)
-
-commit_queue.add_config('x86-mario-commit-queue',
-  internal,
-  boards=['x86-mario'],
-  master=True,
-  overlays='private',
-  paladin_builder_name='TOT Commit Queue',
 )
 
 chrome_pfq = _config(
@@ -584,73 +534,10 @@ _config.add_raw_config('x86-generic-asan',
 # Internal Builds
 #
 
-internal_pfq = internal.derive(pfq, overlays='private')
-internal_pfq_branch = internal_pfq.derive(overlays='both')
 internal_paladin = internal.derive(paladin, overlays='private')
 internal_incremental = internal.derive(incremental, overlays='both')
 
-internal_pfq.add_config('x86-mario-pre-flight-queue',
-  master=True,
-  push_overlays='private',
-  boards=['x86-mario'],
-  gs_path='gs://chromeos-x86-mario/pre-flight-master',
-  description='internal x86 PFQ',
-)
-
-internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
-  master=True,
-  push_overlays='both',
-  boards=['x86-alex'],
-)
-
-internal_pfq_branch.add_config('x86-mario-pre-flight-branch',
-  boards=['x86-mario'],
-)
-
-internal_arm_pfq = internal_pfq.derive(arm)
 internal_arm_paladin = internal_paladin.derive(arm)
-
-internal_arm_pfq.add_config('arm-tegra2_kaen-private-bin',
-  boards=['tegra2_kaen'],
-  description='tegra2_kaen PFQ'
-)
-
-internal_arm_pfq.add_config('arm-ironhide-private-bin',
-  boards=['ironhide'],
-  description='ironhide PFQ',
-  important=False,
-)
-
-internal_pfq.add_config('x86-zgb-private-bin',
-  boards=['x86-zgb'],
-  description='ZGB PFQ',
-  important=False,
-)
-
-internal_pfq.add_config('x86-alex-private-bin',
-  boards=['x86-alex'],
-  description='Alex PFQ',
-)
-
-internal_pfq.add_config('stumpy-private-bin',
-  boards=['stumpy'],
-  description='Stumpy PFQ',
-)
-
-internal_pfq.add_config('lumpy-private-bin',
-  boards=['lumpy'],
-  description='Lumpy PFQ',
-)
-
-internal_pfq.add_config('lumpy64-private-bin',
-  boards=['lumpy64'],
-  description='Lumpy64 PFQ',
-)
-
-internal_pfq.add_config('link-private-bin',
-  boards=['link'],
-  description='link PFQ',
-)
 
 internal_paladin.add_config('mario-paladin',
   master=True,
