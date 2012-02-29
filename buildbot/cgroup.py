@@ -60,8 +60,7 @@ class CGroup(cros_lib.MasterPidContextManager):
       self.CGROUP_ROOT = '/dev/cgroup'
       # Unlike /sys/fs/cgroup, this path is not autocreated.
       if not os.path.exists(self.CGROUP_ROOT):
-        cros_lib.SudoRunCommand(['mkdir', '-p', '%s' % self.CGROUP_ROOT],
-            print_cmd=False)
+        cros_lib.SafeMakedirs(self.CGROUP_ROOT, sudo=True)
 
     return True
 
@@ -76,8 +75,7 @@ class CGroup(cros_lib.MasterPidContextManager):
     opts = ','.join(self.NEEDED_SUBSYSTEMS)
     if not os.path.exists(self.ROOT_PATH):
       # This hierarchy is exclusive to cbuildbot, so it probably doesn't exist.
-      cros_lib.SudoRunCommand(['mkdir', '-p', '%s' % self.ROOT_PATH],
-          print_cmd=False)
+      cros_lib.SafeMakedirs(self.ROOT_PATH, sudo=True)
 
     if not self.FileContains(self.MOUNTS_PATH, [self.ROOT_PATH]):
       # Mount using expected set of opts.
@@ -119,7 +117,7 @@ class CGroup(cros_lib.MasterPidContextManager):
 
   def InitNamedCGroup(self, path):
     """Creates a cgroup given by path."""
-    cros_lib.SudoRunCommand(['mkdir', '-p', path], print_cmd=False)
+    cros_lib.SafeMakedirs(path, sudo=True)
     # Inherit some basics (cpus/mems are needed before we can assign tasks).
     self.SudoInherit(path, 'cpuset.cpus')
     self.SudoInherit(path, 'cpuset.mems')
