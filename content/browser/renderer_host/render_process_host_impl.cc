@@ -46,7 +46,7 @@
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/device_orientation/message_filter.h"
 #include "content/browser/download/mhtml_generation_manager.h"
-#include "content/browser/file_system/file_system_dispatcher_host.h"
+#include "content/browser/file_system/file_and_blob_message_filter.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -57,7 +57,6 @@
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
-#include "content/browser/renderer_host/blob_message_filter.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
@@ -500,13 +499,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       browser_context->GetSpeechInputPreferences(),
       content::BrowserMainLoop::GetAudioManager()));
 #endif
-  channel_->AddFilter(new FileSystemDispatcherHost(
+  channel_->AddFilter(new FileAndBlobMessageFilter(
+      GetID(),
       browser_context->GetRequestContext(),
       BrowserContext::GetFileSystemContext(browser_context),
       ChromeBlobStorageContext::GetFor(browser_context)));
   channel_->AddFilter(new device_orientation::MessageFilter());
-  channel_->AddFilter(new BlobMessageFilter(GetID(),
-      ChromeBlobStorageContext::GetFor(browser_context)));
   channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(

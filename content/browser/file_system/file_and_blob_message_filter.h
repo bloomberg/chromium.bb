@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_HOST_H_
-#define CONTENT_BROWSER_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_HOST_H_
+#ifndef CONTENT_BROWSER_FILE_SYSTEM_FILE_AND_BLOB_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_FILE_SYSTEM_FILE_AND_BLOB_MESSAGE_FILTER_H_
 
-#include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/file_util_proxy.h"
+#include "base/hash_tables.h"
 #include "base/id_map.h"
 #include "base/platform_file.h"
+#include "base/shared_memory.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "webkit/blob/blob_data.h"
 #include "webkit/fileapi/file_system_types.h"
 
 class ChromeBlobStorageContext;
@@ -36,23 +39,25 @@ namespace webkit_blob {
 class DeletableFileReference;
 }
 
-class FileSystemDispatcherHost : public content::BrowserMessageFilter {
+class FileAndBlobMessageFilter : public content::BrowserMessageFilter {
  public:
   // Used by the renderer process host on the UI thread.
-  FileSystemDispatcherHost(
+  FileAndBlobMessageFilter(
+      int process_id,
       net::URLRequestContextGetter* request_context_getter,
       fileapi::FileSystemContext* file_system_context,
       ChromeBlobStorageContext* blob_storage_context);
   // Used by the worker process host on the IO thread.
-  FileSystemDispatcherHost(
+  FileAndBlobMessageFilter(
+      int process_id,
       net::URLRequestContext* request_context,
       fileapi::FileSystemContext* file_system_context,
       ChromeBlobStorageContext* blob_storage_context);
-  virtual ~FileSystemDispatcherHost();
+  virtual ~FileAndBlobMessageFilter();
 
   // content::BrowserMessageFilter implementation.
-  virtual void OnChannelClosing() OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;
@@ -101,6 +106,15 @@ class FileSystemDispatcherHost : public content::BrowserMessageFilter {
                             const GURL& blob_url,
                             const GURL& path);
 
+  void OnStartBuildingBlob(const GURL& url);
+  void OnAppendBlobDataItem(const GURL& url,
+                            const webkit_blob::BlobData::Item& item);
+  void OnAppendSharedMemory(const GURL& url, base::SharedMemoryHandle handle,
+                            size_t buffer_size);
+  void OnFinishBuildingBlob(const GURL& url, const std::string& content_type);
+  void OnCloneBlob(const GURL& url, const GURL& src_url);
+  void OnRemoveBlob(const GURL& url);
+
   // Callback functions to be used when each file operation is finished.
   void DidFinish(int request_id, base::PlatformFileError result);
   void DidCancel(int request_id, base::PlatformFileError result);
@@ -138,6 +152,8 @@ class FileSystemDispatcherHost : public content::BrowserMessageFilter {
       const GURL& target_path,
       int request_id);
 
+  int process_id_;
+
   fileapi::FileSystemContext* context_;
 
   // Keeps ongoing file system operations.
@@ -149,16 +165,13 @@ class FileSystemDispatcherHost : public content::BrowserMessageFilter {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   net::URLRequestContext* request_context_;
 
-  // We access BlobStorageContext to construct an internal blob for
-  // snapshot files.
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
-  // Keeps track of internal blob URLs for temporary snapshot files.
-  // (As we do for regular blobs in BlobMessageFilter.)
-  // TODO(kinuko,tzik): merge this with the one in BlobMessageFilter.
+  // Keep track of blob URLs registered in this process. Need to unregister
+  // all of them when the renderer process dies.
   base::hash_set<std::string> blob_urls_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);
+  DISALLOW_COPY_AND_ASSIGN(FileAndBlobMessageFilter);
 };
 
-#endif  // CONTENT_BROWSER_FILE_SYSTEM_FILE_SYSTEM_DISPATCHER_HOST_H_
+#endif  // CONTENT_BROWSER_FILE_SYSTEM_FILE_AND_BLOB_MESSAGE_FILTER_H_

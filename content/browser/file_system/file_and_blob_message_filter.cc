@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/file_system/file_system_dispatcher_host.h"
+#include "content/browser/file_system/file_and_blob_message_filter.h"
 
 #include <string>
 #include <vector>
@@ -13,8 +13,10 @@
 #include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/common/file_system_messages.h"
+#include "content/common/webblob_messages.h"
 #include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
@@ -39,44 +41,39 @@ using fileapi::FileSystemOperationInterface;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
 
-FileSystemDispatcherHost::FileSystemDispatcherHost(
+FileAndBlobMessageFilter::FileAndBlobMessageFilter(
+    int process_id,
     net::URLRequestContextGetter* request_context_getter,
     fileapi::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context)
-    : context_(file_system_context),
+    : process_id_(process_id),
+      context_(file_system_context),
       request_context_getter_(request_context_getter),
       request_context_(NULL),
       blob_storage_context_(blob_storage_context) {
   DCHECK(context_);
   DCHECK(request_context_getter_);
+  DCHECK(blob_storage_context);
 }
 
-FileSystemDispatcherHost::FileSystemDispatcherHost(
+FileAndBlobMessageFilter::FileAndBlobMessageFilter(
+    int process_id,
     net::URLRequestContext* request_context,
     fileapi::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context)
-    : context_(file_system_context),
+    : process_id_(process_id),
+      context_(file_system_context),
       request_context_(request_context),
       blob_storage_context_(blob_storage_context) {
   DCHECK(context_);
   DCHECK(request_context_);
+  DCHECK(blob_storage_context);
 }
 
-FileSystemDispatcherHost::~FileSystemDispatcherHost() {
+FileAndBlobMessageFilter::~FileAndBlobMessageFilter() {
 }
 
-void FileSystemDispatcherHost::OnChannelClosing() {
-  BrowserMessageFilter::OnChannelClosing();
-
-  // Unregister all the blob URLs that are previously registered in this
-  // process.
-  for (base::hash_set<std::string>::const_iterator iter = blob_urls_.begin();
-       iter != blob_urls_.end(); ++iter) {
-    blob_storage_context_->controller()->RemoveBlob(GURL(*iter));
-  }
-}
-
-void FileSystemDispatcherHost::OnChannelConnected(int32 peer_pid) {
+void FileAndBlobMessageFilter::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
   if (request_context_getter_.get()) {
@@ -87,18 +84,29 @@ void FileSystemDispatcherHost::OnChannelConnected(int32 peer_pid) {
   }
 }
 
-void FileSystemDispatcherHost::OverrideThreadForMessage(
+void FileAndBlobMessageFilter::OnChannelClosing() {
+  BrowserMessageFilter::OnChannelClosing();
+
+  // Unregister all the blob URLs that are previously registered in this
+  // process.
+  for (base::hash_set<std::string>::const_iterator iter = blob_urls_.begin();
+       iter != blob_urls_.end(); ++iter) {
+    blob_storage_context_->controller()->RemoveBlob(GURL(*iter));
+  }
+}
+
+void FileAndBlobMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
   if (message.type() == FileSystemHostMsg_SyncGetPlatformPath::ID)
     *thread = BrowserThread::FILE;
 }
 
-bool FileSystemDispatcherHost::OnMessageReceived(
+bool FileAndBlobMessageFilter::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
   *message_was_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(FileSystemDispatcherHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(FileAndBlobMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Open, OnOpen)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Move, OnMove)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Copy, OnCopy)
@@ -118,12 +126,19 @@ bool FileSystemDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_DidUpdate, OnDidUpdate)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_SyncGetPlatformPath,
                         OnSyncGetPlatformPath)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_StartBuildingBlob, OnStartBuildingBlob)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_AppendBlobDataItem, OnAppendBlobDataItem)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_SyncAppendSharedMemory,
+                        OnAppendSharedMemory)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_FinishBuildingBlob, OnFinishBuildingBlob)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_CloneBlob, OnCloneBlob)
+    IPC_MESSAGE_HANDLER(BlobHostMsg_RemoveBlob, OnRemoveBlob)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }
 
-void FileSystemDispatcherHost::OnOpen(
+void FileAndBlobMessageFilter::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size, bool create) {
   if (type == fileapi::kFileSystemTypeTemporary) {
@@ -132,72 +147,72 @@ void FileSystemDispatcherHost::OnOpen(
     content::RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
   }
   context_->OpenFileSystem(origin_url, type, create, base::Bind(
-      &FileSystemDispatcherHost::DidOpenFileSystem, this, request_id));
+      &FileAndBlobMessageFilter::DidOpenFileSystem, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnMove(
+void FileAndBlobMessageFilter::OnMove(
     int request_id, const GURL& src_path, const GURL& dest_path) {
   GetNewOperation(src_path, request_id)->Move(
       src_path, dest_path,
-      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnCopy(
+void FileAndBlobMessageFilter::OnCopy(
     int request_id, const GURL& src_path, const GURL& dest_path) {
   GetNewOperation(src_path, request_id)->Copy(
       src_path, dest_path,
-      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnRemove(
+void FileAndBlobMessageFilter::OnRemove(
     int request_id, const GURL& path, bool recursive) {
   GetNewOperation(path, request_id)->Remove(
       path, recursive,
-      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnReadMetadata(
+void FileAndBlobMessageFilter::OnReadMetadata(
     int request_id, const GURL& path) {
   GetNewOperation(path, request_id)->GetMetadata(
       path,
-      base::Bind(&FileSystemDispatcherHost::DidGetMetadata, this, request_id));
+      base::Bind(&FileAndBlobMessageFilter::DidGetMetadata, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnCreate(
+void FileAndBlobMessageFilter::OnCreate(
     int request_id, const GURL& path, bool exclusive,
     bool is_directory, bool recursive) {
   if (is_directory) {
     GetNewOperation(path, request_id)->CreateDirectory(
         path, exclusive, recursive,
-        base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+        base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
   } else {
     GetNewOperation(path, request_id)->CreateFile(
         path, exclusive,
-        base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+        base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
   }
 }
 
-void FileSystemDispatcherHost::OnExists(
+void FileAndBlobMessageFilter::OnExists(
     int request_id, const GURL& path, bool is_directory) {
   if (is_directory) {
     GetNewOperation(path, request_id)->DirectoryExists(
         path,
-        base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+        base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
   } else {
     GetNewOperation(path, request_id)->FileExists(
         path,
-        base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+        base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
   }
 }
 
-void FileSystemDispatcherHost::OnReadDirectory(
+void FileAndBlobMessageFilter::OnReadDirectory(
     int request_id, const GURL& path) {
   GetNewOperation(path, request_id)->ReadDirectory(
-      path, base::Bind(&FileSystemDispatcherHost::DidReadDirectory,
+      path, base::Bind(&FileAndBlobMessageFilter::DidReadDirectory,
                        this, request_id));
 }
 
-void FileSystemDispatcherHost::OnWrite(
+void FileAndBlobMessageFilter::OnWrite(
     int request_id,
     const GURL& path,
     const GURL& blob_url,
@@ -209,29 +224,29 @@ void FileSystemDispatcherHost::OnWrite(
   }
   GetNewOperation(path, request_id)->Write(
       request_context_, path, blob_url, offset,
-      base::Bind(&FileSystemDispatcherHost::DidWrite, this, request_id));
+      base::Bind(&FileAndBlobMessageFilter::DidWrite, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnTruncate(
+void FileAndBlobMessageFilter::OnTruncate(
     int request_id,
     const GURL& path,
     int64 length) {
   GetNewOperation(path, request_id)->Truncate(
       path, length,
-      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnTouchFile(
+void FileAndBlobMessageFilter::OnTouchFile(
     int request_id,
     const GURL& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
   GetNewOperation(path, request_id)->TouchFile(
       path, last_access_time, last_modified_time,
-      base::Bind(&FileSystemDispatcherHost::DidFinish, this, request_id));
+      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnCancel(
+void FileAndBlobMessageFilter::OnCancel(
     int request_id,
     int request_id_to_cancel) {
   FileSystemOperationInterface* write = operations_.Lookup(
@@ -240,7 +255,7 @@ void FileSystemDispatcherHost::OnCancel(
     // The cancel will eventually send both the write failure and the cancel
     // success.
     write->Cancel(
-        base::Bind(&FileSystemDispatcherHost::DidCancel, this, request_id));
+        base::Bind(&FileAndBlobMessageFilter::DidCancel, this, request_id));
   } else {
     // The write already finished; report that we failed to stop it.
     Send(new FileSystemMsg_DidFail(
@@ -248,14 +263,14 @@ void FileSystemDispatcherHost::OnCancel(
   }
 }
 
-void FileSystemDispatcherHost::OnOpenFile(
+void FileAndBlobMessageFilter::OnOpenFile(
     int request_id, const GURL& path, int file_flags) {
   GetNewOperation(path, request_id)->OpenFile(
       path, file_flags, peer_handle(),
-      base::Bind(&FileSystemDispatcherHost::DidOpenFile, this, request_id));
+      base::Bind(&FileAndBlobMessageFilter::DidOpenFile, this, request_id));
 }
 
-void FileSystemDispatcherHost::OnWillUpdate(const GURL& path) {
+void FileAndBlobMessageFilter::OnWillUpdate(const GURL& path) {
   GURL origin_url;
   fileapi::FileSystemType type;
   if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
@@ -266,7 +281,7 @@ void FileSystemDispatcherHost::OnWillUpdate(const GURL& path) {
   quota_util->proxy()->StartUpdateOrigin(origin_url, type);
 }
 
-void FileSystemDispatcherHost::OnDidUpdate(const GURL& path, int64 delta) {
+void FileAndBlobMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
   GURL origin_url;
   fileapi::FileSystemType type;
   if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
@@ -279,7 +294,7 @@ void FileSystemDispatcherHost::OnDidUpdate(const GURL& path, int64 delta) {
   quota_util->proxy()->EndUpdateOrigin(origin_url, type);
 }
 
-void FileSystemDispatcherHost::OnSyncGetPlatformPath(
+void FileAndBlobMessageFilter::OnSyncGetPlatformPath(
     const GURL& path, FilePath* platform_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(platform_path);
@@ -307,16 +322,72 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
   operation->SyncGetPlatformPath(path, platform_path);
 }
 
-void FileSystemDispatcherHost::OnCreateSnapshotFile(
+void FileAndBlobMessageFilter::OnCreateSnapshotFile(
     int request_id, const GURL& blob_url, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GetNewOperation(path, request_id)->CreateSnapshotFile(
       path,
-      base::Bind(&FileSystemDispatcherHost::DidCreateSnapshot,
+      base::Bind(&FileAndBlobMessageFilter::DidCreateSnapshot,
                  this, request_id, blob_url));
 }
 
-void FileSystemDispatcherHost::DidFinish(int request_id,
+void FileAndBlobMessageFilter::OnStartBuildingBlob(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  blob_storage_context_->controller()->StartBuildingBlob(url);
+  blob_urls_.insert(url.spec());
+}
+
+void FileAndBlobMessageFilter::OnAppendBlobDataItem(
+    const GURL& url, const BlobData::Item& item) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (item.type == BlobData::TYPE_FILE &&
+      !ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+          process_id_, item.file_path)) {
+    OnRemoveBlob(url);
+    return;
+  }
+  blob_storage_context_->controller()->AppendBlobDataItem(url, item);
+}
+
+void FileAndBlobMessageFilter::OnAppendSharedMemory(
+    const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size) {
+  DCHECK(base::SharedMemory::IsHandleValid(handle));
+#if defined(OS_WIN)
+  base::SharedMemory shared_memory(handle, true, peer_handle());
+#else
+  base::SharedMemory shared_memory(handle, true);
+#endif
+  if (!shared_memory.Map(buffer_size)) {
+    OnRemoveBlob(url);
+    return;
+  }
+
+  BlobData::Item item;
+  item.SetToDataExternal(static_cast<char*>(shared_memory.memory()),
+                        buffer_size);
+  blob_storage_context_->controller()->AppendBlobDataItem(url, item);
+}
+
+void FileAndBlobMessageFilter::OnFinishBuildingBlob(
+    const GURL& url, const std::string& content_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  blob_storage_context_->controller()->FinishBuildingBlob(url, content_type);
+}
+
+void FileAndBlobMessageFilter::OnCloneBlob(
+    const GURL& url, const GURL& src_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  blob_storage_context_->controller()->CloneBlob(url, src_url);
+  blob_urls_.insert(url.spec());
+}
+
+void FileAndBlobMessageFilter::OnRemoveBlob(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  blob_storage_context_->controller()->RemoveBlob(url);
+  blob_urls_.erase(url.spec());
+}
+
+void FileAndBlobMessageFilter::DidFinish(int request_id,
                                          base::PlatformFileError result) {
   if (result == base::PLATFORM_FILE_OK)
     Send(new FileSystemMsg_DidSucceed(request_id));
@@ -325,7 +396,7 @@ void FileSystemDispatcherHost::DidFinish(int request_id,
   UnregisterOperation(request_id);
 }
 
-void FileSystemDispatcherHost::DidCancel(int request_id,
+void FileAndBlobMessageFilter::DidCancel(int request_id,
                                          base::PlatformFileError result) {
   if (result == base::PLATFORM_FILE_OK)
     Send(new FileSystemMsg_DidSucceed(request_id));
@@ -334,7 +405,7 @@ void FileSystemDispatcherHost::DidCancel(int request_id,
   // For Cancel we do not create a new operation, so no unregister here.
 }
 
-void FileSystemDispatcherHost::DidGetMetadata(
+void FileAndBlobMessageFilter::DidGetMetadata(
     int request_id,
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
@@ -346,7 +417,7 @@ void FileSystemDispatcherHost::DidGetMetadata(
   UnregisterOperation(request_id);
 }
 
-void FileSystemDispatcherHost::DidReadDirectory(
+void FileAndBlobMessageFilter::DidReadDirectory(
     int request_id,
     base::PlatformFileError result,
     const std::vector<base::FileUtilProxy::Entry>& entries,
@@ -358,7 +429,7 @@ void FileSystemDispatcherHost::DidReadDirectory(
   UnregisterOperation(request_id);
 }
 
-void FileSystemDispatcherHost::DidOpenFile(int request_id,
+void FileAndBlobMessageFilter::DidOpenFile(int request_id,
                                            base::PlatformFileError result,
                                            base::PlatformFile file,
                                            base::ProcessHandle peer_handle) {
@@ -374,7 +445,7 @@ void FileSystemDispatcherHost::DidOpenFile(int request_id,
   UnregisterOperation(request_id);
 }
 
-void FileSystemDispatcherHost::DidWrite(int request_id,
+void FileAndBlobMessageFilter::DidWrite(int request_id,
                                         base::PlatformFileError result,
                                         int64 bytes,
                                         bool complete) {
@@ -388,7 +459,7 @@ void FileSystemDispatcherHost::DidWrite(int request_id,
   }
 }
 
-void FileSystemDispatcherHost::DidOpenFileSystem(int request_id,
+void FileAndBlobMessageFilter::DidOpenFileSystem(int request_id,
                                                  base::PlatformFileError result,
                                                  const std::string& name,
                                                  const GURL& root) {
@@ -401,7 +472,7 @@ void FileSystemDispatcherHost::DidOpenFileSystem(int request_id,
   // For OpenFileSystem we do not create a new operation, so no unregister here.
 }
 
-void FileSystemDispatcherHost::DidCreateSnapshot(
+void FileAndBlobMessageFilter::DidCreateSnapshot(
     int request_id,
     const GURL& blob_url,
     base::PlatformFileError result,
@@ -436,7 +507,7 @@ void FileSystemDispatcherHost::DidCreateSnapshot(
   Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
 }
 
-FileSystemOperationInterface* FileSystemDispatcherHost::GetNewOperation(
+FileSystemOperationInterface* FileAndBlobMessageFilter::GetNewOperation(
     const GURL& target_path,
     int request_id) {
   FileSystemOperationInterface* operation =
@@ -448,7 +519,7 @@ FileSystemOperationInterface* FileSystemDispatcherHost::GetNewOperation(
   return operation;
 }
 
-void FileSystemDispatcherHost::UnregisterOperation(int request_id) {
+void FileAndBlobMessageFilter::UnregisterOperation(int request_id) {
   DCHECK(operations_.Lookup(request_id));
   operations_.Remove(request_id);
 }
