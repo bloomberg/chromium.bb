@@ -8,6 +8,7 @@ import errno
 import subprocess
 import cros_build_lib
 
+
 class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
 
   """
@@ -96,6 +97,7 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
 
     os.environ["CROS_SUDO_KEEP_ALIVE"] = start_for_tty
 
+  # pylint: disable=W0613
   def _exit(self, exc_type, exc_value, traceback):
     if self._proc is None:
       return
