@@ -656,7 +656,10 @@ class Network {
     // Implemented to handle a given certificate enrollment URI.  Returns false
     // if the enrollment URI doesn't use a scheme that we can handle, and in
     // that case, this will be called for any remaining enrollment URIs.
-    virtual bool Enroll(const std::string& uri) = 0;
+    // If enrollment succeeds, then the enrollment handler must run
+    // |post_action| to finish connecting.
+    virtual void Enroll(const std::vector<std::string>& uri_list,
+                        const base::Closure& post_action) = 0;
    private:
     DISALLOW_COPY_AND_ASSIGN(EnrollmentHandler);
   };
@@ -746,6 +749,12 @@ class Network {
   void SetSaveCredentials(bool save_credentials);
 
   void ClearUIData();
+
+  // This will resolve any automatic configuration that has to occur
+  // (provisioning certificates, etc.) before attempting to connect to the
+  // network.  When configuration is complete, calls the closure to finish the
+  // connection or show the config dialog to collect user-supplied info.
+  virtual void AttemptConnection(const base::Closure& connect);
 
   // Return a string representation of the state code.
   std::string GetStateString() const;
@@ -993,6 +1002,7 @@ class VirtualNetwork : public Network {
   // Network overrides.
   virtual bool RequiresUserProfile() const OVERRIDE;
   virtual void CopyCredentialsFromRemembered(Network* remembered) OVERRIDE;
+  virtual void AttemptConnection(const base::Closure& connect) OVERRIDE;
 
   // Public getters.
   bool NeedMoreInfoToConnect() const;
@@ -1012,15 +1022,6 @@ class VirtualNetwork : public Network {
                              const std::string& username,
                              const std::string& user_passphrase,
                              const std::string& otp);
-
-  // Matches the client certificate pattern by checking to see if a
-  // certificate exists that meets the pattern criteria.  If it finds one,
-  // it sets the appropriate network property. If not, it signals the
-  // EnrollmentHandler to do something with the enrollment URI (e.g. launch a
-  // dialog) to install the certificate.
-  // Returns false if it can't find any certificate that matches, whether or
-  // not it notifies the EnrollmentHandler to fetch one.
-  bool MatchCertificatePattern();
 
  private:
   // This allows NetworkParser and its subclasses access to
@@ -1068,7 +1069,14 @@ class VirtualNetwork : public Network {
     client_cert_type_ = type;
   }
 
-  // Network overrides.
+  // Matches the client certificate pattern by checking to see if a
+  // certificate exists that meets the pattern criteria.  If it finds one,
+  // it sets the appropriate network property. If not, it passes |connect| to
+  // the EnrollmentHandler to do something with the enrollment URI (e.g. launch
+  // a dialog) to install the certificate, and then invoke |connect|.
+  void MatchCertificatePattern(const base::Closure& connect);
+
+ // Network overrides.
   virtual void EraseCredentials() OVERRIDE;
   virtual void CalculateUniqueId() OVERRIDE;
 
@@ -1345,6 +1353,7 @@ class WifiNetwork : public WirelessNetwork {
 
   // Network overrides.
   virtual bool RequiresUserProfile() const OVERRIDE;
+  virtual void AttemptConnection(const base::Closure& connect) OVERRIDE;
 
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
@@ -1353,17 +1362,8 @@ class WifiNetwork : public WirelessNetwork {
   // Return true if a passphrase or other input is required to connect.
   bool IsPassphraseRequired() const;
 
-  // Matches the client certificate pattern by checking to see if a
-  // certificate exists that meets the pattern criteria.  If it finds one,
-  // it sets the appropriate network property. If not, it signals the
-  // EnrollmentHandler to do something with the enrollment URI (e.g. launch a
-  // dialog) to install the certificate.
-  // Returns false if it can't find any certificate that matches, whether or
-  // not it notifies the EnrollmentHandler to fetch one.
-  bool MatchCertificatePattern();
-
  private:
-  // This allows NativeWifiNetworkParser access to device privates so
+   // This allows NativeWifiNetworkParser access to device privates so
   // that they can be reconstituted during parsing.  The parsers only
   // access things through the private set_ functions so that this
   // class can evolve without having to change all the parsers.
@@ -1417,6 +1417,13 @@ class WifiNetwork : public WirelessNetwork {
   void set_eap_client_cert_type(const ClientCertType type) {
     eap_client_cert_type_ = type;
   }
+
+  // Matches the client certificate pattern by checking to see if a
+  // certificate exists that meets the pattern criteria.  If it finds one,
+  // it sets the appropriate network property. If not, it passes |connect| to
+  // the EnrollmentHandler to do something with the enrollment URI (e.g. launch
+  // a dialog) to install the certificate, and then invoke |connect|.
+  void MatchCertificatePattern(const base::Closure& connect);
 
   // Network overrides.
   virtual void EraseCredentials() OVERRIDE;

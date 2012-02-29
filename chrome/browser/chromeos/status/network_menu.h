@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"  // ConnectionType
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "ui/views/controls/menu/view_menu_delegate.h"
@@ -94,6 +95,9 @@ class NetworkMenu {
   // Setters.
   void set_min_width(int min_width) { min_width_ = min_width; }
 
+  // Used in a closure for doing actual network connection.
+  void DoConnect(Network* network);
+
  private:
   friend class NetworkMenuModel;
 
@@ -111,6 +115,11 @@ class NetworkMenu {
 
   // Holds minimum width of the menu.
   int min_width_;
+
+  // Weak pointer factory so we can start connections at a later time
+  // without worrying that they will actually try to happen after the lifetime
+  // of this object.
+  base::WeakPtrFactory<NetworkMenu> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenu);
 };

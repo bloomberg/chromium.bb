@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
@@ -125,7 +126,8 @@ class NetworkMenuModel : public ui::MenuModel {
   };
   typedef std::vector<MenuItem> MenuItemVector;
 
-  explicit NetworkMenuModel(NetworkMenu* owner) : owner_(owner) {}
+  explicit NetworkMenuModel(const base::WeakPtr<NetworkMenu>& owner)
+    : owner_(owner) {}
   virtual ~NetworkMenuModel() {}
 
   // Connect or reconnect to the network at |index|.
@@ -188,7 +190,7 @@ class NetworkMenuModel : public ui::MenuModel {
   MenuItemVector menu_items_;
 
   // Weak pointer to NetworkMenu that owns this MenuModel.
-  NetworkMenu* owner_;
+  base::WeakPtr<NetworkMenu> owner_;
 
   // Top up URL of the current carrier on empty string if there's none.
   std::string top_up_url_;
@@ -211,7 +213,8 @@ class NetworkMenuModel : public ui::MenuModel {
 
 class MoreMenuModel : public NetworkMenuModel {
  public:
-  explicit MoreMenuModel(NetworkMenu* owner) : NetworkMenuModel(owner) {}
+  explicit MoreMenuModel(const base::WeakPtr<NetworkMenu> owner)
+    : NetworkMenuModel(owner) {}
   virtual ~MoreMenuModel() {}
 
   // NetworkMenuModel implementation.
@@ -226,7 +229,8 @@ class MoreMenuModel : public NetworkMenuModel {
 
 class VPNMenuModel : public NetworkMenuModel {
  public:
-  explicit VPNMenuModel(NetworkMenu* owner) : NetworkMenuModel(owner) {}
+  explicit VPNMenuModel(const base::WeakPtr<NetworkMenu>& owner)
+    : NetworkMenuModel(owner) {}
   virtual ~VPNMenuModel() {}
 
   // NetworkMenuModel implementation.
@@ -241,7 +245,7 @@ class VPNMenuModel : public NetworkMenuModel {
 
 class MainMenuModel : public NetworkMenuModel {
  public:
-  explicit MainMenuModel(NetworkMenu* owner)
+  explicit MainMenuModel(const base::WeakPtr<NetworkMenu>& owner)
       : NetworkMenuModel(owner),
         vpn_menu_model_(new VPNMenuModel(owner)),
         more_menu_model_(new MoreMenuModel(owner)) {
@@ -280,13 +284,10 @@ void NetworkMenuModel::ConnectToNetworkAt(int index,
       if (wifi->connecting_or_connected()) {
         // Show the config settings for the active network.
         owner_->ShowTabbedNetworkSettings(wifi);
-      } else if (wifi->IsPassphraseRequired()) {
-        // Show the connection UI if we require a passphrase.
-        ShowNetworkConfigView(new NetworkConfigView(wifi));
       } else {
-        cros->ConnectToWifiNetwork(wifi);
-        // Connection failures are responsible for updating the UI, including
-        // reopening dialogs.
+        wifi->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
+                                           owner_,
+                                           wifi));
       }
     } else {
       // If we are attempting to connect to a network that no longer exists,
@@ -332,13 +333,10 @@ void NetworkMenuModel::ConnectToNetworkAt(int index,
         // Show the config settings for the connected network.
         if (cros->connected_network())
           owner_->ShowTabbedNetworkSettings(cros->connected_network());
-      } else if (vpn->NeedMoreInfoToConnect()) {
-      // Show the connection UI if info for a field is missing.
-        ShowNetworkConfigView(new NetworkConfigView(vpn));
       } else {
-        cros->ConnectToVirtualNetwork(vpn);
-        // Connection failures are responsible for updating the UI, including
-        // reopening dialogs.
+        vpn->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
+                                          owner_,
+                                          vpn));
       }
     } else {
       // If we are attempting to connect to a network that no longer exists,
@@ -976,8 +974,9 @@ NetworkMenu::NetworkMenu(Delegate* delegate)
     : delegate_(delegate),
       refreshing_menu_(false),
       menu_item_view_(NULL),
-      min_width_(kDefaultMinimumWidth) {
-  main_menu_model_.reset(new MainMenuModel(this));
+      min_width_(kDefaultMinimumWidth),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_pointer_factory_(this)) {
+  main_menu_model_.reset(new MainMenuModel(weak_pointer_factory_.GetWeakPtr()));
   menu_model_adapter_.reset(
       new views::MenuModelAdapter(main_menu_model_.get()));
   menu_item_view_ = new views::MenuItemView(menu_model_adapter_.get());
@@ -1046,6 +1045,40 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
       network->type(),
       net::EscapeUrlEncodedData(network_name, false).c_str());
   browser->ShowOptionsTab(page);
+}
+
+void NetworkMenu::DoConnect(Network* network) {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  if (network->type() == TYPE_VPN) {
+    VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
+    if (vpn->NeedMoreInfoToConnect()) {
+      // Show the connection UI if info for a field is missing.
+      NetworkConfigView* view = new NetworkConfigView(vpn);
+      views::Widget* window = browser::CreateViewsWindow(
+          delegate()->GetNativeWindow(), view, STYLE_GENERIC);
+      window->SetAlwaysOnTop(true);
+      window->Show();
+    } else {
+      cros->ConnectToVirtualNetwork(vpn);
+      // Connection failures are responsible for updating the UI, including
+      // reopening dialogs.
+    }
+  }
+  if (network->type() == TYPE_WIFI) {
+    WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
+    if (wifi->IsPassphraseRequired()) {
+      // Show the connection UI if we require a passphrase.
+      NetworkConfigView* view = new NetworkConfigView(wifi);
+      views::Widget* window = browser::CreateViewsWindow(
+          delegate()->GetNativeWindow(), view, STYLE_GENERIC);
+      window->SetAlwaysOnTop(true);
+      window->Show();
+    } else {
+      cros->ConnectToWifiNetwork(wifi);
+      // Connection failures are responsible for updating the UI, including
+      // reopening dialogs.
+    }
+  }
 }
 
 }  // namespace chromeos

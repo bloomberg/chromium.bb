@@ -190,19 +190,6 @@ NetworkProfileType GetProfileTypeForSource(NetworkUIData::ONCSource source) {
   return PROFILE_NONE;
 }
 
-void DoEnrollmentIfNeeded(Network::EnrollmentHandler* enrollment_handler,
-                          const std::vector<std::string>& uri_list) {
-  if (enrollment_handler && !uri_list.empty()) {
-    // Launch the enrollment URI from the pattern, based on finding the first
-    // scheme in the list that we can handle.
-    for (std::vector<std::string>::const_iterator iter = uri_list.begin();
-        iter != uri_list.end(); ++iter) {
-      if (enrollment_handler->Enroll(*iter))
-        break;
-    }
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // glib
 
@@ -617,6 +604,12 @@ void Network::ClearUIData() {
   ClearProperty(flimflam::kUIDataProperty);
 }
 
+void Network::AttemptConnection(const base::Closure& closure) {
+  // By default, just invoke the closure right away.  Some subclasses
+  // (Wifi, VPN, etc.) override to do more work.
+  closure.Run();
+}
+
 void Network::SetProfilePath(const std::string& profile_path) {
   VLOG(1) << "Setting profile for: " << name_ << " to: " << profile_path;
   SetOrClearStringProperty(
@@ -775,6 +768,10 @@ bool VirtualNetwork::RequiresUserProfile() const {
   return true;
 }
 
+void VirtualNetwork::AttemptConnection(const base::Closure& closure) {
+  MatchCertificatePattern(closure);
+}
+
 void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
   DCHECK_EQ(remembered->type(), TYPE_VPN);
   VirtualNetwork* remembered_vpn = static_cast<VirtualNetwork*>(remembered);
@@ -915,11 +912,14 @@ void VirtualNetwork::SetCertificateSlotAndPin(
   }
 }
 
-bool VirtualNetwork::MatchCertificatePattern() {
+void VirtualNetwork::MatchCertificatePattern(const base::Closure& closure) {
   DCHECK(client_cert_type_ == CLIENT_CERT_TYPE_PATTERN);
   DCHECK(!client_cert_pattern()->Empty());
-  if (client_cert_pattern()->Empty())
-    return true;
+  if (client_cert_pattern()->Empty()) {
+    closure.Run();
+    return;
+  }
+
   scoped_refptr<net::X509Certificate> matching_cert =
       client_cert_pattern()->GetMatch();
   if (matching_cert.get()) {
@@ -932,12 +932,16 @@ bool VirtualNetwork::MatchCertificatePattern() {
       SetStringProperty(flimflam::kL2tpIpsecClientCertIdProperty,
                         client_cert_id, &client_cert_id_);
     }
-    return true;
   } else {
-    DoEnrollmentIfNeeded(enrollment_handler(),
-                         client_cert_pattern()->enrollment_uri_list());
-    return false;
+    if (enrollment_handler()) {
+      enrollment_handler()->Enroll(client_cert_pattern()->enrollment_uri_list(),
+                                   closure);
+      // Enrollment handler will take care of running the closure at the
+      // appropriate time, if the user doesn't cancel.
+      return;
+    }
   }
+  closure.Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1601,15 +1605,20 @@ bool WifiNetwork::RequiresUserProfile() const {
   return true;
 }
 
+void WifiNetwork::AttemptConnection(const base::Closure& closure) {
+  MatchCertificatePattern(closure);
+}
+
 void WifiNetwork::SetCertificatePin(const std::string& pin) {
   SetOrClearStringProperty(flimflam::kEapPinProperty, pin, NULL);
 }
 
-bool WifiNetwork::MatchCertificatePattern() {
+void WifiNetwork::MatchCertificatePattern(const base::Closure& closure) {
   DCHECK(eap_client_cert_type_ == CLIENT_CERT_TYPE_PATTERN);
   DCHECK(!client_cert_pattern()->Empty());
   if (client_cert_pattern()->Empty()) {
-    return false;
+    closure.Run();
+    return;
   }
 
   scoped_refptr<net::X509Certificate> matching_cert =
@@ -1617,18 +1626,22 @@ bool WifiNetwork::MatchCertificatePattern() {
   if (matching_cert.get()) {
     SetEAPClientCertPkcs11Id(
         x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle()));
-    return true;
   } else {
-    DoEnrollmentIfNeeded(enrollment_handler(),
-                         client_cert_pattern()->enrollment_uri_list());
-    return false;
+    if (enrollment_handler()) {
+      enrollment_handler()->Enroll(client_cert_pattern()->enrollment_uri_list(),
+                                   closure);
+      // Enrollment handler will take care of running the closure at the
+      // appropriate time, if the user doesn't cancel.
+      return;
+    }
   }
+  closure.Run();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary
 
-class NetworkLibraryImplBase : public NetworkLibrary  {
+class NetworkLibraryImplBase : public NetworkLibrary {
  public:
   NetworkLibraryImplBase();
   virtual ~NetworkLibraryImplBase();
@@ -2115,7 +2128,7 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
   // List of networks to move to the user profile once logged in.
   std::list<std::string> user_networks_;
 
-  // Weak pointer factory for cancelling a network change callback.
+  // Weak pointer factory for canceling a network change callback.
   base::WeakPtrFactory<NetworkLibraryImplBase> notify_manager_weak_factory_;
 
   // Cellular plan payment time.
@@ -2712,9 +2725,14 @@ void NetworkLibraryImplBase::NetworkConnectStartWifi(
     if (!tpm_pin.empty())
       wifi->SetCertificatePin(tpm_pin);
 
-    if (wifi->eap_client_cert_type() == CLIENT_CERT_TYPE_PATTERN &&
-        !wifi->MatchCertificatePattern()) {
-        return;
+    // For certificate patterns, we have to delay the connect start.
+    if (wifi->eap_client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
+      wifi->MatchCertificatePattern(
+          base::Bind(&NetworkLibraryImplBase::NetworkConnectStart,
+                     notify_manager_weak_factory_.GetWeakPtr(),
+                     wifi,
+                     profile_type));
+      return;
     }
   }
   NetworkConnectStart(wifi, profile_type);
@@ -2730,9 +2748,13 @@ void NetworkLibraryImplBase::NetworkConnectStartVPN(VirtualNetwork* vpn) {
     vpn->SetCertificateSlotAndPin(tpm_slot, tpm_pin);
   }
   // Resolve any certificate pattern.
-  if (vpn->client_cert_type() == CLIENT_CERT_TYPE_PATTERN &&
-      !vpn->MatchCertificatePattern()) {
-      return;
+  if (vpn->client_cert_type() == CLIENT_CERT_TYPE_PATTERN) {
+    vpn->MatchCertificatePattern(
+        base::Bind(&NetworkLibraryImplBase::NetworkConnectStart,
+                   notify_manager_weak_factory_.GetWeakPtr(),
+                   vpn,
+                   PROFILE_NONE));
+    return;
   }
   NetworkConnectStart(vpn, PROFILE_NONE);
 }

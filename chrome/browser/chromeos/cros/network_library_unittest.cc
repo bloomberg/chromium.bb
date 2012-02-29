@@ -5,7 +5,11 @@
 #include <cert.h>
 #include <pk11pub.h>
 
+#include <vector>
+#include <string>
+
 #include "base/at_exit.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
@@ -32,9 +36,34 @@ int32 GetPrefixLength(std::string netmask) {
       netmask, std::string(), std::string()).GetPrefixLength();
 }
 
-class MockEnrollmentHandler : public Network::EnrollmentHandler {
+// Have to do a stub here because MOCK can't handle closure arguments.
+class StubEnrollmentHandler : public Network::EnrollmentHandler {
  public:
-  MOCK_METHOD1(Enroll, bool(const std::string& uri));
+  explicit StubEnrollmentHandler(OncNetworkParser* parser)
+    : did_enroll(false), correct_args(false), parser_(parser) {}
+
+  void Enroll(const std::vector<std::string>& uri_list,
+              const base::Closure& closure) {
+    std::vector<std::string> expected_uri_list;
+    expected_uri_list.push_back("http://youtu.be/dQw4w9WgXcQ");
+    expected_uri_list.push_back("chrome-extension://abc/keygen-cert.html");
+    if (uri_list == expected_uri_list)
+      correct_args = true;
+
+    scoped_refptr<net::X509Certificate> certificate0(
+        parser_->ParseCertificate(0));
+    scoped_refptr<net::X509Certificate> certificate1(
+        parser_->ParseCertificate(1));
+
+    if (certificate0.get() && certificate1.get()) {
+      did_enroll = true;
+      closure.Run();
+    }
+  }
+
+  bool did_enroll;
+  bool correct_args;
+  OncNetworkParser* parser_;
 };
 
 }  // namespace
@@ -318,15 +347,12 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncWifi) {
   scoped_ptr<Network> network(parser.ParseNetwork(0));
   ASSERT_TRUE(network.get());
 
-  MockEnrollmentHandler* enrollment_handler = new MockEnrollmentHandler;
-  EXPECT_CALL(*enrollment_handler,
-              Enroll("http://youtu.be/dQw4w9WgXcQ")).
-              WillOnce(Return(false));
-  EXPECT_CALL(*enrollment_handler,
-              Enroll("chrome-extension://abc/keygen-cert.html")).
-              WillOnce(Return(true));
+  StubEnrollmentHandler* enrollment_handler =
+      new StubEnrollmentHandler(&parser);
 
   network->SetEnrollmentHandler(enrollment_handler);
+  EXPECT_FALSE(enrollment_handler->did_enroll);
+  EXPECT_FALSE(enrollment_handler->correct_args);
   WifiNetwork* wifi1 = static_cast<WifiNetwork*>(network.get());
 
   ASSERT_NE(static_cast<const WifiNetwork*>(NULL), wifi1);
@@ -334,17 +360,9 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncWifi) {
   EXPECT_TRUE(cros_->CanConnectToNetwork(wifi1));
   EXPECT_FALSE(wifi1->connected());
   cros_->ConnectToWifiNetwork(wifi1);
-  EXPECT_FALSE(wifi1->connected());
-
-  scoped_refptr<net::X509Certificate> certificate0(parser.ParseCertificate(0));
-  scoped_refptr<net::X509Certificate> certificate1(parser.ParseCertificate(1));
-
-  EXPECT_FALSE(wifi1->connected());
-  EXPECT_TRUE(cros_->CanConnectToNetwork(wifi1));
-  cros_->ConnectToWifiNetwork(wifi1);
   EXPECT_TRUE(wifi1->connected());
-  cros_->ConnectToWifiNetwork(wifi1);
-  EXPECT_TRUE(wifi1->connected());
+  EXPECT_TRUE(enrollment_handler->did_enroll);
+  EXPECT_TRUE(enrollment_handler->correct_args);
 }
 
 TEST_F(NetworkLibraryStubTest, NetworkConnectOncVPN) {
@@ -358,15 +376,12 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncVPN) {
   scoped_ptr<Network> network(parser.ParseNetwork(0));
   ASSERT_TRUE(network.get());
 
-  MockEnrollmentHandler* enrollment_handler = new MockEnrollmentHandler;
-  EXPECT_CALL(*enrollment_handler,
-              Enroll("http://youtu.be/dQw4w9WgXcQ")).
-              WillOnce(Return(false));
-  EXPECT_CALL(*enrollment_handler,
-              Enroll("chrome-extension://abc/keygen-cert.html")).
-              WillOnce(Return(true));
+  StubEnrollmentHandler* enrollment_handler =
+      new StubEnrollmentHandler(&parser);
 
   network->SetEnrollmentHandler(enrollment_handler);
+  EXPECT_FALSE(enrollment_handler->did_enroll);
+  EXPECT_FALSE(enrollment_handler->correct_args);
   VirtualNetwork* vpn1 = static_cast<VirtualNetwork*>(network.get());
 
   ASSERT_NE(static_cast<const VirtualNetwork*>(NULL), vpn1);
@@ -374,17 +389,9 @@ TEST_F(NetworkLibraryStubTest, NetworkConnectOncVPN) {
   EXPECT_TRUE(cros_->CanConnectToNetwork(vpn1));
   EXPECT_FALSE(vpn1->connected());
   cros_->ConnectToVirtualNetwork(vpn1);
-  EXPECT_FALSE(vpn1->connected());
-
-  scoped_refptr<net::X509Certificate> certificate0(parser.ParseCertificate(0));
-  scoped_refptr<net::X509Certificate> certificate1(parser.ParseCertificate(1));
-
-  EXPECT_FALSE(vpn1->connected());
-  EXPECT_TRUE(cros_->CanConnectToNetwork(vpn1));
-  cros_->ConnectToVirtualNetwork(vpn1);
   EXPECT_TRUE(vpn1->connected());
-  cros_->ConnectToVirtualNetwork(vpn1);
-  EXPECT_TRUE(vpn1->connected());
+  EXPECT_TRUE(enrollment_handler->did_enroll);
+  EXPECT_TRUE(enrollment_handler->correct_args);
 }
 
 TEST_F(NetworkLibraryStubTest, NetworkConnectVPN) {
