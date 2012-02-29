@@ -5,6 +5,7 @@
 #ifndef REMOTING_JINGLE_GLUE_FAKE_SIGNAL_STRATEGY_H_
 #define REMOTING_JINGLE_GLUE_FAKE_SIGNAL_STRATEGY_H_
 
+#include <list>
 #include <queue>
 #include <string>
 
@@ -23,6 +24,10 @@ class FakeSignalStrategy : public SignalStrategy,
 
   FakeSignalStrategy(const std::string& jid);
   virtual ~FakeSignalStrategy();
+
+  const std::list<buzz::XmlElement*>& received_messages() {
+    return received_messages_;
+  }
 
   // SignalStrategy interface.
   virtual void Connect() OVERRIDE;
@@ -46,6 +51,10 @@ class FakeSignalStrategy : public SignalStrategy,
 
   int last_id_;
 
+  // All received messages, includes thouse still in |pending_messages_|.
+  std::list<buzz::XmlElement*> received_messages_;
+
+  // Queue of messages that have yet to be delivered to observers.
   std::queue<buzz::XmlElement*> pending_messages_;
 
   base::WeakPtrFactory<FakeSignalStrategy> weak_factory_;

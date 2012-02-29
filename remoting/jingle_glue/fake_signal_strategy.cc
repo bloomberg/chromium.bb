@@ -30,9 +30,9 @@ FakeSignalStrategy::FakeSignalStrategy(const std::string& jid)
 }
 
 FakeSignalStrategy::~FakeSignalStrategy() {
-  while (!pending_messages_.empty()) {
-    delete pending_messages_.front();
-    pending_messages_.pop();
+  while (!received_messages_.empty()) {
+    delete received_messages_.front();
+    received_messages_.pop_front();
   }
 }
 
@@ -87,7 +87,8 @@ std::string FakeSignalStrategy::GetNextId() {
 
 void FakeSignalStrategy::OnIncomingMessage(
     scoped_ptr<buzz::XmlElement> stanza) {
-  pending_messages_.push(stanza.release());
+  pending_messages_.push(stanza.get());
+  received_messages_.push_back(stanza.release());
   MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&FakeSignalStrategy::DeliverIncomingMessages,
                             weak_factory_.GetWeakPtr()));
@@ -112,7 +113,6 @@ void FakeSignalStrategy::DeliverIncomingMessages() {
     }
 
     pending_messages_.pop();
-    delete stanza;
   }
 }
 

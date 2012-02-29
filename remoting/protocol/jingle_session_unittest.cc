@@ -312,6 +312,16 @@ TEST_F(JingleSessionTest, RejectConnection) {
 TEST_F(JingleSessionTest, Connect) {
   CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
   InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
+
+  // Verify that the client specified correct initiator value.
+  ASSERT_GT(host_signal_strategy_->received_messages().size(), 0U);
+  const buzz::XmlElement* initiate_xml =
+      host_signal_strategy_->received_messages().front();
+  const buzz::XmlElement* jingle_element =
+      initiate_xml->FirstNamed(buzz::QName(kJingleNamespace, "jingle"));
+  ASSERT_TRUE(jingle_element);
+  ASSERT_EQ(kClientJid,
+            jingle_element->Attr(buzz::QName("", "initiator")));
 }
 
 // Verify that we can connect two endpoints with multi-step authentication.
