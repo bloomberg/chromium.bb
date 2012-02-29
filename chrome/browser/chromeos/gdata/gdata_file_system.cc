@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "base/platform_file.h"
 #include "base/stringprintf.h"
@@ -318,6 +319,22 @@ GDataFileSystem::~GDataFileSystem() {
 void GDataFileSystem::Shutdown() {
   // TODO(satorux): We should probably cancel or wait for the in-flight
   // operation here.
+}
+
+void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
+  if (documents_service_->IsFullyAuthenticated()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, gdata::HTTP_SUCCESS,
+                   documents_service_->oauth2_auth_token()));
+  } else if (documents_service_->IsPartiallyAuthenticated()) {
+    // We have refresh token, let's gets authenticated.
+    documents_service_->StartAuthentication(callback);
+  } else {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, gdata::HTTP_SUCCESS, std::string()));
+  }
 }
 
 void GDataFileSystem::FindFileByPath(

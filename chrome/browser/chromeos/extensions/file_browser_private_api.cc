@@ -1290,21 +1290,9 @@ bool AddMountFunction::RunImpl() {
     case chromeos::MOUNT_TYPE_GDATA: {
       gdata::GDataFileSystem* file_system =
           gdata::GDataFileSystemFactory::GetForProfile(profile_);
-      // TODO(satorux): DocumentsService should not be used directly.
-      gdata::DocumentsService* service = file_system->documents_service();
-      if (service->IsFullyAuthenticated()) {
-        AddGDataMountPoint();
-        RaiseGDataMountEvent(gdata::HTTP_SUCCESS, service->oauth2_auth_token());
-        SendResponse(true);
-      } else if (service->IsPartiallyAuthenticated()) {
-        // We have refresh token, let's gets authenticated.
-        service->StartAuthentication(
-            base::Bind(&AddMountFunction::OnGDataAuthentication,
-                       this));
-      } else {
-        RaiseGDataMountEvent(gdata::HTTP_UNAUTHORIZED, std::string());
-        SendResponse(true);
-      }
+      file_system->Authenticate(
+          base::Bind(&AddMountFunction::OnGDataAuthentication,
+                     this));
       break;
     }
     default: {

@@ -227,6 +227,11 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
+  // Authenticates the user by fetching the auth token as
+  // needed. |callback| will be run with the error code and the auth
+  // token, on the thread this function is run.
+  void Authenticate(const AuthStatusCallback& callback);
+
   // Finds file info by using virtual |file_path|. If |require_content| is set,
   // the found directory will be pre-populated before passed back to the
   // |delegate|. If |allow_refresh| is not set, directories' content
@@ -251,10 +256,6 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
   // RefreshFeedOnUIThread() method which will initiated content fetching from
   // UI thread as required by gdata library (UrlFetcher).
   void StartDirectoryRefresh(const FindFileParams& params);
-
-  // Returns the documents service for this file system.
-  // TODO(satorux): Should stop exposing this. crosbug.com/27050.
-  DocumentsService* documents_service() { return documents_service_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<GDataFileSystem>;
