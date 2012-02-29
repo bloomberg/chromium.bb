@@ -277,6 +277,8 @@
       'utility/graphics/paint_manager.h',
       'utility/threading/simple_thread.cc',
       'utility/threading/simple_thread.h',
+      'utility/websocket/websocket_api.cc',
+      'utility/websocket/websocket_api.h',
     ],
     #
     # Common Testing source for trusted and untrusted (NaCl) pugins.
