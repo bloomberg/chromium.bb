@@ -1936,7 +1936,7 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 
 	if (device->drag_surface->output == NULL &&
 	    device->drag_surface->buffer) {
-		wl_list_insert(weston_compositor_top(device->compositor),
+		wl_list_insert(&device->sprite->link,
 			       &device->drag_surface->link);
 		weston_surface_assign_output(device->drag_surface);
 		empty_region(&device->drag_surface->input);
