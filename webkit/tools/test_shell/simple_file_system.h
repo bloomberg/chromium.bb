@@ -79,6 +79,10 @@ class SimpleFileSystem
       WebKit::WebFileSystemCallbacks*) OVERRIDE;
   virtual WebKit::WebFileWriter* createFileWriter(
       const WebKit::WebURL& path, WebKit::WebFileWriterClient*) OVERRIDE;
+  virtual void createSnapshotFileAndReadMetadata(
+      const WebKit::WebURL& blobURL,
+      const WebKit::WebURL& path,
+      WebKit::WebFileSystemCallbacks* callbacks) OVERRIDE;
 
  private:
   // Helpers.
@@ -94,6 +98,8 @@ class SimpleFileSystem
       ReadDirectoryHandler(WebKit::WebFileSystemCallbacks* callbacks);
   fileapi::FileSystemContext::OpenFileSystemCallback OpenFileSystemHandler(
       WebKit::WebFileSystemCallbacks* callbacks);
+  fileapi::FileSystemOperationInterface::SnapshotFileCallback
+      SnapshotFileHandler(WebKit::WebFileSystemCallbacks* callbacks);
   void DidFinish(WebKit::WebFileSystemCallbacks* callbacks,
                  base::PlatformFileError result);
   void DidGetMetadata(WebKit::WebFileSystemCallbacks* callbacks,
@@ -108,6 +114,12 @@ class SimpleFileSystem
   void DidOpenFileSystem(WebKit::WebFileSystemCallbacks* callbacks,
                          base::PlatformFileError result,
                          const std::string& name, const GURL& root);
+  void DidCreateSnapshotFile(
+      WebKit::WebFileSystemCallbacks* callbacks,
+      base::PlatformFileError result,
+      const base::PlatformFileInfo& info,
+      const FilePath& platform_path,
+      const scoped_refptr<webkit_blob::DeletableFileReference>& deletable_ref);
 
   // A temporary directory for FileSystem API.
   ScopedTempDir file_system_dir_;

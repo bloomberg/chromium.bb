@@ -148,6 +148,15 @@ WebFileWriter* SimpleFileSystem::createFileWriter(
   return new SimpleFileWriter(path, client, file_system_context_.get());
 }
 
+void SimpleFileSystem::createSnapshotFileAndReadMetadata(
+    const WebURL& blobURL,
+    const WebURL& path,
+    WebFileSystemCallbacks* callbacks) {
+  // Not registering blobURL for this simplified version.
+  GetNewOperation(path)->CreateSnapshotFile(
+      path, SnapshotFileHandler(callbacks));
+}
+
 FileSystemOperationInterface* SimpleFileSystem::GetNewOperation(
     const WebURL& url) {
   return file_system_context_->CreateFileSystemOperation(
@@ -176,6 +185,12 @@ SimpleFileSystem::GetMetadataHandler(WebFileSystemCallbacks* callbacks) {
 FileSystemContext::OpenFileSystemCallback
 SimpleFileSystem::OpenFileSystemHandler(WebFileSystemCallbacks* callbacks) {
   return base::Bind(&SimpleFileSystem::DidOpenFileSystem,
+                    AsWeakPtr(), base::Unretained(callbacks));
+}
+
+FileSystemOperationInterface::SnapshotFileCallback
+SimpleFileSystem::SnapshotFileHandler(WebFileSystemCallbacks* callbacks) {
+  return base::Bind(&SimpleFileSystem::DidCreateSnapshotFile,
                     AsWeakPtr(), base::Unretained(callbacks));
 }
 
@@ -238,4 +253,13 @@ void SimpleFileSystem::DidOpenFileSystem(
   } else {
     callbacks->didFail(webkit_glue::PlatformFileErrorToWebFileError(result));
   }
+}
+
+void SimpleFileSystem::DidCreateSnapshotFile(
+    WebFileSystemCallbacks* callbacks,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& info,
+    const FilePath& platform_path,
+    const scoped_refptr<webkit_blob::DeletableFileReference>& deletable_ref) {
+  DidGetMetadata(callbacks, result, info, platform_path);
 }
