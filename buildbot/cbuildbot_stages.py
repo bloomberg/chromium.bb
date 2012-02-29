@@ -770,10 +770,6 @@ class VMTestStage(BoardSpecificBuilderStage):
       test_results_dir = None
       tests_passed = False
 
-      # VM tests should run with higher priority than other tasks
-      # because they are usually the bottleneck, and don't use much CPU.
-      background.SetNiceness(foreground=True)
-
       # Payloads dir is not in the chroot as ctest archives them outside of
       # the chroot.
       payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')

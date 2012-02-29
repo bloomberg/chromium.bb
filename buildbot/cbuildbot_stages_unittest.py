@@ -438,8 +438,6 @@ class VMTestStageTest(AbstractStageTest):
     AbstractStageTest.setUp(self)
     self.fake_results_dir = '/tmp/fake_results_dir'
     self.fake_chroot_results_dir = '/my/fake_chroot/tmp/fake_results_dir'
-    self.mox.StubOutWithMock(background, 'SetNiceness')
-    background.SetNiceness(foreground=True)
     self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
 

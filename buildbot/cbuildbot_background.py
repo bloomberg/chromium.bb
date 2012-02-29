@@ -18,32 +18,6 @@ from chromite.lib import cros_build_lib as cros_lib
 _PRINT_INTERVAL = 1
 
 
-def SetNiceness(foreground):
-  """Set the niceness of this process.
-
-  Args:
-    foreground: If set, the process runs with higher priority. This means
-    that the process will be scheduled more often when accessing resources
-    (e.g. cpu and disk).
-  """
-  # Note: -c 2 means best effort priority.
-  pid_str = str(os.getpid())
-  ionice_cmd = ['ionice', '-p', pid_str, '-c', '2']
-  renice_cmd = ['renice']
-  if foreground:
-    # Set this program to foreground priority. ionice and negative niceness
-    # is honored by sudo and passed to subprocesses.
-    ionice_cmd.extend(['-n', '0'])
-    renice_cmd.extend(['-n', '-20', '-p', pid_str])
-  else:
-    # Set this program to background priority. Positive niceness isn't
-    # inherited by sudo, so we just set to zero.
-    ionice_cmd.extend(['-n', '7'])
-    renice_cmd.extend(['-n', '0', '-p', pid_str])
-  cros_lib.RunCommand(ionice_cmd, print_cmd=False)
-  cros_lib.SudoRunCommand(renice_cmd, print_cmd=False, redirect_stdout=True)
-
-
 class BackgroundException(Exception):
   pass
 
@@ -108,9 +82,6 @@ class BackgroundSteps(multiprocessing.Process):
 
   def run(self):
     """Run the list of steps."""
-
-    # Be nice so that foreground processes get CPU if they need it.
-    SetNiceness(foreground=False)
 
     stdout_fileno = sys.stdout.fileno()
     stderr_fileno = sys.stderr.fileno()
