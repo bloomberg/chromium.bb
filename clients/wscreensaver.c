@@ -268,7 +268,7 @@ init_wscreensaver(struct wscreensaver *wscr, struct display *display)
 	}
 
 	eglBindAPI(EGL_OPENGL_API);
-	wscr->egl.config = display_get_rgb_egl_config(wscr->display);
+	wscr->egl.config = display_get_argb_egl_config(wscr->display);
 
 	if (demo_mode) {
 		struct wl_output *o =
