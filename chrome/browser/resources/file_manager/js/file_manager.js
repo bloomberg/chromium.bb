@@ -509,9 +509,9 @@ FileManager.prototype = {
       self.currentList_.endBatchUpdates();
     });
     this.directoryModel_.addEventListener('scan-started',
-                                          this.showSpinner_.bind(this, true));
+        this.showSpinnerLater_.bind(this));
     this.directoryModel_.addEventListener('scan-completed',
-                                          this.showSpinner_.bind(this, false));
+        this.showSpinner_.bind(this, false));
     this.addEventListener('selection-summarized',
                           this.onSelectionSummarized_.bind(this));
 
@@ -3405,7 +3405,21 @@ FileManager.prototype = {
     setTimeout(this.onResize_.bind(this), 300);
   };
 
+  FileManager.prototype.cancelSpinnerTimeout_ = function() {
+    if (this.showSpinnerTimeout_) {
+      clearTimeout(this.showSpinnerTimeout_);
+      this.showSpinnerTimeout_ = null;
+    }
+  };
+
+  FileManager.prototype.showSpinnerLater_ = function() {
+    this.cancelSpinnerTimeout_();
+    this.showSpinnerTimeout_ =
+        setTimeout(this.showSpinner_.bind(this, true), 500);
+  };
+
   FileManager.prototype.showSpinner_ = function(on) {
+    this.cancelSpinnerTimeout_();
     this.spinner_.style.display = on ? '' : 'none';
   };
 
