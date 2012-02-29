@@ -24,6 +24,16 @@ class PDFTest(pyauto.PyUITest):
       tab_index: tab index  Defaults to 0
       windex: window index.  Defaults to 0
     """
+    # Sometimes the zoom/fit bar is not fully loaded.  We need to wait for it to
+    # load before we can perform actions.
+    js = """if (document.getElementsByName("plugin") &&
+      document.getElementsByName("plugin")[0])
+      { window.domAutomationController.send("true"); }
+      else {window.domAutomationController.send("false"); }"""
+    self.assertTrue(self.WaitUntil(lambda: self.ExecuteJavascript(js,
+      tab_index=tab_index, windex=windex), expect_retval="true"),
+      msg='Could not find zoom/fit to page/width bar so we will not be able '
+          'to peform the requested action')
     assert action in ('fitToHeight', 'fitToWidth', 'ZoomIn', 'ZoomOut')
     js = 'document.getElementsByName("plugin")[0].%s()' % action
     # Add an empty string so that there's something to return back
