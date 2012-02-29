@@ -72,8 +72,7 @@ class FileSystemFileUtil {
       const FileSystemPath& path,
       bool recursive);
 
-  // Creates or opens a file with the given flags.  It is invalid to pass NULL
-  // for the callback.
+  // Creates or opens a file with the given flags.
   // If PLATFORM_FILE_CREATE is set in |file_flags| it always tries to create
   // a new file at the given |path| and calls back with
   // PLATFORM_FILE_ERROR_FILE_EXISTS if the |path| already exists.
@@ -84,7 +83,7 @@ class FileSystemFileUtil {
       PlatformFile* file_handle,
       bool* created);
 
-  // Close the given file handle.
+  // Closes the given file handle.
   virtual PlatformFileError Close(
       FileSystemOperationContext* context,
       PlatformFile);
@@ -92,7 +91,7 @@ class FileSystemFileUtil {
   // Ensures that the given |path| exist.  This creates a empty new file
   // at |path| if the |path| does not exist.
   // If a new file han not existed and is created at the |path|,
-  // |created| of the callback argument is set true and |error code|
+  // |created| is set true and |error code|
   // is set PLATFORM_FILE_OK.
   // If the file already exists, |created| is set false and |error code|
   // is set PLATFORM_FILE_OK.
@@ -110,8 +109,7 @@ class FileSystemFileUtil {
       bool exclusive,
       bool recursive);
 
-  // Retrieves the information about a file.  It is invalid to pass NULL for the
-  // callback.
+  // Retrieves the information about a file.
   virtual PlatformFileError GetFileInfo(
       FileSystemOperationContext* context,
       const FileSystemPath& path,
@@ -143,7 +141,7 @@ class FileSystemFileUtil {
       const FileSystemPath& file_system_path,
       FilePath* local_file_path);
 
-  // Touches a file. The callback can be NULL.
+  // Touches a file.
   // If the file doesn't exist, this fails with PLATFORM_FILE_ERROR_NOT_FOUND.
   virtual PlatformFileError Touch(
       FileSystemOperationContext* context,
@@ -153,7 +151,6 @@ class FileSystemFileUtil {
 
   // Truncates a file to the given length. If |length| is greater than the
   // current length of the file, the file will be extended with zeroes.
-  // The callback can be NULL.
   virtual PlatformFileError Truncate(
       FileSystemOperationContext* context,
       const FileSystemPath& path,
