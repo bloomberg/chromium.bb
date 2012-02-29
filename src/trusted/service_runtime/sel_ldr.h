@@ -622,13 +622,6 @@ void NaClPatchOneTrampolineCall(uintptr_t call_target_addr,
 
 #endif
 
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
-     && NACL_BUILD_SUBARCH == 32)
-
-void NaClPatchDebuggerInfo(struct NaClApp *nap);
-
-#endif
-
 void NaClPatchOneTrampoline(struct NaClApp *nap,
                             uintptr_t target_addr);
 /*

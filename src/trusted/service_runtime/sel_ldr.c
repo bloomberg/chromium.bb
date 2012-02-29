@@ -428,13 +428,6 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
    */
   num_syscalls = ((NACL_TRAMPOLINE_END - NACL_SYSCALL_START_ADDR)
                   / NACL_SYSCALL_BLOCK_SIZE) - 1;
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  /*
-   * Use one last entry to tell the debugger address of the nacl_user variable.
-   */
-  num_syscalls--;
-  NaClPatchDebuggerInfo(nap);
-#endif
 
   NaClLog(2, "num_syscalls = %d (0x%x)\n", num_syscalls, num_syscalls);
 

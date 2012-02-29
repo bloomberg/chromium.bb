@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -181,35 +181,6 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
   NaClFillMemoryRegionWithHalt(
       (void *) (nap->mem_start + NACL_TRAMPOLINE_START),
       NACL_TRAMPOLINE_SIZE);
-}
-
-/*
- * TODO(halyavin): use intermediate page to hide trusted code address from
- * untrusted code. http://code.google.com/p/nativeclient/issues/detail?id=2434
- */
-void NaClPatchDebuggerInfo(struct NaClApp *nap) {
-  struct NaClPatchInfo patch_info;
-  struct NaClPatch patch32[1];
-  unsigned char op_code = 0xB8; /* mov eax, imm32 */
-  NaClPatchInfoCtor(&patch_info);
-
-  patch_info.dst = nap->mem_start + NACL_TRAMPOLINE_END -
-                   NACL_SYSCALL_BLOCK_SIZE - 5;
-  patch_info.src = (uintptr_t) &op_code;
-  patch_info.nbytes = 1;
-
-  patch32[0].target = ((uintptr_t) &op_code) + 1;
-  patch32[0].value = (uintptr_t) &nacl_user;
-
-  patch_info.abs32 = patch32;
-  patch_info.num_abs32 = NACL_ARRAY_SIZE(patch32);
-
-  NaClApplyPatchToMemory(&patch_info);
-
-  patch_info.dst -= 5;
-  patch32[0].value = (uintptr_t) &(nap->exception_handler);
-
-  NaClApplyPatchToMemory(&patch_info);
 }
 
 void NaClLoadSpringboard(struct NaClApp  *nap) {

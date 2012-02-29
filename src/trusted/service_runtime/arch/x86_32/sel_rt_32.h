@@ -11,7 +11,6 @@
 #ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__
 #define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__ 1
 
-#include <stddef.h>
 #include "native_client/src/include/portability.h"
 
 uint16_t NaClGetGlobalCs(void);
@@ -121,8 +120,5 @@ struct NaClThreadContext {
   uint32_t    exception_flag;
   /*          44 */
 };
-
-#define NACL_THREAD_CONTEXT_EXCEPTION_HANDLER_OFFSET \
-            offsetof(struct NaClThreadContext, exception_stack)
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__ */
