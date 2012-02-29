@@ -457,6 +457,7 @@ void FactoryRegistry::ResetFunctions() {
 
   // Font settings.
   RegisterFunction<GetFontNameFunction>();
+  RegisterFunction<SetFontNameFunction>();
 
   // ChromeAuth settings.
   RegisterFunction<SetCloudPrintCredentialsFunction>();

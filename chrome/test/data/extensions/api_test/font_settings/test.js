@@ -14,6 +14,14 @@ function expect(expected, message) {
 }
 
 chrome.test.runTests([
+  function setPerScriptFontName() {
+    fs.setFontName({
+      script: 'Hang',
+      genericFamily: 'standard',
+      fontName: 'UnBatang'
+    }, chrome.test.callbackPass());
+  },
+
   function getPerScriptFontName() {
     var expected = 'UnBatang';
     var message = 'Setting for Hangul standard font should be ' + expected;
@@ -21,6 +29,13 @@ chrome.test.runTests([
       script: 'Hang',
       genericFamily: 'standard'
     }, expect({fontName: expected}, message));
+  },
+
+  function setGlobalFontName() {
+    fs.setFontName({
+      genericFamily: 'sansserif',
+      fontName: 'Arial'
+    }, chrome.test.callbackPass());
   },
 
   function getGlobalFontName() {

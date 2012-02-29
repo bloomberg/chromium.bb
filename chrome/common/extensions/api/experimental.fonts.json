@@ -42,6 +42,40 @@
             ]
           }
         ]
+      },
+      {
+        "name": "setFontName",
+        "type": "function",
+        "description": "Sets the font name of the current setting for a given script and font family.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "script": {
+                "type": "string",
+                "enum": ["Arab", "Hang", "Hans", "Hant", "Hrkt"],
+                "description": "The ISO 15924 script code for which the font setting should be retrieved. If omitted, the global script font setting is retrieved.",
+                "optional": true
+              },
+              "genericFamily": {
+                "type": "string",
+                "enum": ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"],
+                "description": "The CSS generic font family for which the font setting should be retrieved."
+              },
+              "fontName": {
+                "type": "string",
+                "description": "The font name."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": "true",
+            "parameters": []
+          }
+        ]
       }
     ]
   }

@@ -31,27 +31,37 @@ const char kWebKitPerScriptFontPrefFormat[] = "webkit.webprefs.fonts.%s.%s";
 const char kWebKitGlobalFontPrefFormat[] =
     "webkit.webprefs.global.%s_font_family";
 
+// Gets the font name preference path from |details| which contains key
+// |kGenericFamilyKey| and optionally |kScriptKey|.
+bool GetFontNamePrefPath(DictionaryValue* details, std::string* pref_path)
+{
+  std::string generic_family;
+  if (!details->GetString(kGenericFamilyKey, &generic_family))
+    return false;
+
+  if (details->HasKey(kScriptKey)) {
+    std::string script;
+    if (!details->GetString(kScriptKey, &script))
+      return false;
+    *pref_path = base::StringPrintf(kWebKitPerScriptFontPrefFormat,
+                                   generic_family.c_str(),
+                                   script.c_str());
+  } else {
+    *pref_path = base::StringPrintf(kWebKitGlobalFontPrefFormat,
+                                   generic_family.c_str());
+  }
+
+  return true;
+}
+
 }  // namespace
 
 bool GetFontNameFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
-  std::string generic_family;
-  EXTENSION_FUNCTION_VALIDATE(details->GetString(kGenericFamilyKey,
-                                                 &generic_family));
-
   std::string pref_path;
-  if (details->HasKey(kScriptKey)) {
-    std::string script;
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(kScriptKey, &script));
-    pref_path = base::StringPrintf(kWebKitPerScriptFontPrefFormat,
-                                   generic_family.c_str(),
-                                   script.c_str());
-  } else {
-    pref_path = base::StringPrintf(kWebKitGlobalFontPrefFormat,
-                                   generic_family.c_str());
-  }
+  EXTENSION_FUNCTION_VALIDATE(GetFontNamePrefPath(details, &pref_path));
 
   PrefService* prefs = profile_->GetPrefs();
   const PrefService::Preference* pref =
@@ -63,5 +73,26 @@ bool GetFontNameFunction::RunImpl() {
   DictionaryValue* result = new DictionaryValue();
   result->SetString(kFontNameKey, font_name);
   result_.reset(result);
+  return true;
+}
+
+bool SetFontNameFunction::RunImpl() {
+  DictionaryValue* details = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+
+  std::string pref_path;
+  EXTENSION_FUNCTION_VALIDATE(GetFontNamePrefPath(details, &pref_path));
+
+  std::string font_name;
+  EXTENSION_FUNCTION_VALIDATE(details->GetString(kFontNameKey, &font_name));
+
+  // Ensure |pref_path| really is for a registered per-script font pref.
+  EXTENSION_FUNCTION_VALIDATE(
+      profile_->GetPrefs()->FindPreference(pref_path.c_str()));
+
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  prefs->SetExtensionControlledPref(extension_id(), pref_path.c_str(),
+                                    kExtensionPrefsScopeRegular,
+                                    base::Value::CreateStringValue(font_name));
   return true;
 }

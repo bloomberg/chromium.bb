@@ -70,6 +70,7 @@
     "chrome.experimental.devtools.console.onMessageAdded": "experimental.devtools.console.html#event-onMessageAdded",
     "chrome.experimental.extension.onInstalled": "experimental.extension.html#event-onInstalled",
     "chrome.experimental.fontSettings.getFontName": "experimental.fontSettings.html#method-getFontName",
+    "chrome.experimental.fontSettings.setFontName": "experimental.fontSettings.html#method-setFontName",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.keybinding.onCommand": "experimental.keybinding.html#event-onCommand",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",

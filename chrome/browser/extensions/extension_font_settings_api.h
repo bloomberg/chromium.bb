@@ -14,4 +14,10 @@ class GetFontNameFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.getFontName")
 };
 
+class SetFontNameFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.setFontName")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__

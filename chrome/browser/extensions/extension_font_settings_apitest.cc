@@ -13,8 +13,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  prefs->SetString(prefs::kWebKitStandardFontFamilyKorean, "UnBatang");
-  prefs->SetString(prefs::kWebKitGlobalSansSerifFontFamily, "Arial");
   EXPECT_TRUE(RunExtensionTest("font_settings")) << message_;
 }
