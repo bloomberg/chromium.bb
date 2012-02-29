@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
+#include "base/timer.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/common/url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
@@ -217,6 +218,11 @@ class URLFetcherImpl::Core
   // Drop ownership of any temp file managed by |temp_file_|.
   void DisownTempFile();
 
+  // Notify Delegate about the progress of downloading.
+  void InformDelegateDownloadProgress();
+  void InformDelegateDownloadProgressInDelegateThread(int64 current,
+                                                      int64 total);
+
   URLFetcherImpl* fetcher_;          // Corresponding fetcher object
   GURL original_url_;                // The URL we were asked to fetch
   GURL url_;                         // The URL we eventually wound up at
@@ -289,6 +295,11 @@ class URLFetcherImpl::Core
   int max_retries_;
   // Back-off time delay. 0 by default.
   base::TimeDelta backoff_delay_;
+
+  // Length of bytes received so far.
+  int64 current_response_bytes_;
+  // Total expected bytes to receive (-1 if it cannot be determined).
+  int64 total_response_bytes_;
 
   static base::LazyInstance<Registry> g_registry;
 
@@ -543,7 +554,9 @@ URLFetcherImpl::Core::Core(URLFetcherImpl* fetcher,
       was_cancelled_(false),
       response_destination_(STRING),
       automatically_retry_on_5xx_(true),
-      max_retries_(0) {
+      max_retries_(0),
+      current_response_bytes_(0),
+      total_response_bytes_(-1) {
 }
 
 URLFetcherImpl::Core::~Core() {
@@ -624,6 +637,7 @@ void URLFetcherImpl::Core::OnResponseStarted(net::URLRequest* request) {
     response_headers_ = request_->response_headers();
     socket_address_ = request_->GetSocketAddress();
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
+    total_response_bytes_ = request_->GetExpectedContentSize();
   }
 
   ReadResponse();
@@ -686,6 +700,9 @@ void URLFetcherImpl::Core::OnReadCompleted(net::URLRequest* request,
   do {
     if (!request_->status().is_success() || bytes_read <= 0)
       break;
+
+    current_response_bytes_ += bytes_read;
+    InformDelegateDownloadProgress();
 
     if (!WriteBuffer(bytes_read)) {
       // If WriteBuffer() returns false, we have a pending write to
@@ -782,6 +799,7 @@ void URLFetcherImpl::Core::StartURLRequest() {
   DCHECK(!request_.get());
 
   g_registry.Get().AddURLFetcherCore(this);
+  current_response_bytes_ = 0;
   request_.reset(new net::URLRequest(original_url_, this));
   int flags = request_->load_flags() | load_flags_;
   if (!g_interception_enabled) {
@@ -885,6 +903,21 @@ void URLFetcherImpl::Core::OnCompletedURLRequest(
     backoff_delay_ = backoff_delay;
     InformDelegateFetchIsComplete();
   }
+}
+
+void URLFetcherImpl::Core::InformDelegateDownloadProgress() {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  delegate_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&Core::InformDelegateDownloadProgressInDelegateThread,
+                 this, current_response_bytes_, total_response_bytes_));
+}
+
+void URLFetcherImpl::Core::InformDelegateDownloadProgressInDelegateThread(
+    int64 current, int64 total) {
+  DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
+  if (delegate_)
+    delegate_->OnURLFetchDownloadProgress(fetcher_, current, total);
 }
 
 void URLFetcherImpl::Core::InformDelegateFetchIsComplete() {

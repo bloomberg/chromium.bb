@@ -140,6 +140,32 @@ class URLFetcherPostTest : public URLFetcherTest {
   virtual void OnURLFetchComplete(const content::URLFetcher* source);
 };
 
+// Version of URLFetcherTest that tests download progress reports.
+class URLFetcherDownloadProgressTest : public URLFetcherTest {
+ public:
+  virtual void CreateFetcher(const GURL& url);
+
+  // content::URLFetcherDelegate
+  virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
+                                          int64 current, int64 total);
+ protected:
+  int64 previous_progress_;
+  int64 expected_total_;
+};
+
+/// Version of URLFetcherTest that tests progress reports at cancellation.
+class URLFetcherDownloadProgressCancelTest : public URLFetcherTest {
+ public:
+  virtual void CreateFetcher(const GURL& url);
+
+  // content::URLFetcherDelegate
+  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchDownloadProgress(const content::URLFetcher* source,
+                                          int64 current, int64 total);
+ protected:
+  bool cancelled_;
+};
+
 // Version of URLFetcherTest that tests headers.
 class URLFetcherHeadersTest : public URLFetcherTest {
  public:
@@ -286,7 +312,7 @@ TEST_F(URLFetcherTempFileTest, SmallGet) {
   ASSERT_TRUE(test_server.Start());
 
   // Get a small file.
-  const char* kFileToFetch = "simple.html";
+  static const char kFileToFetch[] = "simple.html";
   expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
   CreateFetcher(
       test_server.GetURL(std::string(kTestServerFilePrefix) + kFileToFetch));
@@ -305,7 +331,7 @@ TEST_F(URLFetcherTempFileTest, LargeGet) {
 
   // Get a file large enough to require more than one read into
   // URLFetcher::Core's IOBuffer.
-  const char* kFileToFetch = "animate1.gif";
+  static const char kFileToFetch[] = "animate1.gif";
   expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
   CreateFetcher(test_server.GetURL(
       std::string(kTestServerFilePrefix) + kFileToFetch));
@@ -320,7 +346,7 @@ TEST_F(URLFetcherTempFileTest, CanTakeOwnershipOfFile) {
   ASSERT_TRUE(test_server.Start());
 
   // Get a small file.
-  const char* kFileToFetch = "simple.html";
+  static const char kFileToFetch[] = "simple.html";
   expected_file_ = test_server.document_root().AppendASCII(kFileToFetch);
   CreateFetcher(test_server.GetURL(
       std::string(kTestServerFilePrefix) + kFileToFetch));
@@ -346,6 +372,50 @@ void URLFetcherPostTest::OnURLFetchComplete(const content::URLFetcher* source) {
   EXPECT_TRUE(source->GetResponseAsString(&data));
   EXPECT_EQ(std::string("bobsyeruncle"), data);
   URLFetcherTest::OnURLFetchComplete(source);
+}
+
+void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
+  previous_progress_ = 0;
+  fetcher_->Start();
+}
+
+void URLFetcherDownloadProgressTest::OnURLFetchDownloadProgress(
+    const content::URLFetcher* source, int64 current, int64 total) {
+  // Increasing between 0 and total.
+  EXPECT_LE(0, current);
+  EXPECT_GE(total, current);
+  EXPECT_LE(previous_progress_, current);
+  previous_progress_ = current;
+  EXPECT_EQ(expected_total_, total);
+}
+
+void URLFetcherDownloadProgressCancelTest::CreateFetcher(const GURL& url) {
+  fetcher_ = new URLFetcherImpl(url, content::URLFetcher::GET, this);
+  fetcher_->SetRequestContext(new TestURLRequestContextGetter(
+      io_message_loop_proxy()));
+  cancelled_ = false;
+  fetcher_->Start();
+}
+
+void URLFetcherDownloadProgressCancelTest::OnURLFetchDownloadProgress(
+    const content::URLFetcher* source, int64 current, int64 total) {
+  EXPECT_FALSE(cancelled_);
+  if (!cancelled_) {
+    delete fetcher_;
+    cancelled_ = true;
+    io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  }
+}
+
+void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
+    const content::URLFetcher* source) {
+  // Should have been cancelled.
+  ADD_FAILURE();
+  delete fetcher_;
+  io_message_loop_proxy()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
 void URLFetcherHeadersTest::OnURLFetchComplete(
@@ -584,6 +654,38 @@ TEST_F(URLFetcherPostTest, Basic) {
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("echo"));
+  MessageLoop::current()->Run();
+}
+
+TEST_F(URLFetcherDownloadProgressTest, Basic) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  // Get a file large enough to require more than one read into
+  // URLFetcher::Core's IOBuffer.
+  static const char kFileToFetch[] = "animate1.gif";
+  file_util::GetFileSize(test_server.document_root().AppendASCII(kFileToFetch),
+                         &expected_total_);
+  CreateFetcher(test_server.GetURL(
+      std::string(kTestServerFilePrefix) + kFileToFetch));
+
+  MessageLoop::current()->Run();
+}
+
+TEST_F(URLFetcherDownloadProgressCancelTest, CancelWhileProgressReport) {
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              net::TestServer::kLocalhost,
+                              FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  // Get a file large enough to require more than one read into
+  // URLFetcher::Core's IOBuffer.
+  static const char kFileToFetch[] = "animate1.gif";
+  CreateFetcher(test_server.GetURL(
+      std::string(kTestServerFilePrefix) + kFileToFetch));
+
   MessageLoop::current()->Run();
 }
 
