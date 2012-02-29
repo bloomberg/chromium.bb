@@ -197,16 +197,8 @@ var ImportView = (function() {
       if (typeof(ClientInfo) != 'object')
         return;
 
-      // Dumps made with the command line option don't have a date, and older
-      // versions of Chrome use a formatted string.
-      // TODO(mmenke):  At some point, after Chrome 17 hits stable, remove the
-      //                ClientInfo.date case.
-      if (ClientInfo.numericDate) {
-        timeutil.addNodeWithDate(this.loadedInfoExportDate_,
-                                 new Date(ClientInfo.numericDate));
-      } else if (ClientInfo.date) {
-        this.loadedInfoExportDate_.innerText = ClientInfo.date;
-      }
+      timeutil.addNodeWithDate(this.loadedInfoExportDate_,
+                               new Date(ClientInfo.numericDate));
 
       var buildName =
           ClientInfo.name +

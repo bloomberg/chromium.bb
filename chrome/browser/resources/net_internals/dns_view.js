@@ -95,14 +95,7 @@ var DnsView = (function() {
       // logging data, or the date the log dump was created.
       var logDate;
       if (MainView.isViewingLoadedLog()) {
-        if (typeof ClientInfo.numericDate == 'number') {
-          logDate = new Date(ClientInfo.numericDate);
-        } else {
-          // This is to prevent displaying entries as expired when loading
-          // old logs.
-          // TODO(mmenke):  Remove when Chrome 17 hits stable.
-          logDate = new Date(0);
-        }
+        logDate = new Date(ClientInfo.numericDate);
       } else {
         logDate = new Date();
       }

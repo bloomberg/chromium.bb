@@ -13,7 +13,7 @@ log_util = (function() {
    * private information should be removed from the generated dump.
    *
    * Returns the new log dump as an object.  Resulting object may have a null
-   * |date| and/or |numericDate|.
+   * |numericDate|.
    *
    * TODO(eroman): Use javadoc notation for these parameters.
    *
@@ -47,8 +47,6 @@ log_util = (function() {
     // Not technically client info, but it's used at the same point in the code.
     if (numericDate && constants.clientInfo) {
       constants.clientInfo.numericDate = numericDate;
-      // TODO(mmenke):  Remove this some time after Chrome 17 hits stable.
-      constants.clientInfo.date = (new Date(numericDate)).toLocaleString();
     }
 
     return logDump;
@@ -61,8 +59,10 @@ log_util = (function() {
    */
   function createUpdatedLogDump(userComments, oldLogDump, securityStripping) {
     var numericDate = null;
-    if (oldLogDump.clientInfo && oldLogDump.clientInfo.numericDate)
-      numericDate = oldLogDump.clientInfo.numericDate;
+    if (oldLogDump.constants.clientInfo &&
+        oldLogDump.constants.clientInfo.numericDate) {
+      numericDate = oldLogDump.constants.clientInfo.numericDate;
+    }
     var logDump = createLogDump(userComments,
                                 Constants,
                                 g_browser.sourceTracker.getAllCapturedEvents(),
@@ -167,23 +167,6 @@ log_util = (function() {
 
     g_browser.receivedConstants(logDump.constants);
 
-    // Prevent communication with the browser.  Once the constants have been
-    // loaded, it's safer to continue trying to load the log, even in the case
-    // of bad data.
-    MainView.getInstance().onLoadLog(opt_fileName);
-
-    // Delete all events.  This will also update all logObservers.
-    g_browser.sourceTracker.deleteAllSourceEntries();
-
-    // Inform all the views that a log file is being loaded, and pass in
-    // view-specific saved state, if any.
-    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
-    var tabIds = categoryTabSwitcher.getAllTabIds();
-    for (var i = 0; i < tabIds.length; ++i) {
-      var view = categoryTabSwitcher.findTabById(tabIds[i]).contentView;
-      view.onLoadLogStart(logDump.polledData, logDump.tabData[tabIds[i]]);
-    }
-
     // Check for validity of each log entry, and then add the ones that pass.
     // Since the events are kept around, and we can't just hide a single view
     // on a bad event, we have more error checking for them than other data.
@@ -205,6 +188,41 @@ log_util = (function() {
         }
         validEvents.push(event);
       }
+    }
+
+    // Make sure the loaded log contained an export date. If not we will
+    // synthesize one. This can legitimately happen for dump files created
+    // via command line flag, or for older dump formats (before Chrome 17).
+    if (typeof logDump.constants.clientInfo.numericDate != 'number') {
+      errorString += 'The log file is missing clientInfo.numericDate.\n';
+
+      if (validEvents.length > 0) {
+        errorString +=
+            'Synthesizing export date as time of last event captured.\n';
+        var lastEvent = validEvents[validEvents.length - 1];
+        ClientInfo.numericDate =
+            timeutil.convertTimeTicksToDate(lastEvent.time).getTime();
+      } else {
+        errorString += 'Can\'t guess export date!\n';
+        ClientInfo.numericDate = 0;
+      }
+    }
+
+    // Prevent communication with the browser.  Once the constants have been
+    // loaded, it's safer to continue trying to load the log, even in the case
+    // of bad data.
+    MainView.getInstance().onLoadLog(opt_fileName);
+
+    // Delete all events.  This will also update all logObservers.
+    g_browser.sourceTracker.deleteAllSourceEntries();
+
+    // Inform all the views that a log file is being loaded, and pass in
+    // view-specific saved state, if any.
+    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
+    var tabIds = categoryTabSwitcher.getAllTabIds();
+    for (var i = 0; i < tabIds.length; ++i) {
+      var view = categoryTabSwitcher.findTabById(tabIds[i]).contentView;
+      view.onLoadLogStart(logDump.polledData, logDump.tabData[tabIds[i]]);
     }
     g_browser.sourceTracker.onReceivedLogEntries(validEvents);
 
