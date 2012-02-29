@@ -182,10 +182,10 @@ GdkCursor* WebCursor::GetCustomCursor() {
                                                  hotspot_.x(),
                                                  hotspot_.y());
 
-  g_object_unref(pixbuf);
+  gdk_pixbuf_unref(pixbuf);
 
   if (unref_)
-    g_object_unref(unref_);
+    gdk_cursor_unref(unref_);
   unref_ = cursor;
   return cursor;
 }
