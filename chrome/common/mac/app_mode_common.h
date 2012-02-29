@@ -20,10 +20,6 @@ namespace app_mode {
 // app mode launcher bundle's Info.plist.
 extern NSString* const kBrowserBundleIDKey;
 
-// The key under which to record the path to the (user-visible) application
-// bundle; this key is recorded under the ID given by |kAppPrefsID|.
-extern NSString* const kLastRunAppBundlePathPrefsKey;
-
 // Key for the shortcut ID.
 extern NSString* const kCrAppModeShortcutIDKey;
 
@@ -41,6 +37,14 @@ extern NSString* const kCrAppModeUserDataDirKey;
 
 // Key for the app's extension path.
 extern NSString* const kCrAppModeExtensionPathKey;
+
+// When the Chrome browser is run, it stores it's location in the defaults
+// system using this key.
+extern NSString* const kLastRunAppBundlePathPrefsKey;
+
+// Placeholder used in the Info.plist, meant to be replaced by the extension
+// shortcut ID.
+extern NSString* const kShortcutIdPlaceholder;
 
 // Current major/minor version numbers of |ChromeAppModeInfo| (defined below).
 const unsigned kCurrentChromeAppModeInfoMajorVersion = 1;
@@ -68,9 +72,12 @@ struct ChromeAppModeInfo {
   // Versioned path to the browser which is being loaded.
   FilePath chrome_versioned_path;  // Required: v1.0
 
+  // Path to Chrome app bundle.
+  FilePath chrome_outer_bundle_path;  // Required: v1.0
+
   // Information about the App Mode shortcut:
 
-  // Path to the App Mode Loader application bundle originally run.
+  // Path to the App Mode Loader application bundle that launched the process.
   FilePath app_mode_bundle_path;  // Optional: v1.0
 
   // Short ID string, preferably derived from |app_mode_short_name|. Should be

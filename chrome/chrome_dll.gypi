@@ -310,6 +310,7 @@
                 'app/framework-Info.plist',
               ],
               'dependencies': [
+                'app_mode_app',
                 # Bring in pdfsqueeze and run it on all pdfs
                 '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
                 '../crypto/crypto.gyp:crypto',
@@ -444,7 +445,10 @@
                 },
                 {
                   'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/resources',
-                  'files': [],
+                  'files': [
+                    # Loader bundle for platform apps.
+                    '<(PRODUCT_DIR)/app_mode_loader.app',
+                  ],
                   'conditions': [
                     ['debug_devtools!=0', {
                       'files': [

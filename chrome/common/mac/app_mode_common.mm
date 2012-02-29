@@ -7,13 +7,16 @@
 namespace app_mode {
 
 NSString* const kBrowserBundleIDKey = @"CrBundleIdentifier";
-NSString* const kLastRunAppBundlePathPrefsKey = @"LastRunAppBundlePath";
 NSString* const kCrAppModeShortcutIDKey = @"CrAppModeShortcutID";
 NSString* const kCrAppModeShortcutShortNameKey = @"CrAppModeShortcutShortName";
 NSString* const kCrAppModeShortcutNameKey = @"CrAppModeShortcutName";
 NSString* const kCrAppModeShortcutURLKey = @"CrAppModeShortcutURL";
 NSString* const kCrAppModeUserDataDirKey = @"CrAppModeUserDataDir";
 NSString* const kCrAppModeExtensionPathKey = @"CrAppModeExtensionPath";
+
+NSString* const kLastRunAppBundlePathPrefsKey = @"LastRunAppBundlePath";
+
+NSString* const kShortcutIdPlaceholder = @"APP_MODE_SHORTCUT_ID";
 
 ChromeAppModeInfo::ChromeAppModeInfo()
     : major_version(0),

@@ -781,7 +781,7 @@
               # Modify the Info.plist as needed.  The script explains why this
               # is needed.  This is also done in the chrome and chrome_dll
               # targets.  In this case, --breakpad=0, -k0, and -s0 are used
-              # because Breakpad, Keystone, and Subersion keys are never
+              # because Breakpad, Keystone, and Subversion keys are never
               # placed into the helper.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(tweak_info_plist_path)',
@@ -841,17 +841,21 @@
           ],
         },  # target app_mode_app_support
         {
-          # This produces the app mode loader, but not as a bundle. Chromium
-          # itself is responsible for producing bundles.
+          # This produces the template for app mode loader bundles. It's a
+          # template in the sense that parts of it need to be "filled in" by
+          # Chrome before it can be executed.
           'target_name': 'app_mode_app',
           'type': 'executable',
+          'mac_bundle' : 1,
           'variables': { 'enable_wexit_time_destructors': 1, },
-          'product_name': '<(mac_product_name) App Mode Loader',
+          'product_name': 'app_mode_loader',
           'dependencies': [
             'app_mode_app_support',
+            'infoplist_strings_tool',
           ],
           'sources': [
             'app/app_mode_loader_mac.mm',
+            'app/app_mode-Info.plist',
           ],
           'include_dirs': [
             '..',
@@ -862,6 +866,32 @@
               '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
             ],
           },
+          'mac_bundle_resources!': [
+            'app/app_mode-Info.plist',
+          ],
+          'mac_bundle_resources/': [
+            ['exclude', '.*'],
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': 'app/app_mode-Info.plist',
+            'APP_MODE_APP_BUNDLE_ID': '<(mac_bundle_id).app.@APP_MODE_SHORTCUT_ID@',
+          },
+          'postbuilds' : [
+            {
+              # Modify the Info.plist as needed.  The script explains why this
+              # is needed.  This is also done in the chrome and chrome_dll
+              # targets.  In this case, --breakpad=0, -k0, and -s0 are used
+              # because Breakpad, Keystone, and Subversion keys are never
+              # placed into the app mode loader.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['<(tweak_info_plist_path)',
+                         '--breakpad=0',
+                         '-k0',
+                         '-s0',
+                         '<(branding)',
+                         '<(mac_bundle_id)'],
+            },
+          ],
         },  # target app_mode_app
         {
           # Convenience target to build a disk image.

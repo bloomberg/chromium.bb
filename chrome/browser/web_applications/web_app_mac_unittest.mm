@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/web_app_mac.h"
+#import "chrome/browser/web_applications/web_app_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -30,7 +30,8 @@ class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
  public:
   explicit WebAppShortcutCreatorMock(
       const ShellIntegration::ShortcutInfo& shortcut_info)
-      : WebAppShortcutCreator(FilePath(), shortcut_info) {
+      : WebAppShortcutCreator(FilePath(), shortcut_info,
+            UTF8ToUTF16("fake.cfbundleidentifier")) {
   }
 
   MOCK_CONST_METHOD1(GetDestinationPath, FilePath(const FilePath&));
@@ -48,8 +49,11 @@ ShellIntegration::ShortcutInfo GetShortcutInfo() {
 
 namespace web_app {
 
-// This test currently fails because the Mac app loader isn't built yet.
-TEST(WebAppShortcutCreatorTest, FAILS_CreateShortcut) {
+// This test is disabled for the following reasons:
+// * The plist still isn't filled in correctly.
+// * WebAppShortcutCreator::CreateShortcut() opens a Finder window which it
+//   shouldn't be doing when run from a unit test.
+TEST(WebAppShortcutCreatorTest, DISABLED_CreateShortcut) {
   ScopedTempDir scoped_temp_dir;
   EXPECT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   FilePath dst_path = scoped_temp_dir.path().Append("a.app");
@@ -72,11 +76,17 @@ TEST(WebAppShortcutCreatorTest, FAILS_CreateShortcut) {
               [plist objectForKey:app_mode::kCrAppModeShortcutURLKey]);
 
   // Make sure all values in the plist are actually filled in.
-  for (NSString* value in [plist allValues])
-    EXPECT_FALSE([value hasPrefix:@"@APP_"]);
+  for (id key in plist) {
+    id value = [plist valueForKey:key];
+    if (!base::mac::ObjCCast<NSString>(value))
+      continue;
+
+    EXPECT_EQ([value rangeOfString:@"@APP_"].location, NSNotFound)
+        << [key UTF8String] << ":" << [value UTF8String];
+  }
 }
 
-TEST(WebAppShortcutCreatorTest, CreateFailure) {
+TEST(WebAppShortcutCreatorTest, DISABLED_CreateFailure) {
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(GetShortcutInfo());
   EXPECT_CALL(shortcut_creator, GetDestinationPath(_))
       .WillRepeatedly(Return(FilePath("/non-existant/path/")));

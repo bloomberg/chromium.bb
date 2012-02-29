@@ -39,8 +39,8 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
 
   // ** 1: Get path to outer Chrome bundle.
   // Get the bundle ID of the browser that created this app bundle.
-  NSString* cr_bundle_id = [app_bundle
-      objectForInfoDictionaryKey:app_mode::kBrowserBundleIDKey];
+  NSString* cr_bundle_id = base::mac::ObjCCast<NSString>(
+      [app_bundle objectForInfoDictionaryKey:app_mode::kBrowserBundleIDKey]);
   CHECK(cr_bundle_id) << "couldn't get browser bundle ID";
 
   // First check if Chrome exists at the last known location.
@@ -72,6 +72,7 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
   }
 
   // ** 3: Fill in ChromeAppModeInfo.
+  info->chrome_outer_bundle_path = cr_bundle_path;
   info->chrome_versioned_path = version_path;
   info->app_mode_bundle_path =
       base::mac::NSStringToFilePath([app_bundle bundlePath]);
@@ -93,7 +94,6 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
 
   info->app_mode_url = SysNSStringToUTF8(
       [info_plist objectForKey:app_mode::kCrAppModeShortcutURLKey]);
-  CHECK(info->app_mode_url.size()) << "couldn't get app shortcut URL";
 
   info->user_data_dir = base::mac::NSStringToFilePath(
       [info_plist objectForKey:app_mode::kCrAppModeUserDataDirKey]);

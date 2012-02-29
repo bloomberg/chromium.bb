@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/web_app_mac.h"
+#import "chrome/browser/web_applications/web_app_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -13,7 +13,9 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/scoped_temp_dir.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/mac/app_mode_common.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -40,9 +42,11 @@ namespace web_app {
 
 WebAppShortcutCreator::WebAppShortcutCreator(
     const FilePath& user_data_dir,
-    const ShellIntegration::ShortcutInfo& shortcut_info)
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const string16& chrome_bundle_id)
     : user_data_dir_(user_data_dir),
-      info_(shortcut_info) {
+      info_(shortcut_info),
+      chrome_bundle_id_(chrome_bundle_id) {
 }
 
 WebAppShortcutCreator::~WebAppShortcutCreator() {
@@ -83,10 +87,8 @@ bool WebAppShortcutCreator::CreateShortcut() {
 }
 
 FilePath WebAppShortcutCreator::GetAppLoaderPath() const {
-  NSString* app_loader = [l10n_util::GetNSString(IDS_PRODUCT_NAME)
-      stringByAppendingString:@" App Mode Loader.app"];
   return base::mac::PathForFrameworkBundleResource(
-      base::mac::NSToCFCast(app_loader));
+      base::mac::NSToCFCast(@"app_mode_loader.app"));
 }
 
 FilePath WebAppShortcutCreator::GetDestinationPath(
@@ -109,6 +111,8 @@ bool WebAppShortcutCreator::UpdatePlist(const FilePath& app_path) const {
   NSMutableDictionary* dict =
       [NSMutableDictionary dictionaryWithContentsOfFile:plist_path];
 
+  [dict setObject:GetBundleIdentifier(dict)
+           forKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)];
   [dict setObject:base::SysUTF8ToNSString(info_.extension_id)
            forKey:app_mode::kCrAppModeShortcutIDKey];
   [dict setObject:base::SysUTF16ToNSString(info_.title)
@@ -119,6 +123,8 @@ bool WebAppShortcutCreator::UpdatePlist(const FilePath& app_path) const {
            forKey:app_mode::kCrAppModeUserDataDirKey];
   [dict setObject:base::mac::FilePathToNSString(info_.extension_path)
            forKey:app_mode::kCrAppModeExtensionPathKey];
+  [dict setObject:base::SysUTF16ToNSString(chrome_bundle_id_)
+           forKey:app_mode::kBrowserBundleIDKey];
   return [dict writeToFile:plist_path atomically:YES];
 }
 
@@ -152,6 +158,21 @@ bool WebAppShortcutCreator::UpdateIcon(const FilePath& app_path) const {
   return [icon_family writeToFile:base::mac::FilePathToNSString(icon_path)];
 }
 
+NSString* WebAppShortcutCreator::GetBundleIdentifier(NSDictionary* plist) const
+{
+  NSString* bundle_id_template =
+    base::mac::ObjCCast<NSString>(
+        [plist objectForKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)]);
+  NSString* extension_id = base::SysUTF8ToNSString(info_.extension_id);
+  NSString* placeholder =
+      [NSString stringWithFormat:@"@%@@", app_mode::kShortcutIdPlaceholder];
+  NSString* bundle_id =
+      [bundle_id_template
+          stringByReplacingOccurrencesOfString:placeholder
+                                    withString:extension_id];
+  return bundle_id;
+}
+
 }  // namespace
 
 namespace web_app {
@@ -161,7 +182,9 @@ void CreateShortcutTask(const FilePath& web_app_path,
                         const FilePath& profile_path,
                         const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-  WebAppShortcutCreator shortcut_creator(web_app_path, shortcut_info);
+  string16 bundle_id = UTF8ToUTF16(base::mac::BaseBundleID());
+  WebAppShortcutCreator shortcut_creator(web_app_path, shortcut_info,
+                            bundle_id);
   shortcut_creator.CreateShortcut();
 }
 

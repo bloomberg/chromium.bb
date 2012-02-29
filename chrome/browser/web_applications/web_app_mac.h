@@ -8,7 +8,16 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/string16.h"
 #include "chrome/browser/shell_integration.h"
+
+#ifdef __OBJC__
+@class NSDictionary;
+@class NSString;
+#else  // __OBJC__
+class NSDictionary;
+class NSString;
+#endif  // __OBJC__
 
 namespace web_app {
 
@@ -18,12 +27,16 @@ class WebAppShortcutCreator {
  public:
   // Creates a new shortcut based on information in |shortcut_info|.
   // The shortcut stores its user data directory in |user_data_dir|.
-  explicit WebAppShortcutCreator(
+  // |chrome_bundle_id| is the CFBundleIdentifier of the Chrome browser bundle.
+  WebAppShortcutCreator(
       const FilePath& user_data_dir,
-      const ShellIntegration::ShortcutInfo& shortcut_info);
+      const ShellIntegration::ShortcutInfo& shortcut_info,
+      const string16& chrome_bundle_id);
+
   virtual ~WebAppShortcutCreator();
 
-  // Creates a shortcut.
+  // Copies the app launcher template into place and fills in all relevant
+  // information.
   bool CreateShortcut();
 
  protected:
@@ -47,8 +60,16 @@ class WebAppShortcutCreator {
   // Note, the user data directory is the parent of the profile directory.
   FilePath user_data_dir_;
 
+  // Returns the bundle identifier to use for this app bundle.
+  // |plist| is a dictionary containg a copy of the template plist file to
+  // be used for creating the app bundle.
+  NSString* GetBundleIdentifier(NSDictionary* plist) const;
+
   // Information about the app.
   ShellIntegration::ShortcutInfo info_;
+
+  // The CFBundleIdentifier of the Chrome browser bundle.
+  string16 chrome_bundle_id_;
 };
 
 }  // namespace web_app

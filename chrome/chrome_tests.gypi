@@ -4241,7 +4241,7 @@
           # Tests for Mac app launcher.
           'target_name': 'app_mode_app_tests',
           'type': 'executable',
-          'product_name': 'App Mode Loader Tests',
+          'product_name': 'app_mode_app_tests',
           'dependencies': [
             '../base/base.gyp:test_support_base',
             '../testing/gtest.gyp:gtest',
