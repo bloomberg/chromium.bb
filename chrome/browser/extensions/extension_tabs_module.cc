@@ -894,6 +894,9 @@ bool QueryTabsFunction::RunImpl() {
     if (!(*browser)->window())
       continue;
 
+    if (!include_incognito() && profile() != (*browser)->profile())
+      continue;
+
     if (window_id >= 0 && window_id != ExtensionTabUtil::GetWindowId(*browser))
       continue;
 

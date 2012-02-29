@@ -182,6 +182,17 @@ chrome.test.runTests([
       for (var i = 0; i < tabs.length; i++)
         assertEq(0, tabs[0].index);
     }));
+  },
+
+  function queryIncognito() {
+    chrome.windows.create(
+        {url: ['http://a.com', 'http://a.com'], incognito: true},
+        pass(function(win) {
+      assertEq(null, win);
+      chrome.tabs.query({url: 'http://a.com/'}, pass(function(tabs) {
+         assertEq(0, tabs.length);
+      }));
+    }));
   }
 ]);
 
