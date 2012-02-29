@@ -30,15 +30,25 @@ class SrcCheckOutException(Exception):
   pass
 
 
-def InARepoRepository(directory, exists=True):
-  """Returns True if directory is part of a repo checkout."""
-  if not exists:
-    directory = os.path.abspath(directory)
-    while not os.path.isdir(directory):
-      directory = os.path.dirname(directory)
+def InARepoRepository(directory, require_project=False):
+  """Returns True if directory is part of a repo checkout.
+
+  Args:
+    directory: Path to check.
+    require_project: Whether to require that directory is inside a valid
+     project in the repo root.
+  """
+  directory = os.path.abspath(directory)
+  while not os.path.isdir(directory):
+    directory = os.path.dirname(directory)
+
+  if require_project:
+    cmd = ['repo', 'forall', '.', '-c', 'true']
+  else:
+    cmd = ['repo']
 
   output = cros_lib.RunCommand(
-      ['repo'], error_ok=True, redirect_stdout=True, redirect_stderr=True,
+      cmd, error_code_ok=True, redirect_stdout=True, redirect_stderr=True,
       cwd=directory, print_cmd=False)
   return output.returncode == 0
 
@@ -137,7 +147,7 @@ class RepoRepository(object):
     self._manifest = manifest
     self._initialized = IsARepoRoot(self.directory)
 
-    if not self._initialized and InARepoRepository(self.directory, False):
+    if not self._initialized and InARepoRepository(self.directory):
       raise ValueError('Given directory %s is not the root of a repository.'
                        % self.directory)
 

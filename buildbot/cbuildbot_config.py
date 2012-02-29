@@ -40,21 +40,20 @@ def OverrideConfigForTrybot(build_config):
 
 
 def GetManifestVersionsRepoUrl(internal_build, read_only=False):
-  """Returns the url to the manifest versions repository."""
+  """Returns the url to the manifest versions repository.
+
+  Args:
+    internal_build: Whether to use the internal repo.
+    read_only: Whether the URL may be read only.  If read_only is True,
+      pushing changes (even with dryrun option) may not work.
+  """
   if internal_build:
-    if read_only:
-      # This is not good .. we needlessly load the gerrit server.
-      # TODO(petermayo):  Fix re: crosbug.com/20303
-      return (constants.GERRIT_INT_SSH_URL +
-              constants.MANIFEST_VERSIONS_INT_SUFFIX)
-    else:
-      return (constants.GERRIT_INT_SSH_URL +
-              constants.MANIFEST_VERSIONS_INT_SUFFIX)
+    return (constants.GERRIT_INT_SSH_URL +
+            constants.MANIFEST_VERSIONS_INT_SUFFIX)
+  elif read_only:
+    return constants.GIT_HTTP_URL + constants.MANIFEST_VERSIONS_SUFFIX
   else:
-    if read_only:
-      return constants.GIT_HTTP_URL + constants.MANIFEST_VERSIONS_SUFFIX
-    else:
-      return constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
+    return constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
 
 
 def IsPFQType(b_type):

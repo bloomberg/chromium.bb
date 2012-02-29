@@ -77,8 +77,8 @@ class DEPSFileTest(mox.MoxTestBase):
   def testParseInternalManifestWithDoubleCheckout(self):
     """Test a scenario where one project is checked out to two locations."""
     self._CopyTestFiles('test1')
-    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
-    manifest_version.PrepForChanges(mox.IgnoreArg(), False)
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     self.mox.ReplayAll()
     manifest = chrome_update_manifest.Manifest(self.repo_root,
                                                self.manifest_path,
@@ -92,8 +92,8 @@ class DEPSFileTest(mox.MoxTestBase):
   def testNoBeginMarker(self):
     """Test case where manifest has no begin marker for chrome projects."""
     self._CopyTestFiles('test2')
-    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
-    manifest_version.PrepForChanges(mox.IgnoreArg(), False)
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     self.mox.ReplayAll()
     manifest = chrome_update_manifest.Manifest(self.repo_root,
                                                self.manifest_path,
@@ -105,8 +105,8 @@ class DEPSFileTest(mox.MoxTestBase):
   def testNoEndMarker(self):
     """Test case where manifest has no end marker for chrome projects."""
     self._CopyTestFiles('test3')
-    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
-    manifest_version.PrepForChanges(mox.IgnoreArg(), False)
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     self.mox.ReplayAll()
     manifest = chrome_update_manifest.Manifest(self.repo_root,
                                                self.manifest_path,
@@ -119,8 +119,8 @@ class DEPSFileTest(mox.MoxTestBase):
   def testNonChromeProjectOverwritten(self):
     """Test case where """
     self._CopyTestFiles('test4')
-    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
-    manifest_version.PrepForChanges(mox.IgnoreArg(), False)
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     self.mox.ReplayAll()
     manifest = chrome_update_manifest.Manifest(self.repo_root,
                                                self.manifest_path,
@@ -132,8 +132,8 @@ class DEPSFileTest(mox.MoxTestBase):
   def testParseInternalManifestWithNoCrosDEPS(self):
     """Test a scenario where no cros.DEPS projects are written to manifest."""
     self._CopyTestFiles('test5')
-    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
-    manifest_version.PrepForChanges(mox.IgnoreArg(), False)
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     self.mox.ReplayAll()
     manifest = chrome_update_manifest.Manifest(self.repo_root,
                                                self.manifest_path,
@@ -147,8 +147,8 @@ class DEPSFileTest(mox.MoxTestBase):
   def testParseExternalManifestCrosDEPSUnchanged(self):
     """Test that manifest stays the same given same cros.DEPS."""
     self._CopyTestFiles('test6')
-    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
-    manifest_version.PrepForChanges(mox.IgnoreArg(), False)
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     self.mox.ReplayAll()
     manifest = chrome_update_manifest.Manifest(self.repo_root,
                                                self.manifest_path,

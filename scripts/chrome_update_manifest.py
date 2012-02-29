@@ -11,7 +11,6 @@ import optparse
 import os
 import re
 import shutil
-import sys
 import StringIO
 import tempfile
 
@@ -144,6 +143,16 @@ def GetListOfProjects(manifest_xml):
 class Manifest(object):
   """Encapsulates manifest update logic for an external or internal manifest."""
   def __init__(self, repo_root, manifest_path, testroot, internal, dryrun=True):
+    """Initializes a new Manifest object.
+
+    Arguments:
+      repo_root: Absolute path to a repo root.
+      manifest_path: The path to the manifest. This manifest must already be up
+        up to date.
+      testroot: Directory where test checkout is stored.
+      internal: Whether this is an internal manifest.
+      dryrun: If set, don't actually push the changes.
+    """
     self.repo_root = repo_root
     self.testroot = testroot
     self.manifest_path = manifest_path
@@ -177,7 +186,7 @@ class Manifest(object):
   def CreateNewManifest(self):
     """Generates a new manifest with updated Chrome entries."""
     # Prepare git repo for push
-    manifest_version.PrepForChanges(self.manifest_dir, False)
+    manifest_version.CreatePushBranch(self.manifest_dir)
 
     top_part, overwritten, bottom_part = self._PartitionManifest()
     CheckForNonChromeProjects(_TEST_MANIFEST_TEMPLATE
@@ -327,7 +336,7 @@ def main(argv):
   internal_manifest_dir = os.path.join(tempfile.gettempdir(),
                                        _INTERNAL_MANIFEST_DIR)
 
-  # Sync manifest and .DEPS.git files
+  # Sync manifest and .DEPS.git files.
   GetSource(external_manifest_dir, _EXTERNAL_MANIFEST_PROJECT)
   GetSource(internal_manifest_dir, _INTERNAL_MANIFEST_PROJECT,
             internal=True)
@@ -335,12 +344,12 @@ def main(argv):
   project_list = [_CHROMIUM_SRC_PROJECT, _CHROMIUM_SRC_INTERNAL_PROJECT]
   cros_lib.RunCommand(['repo', 'sync'] + project_list, cwd=repo_root)
 
-  # Update external manifest
+  # Update external manifest.
   Manifest(repo_root, os.path.join(external_manifest_dir, 'oldlayout.xml'),
            options.testroot, internal=False,
            dryrun=not options.force).PerformUpdate()
 
-  # Update internal manifest
+  # Update internal manifest.
   Manifest(repo_root, os.path.join(internal_manifest_dir, 'oldlayout.xml'),
            options.testroot, internal=True,
            dryrun=not options.force).PerformUpdate()

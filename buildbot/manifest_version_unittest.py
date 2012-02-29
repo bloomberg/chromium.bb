@@ -18,7 +18,6 @@ if __name__ == '__main__':
   sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import configure_repo
 from chromite.buildbot import manifest_version
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
@@ -37,6 +36,7 @@ CHROME_BRANCH = '13'
 
 # Use the chromite repo to actually test git changes.
 GIT_TEST_PATH = 'chromite'
+
 
 def TouchFile(file_path):
   """Touches a file specified by file_path"""
@@ -85,7 +85,7 @@ class HelperMethodsTest(unittest.TestCase):
     repo.Sync()
 
     git_dir = os.path.join(self.tmpdir, GIT_TEST_PATH)
-    manifest_version.PrepForChanges(git_dir, dry_run=True)
+    manifest_version.CreatePushBranch(git_dir)
 
     # Change something.
     cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
@@ -97,33 +97,15 @@ class HelperMethodsTest(unittest.TestCase):
 
   def testPushGitChangesWithRealPrep(self):
     """Another push test that tests push but on non-repo does it on a branch."""
-    git_dir = tempfile.mktemp('manifest_dir')
     manifest_versions_url = cbuildbot_config.GetManifestVersionsRepoUrl(
-        internal_build=False, read_only=True)
-    cros_lib.RunCommand(['git', 'clone', manifest_versions_url, git_dir,
-                        '--depth', '1'])
-    try:
-      manifest_version.PrepForChanges(git_dir, dry_run=False)
-
-      # This should not error out if we are running with dry_run=False for
-      # prep for changes.
-      cros_lib.RunCommand(['git', 'show', manifest_version.PUSH_BRANCH],
-                          cwd=git_dir)
-
-      # Change something.
-      cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
-                          input='TEST USER <test_user@chromium.org>')
-
-      # Push the change with dryrun.
-      manifest_version._PushGitChanges(git_dir, 'Test appending user.',
-                                       dry_run=True)
-
-      # This should not error out if we are running with dry_run=False for
-      # prep for changes.
-      cros_lib.RunCommand(['git', 'show', manifest_version.PUSH_BRANCH],
-                          cwd=git_dir)
-    finally:
-      shutil.rmtree(git_dir)
+        internal_build=False, read_only=False)
+    git_dir = os.path.join(constants.SOURCE_ROOT, 'manifest-versions')
+    manifest_version.RefreshManifestCheckout(git_dir, manifest_versions_url)
+    manifest_version.CreatePushBranch(git_dir)
+    cros_lib.RunCommand(('tee --append %s/AUTHORS' % git_dir).split(),
+                        input='TEST USER <test_user@chromium.org>')
+    manifest_version._PushGitChanges(git_dir, 'Test appending user.',
+                                     dry_run=True)
 
   def tearDown(self):
     shutil.rmtree(self.tmpdir)
@@ -159,10 +141,10 @@ class VersionInfoTest(mox.MoxTestBase):
   def CommonTestIncrementVersion(self, incr_type, version):
     """Common test increment.  Returns path to new incremented file."""
     message = 'Incrementing cuz I sed so'
-    self.mox.StubOutWithMock(manifest_version, 'PrepForChanges')
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
     self.mox.StubOutWithMock(manifest_version, '_PushGitChanges')
 
-    manifest_version.PrepForChanges(self.tmpdir, False)
+    manifest_version.CreatePushBranch(self.tmpdir)
 
     version_file = self.CreateFakeVersionFile(self.tmpdir, version)
 
@@ -215,30 +197,28 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.build_name = 'x86-generic'
     self.incr_type = 'branch'
 
-    # Change default to something we clean up.
-    self.tmpmandir = tempfile.mkdtemp()
-    manifest_version.BuildSpecsManager._TMP_MANIFEST_DIR = self.tmpmandir
-
     repo = repository.RepoRepository(
       self.source_repo, self.tmpdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
       repo, self.manifest_repo, self.build_name, self.incr_type, dry_run=True)
 
+    # Change default to something we clean up.
+    self.tmpmandir = tempfile.mkdtemp()
+    self.manager.manifest_dir = self.tmpmandir
+
   def testLoadSpecs(self):
     """Tests whether we can load specs correctly."""
-    self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
-    self.mox.StubOutWithMock(repository, 'CloneGitRepo')
     info = manifest_version.VersionInfo(
         FAKE_VERSION_STRING, CHROME_BRANCH, incr_type='branch')
-    m1 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+    m1 = os.path.join(self.manager.manifest_dir, 'buildspecs',
                       CHROME_BRANCH, '1.2.2.xml')
-    m2 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+    m2 = os.path.join(self.manager.manifest_dir, 'buildspecs',
                       CHROME_BRANCH, '1.2.3.xml')
-    m3 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+    m3 = os.path.join(self.manager.manifest_dir, 'buildspecs',
                       CHROME_BRANCH, '1.2.4.xml')
-    m4 = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+    m4 = os.path.join(self.manager.manifest_dir, 'buildspecs',
                       CHROME_BRANCH, '1.2.5.xml')
-    for_build = os.path.join(self.manager._TMP_MANIFEST_DIR, 'build-name',
+    for_build = os.path.join(self.manager.manifest_dir, 'build-name',
                              self.build_name)
 
     # Create fake buildspecs.
@@ -252,13 +232,9 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
         for_build, 'fail', CHROME_BRANCH, os.path.basename(m1)))
     manifest_version.CreateSymlink(m1, os.path.join(
         for_build, 'pass', CHROME_BRANCH, os.path.basename(m2)))
-    manifest_version._RemoveDirs(self.manager._TMP_MANIFEST_DIR)
-    repository.CloneGitRepo(self.manager._TMP_MANIFEST_DIR,
-                            self.manifest_repo)
     self.mox.StubOutWithMock(self.manager, '_GetSpecAge')
     self.manager._GetSpecAge('1.2.5').AndReturn(100)
     self.mox.ReplayAll()
-    self.manager.RefreshManifestCheckout()
     self.manager.InitializeManifestVariables(info)
     self.mox.VerifyAll()
     self.assertEqual(self.manager.latest_unprocessed, '1.2.5')
@@ -270,7 +246,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     info = manifest_version.VersionInfo(
         '99.1.2', CHROME_BRANCH, incr_type='branch')
 
-    specs_dir = os.path.join(self.manager._TMP_MANIFEST_DIR, 'buildspecs',
+    specs_dir = os.path.join(self.manager.manifest_dir, 'buildspecs',
                              CHROME_BRANCH)
     m1 = os.path.join(specs_dir, '100.0.0.xml')
     m2 = os.path.join(specs_dir, '99.3.3.xml')

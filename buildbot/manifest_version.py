@@ -59,55 +59,25 @@ def _GitCleanDirectory(directory):
     raise GitCommandException(err_msg)
 
 
-def PrepForChanges(git_repo, dry_run):
+def CreatePushBranch(git_repo):
   """Prepare a git/repo repository for making changes. It should
-     have no files modified when you call this.
+     be up to date and have no files modified when you call this.
   Args:
     git_repo: git repo to push
-    dry_run: Run but we are not planning on pushing changes for real.
   Raises:
     cros_lib.GitCommandException
   """
   _GitCleanDirectory(git_repo)
   try:
-
-    if repository.InARepoRepository(git_repo):
+    if repository.InARepoRepository(git_repo, require_project=True):
       cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH, '.'],
                           cwd=git_repo, error_ok=True)
       repository.RepoSyncUsingSSH(git_repo)
       cros_lib.RunCommand(['repo', 'start', PUSH_BRANCH, '.'], cwd=git_repo)
     else:
-      # TODO(ferringb): Rework this whole codepath- the level of syncs in use
-      # make this likely to be working accidentally rather than intentionally.
-      # See http://crosbug.com/24709 for details.
-      cros_lib.RunCommand(['git',
-                           'config',
-                           'url.%s.insteadof' % constants.GERRIT_SSH_URL,
-                           constants.GIT_HTTP_URL], cwd=git_repo)
-
-      # Attempt the equivalent of repo abandon for retries.  Master always
-      # exists for manifest_version git repos.
-      try:
-        cros_lib.RunCommand(['git', 'checkout', 'master'], cwd=git_repo)
-        if not dry_run:
-          cros_lib.RunCommand(['git', 'branch', '-D', PUSH_BRANCH],
-                              cwd=git_repo)
-      except cros_lib.RunCommandError:
-        pass
-
-      remote, branch = cros_lib.GetPushBranch('master', cwd=git_repo)
-      cros_lib.RunCommand(['git', 'remote', 'update'], cwd=git_repo)
-      if not cros_lib.DoesLocalBranchExist(git_repo, PUSH_BRANCH):
-        cros_lib.RunCommand(['git', 'checkout', '-b', PUSH_BRANCH, '-t',
-                             '/'.join([remote, branch])], cwd=git_repo)
-      else:
-        # If the branch exists, we must be dry run.   Checkout to branch.
-        assert dry_run, 'Failed to previously delete push branch.'
-        cros_lib.RunCommand(['git', 'checkout', PUSH_BRANCH], cwd=git_repo)
-
-    cros_lib.RunCommand(['git', 'config', 'push.default', 'tracking'],
-                        cwd=git_repo)
-
+      cros_lib.RunCommand(['git', 'checkout', 'origin/master'], cwd=git_repo)
+      cros_lib.RunCommand(['git', 'checkout', '-B', PUSH_BRANCH, '-t',
+                           'origin/master'], cwd=git_repo)
   except cros_lib.RunCommandError, e:
     err_msg = 'Failed to prep for edit in %s with %s' % (git_repo, e.message)
     logging.error(err_msg)
@@ -115,6 +85,26 @@ def PrepForChanges(git_repo, dry_run):
     logging.error('Current repo %s status: %s', git_repo, git_status)
     _GitCleanDirectory(git_repo)
     raise GitCommandException(err_msg)
+
+
+def RefreshManifestCheckout(manifest_dir, manifest_repo):
+  """Checks out manifest versions into the manifest directory."""
+  reinitialize = True
+  if os.path.exists(manifest_dir):
+    result = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
+                                 cwd=manifest_dir, print_cmd=False,
+                                 redirect_stdout=True, error_code_ok=True)
+    if (result.returncode == 0 and
+        result.output.rstrip() == manifest_repo):
+      reinitialize = False
+
+  if reinitialize:
+    logging.info('Cloning fresh manifest-versions checkout.')
+    _RemoveDirs(manifest_dir)
+    repository.CloneGitRepo(manifest_dir, manifest_repo)
+  else:
+    logging.info('Updating manifest-versions checkout.')
+    cros_lib.RunCommand(['git', 'remote', 'update'], cwd=manifest_dir)
 
 
 def _PushGitChanges(git_repo, message, dry_run=True):
@@ -140,7 +130,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
         raise
 
     push_cmd = ['git', 'push', remote, '%s:%s' % (PUSH_BRANCH, push_branch)]
-    if dry_run: push_cmd.append('--dry-run')
+    if dry_run: push_cmd.extend(['--dry-run', '--force'])
     cros_lib.RunCommand(push_cmd, cwd=git_repo)
   except cros_lib.RunCommandError, e:
     err_msg = 'Failed to commit to %s' % e.message
@@ -150,7 +140,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
     _GitCleanDirectory(git_repo)
     raise GitCommandException(err_msg)
   finally:
-    if repository.InARepoRepository(git_repo):
+    if repository.InARepoRepository(git_repo, require_project=True):
       # Needed for chromeos version file.  Otherwise on increment, we leave
       # local commit behind in tree.
       cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH], cwd=git_repo,
@@ -329,7 +319,7 @@ class VersionInfo(object):
 
     repo_dir = os.path.dirname(self.version_file)
 
-    PrepForChanges(repo_dir, dry_run)
+    CreatePushBranch(repo_dir)
 
     shutil.copyfile(temp_file, self.version_file)
     os.unlink(temp_file)
@@ -367,7 +357,6 @@ class VersionInfo(object):
 
 class BuildSpecsManager(object):
   """A Class to manage buildspecs and their states."""
-  _TMP_MANIFEST_DIR = '/tmp/manifests'
   # Various status builds can be in.
   STATUS_FAILED = 'fail'
   STATUS_PASSED = 'pass'
@@ -376,11 +365,6 @@ class BuildSpecsManager(object):
 
   # Max timeout before assuming other builders have failed.
   LONG_MAX_TIMEOUT_SECONDS = 1200
-
-  @classmethod
-  def GetManifestDir(cls):
-    """Get the directory where specs are checked out to."""
-    return cls._TMP_MANIFEST_DIR
 
   def __init__(self, source_repo, manifest_repo, build_name,
                incr_type, dry_run=True):
@@ -393,6 +377,8 @@ class BuildSpecsManager(object):
       dry_run: Whether we actually commit changes we make or not.
     """
     self.cros_source = source_repo
+    buildroot = source_repo.directory
+    self.manifest_dir = os.path.join(buildroot, 'manifest-versions')
     self.manifest_repo = manifest_repo
     self.build_name = build_name
     self.incr_type = incr_type
@@ -447,9 +433,7 @@ class BuildSpecsManager(object):
 
   def RefreshManifestCheckout(self):
     """Checks out manifest versions into the manifest directory."""
-    logging.info('Refreshing manifest-versions checkout.')
-    _RemoveDirs(self._TMP_MANIFEST_DIR)
-    repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
+    RefreshManifestCheckout(self.manifest_dir, self.manifest_repo)
 
   def InitializeManifestVariables(self, version_info):
     """Initializes manifest-related instance variables.
@@ -457,7 +441,7 @@ class BuildSpecsManager(object):
     Args:
       version_info: Info class for version information of cros.
     """
-    working_dir = os.path.join(self._TMP_MANIFEST_DIR, self.rel_working_dir)
+    working_dir = os.path.join(self.manifest_dir, self.rel_working_dir)
     dir_pfx = version_info.DirPrefix()
     self.specs_for_builder = os.path.join(working_dir, 'build-name',
                                           '%(builder)s')
@@ -622,7 +606,7 @@ class BuildSpecsManager(object):
         if self.HasCheckoutBeenBuilt():
           return None
 
-        self.PrepSpecChanges()
+        CreatePushBranch(self.manifest_dir)
         if not self.latest_unprocessed:
           version = self.GetNextVersion(version_info)
           new_manifest = self.CreateManifest()
@@ -668,13 +652,9 @@ class BuildSpecsManager(object):
     logging.debug('Setting build to passed  %s: %s', src_file, dest_file)
     CreateSymlink(src_file, dest_file, remove_file)
 
-  def PrepSpecChanges(self):
-    """Prepare the manifest repository for changes."""
-    PrepForChanges(self._TMP_MANIFEST_DIR, self.dry_run)
-
   def PushSpecChanges(self, commit_message):
     """Pushes any changes you have in the manifest directory."""
-    _PushGitChanges(self._TMP_MANIFEST_DIR, commit_message,
+    _PushGitChanges(self.manifest_dir, commit_message,
                     dry_run=self.dry_run)
 
   def UpdateStatus(self, success, retries=5):
@@ -686,7 +666,8 @@ class BuildSpecsManager(object):
     last_error = None
     for index in range(0, retries + 1):
       try:
-        self.PrepSpecChanges()
+        self.RefreshManifestCheckout()
+        CreatePushBranch(self.manifest_dir)
         status = self.STATUS_PASSED if success else self.STATUS_FAILED
         commit_message = ('Automatic checkin: status=%s build_version %s for '
                           '%s' % (status,

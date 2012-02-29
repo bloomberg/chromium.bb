@@ -102,18 +102,19 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.build_name = 'x86-generic'
     self.incr_type = 'branch'
 
-    # Change default to something we clean up.
-    self.tmpmandir = tempfile.mkdtemp()
-    manifest_version.BuildSpecsManager._TMP_MANIFEST_DIR = self.tmpmandir
-
     repo = repository.RepoRepository(
       self.source_repo, self.tmpdir, self.branch, depth=1)
+    self.tmpmandir = tempfile.mkdtemp()
     self.manager = lkgm_manager.LKGMManager(
       repo, self.manifest_repo, self.build_name, constants.PFQ_TYPE,
       'branch', dry_run=True)
+    self.manager.manifest_dir = self.tmpmandir
+    self.manager.lkgm_path = os.path.join(self.tmpmandir,
+                                          self.manager.LKGM_PATH)
 
     self.manager.all_specs_dir = '/LKGM/path'
-    self.manager.specs_for_builder = os.path.join(self.manager.GetManifestDir(),
+    manifest_dir = self.manager.manifest_dir
+    self.manager.specs_for_builder = os.path.join(manifest_dir,
                                                   self.manager.rel_working_dir,
                                                   'build-name', '%(builder)s')
     self.manager.SLEEP_TIMEOUT = 1
@@ -135,8 +136,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
                              'HasCheckoutBeenBuilt')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CreateManifest')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PublishManifest')
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
@@ -151,9 +152,9 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
-    lkgm_manager.LKGMManager.PrepSpecChanges()
 
     # Publish new candidate.
     lkgm_manager.LKGMManager.PublishManifest(new_manifest,
@@ -198,9 +199,9 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
                              'InitializeManifestVariables')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
@@ -208,10 +209,10 @@ class LKGMManagerTest(mox.MoxTestBase):
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
-    lkgm_manager.LKGMManager.PrepSpecChanges()
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString()))
@@ -233,9 +234,9 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
                              'InitializeManifestVariables')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PushSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
+    self.mox.StubOutWithMock(manifest_version, 'CreatePushBranch')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4-rc12',
@@ -243,16 +244,17 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     lkgm_manager.LKGMManager.CheckoutSourceCode()
     lkgm_manager.LKGMManager.RefreshManifestCheckout()
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
 
-    lkgm_manager.LKGMManager.PrepSpecChanges()
+    lkgm_manager.LKGMManager.RefreshManifestCheckout()
+    manifest_version.CreatePushBranch(mox.IgnoreArg())
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString())).AndRaise(
             manifest_version.GitCommandException('Push failed'))
 
-    lkgm_manager.LKGMManager.PrepSpecChanges()
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString()))
@@ -290,7 +292,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     """Returns a created test manifest in tmpdir with its dir_pfx."""
     self.manager.current_version = '1.2.4-rc21'
     dir_pfx = CHROME_BRANCH
-    manifest = os.path.join(self.manager._TMP_MANIFEST_DIR,
+    manifest = os.path.join(self.manager.manifest_dir,
                             self.manager.rel_working_dir, 'buildspecs',
                             dir_pfx, '1.2.4-rc21.xml')
     manifest_version_unittest.TouchFile(manifest)
@@ -321,17 +323,17 @@ class LKGMManagerTest(mox.MoxTestBase):
 
     manifest, dir_pfx = self._CreateManifest()
     print manifest, dir_pfx
-    for_build1 = os.path.join(self.manager._TMP_MANIFEST_DIR,
+    for_build1 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
                               'build-name', 'build1')
-    for_build2 = os.path.join(self.manager._TMP_MANIFEST_DIR,
+    for_build2 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
                               'build-name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail')
     self._FinishBuild(manifest, for_build2, dir_pfx, 'pass')
 
-    lkgm_manager._SyncGitRepo(self.manager._TMP_MANIFEST_DIR)
+    lkgm_manager._SyncGitRepo(self.manager.manifest_dir)
     self.mox.ReplayAll()
     statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
                                               fake_version_file)
@@ -345,17 +347,17 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager, '_SyncGitRepo')
 
     manifest, dir_pfx = self._CreateManifest()
-    for_build1 = os.path.join(self.manager._TMP_MANIFEST_DIR,
+    for_build1 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
                               'build-name', 'build1')
-    for_build2 = os.path.join(self.manager._TMP_MANIFEST_DIR,
+    for_build2 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
                               'build-name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail')
     self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=3)
 
-    lkgm_manager._SyncGitRepo(self.manager._TMP_MANIFEST_DIR).MultipleTimes()
+    lkgm_manager._SyncGitRepo(self.manager.manifest_dir).MultipleTimes()
     self.mox.ReplayAll()
 
     statuses = self.manager.GetBuildersStatus(['build1', 'build2'],
@@ -370,17 +372,17 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager, '_SyncGitRepo')
 
     manifest, dir_pfx = self._CreateManifest()
-    for_build1 = os.path.join(self.manager._TMP_MANIFEST_DIR,
+    for_build1 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
                               'build-name', 'build1')
-    for_build2 = os.path.join(self.manager._TMP_MANIFEST_DIR,
+    for_build2 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
                               'build-name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail', wait=3)
     thread = self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=10)
 
-    lkgm_manager._SyncGitRepo(self.manager._TMP_MANIFEST_DIR).MultipleTimes()
+    lkgm_manager._SyncGitRepo(self.manager.manifest_dir).MultipleTimes()
     self.mox.ReplayAll()
     # Let's reduce this.
     self.manager.LONG_MAX_TIMEOUT_SECONDS = 5

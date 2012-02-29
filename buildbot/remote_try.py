@@ -50,7 +50,7 @@ class RemoteTryJob(object):
     """Internal submission function.  See Submit() for arg description."""
     # TODO(rcui): convert to shallow clone when that's available.
     repository.CloneGitRepo(self.tryjob_repo, self.SSH_URL)
-    manifest_version.PrepForChanges(self.tryjob_repo, False)
+    manifest_version.CreatePushBranch(self.tryjob_repo)
 
     current_time = datetime.datetime.utcnow()
     file_name = '%s.%s' % (self.user,

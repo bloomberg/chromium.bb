@@ -205,13 +205,11 @@ class LKGMSyncStage(SyncStage):
 
   def GetNextManifest(self):
     """Override: Gets the LKGM."""
-    manifests_dir = lkgm_manager.LKGMManager.GetManifestDir()
-    if os.path.exists(manifests_dir):
-      shutil.rmtree(manifests_dir)
 
-    repository.CloneGitRepo(manifests_dir,
-                            self._GetManifestVersionsRepoUrl(read_only=True))
-    return lkgm_manager.LKGMManager.GetAbsolutePathToLKGM()
+    manifest_path = os.path.join(self._build_root, 'manifest-versions')
+    manifest_repo = self._GetManifestVersionsRepoUrl(read_only=True)
+    manifest_version.RefreshManifestCheckout(manifest_path, manifest_repo)
+    return os.path.join(manifest_path, lkgm_manager.LKGMManager.LKGM_PATH)
 
 
 class ManifestVersionedSyncStage(SyncStage):
@@ -224,6 +222,10 @@ class ManifestVersionedSyncStage(SyncStage):
     super(ManifestVersionedSyncStage, self).__init__(bot_id, options,
                                                      build_config)
     self.repo = None
+
+    # If a builder pushes changes (even with dryrun mode), we need a writable
+    # repository. Otherwise, the push will be rejected by the server.
+    self.manifest_repo = self._GetManifestVersionsRepoUrl(read_only=False)
 
   def HandleSkip(self):
     """Initializes a manifest manager to the specified version if skipped."""
@@ -247,7 +249,7 @@ class ManifestVersionedSyncStage(SyncStage):
     ManifestVersionedSyncStage.manifest_manager = \
         manifest_version.BuildSpecsManager(
             source_repo=self.repo,
-            manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
+            manifest_repo=self.manifest_repo,
             build_name=self._bot_id,
             incr_type=increment,
             dry_run=dry_run)
@@ -298,7 +300,7 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     increment = 'build' if self._tracking_branch == 'master' else 'branch'
     ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
         source_repo=self.repo,
-        manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
+        manifest_repo=self.manifest_repo,
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
         incr_type=increment,

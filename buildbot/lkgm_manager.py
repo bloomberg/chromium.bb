@@ -120,18 +120,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # Set path in repository to keep latest approved LKGM manifest.
   LKGM_PATH = 'LKGM/lkgm.xml'
 
-  @classmethod
-  def GetAbsolutePathToLKGM(cls):
-    """Returns the path to the LKGM file blessed by builders."""
-    return os.path.join(cls._TMP_MANIFEST_DIR, cls.LKGM_PATH)
-
-  @classmethod
-  def GetLKGMVersion(cls):
-    """Returns the full buildspec version the LKGM corresponds to."""
-    realpath = os.path.realpath(cls.GetAbsolutePathToLKGM())
-    version, _ = os.path.splitext(os.path.basename(realpath))
-    return version
-
   def __init__(self, source_repo, manifest_repo, build_name,
                build_type, incr_type, dry_run=True):
     """Initialize an LKGM Manager.
@@ -144,6 +132,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         source_repo=source_repo, manifest_repo=manifest_repo,
         build_name=build_name, incr_type=incr_type, dry_run=dry_run)
 
+    self.lkgm_path = os.path.join(self.manifest_dir, self.LKGM_PATH)
     self.compare_versions_fn = _LKGMCandidateInfo.VersionCompare
     self.build_type = build_type
     # Chrome PFQ and PFQ's exist at the same time and version separately so they
@@ -253,7 +242,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
               latest, chrome_branch=version_info.chrome_branch,
               incr_type=self.incr_type)
 
-        self.PrepSpecChanges()
+        manifest_version.CreatePushBranch(self.manifest_dir)
         version = self.GetNextVersion(version_info)
         self.PublishManifest(new_manifest, version)
         self.current_version = version
@@ -294,12 +283,14 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                                                   use_long_timeout=True)
     if version_to_build:
       last_error = None
-      for _ in range(0, retries + 1):
+      for attempt in range(0, retries + 1):
         try:
+          if attempt > 0:
+            self.RefreshManifestCheckout()
           logging.info('Starting build spec: %s', version_to_build)
           commit_message = 'Automatic: Start %s %s' % (self.build_name,
                                                        version_to_build)
-          self.PrepSpecChanges()
+          manifest_version.CreatePushBranch(self.manifest_dir)
           self.SetInFlight(version_to_build)
           self.PushSpecChanges(commit_message)
           self.current_version = version_to_build
@@ -326,7 +317,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     def _CheckStatusOfBuildersArray():
       """Helper function that iterates through current statuses."""
       num_complete = 0
-      _SyncGitRepo(self._TMP_MANIFEST_DIR)
+      _SyncGitRepo(self.manifest_dir)
       version_info = _LKGMCandidateInfo(version_file=version_file,
                                         incr_type=self.incr_type)
       for builder in builders_array:
@@ -364,16 +355,17 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     last_error = None
     path_to_candidate = self.GetLocalManifest(self.current_version)
-    path_to_lkgm = self.GetAbsolutePathToLKGM()
     assert os.path.exists(path_to_candidate), 'Candidate not found locally.'
 
     # This may potentially fail for not being at TOT while pushing.
-    for index in range(0, retries + 1):
+    for attempt in range(0, retries + 1):
       try:
-        self.PrepSpecChanges()
-        manifest_version.CreateSymlink(path_to_candidate, path_to_lkgm)
+        if attempt > 0:
+          self.RefreshManifestCheckout()
+        manifest_version.CreatePushBranch(self.manifest_dir)
+        manifest_version.CreateSymlink(path_to_candidate, self.lkgm_path)
         cros_lib.RunCommand(['git', 'add', self.LKGM_PATH],
-                            cwd=self._TMP_MANIFEST_DIR)
+                            cwd=self.manifest_dir)
         self.PushSpecChanges(
             'Automatic: %s promoting %s to LKGM' % (self.build_name,
                                                     self.current_version))
@@ -382,7 +374,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
               cros_lib.RunCommandError) as e:
         last_error = 'Failed to promote manifest. error: %s' % e
         logging.error(last_error)
-        logging.error('Retrying to promote manifest:  Retry %d/%d', index + 1,
+        logging.error('Retrying to promote manifest:  Retry %d/%d', attempt + 1,
                       retries)
 
     else:
@@ -407,8 +399,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
                    'for this build type.')
       return
 
-    handler = cros_lib.ManifestHandler.ParseManifest(
-        self.GetAbsolutePathToLKGM())
+    handler = cros_lib.ManifestHandler.ParseManifest(self.lkgm_path)
     reviewed_on_re = re.compile('\s*Reviewed-on:\s*(\S+)')
     author_re = re.compile('\s*Author:.*<(\S+)@\S+>\s*')
     committer_re = re.compile('\s*Commit:.*<(\S+)@\S+>\s*')
