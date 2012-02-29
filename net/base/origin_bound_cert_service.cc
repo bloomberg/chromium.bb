@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/ec_private_key.h"
-#include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/base/origin_bound_cert_store.h"
 #include "net/base/registry_controlled_domain.h"
@@ -39,7 +38,6 @@ const int kValidityPeriodInDays = 365;
 
 bool IsSupportedCertType(uint8 type) {
   switch(type) {
-    case CLIENT_CERT_RSA_SIGN:
     case CLIENT_CERT_ECDSA_SIGN:
       return true;
     default:
@@ -424,30 +422,6 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
   std::string der_cert;
   std::vector<uint8> private_key_info;
   switch (type) {
-    case CLIENT_CERT_RSA_SIGN: {
-      scoped_ptr<crypto::RSAPrivateKey> key(
-          crypto::RSAPrivateKey::Create(kKeySizeInBits));
-      if (!key.get()) {
-        DLOG(ERROR) << "Unable to create key pair for client";
-        return ERR_KEY_GENERATION_FAILED;
-      }
-      if (!x509_util::CreateOriginBoundCertRSA(
-          key.get(),
-          origin,
-          serial_number,
-          now,
-          not_valid_after,
-          &der_cert)) {
-        DLOG(ERROR) << "Unable to create x509 cert for client";
-        return ERR_ORIGIN_BOUND_CERT_GENERATION_FAILED;
-      }
-
-      if (!key->ExportPrivateKey(&private_key_info)) {
-        DLOG(ERROR) << "Unable to export private key";
-        return ERR_PRIVATE_KEY_EXPORT_FAILED;
-      }
-      break;
-    }
     case CLIENT_CERT_ECDSA_SIGN: {
       scoped_ptr<crypto::ECPrivateKey> key(crypto::ECPrivateKey::Create());
       if (!key.get()) {
