@@ -421,16 +421,43 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
   LoadAndExpectError("launch_container_without_launch_url.json",
                      errors::kLaunchURLRequired);
   LoadAndExpectError("launch_width_invalid.json",
-                     errors::kInvalidLaunchWidthContainer);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValueContainer,
+                         keys::kLaunchWidth));
   LoadAndExpectError("launch_width_negative.json",
-                     errors::kInvalidLaunchWidth);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchWidth));
   LoadAndExpectError("launch_height_invalid.json",
-                     errors::kInvalidLaunchHeightContainer);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValueContainer,
+                         keys::kLaunchHeight));
   LoadAndExpectError("launch_height_negative.json",
-                     errors::kInvalidLaunchHeight);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchHeight));
+
+  LoadAndExpectError("launch_min_width_invalid.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValueContainer,
+                         keys::kLaunchMinWidth));
+  LoadAndExpectError("launch_min_width_negative.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchMinWidth));
+  LoadAndExpectError("launch_min_height_invalid.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValueContainer,
+                         keys::kLaunchMinHeight));
+  LoadAndExpectError("launch_min_height_negative.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchMinHeight));
 
   LoadAndExpectError("launch_container_missing_size_for_platform.json",
-                     errors::kInvalidLaunchWidth);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchWidth));
 }
 
 TEST_F(ExtensionManifestTest, PlatformAppLaunchContainer) {
@@ -446,19 +473,33 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
   LoadAndExpectError("launch_path_and_extent.json",
                      errors::kLaunchPathAndExtentAreExclusive);
   LoadAndExpectError("launch_path_invalid_type.json",
-                     errors::kInvalidLaunchLocalPath);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchLocalPath));
   LoadAndExpectError("launch_path_invalid_value.json",
-                     errors::kInvalidLaunchLocalPath);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchLocalPath));
   LoadAndExpectError("launch_path_invalid_localized.json",
-                     errors::kInvalidLaunchLocalPath);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchLocalPath));
   LoadAndExpectError("launch_url_invalid_type_1.json",
-                     errors::kInvalidLaunchWebURL);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchWebURL));
   LoadAndExpectError("launch_url_invalid_type_2.json",
-                     errors::kInvalidLaunchWebURL);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchWebURL));
   LoadAndExpectError("launch_url_invalid_type_3.json",
-                     errors::kInvalidLaunchWebURL);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchWebURL));
   LoadAndExpectError("launch_url_invalid_localized.json",
-                     errors::kInvalidLaunchWebURL);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchWebURL));
 
   scoped_refptr<Extension> extension;
   extension = LoadAndExpectSuccess("launch_local_path.json");
@@ -470,7 +511,9 @@ TEST_F(ExtensionManifestTest, AppLaunchURL) {
             extension->GetFullLaunchURL().spec());
 
   LoadAndExpectError("launch_web_url_relative.json",
-                     errors::kInvalidLaunchWebURL);
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchWebURL));
 
   extension = LoadAndExpectSuccess("launch_web_url_absolute.json");
   EXPECT_EQ(GURL("http://www.google.com/launch.html"),

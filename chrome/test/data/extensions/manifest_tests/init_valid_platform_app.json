@@ -8,7 +8,9 @@
       "container": "shell",
       "local_path": "launch.html",
       "width": 250,
-      "height": 250
+      "height": 250,
+      "min_width": 100,
+      "min_height": 100
     }
   }
 }

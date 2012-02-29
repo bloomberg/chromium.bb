@@ -58,6 +58,8 @@ const char kLaunchContainer[] = "app.launch.container";
 const char kLaunchHeight[] = "app.launch.height";
 const char kLaunchLocalPath[] = "app.launch.local_path";
 const char kLaunchWebURL[] = "app.launch.web_url";
+const char kLaunchMinHeight[] = "app.launch.min_height";
+const char kLaunchMinWidth[] = "app.launch.min_width";
 const char kLaunchWidth[] = "app.launch.width";
 const char kLayouts[] = "layouts";
 const char kManifestVersion[] = "manifest_version";
@@ -289,18 +291,10 @@ const char kInvalidLaunchContainerForNonPlatform[] =
     "'app.launch.container' = 'shell' can only be used with platform_app.";
 const char kInvalidLaunchContainerForPlatform[] =
     "platform_app requires 'app.launch.container' == 'shell'.";
-const char kInvalidLaunchHeight[] =
-    "Invalid value for 'app.launch.height'.";
-const char kInvalidLaunchHeightContainer[] =
-    "Invalid container type for 'app.launch.height'.";
-const char kInvalidLaunchLocalPath[] =
-    "Invalid value for 'app.launch.local_path'.";
-const char kInvalidLaunchWebURL[] =
-    "Invalid value for 'app.launch.web_url'.";
-const char kInvalidLaunchWidth[] =
-    "Invalid value for 'app.launch.width'.";
-const char kInvalidLaunchWidthContainer[] =
-    "Invalid container type for 'app.launch.width'.";
+const char kInvalidLaunchValue[] =
+    "Invalid value for '*'.";
+const char kInvalidLaunchValueContainer[] =
+    "Invalid container type for '*'.";
 const char kInvalidManifest[] =
     "Manifest file is invalid.";
 const char kInvalidManifestVersion[] =

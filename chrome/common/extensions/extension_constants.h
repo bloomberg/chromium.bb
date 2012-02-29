@@ -59,6 +59,8 @@ namespace extension_manifest_keys {
   extern const char kLaunchContainer[];
   extern const char kLaunchHeight[];
   extern const char kLaunchLocalPath[];
+  extern const char kLaunchMinHeight[];
+  extern const char kLaunchMinWidth[];
   extern const char kLaunchWebURL[];
   extern const char kLaunchWidth[];
   extern const char kLayouts[];
@@ -215,12 +217,8 @@ namespace extension_manifest_errors {
   extern const char kInvalidLaunchContainer[];
   extern const char kInvalidLaunchContainerForNonPlatform[];
   extern const char kInvalidLaunchContainerForPlatform[];
-  extern const char kInvalidLaunchHeight[];
-  extern const char kInvalidLaunchHeightContainer[];
-  extern const char kInvalidLaunchLocalPath[];
-  extern const char kInvalidLaunchWebURL[];
-  extern const char kInvalidLaunchWidth[];
-  extern const char kInvalidLaunchWidthContainer[];
+  extern const char kInvalidLaunchValue[];
+  extern const char kInvalidLaunchValueContainer[];
   extern const char kInvalidManifest[];
   extern const char kInvalidManifestVersion[];
   extern const char kInvalidMatch[];
