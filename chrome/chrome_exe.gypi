@@ -97,6 +97,11 @@
                 ],
               },
             ],
+            ['profiling==0 and linux_disable_pie==0', {
+              'ldflags': [
+                '-pie',
+              ],
+            }],
             ['use_system_xdg_utils==0', {
               'copies': [
                 {
