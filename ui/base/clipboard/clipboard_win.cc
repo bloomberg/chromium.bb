@@ -374,6 +374,15 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
   return ::IsClipboardFormatAvailable(format.ToUINT()) != FALSE;
 }
 
+void Clipboard::Clear(Buffer buffer) {
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return;
+
+  ::EmptyClipboard();
+}
+
 void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
                                    std::vector<string16>* types,
                                    bool* contains_filenames) const {

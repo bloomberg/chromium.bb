@@ -67,6 +67,7 @@ bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsSync, OnWriteObjectsSync)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_GetSequenceNumber, OnGetSequenceNumber)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_IsFormatAvailable, OnIsFormatAvailable)
+    IPC_MESSAGE_HANDLER(ClipboardHostMsg_Clear, OnClear)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadAvailableTypes,
                         OnReadAvailableTypes)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_ReadText, OnReadText)
@@ -151,6 +152,10 @@ void ClipboardMessageFilter::OnIsFormatAvailable(
     const ui::Clipboard::FormatType& format, ui::Clipboard::Buffer buffer,
     bool* result) {
   *result = GetClipboard()->IsFormatAvailable(format, buffer);
+}
+
+void ClipboardMessageFilter::OnClear(ui::Clipboard::Buffer buffer) {
+  GetClipboard()->Clear(buffer);
 }
 
 void ClipboardMessageFilter::OnReadText(

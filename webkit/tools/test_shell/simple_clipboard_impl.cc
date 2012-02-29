@@ -48,6 +48,10 @@ bool SimpleClipboardClient::IsFormatAvailable(
   return GetClipboard()->IsFormatAvailable(format, buffer);
 }
 
+void SimpleClipboardClient::Clear(ui::Clipboard::Buffer buffer) {
+  GetClipboard()->Clear(buffer);
+}
+
 void SimpleClipboardClient::ReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                                std::vector<string16>* types,
                                                bool* contains_filenames) {

@@ -158,6 +158,10 @@ class AuraClipboard {
   AuraClipboard() {}
 
   ~AuraClipboard() {
+    Clear();
+  }
+
+  void Clear() {
     STLDeleteContainerPointers(data_list_.begin(), data_list_.end());
     data_list_.clear();
   }
@@ -455,6 +459,13 @@ bool Clipboard::IsFormatAvailable(const FormatType& format,
       return true;
   }
   return false;
+}
+
+void Clipboard::Clear(Buffer buffer) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(IsValidBuffer(buffer));
+  AuraClipboard* clipboard = GetClipboard();
+  clipboard->Clear();
 }
 
 void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,

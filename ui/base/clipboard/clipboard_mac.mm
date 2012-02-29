@@ -238,6 +238,14 @@ bool Clipboard::IsFormatAvailable(const FormatType& format,
   return [types containsObject:format.ToNSString()];
 }
 
+void Clipboard::Clear(Buffer buffer) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(buffer, BUFFER_STANDARD);
+
+  NSPasteboard* pb = GetPasteboard();
+  [pb declareTypes:[NSArray array] owner:nil];
+}
+
 void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
                                    std::vector<string16>* types,
                                    bool* contains_filenames) const {

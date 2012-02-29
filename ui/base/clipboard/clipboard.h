@@ -199,6 +199,9 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // Tests whether the clipboard contains a certain format
   bool IsFormatAvailable(const FormatType& format, Buffer buffer) const;
 
+  // Clear the clipboard data.
+  void Clear(Buffer buffer);
+
   void ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
                           bool* contains_filenames) const;
 

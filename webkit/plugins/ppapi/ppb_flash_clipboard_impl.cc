@@ -207,11 +207,11 @@ int32_t PPB_Flash_Clipboard_Impl::WriteData(
     return PP_ERROR_FAILED;
   }
 
-  ScopedClipboardWriterGlue scw(client_.get());
   if (data_item_count == 0) {
-    // TODO(raymes): implement clear()
-    return PP_ERROR_NOTSUPPORTED;
+    client_->Clear(ConvertClipboardType(clipboard_type));
+    return PP_OK;
   }
+  ScopedClipboardWriterGlue scw(client_.get());
   for (uint32_t i = 0; i < data_item_count; ++i) {
     int32_t res = WriteDataItem(formats[i], data_items[i], &scw);
     if (res != PP_OK) {

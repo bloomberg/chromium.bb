@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ class SimpleClipboardClient : public webkit_glue::ClipboardClient {
   virtual uint64 GetSequenceNumber(ui::Clipboard::Buffer buffer) OVERRIDE;
   virtual bool IsFormatAvailable(const ui::Clipboard::FormatType& format,
                                  ui::Clipboard::Buffer buffer) OVERRIDE;
+  virtual void Clear(ui::Clipboard::Buffer buffer) OVERRIDE;
   virtual void ReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                   std::vector<string16>* types,
                                   bool* contains_filenames) OVERRIDE;

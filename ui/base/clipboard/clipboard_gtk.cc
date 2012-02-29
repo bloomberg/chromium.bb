@@ -403,6 +403,14 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
   return retval;
 }
 
+void Clipboard::Clear(Clipboard::Buffer buffer) {
+  DCHECK(CalledOnValidThread());
+  GtkClipboard* clipboard = LookupBackingClipboard(buffer);
+  if (clipboard == NULL)
+    return;
+  gtk_clipboard_clear(clipboard);
+}
+
 void Clipboard::ReadAvailableTypes(Clipboard::Buffer buffer,
                                    std::vector<string16>* types,
                                    bool* contains_filenames) const {

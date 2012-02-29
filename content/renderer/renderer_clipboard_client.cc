@@ -125,6 +125,10 @@ bool RendererClipboardClient::IsFormatAvailable(
   return result;
 }
 
+void RendererClipboardClient::Clear(ui::Clipboard::Buffer buffer) {
+  RenderThreadImpl::current()->Send(new ClipboardHostMsg_Clear(buffer));
+}
+
 void RendererClipboardClient::ReadAvailableTypes(
     ui::Clipboard::Buffer buffer,
     std::vector<string16>* types,

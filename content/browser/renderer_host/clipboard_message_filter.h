@@ -35,6 +35,7 @@ class ClipboardMessageFilter : public content::BrowserMessageFilter {
   void OnIsFormatAvailable(const ui::Clipboard::FormatType& format,
                            ui::Clipboard::Buffer buffer,
                            bool* result);
+  void OnClear(ui::Clipboard::Buffer buffer);
   void OnReadAvailableTypes(ui::Clipboard::Buffer buffer,
                             std::vector<string16>* types,
                             bool* contains_filenames);

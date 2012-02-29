@@ -63,6 +63,10 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format,
   return false;
 }
 
+void Clipboard::Clear(Buffer buffer) {
+
+}
+
 void Clipboard::ReadAvailableTypes(Buffer buffer, std::vector<string16>* types,
                                    bool* contains_filenames) const {
 }

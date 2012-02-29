@@ -32,6 +32,7 @@ class TestFlashClipboard : public TestCase {
   std::string TestReadWritePlainText();
   std::string TestReadWriteHTML();
   std::string TestReadWriteMultipleFormats();
+  std::string TestClear();
 
   const PPB_Flash_Clipboard* clipboard_interface_;
 };

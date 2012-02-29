@@ -32,6 +32,7 @@ void TestFlashClipboard::RunTests(const std::string& filter) {
   RUN_TEST(ReadWritePlainText, filter);
   RUN_TEST(ReadWriteHTML, filter);
   RUN_TEST(ReadWriteMultipleFormats, filter);
+  RUN_TEST(Clear, filter);
 }
 
 PP_Bool TestFlashClipboard::IsFormatAvailable(
@@ -140,5 +141,20 @@ std::string TestFlashClipboard::TestReadWriteMultipleFormats() {
   ASSERT_TRUE(ReadAndMatchPlainText(plain_text_var.AsString()));
   ASSERT_TRUE(ReadAndMatchHTML(html_var.AsString()));
 
+  PASS();
+}
+
+std::string TestFlashClipboard::TestClear() {
+  std::string input = "Hello world plain text!";
+  ASSERT_TRUE(WriteStringVar(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
+                             input) == PP_OK);
+  ASSERT_TRUE(IsFormatAvailable(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT));
+  clipboard_interface_->WriteData(
+      instance_->pp_instance(),
+      PP_FLASH_CLIPBOARD_TYPE_STANDARD,
+      0,
+      NULL,
+      NULL);
+  ASSERT_FALSE(IsFormatAvailable(PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT));
   PASS();
 }

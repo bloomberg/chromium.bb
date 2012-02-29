@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,9 @@ class ClipboardClient {
   // Tests whether the clipboard contains a certain format
   virtual bool IsFormatAvailable(const ui::Clipboard::FormatType& format,
                                  ui::Clipboard::Buffer buffer) = 0;
+
+  // Clear the contents of the clipboard.
+  virtual void Clear(ui::Clipboard::Buffer buffer) = 0;
 
   // Reads the available types from the clipboard, if available.
   virtual void ReadAvailableTypes(ui::Clipboard::Buffer buffer,

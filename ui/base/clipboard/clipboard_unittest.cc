@@ -59,11 +59,7 @@ TEST_F(ClipboardTest, ClearTest) {
     clipboard_writer.WriteText(ASCIIToUTF16("clear me"));
   }
 
-  {
-    ScopedClipboardWriter clipboard_writer(&clipboard,
-                                           Clipboard::BUFFER_STANDARD);
-    clipboard_writer.WriteHTML(ASCIIToUTF16("<b>broom</b>"), "");
-  }
+  clipboard.Clear(Clipboard::BUFFER_STANDARD);
 
   EXPECT_FALSE(clipboard.IsFormatAvailable(
       Clipboard::GetPlainTextWFormatType(), Clipboard::BUFFER_STANDARD));
