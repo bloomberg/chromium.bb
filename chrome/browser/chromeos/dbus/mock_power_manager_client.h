@@ -22,7 +22,7 @@ class MockPowerManagerClient : public PowerManagerClient {
   MOCK_METHOD1(HasObserver, bool(Observer*));
   MOCK_METHOD1(DecreaseScreenBrightness, void(bool));
   MOCK_METHOD0(IncreaseScreenBrightness, void(void));
-  MOCK_METHOD0(RequestStatusUpdate, void(void));
+  MOCK_METHOD1(RequestStatusUpdate, void(UpdateRequestType));
   MOCK_METHOD0(RequestRestart, void(void));
   MOCK_METHOD0(RequestShutdown, void(void));
   MOCK_METHOD1(CalculateIdleTime, void(const CalculateIdleTimeCallback&));

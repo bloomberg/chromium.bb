@@ -214,7 +214,8 @@ PowerMenuButton::PowerMenuButton(StatusAreaButton::Delegate* delegate)
   set_id(VIEW_ID_STATUS_BUTTON_POWER);
   UpdateIconAndLabelInfo();
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
+      PowerManagerClient::UPDATE_INITIAL);
 }
 
 PowerMenuButton::~PowerMenuButton() {
@@ -269,7 +270,8 @@ void PowerMenuButton::OnLocaleChanged() {
 
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // Explicitly query the power status.
-  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
+  DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
+      PowerManagerClient::UPDATE_USER);
 
   views::MenuItemView* menu = new views::MenuItemView(this);
   // MenuRunner takes ownership of |menu|.

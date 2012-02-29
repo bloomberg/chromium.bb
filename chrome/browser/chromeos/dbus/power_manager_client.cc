@@ -174,7 +174,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     SimpleMethodCallToPowerManager(power_manager::kIncreaseScreenBrightness);
   }
 
-  virtual void RequestStatusUpdate() OVERRIDE {
+  virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {
     dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
                                  power_manager::kGetAllPropertiesMethod);
     power_manager_proxy_->CallMethod(
@@ -310,7 +310,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void PowerSupplyPollReceived(dbus::Signal* unused_signal) {
     VLOG(1) << "Received power supply poll signal.";
-    RequestStatusUpdate();
+    RequestStatusUpdate(UPDATE_POLL);
   }
 
   void OnGetAllPropertiesMethod(dbus::Response* response) {
@@ -418,7 +418,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
  public:
   PowerManagerClientStubImpl()
       : discharging_(true),
-        battery_percentage_(80),
+        battery_percentage_(81),
         pause_count_(0) {
   }
 
@@ -446,8 +446,12 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     VLOG(1) << "Requested to increase screen brightness";
   }
 
-  virtual void RequestStatusUpdate() OVERRIDE {
-    if (!timer_.IsRunning()) {
+  virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {
+    if (update_type == UPDATE_INITIAL) {
+      Update();
+      return;
+    }
+    if (!timer_.IsRunning() && update_type == UPDATE_USER) {
       timer_.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(1000),

@@ -85,6 +85,12 @@ class PowerManagerClient {
     virtual void ActiveNotify() {}
   };
 
+  enum UpdateRequestType {
+    UPDATE_INITIAL,  // Initial update request.
+    UPDATE_USER,     // User initialted update request.
+    UPDATE_POLL      // Update requested by poll signal.
+  };
+
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
@@ -97,8 +103,8 @@ class PowerManagerClient {
   // Increases the screen brightness.
   virtual void IncreaseScreenBrightness() = 0;
 
-  // UI initiated request for power supply status update.
-  virtual void RequestStatusUpdate() = 0;
+  // Request for power supply status update.
+  virtual void RequestStatusUpdate(UpdateRequestType update_type) = 0;
 
   // Requests restart of the system.
   virtual void RequestRestart() = 0;
