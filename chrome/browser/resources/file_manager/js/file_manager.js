@@ -72,12 +72,6 @@ FileManager.prototype = {
       'answer.py?hl=en&answer=1061547';
 
   /**
-   * Location of the FAQ about the file actions.
-   */
-  const NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
-      'answer.py?hl=en&answer=1700055&topic=29026&ctx=topic';
-
-  /**
    * Mnemonics for the recurse parameter of the copyFiles method.
    */
   const CP_RECURSE = true;
@@ -415,14 +409,16 @@ FileManager.prototype = {
                    str('SIZE_TB'),
                    str('SIZE_PB')];
 
+    if (str('ENABLE_GDATA') == '1')
+      this.initGData_();
+
     metrics.startInterval('Load.FileSystem');
 
     var self = this;
 
     // The list of active mount points to distinct them from other directories.
     chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
-      self.mountPoints_ = mountPoints;
-      self.updateVolumeMetadata_();
+      self.setMountPoints_(mountPoints);
       onDone();
     });
 
@@ -436,6 +432,15 @@ FileManager.prototype = {
       self.filesystem_ = filesystem;
       onDone();
     });
+  };
+
+  FileManager.prototype.setMountPoints_ = function(mountPoints) {
+    this.mountPoints_ = mountPoints;
+    // Add gdata mount info if present.
+    if (this.gdataMounted_)
+      this.mountPoints_.push(this.gdataMountInfo_);
+
+    this.updateVolumeMetadata_();
   };
 
   /**
@@ -756,6 +761,12 @@ FileManager.prototype = {
     // TODO(dgozman): add "Add a drive" item.
     this.rootsList_.dataModel = this.directoryModel_.rootsList;
     this.directoryModel_.updateRoots();
+  };
+
+  FileManager.prototype.initGData_ = function() {
+    metrics.startInterval('Load.GData');
+    // TODO(zelidrag): We should do this first time user selects this provider.
+    chrome.fileBrowserPrivate.addMount('', 'gdata', {});
   };
 
   /**
@@ -1617,6 +1628,9 @@ FileManager.prototype = {
     if (isParentPath('/' + DirectoryModel.REMOVABLE_DIRECTORY, path))
       return path.substring(DirectoryModel.REMOVABLE_DIRECTORY.length + 2);
 
+    if (path == '/' + DirectoryModel.GDATA_DIRECTORY)
+      return str('GDATA_DIRECTORY_LABEL');
+
     return path;
   };
 
@@ -2249,9 +2263,9 @@ FileManager.prototype = {
 
       function callback(success) {
         if (!success && selection.entries.length == 1)
-          this.alert.showHtml(
+          this.alert.showWithTitle(
               unescape(selection.entries[0].name),
-              strf('NO_ACTION_FOR_FILE', NO_ACTION_FOR_FILE_URL),
+              strf('ERROR_VIEWING_FILE'),
               function() {});
       }
 
@@ -2276,9 +2290,27 @@ FileManager.prototype = {
    */
   FileManager.prototype.onMountCompleted_ = function(event) {
     var self = this;
+
+    if (event && event.mountType == 'gdata') {
+      metrics.recordInterval('Load.GData');
+      if (event.status == 'success') {
+        self.gdataMounted_ = true;
+        self.gdataAuthToken_ = event.authToken;
+        self.gdataMountInfo_ = {
+          "mountPath": event.mountPath,
+          "sourceUrl": event.sourceUrl,
+          "mountType": event.mountType,
+          "mountCondition": event.status
+        };
+      } else {
+        self.gdataMounted_ = false;
+        self.gdataAuthToken_ = null;
+        self.gdataMountInfo_ = null;
+      }
+    }
+
     chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
-      self.mountPoints_ = mountPoints;
-      self.updateVolumeMetadata_();
+      self.setMountPoints_(mountPoints);
       var changeDirectoryTo = null;
 
       if (event.eventType == 'mount') {

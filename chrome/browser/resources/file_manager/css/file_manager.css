@@ -267,6 +267,18 @@ li.root-item > .spacer {
   background-position: 0 -3px;
 }
 
+.root-label[icon=gdata] {
+  -webkit-padding-start: 29px;
+  background-image: url('../images/gdata_24x24.png');
+  background-position: 0 -2px;
+}
+
+.breadcrumbs .root-label[icon=gdata] {
+  -webkit-padding-start: 33px;
+  background-image: url('../images/gdata_28x28.png');
+  background-position: 0 -3px;
+}
+
 .root-label[icon=archive] {
   background-image: url('../images/icon_mount_archive_16x16.png');
   background-position: 0 0;

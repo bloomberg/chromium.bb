@@ -10120,6 +10120,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_REMOVABLE_DIRECTORY_LABEL" desc="/removable directory label.">
         External Storage
       </message>
+      <message name="IDS_FILE_BROWSER_GDATA_DIRECTORY_LABEL" desc="/gdata directory label.">
+        Docs
+      </message>
       <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
         External Storage
       </message>

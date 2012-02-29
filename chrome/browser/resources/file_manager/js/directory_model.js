@@ -61,13 +61,19 @@ DirectoryModel.ARCHIVE_DIRECTORY = 'archive';
 DirectoryModel.RootType = {
   DOWNLOADS: 'downloads',
   ARCHIVE: 'archive',
-  REMOVABLE: 'removable'
+  REMOVABLE: 'removable',
+  GDATA: 'gdata'
 };
 
 /**
 * The name of the downloads directory.
 */
 DirectoryModel.DOWNLOADS_DIRECTORY = 'Downloads';
+
+/**
+* The name of the gdata provider directory.
+*/
+DirectoryModel.GDATA_DIRECTORY = 'gdata';
 
 DirectoryModel.prototype = {
   __proto__: cr.EventTarget.prototype,
@@ -699,7 +705,8 @@ DirectoryModel.prototype = {
     var groups = {
       downloads: null,
       archives: null,
-      removables: null
+      removables: null,
+      gdata: null
     };
 
     metrics.startInterval('Load.Roots');
@@ -710,7 +717,8 @@ DirectoryModel.prototype = {
 
       callback(groups.downloads.
                concat(groups.archives).
-               concat(groups.removables));
+               concat(groups.removables).
+               concat(groups.gdata));
       metrics.recordInterval('Load.Roots');
     }
 
@@ -729,6 +737,16 @@ DirectoryModel.prototype = {
       done();
     }
 
+    function onGData(entry) {
+      groups.gdata = [entry];
+      done();
+    }
+
+    function onGDataError(error) {
+      groups.gdata = [];
+      done();
+    }
+
     var root = this.root_;
     root.getDirectory(DirectoryModel.DOWNLOADS_DIRECTORY, { create: false },
                       onDownloads, onDownloadsError);
@@ -736,6 +754,8 @@ DirectoryModel.prototype = {
                        append.bind(this, 'archives'));
     util.readDirectory(root, DirectoryModel.REMOVABLE_DIRECTORY,
                        append.bind(this, 'removables'));
+    root.getDirectory(DirectoryModel.GDATA_DIRECTORY, { create: false },
+                      onGData, onGDataError);
   },
 
   updateRoots: function(opt_changeDirectoryTo) {

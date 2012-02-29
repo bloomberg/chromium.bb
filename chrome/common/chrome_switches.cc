@@ -1169,6 +1169,9 @@ const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 const char kMemoryWidget[]                  = "memory-widget";
 
 #if defined(OS_CHROMEOS)
+// Enables gdata content provider.
+const char kEnableGData[]                   = "enable-gdata";
+
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
 
