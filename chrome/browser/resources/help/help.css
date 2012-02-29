@@ -20,7 +20,7 @@ body {
 #version-container {
   font-size: 90%;
   line-height: 1.5em;
-  margin-top: 20px;
+  margin-top: 30px;
 }
 
 #update-status-container {
@@ -42,7 +42,7 @@ body {
 }
 
 #help-container {
-  margin-top: 40px;
+  margin-top: 16px;
 }
 
 #update-percentage {
@@ -50,13 +50,7 @@ body {
 }
 
 #get-help {
-  -webkit-margin-end: 10px;
-}
-
-#version-container,
-#help-container {
-  /* 32px icon + 10px margin-left to match #product-container */
-  -webkit-margin-start: 42px;
+  -webkit-margin-end: 4px;
 }
 
 #product-container {
