@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -412,7 +412,8 @@ MessageChannel::~MessageChannel() {
 void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
   // Retain the passthrough object; We need to ensure it lives as long as this
   // MessageChannel.
-  WebBindings::retainObject(passthrough);
+  if (passthrough)
+    WebBindings::retainObject(passthrough);
 
   // If we had a passthrough set already, release it. Note that we retain the
   // incoming passthrough object first, so that we behave correctly if anyone

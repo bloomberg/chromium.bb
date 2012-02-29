@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ void HostVarTracker::AddNPObjectVar(NPObjectVar* object_var) {
   DCHECK(np_object_map->find(object_var->np_object()) ==
          np_object_map->end()) << "NPObjectVar already in map";
   np_object_map->insert(
-      std::make_pair(object_var->np_object(), object_var));
+      std::make_pair(object_var->np_object(), object_var->AsWeakPtr()));
 }
 
 void HostVarTracker::RemoveNPObjectVar(NPObjectVar* object_var) {
@@ -98,20 +98,41 @@ void HostVarTracker::ForceFreeNPObjectsForInstance(PP_Instance instance) {
     return;  // Nothing to do.
   NPObjectToNPObjectVarMap* np_object_map = found_instance->second.get();
 
-  // Force delete all var references. Need to make a copy so we can iterate over
-  // the map while deleting stuff from it.
+  // Force delete all var references. It's possible that deleting an object "A"
+  // will cause it to delete another object "B" it references, thus removing "B"
+  // from instance_map_. Therefore, we need to make a copy over which we can
+  // iterate safely. Furthermore, the maps contain WeakPtrs so that we can
+  // detect if the object is gone so that we don't dereference invalid memory.
   NPObjectToNPObjectVarMap np_object_map_copy = *np_object_map;
   NPObjectToNPObjectVarMap::iterator cur_var =
       np_object_map_copy.begin();
   while (cur_var != np_object_map_copy.end()) {
     NPObjectToNPObjectVarMap::iterator current = cur_var++;
-    current->second->InstanceDeleted();
+    ForceReleaseNPObject(current->second);
     np_object_map->erase(current->first);
   }
 
   // Remove the record for this instance since it should be empty.
   DCHECK(np_object_map->empty());
   instance_map_.erase(found_instance);
+}
+
+void HostVarTracker::ForceReleaseNPObject(
+    const base::WeakPtr< ::ppapi::NPObjectVar>& object) {
+  // There's a chance that the object was already deleted before we got here.
+  // See ForceFreeNPObjectsForInstance for further explanation. If the object
+  // was deleted, the WeakPtr will return NULL.
+  if (!object.get())
+    return;
+  object->InstanceDeleted();
+  VarMap::iterator iter = live_vars_.find(object->GetExistingVarID());
+  if (iter == live_vars_.end()) {
+    NOTREACHED();
+    return;
+  }
+  iter->second.ref_count = 0;
+  DCHECK(iter->second.track_with_no_reference_count == 0);
+  DeleteObjectInfoIfNecessary(iter);
 }
 
 }  // namespace ppapi

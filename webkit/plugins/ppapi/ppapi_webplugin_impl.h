@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_helpers.h"
+#include "ppapi/c/pp_var.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/webkit_plugins_export.h"
@@ -93,6 +94,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
   scoped_refptr<PluginInstance> instance_;
   scoped_refptr<PPB_URLLoader_Impl> document_loader_;
   gfx::Rect plugin_rect_;
+  PP_Var instance_object_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
 };

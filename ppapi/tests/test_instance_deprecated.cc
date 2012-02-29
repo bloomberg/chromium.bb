@@ -1,9 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/tests/test_instance_deprecated.h"
 
+#include <assert.h>
+
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/tests/testing_instance.h"
@@ -17,7 +20,8 @@ static const char kReturnValueFunction[] = "ReturnValue";
 // ScriptableObject used by instance.
 class InstanceSO : public pp::deprecated::ScriptableObject {
  public:
-  InstanceSO(TestInstance* i) : test_instance_(i) {}
+  InstanceSO(TestInstance* i);
+  virtual ~InstanceSO();
 
   // pp::deprecated::ScriptableObject overrides.
   bool HasMethod(const pp::Var& name, pp::Var* exception);
@@ -28,6 +32,27 @@ class InstanceSO : public pp::deprecated::ScriptableObject {
  private:
   TestInstance* test_instance_;
 };
+
+InstanceSO::InstanceSO(TestInstance* i) : test_instance_(i) {
+  // Set up a post-condition for the test so that we can ensure our destructor
+  // is called. This only works in-process right now. Rather than disable the
+  // whole test, we only do this check when running in-process.
+  // TODO(dmichael): Figure out if we want this to work out-of-process, and if
+  //                 so, fix it. Note that it might just be failing because the
+  //                 ReleaseObject and Deallocate messages are asynchronous.
+  if (i->testing_interface() &&
+      i->testing_interface()->IsOutOfProcess() == PP_FALSE) {
+    i->instance()->AddPostCondition(
+        "window.document.getElementById('container').instance_object_destroyed"
+        );
+  }
+}
+
+InstanceSO::~InstanceSO() {
+  pp::Var exception;
+  pp::Var ret = test_instance_->instance()->ExecuteScript(
+      "document.getElementById('container').instance_object_destroyed=true;");
+}
 
 bool InstanceSO::HasMethod(const pp::Var& name, pp::Var* exception) {
   if (!name.is_string())
@@ -79,6 +104,15 @@ bool TestInstance::Init() {
 
 void TestInstance::RunTests(const std::string& filter) {
   RUN_TEST(ExecuteScript, filter);
+  RUN_TEST(RecursiveObjects, filter);
+  RUN_TEST(LeakedObjectDestructors, filter);
+}
+
+void TestInstance::LeakReferenceAndIgnore(const pp::Var& leaked) {
+  static const PPB_Var* var_interface = static_cast<const PPB_Var*>(
+        pp::Module::Get()->GetBrowserInterface(PPB_VAR_INTERFACE));
+  var_interface->AddRef(leaked.pp_var());
+  IgnoreLeakedVar(leaked.pp_var().value.as_id);
 }
 
 pp::deprecated::ScriptableObject* TestInstance::CreateTestObject() {
@@ -120,3 +154,67 @@ std::string TestInstance::TestExecuteScript() {
 
   PASS();
 }
+
+// A scriptable object that contains other scriptable objects recursively. This
+// is used to help verify that our scriptable object clean-up code works
+// properly.
+class ObjectWithChildren : public pp::deprecated::ScriptableObject {
+ public:
+  ObjectWithChildren(TestInstance* i, int num_descendents) {
+    if (num_descendents > 0) {
+      child_ = pp::VarPrivate(i->instance(),
+                              new ObjectWithChildren(i, num_descendents - 1));
+    }
+  }
+  struct IgnoreLeaks {};
+  ObjectWithChildren(TestInstance* i, int num_descendents, IgnoreLeaks) {
+    if (num_descendents > 0) {
+      child_ = pp::VarPrivate(i->instance(),
+                              new ObjectWithChildren(i, num_descendents - 1,
+                                                     IgnoreLeaks()));
+      i->IgnoreLeakedVar(child_.pp_var().value.as_id);
+    }
+  }
+ private:
+  pp::VarPrivate child_;
+};
+
+std::string TestInstance::TestRecursiveObjects() {
+  // These should be deleted when we exit scope, so should not leak.
+  pp::VarPrivate not_leaked(instance(), new ObjectWithChildren(this, 50));
+
+  // Leak some, but tell TestCase to ignore the leaks. This test is run and then
+  // reloaded (see ppapi_uitest.cc). If these aren't cleaned up when the first
+  // run is torn down, they will show up as leaks in the second run.
+  // NOTE: The ScriptableObjects are actually leaked, but they should be removed
+  //       from the tracker. See below for a test that verifies that the
+  //       destructor is not run.
+  pp::VarPrivate leaked(
+      instance(),
+      new ObjectWithChildren(this, 50, ObjectWithChildren::IgnoreLeaks()));
+  // Now leak a reference to the root object. This should force the root and
+  // all its descendents to stay in the tracker.
+  LeakReferenceAndIgnore(leaked);
+
+  PASS();
+}
+
+// A scriptable object that should cause a crash if its destructor is run. We
+// don't run the destructor for objects which the plugin leaks. This is to
+// prevent them doing dangerous things at cleanup time, such as executing script
+// or creating new objects.
+class BadDestructorObject : public pp::deprecated::ScriptableObject {
+ public:
+  BadDestructorObject() {}
+  ~BadDestructorObject() {
+    assert(false);
+  }
+};
+
+std::string TestInstance::TestLeakedObjectDestructors() {
+  pp::VarPrivate leaked(instance(), new BadDestructorObject());
+  // Leak a reference so it gets deleted on instance shutdown.
+  LeakReferenceAndIgnore(leaked);
+  PASS();
+}
+
