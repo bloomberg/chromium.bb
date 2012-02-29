@@ -13,12 +13,17 @@
 #include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
+#include "content/browser/chrome_blob_storage_context.h"
 #include "content/common/file_system_messages.h"
 #include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
+#include "net/base/mime_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "webkit/blob/blob_data.h"
+#include "webkit/blob/blob_storage_controller.h"
+#include "webkit/blob/deletable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_quota_util.h"
@@ -31,27 +36,44 @@ using content::UserMetricsAction;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationInterface;
+using webkit_blob::BlobData;
+using webkit_blob::BlobStorageController;
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
     net::URLRequestContextGetter* request_context_getter,
-    fileapi::FileSystemContext* file_system_context)
+    fileapi::FileSystemContext* file_system_context,
+    ChromeBlobStorageContext* blob_storage_context)
     : context_(file_system_context),
       request_context_getter_(request_context_getter),
-      request_context_(NULL) {
+      request_context_(NULL),
+      blob_storage_context_(blob_storage_context) {
   DCHECK(context_);
   DCHECK(request_context_getter_);
 }
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
     net::URLRequestContext* request_context,
-    fileapi::FileSystemContext* file_system_context)
+    fileapi::FileSystemContext* file_system_context,
+    ChromeBlobStorageContext* blob_storage_context)
     : context_(file_system_context),
-      request_context_(request_context) {
+      request_context_(request_context),
+      blob_storage_context_(blob_storage_context) {
   DCHECK(context_);
   DCHECK(request_context_);
 }
 
 FileSystemDispatcherHost::~FileSystemDispatcherHost() {
+}
+
+void FileSystemDispatcherHost::OnChannelClosing() {
+  BrowserMessageFilter::OnChannelClosing();
+
+  // Unregister all the blob URLs that are previously registered in this
+  // process.
+  for (base::hash_set<std::string>::const_iterator iter = blob_urls_.begin();
+       iter != blob_urls_.end(); ++iter) {
+    blob_storage_context_->controller()->RemoveBlob(GURL(*iter));
+  }
 }
 
 void FileSystemDispatcherHost::OnChannelConnected(int32 peer_pid) {
@@ -283,6 +305,16 @@ void FileSystemDispatcherHost::OnSyncGetPlatformPath(
   operation->SyncGetPlatformPath(path, platform_path);
 }
 
+// TODO(kinuko,tzik): Add IPC plumbing to wire this.
+void FileSystemDispatcherHost::OnCreateSnapshotFile(
+    int request_id, const GURL& blob_url, const GURL& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  GetNewOperation(path, request_id)->CreateSnapshotFile(
+      path,
+      base::Bind(&FileSystemDispatcherHost::DidCreateSnapshot,
+                 this, request_id, blob_url));
+}
+
 void FileSystemDispatcherHost::DidFinish(int request_id,
                                          base::PlatformFileError result) {
   if (result == base::PLATFORM_FILE_OK)
@@ -366,6 +398,41 @@ void FileSystemDispatcherHost::DidOpenFileSystem(int request_id,
     Send(new FileSystemMsg_DidFail(request_id, result));
   }
   // For OpenFileSystem we do not create a new operation, so no unregister here.
+}
+
+void FileSystemDispatcherHost::DidCreateSnapshot(
+    int request_id,
+    const GURL& blob_url,
+    base::PlatformFileError result,
+    const base::PlatformFileInfo& info,
+    const FilePath& platform_path,
+    const scoped_refptr<webkit_blob::DeletableFileReference>& unused) {
+  if (result != base::PLATFORM_FILE_OK) {
+    Send(new FileSystemMsg_DidFail(request_id, result));
+    return;
+  }
+
+  FilePath::StringType extension = platform_path.Extension();
+  if (!extension.empty())
+    extension = extension.substr(1);  // Strip leading ".".
+
+  // This may fail, but then we'll be just setting the empty mime type.
+  std::string mime_type;
+  net::GetWellKnownMimeTypeFromExtension(extension, &mime_type);
+
+  // Register the created file to the blob registry.
+  // Blob storage automatically finds and refs deletable files, so we don't
+  // need to do anything for the returned file reference (|unused|) here.
+  BlobData::Item item;
+  item.SetToFile(platform_path, 0, -1, base::Time());
+  BlobStorageController* controller = blob_storage_context_->controller();
+  controller->StartBuildingBlob(blob_url);
+  controller->AppendBlobDataItem(blob_url, item);
+  controller->FinishBuildingBlob(blob_url, mime_type);
+  blob_urls_.insert(blob_url.spec());
+
+  // Return the file info and platform_path.
+  Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
 }
 
 FileSystemOperationInterface* FileSystemDispatcherHost::GetNewOperation(

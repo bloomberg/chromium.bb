@@ -502,7 +502,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #endif
   channel_->AddFilter(new FileSystemDispatcherHost(
       browser_context->GetRequestContext(),
-      BrowserContext::GetFileSystemContext(browser_context)));
+      BrowserContext::GetFileSystemContext(browser_context),
+      ChromeBlobStorageContext::GetFor(browser_context)));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(new BlobMessageFilter(GetID(),
       ChromeBlobStorageContext::GetFor(browser_context)));

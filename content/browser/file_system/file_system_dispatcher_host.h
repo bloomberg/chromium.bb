@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/fileapi/file_system_types.h"
 
+class ChromeBlobStorageContext;
 class FilePath;
 class GURL;
 
@@ -31,19 +32,26 @@ class URLRequestContext;
 class URLRequestContextGetter;
 }  // namespace net
 
+namespace webkit_blob {
+class DeletableFileReference;
+}
+
 class FileSystemDispatcherHost : public content::BrowserMessageFilter {
  public:
   // Used by the renderer process host on the UI thread.
   FileSystemDispatcherHost(
       net::URLRequestContextGetter* request_context_getter,
-      fileapi::FileSystemContext* file_system_context);
+      fileapi::FileSystemContext* file_system_context,
+      ChromeBlobStorageContext* blob_storage_context);
   // Used by the worker process host on the IO thread.
   FileSystemDispatcherHost(
       net::URLRequestContext* request_context,
-      fileapi::FileSystemContext* file_system_context);
+      fileapi::FileSystemContext* file_system_context,
+      ChromeBlobStorageContext* blob_storage_context);
   virtual ~FileSystemDispatcherHost();
 
   // content::BrowserMessageFilter implementation.
+  virtual void OnChannelClosing() OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
@@ -89,6 +97,9 @@ class FileSystemDispatcherHost : public content::BrowserMessageFilter {
   void OnDidUpdate(const GURL& path, int64 delta);
   void OnSyncGetPlatformPath(const GURL& path,
                              FilePath* platform_path);
+  void OnCreateSnapshotFile(int request_id,
+                            const GURL& blob_url,
+                            const GURL& path);
 
   // Callback functions to be used when each file operation is finished.
   void DidFinish(int request_id, base::PlatformFileError result);
@@ -113,6 +124,14 @@ class FileSystemDispatcherHost : public content::BrowserMessageFilter {
                          base::PlatformFileError result,
                          const std::string& name,
                          const GURL& root);
+  void DidCreateSnapshot(
+      int request_id,
+      const GURL& blob_url,
+      base::PlatformFileError result,
+      const base::PlatformFileInfo& info,
+      const FilePath& platform_path,
+      const scoped_refptr<webkit_blob::DeletableFileReference>&
+          deletable_ref);
 
   // Creates a new FileSystemOperationInterface based on |target_path|.
   fileapi::FileSystemOperationInterface* GetNewOperation(
@@ -129,6 +148,15 @@ class FileSystemDispatcherHost : public content::BrowserMessageFilter {
   // IO thread, which will extract the net::URLRequestContext from it.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   net::URLRequestContext* request_context_;
+
+  // We access BlobStorageContext to construct an internal blob for
+  // snapshot files.
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+
+  // Keeps track of internal blob URLs for temporary snapshot files.
+  // (As we do for regular blobs in BlobMessageFilter.)
+  // TODO(kinuko,tzik): merge this with the one in BlobMessageFilter.
+  base::hash_set<std::string> blob_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);
 };

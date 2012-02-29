@@ -265,7 +265,9 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       process_->GetData().id));
   process_->GetHost()->AddFilter(new FileSystemDispatcherHost(
       request_context,
-      ResourceContext::GetFileSystemContext(resource_context_)));
+      ResourceContext::GetFileSystemContext(resource_context_),
+      content::GetChromeBlobStorageContextForResourceContext(
+          resource_context_)));
   process_->GetHost()->AddFilter(new FileUtilitiesMessageFilter(
       process_->GetData().id));
   process_->GetHost()->AddFilter(new BlobMessageFilter(
