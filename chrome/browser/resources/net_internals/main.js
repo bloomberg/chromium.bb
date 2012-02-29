@@ -34,8 +34,8 @@ var g_browser = null;
 var MainView = (function() {
   'use strict';
 
-  // We inherit from ResizableVerticalSplitView.
-  var superClass = ResizableVerticalSplitView;
+  // We inherit from HorizontalSplitView
+  var superClass = HorizontalSplitView;
 
   /**
    * Main entry point. Called once the page has loaded.
@@ -53,7 +53,7 @@ var MainView = (function() {
     // the constants themselves.
     g_browser.addConstantsObserver(new ConstantsObserver());
 
-    // This view is a left (resizable) navigation bar.
+    // This view is a left navigation bar.
     this.categoryTabSwitcher_ = new TabSwitcherView();
     var tabs = this.categoryTabSwitcher_;
 
@@ -61,14 +61,7 @@ var MainView = (function() {
     // between the different sub-views.
     superClass.call(this,
                     new DivView(MainView.CATEGORY_TAB_HANDLES_ID),
-                    tabs,
-                    new DivView(MainView.SPLITTER_BOX_FOR_MAIN_TABS_ID));
-
-    // By default the split for the left navbar will be at 50% of the entire
-    // width. This is not aesthetically pleasing, so we will shrink it.
-    // TODO(eroman): Should set this dynamically based on the largest tab
-    //               name rather than using a fixed width.
-    this.setLeftSplit(150);
+                    tabs);
 
     // Populate the main tabs.  Even tabs that don't contain information for the
     // running OS should be created, so they can load log dumps from other
@@ -141,7 +134,6 @@ var MainView = (function() {
 
   // IDs for special HTML elements in index.html
   MainView.CATEGORY_TAB_HANDLES_ID = 'category-tab-handles';
-  MainView.SPLITTER_BOX_FOR_MAIN_TABS_ID = 'splitter-box-for-main-tabs';
 
   cr.addSingletonGetter(MainView);
 

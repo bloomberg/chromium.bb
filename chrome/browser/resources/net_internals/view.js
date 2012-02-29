@@ -205,12 +205,12 @@ var WindowView = (function() {
  * fixed-height, and the bottom view will fill the remainder of the space.
  *
  *  +-----------------------------------+
- *  |            top_view               |
+ *  |            topView                |
  *  +-----------------------------------+
  *  |                                   |
  *  |                                   |
  *  |                                   |
- *  |          bottom_view              |
+ *  |          bottomView               |
  *  |                                   |
  *  |                                   |
  *  |                                   |
@@ -259,4 +259,66 @@ var VerticalSplitView = (function() {
   };
 
   return VerticalSplitView;
+})();
+
+/**
+ * View that positions two views horizontally. The left view should be
+ * fixed-width, and the right view will fill the remainder of the space.
+ *
+ *  +----------+--------------------------+
+ *  |          |                          |
+ *  |          |                          |
+ *  |          |                          |
+ *  | leftView |       rightView          |
+ *  |          |                          |
+ *  |          |                          |
+ *  |          |                          |
+ *  |          |                          |
+ *  |          |                          |
+ *  |          |                          |
+ *  |          |                          |
+ *  +----------+--------------------------+
+ */
+var HorizontalSplitView = (function() {
+  'use strict';
+
+  // We inherit from View.
+  var superClass = View;
+
+  /**
+   * @param {!View} leftView
+   * @param {!View} rightView
+   * @constructor
+   */
+  function HorizontalSplitView(leftView, rightView) {
+    // Call superclass's constructor.
+    superClass.call(this);
+
+    this.leftView_ = leftView;
+    this.rightView_ = rightView;
+  }
+
+  HorizontalSplitView.prototype = {
+    // Inherit the superclass's methods.
+    __proto__: superClass.prototype,
+
+    setGeometry: function(left, top, width, height) {
+      superClass.prototype.setGeometry.call(this, left, top, width, height);
+
+      var fixedWidth = this.leftView_.getWidth();
+      this.leftView_.setGeometry(left, top, fixedWidth, height);
+
+      this.rightView_.setGeometry(
+          left + fixedWidth, top, width - fixedWidth, height);
+    },
+
+    show: function(isVisible) {
+      superClass.prototype.show.call(this, isVisible);
+
+      this.leftView_.show(isVisible);
+      this.rightView_.show(isVisible);
+    }
+  };
+
+  return HorizontalSplitView;
 })();

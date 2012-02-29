@@ -5,6 +5,8 @@
  */
 .tab-switcher-view {
   font-family: sans-serif;
+  display: inline-block;
+  border-right: 1px solid #aaa;
 }
 
 .tab-switcher-view {
@@ -15,10 +17,9 @@
 
 .tab-switcher-view a {
   text-decoration: none;
-  display: inline-block;
+  display: block;
   margin-top: 2px;
   padding: 5px 10px 3px 10px;
-  width: 100%;
 }
 
 .tab-switcher-view a:hover,
