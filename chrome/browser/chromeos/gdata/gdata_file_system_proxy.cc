@@ -12,6 +12,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
+using base::MessageLoopProxy;
 using content::BrowserThread;
 using fileapi::FileSystemOperationInterface;
 
@@ -97,7 +98,7 @@ class FindFileDelegateReplyBase : public FindFileDelegate {
   FilePath search_file_path_;
   // True if the final directory content is required.
   bool require_content_;
-  scoped_refptr<base::MessageLoopProxy> replay_message_proxy_;
+  scoped_refptr<MessageLoopProxy> replay_message_proxy_;
 };
 
 // GetFileInfoDelegate is used to handle results of proxy's content search
@@ -107,8 +108,7 @@ class GetFileInfoDelegate : public FindFileDelegateReplyBase {
   GetFileInfoDelegate(
       scoped_refptr<GDataFileSystem> file_system,
       const FilePath& search_file_path,
-      const FileSystemOperationInterface::GetMetadataCallback&
-         callback)
+      const FileSystemOperationInterface::GetMetadataCallback& callback)
       : FindFileDelegateReplyBase(file_system,
                                   search_file_path,
                                   false  /* require_content */),
@@ -168,8 +168,7 @@ class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
   ReadDirectoryDelegate(
       scoped_refptr<GDataFileSystem> file_system,
       const FilePath& search_file_path,
-      const FileSystemOperationInterface::ReadDirectoryCallback&
-          callback)
+      const FileSystemOperationInterface::ReadDirectoryCallback& callback)
       : FindFileDelegateReplyBase(file_system,
                                   search_file_path,
                                   true  /* require_content */),
@@ -240,6 +239,7 @@ class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
   FileSystemOperationInterface::ReadDirectoryCallback callback_;
 };
 
+// GDataFileSystemProxy class implementation.
 
 GDataFileSystemProxy::GDataFileSystemProxy(Profile* profile)
     : file_system_(GDataFileSystemFactory::GetForProfile(profile)) {
@@ -278,6 +278,31 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
       file_path, new ReadDirectoryDelegate(file_system_, file_path, callback));
 }
 
+void GDataFileSystemProxy::Remove(const GURL& file_url, bool recursive,
+    const FileSystemOperationInterface::StatusCallback& callback) {
+  FilePath file_path;
+  if (!ValidateUrl(file_url, &file_path)) {
+    OnFileOperationCompleted(MessageLoopProxy::current(), callback,
+        base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  file_system_->Remove(file_path, recursive,
+      base::Bind(&GDataFileSystemProxy::OnFileOperationCompleted,
+                 MessageLoopProxy::current(),
+                 callback));
+}
+
+// static.
+void GDataFileSystemProxy::OnFileOperationCompleted(
+    scoped_refptr<MessageLoopProxy> proxy,
+    const FileSystemOperationInterface::StatusCallback& callback,
+    base::PlatformFileError result) {
+  if (!callback.is_null())
+    proxy->PostTask(FROM_HERE, base::Bind(callback, result));
+}
+
+// static.
 bool GDataFileSystemProxy::ValidateUrl(const GURL& url, FilePath* file_path) {
   // what platform you're on.
   fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;

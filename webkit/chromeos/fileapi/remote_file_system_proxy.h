@@ -23,6 +23,8 @@ class RemoteFileSystemProxyInterface :
       const FileSystemOperationInterface::GetMetadataCallback& callback) = 0;
   virtual void ReadDirectory(const GURL& path,
       const FileSystemOperationInterface::ReadDirectoryCallback& callback) = 0;
+  virtual void Remove(const GURL& path, bool recursive,
+      const FileSystemOperationInterface::StatusCallback& callback) = 0;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 };
 

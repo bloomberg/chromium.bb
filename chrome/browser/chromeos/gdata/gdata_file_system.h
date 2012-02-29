@@ -25,12 +25,14 @@ class GDataFile;
 // system.
 class GDataFileBase {
  public:
-  GDataFileBase();
+  explicit GDataFileBase(GDataDirectory* parent);
   virtual ~GDataFileBase();
-  // Converts gdata::DocumentEntry into chromeos::GDataFileBase.
-  static GDataFileBase* FromDocumentEntry(gdata::DocumentEntry* doc);
+  // Converts DocumentEntry into GDataFileBase.
+  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
+                                          DocumentEntry* doc);
   virtual GDataFile* AsGDataFile();
   virtual GDataDirectory* AsGDataDirectory();
+  GDataDirectory* parent() { return parent_; }
   const base::PlatformFileInfo& file_info() const { return file_info_; }
   const FilePath::StringType& file_name() const { return file_name_; }
   const FilePath::StringType& original_file_name() const {
@@ -38,6 +40,10 @@ class GDataFileBase {
   }
   void set_file_name(const FilePath::StringType& name) { file_name_ = name; }
   const GURL& self_url() const { return self_url_; }
+  // Returns virtual file path representing this file system entry. This path
+  // corresponds to file path expected by public methods of GDataFileSyste
+  // class.
+  FilePath GetFilePath();
 
  protected:
   base::PlatformFileInfo file_info_;
@@ -48,6 +54,7 @@ class GDataFileBase {
   // For example, two files in the same directory with the same name "Foo"
   // will show up in the virtual directory as "Foo" and "Foo (2)".
   GURL self_url_;
+  GDataDirectory* parent_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GDataFileBase);
@@ -59,13 +66,14 @@ typedef std::map<FilePath::StringType, GDataFileBase*> GDataFileCollection;
 // this could be either a regular file or a server side document.
 class GDataFile : public GDataFileBase {
  public:
-  GDataFile();
+  explicit GDataFile(GDataDirectory* parent);
   virtual ~GDataFile();
   virtual GDataFile* AsGDataFile() OVERRIDE;
 
-  static GDataFileBase* FromDocumentEntry(gdata::DocumentEntry* doc);
+  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
+                                          DocumentEntry* doc);
 
-  gdata::DocumentEntry::EntryKind kind() const { return kind_; }
+  DocumentEntry::EntryKind kind() const { return kind_; }
   const GURL& content_url() const { return content_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
   const std::string& etag() const { return etag_; }
@@ -75,7 +83,7 @@ class GDataFile : public GDataFileBase {
 
  private:
   // Content URL for files.
-  gdata::DocumentEntry::EntryKind kind_;
+  DocumentEntry::EntryKind kind_;
   GURL content_url_;
   std::string content_mime_type_;
   std::string etag_;
@@ -90,17 +98,21 @@ class GDataFile : public GDataFileBase {
 // collection element.
 class GDataDirectory : public GDataFileBase {
  public:
-  GDataDirectory();
+  explicit GDataDirectory(GDataDirectory* parent);
   virtual ~GDataDirectory();
   virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
 
-  static GDataFileBase* FromDocumentEntry(gdata::DocumentEntry* doc);
+  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
+                                          DocumentEntry* doc);
 
   // Adds child file to the directory and takes over the ownership of |file|
   // object. The method will also do name deduplication to ensure that the
   // exposed presentation path does not have naming conflicts. Two files with
   // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
   void AddFile(GDataFileBase* file);
+
+  // Removes the file from its children list.
+  bool RemoveFile(GDataFileBase* file);
 
   // Checks if directory content needs to be retrieved again. If it does,
   // the function will return URL for next feed in |next_feed_url|.
@@ -163,6 +175,28 @@ class FindFileDelegate : public base::RefCountedThreadSafe<FindFileDelegate> {
   virtual void OnError(base::PlatformFileError error) = 0;
 };
 
+// Delegate used to find a directory element for file system updates.
+class ReadOnlyFindFileDelegate : public FindFileDelegate {
+ public:
+  ReadOnlyFindFileDelegate();
+
+  // Returns found file.
+  GDataFileBase* file() { return file_; }
+
+ private:
+  // GDataFileSystem::FindFileDelegate overrides.
+  virtual void OnFileFound(gdata::GDataFile* file) OVERRIDE;
+  virtual void OnDirectoryFound(const FilePath&,
+                                GDataDirectory* dir) OVERRIDE;
+  virtual FindFileTraversalCommand OnEnterDirectory(const FilePath&,
+                                                    GDataDirectory*) OVERRIDE;
+  virtual void OnError(base::PlatformFileError) OVERRIDE;
+
+  // File entry that was found.
+  GDataFileBase* file_;
+};
+
+
 // GData file system abstraction layer. This class is refcounted since we
 // access it from different threads and aggregate into number of other objects.
 // GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
@@ -186,6 +220,8 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
     const scoped_refptr<FindFileDelegate> delegate;
   };
 
+  typedef base::Callback<void(base::PlatformFileError error)>
+      FileOperationCallback;
 
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
@@ -197,6 +233,16 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
   void FindFileByPath(const FilePath& file_path,
                       scoped_refptr<FindFileDelegate> delegate);
 
+  // Removes |file_path| from the file system.  If |is_recursive| is set and
+  // |file_path| represents a directory, we will also delete all of its
+  // contained children elements. The file entry represented by |file_path|
+  // needs to be present in in-memory representation of the file system that
+  // in order to be removed.
+  // TODO(zelidrag): Wire |is_recursive| through gdata api
+  // (find appropriate call for it).
+  void Remove(const FilePath& file_path,
+              bool is_recursive,
+              const FileOperationCallback& callback);
 
   // Initiates directory feed fetching operation and continues previously
   // initiated FindFileByPath() attempt upon its completion. Safe to be called
@@ -219,11 +265,20 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
 
   // Initiates document feed fetching from UI thread.
   void RefreshFeedOnUIThread(const GURL& feed_url,
-                             const gdata::GetDataCallback& callback);
+                             const GetDataCallback& callback);
+
+  // Initiates |file_path| entry deletion from UI thread.
+  void RemoveOnUIThread(const FilePath& file_path,
+                        bool is_recursive,
+                        const EntryActionCallback& callback);
+
+  // Finds file object by |file_path| and returns its gdata self-url.
+  // Returns empty GURL if it does not find the file.
+  GURL GetDocumentUrlFromPath(const FilePath& file_path);
 
   // Converts document feed from gdata service into DirectoryInfo. On failure,
   // returns NULL and fills in |error| with an appropriate value.
-  GDataDirectory* ParseGDataFeed(gdata::GDataErrorCode status,
+  GDataDirectory* ParseGDataFeed(GDataErrorCode status,
                                  base::Value* data,
                                  base::PlatformFileError *error);
 
@@ -233,8 +288,18 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
   // the content of the refreshed directory object and continue initially
   // started FindFileByPath() request.
   void OnGetDocuments(const FindFileParams& params,
-                      gdata::GDataErrorCode status,
+                      GDataErrorCode status,
                       base::Value* data);
+
+  // Callback for handling document remove attempt.
+  void OnRemovedDocument(
+      const FileOperationCallback& callback,
+      const FilePath& file_path,
+      GDataErrorCode status, const GURL& document_url);
+
+  // Removes file under |file_path| from in-memory snapshot of the file system.
+  // Return PLATFORM_FILE_OK if successful.
+  base::PlatformFileError RemoveFileFromFileSystem(const FilePath& file_path);
 
   // Updates content of the directory identified with |directory_path|. If the
   // feed was not complete, it will return URL for the remaining portion in
@@ -275,6 +340,6 @@ class GDataFileSystemFactory : public ProfileKeyedServiceFactory {
       Profile* profile) const OVERRIDE;
 };
 
-}  // namespace chromeos
+}  // namespace gdata
 
 #endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_

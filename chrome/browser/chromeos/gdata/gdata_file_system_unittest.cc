@@ -80,6 +80,29 @@ class GDataFileSystemTest : public testing::Test {
                                  data);
   }
 
+  bool RemoveFile(const FilePath& file_path) {
+    return file_system_->RemoveFileFromFileSystem(file_path) ==
+        base::PLATFORM_FILE_OK;
+  }
+
+  GDataFileBase* FindFile(const FilePath& file_path) {
+    scoped_refptr<ReadOnlyFindFileDelegate> search_delegate(
+        new ReadOnlyFindFileDelegate());
+    file_system_->FindFileByPath(file_path,
+                                 search_delegate);
+    return search_delegate->file();
+  }
+
+  void FindAndTestFilePath(const FilePath& file_path) {
+    scoped_refptr<ReadOnlyFindFileDelegate> search_delegate(
+        new ReadOnlyFindFileDelegate());
+    file_system_->FindFileByPath(file_path,
+                                 search_delegate);
+    GDataFileBase* file = FindFile(file_path);
+    ASSERT_TRUE(file);
+    EXPECT_EQ(file->GetFilePath(), file_path);
+  }
+
   static Value* LoadJSONFile(const std::string& filename) {
     FilePath path;
     std::string error;
@@ -261,6 +284,50 @@ TEST_F(GDataFileSystemTest, SearchInSubdir) {
   file_system_->FindFileByPath(
       FilePath("gdata/Directory 1/SubDirectory File 1.txt"),
       mock_find_file_delegate);
+}
+
+TEST_F(GDataFileSystemTest, FilePathTests) {
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+
+  FindAndTestFilePath(FilePath("gdata/File 1.txt"));
+  FindAndTestFilePath(FilePath("gdata/Directory 1"));
+  FindAndTestFilePath(FilePath("gdata/Directory 1/SubDirectory File 1.txt"));
+}
+
+TEST_F(GDataFileSystemTest, RemoveFiles) {
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+
+  FilePath nonexisting_file("gdata/Dummy file.txt");
+  FilePath file_in_root("gdata/File 1.txt");
+  FilePath dir_in_root("gdata/Directory 1");
+  FilePath file_in_subdir("gdata/Directory 1/SubDirectory File 1.txt");
+
+  EXPECT_TRUE(FindFile(file_in_root) != NULL);
+  EXPECT_TRUE(FindFile(dir_in_root) != NULL);
+  EXPECT_TRUE(FindFile(file_in_subdir) != NULL);
+
+  // Remove first file in root.
+  EXPECT_TRUE(RemoveFile(file_in_root));
+  EXPECT_TRUE(FindFile(file_in_root) == NULL);
+  EXPECT_TRUE(FindFile(dir_in_root) != NULL);
+  EXPECT_TRUE(FindFile(file_in_subdir) != NULL);
+
+  // Remove directory.
+  EXPECT_TRUE(RemoveFile(dir_in_root));
+  EXPECT_TRUE(FindFile(file_in_root) == NULL);
+  EXPECT_TRUE(FindFile(dir_in_root) == NULL);
+  EXPECT_TRUE(FindFile(file_in_subdir) == NULL);
+
+  // Try removing file in already removed subdirectory.
+  EXPECT_FALSE(RemoveFile(file_in_subdir));
+
+  // Try removing non-existing file.
+  EXPECT_FALSE(RemoveFile(nonexisting_file));
+
+  // Try removing root file element.
+  EXPECT_FALSE(RemoveFile(FilePath("gdata")));
 }
 
 }   // namespace gdata

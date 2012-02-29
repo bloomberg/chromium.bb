@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
@@ -66,48 +68,46 @@ std::string EscapeFileName(const std::string& input) {
 
 namespace gdata {
 
-// Delegate used to find a directory element for file system updates.
-class UpdateDirectoryDelegate : public FindFileDelegate {
- public:
-  UpdateDirectoryDelegate() : directory_(NULL) {
-  }
-
-  GDataDirectory* directory() { return directory_; }
-
- private:
-  // GDataFileSystem::FindFileDelegate overrides.
-  virtual void OnFileFound(gdata::GDataFile*) OVERRIDE {
-    directory_ = NULL;
-  }
-
-  // GDataFileSystem::FindFileDelegate overrides.
-  virtual void OnDirectoryFound(const FilePath&,
-                                GDataDirectory* dir) OVERRIDE {
-    if (!dir->file_info().is_directory)
-      return;
-
-    directory_ = dir;
-  }
-
-  virtual FindFileTraversalCommand OnEnterDirectory(const FilePath&,
-                                                    GDataDirectory*) OVERRIDE {
-    // Keep traversing while doing read only lookups.
-    return FIND_FILE_CONTINUES;
-  }
-
-  virtual void OnError(base::PlatformFileError) OVERRIDE {
-    directory_ = NULL;
-  }
-
-  GDataDirectory* directory_;
-};
+// FindFileDelegate class implementation.
 
 FindFileDelegate::~FindFileDelegate() {
 }
 
+// ReadOnlyFindFileDelegate class implementation.
+
+ReadOnlyFindFileDelegate::ReadOnlyFindFileDelegate() : file_(NULL) {
+}
+
+void ReadOnlyFindFileDelegate::OnFileFound(gdata::GDataFile* file) {
+  // file_ should be set only once since OnFileFound() is a terminal
+  // function.
+  DCHECK(!file_);
+  DCHECK(!file->file_info().is_directory);
+  file_ = file;
+}
+
+void ReadOnlyFindFileDelegate::OnDirectoryFound(const FilePath&,
+                                                GDataDirectory* dir) {
+  // file_ should be set only once since OnDirectoryFound() is a terminal
+  // function.
+  DCHECK(!file_);
+  DCHECK(dir->file_info().is_directory);
+  file_ = dir;
+}
+
+FindFileDelegate::FindFileTraversalCommand
+ReadOnlyFindFileDelegate::OnEnterDirectory(const FilePath&, GDataDirectory*) {
+  // Keep traversing while doing read only lookups.
+  return FIND_FILE_CONTINUES;
+}
+
+void ReadOnlyFindFileDelegate::OnError(base::PlatformFileError) {
+  file_ = NULL;
+}
+
 // GDataFileBase class.
 
-GDataFileBase::GDataFileBase() {
+GDataFileBase::GDataFileBase(GDataDirectory* parent) : parent_(parent) {
 }
 
 GDataFileBase::~GDataFileBase() {
@@ -117,23 +117,43 @@ GDataFile* GDataFileBase::AsGDataFile() {
   return NULL;
 }
 
+FilePath GDataFileBase::GetFilePath() {
+  FilePath path;
+  std::vector<FilePath::StringType> parts;
+  for (GDataFileBase* file = this; file != NULL; file = file->parent())
+    parts.push_back(file->file_name());
+
+  // Paste paths parts back together in reverse order from upward tree
+  // traversal.
+  for (std::vector<FilePath::StringType>::reverse_iterator iter =
+           parts.rbegin();
+       iter != parts.rend(); ++iter) {
+    path = path.Append(*iter);
+  }
+  return path;
+}
+
 GDataDirectory* GDataFileBase::AsGDataDirectory() {
   return NULL;
 }
 
 
-GDataFileBase* GDataFileBase::FromDocumentEntry(DocumentEntry* doc) {
+GDataFileBase* GDataFileBase::FromDocumentEntry(GDataDirectory* parent,
+                                                DocumentEntry* doc) {
+  DCHECK(parent);
+  DCHECK(doc);
   if (doc->is_folder())
-    return GDataDirectory::FromDocumentEntry(doc);
+    return GDataDirectory::FromDocumentEntry(parent, doc);
   else if (doc->is_hosted_document() || doc->is_file())
-    return GDataFile::FromDocumentEntry(doc);
+    return GDataFile::FromDocumentEntry(parent, doc);
 
   return NULL;
 }
 
-GDataFileBase* GDataFile::FromDocumentEntry(DocumentEntry* doc) {
+GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
+                                            DocumentEntry* doc) {
   DCHECK(doc->is_hosted_document() || doc->is_file());
-  GDataFile* file = new GDataFile();
+  GDataFile* file = new GDataFile(parent);
   // Check if this entry is a true file, or...
   if (doc->is_file()) {
     file->original_file_name_ = UTF16ToUTF8(doc->filename());
@@ -173,7 +193,9 @@ GDataFileBase* GDataFile::FromDocumentEntry(DocumentEntry* doc) {
 
 // GDataFile class implementation.
 
-GDataFile::GDataFile() : kind_(gdata::DocumentEntry::UNKNOWN) {
+GDataFile::GDataFile(GDataDirectory* parent)
+    : GDataFileBase(parent), kind_(gdata::DocumentEntry::UNKNOWN) {
+  DCHECK(parent);
 }
 
 GDataFile::~GDataFile() {
@@ -185,7 +207,7 @@ GDataFile* GDataFile::AsGDataFile() {
 
 // GDataDirectory class implementation.
 
-GDataDirectory::GDataDirectory() {
+GDataDirectory::GDataDirectory(GDataDirectory* parent) : GDataFileBase(parent) {
   file_info_.is_directory = true;
 }
 
@@ -198,9 +220,11 @@ GDataDirectory* GDataDirectory::AsGDataDirectory() {
 }
 
 // static
-GDataFileBase* GDataDirectory::FromDocumentEntry(DocumentEntry* doc) {
+GDataFileBase* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
+                                                 DocumentEntry* doc) {
+  DCHECK(parent);
   DCHECK(doc->is_folder());
-  GDataDirectory* dir = new GDataDirectory();
+  GDataDirectory* dir = new GDataDirectory(parent);
   dir->file_name_ = UTF16ToUTF8(doc->title());
   dir->file_info_.last_modified = doc->updated_time();
   dir->file_info_.last_accessed = doc->updated_time();
@@ -244,8 +268,18 @@ void GDataDirectory::AddFile(GDataFileBase* file) {
   }
   if (full_file_name.value() != file->file_name())
     file->set_file_name(full_file_name.value());
-
   children_.insert(std::make_pair(file->file_name(), file));
+}
+
+bool GDataDirectory::RemoveFile(GDataFileBase* file) {
+  GDataFileCollection::iterator iter = children_.find(file->file_name());
+  if (children_.find(file->file_name()) ==  children_.end())
+    return false;
+
+  DCHECK(iter->second);
+  delete iter->second;
+  children_.erase(iter);
+  return true;
 }
 
 // GDataFileSystem::FindFileParams struct implementation.
@@ -272,7 +306,7 @@ GDataFileSystem::FindFileParams::~FindFileParams() {
 
 GDataFileSystem::GDataFileSystem(Profile* profile)
     : profile_(profile) {
-  root_.reset(new GDataDirectory());
+  root_.reset(new GDataDirectory(NULL));
   root_->set_file_name(kGDataRootDirectory);
 }
 
@@ -303,6 +337,23 @@ void GDataFileSystem::StartDirectoryRefresh(
           base::Bind(&GDataFileSystem::OnGetDocuments,
                      this,
                      params)));
+}
+
+void GDataFileSystem::Remove(const FilePath& file_path,
+    bool is_recursive,
+    const FileOperationCallback& callback) {
+  // Kick off document deletion.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &GDataFileSystem::RemoveOnUIThread,
+          this,
+          file_path,
+          is_recursive,
+          base::Bind(&GDataFileSystem::OnRemovedDocument,
+                     this,
+                     callback,
+                     file_path)));
 }
 
 void GDataFileSystem::UnsafeFindFileByPath(
@@ -362,6 +413,33 @@ void GDataFileSystem::RefreshFeedOnUIThread(const GURL& feed_url,
   DocumentsService::GetInstance()->GetDocuments(feed_url, callback);
 }
 
+void GDataFileSystem::RemoveOnUIThread(
+    const FilePath& file_path, bool is_recursive,
+    const EntryActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GURL document_url = GetDocumentUrlFromPath(file_path);
+  if (document_url.is_empty()) {
+    if (!callback.is_null())
+      callback.Run(HTTP_NOT_FOUND, GURL());
+
+    return;
+  }
+  DocumentsService::GetInstance()->DeleteDocument(document_url, callback);
+}
+
+GURL GDataFileSystem::GetDocumentUrlFromPath(const FilePath& file_path) {
+  base::AutoLock lock(lock_);
+  // Find directory element within the cached file system snapshot.
+  scoped_refptr<ReadOnlyFindFileDelegate> find_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(file_path, find_delegate);
+  if (!find_delegate->file())
+    return GURL();
+
+  return find_delegate->file()->self_url();
+}
+
 void GDataFileSystem::OnGetDocuments(
     const FindFileParams& params,
     GDataErrorCode status,
@@ -405,6 +483,46 @@ void GDataFileSystem::OnGetDocuments(
 }
 
 
+void GDataFileSystem::OnRemovedDocument(
+    const FileOperationCallback& callback,
+    const FilePath& file_path,
+    GDataErrorCode status, const GURL& document_url) {
+  base::PlatformFileError error = GDataToPlatformError(status);
+
+  if (error == base::PLATFORM_FILE_OK)
+    error = RemoveFileFromFileSystem(file_path);
+
+  if (!callback.is_null())
+    callback.Run(error);
+}
+
+base::PlatformFileError GDataFileSystem::RemoveFileFromFileSystem(
+    const FilePath& file_path) {
+  // We need to lock here as well (despite FindFileByPath lock) since directory
+  // instance below is a 'live' object.
+  base::AutoLock lock(lock_);
+
+  // Find directory element within the cached file system snapshot.
+  scoped_refptr<ReadOnlyFindFileDelegate> update_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(file_path, update_delegate);
+
+  GDataFileBase* file = update_delegate->file();
+
+  if (!file)
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  // You can't remove root element.
+  if (!file->parent())
+    return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+
+  if (!file->parent()->RemoveFile(file))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+
+  return base::PLATFORM_FILE_OK;
+}
+
+
 base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     const FilePath& directory_path, const GURL& feed_url,
     base::Value* data, bool is_initial_feed, GURL* next_feed) {
@@ -425,12 +543,15 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   base::AutoLock lock(lock_);
 
   // Find directory element within the cached file system snapshot.
-  scoped_refptr<UpdateDirectoryDelegate> update_delegate(
-      new UpdateDirectoryDelegate());
-  UnsafeFindFileByPath(directory_path,
-                       update_delegate);
+  scoped_refptr<ReadOnlyFindFileDelegate> update_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(directory_path, update_delegate);
 
-  GDataDirectory* dir = update_delegate->directory();
+  GDataFileBase* file = update_delegate->file();
+  if (!file)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  GDataDirectory* dir = file->AsGDataDirectory();
   if (!dir)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
@@ -458,7 +579,7 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
         continue;
     }
 
-    GDataFileBase* file = GDataFileBase::FromDocumentEntry(doc);
+    GDataFileBase* file = GDataFileBase::FromDocumentEntry(dir, doc);
     if (file)
       dir->AddFile(file);
   }

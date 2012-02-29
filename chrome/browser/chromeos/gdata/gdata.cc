@@ -79,6 +79,7 @@ const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadResponseLocation[] = "location";
 const char kUploadResponseRange[] = "range";
+const char kIfMatchAllHeader[] = "If-Match: *";
 
 // OAuth scope for the documents API.
 const char kDocsListScope[] = "https://docs.google.com/feeds/";
@@ -140,9 +141,16 @@ std::string GetResponseHeadersAsString(const content::URLFetcher* url_fetcher) {
 
 // Adds additional parameters for API version, output content type and to show
 // folders in the feed are added to document feed URLs.
-GURL AddFeedUrlParams(const GURL& url) {
+GURL AddStandardUrlParams(const GURL& url) {
   GURL result = chrome_browser_net::AppendQueryParameter(url, "v", "3");
   result = chrome_browser_net::AppendQueryParameter(result, "alt", "json");
+  return result;
+}
+
+// Adds additional parameters for API version, output content type and to show
+// folders in the feed are added to document feed URLs.
+GURL AddFeedUrlParams(const GURL& url) {
+  GURL result = AddStandardUrlParams(url);
   result = chrome_browser_net::AppendQueryParameter(result,
                                                     "showfolders",
                                                     "true");
@@ -315,7 +323,9 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
  protected:
   virtual ~EntryActionOperation() {}
 
-  virtual GURL GetURL() const OVERRIDE { return document_url_; }
+  virtual GURL GetURL() const OVERRIDE {
+    return AddStandardUrlParams(document_url_);
+  }
 
   // content::URLFetcherDelegate overrides.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
@@ -490,6 +500,7 @@ class DeleteDocumentOperation : public EntryActionOperation  {
  private:
   // Overrides from EntryActionOperation.
   virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 };
 
 DeleteDocumentOperation::DeleteDocumentOperation(Profile* profile,
@@ -502,6 +513,14 @@ content::URLFetcher::RequestType
 DeleteDocumentOperation::GetRequestType() const {
   return content::URLFetcher::DELETE_REQUEST;
 }
+
+std::vector<std::string>
+DeleteDocumentOperation::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(kIfMatchAllHeader);
+  return headers;
+}
+
 
 //=========================== InitiateUploadOperation ==========================
 

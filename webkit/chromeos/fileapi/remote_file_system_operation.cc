@@ -53,6 +53,15 @@ void RemoteFileSystemOperation::ReadDirectory(const GURL& path,
                  base::Owned(this), callback));
 }
 
+void RemoteFileSystemOperation::Remove(const GURL& path, bool recursive,
+                                       const StatusCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationRemove));
+  remote_proxy_->Remove(path, recursive,
+      base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
+}
+
+
 void RemoteFileSystemOperation::CreateFile(const GURL& path,
                                            bool exclusive,
                                            const StatusCallback& callback) {
@@ -74,11 +83,6 @@ void RemoteFileSystemOperation::Copy(const GURL& src_path,
 void RemoteFileSystemOperation::Move(const GURL& src_path,
                                      const GURL& dest_path,
                   const StatusCallback& callback) {
-  NOTIMPLEMENTED();
-}
-
-void RemoteFileSystemOperation::Remove(const GURL& path, bool recursive,
-                                       const StatusCallback& callback) {
   NOTIMPLEMENTED();
 }
 
@@ -168,6 +172,12 @@ void RemoteFileSystemOperation::DidReadDirectory(
     const std::vector<base::FileUtilProxy::Entry>& entries,
     bool has_more) {
   callback.Run(rv, entries, has_more /* has_more */);
+}
+
+void RemoteFileSystemOperation::DidFinishFileOperation(
+    const StatusCallback& callback,
+    base::PlatformFileError rv) {
+  callback.Run(rv);
 }
 
 }  // namespace chromeos

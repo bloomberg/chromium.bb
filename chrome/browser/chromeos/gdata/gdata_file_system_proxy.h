@@ -27,10 +27,20 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   virtual void ReadDirectory(const GURL& path,
      const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
          callback) OVERRIDE;
+  virtual void Remove(const GURL& path, bool recursive,
+      const fileapi::FileSystemOperationInterface::StatusCallback& callback)
+          OVERRIDE;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 
  private:
-  // Checks if a given |url| belongs to this file system. If it does,
+
+  // Routes reply from simple file operations to the calling thread.
+  static void OnFileOperationCompleted(
+      scoped_refptr<base::MessageLoopProxy> proxy,
+      const fileapi::FileSystemOperationInterface::StatusCallback& callback,
+      base::PlatformFileError result);
+
+    // Checks if a given |url| belongs to this file system. If it does,
   // the call will return true and fill in |file_path| with a file path of
   // a corresponding element within this file system.
   static bool ValidateUrl(const GURL& url, FilePath* file_path);

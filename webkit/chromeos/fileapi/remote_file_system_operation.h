@@ -97,6 +97,8 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
       base::PlatformFileError rv,
       const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more);
+  void DidFinishFileOperation(const StatusCallback& callback,
+                              base::PlatformFileError rv);
 
   scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_proxy_;
   // A flag to make sure we call operation only once per instance.
