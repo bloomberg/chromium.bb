@@ -24,6 +24,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/win/registry.h"
@@ -464,6 +465,12 @@ BOOL __stdcall LaunchGoogleChrome() {
     if (SUCCEEDED(ipl->LaunchCmdLine(chrome_exe_path.value().c_str())))
       ret = true;
     ipl.Release();
+  } else {
+    // Couldn't get Omaha's process launcher, Omaha may not be installed at
+    // system level. Try just running Chrome instead.
+    ret = base::LaunchProcess(chrome_exe_path.value(),
+                              base::LaunchOptions(),
+                              NULL);
   }
 
   if (impersonation_success)
