@@ -40,7 +40,7 @@ struct TestData {
   const int compare_result;
 };
 
-void RunTest(Testcase* testcases, size_t num_testcases) {
+void RunUrlTest(Testcase* testcases, size_t num_testcases) {
   static const gfx::Font font;
   for (size_t i = 0; i < num_testcases; ++i) {
     const GURL url(testcases[i].input);
@@ -78,7 +78,7 @@ TEST(TextEliderTest, TestGeneralEliding) {
      "www.google.com/intl/en/ads/?aLongQ" + kEllipsisStr},
   };
 
-  RunTest(testcases, arraysize(testcases));
+  RunUrlTest(testcases, arraysize(testcases));
 }
 
 // When there is very little space available, the elision code will shorten
@@ -101,7 +101,7 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
     {"http://battersbox.com/directory/foo/peter_paul_and_mary.html",
      "battersbox.com/" + kEllipsisStr + "/peter" + kEllipsisStr},
   };
-  RunTest(testcases, arraysize(testcases));
+  RunUrlTest(testcases, arraysize(testcases));
 }
 
 // Test eliding of empty strings, URLs with ports, passwords, queries, etc.
@@ -139,7 +139,7 @@ TEST(TextEliderTest, TestMoreEliding) {
      "www/%E4%A0%E5%A5%BD?q=\xe4\xbd\xa0\xe5\xa5\xbd#\xe4\xbd\xa0"},
   };
 
-  RunTest(testcases, arraysize(testcases));
+  RunUrlTest(testcases, arraysize(testcases));
 }
 
 // Test eliding of file: URLs.
@@ -164,7 +164,7 @@ TEST(TextEliderTest, TestFileURLEliding) {
     {"file://filer/foo/bar/file", "filer/" + kEllipsisStr + "/file"},
   };
 
-  RunTest(testcases, arraysize(testcases));
+  RunUrlTest(testcases, arraysize(testcases));
 }
 
 TEST(TextEliderTest, TestFilenameEliding) {

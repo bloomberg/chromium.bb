@@ -29,7 +29,7 @@ UI_EXPORT extern const char kEllipsis[];
 // which composed of parts from subdomain, domain, path, filename and query.
 // A "..." is added automatically at the end if the elided string is bigger
 // than the available pixel width. For available pixel width = 0, empty
-// string is returned. |languages| is a comma separted list of ISO 639
+// string is returned. |languages| is a comma separated list of ISO 639
 // language codes and is used to determine what characters are understood
 // by a user. It should come from |prefs::kAcceptLanguages|.
 //
