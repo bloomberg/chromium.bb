@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -70,9 +70,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 #else
   __asm__ __volatile__("fnstcw %0" : "=m" (ntcp->sys_fcw));
 #endif
-
-  ntcp->exception_stack = 0;
-  ntcp->exception_flag = 0;
 
   return 1;
 }

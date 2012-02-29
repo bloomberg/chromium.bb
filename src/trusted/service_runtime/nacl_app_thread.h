@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -119,6 +119,19 @@ struct NaClAppThread {
   /* Stack for signal handling, registered with sigaltstack(). */
   void                      *signal_stack;
 
+  /*
+   * exception_stack is the address of the top of the untrusted
+   * exception handler stack, or 0 if no such stack is registered for
+   * this thread.
+   */
+  uint32_t                  exception_stack;
+  /*
+   * exception_flag is a boolean.  When it is 1, untrusted exception
+   * handling is disabled for this thread.  It is set to 1 when the
+   * exception handler is called, in order to prevent the exception
+   * handler from being re-entered.
+   */
+  uint32_t                  exception_flag;
 
   /*
    * The last generation this thread reported into the service runtime

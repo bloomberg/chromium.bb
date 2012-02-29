@@ -214,16 +214,16 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   if (nap->exception_handler == 0) {
     return 0;
   }
-  if (natp->user.exception_flag) {
+  if (natp->exception_flag) {
     return 0;
   }
 
-  natp->user.exception_flag = 1;
+  natp->exception_flag = 1;
 
-  if (natp->user.exception_stack == 0) {
+  if (natp->exception_stack == 0) {
     new_stack_ptr = regs->stack_ptr - NACL_STACK_RED_ZONE;
   } else {
-    new_stack_ptr = natp->user.exception_stack;
+    new_stack_ptr = natp->exception_stack;
   }
   /* Allocate space for the stack frame, and ensure its alignment. */
   new_stack_ptr -= sizeof(struct ExceptionFrame) - NACL_STACK_PAD_BELOW_ALIGN;

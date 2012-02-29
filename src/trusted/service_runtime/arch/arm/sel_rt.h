@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -45,10 +45,6 @@ struct NaClThreadContext {
   /*            30 */
   uint32_t  tls_idx;
   /*            34 */
-  uint32_t  exception_stack;
-  /*            38 */
-  uint32_t  exception_flag;
-  /*            3C */
 };
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H___ */

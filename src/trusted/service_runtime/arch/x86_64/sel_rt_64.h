@@ -42,12 +42,8 @@ struct NaClThreadContext {
   /*          0xa4 */
   uint16_t    sys_fcw;
   /*          0xa6 */
-  uint32_t    exception_stack;
-  /*          0xa8 */
-  uint32_t    exception_flag;
-  /*          0xac */
 };
-/* 0xb0 */
+/* 0xa8 */
 
 /*
  * Argument passing convention in AMD64, from

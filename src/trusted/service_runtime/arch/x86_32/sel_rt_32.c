@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -95,9 +95,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   NaClLog(4, "user.fs: 0x%02x\n", ntcp->fs);
   NaClLog(4, "user.gs: 0x%02x\n", ntcp->gs);
   NaClLog(4, "user.ss: 0x%02x\n", ntcp->ss);
-
-  ntcp->exception_stack = 0;
-  ntcp->exception_flag = 0;
 
   return 1;
 }

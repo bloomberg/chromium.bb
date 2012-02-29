@@ -383,13 +383,13 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
   }
 #endif
 
-  exception_stack = appthread_copy.user.exception_stack;
-  exception_flag = appthread_copy.user.exception_flag;
+  exception_stack = appthread_copy.exception_stack;
+  exception_flag = appthread_copy.exception_flag;
   if (exception_flag) {
     return FALSE;
   }
   exception_flag = 1;
-  if (!WRITE_MEM(process_handle, &natp_remote->user.exception_flag,
+  if (!WRITE_MEM(process_handle, &natp_remote->exception_flag,
                  &exception_flag)) {
     return FALSE;
   }

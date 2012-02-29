@@ -2772,7 +2772,7 @@ int32_t NaClCommonSysException_Stack(struct NaClAppThread *natp,
                                                    stack_addr + stack_size)) {
     return -NACL_ABI_EINVAL;
   }
-  natp->user.exception_stack = stack_addr + stack_size;
+  natp->exception_stack = stack_addr + stack_size;
   return 0;
 }
 
@@ -2780,7 +2780,7 @@ int32_t NaClCommonSysException_Clear_Flag(struct NaClAppThread *natp) {
   if (!natp->nap->enable_exception_handling) {
     return -NACL_ABI_ENOSYS;
   }
-  natp->user.exception_flag = 0;
+  natp->exception_flag = 0;
   return 0;
 }
 

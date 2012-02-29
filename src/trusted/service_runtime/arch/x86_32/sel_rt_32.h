@@ -114,11 +114,6 @@ struct NaClThreadContext {
   /*          38 */
   uint16_t    cs; /* spring_addr and cs must be adjacent */
   /*          3c */
-  char        dummy1[2];
-  uint32_t    exception_stack;
-  /*          40 */
-  uint32_t    exception_flag;
-  /*          44 */
 };
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__ */

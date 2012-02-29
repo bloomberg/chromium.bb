@@ -140,11 +140,11 @@ static int HandleException(mach_port_t thread_port,
   nap = natp->nap;
 
   /* Don't handle it if the exception flag is set. */
-  if (natp->user.exception_flag) {
+  if (natp->exception_flag) {
     return 0;
   }
   /* Set the flag. */
-  natp->user.exception_flag = 1;
+  natp->exception_flag = 1;
 
   /* Don't handle if no exception handler is set. */
   if (nap->exception_handler == 0) {
@@ -152,8 +152,8 @@ static int HandleException(mach_port_t thread_port,
   }
 
   /* Get location of exception stack frame. */
-  if (natp->user.exception_stack) {
-    frame_addr_user = natp->user.exception_stack;
+  if (natp->exception_stack) {
+    frame_addr_user = natp->exception_stack;
   } else {
     /* If not set default to user stack. */
     frame_addr_user = regs.uts.ts32.__esp;

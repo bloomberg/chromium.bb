@@ -189,6 +189,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, tls_idx);
 
   natp->signal_stack = NULL;
+  natp->exception_stack = 0;
+  natp->exception_flag = 0;
 
   if (!NaClMutexCtor(&natp->mu)) {
     return 0;
