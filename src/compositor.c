@@ -282,17 +282,15 @@ surface_to_global_float(struct weston_surface *surface,
 WL_EXPORT void
 weston_surface_damage_below(struct weston_surface *surface)
 {
-	struct weston_surface *below;
+	struct weston_compositor *compositor = surface->compositor;
+	pixman_region32_t damage;
 
-	if (surface->output == NULL)
-		return;
-
-	if (surface->link.next == &surface->compositor->surface_list)
-		return;
-
-	below = container_of(surface->link.next, struct weston_surface, link);
-	pixman_region32_union(&below->damage, &below->damage,
-			      &surface->transform.boundingbox);
+	pixman_region32_init(&damage);
+	pixman_region32_subtract(&damage, &surface->transform.boundingbox,
+				 &surface->clip);
+	pixman_region32_union(&compositor->damage,
+			      &compositor->damage, &damage);
+	pixman_region32_fini(&damage);
 }
 
 static void
@@ -511,21 +509,6 @@ weston_surface_damage(struct weston_surface *surface)
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
-static void
-weston_surface_flush_damage(struct weston_surface *surface)
-{
-	struct weston_surface *below;
-
-	if (surface->output &&
-	    surface->link.next != &surface->compositor->surface_list) {
-		below = container_of(surface->link.next,
-				     struct weston_surface, link);
-
-		pixman_region32_union(&below->damage,
-				      &below->damage, &surface->damage);
-	}
-}
-
 WL_EXPORT void
 weston_surface_configure(struct weston_surface *surface,
 			 GLfloat x, GLfloat y, int width, int height)
@@ -615,7 +598,6 @@ static void
 weston_surface_unmap(struct weston_surface *surface)
 {
 	weston_surface_damage_below(surface);
-	weston_surface_flush_damage(surface);
 	surface->output = NULL;
 	wl_list_remove(&surface->link);
 	weston_compositor_repick(surface->compositor);
