@@ -633,20 +633,7 @@ string16 InputMethodMenu::GetTextForIndicator(
 
   if (text.empty()) {
     const size_t kMaxLanguageNameLen = 2;
-    std::string language_code =
-        manager->GetInputMethodUtil()->GetLanguageCodeFromDescriptor(
-            input_method);
-
-    // Use "CN" for simplified Chinese and "TW" for traditonal Chinese,
-    // rather than "ZH".
-    if (StartsWithASCII(language_code, "zh-", false)) {
-      std::vector<std::string> portions;
-      base::SplitString(language_code, '-', &portions);
-      if (portions.size() >= 2 && !portions[1].empty()) {
-        language_code = portions[1];
-      }
-    }
-
+    const std::string language_code = input_method.language_code();
     text = StringToUpperASCII(UTF8ToUTF16(language_code)).substr(
         0, kMaxLanguageNameLen);
   }
@@ -673,9 +660,7 @@ string16 InputMethodMenu::GetTextForMenu(
   // Indic languages: they share "Standard Input Method".
   const string16 standard_input_method_text = l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD);
-  const std::string language_code =
-      manager->GetInputMethodUtil()->GetLanguageCodeFromDescriptor(
-          input_method);
+  const std::string language_code = input_method.language_code();
 
   string16 text =
       manager->GetInputMethodUtil()->TranslateString(input_method.id());

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,9 @@ static InputMethodDescriptors CreateInputMethodDescriptors() {
   scoped_ptr<IBusController> controller(IBusController::Create());
 
   InputMethodDescriptors descriptors;
-  descriptors.push_back(GetDesc(controller.get(), "xkb:us::eng", "us", "eng"));
-  descriptors.push_back(GetDesc(controller.get(), "xkb:fr::fra", "fr", "fra"));
+  descriptors.push_back(
+      GetDesc(controller.get(), "xkb:us::eng", "us", "en-US"));
+  descriptors.push_back(GetDesc(controller.get(), "xkb:fr::fra", "fr", "fr"));
   descriptors.push_back(GetDesc(controller.get(), "xkb:be::fra", "be", "fr"));
   descriptors.push_back(GetDesc(controller.get(), "mozc", "us", "ja"));
   return descriptors;

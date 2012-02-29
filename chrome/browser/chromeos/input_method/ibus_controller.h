@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,8 +71,7 @@ class InputMethodDescriptor {
   // Preferred virtual keyboard layouts for the input method. Comma separated
   // layout names in order of priority, such as "handwriting,us", could appear.
   std::vector<std::string> virtual_keyboard_layouts_;
-  // Language codes like "ko", "ja", "zh_CN", and "t".
-  // "t" is used for languages in the "Others" category.
+  // Language code like "ko", "ja", "en-US", and "zh-CN".
   std::string language_code_;
 };
 

@@ -52,6 +52,7 @@ class TestableInputMethodUtil : public InputMethodUtil {
   using InputMethodUtil::GetInputMethodIdsFromLanguageCodeInternal;
   using InputMethodUtil::ReloadInternalMaps;
   using InputMethodUtil::SortLanguageCodesByNames;
+  using InputMethodUtil::supported_input_methods_;
 };
 
 }  // namespace
@@ -87,50 +88,9 @@ TEST_F(InputMethodUtilTest, TestStringIsSupported) {
   EXPECT_TRUE(util_.StringIsSupported("_Chinese"));
 }
 
-TEST_F(InputMethodUtilTest, TestNormalizeLanguageCode) {
-  // TODO(yusukes): test all language codes that IBus provides.
-  EXPECT_EQ("ja", util_.NormalizeLanguageCode("ja"));
-  EXPECT_EQ("ja", util_.NormalizeLanguageCode("jpn"));
-  // In the past "t" had a meaning of "other language" for some m17n latin
-  // input methods for testing purpose, but it is no longer used. We test "t"
-  // here as just an "unknown" language.
-  EXPECT_EQ("t", util_.NormalizeLanguageCode("t"));
-  EXPECT_EQ("zh-CN", util_.NormalizeLanguageCode("zh-CN"));
-  EXPECT_EQ("zh-CN", util_.NormalizeLanguageCode("zh_CN"));
-  EXPECT_EQ("en-US", util_.NormalizeLanguageCode("EN_us"));
-  // See l10n_util.cc for es-419.
-  EXPECT_EQ("es-419", util_.NormalizeLanguageCode("es_419"));
-
-  // Special three-letter language codes.
-  EXPECT_EQ("cs", util_.NormalizeLanguageCode("cze"));
-  EXPECT_EQ("de", util_.NormalizeLanguageCode("ger"));
-  EXPECT_EQ("el", util_.NormalizeLanguageCode("gre"));
-  EXPECT_EQ("hr", util_.NormalizeLanguageCode("scr"));
-  EXPECT_EQ("ro", util_.NormalizeLanguageCode("rum"));
-  EXPECT_EQ("sk", util_.NormalizeLanguageCode("slo"));
-}
-
 TEST_F(InputMethodUtilTest, TestIsKeyboardLayout) {
   EXPECT_TRUE(InputMethodUtil::IsKeyboardLayout("xkb:us::eng"));
   EXPECT_FALSE(InputMethodUtil::IsKeyboardLayout("mozc"));
-}
-
-TEST_F(InputMethodUtilTest, TestGetLanguageCodeFromDescriptor) {
-  scoped_ptr<IBusController> controller(IBusController::Create());
-  EXPECT_EQ("ja", util_.GetLanguageCodeFromDescriptor(
-      GetDesc(controller.get(), "mozc", "us", "ja")));
-  EXPECT_EQ("zh-TW", util_.GetLanguageCodeFromDescriptor(
-      GetDesc(controller.get(), "mozc-chewing", "us", "zh")));
-  EXPECT_EQ("zh-TW", util_.GetLanguageCodeFromDescriptor(
-      GetDesc(controller.get(), "m17n:zh:cangjie", "us", "zh")));
-  EXPECT_EQ("zh-TW", util_.GetLanguageCodeFromDescriptor(
-      GetDesc(controller.get(), "m17n:zh:quick", "us", "zh")));
-  EXPECT_EQ("zh-CN", util_.GetLanguageCodeFromDescriptor(
-      GetDesc(controller.get(), "pinyin", "us", "zh")));
-  EXPECT_EQ("en-US", util_.GetLanguageCodeFromDescriptor(
-      GetDesc(controller.get(), "xkb:us::eng", "us", "eng")));
-  EXPECT_EQ("en-UK", util_.GetLanguageCodeFromDescriptor(
-      GetDesc(controller.get(), "xkb:uk::eng", "us", "eng")));
 }
 
 TEST_F(InputMethodUtilTest, TestGetKeyboardLayoutName) {
@@ -185,7 +145,7 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromXkbId) {
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
   EXPECT_EQ("xkb:us:dvorak:eng", descriptor->id());
   EXPECT_EQ("us(dvorak)", descriptor->keyboard_layout());
-  EXPECT_EQ("eng", descriptor->language_code());
+  EXPECT_EQ("en-US", descriptor->language_code());
 }
 
 TEST_F(InputMethodUtilTest, TestGetLanguageNativeDisplayNameFromCode) {
@@ -364,6 +324,28 @@ TEST_F(InputMethodUtilTest, TestSetHardwareInputMethodId) {
   EXPECT_EQ("xkb:fr::fra", util_.GetHardwareInputMethodId());
   // Reset to the default behavior just in case.
   util_.SetHardwareInputMethodIdForTesting("");
+}
+
+// Test all supported descriptors to detect a typo in ibus_input_methods.txt.
+TEST_F(InputMethodUtilTest, TestIBusInputMethodText) {
+  for (size_t i = 0; i < util_.supported_input_methods_->size(); ++i) {
+    const std::string language_code =
+        util_.supported_input_methods_->at(i).language_code();
+    const string16 display_name =
+        l10n_util::GetDisplayNameForLocale(language_code, "en", false);
+    // Only two formats, like "fr" (lower case) and "en-US" (lower-upper), are
+    // allowed. See the text file for details.
+    EXPECT_TRUE(language_code.length() == 2 ||
+                (language_code.length() == 5 && language_code[2] == '-'))
+        << "Invalid language code " << language_code;
+    EXPECT_TRUE(l10n_util::IsValidLocaleSyntax(language_code))
+        << "Invalid language code " << language_code;
+    EXPECT_FALSE(display_name.empty())
+        << "Invalid language code " << language_code;
+    // On error, GetDisplayNameForLocale() returns the |language_code| as-is.
+    EXPECT_NE(language_code, UTF16ToUTF8(display_name))
+        << "Invalid language code " << language_code;
+  }
 }
 
 }  // namespace input_method

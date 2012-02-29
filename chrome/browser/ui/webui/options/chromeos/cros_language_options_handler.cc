@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,9 +102,7 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor =
         descriptors[i];
-    const std::string language_code =
-        manager->GetInputMethodUtil()->GetLanguageCodeFromDescriptor(
-            descriptor);
+    const std::string language_code = descriptor.language_code();
     const std::string display_name =
         manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
             descriptor.id());
@@ -138,16 +136,11 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
 
 ListValue* CrosLanguageOptionsHandler::GetLanguageList(
     const input_method::InputMethodDescriptors& descriptors) {
-  input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::GetInstance();
-
   std::set<std::string> language_codes;
   // Collect the language codes from the supported input methods.
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor = descriptors[i];
-    const std::string language_code =
-        manager->GetInputMethodUtil()->GetLanguageCodeFromDescriptor(
-            descriptor);
+    const std::string language_code = descriptor.language_code();
     language_codes.insert(language_code);
   }
   // Collect the language codes from kExtraLanguages.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,32 +54,32 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
   // Test special cases.
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:us:dvorak:eng", "us", "eng");
+        GetDesc(controller.get(), "xkb:us:dvorak:eng", "us", "en-US");
     EXPECT_EQ(ASCIIToUTF16("DV"), InputMethodMenu::GetTextForIndicator(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:us:colemak:eng", "us", "eng");
+        GetDesc(controller.get(), "xkb:us:colemak:eng", "us", "en-US");
     EXPECT_EQ(ASCIIToUTF16("CO"), InputMethodMenu::GetTextForIndicator(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:us:altgr-intl:eng", "us", "eng");
+        GetDesc(controller.get(), "xkb:us:altgr-intl:eng", "us", "en-US");
     EXPECT_EQ(ASCIIToUTF16("EXTD"), InputMethodMenu::GetTextForIndicator(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:us:intl:eng", "us", "eng");
+        GetDesc(controller.get(), "xkb:us:intl:eng", "us", "en-US");
     EXPECT_EQ(ASCIIToUTF16("INTL"), InputMethodMenu::GetTextForIndicator(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:de:neo:ger", "de(neo)", "ger");
+        GetDesc(controller.get(), "xkb:de:neo:ger", "de(neo)", "de");
     EXPECT_EQ(ASCIIToUTF16("NEO"), InputMethodMenu::GetTextForIndicator(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:es:cat:cat", "es(cat)", "cat");
+        GetDesc(controller.get(), "xkb:es:cat:cat", "es(cat)", "ca");
     EXPECT_EQ(ASCIIToUTF16("CAS"), InputMethodMenu::GetTextForIndicator(desc));
   }
   {
@@ -166,19 +166,19 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:jp::jpn", "jp", "jpn");
+        GetDesc(controller.get(), "xkb:jp::jpn", "jp", "ja");
     EXPECT_EQ(ASCIIToUTF16("Japanese keyboard"),
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:us:dvorak:eng", "us(dvorak)", "eng");
+        GetDesc(controller.get(), "xkb:us:dvorak:eng", "us(dvorak)", "en-US");
     EXPECT_EQ(ASCIIToUTF16("US Dvorak keyboard"),
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:gb:dvorak:eng", "gb(dvorak)", "eng");
+        GetDesc(controller.get(), "xkb:gb:dvorak:eng", "gb(dvorak)", "en-US");
     EXPECT_EQ(ASCIIToUTF16("UK Dvorak keyboard"),
               InputMethodMenu::GetTextForMenu(desc));
   }
@@ -193,37 +193,31 @@ TEST(InputMethodMenuTest, GetTextForMenuTest) {
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:nl::nld", "nl", "nld");
-    EXPECT_EQ(ASCIIToUTF16("Dutch - Dutch keyboard"),
-              InputMethodMenu::GetTextForMenu(desc));
-  }
-  {
-    InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:be::nld", "be", "nld");
+        GetDesc(controller.get(), "xkb:be::nld", "be", "nl");
     EXPECT_EQ(ASCIIToUTF16("Dutch - Belgian keyboard"),
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:fr::fra", "fr", "fra");
+        GetDesc(controller.get(), "xkb:fr::fra", "fr", "fr");
     EXPECT_EQ(ASCIIToUTF16("French - French keyboard"),
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:be::fra", "be", "fra");
+        GetDesc(controller.get(), "xkb:be::fra", "be", "fr");
     EXPECT_EQ(ASCIIToUTF16("French - Belgian keyboard"),
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:de::ger", "de", "ger");
+        GetDesc(controller.get(), "xkb:de::ger", "de", "de");
     EXPECT_EQ(ASCIIToUTF16("German - German keyboard"),
               InputMethodMenu::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc =
-        GetDesc(controller.get(), "xkb:be::ger", "be", "ger");
+        GetDesc(controller.get(), "xkb:be::ger", "be", "de");
     EXPECT_EQ(ASCIIToUTF16("German - Belgian keyboard"),
               InputMethodMenu::GetTextForMenu(desc));
   }

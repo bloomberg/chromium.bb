@@ -9,8 +9,6 @@
 #include <map>
 #include <utility>
 
-#include "unicode/uloc.h"
-
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_split.h"
@@ -24,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
+#include "unicode/uloc.h"
 
 namespace chromeos {
 namespace input_method {
@@ -186,23 +185,6 @@ const struct EnglishToResouceId {
 const size_t kEnglishToResourceIdArraySize =
     arraysize(kEnglishToResourceIdArray);
 
-// There are some differences between ISO 639-2 (T) and ISO 639-2 B, and
-// some language codes are not recognized by ICU (i.e. ICU cannot convert
-// these codes to two-letter language codes and display names). Hence we
-// convert these codes to ones that ICU recognize.
-//
-// See http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for details.
-const char* kIso639VariantMapping[][2] = {
-  { "cze", "ces" },
-  { "ger", "deu" },
-  { "gre", "ell" },
-  // "scr" is not a ISO 639 code. For some reason, evdev.xml uses "scr" as
-  // the language code for Croatian.
-  { "scr", "hrv" },
-  { "rum", "ron" },
-  { "slo", "slk" },
-};
-
 // The comparator is used for sorting language codes by their
 // corresponding language names, using the ICU collator.
 struct CompareLanguageCodesByLanguageName
@@ -228,15 +210,15 @@ struct CompareLanguageCodesByLanguageName
 
 const ExtraLanguage kExtraLanguages[] = {
   // Language Code  Input Method ID
-  { "en-AU",        "xkb:us::eng" },  // For Austrailia, use US keyboard layout.
-  { "id",           "xkb:us::eng" },  // For Indonesian, use US keyboard layout.
+  { "en-AU", "xkb:us::eng" },  // For Austrailia, use US keyboard layout.
+  { "id", "xkb:us::eng" },  // For Indonesian, use US keyboard layout.
   // The code "fil" comes from l10_util.cc.
-  { "fil",          "xkb:us::eng" },  // For Filipino, use US keyboard layout.
+  { "fil", "xkb:us::eng" },  // For Filipino, use US keyboard layout.
   // For Netherlands, use US international keyboard layout.
-  { "nl",           "xkb:us:intl:eng" },
+  { "nl", "xkb:us:intl:eng" },
   // The code "es-419" comes from l10_util.cc.
   // For Spanish in Latin America, use Latin American keyboard layout.
-  { "es-419",       "xkb:latam::spa" },
+  { "es-419", "xkb:latam::spa" },
 
   // TODO(yusukes): Add {"sw", "xkb:us::eng"} once Swahili is removed from the
   // blacklist in src/ui/base/l10n/l10n_util_posix.cc.
@@ -292,86 +274,10 @@ bool InputMethodUtil::StringIsSupported(
   return TranslateStringInternal(english_string, &localized_string);
 }
 
-std::string InputMethodUtil::NormalizeLanguageCode(
-    const std::string& language_code) const {
-  // Some ibus engines return locale codes like "zh_CN" as language codes.
-  // Normalize these to like "zh-CN".
-  if (language_code.size() >= 5 && language_code[2] == '_') {
-    std::string copied_language_code = language_code;
-    copied_language_code[2] = '-';
-    // Downcase the language code part.
-    for (size_t i = 0; i < 2; ++i) {
-      copied_language_code[i] = base::ToLowerASCII(copied_language_code[i]);
-    }
-    // Upcase the country code part.
-    for (size_t i = 3; i < copied_language_code.size(); ++i) {
-      copied_language_code[i] = base::ToUpperASCII(copied_language_code[i]);
-    }
-    return copied_language_code;
-  }
-  // We only handle three-letter codes from here.
-  if (language_code.size() != 3) {
-    return language_code;
-  }
-
-  // Convert special language codes. See comments at kIso639VariantMapping.
-  std::string copied_language_code = language_code;
-  for (size_t i = 0; i < arraysize(kIso639VariantMapping); ++i) {
-    if (language_code == kIso639VariantMapping[i][0]) {
-      copied_language_code = kIso639VariantMapping[i][1];
-    }
-  }
-  // Convert the three-letter code to two letter-code.
-  UErrorCode error = U_ZERO_ERROR;
-  char two_letter_code[ULOC_LANG_CAPACITY];
-  uloc_getLanguage(copied_language_code.c_str(),
-                   two_letter_code, sizeof(two_letter_code), &error);
-  if (U_FAILURE(error)) {
-    return language_code;
-  }
-  return two_letter_code;
-}
-
 // static
 bool InputMethodUtil::IsKeyboardLayout(const std::string& input_method_id) {
   const bool kCaseInsensitive = false;
   return StartsWithASCII(input_method_id, "xkb:", kCaseInsensitive);
-}
-
-std::string InputMethodUtil::GetLanguageCodeFromDescriptor(
-    const InputMethodDescriptor& descriptor) const {
-  // Handle some Chinese input methods as zh-CN/zh-TW, rather than zh.
-  // TODO: we should fix this issue in engines rather than here.
-  if (descriptor.language_code() == "zh") {
-    if (descriptor.id() == "pinyin" || descriptor.id() == "pinyin-dv") {
-      return "zh-CN";
-    } else if (descriptor.id() == "mozc-chewing" ||
-               descriptor.id() == "m17n:zh:cangjie" ||
-               descriptor.id() == "m17n:zh:quick") {
-      return "zh-TW";
-    }
-    LOG(ERROR) << "Unhandled Chinese engine: " << descriptor.id();
-  }
-
-  std::string language_code = NormalizeLanguageCode(descriptor.language_code());
-
-  // Add country codes to language codes of some XKB input methods to make
-  // these compatible with Chrome's application locale codes like "en-US".
-  // TODO(satorux): Maybe we need to handle "es" for "es-419".
-  // TODO: We should not rely on the format of the engine name. Should we add
-  //       |country_code| in InputMethodDescriptor?
-  if (IsKeyboardLayout(descriptor.id()) &&
-      (language_code == "en" ||
-       language_code == "zh" ||
-       language_code == "pt")) {
-    std::vector<std::string> portions;
-    base::SplitString(descriptor.id(), ':', &portions);
-    if (portions.size() >= 2 && !portions[1].empty()) {
-      language_code.append("-");
-      language_code.append(StringToUpperASCII(portions[1]));
-    }
-  }
-  return language_code;
 }
 
 std::string InputMethodUtil::GetLanguageCodeFromInputMethodId(
@@ -551,8 +457,7 @@ void InputMethodUtil::GetLanguageCodesFromInputMethodIds(
       LOG(ERROR) << "Unknown input method ID: " << input_method_ids[i];
       continue;
     }
-    const std::string language_code =
-        GetLanguageCodeFromDescriptor(*input_method);
+    const std::string language_code = input_method->language_code();
     // Add it if it's not already present.
     if (std::count(out_language_codes->begin(), out_language_codes->end(),
                    language_code) == 0) {
@@ -607,8 +512,7 @@ void InputMethodUtil::ReloadInternalMaps() {
   for (size_t i = 0; i < supported_input_methods_->size(); ++i) {
     const InputMethodDescriptor& input_method =
         supported_input_methods_->at(i);
-    const std::string language_code =
-        GetLanguageCodeFromDescriptor(input_method);
+    const std::string language_code = input_method.language_code();
     language_code_to_ids_.insert(
         std::make_pair(language_code, input_method.id()));
     // Remember the pairs.

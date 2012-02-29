@@ -124,7 +124,7 @@ InputMethodDescriptor::InputMethodDescriptor(
 InputMethodDescriptor
 InputMethodDescriptor::GetFallbackInputMethodDescriptor() {
   return InputMethodDescriptor(
-      "xkb:us::eng", "", kFallbackLayout, kFallbackLayout, "eng");
+      "xkb:us::eng", "", kFallbackLayout, kFallbackLayout, "en-US");
 }
 
 std::string InputMethodDescriptor::ToString() const {

@@ -48,24 +48,6 @@ class InputMethodUtil {
   // Non-UI threads are not allowed to call them.
   string16 TranslateString(const std::string& english_string) const;
 
-  // Normalizes the language code and returns the normalized version.  The
-  // function normalizes the given language code to be compatible with the
-  // one used in Chrome's application locales. Otherwise, returns the
-  // given language code as-is.
-  //
-  // Examples:
-  //
-  // - "zh_CN" => "zh-CN" (Use - instead of _)
-  // - "jpn"   => "ja"    (Use two-letter code)
-  // - "t"     => "t"     (Return as-is if unknown)
-  std::string NormalizeLanguageCode(const std::string& language_code) const;
-
-  // Gets the language code from the given input method descriptor.  This
-  // encapsulates differences between the language codes used in
-  // InputMethodDescriptor and Chrome's application locale codes.
-  std::string GetLanguageCodeFromDescriptor(
-      const InputMethodDescriptor& descriptor) const;
-
   // Gets the keyboard layout name from the given input method ID.
   // If the ID is invalid, an empty string will be returned.
   // This function only supports xkb layouts.
@@ -183,12 +165,13 @@ class InputMethodUtil {
   static void SortLanguageCodesByNames(
       std::vector<std::string>* language_codes);
 
+  // All input methods that are supported, including ones not active.
+  // protected: for testing.
+  scoped_ptr<InputMethodDescriptors> supported_input_methods_;
+
  private:
   bool TranslateStringInternal(const std::string& english_string,
                                string16 *out_string) const;
-
-  // All input methods that are supported, including ones not active.
-  scoped_ptr<InputMethodDescriptors> supported_input_methods_;
 
   // Map from language code to associated input method IDs, etc.
   typedef std::multimap<std::string, std::string> LanguageCodeToIdsMap;
