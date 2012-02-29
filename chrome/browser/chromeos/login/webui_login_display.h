@@ -49,6 +49,7 @@ class WebUILoginDisplay : public LoginDisplay,
                              const std::string& password) OVERRIDE;
   virtual void Login(const std::string& username,
                      const std::string& password) OVERRIDE;
+  virtual void LoginAsDemoUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
   virtual void Signout() OVERRIDE;
   virtual void FixCaptivePortal() OVERRIDE;

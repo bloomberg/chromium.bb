@@ -12037,6 +12037,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_LOGIN_REMOVE">
         Remove
       </message>
+      <message name="IDS_KIOSK_MODE_LOGIN_MESSAGE">
+        Click anywhere to start your experience
+      </message>
       <message name="IDS_LOGIN_CHANGE_PHOTO">
         Change picture
       </message>

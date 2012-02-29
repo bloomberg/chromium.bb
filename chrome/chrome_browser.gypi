@@ -560,6 +560,8 @@
         'browser/chromeos/input_method/xkeyboard.cc',
         'browser/chromeos/input_method/xkeyboard.h',
         'browser/chromeos/input_method/xkeyboard_data.h',
+        'browser/chromeos/kiosk_mode/kiosk_mode_helper.cc',
+        'browser/chromeos/kiosk_mode/kiosk_mode_helper.h',
         'browser/chromeos/kiosk_mode/kiosk_mode_screensaver.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h',
         'browser/chromeos/language_preferences.cc',

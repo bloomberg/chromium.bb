@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
@@ -127,6 +128,8 @@ void WebUILoginDisplayHost::StartSignInScreen() {
   BaseLoginDisplayHost::StartSignInScreen();
   CHECK(webui_login_display_);
   GetOobeUI()->ShowSigninScreen(webui_login_display_);
+  if (chromeos::KioskModeHelper::IsKioskModeEnabled())
+    SetStatusAreaVisible(false);
 }
 
 void WebUILoginDisplayHost::OnBrowserCreated() {
