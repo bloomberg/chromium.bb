@@ -63,9 +63,6 @@ class SigninScreenHandlerDelegate {
   virtual void Login(const std::string& username,
                      const std::string& password) = 0;
 
-  // Sign in into a demo user session.
-  virtual void LoginAsDemoUser() = 0;
-
   // Sign in into Guest session.
   virtual void LoginAsGuest() = 0;
 
@@ -185,9 +182,6 @@ class SigninScreenHandler : public BaseScreenHandler,
 
   // Handles authentication request when signing in an existing user.
   void HandleAuthenticateUser(const base::ListValue* args);
-
-  // Handles entering as the demo user.
-  void HandleLaunchDemoUser(const base::ListValue* args);
 
   // Handles entering bwsi mode request.
   void HandleLaunchIncognito(const base::ListValue* args);

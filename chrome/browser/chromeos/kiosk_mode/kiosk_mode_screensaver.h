@@ -19,9 +19,6 @@ class KioskModeScreensaver : public PowerManagerClient::Observer,
   KioskModeScreensaver();
   virtual ~KioskModeScreensaver();
 
-  // Really initialize screensaver when KioskModeHelper is initialized.
-  void Setup();
-
   // NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

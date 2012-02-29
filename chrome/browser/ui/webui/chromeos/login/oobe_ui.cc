@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -91,9 +90,7 @@ void OobeUIHTMLSource::StartDataRequest(const std::string& path,
   }
 
   std::string response;
-  if (chromeos::KioskModeHelper::Get()->IsKioskModeEnabled())
-    response = GetDataResource(IDR_DEMO_USER_LOGIN_HTML);
-  else if (path.empty())
+  if (path.empty())
     response = GetDataResource(IDR_OOBE_HTML);
   else if (path == kLoginPath)
     response = GetDataResource(IDR_LOGIN_HTML);

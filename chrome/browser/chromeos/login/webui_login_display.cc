@@ -168,12 +168,6 @@ void WebUILoginDisplay::Login(const std::string& username,
     delegate_->Login(username, password);
 }
 
-void WebUILoginDisplay::LoginAsDemoUser() {
-  DCHECK(delegate_);
-  if (delegate_)
-    delegate_->LoginAsDemoUser();
-}
-
 void WebUILoginDisplay::LoginAsGuest() {
   DCHECK(delegate_);
   if (delegate_)

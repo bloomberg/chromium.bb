@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -328,11 +327,6 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_OFFLINE_LOGIN_HTML));
   localized_strings->SetString("removeUser",
       l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE));
-
-  if (chromeos::KioskModeHelper::Get()->IsKioskModeEnabled()) {
-    localized_strings->SetString("demoLoginMessage",
-        l10n_util::GetStringUTF16(IDS_KIOSK_MODE_LOGIN_MESSAGE));
-  }
 }
 
 void SigninScreenHandler::Show(bool oobe_ui) {
@@ -396,9 +390,6 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getUsers",
       base::Bind(&SigninScreenHandler::HandleGetUsers,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("launchDemoUser",
-      base::Bind(&SigninScreenHandler::HandleLaunchDemoUser,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("launchIncognito",
       base::Bind(&SigninScreenHandler::HandleLaunchIncognito,
@@ -658,12 +649,6 @@ void SigninScreenHandler::HandleAuthenticateUser(const base::ListValue* args) {
 
   username = SanitizeEmail(username);
   delegate_->Login(username, password);
-}
-
-void SigninScreenHandler::HandleLaunchDemoUser(const base::ListValue* args) {
-  if (!delegate_)
-    return;
-  delegate_->LoginAsDemoUser();
 }
 
 void SigninScreenHandler::HandleLaunchIncognito(const base::ListValue* args) {
