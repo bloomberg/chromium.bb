@@ -1067,6 +1067,7 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 		wl_list_insert(&compositor->surface_list, &surface->link);
 		weston_surface_assign_output(surface);
 		compositor->fade.surface = surface;
+		pixman_region32_init(&surface->input);
 	}
 
 	weston_surface_damage(compositor->fade.surface);
