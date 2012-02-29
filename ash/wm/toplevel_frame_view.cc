@@ -10,6 +10,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -137,13 +138,11 @@ class WindowCaption : public FrameComponent,
                       public views::ButtonListener {
  public:
   WindowCaption() {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    close_button_ =
-        new WindowControlButton(this, SK_ColorRED,
-                                *rb.GetBitmapNamed(IDR_AURA_WINDOW_CLOSE_ICON));
-    zoom_button_ =
-        new WindowControlButton(this, SK_ColorGREEN,
-                                *rb.GetBitmapNamed(IDR_AURA_WINDOW_ZOOM_ICON));
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    close_button_ = new WindowControlButton(this, SK_ColorRED,
+        *rb.GetImageNamed(IDR_AURA_WINDOW_CLOSE_ICON).ToSkBitmap());
+    zoom_button_ =  new WindowControlButton(this, SK_ColorGREEN,
+        *rb.GetImageNamed(IDR_AURA_WINDOW_ZOOM_ICON).ToSkBitmap());
     AddChildView(close_button_);
     AddChildView(zoom_button_);
   }

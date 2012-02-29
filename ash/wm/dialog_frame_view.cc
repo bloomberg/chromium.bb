@@ -9,6 +9,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -69,11 +70,11 @@ DialogFrameView::DialogFrameView() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR));
+      rb.GetImageNamed(IDR_CLOSE_BAR).ToSkBitmap());
   close_button_->SetImage(views::CustomButton::BS_HOT,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+      rb.GetImageNamed(IDR_CLOSE_BAR_H).ToSkBitmap());
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+      rb.GetImageNamed(IDR_CLOSE_BAR_P).ToSkBitmap());
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
   AddChildView(close_button_);

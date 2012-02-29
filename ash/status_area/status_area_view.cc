@@ -12,14 +12,15 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
 
 StatusAreaView::StatusAreaView()
-    : status_mock_(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_AURA_STATUS_MOCK)) {
+    : status_mock_(*ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_AURA_STATUS_MOCK).ToSkBitmap()) {
 }
 StatusAreaView::~StatusAreaView() {
 }

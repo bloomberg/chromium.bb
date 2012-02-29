@@ -11,6 +11,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -60,10 +61,9 @@ class PanelCaption : public views::View,
                      public views::ButtonListener {
  public:
   PanelCaption() {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    close_button_ =
-        new PanelControlButton(this,
-                               *rb.GetBitmapNamed(IDR_AURA_WINDOW_CLOSE_ICON));
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    close_button_ = new PanelControlButton(this,
+        *rb.GetImageNamed(IDR_AURA_WINDOW_CLOSE_ICON).ToSkBitmap());
     AddChildView(close_button_);
   }
   virtual ~PanelCaption() {}
