@@ -768,7 +768,9 @@ void ImmediateInterpreter::UpdateTapState(
              tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e; ++it)
       if (!prev_state_.GetFingerState(*it)) {
         // Gesturing finger wasn't in prev state. It's new.
-        if (FingerTooCloseToTap(*hwstate, *it))
+        const FingerState* fs = hwstate->GetFingerState(*it);
+        if (FingerTooCloseToTap(*hwstate, *fs) ||
+            FingerTooCloseToTap(prev_state_, *fs))
           continue;
         added_fingers.insert(*it);
         Log("TTC: Added %d", *it);
@@ -994,19 +996,14 @@ void ImmediateInterpreter::UpdateTapState(
 }
 
 bool ImmediateInterpreter::FingerTooCloseToTap(const HardwareState& hwstate,
-                                               short finger_id) {
-  const FingerState* fs = hwstate.GetFingerState(finger_id);
-  if (!fs) {
-    Err("Missing finger state?");
-    return false;
-  }
+                                               const FingerState& fs) {
   const float kMinAllowableSq =
       tapping_finger_min_separation_.val_ * tapping_finger_min_separation_.val_;
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState* iter_fs = &hwstate.fingers[i];
-    if (iter_fs == fs)
+    if (iter_fs->tracking_id == fs.tracking_id)
       continue;
-    float dist_sq = DistSq(*fs, *iter_fs);
+    float dist_sq = DistSq(fs, *iter_fs);
     if (dist_sq < kMinAllowableSq)
       return true;
   }

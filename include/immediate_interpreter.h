@@ -222,7 +222,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
 
   // Returns true iff the given finger is too close to any other finger to
   // realistically be doing a tap gesture.
-  bool FingerTooCloseToTap(const HardwareState& hwstate, short finger_id);
+  bool FingerTooCloseToTap(const HardwareState& hwstate, const FingerState& fs);
 
   // Does a deep copy of hwstate into prev_state_
   void SetPrevState(const HardwareState& hwstate);
