@@ -49,10 +49,10 @@ if test "x$enable_scanner" = "xyes"; then
 fi
 
 AC_PATH_PROG(XSLTPROC, xsltproc)
-AM_CONDITIONAL([HAVE_XSLTPROC], [test $XSLTPROC != ""])
+AM_CONDITIONAL([HAVE_XSLTPROC], [test "x$XSLTPROC" != "x"])
 
 AC_PATH_PROG(PUBLICAN, publican)
-AM_CONDITIONAL([HAVE_PUBLICAN], [test $PUBLICAN != ""])
+AM_CONDITIONAL([HAVE_PUBLICAN], [test "x$PUBLICAN" != "x"])
 
 AC_CONFIG_FILES([Makefile
 		 wayland-scanner.m4
