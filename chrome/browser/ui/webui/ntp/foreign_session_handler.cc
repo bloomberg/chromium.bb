@@ -84,10 +84,8 @@ SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
   // syncing sessions.
   SessionModelAssociator* model_associator =
       service->GetSessionModelAssociator();
-  if (model_associator == NULL ||
-      !service->ShouldPushChanges()) {
+  if (!service->ShouldPushChanges())
     return NULL;
-  }
   return model_associator;
 }
 
@@ -111,24 +109,22 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
   for (std::vector<const SyncedSession*>::const_iterator i =
       sessions.begin(); i != sessions.end() &&
       added_count < kMaxSessionsToShow; ++i) {
-    const SyncedSession* foreign_session = *i;
+    const SyncedSession* session = *i;
+    scoped_ptr<DictionaryValue> session_data(new DictionaryValue());
+    session_data->SetString("tag", session->session_tag);
+    session_data->SetString("name", session->session_name);
     scoped_ptr<ListValue> window_list(new ListValue());
     for (SyncedSession::SyncedWindowMap::const_iterator it =
-        foreign_session->windows.begin(); it != foreign_session->windows.end();
-        ++it) {
+        session->windows.begin(); it != session->windows.end(); ++it) {
       SessionWindow* window = it->second;
       scoped_ptr<DictionaryValue> window_data(new DictionaryValue());
       if (SessionWindowToValue(*window, window_data.get())) {
-        window_data->SetString("sessionTag", foreign_session->session_tag);
-
-        // Give ownership to |list_value|.
         window_list->Append(window_data.release());
       }
     }
+    session_data->Set("windows", window_list.release());
+    session_list.Append(session_data.release());
     added_count++;
-
-    // Give ownership to |session_list|.
-    session_list.Append(window_list.release());
   }
   web_ui()->CallJavascriptFunction("ntp.foreignSessions", session_list);
 }

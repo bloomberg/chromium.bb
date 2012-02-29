@@ -108,6 +108,12 @@ cr.define('ntp', function() {
     cr.ui.decorate($('recently-closed-menu-button'), ntp.RecentMenuButton);
     chrome.send('getRecentlyClosedTabs');
 
+    if (templateData.showOtherSessionsMenu) {
+      cr.ui.decorate($('other-sessions-menu-button'),
+                     ntp.OtherSessionsMenuButton);
+      chrome.send('getForeignSessions');
+    }
+
     newTabView.appendTilePage(new ntp.MostVisitedPage(),
                               localStrings.getString('mostvisited'),
                               false);
@@ -508,6 +514,10 @@ cr.define('ntp', function() {
     return newTabView.enterRearrangeMode.apply(newTabView, arguments);
   }
 
+  function foreignSessions(sessionList) {
+    $('other-sessions-menu-button').sessions = sessionList;
+  }
+
   function getAppsCallback() {
     return newTabView.getAppsCallback.apply(newTabView, arguments);
   }
@@ -539,6 +549,7 @@ cr.define('ntp', function() {
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
     enterRearrangeMode: enterRearrangeMode,
+    foreignSessions: foreignSessions,
     getAppsCallback: getAppsCallback,
     getAppsPageIndex: getAppsPageIndex,
     getCardSlider: getCardSlider,

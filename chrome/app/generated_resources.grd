@@ -5205,6 +5205,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EXTENSION_ACTIVITY_UI_DESCRIPTION" desc="Description for the flag to enable the extension activity UI.">
         Enable experimental UI that shows a log of extension activity.
       </message>
+      <message name="IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_NAME" desc="Name for the flag to disable the 'Other devices' menu on the NTP.">
+        Disable NTP 'Other devices' menu.
+      </message>
+      <message name="IDS_FLAGS_NTP_OTHER_SESSIONS_MENU_DESCRIPTION" desc="Description for the flag to disable the 'Other devices' menu on the NTP.">
+        Disable the new tab page menu for accessing tabs on other devices.
+      </message>
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
         Crashes
@@ -9247,6 +9253,14 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_NEW_TAB_RECENTLY_CLOSED"
                desc="The name for the 'Recently Closed' menu on the New Tab Page.">
         Recently closed
+      </message>
+      <message name="IDS_NEW_TAB_OTHER_SESSIONS_LABEL"
+               desc="The label for the 'Other Sessions' menu on the New Tab Page, which lists tabs that are open in browsing sessions on other devices.">
+        Other devices
+      </message>
+      <message name="IDS_NEW_TAB_OTHER_SESSIONS_EMPTY"
+               desc="The message for the 'Other Sessions' menu on the New Tab Page, when there are no other sessions.">
+        Access your open tabs on all of your devices.
       </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_NEW_TAB_OTR_MESSAGE"

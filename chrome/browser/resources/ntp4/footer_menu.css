@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#recently-closed-menu-button {
+.footer-menu-button {
   -webkit-appearance: none;
   -webkit-padding-end: 15px;
   -webkit-padding-start: 9px;
@@ -21,50 +21,66 @@
   padding-top: 0;
 }
 
-.enable-cws-experiment #recently-closed-menu-button {
+.enable-cws-experiment .footer-menu-button {
   -webkit-margin-end: 0;
   -webkit-padding-end: 16px;
   position: relative;
 }
 
-#recently-closed-menu-button:hover:not([menu-shown]) {
+.footer-menu-button:hover:not([menu-shown]) {
   color: #666;
 }
 
-#recently-closed-menu-button:hover:not([menu-shown]) .disclosure-triangle {
+.footer-menu-button:hover:not([menu-shown]) .disclosure-triangle {
   background-color: #666;
 }
 
-#recently-closed-menu-button[menu-shown] {
+.footer-menu-button[menu-shown] {
   color: #555;
 }
 
-#recently-closed-menu-button[menu-shown] .disclosure-triangle {
+.footer-menu-button[menu-shown] .disclosure-triangle {
   background-color: #555;
 }
 
 /* Reserve space for the menu button even when it's hidden. */
-#recently-closed-menu-button.invisible,
-#footer.showing-trash-mode #recently-closed-menu-button {
+.footer-menu-button.invisible,
+#footer.showing-trash-mode .footer-menu-button {
   visibility: hidden;
 }
 
-#footer.showing-trash-mode #recently-closed-menu-button {
+#footer.showing-trash-mode .footer-menu-button {
   -webkit-transition-delay: 0;
   opacity: 0;
 }
 
-#recently-closed-menu-button > * {
+.footer-menu-button > * {
   vertical-align: middle;
 }
 
-.recent-menu {
+.footer-menu {
+  max-height: 400px;
+  overflow: auto;
   padding: 6px 8px;
   /* Needs to be above #footer. */
   z-index: 10;
 }
 
-.recent-menu-item {
+/* TODO(dubroy): Unify this with tile page scrollbar. */
+.footer-menu::-webkit-scrollbar-button {
+  display: none;
+}
+
+.footer-menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.footer-menu::-webkit-scrollbar-thumb {
+  background-color: #D9D9D9;
+  border: 2px solid white;
+}
+
+.footer-menu-item {
   -webkit-margin-end: 8px;
   -webkit-margin-start: 0;
   -webkit-padding-end: 0;
@@ -84,19 +100,25 @@
   white-space: nowrap;
 }
 
-.recent-menu-item:not(:hover) {
+.footer-menu-item:not(:hover) {
   text-decoration: none;
 }
 
-.recent-menu-item:first-of-type {
+.footer-menu-item:first-of-type {
   margin-top: 4px;
 }
 
-.recent-menu-item:last-of-type {
+.footer-menu-item:last-of-type {
   margin-bottom: 4px;
 }
 
-html[dir='rtl'] .recent-menu-item {
+.footer-menu section h3 {
+  color: black;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+html[dir='rtl'] .footer-menu-item {
   background: no-repeat 100% 50%;
 }
 
@@ -105,9 +127,9 @@ html[dir='rtl'] .recent-menu-item {
 }
 
 /* TODO(estade): find a better color for active. */
-.recent-menu-item:active,
-.recent-menu-item:visited,
-.recent-menu-item:link {
+.footer-menu-item:active,
+.footer-menu-item:visited,
+.footer-menu-item:link {
   color: hsl(213, 90%, 24%) !important;
 }
 

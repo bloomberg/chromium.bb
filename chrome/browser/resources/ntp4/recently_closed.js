@@ -34,7 +34,7 @@ cr.define('ntp', function() {
       MenuButton.prototype.decorate.call(this);
       this.menu = new Menu;
       cr.ui.decorate(this.menu, Menu);
-      this.menu.classList.add('recent-menu');
+      this.menu.classList.add('footer-menu');
       document.body.appendChild(this.menu);
 
       this.needsRebuild_ = true;
@@ -80,7 +80,7 @@ cr.define('ntp', function() {
     addItem_: function(data) {
       var isWindow = data.type == 'window';
       var a = this.ownerDocument.createElement('a');
-      a.className = 'recent-menu-item';
+      a.className = 'footer-menu-item';
       if (isWindow) {
         a.href = '';
         a.classList.add('recent-window');

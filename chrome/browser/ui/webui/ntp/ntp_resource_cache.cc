@@ -334,6 +334,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
   localized_strings.SetString("syncLinkText",
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
+  localized_strings.SetString("otherSessions",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_LABEL));
+  localized_strings.SetString("otherSessionsEmpty",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTHER_SESSIONS_EMPTY));
   localized_strings.SetString("webStoreLink",
       GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
   localized_strings.SetBoolean("isWebStoreExperimentEnabled",
@@ -387,6 +391,12 @@ void NTPResourceCache::CreateNewTabHTML() {
     localized_strings.SetString("serverpromo",
         profile_->GetPrefs()->GetString(prefs::kNtpPromoLine));
   }
+
+  // Determine whether to show the menu for accessing tabs on other devices.
+  bool show_other_sessions_menu = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableNTPOtherSessionsMenu);
+  localized_strings.SetBoolean("showOtherSessionsMenu",
+                               show_other_sessions_menu);
 
   // Load the new tab page appropriate for this build
   std::string full_html;

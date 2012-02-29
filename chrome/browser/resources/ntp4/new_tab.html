@@ -30,7 +30,7 @@
 <link rel="stylesheet" href="most_visited_page.css">
 <link rel="stylesheet" href="nav_dot.css">
 <link rel="stylesheet" href="new_tab.css">
-<link rel="stylesheet" href="recently_closed.css">
+<link rel="stylesheet" href="footer_menu.css">
 <link rel="stylesheet" href="tile_page.css">
 <link id="themecss" rel="stylesheet">
 
@@ -63,6 +63,7 @@
 <script src="nav_dot.js"></script>
 <script src="new_tab.js"></script>
 <script src="recently_closed.js"></script>
+<script src="other_sessions.js"></script>
 </head>
 
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
@@ -104,7 +105,15 @@
       <ul id="dot-list">
       </ul>
 
-      <button id="recently-closed-menu-button" class="custom-appearance">
+      <button id="other-sessions-menu-button"
+          class="footer-menu-button custom-appearance" hidden>
+        <span i18n-content="otherSessions"></span>
+        <div class="disclosure-triangle"></div>
+        <div id="vertical-separator"></div>
+      </button>
+
+      <button id="recently-closed-menu-button"
+          class="footer-menu-button custom-appearance">
         <span i18n-content="recentlyclosed"></span>
         <div class="disclosure-triangle"></div>
         <div id="vertical-separator"></div>
