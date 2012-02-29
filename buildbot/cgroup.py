@@ -14,6 +14,7 @@ import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import sudo
 
 
 class CGroup(cros_lib.MasterPidContextManager):
@@ -112,8 +113,7 @@ class CGroup(cros_lib.MasterPidContextManager):
 
   def SudoSet(self, path, name, value):
     """Set given key of a given cgroup to value."""
-    cros_lib.SudoRunCommand(['sh', '-c', '/bin/echo %s > %s' %
-        (value, os.path.join(path, name))], print_cmd=False)
+    sudo.SetFileContents(os.path.join(path, name), value)
 
   def InitNamedCGroup(self, path):
     """Creates a cgroup given by path."""
