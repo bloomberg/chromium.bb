@@ -22,7 +22,7 @@ import cros_build_lib
 
 _CACHE_NAME = '.cros_projects.list'
 
-# TODO(ferringb): either move _atomic_writefile, _safe_makedirs, and
+# TODO(ferringb): either move _atomic_writefile, and
 # _safe_unlink into a library, or refactor it to use snakeoil; do this
 # once the question of whether or not to use snakeoil is answered.
 
@@ -40,14 +40,6 @@ def _atomic_writefile(path, data):
     _safe_unlink(tmp, True)
 
     raise
-
-
-def _safe_makedirs(path, mode=0775):
-  try:
-    os.makedirs(path, mode)
-  except EnvironmentError as e:
-    if e.errno != errno.EEXIST:
-      raise
 
 
 def _safe_unlink(path, suppress=False):
@@ -95,7 +87,7 @@ def _UpdateAlternatesDir(alternates_root, reference_maps, projects):
       if os.path.exists(k):
         paths.append(os.path.join(v, '.repo', 'projects', project, 'objects'))
 
-    _safe_makedirs(os.path.dirname(alt_path))
+    cros_build_lib.SafeMakedirs(os.path.dirname(alt_path))
 
     _atomic_writefile(alt_path, '%s\n' % ('\n'.join(paths),))
 
@@ -115,7 +107,7 @@ def _UpdateGitAlternates(proj_root, projects):
     relpath = '../' * (project.count('/') + 4)
     relpath = os.path.join(relpath, 'alternates', project)
 
-    _safe_makedirs(os.path.dirname(tmp_path))
+    cros_build_lib.SafeMakedirs(os.path.dirname(tmp_path))
     os.symlink(relpath , tmp_path)
     os.rename(tmp_path, alt_path)
 
@@ -171,7 +163,7 @@ def _RebuildRepoCheckout(target_root, reference_map,
   projects = _FilterNonExistentProjects(proj_root, projects)
   projects = list(sorted(projects))
 
-  _safe_makedirs(alternates_dir)
+  cros_build_lib.SafeMakedirs(alternates_dir)
   try:
     os.makedirs(alternates_dir, 0775)
   except EnvironmentError, e:
