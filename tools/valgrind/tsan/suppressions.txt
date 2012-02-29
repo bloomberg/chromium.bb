@@ -339,30 +339,6 @@
   fun:base::ThreadCollisionWarner::Leave
 }
 
-{
-   bug_100026a
-   ThreadSanitizer:Race
-   ...
-   fun:std::*
-   ...
-   fun:logging::LogMessage::*LogMessage
-   fun:base::PlatformThread::SetThreadPriority
-   fun:base::SimpleThread::SetThreadPriority
-   fun:AudioDevice::Run
-}
-
-{
-   bug_100026b
-   ThreadSanitizer:Race
-   ...
-   fun:std::*
-   ...
-   fun:logging::LogMessage::*LogMessage
-   fun:base::PlatformThread::SetThreadPriority
-   fun:AudioDeviceThread::Thread::ThreadMain
-   ...
-}
-
 ############################
 # 2.2 Benign races in Chromium
 {
