@@ -81,7 +81,7 @@ class Observer : public BrowserList::Observer,
 }
 
 - (IBAction)switchToProfile:(id)sender {
-  model_->SwitchToProfile([sender tag], true);
+  model_->SwitchToProfile([sender tag], false);
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_MENU);
 }
 
