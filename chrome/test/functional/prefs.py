@@ -141,6 +141,9 @@ class PrefsTest(pyauto.PyUITest):
 
     Checks for the geolocation infobar.
     """
+    # GetBrowserInfo() call seems to fail later on in this test. Call it early.
+    # crbug.com/89000
+    branding = self.GetBrowserInfo()['properties']['branding']
     from webdriver_pages import settings
     from webdriver_pages.settings import Behaviors, ContentTypes
     driver = self.NewWebDriver()
@@ -157,8 +160,7 @@ class PrefsTest(pyauto.PyUITest):
         self.GetPrefsInfo().Prefs(pyauto.kGeolocationDefaultContentSetting))
     self.GetBrowserWindow(0).GetTab(0).Reload()
     # Fails on Win7/Vista Chromium bots.  crbug.com/89000
-    if ((self.IsWin7() or self.IsWinVista()) and
-        self.GetBrowserInfo()['properties']['branding'] == 'Chromium'):
+    if (self.IsWin7() or self.IsWinVista()) and branding == 'Chromium':
       return
     behavior = driver.execute_async_script(
         'triggerGeoWithCallback(arguments[arguments.length - 1]);')
