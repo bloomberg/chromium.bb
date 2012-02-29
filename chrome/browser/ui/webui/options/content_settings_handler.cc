@@ -678,7 +678,10 @@ void ContentSettingsHandler::ApplyWhitelist(ContentSettingsType content_type,
       prefs::kContentSettingsDefaultWhitelistVersion);
   if (version >= kDefaultWhitelistVersion)
     return;
-  if (default_setting != CONTENT_SETTING_ALLOW) {
+  ContentSetting old_setting =
+      map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS, NULL);
+  if (old_setting == CONTENT_SETTING_ALLOW &&
+      default_setting == CONTENT_SETTING_ASK) {
     map->SetWebsiteSetting(
         ContentSettingsPattern::Wildcard(),
         ContentSettingsPattern::Wildcard(),
@@ -707,8 +710,8 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
         SetDefaultContentSetting(default_setting);
   } else {
     HostContentSettingsMap* map = GetContentSettingsMap();
-    map->SetDefaultContentSetting(content_type, default_setting);
     ApplyWhitelist(content_type, default_setting);
+    map->SetDefaultContentSetting(content_type, default_setting);
   }
   switch (content_type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
