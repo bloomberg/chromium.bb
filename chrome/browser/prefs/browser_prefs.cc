@@ -104,52 +104,55 @@ namespace browser {
 void RegisterLocalState(PrefService* local_state) {
   // Prefs in Local State
   local_state->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
+
   AppsPromo::RegisterPrefs(local_state);
   Browser::RegisterPrefs(local_state);
-  FlagsUI::RegisterPrefs(local_state);
-  WebCacheManager::RegisterPrefs(local_state);
+  browser_shutdown::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
+  FlagsUI::RegisterPrefs(local_state);
+  geolocation::RegisterPrefs(local_state);
   GoogleURLTracker::RegisterPrefs(local_state);
   IntranetRedirectDetector::RegisterPrefs(local_state);
   KeywordEditorController::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
+  NotificationUIManager::RegisterPrefs(local_state);
+  PrefProxyConfigTrackerImpl::RegisterPrefs(local_state);
+  ProfileInfoCache::RegisterPrefs(local_state);
+  ProfileManager::RegisterPrefs(local_state);
+  SSLConfigServiceManager::RegisterPrefs(local_state);
+  TaskManager::RegisterPrefs(local_state);
+  UpgradeDetector::RegisterPrefs(local_state);
+  WebCacheManager::RegisterPrefs(local_state);
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::CloudPolicySubsystem::RegisterPrefs(local_state);
+#endif
 
 #if defined(ENABLE_SAFE_BROWSING)
   SafeBrowsingService::RegisterPrefs(local_state);
 #endif
-  browser_shutdown::RegisterPrefs(local_state);
+
 #if defined(TOOLKIT_VIEWS)
   BrowserView::RegisterBrowserViewPrefs(local_state);
 #endif
-  UpgradeDetector::RegisterPrefs(local_state);
-  TaskManager::RegisterPrefs(local_state);
-  geolocation::RegisterPrefs(local_state);
-  NotificationUIManager::RegisterPrefs(local_state);
-  PrefProxyConfigTrackerImpl::RegisterPrefs(local_state);
-  SSLConfigServiceManager::RegisterPrefs(local_state);
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::CloudPolicySubsystem::RegisterPrefs(local_state);
-#endif
-  ProfileInfoCache::RegisterPrefs(local_state);
-  ProfileManager::RegisterPrefs(local_state);
 
 #if !defined(OS_ANDROID)
+  BackgroundModeManager::RegisterPrefs(local_state);
   NewTabPageHandler::RegisterPrefs(local_state);
   printing::PrintJobManager::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
-  BackgroundModeManager::RegisterPrefs(local_state);
 #endif
 
 #if defined(OS_CHROMEOS)
   chromeos::AudioHandler::RegisterPrefs(local_state);
-  chromeos::UserManager::RegisterPrefs(local_state);
-  chromeos::WizardController::RegisterPrefs(local_state);
   chromeos::InputMethodMenu::RegisterPrefs(local_state);
-  chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
-  chromeos::signed_settings_cache::RegisterPrefs(local_state);
   chromeos::NetworkMenuButton::RegisterPrefs(local_state);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(local_state);
+  chromeos::UserManager::RegisterPrefs(local_state);
+  chromeos::ServicesCustomizationDocument::RegisterPrefs(local_state);
+  chromeos::signed_settings_cache::RegisterPrefs(local_state);
+  chromeos::WizardController::RegisterPrefs(local_state);
   policy::AutoEnrollmentClient::RegisterPrefs(local_state);
   policy::DeviceStatusCollector::RegisterPrefs(local_state);
 #endif
@@ -161,63 +164,70 @@ void RegisterLocalState(PrefService* local_state) {
 
 void RegisterUserPrefs(PrefService* user_prefs) {
   // User prefs
+  AlternateErrorPageTabObserver::RegisterUserPrefs(user_prefs);
   AppsPromo::RegisterUserPrefs(user_prefs);
   AutofillManager::RegisterUserPrefs(user_prefs);
-  SessionStartupPref::RegisterUserPrefs(user_prefs);
+  bookmark_utils::RegisterUserPrefs(user_prefs);
   BookmarkModel::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
   BrowserInit::RegisterUserPrefs(user_prefs);
-  PasswordManager::RegisterUserPrefs(user_prefs);
+  chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
-  DownloadPrefs::RegisterUserPrefs(user_prefs);
-  bookmark_utils::RegisterUserPrefs(user_prefs);
-  AlternateErrorPageTabObserver::RegisterUserPrefs(user_prefs);
-  PrefsTabHelper::RegisterUserPrefs(user_prefs);
-  TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
-  ExtensionWebUI::RegisterUserPrefs(user_prefs);
-  ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
-  IncognitoModePrefs::RegisterUserPrefs(user_prefs);
-  NewTabUI::RegisterUserPrefs(user_prefs);
-  ProfileImpl::RegisterUserPrefs(user_prefs);
-  HostContentSettingsMap::RegisterUserPrefs(user_prefs);
   DevToolsWindow::RegisterUserPrefs(user_prefs);
-  PinnedTabCodec::RegisterUserPrefs(user_prefs);
+  DownloadPrefs::RegisterUserPrefs(user_prefs);
+  extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
   ExtensionPrefs::RegisterUserPrefs(user_prefs);
-  TranslatePrefs::RegisterUserPrefs(user_prefs);
+  ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
+  ExtensionWebUI::RegisterUserPrefs(user_prefs);
+  GAIAInfoUpdateService::RegisterUserPrefs(user_prefs);
+  HostContentSettingsMap::RegisterUserPrefs(user_prefs);
+  IncognitoModePrefs::RegisterUserPrefs(user_prefs);
+  InstantController::RegisterUserPrefs(user_prefs);
+  NetPrefObserver::RegisterPrefs(user_prefs);
+  NewTabUI::RegisterUserPrefs(user_prefs);
+  PasswordManager::RegisterUserPrefs(user_prefs);
+  PinnedTabCodec::RegisterUserPrefs(user_prefs);
   PrefProxyConfigTrackerImpl::RegisterPrefs(user_prefs);
+  PrefsTabHelper::RegisterUserPrefs(user_prefs);
+  ProfileImpl::RegisterUserPrefs(user_prefs);
+  ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
+  SessionStartupPref::RegisterUserPrefs(user_prefs);
+  SyncPromoUI::RegisterUserPrefs(user_prefs);
+  TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
+  TranslatePrefs::RegisterUserPrefs(user_prefs);
+  web_intents::RegisterUserPrefs(user_prefs);
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::URLBlacklistManager::RegisterPrefs(user_prefs);
+#endif
+
 #if defined(TOOLKIT_VIEWS)
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif
+
+#if defined(USE_AURA)
+  ChromeLauncherDelegate::RegisterUserPrefs(user_prefs);
+#endif
+
+#if !defined(OS_ANDROID)
+  PluginsUI::RegisterUserPrefs(user_prefs);
+  PromoResourceService::RegisterUserPrefs(user_prefs);
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  default_apps::RegisterUserPrefs(user_prefs);
+#endif
+
 #if defined(OS_CHROMEOS)
   chromeos::Preferences::RegisterUserPrefs(user_prefs);
   chromeos::ProxyConfigServiceImpl::RegisterPrefs(user_prefs);
 #endif
-  InstantController::RegisterUserPrefs(user_prefs);
-  NetPrefObserver::RegisterPrefs(user_prefs);
-  ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
+
 #if defined(OS_MACOSX)
-  PresentationModePrefs::RegisterUserPrefs(user_prefs);
   confirm_quit::RegisterObsoleteUserPrefs(user_prefs);
-#endif
-#if defined(ENABLE_CONFIGURATION_POLICY)
-  policy::URLBlacklistManager::RegisterPrefs(user_prefs);
-#endif
-  SyncPromoUI::RegisterUserPrefs(user_prefs);
-  GAIAInfoUpdateService::RegisterUserPrefs(user_prefs);
-  chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-  default_apps::RegisterUserPrefs(user_prefs);
-#endif
-  extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
-  web_intents::RegisterUserPrefs(user_prefs);
-#if defined(USE_AURA)
-  ChromeLauncherDelegate::RegisterUserPrefs(user_prefs);
-#endif
-#if !defined(OS_ANDROID)
-  PluginsUI::RegisterUserPrefs(user_prefs);
-  PromoResourceService::RegisterUserPrefs(user_prefs);
+  PresentationModePrefs::RegisterUserPrefs(user_prefs);
 #endif
 }
 
