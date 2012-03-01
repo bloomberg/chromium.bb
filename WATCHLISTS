@@ -178,8 +178,7 @@
                   'chrome/browser/ui/webui/options/.*',
     },
     'ntp': {
-      'filepath': 'chrome/browser/resources/ntp/.*|'\
-        'chrome/browser/resources/ntp4/.*|'\
+      'filepath': 'chrome/browser/resources/ntp4/.*|'\
         'chrome/browser/resources/touch_ntp/.*|'\
         'chrome/browser/resources/touch_ntp/.*|'\
         'chrome/browser/ui/webui/ntp/.*',
