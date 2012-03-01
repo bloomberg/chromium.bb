@@ -110,7 +110,7 @@ TEST_F(AssertionTest, Assertion) {
 }
 #endif  // !defined(NDEBUG)
 
-#if !defined(OFFICIAL_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD)
 // Only works on Linux in Release mode with CHROME_HEADLESS=1
 class CheckFalseTest : public UITest {
  protected:
@@ -135,7 +135,7 @@ TEST_F(CheckFalseTest, CheckFails) {
   expected_errors_ = EXPECTED_ASSERT_ERRORS;
   expected_crashes_ = EXPECTED_ASSERT_CRASHES;
 }
-#endif  // !defined(OFFICIAL_BUILD)
+#endif  // !defined(GOOGLE_CHROME_BUILD)
 
 // Tests whether we correctly fail on browser crashes during UI Tests.
 class RendererCrashTest : public UITest {
