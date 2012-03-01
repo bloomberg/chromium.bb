@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "media/audio/audio_util.h"
@@ -27,6 +26,11 @@ class AudioDeviceThread::Thread
          const char* thread_name);
 
   void Start();
+
+  // Stops the thread.  If |loop_for_join| is non-NULL, the function posts
+  // a task to join (close) the thread handle later instead of waiting for
+  // the thread.  If loop_for_join is NULL, then the function waits
+  // synchronously for the thread to terminate.
   void Stop(MessageLoop* loop_for_join);
 
  private:
@@ -61,20 +65,23 @@ AudioDeviceThread::~AudioDeviceThread() {
 void AudioDeviceThread::Start(AudioDeviceThread::Callback* callback,
                               base::SyncSocket::Handle socket,
                               const char* thread_name) {
+  base::AutoLock auto_lock(thread_lock_);
   CHECK(thread_ == NULL);
   thread_ = new AudioDeviceThread::Thread(callback, socket, thread_name);
   thread_->Start();
 }
 
 void AudioDeviceThread::Stop(MessageLoop* loop_for_join) {
+  base::AutoLock auto_lock(thread_lock_);
   if (thread_) {
-    if (!loop_for_join) {
-      loop_for_join = MessageLoop::current();
-      CHECK(loop_for_join);
-    }
     thread_->Stop(loop_for_join);
     thread_ = NULL;
   }
+}
+
+bool AudioDeviceThread::IsStopped() {
+  base::AutoLock auto_lock(thread_lock_);
+  return thread_ == NULL;
 }
 
 // AudioDeviceThread::Thread implementation
@@ -113,8 +120,12 @@ void AudioDeviceThread::Thread::Stop(MessageLoop* loop_for_join) {
   }
 
   if (thread != base::kNullThreadHandle) {
-    loop_for_join->PostTask(FROM_HERE,
-        base::Bind(&base::PlatformThread::Join, thread));
+    if (loop_for_join) {
+      loop_for_join->PostTask(FROM_HERE,
+          base::Bind(&base::PlatformThread::Join, thread));
+    } else {
+      base::PlatformThread::Join(thread);
+    }
   }
 }
 

@@ -146,6 +146,16 @@ void AudioInputDevice::ShutDownOnIOThread() {
     session_id_ = 0;
     pending_device_ready_ = false;
   }
+
+  // We can run into an issue where ShutDownOnIOThread is called right after
+  // OnStreamCreated is called in cases where Start/Stop are called before we
+  // get the OnStreamCreated callback.  To handle that corner case, we call
+  // Stop(). In most cases, the thread will already be stopped.
+  // Another situation is when the IO thread goes away before Stop() is called
+  // in which case, we cannot use the message loop to close the thread handle
+  // and can't not rely on the main thread existing either.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  audio_thread_.Stop(NULL);
   audio_callback_.reset();
 }
 
@@ -178,11 +188,11 @@ void AudioInputDevice::OnStreamCreated(
     return;
   }
 
+  DCHECK(audio_thread_.IsStopped());
   audio_callback_.reset(
       new AudioInputDevice::AudioThreadCallback(audio_parameters_, handle,
                                                 length, callback_));
-  audio_thread_.Start(audio_callback_.get(), socket_handle,
-                       "AudioInputDevice");
+  audio_thread_.Start(audio_callback_.get(), socket_handle, "AudioInputDevice");
 
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::StartOnIOThread, this));
@@ -258,6 +268,7 @@ void AudioInputDevice::Send(IPC::Message* message) {
 }
 
 void AudioInputDevice::WillDestroyCurrentMessageLoop() {
+  LOG(ERROR) << "IO loop going away before the input device has been stopped";
   ShutDownOnIOThread();
 }
 

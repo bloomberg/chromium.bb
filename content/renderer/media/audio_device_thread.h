@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_parameters.h"
 
@@ -76,15 +77,18 @@ class CONTENT_EXPORT AudioDeviceThread {
              const char* thread_name);
 
   // This tells the audio thread to stop and clean up the data.
-  // The method is asynchronous, so the thread might still be running after it
+  // The method can stop the thread synchronously or asynchronously.
+  // In the latter case, the thread will still be running after Stop()
   // returns, but the callback pointer is cleared so no further callbacks will
-  // be made (i.e. after Stop() returns, it is safe to delete the callback).
-  // The |loop_for_join| parameter is required in order to join the worker
-  // thread and close the thread handle later via a posted task.
-  // If set to NULL, the current message loop is used. Note that the thread
-  // that the message loop belongs to, must be allowed to join threads
-  // (see SetIOAllowed in base/thread_restrictions.h).
+  // be made (IOW after Stop() returns, it is safe to delete the callback).
+  // The |loop_for_join| parameter is required for asynchronous operation
+  // in order to join the worker thread and close the thread handle later via a
+  // posted task.
+  // If set to NULL, function will wait for the thread to exit before returning.
   void Stop(MessageLoop* loop_for_join);
+
+  // Returns true if the thread is stopped or stopping.
+  bool IsStopped();
 
  private:
   // Our own private SimpleThread override.  We implement this in a
@@ -96,6 +100,7 @@ class CONTENT_EXPORT AudioDeviceThread {
   //    reliable initialization.
   class Thread;
 
+  base::Lock thread_lock_;
   scoped_refptr<AudioDeviceThread::Thread> thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceThread);
