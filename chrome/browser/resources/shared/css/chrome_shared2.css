@@ -131,13 +131,13 @@ html[touch-optimized] input[type='search']::-webkit-search-cancel-button {
 header > .search-field-container,
 header > button {
   position: absolute;
-  right: 0;
-  top: 18px;
+  right: 100px;
+  top: 21px;
 }
 
 html[dir='rtl'] header > .search-field-container,
 html[dir='rtl'] header > button {
-  left: 0;
+  left: 100px;
   right: auto;
 }
 

@@ -42,24 +42,6 @@ html.hide-menu #mainview {
   min-width: 600px;
 }
 
-#page-container .page {
-  -webkit-transition-duration: 200ms;
-  -webkit-transition-property: margin-top;
-}
-
-#page-container .page.under-managed-prefs-banner {
-  margin-top: 31px;
-}
-
-#page-container header {
-  -webkit-transition-duration: 200ms;
-  -webkit-transition-property: top;
-}
-
-#page-container .page.under-managed-prefs-banner header {
-  top: 31px;
-}
-
 div.disabled {
   color: #888;
 }
@@ -177,43 +159,47 @@ html[touch-optimized] body {
 }
 
 .managed-prefs-banner {
-  -webkit-transition-duration: 200ms;
-  -webkit-transition-property: height;
-  background: -webkit-linear-gradient(rgb(255, 242, 183),
-                                      rgb(250, 230, 145) 97%,
-                                      rgb(135, 135, 135));
-  height: 31px;
-  margin: 0;
-  padding: 0;
-  position: fixed;
-  vertical-align: middle;
+  background-color: white;
   width: 100%;
   z-index: 2;
 }
 
-.managed-prefs-banner[hidden] {
-  height: 0;
+.page:not(.showing-banner) .managed-prefs-banner {
+  display: none;
 }
 
-.managed-prefs-banner.clickable:active {
-  background: -webkit-linear-gradient(rgb(135, 135, 135),
-                                      rgb(250, 230, 145) 3%,
-                                      rgb(255, 242, 183));
+.managed-prefs-gradient {
+  background: -webkit-linear-gradient(rgb(255, 242, 183),
+                                      rgb(250, 230, 145));
+  border: 1px solid rgb(201, 189, 141);
+  border-radius: 3px;
+  height: 25px;
+  margin: 9px 9px 0 9px;
 }
 
-.managed-prefs-icon {
-  background-image: url('chrome://theme/IDR_WARNING');
-  background-position: center;
-  background-repeat: no-repeat;
-  display: inline-block;
-  height: 21px;
-  padding: 5px;
-  vertical-align: middle;
-  width: 24px;
+.main-page-banner .managed-prefs-gradient {
+  -webkit-margin-end: 100px;
+  -webkit-margin-start: 0;
+  margin-bottom: 9px;
+  margin-top: 0;
 }
 
 .managed-prefs-text {
-  vertical-align: middle;
+  background-image: url('chrome://theme/IDR_WARNING');
+  background-position: 3px center;
+  background-repeat: no-repeat;
+  display: block;
+  line-height: 25px;
+  padding-left: 31px;
+}
+
+.managed-prefs-banner.clickable:active .managed-prefs-text {
+  background: -webkit-linear-gradient(rgb(250, 230, 145),
+                                      rgb(255, 242, 183));
+}
+
+#page-container .page.showing-banner {
+  margin-top: 36px;
 }
 
 .overlay .page h1 {

@@ -159,7 +159,7 @@ cr.define('options', function() {
           (dict['cookies']['value'] == 'session');
     }
     ContentSettings.getInstance().updateSessionRestoreContentSettings();
-    BrowserOptions.updateManagedBannerVisibility();
+    OptionsPage.updateManagedBannerVisibility();
   };
 
   /**

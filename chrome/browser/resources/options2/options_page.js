@@ -906,6 +906,57 @@ cr.define('options', function() {
     initializePage: function() {},
 
     /**
+     * Updates managed banner visibility state. This function iterates over
+     * all input fields of a page and if any of these is marked as managed
+     * it triggers the managed banner to be visible. The banner can be enforced
+     * being on through the managed flag of this class but it can not be forced
+     * being off if managed items exist.
+     */
+    updateManagedBannerVisibility: function() {
+      var bannerDiv = this.pageDiv.querySelector('.managed-prefs-banner');
+      // Create a banner for the overlay if we don't have one.
+      if (!bannerDiv) {
+        bannerDiv = $('managed-prefs-banner').cloneNode(true);
+        bannerDiv.id = null;
+
+        if (this.isOverlay) {
+          var content = this.pageDiv.querySelector('.content-area');
+          this.pageDiv.insertBefore(bannerDiv, content);
+        } else {
+          bannerDiv.classList.add('main-page-banner');
+          var header = this.pageDiv.querySelector('header');
+          header.appendChild(bannerDiv);
+        }
+      }
+
+      var controlledByPolicy = false;
+      var controlledByExtension = false;
+      var inputElements = this.pageDiv.querySelectorAll('input[controlled-by]');
+      for (var i = 0; i < inputElements.length; i++) {
+        if (inputElements[i].controlledBy == 'policy')
+          controlledByPolicy = true;
+        else if (inputElements[i].controlledBy == 'extension')
+          controlledByExtension = true;
+      }
+
+      if (!controlledByPolicy && !controlledByExtension) {
+        this.pageDiv.classList.remove('showing-banner');
+      } else {
+        this.pageDiv.classList.add('showing-banner');
+
+        var text = bannerDiv.querySelector('.managed-prefs-text');
+        if (controlledByPolicy && !controlledByExtension) {
+          text.textContent = templateData.policyManagedPrefsBannerText;
+        } else if (!controlledByPolicy && controlledByExtension) {
+          text.textContent = templateData.extensionManagedPrefsBannerText;
+        } else if (controlledByPolicy && controlledByExtension) {
+          text.textContent =
+              templateData.policyAndExtensionManagedPrefsBannerText;
+        }
+      }
+    },
+
+    /**
      * Gets page visibility state.
      */
     get visible() {
@@ -923,6 +974,7 @@ cr.define('options', function() {
       this.setContainerVisibility_(visible);
 
       OptionsPage.updatePageFreezeStates();
+      OptionsPage.updateManagedBannerVisibility();
 
       // A subpage was shown or hidden.
       if (!this.isOverlay && this.nestingLevel > 0)

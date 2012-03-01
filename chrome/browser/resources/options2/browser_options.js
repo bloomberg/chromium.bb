@@ -481,50 +481,9 @@ cr.define('options', function() {
      * @private
      */
     hideAdvancedSettings_: function() {
-      $('advanced-settings').style.height = '0px'
+      $('advanced-settings').style.height = '0px';
       $('advanced-settings-expander').innerHTML =
           localStrings.getString('showAdvancedSettings');
-    },
-
-    /**
-     * Updates managed banner visibility state. This function iterates over
-     * all input fields of all subpages and if any of these is marked as managed
-     * it triggers the managed banner to be visible.
-     * @private
-     */
-    updateManagedBannerVisibility_: function() {
-      var bannerDiv = $('managed-prefs-banner');
-
-      var controlledByPolicy = false;
-      var controlledByExtension = false;
-      var inputElements = document.querySelectorAll('input[controlled-by]');
-      var mainPages = document.querySelectorAll('#page-container .page');
-      for (var i = 0, len = inputElements.length; i < len; i++) {
-        if (inputElements[i].controlledBy == 'policy')
-          controlledByPolicy = true;
-        else if (inputElements[i].controlledBy == 'extension')
-          controlledByExtension = true;
-      }
-      if (!controlledByPolicy && !controlledByExtension) {
-        bannerDiv.hidden = true;
-        for (var i = 0; i < mainPages.length; i++)
-          mainPages[i].classList.remove('under-managed-prefs-banner');
-      } else {
-        bannerDiv.hidden = false;
-        for (var i = 0; i < mainPages.length; i++)
-          mainPages[i].classList.add('under-managed-prefs-banner');
-
-        if (controlledByPolicy && !controlledByExtension) {
-          $('managed-prefs-text').textContent =
-              templateData.policyManagedPrefsBannerText;
-        } else if (!controlledByPolicy && controlledByExtension) {
-          $('managed-prefs-text').textContent =
-              templateData.extensionManagedPrefsBannerText;
-        } else if (controlledByPolicy && controlledByExtension) {
-          $('managed-prefs-text').textContent =
-              templateData.policyAndExtensionManagedPrefsBannerText;
-        }
-      }
     },
 
     /**

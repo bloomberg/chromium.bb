@@ -57,7 +57,7 @@ cr.define('options', function() {
 
     el.controlledBy = event.value['controlledBy'];
 
-    BrowserOptions.updateManagedBannerVisibility();
+    OptionsPage.updateManagedBannerVisibility();
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -622,7 +622,7 @@ cr.define('options', function() {
      * directly to save dialog preferences.
      */
     savePrefState: function() {
-      switch(this.dataType) {
+      switch (this.dataType) {
         case 'number':
           Preferences.setIntegerPref(this.pref, this.value, this.metric);
           break;
