@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -86,7 +86,8 @@ _INTERVAL_UNIT_CHOICES = ('hours', 'days', 'weeks')
 _URL_EXCLUSION_LIST = ('http://www.youtube.com/html5',
                        'http://www.google.com')
 _ISSUE_ELEMENT_IN_EMAIL_CHOICES = ('issue_id', 'author', 'status', 'state',
-                                   'content', 'comments', 'labels', 'urls')
+                                   'content', 'comments', 'labels', 'urls',
+                                   'mstone')
 
 
 def ParseArgs():
@@ -246,12 +247,19 @@ class BugHunter(object):
           set(re.findall(r'(https?://\S+)', content + comments)))
       url_list = [url for url in url_list
                   if not url.rstrip('/') in _URL_EXCLUSION_LIST]
-      issues.append({'issue_id': issue_id, 'title': entry.title.text,
-                     'author': entry.author[0].name.text,
-                     'status': entry.status.text,
-                     'state': entry.state.text, 'content': content,
-                     'comments': comments, 'labels': label_list,
-                     'urls': url_list})
+      mstone = ''
+      r = re.compile(r'Mstone-(\d*)')
+      for label in label_list:
+        m = r.search(label)
+        if m:
+          mstone = m.group(1)
+      issues.append(
+          {'issue_id': issue_id, 'title': entry.title.text,
+           'author': entry.author[0].name.text,
+           'status': entry.status.text if entry.status is not None else '',
+           'state': entry.state.text if entry.state is not None else '',
+           'content': content, 'mstone': mstone, 'comments': comments,
+           'labels': label_list, 'urls': url_list})
     return sorted(issues, key=itemgetter('issue_id'), reverse=True)
 
   def _SetUpEmailSubjectMsg(self, issues):
