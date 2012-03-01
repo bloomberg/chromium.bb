@@ -127,13 +127,32 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
  private:
   base::Histogram::SampleSet GetHistogram(const char* name) {
     base::Histogram::SampleSet sample;
-    base::Histogram* histogram;
+    base::Histogram* current_histogram = NULL;
+    base::Histogram* cached_histogram = NULL;
+    base::StatisticsRecorder::FindHistogram(name, &current_histogram);
     if (ContainsKey(histograms_, name)) {
-      histogram = histograms_[name];
-      histogram->SnapshotSample(&sample);
-    } else if (base::StatisticsRecorder::FindHistogram(name, &histogram)) {
-      histograms_[name] = histogram;
-      histogram->SnapshotSample(&sample);
+      cached_histogram = histograms_[name];
+    }
+
+    // This is to work around the CACHE_HISTOGRAM_* macros caching the last used
+    // histogram by name. So, even though we throw out the StatisticsRecorder
+    // between tests, the CACHE_HISTOGRAM_* might still write into the old
+    // Histogram if it has the same name as the last run. We keep a cache of the
+    // last used Histogram and then update the cache if it's different than the
+    // current Histogram.
+    if (cached_histogram && current_histogram) {
+      cached_histogram->SnapshotSample(&sample);
+      if (cached_histogram != current_histogram) {
+        base::Histogram::SampleSet current_sample;
+        current_histogram->SnapshotSample(&current_sample);
+        sample.Add(current_sample);
+        histograms_[name] = current_histogram;
+      }
+    } else if (current_histogram) {
+      current_histogram->SnapshotSample(&sample);
+      histograms_[name] = current_histogram;
+    } else if (cached_histogram) {
+      cached_histogram->SnapshotSample(&sample);
     }
     return sample;
   }
@@ -416,7 +435,7 @@ TEST_F(HttpPipeliningCompatibilityClientTest, MultipleRequests) {
   base::Histogram::SampleSet network_sample2 =
       GetHistogramValue(1, FIELD_NETWORK_ERROR);
   EXPECT_EQ(1, network_sample2.TotalCount());
-  EXPECT_EQ(1, network_sample2.counts(-net::ERR_EMPTY_RESPONSE));
+  EXPECT_EQ(1, network_sample2.counts(-net::ERR_PIPELINE_EVICTION));
 
   base::Histogram::SampleSet response_sample2 =
       GetHistogramValue(1, FIELD_RESPONSE_CODE);
@@ -426,16 +445,16 @@ TEST_F(HttpPipeliningCompatibilityClientTest, MultipleRequests) {
       GetHistogramValue(2, FIELD_STATUS);
   EXPECT_EQ(1, status_sample3.TotalCount());
   EXPECT_EQ(1, status_sample3.counts(
-      HttpPipeliningCompatibilityClient::BAD_RESPONSE_CODE));
+      HttpPipeliningCompatibilityClient::NETWORK_ERROR));
 
   base::Histogram::SampleSet network_sample3 =
       GetHistogramValue(2, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample3.TotalCount());
+  EXPECT_EQ(1, network_sample3.TotalCount());
+  EXPECT_EQ(1, network_sample3.counts(-net::ERR_PIPELINE_EVICTION));
 
   base::Histogram::SampleSet response_sample3 =
       GetHistogramValue(2, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample3.TotalCount());
-  EXPECT_EQ(1, response_sample3.counts(401));
+  EXPECT_EQ(0, response_sample3.TotalCount());
 }
 
 }  // anonymous namespace

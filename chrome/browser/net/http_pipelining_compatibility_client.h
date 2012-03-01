@@ -13,6 +13,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 
 namespace chrome_browser_net {
 
@@ -118,6 +119,8 @@ class HttpPipeliningCompatibilityClient {
   ScopedVector<Request> requests_;
   net::CompletionCallback finished_callback_;
   size_t num_finished_;
+  scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
+  scoped_refptr<net::URLRequestContext> url_request_context_;
 };
 
 }  // namespace chrome_browser_net

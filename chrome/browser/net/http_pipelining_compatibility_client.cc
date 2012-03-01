@@ -8,6 +8,8 @@
 #include "base/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/disk_cache/histogram_macros.h"
+#include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_version.h"
 
@@ -25,10 +27,24 @@ void HttpPipeliningCompatibilityClient::Start(
     std::vector<RequestInfo>& requests,
     const net::CompletionCallback& callback,
     net::URLRequestContext* url_request_context) {
+  net::HttpNetworkSession* old_session =
+      url_request_context->http_transaction_factory()->GetSession();
+  net::HttpNetworkSession::Params params = old_session->params();
+  params.force_http_pipelining = true;
+  scoped_refptr<net::HttpNetworkSession> session =
+      new net::HttpNetworkSession(params);
+  http_transaction_factory_.reset(
+      net::HttpNetworkLayer::CreateFactory(session.get()));
+
+  url_request_context_ = new net::URLRequestContext;
+  url_request_context_->CopyFrom(url_request_context);
+  url_request_context_->set_http_transaction_factory(
+      http_transaction_factory_.get());
+
   finished_callback_ = callback;
   for (size_t i = 0; i < requests.size(); ++i) {
     requests_.push_back(new Request(i, base_url, requests[i], this,
-                                    url_request_context));
+                                    url_request_context_.get()));
   }
 }
 
@@ -74,7 +90,6 @@ HttpPipeliningCompatibilityClient::Request::Request(
       client_(client),
       finished_(false) {
   request_.set_context(url_request_context);
-  // TODO(simonjam): Force pipelining.
   request_.set_load_flags(net::LOAD_BYPASS_CACHE |
                           net::LOAD_DISABLE_CACHE |
                           net::LOAD_DO_NOT_SAVE_COOKIES |

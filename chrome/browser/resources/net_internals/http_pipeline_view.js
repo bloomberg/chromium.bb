@@ -121,6 +121,7 @@ var HttpPipelineView = (function() {
   function createConnectionTablePrinter(httpPipelinedConnectionInfo) {
     var tablePrinter = new TablePrinter();
     tablePrinter.addHeaderCell('Host');
+    tablePrinter.addHeaderCell('Forced');
     tablePrinter.addHeaderCell('Depth');
     tablePrinter.addHeaderCell('Capacity');
     tablePrinter.addHeaderCell('Usable');
@@ -134,6 +135,8 @@ var HttpPipelineView = (function() {
         tablePrinter.addRow();
 
         tablePrinter.addCell(connection.host);
+        tablePrinter.addCell(
+            connection.forced === undefined ? false : connection.forced);
         tablePrinter.addCell(connection.depth);
         tablePrinter.addCell(connection.capacity);
         tablePrinter.addCell(connection.usable);
