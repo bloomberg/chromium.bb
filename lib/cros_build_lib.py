@@ -762,18 +762,12 @@ def GetCurrentBranch(cwd):
   return current_branch
 
 
-def GetShortBranchName(remote, ref):
-  """Return branch name in the form 'cros/master' given a remote and a ref.
+def StripLeadingRefsHeads(ref):
+  """Remove leading 'refs/heads' from a ref name."""
+  if not ref.startswith('refs/heads/'):
+    raise Exception('Ref name %s does not start with refs/heads/' % ref)
 
-  Args:
-    remote: The git remote name - i.e., 'cros'
-    ref: The ref that exists on the remote - i.e., 'refs/heads/master'
-
-  Returns:
-    Concatenated name of the ref - i.e., 'cros/master'
-  """
-  assert(ref.startswith('refs/heads/'))
-  return os.path.join(remote, ref.replace('refs/heads/', ''))
+  return ref.replace('refs/heads/', '')
 
 
 class ManifestHandler(xml.sax.handler.ContentHandler):
@@ -846,8 +840,7 @@ def GetManifestDefaultBranch(cwd):
   m = re.search(r'<default[^>]*revision="(refs/heads/[^"]*)"', manifest)
   assert m, "Can't find default revision in manifest"
   ref = m.group(1)
-  assert ref.startswith('refs/heads/')
-  return ref.replace('refs/heads/', '')
+  return StripLeadingRefsHeads(ref)
 
 
 class NoTrackingBranchException(Exception):
@@ -904,20 +897,26 @@ def GetPushBranch(cwd):
 
   repo_root = FindRepoCheckoutRoot(cwd)
   remote_branch = GetProjectManifestBranch(repo_root, output.rstrip())[1]
-  if not remote_branch.startswith('refs/heads/'):
-    raise Exception('Could not find push branch. Got %s' % remote_branch)
-  return GERRIT_SSH_REMOTE, remote_branch.replace('refs/heads/', '')
+  return GERRIT_SSH_REMOTE, StripLeadingRefsHeads(remote_branch)
 
 
-def CreatePushBranch(branch, cwd, sync=True):
+def CreatePushBranch(branch, cwd, sync=True, remote_push_branch=None):
   """Create a local branch for pushing changes inside a repo repository.
 
     Args:
       branch: Local branch to create.
       cwd: Directory to create the branch in.
       sync: Update remote before creating push branch.
+      remote_push_branch: A tuple of the (remote, branch) to push to. i.e.,
+                          ('cros', 'master').  By default it tries to
+                          automatically determine which tracking branch to use
+                          (see GetPushBranch()).
   """
-  remote, push_branch = GetPushBranch(cwd)
+  if not remote_push_branch:
+    remote, push_branch = GetPushBranch(cwd)
+  else:
+    remote, push_branch = remote_push_branch
+
   if sync:
     RunCommand(['git', 'remote', 'update', remote], cwd=cwd)
   RunCommand(['git', 'checkout', '-B', branch, '-t',
@@ -959,7 +958,9 @@ def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
     Raises:
       GitPushFailed if push was unsuccessful after retries
   """
-  remote, push_branch = GetPushBranch(cwd)
+  remote, ref = GetTrackingBranch(branch, cwd)
+  push_branch = StripLeadingRefsHeads(ref)
+
   for retry in range(1, retries + 1):
     SyncPushBranch(cwd, remote, push_branch)
     push_command = ['git', 'push', remote, '%s:%s' % (branch, push_branch)]

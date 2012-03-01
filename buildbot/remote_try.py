@@ -63,7 +63,7 @@ class RemoteTryJob(object):
         'extra_args' : self.extra_args,
         'version' : self.TRYJOB_DESCRIPTION_VERSION,}
 
-  def _Submit(self, dryrun):
+  def _Submit(self, testjob, dryrun):
     """Internal submission function.  See Submit() for arg description."""
     current_time = str(int(time.time()))
     ref_base = os.path.join('refs/tryjobs', self.user, current_time)
@@ -79,7 +79,9 @@ class RemoteTryJob(object):
     # TODO(rcui): convert to shallow clone when that's available.
     repository.CloneGitRepo(self.tryjob_repo, self.SSH_URL)
     push_branch = manifest_version.PUSH_BRANCH
-    cros_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False)
+    remote_branch = ('origin', 'test') if testjob else None
+    cros_lib.CreatePushBranch(push_branch, self.tryjob_repo, sync=False,
+                              remote_push_branch=remote_branch)
 
     file_name = '%s.%s' % (self.user,
                            current_time)
@@ -109,13 +111,15 @@ class RemoteTryJob(object):
                      'submission requests by users.  Please try again.')
       raise
 
-  def Submit(self, workdir=None, dryrun=False):
+  def Submit(self, workdir=None, testjob=False, dryrun=False):
     """Submit the tryjob through Git.
 
     Args:
       workdir: The directory to clone tryjob repo into.  If you pass this
                in, you are responsible for deleting the directory.  Used for
                testing.
+      testjob: Submit job to the test branch of the tryjob repo.  The tryjob
+               will be ignored by production master.
       dryrun: Setting to true will run everything except the final submit step.
     """
     self.tryjob_repo = workdir
@@ -123,7 +127,7 @@ class RemoteTryJob(object):
       self.tryjob_repo = tempfile.mkdtemp()
 
     try:
-      self._Submit(dryrun)
+      self._Submit(testjob, dryrun)
     finally:
       if workdir is None:
         shutil.rmtree(self.tryjob_repo)

@@ -763,6 +763,10 @@ def _CreateParser():
                     help="Specify the maximum amount of time this job can run "
                          "for, at which point the build will be aborted.  If "
                          "set to zero, then there is no timeout")
+  group.add_option('--test-tryjob', action='store_true',
+                   default=False,
+                   help='Submit a tryjob to the test repository.  Will not '
+                        'show up on the production trybot waterfall.')
   group.add_option('--validation_pool', default=None,
                    help='Path to a pickled validation pool. Intended for use '
                    'only with the commit queue.')
@@ -908,7 +912,7 @@ def main(argv):
                                           options.local_patches)
     print 'Submitting tryjob...'
     tryjob = remote_try.RemoteTryJob(options, args, local_patches)
-    tryjob.Submit(dryrun=options.debug)
+    tryjob.Submit(testjob=options.test_tryjob, dryrun=options.debug)
     print 'Tryjob submitted!'
     print ('Go to %s to view the status of your job.'
            % tryjob.GetTrybotWaterfallLink())

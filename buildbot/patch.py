@@ -326,14 +326,14 @@ def _GetRemoteTrackingBranch(project_dir, branch):
     cros_lib.NoTrackingBranchException if branch does not track anything.
   """
   (remote, ref) = cros_lib.GetTrackingBranch(branch, project_dir)
-  return cros_lib.GetShortBranchName(remote, ref)
+  return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
 
 
 def _GetProjectManifestBranch(buildroot, project):
   """Get the branch specified in the manifest for the project."""
   (remote, ref) = cros_lib.GetProjectManifestBranch(buildroot,
                                                     project)
-  return cros_lib.GetShortBranchName(remote, ref)
+  return '%s/%s' % (remote, cros_lib.StripLeadingRefsHeads(ref))
 
 
 def PrepareLocalPatches(patches, manifest_branch):
