@@ -26,7 +26,7 @@ class RemoteTryTests(mox.MoxTestBase):
   def testSimpleTryJob(self):
     """Test that a tryjob spec file is created and pushed properly."""
     PATCHES = ['5555', '6666']
-    BOTS = ['x86-generic-pre-flight-queue', 'arm-generic-pre-flight-queue']
+    BOTS = ['x86-generic-paladin', 'arm-generic-paladin']
     options = mox.MockAnything()
     options.gerrit_patches = PATCHES
     self.mox.ReplayAll()

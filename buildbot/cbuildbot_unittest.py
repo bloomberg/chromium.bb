@@ -41,7 +41,7 @@ class RunBuildStagesTest(mox.MoxTestBase):
     mox.MoxTestBase.setUp(self)
     self.buildroot = tempfile.mkdtemp()
     # Always stub RunCommmand out as we use it in every method.
-    self.bot_id = 'x86-generic-pre-flight-queue'
+    self.bot_id = 'x86-generic-paladin'
     self.build_config = config.config[self.bot_id]
     self.build_config['master'] = False
     self.build_config['important'] = False
@@ -176,7 +176,7 @@ class LogTest(mox.MoxTestBase):
 
 class InterfaceTest(mox.MoxTestBase):
 
-  _X86_PREFLIGHT = 'x86-generic-pre-flight-queue'
+  _X86_PREFLIGHT = 'x86-generic-paladin'
   _BUILD_ROOT = '/b/test_build1'
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -394,21 +394,21 @@ class FullInterfaceTest(unittest.TestCase):
     """Test that null args are stripped out and don't cause error."""
     self.mox.ReplayAll()
     cbuildbot.main(['-r', self._BUILD_ROOT, '', '',
-                    'x86-generic-pre-flight-queue'])
+                    'x86-generic-paladin'])
 
   def testMultipleConfigsError(self):
     """Test that multiple configs cause error if --remote is not used."""
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
                      ['-r', self._BUILD_ROOT,
-                      'arm-generic-pre-flight-queue',
-                      'x86-generic-pre-flight-queue'])
+                      'arm-generic-paladin',
+                      'x86-generic-paladin'])
 
   def testDontInferBuildrootForBuildBotRuns(self):
     """Test that we don't infer buildroot if run with --buildbot option."""
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
-                      ['--buildbot', 'x86-generic-pre-flight-queue'])
+                      ['--buildbot', 'x86-generic-paladin'])
 
   def testInferExternalBuildRoot(self):
     """Test that we default to correct buildroot for external config."""
@@ -419,7 +419,7 @@ class FullInterfaceTest(unittest.TestCase):
 
     self.mox.ReplayAll()
     self.assertRaises(TestHaltedException, cbuildbot.main,
-                      ['x86-generic-pre-flight-queue'])
+                      ['x86-generic-paladin'])
 
   def testInferInternalBuildRoot(self):
     """Test that we default to correct buildroot for internal config."""
@@ -430,7 +430,7 @@ class FullInterfaceTest(unittest.TestCase):
 
     self.mox.ReplayAll()
     self.assertRaises(TestHaltedException, cbuildbot.main,
-                      ['x86-mario-pre-flight-queue'])
+                      ['mario-paladin'])
 
   def testInferBuildRootPromptNo(self):
     """Test that a 'no' answer on the prompt halts execution."""
@@ -439,7 +439,7 @@ class FullInterfaceTest(unittest.TestCase):
 
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
-                      ['x86-generic-pre-flight-queue'])
+                      ['x86-generic-paladin'])
 
   def testInferBuildRootExists(self):
     """Test that we don't prompt the user if buildroot already exists."""
@@ -448,7 +448,7 @@ class FullInterfaceTest(unittest.TestCase):
         .AndRaise(TestFailedException()))
 
     self.mox.ReplayAll()
-    cbuildbot.main(['x86-generic-pre-flight-queue'])
+    cbuildbot.main(['x86-generic-paladin'])
 
   def testValidateClobberForClobberOption(self):
     """Test that we ask for clobber confirmation for trybot runs."""
@@ -456,14 +456,14 @@ class FullInterfaceTest(unittest.TestCase):
     commands.ValidateClobber(self._BUILD_ROOT)
     self.mox.ReplayAll()
     cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber',
-                    'x86-generic-pre-flight-queue'])
+                    'x86-generic-paladin'])
 
   def testNoClobberConfirmationForBuildBotBuilds(self):
     """Test that we don't ask for clobber confirmation for --buildbot runs."""
     self.mox.StubOutWithMock(commands, 'ValidateClobber')
     self.mox.ReplayAll()
     cbuildbot.main(['-r', self._BUILD_ROOT, '--clobber', '--buildbot',
-                    'x86-generic-pre-flight-queue'])
+                    'x86-generic-paladin'])
 
   def testBuildbotDiesInChroot(self):
     """Buildbot should quit if run inside a chroot."""
@@ -475,7 +475,7 @@ class FullInterfaceTest(unittest.TestCase):
     cros_lib.IsInsideChroot = new_is_inside_chroot
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
-                      ['-r', self._BUILD_ROOT, 'x86-generic-pre-flight-queue'])
+                      ['-r', self._BUILD_ROOT, 'x86-generic-paladin'])
 
 
 if __name__ == '__main__':

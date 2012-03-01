@@ -50,7 +50,7 @@ class AbstractStageTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
-    self.bot_id = 'x86-generic-pre-flight-queue'
+    self.bot_id = 'x86-generic-paladin'
     self.build_config = config.config[self.bot_id].copy()
     self.build_root = '/fake_root'
     self._boards = self.build_config['boards']
@@ -229,7 +229,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
-    self.build_name = 'x86-generic-pre-flight-queue'
+    self.build_name = 'x86-generic-paladin'
     self.build_type = constants.PFQ_TYPE
 
     self.build_config['manifest_version'] = True
@@ -999,7 +999,7 @@ class BuildStagesResultsTest(unittest.TestCase):
   def setUp(self):
     unittest.TestCase.setUp(self)
     # Always stub RunCommmand out as we use it in every method.
-    self.bot_id = 'x86-generic-pre-flight-queue'
+    self.bot_id = 'x86-generic-paladin'
     self.build_config = config.config[self.bot_id]
     self.build_root = '/fake_root'
     self.url = 'fake_url'
