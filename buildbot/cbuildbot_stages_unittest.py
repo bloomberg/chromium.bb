@@ -724,6 +724,7 @@ class BuildTargetStageTest(AbstractStageTest):
     self.build_config['useflags'] = ['ALPHA', 'BRAVO', 'CHARLIE']
     self.build_config['skip_toolchain_update'] = False
     self.build_config['nowithdebug'] = False
+    self.build_config['hw_tests'] = ['bvt']
 
     proper_env = {'USE' : ' '.join(self.build_config['useflags'])}
 
