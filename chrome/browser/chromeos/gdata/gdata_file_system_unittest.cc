@@ -5,6 +5,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +32,10 @@ namespace gdata {
 
 class GDataFileSystemTest : public testing::Test {
  protected:
+  GDataFileSystemTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+  }
+
   virtual void SetUp() {
     profile_.reset(new TestingProfile);
     file_system_ = new GDataFileSystem(profile_.get());
@@ -120,6 +126,8 @@ class GDataFileSystemTest : public testing::Test {
     return value;
   }
 
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<GDataFileSystem> file_system_;
 };
