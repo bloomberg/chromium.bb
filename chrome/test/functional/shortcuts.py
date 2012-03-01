@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -103,8 +103,8 @@ class ShortcutsTest(pyauto.PyUITest):
     """Verify view source shortcut."""
     self.ApplyAccelerator(pyauto.IDC_VIEW_SOURCE)
     self.assertEqual(2, self.GetTabCount(), msg='Cannot View Source.')
-    self.assertEqual('view-source:about:blank', self.GetActiveTabURL().spec(),
-                      msg='View Source URL is not correct.')
+    self.assertEqual('view-source:chrome://newtab/',
+        self.GetActiveTabURL().spec())
 
   def testDeveloperToolsShortcut(self):
     """Verify developer tools shortcut opens developer tools window.."""

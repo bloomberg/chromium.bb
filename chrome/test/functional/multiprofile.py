@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -53,7 +53,7 @@ class MultiprofileTest(pyauto.PyUITest):
     new_profile_window = info['windows'][1]
     self.assertEqual('Profile 1', new_profile_window['profile_path'])
     self.assertEqual(1, len(new_profile_window['tabs']))
-    self.assertEqual('about:blank', new_profile_window['tabs'][0]['url'])
+    self.assertEqual('chrome://newtab/', new_profile_window['tabs'][0]['url'])
 
   def test20NewProfiles(self):
     """Verify we can create 20 new profiles."""
