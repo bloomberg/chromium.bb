@@ -4376,8 +4376,7 @@
           'sources!': [
             'browser/protector/keys.cc',
           ],
-        }],
-        ['branding!="Chrome"', {
+        }, {  # branding!="Chrome"
           'sources!': [
             'browser/protector/internal/keys_internal.cc',
           ],
@@ -4462,8 +4461,7 @@
             ['exclude', 'browser/ui/views/status_icons/status_icon_chromeos.h'],
             ['exclude', 'browser/ui/webui/active_downloads_ui.cc'],
           ],
-        }],
-        ['chromeos==1', {
+        }, {  # chromeos==1
           'dependencies': [
             '../build/linux/system.gyp:dbus-glib',
             '../third_party/libevent/libevent.gyp:libevent',
@@ -5300,7 +5298,7 @@
               'sources/': [
                 ['exclude', '^browser/ui/login/login_prompt_ui.cc'],
                 ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
-                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],                
+                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
               ]
             }],
             # Exclude these toolkit_views specific files again.

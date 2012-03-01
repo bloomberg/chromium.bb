@@ -288,7 +288,7 @@
           'sources!': [
             'common/chrome_version_info_chromeos.cc',
           ],
-        }, {
+        }, {  # chromeos==1
           'sources!': [
             'common/chrome_version_info_linux.cc',
           ],
@@ -442,7 +442,7 @@
             ],
           },
         ],
-       ],
+      ],
     },
     {
       # Protobuf compiler / generator for the safebrowsing client

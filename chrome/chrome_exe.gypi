@@ -237,6 +237,9 @@
             'infoplist_strings_tool',
             'interpose_dependency_shim',
             'chrome_manifest_bundle',
+            # On Mac, make sure we've built chrome_dll, which contains all of
+            # the library code with Chromium functionality.
+            'chrome_dll',
           ],
           'mac_bundle_resources': [
             '<(PRODUCT_DIR)/<(mac_bundle_id).manifest',
@@ -373,22 +376,7 @@
               ],
             },
           ],  # postbuilds
-        }],
-        ['OS=="linux"', {
-          'conditions': [
-            ['branding=="Chrome"', {
-              'dependencies': [
-                'linux_installer_configs',
-              ],
-            }],
-            ['selinux==0', {
-              'dependencies': [
-                '../sandbox/sandbox.gyp:sandbox',
-              ],
-            }],
-          ],
-        }],
-        ['OS != "mac"', {
+        }, {  # OS != "mac"
           'conditions': [
             # TODO:  add a:
             #   'product_name': 'chromium'
@@ -415,8 +403,24 @@
             '../third_party/adobe/flash/flash_player.gyp:flapper_binaries',
           ],
         }],
+        ['OS=="mac" and asan==1', {
+          'xcode_settings': {
+            # Override the outer definition of CHROMIUM_STRIP_SAVE_FILE.
+            'CHROMIUM_STRIP_SAVE_FILE': 'app/app_asan.saves',
+          },
+        }],
         ['OS=="linux"', {
           'conditions': [
+            ['branding=="Chrome"', {
+              'dependencies': [
+                'linux_installer_configs',
+              ],
+            }],
+            ['selinux==0', {
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sandbox',
+              ],
+            }],
             # For now, do not build nacl_helper when disable_nacl=1
             # or when arm is enabled
             # http://code.google.com/p/gyp/issues/detail?id=239
@@ -427,19 +431,6 @@
                 ],
             }],
           ],
-        }],
-        ['OS=="mac"', {
-          'dependencies': [
-            # On Mac, make sure we've built chrome_dll, which contains all of
-            # the library code with Chromium functionality.
-            'chrome_dll',
-          ],
-        }],
-        ['OS=="mac" and asan==1', {
-          'xcode_settings': {
-            # Override the outer definition of CHROMIUM_STRIP_SAVE_FILE.
-            'CHROMIUM_STRIP_SAVE_FILE': 'app/app_asan.saves',
-          },
         }],
         ['OS=="win"', {
           'dependencies': [
