@@ -471,17 +471,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
 int NaClWaitForMainThreadToExit(struct NaClApp  *nap);
 
 /*
- * Register the integrated runtime (IRT) library file for use by
- * NaClMainForChromium().  This takes a file descriptor, even on
- * Windows (where file descriptors are emulated by the C runtime
- * library).
- */
-void NaClSetIrtFileDesc(int fd);
-
-void NaClMainForChromium(int handle_count, const NaClHandle *handles,
-                         int debug);
-
-/*
  * Used by syscall code.
  */
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,

@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
+
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 
