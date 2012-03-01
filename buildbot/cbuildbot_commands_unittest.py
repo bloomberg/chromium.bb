@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -73,7 +73,6 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
                           '/tmp/taco', build_config='test_config',
-                          nplus1_archive_dir='/tmp/taco',
                           whitelist_chrome_crashes=False,
                           test_type=constants.FULL_AU_TEST_TYPE)
     self.mox.VerifyAll()
@@ -85,7 +84,6 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
                           '/tmp/taco', build_config='test_config',
-                          nplus1_archive_dir='/tmp/taco',
                           whitelist_chrome_crashes=False,
                           test_type=constants.SIMPLE_AU_TEST_TYPE)
     self.mox.VerifyAll()
@@ -98,7 +96,6 @@ class CBuildBotTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     commands.RunTestSuite(self._work_dir, self._test_board, self._buildroot,
                           '/tmp/taco', build_config='test_config',
-                          nplus1_archive_dir='/tmp/taco',
                           whitelist_chrome_crashes=False,
                           test_type=constants.SMOKE_SUITE_TEST_TYPE)
     self.mox.VerifyAll()

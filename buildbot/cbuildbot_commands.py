@@ -316,7 +316,7 @@ def RunChromeSuite(buildroot, board, image_dir, results_dir):
 
 
 def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
-                 nplus1_archive_dir, whitelist_chrome_crashes, build_config):
+                 whitelist_chrome_crashes, build_config):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -339,7 +339,6 @@ def RunTestSuite(buildroot, board, image_dir, results_dir, test_type,
     if test_type == constants.SMOKE_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
   else:
-    cmd.append('--nplus1_archive_dir=%s' % nplus1_archive_dir)
     cmd.append('--build_config=%s' % build_config)
 
   if whitelist_chrome_crashes:
@@ -1043,3 +1042,18 @@ def CreateTestRoot(build_root):
 
   # Path inside chroot.
   return os.path.sep + os.path.relpath(test_root, start=chroot)
+
+
+def GenerateNPlus1Payloads(build_root, build_config, target_image_path,
+                           archive_dir, board):
+  """Generates nplus1 payloads for hw testing."""
+  crostestutils = os.path.join(build_root, 'src', 'platform', 'crostestutils')
+  payload_generator = 'generate_test_payloads/cros_generate_test_payloads.py'
+  cmd = [os.path.join(crostestutils, payload_generator),
+         '--board=%s' % board,
+         '--target=%s' % target_image_path,
+         '--base_latest_from_config=%s' % build_config,
+         '--nplus1',
+         '--nplus1_archive_dir=%s' % archive_dir,
+        ]
+  cros_lib.RunCommand(cmd)

@@ -455,7 +455,6 @@ class VMTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'CreateTestRoot')
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
-    tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
     commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self._current_board,
@@ -463,12 +462,10 @@ class VMTestStageTest(AbstractStageTest):
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
                           build_config=self.bot_id,
-                          nplus1_archive_dir=self.fake_results_dir,
                           whitelist_chrome_crashes=True,
                           test_type=constants.FULL_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
                                 prefix='').AndReturn('some tarball')
-    self.archive_stage_mock.UpdatePayloadsReady(self.fake_results_dir)
     self.archive_stage_mock.TestResultsReady('some tarball')
     self.archive_stage_mock.VMTestStatus(True)
 
@@ -486,7 +483,6 @@ class VMTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'CreateTestRoot')
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
-    tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
     commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self._current_board,
@@ -494,12 +490,10 @@ class VMTestStageTest(AbstractStageTest):
                           os.path.join(self.fake_results_dir,
                                        'test_harness'),
                           build_config=self.bot_id,
-                          nplus1_archive_dir=self.fake_results_dir,
                           whitelist_chrome_crashes=True,
                           test_type=constants.SIMPLE_AU_TEST_TYPE)
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
                                 prefix='').AndReturn('some tarball')
-    self.archive_stage_mock.UpdatePayloadsReady(self.fake_results_dir)
     self.archive_stage_mock.TestResultsReady('some tarball')
     self.archive_stage_mock.VMTestStatus(True)
 
@@ -556,7 +550,6 @@ class HWTestStageTest(AbstractStageTest):
 
   def testWithSuite(self):
     """Test if run correctly with a test suite."""
-    self.archive_stage_mock.WaitForVMTestStatus().AndReturn(True)
     self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     build = '%s/%s' % (self.bot_id,

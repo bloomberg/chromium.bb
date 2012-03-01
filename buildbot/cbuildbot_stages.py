@@ -770,13 +770,8 @@ class VMTestStage(BoardSpecificBuilderStage):
   def _PerformStage(self):
     try:
       # These directories are used later to archive test artifacts.
-      payloads_dir = None
       test_results_dir = None
       tests_passed = False
-
-      # Payloads dir is not in the chroot as ctest archives them outside of
-      # the chroot.
-      payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
       test_results_dir = commands.CreateTestRoot(self._build_root)
 
       commands.RunTestSuite(self._build_root,
@@ -785,7 +780,6 @@ class VMTestStage(BoardSpecificBuilderStage):
                             os.path.join(test_results_dir,
                                          'test_harness'),
                             test_type=self._build_config['vm_tests'],
-                            nplus1_archive_dir=payloads_dir,
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             build_config=self._bot_id)
       tests_passed = True
@@ -799,7 +793,6 @@ class VMTestStage(BoardSpecificBuilderStage):
                                                    test_results_dir,
                                                    prefix='')
 
-      self._archive_stage.UpdatePayloadsReady(payloads_dir)
       self._archive_stage.TestResultsReady(test_tarball)
       self._archive_stage.VMTestStatus(tests_passed)
 
@@ -818,9 +811,6 @@ class HWTestStage(BoardSpecificBuilderStage):
     self._suite = suite
 
   def _PerformStage(self):
-    if not self._archive_stage.WaitForVMTestStatus():
-      raise Exception('VM tests failed.')
-
     if not self._archive_stage.WaitForHWTestUploads():
       raise Exception('Missing uploads.')
 
@@ -892,12 +882,12 @@ class ArchiveStage(BoardSpecificBuilderStage):
       self._archive_root = os.path.join(self._build_root,
                                         'trybot_archive')
 
+    self.bot_id = bot_id
     self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
     self._version_queue = multiprocessing.Queue()
     self._autotest_tarball_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
     self._vm_test_status_queue = multiprocessing.Queue()
-    self._update_payloads_queue = multiprocessing.Queue()
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._hw_test_uploads_status_queue = multiprocessing.Queue()
 
@@ -930,16 +920,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
          autotest_tarball: The filename of the autotest tarball.
     """
     self._autotest_tarball_queue.put(autotest_tarball)
-
-  def UpdatePayloadsReady(self, update_payloads_dir):
-    """Tell Archive Stage that test results are ready.
-
-       Args:
-         update_payloads_dir: The test results tarball from the tests. If no
-                              payloads are available, this should be set to
-                              None.
-    """
-    self._update_payloads_queue.put(update_payloads_dir)
 
   def TestResultsReady(self, test_results):
     """Tell Archive Stage that test results are ready.
@@ -1050,19 +1030,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     return autotest_tarball
 
-  def _GetUpdatePayloads(self):
-    """Get the path to the directory containing update payloads."""
-    update_payloads_dir = None
-    if self._build_config['vm_tests']:
-      cros_lib.Info('Waiting for update payloads dir...')
-      update_payloads_dir = self._update_payloads_queue.get()
-      if update_payloads_dir:
-        cros_lib.Info('Found update payloads at %s...' % update_payloads_dir)
-      else:
-        cros_lib.Info('No update payloads found.')
-
-    return update_payloads_dir
-
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
     vm_tests = bool(self._build_config['vm_tests'])
@@ -1140,8 +1107,13 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     def ArchivePayloads():
       """Archives update payloads when they are ready."""
-      update_payloads_dir = self._GetUpdatePayloads()
-      if update_payloads_dir:
+      if self._build_config['hw_tests']:
+        update_payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
+        commands.GenerateNPlus1Payloads(
+            buildroot, self.bot_id,
+            os.path.join(self.GetImageDirSymlink(),
+                         'chromiumos_test_image.bin'),
+            update_payloads_dir, board)
         for payload in os.listdir(update_payloads_dir):
           full_path = os.path.join(update_payloads_dir, payload)
           upload_for_hw_test_queue.put(commands.ArchiveFile(full_path,
@@ -1289,6 +1261,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     steps += [lambda: UploadArtifacts(upload_queue)] * NUM_UPLOAD_QUEUE_THREADS
     if self._options.tests:
       steps += [UploadArtifactsForHWTesting]
+
     background.RunParallelSteps(steps)
 
     # Now that all data has been generated, we can upload the final result to
