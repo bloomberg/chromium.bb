@@ -235,6 +235,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // GetPreferredSize.
   virtual gfx::Size GetMinimumSize();
 
+  // Gets the maximum size of the view. Currently only used for sizing shell
+  // windows.
+  virtual gfx::Size GetMaximumSize();
+
   // Return the height necessary to display this view with the provided width.
   // View's implementation returns the value from getPreferredSize.cy.
   // Override if your View's preferred height depends upon the width (such

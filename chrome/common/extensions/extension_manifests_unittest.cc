@@ -458,6 +458,10 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
                      ExtensionErrorUtils::FormatErrorMessage(
                          errors::kInvalidLaunchValue,
                          keys::kLaunchWidth));
+  LoadAndExpectError("launch_container_invalid_size_constraints.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidLaunchValue,
+                         keys::kLaunchMaxWidth));
 }
 
 TEST_F(ExtensionManifestTest, PlatformAppLaunchContainer) {

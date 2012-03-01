@@ -129,6 +129,10 @@ gfx::Size NonClientView::GetMinimumSize() {
   return frame_view_->GetMinimumSize();
 }
 
+gfx::Size NonClientView::GetMaximumSize() {
+  return frame_view_->GetMaximumSize();
+}
+
 void NonClientView::Layout() {
   LayoutFrameView();
 

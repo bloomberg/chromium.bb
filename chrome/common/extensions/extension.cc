@@ -1250,6 +1250,18 @@ bool Extension::LoadLaunchContainer(string16* error) {
                            can_specify_size_range,
                            error))
       return false;
+  if (!ReadLaunchDimension(manifest_,
+                           keys::kLaunchMaxWidth,
+                           &launch_max_width_,
+                           can_specify_size_range,
+                           error))
+      return false;
+  if (!ReadLaunchDimension(manifest_,
+                           keys::kLaunchMaxHeight,
+                           &launch_max_height_,
+                           can_specify_size_range,
+                           error))
+      return false;
 
   if (launch_container() == extension_misc::LAUNCH_SHELL) {
     if (!manifest_->Get(keys::kLaunchWidth, &temp)) {
@@ -1262,6 +1274,18 @@ bool Extension::LoadLaunchContainer(string16* error) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
           errors::kInvalidLaunchValue,
           keys::kLaunchHeight);
+      return false;
+    }
+    if (launch_max_width_ > 0 && launch_max_width_ < launch_min_width_) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidLaunchValue,
+          keys::kLaunchMaxWidth);
+      return false;
+    }
+    if (launch_max_height_ > 0 && launch_max_height_ < launch_min_height_) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidLaunchValue,
+          keys::kLaunchMaxHeight);
       return false;
     }
   }
@@ -1511,6 +1535,8 @@ Extension::Extension(const FilePath& path,
       launch_height_(0),
       launch_min_width_(0),
       launch_min_height_(0),
+      launch_max_width_(0),
+      launch_max_height_(0),
       wants_file_access_(false),
       creation_flags_(0) {
   DCHECK(path.empty() || path.IsAbsolute());

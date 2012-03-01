@@ -968,6 +968,10 @@ gfx::Size Widget::GetMinimumSize() {
   return non_client_view_ ? non_client_view_->GetMinimumSize() : gfx::Size();
 }
 
+gfx::Size Widget::GetMaximumSize() {
+  return non_client_view_ ? non_client_view_->GetMaximumSize() : gfx::Size();
+}
+
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
 

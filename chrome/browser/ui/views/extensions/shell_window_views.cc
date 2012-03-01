@@ -40,13 +40,16 @@ class ShellWindowFrameView : public views::NonClientFrameView {
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
   virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() OVERRIDE;
 
   void set_min_size(gfx::Size size) { min_size_ = size; }
+  void set_max_size(gfx::Size size) { max_size_ = size; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
 
   gfx::Size min_size_;
+  gfx::Size max_size_;
 };
 
 ShellWindowFrameView::ShellWindowFrameView(): min_size_() {
@@ -100,6 +103,9 @@ gfx::Size ShellWindowFrameView::GetMinimumSize() {
   return min_size_;
 }
 
+gfx::Size ShellWindowFrameView::GetMaximumSize() {
+  return max_size_;
+}
 
 ShellWindowViews::ShellWindowViews(ExtensionHost* host)
     : ShellWindow(host) {
@@ -150,9 +156,12 @@ views::View* ShellWindowViews::GetContentsView() {
 
 views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView() {
   ShellWindowFrameView* frame_view = new ShellWindowFrameView();
-  gfx::Size size(host_->extension()->launch_min_width(),
-                 host_->extension()->launch_min_height());
-  frame_view->set_min_size(size);
+  gfx::Size min_size(host_->extension()->launch_min_width(),
+                     host_->extension()->launch_min_height());
+  gfx::Size max_size(host_->extension()->launch_max_width(),
+                     host_->extension()->launch_max_height());
+  frame_view->set_min_size(min_size);
+  frame_view->set_max_size(max_size);
   return frame_view;
 }
 

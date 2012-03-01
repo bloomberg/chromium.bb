@@ -381,6 +381,10 @@ gfx::Size View::GetMinimumSize() {
   return GetPreferredSize();
 }
 
+gfx::Size View::GetMaximumSize() {
+  return gfx::Size();
+}
+
 int View::GetHeightForWidth(int w) {
   if (layout_manager_.get())
     return layout_manager_->GetPreferredHeightForWidth(this, w);
