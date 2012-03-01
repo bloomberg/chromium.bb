@@ -40,6 +40,10 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using content::UserMetricsAction;
 
 namespace {
@@ -711,11 +715,19 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   ContentSetting default_setting = ContentSettingFromString(setting);
   ContentSettingsType content_type = ContentSettingsTypeFromGroupName(group);
   Profile* profile = Profile::FromWebUI(web_ui());
+
+#if defined(OS_CHROMEOS)
+  // ChromeOS special case : in Guest mode settings are opened in Incognito
+  // mode, so we need original profile to actually modify settings.
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest())
+    profile = profile->GetOriginalProfile();
+#endif
+
   if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     DesktopNotificationServiceFactory::GetForProfile(profile)->
         SetDefaultContentSetting(default_setting);
   } else {
-    HostContentSettingsMap* map = GetContentSettingsMap();
+    HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
     ApplyWhitelist(content_type, default_setting);
     map->SetDefaultContentSetting(content_type, default_setting);
   }
