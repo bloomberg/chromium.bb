@@ -12,6 +12,11 @@ using content::BrowserContext;
 
 #if defined(OS_CHROMEOS)
 
+namespace {
+const char kExpectedWriteError[] =
+    "Got unexpected error: File handler error: SECURITY_ERR";
+}
+
 class FileSystemExtensionApiTest : public ExtensionApiTest {
  public:
   FileSystemExtensionApiTest() : test_mount_point_("/tmp") {
@@ -35,13 +40,30 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {
   AddTmpMountPoint();
   ASSERT_TRUE(RunComponentExtensionTest("local_filesystem")) << message_;
-
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTest) {
   AddTmpMountPoint();
   ASSERT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
-  ASSERT_TRUE(RunComponentExtensionTest("filebrowser_component")) << message_;
+  ASSERT_TRUE(RunComponentExtensionSubtest("filebrowser_component",
+                                           "read.html")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestWrite) {
+  AddTmpMountPoint();
+  ASSERT_TRUE(RunExtensionTest("filesystem_handler_write")) << message_;
+  ASSERT_FALSE(RunComponentExtensionSubtest("filebrowser_component",
+                                            "write.html"));
+  EXPECT_EQ(0u, message_.find(kExpectedWriteError)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
+                       FileBrowserTestWriteComponent) {
+  AddTmpMountPoint();
+  ASSERT_TRUE(RunComponentExtensionTest("filesystem_handler_write"))
+      << message_;
+  ASSERT_TRUE(RunComponentExtensionSubtest("filebrowser_component",
+                                           "write.html")) << message_;
 }
 
 #endif

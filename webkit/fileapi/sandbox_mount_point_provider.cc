@@ -413,6 +413,13 @@ FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil() {
   return sandbox_file_util_.get();
 }
 
+FilePath SandboxMountPointProvider::GetPathForPermissionsCheck(
+    const FilePath& virtual_path) const {
+  // We simply return the very top directory of the sandbox
+  // filesystem regardless of the input path.
+  return new_base_path();
+}
+
 FileSystemOperationInterface*
 SandboxMountPointProvider::CreateFileSystemOperation(
     const GURL& origin_url,

@@ -134,6 +134,14 @@ bool ExtensionApiTest::RunExtensionSubtest(const char* extension_name,
   return RunExtensionTestImpl(extension_name, page_url, kFlagEnableFileAccess);
 }
 
+bool ExtensionApiTest::RunComponentExtensionSubtest(
+    const char* extension_name,
+    const std::string& page_url) {
+  DCHECK(!page_url.empty()) << "Argument page_url is required.";
+  return RunExtensionTestImpl(
+      extension_name, page_url, kFlagEnableFileAccess | kFlagLoadAsComponent);
+}
+
 bool ExtensionApiTest::RunExtensionSubtestNoFileAccess(
     const char* extension_name,
     const std::string& page_url) {

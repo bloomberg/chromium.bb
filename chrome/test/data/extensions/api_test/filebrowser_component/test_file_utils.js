@@ -17,32 +17,40 @@ function createFileUrl(dirName, fileName) {
          '/external/' + dirName + '/' + fileName
 };
 
-function testFileCreator(filesystem, callback, errorCallback) {
+// Class that handles creation and destruction of filessystem resources in the
+// test.
+function TestFileCreator(filesystem) {
   this.directoryName = createRandomName(testDirNameSuffix);
   this.baseFileName = createRandomName(testFileNameSuffix);
   this.directoryEntry = undefined;
 };
 
 // If this.directoryEntry is not already set, creates test directory on the fs.
-testFileCreator.prototype.init = function(fs, callback, errorCallback) {
+// |callback| does not expect any args.
+// |errorCallback| expects error object.
+TestFileCreator.prototype.init = function(fs, callback, errorCallback) {
   if (this.directoryEntry)
     callback();
 
   console.log('Creating directory : ' + this.directoryName);
   fs.root.getDirectory(this.directoryName, {create:true},
-                       this.onDirectoryCreated_.bind(this, callback),
+                       this.onTestDirectoryCreated_.bind(this, callback),
                        errorCallback);
 };
 
-testFileCreator.prototype.onDirectoryCreated_ = function(callback, dir) {
+TestFileCreator.prototype.onTestDirectoryCreated_ = function(callback, dir) {
   console.log('DONE creating directory: ' + dir.fullPath);
   this.directoryEntry = dir;
   callback();
 };
 
-testFileCreator.prototype.createFile = function(ext, callback, errorCallback) {
+// Creates file in the previously created directory (init must be called by
+// now) and writes some random text to it.
+// |callback| expects created fileEntry object and the contents written to the
+// created file, |errorCallback| expects error object.
+TestFileCreator.prototype.createFile = function(ext, callback, errorCallback) {
   chrome.test.assertTrue(!!this.directoryEntry,
-                         'testFileCreator not initialized');
+                         'TestFileCreator not initialized');
 
   var fileName = this.baseFileName + ext;
   console.log('Creating file: ' + fileName);
@@ -52,14 +60,14 @@ testFileCreator.prototype.createFile = function(ext, callback, errorCallback) {
                               errorCallback);
 };
 
-testFileCreator.prototype.createWriter_ = function(callback,
+TestFileCreator.prototype.createWriter_ = function(callback,
                                                    errorCallback,
                                                    file) {
   file.createWriter(this.writeFile_.bind(this, file, callback, errorCallback),
                     errorCallback);
 };
 
-testFileCreator.prototype.writeFile_ = function(file,
+TestFileCreator.prototype.writeFile_ = function(file,
                                                 callback,
                                                 errorCallback,
                                                 writer) {
@@ -77,7 +85,7 @@ testFileCreator.prototype.writeFile_ = function(file,
   writer.write(bb.getBlob('text/plain'));
 };
 
-testFileCreator.prototype.cleanupAndEndTest = function(successCallback,
+TestFileCreator.prototype.cleanupAndEndTest = function(successCallback,
                                                        errorCallback) {
   if (!this.directoryEntry)
     return;

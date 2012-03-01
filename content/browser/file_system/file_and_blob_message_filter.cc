@@ -36,10 +36,37 @@ using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::UserMetricsAction;
 using fileapi::FileSystemFileUtil;
+using fileapi::FileSystemMountPointProvider;
 using fileapi::FileSystemOperation;
 using fileapi::FileSystemOperationInterface;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
+
+namespace {
+
+const int kReadFilePermissions = base::PLATFORM_FILE_OPEN |
+                                 base::PLATFORM_FILE_READ |
+                                 base::PLATFORM_FILE_EXCLUSIVE_READ |
+                                 base::PLATFORM_FILE_ASYNC;
+
+const int kWriteFilePermissions = base::PLATFORM_FILE_OPEN |
+                                  base::PLATFORM_FILE_WRITE |
+                                  base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+                                  base::PLATFORM_FILE_ASYNC |
+                                  base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+
+const int kCreateFilePermissions = base::PLATFORM_FILE_CREATE;
+
+const int kOpenFilePermissions = base::PLATFORM_FILE_CREATE |
+                                 base::PLATFORM_FILE_OPEN_ALWAYS |
+                                 base::PLATFORM_FILE_CREATE_ALWAYS |
+                                 base::PLATFORM_FILE_OPEN_TRUNCATED |
+                                 base::PLATFORM_FILE_WRITE |
+                                 base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+                                 base::PLATFORM_FILE_DELETE_ON_CLOSE |
+                                 base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+
+}  // namespace
 
 FileAndBlobMessageFilter::FileAndBlobMessageFilter(
     int process_id,
@@ -152,6 +179,14 @@ void FileAndBlobMessageFilter::OnOpen(
 
 void FileAndBlobMessageFilter::OnMove(
     int request_id, const GURL& src_path, const GURL& dest_path) {
+  base::PlatformFileError error;
+  const int src_permissions = kReadFilePermissions | kWriteFilePermissions;
+  if (!HasPermissionsForFile(src_path, src_permissions, &error) ||
+      !HasPermissionsForFile(dest_path, kCreateFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(src_path, request_id)->Move(
       src_path, dest_path,
       base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
@@ -159,6 +194,13 @@ void FileAndBlobMessageFilter::OnMove(
 
 void FileAndBlobMessageFilter::OnCopy(
     int request_id, const GURL& src_path, const GURL& dest_path) {
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(src_path, kReadFilePermissions, &error) ||
+      !HasPermissionsForFile(dest_path, kCreateFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(src_path, request_id)->Copy(
       src_path, dest_path,
       base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
@@ -166,6 +208,12 @@ void FileAndBlobMessageFilter::OnCopy(
 
 void FileAndBlobMessageFilter::OnRemove(
     int request_id, const GURL& path, bool recursive) {
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(path, kWriteFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(path, request_id)->Remove(
       path, recursive,
       base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
@@ -173,6 +221,12 @@ void FileAndBlobMessageFilter::OnRemove(
 
 void FileAndBlobMessageFilter::OnReadMetadata(
     int request_id, const GURL& path) {
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(path, request_id)->GetMetadata(
       path,
       base::Bind(&FileAndBlobMessageFilter::DidGetMetadata, this, request_id));
@@ -181,6 +235,12 @@ void FileAndBlobMessageFilter::OnReadMetadata(
 void FileAndBlobMessageFilter::OnCreate(
     int request_id, const GURL& path, bool exclusive,
     bool is_directory, bool recursive) {
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(path, kCreateFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   if (is_directory) {
     GetNewOperation(path, request_id)->CreateDirectory(
         path, exclusive, recursive,
@@ -194,6 +254,12 @@ void FileAndBlobMessageFilter::OnCreate(
 
 void FileAndBlobMessageFilter::OnExists(
     int request_id, const GURL& path, bool is_directory) {
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   if (is_directory) {
     GetNewOperation(path, request_id)->DirectoryExists(
         path,
@@ -207,6 +273,12 @@ void FileAndBlobMessageFilter::OnExists(
 
 void FileAndBlobMessageFilter::OnReadDirectory(
     int request_id, const GURL& path) {
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(path, request_id)->ReadDirectory(
       path, base::Bind(&FileAndBlobMessageFilter::DidReadDirectory,
                        this, request_id));
@@ -222,6 +294,13 @@ void FileAndBlobMessageFilter::OnWrite(
     NOTREACHED();
     return;
   }
+
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(path, kWriteFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(path, request_id)->Write(
       request_context_, path, blob_url, offset,
       base::Bind(&FileAndBlobMessageFilter::DidWrite, this, request_id));
@@ -231,6 +310,12 @@ void FileAndBlobMessageFilter::OnTruncate(
     int request_id,
     const GURL& path,
     int64 length) {
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(path, kWriteFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(path, request_id)->Truncate(
       path, length,
       base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
@@ -241,6 +326,12 @@ void FileAndBlobMessageFilter::OnTouchFile(
     const GURL& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
+  base::PlatformFileError error;
+  if (!HasPermissionsForFile(path, kCreateFilePermissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(path, request_id)->TouchFile(
       path, last_access_time, last_modified_time,
       base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
@@ -265,6 +356,14 @@ void FileAndBlobMessageFilter::OnCancel(
 
 void FileAndBlobMessageFilter::OnOpenFile(
     int request_id, const GURL& path, int file_flags) {
+  base::PlatformFileError error;
+  const int open_permissions = base::PLATFORM_FILE_OPEN |
+                               (file_flags & kOpenFilePermissions);
+  if (!HasPermissionsForFile(path, open_permissions, &error)) {
+    Send(new FileSystemMsg_DidFail(request_id, error));
+    return;
+  }
+
   GetNewOperation(path, request_id)->OpenFile(
       path, file_flags, peer_handle(),
       base::Bind(&FileAndBlobMessageFilter::DidOpenFile, this, request_id));
@@ -506,6 +605,44 @@ void FileAndBlobMessageFilter::DidCreateSnapshot(
   // Return the file info and platform_path.
   Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
 }
+
+bool FileAndBlobMessageFilter::HasPermissionsForFile(
+    const GURL& path, int permissions, base::PlatformFileError* error) {
+  DCHECK(error);
+  *error = base::PLATFORM_FILE_OK;
+
+  GURL origin;
+  fileapi::FileSystemType file_system_type = fileapi::kFileSystemTypeUnknown;
+  FilePath virtual_path;
+  // TODO(tbarzic): try to reduce number of calls to CrackFileSystemURL.
+  if (!fileapi::CrackFileSystemURL(path, &origin, &file_system_type,
+           &virtual_path)) {
+    *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
+    return false;
+  }
+
+  FileSystemMountPointProvider* mount_point_provider =
+      context_->GetMountPointProvider(file_system_type);
+  if (!mount_point_provider) {
+    *error = base::PLATFORM_FILE_ERROR_INVALID_URL;
+    return false;
+  }
+
+  FilePath file_path =
+      mount_point_provider->GetPathForPermissionsCheck(virtual_path);
+  if (file_path.empty()) {
+    *error = base::PLATFORM_FILE_ERROR_SECURITY;
+    return false;
+  }
+
+  bool success =
+      ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
+          process_id_, file_path, permissions);
+  if (!success)
+    *error = base::PLATFORM_FILE_ERROR_SECURITY;
+  return success;
+}
+
 
 FileSystemOperationInterface* FileAndBlobMessageFilter::GetNewOperation(
     const GURL& target_path,

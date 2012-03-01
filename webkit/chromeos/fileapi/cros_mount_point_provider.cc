@@ -219,6 +219,17 @@ fileapi::FileSystemFileUtil* CrosMountPointProvider::GetFileUtil() {
   return local_file_util_.get();
 }
 
+FilePath CrosMountPointProvider::GetPathForPermissionsCheck(
+    const FilePath& virtual_path) const {
+  const MountPoint* mount_point = GetMountPoint(virtual_path);
+  if (!mount_point)
+    return FilePath();
+
+  FilePath root_path = mount_point->local_root_path;
+
+  return root_path.Append(virtual_path);
+}
+
 const CrosMountPointProvider::MountPoint*
 CrosMountPointProvider::GetMountPoint(const FilePath& virtual_path) const {
   std::vector<FilePath::StringType> components;

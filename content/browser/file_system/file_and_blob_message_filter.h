@@ -146,6 +146,11 @@ class FileAndBlobMessageFilter : public content::BrowserMessageFilter {
       const FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
+  // Checks renderer's access permissions for single file.
+  bool HasPermissionsForFile(const GURL& path,
+                             int permissions,
+                             base::PlatformFileError* error);
+
   // Creates a new FileSystemOperationInterface based on |target_path|.
   fileapi::FileSystemOperationInterface* GetNewOperation(
       const GURL& target_path,

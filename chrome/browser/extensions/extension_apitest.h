@@ -98,6 +98,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunExtensionSubtest(const char* extension_name,
                            const std::string& page_url);
 
+  // Same as RunExtensionSubtest, but loads extension as component.
+  bool RunComponentExtensionSubtest(const char* extension_name,
+                                    const std::string& page_url);
+
   // Same as RunExtensionSubtest, but disables file access.
   bool RunExtensionSubtestNoFileAccess(const char* extension_name,
                                        const std::string& page_url);
