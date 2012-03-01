@@ -1264,12 +1264,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
   NonSubstitutingKeywordTest();
 }
 
-#if defined(OS_POSIX)
-// Flaky on Mac 10.6, Linux http://crbug.com/84420
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_DeleteItem) {
-#else
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
-#endif
   DeleteItemTest();
 }
 
@@ -1405,8 +1400,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 }
 
 // http://crbug.com/12316
-// Flaky, http://crbug.com/80934.
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_PasteReplacingAll) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PasteReplacingAll) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
