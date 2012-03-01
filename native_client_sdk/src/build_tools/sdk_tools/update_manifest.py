@@ -5,14 +5,25 @@
 
 '''Utility to update the SDK manifest file in the build_tools directory'''
 
+
 import optparse
 import os
 import re
-import sdk_update
 import string
 import subprocess
 import sys
 import urllib2
+
+# Create the various paths of interest
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SDK_SRC_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+SRC_DIR = os.path.dirname(os.path.dirname(SDK_SRC_DIR))
+NACL_DIR = os.path.join(SRC_DIR, 'native_client')
+
+sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
+sys.path.append(os.path.join(NACL_DIR, 'build'))
+
+import sdk_update
 
 HELP='''"Usage: %prog [-b bundle] [options]"
 
@@ -309,13 +320,14 @@ class UpdateSDKManifestFile(sdk_update.SDKManifestFile):
       # This is the old archive naming scheme
       root_url = '%s/pepper_%s_%s' % (root_url, options.bundle_version,
                                       options.bundle_revision)
-    options.mac_arch_url = '/'.join([root_url, 'naclsdk_mac.tgz'])
-    options.linux_arch_url = '/'.join([root_url, 'naclsdk_linux.tgz'])
-    options.win_arch_url = '/'.join([root_url, 'naclsdk_win.exe'])
+    options.mac_arch_url = '/'.join([root_url, 'naclsdk_mac.bz2'])
+    options.linux_arch_url = '/'.join([root_url, 'naclsdk_linux.bz2'])
+    options.win_arch_url = '/'.join([root_url, 'naclsdk_win.bz2'])
 
   def HandleBundles(self):
     '''Handles known bundles by automatically uploading files'''
     bundle_name = self.options.bundle_name
+    print 'bundle_name=' + bundle_name
     if bundle_name == BUNDLE_SDK_TOOLS:
       self._HandleSDKTools()
     elif bundle_name.startswith('pepper'):

@@ -6,6 +6,7 @@
 '''A simple tool to update the Native Client SDK to the latest version'''
 
 import cStringIO
+import cygtar
 import errno
 import exceptions
 import hashlib
@@ -15,7 +16,6 @@ import os
 import shutil
 import subprocess
 import sys
-import tarfile
 import tempfile
 import time
 import urllib2
@@ -26,8 +26,8 @@ import urlparse
 # Constants
 
 # Bump the MINOR_REV every time you check this file in.
-MAJOR_REV = 1
-MINOR_REV = 14
+MAJOR_REV = 2
+MINOR_REV = 16
 
 GLOBAL_HELP = '''Usage: naclsdk [options] command [command_options]
 
@@ -46,7 +46,7 @@ Example Usage:
   naclsdk install recommended
   naclsdk help update'''
 
-MANIFEST_FILENAME='naclsdk_manifest.json'
+MANIFEST_FILENAME='naclsdk_manifest2.json'
 SDK_TOOLS='sdk_tools'  # the name for this tools directory
 USER_DATA_DIR='sdk_cache'
 
@@ -139,7 +139,7 @@ YES_NO_LITERALS = ['yes', 'no']
 VALID_ARCHIVE_KEYS = frozenset(['host_os', 'size', 'checksum', 'url'])
 VALID_BUNDLES_KEYS = frozenset([
     ARCHIVES_KEY, NAME_KEY, VERSION_KEY, REVISION_KEY,
-    'description', 'desc_url', 'stability', 'recommended',
+    'description', 'desc_url', 'stability', 'recommended', 'repath',
     ])
 VALID_MANIFEST_KEYS = frozenset(['manifest_version', BUNDLES_KEY])
 
@@ -223,12 +223,15 @@ def ExtractInstaller(installer, outdir):
   else:
     os.mkdir(outdir)
     tar_file = None
+    curpath = os.getcwd()
     try:
-      tar_file = tarfile.open(installer)
-      tar_file.extractall(path=outdir)
+      tar_file = cygtar.CygTar(installer, 'r', verbose=True)
+      if outdir: os.chdir(outdir)
+      tar_file.Extract()
     finally:
       if tar_file:
-        tar_file.close()
+        tar_file.Close()
+      os.chdir(curpath)
 
 
 def RemoveDir(outdir):
@@ -250,25 +253,20 @@ def RemoveDir(outdir):
 
   DebugPrint('Removing %s' % outdir)
   try:
-    if sys.platform == 'win32':
-      subprocess.check_call(['rmdir /S /Q', outdir], shell=True)
-    else:
-      shutil.rmtree(outdir)
+    shutil.rmtree(outdir)
   except:
-    # If the directory is gone anyway, we probably failed because it was
-    # already gone. Treat that as success.
     if not os.path.exists(outdir):
       return
-    # Otherwise, re-raise.
-    raise
+    # On Windows this could be an issue with junctions, so try again with rmdir
+    if sys.platform == 'win32':
+      subprocess.check_call(['rmdir', '/S', '/Q', outdir], shell=True)
 
 
 def RenameDir(srcdir, destdir):
   '''Renames srcdir to destdir. Removes destdir before doing the
      rename if it already exists.'''
 
-  max_tries = 100
-
+  max_tries = 5
   for num_tries in xrange(max_tries):
     try:
       RemoveDir(destdir)
@@ -280,7 +278,7 @@ def RenameDir(srcdir, destdir):
       # If we are here, we didn't exit due to raised exception, so we are
       # handling a Windows flaky access error.  Sleep one second and try
       # again.
-      time.sleep(1)
+      time.sleep(num_tries + 1)
   # end of while loop -- could not RenameDir
   raise Error('Could not RenameDir %s => %s after %d tries.\n' %
               'Please check that no shells or applications '
@@ -614,7 +612,7 @@ class SDKManifest(object):
 
   def __init__(self):
     '''Create a new SDKManifest object with default contents'''
-    self.MANIFEST_VERSION = 1
+    self.MANIFEST_VERSION = MAJOR_REV
     self._manifest_data = {
         "manifest_version": self.MANIFEST_VERSION,
         "bundles": [],
@@ -921,7 +919,14 @@ def Update(options, argv):
                 (bundle_name, bundle[VERSION_KEY], bundle[REVISION_KEY])))
       ExtractInstaller(dest_filename, bundle_update_path)
       if bundle_name != SDK_TOOLS:
-        RenameDir(bundle_update_path, bundle_path)
+        repath = bundle.get('repath', None)
+        if repath:
+          bundle_move_path = os.path.join(bundle_update_path, repath)
+        else:
+          bundle_move_path = bundle_update_path
+        RenameDir(bundle_move_path, bundle_path)
+        if os.path.exists(bundle_update_path):
+          RemoveDir(bundle_update_path)
       os.remove(dest_filename)
       local_manifest.MergeBundle(bundle)
       local_manifest.WriteFile()
