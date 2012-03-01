@@ -123,10 +123,11 @@ void ScopedChromeFrameRegistrar::DoRegistration(
   }
   if (exit_code != 0) {
     if (registration_operation == REGISTER) {
-      LOG(FATAL)
+      LOG(ERROR)
           << "DLL registration failed (exit code: 0x" << std::hex << exit_code
           << ", command: " << registration_command
           << "). Make sure you are running as Admin.";
+      ::ExitProcess(1);
     } else {
       LOG(WARNING)
           << "DLL unregistration failed (exit code: 0x" << std::hex << exit_code
