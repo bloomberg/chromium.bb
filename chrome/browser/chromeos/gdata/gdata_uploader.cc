@@ -117,7 +117,7 @@ void GDataUploader::OnDownloadUpdated(DownloadItem* download) {
     default:
       NOTREACHED();
   }
-  DLOG(INFO) << "Number of pending downloads=" << pending_downloads_.size();
+  DVLOG(1) << "Number of pending downloads=" << pending_downloads_.size();
 }
 
 void GDataUploader::AddPendingDownload(DownloadItem* download) {
@@ -127,7 +127,7 @@ void GDataUploader::AddPendingDownload(DownloadItem* download) {
   if (pending_downloads_.find(download) == pending_downloads_.end()) {
     pending_downloads_.insert(download);
     download->AddObserver(this);
-    DLOG(INFO) << "new download total bytes=" << download->GetTotalBytes()
+    DVLOG(1) << "new download total bytes=" << download->GetTotalBytes()
              << ", full path=" << download->GetFullPath().value()
              << ", mime type=" << download->GetMimeType();
   }
@@ -151,7 +151,7 @@ void GDataUploader::UploadDownloadItem(DownloadItem* download) {
   if (!ShouldUpload(download))
     return;
 
-  DLOG(INFO) << "Starting upload"
+  DVLOG(1) << "Starting upload"
            << ", full path=" << download->GetFullPath().value()
            << ", received bytes=" << download->GetReceivedBytes()
            << ", total bytes=" << download->GetTotalBytes()
@@ -181,7 +181,7 @@ void GDataUploader::UpdateUpload(DownloadItem* download) {
     return;
 
   // Update file_size and download_complete.
-  DLOG(INFO) << "Updating file size from " << upload_file_info->file_size
+  DVLOG(1) << "Updating file size from " << upload_file_info->file_size
            << " to " << download->GetReceivedBytes();
   upload_file_info->file_size = download->GetReceivedBytes();
   upload_file_info->download_complete = download->IsComplete();
@@ -206,7 +206,7 @@ void GDataUploader::UploadFile(const GURL& file_url) {
   if (!upload_file_info)
     return;
 
-  DLOG(INFO) << "Uploading file: title=[" << upload_file_info->title
+  DVLOG(1) << "Uploading file: title=[" << upload_file_info->title
            << "], file_path=[" << upload_file_info->file_path.value()
            << "], content_type=" << upload_file_info->content_type
            << ", file_size=" << upload_file_info->file_size;
@@ -281,7 +281,7 @@ void GDataUploader::OnUploadLocationReceived(
   if (!upload_file_info)
     return;
 
-  DLOG(INFO) << "Got upload location [" << upload_location.spec()
+  DVLOG(1) << "Got upload location [" << upload_location.spec()
            << "] for [" << upload_file_info->title << "]";
 
   if (code != HTTP_SUCCESS) {
@@ -334,7 +334,7 @@ void GDataUploader::UploadNextChunk(
     return;
   }
 
-  DLOG(INFO) << "Number of pending uploads=" << pending_uploads_.size();
+  DVLOG(1) << "Number of pending uploads=" << pending_uploads_.size();
 
   // Determine number of bytes to read for this upload iteration, which cannot
   // exceed size of buf i.e. buf_len.
@@ -368,7 +368,7 @@ void GDataUploader::ReadCompletionCallback(
   // The Read is asynchronously executed on BrowserThread::UI, where
   // Read() was called.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DLOG(INFO) << "ReadCompletionCallback bytes read=" << bytes_read;
+  DVLOG(1) << "ReadCompletionCallback bytes read=" << bytes_read;
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
@@ -401,7 +401,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
     return;
 
   if (code != HTTP_CREATED) {
-    DLOG(INFO) << "Received range " << start_range_received
+    DVLOG(1) << "Received range " << start_range_received
              << "-" << end_range_received
              << " for [" << upload_file_info->title << "]";
 
@@ -411,7 +411,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
     return;
   }
 
-  DLOG(INFO) << "Successfully created uploaded file=["
+  DVLOG(1) << "Successfully created uploaded file=["
            << upload_file_info->title << "]";
 
   // Done uploading.
