@@ -399,6 +399,9 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
   prefs.fullscreen_enabled =
       !command_line.HasSwitch(switches::kDisableFullScreen);
+  prefs.css_regions_enabled =
+      command_line.HasSwitch(switches::kEnableCssRegions);
+
 
 #if defined(OS_MACOSX)
   bool default_enable_scroll_animator = true;
