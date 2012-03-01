@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "base/mac/closure_blocks_leopard_compat.h"
 
 #include "base/mac/mac_util.h"
-#include "content/browser/mac/closure_blocks_leopard_compat.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 // Used in ClosureBlocksLeopardCompatTest.Global. Putting a block at global
 // scope results in a block structure whose isa field is set to

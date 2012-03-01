@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
-#define CONTENT_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
+#ifndef BASE_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
+#define BASE_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
 #pragma once
 
 // libclosure (blocks) compatibility for Mac OS X 10.5 (Leopard)
@@ -101,4 +101,4 @@ MAYBE_WEAK_IMPORT extern void* _NSConcreteStackBlock[32];
 #define Block_release(...) _Block_release((const void *)(__VA_ARGS__))
 #endif
 
-#endif  // CONTENT_BROWSER_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_
+#endif  // BASE_MAC_CLOSURE_BLOCKS_LEOPARD_COMPAT_H_

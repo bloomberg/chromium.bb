@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/mac/closure_blocks_leopard_compat.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
@@ -15,7 +16,6 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/public/browser/render_view_host_observer.h"

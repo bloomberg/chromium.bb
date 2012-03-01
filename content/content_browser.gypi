@@ -790,7 +790,7 @@
         ],
       },
       'dependencies': [
-        'closure_blocks_leopard_compat',
+        '../base/base.gyp:closure_blocks_leopard_compat',
       ],
     }, { # OS!="mac"
       'dependencies': [
