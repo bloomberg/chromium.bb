@@ -7,13 +7,13 @@ meta-refresh timer is scheduled, so we use a non-zero timeout of 1msec for this.
   <head>
     <meta http-equiv="refresh" content="20000">
     <script>
-      function click() {
+      function clickHandler() {
         document.location = "#myanchor";
         return true;
       }
     </script>
   </head>
-  <body onclick="click()">
+  <body onclick="clickHandler();">
 	  <input type="button" id="mybutton" onclick="document.location='#myanchor'"/>
       	  <a name="myanchor">Anchor</a><br/>
   </body>
