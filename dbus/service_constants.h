@@ -946,4 +946,15 @@ const char kSetTrack[] = "SetTrack";
 const char kStatusUpdate[] = "StatusUpdate";
 }  // namespace update_engine
 
+namespace debugd {
+const char kDebugdInterface[] = "org.chromium.debugd";
+const char kDebugdServicePath[] = "/org/chromium/debugd";
+const char kDebugdServiceName[] = "org.chromium.debugd";
+
+// Methods.
+const char kSystraceStart[] = "SystraceStart";
+const char kSystraceStop[] = "SystraceStop";
+const char kSytraceStatus[] = "SystraceStatus";
+}  // namespace debugd
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
