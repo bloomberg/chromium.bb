@@ -9,7 +9,8 @@ body {
 
 h1 {
   -webkit-margin-after: 1em;
-  -webkit-margin-before: 1.2em;
+  /* This value must match the top padding of the uber page header. */
+  -webkit-margin-before: 21px;
   -webkit-margin-start: 23px;
   color: rgb(92, 97, 102);
 }
