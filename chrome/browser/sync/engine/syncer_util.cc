@@ -300,8 +300,8 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
 
       // If this fails, something is wrong with the cryptographer, but there's
       // nothing we can do about it here.
-      syncable::ProcessUnsyncedChangesForEncryption(trans,
-                                                    cryptographer);
+      DVLOG(1) << "Received new nigori, encrypting unsynced changes.";
+      syncable::ProcessUnsyncedChangesForEncryption(trans, cryptographer);
     }
   }
 

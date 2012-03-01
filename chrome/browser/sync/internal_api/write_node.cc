@@ -45,6 +45,10 @@ bool WriteNode::UpdateEntryWithEncryption(
   // specifics are already encrypted, we want to ensure we continue encrypting.
   bool was_encrypted = old_specifics.has_encrypted();
   sync_pb::EntitySpecifics generated_specifics;
+  if (new_specifics.has_encrypted()) {
+    NOTREACHED() << "New specifics already has an encrypted blob.";
+    return false;
+  }
   if ((!SpecificsNeedsEncryption(encrypted_types, new_specifics) &&
        !was_encrypted) ||
       !cryptographer->is_initialized()) {

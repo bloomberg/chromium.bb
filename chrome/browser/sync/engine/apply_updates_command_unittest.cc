@@ -764,6 +764,11 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
           .Equals(syncable::ModelTypeSet::All()));
 }
 
+// Create some local unsynced and unencrypted data. Apply a nigori update that
+// turns on encryption for the unsynced data. Ensure we properly encrypt the
+// data as part of the nigori update. Apply another nigori update with no
+// changes. Ensure we ignore already-encrypted unsynced data and that nothing
+// breaks.
 TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   // Storing the cryptographer separately is bad, but for this test we
   // know it's safe.
@@ -830,18 +835,20 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   ExpectGroupToChange(apply_updates_command_, GROUP_PASSIVE);
   apply_updates_command_.ExecuteImpl(session());
 
-  sessions::StatusController* status = session()->mutable_status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-  ASSERT_TRUE(status->update_progress());
-  EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
-      << "All updates should have been attempted";
-  ASSERT_TRUE(status->conflict_progress());
-  EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
-      << "No updates should be in conflict";
-  EXPECT_EQ(0, status->conflict_progress()->EncryptionConflictingItemsSize())
-      << "No updates should be in conflict";
-  EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
-      << "The nigori update should be applied";
+  {
+    sessions::StatusController* status = session()->mutable_status_controller();
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+    ASSERT_TRUE(status->update_progress());
+    EXPECT_EQ(1, status->update_progress()->AppliedUpdatesSize())
+        << "All updates should have been attempted";
+    ASSERT_TRUE(status->conflict_progress());
+    EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
+        << "No updates should be in conflict";
+    EXPECT_EQ(0, status->conflict_progress()->EncryptionConflictingItemsSize())
+        << "No updates should be in conflict";
+    EXPECT_EQ(1, status->update_progress()->SuccessfullyAppliedUpdateCount())
+        << "The nigori update should be applied";
+  }
   EXPECT_FALSE(cryptographer->has_pending_keys());
   EXPECT_TRUE(cryptographer->is_ready());
   {
@@ -849,6 +856,46 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
+    EXPECT_TRUE(syncable::ModelTypeSet::All().Equals(
+        cryptographer->GetEncryptedTypes()));
+    EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
+
+    Syncer::UnsyncedMetaHandles handles;
+    SyncerUtil::GetUnsyncedEntries(&trans, &handles);
+    EXPECT_EQ(2*batch_s+1, handles.size());
+  }
+
+  // Simulate another nigori update that doesn't change anything.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry entry(&trans, syncable::GET_BY_SERVER_TAG,
+                       syncable::ModelTypeToRootTag(syncable::NIGORI));
+    ASSERT_TRUE(entry.good());
+    entry.Put(syncable::SERVER_VERSION, GetNextRevision());
+    entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
+  }
+  ExpectGroupToChange(apply_updates_command_, GROUP_PASSIVE);
+  apply_updates_command_.ExecuteImpl(session());
+  {
+    sessions::StatusController* status = session()->mutable_status_controller();
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+    ASSERT_TRUE(status->update_progress());
+    EXPECT_EQ(2, status->update_progress()->AppliedUpdatesSize())
+        << "All updates should have been attempted";
+    ASSERT_TRUE(status->conflict_progress());
+    EXPECT_EQ(0, status->conflict_progress()->SimpleConflictingItemsSize())
+        << "No updates should be in conflict";
+    EXPECT_EQ(0, status->conflict_progress()->EncryptionConflictingItemsSize())
+        << "No updates should be in conflict";
+    EXPECT_EQ(2, status->update_progress()->SuccessfullyAppliedUpdateCount())
+        << "The nigori update should be applied";
+  }
+  EXPECT_FALSE(cryptographer->has_pending_keys());
+  EXPECT_TRUE(cryptographer->is_ready());
+  {
+    ReadTransaction trans(FROM_HERE, directory());
+
+    // All our changes should still be encrypted.
     EXPECT_TRUE(syncable::ModelTypeSet::All().Equals(
         cryptographer->GetEncryptedTypes()));
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));

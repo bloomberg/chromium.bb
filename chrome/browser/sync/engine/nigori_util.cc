@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,13 +21,23 @@ bool ProcessUnsyncedChangesForEncryption(
   DCHECK(cryptographer->is_ready());
   // Get list of all datatypes with unsynced changes. It's possible that our
   // local changes need to be encrypted if encryption for that datatype was
-  // just turned on (and vice versa). This should never affect passwords.
+  // just turned on (and vice versa).
+  // Note: we do not attempt to re-encrypt data with a new key here as key
+  // changes in this code path are likely due to consistency issues (we have
+  // to be updated to a key we already have, e.g. an old key).
   std::vector<int64> handles;
   browser_sync::SyncerUtil::GetUnsyncedEntries(trans, &handles);
   for (size_t i = 0; i < handles.size(); ++i) {
     MutableEntry entry(trans, GET_BY_HANDLE, handles[i]);
+    const sync_pb::EntitySpecifics& specifics = entry.Get(SPECIFICS);
+    // Ignore types that don't need encryption or entries that are already
+    // encrypted.
+    if (!SpecificsNeedsEncryption(cryptographer->GetEncryptedTypes(),
+                                  specifics)) {
+      continue;
+    }
     if (!sync_api::WriteNode::UpdateEntryWithEncryption(cryptographer,
-                                                        entry.Get(SPECIFICS),
+                                                        specifics,
                                                         &entry)) {
       NOTREACHED();
       return false;
