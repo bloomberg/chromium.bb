@@ -132,8 +132,10 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   g_browser_process = this;
   clipboard_.reset(new ui::Clipboard);
 
+#if !defined(OS_ANDROID)
   // Must be created after the NotificationService.
   print_job_manager_.reset(new printing::PrintJobManager);
+#endif
 
   net_log_.reset(new ChromeNetLog);
 
@@ -148,9 +150,11 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
+#if !defined(OS_ANDROID)
   // Wait for the pending print jobs to finish.
   print_job_manager_->OnQuit();
   print_job_manager_.reset();
+#endif
 
   tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
 
@@ -464,18 +468,28 @@ printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
 
 printing::PrintPreviewTabController*
     BrowserProcessImpl::print_preview_tab_controller() {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+  return NULL;
+#else
   DCHECK(CalledOnValidThread());
   if (!print_preview_tab_controller_.get())
     CreatePrintPreviewTabController();
   return print_preview_tab_controller_.get();
+#endif
 }
 
 printing::BackgroundPrintingManager*
     BrowserProcessImpl::background_printing_manager() {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+  return NULL;
+#else
   DCHECK(CalledOnValidThread());
   if (!background_printing_manager_.get())
     CreateBackgroundPrintingManager();
   return background_printing_manager_.get();
+#endif
 }
 
 GoogleURLTracker* BrowserProcessImpl::google_url_tracker() {
@@ -675,7 +689,9 @@ void BrowserProcessImpl::CreateLocalState() {
 
   pref_change_registrar_.Init(local_state_.get());
 
+#if !defined(OS_ANDROID)
   print_job_manager_->InitOnUIThread(local_state_.get());
+#endif
 
   // Initialize the notification for the default browser setting policy.
   local_state_->RegisterBooleanPref(prefs::kDefaultBrowserSettingEnabled,
@@ -782,8 +798,12 @@ void BrowserProcessImpl::CreateStatusTray() {
 }
 
 void BrowserProcessImpl::CreatePrintPreviewTabController() {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+#else
   DCHECK(print_preview_tab_controller_.get() == NULL);
   print_preview_tab_controller_ = new printing::PrintPreviewTabController();
+#endif
 }
 
 void BrowserProcessImpl::CreateBackgroundPrintingManager() {

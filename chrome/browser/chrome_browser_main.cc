@@ -1734,7 +1734,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // might have shutdown because an update was available.
   // TODO(torne): this should maybe be done with
   // ProfileKeyedServiceFactory::ServiceIsCreatedWithProfile() instead?
+#if !defined(OS_ANDROID)
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
+#endif
 
   // Load GPU Blacklist.
   InitializeGpuDataManager(parsed_command_line());

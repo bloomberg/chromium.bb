@@ -95,7 +95,6 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
       new PasswordManager(contents, password_manager_delegate_.get()));
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
-  print_view_manager_.reset(new printing::PrintViewManager(this));
   restore_tab_helper_.reset(new RestoreTabHelper(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   snapshot_tab_helper_.reset(new SnapshotTabHelper(contents));
@@ -104,6 +103,10 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   web_intent_picker_controller_.reset(new WebIntentPickerController(this));
+
+#if !defined(OS_ANDROID)
+  print_view_manager_.reset(new printing::PrintViewManager(this));
+#endif
 
   // Create the per-tab observers.
   alternate_error_page_tab_observer_.reset(
@@ -117,10 +120,13 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
   pdf_tab_observer_.reset(new PDFTabObserver(this));
   plugin_observer_.reset(new PluginObserver(this));
-  print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   sad_tab_observer_.reset(new SadTabObserver(contents));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
+
+#if !defined(OS_ANDROID)
+  print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
+#endif
 
   // Start the in-browser thumbnailing if the feature is enabled.
   if (CommandLine::ForCurrentProcess()->HasSwitch(

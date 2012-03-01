@@ -4749,12 +4749,14 @@
           ],
           'sources/': [
             ['exclude', '^browser/importer/'],
+            ['exclude', '^browser/printing/'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
             ['exclude', '^browser/ui/webui/options'],
             ['exclude', '^browser/ui/webui/options2'],
+            ['exclude', '^browser/ui/webui/print_preview/'],
           ],
         }],
         ['OS=="mac"', {

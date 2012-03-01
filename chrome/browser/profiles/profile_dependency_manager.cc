@@ -164,7 +164,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
     return;
 
   BackgroundContentsServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
   CloudPrintProxyServiceFactory::GetInstance();
+#endif
   CookieSettings::Factory::GetInstance();
   DesktopNotificationServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();

@@ -399,7 +399,9 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   host->GetChannel()->AddFilter(new ChromeRenderMessageFilter(
       id, profile, profile->GetRequestContextForRenderProcess(id)));
   host->GetChannel()->AddFilter(new PluginInfoMessageFilter(id, profile));
+#if !defined(OS_ANDROID)
   host->GetChannel()->AddFilter(new PrintingMessageFilter());
+#endif
   host->GetChannel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(id, profile));
   host->GetChannel()->AddFilter(new SpellCheckMessageFilter(id));
