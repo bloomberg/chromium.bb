@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,11 +35,9 @@ SkBitmap* CreateRadioButtonImage(bool selected) {
   canvas.Translate(gfx::Point(1, 1));
 
   SkPoint gradient_points[3];
-  gradient_points[0].set(SkIntToScalar(0), SkIntToScalar(0));
-  gradient_points[1].set(
-      SkIntToScalar(0),
-      SkIntToScalar(static_cast<int>(kIndicatorSize * kGradientStop)));
-  gradient_points[2].set(SkIntToScalar(0), SkIntToScalar(kIndicatorSize));
+  gradient_points[0].iset(0, 0);
+  gradient_points[1].iset(0, static_cast<int>(kIndicatorSize * kGradientStop));
+  gradient_points[2].iset(0, kIndicatorSize);
   SkColor gradient_colors[3] = { kGradient0, kGradient1, kGradient2 };
   SkShader* shader = SkGradientShader::CreateLinear(
       gradient_points, gradient_colors, NULL, arraysize(gradient_points),
@@ -60,10 +58,8 @@ SkBitmap* CreateRadioButtonImage(bool selected) {
 
   if (selected) {
     SkPoint selected_gradient_points[2];
-    selected_gradient_points[0].set(SkIntToScalar(0), SkIntToScalar(0));
-    selected_gradient_points[1].set(
-        SkIntToScalar(0),
-        SkIntToScalar(kSelectedIndicatorSize));
+    selected_gradient_points[0].iset(0, 0);
+    selected_gradient_points[1].iset(0, kSelectedIndicatorSize);
     SkColor selected_gradient_colors[2] = { kRadioButtonIndicatorGradient0,
                                             kRadioButtonIndicatorGradient1 };
     shader = SkGradientShader::CreateLinear(

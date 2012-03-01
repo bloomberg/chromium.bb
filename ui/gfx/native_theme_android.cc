@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -345,10 +345,8 @@ void NativeThemeAndroid::PaintButton(SkCanvas* canvas,
   int kLightEnd = state == PRESSED ? 1 : 0;
   int kDarkEnd = !kLightEnd;
   SkPoint gradient_bounds[2];
-  gradient_bounds[kLightEnd].set(SkIntToScalar(rect.x()),
-                                 SkIntToScalar(rect.y()));
-  gradient_bounds[kDarkEnd].set(SkIntToScalar(rect.x()),
-                                SkIntToScalar(kBottom - 1));
+  gradient_bounds[kLightEnd].iset(rect.x(), rect.y());
+  gradient_bounds[kDarkEnd].iset(rect.x(), kBottom - 1);
   SkColor colors[2];
   colors[0] = light_color;
   colors[1] = base_color;
@@ -614,20 +612,15 @@ void NativeThemeAndroid::PaintProgressBar(
 
   int dest_left_border_width = static_cast<int>(left_border_image->width() *
       tile_scale);
-  SkRect dest_rect = {
-      SkIntToScalar(rect.x()),
-      SkIntToScalar(rect.y()),
-      SkIntToScalar(rect.x() + dest_left_border_width),
-      SkIntToScalar(rect.bottom())
-  };
+  SkRect dest_rect;
+  dest_rect.iset(rect.x(), rect.y(), rect.x() + dest_left_border_width,
+                 rect.bottom());
   canvas->drawBitmapRect(*left_border_image, NULL, dest_rect);
 
   int dest_right_border_width = static_cast<int>(right_border_image->width() *
       tile_scale);
-  dest_rect.set(SkIntToScalar(rect.right() - dest_right_border_width),
-      SkIntToScalar(rect.y()),
-      SkIntToScalar(rect.right()),
-      SkIntToScalar(rect.bottom()));
+  dest_rect.iset(rect.right() - dest_right_border_width, rect.y(), rect.right(),
+                rect.bottom());
   canvas->drawBitmapRect(*right_border_image, NULL, dest_rect);
 }
 

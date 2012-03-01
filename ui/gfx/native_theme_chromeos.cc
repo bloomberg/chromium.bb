@@ -7,10 +7,10 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "grit/gfx_resources.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
@@ -136,8 +136,8 @@ void GetGradientPaintForRect(const gfx::Rect& rect,
   paint->setAntiAlias(true);
 
   SkPoint points[2];
-  points[0].set(SkIntToScalar(rect.x()), SkIntToScalar(rect.y()));
-  points[1].set(SkIntToScalar(rect.x()), SkIntToScalar(rect.bottom()));
+  points[0].iset(rect.x(), rect.y());
+  points[1].iset(rect.x(), rect.bottom());
 
   SkShader* shader = SkGradientShader::CreateLinear(points,
       colors, stops, count, SkShader::kClamp_TileMode);
@@ -225,8 +225,8 @@ void GetRadioIndicatorGradientPaint(const gfx::Rect bounds,
   paint->setAntiAlias(true);
 
   SkPoint points[2];
-  points[0].set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()));
-  points[1].set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.bottom()));
+  points[0].iset(bounds.x(), bounds.y());
+  points[1].iset(bounds.x(), bounds.bottom());
 
   static const SkScalar kGradientPoints[2] = {
       SkIntToScalar(0),
@@ -588,12 +588,11 @@ void NativeThemeChromeos::PaintTextField(SkCanvas* canvas,
     };
 
     SkPoint points[2];
-    points[0].set(SkIntToScalar(rect.x()), SkIntToScalar(rect.y()));
-    points[1].set(SkIntToScalar(rect.x()), SkIntToScalar(rect.bottom()));
+    points[0].iset(rect.x(), rect.y());
+    points[1].iset(rect.x(), rect.bottom());
 
-    GetGradientPaintForRect(rect,
-        gradient_colors, gradient_points, arraysize(gradient_points),
-        &fill_paint);
+    GetGradientPaintForRect(rect, gradient_colors, gradient_points,
+                            arraysize(gradient_points), &fill_paint);
   }
 
   SkPath border;
@@ -675,8 +674,8 @@ void NativeThemeChromeos::PaintMenuPopupBackground(
   };
 
   SkPoint points[2];
-  points[0].set(SkIntToScalar(0), SkIntToScalar(0));
-  points[1].set(SkIntToScalar(0), SkIntToScalar(rect.height()));
+  points[0].iset(0, 0);
+  points[1].iset(0, rect.height());
 
   SkShader* shader = SkGradientShader::CreateLinear(points,
       kGradientColors, kGradientPoints, arraysize(kGradientPoints),
@@ -690,10 +689,7 @@ void NativeThemeChromeos::PaintMenuPopupBackground(
   paint.setStyle(SkPaint::kFill_Style);
   paint.setXfermodeMode(SkXfermode::kSrc_Mode);
 
-  SkRect sk_rect;
-  sk_rect.set(SkIntToScalar(0), SkIntToScalar(0),
-              SkIntToScalar(rect.width()), SkIntToScalar(rect.height()));
-  canvas->drawRect(sk_rect, paint);
+  canvas->drawRect(gfx::RectToSkRect(gfx::Rect(rect.size())), paint);
 }
 
 void NativeThemeChromeos::PaintProgressBar(SkCanvas* canvas,

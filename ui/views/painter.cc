@@ -33,15 +33,14 @@ class GradientPainter : public Painter {
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
     SkPaint paint;
     SkPoint p[2];
-    p[0].set(SkIntToScalar(0), SkIntToScalar(0));
+    p[0].iset(0, 0);
     if (horizontal_)
-      p[1].set(SkIntToScalar(size.width()), SkIntToScalar(0));
+      p[1].iset(size.width(), 0);
     else
-      p[1].set(SkIntToScalar(0), SkIntToScalar(size.height()));
+      p[1].iset(0, size.height());
 
-    SkShader* s =
-        SkGradientShader::CreateLinear(p, colors_, NULL, 2,
-                                       SkShader::kClamp_TileMode, NULL);
+    SkShader* s = SkGradientShader::CreateLinear(p, colors_, NULL, 2,
+        SkShader::kClamp_TileMode, NULL);
     paint.setStyle(SkPaint::kFill_Style);
     paint.setShader(s);
     // Need to unref shader, otherwise never deleted.

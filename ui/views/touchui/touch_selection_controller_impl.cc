@@ -12,7 +12,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
@@ -72,16 +71,13 @@ void PaintCircle(const Circle& circle, gfx::Canvas* canvas) {
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(circle.color);
-  gfx::Path path;
+  SkPath path;
   gfx::Rect bounds(circle.center.x() - circle.radius,
                    circle.center.y() - circle.radius,
                    circle.radius * 2,
                    circle.radius * 2);
-  SkRect rect;
-  rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
-           SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
   SkScalar radius = SkIntToScalar(circle.radius);
-  path.addRoundRect(rect, radius, radius);
+  path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
   canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
@@ -262,8 +258,8 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     };
 
     SkPoint points[2];
-    points[0].set(SkIntToScalar(0), SkIntToScalar(0));
-    points[1].set(SkIntToScalar(0), SkIntToScalar(height()));
+    points[0].iset(0, 0);
+    points[1].iset(0, height());
 
     SkShader* shader = SkGradientShader::CreateLinear(points,
         kGradientColors, kGradientPoints, arraysize(kGradientPoints),

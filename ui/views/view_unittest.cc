@@ -629,22 +629,13 @@ TEST_F(ViewTest, DISABLED_Painting) {
 
   SkRect tmp_rect;
 
-  tmp_rect.set(SkIntToScalar(10),
-               SkIntToScalar(10),
-               SkIntToScalar(20),
-               SkIntToScalar(20));
+  tmp_rect.iset(10, 10, 20, 20);
   CheckRect(v3->last_clip_, tmp_rect);
 
-  tmp_rect.set(SkIntToScalar(20),
-               SkIntToScalar(20),
-               SkIntToScalar(30),
-               SkIntToScalar(30));
+  tmp_rect.iset(20, 20, 30, 30);
   CheckRect(v2->last_clip_, tmp_rect);
 
-  tmp_rect.set(SkIntToScalar(30),
-               SkIntToScalar(30),
-               SkIntToScalar(40),
-               SkIntToScalar(40));
+  tmp_rect.iset(30, 30, 40, 40);
   CheckRect(v1->last_clip_, tmp_rect);
 
   // Make sure v4 was not painted

@@ -75,11 +75,11 @@ void FillRoundRect(gfx::Canvas* canvas,
   paint.setFlags(SkPaint::kAntiAlias_Flag);
 
   SkPoint p[2];
-  p[0].set(SkIntToScalar(x), SkIntToScalar(y));
+  p[0].iset(x, y);
   if (gradient_horizontal) {
-    p[1].set(SkIntToScalar(x + w), SkIntToScalar(y));
+    p[1].iset(x + w, y);
   } else {
-    p[1].set(SkIntToScalar(x), SkIntToScalar(y + h));
+    p[1].iset(x, y + h);
   }
   SkShader* s = SkGradientShader::CreateLinear(
       p, colors, points, count, SkShader::kClamp_TileMode, NULL);

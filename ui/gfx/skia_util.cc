@@ -37,8 +37,8 @@ SkShader* CreateGradientShader(int start_point,
                                SkColor end_color) {
   SkColor grad_colors[2] = { start_color, end_color};
   SkPoint grad_points[2];
-  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(start_point));
-  grad_points[1].set(SkIntToScalar(0), SkIntToScalar(end_point));
+  grad_points[0].iset(0, start_point);
+  grad_points[1].iset(0, end_point);
 
   return SkGradientShader::CreateLinear(
       grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode);

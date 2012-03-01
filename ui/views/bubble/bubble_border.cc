@@ -12,7 +12,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/path.h"
+#include "ui/gfx/skia_util.h"
 
 namespace views {
 
@@ -480,7 +480,7 @@ void BubbleBorder::DrawArrowInterior(gfx::Canvas* canvas,
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(background_color_);
-  gfx::Path path;
+  SkPath path;
   path.incReserve(4);
   path.moveTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
   path.lineTo(SkIntToScalar(tip_x + shift_x),
@@ -498,11 +498,7 @@ void BubbleBorder::DrawArrowInterior(gfx::Canvas* canvas,
 void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   // Clip out the client bounds to prevent overlapping transparent widgets.
   if (!border_->client_bounds().IsEmpty()) {
-    SkRect client_rect;
-    client_rect.set(SkIntToScalar(border_->client_bounds().x()),
-                    SkIntToScalar(border_->client_bounds().y()),
-                    SkIntToScalar(border_->client_bounds().right()),
-                    SkIntToScalar(border_->client_bounds().bottom()));
+    SkRect client_rect(gfx::RectToSkRect(border_->client_bounds()));
     canvas->GetSkCanvas()->clipRect(client_rect, SkRegion::kDifference_Op);
   }
 
@@ -514,14 +510,11 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(border_->background_color());
-  gfx::Path path;
+  SkPath path;
   gfx::Rect bounds(view->GetContentsBounds());
-  SkRect rect;
-  rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
-           SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
-  rect.inset(-border_->border_thickness(), -border_->border_thickness());
+  bounds.Inset(-border_->border_thickness(), -border_->border_thickness());
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
-  path.addRoundRect(rect, radius, radius);
+  path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
   canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
