@@ -6,9 +6,6 @@
 
 import os
 import constants
-if __name__ == '__main__':
-  import sys
-  sys.path.insert(0, constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
 
@@ -32,19 +29,3 @@ def FixBrokenExistingRepos(buildroot):
       ['repo', '--time', 'forall', '-c',
       'git config --remove-section "url.%s" 2> /dev/null' %
       constants.GERRIT_SSH_URL], cwd=buildroot, error_ok=True)
-
-
-if __name__ == '__main__':
-  if len(sys.argv) == 2:
-    path = os.path.abspath(sys.argv[1])
-    FixBrokenExistingRepos(path)
-    FixExternalRepoPushUrls(path)
-    sys.exit(0)
-
-  elif len(sys.argv) == 1:
-    print "No arguments given: I need the pathway to the repo root."
-
-  else:
-    print "Wrong arguments given: I expect just the path to the repo root" \
-          " however was given: %s" % ' '.join(map(repr, sys.argv[1:]))
-  sys.exit(1)
