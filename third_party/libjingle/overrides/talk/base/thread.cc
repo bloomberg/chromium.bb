@@ -85,7 +85,6 @@ void ThreadManager::SetCurrentThread(Thread *thread) {
 #ifdef WIN32
 ThreadManager::ThreadManager() {
   key_ = TlsAlloc();
-  WrapCurrentThread();
 }
 
 ThreadManager::~ThreadManager() {
@@ -126,16 +125,24 @@ struct ThreadInit {
   Runnable* runnable;
 };
 
+Thread::Thread() {
+  Construct();
+}
+
 Thread::Thread(SocketServer* ss)
-    : MessageQueue(ss),
-      priority_(PRIORITY_NORMAL),
-      started_(false),
-      has_sends_(false),
+    : MessageQueue(ss) {
+  Construct();
+}
+
+void Thread::Construct() {
+  priority_ = PRIORITY_NORMAL;
+  started_ = false;
+  has_sends_ = false;
 #if defined(WIN32)
-      thread_(NULL),
+  thread_ = NULL;
 #endif
-      owned_(true),
-      delete_self_when_complete_(false) {
+  owned_ = true;
+  delete_self_when_complete_ = false;
   SetName("Thread", this);  // default name
 }
 

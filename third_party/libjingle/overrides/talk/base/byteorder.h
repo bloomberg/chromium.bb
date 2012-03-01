@@ -34,6 +34,7 @@
 
 #ifdef WIN32
 #include <winsock2.h>
+#include "talk/base/win32.h"
 #endif
 
 #include "talk/base/basictypes.h"

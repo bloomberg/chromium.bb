@@ -174,6 +174,14 @@
         'overrides/talk/base/logging.h',
 
         'overrides/talk/base/scoped_ptr.h',
+        
+        # TODO(ronghuawu): Remove below overrides once below bug is fixed:
+        # http://crbug.com/115702
+        'overrides/talk/base/byteorder.h',
+        'overrides/talk/base/messagequeue.cc',
+        'overrides/talk/base/messagequeue.h',
+        'overrides/talk/base/thread.cc',
+        'overrides/talk/base/thread.h',
 
         'source/talk/base/Equifax_Secure_Global_eBusiness_CA-1.h',
         'source/talk/base/asyncfile.cc',
@@ -196,7 +204,6 @@
         'source/talk/base/basicpacketsocketfactory.h',
         'source/talk/base/bytebuffer.cc',
         'source/talk/base/bytebuffer.h',
-        'source/talk/base/byteorder.h',
         'source/talk/base/checks.cc',
         'source/talk/base/checks.h',
         'source/talk/base/common.cc',
@@ -235,8 +242,6 @@
         'source/talk/base/md5c.c',
         'source/talk/base/messagehandler.cc',
         'source/talk/base/messagehandler.h',
-        'source/talk/base/messagequeue.cc',
-        'source/talk/base/messagequeue.h',
         'source/talk/base/nethelpers.cc',
         'source/talk/base/nethelpers.h',
         'source/talk/base/network.cc',
@@ -287,8 +292,6 @@
         'source/talk/base/taskparent.h',
         'source/talk/base/taskrunner.cc',
         'source/talk/base/taskrunner.h',
-        'source/talk/base/thread.cc',
-        'source/talk/base/thread.h',
         'source/talk/base/timeutils.cc',
         'source/talk/base/timeutils.h',
         'source/talk/base/timing.cc',
@@ -349,8 +352,10 @@
             'overrides/talk/base/win32socketinit.cc',
             'source/talk/base/schanneladapter.cc',
             'source/talk/base/schanneladapter.h',
-            'source/talk/base/win32.h',
-            'source/talk/base/win32.cc',
+            # TODO(ronghuawu): Remove below overrides once below bug is fixed:
+            # http://crbug.com/115702
+            'overrides/talk/base/win32.h',
+            'overrides/talk/base/win32.cc',
             'source/talk/base/win32filesystem.cc',
             'source/talk/base/win32filesystem.h',
             'source/talk/base/win32window.h',

@@ -43,7 +43,8 @@ JingleThreadWrapper* JingleThreadWrapper::current() {
 }
 
 JingleThreadWrapper::JingleThreadWrapper(MessageLoop* message_loop)
-    : message_loop_(message_loop),
+    : talk_base::Thread(NULL),
+      message_loop_(message_loop),
       send_allowed_(false),
       last_task_id_(0),
       pending_send_event_(true, false) {

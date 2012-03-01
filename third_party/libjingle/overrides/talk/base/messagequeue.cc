@@ -34,10 +34,44 @@
 #endif
 
 #include "talk/base/common.h"
+#include "talk/base/event.h"
 #include "talk/base/logging.h"
 #include "talk/base/messagequeue.h"
 #include "talk/base/physicalsocketserver.h"
 
+namespace {
+//------------------------------------------------------------------
+// NullSocketServer
+
+class NullSocketServer : public talk_base::SocketServer {
+ public:
+  NullSocketServer() : event_(false, false) {}
+
+  virtual bool Wait(int cms, bool process_io) {
+    return event_.Wait(talk_base::kForever);
+  }
+
+  virtual void WakeUp() {
+    event_.Set();
+  }
+
+  virtual talk_base::Socket* CreateSocket(int type) {
+    ASSERT(false);
+    return NULL;
+  }
+
+  // Returns a new socket for nonblocking communication.  The type can be
+  // SOCK_DGRAM and/or SOCK_STREAM.
+  virtual talk_base::AsyncSocket* CreateAsyncSocket(int type) {
+    ASSERT(false);
+    return NULL;
+  }
+
+ private:
+  talk_base::Event event_;
+};
+
+}  // namespace
 
 namespace talk_base {
 
@@ -105,18 +139,33 @@ void MessageQueueManager::Clear(MessageHandler *handler) {
 //------------------------------------------------------------------
 // MessageQueue
 
-MessageQueue::MessageQueue(SocketServer* ss)
-    : ss_(ss), fStop_(false), fPeekKeep_(false), active_(false),
-      dmsgq_next_num_(0) {
-  if (!ss_) {
-    // Currently, MessageQueue holds a socket server, and is the base class for
-    // Thread.  It seems like it makes more sense for Thread to hold the socket
-    // server, and provide it to the MessageQueue, since the Thread controls
-    // the I/O model, and MQ is agnostic to those details.  Anyway, this causes
-    // messagequeue_unittest to depend on network libraries... yuck.
-    default_ss_.reset(new PhysicalSocketServer());
-    ss_ = default_ss_.get();
+MessageQueue::MessageQueue() {
+  // TODO(ronghuawu):
+  // Currently, MessageQueue holds a socket server, and is the base class for
+  // Thread.  It seems like it makes more sense for Thread to hold the socket
+  // server, and provide it to the MessageQueue, since the Thread controls
+  // the I/O model, and MQ is agnostic to those details.  Anyway, this causes
+  // messagequeue_unittest to depend on network libraries... yuck.
+  owned_ss_.reset(new PhysicalSocketServer());
+  ss_ = owned_ss_.get();
+  Construct();
+}
+
+MessageQueue::MessageQueue(SocketServer* ss) {
+  if (ss) {
+    ss_ = ss;
+  } else {
+    owned_ss_.reset(new NullSocketServer());
+    ss_ = owned_ss_.get();
   }
+  Construct();
+}
+
+void MessageQueue::Construct() {
+  fStop_ = false;
+  fPeekKeep_ = false;
+  active_ = false;
+  dmsgq_next_num_ = 0;
   ss_->SetMessageQueue(this);
 }
 
@@ -135,7 +184,7 @@ MessageQueue::~MessageQueue() {
 }
 
 void MessageQueue::set_socketserver(SocketServer* ss) {
-  ss_ = ss ? ss : default_ss_.get();
+  ss_ = ss ? ss : owned_ss_.get();
   ss_->SetMessageQueue(this);
 }
 

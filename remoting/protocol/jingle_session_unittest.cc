@@ -81,8 +81,10 @@ class MockStreamChannelCallback {
 
 class JingleSessionTest : public testing::Test {
  public:
-  JingleSessionTest()
-      : message_loop_(talk_base::Thread::Current()) {
+  JingleSessionTest() {
+    talk_base::ThreadManager::Instance()->WrapCurrentThread();
+    message_loop_.reset(
+        new JingleThreadMessageLoop(talk_base::Thread::Current()));
   }
 
   // Helper method that handles OnIncomingSession().
@@ -113,7 +115,7 @@ class JingleSessionTest : public testing::Test {
   virtual void TearDown() {
     CloseSessions();
     CloseSessionManager();
-    message_loop_.RunAllPending();
+    message_loop_->RunAllPending();
   }
 
   void CloseSessions() {
@@ -224,7 +226,7 @@ class JingleSessionTest : public testing::Test {
         base::Bind(&MockSessionCallback::OnStateChange,
                    base::Unretained(&client_connection_callback_)));
 
-    message_loop_.RunAllPending();
+    message_loop_->RunAllPending();
   }
 
   void CreateChannel(bool expect_fail) {
@@ -238,7 +240,7 @@ class JingleSessionTest : public testing::Test {
         .WillOnce(QuitThreadOnCounter(&counter));
     EXPECT_CALL(host_channel_callback_, OnDone(_))
         .WillOnce(QuitThreadOnCounter(&counter));
-    message_loop_.Run();
+    message_loop_->Run();
 
     if (expect_fail) {
       // At least one socket should fail to connect.
@@ -249,7 +251,7 @@ class JingleSessionTest : public testing::Test {
     }
   }
 
-  JingleThreadMessageLoop message_loop_;
+  scoped_ptr<JingleThreadMessageLoop> message_loop_;
 
   scoped_ptr<FakeSignalStrategy> host_signal_strategy_;
   scoped_ptr<FakeSignalStrategy> client_signal_strategy_;
@@ -305,7 +307,7 @@ TEST_F(JingleSessionTest, RejectConnection) {
       base::Bind(&MockSessionCallback::OnStateChange,
                  base::Unretained(&client_connection_callback_)));
 
-  message_loop_.RunAllPending();
+  message_loop_->RunAllPending();
 }
 
 // Verify that we can connect two endpoints with single-step authentication.
@@ -353,7 +355,7 @@ TEST_F(JingleSessionTest, TestStreamChannel) {
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
   tester.Start();
-  message_loop_.Run();
+  message_loop_->Run();
   tester.CheckResults();
 }
 
@@ -368,7 +370,7 @@ TEST_F(JingleSessionTest, TestMultistepAuthStreamChannel) {
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
   tester.Start();
-  message_loop_.Run();
+  message_loop_->Run();
   tester.CheckResults();
 }
 
