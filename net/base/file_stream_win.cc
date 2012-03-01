@@ -292,13 +292,15 @@ void FileStreamWin::CloseSync() {
   // The logic here is similar to CloseFile() but async_context_.reset() is
   // caled in this function.
 
+  // Block until the in-flight open operation is complete.
+  // TODO(satorux): Replace this with a DCHECK(open_flags & ASYNC) once this
+  // once all async clients are migrated to use Close(). crbug.com/114783
+  WaitForIOCompletion();
+
   bound_net_log_.AddEvent(net::NetLog::TYPE_FILE_STREAM_CLOSE, NULL);
   if (file_ != base::kInvalidPlatformFileValue)
     CancelIo(file_);
 
-  // TODO(satorux): Replace this with a DCHECK(open_flags & ASYNC) once this
-  // once all async clients are migrated to use Close(). crbug.com/114783
-  WaitForIOCompletion();
   // Block until the last read/write operation is complete.
   async_context_.reset();
 
