@@ -39,12 +39,17 @@ class ShellWindowFrameView : public views::NonClientFrameView {
                              gfx::Path* window_mask) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+
+  void set_min_size(gfx::Size size) { min_size_ = size; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
+
+  gfx::Size min_size_;
 };
 
-ShellWindowFrameView::ShellWindowFrameView() {
+ShellWindowFrameView::ShellWindowFrameView(): min_size_() {
 }
 
 ShellWindowFrameView::~ShellWindowFrameView() {
@@ -89,6 +94,10 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
                                          gfx::Path* window_mask) {
   // Don't touch it.
+}
+
+gfx::Size ShellWindowFrameView::GetMinimumSize() {
+  return min_size_;
 }
 
 
@@ -140,7 +149,11 @@ views::View* ShellWindowViews::GetContentsView() {
 }
 
 views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView() {
-  return new ShellWindowFrameView();
+  ShellWindowFrameView* frame_view = new ShellWindowFrameView();
+  gfx::Size size(host_->extension()->launch_min_width(),
+                 host_->extension()->launch_min_height());
+  frame_view->set_min_size(size);
+  return frame_view;
 }
 
 string16 ShellWindowViews::GetWindowTitle() const {
