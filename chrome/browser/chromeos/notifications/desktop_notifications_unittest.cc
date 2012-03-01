@@ -114,7 +114,7 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 void DesktopNotificationsTest::SetUp() {
 #if defined(USE_AURA)
   // Make sure a root window has been instantiated.
-  ash::Shell::CreateInstance(NULL);
+  ash::Shell::GetRootWindow();
 #endif
   browser::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
