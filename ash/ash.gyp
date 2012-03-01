@@ -123,6 +123,8 @@
         'system/tray/system_tray_delegate.h',
         'system/tray/system_tray_item.cc',
         'system/tray/system_tray_item.h',
+        'system/tray_user.cc',
+        'system/tray_user.h',
         'tooltips/tooltip_controller.cc',
         'tooltips/tooltip_controller.h',
         'volume_control_delegate.h',

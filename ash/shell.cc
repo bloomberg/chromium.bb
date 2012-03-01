@@ -20,6 +20,7 @@
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray_user.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/base_layout_manager.h"
@@ -50,6 +51,7 @@
 #include "ash/wm/workspace/workspace_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
@@ -189,6 +191,18 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
  private:
 
   // SystemTrayDelegate implementation.
+  virtual const std::string GetUserDisplayName() OVERRIDE {
+    return "chronos";
+  }
+
+  virtual const std::string GetUserEmail() OVERRIDE {
+    return "chr@nos";
+  }
+
+  virtual const SkBitmap& GetUserImage() OVERRIDE {
+    return null_image_;
+  }
+
   virtual void ShowSettings() OVERRIDE {
   }
 
@@ -211,8 +225,13 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     volume_ = volume;
   }
 
+  virtual void ShutDown() OVERRIDE {}
+  virtual void SignOut() OVERRIDE {}
+  virtual void LockScreen() OVERRIDE {}
+
   bool muted_;
   float volume_;
+  SkBitmap null_image_;
 
   DISALLOW_COPY_AND_ASSIGN(DummySystemTrayDelegate);
 };
@@ -396,19 +415,20 @@ void Shell::Init() {
     tray_.reset(new SystemTray());
     status_widget_->GetContentsView()->AddChildView(tray_.get());
 
+    if (delegate_.get())
+      tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(tray_.get()));
+    if (!tray_delegate_.get())
+      tray_delegate_.reset(new DummySystemTrayDelegate());
+
     internal::TrayVolume* tray_volume = new internal::TrayVolume();
     internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
     audio_controller_ = tray_volume;
     brightness_controller_ = tray_brightness;
 
+    tray_->AddTrayItem(new internal::TrayUser());
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());
-
-    if (delegate_.get())
-      tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(tray_.get()));
-    if (!tray_delegate_.get())
-      tray_delegate_.reset(new DummySystemTrayDelegate());
   }
 
   aura::Window* default_container =

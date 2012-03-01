@@ -93,7 +93,7 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
 
   views::View* tray_item = item->CreateTrayView();
   if (tray_item) {
-    AddChildView(tray_item);
+    AddChildViewAt(tray_item, 0);
     PreferredSizeChanged();
   }
 }
