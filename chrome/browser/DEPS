@@ -99,7 +99,6 @@ include_rules = [
   "+third_party/protobuf/src/google/protobuf",
   "+third_party/sqlite",
   "+third_party/undoview",
-  "+v8/include",  # Browser uses V8 to get the version and run the debugger.
 
   # FIXME: these should probably not be here, we need to find a better
   # structure for these includes.

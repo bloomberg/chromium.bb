@@ -5,6 +5,9 @@ include_rules = [
   "+net",
   "+printing",
   "+sql",
+  # Browser, renderer, common and tests access V8 for various purposes.
+  "-v8",
+  "+v8/include",
 
   # The subdirectories in chrome/ will manually allow their own include
   # directories in chrome/ so we disallow all of them.
@@ -22,7 +25,6 @@ include_rules = [
   "+content/public/browser/native_web_keyboard_event.h",
 
   # Don't allow inclusion of these other libs we shouldn't be calling directly.
-  "-v8",
   "-webkit",
   "-tools",
 

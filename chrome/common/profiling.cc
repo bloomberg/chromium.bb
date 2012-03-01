@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "v8/include/v8.h"
 
 namespace {
 std::string GetProfileName() {
@@ -101,6 +102,17 @@ void Profiling::ProcessStarted() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  // Establish the V8 return address resolution hook if we're
+  // an instrumented binary.
+  if (base::debug::IsBinaryInstrumented()) {
+    base::debug::ReturnAddressLocationResolver resolve_func =
+        base::debug::GetProfilerReturnAddrResolutionFunc();
+
+    if (resolve_func != NULL) {
+      v8::V8::SetReturnAddressLocationResolver(resolve_func);
+    }
+  }
 
   if (command_line.HasSwitch(switches::kProfilingAtStart)) {
     std::string process_type_to_start =
