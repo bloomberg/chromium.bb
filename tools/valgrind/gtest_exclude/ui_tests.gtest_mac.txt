@@ -126,6 +126,9 @@ LoginPromptTest.SupplyRedundantAuths
 LoginPromptTest.TestCancelAuth
 MetricsServiceTest.CrashRenderers
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
+
+# http://crbug.com/116403
+RedirectTest.ClientCancelled
 RedirectTest.Server
 RedirectTest.ServerReference
 RepostFormWarningTest.TestDoubleReload
