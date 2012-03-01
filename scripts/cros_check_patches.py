@@ -193,7 +193,7 @@ def main(argv):
   use_sudo = not board
 
   # We want the toolchain to be quiet to avoid interfering with our output.
-  argv = ['--quiet', '--pretend', '--emptytree']
+  depgraph_argv = ['--quiet', '--pretend', '--emptytree']
 
   # Defaults to rdeps, but allow command-line override.
   default_rootdeps_arg = ['--root-deps=rdeps']
@@ -203,11 +203,11 @@ def main(argv):
 
   # Now, assemble the overall argv as the concatenation of the
   # default list + possible rootdeps-default + actual command line.
-  argv.extend(default_rootdeps_arg)
-  argv.extend(argv)
+  depgraph_argv.extend(default_rootdeps_arg)
+  depgraph_argv.extend(argv)
 
   deps = parallel_emerge.DepGraphGenerator()
-  deps.Initialize(argv)
+  deps.Initialize(depgraph_argv)
   deps_tree, deps_info = deps.GenDependencyTree()
   deps_map = deps.GenDependencyGraph(deps_tree, deps_info)
 
