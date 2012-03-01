@@ -34,45 +34,10 @@ DesktopBackgroundView::~DesktopBackgroundView() {
 // DesktopBackgroundView, views::View overrides:
 
 void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
-  // Scale the image while maintaining the aspect ratio, cropping as
-  // necessary to fill the background. Ideally the image should be larger
-  // than the largest display supported, if not we will center it rather than
-  // streching to avoid upsampling artifacts (Note that we could tile too, but
-  // decided not to do this at the moment).
-  gfx::Rect wallpaper_rect(0, 0, wallpaper_.width(), wallpaper_.height());
-  if (wallpaper_.width() > width() && wallpaper_.height() > height()) {
-    // The dimension with the smallest ratio must be cropped, the other one
-    // is preserved. Both are set in gfx::Size cropped_size.
-    double horizontal_ratio = static_cast<double>(width()) /
-        static_cast<double>(wallpaper_.width());
-    double vertical_ratio = static_cast<double>(height()) /
-        static_cast<double>(wallpaper_.height());
-
-    gfx::Size cropped_size;
-    if (vertical_ratio > horizontal_ratio) {
-      cropped_size = gfx::Size(
-          static_cast<int>(
-              round(static_cast<double>(width()) / vertical_ratio)),
-          wallpaper_.height());
-    } else {
-      cropped_size = gfx::Size(wallpaper_.width(),
-          static_cast<int>(
-              round(static_cast<double>(height()) / horizontal_ratio)));
-    }
-
-    gfx::Rect wallpaper_cropped_rect = wallpaper_rect.Center(cropped_size);
-    canvas->DrawBitmapInt(wallpaper_,
-       wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
-       wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(),
-       0, 0, width(), height(),
-       true);
-  }
-  else {
-    // Center the wallpaper in the destination rectangle (Skia will crop
-    // as needed).
-    canvas->DrawBitmapInt(wallpaper_, (width() - wallpaper_.width()) / 2,
-        (height() - wallpaper_.height()) / 2);
-  }
+  canvas->DrawBitmapInt(wallpaper_,
+      0, 0, wallpaper_.width(), wallpaper_.height(),
+      0, 0, width(), height(),
+      true);
 }
 
 bool DesktopBackgroundView::OnMousePressed(const views::MouseEvent& event) {
