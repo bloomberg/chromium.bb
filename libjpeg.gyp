@@ -240,6 +240,7 @@
                       '-DELF',
                       '-Ilinux/'
                     ],
+                    'yasm_output_filter': [],
                   }, {
                     'yasm_format': '-felf64',
                     'yasm_flag': '-D__x86_64__',
