@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
@@ -23,6 +24,8 @@
 const char kGetInfoEmailKey[] = "email";
 const char kGetInfoServicesKey[] = "allServices";
 const char kGooglePlusServiceKey[] = "googleme";
+
+const char kGoogleAccountsUrl[] = "https://accounts.google.com";
 
 SigninManager::SigninManager()
     : profile_(NULL),
@@ -118,11 +121,18 @@ void SigninManager::StartSignIn(const std::string& username,
 
   // Register for token availability.  The signin manager will pre-login the
   // user when the GAIA service token is ready for use.  Only do this if we
-  // are not running in ChomiumOS, since it handles pre-login itself.
+  // are not running in ChomiumOS, since it handles pre-login itself, and if
+  // cookies are not disabled for Google accounts.
 #if !defined(OS_CHROMEOS)
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 content::Source<TokenService>(profile_->GetTokenService()));
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(profile_);
+  if (cookie_settings &&
+      cookie_settings->IsSettingCookieAllowed(GURL(kGoogleAccountsUrl),
+                                              GURL(kGoogleAccountsUrl))) {
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                   content::Source<TokenService>(profile_->GetTokenService()));
+  }
 #endif
 }
 
