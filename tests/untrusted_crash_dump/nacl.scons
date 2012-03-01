@@ -5,15 +5,16 @@
 
 Import('env')
 
-# TODO(bradnelson): Enable for PNaCl (figure out a way to get full frames
-# with PNaCl).
-is_broken = env.Bit('bitcode') or env.Bit('running_on_valgrind')
-
 # Keep frame pointers so we get a nice stack trace.
 # Set -O0 as otherwise some of the layers in the test case get optimized away.
 env.Append(CCFLAGS=['-O0', '-fno-omit-frame-pointer', '-g'])
 env['COMPONENT_STATIC'] = not env.Bit('nacl_glibc')
 env['ENV']['NACL_UNTRUSTED_EXCEPTION_HANDLING'] = '1'
+
+# TODO(bradnelson): Support x86-64 and pnacl when the frame pointer is provided
+# to the exception handler for those platforms.
+if not env.Bit('build_x86_32') or env.Bit('bitcode'):
+  Return()
 
 untrusted_crash_dump_lib = env.ComponentLibrary(
     'untrusted_crash_dump_lib',
@@ -32,18 +33,17 @@ dump_file = env.File('untrusted_crash_dump_test_core.json')
 run_test = env.CommandSelLdrTestNacl(
     'untrusted_crash_dump_test_run.out',
     untrusted_crash_dump_test,
-    declares_exit_status=True,
+    exit_status=166,
     sel_ldr_flags=['-a', '-E', 'NACLCOREFILE=' + dump_file.abspath])
 env.AlwaysBuild(run_test)
 env.SideEffect(dump_file, run_test)
 node = env.Command('untrusted_crash_dump_test.out',
                    ['untrusted_crash_dump_test.py',
                     dump_file, untrusted_crash_dump_test],
-                   '${PYTHON} ${SOURCES} - ${ADDR2LINE} '
-                   '${LIB_DIR} ${NACL_SDK_LIB} ${TARGET_FULLARCH}')
+                   '${PYTHON} ${SOURCES} - ${ADDR2LINE} ${NACL_SDK_LIB}')
 env.AddNodeToTestSuite(
     node, ['small_tests'],
-    'run_untrusted_crash_dump_test', is_broken=is_broken)
+    'run_untrusted_crash_dump_test')
 
 #
 # Similar stuff, but in the browser.
@@ -58,6 +58,11 @@ untrusted_crash_dump_test = env.ComponentProgram(
                 'untrusted_crash_dump',
                 'platform', 'gio', 'imc', 'imc_syscalls',
                 '${PTHREAD_LIBS}', '${NON_PPAPI_BROWSER_LIBS}'])
+
+# Make sure .so is in place for decoding.
+if env.Bit('nacl_glibc'):
+  env.Depends(untrusted_crash_dump_test,
+      '${LIB_DIR}/${SHLIBPREFIX}untrusted_crash_dump_lib${SHLIBSUFFIX}')
 
 crash_dump = ('${TARGET_ROOT}/test_results/'
               'inbrowser_untrusted_crash_dump_test.stdout')
@@ -76,13 +81,12 @@ node = env.Command(
     ['untrusted_crash_dump_test.py',
      crash_dump, untrusted_crash_dump_test,
      '${STAGING_DIR}/untrusted_crash_dump_test.nmf'],
-     '${PYTHON} ${SOURCES} ${ADDR2LINE} '
-     '${LIB_DIR} ${NACL_SDK_LIB} ${TARGET_FULLARCH}')
+     '${PYTHON} ${SOURCES} ${ADDR2LINE} ${NACL_SDK_LIB}')
 env.AddNodeToTestSuite(
     node, ['chrome_browser_tests'],
     'run_inbrowser_untrusted_crash_dump_test',
     is_broken=env.PPAPIBrowserTesterIsBroken() or
-              # TODO(bradnelson): Once we have proper support for running
-              # in Chrome, remove this limitation.
-              env.Bit('disable_dynamic_plugin_loading') or
-              is_broken)
+              env.Bit('running_on_valgrind') or
+               # TODO(bradnelson): Once we have proper support for running
+               # in Chrome, remove this limitation.
+               env.Bit('disable_dynamic_plugin_loading'))

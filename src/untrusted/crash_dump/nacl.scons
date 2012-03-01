@@ -5,4 +5,9 @@
 
 Import('env')
 
+# TODO(bradnelson): Support x86-64 and pnacl when the frame pointer is provided
+# to the exception handler for those platforms.
+if not env.Bit('build_x86_32') or env.Bit('bitcode'):
+  Return()
+
 env.ComponentLibrary('untrusted_crash_dump', 'untrusted_crash_dump.c')

@@ -20,15 +20,14 @@ class CoreDecoder(object):
   """Class to process core dumps."""
 
   def __init__(self, main_nexe, nmf_filename,
-               addr2line, library_paths, platform):
+               addr2line, toolchain_libs):
     """Construct and object to process core dumps.
 
     Args:
       main_nexe: nexe to resolve NaClMain references from.
       nmf_filename: nmf to resovle references from.
       addr2line: path to appropriate addr2line.
-      library_paths: list of paths to search for libraries.
-      platform: platform string to use in nmf files.
+      toolchain_libs: path to the toolchain libraries.
     """
     self.main_nexe = main_nexe
     self.nmf_filename = nmf_filename
@@ -37,8 +36,7 @@ class CoreDecoder(object):
     else:
       self.nmf_data = json.load(open(nmf_filename))
     self.addr2line = addr2line
-    self.library_paths = library_paths
-    self.platform = platform
+    self.toolchain_libs = toolchain_libs
 
   def _SelectModulePath(self, filename):
     """Select which path to get a module from.
@@ -56,16 +54,17 @@ class CoreDecoder(object):
       return self.main_nexe
     filepart = posixpath.basename(filename)
     nmf_entry = self.nmf_data.get('files', {}).get(filepart, {})
-    nmf_url = nmf_entry.get(self.platform, {}).get('url')
+    # TODO(bradnelson): support x86-64 + arm.
+    nmf_url = nmf_entry.get('x86-32', {}).get('url')
     # Try filename directly if not in manifest.
     if nmf_url is None:
       return filename
-    # Look for the module relative to the manifest (if any),
-    # then in other search paths.
+    # Look for the module relative to the manifest (if any), then toolchain.
     paths = []
     if self.nmf_filename != '-':
       paths.append(os.path.dirname(self.nmf_filename))
-    paths.extend(self.library_paths)
+    if self.toolchain_libs is not None:
+      paths.append(self.toolchain_libs)
     for path in paths:
       pfilename = os.path.join(path, nmf_url)
       if os.path.exists(pfilename):
@@ -178,11 +177,8 @@ def Main(args):
                     help='nmf to resolve references from')
   parser.add_option('-a', '--addr2line', dest='addr2line',
                     help='path to appropriate addr2line')
-  parser.add_option('-L', '--library-path', dest='library_paths',
-                    action='append', default=[],
-                    help='path to search for shared libraries')
-  parser.add_option('-p', '--platform', dest='platform',
-                    help='platform in a style match nmf files')
+  parser.add_option('-l', '--toolchain-libs', dest='toolchain_libs',
+                    help='path to the toolchain libraries')
   options, args = parser.parse_args(args)
   if len(args) != 1:
     parser.print_help()
@@ -191,8 +187,7 @@ def Main(args):
       main_nexe=options.main_nexe,
       nmf_filename=options.nmf_filename,
       addr2line=options.add2line,
-      library_paths=options.library_paths,
-      platform=options.platform)
+      toolchain_libs=options.toolchain_libs)
   info = decoder.LoadAndDecode(args[0])
   trace = decoder.StackTrace(info)
   decoder.PrintTrace(trace, sys.stdout)
