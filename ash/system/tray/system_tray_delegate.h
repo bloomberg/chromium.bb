@@ -6,11 +6,18 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 #pragma once
 
+class SkBitmap;
+
 namespace ash {
 
 class SystemTrayDelegate {
  public:
   virtual ~SystemTrayDelegate() {}
+
+  // Gets information about the logged in user.
+  virtual const std::string GetUserName() = 0;
+  virtual const std::string GetUserEmail() = 0;
+  virtual const SkBitmap& GetUserImage() = 0;
 
   // Shows settings.
   virtual void ShowSettings() = 0;
@@ -29,6 +36,15 @@ class SystemTrayDelegate {
 
   // Sets the volume level.
   virtual void SetVolumeLevel(float level) = 0;
+
+  // Attempts to shut down the system.
+  virtual void ShutDown() = 0;
+
+  // Attempts to sign out the user.
+  virtual void SignOut() = 0;
+
+  // Attempts to lock the screen.
+  virtual void LockScreen() = 0;
 };
 
 }  // namespace ash
