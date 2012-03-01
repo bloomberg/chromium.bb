@@ -8,6 +8,8 @@
 
 #if defined(ENABLE_GPU)
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -16,8 +18,9 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/gl/gl_surface.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 class GpuChannelManager;
@@ -70,6 +73,13 @@ class ImageTransportSurface {
       CreateSurface(GpuChannelManager* manager,
                     GpuCommandBufferStub* stub,
                     const gfx::GLSurfaceHandle& handle);
+ protected:
+  // Used by certain implements of PostSubBuffer to determine
+  // how much needs to be copied between frames.
+  void GetRegionsToCopy(const gfx::Rect& previous_damage_rect,
+                        const gfx::Rect& new_damage_rect,
+                        std::vector<gfx::Rect>* regions);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };

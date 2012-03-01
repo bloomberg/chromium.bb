@@ -109,8 +109,6 @@ class EGLImageTransportSurface
   void ReleaseSurface(scoped_refptr<EGLAcceleratedSurface>* surface);
   void SendBuffersSwapped();
   void SendPostSubBuffer(int x, int y, int width, int height);
-  void GetRegionsToCopy(const gfx::Rect& new_damage_rect,
-                        std::vector<gfx::Rect>* regions);
 
   // Tracks the current surface visibility state.
   VisibilityState visibility_state_;
@@ -433,10 +431,10 @@ bool EGLImageTransportSurface::PostSubBuffer(
   bool surfaces_same_size = front_surface_.get() &&
       front_surface_->size() == expected_size;
 
-  const gfx::Rect new_damage_rect = gfx::Rect(x, y, width, height);
+  const gfx::Rect new_damage_rect(x, y, width, height);
   if (surfaces_same_size) {
     std::vector<gfx::Rect> regions_to_copy;
-    GetRegionsToCopy(new_damage_rect, &regions_to_copy);
+    GetRegionsToCopy(previous_damage_rect_, new_damage_rect, &regions_to_copy);
 
     GLint previous_texture_id = 0;
     glGetIntegerv(GL_ACTIVE_TEXTURE, &previous_texture_id);
@@ -485,42 +483,6 @@ void EGLImageTransportSurface::SendPostSubBuffer(
 
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
   helper_->SetScheduled(false);
-}
-
-void EGLImageTransportSurface::GetRegionsToCopy(
-    const gfx::Rect& new_damage_rect,
-    std::vector<gfx::Rect>* regions) {
-  DCHECK(front_surface_->size() == back_surface_->size());
-  gfx::Rect intersection = previous_damage_rect_.Intersect(new_damage_rect);
-
-  if (intersection.IsEmpty()) {
-    regions->push_back(previous_damage_rect_);
-    return;
-  }
-
-  // Top (above the intersection).
-  regions->push_back(gfx::Rect(previous_damage_rect_.x(),
-      previous_damage_rect_.y(),
-      previous_damage_rect_.width(),
-      intersection.y() - previous_damage_rect_.y()));
-
-  // Left (of the intersection).
-  regions->push_back(gfx::Rect(previous_damage_rect_.x(),
-      intersection.y(),
-      intersection.x() - previous_damage_rect_.x(),
-      intersection.height()));
-
-  // Right (of the intersection).
-  regions->push_back(gfx::Rect(intersection.right(),
-      intersection.y(),
-      previous_damage_rect_.right() - intersection.right(),
-      intersection.height()));
-
-  // Bottom (below the intersection).
-  regions->push_back(gfx::Rect(previous_damage_rect_.x(),
-      intersection.bottom(),
-      previous_damage_rect_.width(),
-      previous_damage_rect_.bottom() - intersection.bottom()));
 }
 
 std::string EGLImageTransportSurface::GetExtensions() {

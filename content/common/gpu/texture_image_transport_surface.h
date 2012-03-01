@@ -82,6 +82,8 @@ class TextureImageTransportSurface :
   // The front and back buffers.
   Texture textures_[2];
 
+  gfx::Rect previous_damage_rect_;
+
   // Indicates which of the 2 above is the front buffer.
   int front_;
 
