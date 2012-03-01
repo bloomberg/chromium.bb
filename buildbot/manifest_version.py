@@ -77,6 +77,14 @@ def PrepForChanges(git_repo, dry_run):
       repository.RepoSyncUsingSSH(git_repo)
       cros_lib.RunCommand(['repo', 'start', PUSH_BRANCH, '.'], cwd=git_repo)
     else:
+      # TODO(ferringb): Rework this whole codepath- the level of syncs in use
+      # make this likely to be working accidentally rather than intentionally.
+      # See http://crosbug.com/24709 for details.
+      cros_lib.RunCommand(['git',
+                           'config',
+                           'url.%s.insteadof' % constants.GERRIT_SSH_URL,
+                           constants.GIT_HTTP_URL], cwd=git_repo)
+
       # Attempt the equivalent of repo abandon for retries.  Master always
       # exists for manifest_version git repos.
       try:
@@ -147,7 +155,7 @@ def _PushGitChanges(git_repo, message, dry_run=True):
       # local commit behind in tree.
       cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH], cwd=git_repo,
                           error_ok=True)
-      cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo, error_ok=True)
+      repository.RepoSyncUsingSSH(git_repo)
 
 
 def _RemoveDirs(dir_name):
