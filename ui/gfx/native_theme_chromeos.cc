@@ -16,6 +16,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/gfx/skia_util.h"
 
 namespace {
 
