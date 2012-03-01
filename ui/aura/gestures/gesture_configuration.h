@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "ui/aura/aura_export.h"
 
 namespace aura {
 
@@ -15,7 +14,7 @@ namespace aura {
 // approaches (windows, chrome, others).  This would turn into an
 // abstract base class.
 
-class AURA_EXPORT GestureConfiguration {
+class GestureConfiguration {
  public:
   static double max_touch_down_duration_in_seconds_for_click() {
     return max_touch_down_duration_in_seconds_for_click_;

@@ -52,7 +52,6 @@
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_init.h"
-#include "chrome/browser/ui/gesture_prefs.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
@@ -161,8 +160,6 @@ void RegisterLocalState(PrefService* local_state) {
 #if defined(OS_MACOSX)
   confirm_quit::RegisterLocalState(local_state);
 #endif
-
-  GesturePrefsRegisterPrefs(local_state);
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {
