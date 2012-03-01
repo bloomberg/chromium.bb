@@ -25,16 +25,17 @@ class MockProtectorService : public ProtectorService {
   MOCK_METHOD1(ShowChange, void(BaseSettingChange*));
   MOCK_CONST_METHOD0(IsShowingChange, bool());
 
-  MOCK_METHOD0(DismissChange, void());
-  MOCK_METHOD1(ApplyChange, void(Browser*));
-  MOCK_METHOD1(DiscardChange, void(Browser*));
+  MOCK_METHOD1(DismissChange, void(BaseSettingChange* change));
+  MOCK_METHOD2(ApplyChange, void(BaseSettingChange* change, Browser*));
+  MOCK_METHOD2(DiscardChange, void(BaseSettingChange* change, Browser*));
 
   MOCK_METHOD2(OpenTab, void(const GURL&, Browser*));
 
-  MOCK_METHOD1(OnApplyChange, void(Browser*));
-  MOCK_METHOD1(OnDiscardChange, void(Browser*));
-  MOCK_METHOD0(OnDecisionTimeout, void());
-  MOCK_METHOD0(OnRemovedFromProfile, void());
+  MOCK_METHOD2(OnApplyChange, void(SettingsChangeGlobalError* error, Browser*));
+  MOCK_METHOD2(OnDiscardChange, void(SettingsChangeGlobalError* error,
+                                     Browser*));
+  MOCK_METHOD1(OnDecisionTimeout, void(SettingsChangeGlobalError* error));
+  MOCK_METHOD1(OnRemovedFromProfile, void(SettingsChangeGlobalError* error));
 
   MOCK_METHOD0(Shutdown, void());
 };

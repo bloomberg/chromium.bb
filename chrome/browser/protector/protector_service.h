@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_PROTECTOR_PROTECTOR_SERVICE_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/linked_ptr.h"
 #include "base/message_loop_helpers.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/protector/base_setting_change.h"
@@ -30,51 +32,83 @@ class ProtectorService : public ProfileKeyedService,
   explicit ProtectorService(Profile* profile);
   virtual ~ProtectorService();
 
-  // Shows global error about the specified change. Owns |change|.
-  // TODO(ivankr): handle multiple subsequent changes.
+  // Shows global error about the specified change. Owns |change|. May be called
+  // multiple times in which case subsequent bubbles will be displayed.
   virtual void ShowChange(BaseSettingChange* change);
 
   // Returns |true| if a change is currently active (shown by a ShowChange call
   // and not yet applied or discarded).
   virtual bool IsShowingChange() const;
 
-  // Removes global error (including the bubbble if one is shown) and deletes
-  // the change instance (without calling Apply or Discard on it).
-  virtual void DismissChange();
+  // Removes corresponding global error (including the bubbble if one is shown)
+  // and deletes the change instance (without calling Apply or Discard on it).
+  virtual void DismissChange(BaseSettingChange* change);
 
-  // Persists the change that is currently active and removes global error.
-  // |browser| is the Browser instance from which the user action originates.
-  virtual void ApplyChange(Browser* browser);
+  // Persists |change| and removes corresponding global error. |browser| is the
+  // Browser instance from which the user action originates.
+  virtual void ApplyChange(BaseSettingChange* change, Browser* browser);
 
-  // Discards the change that is currently active and removes global error.
-  // |browser| is the Browser instance from which the user action originates.
-  virtual void DiscardChange(Browser* browser);
+  // Discards |change| and removes corresponding global error. |browser| is the
+  // Browser instance from which the user action originates.
+  virtual void DiscardChange(BaseSettingChange* change, Browser* browser);
 
   // Opens a tab with specified URL in the browser window we've shown error
   // bubble for.
   virtual void OpenTab(const GURL& url, Browser* browser);
 
-  // Returns the Profile instance we've shown error bubble for.
+  // Returns the most recent change instance or NULL if there are no changes.
+  BaseSettingChange* GetLastChange();
+
+  // Returns the Profile instance for this service.
   Profile* profile() { return profile_; }
 
  private:
   friend class ProtectorServiceTest;
 
+  // Pair of error and corresponding change instance.
+  struct Item {
+    Item();
+    ~Item();
+    linked_ptr<BaseSettingChange> change;
+    linked_ptr<SettingsChangeGlobalError> error;
+  };
+
+  // Matches Item by |change| field.
+  class MatchItemByChange {
+   public:
+    explicit MatchItemByChange(const BaseSettingChange* other);
+
+    bool operator()(const Item& item);
+
+   private:
+    const BaseSettingChange* other_;
+  };
+
+  // Matches Item by |error| field.
+  class MatchItemByError {
+   public:
+    explicit MatchItemByError(const SettingsChangeGlobalError* other);
+
+    bool operator()(const Item& item);
+
+   private:
+    const SettingsChangeGlobalError* other_;
+  };
+
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // SettingsChangeGlobalErrorDelegate implementation.
-  virtual void OnApplyChange(Browser* browser) OVERRIDE;
-  virtual void OnDiscardChange(Browser* browser) OVERRIDE;
-  virtual void OnDecisionTimeout() OVERRIDE;
-  virtual void OnRemovedFromProfile() OVERRIDE;
+  virtual void OnApplyChange(SettingsChangeGlobalError* error,
+                             Browser* browser) OVERRIDE;
+  virtual void OnDiscardChange(SettingsChangeGlobalError* error,
+                               Browser* browser) OVERRIDE;
+  virtual void OnDecisionTimeout(SettingsChangeGlobalError* error) OVERRIDE;
+  virtual void OnRemovedFromProfile(SettingsChangeGlobalError* error) OVERRIDE;
 
-  // Pointer to error bubble controller. Indicates if we're showing change
-  // notification to user.
-  scoped_ptr<SettingsChangeGlobalError> error_;
-
-  // Setting change which we're showing.
-  scoped_ptr<BaseSettingChange> change_;
+  // Pointers to error bubble controllers and corresponding changes in the order
+  // added.
+  std::vector<Item> items_;
 
   // Profile which settings we are protecting.
   Profile* profile_;

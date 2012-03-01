@@ -12,23 +12,27 @@ class Browser;
 
 namespace protector {
 
+class SettingsChangeGlobalError;
+
 // Interface for notifications about settings change error bubble closing.
 class SettingsChangeGlobalErrorDelegate {
  public:
   virtual ~SettingsChangeGlobalErrorDelegate() {}
 
   // Called if user clicks "Apply change" button.
-  virtual void OnApplyChange(Browser* browser) = 0;
+  virtual void OnApplyChange(SettingsChangeGlobalError* error,
+                             Browser* browser) = 0;
 
   // Called if user clicks "Discard change" button.
-  virtual void OnDiscardChange(Browser* browser) = 0;
+  virtual void OnDiscardChange(SettingsChangeGlobalError* error,
+                               Browser* browser) = 0;
 
   // Called if user clicked outside the bubble and timeout for its reshow
   // has passed.
-  virtual void OnDecisionTimeout() = 0;
+  virtual void OnDecisionTimeout(SettingsChangeGlobalError* error) = 0;
 
   // Called when error is removed from profile so it's safe to delete it.
-  virtual void OnRemovedFromProfile() = 0;
+  virtual void OnRemovedFromProfile(SettingsChangeGlobalError* error) = 0;
 };
 
 }  // namespace protector

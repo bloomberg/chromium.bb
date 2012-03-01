@@ -33,17 +33,26 @@ class ProtectorServiceTest : public InProcessBrowserTest {
   }
 
  protected:
-  GlobalError* GetGlobalError() {
-    return protector_service_->error_.get();
+  GlobalError* GetGlobalError(BaseSettingChange* change) {
+    std::vector<ProtectorService::Item>::iterator item =
+        std::find_if(protector_service_->items_.begin(),
+                     protector_service_->items_.end(),
+                     ProtectorService::MatchItemByChange(change));
+    return item == protector_service_->items_.end() ?
+        NULL : item->error.get();
   }
 
-  void ExpectGlobalErrorActive(bool active) {
-    GlobalError* error =
-        GlobalErrorServiceFactory::GetForProfile(browser()->profile())->
-            GetGlobalErrorByMenuItemCommandID(IDC_SHOW_SETTINGS_CHANGES);
-    EXPECT_EQ(active, error != NULL);
-    EXPECT_EQ(active, GetGlobalError() != NULL);
-    EXPECT_EQ(active, protector_service_->IsShowingChange());
+  // Checks that |protector_service_| has an error instance corresponding to
+  // |change| and that GlobalErrorService knows about it.
+  bool IsGlobalErrorActive(BaseSettingChange* change) {
+    GlobalError* error = GetGlobalError(change);
+    if (!error)
+      return false;
+    if (!GlobalErrorServiceFactory::GetForProfile(browser()->profile())->
+            GetGlobalErrorByMenuItemCommandID(error->MenuItemCommandID())) {
+      return false;
+    }
+    return protector_service_->IsShowingChange();
   }
 
   ProtectorService* protector_service_;
@@ -55,9 +64,9 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ChangeInitError) {
   EXPECT_CALL(*mock_change_, MockInit(browser()->profile())).
       WillOnce(Return(false));
   protector_service_->ShowChange(mock_change_);
-  ExpectGlobalErrorActive(false);
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(false);
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
 }
 
 IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDismiss) {
@@ -66,10 +75,10 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDismiss) {
       WillOnce(Return(true));
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(true);
-  protector_service_->DismissChange();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
+  protector_service_->DismissChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(false);
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
 }
 
 IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApply) {
@@ -78,11 +87,11 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApply) {
       WillOnce(Return(true));
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(true);
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
   EXPECT_CALL(*mock_change_, Apply(browser()));
-  protector_service_->ApplyChange(browser());
+  protector_service_->ApplyChange(mock_change_, browser());
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(false);
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
 }
 
 IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApplyManually) {
@@ -91,14 +100,15 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndApplyManually) {
       WillOnce(Return(true));
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(true);
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
   EXPECT_CALL(*mock_change_, Apply(browser()));
   // Pressing Cancel applies the change.
-  GlobalError* error = GetGlobalError();
+  GlobalError* error = GetGlobalError(mock_change_);
+  ASSERT_TRUE(error);
   error->BubbleViewCancelButtonPressed(browser());
   error->GetBubbleView()->CloseBubbleView();
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(false);
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
 }
 
 IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDiscard) {
@@ -107,11 +117,11 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDiscard) {
       WillOnce(Return(true));
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(true);
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
   EXPECT_CALL(*mock_change_, Discard(browser()));
-  protector_service_->DiscardChange(browser());
+  protector_service_->DiscardChange(mock_change_, browser());
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(false);
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
 }
 
 IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDiscardManually) {
@@ -120,14 +130,15 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowAndDiscardManually) {
       WillOnce(Return(true));
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(true);
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
   EXPECT_CALL(*mock_change_, Discard(browser()));
   // Pressing Apply discards the change.
-  GlobalError* error = GetGlobalError();
+  GlobalError* error = GetGlobalError(mock_change_);
+  ASSERT_TRUE(error);
   error->BubbleViewAcceptButtonPressed(browser());
   error->GetBubbleView()->CloseBubbleView();
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(false);
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
 }
 
 IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, BubbleClosedInsideApply) {
@@ -135,18 +146,128 @@ IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, BubbleClosedInsideApply) {
       WillOnce(Return(true));
   protector_service_->ShowChange(mock_change_);
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(true);
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
 
-  GlobalError* error = GetGlobalError();
+  GlobalError* error = GetGlobalError(mock_change_);
+  ASSERT_TRUE(error);
   GlobalErrorBubbleViewBase* bubble_view = error->GetBubbleView();
-  EXPECT_TRUE(bubble_view);
+  ASSERT_TRUE(bubble_view);
   EXPECT_CALL(*mock_change_, Apply(browser())).WillOnce(InvokeWithoutArgs(
       bubble_view, &GlobalErrorBubbleViewBase::CloseBubbleView));
 
   // Pressing Cancel applies the change.
   error->BubbleViewCancelButtonPressed(browser());
   ui_test_utils::RunAllPendingInMessageLoop();
-  ExpectGlobalErrorActive(false);
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+}
+
+IN_PROC_BROWSER_TEST_F(ProtectorServiceTest, ShowMultipleChangesAndApply) {
+  // Show the first change.
+  EXPECT_CALL(*mock_change_, MockInit(browser()->profile())).
+      WillOnce(Return(true));
+  protector_service_->ShowChange(mock_change_);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
+
+  // ProtectService will own this change instance as well.
+  MockSettingChange* mock_change2 = new NiceMock<MockSettingChange>();
+  // Show the second change.
+  EXPECT_CALL(*mock_change2, MockInit(browser()->profile())).
+      WillOnce(Return(true));
+  protector_service_->ShowChange(mock_change2);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
+
+  // Apply the first change, the second should still be active.
+  EXPECT_CALL(*mock_change_, Apply(browser()));
+  protector_service_->ApplyChange(mock_change_, browser());
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
+
+  // Finally apply the second change.
+  EXPECT_CALL(*mock_change2, Apply(browser()));
+  protector_service_->ApplyChange(mock_change2, browser());
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change2));
+}
+
+IN_PROC_BROWSER_TEST_F(ProtectorServiceTest,
+                       ShowMultipleChangesDismissAndApply) {
+  // Show the first change.
+  EXPECT_CALL(*mock_change_, MockInit(browser()->profile())).
+      WillOnce(Return(true));
+  protector_service_->ShowChange(mock_change_);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
+
+  // ProtectService will own this change instance as well.
+  MockSettingChange* mock_change2 = new NiceMock<MockSettingChange>();
+  // Show the second change.
+  EXPECT_CALL(*mock_change2, MockInit(browser()->profile())).
+      WillOnce(Return(true));
+  protector_service_->ShowChange(mock_change2);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
+
+  // Dismiss the first change, the second should still be active.
+  protector_service_->DismissChange(mock_change_);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
+
+  // Finally apply the second change.
+  EXPECT_CALL(*mock_change2, Apply(browser()));
+  protector_service_->ApplyChange(mock_change2, browser());
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change2));
+}
+
+IN_PROC_BROWSER_TEST_F(ProtectorServiceTest,
+                       ShowMultipleChangesAndApplyManually) {
+  // Show the first change.
+  EXPECT_CALL(*mock_change_, MockInit(browser()->profile())).
+      WillOnce(Return(true));
+  protector_service_->ShowChange(mock_change_);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
+
+  // ProtectService will own this change instance as well.
+  MockSettingChange* mock_change2 = new NiceMock<MockSettingChange>();
+  // Show the second change.
+  EXPECT_CALL(*mock_change2, MockInit(browser()->profile())).
+      WillOnce(Return(true));
+  protector_service_->ShowChange(mock_change2);
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change_));
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
+
+  // Apply the first change, mimicking a button click; the second should still
+  // be active.
+  EXPECT_CALL(*mock_change_, Apply(browser()));
+  GlobalError* error = GetGlobalError(mock_change_);
+  ASSERT_TRUE(error);
+  error->ShowBubbleView(browser());
+  error->BubbleViewCancelButtonPressed(browser());
+  error->GetBubbleView()->CloseBubbleView();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+  EXPECT_TRUE(IsGlobalErrorActive(mock_change2));
+
+  // Finally apply the second change.
+  EXPECT_CALL(*mock_change2, Apply(browser()));
+  GlobalError* error2 = GetGlobalError(mock_change2);
+  ASSERT_TRUE(error);
+  error2->ShowBubbleView(browser());
+  error2->BubbleViewCancelButtonPressed(browser());
+  error2->GetBubbleView()->CloseBubbleView();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change_));
+  EXPECT_FALSE(IsGlobalErrorActive(mock_change2));
 }
 
 // TODO(ivankr): Timeout test.

@@ -3462,10 +3462,12 @@ void TestingAutomationProvider::PerformProtectorAction(
     reply.SendError("Missing 'action' value");
     return;
   }
+  protector::BaseSettingChange* change =
+      protector_service->GetLastChange();
   if (action == "apply_change")
-    protector_service->ApplyChange(browser);
+    protector_service->ApplyChange(change, browser);
   else if (action == "discard_change")
-    protector_service->DiscardChange(browser);
+    protector_service->DiscardChange(change, browser);
   else
     return reply.SendError("Invalid 'action' value");
   reply.SendSuccess(NULL);

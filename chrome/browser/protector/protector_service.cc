@@ -29,37 +29,41 @@ ProtectorService::~ProtectorService() {
 
 void ProtectorService::ShowChange(BaseSettingChange* change) {
   DCHECK(change);
-  change_.reset(change);
+  Item new_item;
+  new_item.change.reset(change);
   DVLOG(1) << "Init change";
   if (!change->Init(profile_)) {
     LOG(WARNING) << "Error while initializing, dismissing change";
-    change_.reset();
     return;
   }
-  error_.reset(new SettingsChangeGlobalError(change, this));
-  error_->ShowForProfile(profile_);
+  SettingsChangeGlobalError* error =
+      new SettingsChangeGlobalError(change, this);
+  new_item.error.reset(error);
+  items_.push_back(new_item);
+  error->ShowForProfile(profile_);
 }
 
 bool ProtectorService::IsShowingChange() const {
-  return change_.get() != NULL;
+  return !items_.empty();
 }
 
-void ProtectorService::ApplyChange(Browser* browser) {
-  DCHECK(IsShowingChange());
-  change_->Apply(browser);
-  DismissChange();
+void ProtectorService::ApplyChange(BaseSettingChange* change,
+                                   Browser* browser) {
+  change->Apply(browser);
+  DismissChange(change);
 }
 
-void ProtectorService::DiscardChange(Browser* browser) {
-  DCHECK(IsShowingChange());
-  change_->Discard(browser);
-  DismissChange();
+void ProtectorService::DiscardChange(BaseSettingChange* change,
+                                     Browser* browser) {
+  change->Discard(browser);
+  DismissChange(change);
 }
 
-void ProtectorService::DismissChange() {
-  DCHECK(IsShowingChange());
-  error_->RemoveFromProfile();
-  DCHECK(!IsShowingChange());
+void ProtectorService::DismissChange(BaseSettingChange* change) {
+  std::vector<Item>::iterator item =
+      std::find_if(items_.begin(), items_.end(), MatchItemByChange(change));
+  DCHECK(item != items_.end());
+  item->error->RemoveFromProfile();
 }
 
 void ProtectorService::OpenTab(const GURL& url, Browser* browser) {
@@ -68,32 +72,60 @@ void ProtectorService::OpenTab(const GURL& url, Browser* browser) {
 }
 
 void ProtectorService::Shutdown() {
-  if (IsShowingChange())
-    DismissChange();
+  while (IsShowingChange())
+    items_[0].error->RemoveFromProfile();
 }
 
-void ProtectorService::OnApplyChange(Browser* browser) {
+void ProtectorService::OnApplyChange(SettingsChangeGlobalError* error,
+                                     Browser* browser) {
   DVLOG(1) << "Apply change";
-  DCHECK(IsShowingChange());
-  change_->Apply(browser);
+  error->change()->Apply(browser);
 }
 
-void ProtectorService::OnDiscardChange(Browser* browser) {
+void ProtectorService::OnDiscardChange(SettingsChangeGlobalError* error,
+                                       Browser* browser) {
   DVLOG(1) << "Discard change";
-  DCHECK(IsShowingChange());
-  change_->Discard(browser);
+  error->change()->Discard(browser);
 }
 
-void ProtectorService::OnDecisionTimeout() {
+void ProtectorService::OnDecisionTimeout(SettingsChangeGlobalError* error) {
   DVLOG(1) << "Timeout";
-  DCHECK(IsShowingChange());
-  change_->Timeout();
+  error->change()->Timeout();
 }
 
-void ProtectorService::OnRemovedFromProfile() {
-  DCHECK(IsShowingChange());
-  error_.reset();
-  change_.reset();
+void ProtectorService::OnRemovedFromProfile(SettingsChangeGlobalError* error) {
+  std::vector<Item>::iterator item =
+      std::find_if(items_.begin(), items_.end(), MatchItemByError(error));
+  DCHECK(item != items_.end());
+  items_.erase(item);
+}
+
+BaseSettingChange* ProtectorService::GetLastChange() {
+  return items_.empty() ? NULL : items_.back().change.get();
+}
+
+ProtectorService::Item::Item() {
+}
+
+ProtectorService::Item::~Item() {
+}
+
+ProtectorService::MatchItemByChange::MatchItemByChange(
+    const BaseSettingChange* other) : other_(other) {
+}
+
+bool ProtectorService::MatchItemByChange::operator()(
+    const ProtectorService::Item& item) {
+  return other_ == item.change.get();
+}
+
+ProtectorService::MatchItemByError::MatchItemByError(
+    const SettingsChangeGlobalError* other) : other_(other) {
+}
+
+bool ProtectorService::MatchItemByError::operator()(
+    const ProtectorService::Item& item) {
+  return other_ == item.error.get();
 }
 
 

@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
             turl_service_->GetDefaultSearchProvider());
 
   // Verify that changing search provider externally dismissed the change.
-  EXPECT_CALL(*mock_protector_service_, DismissChange());
+  EXPECT_CALL(*mock_protector_service_, DismissChange(change.get()));
   AddAndSetDefault(new_url);
 }
 

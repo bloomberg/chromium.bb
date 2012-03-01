@@ -335,7 +335,7 @@ void DefaultSearchProviderChange::OnTemplateURLServiceChanged() {
     default_search_provider_ = NULL;
     url_service->RemoveObserver(this);
     // Will delete this DefaultSearchProviderChange instance.
-    ProtectorServiceFactory::GetForProfile(profile())->DismissChange();
+    ProtectorServiceFactory::GetForProfile(profile())->DismissChange(this);
   }
 }
 

@@ -4,11 +4,13 @@
 
 #include "chrome/browser/protector/settings_change_global_error.h"
 
+#include <bitset>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_setting_change.h"
@@ -28,6 +30,12 @@ namespace {
 // Timeout before the global error is removed (wrench menu item disappears).
 const int kMenuItemDisplayPeriodMs = 10*60*1000;  // 10 min
 
+// Unset bits indicate available command IDs.
+static base::LazyInstance<
+    std::bitset<IDC_SHOW_SETTINGS_CHANGE_LAST -
+                IDC_SHOW_SETTINGS_CHANGE_FIRST + 1> > menu_ids =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 SettingsChangeGlobalError::SettingsChangeGlobalError(
@@ -38,11 +46,25 @@ SettingsChangeGlobalError::SettingsChangeGlobalError(
       profile_(NULL),
       closed_by_button_(false),
       show_on_browser_activation_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      menu_id_(-1) {
   DCHECK(delegate_);
+  for (int i = IDC_SHOW_SETTINGS_CHANGE_FIRST;
+       i <= IDC_SHOW_SETTINGS_CHANGE_LAST; i++) {
+    if (!menu_ids.Get()[i - IDC_SHOW_SETTINGS_CHANGE_FIRST]) {
+      menu_id_ = i;
+      menu_ids.Get().set(i - IDC_SHOW_SETTINGS_CHANGE_FIRST);
+      break;
+    }
+  }
+  DCHECK(menu_id_ >= 0) << "Out of command IDs for SettingsChangeGlobalError";
 }
 
 SettingsChangeGlobalError::~SettingsChangeGlobalError() {
+  if (profile_)
+    RemoveFromProfile();
+  if (menu_id_ >= 0)
+    menu_ids.Get().reset(menu_id_ - IDC_SHOW_SETTINGS_CHANGE_FIRST);
 }
 
 bool SettingsChangeGlobalError::HasBadge() {
@@ -58,7 +80,7 @@ bool SettingsChangeGlobalError::HasMenuItem() {
 }
 
 int SettingsChangeGlobalError::MenuItemCommandID() {
-  return IDC_SHOW_SETTINGS_CHANGES;
+  return menu_id_;
 }
 
 string16 SettingsChangeGlobalError::MenuItemLabel() {
@@ -105,13 +127,13 @@ string16 SettingsChangeGlobalError::GetBubbleViewCancelButtonLabel() {
 void SettingsChangeGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
   closed_by_button_ = true;
-  delegate_->OnDiscardChange(browser);
+  delegate_->OnDiscardChange(this, browser);
 }
 
 void SettingsChangeGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
   closed_by_button_ = true;
-  delegate_->OnApplyChange(browser);
+  delegate_->OnApplyChange(this, browser);
 }
 
 void SettingsChangeGlobalError::OnBrowserSetLastActive(
@@ -132,11 +154,13 @@ void SettingsChangeGlobalError::OnBrowserSetLastActive(
 }
 
 void SettingsChangeGlobalError::RemoveFromProfile() {
-  if (profile_)
+  if (profile_) {
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
+    profile_ = NULL;
+  }
   BrowserList::RemoveObserver(this);
   // This will delete |this|.
-  delegate_->OnRemovedFromProfile();
+  delegate_->OnRemovedFromProfile(this);
 }
 
 void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
@@ -201,7 +225,7 @@ void SettingsChangeGlobalError::ShowInBrowser(Browser* browser) {
 }
 
 void SettingsChangeGlobalError::OnInactiveTimeout() {
-  delegate_->OnDecisionTimeout();
+  delegate_->OnDecisionTimeout(this);
   RemoveFromProfile();
 }
 
