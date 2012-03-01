@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
@@ -19,6 +20,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "webkit/blob/blob_storage_controller.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_file_writer.h"
@@ -37,8 +39,34 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
+using webkit_blob::BlobData;
+using webkit_blob::BlobStorageController;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemOperationInterface;
+
+namespace {
+MessageLoop* g_io_thread;
+webkit_blob::BlobStorageController* g_blob_storage_controller;
+
+void RegisterBlob(const GURL& blob_url, const FilePath& file_path) {
+  DCHECK(g_blob_storage_controller);
+
+  FilePath::StringType extension = file_path.Extension();
+  if (!extension.empty())
+    extension = extension.substr(1);  // Strip leading ".".
+
+  // This may fail, but then we'll be just setting the empty mime type.
+  std::string mime_type;
+  net::GetWellKnownMimeTypeFromExtension(extension, &mime_type);
+
+  BlobData::Item item;
+  item.SetToFile(file_path, 0, -1, base::Time());
+  g_blob_storage_controller->StartBuildingBlob(blob_url);
+  g_blob_storage_controller->AppendBlobDataItem(blob_url, item);
+  g_blob_storage_controller->FinishBuildingBlob(blob_url, mime_type);
+}
+
+}  // namespace
 
 SimpleFileSystem::SimpleFileSystem() {
   if (file_system_dir_.CreateUniqueTempDir()) {
@@ -152,9 +180,21 @@ void SimpleFileSystem::createSnapshotFileAndReadMetadata(
     const WebURL& blobURL,
     const WebURL& path,
     WebFileSystemCallbacks* callbacks) {
-  // TODO(michaeln): Register the blobURL with the blob storage contoller.
   GetNewOperation(path)->CreateSnapshotFile(
-      path, SnapshotFileHandler(callbacks));
+      path, SnapshotFileHandler(blobURL, callbacks));
+}
+
+// static
+void SimpleFileSystem::InitializeOnIOThread(
+    webkit_blob::BlobStorageController* blob_storage_controller) {
+  g_io_thread = MessageLoop::current();
+  g_blob_storage_controller = blob_storage_controller;
+}
+
+// static
+void SimpleFileSystem::CleanupOnIOThread() {
+  g_io_thread = NULL;
+  g_blob_storage_controller = NULL;
 }
 
 FileSystemOperationInterface* SimpleFileSystem::GetNewOperation(
@@ -189,9 +229,10 @@ SimpleFileSystem::OpenFileSystemHandler(WebFileSystemCallbacks* callbacks) {
 }
 
 FileSystemOperationInterface::SnapshotFileCallback
-SimpleFileSystem::SnapshotFileHandler(WebFileSystemCallbacks* callbacks) {
+SimpleFileSystem::SnapshotFileHandler(const GURL& blob_url,
+                                      WebFileSystemCallbacks* callbacks) {
   return base::Bind(&SimpleFileSystem::DidCreateSnapshotFile,
-                    AsWeakPtr(), base::Unretained(callbacks));
+                    AsWeakPtr(), blob_url, base::Unretained(callbacks));
 }
 
 void SimpleFileSystem::DidFinish(WebFileSystemCallbacks* callbacks,
@@ -256,10 +297,17 @@ void SimpleFileSystem::DidOpenFileSystem(
 }
 
 void SimpleFileSystem::DidCreateSnapshotFile(
+    const GURL& blob_url,
     WebFileSystemCallbacks* callbacks,
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
     const FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+  DCHECK(g_io_thread);
+  if (result == base::PLATFORM_FILE_OK) {
+    g_io_thread->PostTask(
+        FROM_HERE,
+        base::Bind(&RegisterBlob, blob_url, platform_path));
+  }
   DidGetMetadata(callbacks, result, info, platform_path);
 }

@@ -68,6 +68,7 @@
 #include "webkit/fileapi/file_system_url_request_job.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_file_writer.h"
 #include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
@@ -143,6 +144,8 @@ class IOThread : public base::Thread {
     SimpleAppCacheSystem::InitializeOnIOThread(g_request_context);
     SimpleSocketStreamBridge::InitializeOnIOThread(g_request_context);
     SimpleFileWriter::InitializeOnIOThread(g_request_context);
+    SimpleFileSystem::InitializeOnIOThread(
+        g_request_context->blob_storage_controller());
     TestShellWebBlobRegistryImpl::InitializeOnIOThread(
         g_request_context->blob_storage_controller());
   }
@@ -150,6 +153,7 @@ class IOThread : public base::Thread {
   virtual void CleanUp() {
     // In reverse order of initialization.
     TestShellWebBlobRegistryImpl::Cleanup();
+    SimpleFileSystem::CleanupOnIOThread();
     SimpleFileWriter::CleanupOnIOThread();
     SimpleSocketStreamBridge::Cleanup();
     SimpleAppCacheSystem::CleanupOnIOThread();

@@ -25,6 +25,10 @@ namespace fileapi {
 class FileSystemContext;
 }
 
+namespace webkit_blob {
+class BlobStorageController;
+}
+
 class SimpleFileSystem
     : public WebKit::WebFileSystem,
       public base::SupportsWeakPtr<SimpleFileSystem> {
@@ -84,6 +88,10 @@ class SimpleFileSystem
       const WebKit::WebURL& path,
       WebKit::WebFileSystemCallbacks* callbacks) OVERRIDE;
 
+  static void InitializeOnIOThread(
+      webkit_blob::BlobStorageController* blob_storage_controller);
+  static void CleanupOnIOThread();
+
  private:
   // Helpers.
   fileapi::FileSystemOperationInterface* GetNewOperation(
@@ -99,7 +107,8 @@ class SimpleFileSystem
   fileapi::FileSystemContext::OpenFileSystemCallback OpenFileSystemHandler(
       WebKit::WebFileSystemCallbacks* callbacks);
   fileapi::FileSystemOperationInterface::SnapshotFileCallback
-      SnapshotFileHandler(WebKit::WebFileSystemCallbacks* callbacks);
+      SnapshotFileHandler(const GURL& blob_url,
+                          WebKit::WebFileSystemCallbacks* callbacks);
   void DidFinish(WebKit::WebFileSystemCallbacks* callbacks,
                  base::PlatformFileError result);
   void DidGetMetadata(WebKit::WebFileSystemCallbacks* callbacks,
@@ -115,6 +124,7 @@ class SimpleFileSystem
                          base::PlatformFileError result,
                          const std::string& name, const GURL& root);
   void DidCreateSnapshotFile(
+      const GURL& blob_url,
       WebKit::WebFileSystemCallbacks* callbacks,
       base::PlatformFileError result,
       const base::PlatformFileInfo& info,
