@@ -321,10 +321,18 @@ for read_write in [False, True]:
                              annotate, validator_decoder)
 
 # Run segment sandboxing tests of pre/post conditions for the validator.
-if test_env.Bit('ncval_testing') and test_env.Bit('target_x86_64'):
-  options = ['--hex_text=-', '--max_errors=-1', '--cpuid-all',
+def __AddNcvalTestingTests(report_errors):
+  options = ['--hex_text=-', '--cpuid-all',
              '--readwrite_sfi', '--annotate=false']
   ext = 'cval'
+  if report_errors:
+    # Show error messages that would otherwise hide pre/post conditions
+    # in the corresponding cval test case. Used to verify that we only
+    # report pre/post conditions for instructions that are NaCl legal
+    # except for pre/post conditions.
+    ext = ext + "e"
+    options.append('--max_errors=-1')
+    options.append('--print_all_conds')
   test = 'ncval_conds'
   for base in __GoldenBases(ext):
     command = [ncval] + options
@@ -334,6 +342,10 @@ if test_env.Bit('ncval_testing') and test_env.Bit('target_x86_64'):
         stdin = __BaseTestFile(base, 'hex'),
         stdout_golden = __BaseTestFile(base, ext))
     __AddTest(test, test_env, base, ext, node_val, ['ncval_testing'])
+
+if test_env.Bit('ncval_testing') and test_env.Bit('target_x86_64'):
+  for report_errors in [False, True]:
+    __AddNcvalTestingTests(report_errors)
 
 # Run segment sandboxing tests using ncval on test files.
 def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):

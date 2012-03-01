@@ -1,0 +1,6 @@
+0: -> ZeroExtends(eax)
+VALIDATOR: 0000000000000005: 67 48 89 84 25 70 e4 63 00                   mov [%rbp+0x63e470], %rax
+VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
+VALIDATOR: 0000000000000005: 67 48 89 84 25 70 e4 63 00                   mov [%rbp+0x63e470], %rax
+VALIDATOR: ERROR: Assignment to non-64 bit memory address
+VALIDATOR: Checking block alignment and jump targets: 0 to e

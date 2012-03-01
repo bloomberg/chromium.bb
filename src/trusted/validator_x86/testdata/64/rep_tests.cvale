@@ -1,0 +1,21 @@
+VALIDATOR: 0000000000000002: f3 00 c0                                     add %al, %al
+VALIDATOR: ERROR: Use of REP (F3) prefix for instruction not allowed by Native Client
+VALIDATOR: 0000000000000005: f2 00 c0                                     add %al, %al
+VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+VALIDATOR: 0000000000000008: f3 0f 10 02                                  movss %xmm0, [%rdx]
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: 0000000000000012: 6c                                           insb
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+12: SafeAddress(rdi)
+VALIDATOR: 0000000000000013: f3 6c                                        insb
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+13: SafeAddress(rdi)
+VALIDATOR: 0000000000000015: f2 6c                                        insb
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000015: f2 6c                                        insb
+VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
+15: SafeAddress(rdi)
+17: SafeAddress(rdi)&SafeAddress(rsi)
+18: SafeAddress(rdi)&SafeAddress(rsi)
+1a: SafeAddress(rdi)&SafeAddress(rsi)
+VALIDATOR: Checking block alignment and jump targets: 0 to 1c

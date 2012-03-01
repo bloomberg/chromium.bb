@@ -1,6 +1,4 @@
 16: -> ZeroExtends(edi)
 18: ZeroExtends(edi) -> SafeAddress(rdi)
-1c: SafeAddress(rdi)
 20: -> ZeroExtends(edi)
 22: ZeroExtends(edi) -> SafeAddress(rdi)
-26: SafeAddress(rdi)

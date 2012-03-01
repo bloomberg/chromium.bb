@@ -1,0 +1,3 @@
+2: -> ZeroExtends(edx)
+5: ZeroExtends(edx) -> SafeAddress(r9)
+VALIDATOR: Checking block alignment and jump targets: 0 to c

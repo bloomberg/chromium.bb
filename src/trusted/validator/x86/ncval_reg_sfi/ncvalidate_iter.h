@@ -77,6 +77,12 @@ extern Bool NACL_FLAGS_ncval_annotate;
 #ifdef NCVAL_TESTING
 /* Command line flag for printing out prefix/postfix conditions. */
 extern Bool NACL_FLAGS_print_validator_conditions;
+
+/* Command line flag controlling whether pre/post conditions are printed
+ * on all instructions. By default, only those instructions that validate
+ * have pre/post conditions printed.
+ */
+extern Bool NACL_FLAGS_report_conditions_on_all;
 #endif
 
 /* Changes all validator trace flags to true. */

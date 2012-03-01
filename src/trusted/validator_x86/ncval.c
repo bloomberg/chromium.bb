@@ -56,17 +56,6 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-/* When true, ncval will override the default reporter with the
- * appropriate verbose reporter.
- */
-static Bool override_reporter =
-#if DEBUGGING || !defined(NCVAL_TESTING)
-    TRUE
-#else
-    FALSE
-#endif
-    ;
-
 /* Forward declarations. */
 static void usage(int exit_code);
 
@@ -363,9 +352,7 @@ static Bool AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NCValInit(vbase, vlimit - vbase, ncf->ncalign);
   if (vstate == NULL) return FALSE;
-  if (override_reporter) {
-    NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
-  }
+  NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   if (AnalyzeSegmentSections(ncf, vstate) < 0) {
     NaClLog(LOG_INFO, "%s: text validate failed\n", fname);
   }
@@ -482,9 +469,7 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
     NaClValidatorMessage(LOG_ERROR, vstate, "Unable to create validator state");
     return FALSE;
   }
-  if (override_reporter) {
-    NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
-  }
+  NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
   if (NACL_FLAGS_analyze_segments) {
     AnalyzeSfiSegments(ncf, vstate);
   } else {
@@ -550,9 +535,7 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   if (NACL_FLAGS_stubout_memory) {
     NaClValidatorStateSetDoStubOut(state, TRUE);
   }
-  if (override_reporter) {
-    NaClValidatorStateSetErrorReporter(state, &kNaClVerboseErrorReporter);
-  }
+  NaClValidatorStateSetErrorReporter(state, &kNaClVerboseErrorReporter);
   NaClValidateSegmentUsingTables(data->bytes, data->base, data->num_bytes,
                                  state, NaClGetDecoderTables());
   return_value = NaClValidatesOk(state);
@@ -572,9 +555,7 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
     if (NACL_FLAGS_stubout_memory) {
       NCValidateSetStubOutMode(vstate, 1);
     }
-    if (override_reporter) {
-      NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
-    }
+    NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
     NCValidateSegment(&data->bytes[0], data->base, data->num_bytes, vstate);
     return_value = (0 == NCValidateFinish(vstate)) ? TRUE : FALSE;
     if (vstate->stats.didstubout) {
@@ -621,6 +602,10 @@ static const char usage_str[] =
       "\n"
       "Options are:\n"
       "\n"
+#ifdef NCVAL_TESTING
+      "--print_conditions\n"
+      "\tPrint all pre/post conditions, including NaCl illegal instructions.\n"
+#endif
       "--alignment=N\n"
       "\tSet block alignment to N bytes (only 16 or 32 allowed).\n"
       "--annotate\n"
@@ -764,7 +749,9 @@ static Bool GrokABoolFlag(const char *arg) {
     Bool *flag_ptr;
   } flags[] = {
     { "--segments" , &NACL_FLAGS_analyze_segments },
-#ifndef NCVAL_TESTING
+#ifdef NCVAL_TESTING
+    { "--print_all_conds", &NACL_FLAGS_report_conditions_on_all },
+#else
     { "--detailed", &NACL_FLAGS_detailed_errors },
 #endif
     { "--stubout", &NACL_FLAGS_stubout_memory },

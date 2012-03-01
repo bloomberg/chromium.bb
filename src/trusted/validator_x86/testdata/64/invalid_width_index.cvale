@@ -1,0 +1,2 @@
+4: ZeroExtends(ecx)
+VALIDATOR: Checking block alignment and jump targets: 0 to 9

@@ -45,12 +45,26 @@ struct NaClValidatorState {
   NaClOpKind base_register;
   /* Holds if the validation is still valid. */
   Bool validates_ok;
+#ifdef NCVAL_TESTING
+  /* Hold if any problems occured during validation of any instruction.
+   * This is needed when generating pre/post conditions because we
+   * need to override validates_ok on each instruction so that we
+   * will generate pre/post conditions for all instructions.
+   */
+  Bool validates_ok_with_conditions;
+#endif
   /* Holds if any stubouts have been performed. */
   Bool did_stub_out;
   /* If >= 0, holds how many errors can be reported. If negative,
    * reports all errors.
    */
   int quit_after_error_count;
+#ifdef NCVAL_TESTING
+  /* Define whether we should report pre/post conditions, even
+   * if the instruction does not validate.
+   */
+  Bool report_conditions_on_all;
+#endif
   /* Holds the error reporting object to use. */
   NaClErrorReporter* error_reporter;
   /* Holds the cpu features of the machine it is running on. */

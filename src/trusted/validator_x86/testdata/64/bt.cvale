@@ -1,0 +1,21 @@
+VALIDATOR: 0000000000000000: 48 0f b3 00                                  btr [%rax], %rax
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000000: 48 0f b3 00                                  btr [%rax], %rax
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: 0000000000000004: 48 0f ab 00                                  bts [%rax], %rax
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000004: 48 0f ab 00                                  bts [%rax], %rax
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: 0000000000000008: 48 0f bb 00                                  btc [%rax], %rax
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000008: 48 0f bb 00                                  btc [%rax], %rax
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: 000000000000000c: 0f ba 30 01                                  btr [%rax], 0x1
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: 0000000000000010: 0f ba 28 01                                  bts [%rax], 0x1
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: 0000000000000014: 0f ba 38 01                                  btc [%rax], 0x1
+VALIDATOR: ERROR: Invalid base register in memory offset
+VALIDATOR: Checking block alignment and jump targets: 0 to 38
+VALIDATOR: 000000000000001e: 0f ba 24 24 01                               bt [%rsp], 0x1
+VALIDATOR: ERROR: Instruction crosses basic block alignment

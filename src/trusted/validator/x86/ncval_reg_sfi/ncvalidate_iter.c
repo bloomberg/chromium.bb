@@ -45,7 +45,20 @@
 /* When >= 0, only print that many errors before quiting. When
  * < 0, print all errors.
  */
-int NACL_FLAGS_max_reported_errors = 100;
+int NACL_FLAGS_max_reported_errors =
+#ifdef NCVAL_TESTING
+    /* Turn off error reporting when generating pre/post conditions.
+     * Note: conditional code for NCVAL_TESTING will reset the
+     * quit flag after each instruction. Hence, by using 0, we
+     * effectively turn off printing of errors as the default. However,
+     * one can override this on the command line to force errors to
+     * be printed as well.
+     */
+    0
+#else
+    100
+#endif
+    ;
 
 Bool NACL_FLAGS_validator_trace_instructions = FALSE;
 
@@ -54,6 +67,8 @@ Bool NACL_FLAGS_validator_trace_inst_internals = FALSE;
 Bool NACL_FLAGS_ncval_annotate = TRUE;
 
 #ifdef NCVAL_TESTING
+Bool NACL_FLAGS_report_conditions_on_all = FALSE;
+
 void NaClConditionAppend(char* condition,
                          char** buffer,
                          size_t* remaining_buffer_size) {
@@ -510,6 +525,10 @@ NaClValidatorState *NaClValidatorStateCreate(
     vstate->validates_ok = TRUE;
     vstate->did_stub_out = FALSE;
     vstate->quit_after_error_count = NACL_FLAGS_max_reported_errors;
+#ifdef NCVAL_TESTING
+    vstate->validates_ok_with_conditions = TRUE;
+    vstate->report_conditions_on_all = NACL_FLAGS_report_conditions_on_all;
+#endif
     vstate->error_reporter = &kNaClNullErrorReporter;
     vstate->print_opcode_histogram = NACL_FLAGS_opcode_histogram;
     vstate->trace_instructions = NACL_FLAGS_validator_trace_instructions;
@@ -593,10 +612,23 @@ static INLINE void NaClApplyValidators(NaClValidatorState *vstate) {
     NaClOpcodeHistogramRecord(vstate);
   }
 #ifdef NCVAL_TESTING
-  /* Collect post conditions for instructions that are non-last. */
-  NaClAddAssignsRegisterWithZeroExtendsPostconds(vstate);
-  NaClAddLeaSafeAddressPostconds(vstate);
-  NaClPrintConditions(vstate);
+  /* Collect post conditions for instructions that are non-last.
+   * Only print pre/post conditions for valid instructions (ignoring
+   * pre/post conditions).
+   */
+  if (NaClValidatesOk(vstate) || vstate->report_conditions_on_all) {
+    NaClAddAssignsRegisterWithZeroExtendsPostconds(vstate);
+    NaClAddLeaSafeAddressPostconds(vstate);
+    NaClPrintConditions(vstate);
+  }
+  /* Reset the exit flags, so that errors do not stop
+   * other instructions from firing errors. By reseting these flags,
+   * it allows us to only print pre/post conditions for instructions
+   * that are not marked illegal.
+   */
+  if (!vstate->validates_ok) vstate->validates_ok_with_conditions = FALSE;
+  vstate->validates_ok = TRUE;
+  vstate->quit = FALSE;
 #endif
 }
 
@@ -686,6 +718,13 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
   if (vstate->print_opcode_histogram) {
     NaClOpcodeHistogramPrintStats(vstate);
   }
+#ifdef NCVAL_TESTING
+  /* Update failure to catch instructions that may have validated
+   * incorrectly.
+   */
+  if (vstate->validates_ok)
+    vstate->validates_ok = vstate->validates_ok_with_conditions;
+#endif
 }
 
 void NaClValidateSegmentUsingTables(uint8_t* mbase,

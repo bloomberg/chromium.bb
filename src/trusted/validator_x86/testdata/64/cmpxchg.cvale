@@ -1,0 +1,7 @@
+0: -> ZeroExtends(ebx)
+2: ZeroExtends(ebx)
+7: -> ZeroExtends(ebx)
+9: ZeroExtends(ebx)
+e: -> ZeroExtends(ebx)
+10: ZeroExtends(ebx)
+VALIDATOR: Checking block alignment and jump targets: 0 to 15
