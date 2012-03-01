@@ -15,13 +15,14 @@ from driver_env import env
 def main(argv):
   return RunOpt(argv)
 
-def get_help(argv):
+def get_help(unused_argv):
   RunOpt(['--help'])
   return ""
 
 def RunOpt(args):
   # Binary output may go to stdout
   env.set('ARGS', *args)
-  return RunWithLog('"${LLVM_OPT}" ${ARGS}',
-                    errexit=False,
-                    log_stdout=False)
+  retcode, _, _ = RunWithLog('"${LLVM_OPT}" ${ARGS}',
+                             errexit=False,
+                             log_stdout=False)
+  return retcode

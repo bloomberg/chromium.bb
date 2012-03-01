@@ -82,10 +82,11 @@ INITIAL_ENV = {
   'LIBMODE_NEWLIB'      : '${LIBMODE==newlib ? 1 : 0}',
 
   # Logging settings
-  'LOG_VERBOSE'          : '0', # Activated with --pnacl-driver-verbose
-  'LOG_TO_FILE'          : '1',
-  'LOG_FILENAME'         : '${BASE}/driver.log',
-  'LOG_FILE_SIZE_LIMIT'  : str(20 * 1024 * 1024),
+  'LOGGING'            : '0', # True if logging is enabled.
+  'LOG_VERBOSE'        : '0', # Log to stdout (--pnacl-driver-verbose)
+  'LOG_TO_FILE'        : '0', # Log to file (--pnacl-driver-log-to-file)
+  'LOG_FILENAME'       : '${BASE}/driver.log',
+  'LOG_FILE_SIZE_LIMIT': str(20 * 1024 * 1024),
 
    # Conventions
   'SO_EXT'          : '${SO_EXT_%BUILD_OS%}',

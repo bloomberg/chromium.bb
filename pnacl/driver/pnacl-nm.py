@@ -14,9 +14,10 @@ from driver_env import env
 
 def main(argv):
   env.set('ARGS', *argv)
-  return RunWithLog('${NM} --plugin=LLVMgold ${ARGS}', errexit=False)
+  retcode, _, _ = RunWithLog('${NM} --plugin=LLVMgold ${ARGS}', errexit=False)
+  return retcode
 
-def get_help(argv):
+def get_help(unused_argv):
   return """
 Usage: %s [option(s)] [file(s)]
  List symbols in [file(s)] (a.out by default).

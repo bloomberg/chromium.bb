@@ -9,7 +9,6 @@
 # updates the copy in the toolchain/ tree.
 #
 
-import shutil
 import driver_tools
 from driver_env import env
 from driver_log import Log
@@ -22,9 +21,10 @@ def main(argv):
     print get_help(argv)
     return 1
   env.set('ARGS', *argv)
-  return driver_tools.RunWithLog('${AR} ${ARGS}', errexit=False)
+  retcode, _, _ = driver_tools.RunWithLog('${AR} ${ARGS}', errexit=False)
+  return retcode
 
-def get_help(argv):
+def get_help(unused_argv):
   return """
 Usage: %s [-]{dmpqrstx}[abcDfilMNoPsSTuvV] [member-name] [count] archive-file file...
  commands:

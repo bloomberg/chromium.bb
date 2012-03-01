@@ -18,9 +18,11 @@ def main(argv):
     print get_help(argv)
     return 1
   env.set('ARGS', *argv)
-  return RunWithLog('"${RANLIB}" --plugin=LLVMgold ${ARGS}', errexit=False)
+  retcode, _, _ = RunWithLog('"${RANLIB}" --plugin=LLVMgold ${ARGS}',
+                             errexit=False)
+  return retcode
 
-def get_help(argv):
+def get_help(unused_argv):
   return """
 Usage: %s [options] archive
  Generate an index to speed access to archives
