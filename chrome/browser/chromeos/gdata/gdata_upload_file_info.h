@@ -18,6 +18,9 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 
+namespace content {
+class DownloadItem;
+}
 
 namespace gdata {
 
@@ -26,6 +29,9 @@ namespace gdata {
 struct UploadFileInfo {
   UploadFileInfo();
   ~UploadFileInfo();
+
+  // Initialize from a DownloadItem.
+  void Init(content::DownloadItem* download);
 
   // Headers for Content-Range and Initiate Upload.
   std::string GetContentRangeHeader() const;
@@ -37,8 +43,8 @@ struct UploadFileInfo {
 
   // Data to be initialized by caller before initiating upload request.
   // URL of physical file to be uploaded, used as main identifier in callbacks.
-  GURL file_url;  // file: url of the file to the uploaded.
   FilePath file_path;  // The path of the file to be uploaded.
+  GURL file_url;  // file: url of the file to the uploaded.
   size_t file_size;  // Last known size of the file.
 
   std::string title;  // Title to be used for file to be uploaded.

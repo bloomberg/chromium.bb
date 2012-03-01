@@ -11,7 +11,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
@@ -20,6 +21,7 @@ class Profile;
 namespace gdata {
 
 class DocumentsService;
+struct UploadFileInfo;
 
 class GDataUploader : public content::DownloadManager::Observer,
                       public content::DownloadItem::Observer {
@@ -98,6 +100,12 @@ class GDataUploader : public content::DownloadManager::Observer,
 
   typedef std::map<GURL, UploadFileInfo*> UploadFileInfoMap;
   UploadFileInfoMap pending_uploads_;
+
+  // We observe the DownloadManager for new downloads.
+  content::DownloadManager* download_manager_;
+
+  // Factory for various callbacks.
+  base::WeakPtrFactory<GDataUploader> uploader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataUploader);
 };

@@ -10,12 +10,12 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 
 using content::BrowserThread;
 using content::DownloadManager;
@@ -24,8 +24,6 @@ using content::DownloadItem;
 namespace gdata {
 
 namespace {
-
-const BrowserThread::ID kGDataAPICallThread = BrowserThread::UI;
 
 // Threshold file size after which we stream the file.
 const int64 kStreamingFileSize = 1 << 20;  // 1MB
@@ -54,44 +52,34 @@ UploadingExternalData* GetUploadingExternalData(DownloadItem* download) {
       ->GetExternalData(&kUploadingKey));
 }
 
-// Creates a UploadFileInfo from a DownloadItem.
-// Transfers ownership of UploadFileInfo*
-UploadFileInfo* CreateUploadFileInfo(DownloadItem* download) {
-  UploadFileInfo* upload_file_info = new UploadFileInfo();
-
-  // GetFullPath will be a temporary location if we're streaming.
-  FilePath file_path(download->GetFullPath());
-  upload_file_info->file_url = net::FilePathToFileURL(file_path);
-  upload_file_info->file_path = file_path;
-  upload_file_info->file_size = download->GetReceivedBytes();
-
-  // Use the file name as the title.
-  upload_file_info->title = download->GetTargetName().BaseName().value();
-  upload_file_info->content_type = download->GetMimeType();
-  // GData api handles -1 as unknown file length.
-  upload_file_info->content_length = download->IsInProgress() ?
-                                    -1 : download->GetReceivedBytes();
-  upload_file_info->download_complete = !download->IsInProgress();
-  return upload_file_info;
-}
-
 }  // namespace
 
 GDataUploader::GDataUploader(DocumentsService* docs_service)
-  : docs_service_(docs_service) {
+  : docs_service_(docs_service),
+    download_manager_(NULL),
+    ALLOW_THIS_IN_INITIALIZER_LIST(uploader_factory_(this)) {
 }
 
 GDataUploader::~GDataUploader() {
-  DCHECK(pending_downloads_.empty());
+  if (download_manager_)
+    download_manager_->RemoveObserver(this);
+
+  for (DownloadSet::iterator it = pending_downloads_.begin();
+      it != pending_downloads_.end();
+      ++it) {
+    (*it)->RemoveObserver(this);
+  }
 }
 
 void GDataUploader::Initialize(Profile* profile) {
-  DownloadServiceFactory::GetForProfile(profile)
-      ->GetDownloadManager()->AddObserver(this);
+  download_manager_ =
+      DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager();
+  download_manager_->AddObserver(this);
 }
 
 void GDataUploader::ManagerGoingDown(DownloadManager* download_manager) {
   download_manager->RemoveObserver(this);
+  download_manager_ = NULL;
 }
 
 void GDataUploader::ModelChanged(DownloadManager* download_manager) {
@@ -129,7 +117,7 @@ void GDataUploader::OnDownloadUpdated(DownloadItem* download) {
     default:
       NOTREACHED();
   }
-  DVLOG(1) << "Number of pending downloads=" << pending_downloads_.size();
+  DLOG(INFO) << "Number of pending downloads=" << pending_downloads_.size();
 }
 
 void GDataUploader::AddPendingDownload(DownloadItem* download) {
@@ -139,7 +127,7 @@ void GDataUploader::AddPendingDownload(DownloadItem* download) {
   if (pending_downloads_.find(download) == pending_downloads_.end()) {
     pending_downloads_.insert(download);
     download->AddObserver(this);
-    DVLOG(1) << "new download total bytes=" << download->GetTotalBytes()
+    DLOG(INFO) << "new download total bytes=" << download->GetTotalBytes()
              << ", full path=" << download->GetFullPath().value()
              << ", mime type=" << download->GetMimeType();
   }
@@ -163,13 +151,14 @@ void GDataUploader::UploadDownloadItem(DownloadItem* download) {
   if (!ShouldUpload(download))
     return;
 
-  DVLOG(1) << "Starting upload"
+  DLOG(INFO) << "Starting upload"
            << ", full path=" << download->GetFullPath().value()
            << ", received bytes=" << download->GetReceivedBytes()
            << ", total bytes=" << download->GetTotalBytes()
            << ", mime type=" << download->GetMimeType();
 
-  UploadFileInfo* upload_file_info = CreateUploadFileInfo(download);
+  UploadFileInfo* upload_file_info = new UploadFileInfo();
+  upload_file_info->Init(download);
   const GURL& file_url = upload_file_info->file_url;
   pending_uploads_.insert(std::make_pair(file_url, upload_file_info));
   // Set the UploadingKey in |download|.
@@ -192,7 +181,7 @@ void GDataUploader::UpdateUpload(DownloadItem* download) {
     return;
 
   // Update file_size and download_complete.
-  DVLOG(1) << "Updating file size from " << upload_file_info->file_size
+  DLOG(INFO) << "Updating file size from " << upload_file_info->file_size
            << " to " << download->GetReceivedBytes();
   upload_file_info->file_size = download->GetReceivedBytes();
   upload_file_info->download_complete = download->IsComplete();
@@ -211,13 +200,13 @@ bool GDataUploader::ShouldUpload(DownloadItem* download) {
 }
 
 void GDataUploader::UploadFile(const GURL& file_url) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
     return;
 
-  DVLOG(1) << "Uploading file: title=[" << upload_file_info->title
+  DLOG(INFO) << "Uploading file: title=[" << upload_file_info->title
            << "], file_path=[" << upload_file_info->file_path.value()
            << "], content_type=" << upload_file_info->content_type
            << ", file_size=" << upload_file_info->file_size;
@@ -235,20 +224,13 @@ void GDataUploader::UploadFile(const GURL& file_url) {
   upload_file_info->buf = new net::IOBuffer(upload_file_info->buf_len);
 
   // Open the file asynchronously.
-  //
-  // TODO(achuith): DocumentsService is no longer a singleton but owned by
-  // GDataFileSystem owned by Profile. Need to rethink about lifetime.
-  //
-  // DocumentsService is a singleton, and the lifetime of GDataUploader
-  // is tied to DocumentsService, so it's safe to use base::Unretained here,
-  // since the thread task queues are shut down before singleton destruction.
   const int rv = upload_file_info->file_stream->Open(
       upload_file_info->file_path,
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_READ |
       base::PLATFORM_FILE_ASYNC,
       base::Bind(&GDataUploader::OpenCompletionCallback,
-                 base::Unretained(this),
+                 uploader_factory_.GetWeakPtr(),
                  file_url));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
 }
@@ -268,7 +250,7 @@ void GDataUploader::RemovePendingUpload(UploadFileInfo* upload_file_info) {
 }
 
 void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
@@ -282,30 +264,24 @@ void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
     return;
   }
 
-  // TODO(achuith): DocumentsService is no longer a singleton but owned by
-  // GDataFileSystem owned by Profile. Need to rethink about lifetime.
-  //
-  // DocumentsService is a singleton, and the lifetime of GDataUploader
-  // is tied to DocumentsService, so it's safe to use base::Unretained here,
-  // since the thread task queues are shut down before singleton destruction.
   docs_service_->InitiateUpload(
       *upload_file_info,
       base::Bind(&GDataUploader::OnUploadLocationReceived,
-                 base::Unretained(this)));
+                 uploader_factory_.GetWeakPtr()));
 }
 
 void GDataUploader::OnUploadLocationReceived(
     GDataErrorCode code,
     const UploadFileInfo& in_upload_file_info,
     const GURL& upload_location) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(
       in_upload_file_info.file_url);
   if (!upload_file_info)
     return;
 
-  DVLOG(1) << "Got upload location [" << upload_location.spec()
+  DLOG(INFO) << "Got upload location [" << upload_location.spec()
            << "] for [" << upload_file_info->title << "]";
 
   if (code != HTTP_SUCCESS) {
@@ -328,7 +304,7 @@ void GDataUploader::UploadNextChunk(
     int64 start_range_received,
     int64 end_range_received,
     UploadFileInfo* upload_file_info) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Check that |upload_file_info| is in pending_uploads_.
   DCHECK(upload_file_info == GetUploadFileInfo(upload_file_info->file_url));
@@ -358,7 +334,7 @@ void GDataUploader::UploadNextChunk(
     return;
   }
 
-  DVLOG(1) << "Number of pending uploads=" << pending_uploads_.size();
+  DLOG(INFO) << "Number of pending uploads=" << pending_uploads_.size();
 
   // Determine number of bytes to read for this upload iteration, which cannot
   // exceed size of buf i.e. buf_len.
@@ -376,17 +352,11 @@ void GDataUploader::UploadNextChunk(
     DCHECK(size_remaining > kUploadChunkSize);
 
   upload_file_info->start_range = end_range_received + 1;
-  // TODO(achuith): DocumentsService is no longer a singleton but owned by
-  // GDataFileSystem owned by Profile. Need to rethink about lifetime.
-  //
-  // DocumentsService is a singleton, and the lifetime of GDataUploader
-  // is tied to DocumentsService, so it's safe to use base::Unretained here,
-  // since the thread task queues are shut down before singleton destruction.
   upload_file_info->file_stream->Read(
       upload_file_info->buf,
       bytes_to_read,
       base::Bind(&GDataUploader::ReadCompletionCallback,
-                 base::Unretained(this),
+                 uploader_factory_.GetWeakPtr(),
                  upload_file_info->file_url,
                  bytes_to_read));
 }
@@ -395,10 +365,10 @@ void GDataUploader::ReadCompletionCallback(
     const GURL& file_url,
     int bytes_to_read,
     int bytes_read) {
-  // The Read is asynchronously executed on kGDataAPICallThread, where
+  // The Read is asynchronously executed on BrowserThread::UI, where
   // Read() was called.
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
-  DVLOG(1) << "ReadCompletionCallback bytes read=" << bytes_read;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DLOG(INFO) << "ReadCompletionCallback bytes read=" << bytes_read;
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
@@ -412,16 +382,10 @@ void GDataUploader::ReadCompletionCallback(
   upload_file_info->end_range = upload_file_info->start_range +
                                bytes_read - 1;
 
-  // TODO(achuith): DocumentsService is no longer a singleton but owned by
-  // GDataFileSystem owned by Profile. Need to rethink about lifetime.
-  //
-  // DocumentsService is a singleton, and the lifetime of GDataUploader
-  // is tied to DocumentsService, so it's safe to use base::Unretained here,
-  // since the thread task queues are shut down before singleton destruction.
   docs_service_->ResumeUpload(
       *upload_file_info,
       base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
-                 base::Unretained(this)));
+                 uploader_factory_.GetWeakPtr()));
 }
 
 void GDataUploader::OnResumeUploadResponseReceived(
@@ -429,7 +393,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
     const UploadFileInfo& in_upload_file_info,
     int64 start_range_received,
     int64 end_range_received) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(
       in_upload_file_info.file_url);
@@ -437,7 +401,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
     return;
 
   if (code != HTTP_CREATED) {
-    DVLOG(1) << "Received range " << start_range_received
+    DLOG(INFO) << "Received range " << start_range_received
              << "-" << end_range_received
              << " for [" << upload_file_info->title << "]";
 
@@ -447,7 +411,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
     return;
   }
 
-  DVLOG(1) << "Successfully created uploaded file=["
+  DLOG(INFO) << "Successfully created uploaded file=["
            << upload_file_info->title << "]";
 
   // Done uploading.
