@@ -94,6 +94,7 @@ struct shell_surface {
 
 	enum shell_surface_type type;
 	int32_t saved_x, saved_y;
+	bool saved_position_valid;
 
 	struct {
 		struct weston_transform transform;
@@ -107,6 +108,13 @@ struct shell_surface {
 		struct weston_transform parent_transform;
 		int32_t initial_up;
 	} popup;
+
+	struct {
+		enum wl_shell_surface_fullscreen_method type;
+		struct weston_transform transform; /* matrix from x, y */
+		uint32_t framerate;
+		struct weston_surface *black_surface;
+	} fullscreen;
 
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
@@ -132,6 +140,10 @@ struct rotate_grab {
 		int32_t y;
 	} center;
 };
+
+static void
+center_on_output(struct weston_surface *surface,
+		 struct weston_output *output);
 
 static void
 shell_configuration(struct wl_shell *shell)
@@ -303,7 +315,8 @@ weston_surface_resize(struct shell_surface *shsurf,
 {
 	struct weston_resize_grab *resize;
 
-	/* FIXME: Reject if fullscreen */
+	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+		return 0;
 
 	if (edges == 0 || edges > 15 ||
 	    (edges & 3) == 3 || (edges & 12) == 12)
@@ -334,7 +347,8 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 	struct weston_input_device *wd = input_resource->data;
 	struct shell_surface *shsurf = resource->data;
 
-	/* FIXME: Reject if fullscreen */
+	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+		return;
 
 	if (wd->input_device.button_count == 0 ||
 	    wd->input_device.grab_time != time ||
@@ -352,15 +366,28 @@ get_default_output(struct weston_compositor *compositor)
 			    struct weston_output, link);
 }
 
+static void
+shell_unset_fullscreen(struct shell_surface *shsurf)
+{
+	/* undo all fullscreen things here */
+	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
+	shsurf->fullscreen.framerate = 0;
+	wl_list_remove(&shsurf->fullscreen.transform.link);
+	wl_list_init(&shsurf->fullscreen.transform.link);
+	weston_surface_destroy(shsurf->fullscreen.black_surface);
+	shsurf->fullscreen.black_surface = NULL;
+	shsurf->fullscreen_output = NULL;
+	shsurf->surface->force_configure = 1;
+	weston_surface_set_position(shsurf->surface,
+				    shsurf->saved_x, shsurf->saved_y);
+}
+
 static int
 reset_shell_surface_type(struct shell_surface *surface)
 {
 	switch (surface->type) {
 	case SHELL_SURFACE_FULLSCREEN:
-		weston_surface_set_position(surface->surface,
-					    surface->saved_x,
-					    surface->saved_y);
-		surface->fullscreen_output = NULL;
+		shell_unset_fullscreen(surface);
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
 		surface->output = get_default_output(surface->surface->compositor);
@@ -417,7 +444,7 @@ shell_surface_set_transient(struct wl_client *client,
 	if (reset_shell_surface_type(shsurf))
 		return;
 
-	/* assign to parents output  */
+	/* assign to parents output */
 	shsurf->output = pes->output;
  	weston_surface_set_position(es, pes->geometry.x + x,
 					pes->geometry.y + y);
@@ -474,6 +501,7 @@ shell_surface_set_maximized(struct wl_client *client,
 
 	shsurf->saved_x = es->geometry.x;
 	shsurf->saved_y = es->geometry.y;
+	shsurf->saved_position_valid = true;
 
 	wlshell = shell_surface_get_shell(shsurf);
 	panel_height = get_output_panel_height(wlshell, es->output);
@@ -487,6 +515,96 @@ shell_surface_set_maximized(struct wl_client *client,
 	shsurf->type = SHELL_SURFACE_MAXIMIZED;
 }
 
+static struct weston_surface *
+create_black_surface(struct weston_compositor *ec,
+		     GLfloat x, GLfloat y, int w, int h)
+{
+	struct weston_surface *surface = NULL;
+
+	surface = weston_surface_create(ec);
+	if (surface == NULL) {
+		fprintf(stderr, "no memory\n");
+		return NULL;
+	}
+
+	weston_surface_configure(surface, x, y, w, h);
+	weston_surface_set_color(surface, 0.0, 0.0, 0.0, 1);
+	return surface;
+}
+
+/* Create black surface and append it to the associated fullscreen surface.
+ * Handle size dismatch and positioning according to the method. */
+static void
+shell_configure_fullscreen(struct shell_surface *shsurf)
+{
+	struct weston_output *output = shsurf->fullscreen_output;
+	struct weston_surface *surface = shsurf->surface;
+	struct weston_matrix *matrix;
+	float scale;
+
+	center_on_output(surface, output);
+
+	if (!shsurf->fullscreen.black_surface)
+		shsurf->fullscreen.black_surface = create_black_surface(surface->compositor,
+									output->x, output->y,
+									output->current->width, output->current->height);
+	wl_list_remove(&shsurf->fullscreen.black_surface->link);
+	wl_list_insert(&surface->link, &shsurf->fullscreen.black_surface->link);
+	shsurf->fullscreen.black_surface->output = output;
+
+	switch (shsurf->fullscreen.type) {
+	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT:
+		break;
+	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE:
+		matrix = &shsurf->fullscreen.transform.matrix;
+		weston_matrix_init(matrix);
+		scale = (float)output->current->width/(float)surface->geometry.width;
+		weston_matrix_scale(matrix, scale, scale, 1);
+		wl_list_remove(&shsurf->fullscreen.transform.link);
+		wl_list_insert(surface->geometry.transformation_list.prev,
+			       &shsurf->fullscreen.transform.link);
+		weston_surface_set_position(surface, output->x, output->y);
+		break;
+	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER:
+		break;
+	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_FILL:
+		break;
+	default:
+		break;
+	}
+}
+
+/* make the fullscreen and black surface at the top */
+static void
+shell_stack_fullscreen(struct shell_surface *shsurf)
+{
+	struct weston_surface *surface = shsurf->surface;
+	struct wl_shell *shell = shell_surface_get_shell(shsurf);
+	struct wl_list *list;
+
+	wl_list_remove(&surface->link);
+	wl_list_remove(&shsurf->fullscreen.black_surface->link);
+
+	if (shell->locked) {
+		wl_list_insert(&shell->hidden_surface_list, &surface->link);
+		wl_list_insert(&surface->link, &shsurf->fullscreen.black_surface->link);
+	} else {
+		list = weston_compositor_top(surface->compositor);
+		wl_list_insert(list, &surface->link);
+		wl_list_insert(&surface->link, &shsurf->fullscreen.black_surface->link);
+
+		weston_surface_damage(surface);
+		weston_surface_damage(shsurf->fullscreen.black_surface);
+	}
+}
+
+static void
+shell_map_fullscreen(struct shell_surface *shsurf)
+{
+	shell_configure_fullscreen(shsurf);
+	shell_stack_fullscreen(shsurf);
+}
+
 static void
 shell_surface_set_fullscreen(struct wl_client *client,
 			     struct wl_resource *resource,
@@ -496,20 +614,26 @@ shell_surface_set_fullscreen(struct wl_client *client,
 {
 	struct shell_surface *shsurf = resource->data;
 	struct weston_surface *es = shsurf->surface;
-	struct weston_output *output;
+
+	if (output_resource)
+		shsurf->output = output_resource->data;
+	else
+		shsurf->output = get_default_output(es->compositor);
 
 	if (reset_shell_surface_type(shsurf))
 		return;
 
-	/* FIXME: Fullscreen on first output */
-	/* FIXME: Handle output going away */
-	output = get_default_output(es->compositor);
+	shsurf->fullscreen_output = shsurf->output;
+	shsurf->fullscreen.type = method;
+	shsurf->fullscreen.framerate = framerate;
+	shsurf->type = SHELL_SURFACE_FULLSCREEN;
 
 	shsurf->saved_x = es->geometry.x;
 	shsurf->saved_y = es->geometry.y;
-	shsurf->output = output;
-	shsurf->fullscreen_output = output;
-	shsurf->type = SHELL_SURFACE_FULLSCREEN;
+	shsurf->saved_position_valid = true;
+
+	if (es->output)
+		shsurf->surface->force_configure = 1;
 
 	wl_resource_post_event(resource,
 			       WL_SHELL_SURFACE_CONFIGURE,
@@ -715,7 +839,13 @@ shell_get_shell_surface(struct wl_client *client,
 		(void (**)(void)) &shell_surface_implementation;
 	shsurf->resource.data = shsurf;
 
+	shsurf->saved_position_valid = false;
 	shsurf->surface = surface;
+	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
+	shsurf->fullscreen.framerate = 0;
+	shsurf->fullscreen.black_surface = NULL;
+	wl_list_init(&shsurf->fullscreen.transform.link);
+
 	shsurf->surface_destroy_listener.func = shell_handle_surface_destroy;
 	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
 		       &shsurf->surface_destroy_listener.link);
@@ -1274,6 +1404,9 @@ activate(struct weston_shell *base, struct weston_surface *es,
 				       &es->link);
 		}
 		break;
+	case SHELL_SURFACE_FULLSCREEN:
+		/* should on top of panels */
+		break;
 	default:
 		if (!shell->locked) {
 			list = weston_compositor_top(compositor);
@@ -1290,14 +1423,23 @@ activate(struct weston_shell *base, struct weston_surface *es,
 
 static void
 click_to_activate_binding(struct wl_input_device *device,
-                         uint32_t time, uint32_t key,
+			  uint32_t time, uint32_t key,
 			  uint32_t button, uint32_t state, void *data)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = data;
 	struct weston_surface *focus;
+	struct weston_surface *upper;
 
 	focus = (struct weston_surface *) device->pointer_focus;
+	upper = container_of(focus->link.prev, struct weston_surface, link);
+	if (focus->link.prev != &compositor->surface_list &&
+	    get_shell_surface_type(upper) == SHELL_SURFACE_FULLSCREEN) {
+		printf("%s: focus is black surface, raise its fullscreen surface\n", __func__);
+		shell_stack_fullscreen(get_shell_surface(upper));
+		focus = upper;
+	}
+
 	if (state && focus && device->pointer_grab == &device->default_pointer_grab)
 		activate(compositor->shell, focus, wd, time);
 }
@@ -1444,11 +1586,13 @@ map(struct weston_shell *base, struct weston_surface *surface,
 					    10 + random() % 400);
 		break;
 	case SHELL_SURFACE_SCREENSAVER:
-	case SHELL_SURFACE_FULLSCREEN:
 		center_on_output(surface, shsurf->fullscreen_output);
 		break;
+	case SHELL_SURFACE_FULLSCREEN:
+		shell_map_fullscreen(shsurf);
+		break;
 	case SHELL_SURFACE_MAXIMIZED:
-		/*use surface configure to set the geometry*/
+		/* use surface configure to set the geometry */
 		panel_height = get_output_panel_height(shell,surface->output);
 		weston_surface_set_position(surface, surface->output->x,
 					    surface->output->y + panel_height);
@@ -1496,6 +1640,9 @@ map(struct weston_shell *base, struct weston_surface *surface,
 		}
 		do_configure = 0;
 		break;
+	case SHELL_SURFACE_FULLSCREEN:
+		do_configure = 1;
+		break;
 	case SHELL_SURFACE_NONE:
 		do_configure = 0;
 		break;
@@ -1526,7 +1673,7 @@ map(struct weston_shell *base, struct weston_surface *surface,
 		if (!shell->locked)
 			activate(base, surface,
 				 (struct weston_input_device *)
-					compositor->input_device,
+				 compositor->input_device,
 				 weston_compositor_get_time());
 		break;
 	default:
@@ -1543,6 +1690,7 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
+	enum shell_surface_type prev_surface_type = SHELL_SURFACE_NONE;
 	struct shell_surface *shsurf;
 
 	shsurf = get_shell_surface(surface);
@@ -1557,22 +1705,29 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 
 	switch (surface_type) {
 	case SHELL_SURFACE_SCREENSAVER:
-	case SHELL_SURFACE_FULLSCREEN:
 		center_on_output(surface, shsurf->fullscreen_output);
 		break;
+	case SHELL_SURFACE_FULLSCREEN:
+		shell_configure_fullscreen(shsurf);
+		if (prev_surface_type != SHELL_SURFACE_FULLSCREEN)
+			shell_stack_fullscreen(shsurf);
+		break;
 	case SHELL_SURFACE_MAXIMIZED:
-		/*setting x, y and using configure to change that geometry*/
+		/* setting x, y and using configure to change that geometry */
 		surface->geometry.x = surface->output->x;
 		surface->geometry.y = surface->output->y +
 			get_output_panel_height(shell,surface->output);
+		break;
+	case SHELL_SURFACE_TOPLEVEL:
 		break;
 	default:
 		break;
 	}
 
-	/*  XXX: would a fullscreen surface need the same handling? */
+	/* XXX: would a fullscreen surface need the same handling? */
 	if (surface->output) {
 		weston_surface_assign_output(surface);
+		weston_compositor_repick(surface->compositor);
 
 		if (surface_type == SHELL_SURFACE_SCREENSAVER)
 			surface->output = shsurf->output;
