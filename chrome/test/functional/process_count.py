@@ -53,6 +53,8 @@ class ProcessCountTest(pyauto.PyUITest):
 
     pyauto.PyUITest.setUp(self)
 
+    self.NavigateToURL('about:blank')
+
   def _VerifyProcessCount(self, num_expected):
     """Verifies the number of Chrome-related processes is as expected.
 
