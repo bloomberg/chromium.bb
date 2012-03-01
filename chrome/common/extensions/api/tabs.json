@@ -247,6 +247,16 @@
                 "optional": true,
                 "description": "Whether the tabs are highlighted."
               },
+              "currentWindow": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tabs are in the <a href='windows.html#current-window'>current window</a>."
+              },
+              "lastFocusedWindow": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the tabs are in the last focused window."
+              },
               "status": {
                 "type": "string",
                 "optional": true,

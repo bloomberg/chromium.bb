@@ -385,6 +385,91 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
       keys::kIncognitoModeIsDisabled));
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryCurrentWindowTabs) {
+  const size_t kExtraWindows = 3;
+  for (size_t i = 0; i < kExtraWindows; ++i)
+    CreateBrowser(browser()->profile());
+
+  GURL url;
+  AddTabAtIndexToBrowser(browser(), 0, url, content::PAGE_TRANSITION_LINK);
+  int window_id = ExtensionTabUtil::GetWindowId(browser());
+
+  // Get tabs in the 'current' window called from non-focused browser.
+  scoped_ptr<base::ListValue> result(ToList(
+      RunFunctionAndReturnResult(
+          new QueryTabsFunction(),
+          "[{\"currentWindow\":true}]",
+          browser())));
+
+  ListValue* result_tabs = result.get();
+  // We should have one initial tab and one added tab.
+  EXPECT_EQ(2u, result_tabs->GetSize());
+  for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
+    DictionaryValue* result_tab = NULL;
+    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
+    EXPECT_EQ(window_id, GetInteger(result_tab, keys::kWindowIdKey));
+  }
+
+  // Get tabs NOT in the 'current' window called from non-focused browser.
+  result.reset(ToList(
+      RunFunctionAndReturnResult(
+          new QueryTabsFunction(),
+          "[{\"currentWindow\":false}]",
+          browser())));
+
+  result_tabs = result.get();
+  // We should have one tab for each extra window.
+  EXPECT_EQ(kExtraWindows, result_tabs->GetSize());
+  for (size_t i = 0; i < kExtraWindows; ++i) {
+    DictionaryValue* result_tab = NULL;
+    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
+    EXPECT_NE(window_id, GetInteger(result_tab, keys::kWindowIdKey));
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryLastFocusedWindowTabs) {
+  const size_t kExtraWindows = 2;
+  for (size_t i = 0; i < kExtraWindows; ++i)
+    CreateBrowser(browser()->profile());
+
+  Browser* focused_window = CreateBrowser(browser()->profile());
+  GURL url;
+  AddTabAtIndexToBrowser(focused_window, 0, url, content::PAGE_TRANSITION_LINK);
+  int focused_window_id = ExtensionTabUtil::GetWindowId(focused_window);
+
+  // Get tabs in the 'last focused' window called from non-focused browser.
+  scoped_ptr<base::ListValue> result(ToList(
+      RunFunctionAndReturnResult(
+          new QueryTabsFunction(),
+          "[{\"lastFocusedWindow\":true}]",
+          browser())));
+
+  ListValue* result_tabs = result.get();
+  // We should have one initial tab and one added tab.
+  EXPECT_EQ(2u, result_tabs->GetSize());
+  for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
+    DictionaryValue* result_tab = NULL;
+    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
+    EXPECT_EQ(focused_window_id, GetInteger(result_tab, keys::kWindowIdKey));
+  }
+
+  // Get tabs NOT in the 'last focused' window called from the focused browser.
+  result.reset(ToList(
+      RunFunctionAndReturnResult(
+          new QueryTabsFunction(),
+          "[{\"lastFocusedWindow\":false}]",
+          browser())));
+
+  result_tabs = result.get();
+  // We should get one tab for each extra window and one for the initial window.
+  EXPECT_EQ(kExtraWindows + 1, result_tabs->GetSize());
+  for (size_t i = 0; i < result_tabs->GetSize(); ++i) {
+    DictionaryValue* result_tab = NULL;
+    EXPECT_TRUE(result_tabs->GetDictionary(i, &result_tab));
+    EXPECT_NE(focused_window_id, GetInteger(result_tab, keys::kWindowIdKey));
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DontCreateTabInClosingPopupWindow) {
   // Test creates new popup window, closes it right away and then tries to open
   // a new tab in it. Tab should not be opened in the popup window, but in a

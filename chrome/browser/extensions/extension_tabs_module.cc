@@ -847,6 +847,9 @@ bool QueryTabsFunction::RunImpl() {
   QueryArg active = ParseBoolQueryArg(query, keys::kActiveKey);
   QueryArg pinned = ParseBoolQueryArg(query, keys::kPinnedKey);
   QueryArg selected = ParseBoolQueryArg(query, keys::kHighlightedKey);
+  QueryArg current_window = ParseBoolQueryArg(query, keys::kCurrentWindowKey);
+  QueryArg focused_window =
+      ParseBoolQueryArg(query, keys::kLastFocusedWindowKey);
 
   QueryArg loading = NOT_SET;
   if (query->HasKey(keys::kStatusKey)) {
@@ -902,6 +905,13 @@ bool QueryTabsFunction::RunImpl() {
 
     if (window_id == extension_misc::kCurrentWindowId &&
         *browser != GetCurrentBrowser())
+      continue;
+
+    if (!MatchesQueryArg(current_window, *browser == GetCurrentBrowser()))
+      continue;
+
+    if (!MatchesQueryArg(focused_window,
+        *browser == BrowserList::GetLastActive()))
       continue;
 
     if (!window_type.empty() &&
