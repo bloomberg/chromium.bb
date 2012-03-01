@@ -106,13 +106,6 @@ gfx::Point ConvertPointToParent(aura::Window* window,
   return result;
 }
 
-bool IsNormalWindow(aura::Window* window) {
-  return window->GetProperty(aura::client::kShowStateKey) ==
-          ui::SHOW_STATE_NORMAL ||
-      window->GetProperty(aura::client::kShowStateKey) ==
-          ui::SHOW_STATE_DEFAULT;
-}
-
 }  // namespace
 
 // static
@@ -142,8 +135,7 @@ WindowResizer::WindowResizer(aura::Window* window,
           GetPositionChangeDirectionForWindowComponent(window_component_)),
       size_change_direction_(
           GetSizeChangeDirectionForWindowComponent(window_component_)),
-      is_resizable_(bounds_change_ != kBoundsChangeDirection_None &&
-                    IsNormalWindow(window)),
+      is_resizable_(bounds_change_ != kBoundsChangeDirection_None),
       grid_size_(grid_size),
       did_move_or_resize_(false),
       root_filter_(NULL) {

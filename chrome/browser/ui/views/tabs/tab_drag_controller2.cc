@@ -40,6 +40,10 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(USE_AURA)
+#include "ash/wm/property_util.h"
+#endif
+
 using content::UserMetricsAction;
 using content::WebContents;
 
@@ -322,8 +326,11 @@ TabDragController2::~TabDragController2() {
   if (destroyed_)
     *destroyed_ = true;
 
-  if (move_loop_browser_view_)
+  if (move_loop_browser_view_) {
     move_loop_browser_view_->set_move_observer(NULL);
+    SetTrackedByWorkspace(
+        move_loop_browser_view_->GetWidget()->GetNativeView(), true);
+  }
 
   if (source_tabstrip_)
     GetModel(source_tabstrip_)->RemoveObserver(this);
@@ -1096,6 +1103,11 @@ void TabDragController2::EndDragImpl(EndDragType type) {
   bring_to_front_timer_.Stop();
 
   if (is_dragging_window_) {
+    if (type == NORMAL || (type == TAB_DESTROYED && drag_data_.size() > 1)) {
+      SetTrackedByWorkspace(
+          GetAttachedBrowserView()->GetWidget()->GetNativeView(), true);
+    }
+
     // End the nested drag loop.
     GetAttachedBrowserView()->GetWidget()->EndMoveLoop();
     waiting_for_run_loop_to_exit_ = true;
@@ -1391,6 +1403,14 @@ Browser* TabDragController2::CreateBrowserForDrag(
       break; // Nothing to do for DETACH_ABOVE_OR_BELOW.
   }
 
+  SetTrackedByWorkspace(browser->window()->GetNativeHandle(), false);
   browser->window()->SetBounds(new_bounds);
   return browser;
+}
+
+void TabDragController2::SetTrackedByWorkspace(gfx::NativeWindow window,
+                                               bool value) {
+#if defined(USE_AURA)
+  ash::SetTrackedByWorkspace(window, value);
+#endif
 }

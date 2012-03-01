@@ -31,7 +31,7 @@ class ShelfLayoutManager;
 class WorkspaceManagerTest;
 
 // WorkspaceManager manages multiple workspaces in the desktop.
-class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
+class ASH_EXPORT WorkspaceManager : public aura::WindowObserver {
  public:
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
