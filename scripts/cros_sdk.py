@@ -212,10 +212,8 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
     sys.exit(1)
 
 
-def main(argv=None):
+def main(argv):
   # TODO(ferringb): make argv required once depot_tools is fixed.
-  if argv is None:
-    argv = sys.argv[1:]
   usage="""usage: %prog [options] [VAR1=val1 .. VARn=valn -- <args>]
 
 This script manages a local CrOS SDK chroot. Depending on the flags,
@@ -353,7 +351,3 @@ Action taken is the following:
         lock.read_lock()
         EnterChroot(chroot_path, options.chrome_root,
                     options.chrome_root_mount, remaining_arguments)
-
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

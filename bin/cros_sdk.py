@@ -9,16 +9,12 @@
 import os
 import sys
 
-# We want to use correct version of libraries even when executed through symlink.
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
-
-from chromite.scripts import cros_sdk
-
-
 def main():
-  """Compatibility functor to keep depot_tools chromite_wrapper happy"""
-  cros_sdk.main(sys.argv[1:])
+  # Bypass all of chromite_wrappers attempted 'help', and execve to the actual
+  # cros_sdk wrapper/helper chromite has.
+  location = os.path.dirname(os.path.abspath(__file__))
+  location = os.path.join(location, 'cros_sdk')
+  os.execv(location, [location] + sys.argv[1:])
 
 if __name__ == '__main__':
   main()
