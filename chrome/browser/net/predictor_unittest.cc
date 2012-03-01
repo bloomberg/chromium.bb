@@ -376,6 +376,83 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
   predictor.Shutdown();
 }
 
+// Check that GetHtmlReferrerLists() doesn't crash when given duplicated
+// domains for referring URL, and that it sorts the results in the
+// correct order.
+TEST_F(PredictorTest, GetHtmlReferrerLists) {
+  Predictor predictor(true);
+  predictor.SetHostResolver(host_resolver_.get());
+  const double kUseRate = 23.4;
+  scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
+
+  AddToSerializedList(
+      GURL("http://d.google.com/x1"),
+      GURL("http://foo.com/"),
+      kUseRate, referral_list.get());
+
+  // Duplicated hostname (d.google.com). This should not cause any crashes
+  // (i.e. crbug.com/116345)
+  AddToSerializedList(
+      GURL("http://d.google.com/x2"),
+      GURL("http://foo.com/"),
+      kUseRate, referral_list.get());
+
+  AddToSerializedList(
+      GURL("http://a.yahoo.com/y"),
+      GURL("http://foo1.com/"),
+      kUseRate, referral_list.get());
+
+  AddToSerializedList(
+      GURL("http://b.google.com/x3"),
+      GURL("http://foo2.com/"),
+      kUseRate, referral_list.get());
+
+  AddToSerializedList(
+      GURL("http://d.yahoo.com/x5"),
+      GURL("http://i.like.turtles/"),
+      kUseRate, referral_list.get());
+
+  AddToSerializedList(
+      GURL("http://c.yahoo.com/x4"),
+      GURL("http://foo3.com/"),
+      kUseRate, referral_list.get());
+
+  predictor.DeserializeReferrers(*referral_list.get());
+
+  std::string html;
+  predictor.GetHtmlReferrerLists(&html);
+
+  // The lexicographic sorting of hostnames would be:
+  //   a.yahoo.com
+  //   b.google.com
+  //   c.yahoo.com
+  //   d.google.com
+  //   d.yahoo.com
+  //
+  // However we expect to sort them by domain in the output:
+  //   b.google.com
+  //   d.google.com
+  //   a.yahoo.com
+  //   c.yahoo.com
+  //   d.yahoo.com
+
+  size_t pos[] = {
+      html.find("<td rowspan=1>http://b.google.com/x3"),
+      html.find("<td rowspan=1>http://d.google.com/x1"),
+      html.find("<td rowspan=1>http://d.google.com/x2"),
+      html.find("<td rowspan=1>http://a.yahoo.com/y"),
+      html.find("<td rowspan=1>http://c.yahoo.com/x4"),
+      html.find("<td rowspan=1>http://d.yahoo.com/x5"),
+  };
+
+  // Make sure things appeared in the expected order.
+  for (size_t i = 1; i < arraysize(pos); ++i) {
+    EXPECT_LT(pos[i - 1], pos[i]) << "Mismatch for pos[" << i << "]";
+  }
+
+  predictor.Shutdown();
+}
+
 // Verify that two floats are within 1% of each other in value.
 #define EXPECT_SIMILAR(a, b) do { \
     double espilon_ratio = 1.01;  \

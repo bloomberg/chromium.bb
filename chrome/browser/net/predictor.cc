@@ -14,6 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/string_split.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
@@ -476,58 +478,24 @@ void Predictor::PredictorGetHtmlInfo(Predictor* predictor,
 
 // Provide sort order so all .com's are together, etc.
 struct RightToLeftStringSorter {
-  bool operator()(const GURL& left,
-                  const GURL& right) const {
-    return string_compare(left.host(), right.host());
+  bool operator()(const GURL& left, const GURL& right) const {
+    return ReverseComponents(left) < ReverseComponents(right);
   }
 
-  static bool string_compare(const std::string& left_host,
-                             const std::string& right_host) {
-    if (left_host == right_host) return true;
-    size_t left_already_matched = left_host.size();
-    size_t right_already_matched = right_host.size();
+ private:
+  // Transforms something like "http://www.google.com/xyz" to
+  // "http://com.google.www/xyz".
+  static std::string ReverseComponents(const GURL& url) {
+    // Reverse the components in the hostname.
+    std::vector<std::string> parts;
+    base::SplitString(url.host(), '.', &parts);
+    std::reverse(parts.begin(), parts.end());
+    std::string reversed_host = JoinString(parts, '.');
 
-    // Ensure both strings have characters.
-    if (!left_already_matched) return true;
-    if (!right_already_matched) return false;
-
-    // Watch for trailing dot, so we'll always be safe to go one beyond dot.
-    if ('.' == left_host[left_already_matched - 1]) {
-      if ('.' != right_host[right_already_matched - 1])
-        return true;
-      // Both have dots at end of string.
-      --left_already_matched;
-      --right_already_matched;
-    } else {
-      if ('.' == right_host[right_already_matched - 1])
-        return false;
-    }
-
-    while (1) {
-      if (!left_already_matched) return true;
-      if (!right_already_matched) return false;
-
-      size_t left_start = left_host.find_last_of('.', left_already_matched - 1);
-      if (std::string::npos == left_start) {
-        left_already_matched = left_start = 0;
-      } else {
-        left_already_matched = left_start;
-        ++left_start;  // Don't compare the dot.
-      }
-      size_t right_start = right_host.find_last_of('.',
-                                                   right_already_matched - 1);
-      if (std::string::npos == right_start) {
-        right_already_matched = right_start = 0;
-      } else {
-        right_already_matched = right_start;
-        ++right_start;  // Don't compare the dot.
-      }
-
-      int diff = left_host.compare(left_start, left_host.size(),
-                                   right_host, right_start, right_host.size());
-      if (diff > 0) return false;
-      if (diff < 0) return true;
-    }
+    // Return the new URL.
+    GURL::Replacements url_components;
+    url_components.SetHostStr(reversed_host);
+    return url.ReplaceComponents(url_components).spec();
   }
 };
 
