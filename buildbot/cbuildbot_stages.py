@@ -548,6 +548,7 @@ class BuildBoardStage(bs.BuilderStage):
   option_name = 'build'
 
   def _PerformStage(self):
+    chroot_upgrade = True
     chroot_path = os.path.join(self._build_root, 'chroot')
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
       env = {}
@@ -560,6 +561,7 @@ class BuildBoardStage(bs.BuilderStage):
           use_sdk=self._build_config['use_sdk'],
           chrome_root=self._options.chrome_root,
           extra_env=env)
+      chroot_upgrade = False
     else:
       commands.RunChrootUpgradeHooks(self._build_root)
 
@@ -585,8 +587,10 @@ class BuildBoardStage(bs.BuilderStage):
                           latest_toolchain=latest_toolchain,
                           extra_env=env,
                           profile=self._options.profile or
-                            self._build_config['profile'])
+                            self._build_config['profile'],
+                          chroot_upgrade=chroot_upgrade)
 
+      chroot_upgrade = False
 
 
 class UprevStage(bs.BuilderStage):
@@ -878,10 +882,10 @@ class SDKTestStage(bs.BuilderStage):
 
     for board in cbuildbot_config.SDK_TEST_BOARDS:
       cmd = new_chroot_cmd + ['--', './setup_board',
-          '--board', board]
+          '--board', board, '--skip_chroot_upgrade']
       cros_lib.RunCommand(cmd, cwd=self._build_root)
       cmd = new_chroot_cmd + ['--', './build_packages',
-          '--board', board, '--nousepkg']
+          '--board', board, '--nousepkg', '--skip_chroot_upgrade']
       cros_lib.RunCommand(cmd, cwd=self._build_root)
 
 

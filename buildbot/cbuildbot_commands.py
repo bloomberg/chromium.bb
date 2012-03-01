@@ -201,10 +201,16 @@ def RefreshPackageStatus(buildroot, boards, debug):
 
 
 def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,
-               profile=None):
+               profile=None, chroot_upgrade=True):
   """Wrapper around setup_board."""
   cwd = os.path.join(buildroot, 'src', 'scripts')
   cmd = ['./setup_board', '--board=%s' % board]
+
+  # This isn't the greatest thing, but emerge's dependency calculation
+  # isn't the speediest thing, so let callers skip this step when they
+  # know the system is up-to-date already.
+  if not chroot_upgrade:
+    cmd.append('--skip_chroot_upgrade')
 
   if profile:
     cmd.append('--profile=%s' % profile)
