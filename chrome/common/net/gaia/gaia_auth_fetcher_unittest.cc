@@ -130,9 +130,9 @@ class GaiaAuthFetcherTest : public testing::Test {
     std::string out_token;
 
     GaiaAuthFetcher::ParseClientLoginResponse(data,
-                                                 &out_sid,
-                                                 &out_lsid,
-                                                 &out_token);
+                                              &out_sid,
+                                              &out_lsid,
+                                              &out_token);
     EXPECT_EQ(lsid, out_lsid);
     EXPECT_EQ(sid, out_sid);
     EXPECT_EQ(token, out_token);
@@ -149,10 +149,10 @@ class GaiaAuthFetcherTest : public testing::Test {
     std::string out_captcha_token;
 
     GaiaAuthFetcher::ParseClientLoginFailure(data,
-                                                &out_error,
-                                                &out_error_url,
-                                                &out_captcha_url,
-                                                &out_captcha_token);
+                                             &out_error,
+                                             &out_error_url,
+                                             &out_captcha_url,
+                                             &out_captcha_token);
     EXPECT_EQ(error, out_error);
     EXPECT_EQ(error_url, out_error_url);
     EXPECT_EQ(captcha_url, out_captcha_url);
@@ -184,7 +184,8 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
       void(const std::string& refresh_token,
            const std::string& access_token,
            int expires_in_secs));
-  MOCK_METHOD1(OnTokenAuthSuccess, void(const std::string& data));
+  MOCK_METHOD2(OnTokenAuthSuccess,
+               void(const net::ResponseCookies&, const std::string& data));
   MOCK_METHOD1(OnMergeSessionSuccess, void(const std::string& data));
   MOCK_METHOD1(OnUberAuthTokenSuccess, void(const std::string& data));
   MOCK_METHOD1(OnClientLoginFailure,
@@ -594,6 +595,10 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
   GaiaAuthFetcher auth(&consumer, std::string(),
                        profile_.GetRequestContext());
   auth.StartOAuthLoginTokenFetch("lso_token");
+  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  EXPECT_TRUE(NULL != fetcher);
+  EXPECT_EQ(net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES,
+            fetcher->GetLoadFlags());
 
   net::ResponseCookies cookies;
   cookies.push_back(kGetAuthCodeValidCookie);
@@ -612,6 +617,18 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
       content::URLFetcher::POST, &auth);
   auth.OnURLFetchComplete(&mock_fetcher2);
   EXPECT_FALSE(auth.HasPendingFetch());
+}
+
+TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithEmptyToken) {
+  MockGaiaConsumer consumer;
+  TestingProfile profile;
+  TestURLFetcherFactory factory;
+  GaiaAuthFetcher auth(&consumer, std::string(),
+                       profile_.GetRequestContext());
+  auth.StartOAuthLoginTokenFetch("");
+  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  EXPECT_TRUE(NULL != fetcher);
+  EXPECT_EQ(net::LOAD_NORMAL, fetcher->GetLoadFlags());
 }
 
 TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenClientLoginToOAuth2Failure) {
@@ -670,7 +687,8 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenOAuth2TokenPairFailure) {
 
 TEST_F(GaiaAuthFetcherTest, TokenAuthSuccess) {
   MockGaiaConsumer consumer;
-  EXPECT_CALL(consumer, OnTokenAuthSuccess("<html></html>"))
+  net::ResponseCookies cookies;
+  EXPECT_CALL(consumer, OnTokenAuthSuccess(cookies, "<html></html>"))
       .Times(1);
 
   TestingProfile profile;

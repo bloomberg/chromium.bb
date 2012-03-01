@@ -8,8 +8,13 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 class GoogleServiceAuthError;
+
+namespace net {
+typedef std::vector<std::string> ResponseCookies;
+}
 
 typedef std::map<std::string, std::string> UserInfoMap;
 
@@ -53,7 +58,8 @@ class GaiaAuthConsumer {
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) {}
   virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error) {}
 
-  virtual void OnTokenAuthSuccess(const std::string& data) {}
+  virtual void OnTokenAuthSuccess(const net::ResponseCookies& cookies,
+                                  const std::string& data) {}
   virtual void OnTokenAuthFailure(const GoogleServiceAuthError& error) {}
 
   virtual void OnUberAuthTokenSuccess(const std::string& token) {}

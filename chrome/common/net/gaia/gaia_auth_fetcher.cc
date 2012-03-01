@@ -26,6 +26,9 @@
 #include "net/url_request/url_request_status.h"
 
 namespace {
+const int kLoadFlagsIgnoreCookies = net::LOAD_DO_NOT_SEND_COOKIES |
+                                    net::LOAD_DO_NOT_SAVE_COOKIES;
+
 static bool CookiePartsContains(const std::vector<std::string>& parts,
                                 const char* part) {
   return std::find(parts.begin(), parts.end(), part) != parts.end();
@@ -148,8 +151,8 @@ const char GaiaAuthFetcher::kOAuth2AccessTokenKey[] = "access_token";
 const char GaiaAuthFetcher::kOAuth2ExpiresInKey[] = "expires_in";
 
 GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
-                                       const std::string& source,
-                                       net::URLRequestContextGetter* getter)
+                                 const std::string& source,
+                                 net::URLRequestContextGetter* getter)
     : consumer_(consumer),
       getter_(getter),
       source_(source),
@@ -182,7 +185,7 @@ content::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     const std::string& body,
     const std::string& headers,
     const GURL& gaia_gurl,
-    bool use_cookies,
+    int load_flags,
     content::URLFetcherDelegate* delegate) {
   content::URLFetcher* to_return = content::URLFetcher::Create(
       0, gaia_gurl,
@@ -196,10 +199,8 @@ content::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
   // maintain a separation between the user's browsing and Chrome's internal
   // services.  Where such mixing is desired (MergeSession), it will be done
   // explicitly.
-  if (!use_cookies) {
-    to_return->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                            net::LOAD_DO_NOT_SAVE_COOKIES);
-  }
+  to_return->SetLoadFlags(load_flags);
+
   if (!headers.empty())
     to_return->SetExtraRequestHeaders(headers);
 
@@ -478,7 +479,7 @@ void GaiaAuthFetcher::StartClientLogin(
                                    request_body_,
                                    "",
                                    client_login_gurl_,
-                                   false,
+                                   kLoadFlagsIgnoreCookies,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -496,7 +497,7 @@ void GaiaAuthFetcher::StartIssueAuthToken(const std::string& sid,
                                    request_body_,
                                    "",
                                    issue_auth_token_gurl_,
-                                   false,
+                                   kLoadFlagsIgnoreCookies,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -508,11 +509,23 @@ void GaiaAuthFetcher::StartOAuthLoginTokenFetch(
 
   DVLOG(1) << "Starting OAuth login token fetch";
   request_body_ = MakeGetAuthCodeBody();
+
+  // If no auth_token is given, then make sure to use the cookie jar with this
+  // request.  Otherwise the token contains all the necessary information and
+  // the cookie jar should not be touched.
+  int load_flags = net::LOAD_NORMAL;
+  std::string auth_code_header = "";
+
+  if (!auth_token.empty()) {
+    load_flags = kLoadFlagsIgnoreCookies;
+    auth_code_header = MakeGetAuthCodeHeader(auth_token);
+  }
+
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   MakeGetAuthCodeHeader(auth_token),
+                                   auth_code_header,
                                    client_login_to_oauth2_gurl_,
-                                   false,
+                                   load_flags,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -527,7 +540,7 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
                                    request_body_,
                                    "",
                                    get_user_info_gurl_,
-                                   false,
+                                   kLoadFlagsIgnoreCookies,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -547,7 +560,7 @@ void GaiaAuthFetcher::StartTokenAuth(const std::string& auth_token) {
                                    request_body_,
                                    "",
                                    token_auth_gurl_,
-                                   false,
+                                   kLoadFlagsIgnoreCookies,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -572,7 +585,7 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& auth_token) {
                                    request_body_,
                                    "",
                                    merge_session_gurl_,
-                                   true,
+                                   net::LOAD_NORMAL,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -590,7 +603,7 @@ void GaiaAuthFetcher::StartUberAuthTokenFetch(const std::string& access_token) {
                                    "",
                                    authentication_header,
                                    uberauth_token_gurl_,
-                                   false,
+                                   kLoadFlagsIgnoreCookies,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -755,7 +768,7 @@ void GaiaAuthFetcher::StartOAuth2TokenPairFetch(const std::string& auth_code) {
                                    request_body_,
                                    "",
                                    oauth2_token_gurl_,
-                                   false,
+                                   kLoadFlagsIgnoreCookies,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -797,11 +810,12 @@ void GaiaAuthFetcher::OnGetUserInfoFetched(
   }
 }
 
-void GaiaAuthFetcher::OnTokenAuthFetched(const std::string& data,
+void GaiaAuthFetcher::OnTokenAuthFetched(const net::ResponseCookies& cookies,
+                                         const std::string& data,
                                          const net::URLRequestStatus& status,
                                          int response_code) {
   if (status.is_success() && response_code == net::HTTP_OK) {
-    consumer_->OnTokenAuthSuccess(data);
+    consumer_->OnTokenAuthSuccess(cookies, data);
   } else {
     consumer_->OnTokenAuthFailure(GenerateAuthError(data, status));
   }
@@ -829,7 +843,10 @@ void GaiaAuthFetcher::OnUberAuthTokenFetch(const std::string& data,
 
 void GaiaAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
   fetch_pending_ = false;
-  const GURL& url = source->GetURL();
+  // Some of the GAIA requests perform redirects, which results in the final
+  // URL of the fetcher not being the original URL requested.  Therefore use
+  // the original URL when determining which OnXXX function to call.
+  const GURL& url = source->GetOriginalURL();
   const net::URLRequestStatus& status = source->GetStatus();
   int response_code = source->GetResponseCode();
   std::string data;
@@ -846,10 +863,8 @@ void GaiaAuthFetcher::OnURLFetchComplete(const content::URLFetcher* source) {
   } else if (url == get_user_info_gurl_) {
     OnGetUserInfoFetched(data, status, response_code);
   } else if (url == token_auth_gurl_) {
-    OnTokenAuthFetched(data, status, response_code);
-  } else if (url == merge_session_gurl_ ||
-      (source && source->GetOriginalURL() == merge_session_gurl_)) {
-    // MergeSession may redirect, so check the original URL of the fetcher.
+    OnTokenAuthFetched(source->GetCookies(), data, status, response_code);
+  } else if (url == merge_session_gurl_) {
     OnMergeSessionFetched(data, status, response_code);
   } else if (url == uberauth_token_gurl_) {
     OnUberAuthTokenFetch(data, status, response_code);

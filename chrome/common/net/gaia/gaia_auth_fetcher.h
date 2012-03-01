@@ -30,7 +30,6 @@ class GaiaAuthFetcherTest;
 namespace net {
 class URLRequestContextGetter;
 class URLRequestStatus;
-typedef std::vector<std::string> ResponseCookies;
 }
 
 class GaiaAuthFetcher : public content::URLFetcherDelegate {
@@ -89,7 +88,8 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   void StartMergeSession(const std::string& auth_token);
 
   // Start a request to get an uber-auth token.  The given |access_token| must
-  // be an OAuth2 valid access token.
+  // be an OAuth2 valid access token.  If |access_token| is an empty string,
+  // then the cookie jar is used with the request.
   void StartUberAuthTokenFetch(const std::string& access_token);
 
   // Implementation of content::URLFetcherDelegate
@@ -182,7 +182,8 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
                             const net::URLRequestStatus& status,
                             int response_code);
 
-  void OnTokenAuthFetched(const std::string& data,
+  void OnTokenAuthFetched(const net::ResponseCookies& cookies,
+                          const std::string& data,
                           const net::URLRequestStatus& status,
                           int response_code);
 
@@ -259,13 +260,18 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
 
   void StartOAuth2TokenPairFetch(const std::string& auth_code);
 
-  // Create a fetcher useable for making any Gaia request.
+  // Create a fetcher usable for making any Gaia request.  |body| is used
+  // as the body of the POST request sent to GAIA.  Any strings listed in
+  // |headers| are added as extra HTTP headers in the request.
+  //
+  // |load_flags| are passed to directly to content::URLFetcher::Create() when
+  // creating the URL fetcher.
   static content::URLFetcher* CreateGaiaFetcher(
       net::URLRequestContextGetter* getter,
       const std::string& body,
       const std::string& headers,
       const GURL& gaia_gurl,
-      bool use_cookies,
+      int load_flags,
       content::URLFetcherDelegate* delegate);
 
   // From a URLFetcher result, generate an appropriate error.
