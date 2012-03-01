@@ -30,9 +30,6 @@ ASH_EXPORT aura::Window* GetActiveWindow();
 // this is probably what you're looking for.
 ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
-// Returns true if |window| is normal or default.
-ASH_EXPORT bool IsWindowNormal(aura::Window* window);
-
 // Returns true if |window| is in the maximized state.
 ASH_EXPORT bool IsWindowMaximized(aura::Window* window);
 

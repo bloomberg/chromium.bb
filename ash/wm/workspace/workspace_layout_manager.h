@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/window_observer.h"
 
 namespace aura {
 class MouseEvent;
@@ -27,8 +26,7 @@ namespace internal {
 class WorkspaceManager;
 
 // LayoutManager for top level windows when WorkspaceManager is enabled.
-class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
-                                          public aura::WindowObserver {
+class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager {
  public:
   explicit WorkspaceLayoutManager(WorkspaceManager* workspace_manager);
   virtual ~WorkspaceLayoutManager();
@@ -46,11 +44,6 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
                                               bool visibile) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
-
-  // Overriden from aura::WindowObserver:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE;
 
  private:
   // Owned by WorkspaceController.

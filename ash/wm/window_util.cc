@@ -51,13 +51,6 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
   return internal::ActivationController::GetActivatableWindow(window);
 }
 
-bool IsWindowNormal(aura::Window* window) {
-  return window->GetProperty(aura::client::kShowStateKey) ==
-          ui::SHOW_STATE_NORMAL ||
-      window->GetProperty(aura::client::kShowStateKey) ==
-          ui::SHOW_STATE_DEFAULT;
-}
-
 bool IsWindowMaximized(aura::Window* window) {
   return window->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MAXIMIZED;

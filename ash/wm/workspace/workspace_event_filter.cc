@@ -4,7 +4,6 @@
 
 #include "ash/wm/workspace/workspace_event_filter.h"
 
-#include "ash/wm/property_util.h"
 #include "ash/wm/window_frame.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
@@ -67,12 +66,6 @@ WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point,
     int window_component) {
-  // Allow dragging maximized windows if it's not tracked by workspace. This is
-  // set by tab dragging code.
-  if (!wm::IsWindowNormal(window) &&
-      (window_component != HTCAPTION || GetTrackedByWorkspace(window))) {
-    return NULL;
-  }
   return
       new WorkspaceWindowResizer(window, point, window_component, grid_size());
 }

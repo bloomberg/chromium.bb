@@ -88,7 +88,7 @@ WorkspaceManager::~WorkspaceManager() {
 
 bool WorkspaceManager::IsManagedWindow(aura::Window* window) const {
   return window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-         !window->transient_parent() && ash::GetTrackedByWorkspace(window);
+         !window->transient_parent();
 }
 
 void WorkspaceManager::AddWindow(aura::Window* window) {
@@ -186,7 +186,10 @@ gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
 void WorkspaceManager::OnWindowPropertyChanged(aura::Window* window,
                                                const void* key,
                                                intptr_t old) {
-  if (key != aura::client::kShowStateKey || !IsManagedWindow(window))
+  if (!IsManagedWindow(window))
+    return;
+
+  if (key != aura::client::kShowStateKey)
     return;
 
   DCHECK(FindBy(window));

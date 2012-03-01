@@ -53,7 +53,7 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       if (WindowResizer::GetBoundsChangeForWindowComponent(component)) {
         window_resizer_.reset(
             CreateWindowResizer(target, event->location(), component));
-        if (window_resizer_.get() && !window_resizer_->is_resizable())
+        if (!window_resizer_->is_resizable())
           window_resizer_.reset();
       } else {
         window_resizer_.reset();
@@ -105,7 +105,7 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       in_gesture_resize_ = true;
       window_resizer_.reset(
           CreateWindowResizer(target, event->location(), component));
-      if (window_resizer_.get() && !window_resizer_->is_resizable())
+      if (!window_resizer_->is_resizable())
         window_resizer_.reset();
       break;
     }
@@ -161,8 +161,6 @@ WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point,
     int window_component) {
-  if (!wm::IsWindowNormal(window))
-    return NULL;  // Don't allow resizing/dragging maximized/fullscreen windows.
   return new WindowResizer(window, point, window_component, grid_size_);
 }
 

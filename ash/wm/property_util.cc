@@ -7,19 +7,10 @@
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(bool)
-
 namespace ash {
-
-namespace {
-
-const aura::WindowProperty<bool> kWindowTrackedByWorkspaceSplitProp = {true};
-
-}  // namespace
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
   scoped_ptr<const gfx::Rect> old_bounds(GetRestoreBounds(window));
@@ -44,17 +35,6 @@ void ToggleMaximizedState(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey,
                       wm::IsWindowMaximized(window) ? ui::SHOW_STATE_NORMAL
                                                     : ui::SHOW_STATE_MAXIMIZED);
-}
-
-const aura::WindowProperty<bool>* const
-    kWindowTrackedByWorkspaceSplitPropKey = &kWindowTrackedByWorkspaceSplitProp;
-
-void SetTrackedByWorkspace(aura::Window* window, bool value) {
-  window->SetProperty(kWindowTrackedByWorkspaceSplitPropKey, value);
-}
-
-bool GetTrackedByWorkspace(aura::Window* window) {
-  return window->GetProperty(kWindowTrackedByWorkspaceSplitPropKey);
 }
 
 }

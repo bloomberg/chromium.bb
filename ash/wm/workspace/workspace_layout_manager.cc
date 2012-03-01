@@ -8,7 +8,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace.h"
 #include "ash/wm/workspace/workspace_manager.h"
-#include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -30,19 +29,13 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(
     : workspace_manager_(workspace_manager) {
 }
 
-WorkspaceLayoutManager::~WorkspaceLayoutManager() {
-  const aura::Window::Windows& windows(
-      workspace_manager_->contents_view()->children());
-  for (size_t i = 0; i < windows.size(); ++i)
-    windows[i]->RemoveObserver(this);
-}
+WorkspaceLayoutManager::~WorkspaceLayoutManager() {}
 
 void WorkspaceLayoutManager::OnWindowResized() {
   // Workspace is updated via RootWindowObserver::OnRootWindowResized.
 }
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  child->AddObserver(this);
   if (!workspace_manager_->IsManagedWindow(child))
     return;
 
@@ -63,7 +56,6 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
-  child->RemoveObserver(this);
   ClearRestoreBounds(child);
   workspace_manager_->RemoveWindow(child);
 }
@@ -83,28 +75,15 @@ void WorkspaceLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   gfx::Rect child_bounds(requested_bounds);
-  if (GetTrackedByWorkspace(child)) {
-    if (wm::IsWindowMaximized(child)) {
-      child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
-    } else if (wm::IsWindowFullscreen(child)) {
-      child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
-    } else {
-      child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child).
-          AdjustToFit(requested_bounds);
-    }
+  if (wm::IsWindowMaximized(child)) {
+    child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
+  } else if (wm::IsWindowFullscreen(child)) {
+    child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
+  } else {
+    child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child).
+        AdjustToFit(requested_bounds);
   }
   SetChildBoundsDirect(child, child_bounds);
-}
-
-void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
-                                                     const void* key,
-                                                     intptr_t old) {
-  if (key == ash::kWindowTrackedByWorkspaceSplitPropKey &&
-      ash::GetTrackedByWorkspace(window)) {
-    // We currently don't need to support transitioning from true to false, so
-    // we ignore it.
-    workspace_manager_->AddWindow(window);
-  }
 }
 
 }  // namespace internal
