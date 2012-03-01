@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ var SocketsView = (function() {
 
       var socketPools = SocketPoolWrapper.createArrayFrom(socketPoolInfo);
       var tablePrinter = SocketPoolWrapper.createTablePrinter(socketPools);
-      tablePrinter.toHTML(this.socketPoolDiv_, 'styledTable');
+      tablePrinter.toHTML(this.socketPoolDiv_, 'styled-table');
 
       // Add table for each socket pool with information on each of its groups.
       for (var i = 0; i < socketPools.length; ++i) {
@@ -72,7 +72,7 @@ var SocketsView = (function() {
           var p = addNode(this.socketPoolGroupsDiv_, 'p');
           var br = addNode(p, 'br');
           var groupTablePrinter = socketPools[i].createGroupTablePrinter();
-          groupTablePrinter.toHTML(p, 'styledTable');
+          groupTablePrinter.toHTML(p, 'styled-table');
         }
       }
       return true;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ var SpdyView = (function() {
 
       if (!hasNoSession) {
         var tablePrinter = createSessionTablePrinter(spdySessionInfo);
-        tablePrinter.toHTML(this.spdySessionDiv_, 'styledTable');
+        tablePrinter.toHTML(this.spdySessionDiv_, 'styled-table');
       }
 
       return true;
@@ -123,7 +123,7 @@ var SpdyView = (function() {
         var tabPrinter = createAlternateProtocolMappingsTablePrinter(
                 spdyAlternateProtocolMappings);
         tabPrinter.toHTML(
-            this.spdyAlternateProtocolMappingsDiv_, 'styledTable');
+            this.spdyAlternateProtocolMappingsDiv_, 'styled-table');
       } else {
         this.spdyAlternateProtocolMappingsDiv_.innerHTML = 'None';
       }

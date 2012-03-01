@@ -59,7 +59,7 @@ var DetailsView = (function() {
 
         var sourceEntry = this.sourceEntries_[i];
         var div = addNode(node, 'div');
-        div.className = 'logSourceEntry';
+        div.className = 'log-source-entry';
 
         var p = addNode(div, 'p');
         addNodeWithText(p, 'h4',

@@ -118,7 +118,7 @@ var DnsView = (function() {
           var errorText =
               e.error + ' (' + netErrorToString(e.error) + ')';
           var errorNode = addTextNode(addressesCell, 'error: ' + errorText);
-          changeClassName(addressesCell, 'warningText', true);
+          changeClassName(addressesCell, 'warning-text', true);
         } else {
           for (var j = 0; j < e.addresses.length; ++j) {
             var address = e.addresses[j];
@@ -134,7 +134,7 @@ var DnsView = (function() {
         if (logDate > timeutil.convertTimeTicksToDate(e.expiration)) {
           ++expiredEntries;
           var expiredSpan = addNode(expiresCell, 'span');
-          changeClassName(expiredSpan, 'warningText', true);
+          changeClassName(expiredSpan, 'warning-text', true);
           addTextNode(expiredSpan, ' [Expired]');
         }
       }

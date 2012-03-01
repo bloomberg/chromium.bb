@@ -10,9 +10,14 @@
   border: 1px solid red;
 }
 
+#export-view-save-log-file {
+  font-size: 100%;
+  font-weight: bold;
+}
+
 </style>
 
-<div id=export-view-tab-content>
+<div id=export-view-tab-content class=content-box>
 
   <h2>Dump data</h2>
   <div style="margin: 8px">
@@ -27,7 +32,7 @@
     </p>
     <textarea cols=50 rows=5 placeholder="Explain what went wrong here. (These notes will be included in the dump file. Be sure to mention the specific URLs, so investigators know what to look for!)" id=export-view-user-comments></textarea>
     <div>
-      <button id=export-view-save-log-file class=bigButton>Dump to file</button>
+      <button id=export-view-save-log-file>Dump to file</button>
     </div>
     <pre id=export-view-save-status-text></pre>
 

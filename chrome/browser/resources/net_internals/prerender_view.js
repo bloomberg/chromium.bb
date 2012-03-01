@@ -72,10 +72,10 @@ var PrerenderView = (function() {
         return false;
 
       var tabPrinter = createHistoryTablePrinter(prerenderInfo.history);
-      tabPrinter.toHTML(this.prerenderHistoryDiv_, 'styledTable');
+      tabPrinter.toHTML(this.prerenderHistoryDiv_, 'styled-table');
 
       var tabPrinter = createActiveTablePrinter(prerenderInfo.active);
-      tabPrinter.toHTML(this.prerenderActiveDiv_, 'styledTable');
+      tabPrinter.toHTML(this.prerenderActiveDiv_, 'styled-table');
 
       return true;
     }

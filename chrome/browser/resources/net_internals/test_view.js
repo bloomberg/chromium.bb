@@ -70,7 +70,7 @@ var TestView = (function() {
 
       // Add a table that will hold the individual test results.
       var table = addNode(this.summaryDiv_, 'table');
-      table.className = 'styledTable';
+      table.className = 'styled-table';
       var thead = addNode(table, 'thead');
       thead.innerHTML = '<tr><th>Result</th><th>Experiment</th>' +
                         '<th>Error</th><th>Time (ms)</th></tr>';

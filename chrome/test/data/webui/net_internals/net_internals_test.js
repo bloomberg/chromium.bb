@@ -138,7 +138,7 @@ var NetInternalsTest = (function() {
     if ($(ancestorId).nodeName == 'TBODY')
       return $(ancestorId);
     // The tbody element of the first styled table in |parentId|.
-    return document.querySelector('#' + ancestorId + ' .styledTable tbody');
+    return document.querySelector('#' + ancestorId + ' .styled-table tbody');
   };
 
   /**

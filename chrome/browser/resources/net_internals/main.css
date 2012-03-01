@@ -1,8 +1,8 @@
 /*
-Copyright (c) 2011 The Chromium Authors. All rights reserved.
-Use of this source code is governed by a BSD-style license that can be
-found in the LICENSE file.
-*/
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 /* Only common styles should be declared here. */
 
@@ -26,38 +26,24 @@ body {
   user-select: none;
 }
 
-.logSourceEntry {
+.log-source-entry {
   margin: 5px;
 }
 
-.logSourceEntry * p {
+.log-source-entry * p {
   font-weight: bold;
   font-size: 12px;
 }
 
-.logSourceEntry * td {
+.log-source-entry * td {
   font-size: 10px;
 }
 
-/* TODO(eroman): make this a classname instead */
-#events-view-details-log-box,
-#events-view-details-timeline-box,
-#http-cache-view-tab-content,
-#proxy-view-tab-content,
-#capture-view-tab-content,
-#import-view-tab-content,
-#export-view-tab-content,
-#dns-view-tab-content,
-#sockets-view-tab-content,
-#spdy-view-tab-content,
-#service-providers-view-tab-content,
-#test-view-tab-content,
-#hsts-view-tab-content,
-#http-throttling-view-tab-content,
-#logs-view-tab-content,
-#prerender-view-tab-content,
-#http-pipeline-view-tab-content,
-#chromeos-view-tab-content {
+/*
+ * This class should be given to top-level content boxes (like the view's main
+ * DIV). It gives them a consistent margin, and makes them scrollable.
+ */
+.content-box {
   overflow: auto;
   padding: 10px;
 }
@@ -65,23 +51,23 @@ body {
 /*
  * Styles for TABLE that uses a thin collapsed border.
  */
-table.styledTable {
+table.styled-table {
   border-collapse: collapse;
 }
 
-table.styledTable,
-.styledTable th,
-.styledTable td {
+table.styled-table,
+.styled-table th,
+.styled-table td {
   border: 1px solid #777;
   padding-right: 4px;
   padding-left: 4px;
 }
 
-.styledTable th {
+.styled-table th {
   background: rgb(224,236,255);
 }
 
-.styledTable th.title {
+.styled-table th.title {
   background: rgb(255,217,217);
 }
 
@@ -102,16 +88,8 @@ table.styledTable,
 }
 
 /**
- * Styling for an emphasized button.
- */
-.bigButton {
-  font-size: 100%;
-  font-weight: bold;
-}
-
-/**
  * Styling for text indicating a potential problem or error state.
  */
-.warningText {
+.warning-text {
   color: red;
 }
