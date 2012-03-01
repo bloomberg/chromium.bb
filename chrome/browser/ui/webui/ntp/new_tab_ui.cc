@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/recently_closed_tabs_handler.h"
+#include "chrome/browser/ui/webui/ntp/suggestions_page_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -50,6 +51,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,6 +110,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   if (!GetProfile()->IsOffTheRecord()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
     web_ui->AddMessageHandler(new MostVisitedHandler());
+    if (NewTabUI::IsSuggestionsPageEnabled())
+      web_ui->AddMessageHandler(new SuggestionsHandler());
     web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
     if (GetProfile()->IsSyncAccessible())
@@ -131,6 +135,16 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   InitializeCSSCaches();
   NewTabHTMLSource* html_source =
       new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
+  // These two resources should be loaded only if suggestions NTP is enabled.
+  html_source->AddResource("suggestions_page.css", "text/css",
+      NewTabUI::IsSuggestionsPageEnabled() ? IDR_SUGGESTIONS_PAGE_CSS : 0);
+  if (NewTabUI::IsSuggestionsPageEnabled()) {
+    html_source->AddResource("suggestions_page.js", "application/javascript",
+        IDR_SUGGESTIONS_PAGE_JS);
+  }
+  // ChromeURLDataManager assumes the ownership of the html_source and in some
+  // tests immediately deletes it, so html_source should not be accessed after
+  // this call.
   GetProfile()->GetChromeURLDataManager()->AddDataSource(html_source);
 
   pref_change_registrar_.Init(GetProfile()->GetPrefs());
@@ -234,6 +248,8 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   NewTabPageHandler::RegisterUserPrefs(prefs);
   AppLauncherHandler::RegisterUserPrefs(prefs);
   MostVisitedHandler::RegisterUserPrefs(prefs);
+  if (NewTabUI::IsSuggestionsPageEnabled())
+    SuggestionsHandler::RegisterUserPrefs(prefs);
 }
 
 // static
@@ -263,6 +279,12 @@ bool NewTabUI::ShouldShowAppInstallHint() {
   const CommandLine* cli = CommandLine::ForCurrentProcess();
   return cli->HasSwitch(switches::kNtpAppInstallHint) ||
       WebStoreLinkExperimentGroupIs(g_hint_group);
+}
+
+// static
+bool NewTabUI::IsSuggestionsPageEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSuggestionsTabPage);
 }
 
 // static
@@ -325,6 +347,18 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
                                                   int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  std::map<std::string, std::pair<std::string, int> >::iterator it =
+    resource_map_.find(path);
+  if (it != resource_map_.end()) {
+    scoped_refptr<RefCountedStaticMemory> resource_bytes(
+        it->second.second ?
+            ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+                it->second.second) :
+            new RefCountedStaticMemory);
+    SendResponse(request_id, resource_bytes);
+    return;
+  }
+
   if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
@@ -339,10 +373,24 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
   SendResponse(request_id, html_bytes);
 }
 
-std::string NewTabUI::NewTabHTMLSource::GetMimeType(const std::string&) const {
+std::string NewTabUI::NewTabHTMLSource::GetMimeType(const std::string& resource)
+    const {
+  std::map<std::string, std::pair<std::string, int> >::const_iterator it =
+      resource_map_.find(resource);
+  if (it != resource_map_.end())
+    return it->second.first;
   return "text/html";
 }
 
 bool NewTabUI::NewTabHTMLSource::ShouldReplaceExistingSource() const {
   return false;
+}
+
+void NewTabUI::NewTabHTMLSource::AddResource(const char* resource,
+                                             const char* mime_type,
+                                             int resource_id) {
+  DCHECK(resource);
+  DCHECK(mime_type);
+  resource_map_[std::string(resource)] =
+      std::make_pair(std::string(mime_type), resource_id);
 }

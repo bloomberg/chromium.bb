@@ -292,6 +292,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   localized_strings.SetString("mostvisited",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED));
+  localized_strings.SetString("suggestions",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_SUGGESTIONS));
   localized_strings.SetString("restoreThumbnailsShort",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK));
   localized_strings.SetString("recentlyclosed",
@@ -344,6 +346,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       NewTabUI::ShouldShowWebStoreFooterLink());
   localized_strings.SetBoolean("appInstallHintEnabled",
       NewTabUI::ShouldShowAppInstallHint());
+  localized_strings.SetBoolean("isSuggestionsPageEnabled",
+      NewTabUI::IsSuggestionsPageEnabled());
 
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",

@@ -59,6 +59,12 @@ cr.define('ntp', function() {
     appsPages: undefined,
 
     /**
+     * The Suggestions page.
+     * @type {!Element|undefined}
+     */
+    suggestionsPage: undefined,
+
+    /**
      * The Most Visited page.
      * @type {!Element|undefined}
      */
@@ -199,7 +205,7 @@ cr.define('ntp', function() {
     appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
       if (opt_refNode) {
         var refIndex = this.getTilePageIndex(opt_refNode);
-        this.cardSlider.insertCardAtIndex(page, refIndex);
+        this.cardSlider.addCardAtIndex(page, refIndex);
       } else {
         this.cardSlider.appendCard(page);
       }
@@ -210,6 +216,11 @@ cr.define('ntp', function() {
         assert(this.tilePages.length == 1,
                'MostVisitedPage should be added as first tile page');
         this.mostVisitedPage = page;
+      }
+
+      if (typeof ntp.SuggestionsPage != 'undefined' &&
+          page instanceof ntp.SuggestionsPage) {
+        this.suggestionsPage = page;
       }
 
       // If we're appending an AppsPage and it's a temporary page, animate it.
@@ -319,6 +330,14 @@ cr.define('ntp', function() {
       // An app to animate (in case it was just installed).
       var highlightApp;
 
+      // If there are any pages after the apps, add new pages before them.
+      var lastAppsPage = (this.appsPages.length > 0) ?
+          this.appsPages[this.appsPages.length - 1] : null;
+      var lastAppsPageIndex = (lastAppsPage != null) ?
+          Array.prototype.indexOf.call(this.tilePages, lastAppsPage) : -1;
+      var nextPageAfterApps = lastAppsPageIndex != -1 ?
+          this.tilePages[lastAppsPageIndex + 1] : null;
+
       // Add the apps, creating pages as necessary
       for (var i = 0; i < apps.length; i++) {
         var app = apps[i];
@@ -329,7 +348,8 @@ cr.define('ntp', function() {
             pageName = pageNames[this.appsPages.length];
 
           var origPageCount = this.appsPages.length;
-          this.appendTilePage(new ntp.AppsPage(), pageName, true);
+          this.appendTilePage(new ntp.AppsPage(), pageName, true,
+                              nextPageAfterApps);
           // Confirm that appsPages is a live object, updated when a new page is
           // added (otherwise we'd have an infinite loop)
           assert(this.appsPages.length == origPageCount + 1,
@@ -428,6 +448,10 @@ cr.define('ntp', function() {
         case templateData['most_visited_page_id']:
           if (this.mostVisitedPage)
             this.cardSlider.selectCardByValue(this.mostVisitedPage);
+          break;
+        case templateData['suggestions_page_id']:
+          if (this.suggestionsPage)
+            this.cardSlider.selectCardByValue(this.suggestionsPage);
           break;
       }
     },
@@ -542,6 +566,9 @@ cr.define('ntp', function() {
           this.shownPageIndex = this.getAppsPageIndex(page);
         } else if (page.classList.contains('most-visited-page')) {
           this.shownPage = templateData.most_visited_page_id;
+          this.shownPageIndex = 0;
+        } else if (page.classList.contains('suggestions-page')) {
+          this.shownPage = templateData.suggestions_page_id;
           this.shownPageIndex = 0;
         } else {
           console.error('unknown page selected');

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_NTP_NEW_TAB_UI_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -40,6 +41,9 @@ class NewTabUI : public content::WebUIController,
 
   // Returns whether or not to show the app install hint.
   static bool ShouldShowAppInstallHint();
+
+  // Returns whether or not the "suggestions links page" is enabled.
+  static bool IsSuggestionsPageEnabled();
 
   // Adds "url", "title", and "direction" keys on incoming dictionary, setting
   // title as the url as a fallback on empty title.
@@ -79,11 +83,21 @@ class NewTabUI : public content::WebUIController,
 
     virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
+    // Adds |resource| to the source. |resource_id| is resource id or 0,
+    // which means return empty data set. |mime_type| is mime type of the
+    // resource.
+    void AddResource(const char* resource,
+                     const char *mime_type,
+                     int resource_id);
+
    private:
     virtual ~NewTabHTMLSource() {}
 
     // Pointer back to the original profile.
     Profile* profile_;
+
+    // Maps resource files to mime types an resource ids.
+    std::map<std::string, std::pair<std::string, int> > resource_map_;
 
     DISALLOW_COPY_AND_ASSIGN(NewTabHTMLSource);
   };

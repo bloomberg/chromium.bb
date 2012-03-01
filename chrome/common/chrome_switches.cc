@@ -567,6 +567,9 @@ const char kEnableProfiling[]               = "enable-profiling";
 // supported server-side for searches on google.com.
 const char kEnableSdch[]                    = "enable-sdch";
 
+// Enables experimental suggestions pane in New Tab page.
+const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
+
 // Enables syncing browser sessions.
 const char kEnableSyncTabs[]                = "enable-sync-tabs";
 

@@ -119,6 +119,20 @@ cr.define('ntp', function() {
                               false);
     chrome.send('getMostVisited');
 
+    if (templateData.isSuggestionsPageEnabled) {
+      var suggestions_script = document.createElement('script');
+      suggestions_script.src = 'suggestions_page.js';
+      suggestions_script.onload = function() {
+         newTabView.appendTilePage(new ntp.SuggestionsPage(),
+                                   localStrings.getString('suggestions'),
+                                   false,
+                                   (newTabView.appsPages.length > 0) ?
+                                       newTabView.appsPages[0] : null);
+         chrome.send('getSuggestions');
+      };
+      document.querySelector('head').appendChild(suggestions_script);
+    }
+
     var webstoreLink = localStrings.getString('webStoreLink');
     if (templateData.isWebStoreExperimentEnabled) {
       var url = appendParam(webstoreLink, 'utm_source', 'chrome-ntp-launcher');
@@ -438,6 +452,10 @@ cr.define('ntp', function() {
     cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
+  function setSuggestionsPages(data, hasBlacklistedUrls) {
+    newTabView.suggestionsPage.data = data;
+  }
+
   /**
    * Set the dominant color for a node. This will be called in response to
    * getFaviconDominantColor. The node represented by |id| better have a setter
@@ -559,6 +577,7 @@ cr.define('ntp', function() {
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
     setMostVisitedPages: setMostVisitedPages,
+    setSuggestionsPages: setSuggestionsPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     setStripeColor: setStripeColor,
     showNotification: showNotification,

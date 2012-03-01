@@ -344,7 +344,7 @@ cr.define('cr.ui', function() {
       if (this.currentCard_ == -1)
         this.currentCard_ = 0;
       else if (index <= this.currentCard_)
-        this.selectCard(this.currentCard_ + 1, false, true);
+        this.selectCard(this.currentCard_ + 1, false, true, true);
 
       this.fireAddedEvent_(card, index);
     },
@@ -436,13 +436,21 @@ cr.define('cr.ui', function() {
      *     current position to new position.
      * @param {boolean=} opt_dontNotify If true, don't tell subscribers that
      *     we've changed cards.
+     * @param {boolean=} opt_forceChange If true, ignore if the card already
+     *     selected.
      */
-    selectCard: function(newCardIndex, opt_animate, opt_dontNotify) {
+    selectCard: function(newCardIndex,
+                         opt_animate,
+                         opt_dontNotify,
+                         opt_forceChange) {
       this.assertValidIndex_(newCardIndex);
 
       var previousCard = this.currentCardValue;
       var isChangingCard =
           !this.cards_[newCardIndex].classList.contains('selected-card');
+
+      if (typeof opt_forceChange != 'undefined' && opt_forceChange)
+        isChangingCard = true;
 
       if (isChangingCard) {
         if (previousCard)

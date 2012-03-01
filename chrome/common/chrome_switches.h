@@ -160,6 +160,7 @@ extern const char kEnablePnacl[];
 extern const char kEnableProfiling[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
+extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncTabs[];
 extern const char kEnableSyncTabsForOtherClients[];
 extern const char kEnableTabGroupsContextMenu[];
