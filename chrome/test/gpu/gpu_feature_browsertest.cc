@@ -323,18 +323,5 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, CanOpenPopupAndRenderWith2DCanvas) {
   RunTest(url, "\"SUCCESS\"", false);
 }
 
-class ThreadedCompositorTest : public GpuFeatureTest {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    GpuFeatureTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableThreadedCompositing);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, ThreadedCompositor) {
-  const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
-  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
-}
-
 }  // namespace anonymous
 
