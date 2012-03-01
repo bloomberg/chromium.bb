@@ -761,6 +761,7 @@ static Bool NaClValidateInstReplacement(NaClInstIter *iter_old,
   NaClExpVector *exp_old, *exp_new;
   uint32_t i;
   Bool inst_changed = FALSE;
+  int parent_index;
 
   istate_old = NaClInstIterGetStateInline(iter_old);
   istate_new = NaClInstIterGetStateInline(iter_new);
@@ -820,51 +821,63 @@ static Bool NaClValidateInstReplacement(NaClInstIter *iter_old,
       break;
 
     for (i = 0; i < exp_old->number_expr_nodes; i++) {
-      if (exp_old->node[i].kind  != exp_new->node[i].kind) {
-        goto error_exit;
-      }
-      if (exp_old->node[i].flags != exp_new->node[i].flags) {
-        goto error_exit;
-      }
+      /* Allow nodes that are identical. */
+      if (exp_old->node[i].kind  != exp_new->node[i].kind) goto error_exit;
+      if (exp_old->node[i].flags != exp_new->node[i].flags) goto error_exit;
+      if (exp_old->node[i].value == exp_new->node[i].value) continue;
 
       /*
-       * allow some constants to be different; however it is important not to
-       * allow modification of sandboxing instructions. Note neither of the
-       * instructions allowed for modification is used for sandboxing
+       * Only constant values may differ. However it is important not to
+       * allow constant modification of sandboxing instructions. Note neither
+       * of the instructions allowed for modification is used for sandboxing.
        */
-      if (exp_old->node[i].value != exp_new->node[i].value) {
-        if (exp_old->node[i].kind == ExprConstant) {
+      if (exp_old->node[i].kind != ExprConstant) goto error_exit;
 
+      switch (istate_old->inst->name) {
+
+        case InstCall:
           /* allow different constants in direct calls */
-          if (istate_old->inst->name == InstCall)
-            if (exp_old->node[i].flags & NACL_EFLAG(ExprJumpTarget))
-              if (exp_old->node[NaClGetExpParentIndex(exp_old, i)].kind
-                    == OperandReference)
-                continue;
+          if (!NaClHasBit(exp_old->node[i].flags, NACL_EFLAG(ExprJumpTarget)))
+            break;
+          parent_index = NaClGetExpParentIndex(exp_old, i);
+          if (parent_index < 0) break;
+          if (exp_old->node[parent_index].kind == OperandReference) continue;
+          break;
 
-          /*
-           * allow different constants in operand of mov
-           * e.g. mov $rax, 0xdeadbeef
-           */
-          if (istate_old->inst->name == InstMov)
-            if (exp_old->node[i].flags & NACL_EFLAG(ExprUsed))
-              if (exp_old->node[NaClGetExpParentIndex(exp_old, i)].kind
-                    == OperandReference)
+        case InstMov:
+          parent_index = NaClGetExpParentIndex(exp_old, i);
+          if (parent_index < 0) break;
+          switch (exp_old->node[parent_index].kind) {
+            case OperandReference:
+              /*
+               * allow different constants in operand of mov
+               * e.g. mov $rax, 0xdeadbeef
+               */
+              if (NaClHasBit(exp_old->node[i].flags, NACL_EFLAG(ExprUsed)))
                 continue;
-          /*
-           * allow different displacements in memory reference of mov
-           * instructions e.g. mov $rax, [$r15+$rbx*2+0x7fff]
-           */
-          if (istate_old->inst->name == InstMov)
-            if (exp_old->node[NaClGetExpParentIndex(exp_old, i)].kind
-                    == ExprMemOffset)
-              /* displacement is the fourth node after ExprMemOffset node */
-              if (i - NaClGetExpParentIndex(exp_old, i) == 4)
-                continue;
-        }
-
-        goto error_exit;
+              break;
+            case ExprMemOffset:
+              /*
+               * allow different displacements in memory reference of mov
+               * instructions e.g. mov $rax, [$r15+$rbx*2+0x7fff]
+               *
+               * Note: displacement is the fourth node after ExprMemOffset*
+               * node
+               */
+              if (4 == (i - parent_index)) continue;
+              break;
+            default:
+              break;
+          }
+          break;
+        default:
+          break;
       }
+
+      /* If reached, we found a value that differed, and wasn't one
+       * of the expected constants that can differ.
+       */
+      goto error_exit;
     }
 
     /* This return signifies there is no error in validation. */

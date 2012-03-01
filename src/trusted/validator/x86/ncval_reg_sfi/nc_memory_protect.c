@@ -358,7 +358,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state) {
    * by the string instructions Movs and Cmps. In such cases, the
    * ES:RDI must appear before the DS:RSI.
    */
-  uint32_t i;
+  int i;
   NaClInstState* inst_state = state->cur_inst_state;
   NaClExpVector* vector = state->cur_inst_vector;
 
@@ -388,7 +388,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state) {
     });
 
   /* Look for assignments on a memory offset. */
-  for (i = 0; i < vector->number_expr_nodes; ++i) {
+  for (i = 0; i < (int) vector->number_expr_nodes; ++i) {
     /* Note: continue (within this loop) is used to indicate
      * that the node describes a safe memory address.
      */
