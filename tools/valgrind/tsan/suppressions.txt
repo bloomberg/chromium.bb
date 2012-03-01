@@ -851,4 +851,8 @@
   fun:AudioRendererHost::OnCreated
   fun:media::AudioOutputController::DoCreate
 }
-
+{
+  bug_116421
+  ThreadSanitizer:Race
+  fun:talk_base::Event::EnsureInitialized
+}
