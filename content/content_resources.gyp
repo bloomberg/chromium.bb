@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,6 +13,22 @@
     {
       'target_name': 'content_resources',
       'type': 'none',
+      'dependencies': [
+        'generate_content_resources',
+      ],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak'
+          ],
+        },
+      ],
+      'includes': [ '../build/grit_target.gypi' ],
+    },
+    {
+      'target_name': 'generate_content_resources',
+      'type': 'none',
       'actions': [
         {
           'action_name': 'content_resources',
@@ -20,15 +36,6 @@
             'grit_grd_file': 'content_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)',
-          'files': [
-            '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak'
-          ],
         },
       ],
     },
