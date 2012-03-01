@@ -76,7 +76,8 @@ class CONTENT_EXPORT RenderWidget
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
   // RenderView that this widget lives inside.
   static RenderWidget* Create(int32 opener_id,
-                              WebKit::WebPopupType popup_type);
+                              WebKit::WebPopupType popup_type,
+                              const WebKit::WebScreenInfo& screen_info);
 
   // Creates a WebWidget based on the popup type.
   static WebKit::WebWidget* CreateWebWidget(RenderWidget* render_widget);
@@ -157,7 +158,8 @@ class CONTENT_EXPORT RenderWidget
   // For unit tests.
   friend class RenderWidgetTest;
 
-  explicit RenderWidget(WebKit::WebPopupType popup_type);
+  RenderWidget(WebKit::WebPopupType popup_type,
+               const WebKit::WebScreenInfo& screen_info);
   virtual ~RenderWidget();
 
   // Initializes this view with the given opener.  CompleteInit must be called
@@ -495,6 +497,9 @@ class CONTENT_EXPORT RenderWidget
   // queue. Note: some SwapBuffers may not correspond to an update, in which
   // case NULL is added to the queue.
   std::deque<ViewHostMsg_UpdateRect*> updates_pending_swap_;
+
+  // Properties of the screen hosting this RenderWidget instance.
+  WebKit::WebScreenInfo screen_info_;
 
   // Set to true if we should invert all pixels.
   bool invert_;

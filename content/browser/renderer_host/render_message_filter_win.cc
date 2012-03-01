@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,10 +48,4 @@ void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId window_id,
                                               gfx::Rect* rect) {
   *rect = GetVisibleWindowRect(GetAncestor(gfx::NativeViewFromId(window_id),
                                GA_ROOT));
-}
-
-void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
-                                          WebKit::WebScreenInfo* results) {
-  *results =
-      WebKit::WebScreenInfoFactory::screenInfo(gfx::NativeViewFromId(view));
 }

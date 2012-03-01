@@ -418,8 +418,9 @@ RenderViewImpl::RenderViewImpl(
     int32 surface_id,
     int64 session_storage_namespace_id,
     const string16& frame_name,
-    int32 next_page_id)
-    : RenderWidget(WebKit::WebPopupTypeNone),
+    int32 next_page_id,
+    const WebKit::WebScreenInfo& screen_info)
+    : RenderWidget(WebKit::WebPopupTypeNone, screen_info),
       webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
       enabled_bindings_(0),
@@ -617,7 +618,8 @@ RenderViewImpl* RenderViewImpl::Create(
     int32 surface_id,
     int64 session_storage_namespace_id,
     const string16& frame_name,
-    int32 next_page_id) {
+    int32 next_page_id,
+    const WebKit::WebScreenInfo& screen_info) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderViewImpl(
       parent_hwnd,
@@ -629,7 +631,8 @@ RenderViewImpl* RenderViewImpl::Create(
       surface_id,
       session_storage_namespace_id,
       frame_name,
-      next_page_id);  // adds reference
+      next_page_id,
+      screen_info);
 }
 
 WebKit::WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
@@ -1468,7 +1471,8 @@ WebView* RenderViewImpl::createView(
       surface_id,
       cloned_session_storage_namespace_id,
       frame_name,
-      1);
+      1,
+      screen_info_);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
@@ -1488,7 +1492,8 @@ WebView* RenderViewImpl::createView(
 }
 
 WebWidget* RenderViewImpl::createPopupMenu(WebKit::WebPopupType popup_type) {
-  RenderWidget* widget = RenderWidget::Create(routing_id_, popup_type);
+  RenderWidget* widget =
+      RenderWidget::Create(routing_id_, popup_type, screen_info_);
   return widget->webwidget();
 }
 

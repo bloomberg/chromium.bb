@@ -53,6 +53,9 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#if defined(OS_WIN)
+#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
+#endif
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/webaccessibility.h"
@@ -211,6 +214,20 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name,
   params.session_storage_namespace_id = session_storage_namespace_->id();
   params.frame_name = frame_name;
   params.next_page_id = next_page_id;
+#if defined(OS_POSIX) || defined(USE_AURA)
+  if (view()) {
+    static_cast<content::RenderWidgetHostViewPort*>(
+        view())->GetScreenInfo(&params.screen_info);
+  } else {
+    content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
+        &params.screen_info);
+  }
+#else
+  params.screen_info =
+      WebKit::WebScreenInfoFactory::screenInfo(
+          gfx::NativeViewFromId(GetNativeViewId()));
+#endif
+
   Send(new ViewMsg_New(params));
 
   // If it's enabled, tell the renderer to set up the Javascript bindings for

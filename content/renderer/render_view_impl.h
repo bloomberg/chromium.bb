@@ -184,7 +184,8 @@ class RenderViewImpl : public RenderWidget,
       int32 surface_id,
       int64 session_storage_namespace_id,
       const string16& frame_name,
-      int32 next_page_id);
+      int32 next_page_id,
+      const WebKit::WebScreenInfo& screen_info);
 
   // Returns the RenderViewImpl containing the given WebView.
   CONTENT_EXPORT static RenderViewImpl* FromWebView(WebKit::WebView* webview);
@@ -720,7 +721,8 @@ class RenderViewImpl : public RenderWidget,
                  int32 surface_id,
                  int64 session_storage_namespace_id,
                  const string16& frame_name,
-                 int32 next_page_id);
+                 int32 next_page_id,
+                 const WebKit::WebScreenInfo& screen_info);
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderViewImpl();
