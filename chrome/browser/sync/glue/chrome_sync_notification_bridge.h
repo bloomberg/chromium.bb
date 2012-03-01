@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_NOTIFIER_CHROME_SYNC_NOTIFICATION_BRIDGE_H_
-#define CHROME_BROWSER_SYNC_NOTIFIER_CHROME_SYNC_NOTIFICATION_BRIDGE_H_
+#ifndef CHROME_BROWSER_SYNC_GLUE_CHROME_SYNC_NOTIFICATION_BRIDGE_H_
+#define CHROME_BROWSER_SYNC_GLUE_CHROME_SYNC_NOTIFICATION_BRIDGE_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -14,8 +14,10 @@
 class Profile;
 
 namespace sync_notifier {
-
 class SyncNotifierObserver;
+}  // namespace
+
+namespace browser_sync {
 
 // A thread-safe bridge for chrome events that can trigger sync notifications.
 // Currently only listens to NOTIFICATION_SYNC_REFRESH, triggering each
@@ -29,8 +31,8 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
   virtual ~ChromeSyncNotificationBridge();
 
   // These can be called on any thread.
-  virtual void AddObserver(SyncNotifierObserver* observer);
-  virtual void RemoveObserver(SyncNotifierObserver* observer);
+  virtual void AddObserver(sync_notifier::SyncNotifierObserver* observer);
+  virtual void RemoveObserver(sync_notifier::SyncNotifierObserver* observer);
 
   // NotificationObserver implementation. Called on UI thread.
   virtual void Observe(int type,
@@ -42,9 +44,10 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
 
   // Because [Add/Remove]Observer can be called from any thread, we need a
   // thread-safe observerlist.
-  scoped_refptr<ObserverListThreadSafe<SyncNotifierObserver> > observers_;
+  scoped_refptr<ObserverListThreadSafe<sync_notifier::SyncNotifierObserver> >
+      observers_;
 };
 
-}  // namespace sync_notifier
+}  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_NOTIFIER_CHROME_SYNC_NOTIFICATION_BRIDGE_H_
+#endif  // CHROME_BROWSER_SYNC_GLUE_CHROME_SYNC_NOTIFICATION_BRIDGE_H_

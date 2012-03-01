@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/test_browser_thread.h"
 
@@ -128,9 +127,8 @@ int main(int argc, char* argv[]) {
   scoped_refptr<TestURLRequestContextGetter> request_context_getter(
       new TestURLRequestContextGetter());
   NullInvalidationVersionTracker null_invalidation_version_tracker;
-  TestingProfile profile_;
   sync_notifier::SyncNotifierFactory sync_notifier_factory(
-      &profile_, kClientInfo, request_context_getter,
+      kClientInfo, request_context_getter,
       null_invalidation_version_tracker.AsWeakPtr(), command_line);
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());

@@ -13,12 +13,16 @@ include_rules = [
   "+chrome/browser/sync/engine/passive_model_worker.h",
   "+chrome/browser/sync/notifier/sync_notifier.h",
   "+chrome/browser/sync/notifier/sync_notifier_factory.h",
+  "+chrome/browser/sync/notifier/sync_notifier_observer.h",
   "+chrome/browser/sync/syncable/model_type.h",
+  "+chrome/browser/sync/syncable/model_type_payload_map.h",
   "+chrome/browser/sync/sessions/session_state.h",
 
-  # Mocks.
+  # Mocks/tests.
   "+chrome/browser/sync/engine/read_node_mock.h",
   "+chrome/browser/sync/engine/syncapi_mock.h",
+  "+chrome/browser/sync/notifier/mock_sync_notifier_observer.h",
+  "+chrome/browser/sync/syncable/model_type_test_util.h",
   "+chrome/browser/sync/syncable/syncable_mock.h",
 
   # TODO(zea): SessionModelAssociator shouldn't need this.

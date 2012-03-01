@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/notifier/bridged_sync_notifier.h"
+#include "chrome/browser/sync/glue/bridged_sync_notifier.h"
 
-#include "chrome/browser/sync/notifier/chrome_sync_notification_bridge.h"
+#include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 
-namespace sync_notifier {
+namespace browser_sync {
 
 BridgedSyncNotifier::BridgedSyncNotifier(
-    ChromeSyncNotificationBridge* bridge, SyncNotifier* delegate)
+    ChromeSyncNotificationBridge* bridge,
+    sync_notifier::SyncNotifier* delegate)
     : bridge_(bridge), delegate_(delegate) {
   DCHECK(bridge_);
   DCHECK(delegate_.get());
@@ -18,13 +19,14 @@ BridgedSyncNotifier::BridgedSyncNotifier(
 BridgedSyncNotifier::~BridgedSyncNotifier() {
 }
 
-void BridgedSyncNotifier::AddObserver(SyncNotifierObserver* observer) {
+void BridgedSyncNotifier::AddObserver(
+    sync_notifier::SyncNotifierObserver* observer) {
   delegate_->AddObserver(observer);
   bridge_->AddObserver(observer);
 }
 
 void BridgedSyncNotifier::RemoveObserver(
-    SyncNotifierObserver* observer) {
+    sync_notifier::SyncNotifierObserver* observer) {
   bridge_->RemoveObserver(observer);
   delegate_->RemoveObserver(observer);
 }
@@ -52,4 +54,4 @@ void BridgedSyncNotifier::SendNotification(
   delegate_->SendNotification(changed_types);
 }
 
-}  // namespace sync_notifier
+}  // namespace browser_sync

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/notifier/bridged_sync_notifier.h"
+#include "chrome/browser/sync/glue/bridged_sync_notifier.h"
 
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/sync/notifier/chrome_sync_notification_bridge.h"
+#include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 #include "chrome/browser/sync/notifier/mock_sync_notifier_observer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_notifier {
+namespace browser_sync {
 namespace {
 
 using ::testing::NiceMock;
@@ -33,19 +33,19 @@ class MockChromeSyncNotificationBridge : public ChromeSyncNotificationBridge {
       : ChromeSyncNotificationBridge(&mock_profile_) {}
   virtual ~MockChromeSyncNotificationBridge() {}
 
-  MOCK_METHOD1(AddObserver, void(SyncNotifierObserver*));
-  MOCK_METHOD1(RemoveObserver, void(SyncNotifierObserver*));
+  MOCK_METHOD1(AddObserver, void(sync_notifier::SyncNotifierObserver*));
+  MOCK_METHOD1(RemoveObserver, void(sync_notifier::SyncNotifierObserver*));
  private:
   NiceMock<ProfileMock> mock_profile_;
 };
 
-class MockSyncNotifier : public SyncNotifier {
+class MockSyncNotifier : public sync_notifier::SyncNotifier {
  public:
   MockSyncNotifier() {}
   virtual ~MockSyncNotifier() {}
 
-  MOCK_METHOD1(AddObserver, void(SyncNotifierObserver*));
-  MOCK_METHOD1(RemoveObserver, void(SyncNotifierObserver*));
+  MOCK_METHOD1(AddObserver, void(sync_notifier::SyncNotifierObserver*));
+  MOCK_METHOD1(RemoveObserver, void(sync_notifier::SyncNotifierObserver*));
   MOCK_METHOD1(SetUniqueId, void(const std::string&));
   MOCK_METHOD1(SetState, void(const std::string&));
   MOCK_METHOD2(UpdateCredentials, void(const std::string&, const std::string&));
@@ -73,14 +73,14 @@ class BridgedSyncNotifierTest : public testing::Test {
 };
 
 TEST_F(BridgedSyncNotifierTest, AddObserver) {
-  MockSyncNotifierObserver observer;
+  sync_notifier::MockSyncNotifierObserver observer;
   EXPECT_CALL(mock_bridge_, AddObserver(&observer));
   EXPECT_CALL(*mock_delegate_, AddObserver(&observer));
   bridged_notifier_.AddObserver(&observer);
 }
 
 TEST_F(BridgedSyncNotifierTest, RemoveObserver) {
-  MockSyncNotifierObserver observer;
+  sync_notifier::MockSyncNotifierObserver observer;
   EXPECT_CALL(mock_bridge_, RemoveObserver(&observer));
   EXPECT_CALL(*mock_delegate_, RemoveObserver(&observer));
   bridged_notifier_.RemoveObserver(&observer);
@@ -121,4 +121,4 @@ TEST_F(BridgedSyncNotifierTest, SendNotification) {
 }
 
 }  // namespace
-}  // namespace sync_notifier
+}  // namespace browser_sync

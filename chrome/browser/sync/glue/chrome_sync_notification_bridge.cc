@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/notifier/chrome_sync_notification_bridge.h"
+#include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -11,11 +11,12 @@
 
 using content::BrowserThread;
 
-namespace sync_notifier {
+namespace browser_sync {
 
 ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
     const Profile* profile)
-    : observers_(new ObserverListThreadSafe<SyncNotifierObserver>()) {
+    : observers_(
+        new ObserverListThreadSafe<sync_notifier::SyncNotifierObserver>()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH,
@@ -24,12 +25,13 @@ ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
 
 ChromeSyncNotificationBridge::~ChromeSyncNotificationBridge() {}
 
-void ChromeSyncNotificationBridge::AddObserver(SyncNotifierObserver* observer) {
+void ChromeSyncNotificationBridge::AddObserver(
+    sync_notifier::SyncNotifierObserver* observer) {
   observers_->AddObserver(observer);
 }
 
 void ChromeSyncNotificationBridge::RemoveObserver(
-    SyncNotifierObserver* observer) {
+    sync_notifier::SyncNotifierObserver* observer) {
   observers_->RemoveObserver(observer);
 }
 
@@ -46,8 +48,9 @@ void ChromeSyncNotificationBridge::Observe(
   DCHECK_EQ(syncable::SESSIONS, model_type);
   syncable::ModelTypePayloadMap payload_map;
   payload_map[model_type] = "";
-  observers_->Notify(&SyncNotifierObserver::OnIncomingNotification,
-                     payload_map, LOCAL_NOTIFICATION);
+  observers_->Notify(
+      &sync_notifier::SyncNotifierObserver::OnIncomingNotification,
+      payload_map, sync_notifier::LOCAL_NOTIFICATION);
 }
 
-}  // namespace sync_notifier
+}  // namespace browser_sync

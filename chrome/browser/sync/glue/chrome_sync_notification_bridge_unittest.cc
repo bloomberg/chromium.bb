@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/notifier/chrome_sync_notification_bridge.h"
+#include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -22,7 +22,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_notifier {
+namespace browser_sync {
 namespace {
 
 using ::testing::Mock;
@@ -37,7 +37,8 @@ using content::BrowserThread;
 // Note: Because this object lives on the IO thread, we use a fake (vs a mock)
 // so we don't have to worry about possible thread safety issues within
 // GTest/GMock.
-class FakeSyncNotifierObserverIO : public SyncNotifierObserver {
+class FakeSyncNotifierObserverIO
+    : public sync_notifier::SyncNotifierObserver {
  public:
   FakeSyncNotifierObserverIO(
       ChromeSyncNotificationBridge* bridge,
@@ -57,10 +58,10 @@ class FakeSyncNotifierObserverIO : public SyncNotifierObserver {
   // SyncNotifierObserver implementation.
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
-      IncomingNotificationSource source) OVERRIDE {
+      sync_notifier::IncomingNotificationSource source) OVERRIDE {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     notification_count_++;
-    if (source != LOCAL_NOTIFICATION) {
+    if (source != sync_notifier::LOCAL_NOTIFICATION) {
       LOG(ERROR) << "Received notification with wrong source.";
       received_improper_notification_ = true;
     }
@@ -189,9 +190,10 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
 TEST_F(ChromeSyncNotificationBridgeTest, Basic) {
   syncable::ModelTypePayloadMap payload_map;
   payload_map[syncable::SESSIONS] = "";
-  StrictMock<MockSyncNotifierObserver> observer;
+  StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
   EXPECT_CALL(observer,
-              OnIncomingNotification(payload_map, LOCAL_NOTIFICATION));
+              OnIncomingNotification(payload_map,
+                                     sync_notifier::LOCAL_NOTIFICATION));
   bridge_.AddObserver(&observer);
   TriggerRefreshNotification();
   ui_loop_.RunAllPending();
@@ -210,4 +212,4 @@ TEST_F(ChromeSyncNotificationBridgeTest, BasicThreaded) {
 }
 
 }  // namespace
-}  // namespace sync_notifier
+}  // namespace browser_sync

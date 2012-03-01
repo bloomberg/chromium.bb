@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/sync/glue/bridged_sync_notifier.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
@@ -234,8 +235,8 @@ SyncBackendHost::SyncBackendHost(const std::string& name,
                      weak_ptr_factory_.GetWeakPtr())),
       initialization_state_(NOT_ATTEMPTED),
       sync_prefs_(sync_prefs),
+      chrome_sync_notification_bridge_(profile_),
       sync_notifier_factory_(
-          profile_,
           content::GetUserAgent(GURL()),
           profile_->GetRequestContext(),
           sync_prefs,
@@ -251,8 +252,8 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
       profile_(profile),
       name_("Unknown"),
       initialization_state_(NOT_ATTEMPTED),
+      chrome_sync_notification_bridge_(profile_),
       sync_notifier_factory_(
-          profile_,
           content::GetUserAgent(GURL()),
           NULL,
           base::WeakPtr<sync_notifier::InvalidationVersionTracker>(),
@@ -310,6 +311,7 @@ void SyncBackendHost::Initialize(
       base::Bind(&MakeHttpBridgeFactory,
                  make_scoped_refptr(profile_->GetRequestContext())),
       credentials,
+      &chrome_sync_notification_bridge_,
       &sync_notifier_factory_,
       delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
@@ -722,6 +724,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
     const GURL& service_url,
     MakeHttpBridgeFactoryFn make_http_bridge_factory_fn,
     const sync_api::SyncCredentials& credentials,
+    ChromeSyncNotificationBridge* chrome_sync_notification_bridge,
     sync_notifier::SyncNotifierFactory* sync_notifier_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
@@ -735,6 +738,7 @@ SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
       service_url(service_url),
       make_http_bridge_factory_fn(make_http_bridge_factory_fn),
       credentials(credentials),
+      chrome_sync_notification_bridge(chrome_sync_notification_bridge),
       sync_notifier_factory(sync_notifier_factory),
       delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
@@ -971,7 +975,9 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.registrar /* as SyncManager::ChangeDelegate */,
       MakeUserAgentForSyncApi(),
       options.credentials,
-      options.sync_notifier_factory->CreateSyncNotifier(),
+      new BridgedSyncNotifier(
+          options.chrome_sync_notification_bridge,
+          options.sync_notifier_factory->CreateSyncNotifier()),
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode,
       &encryptor_,
