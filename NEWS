@@ -5,6 +5,9 @@ liblouis NEWS -- history of user-visible changes.
 ** New features
 *** Improvements to the python bindings
     All constants defined in liblouis.h are now exposed in the bindings.
+*** Add doctests
+    These tests are based on the Python doctest framework and are only
+    run if there is a Python interpreter on the system
 
 ** Improved the documentation
 

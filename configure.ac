@@ -79,6 +79,10 @@ else
 fi
 AM_CONDITIONAL([HAVE_HELP2MAN], [test x$HELP2MAN = xhelp2man])
 
+# Check if we have Python installed
+AM_PATH_PYTHON([2.6],, [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])
+
 AC_PATH_PROG(PKG_CONFIG, pkg-config)
 
 AC_ARG_ENABLE(ucs4,
@@ -114,6 +118,7 @@ AC_CONFIG_FILES([
         tests/Makefile
         tests/table_test_corpuses/Makefile
         tests/tables/Makefile
+        tests/doctests/Makefile
 	python/Makefile
 	python/louis/Makefile
         tools/Makefile

@@ -1,4 +1,4 @@
-SUBDIRS = table_test_corpuses tables
+SUBDIRS = table_test_corpuses tables doctests
 
 AM_CPPFLAGS = -I$(top_srcdir)/liblouis
 
@@ -48,6 +48,11 @@ dist_check_SCRIPTS = \
 	check_tables_against_corpus.pl \
 	multiple_table_path.pl
 
+if HAVE_PYTHON
+dist_check_SCRIPTS += \
+	check_doctests.py
+endif
+
 # The present_progressive should not really fail but for the moment
 # the issue doesn't seem to be critical enough that anybody has enough
 # interest to fix it.
@@ -60,4 +65,4 @@ TESTS =	\
 	$(check_PROGRAMS) \
 	$(dist_check_SCRIPTS)
 
-TESTS_ENVIRONMENT = LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables PATH=../tools:$$PATH
+TESTS_ENVIRONMENT = LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables PYTHONPATH=$(top_srcdir)/python:$$PYTHONPATH PATH=../tools:$$PATH

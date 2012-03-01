@@ -1,5 +1,5 @@
 EXTRA_DIST = __init__.py.in
-CLEANFILES = __init__.py
+CLEANFILES = __init__.py __init__.pyc
 
 all:
 	source ../../liblouis/liblouis.la ; \
