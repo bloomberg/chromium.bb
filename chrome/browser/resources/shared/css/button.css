@@ -73,8 +73,7 @@ input[type='search']:not(.custom-appearance):not(.link-button):focus {
   outline-color: rgb(64, 128, 250);
 }
 
-.link-button,
-.link-button:focus {
+.link-button {
   -webkit-box-shadow: none;
   background: transparent none;
   border: none;
@@ -94,4 +93,10 @@ input[type='search']:not(.custom-appearance):not(.link-button):focus {
 .link-button:active {
   color: rgb(5, 37, 119);
   text-decoration: underline;
+}
+
+.link-button[disabled] {
+  color: #888;
+  cursor: default;
+  text-decoration: none;
 }
