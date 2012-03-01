@@ -13,8 +13,6 @@
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
-#include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 
@@ -37,18 +35,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   // Overridden from ash::SystemTrayDelegate.
-  virtual const std::string GetUserName() OVERRIDE {
-    return UserManager::Get()->logged_in_user().GetDisplayName();
-  }
-
-  virtual const std::string GetUserEmail() OVERRIDE {
-    return UserManager::Get()->logged_in_user().email();
-  }
-
-  virtual const SkBitmap& GetUserImage() OVERRIDE {
-    return UserManager::Get()->logged_in_user().image();
-  }
-
   virtual void ShowSettings() OVERRIDE {
     BrowserList::GetLastActive()->OpenOptionsDialog();
   }
@@ -71,19 +57,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void SetVolumeLevel(float level) OVERRIDE {
     AudioHandler::GetInstance()->SetVolumePercent(level * 100.f);
-  }
-
-  virtual void ShutDown() OVERRIDE {
-    DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
-  }
-
-  virtual void SignOut() OVERRIDE {
-    BrowserList::AttemptUserExit();
-  }
-
-  virtual void LockScreen() OVERRIDE {
-    DBusThreadManager::Get()->GetPowerManagerClient()->
-        NotifyScreenLockRequested();
   }
 
  private:
