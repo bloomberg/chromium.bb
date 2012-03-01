@@ -1166,6 +1166,17 @@ def CMDrecurse(parser, args):
   return 0
 
 
+@attr('usage', '[args ...]')
+def CMDfetch(parser, args):
+  """Fetches upstream commits for all modules.
+
+Completely git-specific. Simply runs 'git fetch [args ...]' for each module.
+"""
+  (_, args) = parser.parse_args(args)
+  args = ['-s', 'git', 'git', 'fetch'] + args
+  return CMDrecurse(parser, args)
+
+
 @attr('usage', '[url] [safesync url]')
 def CMDconfig(parser, args):
   """Create a .gclient file in the current directory.
