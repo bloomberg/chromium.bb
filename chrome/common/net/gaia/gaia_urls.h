@@ -38,6 +38,7 @@ class GaiaUrls {
   const std::string& oauth2_chrome_client_secret();
   const std::string& client_login_to_oauth2_url();
   const std::string& oauth2_token_url();
+  const std::string& oauth2_issue_token_url();
 
  private:
   GaiaUrls();
@@ -67,6 +68,7 @@ class GaiaUrls {
   std::string oauth2_chrome_client_secret_;
   std::string client_login_to_oauth2_url_;
   std::string oauth2_token_url_;
+  std::string oauth2_issue_token_url_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaUrls);
 };

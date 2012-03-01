@@ -38,6 +38,8 @@ const char kClientLoginToOAuth2Url[] =
     "https://accounts.google.com/o/oauth2/programmatic_auth";
 const char kOAuth2TokenUrl[] =
     "https://accounts.google.com/o/oauth2/token";
+const char kOAuth2IssueTokenUrl[] =
+    "https://www.googleapis.com/oauth2/v2/IssueToken";
 }  // namespacce
 
 GaiaUrls* GaiaUrls::GetInstance() {
@@ -80,6 +82,7 @@ GaiaUrls::GaiaUrls() {
   oauth2_chrome_client_secret_ = kOAuth2ChromeClientSecret;
   client_login_to_oauth2_url_ = kClientLoginToOAuth2Url;
   oauth2_token_url_ = kOAuth2TokenUrl;
+  oauth2_issue_token_url_ = kOAuth2IssueTokenUrl;
 }
 
 GaiaUrls::~GaiaUrls() {
@@ -159,4 +162,8 @@ const std::string& GaiaUrls::client_login_to_oauth2_url() {
 
 const std::string& GaiaUrls::oauth2_token_url() {
   return oauth2_token_url_;
+}
+
+const std::string& GaiaUrls::oauth2_issue_token_url() {
+  return oauth2_issue_token_url_;
 }
