@@ -885,6 +885,11 @@ launch_screensaver(struct wl_shell *shell)
 	if (!shell->screensaver.path)
 		return;
 
+	if (shell->screensaver.process.pid != 0) {
+		fprintf(stderr, "old screensaver still running\n");
+		return;
+	}
+
 	weston_client_launch(shell->compositor,
 			   &shell->screensaver.process,
 			   shell->screensaver.path,
