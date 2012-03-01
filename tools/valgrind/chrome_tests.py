@@ -237,6 +237,12 @@ class ChromeTests:
   def TestCrypto(self):
     return self.SimpleTest("crypto", "crypto_unittests")
 
+  def TestFFmpeg(self):
+    return self.SimpleTest("chrome", "ffmpeg_unittests")
+
+  def TestFFmpegRegressions(self):
+    return self.SimpleTest("chrome", "ffmpeg_regression_tests")
+
   def TestGfx(self):
     return self.SimpleTest("chrome", "gfx_unittests")
 
@@ -452,6 +458,8 @@ class ChromeTests:
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
     "crypto": TestCrypto,        "crypto_unittests": TestCrypto,
+    "ffmpeg": TestFFmpeg,        "ffmpeg_unittests": TestFFmpeg,
+    "ffmpeg_regression_tests": TestFFmpegRegressions,
     "googleurl": TestGURL,       "googleurl_unittests": TestGURL,
     "content": TestContent,      "content_unittests": TestContent,
     "courgette": TestCourgette,  "courgette_unittests": TestCourgette,
