@@ -121,7 +121,7 @@ class VisitDatabase::VisitAnalysis {
         prerenders_.push_back(prerender_data);
       }
     }
-    void MaybeRecordPrerenderUsed(VisitRow visit) {
+    void MaybeRecordPrerenderUsed(const VisitRow& visit) {
       base::TimeDelta max_age =
           base::TimeDelta::FromSeconds(kPrerenderExpirationSeconds);
       for (int i = 0; i < num_prerenders_; i++) {
@@ -134,7 +134,9 @@ class VisitDatabase::VisitAnalysis {
         }
       }
     }
-    void MaybeAddPrerender(PrerenderData prerender, VisitRow visit) {
+    void MaybeAddPrerender(
+        const PrerenderData& prerender,
+        const VisitRow& visit) {
       if (MaybeAddPrerenderInternal(prerender)) {
         visit_analysis_->RecordEvent(prerender_event_, visit.visit_time);
       }
@@ -147,7 +149,7 @@ class VisitDatabase::VisitAnalysis {
       }
     }
    private:
-    bool MaybeAddPrerenderInternal(PrerenderData prerender) {
+    bool MaybeAddPrerenderInternal(const PrerenderData& prerender) {
       base::Time cutoff = prerender.started -
           base::TimeDelta::FromSeconds(kPrerenderExpirationSeconds);
       int earliest = 0;
@@ -179,7 +181,7 @@ class VisitDatabase::VisitAnalysis {
     VA_EVENTS prerender_event_;
     VA_EVENTS prerender_used_event_;
   };
-  void ProcessVisit(VisitRow visit) {
+  void ProcessVisit(const VisitRow& visit) {
     VLOG(1) << "processing visit to " << visit.url_id;
     RecordEvent(VA_VISIT, visit.visit_time);
     for (int i = 0; i < static_cast<int>(emulated_prerender_managers_.size());
