@@ -14,6 +14,7 @@
 #include "content/browser/gamepad/data_fetcher.h"
 #include "content/browser/gamepad/gamepad_provider.h"
 #include "content/browser/gamepad/platform_data_fetcher.h"
+#include "content/common/gamepad_hardware_buffer.h"
 #include "content/common/gamepad_messages.h"
 #include "content/public/browser/browser_thread.h"
 

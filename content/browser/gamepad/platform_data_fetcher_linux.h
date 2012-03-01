@@ -39,7 +39,6 @@ class GamepadPlatformDataFetcherLinux :
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
  private:
-  bool IsGamepad(udev_device* dev, int* index, std::string* path);
   void RefreshDevice(udev_device* dev);
   void EnumerateDevices();
   void ReadDeviceData(size_t index);

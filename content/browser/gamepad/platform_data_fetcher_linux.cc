@@ -30,6 +30,33 @@ void CloseFileDescriptorIfValid(int fd) {
     close(fd);
 }
 
+bool IsGamepad(udev_device* dev, int* index, std::string* path) {
+  if (!udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK"))
+    return false;
+
+  const char* node_path = udev_device_get_devnode(dev);
+  if (!node_path)
+    return false;
+
+  static const char kJoystickRoot[] = "/dev/input/js";
+  bool is_gamepad = StartsWithASCII(node_path, kJoystickRoot, true);
+  if (!is_gamepad)
+    return false;
+
+  int tmp_idx = -1;
+  const int base_len = sizeof(kJoystickRoot) - 1;
+  base::StringPiece str(&node_path[base_len], strlen(node_path) - base_len);
+  if (!base::StringToInt(str, &tmp_idx))
+    return false;
+  if (tmp_idx < 0 ||
+      tmp_idx >= static_cast<int>(WebKit::WebGamepads::itemsLengthCap)) {
+    return false;
+  }
+  *index = tmp_idx;
+  *path = node_path;
+  return true;
+}
+
 }  // namespace
 
 namespace content {
@@ -106,33 +133,6 @@ void GamepadPlatformDataFetcherLinux::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void GamepadPlatformDataFetcherLinux::OnFileCanWriteWithoutBlocking(int fd) {
-}
-
-bool GamepadPlatformDataFetcherLinux::IsGamepad(udev_device* dev,
-                                                int* index,
-                                                std::string* path) {
-  if (!udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK"))
-    return false;
-
-  const char* node_path = udev_device_get_devnode(dev);
-  if (!node_path)
-    return false;
-
-  static const char kJoystickRoot[] = "/dev/input/js";
-  bool is_gamepad = StartsWithASCII(node_path, kJoystickRoot, true);
-  if (!is_gamepad)
-    return false;
-
-  int tmp_idx = -1;
-  const int base_len = sizeof(kJoystickRoot) - 1;
-  base::StringPiece str(&node_path[base_len], strlen(node_path) - base_len);
-  if (!base::StringToInt(str, &tmp_idx))
-    return false;
-  if (tmp_idx < 0 || tmp_idx >= static_cast<int>(WebGamepads::itemsLengthCap))
-    return false;
-  *index = tmp_idx;
-  *path = node_path;
-  return true;
 }
 
 // Used during enumeration, and monitor notifications.
@@ -228,7 +228,7 @@ void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
     return;
   }
 
-  int& fd = device_fds_[index];
+  const int& fd = device_fds_[index];
   WebGamepad& pad = data_.items[index];
   DCHECK_GE(fd, 0);
 

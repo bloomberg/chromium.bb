@@ -11,21 +11,20 @@
 #include "base/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/system_monitor/system_monitor.h"
-#include "content/browser/gamepad/data_fetcher.h"
 #include "content/common/content_export.h"
-#include "content/common/gamepad_hardware_buffer.h"
 
 namespace base {
 class Thread;
 }
 
-struct GamepadMsg_Updated_Params;
-
 namespace content {
 
+class GamepadDataFetcher;
+struct GamepadHardwareBuffer;
+
 class CONTENT_EXPORT GamepadProvider :
-    public base::RefCountedThreadSafe<GamepadProvider>,
-    public base::SystemMonitor::DevicesChangedObserver {
+  public base::RefCountedThreadSafe<GamepadProvider>,
+  public base::SystemMonitor::DevicesChangedObserver {
  public:
   explicit GamepadProvider(GamepadDataFetcher* fetcher);
 
@@ -36,6 +35,9 @@ class CONTENT_EXPORT GamepadProvider :
   // thread.
   void Pause();
   void Resume();
+
+  // base::SystemMonitor::DevicesChangedObserver implementation.
+  virtual void OnDevicesChanged() OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<GamepadProvider>;
@@ -48,8 +50,6 @@ class CONTENT_EXPORT GamepadProvider :
   // Method for polling a GamepadDataFetcher. Runs on the polling_thread_.
   void DoPoll();
   void ScheduleDoPoll();
-
-  virtual void OnDevicesChanged() OVERRIDE;
 
   GamepadHardwareBuffer* SharedMemoryAsHardwareBuffer();
 
