@@ -45,20 +45,20 @@ class ChromeosTime(pyauto.PyUITest):
     """
     self.NavigateToURL('chrome://settings/system')
     ret = self.ExecuteJavascript("""
-        var enabled = false;
+        var disabled = true;
         var timezone = document.getElementById('timezone-select');
         if (timezone)
-          enabled = banner.enabled;
-        domAutomationController.send(enabled.toString());
+          disabled = timezone.disabled;
+        domAutomationController.send(disabled.toString());
     """)
-    return ret == 'true'
+    return ret == 'false'
 
   def testTimezoneIsEditable(self):
     """Test that the timezone is always editable."""
     # This test only makes sense if we are not running as the owner.
     self.assertFalse(self.GetLoginInfo()['is_owner'])
-    enabled = _IsTimezoneEditable()
-    self.assertTrue(enabled, msg='Timezone is not editable when not owner.')
+    editable = self._IsTimezoneEditable()
+    self.assertTrue(editable, msg='Timezone is not editable when not owner.')
 
 
 if __name__ == '__main__':
