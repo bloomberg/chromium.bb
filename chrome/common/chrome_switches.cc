@@ -573,6 +573,9 @@ const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 // Enables syncing browser sessions.
 const char kEnableSyncTabs[]                = "enable-sync-tabs";
 
+// Disables syncing browser sessions. Will override kEnableSyncTabs.
+const char kDisableSyncTabs[]               = "disable-sync-tabs";
+
 // Enables syncing browser sessions for other synced clients.
 const char kEnableSyncTabsForOtherClients[] =
     "enable-sync-tabs-for-other-clients";

@@ -567,6 +567,10 @@ void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
     return;
   switch (data_type) {
     case syncable::SESSIONS:
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableSyncTabs)) {
+        return;
+      }
       RegisterDataTypeController(
           new browser_sync::SessionDataTypeController(factory_.get(),
                                                       profile_,

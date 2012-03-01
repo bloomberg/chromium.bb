@@ -162,6 +162,7 @@ extern const char kEnableResourceContentSettings[];
 extern const char kEnableSdch[];
 extern const char kEnableSuggestionsTabPage[];
 extern const char kEnableSyncTabs[];
+extern const char kDisableSyncTabs[];
 extern const char kEnableSyncTabsForOtherClients[];
 extern const char kEnableTabGroupsContextMenu[];
 extern const char kEnableWatchdog[];

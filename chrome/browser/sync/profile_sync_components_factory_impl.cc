@@ -154,9 +154,10 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
         new SearchEngineDataTypeController(this, profile_, pss));
   }
 
-  // Session sync is disabled by default.  Register only if explicitly
-  // enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncTabs)) {
+  // Session sync is disabled by default, but has some logic to automatically
+  // enable.  Register only if explicitly enabled and not explicitly disabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncTabs) &&
+      !command_line_->HasSwitch(switches::kDisableSyncTabs)) {
     pss->RegisterDataTypeController(
         new SessionDataTypeController(this, profile_, pss));
   }
