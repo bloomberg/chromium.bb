@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_WEBBLOBREGISTRY_IMPL_H_
-#define CONTENT_COMMON_WEBBLOBREGISTRY_IMPL_H_
+#ifndef CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_
+#define CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_
 #pragma once
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
@@ -31,4 +31,4 @@ class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
   ChildThread* child_thread_;
 };
 
-#endif  // CONTENT_COMMON_WEBBLOBREGISTRY_IMPL_H_
+#endif  // CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_

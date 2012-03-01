@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_FILE_SYSTEM_WEBFILESYSTEM_IMPL_H_
-#define CONTENT_COMMON_FILE_SYSTEM_WEBFILESYSTEM_IMPL_H_
+#ifndef CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_IMPL_H_
+#define CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_IMPL_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -63,4 +63,4 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
       WebKit::WebFileSystemCallbacks*) OVERRIDE;
 };
 
-#endif  // CONTENT_COMMON_FILE_SYSTEM_WEBFILESYSTEM_IMPL_H_
+#endif  // CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_IMPL_H_

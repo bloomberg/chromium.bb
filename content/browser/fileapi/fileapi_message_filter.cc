@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/file_system/file_and_blob_message_filter.h"
+#include "content/browser/fileapi/fileapi_message_filter.h"
 
 #include <string>
 #include <vector>
@@ -14,9 +14,9 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/chrome_blob_storage_context.h"
-#include "content/common/file_system_messages.h"
-#include "content/common/webblob_messages.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/common/fileapi/file_system_messages.h"
+#include "content/common/fileapi/webblob_messages.h"
 #include "content/public/browser/user_metrics.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
@@ -68,7 +68,7 @@ const int kOpenFilePermissions = base::PLATFORM_FILE_CREATE |
 
 }  // namespace
 
-FileAndBlobMessageFilter::FileAndBlobMessageFilter(
+FileAPIMessageFilter::FileAPIMessageFilter(
     int process_id,
     net::URLRequestContextGetter* request_context_getter,
     fileapi::FileSystemContext* file_system_context,
@@ -83,7 +83,7 @@ FileAndBlobMessageFilter::FileAndBlobMessageFilter(
   DCHECK(blob_storage_context);
 }
 
-FileAndBlobMessageFilter::FileAndBlobMessageFilter(
+FileAPIMessageFilter::FileAPIMessageFilter(
     int process_id,
     net::URLRequestContext* request_context,
     fileapi::FileSystemContext* file_system_context,
@@ -97,10 +97,10 @@ FileAndBlobMessageFilter::FileAndBlobMessageFilter(
   DCHECK(blob_storage_context);
 }
 
-FileAndBlobMessageFilter::~FileAndBlobMessageFilter() {
+FileAPIMessageFilter::~FileAPIMessageFilter() {
 }
 
-void FileAndBlobMessageFilter::OnChannelConnected(int32 peer_pid) {
+void FileAPIMessageFilter::OnChannelConnected(int32 peer_pid) {
   BrowserMessageFilter::OnChannelConnected(peer_pid);
 
   if (request_context_getter_.get()) {
@@ -111,7 +111,7 @@ void FileAndBlobMessageFilter::OnChannelConnected(int32 peer_pid) {
   }
 }
 
-void FileAndBlobMessageFilter::OnChannelClosing() {
+void FileAPIMessageFilter::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
 
   // Unregister all the blob URLs that are previously registered in this
@@ -122,18 +122,18 @@ void FileAndBlobMessageFilter::OnChannelClosing() {
   }
 }
 
-void FileAndBlobMessageFilter::OverrideThreadForMessage(
+void FileAPIMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
     BrowserThread::ID* thread) {
   if (message.type() == FileSystemHostMsg_SyncGetPlatformPath::ID)
     *thread = BrowserThread::FILE;
 }
 
-bool FileAndBlobMessageFilter::OnMessageReceived(
+bool FileAPIMessageFilter::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
   *message_was_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(FileAndBlobMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(FileAPIMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Open, OnOpen)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Move, OnMove)
     IPC_MESSAGE_HANDLER(FileSystemHostMsg_Copy, OnCopy)
@@ -165,7 +165,7 @@ bool FileAndBlobMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void FileAndBlobMessageFilter::OnOpen(
+void FileAPIMessageFilter::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size, bool create) {
   if (type == fileapi::kFileSystemTypeTemporary) {
@@ -174,10 +174,10 @@ void FileAndBlobMessageFilter::OnOpen(
     content::RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
   }
   context_->OpenFileSystem(origin_url, type, create, base::Bind(
-      &FileAndBlobMessageFilter::DidOpenFileSystem, this, request_id));
+      &FileAPIMessageFilter::DidOpenFileSystem, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnMove(
+void FileAPIMessageFilter::OnMove(
     int request_id, const GURL& src_path, const GURL& dest_path) {
   base::PlatformFileError error;
   const int src_permissions = kReadFilePermissions | kWriteFilePermissions;
@@ -189,10 +189,10 @@ void FileAndBlobMessageFilter::OnMove(
 
   GetNewOperation(src_path, request_id)->Move(
       src_path, dest_path,
-      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnCopy(
+void FileAPIMessageFilter::OnCopy(
     int request_id, const GURL& src_path, const GURL& dest_path) {
   base::PlatformFileError error;
   if (!HasPermissionsForFile(src_path, kReadFilePermissions, &error) ||
@@ -203,10 +203,10 @@ void FileAndBlobMessageFilter::OnCopy(
 
   GetNewOperation(src_path, request_id)->Copy(
       src_path, dest_path,
-      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnRemove(
+void FileAPIMessageFilter::OnRemove(
     int request_id, const GURL& path, bool recursive) {
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kWriteFilePermissions, &error)) {
@@ -216,10 +216,10 @@ void FileAndBlobMessageFilter::OnRemove(
 
   GetNewOperation(path, request_id)->Remove(
       path, recursive,
-      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnReadMetadata(
+void FileAPIMessageFilter::OnReadMetadata(
     int request_id, const GURL& path) {
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
@@ -229,10 +229,10 @@ void FileAndBlobMessageFilter::OnReadMetadata(
 
   GetNewOperation(path, request_id)->GetMetadata(
       path,
-      base::Bind(&FileAndBlobMessageFilter::DidGetMetadata, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidGetMetadata, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnCreate(
+void FileAPIMessageFilter::OnCreate(
     int request_id, const GURL& path, bool exclusive,
     bool is_directory, bool recursive) {
   base::PlatformFileError error;
@@ -244,15 +244,15 @@ void FileAndBlobMessageFilter::OnCreate(
   if (is_directory) {
     GetNewOperation(path, request_id)->CreateDirectory(
         path, exclusive, recursive,
-        base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+        base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
   } else {
     GetNewOperation(path, request_id)->CreateFile(
         path, exclusive,
-        base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+        base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
   }
 }
 
-void FileAndBlobMessageFilter::OnExists(
+void FileAPIMessageFilter::OnExists(
     int request_id, const GURL& path, bool is_directory) {
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
@@ -263,15 +263,15 @@ void FileAndBlobMessageFilter::OnExists(
   if (is_directory) {
     GetNewOperation(path, request_id)->DirectoryExists(
         path,
-        base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+        base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
   } else {
     GetNewOperation(path, request_id)->FileExists(
         path,
-        base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+        base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
   }
 }
 
-void FileAndBlobMessageFilter::OnReadDirectory(
+void FileAPIMessageFilter::OnReadDirectory(
     int request_id, const GURL& path) {
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
@@ -280,11 +280,11 @@ void FileAndBlobMessageFilter::OnReadDirectory(
   }
 
   GetNewOperation(path, request_id)->ReadDirectory(
-      path, base::Bind(&FileAndBlobMessageFilter::DidReadDirectory,
+      path, base::Bind(&FileAPIMessageFilter::DidReadDirectory,
                        this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnWrite(
+void FileAPIMessageFilter::OnWrite(
     int request_id,
     const GURL& path,
     const GURL& blob_url,
@@ -303,10 +303,10 @@ void FileAndBlobMessageFilter::OnWrite(
 
   GetNewOperation(path, request_id)->Write(
       request_context_, path, blob_url, offset,
-      base::Bind(&FileAndBlobMessageFilter::DidWrite, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidWrite, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnTruncate(
+void FileAPIMessageFilter::OnTruncate(
     int request_id,
     const GURL& path,
     int64 length) {
@@ -318,10 +318,10 @@ void FileAndBlobMessageFilter::OnTruncate(
 
   GetNewOperation(path, request_id)->Truncate(
       path, length,
-      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnTouchFile(
+void FileAPIMessageFilter::OnTouchFile(
     int request_id,
     const GURL& path,
     const base::Time& last_access_time,
@@ -334,10 +334,10 @@ void FileAndBlobMessageFilter::OnTouchFile(
 
   GetNewOperation(path, request_id)->TouchFile(
       path, last_access_time, last_modified_time,
-      base::Bind(&FileAndBlobMessageFilter::DidFinish, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidFinish, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnCancel(
+void FileAPIMessageFilter::OnCancel(
     int request_id,
     int request_id_to_cancel) {
   FileSystemOperationInterface* write = operations_.Lookup(
@@ -346,7 +346,7 @@ void FileAndBlobMessageFilter::OnCancel(
     // The cancel will eventually send both the write failure and the cancel
     // success.
     write->Cancel(
-        base::Bind(&FileAndBlobMessageFilter::DidCancel, this, request_id));
+        base::Bind(&FileAPIMessageFilter::DidCancel, this, request_id));
   } else {
     // The write already finished; report that we failed to stop it.
     Send(new FileSystemMsg_DidFail(
@@ -354,7 +354,7 @@ void FileAndBlobMessageFilter::OnCancel(
   }
 }
 
-void FileAndBlobMessageFilter::OnOpenFile(
+void FileAPIMessageFilter::OnOpenFile(
     int request_id, const GURL& path, int file_flags) {
   base::PlatformFileError error;
   const int open_permissions = base::PLATFORM_FILE_OPEN |
@@ -366,10 +366,10 @@ void FileAndBlobMessageFilter::OnOpenFile(
 
   GetNewOperation(path, request_id)->OpenFile(
       path, file_flags, peer_handle(),
-      base::Bind(&FileAndBlobMessageFilter::DidOpenFile, this, request_id));
+      base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id));
 }
 
-void FileAndBlobMessageFilter::OnWillUpdate(const GURL& path) {
+void FileAPIMessageFilter::OnWillUpdate(const GURL& path) {
   GURL origin_url;
   fileapi::FileSystemType type;
   if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
@@ -380,7 +380,7 @@ void FileAndBlobMessageFilter::OnWillUpdate(const GURL& path) {
   quota_util->proxy()->StartUpdateOrigin(origin_url, type);
 }
 
-void FileAndBlobMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
+void FileAPIMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
   GURL origin_url;
   fileapi::FileSystemType type;
   if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
@@ -393,7 +393,7 @@ void FileAndBlobMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
   quota_util->proxy()->EndUpdateOrigin(origin_url, type);
 }
 
-void FileAndBlobMessageFilter::OnSyncGetPlatformPath(
+void FileAPIMessageFilter::OnSyncGetPlatformPath(
     const GURL& path, FilePath* platform_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(platform_path);
@@ -421,22 +421,22 @@ void FileAndBlobMessageFilter::OnSyncGetPlatformPath(
   operation->SyncGetPlatformPath(path, platform_path);
 }
 
-void FileAndBlobMessageFilter::OnCreateSnapshotFile(
+void FileAPIMessageFilter::OnCreateSnapshotFile(
     int request_id, const GURL& blob_url, const GURL& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GetNewOperation(path, request_id)->CreateSnapshotFile(
       path,
-      base::Bind(&FileAndBlobMessageFilter::DidCreateSnapshot,
+      base::Bind(&FileAPIMessageFilter::DidCreateSnapshot,
                  this, request_id, blob_url));
 }
 
-void FileAndBlobMessageFilter::OnStartBuildingBlob(const GURL& url) {
+void FileAPIMessageFilter::OnStartBuildingBlob(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->StartBuildingBlob(url);
   blob_urls_.insert(url.spec());
 }
 
-void FileAndBlobMessageFilter::OnAppendBlobDataItem(
+void FileAPIMessageFilter::OnAppendBlobDataItem(
     const GURL& url, const BlobData::Item& item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (item.type == BlobData::TYPE_FILE &&
@@ -448,7 +448,7 @@ void FileAndBlobMessageFilter::OnAppendBlobDataItem(
   blob_storage_context_->controller()->AppendBlobDataItem(url, item);
 }
 
-void FileAndBlobMessageFilter::OnAppendSharedMemory(
+void FileAPIMessageFilter::OnAppendSharedMemory(
     const GURL& url, base::SharedMemoryHandle handle, size_t buffer_size) {
   DCHECK(base::SharedMemory::IsHandleValid(handle));
 #if defined(OS_WIN)
@@ -467,27 +467,27 @@ void FileAndBlobMessageFilter::OnAppendSharedMemory(
   blob_storage_context_->controller()->AppendBlobDataItem(url, item);
 }
 
-void FileAndBlobMessageFilter::OnFinishBuildingBlob(
+void FileAPIMessageFilter::OnFinishBuildingBlob(
     const GURL& url, const std::string& content_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->FinishBuildingBlob(url, content_type);
 }
 
-void FileAndBlobMessageFilter::OnCloneBlob(
+void FileAPIMessageFilter::OnCloneBlob(
     const GURL& url, const GURL& src_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->CloneBlob(url, src_url);
   blob_urls_.insert(url.spec());
 }
 
-void FileAndBlobMessageFilter::OnRemoveBlob(const GURL& url) {
+void FileAPIMessageFilter::OnRemoveBlob(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->RemoveBlob(url);
   blob_urls_.erase(url.spec());
 }
 
-void FileAndBlobMessageFilter::DidFinish(int request_id,
-                                         base::PlatformFileError result) {
+void FileAPIMessageFilter::DidFinish(int request_id,
+                                     base::PlatformFileError result) {
   if (result == base::PLATFORM_FILE_OK)
     Send(new FileSystemMsg_DidSucceed(request_id));
   else
@@ -495,8 +495,8 @@ void FileAndBlobMessageFilter::DidFinish(int request_id,
   UnregisterOperation(request_id);
 }
 
-void FileAndBlobMessageFilter::DidCancel(int request_id,
-                                         base::PlatformFileError result) {
+void FileAPIMessageFilter::DidCancel(int request_id,
+                                     base::PlatformFileError result) {
   if (result == base::PLATFORM_FILE_OK)
     Send(new FileSystemMsg_DidSucceed(request_id));
   else
@@ -504,7 +504,7 @@ void FileAndBlobMessageFilter::DidCancel(int request_id,
   // For Cancel we do not create a new operation, so no unregister here.
 }
 
-void FileAndBlobMessageFilter::DidGetMetadata(
+void FileAPIMessageFilter::DidGetMetadata(
     int request_id,
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
@@ -516,7 +516,7 @@ void FileAndBlobMessageFilter::DidGetMetadata(
   UnregisterOperation(request_id);
 }
 
-void FileAndBlobMessageFilter::DidReadDirectory(
+void FileAPIMessageFilter::DidReadDirectory(
     int request_id,
     base::PlatformFileError result,
     const std::vector<base::FileUtilProxy::Entry>& entries,
@@ -528,10 +528,10 @@ void FileAndBlobMessageFilter::DidReadDirectory(
   UnregisterOperation(request_id);
 }
 
-void FileAndBlobMessageFilter::DidOpenFile(int request_id,
-                                           base::PlatformFileError result,
-                                           base::PlatformFile file,
-                                           base::ProcessHandle peer_handle) {
+void FileAPIMessageFilter::DidOpenFile(int request_id,
+                                       base::PlatformFileError result,
+                                       base::PlatformFile file,
+                                       base::ProcessHandle peer_handle) {
   if (result == base::PLATFORM_FILE_OK) {
     IPC::PlatformFileForTransit file_for_transit =
         file != base::kInvalidPlatformFileValue ?
@@ -544,10 +544,10 @@ void FileAndBlobMessageFilter::DidOpenFile(int request_id,
   UnregisterOperation(request_id);
 }
 
-void FileAndBlobMessageFilter::DidWrite(int request_id,
-                                        base::PlatformFileError result,
-                                        int64 bytes,
-                                        bool complete) {
+void FileAPIMessageFilter::DidWrite(int request_id,
+                                    base::PlatformFileError result,
+                                    int64 bytes,
+                                    bool complete) {
   if (result == base::PLATFORM_FILE_OK) {
     Send(new FileSystemMsg_DidWrite(request_id, bytes, complete));
     if (complete)
@@ -558,10 +558,10 @@ void FileAndBlobMessageFilter::DidWrite(int request_id,
   }
 }
 
-void FileAndBlobMessageFilter::DidOpenFileSystem(int request_id,
-                                                 base::PlatformFileError result,
-                                                 const std::string& name,
-                                                 const GURL& root) {
+void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
+                                             base::PlatformFileError result,
+                                             const std::string& name,
+                                             const GURL& root) {
   if (result == base::PLATFORM_FILE_OK) {
     DCHECK(root.is_valid());
     Send(new FileSystemMsg_DidOpenFileSystem(request_id, name, root));
@@ -571,7 +571,7 @@ void FileAndBlobMessageFilter::DidOpenFileSystem(int request_id,
   // For OpenFileSystem we do not create a new operation, so no unregister here.
 }
 
-void FileAndBlobMessageFilter::DidCreateSnapshot(
+void FileAPIMessageFilter::DidCreateSnapshot(
     int request_id,
     const GURL& blob_url,
     base::PlatformFileError result,
@@ -606,7 +606,7 @@ void FileAndBlobMessageFilter::DidCreateSnapshot(
   Send(new FileSystemMsg_DidReadMetadata(request_id, info, platform_path));
 }
 
-bool FileAndBlobMessageFilter::HasPermissionsForFile(
+bool FileAPIMessageFilter::HasPermissionsForFile(
     const GURL& path, int permissions, base::PlatformFileError* error) {
   DCHECK(error);
   *error = base::PLATFORM_FILE_OK;
@@ -644,7 +644,7 @@ bool FileAndBlobMessageFilter::HasPermissionsForFile(
 }
 
 
-FileSystemOperationInterface* FileAndBlobMessageFilter::GetNewOperation(
+FileSystemOperationInterface* FileAPIMessageFilter::GetNewOperation(
     const GURL& target_path,
     int request_id) {
   FileSystemOperationInterface* operation =
@@ -656,7 +656,7 @@ FileSystemOperationInterface* FileAndBlobMessageFilter::GetNewOperation(
   return operation;
 }
 
-void FileAndBlobMessageFilter::UnregisterOperation(int request_id) {
+void FileAPIMessageFilter::UnregisterOperation(int request_id) {
   DCHECK(operations_.Lookup(request_id));
   operations_.Remove(request_id);
 }

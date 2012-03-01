@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "content/common/child_process.h"
 #include "content/common/child_thread.h"
-#include "content/common/file_system/file_system_dispatcher.h"
+#include "content/common/fileapi/file_system_dispatcher.h"
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
 #include "base/compiler_specific.h"

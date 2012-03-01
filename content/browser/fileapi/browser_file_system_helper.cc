@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/file_system/browser_file_system_helper.h"
+#include "content/browser/fileapi/browser_file_system_helper.h"
 
 #include <vector>
 #include <string>

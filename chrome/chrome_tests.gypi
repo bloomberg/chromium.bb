@@ -2865,7 +2865,7 @@
         '../content/browser/child_process_security_policy_browsertest.cc',
         '../content/browser/device_orientation/device_orientation_browsertest.cc',
         '../content/browser/download/mhtml_generation_browsertest.cc',
-        '../content/browser/file_system/file_system_browsertest.cc',
+        '../content/browser/fileapi/file_system_browsertest.cc',
         '../content/browser/in_process_webkit/dom_storage_browsertest.cc',
         '../content/browser/in_process_webkit/indexed_db_browsertest.cc',
         '../content/browser/indexed_db/idbbindingutilities_browsertest.cc',

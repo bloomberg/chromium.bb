@@ -5,8 +5,8 @@
 #include "content/browser/resource_context_impl.h"
 
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/chrome_blob_storage_context.h"
-#include "content/browser/file_system/browser_file_system_helper.h"
+#include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/public/browser/browser_context.h"

@@ -43,17 +43,17 @@
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/device_orientation/message_filter.h"
 #include "content/browser/download/mhtml_generation_manager.h"
-#include "content/browser/file_system/file_and_blob_message_filter.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
-#include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
+#include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
@@ -499,7 +499,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       browser_context->GetSpeechInputPreferences(),
       content::BrowserMainLoop::GetAudioManager()));
 #endif
-  channel_->AddFilter(new FileAndBlobMessageFilter(
+  channel_->AddFilter(new FileAPIMessageFilter(
       GetID(),
       browser_context->GetRequestContext(),
       BrowserContext::GetFileSystemContext(browser_context),

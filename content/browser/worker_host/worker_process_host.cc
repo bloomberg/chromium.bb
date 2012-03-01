@@ -22,7 +22,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
-#include "content/browser/file_system/file_and_blob_message_filter.h"
+#include "content/browser/fileapi/fileapi_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
@@ -262,7 +262,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       static_cast<ChromeAppCacheService*>(
           ResourceContext::GetAppCacheService(resource_context_)),
       process_->GetData().id));
-  process_->GetHost()->AddFilter(new FileAndBlobMessageFilter(
+  process_->GetHost()->AddFilter(new FileAPIMessageFilter(
       process_->GetData().id,
       request_context,
       ResourceContext::GetFileSystemContext(resource_context_),

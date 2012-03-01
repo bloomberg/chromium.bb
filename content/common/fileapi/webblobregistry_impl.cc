@@ -1,13 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/webblobregistry_impl.h"
+#include "content/common/fileapi/webblobregistry_impl.h"
 
 #include "base/memory/ref_counted.h"
 #include "base/shared_memory.h"
 #include "content/common/child_thread.h"
-#include "content/common/webblob_messages.h"
+#include "content/common/fileapi/webblob_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FILE_SYSTEM_FILE_AND_BLOB_MESSAGE_FILTER_H_
-#define CONTENT_BROWSER_FILE_SYSTEM_FILE_AND_BLOB_MESSAGE_FILTER_H_
+#ifndef CONTENT_BROWSER_FILEAPI_FILEAPI_MESSAGE_FILTER_H_
+#define CONTENT_BROWSER_FILEAPI_FILEAPI_MESSAGE_FILTER_H_
 
 #include <string>
 
@@ -39,21 +39,21 @@ namespace webkit_blob {
 class ShareableFileReference;
 }
 
-class FileAndBlobMessageFilter : public content::BrowserMessageFilter {
+class FileAPIMessageFilter : public content::BrowserMessageFilter {
  public:
   // Used by the renderer process host on the UI thread.
-  FileAndBlobMessageFilter(
+  FileAPIMessageFilter(
       int process_id,
       net::URLRequestContextGetter* request_context_getter,
       fileapi::FileSystemContext* file_system_context,
       ChromeBlobStorageContext* blob_storage_context);
   // Used by the worker process host on the IO thread.
-  FileAndBlobMessageFilter(
+  FileAPIMessageFilter(
       int process_id,
       net::URLRequestContext* request_context,
       fileapi::FileSystemContext* file_system_context,
       ChromeBlobStorageContext* blob_storage_context);
-  virtual ~FileAndBlobMessageFilter();
+  virtual ~FileAPIMessageFilter();
 
   // content::BrowserMessageFilter implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
@@ -175,7 +175,7 @@ class FileAndBlobMessageFilter : public content::BrowserMessageFilter {
   // all of them when the renderer process dies.
   base::hash_set<std::string> blob_urls_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileAndBlobMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(FileAPIMessageFilter);
 };
 
-#endif  // CONTENT_BROWSER_FILE_SYSTEM_FILE_AND_BLOB_MESSAGE_FILTER_H_
+#endif  // CONTENT_BROWSER_FILEAPI_FILEAPI_MESSAGE_FILTER_H_
