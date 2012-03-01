@@ -300,52 +300,6 @@ TEST_F(WorkspaceManagerTest, ChangeBoundsOfNormalWindow) {
   EXPECT_EQ(500, w1->bounds().height());
 }
 
-// Assertions around open new windows maximized.
-TEST_F(WorkspaceManagerTest, OpenNewWindowsMaximized) {
-  scoped_ptr<Window> w1(CreateTestWindowUnparented());
-
-  // Default is true for open new windows maximized.
-  EXPECT_TRUE(manager_->open_new_windows_maximized());
-  // SHOW_STATE_DEFAULT should end up maximized.
-  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DEFAULT);
-  w1->SetBounds(gfx::Rect(50, 51, 52, 53));
-  w1->SetParent(GetViewport());
-  // Maximized state and bounds should be set as soon as w1 is added to the
-  // parent.
-  EXPECT_TRUE(wm::IsWindowMaximized(w1.get()));
-  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get()),
-            w1->bounds());
-  w1->Show();
-  EXPECT_TRUE(wm::IsWindowMaximized(w1.get()));
-  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(w1.get()),
-            w1->bounds());
-  // Restored bounds should be saved.
-  ASSERT_TRUE(GetRestoreBounds(w1.get()));
-  EXPECT_EQ(gfx::Rect(50, 51, 52, 53), *GetRestoreBounds(w1.get()));
-
-  // Show state normal should end up normal.
-  scoped_ptr<Window> w2(CreateTestWindow());
-  w2->SetBounds(gfx::Rect(60, 61, 62, 63));
-  w2->Show();
-  EXPECT_EQ(gfx::Rect(60, 61, 62, 63), w2->bounds());
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL,
-            w2->GetProperty(aura::client::kShowStateKey));
-
-  // If open news windows maximized is false, SHOW_STATE_DEFAULT should end as
-  // SHOW_STATE_NORMAL.
-  manager_->set_open_new_windows_maximized(false);
-  scoped_ptr<Window> w3(CreateTestWindowUnparented());
-  // Show state default should end up normal when open new windows maximized is
-  // false.
-  w3->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DEFAULT);
-  w3->SetBounds(gfx::Rect(70, 71, 72, 73));
-  w3->SetParent(GetViewport());
-  w3->Show();
-  EXPECT_EQ(gfx::Rect(70, 71, 72, 73), w3->bounds());
-  EXPECT_EQ(ui::SHOW_STATE_NORMAL,
-            w3->GetProperty(aura::client::kShowStateKey));
-}
-
 // Assertions around grid size.
 TEST_F(WorkspaceManagerTest, SnapToGrid) {
   manager_->set_grid_size(8);

@@ -74,7 +74,6 @@ class ASH_EXPORT WorkspaceController :
  private:
   enum MenuItem {
     MENU_SNAP_TO_GRID,
-    MENU_OPEN_MAXIMIZED,
   };
 
   aura::Window* viewport_;

@@ -33,18 +33,11 @@ class WorkspaceManagerTest;
 // WorkspaceManager manages multiple workspaces in the desktop.
 class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
  public:
-  // If open_new_windows_maximized() is true and the size of the viewport is
-  // smaller than this value, newly created windows are forced maximized.
-  static const int kOpenMaximizedThreshold;
-
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
 
   // Returns true if |window| should be managed by the WorkspaceManager.
   bool IsManagedWindow(aura::Window* window) const;
-
-  // Returns true if |window| should be maximized.
-  bool ShouldMaximize(aura::Window* window) const;
 
   // Adds/removes a window creating/destroying workspace as necessary.
   void AddWindow(aura::Window* window);
@@ -74,16 +67,6 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
   // Returns the window the layout manager should allow the size to be set for.
   // TODO: maybe this should be set on WorkspaceLayoutManager.
   aura::Window* ignored_window() { return ignored_window_; }
-
-  // Sets whether newly added windows open maximized. This is only applicable if
-  // the size of the root window is less than kOpenMaximizedThreshold. Default
-  // is true.
-  void set_open_new_windows_maximized(bool value) {
-    open_new_windows_maximized_ = value;
-  }
-  bool open_new_windows_maximized() const {
-    return open_new_windows_maximized_;
-  }
 
   // Sets the size of the grid. Newly added windows are forced to align to the
   // size of the grid.
@@ -184,9 +167,6 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver{
 
   // See description above setter.
   int grid_size_;
-
-  // See description above setter.
-  bool open_new_windows_maximized_;
 
   // Owned by the Shell container window LauncherContainer. May be NULL.
   ShelfLayoutManager* shelf_;

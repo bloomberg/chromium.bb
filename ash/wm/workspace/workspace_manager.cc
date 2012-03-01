@@ -64,9 +64,6 @@ namespace internal {
 ////////////////////////////////////////////////////////////////////////////////
 // WindowManager, public:
 
-// static
-const int WorkspaceManager::kOpenMaximizedThreshold = 1600;
-
 WorkspaceManager::WorkspaceManager(aura::Window* contents_view)
     : contents_view_(contents_view),
       active_workspace_(NULL),
@@ -75,7 +72,6 @@ WorkspaceManager::WorkspaceManager(aura::Window* contents_view)
       is_overview_(false),
       ignored_window_(NULL),
       grid_size_(0),
-      open_new_windows_maximized_(true),
       shelf_(NULL) {
   DCHECK(contents_view);
 }
@@ -93,12 +89,6 @@ WorkspaceManager::~WorkspaceManager() {
 bool WorkspaceManager::IsManagedWindow(aura::Window* window) const {
   return window->type() == aura::client::WINDOW_TYPE_NORMAL &&
          !window->transient_parent();
-}
-
-bool WorkspaceManager::ShouldMaximize(aura::Window* window) const {
-  return !window->GetProperty(aura::client::kShowStateKey) &&
-         open_new_windows_maximized_ &&
-         contents_view_->bounds().width() < kOpenMaximizedThreshold;
 }
 
 void WorkspaceManager::AddWindow(aura::Window* window) {
@@ -119,14 +109,8 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
     SetRestoreBounds(window, window->bounds());
   }
 
-  if (!window->GetProperty(aura::client::kShowStateKey)) {
-    if (ShouldMaximize(window)) {
-      window->SetProperty(aura::client::kShowStateKey,
-                          ui::SHOW_STATE_MAXIMIZED);
-    } else {
-      window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-    }
-  }
+  if (!window->GetProperty(aura::client::kShowStateKey))
+    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 
   if (wm::IsWindowMaximized(window) || wm::IsWindowFullscreen(window)) {
     SetFullScreenOrMaximizedBounds(window);

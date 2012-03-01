@@ -41,12 +41,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
   if (child->IsVisible()) {
     workspace_manager_->AddWindow(child);
-  } else if (wm::IsWindowMaximized(child) ||
-             workspace_manager_->ShouldMaximize(child)) {
-    if (!wm::IsWindowMaximized(child)) {
-      SetRestoreBoundsIfNotSet(child);
-      wm::MaximizeWindow(child);
-    }
+  } else if (wm::IsWindowMaximized(child)) {
     SetChildBoundsDirect(child,
                          gfx::Screen::GetMonitorWorkAreaNearestWindow(child));
   } else if (wm::IsWindowFullscreen(child)) {

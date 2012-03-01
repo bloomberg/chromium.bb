@@ -59,8 +59,6 @@ void WorkspaceController::ShowMenu(views::Widget* widget,
   // the strings are localized.
   menu_model.AddCheckItem(MENU_SNAP_TO_GRID,
                           ASCIIToUTF16("Snap to grid"));
-  menu_model.AddCheckItem(MENU_OPEN_MAXIMIZED,
-                          ASCIIToUTF16("Maximize new windows"));
   views::MenuModelAdapter menu_model_adapter(&menu_model);
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
   if (menu_runner_->RunMenuAt(
@@ -87,9 +85,6 @@ bool WorkspaceController::IsCommandIdChecked(int command_id) const {
     case MENU_SNAP_TO_GRID:
       return workspace_manager_->grid_size() != 0;
 
-    case MENU_OPEN_MAXIMIZED:
-      return workspace_manager_->open_new_windows_maximized();
-
     default:
       break;
   }
@@ -97,14 +92,6 @@ bool WorkspaceController::IsCommandIdChecked(int command_id) const {
 }
 
 bool WorkspaceController::IsCommandIdEnabled(int command_id) const {
-  switch (static_cast<MenuItem>(command_id)) {
-    case MENU_OPEN_MAXIMIZED:
-      return workspace_manager_->contents_view()->bounds().width() <
-          WorkspaceManager::kOpenMaximizedThreshold;
-
-    default:
-      return true;
-  }
   return true;
 }
 
@@ -125,11 +112,6 @@ void WorkspaceController::ExecuteCommand(int command_id) {
       }
       break;
     }
-
-    case MENU_OPEN_MAXIMIZED:
-      workspace_manager_->set_open_new_windows_maximized(
-          !workspace_manager_->open_new_windows_maximized());
-      break;
   }
 }
 
