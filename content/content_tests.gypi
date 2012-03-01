@@ -275,7 +275,6 @@
         'renderer/media/audio_message_filter_unittest.cc',
         'renderer/media/audio_renderer_impl_unittest.cc',
         'renderer/media/capture_video_decoder_unittest.cc',
-        'renderer/media/media_stream_dispatcher_unittest.cc',
         'renderer/media/video_capture_impl_unittest.cc',
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',
@@ -288,6 +287,7 @@
       'conditions': [
         ['enable_webrtc==1', {
           'sources': [
+            'renderer/media/media_stream_dispatcher_unittest.cc',
             'renderer/media/media_stream_impl_unittest.cc',
             'renderer/media/peer_connection_handler_unittest.cc',
             'renderer/media/rtc_video_decoder_unittest.cc',
