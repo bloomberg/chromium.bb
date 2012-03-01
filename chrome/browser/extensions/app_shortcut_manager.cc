@@ -46,7 +46,8 @@ void AppShortcutManager::Observe(int type,
                                  const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_INSTALLED);
   const Extension* extension = content::Details<const Extension>(details).ptr();
-  if (!disable_shortcut_creation_for_tests && extension->is_platform_app())
+  if (!disable_shortcut_creation_for_tests && extension->is_platform_app() &&
+      extension->location() != Extension::LOAD)
     InstallApplicationShortcuts(extension);
 }
 
@@ -72,6 +73,7 @@ void AppShortcutManager::InstallApplicationShortcuts(
   shortcut_info_.title = UTF8ToUTF16(extension->name());
   shortcut_info_.description = UTF8ToUTF16(extension->description());
   shortcut_info_.extension_path = extension->path();
+  shortcut_info_.is_platform_app = extension->is_platform_app();
   shortcut_info_.create_in_applications_menu = true;
   shortcut_info_.create_in_quick_launch_bar = true;
   shortcut_info_.create_on_desktop = true;

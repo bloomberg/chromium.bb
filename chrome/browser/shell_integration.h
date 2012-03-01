@@ -79,6 +79,9 @@ class ShellIntegration {
     FilePath extension_path;
     SkBitmap favicon;
 
+    // Shortcuts to platform apps are created differently. They start up with
+    // their own user data directory and load the app from |extension_path|.
+    bool is_platform_app;
     bool create_on_desktop;
     bool create_in_applications_menu;
 
@@ -97,6 +100,15 @@ class ShellIntegration {
   static CommandLine CommandLineArgsForLauncher(
       const GURL& url,
       const std::string& extension_app_id);
+
+  // Set up command line arguments for launching a platform app.
+  // The command line will have the switches --app-id, --user-data-dir and
+  // --load-extension, using values |extension_app_id|, |user_data_dir| and
+  // |extension_path| respectively.
+  static CommandLine CommandLineArgsForPlatformApp(
+      const std::string& extension_app_id,
+      const FilePath& user_data_dir,
+      const FilePath& extension_path);
 
 #if defined(USE_X11)
   // Returns filename of the desktop shortcut used to launch the browser.

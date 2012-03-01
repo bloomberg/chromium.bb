@@ -186,9 +186,14 @@ void CreateShortcutTask(const FilePath& web_app_path,
   // Working directory.
   FilePath chrome_folder = chrome_exe.DirName();
 
-  CommandLine cmd_line =
-     ShellIntegration::CommandLineArgsForLauncher(shortcut_info.url,
-                                                  shortcut_info.extension_id);
+  CommandLine cmd_line(CommandLine::NO_PROGRAM);
+  if (shortcut_info.is_platform_app) {
+    cmd_line = ShellIntegration::CommandLineArgsForPlatformApp(
+        shortcut_info.extension_id, web_app_path, shortcut_info.extension_path);
+  } else {
+    cmd_line = ShellIntegration::CommandLineArgsForLauncher(
+        shortcut_info.url, shortcut_info.extension_id);
+  }
   // TODO(evan): we rely on the fact that command_line_string() is
   // properly quoted for a Windows command line.  The method on
   // CommandLine should probably be renamed to better reflect that
