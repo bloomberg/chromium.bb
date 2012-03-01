@@ -43,6 +43,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Returns true if the window touches the bottom of the work area.
   bool WindowTouchesBottomOfScreen() const;
 
+  // True if the window size (height) should be constrained.
+  const bool constrain_size_;
+
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };
 

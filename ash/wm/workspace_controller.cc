@@ -45,6 +45,9 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
 WorkspaceController::~WorkspaceController() {
   Shell::GetRootWindow()->RemoveObserver(this);
   Shell::GetRootWindow()->RemoveRootWindowObserver(this);
+  // WorkspaceLayoutManager may attempt to access state from us. Destroy it now.
+  if (viewport_->layout_manager() == layout_manager_)
+    viewport_->SetLayoutManager(NULL);
 }
 
 void WorkspaceController::ToggleOverview() {

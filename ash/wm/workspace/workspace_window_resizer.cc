@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
+#include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_property.h"
@@ -30,8 +31,10 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(aura::Window* window,
                                                const gfx::Point& location,
                                                int window_component,
                                                int grid_size)
-    : WindowResizer(window, location, window_component, grid_size) {
+    : WindowResizer(window, location, window_component, grid_size),
+      constrain_size_(wm::IsWindowNormal(window)) {
   if (is_resizable() && GetHeightBeforeObscured(window) &&
+      constrain_size_ &&
       (!WindowTouchesBottomOfScreen() ||
        bounds_change() != kBoundsChange_Repositions)) {
     ClearHeightBeforeObscured(window);
@@ -84,6 +87,9 @@ int WorkspaceWindowResizer::GetHeightBeforeObscured(aura::Window* window) {
 }
 
 void WorkspaceWindowResizer::AdjustBounds(gfx::Rect* bounds) const {
+  if (!constrain_size_)
+    return;
+
   gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window()));
   if (bounds->bottom() < work_area.bottom()) {
     int height = GetHeightBeforeObscured(window());

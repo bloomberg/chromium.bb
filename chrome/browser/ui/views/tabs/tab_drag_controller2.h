@@ -279,6 +279,10 @@ class TabDragController2 : public TabDragController,
                                 const gfx::Point& screen_point,
                                 std::vector<gfx::Rect>* drag_bounds);
 
+  // Marks whether |window| is constrained. While dragging we set this to false
+  // to allow maximized windows to move any where.
+  void SetTrackedByWorkspace(gfx::NativeWindow window, bool value);
+
   // Handles registering for notifications.
   content::NotificationRegistrar registrar_;
 
