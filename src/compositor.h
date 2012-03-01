@@ -107,6 +107,7 @@ struct weston_input_device {
 	struct weston_compositor *compositor;
 	struct weston_surface *sprite;
 	struct weston_surface *drag_surface;
+	struct wl_listener drag_surface_destroy_listener;
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;

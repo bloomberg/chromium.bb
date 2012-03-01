@@ -1832,6 +1832,18 @@ const static struct wl_input_device_interface input_device_interface = {
 	input_device_attach,
 };
 
+static void
+handle_drag_surface_destroy(struct wl_listener *listener,
+			    struct wl_resource *resource, uint32_t time)
+{
+	struct weston_input_device *device;
+
+	device = container_of(listener, struct weston_input_device,
+			      drag_surface_destroy_listener);
+
+	device->drag_surface = NULL;
+}
+
 static void unbind_input_device(struct wl_resource *resource)
 {
 	wl_list_remove(&resource->link);
@@ -1868,6 +1880,8 @@ weston_input_device_init(struct weston_input_device *device,
 	device->modifier_state = 0;
 	device->num_tp = 0;
 
+	device->drag_surface_destroy_listener.func = handle_drag_surface_destroy;
+
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 }
 
@@ -1902,6 +1916,7 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 
 	if (!input_device->drag_surface || surface_changed) {
 		undef_region(&device->drag_surface->input);
+		wl_list_remove(&device->drag_surface_destroy_listener.link);
 		device->drag_surface = NULL;
 		if (!surface_changed)
 			return;
@@ -1913,6 +1928,8 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 
 		weston_surface_set_position(device->drag_surface,
 					    input_device->x, input_device->y);
+		wl_list_insert(device->drag_surface->surface.resource.destroy_listener_list.prev,
+			       &device->drag_surface_destroy_listener.link);
 	}
 
 	if (device->drag_surface->output == NULL &&
