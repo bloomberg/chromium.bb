@@ -136,6 +136,8 @@ DirectoryModel.prototype = {
         return true;
       case DirectoryModel.RootType.DOWNLOADS:
         return false;
+      case DirectoryModel.RootType.GDATA:
+        return false;
       default:
         return true;
     }
