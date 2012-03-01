@@ -68,7 +68,7 @@ a:active {
 
 div.checkbox,
 div.radio {
-  margin: 5px 0;
+  margin: 0.45em 0;
 }
 
 input[type=radio] ~ span,

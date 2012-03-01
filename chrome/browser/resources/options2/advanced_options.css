@@ -2,14 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#advancedPage .section-group:not(:first-child) {
-  margin-top: 10px;
-}
-
-#advancedPage .section-group:not(:last-child) {
-  margin-bottom: 10px;
-}
-
 #advancedPage select,
 #advancedPage .web-content-select-label {
   min-width: 145px;
@@ -18,11 +10,6 @@
 #advancedPage .web-content-select-label > span:only-of-type {
   display: inline-block;
   min-width: 100px;
-}
-
-#download-location-group {
-  margin: 10px 0 5px;
-  min-width: 470px;
 }
 
 #fontSettingsCustomizeFontsButton,

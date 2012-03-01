@@ -11,17 +11,17 @@
 <if expr="not pp_ifdef('chromeos')">
   <section id="sync-section">
     <h3 i18n-content="sectionTitleSync"></h3>
-    <div id="sync-overview" class="section-description" hidden>
+    <div id="sync-overview" class="settings-row" hidden>
       <p i18n-content="syncOverview"></p>
       <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"
           target="_blank">
       </a>
     </div>
-    <div id="sync-status" hidden>
+    <div id="sync-status" class="settings-row" hidden>
       <span id="sync-status-text"></span>
       <button id="sync-action-link" class="link-button"></button>
     </div>
-    <div id="sync-buttons">
+    <div id="sync-buttons" class="settings-row">
       <button id="start-stop-sync" hidden></button>
       <button id="customize-sync" i18n-content="customizeSync" hidden>
       </button>
@@ -112,31 +112,28 @@
       <button id="themes-reset" i18n-content="themesReset"></button>
     </div>
 </if>
-    <div>
-      <div id="home-page-select-container">
-        <label id="home-page-label" for="home-page-select"
-            i18n-content="homePage"></label>
-        <select id="home-page-select">
-          <option value="none" i18n-content="homePageNone"></option>
-          <option value="ntp" i18n-content="homePageNtp"></option>
-          <option value="url"></option>
-          <option value="choose" i18n-content="homePageChoose"></option>
-        </select>
-      </div>
-      <div class="checkbox"><label>
-          <input type="checkbox" pref="bookmark_bar.show_on_all_tabs"
-              metric="Options_ShowBookmarksBar">
-          <span i18n-content="toolbarShowBookmarksBar"></span>
-      </label></div>
-<if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
-      <div class="checkbox"><label>
-          <input id="show-window-decorations" type="checkbox"
-              pref="browser.custom_chrome_frame" metric="Options_CustomFrame"
-              inverted_pref>
-          <span i18n-content="showWindowDecorations"></span>
-      </label></div>
-</if>
+    <div class="settings-row">
+      <span i18n-content="homePage"></span>
+      <select id="home-page-select">
+        <option value="none" i18n-content="homePageNone"></option>
+        <option value="ntp" i18n-content="homePageNtp"></option>
+        <option value="url"></option>
+        <option value="choose" i18n-content="homePageChoose"></option>
+      </select>
     </div>
+    <div class="checkbox"><label>
+        <input type="checkbox" pref="bookmark_bar.show_on_all_tabs"
+            metric="Options_ShowBookmarksBar">
+        <span i18n-content="toolbarShowBookmarksBar"></span>
+    </label></div>
+<if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+    <div class="checkbox"><label>
+        <input id="show-window-decorations" type="checkbox"
+            pref="browser.custom_chrome_frame" metric="Options_CustomFrame"
+            inverted_pref>
+        <span i18n-content="showWindowDecorations"></span>
+    </label></div>
+</if>
   </section>
 <if expr="pp_ifdef('chromeos')">
   <section>
@@ -177,17 +174,17 @@
 </if>
   <section>
     <h3 i18n-content="sectionTitleSearch"></h3>
-      <div id="default-search-engine-group">
-        <div id="default-search-group-label"
+      <div>
+        <span class="settings-row"
             i18n-values=".innerHTML:defaultSearchGroupLabel">
-        </div>
-        <div>
+        </span>
+        <div class="settings-row">
           <select id="default-search-engine" class="weakrtl"></select>
           <button id="manage-default-search-engines"
               i18n-content="defaultSearchManageEngines">
           </button>
         </div>
-        <div id="instant-setting" class="checkbox">
+        <div class="checkbox">
           <label id="instant-label">
             <!-- TODO(estade): metric? -->
             <input id="instant-field-trial-control" type="checkbox"
@@ -205,7 +202,7 @@
     <h3 i18n-content="sectionTitleUsers"></h3>
 <if expr="pp_ifdef('chromeos')">
     <div id="sync-section">
-      <div id="sync-overview" class="section-description" hidden>
+      <div id="sync-overview" class="settings-row" hidden>
         <p i18n-content="syncOverview"></p>
         <a i18n-values="href:syncLearnMoreURL" i18n-content="learnMore"></a>
       </div>
@@ -215,7 +212,7 @@
         <div id="change-picture-caption" i18n-content="changePicture"></div>
       </div>
       <div id="sync-general">
-        <div id="sync-status" hidden>
+        <div id="sync-status" class="settings-row" hidden>
           <span id="sync-status-text"></span>
           <button id="sync-action-link" class="link-button"></button>
         </div>
@@ -234,7 +231,7 @@
           </label>
         </div>
       </div>
-      <div id="sync-buttons">
+      <div id="sync-buttons" class="settings-row">
         <button id="start-stop-sync" hidden></button>
         <button id="customize-sync" i18n-content="customizeSync" hidden>
         </button>
@@ -252,18 +249,12 @@
         <button id="profiles-create" i18n-content="profilesCreate"></button>
         <button id="profiles-manage" i18n-content="profilesManage" disabled>
         </button>
-        <button id="profiles-delete" i18n-content="profilesDelete">
-        </button>
-      </div>
-    </div>
+        <button id="profiles-delete" i18n-content="profilesDelete"></button>
 <if expr="not pp_ifdef('chromeos')">
-    <div id="manage-data-group">
-      <div i18n-content="manageDataDescription"></div>
-      <div>
         <button id="import-data" i18n-content="importData"></button>
+</if>
       </div>
     </div>
-</if>
   </section>
 <if expr="not pp_ifdef('chromeos')">
   <section>

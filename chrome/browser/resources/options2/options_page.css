@@ -64,6 +64,16 @@ div.disabled {
   color: #888;
 }
 
+.settings-row {
+  display: block;
+  margin-bottom: 0.45em;
+  margin-top: 0.45em;
+}
+
+button:first-child {
+  -webkit-margin-start: 0;
+}
+
 /* TEXT */
 input[type='password'],
 input[type='text'],
@@ -299,10 +309,6 @@ section > h3 {
 
 section > div:only-of-type {
   -webkit-box-flex: 1;
-}
-
-.section-description {
-  margin-top: 4px;
 }
 
 .option {

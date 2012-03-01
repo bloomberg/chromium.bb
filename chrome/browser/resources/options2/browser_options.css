@@ -2,42 +2,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#home-page-select-container {
-  margin-top: 5px;
-}
-
-#default-search-engine-group {
-  -webkit-box-orient: vertical;
-  display: -webkit-box;
-}
-
-#default-search-engine-group > div {
-  -webkit-box-orient: horizontal;
-  display: -webkit-box;
-}
-
-#default-search-engine {
-  -webkit-box-flex: 1;
-  display: block;
-  max-width: 100px;
-}
-
-#default-search-group-label {
-  margin-bottom: 5px;
-}
-
 #manage-default-search-engines {
-  -webkit-margin-start: 10px;
-  margin-top: 0;
+  -webkit-margin-start: 4px;
 }
 
 #default-browser-state {
   margin-top: 6px;
-}
-
-#instant-setting {
-  margin-bottom: 3px;
-  margin-top: 10px
 }
 
 #sync-overview p {
@@ -126,8 +96,7 @@ html[dir=rtl] #account-picture-wrapper {
   margin-top: 10px;
 }
 
-#mac-passwords-warning,
-#manage-data-group {
+#mac-passwords-warning {
   margin-top: 10px;
 }
 

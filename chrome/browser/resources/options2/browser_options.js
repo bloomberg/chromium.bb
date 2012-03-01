@@ -664,6 +664,11 @@ cr.define('options', function() {
       $('profiles-manage').disabled = !hasSelection ||
           !selectedProfile.isCurrentProfile;
       $('profiles-delete').disabled = !hasSelection && !hasSingleProfile;
+      var importData = $('import-data');
+      if (importData) {
+        importData.disabled = $('import-data').disabled = hasSelection &&
+          !selectedProfile.isCurrentProfile;
+      }
     },
 
     /**

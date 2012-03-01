@@ -17,6 +17,7 @@ input[type='submit']:not(.custom-appearance):not(.link-button) {
   font-family: inherit;
   font-size: inherit;
   margin-bottom: 0;
+  margin-top: 0;
   min-width: 4em;
   padding: 3px 12px;
 }
