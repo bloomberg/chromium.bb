@@ -590,6 +590,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshUberTray),
   },
 #endif
+  {
+    "enable-devtools-experiments",
+    IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME,
+    IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableDevToolsExperiments)
+  },
 };
 
 const Experiment* experiments = kExperiments;

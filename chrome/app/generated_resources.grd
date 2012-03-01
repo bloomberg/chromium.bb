@@ -5202,6 +5202,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ASH_UBER_TRAY_DESCRIPTION" desc="Description of the flag to enable the uber tray in ash.">
         Enables the in-progress uber tray for ash. Replaces the existing status view.
       </message>
+      <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME" desc="Name for the flag to enable experiments in Developer Tools">
+        Enable Developer Tools experiments.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_DESCRIPTION" desc="Description for the flag to enable experiments in Developer Tools.">
+        Enable Developer Tools experiments. Use Settings panel in Developer Tools to toggle individual experiments.
+      </message>
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
         Crashes
