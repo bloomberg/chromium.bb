@@ -375,7 +375,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   gtk_entry_set_activates_default(GTK_ENTRY(name_entry_), TRUE);
 
   GtkWidget* table;
-  if (details_.type != EditDetails::NEW_FOLDER) {
+  if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     url_entry_ = gtk_entry_new();
     gtk_entry_set_text(GTK_ENTRY(url_entry_), url.spec().c_str());
     g_signal_connect(url_entry_, "changed",
@@ -632,7 +632,7 @@ void BookmarkEditorGtk::OnWindowDestroy(GtkWidget* widget) {
 
 void BookmarkEditorGtk::OnEntryChanged(GtkWidget* entry) {
   gboolean can_close = TRUE;
-  if (details_.type == EditDetails::NEW_FOLDER) {
+  if (details_.GetNodeType() == BookmarkNode::FOLDER) {
     if (GetInputTitle().empty()) {
       gtk_widget_modify_base(name_entry_, GTK_STATE_NORMAL,
                              &kErrorColor);

@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/bookmarks/bookmark_input_window_dialog_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -133,18 +132,12 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
         return;
       }
 
-      if (selection_[0]->is_url()) {
-        BookmarkEditor::Show(
-            parent_widget_->GetNativeWindow(),
-            profile_,
-            BookmarkEditor::EditDetails::EditNode(selection_[0]),
-            BookmarkEditor::SHOW_TREE);
-      } else {
-        BookmarkInputWindowDialogController::Show(
-            profile_,
-            parent_widget_->GetNativeWindow(),
-            BookmarkEditor::EditDetails::EditNode(selection_[0]));
-      }
+      BookmarkEditor::Show(
+          parent_widget_->GetNativeWindow(),
+          profile_,
+          BookmarkEditor::EditDetails::EditNode(selection_[0]),
+          selection_[0]->is_url() ? BookmarkEditor::SHOW_TREE :
+                                    BookmarkEditor::NO_TREE);
       break;
 
     case IDC_BOOKMARK_BAR_REMOVE: {

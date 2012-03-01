@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,6 +11,24 @@
 
 BookmarkEditor::EditDetails::EditDetails(Type node_type)
     : type(node_type), existing_node(NULL), parent_node(NULL), index(-1) {
+}
+
+BookmarkNode::Type BookmarkEditor::EditDetails::GetNodeType() const {
+  BookmarkNode::Type node_type = BookmarkNode::URL;
+  switch (type) {
+    case EXISTING_NODE:
+      node_type = existing_node->type();
+      break;
+    case NEW_URL:
+      node_type = BookmarkNode::URL;
+      break;
+    case NEW_FOLDER:
+      node_type = BookmarkNode::FOLDER;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return node_type;
 }
 
 int BookmarkEditor::EditDetails::GetWindowTitleId() const {

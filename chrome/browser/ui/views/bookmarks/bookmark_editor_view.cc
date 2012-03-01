@@ -98,7 +98,7 @@ string16 BookmarkEditorView::GetDialogButtonLabel(
 }
 bool BookmarkEditorView::IsDialogButtonEnabled(ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK) {
-    if (details_.type == EditDetails::NEW_FOLDER)
+    if (details_.GetNodeType() == BookmarkNode::FOLDER)
       return !title_tf_.text().empty();
 
     const GURL url(GetInputURL());
@@ -121,7 +121,7 @@ string16 BookmarkEditorView::GetWindowTitle() const {
 
 bool BookmarkEditorView::Accept() {
   if (!IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
-    if (details_.type != EditDetails::NEW_FOLDER) {
+    if (details_.GetNodeType() != BookmarkNode::FOLDER) {
       // The url is invalid, focus the url field.
       url_tf_->SelectAll();
       url_tf_->RequestFocus();
@@ -378,7 +378,7 @@ void BookmarkEditorView::Init() {
   layout->AddView(title_label_);
   layout->AddView(&title_tf_);
 
-  if (details_.type != EditDetails::NEW_FOLDER) {
+  if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     url_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_URL_LABEL));
 
@@ -477,7 +477,7 @@ void BookmarkEditorView::Reset() {
 }
 
 GURL BookmarkEditorView::GetInputURL() const {
-  if (details_.type == EditDetails::NEW_FOLDER)
+  if (details_.GetNodeType() == BookmarkNode::FOLDER)
     return GURL();
   return URLFixerUpper::FixupURL(UTF16ToUTF8(url_tf_->text()), std::string());
 }
@@ -487,7 +487,7 @@ string16 BookmarkEditorView::GetInputTitle() const {
 }
 
 void BookmarkEditorView::UserInputChanged() {
-  if (details_.type != EditDetails::NEW_FOLDER) {
+  if (details_.GetNodeType() != BookmarkNode::FOLDER) {
     const GURL url(GetInputURL());
     if (!url.is_valid())
       url_tf_->SetBackgroundColor(kErrorColor);

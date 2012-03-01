@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "ui/gfx/native_widget_types.h"
 
-class BookmarkNode;
 class GURL;
 class Profile;
 class Browser;
@@ -30,6 +30,9 @@ class BookmarkEditor {
   // Describes what the user is editing.
   class EditDetails {
    public:
+    // Returns the type of the existing or new node.
+    BookmarkNode::Type GetNodeType() const;
+
     // Returns the resource id for the string resource to use on the window
     // title for this edit operation.
     int GetWindowTitleId() const;
