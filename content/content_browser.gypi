@@ -374,8 +374,6 @@
     'browser/load_from_memory_cache_details.cc',
     'browser/load_from_memory_cache_details.h',
     'browser/load_notification_details.h',
-    'browser/mac/media_device_notifications.h',
-    'browser/mac/media_device_notifications.mm',
     'browser/mach_broker_mac.cc',
     'browser/mach_broker_mac.h',
     'browser/mime_registry_message_filter.cc',
@@ -784,11 +782,6 @@
         '../third_party/mozilla/NSPasteboard+Utils.h',
         '../third_party/mozilla/NSPasteboard+Utils.mm',
       ],
-      'link_settings': {
-        'libraries': [
-          '$(SDKROOT)/System/Library/Frameworks/DiskArbitration.framework',
-        ],
-      },
       'dependencies': [
         '../base/base.gyp:closure_blocks_leopard_compat',
       ],

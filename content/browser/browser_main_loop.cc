@@ -53,10 +53,6 @@
 #include "net/base/winsock_init.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "content/browser/mac/media_device_notifications.h"
-#endif
-
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include <glib-object.h>
 #endif
@@ -331,8 +327,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
 #if defined(OS_WIN)
   system_message_window_.reset(new SystemMessageWindowWin);
-#elif defined(OS_MACOSX)
-  StartMediaDeviceNotifications();
 #endif
 
   // Prior to any processing happening on the io thread, we create the
