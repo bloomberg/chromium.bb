@@ -261,6 +261,3 @@ class PackageBuilder(object):
     if os.path.exists(default_board_file):
       default_board = file(default_board_file).read().strip()
     return default_board
-
-if __name__ == "__main__":
-  BuildPackages(sys.argv[1:])

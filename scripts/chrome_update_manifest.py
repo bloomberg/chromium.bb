@@ -344,7 +344,3 @@ def main(argv):
   Manifest(repo_root, os.path.join(internal_manifest_dir, 'oldlayout.xml'),
            options.testroot, internal=True,
            dryrun=not options.force).PerformUpdate()
-
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

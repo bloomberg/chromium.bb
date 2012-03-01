@@ -103,7 +103,3 @@ def main(argv):
   deps.Initialize(argv)
   deps_tree, deps_info = deps.GenDependencyTree()
   print json.dumps(FlattenDepTree(deps_tree), sort_keys=True, indent=2)
-
-
-if __name__ == "__main__":
-  main(sys.argv[1:])

@@ -285,7 +285,3 @@ def main(argv):
   triager = CrashTriager(since, options.chrome_branch, options.all_programs,
                          options.list_all, options.jobs)
   triager.Run()
-
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

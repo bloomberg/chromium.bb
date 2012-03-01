@@ -347,7 +347,3 @@ def main(argv):
   if options.runhooks:
     for hooks in hook_dicts:
       _RunHooks(chromium_root, hooks)
-
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

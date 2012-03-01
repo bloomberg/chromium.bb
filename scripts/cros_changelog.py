@@ -359,7 +359,3 @@ def main(argv):
     print change.AsHTMLTableRow()
   print '</table>'
   print '</html>'
-
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

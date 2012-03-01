@@ -1980,6 +1980,3 @@ def main(argv):
   upgrader.WriteTableFiles(csv=options.csv_file)
 
   upgrader.SayGoodbye()
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

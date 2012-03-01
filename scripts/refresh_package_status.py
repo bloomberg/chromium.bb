@@ -215,7 +215,3 @@ def main(argv):
 
   if options.update_gentoo:
     CleanupOriginGentoo(upstream)
-
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

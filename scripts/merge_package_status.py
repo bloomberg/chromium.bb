@@ -257,6 +257,3 @@ def main(argv):
   csv_table = LoadAndMergeTables(args)
 
   WriteTable(csv_table, options.outpath)
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

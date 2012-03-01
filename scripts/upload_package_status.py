@@ -296,6 +296,3 @@ def main(argv):
   # if it was not loaded from there in the first place.
   if options.token_file and not creds.auth_token_loaded:
     creds.StoreAuthToken(options.token_file)
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

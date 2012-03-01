@@ -689,6 +689,3 @@ def main(argv):
       oper.Notice('Be sure to save the creds file to the same location'
                   ' outside your chroot so it will also be used with'
                   ' future chroots.')
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

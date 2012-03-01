@@ -168,7 +168,3 @@ def main(args):
     InsideChroot().Run()
   else:
     OutsideChroot(args).Run()
-
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

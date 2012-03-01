@@ -574,6 +574,3 @@ def main(argv):
 
   targets = set(options.targets.split(','))
   UpdateToolchains(options.usepkg, options.deleteold, targets)
-
-if __name__ == '__main__':
-  main(sys.argv[1:])

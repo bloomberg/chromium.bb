@@ -220,7 +220,3 @@ def main(argv):
   print "Patches observed: %d" % len(observed)
   print "Patches expected: %d" % len(reporter.patches.keys())
   sys.exit(diff_count)
-
-
-if __name__ == "__main__":
-  main(sys.argv[1:])
