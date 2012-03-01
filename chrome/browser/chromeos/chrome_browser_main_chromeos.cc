@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/imageburner/burn_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -201,7 +202,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
 
     browser::ShowLoginWizard(first_screen, size);
 
-    if (parsed_command_line.HasSwitch(switches::kEnableKioskMode))
+    if (chromeos::KioskModeHelper::IsKioskModeEnabled())
       chromeos::InitializeKioskModeScreensaver();
   } else if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
       parsed_command_line.HasSwitch(switches::kLoginPassword)) {
@@ -226,7 +227,8 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
-  chromeos::ShutdownKioskModeScreensaver();
+  if (chromeos::KioskModeHelper::IsKioskModeEnabled())
+    chromeos::ShutdownKioskModeScreensaver();
   cryptohome::AsyncMethodCaller::Shutdown();
   chromeos::imageburner::BurnManager::Shutdown();
   chromeos::disks::DiskMountManager::Shutdown();
