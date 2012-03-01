@@ -62,6 +62,7 @@ WHITELIST_FILES = [
     '/o3d/gypbuild',
     '/o3d/installer/linux/debian.in/rules',
     '/third_party/icu/source/runconfigureicu',
+    '/third_party/gold/gold32',
     '/third_party/gold/gold64',
     '/third_party/gold/ld',
     '/third_party/gold/ld.bfd',
