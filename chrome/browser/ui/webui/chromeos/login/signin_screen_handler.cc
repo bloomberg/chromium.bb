@@ -337,6 +337,8 @@ void SigninScreenHandler::GetLocalizedStrings(
 
 void SigninScreenHandler::Show(bool oobe_ui) {
   CHECK(delegate_);
+  LOG(ERROR) << "Show: oobe=" << oobe_ui
+             << ", page_is_ready=" << page_is_ready();
 
   oobe_ui_ = oobe_ui;
   if (!page_is_ready()) {
@@ -369,6 +371,7 @@ void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
 // SigninScreenHandler, private: -----------------------------------------------
 
 void SigninScreenHandler::Initialize() {
+  LOG(ERROR) << "Initialize:" << delegate_;
   // If delegate_ is NULL here (e.g. WebUIScreenLocker has been destroyed),
   // don't do anything, just return.
   if (!delegate_)
@@ -386,6 +389,7 @@ void SigninScreenHandler::Initialize() {
 }
 
 void SigninScreenHandler::RegisterMessages() {
+  LOG(ERROR) << "RegisterMessages";
   network_state_informer_.reset(new NetworkStateInformer(web_ui()));
 
   web_ui()->RegisterMessageCallback("authenticateUser",
@@ -475,6 +479,7 @@ void SigninScreenHandler::OnUserImageChanged(const User& user) {
 }
 
 void SigninScreenHandler::OnPreferencesChanged() {
+  LOG(ERROR) << "OnPreferenceChanged:" << delegate_;
   if (delegate_ && !delegate_->IsShowUsers())
     HandleShowAddUser(NULL);
   else
@@ -719,6 +724,9 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   // |args| can be null if it's OOBE.
   if (args)
     args->GetString(0, &email_);
+  LOG(ERROR) << "HandleShowAddUser: email=" << email_ << ", first_attempt="
+             << is_first_attempt_;
+
   if (is_first_attempt_ && email_.empty()) {
     dns_cleared_ = true;
     cookies_cleared_ = true;
@@ -912,6 +920,8 @@ void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {
+  LOG(ERROR) << "StartClearingDnsCache: cond:"
+             << (dns_clear_task_running_ || !g_browser_process->io_thread());
   if (dns_clear_task_running_ || !g_browser_process->io_thread())
     return;
 
@@ -925,6 +935,7 @@ void SigninScreenHandler::StartClearingDnsCache() {
 }
 
 void SigninScreenHandler::StartClearingCookies() {
+  LOG(ERROR) << "StartClearingCookies";
   cookies_cleared_ = false;
   if (cookie_remover_)
     cookie_remover_->RemoveObserver(this);

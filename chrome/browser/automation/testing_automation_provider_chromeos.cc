@@ -259,6 +259,8 @@ void TestingAutomationProvider::ShowCreateAccountUI(
 // flags. If you used EnableChromeTesting, you will have to call it again.
 void TestingAutomationProvider::LoginAsGuest(DictionaryValue* args,
                                              IPC::Message* reply_message) {
+  LOG(ERROR) << "TestingAutomationProvider::LoginAsGuest";
+
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   // Return immediately, since we're going to die before the login is finished.
@@ -268,6 +270,8 @@ void TestingAutomationProvider::LoginAsGuest(DictionaryValue* args,
 
 void TestingAutomationProvider::Login(DictionaryValue* args,
                                       IPC::Message* reply_message) {
+  LOG(ERROR) << "TestingAutomationProvider::Login";
+
   std::string username, password;
   if (!args->GetString("username", &username) ||
       !args->GetString("password", &password)) {
@@ -285,6 +289,9 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
   // WebUI login.
   chromeos::WebUILoginDisplay* webui_login_display =
       static_cast<chromeos::WebUILoginDisplay*>(controller->login_display());
+  LOG(ERROR) << "TestingAutomationProvider::Login ShowSigninScreenForCreds("
+             << username << ", " << password << ")";
+
   webui_login_display->ShowSigninScreenForCreds(username, password);
 }
 
