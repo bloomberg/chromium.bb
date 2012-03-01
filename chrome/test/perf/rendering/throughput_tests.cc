@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/values.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -70,17 +71,32 @@ class ThroughputTest : public BrowserPerfTest {
     root.reset(base::JSONReader::Read(json, false));
 
     ListValue* root_list = NULL;
-    if (!root.get() || !root->GetAsList(&root_list))
+    if (!root.get() || !root->GetAsList(&root_list)) {
+      LOG(ERROR) << "JSON missing root list element";
       return false;
+    }
 
     DictionaryValue* item = NULL;
-    if (!root_list->GetDictionary(index, &item))
+    if (!root_list->GetDictionary(index, &item)) {
+      LOG(ERROR) << "index " << index << " not found in JSON";
       return false;
+    }
 
     std::string str;
-    if (!item->GetStringASCII("url", &str))
+    if (item->GetStringASCII("url", &str)) {
+      gurl_ = GURL(str);
+    } else if (item->GetStringASCII("file", &str)) {
+      FilePath empty;
+      gurl_ = URLFixerUpper::FixupRelativeFile(empty, empty.AppendASCII(str));
+    } else {
+      LOG(ERROR) << "missing url or file";
       return false;
-    gurl_ = GURL(str);
+    }
+
+    if (!gurl_.is_valid()) {
+      LOG(ERROR) << "invalid url: " << gurl_.possibly_invalid_spec();
+      return false;
+    }
 
     FilePath::StringType cache_dir;
     if (item->GetString("local_path", &cache_dir))
