@@ -79,6 +79,9 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   /* Get the set of features that the CPU we're running on supports. */
   NaClGetCurrentCPUFeatures(&nap->cpu_features);
 
+  /* The validation cache will be injected later, if it exists. */
+  nap->validation_cache = NULL;
+
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 
   nap->stack_size = NACL_DEFAULT_STACK_MAX;

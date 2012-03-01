@@ -40,7 +40,7 @@ static Bool FixUpSection(uintptr_t load_address,
                              NACL_TARGET_ARCH,
                              NACL_TARGET_SUBARCH)
       (sb_kind, NaClApplyValidationDoStubout, load_address, code,
-       code_size,  bundle_size, &cpu_features);
+       code_size, bundle_size, &cpu_features, NULL);
   if (status == NaClValidationSucceeded) {
     /* Now run the validator again, so that we report any errors
      * that were not fixed by stubbing out. This is done so that

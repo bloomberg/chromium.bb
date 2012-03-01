@@ -15,3 +15,23 @@ lib_env = env.Clone();
 lib_env.Append(CPPPATH=['${TARGET_ROOT}'])
 lib_env.ComponentLibrary(lib_env.NaClTargetArchSuffix('ncfileutils'),
                          ['ncfileutil.c'])
+
+
+if env.Bit('target_x86'):
+  # TODO(ncbray) support ARM.  This will require making validation caching safe
+  # for ARM and embedding ARM binary chunks in the test that can trigger various
+  # validation scenarios.
+  gtest_env = env.MakeGTestEnv()
+  validator_libs = [gtest_env.NaClTargetArchSuffix('ncvalidate')]
+
+  validation_cache_test_exe = gtest_env.ComponentProgram(
+      'validation_cache_test',
+      ['validation_cache_test.cc'],
+      EXTRA_LIBS=validator_libs)
+
+  node = gtest_env.CommandTest(
+      'validation_cache_test.out',
+      command=[validation_cache_test_exe])
+
+  env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
+                         'run_validation_cache_test')

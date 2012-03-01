@@ -379,6 +379,9 @@ void NaClValidatorTwoInstMessage(int level,
 /* Returns true if the validator should quit due to previous errors. */
 Bool NaClValidatorQuit(NaClValidatorState* state);
 
+/* Returns true if any code has been overwritten with halts. */
+Bool NaClValidatorDidStubOut(NaClValidatorState *vstate);
+
 #ifdef NCVAL_TESTING
 /* Defines the buffer and the corresponding buffer size to use for SNPRINTF,
  * given the current contents of the pre/post condition.

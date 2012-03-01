@@ -423,6 +423,10 @@ Bool NaClValidatorQuit(NaClValidatorState *vstate) {
   return !vstate->validates_ok && (vstate->quit_after_error_count == 0);
 }
 
+Bool NaClValidatorDidStubOut(NaClValidatorState *vstate) {
+  return vstate->did_stub_out;
+}
+
 static void NaClNullErrorPrintInst(NaClErrorReporter* self,
                                    struct NaClInstState* inst) {}
 

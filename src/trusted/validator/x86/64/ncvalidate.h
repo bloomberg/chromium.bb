@@ -50,18 +50,4 @@ NaClValidationStatus NaClValidatorSetup_x86_64(
     NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidatorState** vstate_ptr);
 
-/* Runs the validator on the memory segment, returning
- * true if the segment validates.
- * Parameters are:
- *    guest_addr: The pc address to use.
- *    data - The contents of the code segment to be validated.
- *    size - The size of the code segment to be validated.
- *    vstate - The allocated and initialized validator state to use.
- */
-Bool NaClSegmentValidate_x86_64(
-    uintptr_t guest_addr,
-    uint8_t *data,
-    size_t size,
-    struct NaClValidatorState* vstate);
-
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_64_NCVALIDATE_H_ */

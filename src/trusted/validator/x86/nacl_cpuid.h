@@ -15,6 +15,8 @@
 
 #include "native_client/src/include/portability.h"
 
+EXTERN_C_BEGIN
+
 /* The list of features we can get from the CPUID instruction.
  * Do not modify this enum without making similar modifications to
  * CPUFeatureDescriptions in nacl_cpuid.c.
@@ -143,5 +145,7 @@ void NaClGetCurrentCPUFeatures(NaClCPUFeaturesX86 *cpu_features);
 
 /* Returns true if CPUID is defined, and the CPU is supported. */
 int NaClArchSupported(NaClCPUFeaturesX86 *features);
+
+EXTERN_C_END
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NACL_CPUID_H_ */

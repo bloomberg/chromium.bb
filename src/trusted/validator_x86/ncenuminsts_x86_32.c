@@ -105,7 +105,7 @@ Bool NaClSegmentValidates(uint8_t* mbase,
   NaClSetAllCPUFeatures(&cpu_features);
   status = NaCl_ApplyValidator_x86_32(
       NACL_SB_DEFAULT, NaClApplyCodeValidation, vbase, mbase, size, 32,
-      &cpu_features);
+      &cpu_features, NULL);
   switch (status) {
     case NaClValidationSucceeded:
       return TRUE;

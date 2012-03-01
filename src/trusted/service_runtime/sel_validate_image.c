@@ -29,7 +29,12 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   NaClValidationStatus status = NaClValidationSucceeded;
   enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
+
+  struct NaClValidationCache *cache = nap->validation_cache;
+
   if (nap->validator_stub_out_mode) {
+    /* Validation caching is currently incompatible with stubout. */
+    cache = NULL;
     /* In stub out mode, we do two passes.  The second pass acts as a
        sanity check that bad instructions were indeed overwritten with
        allowable HLTs. */
@@ -39,7 +44,8 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                    sb_kind,
                                    NaClApplyValidationDoStubout,
                                    guest_addr, data, size,
-                                   nap->bundle_size, &nap->cpu_features);
+                                   nap->bundle_size, &nap->cpu_features,
+                                   cache);
   }
   if (status == NaClValidationSucceeded) {
     status = NACL_SUBARCH_NAME(ApplyValidator,
@@ -48,7 +54,8 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                    sb_kind,
                                    NaClApplyCodeValidation,
                                    guest_addr, data, size,
-                                   nap->bundle_size, &nap->cpu_features);
+                                   nap->bundle_size, &nap->cpu_features,
+                                   cache);
   }
   return NaClValidateStatus(status);
 }

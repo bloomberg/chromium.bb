@@ -38,6 +38,7 @@ int verbosity = 0;
 
 static int g_irt_file_desc = -1;
 
+static struct NaClValidationCache *g_validation_cache = NULL;
 
 void NaClSetIrtFileDesc(int fd) {
   CHECK(g_irt_file_desc == -1);
@@ -77,6 +78,11 @@ static void NaClLoadIrt(struct NaClApp *nap) {
   (*NACL_VTBL(Gio, gio_desc)->Dtor)(gio_desc);
 }
 
+/* TODO(ncbray) consolidate Chrome's sel_ldr setup to a single function. */
+void NaClSetValidationCache(struct NaClValidationCache *cache) {
+  g_validation_cache = cache;
+}
+
 void NaClMainForChromium(int handle_count, const NaClHandle *handles,
                          int debug) {
   char *av[1];
@@ -111,6 +117,9 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   }
 
   errcode = LOAD_OK;
+
+  /* Inject the validation caching interface, if it exists. */
+  nap->validation_cache = g_validation_cache;
 
   NaClAppInitialDescriptorHookup(nap);
 

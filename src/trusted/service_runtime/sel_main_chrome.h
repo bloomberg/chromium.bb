@@ -12,6 +12,8 @@
 
 EXTERN_C_BEGIN
 
+struct NaClValidationCache;
+
 /*
  * Register the integrated runtime (IRT) library file for use by
  * NaClMainForChromium().  This takes a file descriptor, even on
@@ -19,6 +21,8 @@ EXTERN_C_BEGIN
  * library).
  */
 void NaClSetIrtFileDesc(int fd);
+
+void NaClSetValidationCache(struct NaClValidationCache *cache);
 
 void NaClMainForChromium(int handle_count, const NaClHandle *handles,
                          int debug);

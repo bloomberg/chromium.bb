@@ -7,8 +7,11 @@
 /* Implement the ApplyValidator API for the x86-32 architecture. */
 
 #include "native_client/src/trusted/validator/ncvalidate.h"
+#include "native_client/src/trusted/validator/validation_cache.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_detailed.h"
+/* HACK to get access to didstubout */
+#include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_internaltypes.h"
 #include <assert.h>
 
 /* Be sure the correct compile flags are defined for this. */
@@ -25,14 +28,42 @@ static NaClValidationStatus NCApplyValidatorSilently_x86_32(
     uint8_t *data,
     size_t size,
     int bundle_size,
-    NaClCPUFeaturesX86 *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features,
+    struct NaClValidationCache *cache) {
   struct NCValidatorState *vstate;
   int validator_result = 0;
+  void *query = NULL;
+
+  if (cache != NULL)
+    query = cache->CreateQuery(cache->handle);
+
+  if (query != NULL) {
+    const char validator_id[] = "x86-32";
+    cache->AddData(query, (uint8_t *) validator_id, sizeof(validator_id));
+    cache->AddData(query, (uint8_t *) cpu_features, sizeof(*cpu_features));
+    cache->AddData(query, data, size);
+    if (cache->QueryKnownToValidate(query)) {
+      cache->DestroyQuery(query);
+      return NaClValidationSucceeded;
+    }
+  }
 
   vstate = NCValidateInit(guest_addr, size, bundle_size, cpu_features);
-  if (vstate == NULL) return NaClValidationFailedOutOfMemory;
+  if (vstate == NULL) {
+    if (query != NULL)
+      cache->DestroyQuery(query);
+    return NaClValidationFailedOutOfMemory;
+  }
   NCValidateSegment(data, guest_addr, size, vstate);
   validator_result = NCValidateFinish(vstate);
+
+  if (query != NULL) {
+    /* Don't cache the result if the code is modified. */
+    if (validator_result == 0 && !NCValidatorDidStubOut(vstate))
+      cache->SetKnownToValidate(query);
+    cache->DestroyQuery(query);
+  }
+
   NCValidateFreeState(&vstate);
   return (validator_result == 0)
       ? NaClValidationSucceeded : NaClValidationFailed;
@@ -62,7 +93,8 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
     uint8_t *data,
     size_t size,
     int bundle_size,
-    NaClCPUFeaturesX86 *cpu_features) {
+    NaClCPUFeaturesX86 *cpu_features,
+    struct NaClValidationCache *cache) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
   if (bundle_size == 16 || bundle_size == 32) {
@@ -71,7 +103,7 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
     switch (kind) {
       case NaClApplyCodeValidation:
         status = NCApplyValidatorSilently_x86_32(
-            guest_addr, data, size, bundle_size, cpu_features);
+            guest_addr, data, size, bundle_size, cpu_features, cache);
         break;
       case NaClApplyValidationDoStubout:
         status = NCApplyValidatorStubout_x86_32(

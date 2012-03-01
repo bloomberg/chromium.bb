@@ -30,6 +30,8 @@
 
 EXTERN_C_BEGIN
 
+struct NaClValidationCache;
+
 /* Defines the API to select the validator kind.
  * So far only the ARM architecture has a non-default validator kind
  *
@@ -110,7 +112,8 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
     uint8_t                 *data,
     size_t                  size,
     int                     bundle_size,
-    NaClCPUFeatures         *cpu_features);
+    NaClCPUFeatures         *cpu_features,
+    struct NaClValidationCache *cache);
 
 /* Applies the validator, as used in a command-line tool to report issues.
  * Note: This is intentionally separated from ApplyValidator, since it need

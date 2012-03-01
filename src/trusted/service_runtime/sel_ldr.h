@@ -69,6 +69,7 @@ struct NaClReverseQuotaInterface;
 struct NaClSecureService;
 struct NaClSecureReverseService;
 struct NaClThreadInterface;  /* see sel_ldr_thread_interface.h */
+struct NaClValidationCache;
 
 struct NaClDebugCallbacks {
   void (*thread_create_hook)(struct NaClAppThread *natp);
@@ -298,6 +299,7 @@ struct NaClApp {
 
 
   NaClCPUFeatures           cpu_features;
+  struct NaClValidationCache *validation_cache;
   int                       ignore_validator_result;
   int                       skip_validator;
   int                       validator_stub_out_mode;

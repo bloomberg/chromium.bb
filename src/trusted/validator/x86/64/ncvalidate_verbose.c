@@ -37,8 +37,11 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
   NaClValidatorStateSetMaxReportedErrors(vstate, -1);  /* Report all errors. */
   NaClValidatorStateSetErrorReporter(vstate, &kNaClVerboseErrorReporter);
-  return NaClSegmentValidate_x86_64(guest_addr, data, size, vstate)
-      ? NaClValidationSucceeded : NaClValidationFailed;
+  NaClValidateSegment(data, guest_addr, size, vstate);
+  status =
+      NaClValidatesOk(vstate) ? NaClValidationSucceeded : NaClValidationFailed;
+  NaClValidatorStateDestroy(vstate);
+  return status;
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)

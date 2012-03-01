@@ -78,6 +78,10 @@ void NCValidatorSetMaxDiagnostics(int new_value) {
   kMaxDiagnostics = new_value;
 }
 
+int NCValidatorDidStubOut(struct NCValidatorState *vstate) {
+  return vstate->stats.didstubout;
+}
+
 /* This function is intended to only be called by ValidatePrintInstructionError
  * and ValidatePrintOffsetError.
  */

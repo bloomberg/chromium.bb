@@ -135,4 +135,7 @@ int NCValidatorGetMaxDiagnostics();
  */
 void NCValidatorSetMaxDiagnostics(int new_value);
 
+/* Returns 1 if any code has been overwritten with halts. */
+int NCValidatorDidStubOut(struct NCValidatorState *vstate);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_H__ */

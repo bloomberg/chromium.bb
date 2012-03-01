@@ -72,10 +72,13 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
     uint8_t *data,
     size_t size,
     int bundle_size,
-    NaClCPUFeaturesArm *cpu_features) {
+    NaClCPUFeaturesArm *cpu_features,
+    struct NaClValidationCache *cache) {
   NaClValidationStatus status = NaClValidationFailedNotImplemented;
   UNREFERENCED_PARAMETER(cpu_features);
   UNREFERENCED_PARAMETER(sb_kind);
+  /* The ARM validator is currently unsafe w.r.t. caching. */
+  UNREFERENCED_PARAMETER(cache);
   if (bundle_size == 16) {
     if (kind == NaClApplyCodeValidation) {
         status = ((0 == NCValidateSegment(data, guest_addr, size))
