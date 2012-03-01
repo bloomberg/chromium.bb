@@ -193,6 +193,9 @@ void SpeechInputManagerImpl::StartRecognitionForRequest(int caller_id) {
     return;
   }
 
+  // We should not currently be recording for the caller.
+  CHECK(recording_caller_id_ != caller_id);
+
   // If we are currently recording audio for another caller, abort that cleanly.
   if (recording_caller_id_)
     CancelRecognitionAndInformDelegate(recording_caller_id_);

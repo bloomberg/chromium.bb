@@ -185,6 +185,11 @@ void SpeechInputBubbleView::UpdateLayout(
   cancel_->SetVisible(mode != SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP);
   heading_->SetVisible(mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING);
 
+  // Clickable elements should be enabled if and only if they are visible.
+  mic_settings_->SetEnabled(mic_settings_->visible());
+  try_again_->SetEnabled(try_again_->visible());
+  cancel_->SetEnabled(cancel_->visible());
+
   if (is_message) {
     message_->SetText(message_text);
   } else {
