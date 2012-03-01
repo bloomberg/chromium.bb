@@ -207,8 +207,7 @@
 }
 
 #sync-setup-configure {
-  line-height: 1.33em;
-  background: #fff;
+  background: white;
 }
 
 html[os='mac'] #sync-setup-configure {
