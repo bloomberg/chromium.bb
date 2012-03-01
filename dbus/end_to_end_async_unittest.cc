@@ -83,6 +83,24 @@ class EndToEndAsyncTest : public testing::Test {
                    base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
     message_loop_.Run();
+
+    // Create a second object proxy for the root object.
+    root_object_proxy_ = bus_->GetObjectProxy(
+        "org.chromium.TestService",
+        dbus::ObjectPath("/"));
+    ASSERT_TRUE(bus_->HasDBusThread());
+
+    // Connect to the "Test" signal of "org.chromium.TestInterface" from
+    // the root remote object too.
+    root_object_proxy_->ConnectToSignal(
+        "org.chromium.TestInterface",
+        "Test",
+        base::Bind(&EndToEndAsyncTest::OnRootTestSignal,
+                   base::Unretained(this)),
+        base::Bind(&EndToEndAsyncTest::OnConnected,
+                   base::Unretained(this)));
+    // Wait until the root object proxy is connected to the signal.
+    message_loop_.Run();
   }
 
   virtual void TearDown() {
@@ -140,6 +158,15 @@ class EndToEndAsyncTest : public testing::Test {
     message_loop_.Quit();
   }
 
+  // Called when the "Test" signal is received, in the main thread, by
+  // the root object proxy. Copy the string payload to
+  // |root_test_signal_string_|.
+  void OnRootTestSignal(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    ASSERT_TRUE(reader.PopString(&root_test_signal_string_));
+    message_loop_.Quit();
+  }
+
   // Called when the "Test2" signal is received, in the main thread.
   void OnTest2Signal(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
@@ -165,9 +192,12 @@ class EndToEndAsyncTest : public testing::Test {
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> bus_;
   dbus::ObjectProxy* object_proxy_;
+  dbus::ObjectProxy* root_object_proxy_;
   scoped_ptr<dbus::TestService> test_service_;
   // Text message from "Test" signal.
   std::string test_signal_string_;
+  // Text message from "Test" signal delivered to root.
+  std::string root_test_signal_string_;
 };
 
 TEST_F(EndToEndAsyncTest, Echo) {
@@ -302,11 +332,14 @@ TEST_F(EndToEndAsyncTest, TestSignal) {
 
 TEST_F(EndToEndAsyncTest, TestSignalFromRoot) {
   const char kMessage[] = "hello, world";
-  // Send the test signal from the root object path, to see if we can
-  // handle signals sent from "/", like dbus-send does.
+  // Object proxies are tied to a particular object path, if a signal
+  // arrives from a different object path like "/" the first object proxy
+  // |object_proxy_| should not handle it, and should leave it for the root
+  // object proxy |root_object_proxy_|.
   test_service_->SendTestSignalFromRoot(kMessage);
-  // Receive the signal with the object proxy. The signal is handled in
-  // EndToEndAsyncTest::OnTestSignal() in the main thread.
   WaitForTestSignal();
-  ASSERT_EQ(kMessage, test_signal_string_);
+  // Verify the signal was not received by the specific proxy.
+  ASSERT_TRUE(test_signal_string_.empty());
+  // Verify the string WAS received by the root proxy.
+  ASSERT_EQ(kMessage, root_test_signal_string_);
 }

@@ -304,14 +304,10 @@ void ObjectProxy::ConnectToSignalInternal(
       }
     }
     // Add a match rule so the signal goes through HandleMessage().
-    //
-    // We don't restrict the sender object path to be |object_path_| here,
-    // to make it easy to test D-Bus signal handling with dbus-send, that
-    // uses "/" as the sender object path. We can make the object path
-    // restriction customizable when it becomes necessary.
     const std::string match_rule =
-        base::StringPrintf("type='signal', interface='%s'",
-                           interface_name.c_str());
+        base::StringPrintf("type='signal', interface='%s', path='%s'",
+                           interface_name.c_str(),
+                           object_path_.value().c_str());
 
     // Add the match rule if we don't have it.
     if (match_rules_.find(match_rule) == match_rules_.end()) {
@@ -365,6 +361,14 @@ DBusHandlerResult ObjectProxy::HandleMessage(
   dbus_message_ref(raw_message);
   scoped_ptr<Signal> signal(
       Signal::FromRawMessage(raw_message));
+
+  // Verify the signal comes from the object we're proxying for, this is
+  // our last chance to return DBUS_HANDLER_RESULT_NOT_YET_HANDLED and
+  // allow other object proxies to handle instead.
+  const dbus::ObjectPath path = signal->GetPath();
+  if (path != object_path_) {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
 
   const std::string interface = signal->GetInterface();
   const std::string member = signal->GetMember();
