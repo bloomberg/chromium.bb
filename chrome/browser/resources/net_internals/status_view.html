@@ -15,10 +15,15 @@ found in the LICENSE file.
       <button id=capture-status-view-reset>Reset</button>
     </td>
     <td align=right>
-      <button id=capture-status-view-clear-cache class=warningText>
-        Clear cache</button>
-      <button id=capture-status-view-flush-sockets class=warningText>
-        Flush sockets</button>
+      <img id=capture-status-view-toggle-extras
+           class=capture-status-view-rotateleft
+           src='chrome://resources/images/select.png' />
+      <span id=capture-status-view-extras style="display:none">
+        <button id=capture-status-view-clear-cache class=warningText>
+          Clear cache</button>
+        <button id=capture-status-view-flush-sockets class=warningText>
+          Flush sockets</button>
+      </span>
     </td>
   </tr></table>
 </div>

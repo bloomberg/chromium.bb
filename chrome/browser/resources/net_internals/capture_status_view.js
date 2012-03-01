@@ -24,6 +24,9 @@ var CaptureStatusView = (function() {
     $(CaptureStatusView.FLUSH_SOCKETS_BUTTON_ID).onclick =
         g_browser.sendFlushSocketPools.bind(g_browser);
 
+    $(CaptureStatusView.TOGGLE_EXTRAS_ID).onclick =
+        this.toggleExtras_.bind(this);
+
     this.capturedEventsCountBox_ =
         $(CaptureStatusView.CAPTURED_EVENTS_COUNT_ID);
     this.updateEventCounts_();
@@ -40,6 +43,8 @@ var CaptureStatusView = (function() {
       'capture-status-view-flush-sockets';
   CaptureStatusView.CAPTURED_EVENTS_COUNT_ID =
       'capture-status-view-captured-events-count';
+  CaptureStatusView.TOGGLE_EXTRAS_ID = 'capture-status-view-toggle-extras';
+  CaptureStatusView.EXTRAS_ID = 'capture-status-view-extras';
 
   CaptureStatusView.prototype = {
     // Inherit the superclass's methods.
@@ -65,6 +70,21 @@ var CaptureStatusView = (function() {
     updateEventCounts_: function() {
       this.capturedEventsCountBox_.textContent =
           g_browser.sourceTracker.getNumCapturedEvents();
+    },
+
+    /**
+     * Toggles the visibility of the "extras" action bar.
+     */
+    toggleExtras_: function() {
+      var toggle = $(CaptureStatusView.TOGGLE_EXTRAS_ID);
+      var extras = $(CaptureStatusView.EXTRAS_ID);
+
+      var isVisible = extras.style.display == '';
+
+      // Toggle between the left-facing triangle and right-facing triange.
+      toggle.className = isVisible ?
+          'capture-status-view-rotateleft' : 'capture-status-view-rotateright';
+      setNodeDisplay(extras, !isVisible);
     }
   };
 

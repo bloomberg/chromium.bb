@@ -23,3 +23,16 @@
 #loaded-status-view {
   background: #88c;
 }
+
+#capture-status-view-toggle-extras {
+  cursor: pointer;
+  -webkit-filter: invert();  /* Make it white! */
+}
+
+.capture-status-view-rotateleft {
+  -webkit-transform: rotate(90deg);
+}
+
+.capture-status-view-rotateright {
+  -webkit-transform: rotate(270deg);
+}
