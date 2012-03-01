@@ -63,7 +63,7 @@ deps = {
     'src/third_party/libjingle/source':
         Var('git_url') + '/external/libjingle.git@c5ce810fb4aadd2dbbfcde1559c8010b3a130ca6',
     'src/third_party/libjpeg_turbo':
-        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@1ba49dec21994e9bceaa05db705b3850fd4ca5ea',
+        Var('git_url') + '/chromium/deps/libjpeg_turbo.git@1c3c7ffd1f4d6914024b069b1e4b4230dcce8d73',
     'src/third_party/libphonenumber/src/phonenumbers':
         Var('git_url') + '/external/libphonenumber/cpp/src/phonenumbers.git@2a128ddf9bd97501ec23ca0f751195edc0aea1a6',
     'src/third_party/libphonenumber/src/resources':
@@ -119,7 +119,7 @@ deps = {
     'src/third_party/webrtc':
         Var('git_url') + '/external/webrtc/src.git@2c41f67dadcc8717802a371281c1f917ea5286b6',
     'src/third_party/yasm/source/patched-yasm':
-        Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@44efe151b6960bab3db0c85354cc4cce1024219d',
+        Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@ac0db4eaa525cd90c959d3312c3c73b7a961eb18',
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@ffaab37ab059ae68d9459a353064752795381113',
     'src/tools/gyp':
