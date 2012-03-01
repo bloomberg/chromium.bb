@@ -1833,6 +1833,7 @@ input_device_attach(struct wl_client *client,
 				 buffer->width, buffer->height);
 
 	weston_buffer_attach(buffer, &device->sprite->surface);
+	weston_surface_damage(device->sprite);
 }
 
 const static struct wl_input_device_interface input_device_interface = {
