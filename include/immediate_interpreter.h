@@ -28,8 +28,7 @@ class ImmediateInterpreter;
 class TapRecord {
  public:
   explicit TapRecord(const ImmediateInterpreter* immediate_interpreter)
-      : min_pressure_met_(false),
-        immediate_interpreter_(immediate_interpreter),
+      : immediate_interpreter_(immediate_interpreter),
         t5r2_(false),
         t5r2_touched_size_(0),
         t5r2_released_size_(0) {}
@@ -46,8 +45,8 @@ class TapRecord {
   bool TapComplete() const;  // is a completed tap
   // return GESTURES_BUTTON_* value or 0, if tap was too light
   int TapType() const;
-  // If we're in T5R2 mode, always let the taps through
-  bool MinTapPressureMet() const { return t5r2_ || min_pressure_met_; }
+  // If any contact has met the minimum pressure threshold
+  bool MinTapPressureMet() const;
  private:
   void NoteTouch(short the_id, const FingerState& fs);  // Adds to touched_
   void NoteRelease(short the_id);  // Adds to released_
@@ -56,8 +55,8 @@ class TapRecord {
   map<short, FingerState, kMaxTapFingers> touched_;
   set<short, kMaxTapFingers> released_;
   // At least one finger must meet the minimum pressure requirement during a
-  // tap.
-  bool min_pressure_met_;
+  // tap. This set contains the fingers that have.
+  set<short, kMaxTapFingers> min_pressure_met_;
   // Used to fetch properties
   const ImmediateInterpreter* immediate_interpreter_;
   // T5R2: For these pads, we try to track individual IDs, but if we get an

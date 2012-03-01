@@ -67,6 +67,7 @@ void TapRecord::NoteRelease(short the_id) {
 }
 
 void TapRecord::Remove(short the_id) {
+  min_pressure_met_.erase(the_id);
   touched_.erase(the_id);
   released_.erase(the_id);
 }
@@ -111,17 +112,16 @@ void TapRecord::Update(const HardwareState& hwstate,
   // Check if min pressure met yet
   for (map<short, FingerState, kMaxTapFingers>::iterator it =
            touched_.begin(), e = touched_.end();
-       !min_pressure_met_ && it != e; ++it) {
+       it != e; ++it) {
     const FingerState* fs = hwstate.GetFingerState((*it).first);
-    if (fs)
-      min_pressure_met_ =
-          fs->pressure >= immediate_interpreter_->tap_min_pressure();
+    if (fs && fs->pressure >= immediate_interpreter_->tap_min_pressure())
+      min_pressure_met_.insert(fs->tracking_id);
   }
   Log("Done Updating TapRecord.");
 }
 
 void TapRecord::Clear() {
-  min_pressure_met_ = false;
+  min_pressure_met_.clear();
   t5r2_ = false;
   t5r2_touched_size_ = 0;
   t5r2_released_size_ = 0;
@@ -169,6 +169,11 @@ bool TapRecord::TapComplete() const {
     Log("released_: %d", *it);
   Log("TapComplete() returning %d", ret);
   return ret;
+}
+
+bool TapRecord::MinTapPressureMet() const {
+  // True if any touching finger met minimum pressure
+  return t5r2_ || !min_pressure_met_.empty();
 }
 
 int TapRecord::TapType() const {
