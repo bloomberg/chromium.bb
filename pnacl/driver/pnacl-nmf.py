@@ -90,7 +90,7 @@ def SetPortableUrl(json_dict, shortname, filepath):
   json_dict['portable'] = {}
   json_dict['portable']['pnacl-translate'] = {}
   json_dict['portable']['pnacl-translate']['url'] = shortname
-  fd = open(filepath, 'r')
+  fd = DriverOpen(filepath, 'r')
   sha = hashlib.sha256()
   sha.update(fd.read())
   fd.close()
@@ -131,7 +131,7 @@ def GetTransitiveClosureOfNeeded(base_needed):
   return all_needed
 
 def ReadBaselineNMF(baseline_file):
-  f = open(baseline_file, 'r')
+  f = DriverOpen(baseline_file, 'r')
   json_dict = json.load(f)
   f.close()
   return json_dict
