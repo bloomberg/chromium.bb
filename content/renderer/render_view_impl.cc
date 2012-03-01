@@ -540,9 +540,6 @@ RenderViewImpl::RenderViewImpl(
   webview()->enableFixedLayoutMode(enable_fixed_layout);
   if (enable_fixed_layout)
       webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
-  base::StringToInt(command_line.GetSwitchValueASCII(
-                        switches::kDefaultDeviceScaleFactor),
-                    &default_device_scale_factor_);
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }
@@ -4417,9 +4414,9 @@ void RenderViewImpl::OnResize(const gfx::Size& new_size,
                               bool is_fullscreen) {
   if (webview()) {
     // This setting has no effect if fixed layout is not enabled.
-    if (default_device_scale_factor_)
+    if (webkit_preferences_.default_device_scale_factor)
       webview()->settings()->setLayoutFallbackWidth(
-          new_size.width() / default_device_scale_factor_);
+          new_size.width() / webkit_preferences_.default_device_scale_factor);
     webview()->hidePopups();
     if (send_preferred_size_changes_) {
       webview()->mainFrame()->setCanHaveScrollbars(

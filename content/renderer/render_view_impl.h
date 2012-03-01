@@ -1020,8 +1020,6 @@ class RenderViewImpl : public RenderWidget,
   // should be drawn.
   gfx::Size disable_scrollbars_size_limit_;
 
-  int default_device_scale_factor_;
-
   // Loading state -------------------------------------------------------------
 
   // True if the top level frame is currently being loaded.

@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -459,6 +460,13 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
   }
+
+  int default_device_scale_factor;
+  base::StringToInt(command_line.GetSwitchValueASCII(
+                        switches::kDefaultDeviceScaleFactor),
+                    &default_device_scale_factor);
+
+  prefs.default_device_scale_factor = default_device_scale_factor;
 
   content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, &prefs);
 
