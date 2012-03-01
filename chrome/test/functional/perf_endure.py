@@ -213,6 +213,51 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     return True
 
 
+class ChromeEndureControlTest(ChromeEndureBaseTest):
+  """Control tests for Chrome Endure."""
+
+  _webapp_name = 'Control'
+  _tab_title_substring = 'Chrome Endure Control Test'
+
+  def testControlAttachDetachDOMTree(self):
+    """Continually attach and detach a DOM tree from a basic document."""
+    test_description = 'AttachDetachDOMTree'
+
+    url = self.GetHttpURLForDataPath('chrome_endure', 'endurance_control.html')
+    self.NavigateToURL(url)
+    loaded_tab_title = self.GetActiveTabTitle()
+    self.assertTrue(self._tab_title_substring in loaded_tab_title,
+                    msg='Loaded tab title does not contain "%s": "%s"' %
+                        (self._tab_title_substring, loaded_tab_title))
+
+    # This test performs no interaction with the webpage.  It simply sleeps
+    # and periodically checks to see whether it's time to take performance
+    # measurements.
+    self._test_start_time = time.time()
+    last_perf_stats_time = time.time()
+    self._GetPerformanceStats(self._webapp_name, test_description,
+                              self._tab_title_substring)
+    iteration_num = 0
+    while time.time() - self._test_start_time < self._test_length_sec:
+      iteration_num += 1
+
+      if time.time() - last_perf_stats_time >= self._get_perf_stats_interval:
+        last_perf_stats_time = time.time()
+        self._GetPerformanceStats(self._webapp_name, test_description,
+                                  self._tab_title_substring)
+
+      if iteration_num % 10 == 0:
+        remaining_time = self._test_length_sec - (
+                             time.time() - self._test_start_time)
+        logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
+                     (iteration_num, remaining_time))
+
+      time.sleep(5)
+
+    self._GetPerformanceStats(self._webapp_name, test_description,
+                              self._tab_title_substring)
+
+
 class ChromeEndureGmailTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Gmail."""
 
@@ -227,8 +272,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     self.NavigateToURL('http://www.gmail.com')
     loaded_tab_title = self.GetActiveTabTitle()
     self.assertTrue(self._tab_title_substring in loaded_tab_title,
-                    msg='Loaded tab title does not contain "Gmail": "%s"' %
-                        loaded_tab_title)
+                    msg='Loaded tab title does not contain "%s": "%s"' %
+                        (self._tab_title_substring, loaded_tab_title))
 
     self._driver = self.NewWebDriver()
     # Any call to wait.until() will raise an exception if the timeout is hit.
@@ -672,8 +717,8 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
     self.NavigateToURL('http://plus.google.com')
     loaded_tab_title = self.GetActiveTabTitle()
     self.assertTrue(self._tab_title_substring in loaded_tab_title,
-                    msg='Loaded tab title does not contain "Google+": "%s"' %
-                        loaded_tab_title)
+                    msg='Loaded tab title does not contain "%s": "%s"' %
+                        (self._tab_title_substring, loaded_tab_title))
 
     # Interact with Google Plus for the duration of the test.  Here, we repeat
     # the following sequence of interactions: click the "Friends" button, then
