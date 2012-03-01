@@ -35,14 +35,7 @@
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
 #endif
 
-// See crbug.com/108492.
-#if defined(USE_AURA) && defined(OS_CHROMEOS)
-#define MAYBE_Tabs DISABLED_Tabs
-#else
-#define MAYBE_Tabs Tabs
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   // The test creates a tab and checks that the URL of the new tab
   // is that of the new tab page.  Make sure the pref that controls
   // this is set.
