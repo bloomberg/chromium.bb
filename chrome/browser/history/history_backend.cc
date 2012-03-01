@@ -480,7 +480,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
         VisitRow visit_row;
         if (request->did_replace_entry &&
             db_->GetRowForVisit(last_ids.second, &visit_row) &&
-            visit_row.transition | content::PAGE_TRANSITION_CHAIN_END) {
+            visit_row.transition & content::PAGE_TRANSITION_CHAIN_END) {
           visit_row.transition = content::PageTransitionFromInt(
               visit_row.transition & ~content::PAGE_TRANSITION_CHAIN_END);
           db_->UpdateVisitRow(visit_row);
