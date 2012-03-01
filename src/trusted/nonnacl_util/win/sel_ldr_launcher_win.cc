@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -74,7 +74,7 @@ static nacl::string Escape(nacl::string s) {
   return result;
 }
 
-Handle SelLdrLauncher::CreateBootstrapSocket(nacl::string* dest_fd) {
+Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
   Handle pair[2];
   if (SocketPair(pair) == -1) {
     return kInvalidHandle;
@@ -96,18 +96,19 @@ Handle SelLdrLauncher::CreateBootstrapSocket(nacl::string* dest_fd) {
   Close(pair[1]);
   close_after_launch_.push_back(channel);
 
-  *dest_fd = ToString(reinterpret_cast<uintptr_t>(channel));
+  sel_ldr_argv_.push_back("-i");
+  sel_ldr_argv_.push_back(ToString(dest_fd) + ":" +
+                          ToString(reinterpret_cast<uintptr_t>(channel)));
   return pair[0];
 }
 
-bool SelLdrLauncher::StartViaCommandLine(
-    const vector<nacl::string>& prefix,
-    const vector<nacl::string>& sel_ldr_argv,
-    const vector<nacl::string>& app_argv) {
-  // Set up the command line.
-  InitCommandLine(prefix, sel_ldr_argv, app_argv);
+bool SelLdrLauncher::LaunchFromCommandLine() {
   STARTUPINFOA startup_info;
   PROCESS_INFORMATION process_infomation;
+
+  if (channel_number_ != -1) {
+    channel_ = ExportImcFD(channel_number_);
+  }
 
   vector<nacl::string> command;
   BuildCommandLine(&command);

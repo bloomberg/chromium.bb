@@ -30,6 +30,8 @@
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 
+static int const kSrpcFd = 5;
+
 int verbosity = 0;
 
 static int g_irt_file_desc = -1;
@@ -79,7 +81,7 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   int ac = 1;
   const char **envp;
   struct NaClApp state;
-  int export_addr_to = (int) handles[0]; /* Used to be set by -X. */
+  int export_addr_to = kSrpcFd; /* Used to be set by -X. */
   struct NaClApp *nap = &state;
   NaClErrorCode errcode = LOAD_INTERNAL;
   int ret_code = 1;
@@ -116,8 +118,10 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
    */
 
   /* import IMC handle - used to be "-i" */
-  CHECK(handle_count == 1);
+  CHECK(handle_count == 3);
   NaClAddImcHandle(nap, handles[0], export_addr_to);
+  NaClAddImcHandle(nap, handles[1], 6); /* async_receive_desc */
+  NaClAddImcHandle(nap, handles[2], 7); /* async_send_desc */
 
   /*
    * in order to report load error to the browser plugin through the

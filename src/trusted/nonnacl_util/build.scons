@@ -55,3 +55,54 @@ elif env.Bit('mac'):
 nonnacl_util_inputs = env.DualObject(nonnacl_util_inputs)
 
 env.DualLibrary('nonnacl_util', nonnacl_util_inputs)
+
+# Testing:
+#
+# sel_ldr_launcher_test - builds the test binary and copies to staging/;
+#                         the binary can be run directly, but the invoker
+#                         is responsible for setting the environment to match
+#                         the scons set-up below
+# run_sel_ldr_launcher_test - builds the test binary and tests it within
+#                             the scons-set environment
+
+# Set up the build environment: gtest does not compile with our strict settings.
+gtest_env = env.MakeGTestEnv()
+
+# Set up dependencies and environment variables.
+test_deps = [ 'nonnacl_util',
+              'nrd_xfer',
+              'nacl_base',
+              'platform',
+              'imc',
+              'gio',
+              'nonnacl_srpc',
+              'env_cleanser',
+              'nacl_error_code' ]
+# TODO(polina): figure out why empty osenv causes
+#   File "/usr/lib/python2.5/subprocess.py", line 1054, in _execute_child
+#      executable = args[0]
+#   IndexError: list index out of range
+test_osenv="DUMMY=1"
+
+if not env.Bit('windows'):
+  # Add a dependency for #include <dlfcn.h>.
+  test_deps += [ 'dl' ]
+
+if env.Bit('mac'):
+  # Add a dependency for objc symbols from osx/get_plugin_dirname.mm,
+  # but don't do the bundling.
+  gtest_env.Append(LINKFLAGS=['-framework', 'Foundation'])
+  # Set $NACL_SEL_LDR to bypass the objc code that relies on bundling
+  # to get the sel_ldr path.
+  test_osenv = 'NACL_SEL_LDR=dummy_dir'
+
+# Build the test binary and add it to the test suite.
+test_binary = gtest_env.ComponentProgram('sel_ldr_launcher_test',
+                                         'sel_ldr_launcher_test.cc',
+                                         EXTRA_LIBS=test_deps)
+test_node = gtest_env.CommandTest(name='sel_ldr_launcher_test.out',
+                                  command=[ test_binary ],
+                                  osenv=test_osenv)
+
+if not env.IsRunningUnderValgrind():
+  env.AddNodeToTestSuite(test_node, ['small_tests'], 'run_sel_ldr_launcher_test')

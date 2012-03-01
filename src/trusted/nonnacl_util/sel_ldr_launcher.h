@@ -73,6 +73,8 @@ struct SelLdrLauncher {
   explicit SelLdrLauncher(SelLdrLocator* sel_ldr_locator);
   ~SelLdrLauncher();
 
+  Handle child_process() const { return child_process_; }
+
   /////////////////////////////////////////////////////////////////////////////
   // Command line start-up: (Only used by sel_universal.)
   //
@@ -80,44 +82,47 @@ struct SelLdrLauncher {
   // indicator that a reference will be supplied after the launch over RPC.
   /////////////////////////////////////////////////////////////////////////////
 
-  // Starts a sel_ldr process.  If |prefix| is not empty, adds prefix arguments,
-  // like using 'time', to run the sel_ldr within.  This is primarily intended
-  // to provide a hook for qemu emulation or for timing.  |sel_ldr_argv|
-  // specifies the arguments to be passed to sel_ldr itself, while
-  // |application_argv| specifies the arguments to be passed to the nexe.
-  // If subprocess creation fails, returns false and both child_process_ and
-  // channel_ are set to kInvalidHandle.
-  bool StartViaCommandLine(const std::vector<nacl::string>& prefix,
-                           const std::vector<nacl::string>& sel_ldr_argv,
-                           const std::vector<nacl::string>& application_argv);
+  // Creates a socket pair.  Maps the first socket into the NaCl
+  // subprocess's FD table as dest_fd. Sets the corresponding command line arg.
+  // Returns the second socket. Returns kInvalidHandle on failure.
+  Handle ExportImcFD(int dest_fd);
 
-  /////////////////////////////////////////////////////////////////////////////
-  // Browser start-up: (used by the plugin inside or outside of Chrome build.)
-  /////////////////////////////////////////////////////////////////////////////
+  // Sets up the command line to start a sel_ldr.  Specifies |imc_fd| to
+  // use for bootstrapping. |sel_ldr_argv| specifies the arguments to be
+  // passed to sel_ldr itself, while |application_argv| specifies the arguments
+  // to be passed to the nexe.
+  void InitCommandLine(int imc_fd,
+                       const std::vector<nacl::string>& sel_ldr_argv,
+                       const std::vector<nacl::string>& application_argv);
 
-  bool Start(const char* url);
-  // TODO(sehr): remove this obsolete interface.  The parameters are useless.
-  bool Start(int socket_count, Handle* result_sockets, const char* url = "");
+  // If subprocess creation fails, both child_process_ and channel_ are set to
+  // kInvalidHandle. We have different implementations for posix and win.
+  // You must call InitCommandLine() before calling this function.
+  bool LaunchFromCommandLine();
 
-
-  /////////////////////////////////////////////////////////////////////////////
-  // After starting the sel_ldr process.
-  /////////////////////////////////////////////////////////////////////////////
+  // Builds a command line out of the prepopulated args.
+  void BuildCommandLine(std::vector<nacl::string>* command);
 
   // Sets up the command channel |command| and sends the SRPC to load |nexe|.
-  bool SetupCommandAndLoad(NaClSrpcChannel* command, DescWrapper* nexe);
+  bool SetupCommandAndLoad(NaClSrpcChannel* command,
+                           DescWrapper* nexe);
 
   // Sends the SRPC to start the nexe over |command| and sets up the application
   // SRPC chanel |out_app_chan|.
   bool StartModuleAndSetupAppChannel(NaClSrpcChannel* command,
                                      NaClSrpcChannel* out_app_chan);
 
+  // Add a prefix shell program, like 'time', to run the sel_ldr in
+  // This is primarily intended to provide a hook for qemu emulation
+  void SetCommandPrefix(const nacl::string& prefix);
+
   // Kill the child process.  The channel() remains valid, but nobody
   // is talking on the other end.  Returns true if successful.
   bool KillChildProcess();
 
-  // Returns a handle to the created sel_ldr process.
-  Handle child_process() const { return child_process_; }
+  // User is responsible for invoking channel() and then taking
+  // ownership of the handle prior to the Dtor firing.
+  Handle channel() const { return channel_; }
 
   // Returns the socket address used to connect to the sel_ldr.
   DescWrapper* socket_addr() const { return socket_addr_.get(); }
@@ -129,22 +134,39 @@ struct SelLdrLauncher {
   // As above, but raw_desc is Unref'd on failure.
   DescWrapper* WrapCleanup(NaClDesc* raw_desc);
 
+  /////////////////////////////////////////////////////////////////////////////
+  // Start the sel_ldr process.  No nexe information is passed at this point.
+  // It will be supplied over RPC after start-up.
+  /////////////////////////////////////////////////////////////////////////////
+
+  // TODO(halyavin): Default url parameter must be made required once chrome
+  // code is adapted to new API or sehr will finish refactoring of this code.
+  bool Start(int socket_count, Handle* result_sockets, const char* url = "");
+
  private:
-  // Builds a command line out of the prepopulated args.
-  void BuildCommandLine(std::vector<nacl::string>* command);
+  // OpenSrpcChannels is essentially the following sequence of
+  // (lower-level) operations.
 
-  // Sets up the command line to start a sel_ldr.  |prefix| specifies the
-  // set of prefixes to apply to the sel_ldr invocation (e.g., 'time' or
-  // 'qemu').  |sel_ldr_argv| specifies the arguments to be passed to sel_ldr
-  // itself, while |application_argv| specifies the arguments to be passed to
-  // the nexe.
-  void InitCommandLine(const std::vector<nacl::string>& prefix,
-                       const std::vector<nacl::string>& sel_ldr_argv,
-                       const std::vector<nacl::string>& app_argv);
+  // BEGIN EQUIVALENT SEQUENCE
 
-  // Creates a socket pair.  Dups the first socket into the NaCl subprocess as
-  // dest_fd.  Returns the second socket or kInvalidHandle on failure.
-  Handle CreateBootstrapSocket(nacl::string* dest_fd);
+  bool SetupBootstrapChannel();
+  bool GetLdrSocketAddress();
+  bool SetupCommandChannel(NaClSrpcChannel* command);
+
+  // LoadModule supplies, via the |command| channel, the |nexe| file
+  // for the service runtime to load.
+  bool LoadModule(NaClSrpcChannel* command, DescWrapper* nexe);
+
+  // ----
+
+  // Tell the service runtime to start the NaCl module via the
+  // |command| channel.  If |error| is non-NULL, any failures will
+  // cause the error code to be written there.
+  bool StartModule(NaClSrpcChannel* command, NaClErrorCode* error);
+
+  bool SetupApplicationChannel(NaClSrpcChannel* app_channel);
+
+  // END EQUIVALENT SEQUENCE
 
   void GetPluginDirectory(char* buffer, size_t len);
   nacl::string GetSelLdrPathName();
@@ -153,13 +175,13 @@ struct SelLdrLauncher {
 
   Handle child_process_;
   Handle channel_;
+  int channel_number_;  // IMC file descriptor.
 
   // The following members are used to initialize and build the command line.
   // The detailed magic is in BuildCommandLine() but roughly we run
-  // <prefix> <sel_ldr> <extra stuff> <sel_ldr_argv> -- <nexe_args>
-  // Prefix parameters or empty if not used
-  std::vector<nacl::string> command_prefix_;
-  // Path to the sel_ldr chain loader executable
+  // <prefix> <sel_ldr> <extra stuff> -f <nexe> <sel_ldr_argv> -- <nexe_args>
+  // Path to prefix tool or empty if not used
+  nacl::string command_prefix_;
   nacl::string sel_ldr_bootstrap_;
   // Path to the sel_ldr executable
   nacl::string sel_ldr_;

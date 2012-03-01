@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Native Client Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,35 +11,31 @@ LaunchNaClProcessFunc launch_nacl_process = NULL;
 
 #if !defined(NACL_STANDALONE)
 namespace nacl {
-bool SelLdrLauncher::Start(const char* url) {
-  // send a synchronous message to the browser process
-  Handle nacl_proc_handle;
-  int nacl_proc_id;
-  if (!launch_nacl_process ||
-      !launch_nacl_process(url,
-                           1,
-                           &channel_,
-                           &nacl_proc_handle,
-                           &nacl_proc_id)) {
-    return false;
-  }
+  bool SelLdrLauncher::Start(int socket_count,
+                             Handle* result_sockets,
+                             const char* url) {
+    // send a synchronous message to the browser process
+    Handle nacl_proc_handle;
+    int nacl_proc_id;
+    if (!launch_nacl_process ||
+        !launch_nacl_process(url,
+                             socket_count,
+                             result_sockets,
+                             &nacl_proc_handle,
+                             &nacl_proc_id)) {
+      return false;
+    }
 
 #if NACL_WINDOWS
-  NaClHandlePassBrowserRememberHandle(nacl_proc_id, nacl_proc_handle);
+    NaClHandlePassBrowserRememberHandle(nacl_proc_id, nacl_proc_handle);
 #endif
 
-  CloseHandlesAfterLaunch();
-  // TODO(gregoryd): the handle is currently returned on Windows only.
-  child_process_ = nacl_proc_handle;
-  return true;
+    CloseHandlesAfterLaunch();
+    // TODO(gregoryd): the handle is currently returned on Windows only.
+    child_process_ = nacl_proc_handle;
+    // channel_ conveys the bootstrap channel.
+    channel_ = result_sockets[0];
+    return true;
+  }
 }
-
-bool SelLdrLauncher::Start(int socket_count,
-                           Handle* result_sockets,
-                           const char* url) {
-  UNREFERENCED_PARAMETER(socket_count);
-  UNREFERENCED_PARAMETER(result_sockets);
-  return Start(url);
-}
-}  // namespace
 #endif  // !defined(NACL_STANDALONE)
