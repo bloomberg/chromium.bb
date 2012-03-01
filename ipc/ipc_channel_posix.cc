@@ -479,48 +479,68 @@ bool Channel::ChannelImpl::Connect() {
 }
 
 bool Channel::ChannelImpl::ProcessIncomingMessages() {
-  for (;;) {
-    if (pipe_ == -1)
+  while (true) {
+    int bytes_read = 0;
+    ReadState read_state = ReadData(input_buf_, Channel::kReadBufferSize,
+                                    &bytes_read);
+    if (read_state == READ_FAILED)
       return false;
+    if (read_state == READ_PENDING)
+      return true;
 
-    const char* p = NULL;
-    const char* end = NULL;
-    if (!ReadDataFromPipe(&p, &end))
-      return false;  // Pipe error.
-    if (!p)
-      return true;  // No data waiting.
+    DCHECK(bytes_read > 0);
+    if (!DispatchInputData(input_buf_, bytes_read))
+      return false;
+  }
+}
 
-    // Dispatch all complete messages in the data buffer.
-    while (p < end) {
-      const char* message_tail = Message::FindNext(p, end);
-      if (message_tail) {
-        int len = static_cast<int>(message_tail - p);
-        Message m(p, len);
-        if (!PopulateMessageFileDescriptors(&m))
-          return false;
+bool Channel::ChannelImpl::DispatchInputData(const char* input_data,
+                                             int input_data_len) {
+  const char* p;
+  const char* end;
 
-        DVLOG(2) << "received message on channel @" << this
-                 << " with type " << m.type() << " on fd " << pipe_;
-        if (IsHelloMessage(&m))
-          HandleHelloMessage(m);
-        else
-          listener_->OnMessageReceived(m);
-        p = message_tail;
-      } else {
-        // Last message is partial.
-        break;
-      }
+  // Possibly combine with the overflow buffer to make a larger buffer.
+  if (input_overflow_buf_.empty()) {
+    p = input_data;
+    end = input_data + input_data_len;
+  } else {
+    if (input_overflow_buf_.size() >
+        kMaximumMessageSize - input_data_len) {
+      input_overflow_buf_.clear();
+      LOG(ERROR) << "IPC message is too big";
+      return false;
     }
-    input_overflow_buf_.assign(p, end - p);
+    input_overflow_buf_.append(input_data, input_data_len);
+    p = input_overflow_buf_.data();
+    end = p + input_overflow_buf_.size();
+  }
 
-    // When the input data buffer is empty, the fds should be too. If this is
-    // not the case, we probably have a rogue renderer which is trying to fill
-    // our descriptor table.
-    if (input_overflow_buf_.empty() && !input_fds_.empty()) {
-      // We close these descriptors in Close()
-      return false;
+  // Dispatch all complete messages in the data buffer.
+  while (p < end) {
+    const char* message_tail = Message::FindNext(p, end);
+    if (message_tail) {
+      int len = static_cast<int>(message_tail - p);
+      Message m(p, len);
+      if (!WillDispatchInputMessage(&m))
+        return false;
+
+      if (IsHelloMessage(&m))
+        HandleHelloMessage(m);
+      else
+        listener_->OnMessageReceived(m);
+      p = message_tail;
+    } else {
+      // Last message is partial.
+      break;
     }
   }
+
+  // Save any partial data in the overflow buffer.
+  input_overflow_buf_.assign(p, end - p);
+
+  if (input_overflow_buf_.empty() && !DidEmptyInputBuffers())
+    return false;
+  return true;
 }
 
 bool Channel::ChannelImpl::ProcessOutgoingMessages() {
@@ -937,11 +957,16 @@ bool Channel::ChannelImpl::IsHelloMessage(const Message* m) const {
   return m->routing_id() == MSG_ROUTING_NONE && m->type() == HELLO_MESSAGE_TYPE;
 }
 
-bool Channel::ChannelImpl::ReadDataFromPipe(const char** buffer_begin,
-                                            const char** buffer_end) {
+Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
+    char* buffer,
+    int buffer_len,
+    int* bytes_read) {
+  if (pipe_ == -1)
+    return READ_FAILED;
+
   struct msghdr msg = {0};
 
-  struct iovec iov = {input_buf_, Channel::kReadBufferSize};
+  struct iovec iov = {buffer, buffer_len};
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
@@ -949,62 +974,44 @@ bool Channel::ChannelImpl::ReadDataFromPipe(const char** buffer_begin,
 
   // recvmsg() returns 0 if the connection has closed or EAGAIN if no data
   // is waiting on the pipe.
-  ssize_t bytes_read = 0;
 #if defined(IPC_USES_READWRITE)
   if (fd_pipe_ >= 0) {
-    bytes_read = HANDLE_EINTR(read(pipe_, input_buf_,
-                                   Channel::kReadBufferSize));
+    *bytes_read = HANDLE_EINTR(read(pipe_, buffer, buffer_len));
     msg.msg_controllen = 0;
   } else
 #endif  // IPC_USES_READWRITE
   {
     msg.msg_controllen = sizeof(input_cmsg_buf_);
-    bytes_read = HANDLE_EINTR(recvmsg(pipe_, &msg, MSG_DONTWAIT));
+    *bytes_read = HANDLE_EINTR(recvmsg(pipe_, &msg, MSG_DONTWAIT));
   }
-  if (bytes_read < 0) {
+  if (*bytes_read < 0) {
     if (errno == EAGAIN) {
-      *buffer_begin = *buffer_end = NULL;  // Signal no data was read.
-      return true;
+      return READ_PENDING;
 #if defined(OS_MACOSX)
     } else if (errno == EPERM) {
       // On OSX, reading from a pipe with no listener returns EPERM
       // treat this as a special case to prevent spurious error messages
       // to the console.
-      return false;
+      return READ_FAILED;
 #endif  // OS_MACOSX
     } else if (errno == ECONNRESET || errno == EPIPE) {
-      return false;
+      return READ_FAILED;
     } else {
       PLOG(ERROR) << "pipe error (" << pipe_ << ")";
-      return false;
+      return READ_FAILED;
     }
-  } else if (bytes_read == 0) {
+  } else if (*bytes_read == 0) {
     // The pipe has closed...
-    return false;
+    return READ_FAILED;
   }
-  DCHECK(bytes_read);
+  DCHECK(*bytes_read);
 
   CloseClientFileDescriptor();
 
   // Read any file descriptors from the message.
   if (!ExtractFileDescriptorsFromMsghdr(&msg))
-    return false;
-
-  // Possibly combine with the overflow buffer to make a larger buffer.
-  if (input_overflow_buf_.empty()) {
-    *buffer_begin = input_buf_;
-    *buffer_end = *buffer_begin + bytes_read;
-  } else {
-    if (input_overflow_buf_.size() > (kMaximumMessageSize - bytes_read)) {
-      input_overflow_buf_.clear();
-      LOG(ERROR) << "IPC message is too big";
-      return false;
-    }
-    input_overflow_buf_.append(input_buf_, bytes_read);
-    *buffer_begin = input_overflow_buf_.data();
-    *buffer_end = *buffer_begin + input_overflow_buf_.size();
-  }
-  return true;
+    return READ_FAILED;
+  return READ_SUCCEEDED;
 }
 
 #if defined(IPC_USES_READWRITE)
@@ -1028,7 +1035,7 @@ bool Channel::ChannelImpl::ReadFileDescriptorsFromFDPipe() {
 }
 #endif
 
-bool Channel::ChannelImpl::PopulateMessageFileDescriptors(Message* msg) {
+bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
   uint16 header_fds = msg->header()->num_fds;
   if (!header_fds)
     return true;  // Nothing to do.
@@ -1068,6 +1075,13 @@ bool Channel::ChannelImpl::PopulateMessageFileDescriptors(Message* msg) {
                                              header_fds);
   input_fds_.erase(input_fds_.begin(), input_fds_.begin() + header_fds);
   return true;
+}
+
+bool Channel::ChannelImpl::DidEmptyInputBuffers() {
+  // When the input data buffer is empty, the fds should be too. If this is
+  // not the case, we probably have a rogue renderer which is trying to fill
+  // our descriptor table.
+  return input_fds_.empty();
 }
 
 bool Channel::ChannelImpl::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {

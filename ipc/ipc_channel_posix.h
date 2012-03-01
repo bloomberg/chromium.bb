@@ -70,6 +70,8 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
 #endif  // OS_LINUX
 
  private:
+  enum ReadState { READ_SUCCEEDED, READ_FAILED, READ_PENDING };
+
   bool CreatePipe(const IPC::ChannelHandle& channel_handle);
 
   bool ProcessIncomingMessages();
@@ -81,18 +83,25 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   void QueueHelloMessage();
   bool IsHelloMessage(const Message* m) const;
 
-  // Reads data from the "regular" (non FD) pipe into the input buffers. The
-  // two output params will identify the data received.
+  // Populates the given buffer with data from the pipe.
   //
-  // On success, returns true. If there is no data waiting, the pointers will
-  // both be set to NULL. Otherwise, they'll indicate the data read. This will
-  // be inside the input_buf_ for short messages, and for long messages will
-  // automatically spill into the input_overflow_buf_. When in non-READWRITE
-  // mode this will also load any handles from the message into input_fds_.
+  // Returns the state of the read. On READ_SUCCESS, the number of bytes
+  // read will be placed into |*bytes_read| (which can be less than the
+  // buffer size). On READ_FAILED, the channel will be closed.
   //
-  // On failure, returns false. This means there was some kind of pipe error
-  // and we should not continue.
-  bool ReadDataFromPipe(const char** begin, const char** end);
+  // If the return value is READ_PENDING, it means that there was no data
+  // ready for reading. The implementation is then responsible for either
+  // calling AsyncReadComplete with the number of bytes read into the
+  // buffer, or ProcessIncomingMessages to try the read again (depending
+  // on whether the platform's async I/O is "try again" or "write
+  // asynchronously into your buffer").
+  ReadState ReadData(char* buffer, int buffer_len, int* bytes_read);
+
+  // Takes the given data received from the IPC channel and dispatches any
+  // fully completed messages.
+  //
+  // Returns true on success. False means channel error.
+  bool DispatchInputData(const char* input_data, int input_data_len);
 
 #if defined(IPC_USES_READWRITE)
   // Reads the next message from the fd_pipe_ and appends them to the
@@ -107,7 +116,11 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   //
   // This will read from the input_fds_ and read more handles from the FD
   // pipe if necessary.
-  bool PopulateMessageFileDescriptors(Message* msg);
+  bool WillDispatchInputMessage(Message* msg);
+
+  // Performs post-dispatch checks. Called when all input buffers are empty,
+  // though there could be more data ready to be read from the OS.
+  bool DidEmptyInputBuffers();
 
   // Finds the set of file descriptors in the given message.  On success,
   // appends the descriptors to the input_fds_ member and returns true
@@ -170,7 +183,7 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // Messages to be sent are queued here.
   std::queue<Message*> output_queue_;
 
-  // We read from the pipe into this buffer. Managed by ReadDataFromPipe, do
+  // We read from the pipe into this buffer. Managed by DispatchInputData, do
   // not access directly outside that function.
   char input_buf_[Channel::kReadBufferSize];
 
