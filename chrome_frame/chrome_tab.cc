@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,10 +22,12 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/chrome_active_document.h"
@@ -833,6 +835,12 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
         logging::DELETE_OLD_LOG_FILE,
         logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
+    // Log the same items as Chrome.
+    logging::SetLogItems(true,  // enable_process_id
+                         true,  // enable_thread_id
+                         false, // enable_timestamp
+                         true); // enable_tickcount
+
     DllRedirector* dll_redirector = DllRedirector::GetInstance();
     DCHECK(dll_redirector);
 
@@ -845,8 +853,11 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
           << "Found CF module with no DllGetClassObject export.";
     }
 
-    // Enable ETW logging.
-    logging::LogEventProvider::Initialize(kChromeFrameProvider);
+    // Enable trace control and transport through event tracing for Windows.
+    if (::GetEnvironmentVariable(ASCIIToWide(env_vars::kEtwLogging).c_str(),
+                                 NULL, 0)) {
+      logging::LogEventProvider::Initialize(kChromeFrameProvider);
+    }
   } else if (reason == DLL_PROCESS_DETACH) {
     DllRedirector* dll_redirector = DllRedirector::GetInstance();
     DCHECK(dll_redirector);
