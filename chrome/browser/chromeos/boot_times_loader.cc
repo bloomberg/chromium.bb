@@ -293,11 +293,16 @@ void BootTimesLoader::WriteTimes(
     const std::string base_name,
     const std::string uma_name,
     const std::string uma_prefix,
-    const std::vector<TimeMarker> login_times) {
+    std::vector<TimeMarker> login_times) {
   const int kMinTimeMillis = 1;
   const int kMaxTimeMillis = 30000;
   const int kNumBuckets = 100;
   const FilePath log_path(kLoginLogPath);
+
+  // Need to sort by time since the entries may have been pushed onto the
+  // vector (on the UI thread) in a different order from which they were
+  // created (potentially on other threads).
+  std::sort(login_times.begin(), login_times.end());
 
   base::Time first = login_times.front().time();
   base::Time last = login_times.back().time();
@@ -345,6 +350,7 @@ void BootTimesLoader::WriteTimes(
 }
 
 void BootTimesLoader::LoginDone() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AddLoginTimeMarker("LoginDone", true);
   RecordCurrentStats(kChromeFirstRender);
   registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
@@ -364,6 +370,12 @@ void BootTimesLoader::LoginDone() {
 }
 
 void BootTimesLoader::WriteLogoutTimes() {
+  // Either we're on the browser thread, or (more likely) Chrome is in the
+  // process of shutting down and we're on the main thread but the message loop
+  // has already been terminated.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+
   WriteTimes(kLogoutTimes,
              kUmaLogout,
              kUmaLogoutPrefix,
@@ -399,6 +411,7 @@ void BootTimesLoader::RecordChromeMainStats() {
 }
 
 void BootTimesLoader::RecordLoginAttempted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   login_time_markers_.clear();
   AddLoginTimeMarker("LoginStarted", false);
   if (!have_registered_) {
@@ -418,12 +431,34 @@ void BootTimesLoader::RecordLoginAttempted() {
 
 void BootTimesLoader::AddLoginTimeMarker(
     const std::string& marker_name, bool send_to_uma) {
-  login_time_markers_.push_back(TimeMarker(marker_name, send_to_uma));
+  AddMarker(&login_time_markers_, TimeMarker(marker_name, send_to_uma));
 }
 
 void BootTimesLoader::AddLogoutTimeMarker(
     const std::string& marker_name, bool send_to_uma) {
-  logout_time_markers_.push_back(TimeMarker(marker_name, send_to_uma));
+  AddMarker(&logout_time_markers_, TimeMarker(marker_name, send_to_uma));
+}
+
+// static
+void BootTimesLoader::AddMarker(std::vector<TimeMarker>* vector,
+                                TimeMarker marker)
+{
+  // The marker vectors can only be safely manipulated on the main thread.
+  // If we're late in the process of shutting down (eg. as can be the case at
+  // logout), then we have to assume we're on the main thread already.
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+      !BrowserThread::IsMessageLoopValid(BrowserThread::UI)) {
+    vector->push_back(marker);
+  } else {
+    // Add the marker on the UI thread.
+    // Note that it's safe to use an unretained pointer to the vector because
+    // BootTimesLoader's lifetime exceeds that of the UI thread message loop.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&BootTimesLoader::AddMarker,
+                   base::Unretained(vector),
+                   marker));
+  }
 }
 
 void BootTimesLoader::Observe(

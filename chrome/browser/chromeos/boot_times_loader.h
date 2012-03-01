@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,6 +140,11 @@ class BootTimesLoader
     base::Time time() const { return time_; }
     bool send_to_uma() const { return send_to_uma_; }
 
+    // comparitor for sorting
+    bool operator<(const TimeMarker& other) const {
+      return time_ < other.time_;
+    }
+
    private:
     friend class std::vector<TimeMarker>;
     std::string name_;
@@ -159,7 +164,9 @@ class BootTimesLoader
   static void WriteTimes(const std::string base_name,
                          const std::string uma_name,
                          const std::string uma_prefix,
-                         const std::vector<TimeMarker> login_times);
+                         std::vector<TimeMarker> login_times);
+  static void AddMarker(std::vector<TimeMarker>* vector, TimeMarker marker);
+
   void LoginDone();
 
   // Used to hold the stats at main().
