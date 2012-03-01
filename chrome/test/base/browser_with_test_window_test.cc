@@ -48,11 +48,11 @@ void BrowserWithTestWindowTest::SetUp() {
   window_.reset(new TestBrowserWindow(browser()));
   browser_->SetWindowForTesting(window_.get());
 #if defined(USE_AURA)
-  root_window_.reset(new aura::RootWindow);
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
   test_activation_client_.reset(
-      new aura::test::TestActivationClient(root_window_.get()));
+      new aura::test::TestActivationClient(root_window));
   test_stacking_client_.reset(
-      new aura::test::TestStackingClient(root_window_.get()));
+      new aura::test::TestStackingClient(root_window));
 #endif
 }
 
@@ -61,7 +61,7 @@ void BrowserWithTestWindowTest::TearDown() {
 #if defined(USE_AURA)
   test_activation_client_.reset();
   test_stacking_client_.reset();
-  root_window_.reset();
+  aura::RootWindow::DeleteInstance();
 #endif
 }
 

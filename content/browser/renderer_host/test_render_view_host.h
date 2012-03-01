@@ -19,7 +19,6 @@
 
 #if defined(USE_AURA)
 namespace aura {
-class RootWindow;
 namespace test {
 class TestStackingClient;
 }
@@ -375,7 +374,6 @@ class RenderViewHostTestHarness : public testing::Test {
  private:
   scoped_ptr<TestTabContents> contents_;
 #if defined(USE_AURA)
-  scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
 #endif
 

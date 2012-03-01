@@ -305,6 +305,8 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 
+  MessageLoopForUI::current()->AddDestructionObserver(this);
+
   // Initialize invisible cursor.
   char nodata[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
   XColor black;
@@ -326,6 +328,8 @@ RootWindowHostLinux::~RootWindowHostLinux() {
   ui::GetXCursor(ui::kCursorClearXCursorCache);
 
   XFreeCursor(xdisplay_, invisible_cursor_);
+
+  MessageLoopForUI::current()->RemoveDestructionObserver(this);
 }
 
 base::MessagePumpDispatcher::DispatchStatus RootWindowHostLinux::Dispatch(
@@ -618,6 +622,10 @@ void RootWindowHostLinux::PostNativeEvent(
       break;
   }
   XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
+}
+
+void RootWindowHostLinux::WillDestroyCurrentMessageLoop() {
+  aura::RootWindow::DeleteInstance();
 }
 
 bool RootWindowHostLinux::IsWindowManagerPresent() {

@@ -270,7 +270,11 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
 // Shell, public:
 
 Shell::Shell(ShellDelegate* delegate)
-    : root_window_(new aura::RootWindow),
+    : root_filter_(new internal::RootWindowEventFilter),
+#if !defined(OS_MACOSX)
+      nested_dispatcher_controller_(new NestedDispatcherController),
+      accelerator_controller_(new AcceleratorController),
+#endif
       delegate_(delegate),
       audio_controller_(NULL),
       brightness_controller_(NULL),
@@ -279,6 +283,8 @@ Shell::Shell(ShellDelegate* delegate)
       desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
       status_widget_(NULL) {
+  // Pass ownership of the filter to the root window.
+  GetRootWindow()->SetEventFilter(root_filter_);
 }
 
 Shell::~Shell() {
@@ -314,10 +320,7 @@ Shell::~Shell() {
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
-  // Alphabetical.
-  activation_controller_.reset();
   drag_drop_controller_.reset();
-  shadow_controller_.reset();
   window_cycle_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
@@ -353,18 +356,10 @@ void Shell::DeleteInstance() {
 
 // static
 aura::RootWindow* Shell::GetRootWindow() {
-  return GetInstance()->root_window_.get();
+  return aura::RootWindow::GetInstance();
 }
 
 void Shell::Init() {
-  root_filter_ = new internal::RootWindowEventFilter;
-#if !defined(OS_MACOSX)
-  nested_dispatcher_controller_.reset(new NestedDispatcherController);
-  accelerator_controller_.reset(new AcceleratorController);
-#endif
-  // Pass ownership of the filter to the root window.
-  GetRootWindow()->SetEventFilter(root_filter_);
-
   DCHECK(!GetRootWindowEventFilterCount());
 
   // PartialScreenshotEventFilter must be the first one to capture key

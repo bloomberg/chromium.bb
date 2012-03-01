@@ -68,7 +68,7 @@ ViewEventTestBase::ViewEventTestBase()
 void ViewEventTestBase::Done() {
   MessageLoop::current()->Quit();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // We need to post a message to tickle the Dispatcher getting called and
   // exiting out of the nested loop. Without this the quit never runs.
   PostMessage(window_->GetNativeWindow(), WM_USER, 0, 0);
@@ -87,6 +87,7 @@ void ViewEventTestBase::SetUp() {
 #endif
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_AURA)
+  ash::Shell::GetRootWindow();
   ash::Shell::CreateInstance(NULL);
 #endif
   window_ = views::Widget::CreateWindow(this);
@@ -94,7 +95,7 @@ void ViewEventTestBase::SetUp() {
 
 void ViewEventTestBase::TearDown() {
   if (window_) {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     DestroyWindow(window_->GetNativeWindow());
 #else
     window_->Close();
@@ -104,6 +105,7 @@ void ViewEventTestBase::TearDown() {
   }
 #if defined(USE_AURA)
   ash::Shell::DeleteInstance();
+  aura::RootWindow::DeleteInstance();
   aura::Env::DeleteInstance();
 #endif
   ui::CompositorTestSupport::Terminate();
@@ -143,7 +145,7 @@ void ViewEventTestBase::StartMessageLoopAndRunTest() {
   window_->Show();
   // Make sure the window is the foreground window, otherwise none of the
   // mouse events are going to be targeted correctly.
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   SetForegroundWindow(window_->GetNativeWindow());
 #endif
 

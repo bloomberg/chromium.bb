@@ -77,5 +77,6 @@ void ChromeBrowserMainExtraPartsAura::PostProfileInit() {
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
   ash::Shell::DeleteInstance();
+  aura::RootWindow::DeleteInstance();
   aura::Env::DeleteInstance();
 }

@@ -400,9 +400,8 @@ void RenderViewHostTestHarness::Reload() {
 
 void RenderViewHostTestHarness::SetUp() {
 #if defined(USE_AURA)
-  root_window_.reset(new aura::RootWindow);
-  test_stacking_client_.reset(
-      new aura::test::TestStackingClient(root_window_.get()));
+  aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+  test_stacking_client_.reset(new aura::test::TestStackingClient(root_window));
 #endif
   SetContents(CreateTestTabContents());
 }
@@ -411,7 +410,6 @@ void RenderViewHostTestHarness::TearDown() {
   SetContents(NULL);
 #if defined(USE_AURA)
   test_stacking_client_.reset();
-  root_window_.reset();
 #endif
 
   // Make sure that we flush any messages related to TabContents destruction

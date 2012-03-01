@@ -268,6 +268,7 @@ int main(int argc, char** argv) {
 
   ash::Shell::DeleteInstance();
 
+  aura::RootWindow::DeleteInstance();
   aura::Env::DeleteInstance();
 
   ui::CompositorTestSupport::Terminate();
