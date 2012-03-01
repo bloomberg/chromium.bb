@@ -51,7 +51,7 @@ void PeerConnectionHandler::SetVideoRenderer(
 void PeerConnectionHandler::initialize(
     const WebKit::WebString& server_configuration,
     const WebKit::WebSecurityOrigin& security_origin) {
-  native_peer_connection_ = dependency_factory_->CreatePeerConnection(
+  native_peer_connection_ = dependency_factory_->CreateRoapPeerConnection(
       UTF16ToUTF8(server_configuration),
       this);
   CHECK(native_peer_connection_);
@@ -150,6 +150,17 @@ void PeerConnectionHandler::OnRemoveStream(
   } else {
     OnRemoveStreamCallback(stream);
   }
+}
+
+void PeerConnectionHandler::OnIceCandidate(
+    const webrtc::IceCandidateInterface* candidate) {
+  // TODO(grunell): Implement.
+  NOTIMPLEMENTED();
+}
+
+void PeerConnectionHandler::OnIceComplete() {
+  // TODO(grunell): Implement.
+  NOTIMPLEMENTED();
 }
 
 void PeerConnectionHandler::AddStreams(

@@ -43,7 +43,7 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
   VideoRendererWrapperInterface* renderer_;
 };
 
-} //  namespace webrtc
+}  //  namespace webrtc
 
 // A mock factory for creating different objects for MediaStreamImpl.
 class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
@@ -61,6 +61,10 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual bool PeerConnectionFactoryCreated() OVERRIDE;
   virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(
+          const std::string& config,
+          webrtc::PeerConnectionObserver* observer) OVERRIDE;
+  virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
+      CreateRoapPeerConnection(
           const std::string& config,
           webrtc::PeerConnectionObserver* observer) OVERRIDE;
   virtual talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>

@@ -58,7 +58,10 @@ void IpcNetworkManager::OnNetworkListChanged(
             it->name, it->name, talk_base::IPAddress(address)));
   }
 
-  MergeNetworkList(networks);
+  bool changed = false;
+  MergeNetworkList(networks, &changed);
+  if (changed)
+    SignalNetworksChanged();
 }
 
 void IpcNetworkManager::SendNetworksChangedSignal() {

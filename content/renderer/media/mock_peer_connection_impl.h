@@ -32,6 +32,25 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   virtual void Close() OVERRIDE;
   virtual ReadyState ready_state() OVERRIDE;
   virtual SdpState sdp_state() OVERRIDE;
+  virtual void StartIce(IceOptions options) OVERRIDE;
+
+  virtual webrtc::SessionDescriptionInterface* CreateOffer(
+      const webrtc::MediaHints& hints) OVERRIDE;
+  virtual webrtc::SessionDescriptionInterface* CreateAnswer(
+      const webrtc::MediaHints& hints,
+      const webrtc::SessionDescriptionInterface* offer) OVERRIDE;
+  virtual bool SetLocalDescription(
+      Action action,
+      webrtc::SessionDescriptionInterface* desc) OVERRIDE;
+  virtual bool SetRemoteDescription(
+      Action action,
+      webrtc::SessionDescriptionInterface* desc) OVERRIDE;
+  virtual bool ProcessIceMessage(
+      const webrtc::IceCandidateInterface* ice_candidate) OVERRIDE;
+  virtual const webrtc::SessionDescriptionInterface* local_description()
+      const OVERRIDE;
+  virtual const webrtc::SessionDescriptionInterface* remote_description()
+      const OVERRIDE;
 
   void AddRemoteStream(MediaStreamInterface* stream);
   void ClearStreamChangesCommitted() { stream_changes_committed_ = false; }

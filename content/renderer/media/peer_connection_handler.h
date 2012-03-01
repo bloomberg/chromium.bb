@@ -64,6 +64,9 @@ class CONTENT_EXPORT PeerConnectionHandler
   virtual void OnStateChange(StateType state_changed) OVERRIDE;
   virtual void OnAddStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
   virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) OVERRIDE;
+  virtual void OnIceCandidate(
+      const webrtc::IceCandidateInterface* candidate) OVERRIDE;
+  virtual void OnIceComplete() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionHandlerTest, Basic);

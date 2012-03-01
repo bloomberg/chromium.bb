@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
-#include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
+#include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/base/scoped_ref_ptr.h"
 
 namespace webrtc {
@@ -14,7 +14,7 @@ template <class TrackType>
 class MockMediaStreamTrackList
     : public MediaStreamTrackListInterface<TrackType> {
  public:
-  virtual size_t count() OVERRIDE {
+  virtual size_t count() const OVERRIDE {
     return tracks_.size();
   }
   virtual TrackType* at(size_t index) OVERRIDE {
@@ -56,7 +56,7 @@ class MockLocalMediaStream : public LocalMediaStreamInterface {
   virtual VideoTracks* video_tracks() OVERRIDE {
     return video_tracks_;
   }
-  virtual ReadyState ready_state() OVERRIDE {
+  virtual ReadyState ready_state() const OVERRIDE {
     NOTIMPLEMENTED();
     return kInitializing;
   }
@@ -151,6 +151,14 @@ bool MockMediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
 
 talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
 MockMediaStreamDependencyFactory::CreatePeerConnection(
+    const std::string& config,
+    webrtc::PeerConnectionObserver* observer) {
+  DCHECK(mock_pc_factory_created_);
+  return new talk_base::RefCountedObject<webrtc::MockPeerConnectionImpl>();
+}
+
+talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
+MockMediaStreamDependencyFactory::CreateRoapPeerConnection(
     const std::string& config,
     webrtc::PeerConnectionObserver* observer) {
   DCHECK(mock_pc_factory_created_);

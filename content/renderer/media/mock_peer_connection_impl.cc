@@ -91,6 +91,57 @@ MockPeerConnectionImpl::SdpState MockPeerConnectionImpl::sdp_state() {
   return kSdpNew;
 }
 
+void MockPeerConnectionImpl::StartIce(IceOptions options) {
+  NOTIMPLEMENTED();
+}
+
+webrtc::SessionDescriptionInterface* MockPeerConnectionImpl::CreateOffer(
+    const webrtc::MediaHints& hints) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+webrtc::SessionDescriptionInterface* MockPeerConnectionImpl::CreateAnswer(
+    const webrtc::MediaHints& hints,
+    const webrtc::SessionDescriptionInterface* offer) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+bool MockPeerConnectionImpl::SetLocalDescription(
+    Action action,
+    webrtc::SessionDescriptionInterface* desc) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool MockPeerConnectionImpl::SetRemoteDescription(
+    Action action,
+    webrtc::SessionDescriptionInterface* desc) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool MockPeerConnectionImpl::ProcessIceMessage(
+    const webrtc::IceCandidateInterface* ice_candidate) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+const webrtc::SessionDescriptionInterface*
+MockPeerConnectionImpl::local_description()
+    const {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+const webrtc::SessionDescriptionInterface*
+MockPeerConnectionImpl::remote_description()
+    const {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 void MockPeerConnectionImpl::AddRemoteStream(MediaStreamInterface* stream) {
   remote_streams_->AddStream(stream);
 }

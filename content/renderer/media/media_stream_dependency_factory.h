@@ -56,6 +56,9 @@ class CONTENT_EXPORT MediaStreamDependencyFactory {
   virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
       CreatePeerConnection(const std::string& config,
                            webrtc::PeerConnectionObserver* observer);
+  virtual talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
+      CreateRoapPeerConnection(const std::string& config,
+                               webrtc::PeerConnectionObserver* observer);
 
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
