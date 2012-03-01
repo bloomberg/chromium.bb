@@ -2483,11 +2483,13 @@ void Browser::Shutdown() {
 }
 
 void Browser::OpenAdvancedOptionsDialog() {
+  // TODO(csilv): The main purpose of this method is to expose the date & time
+  // settings from the clock. Simply showing the options tab not quite enough.
   content::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"));
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage))
     ShowOptionsTab(chrome::kSystemOptionsSubPage);
   else
-    ShowOptionsTab(chrome::kAdvancedOptionsSubPage);
+    ShowOptionsTab("");
 }
 
 void Browser::OpenInternetOptionsDialog() {

@@ -55,7 +55,16 @@ body.uber-frame header > * {
 }
 
 body.uber-frame header > h1 {
-  border-bottom: 1px solid #f7f7f7;
+  border-bottom: 1px solid #eee;
   margin: 0;
   padding: 21px 0 13px;
+}
+
+body.uber-frame footer {
+  border-top: 1px solid #eee;
+  margin-top: 16px;
+  /* min-width and max-width should match the header */
+  min-width: 600px;
+  max-width: 638px;
+  padding: 8px 0;
 }

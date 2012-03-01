@@ -4150,8 +4150,6 @@
         'browser/ui/webui/options/stop_syncing_handler.h',
         'browser/ui/webui/options/web_intents_settings_handler.cc',
         'browser/ui/webui/options/web_intents_settings_handler.h',
-        'browser/ui/webui/options2/advanced_options_handler2.cc',
-        'browser/ui/webui/options2/advanced_options_handler2.h',
         'browser/ui/webui/options2/advanced_options_utils2.h',
         'browser/ui/webui/options2/advanced_options_utils2_mac.mm',
         'browser/ui/webui/options2/advanced_options_utils2_win.cc',

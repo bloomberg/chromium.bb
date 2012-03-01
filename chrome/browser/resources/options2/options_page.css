@@ -107,8 +107,7 @@ input[type='text']:disabled {
   -webkit-box-flex: 1;
 }
 
-.frozen,
-.subpage-sheet-container.frozen {
+.frozen {
   position: fixed;
 }
 
@@ -170,73 +169,11 @@ html[touch-optimized] body {
   padding-bottom: 20px;
 }
 
-#subpage-backdrop {
-  background: black;
-  bottom: 0;
-  cursor: pointer;
-  left: 0;
-  opacity: 0.3;
-  position: fixed;
-  right: 0;
-  top: 0;
-}
-
-#subpage-backdrop:hover {
-  background: #424242;
-}
-
-.subpage-sheet-container {
-  -webkit-transition: 250ms opacity, 100ms padding-left, 100ms padding-right;
-  box-sizing: border-box;
-  left: 0;
-  min-height: 100%;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
 /* Omit top padding (currently only on #settings) whenever the search page is
  * showing.
  */
 #searchPage:not([hidden]) + #settings {
   padding-top: 0;
-}
-
-#subpage-sheet-container-1 {
-  -webkit-padding-start: 52px;
-  z-index: 5;
-}
-
-#subpage-sheet-container-1 header {
-  left: 72px;
-  right: 72px;
-}
-
-.subpage-sheet {
-  -webkit-margin-start: -155px;
-  background-color: white;
-  box-shadow: #666 0 2px 5px;
-  box-sizing: border-box;
-  min-height: 100%;
-  min-width: 651px;
-}
-
-/* Special shadow for only first subpage sheet. */
-#subpage-sheet-1 {
-  box-shadow: 0 0 17px rgba(0, 0, 0, 0.3), 0 0 57px rgba(0, 0, 0, 0.3);
-}
-
-.subpage-sheet-contents {
-  box-sizing: border-box;
-  max-width: 900px;
-  min-height: 100%;
-  min-width: 650px;
-  padding: 0 20px;
-  width: 95%;
-}
-
-.subpage-sheet-contents .page {
-  z-index: 1;
 }
 
 .managed-prefs-banner {

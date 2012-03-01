@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 var AddLanguageOverlay = options.AddLanguageOverlay;
-var AdvancedOptions = options.AdvancedOptions;
 var AlertOverlay = options.AlertOverlay;
 var AutofillEditAddressOverlay = options.AutofillEditAddressOverlay;
 var AutofillEditCreditCardOverlay = options.AutofillEditCreditCardOverlay;
@@ -66,11 +65,6 @@ function load() {
   OptionsPage.register(SearchPage.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
 
-  // BrowserOptions sub-page.
-  OptionsPage.registerSubPage(AdvancedOptions.getInstance(),
-                              BrowserOptions.getInstance(),
-                              [$('advanced-settings')]);
-
   // Overlays.
   OptionsPage.registerOverlay(AddLanguageOverlay.getInstance(),
                               LanguageOptions.getInstance());
@@ -80,13 +74,13 @@ function load() {
   OptionsPage.registerOverlay(AutofillEditCreditCardOverlay.getInstance(),
                               AutofillOptions.getInstance());
   OptionsPage.registerOverlay(AutofillOptions.getInstance(),
-                              AdvancedOptions.getInstance(),
+                              BrowserOptions.getInstance(),
                               [$('autofill-settings')]);
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
-                              AdvancedOptions.getInstance(),
+                              BrowserOptions.getInstance(),
                               [$('privacyClearDataButton')]);
   OptionsPage.registerOverlay(ContentSettings.getInstance(),
-                              AdvancedOptions.getInstance(),
+                              BrowserOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
   OptionsPage.registerOverlay(ContentSettingsExceptionsArea.getInstance(),
                               ContentSettings.getInstance());
@@ -95,7 +89,7 @@ function load() {
                               [$('privacyContentSettingsButton'),
                                $('show-cookies-button')]);
   OptionsPage.registerOverlay(FontSettings.getInstance(),
-                              AdvancedOptions.getInstance(),
+                              BrowserOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);
   if (HandlerOptions && $('manage-handlers-button')) {
     OptionsPage.registerOverlay(HandlerOptions.getInstance(),
@@ -110,12 +104,12 @@ function load() {
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(LanguageOptions.getInstance(),
-                              AdvancedOptions.getInstance(),
+                              BrowserOptions.getInstance(),
                               [$('language-button')]);
   OptionsPage.registerOverlay(ManageProfileOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(PasswordManager.getInstance(),
-                              AdvancedOptions.getInstance(),
+                              BrowserOptions.getInstance(),
                               [$('manage-passwords')]);
   OptionsPage.registerOverlay(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
@@ -131,10 +125,10 @@ function load() {
                                 BrowserOptions.getInstance(),
                                 [$('manage-accounts-button')]);
     OptionsPage.registerOverlay(BluetoothOptions.getInstance(),
-                                AdvancedOptions.getInstance(),
+                                BrowserOptions.getInstance(),
                                 [$('bluetooth-add-device')]);
     OptionsPage.registerOverlay(BluetoothPairing.getInstance(),
-                                AdvancedOptions.getInstance());
+                                BrowserOptions.getInstance());
     OptionsPage.registerOverlay(ChangePictureOptions.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('account-picture')]);
@@ -187,7 +181,7 @@ function load() {
     OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance(),
                                 CertificateManager.getInstance());
     OptionsPage.registerOverlay(CertificateManager.getInstance(),
-                                AdvancedOptions.getInstance(),
+                                BrowserOptions.getInstance(),
                                 [$('certificatesManageButton')]);
     OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance(),
                                 CertificateManager.getInstance());

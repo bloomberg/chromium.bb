@@ -24,6 +24,7 @@ OptionsWebUITest.prototype = {
   preLoad: function() {
     this.makeAndRegisterMockHandler(
         ['coreOptionsInitialize',
+         'defaultZoomFactorAction',
          'fetchPrefs',
          'observePrefs',
          'setBooleanPref',
@@ -71,15 +72,9 @@ TEST_F('OptionsWebUITest', 'MAYBE_testSetBooleanPrefTriggers', function() {
 
 // Not meant to run on ChromeOS at this time.
 // Not finishing in windows. http://crbug.com/81723
-GEN('#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)');
-GEN('#define MAYBE_testRefreshStaysOnCurrentPage \\');
-GEN('    DISABLED_testRefreshStaysOnCurrentPage');
-GEN('#else');
-GEN('#define MAYBE_testRefreshStaysOnCurrentPage ' +
-    'testRefreshStaysOnCurrentPage');
-GEN('#endif');
-
-TEST_F('OptionsWebUITest', 'MAYBE_testRefreshStaysOnCurrentPage', function() {
+// TODO(csilv): Redo logic for uber page.
+TEST_F('OptionsWebUITest', 'DISABLED_testRefreshStaysOnCurrentPage',
+    function() {
   var item = $('advancedPageNav');
   item.onclick();
   window.location.reload();
@@ -90,4 +85,26 @@ TEST_F('OptionsWebUITest', 'MAYBE_testRefreshStaysOnCurrentPage', function() {
   assertEquals("chrome://settings/advanced", document.location.href);
   assertEquals(expectedTitle, actualTitle);
   assertEquals(pageInstance, topPage);
+});
+
+/**
+ * Test the default zoom factor select element.
+ */
+TEST_F('OptionsWebUITest', 'testDefaultZoomFactor', function() {
+  // The expected minimum length of the |defaultZoomFactor| element.
+  var defaultZoomFactorMinimumLength = 10;
+  // Verify that the zoom factor element exists.
+  var defaultZoomFactor = $('defaultZoomFactor');
+  assertNotEquals(defaultZoomFactor, null);
+
+  // Verify that the zoom factor element has a reasonable number of choices.
+  expectGE(defaultZoomFactor.options.length, defaultZoomFactorMinimumLength);
+
+  // Simulate a change event, selecting the highest zoom value.  Verify that
+  // the javascript handler was invoked once.
+  this.mockHandler.expects(once()).defaultZoomFactorAction(NOT_NULL).
+      will(callFunction(function() { }));
+  defaultZoomFactor.selectedIndex = defaultZoomFactor.options.length - 1;
+  var event = { target: defaultZoomFactor };
+  if (defaultZoomFactor.onchange) defaultZoomFactor.onchange(event);
 });

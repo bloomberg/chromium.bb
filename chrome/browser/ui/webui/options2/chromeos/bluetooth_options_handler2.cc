@@ -136,13 +136,13 @@ void BluetoothOptionsHandler::Initialize() {
   }
 
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.showBluetoothSettings");
+      "options.BrowserOptions.showBluetoothSettings");
 
   // TODO(kevers): Determine whether bluetooth adapter is powered.
   bool bluetooth_on = false;
   base::FundamentalValue checked(bluetooth_on);
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.setBluetoothState", checked);
+      "options.BrowserOptions.setBluetoothState", checked);
 
   chromeos::BluetoothManager* bluetooth_manager =
       chromeos::BluetoothManager::GetInstance();
@@ -180,7 +180,7 @@ void BluetoothOptionsHandler::EnableChangeCallback(
   // TODO(kevers): Call Bluetooth API to enable or disable.
   base::FundamentalValue checked(bluetooth_enabled);
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.setBluetoothState", checked);
+      "options.BrowserOptions.setBluetoothState", checked);
 }
 
 void BluetoothOptionsHandler::FindDevicesCallback(
@@ -267,7 +267,7 @@ void BluetoothOptionsHandler::SendDeviceNotification(
     js_properties.MergeDictionary(params);
   }
   web_ui()->CallJavascriptFunction(
-      "options.AdvancedOptions.addBluetoothDevice",
+      "options.BrowserOptions.addBluetoothDevice",
       js_properties);
 }
 

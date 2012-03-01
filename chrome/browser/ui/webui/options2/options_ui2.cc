@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/options_sync_setup_handler.h"
 #include "chrome/browser/ui/webui/options/stop_syncing_handler.h"
-#include "chrome/browser/ui/webui/options2/advanced_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/autofill_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/browser_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/clear_browser_data_handler2.h"
@@ -172,7 +171,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   core_handler->set_handlers_host(this);
   AddOptionsPageUIHandler(localized_strings, core_handler);
 
-  AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new AutofillOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());

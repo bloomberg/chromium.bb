@@ -215,6 +215,15 @@ cr.define('options', function() {
         var hash = location.hash;
         if (hash)
           this.searchField.value = unescape(hash.slice(1));
+
+        // Move 'advanced' sections into the main settings page to allow
+        // searching.
+        if (!this.advancedSections_) {
+          this.advancedSections_ =
+              $('advanced-settings-container').querySelectorAll('section');
+          for (var i = 0, section; section = this.advancedSections_[i]; i++)
+            $('settings').appendChild(section);
+        }
       } else {
         // Just wipe out any active search text since it's no longer relevant.
         this.searchField.value = '';
@@ -256,6 +265,13 @@ cr.define('options', function() {
         // After hiding all page content, remove any search results.
         this.unhighlightMatches_();
         this.removeSearchBubbles_();
+
+        // Move 'advanced' sections back into their original container.
+        if (this.advancedSections_) {
+          for (var i = 0, section; section = this.advancedSections_[i]; i++)
+            $('advanced-settings-container').appendChild(section);
+          this.advancedSections_ = null;
+        }
       }
     },
 
@@ -271,12 +287,6 @@ cr.define('options', function() {
 
       // Cleanup the search query string.
       text = SearchPage.canonicalizeQuery(text);
-
-      // Notify listeners about the new search query, some pages may wish to
-      // show/hide elements based on the query.
-      var event = new cr.Event('searchChanged');
-      event.searchText = text;
-      this.dispatchEvent(event);
 
       // Toggle the search page if necessary.
       if (text.length) {

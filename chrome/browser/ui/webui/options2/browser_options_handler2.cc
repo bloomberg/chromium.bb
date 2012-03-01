@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options2/browser_options_handler2.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -19,13 +21,19 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -33,12 +41,14 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_constants.h"
@@ -49,19 +59,30 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
+#include "content/public/common/page_zoom.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
+#include "chrome/browser/ui/webui/options2/advanced_options_utils2.h"
+#endif
+
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
@@ -69,6 +90,7 @@
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -81,6 +103,9 @@
 #endif  // defined(TOOLKIT_GTK)
 
 using content::BrowserThread;
+using content::DownloadManager;
+using content::OpenURLParams;
+using content::Referrer;
 using content::UserMetricsAction;
 
 namespace options2 {
@@ -92,6 +117,18 @@ BrowserOptionsHandler::BrowserOptionsHandler()
   multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
 #if !defined(OS_MACOSX)
   default_browser_worker_ = new ShellIntegration::DefaultBrowserWorker(this);
+#endif
+#if(!defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN))
+  // On Windows, we need the PDF plugin which is only guaranteed to exist on
+  // Google Chrome builds. Use a command-line switch for Windows non-Google
+  //  Chrome builds.
+  cloud_print_connector_ui_enabled_ =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCloudPrintProxy);
+#elif(!defined(OS_CHROMEOS))
+  // Always enabled for Mac, Linux and Google Chrome Windows builds.
+  // Never enabled for Chrome OS, we don't even need to indicate it.
+  cloud_print_connector_ui_enabled_ = true;
 #endif
 }
 
@@ -105,6 +142,10 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
     default_browser_worker_->ObserverDestroyed();
   if (template_url_service_)
     template_url_service_->RemoveObserver(this);
+  // There may be pending file dialogs, we need to tell them that we've gone
+  // away so they don't try and call back to us.
+  if (select_folder_dialog_.get())
+    select_folder_dialog_->ListenerDestroyed();
 }
 
 void BrowserOptionsHandler::GetLocalizedValues(
@@ -112,12 +153,50 @@ void BrowserOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "advancedSettings", IDS_OPTIONS_ADVANCED_BUTTON_TITLE },
+    { "advancedSectionTitleCloudPrint", IDS_GOOGLE_CLOUD_PRINT },
+    { "advancedSectionTitleContent",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT },
+    { "advancedSectionTitleLanguages",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_LANGUAGES },
+    { "advancedSectionTitleNetwork",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK },
+    { "advancedSectionTitlePrivacy",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY },
+    { "advancedSectionTitleSecurity",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY },
+    { "autofillEnabled", IDS_OPTIONS_AUTOFILL_ENABLE },
     { "autologinEnabled", IDS_OPTIONS_PASSWORDS_AUTOLOGIN },
+    { "autoOpenFileTypesInfo", IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY },
+    { "autoOpenFileTypesResetToDefault",
+      IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT },
     { "browsingData", IDS_OPTIONS_BROWSING_DATA_GROUP_NAME },  // needed?
     { "changeHomePage", IDS_OPTIONS_CHANGE_HOME_PAGE },
+    { "certificatesManageButton", IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON },
     { "customizeSync", IDS_OPTIONS2_CUSTOMIZE_SYNC_BUTTON_LABEL },
+    { "defaultFontSizeLabel", IDS_OPTIONS_DEFAULT_FONT_SIZE_LABEL },
     { "defaultSearchManageEngines", IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES },
+    { "defaultZoomFactorLabel", IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL },
+    { "disableWebServices", IDS_OPTIONS_DISABLE_WEB_SERVICES },
+    { "downloadLocationAskForSaveLocation",
+      IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION },
+    { "downloadLocationBrowseTitle",
+      IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE },
+    { "downloadLocationBrowseWindowTitle",
+      IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_WINDOW_TITLE },
+    { "downloadLocationChangeButton",
+      IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON },
+    { "downloadLocationGroupName", IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME },
+    { "enableLogging", IDS_OPTIONS_ENABLE_LOGGING },
+    { "fontSettingsCustomizeFontsButton",
+      IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON },
+    { "fontSettingsInfo", IDS_OPTIONS_FONTSETTINGS_INFO },
+    { "fontSizeLabelCustom", IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM },
+    { "fontSizeLabelLarge", IDS_OPTIONS_FONT_SIZE_LABEL_LARGE },
+    { "fontSizeLabelMedium", IDS_OPTIONS_FONT_SIZE_LABEL_MEDIUM },
+    { "fontSizeLabelSmall", IDS_OPTIONS_FONT_SIZE_LABEL_SMALL },
+    { "fontSizeLabelVeryLarge", IDS_OPTIONS_FONT_SIZE_LABEL_VERY_LARGE },
+    { "fontSizeLabelVerySmall", IDS_OPTIONS_FONT_SIZE_LABEL_VERY_SMALL },
+    { "hideAdvancedSettings", IDS_SETTINGS_HIDE_ADVANCED_SETTINGS },
     { "homePage", IDS_OPTIONS2_HOMEPAGE },
     { "homePageChoose", IDS_OPTIONS2_HOMEPAGE_CHOOSE },
     { "homePageDialogLabel", IDS_OPTIONS2_HOMEPAGE_DIALOG_LABEL },
@@ -129,13 +208,33 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
     { "instantConfirmTitle", IDS_INSTANT_OPT_IN_TITLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
+    { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
+    { "languageAndSpellCheckSettingsButton",
+#if defined(OS_CHROMEOS)
+      IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE },
+#else
+      IDS_OPTIONS_LANGUAGE_AND_SPELLCHECK_BUTTON },
+#endif
+    { "linkDoctorPref", IDS_OPTIONS_LINKDOCTOR_PREF },
+    { "manageAutofillSettings", IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK },
     { "manageDataDescription", IDS_OPTIONS_MANAGE_DATA_DESCRIPTION },
+    { "managePasswords", IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK },
+    { "networkPredictionEnabledDescription",
+      IDS_NETWORK_PREDICTION_ENABLED_DESCRIPTION },
+    { "passwordsAndAutofillGroupName",
+      IDS_OPTIONS_PASSWORDS_AND_FORMS_GROUP_NAME },
+    { "passwordManagerEnabled", IDS_OPTIONS_PASSWORD_MANAGER_ENABLE },
+    { "privacyClearDataButton", IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON },
+    { "privacyContentSettingsButton",
+      IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON },
     { "profilesCreate", IDS_PROFILES_CREATE_BUTTON_LABEL },
     { "profilesDelete", IDS_PROFILES_DELETE_BUTTON_LABEL },
     { "profilesDeleteSingle", IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL },
     { "profilesListItemCurrent", IDS_PROFILES_LIST_ITEM_CURRENT },
     { "profilesManage", IDS_PROFILES_MANAGE_BUTTON_LABEL },
-    { "sectionTitleAdvanced", IDS_OPTIONS_ADVANCED_TAB_LABEL },
+    { "proxiesLabel", IDS_OPTIONS_PROXIES_LABEL },
+    { "safeBrowsingEnableProtection",
+      IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION },
     { "sectionTitleAppearance", IDS_APPEARANCE_GROUP_NAME },
     { "sectionTitleDefaultBrowser", IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME },
     { "sectionTitleUsers", IDS_PROFILES_OPTIONS_GROUP_NAME },
@@ -146,18 +245,26 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "sessionRestoreOverlayTitle", IDS_SESSION_RESTORE_OVERLAY_TITLE },
     { "startupRestoreLastSession", IDS_OPTIONS_STARTUP_RESTORE_LAST_SESSION },
     { "settingsTitle", IDS_SETTINGS_TITLE },
+    { "showAdvancedSettings", IDS_SETTINGS_SHOW_ADVANCED_SETTINGS },
+    { "spellingPref", IDS_OPTIONS_SPELLING_PREF },
+    { "sslCheckRevocation", IDS_OPTIONS_SSL_CHECKREVOCATION },
+    { "sslGroupDescription", IDS_OPTIONS_SSL_GROUP_DESCRIPTION },
     { "startupSetPages", IDS_OPTIONS2_STARTUP_SET_PAGES },
     { "startupShowHomePage", IDS_OPTIONS2_STARTUP_SHOW_HOME_PAGE },
     { "startupShowNewTab", IDS_OPTIONS2_STARTUP_SHOW_NEWTAB },
     { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
     { "startupShowPages", IDS_OPTIONS2_STARTUP_SHOW_PAGES },
+    { "suggestPref", IDS_OPTIONS_SUGGEST_PREF },
     { "syncButtonTextInProgress", IDS_SYNC_NTP_SETUP_IN_PROGRESS },
     { "syncButtonTextStop", IDS_SYNC_STOP_SYNCING_BUTTON_LABEL },
     { "themesGallery", IDS_THEMES_GALLERY_BUTTON },
     { "themesGalleryURL", IDS_THEMES_GALLERY_URL },
+    { "tabsToLinksPref", IDS_OPTIONS_TABS_TO_LINKS_PREF },
     { "toolbarGroupName", IDS_OPTIONS2_TOOLBAR_GROUP_NAME },
     { "toolbarShowBookmarksBar", IDS_OPTIONS_TOOLBAR_SHOW_BOOKMARKS_BAR },
     { "toolbarShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
+    { "translateEnableTranslate",
+      IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE },
 #if defined(TOOLKIT_GTK)
     { "showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS },
     { "themesGTKButton", IDS_THEMES_GTK_BUTTON },
@@ -167,9 +274,20 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "themesReset", IDS_THEMES_RESET_BUTTON },
 #endif
 #if defined(OS_CHROMEOS)
+    { "accessibilityHighContrast",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_HIGH_CONTRAST_DESCRIPTION },
+    { "accessibilityScreenMagnifier",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_DESCRIPTION },
+    { "accessibilitySpokenFeedback",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION },
+    { "accessibilityTitle",
+      IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
+    { "accessibilityVirtualKeyboard",
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
     { "brightnessDecrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DECREASE },
     { "brightnessIncrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE },
     { "changePicture", IDS_OPTIONS_CHANGE_PICTURE_CAPTION },
+    { "datetimeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME },
     { "deviceGroupBrightness", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION },
     { "deviceGroupKeyboard", IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION },
     { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },
@@ -186,10 +304,24 @@ void BrowserOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
     { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
+    { "timezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
+    { "use24HourClock", IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION },
+#else
+    { "cloudPrintConnectorEnabledManageButton",
+      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_MANAGE_BUTTON},
+    { "cloudPrintConnectorEnablingButton",
+      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON },
+    { "proxiesConfigureButton", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON },
+#endif
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+    { "advancedSectionTitleBackground",
+      IDS_OPTIONS_ADVANCED_SECTION_TITLE_BACKGROUND },
+    { "backgroundModeCheckbox", IDS_OPTIONS_BACKGROUND_ENABLE_BACKGROUND_MODE },
 #endif
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
+  RegisterCloudPrintStrings(localized_strings);
   RegisterTitle(localized_strings, "homePageOverlay",
                 IDS_OPTIONS2_HOMEPAGE_TITLE);
 
@@ -242,6 +374,61 @@ void BrowserOptionsHandler::GetLocalizedValues(
 
   // Pass along sync status early so it will be available during page init.
   localized_strings->Set("syncData", GetSyncStateDictionary());
+
+  localized_strings->SetString("privacyLearnMoreURL",
+                               chrome::kPrivacyLearnMoreURL);
+
+  localized_strings->SetString(
+      "languageSectionLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+
+#if defined(OS_CHROMEOS)
+  localized_strings->SetString("cloudPrintLearnMoreURL",
+                               chrome::kCloudPrintLearnMoreURL);
+
+  // TODO(pastarmovj): replace this with a call to the CrosSettings list
+  // handling functionality to come.
+  localized_strings->Set("timezoneList",
+      static_cast<chromeos::options2::SystemSettingsProvider*>(
+          chromeos::CrosSettings::Get()->GetProvider(
+              chromeos::kSystemTimezone))->GetTimezoneList());
+#endif
+#if defined(OS_MACOSX)
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager->GetNumberOfProfiles() > 1) {
+    localized_strings->SetString("macPasswordsWarning",
+        l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MAC_WARNING));
+  }
+#endif
+}
+
+void BrowserOptionsHandler::RegisterCloudPrintStrings(
+    DictionaryValue* localized_strings) {
+#if defined(OS_CHROMEOS)
+  localized_strings->SetString("cloudPrintChromeosOptionLabel",
+      l10n_util::GetStringFUTF16(
+      IDS_CLOUD_PRINT_CHROMEOS_OPTION_LABEL,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+  localized_strings->SetString("cloudPrintChromeosOptionButton",
+      l10n_util::GetStringFUTF16(
+      IDS_CLOUD_PRINT_CHROMEOS_OPTION_BUTTON,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+#else
+  localized_strings->SetString("cloudPrintConnectorDisabledLabel",
+      l10n_util::GetStringFUTF16(
+      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+  localized_strings->SetString("cloudPrintConnectorDisabledButton",
+      l10n_util::GetStringFUTF16(
+      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+  localized_strings->SetString("cloudPrintConnectorEnabledButton",
+      l10n_util::GetStringFUTF16(
+      IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON,
+      l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
+#endif
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
@@ -293,6 +480,82 @@ void BrowserOptionsHandler::RegisterMessages() {
       base::Bind(&BrowserOptionsHandler::IncreaseScreenBrightnessCallback,
                  base::Unretained(this)));
 #endif
+  web_ui()->RegisterMessageCallback(
+      "selectDownloadLocation",
+      base::Bind(&BrowserOptionsHandler::HandleSelectDownloadLocation,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "autoOpenFileTypesAction",
+      base::Bind(&BrowserOptionsHandler::HandleAutoOpenButton,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "defaultFontSizeAction",
+      base::Bind(&BrowserOptionsHandler::HandleDefaultFontSize,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "defaultZoomFactorAction",
+      base::Bind(&BrowserOptionsHandler::HandleDefaultZoomFactor,
+                 base::Unretained(this)));
+#if !defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "metricsReportingCheckboxAction",
+      base::Bind(&BrowserOptionsHandler::HandleMetricsReportingCheckbox,
+                 base::Unretained(this)));
+#endif
+#if !defined(USE_NSS) && !defined(USE_OPENSSL)
+  web_ui()->RegisterMessageCallback(
+      "showManageSSLCertificates",
+      base::Bind(&BrowserOptionsHandler::ShowManageSSLCertificates,
+                 base::Unretained(this)));
+#endif
+  web_ui()->RegisterMessageCallback(
+      "showCloudPrintManagePage",
+      base::Bind(&BrowserOptionsHandler::ShowCloudPrintManagePage,
+                 base::Unretained(this)));
+#if !defined(OS_CHROMEOS)
+  if (cloud_print_connector_ui_enabled_) {
+    web_ui()->RegisterMessageCallback(
+        "showCloudPrintSetupDialog",
+        base::Bind(&BrowserOptionsHandler::ShowCloudPrintSetupDialog,
+                   base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        "disableCloudPrintConnector",
+        base::Bind(&BrowserOptionsHandler::HandleDisableCloudPrintConnector,
+                   base::Unretained(this)));
+  }
+  web_ui()->RegisterMessageCallback(
+      "showNetworkProxySettings",
+      base::Bind(&BrowserOptionsHandler::ShowNetworkProxySettings,
+                 base::Unretained(this)));
+#endif
+  web_ui()->RegisterMessageCallback(
+      "checkRevocationCheckboxAction",
+      base::Bind(&BrowserOptionsHandler::HandleCheckRevocationCheckbox,
+                 base::Unretained(this)));
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "backgroundModeAction",
+      base::Bind(&BrowserOptionsHandler::HandleBackgroundModeCheckbox,
+                 base::Unretained(this)));
+#endif
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "spokenFeedbackChange",
+      base::Bind(&BrowserOptionsHandler::SpokenFeedbackChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "highContrastChange",
+      base::Bind(&BrowserOptionsHandler::HighContrastChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "screenMagnifierChange",
+      base::Bind(&BrowserOptionsHandler::ScreenMagnifierChangeCallback,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "virtualKeyboardChange",
+      base::Bind(&BrowserOptionsHandler::VirtualKeyboardChangeCallback,
+                 base::Unretained(this)));
+#endif
 }
 
 void BrowserOptionsHandler::OnStateChanged() {
@@ -304,9 +567,10 @@ void BrowserOptionsHandler::OnStateChanged() {
 
 void BrowserOptionsHandler::Initialize() {
   Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* prefs = profile->GetPrefs();
 
-  ProfileSyncService* sync_service(ProfileSyncServiceFactory::
-      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
+  ProfileSyncService* sync_service(
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
   if (sync_service)
     sync_service->AddObserver(this);
   OnStateChanged();
@@ -315,7 +579,7 @@ void BrowserOptionsHandler::Initialize() {
   profile->GetChromeURLDataManager()->AddDataSource(
       new FaviconSource(profile, FaviconSource::FAVICON));
 
-  homepage_.Init(prefs::kHomePage, profile->GetPrefs(), NULL);
+  homepage_.Init(prefs::kHomePage, prefs, NULL);
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,
                                g_browser_process->local_state(),
                                this);
@@ -347,6 +611,52 @@ void BrowserOptionsHandler::Initialize() {
                    profile->GetPath()));
     weak_ptr_factory_for_ui_.DetachFromThread();
   }
+#endif
+
+#if !defined(OS_CHROMEOS)
+  enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
+                                 g_browser_process->local_state(), this);
+  cloud_print_connector_email_.Init(prefs::kCloudPrintEmail, prefs, this);
+  cloud_print_connector_enabled_.Init(prefs::kCloudPrintProxyEnabled, prefs,
+                                      this);
+#endif
+
+  rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled,
+                             g_browser_process->local_state(), this);
+
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  background_mode_enabled_.Init(prefs::kBackgroundModeEnabled,
+                                g_browser_process->local_state(), this);
+#endif
+
+  auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
+  default_font_size_.Init(prefs::kWebKitGlobalDefaultFontSize, prefs, this);
+  default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
+#if !defined(OS_CHROMEOS)
+  proxy_prefs_.reset(
+      PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
+#endif  // !defined(OS_CHROMEOS)
+
+  SetupMetricsReportingCheckbox();
+  SetupMetricsReportingSettingVisibility();
+  SetupFontSizeSelector();
+  SetupPageZoomSelector();
+  SetupAutoOpenFileTypesDisabledAttribute();
+  SetupProxySettingsSection();
+  SetupSSLConfigSettings();
+#if !defined(OS_CHROMEOS)
+  if (cloud_print_connector_ui_enabled_) {
+    SetupCloudPrintConnectorSection();
+    RefreshCloudPrintStatusFromService();
+  } else {
+    RemoveCloudPrintConnectorSection();
+  }
+#endif
+#if defined(OS_CHROMEOS)
+  SetupAccessibilityFeatures();
+#endif
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  SetupBackgroundModeSettings();
 #endif
 }
 
@@ -546,9 +856,29 @@ void BrowserOptionsHandler::Observe(
     UpdateAccountPicture();
 #endif
   } else if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    std::string* pref = content::Details<std::string>(details).ptr();
-    if (*pref == prefs::kDefaultBrowserSettingEnabled) {
+    std::string* pref_name = content::Details<std::string>(details).ptr();
+    if (*pref_name == prefs::kDefaultBrowserSettingEnabled) {
       UpdateDefaultBrowserState();
+    } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
+      SetupAutoOpenFileTypesDisabledAttribute();
+#if !defined(OS_CHROMEOS)
+    } else if (proxy_prefs_->IsObserved(*pref_name)) {
+      SetupProxySettingsSection();
+#endif  // !defined(OS_CHROMEOS)
+    } else if ((*pref_name == prefs::kCloudPrintEmail) ||
+               (*pref_name == prefs::kCloudPrintProxyEnabled)) {
+#if !defined(OS_CHROMEOS)
+      if (cloud_print_connector_ui_enabled_)
+        SetupCloudPrintConnectorSection();
+#endif
+    } else if (*pref_name == prefs::kWebKitGlobalDefaultFontSize) {
+      SetupFontSizeSelector();
+    } else if (*pref_name == prefs::kDefaultZoomLevel) {
+      SetupPageZoomSelector();
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+    } else if (*pref_name == prefs::kBackgroundModeEnabled) {
+      SetupBackgroundModeSettings();
+#endif
     } else {
       NOTREACHED();
     }
@@ -763,6 +1093,363 @@ DictionaryValue* BrowserOptionsHandler::GetSyncStateDictionary() {
       service->AreCredentialsAvailable());
 
   return sync_status;
+}
+
+void BrowserOptionsHandler::HandleSelectDownloadLocation(
+    const ListValue* args) {
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  select_folder_dialog_ = SelectFileDialog::Create(this);
+  select_folder_dialog_->SelectFile(
+      SelectFileDialog::SELECT_FOLDER,
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE),
+      pref_service->GetFilePath(prefs::kDownloadDefaultDirectory),
+      NULL, 0, FILE_PATH_LITERAL(""), web_ui()->GetWebContents(),
+      web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow(), NULL);
+}
+
+void BrowserOptionsHandler::FileSelected(const FilePath& path, int index,
+                                         void* params) {
+  content::RecordAction(UserMetricsAction("Options_SetDownloadDirectory"));
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  pref_service->SetFilePath(prefs::kDownloadDefaultDirectory, path);
+}
+
+void BrowserOptionsHandler::OnCloudPrintSetupClosed() {
+#if !defined(OS_CHROMEOS)
+  if (cloud_print_connector_ui_enabled_)
+    SetupCloudPrintConnectorSection();
+#endif
+}
+
+void BrowserOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"));
+  DownloadManager* manager =
+      web_ui()->GetWebContents()->GetBrowserContext()->GetDownloadManager();
+  if (manager)
+    DownloadPrefs::FromDownloadManager(manager)->ResetAutoOpen();
+}
+
+void BrowserOptionsHandler::HandleMetricsReportingCheckbox(
+    const ListValue* args) {
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  content::RecordAction(
+      enabled ?
+          UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
+          UserMetricsAction("Options_MetricsReportingCheckbox_Disable"));
+  bool is_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
+  enable_metrics_recording_.SetValue(is_enabled);
+  SetupMetricsReportingCheckbox();
+#endif
+}
+
+void BrowserOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
+  int font_size;
+  if (ExtractIntegerValue(args, &font_size)) {
+    if (font_size > 0) {
+      default_font_size_.SetValue(font_size);
+      SetupFontSizeSelector();
+    }
+  }
+}
+
+void BrowserOptionsHandler::HandleDefaultZoomFactor(const ListValue* args) {
+  double zoom_factor;
+  if (ExtractDoubleValue(args, &zoom_factor)) {
+    default_zoom_level_.SetValue(
+        WebKit::WebView::zoomFactorToZoomLevel(zoom_factor));
+  }
+}
+
+void BrowserOptionsHandler::HandleCheckRevocationCheckbox(
+    const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  content::RecordAction(
+      enabled ?
+          UserMetricsAction("Options_CheckCertRevocation_Enable") :
+          UserMetricsAction("Options_CheckCertRevocation_Disable"));
+  rev_checking_enabled_.SetValue(enabled);
+}
+
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+void BrowserOptionsHandler::HandleBackgroundModeCheckbox(
+    const ListValue* args) {
+  std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  bool enabled = checked_str == "true";
+  content::RecordAction(enabled ?
+      UserMetricsAction("Options_BackgroundMode_Enable") :
+      UserMetricsAction("Options_BackgroundMode_Disable"));
+  background_mode_enabled_.SetValue(enabled);
+}
+
+void BrowserOptionsHandler::SetupBackgroundModeSettings() {
+    base::FundamentalValue checked(background_mode_enabled_.GetValue());
+    web_ui()->CallJavascriptFunction(
+        "BrowserOptions.setBackgroundModeCheckboxState", checked);
+}
+#endif
+
+#if !defined(OS_CHROMEOS)
+void BrowserOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_ShowProxySettings"));
+  AdvancedOptionsUtilities::ShowNetworkProxySettings(
+      web_ui()->GetWebContents());
+}
+#endif
+
+#if !defined(USE_NSS) && !defined(USE_OPENSSL)
+void BrowserOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
+  AdvancedOptionsUtilities::ShowManageSSLCertificates(
+      web_ui()->GetWebContents());
+}
+#endif
+
+void BrowserOptionsHandler::ShowCloudPrintManagePage(const ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_ManageCloudPrinters"));
+  // Open a new tab in the current window for the management page.
+  Profile* profile = Profile::FromWebUI(web_ui());
+  OpenURLParams params(
+      CloudPrintURL(profile).GetCloudPrintServiceManageURL(), Referrer(),
+      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false);
+  web_ui()->GetWebContents()->OpenURL(params);
+}
+
+#if !defined(OS_CHROMEOS)
+void BrowserOptionsHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
+  content::RecordAction(UserMetricsAction("Options_EnableCloudPrintProxy"));
+  // Open the connector enable page in the current tab.
+  Profile* profile = Profile::FromWebUI(web_ui());
+  OpenURLParams params(
+      CloudPrintURL(profile).GetCloudPrintServiceEnableURL(
+          CloudPrintProxyServiceFactory::GetForProfile(profile)->proxy_id()),
+      Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_LINK, false);
+  web_ui()->GetWebContents()->OpenURL(params);
+}
+
+void BrowserOptionsHandler::HandleDisableCloudPrintConnector(
+    const ListValue* args) {
+  content::RecordAction(
+      UserMetricsAction("Options_DisableCloudPrintProxy"));
+  CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
+      DisableForUser();
+}
+
+void BrowserOptionsHandler::RefreshCloudPrintStatusFromService() {
+  if (cloud_print_connector_ui_enabled_)
+    CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
+        RefreshStatusFromService();
+}
+
+void BrowserOptionsHandler::SetupCloudPrintConnectorSection() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!CloudPrintProxyServiceFactory::GetForProfile(profile)) {
+    cloud_print_connector_ui_enabled_ = false;
+    RemoveCloudPrintConnectorSection();
+    return;
+  }
+
+  bool cloud_print_connector_allowed =
+      !cloud_print_connector_enabled_.IsManaged() ||
+      cloud_print_connector_enabled_.GetValue();
+  base::FundamentalValue allowed(cloud_print_connector_allowed);
+
+  std::string email;
+  if (profile->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
+      cloud_print_connector_allowed) {
+    email = profile->GetPrefs()->GetString(prefs::kCloudPrintEmail);
+  }
+  base::FundamentalValue disabled(email.empty());
+
+  string16 label_str;
+  if (email.empty()) {
+    label_str = l10n_util::GetStringFUTF16(
+        IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL,
+        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT));
+  } else {
+    label_str = l10n_util::GetStringFUTF16(
+        IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL,
+        l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
+        UTF8ToUTF16(email));
+  }
+  StringValue label(label_str);
+
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setupCloudPrintConnectorSection", disabled, label,
+      allowed);
+}
+
+void BrowserOptionsHandler::RemoveCloudPrintConnectorSection() {
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.removeCloudPrintConnectorSection");
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+void BrowserOptionsHandler::SpokenFeedbackChangeCallback(
+    const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableSpokenFeedback(enabled, NULL);
+}
+
+void BrowserOptionsHandler::HighContrastChangeCallback(const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableHighContrast(enabled);
+}
+
+void BrowserOptionsHandler::ScreenMagnifierChangeCallback(
+    const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableScreenMagnifier(enabled);
+}
+
+void BrowserOptionsHandler::VirtualKeyboardChangeCallback(
+    const ListValue* args) {
+  bool enabled = false;
+  args->GetBoolean(0, &enabled);
+
+  chromeos::accessibility::EnableVirtualKeyboard(enabled);
+}
+
+void BrowserOptionsHandler::SetupAccessibilityFeatures() {
+  PrefService* pref_service = g_browser_process->local_state();
+  base::FundamentalValue spoken_feedback_enabled(
+      pref_service->GetBoolean(prefs::kSpokenFeedbackEnabled));
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setSpokenFeedbackCheckboxState",
+      spoken_feedback_enabled);
+  base::FundamentalValue high_contrast_enabled(
+      pref_service->GetBoolean(prefs::kHighContrastEnabled));
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setHighContrastCheckboxState",
+      high_contrast_enabled);
+  base::FundamentalValue screen_magnifier_enabled(
+      pref_service->GetBoolean(prefs::kScreenMagnifierEnabled));
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setScreenMagnifierCheckboxState",
+      screen_magnifier_enabled);
+  base::FundamentalValue virtual_keyboard_enabled(
+      pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled));
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setVirtualKeyboardCheckboxState",
+      virtual_keyboard_enabled);
+}
+#endif
+
+void BrowserOptionsHandler::SetupMetricsReportingCheckbox() {
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+  base::FundamentalValue checked(enable_metrics_recording_.GetValue());
+  base::FundamentalValue disabled(enable_metrics_recording_.IsManaged());
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setMetricsReportingCheckboxState", checked, disabled);
+#endif
+}
+
+void BrowserOptionsHandler::SetupMetricsReportingSettingVisibility() {
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_CHROMEOS)
+  // Don't show the reporting setting if we are in the guest mode.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession)) {
+    base::FundamentalValue visible(false);
+    web_ui()->CallJavascriptFunction(
+        "BrowserOptions.setMetricsReportingSettingVisibility", visible);
+  }
+#endif
+}
+
+void BrowserOptionsHandler::SetupFontSizeSelector() {
+  // We're only interested in integer values, so convert to int.
+  base::FundamentalValue font_size(default_font_size_.GetValue());
+  web_ui()->CallJavascriptFunction("BrowserOptions.setFontSize", font_size);
+}
+
+void BrowserOptionsHandler::SetupPageZoomSelector() {
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  double default_zoom_level = pref_service->GetDouble(prefs::kDefaultZoomLevel);
+  double default_zoom_factor =
+      WebKit::WebView::zoomLevelToZoomFactor(default_zoom_level);
+
+  // Generate a vector of zoom factors from an array of known presets along with
+  // the default factor added if necessary.
+  std::vector<double> zoom_factors =
+      chrome_page_zoom::PresetZoomFactors(default_zoom_factor);
+
+  // Iterate through the zoom factors and and build the contents of the
+  // selector that will be sent to the javascript handler.
+  // Each item in the list has the following parameters:
+  // 1. Title (string).
+  // 2. Value (double).
+  // 3. Is selected? (bool).
+  ListValue zoom_factors_value;
+  for (std::vector<double>::const_iterator i = zoom_factors.begin();
+       i != zoom_factors.end(); ++i) {
+    ListValue* option = new ListValue();
+    double factor = *i;
+    int percent = static_cast<int>(factor * 100 + 0.5);
+    option->Append(Value::CreateStringValue(
+        l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, percent)));
+    option->Append(Value::CreateDoubleValue(factor));
+    bool selected = content::ZoomValuesEqual(factor, default_zoom_factor);
+    option->Append(Value::CreateBooleanValue(selected));
+    zoom_factors_value.Append(option);
+  }
+
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setupPageZoomSelector", zoom_factors_value);
+}
+
+void BrowserOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
+  // Set the enabled state for the AutoOpenFileTypesResetToDefault button.
+  // We enable the button if the user has any auto-open file types registered.
+  DownloadManager* manager =
+      web_ui()->GetWebContents()->GetBrowserContext()->GetDownloadManager();
+  bool disabled = !(manager &&
+      DownloadPrefs::FromDownloadManager(manager)->IsAutoOpenUsed());
+  base::FundamentalValue value(disabled);
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setAutoOpenFileTypesDisabledAttribute", value);
+}
+
+void BrowserOptionsHandler::SetupProxySettingsSection() {
+#if !defined(OS_CHROMEOS)
+  // Disable the button if proxy settings are managed by a sysadmin or
+  // overridden by an extension.
+  PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  const PrefService::Preference* proxy_config =
+      pref_service->FindPreference(prefs::kProxy);
+  bool is_extension_controlled = (proxy_config &&
+                                  proxy_config->IsExtensionControlled());
+
+  base::FundamentalValue disabled(proxy_prefs_->IsManaged() ||
+                            is_extension_controlled);
+
+  // Get the appropriate info string to describe the button.
+  string16 label_str;
+  if (is_extension_controlled) {
+    label_str = l10n_util::GetStringUTF16(IDS_OPTIONS_EXTENSION_PROXIES_LABEL);
+  } else {
+    label_str = l10n_util::GetStringFUTF16(IDS_OPTIONS_SYSTEM_PROXIES_LABEL,
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  }
+  StringValue label(label_str);
+
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setupProxySettingsSection", disabled, label);
+#endif  // !defined(OS_CHROMEOS)
+}
+
+void BrowserOptionsHandler::SetupSSLConfigSettings() {
+  base::FundamentalValue checked(rev_checking_enabled_.GetValue());
+  base::FundamentalValue disabled(rev_checking_enabled_.IsManaged());
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setCheckRevocationCheckboxState", checked, disabled);
 }
 
 }  // namespace options2

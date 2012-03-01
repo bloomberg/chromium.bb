@@ -71,7 +71,7 @@ cr.define('options', function() {
 
     /** @inheritDoc */
     canShowPage: function() {
-      return !AdvancedOptions.GuestModeActive();
+      return !BrowserOptions.guestModeActive();
     },
 
     /** @inheritDoc */

@@ -8086,6 +8086,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_SETTINGS_TITLE" desc="Title for the settings tab.">
         Settings
       </message>
+      <message name="IDS_SETTINGS_HIDE_ADVANCED_SETTINGS" desc="Title for the link to hide advanced settings.">
+        Hide advanced settings...
+      </message>
+      <message name="IDS_SETTINGS_SHOW_ADVANCED_SETTINGS" desc="Title for the link to show advanced settings.">
+        Show advanced settings...
+      </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_SYSTEM_TAB_LABEL" desc="The title of the System tab">
           System
@@ -8117,9 +8123,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
       <message name="IDS_OPTIONS_ADVANCED_TAB_LABEL" desc="The title of the Under the Hood tab">
         Under the hood
-      </message>
-      <message name="IDS_OPTIONS2_ADVANCED_TAB_LABEL" desc="The title of the Advanced settings tab">
-        Advanced settings
       </message>
       <message name="IDS_OPTIONS_TAB_TITLE" desc="The format of the title on the browser tab for an options subpage, e.g. Settings - Basics">
         <ph name="OPTIONS_TITLE">$1<ex>Settings</ex></ph> - <ph name="SUBPAGE_TITLE">$2<ex>Under the Hood</ex></ph>
@@ -8333,9 +8336,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> automatically when I start my computer
         </message>
       </if>
-      <message name="IDS_OPTIONS_ADVANCED_BUTTON_TITLE" desc="The title of the advanced options button">
-        Advanced settings...
-      </message>
       <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chrome as default' browser button">
         Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
       </message>
@@ -9809,11 +9809,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_CHOOSE_DIRECTORY_BUTTON" desc="Text on button that opens another dialog to choose a new directory for user data.">
         Choose Another Directory...
-      </message>
-
-      <!-- Advanced subpage back button -->
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_BACK_BUTTON">
-        Return to settings...
       </message>
 
       <!-- Advanced Section Titles -->

@@ -239,3 +239,37 @@ html[dir=rtl] #pointer-sensitivity-more {
 .network-menu > hr {
   opacity: 0.4;
 }
+
+#web-content-section select,
+.web-content-select-label {
+  min-width: 145px;
+}
+
+.web-content-select-label > span:only-of-type {
+  display: inline-block;
+  min-width: 100px;
+}
+
+#fontSettingsCustomizeFontsButton,
+#privacyClearDataButton {
+  margin-left: 10px;
+}
+
+#timezone-value {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+#privacy-explanation {
+  line-height: 1.8em;
+}
+
+#privacy-explanation span:first-child {
+  display: block;
+}
+
+#advanced-settings {
+  -webkit-transition: height 500ms;
+  height: 0;
+  overflow: hidden;
+}
