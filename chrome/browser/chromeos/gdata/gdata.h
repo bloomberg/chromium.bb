@@ -302,6 +302,7 @@ class DocumentsService : public GDataAuthService::Observer {
 
   scoped_ptr<GDataAuthService> gdata_auth_service_;
   scoped_ptr<GDataUploader> uploader_;
+  base::WeakPtrFactory<DocumentsService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentsService);
 };
