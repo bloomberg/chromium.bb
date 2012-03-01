@@ -21,6 +21,9 @@ class AURA_EXPORT RootWindowObserver {
   // Invoked after the RootWindow is resized.
   virtual void OnRootWindowResized(const gfx::Size& new_size) {}
 
+  // Invoked after the screen's work area insets changes.
+  virtual void OnScreenWorkAreaInsetsChanged() {}
+
   // Invoked when a window is focused.
   virtual void OnWindowFocused(Window* window) {}
 

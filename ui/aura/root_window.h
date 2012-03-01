@@ -73,7 +73,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool cursor_shown() const { return cursor_shown_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* capture_window() { return capture_window_; }
-  ScreenAura* screen() { return screen_; }
+  const ScreenAura* screen() { return screen_; }
 
   // Shows the root window host.
   void ShowRootWindow();
@@ -81,6 +81,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Sets the size of the root window.
   void SetHostSize(const gfx::Size& size);
   gfx::Size GetHostSize() const;
+
+  // Sets the screen's work area insets, this notifies observers too.
+  void SetScreenWorkAreaInsets(const gfx::Insets& insets);
 
   // Sets the currently-displayed cursor. If the cursor was previously hidden
   // via ShowCursor(false), it will remain hidden until ShowCursor(true) is

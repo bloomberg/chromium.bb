@@ -171,10 +171,11 @@ void WorkspaceManager::SetWorkspaceSize(const gfx::Size& workspace_size) {
   if (workspace_size == workspace_size_)
     return;
   workspace_size_ = workspace_size;
-  for (Workspaces::const_iterator i = workspaces_.begin();
-       i != workspaces_.end(); ++i) {
-    (*i)->SetBounds(GetWorkAreaBounds());
-  }
+  SetWorkspaceBounds();
+}
+
+void WorkspaceManager::OnScreenWorkAreaInsetsChanged() {
+  SetWorkspaceBounds();
 }
 
 gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
@@ -353,6 +354,13 @@ void WorkspaceManager::SetFullScreenOrMaximizedBounds(aura::Window* window) {
     SetWindowBounds(window, GetWorkAreaBounds());
   else if (wm::IsWindowFullscreen(window))
     SetWindowBounds(window, gfx::Screen::GetMonitorAreaNearestWindow(window));
+}
+
+void WorkspaceManager::SetWorkspaceBounds() {
+  for (Workspaces::const_iterator i = workspaces_.begin();
+       i != workspaces_.end(); ++i) {
+    (*i)->SetBounds(GetWorkAreaBounds());
+  }
 }
 
 void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {

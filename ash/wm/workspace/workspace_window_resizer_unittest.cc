@@ -50,7 +50,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     root->SetBounds(gfx::Rect(0, 0, 800, kRootHeight));
     gfx::Rect root_bounds(root->bounds());
     EXPECT_EQ(kRootHeight, root_bounds.height());
-    root->screen()->set_work_area_insets(gfx::Insets());
+    root->SetScreenWorkAreaInsets(gfx::Insets());
     window_.reset(new aura::Window(&delegate_));
     window_->Init(ui::Layer::LAYER_NOT_DRAWN);
     window_->SetParent(Shell::GetInstance()->GetRootWindow());

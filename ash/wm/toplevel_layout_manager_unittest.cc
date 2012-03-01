@@ -33,7 +33,7 @@ class ToplevelLayoutManagerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    Shell::GetRootWindow()->screen()->set_work_area_insets(
+    Shell::GetRootWindow()->SetScreenWorkAreaInsets(
         gfx::Insets(1, 2, 3, 4));
     Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
     aura::Window* default_container = Shell::GetInstance()->GetContainer(
@@ -98,6 +98,26 @@ TEST_F(ToplevelLayoutManagerTest, Fullscreen) {
             window->bounds());
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(bounds, window->bounds());
+}
+
+// Tests maximized window resizing on work area insets change.
+TEST_F(ToplevelLayoutManagerTest,
+       ResizeMaximizedWindowOnWorkAreaInsetsChange) {
+  gfx::Rect bounds(100, 100, 200, 200);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
+        gfx::Insets(0, 0, 30, 0));
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  // Maximized window fills the work area.
+  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window.get()),
+            window->bounds());
+
+  // Change work area insets.
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
+        gfx::Insets(0, 0, 60, 0));
+  // Maximized window fills the changed work area.
+  EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window.get()),
+            window->bounds());
 }
 
 // Tests fullscreen window size during root window resize.

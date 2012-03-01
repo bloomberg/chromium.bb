@@ -115,6 +115,14 @@ gfx::Size RootWindow::GetHostSize() const {
   return rect.size();
 }
 
+void RootWindow::SetScreenWorkAreaInsets(const gfx::Insets& insets) {
+  if (screen_->work_area_insets() == insets)
+    return;
+  screen_->set_work_area_insets(insets);
+  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
+                    OnScreenWorkAreaInsetsChanged());
+}
+
 void RootWindow::SetCursor(gfx::NativeCursor cursor) {
   last_cursor_ = cursor;
   // A lot of code seems to depend on NULL cursors actually showing an arrow,

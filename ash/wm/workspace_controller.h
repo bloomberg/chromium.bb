@@ -58,6 +58,9 @@ class ASH_EXPORT WorkspaceController :
   // aura::RootWindowObserver overrides:
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
 
+  // aura::RootWindowObserver overrides:
+  virtual void OnScreenWorkAreaInsetsChanged() OVERRIDE;
+
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,

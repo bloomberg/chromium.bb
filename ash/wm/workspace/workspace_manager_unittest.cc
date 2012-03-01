@@ -159,6 +159,48 @@ TEST_F(WorkspaceManagerTest, SingleMaximizeWindow) {
   EXPECT_EQ(251, w1->bounds().height());
 }
 
+// Assertions around maximized window resizing on work area insets change.
+TEST_F(WorkspaceManagerTest, ResizeMaximizedWindowOnWorkAreaInsetsChange) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->SetBounds(gfx::Rect(0, 0, 250, 251));
+
+  ASSERT_TRUE(manager_->IsManagedWindow(w1.get()));
+
+  w1->Show();
+
+  ASSERT_TRUE(w1->layer() != NULL);
+  EXPECT_TRUE(w1->layer()->visible());
+
+  EXPECT_EQ(250, w1->bounds().width());
+  EXPECT_EQ(251, w1->bounds().height());
+
+  // Maximize the window.
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
+        gfx::Insets(0, 0, 30, 0));
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+
+  // Should be 1 workspace, TYPE_MAXIMIZED with w1, fills the work area bounds.
+  ASSERT_EQ(1u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[0]->type());
+  ASSERT_EQ(1u, workspaces()[0]->windows().size());
+  EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
+  EXPECT_EQ(GetWorkAreaBounds().width(), w1->bounds().width());
+  EXPECT_EQ(GetWorkAreaBounds().height(), w1->bounds().height());
+
+  // Change work area insets.
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
+        gfx::Insets(0, 0, 60, 0));
+
+  // Should be 1 workspace, TYPE_MAXIMIZED with w1, fills the changed work
+  // area bounds.
+  ASSERT_EQ(1u, workspaces().size());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, workspaces()[0]->type());
+  ASSERT_EQ(1u, workspaces()[0]->windows().size());
+  EXPECT_EQ(w1.get(), workspaces()[0]->windows()[0]);
+  EXPECT_EQ(GetWorkAreaBounds().width(), w1->bounds().width());
+  EXPECT_EQ(GetWorkAreaBounds().height(), w1->bounds().height());
+}
+
 // Assertions around closing the last window in a workspace.
 TEST_F(WorkspaceManagerTest, CloseLastWindowInWorkspace) {
   scoped_ptr<Window> w1(CreateTestWindow());

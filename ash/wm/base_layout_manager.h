@@ -50,6 +50,9 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
 
+  // RootWindowObserver overrides:
+  virtual void OnScreenWorkAreaInsetsChanged() OVERRIDE;
+
   // WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
@@ -58,6 +61,10 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
  private:
   // Update window bounds based on a change in show state.
   void UpdateBoundsFromShowState(aura::Window* window);
+
+  // Adjusts the window sizes when the screen changes its size or its
+  // work area insets.
+  void AdjustWindowSizesForScreenChange();
 
   // Set of windows we're listening to.
   WindowSet windows_;

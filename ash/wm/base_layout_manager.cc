@@ -67,21 +67,11 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
 // BaseLayoutManager, RootWindowObserver overrides:
 
 void BaseLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
-  // If a user plugs an external monitor into a laptop running Aura the
-  // monitor size will change.  Maximized windows need to resize to match.
-  // We also do this when developers running Aura on a desktop manually resize
-  // the host window.
-  for (WindowSet::const_iterator it = windows_.begin();
-       it != windows_.end();
-       ++it) {
-    aura::Window* window = *it;
-    // The work area may be smaller than the full screen.
-    gfx::Rect monitor_rect = wm::IsWindowFullscreen(window) ?
-        gfx::Screen::GetMonitorAreaNearestWindow(window) :
-        gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
-    // Put as much of the window as possible within the monitor area.
-    window->SetBounds(window->bounds().AdjustToFit(monitor_rect));
-  }
+  AdjustWindowSizesForScreenChange();
+}
+
+void BaseLayoutManager::OnScreenWorkAreaInsetsChanged() {
+  AdjustWindowSizesForScreenChange();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -121,6 +111,25 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
 
     default:
       break;
+  }
+}
+
+void BaseLayoutManager::AdjustWindowSizesForScreenChange() {
+  // If a user plugs an external monitor into a laptop running Aura the
+  // monitor size will change.  Maximized windows need to resize to match.
+  // We also do this when developers running Aura on a desktop manually resize
+  // the host window.
+  // We also need to do this when the work area insets changes.
+  for (WindowSet::const_iterator it = windows_.begin();
+       it != windows_.end();
+       ++it) {
+    aura::Window* window = *it;
+    // The work area may be smaller than the full screen.
+    gfx::Rect monitor_rect = wm::IsWindowFullscreen(window) ?
+        gfx::Screen::GetMonitorAreaNearestWindow(window) :
+        gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
+    // Put as much of the window as possible within the monitor area.
+    window->SetBounds(window->bounds().AdjustToFit(monitor_rect));
   }
 }
 

@@ -51,7 +51,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   shelf->LayoutShelf();
   ASSERT_TRUE(shelf->visible());
 
-  aura::ScreenAura* screen = Shell::GetRootWindow()->screen();
+  const aura::ScreenAura* screen = Shell::GetRootWindow()->screen();
   ASSERT_TRUE(screen);
   // Bottom inset should be the max of widget heights.
   EXPECT_EQ(shelf->max_height(), screen->work_area_insets().bottom());
@@ -96,7 +96,7 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   shelf->LayoutShelf();
   ASSERT_TRUE(shelf->visible());
 
-  aura::ScreenAura* screen = Shell::GetRootWindow()->screen();
+  const aura::ScreenAura* screen = Shell::GetRootWindow()->screen();
 
   // Hide the shelf.
   shelf->SetVisible(false);

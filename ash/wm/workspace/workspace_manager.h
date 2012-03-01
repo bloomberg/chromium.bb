@@ -64,6 +64,9 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver {
   // Sets the size of a single workspace (all workspaces have the same size).
   void SetWorkspaceSize(const gfx::Size& workspace_size);
 
+  // Called when screen work area insets changes.
+  void OnScreenWorkAreaInsetsChanged();
+
   // Returns the window the layout manager should allow the size to be set for.
   // TODO: maybe this should be set on WorkspaceLayoutManager.
   aura::Window* ignored_window() { return ignored_window_; }
@@ -138,6 +141,9 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver {
 
   // Reset the bounds of |window|. Use when |window| is fullscreen or maximized.
   void SetFullScreenOrMaximizedBounds(aura::Window* window);
+
+  // Sets the bounds of all workspaces.
+  void SetWorkspaceBounds();
 
   // Invoked when the type of workspace needed for |window| changes.
   void OnTypeOfWorkspacedNeededChanged(aura::Window* window);
