@@ -7,6 +7,7 @@
 
 #include <windows.h>
 
+#include "base/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
@@ -84,6 +85,9 @@ class HostService : public WtsConsoleMonitor {
   // The list of observers receiving notifications about any session attached
   // to the physical console.
   ObserverList<WtsConsoleObserver> console_observers_;
+
+  // The host binary name.
+  FilePath host_binary_;
 
   // Service message loop.
   MessageLoop* message_loop_;

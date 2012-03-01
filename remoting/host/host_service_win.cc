@@ -15,7 +15,7 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -37,6 +37,8 @@ const char kServiceName[] = "chromoting";
 // TODO(alexeypa): investigate and migrate this over to Chrome's i18n framework.
 const char kMuiStringFormat[] = "@%ls,-%d";
 const char kServiceDependencies[] = "";
+
+const char kServiceCommandLineFormat[] = "\"%ls\" --host-binary=\"%ls\"";
 
 const DWORD kServiceStopTimeoutMs = 30 * 1000;
 
@@ -60,6 +62,9 @@ const char kRemoveActionName[] = "remove";
 // "--console" runs the service interactively for debugging purposes.
 const char kConsoleSwitchName[] = "console";
 
+// "--host-binary" specifies the host binary to run in console session.
+const char kHostBinarySwitchName[] = "host-binary";
+
 // "--help" or "--?" prints the usage message.
 const char kHelpSwitchName[] = "help";
 const char kQuestionSwitchName[] = "?";
@@ -69,13 +74,14 @@ const char kUsageMessage[] =
   "Usage: %s [action] [options]\n"
   "\n"
   "Actions:\n"
-  "  run         - Run the service. If no action specified 'run' is assumed.\n"
-  "  install     - Install the service.\n"
-  "  remove      - Uninstall the service.\n"
+  "  run           - Run the service (default if no action was specified).\n"
+  "  install       - Install the service.\n"
+  "  remove        - Uninstall the service.\n"
   "\n"
   "Options:\n"
-  "  --console   - Run the service interactively for debugging purposes.\n"
-  "  --help, --? - Print this message.\n";
+  "  --console     - Run the service interactively for debugging purposes.\n"
+  "  --host-binary - Specifies the host binary to run in the console session.\n"
+  "  --help, --?   - Print this message.\n";
 
 // Exit codes:
 const int kSuccessExitCode = 0;
@@ -163,6 +169,7 @@ bool HostService::InitWithCommandLine(const CommandLine* command_line) {
   CommandLine::StringVector args = command_line->GetArgs();
 
   // Choose the action to perform.
+  bool host_binary_required = true;
   if (!args.empty()) {
     if (args.size() > 1) {
       LOG(ERROR) << "Invalid command line: more than one action requested.";
@@ -172,9 +179,20 @@ bool HostService::InitWithCommandLine(const CommandLine* command_line) {
       run_routine_ = &HostService::Install;
     } else if (args[0] == ASCIIToUTF16(kRemoveActionName)) {
       run_routine_ = &HostService::Remove;
+      host_binary_required = false;
     } else if (args[0] != ASCIIToUTF16(kRunActionName)) {
       LOG(ERROR) << "Invalid command line: invalid action specified: "
                  << args[0];
+      return false;
+    }
+  }
+
+  if (host_binary_required) {
+    if (command_line->HasSwitch(kHostBinarySwitchName)) {
+      host_binary_ = command_line->GetSwitchValuePath(kHostBinarySwitchName);
+    } else {
+      LOG(ERROR) << "Invalid command line: --" << kHostBinarySwitchName
+                 << " is required.";
       return false;
     }
   }
@@ -207,6 +225,17 @@ int HostService::Install() {
   string16 name = StringPrintf(ASCIIToUTF16(kMuiStringFormat).c_str(),
                                exe.value().c_str(),
                                IDS_DISPLAY_SERVICE_NAME);
+
+  if (!file_util::AbsolutePath(&host_binary_) ||
+      !file_util::PathExists(host_binary_)) {
+    LOG(ERROR) << "Invalid host binary name: " << host_binary_.value();
+    return kErrorExitCode;
+  }
+
+  string16 command_line = StringPrintf(
+                              ASCIIToUTF16(kServiceCommandLineFormat).c_str(),
+                              exe.value().c_str(),
+                              host_binary_.value().c_str());
   ScopedScHandle service(
       CreateServiceW(scmanager,
                      service_name_.c_str(),
@@ -214,7 +243,7 @@ int HostService::Install() {
                      SERVICE_QUERY_STATUS | SERVICE_CHANGE_CONFIG,
                      SERVICE_WIN32_OWN_PROCESS,
                      SERVICE_DEMAND_START, SERVICE_ERROR_NORMAL,
-                     exe.value().c_str(),
+                     command_line.c_str(),
                      NULL,
                      NULL,
                      ASCIIToUTF16(kServiceDependencies).c_str(),
@@ -322,7 +351,7 @@ int HostService::Run() {
 }
 
 void HostService::RunMessageLoop() {
-  WtsSessionProcessLauncher launcher(this);
+  WtsSessionProcessLauncher launcher(this, host_binary_);
 
   // Run the service.
   message_loop_->Run();
