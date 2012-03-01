@@ -476,6 +476,7 @@
         'browser/sync/util/cryptographer.cc',
         'browser/sync/util/cryptographer.h',
         'browser/sync/util/data_type_histogram.h',
+        'browser/sync/util/encryptor.h',
         'browser/sync/util/enum_set.h',
         'browser/sync/util/extensions_activity_monitor.cc',
         'browser/sync/util/extensions_activity_monitor.h',

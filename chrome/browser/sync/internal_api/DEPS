@@ -12,8 +12,5 @@ include_rules = [
   # We store the Chrome version in the nigori node.
   "+chrome/common/chrome_version_info.h",
 
-  # unittests need this for mac osx keychain overriding
-  "+chrome/browser/password_manager/encryptor.h",
-
   "+chrome/common/net/gaia/google_service_auth_error.h",
 ]

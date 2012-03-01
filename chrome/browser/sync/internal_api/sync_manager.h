@@ -23,6 +23,7 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 
 namespace browser_sync {
+class Encryptor;
 class ExtensionsActivityMonitor;
 class JsBackend;
 class JsEventHandler;
@@ -461,6 +462,7 @@ class SyncManager {
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode,
+            browser_sync::Encryptor* encryptor,
             browser_sync::UnrecoverableErrorHandler*
                 unrecoverable_error_handler,
             browser_sync::ReportUnrecoverableErrorFunction

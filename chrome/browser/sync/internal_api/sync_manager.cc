@@ -62,6 +62,7 @@ using std::string;
 using base::TimeDelta;
 using browser_sync::AllStatus;
 using browser_sync::Cryptographer;
+using browser_sync::Encryptor;
 using browser_sync::JsArgList;
 using browser_sync::JsBackend;
 using browser_sync::JsEventDetails;
@@ -142,6 +143,7 @@ class SyncManager::SyncInternal
         initialized_(false),
         setup_for_test_mode_(false),
         observing_ip_address_changes_(false),
+        encryptor_(NULL),
         unrecoverable_error_handler_(NULL),
         report_unrecoverable_error_function_(NULL),
         created_on_loop_(MessageLoop::current()) {
@@ -195,6 +197,7 @@ class SyncManager::SyncInternal
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode,
+            Encryptor* encryptor,
             UnrecoverableErrorHandler* unrecoverable_error_handler,
             ReportUnrecoverableErrorFunction
                 report_unrecoverable_error_function);
@@ -592,6 +595,7 @@ class SyncManager::SyncInternal
   // This is for keeping track of client events to send to the server.
   DebugInfoEventListener debug_info_event_listener_;
 
+  Encryptor* encryptor_;
   UnrecoverableErrorHandler* unrecoverable_error_handler_;
   ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
 
@@ -726,6 +730,7 @@ bool SyncManager::Init(
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode,
+    Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -746,6 +751,7 @@ bool SyncManager::Init(
                      sync_notifier,
                      restored_key_for_bootstrapping,
                      setup_for_test_mode,
+                     encryptor,
                      unrecoverable_error_handler,
                      report_unrecoverable_error_function);
 }
@@ -861,6 +867,7 @@ bool SyncManager::SyncInternal::Init(
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode,
+    Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
   CHECK(!initialized_);
@@ -884,10 +891,12 @@ bool SyncManager::SyncInternal::Init(
 
   database_path_ = database_location.Append(
       syncable::Directory::kSyncDatabaseFilename);
+  encryptor_ = encryptor;
   unrecoverable_error_handler_ = unrecoverable_error_handler;
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
   share_.directory.reset(
-      new syncable::Directory(unrecoverable_error_handler_,
+      new syncable::Directory(encryptor_,
+                              unrecoverable_error_handler_,
                               report_unrecoverable_error_function_));
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
@@ -1375,7 +1384,7 @@ bool SyncManager::SyncInternal::SetDecryptionPassphrase(
           // password, we need to generate a new bootstrap token to preserve it.
           // We build a temporary cryptographer to allow us to extract these
           // params without polluting our current cryptographer.
-          Cryptographer temp_cryptographer;
+          Cryptographer temp_cryptographer(encryptor_);
           temp_cryptographer.AddKey(key_params);
           temp_cryptographer.GetBootstrapToken(bootstrap_token);
           // We then set the new passphrase as the default passphrase of the
@@ -1395,7 +1404,7 @@ bool SyncManager::SyncInternal::SetDecryptionPassphrase(
           // Otherwise, we're in a situation where the pending keys are
           // encrypted with an old gaia passphrase, while the default is the
           // current gaia passphrase. In that case, we preserve the default.
-          Cryptographer temp_cryptographer;
+          Cryptographer temp_cryptographer(encryptor_);
           temp_cryptographer.SetPendingKeys(cryptographer->GetPendingKeys());
           if (temp_cryptographer.DecryptPendingKeys(key_params)) {
             // Check to see if the pending bag of keys contains the current

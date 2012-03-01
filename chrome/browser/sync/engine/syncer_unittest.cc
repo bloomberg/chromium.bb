@@ -44,6 +44,7 @@
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/engine/test_syncable_utils.h"
+#include "chrome/browser/sync/test/fake_encryptor.h"
 #include "chrome/browser/sync/test/fake_extensions_activity_monitor.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/time.h"
@@ -491,6 +492,7 @@ class SyncerTest : public testing::Test,
   TestIdFactory ids_;
 
   TestDirectorySetterUpper dir_maker_;
+  FakeEncryptor encryptor_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
   scoped_ptr<MockConnectionManager> mock_server_;
 
@@ -658,7 +660,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
     // Mark bookmarks as encrypted and set the cryptographer to have pending
     // keys.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    browser_sync::Cryptographer other_cryptographer;
+    browser_sync::Cryptographer other_cryptographer(&encryptor_);
     other_cryptographer.AddKey(other_params);
     sync_pb::EntitySpecifics specifics;
     sync_pb::NigoriSpecifics* nigori =
@@ -757,7 +759,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
 
 TEST_F(SyncerTest, EncryptionAwareConflicts) {
   KeyParams key_params = {"localhost", "dummy", "foobar"};
-  browser_sync::Cryptographer other_cryptographer;
+  browser_sync::Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.AddKey(key_params);
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark, modified_bookmark;
   bookmark.MutableExtension(sync_pb::bookmark)->set_title("title");
@@ -941,7 +943,7 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
 TEST_F(SyncerTest, NigoriConflicts) {
   KeyParams local_key_params = {"localhost", "dummy", "blargle"};
   KeyParams other_key_params = {"localhost", "dummy", "foobar"};
-  browser_sync::Cryptographer other_cryptographer;
+  browser_sync::Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.AddKey(other_key_params);
   syncable::ModelTypeSet encrypted_types(syncable::PASSWORDS, syncable::NIGORI);
   sync_pb::EntitySpecifics initial_nigori_specifics;

@@ -43,6 +43,10 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace browser_sync {
+class Encryptor;
+}  // namespace browser_sync
+
 namespace sync_api {
 class ReadTransaction;
 class WriteNode;
@@ -811,8 +815,10 @@ class Directory {
     MetahandleSet metahandles_to_purge;
   };
 
+  // Does not take ownership of |encryptor|.
   // |report_unrecoverable_error_function| may be NULL.
   Directory(
+      browser_sync::Encryptor* encryptor,
       browser_sync::UnrecoverableErrorHandler* unrecoverable_error_handler,
       browser_sync::ReportUnrecoverableErrorFunction
           report_unrecoverable_error_function);

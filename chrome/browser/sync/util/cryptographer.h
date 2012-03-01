@@ -20,6 +20,8 @@
 
 namespace browser_sync {
 
+class Encryptor;
+
 extern const char kNigoriTag[];
 
 // The parameters used to initialize a Nigori instance.
@@ -70,7 +72,8 @@ class Cryptographer {
     virtual ~Observer();
   };
 
-  Cryptographer();
+  // Does not take ownership of |encryptor|.
+  explicit Cryptographer(Encryptor* encryptor);
   ~Cryptographer();
 
   // When update on cryptographer is called this enum tells if the
@@ -223,6 +226,8 @@ class Cryptographer {
   // persistence by sync infrastructure.
   bool PackBootstrapToken(const Nigori* nigori, std::string* pack_into) const;
   Nigori* UnpackBootstrapToken(const std::string& token) const;
+
+  Encryptor* const encryptor_;
 
   ObserverList<Observer> observers_;
 

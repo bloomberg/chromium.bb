@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/chrome_encryptor.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/sync_backend_registrar.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
@@ -211,6 +212,9 @@ class SyncBackendHost::Core
 
   // The timer used to periodically call SaveChanges.
   base::RepeatingTimer<Core> save_changes_timer_;
+
+  // Our encryptor, which uses Chrome's encryption functions.
+  ChromeEncryptor encryptor_;
 
   // The top-level syncapi entry point.  Lives on the sync thread.
   scoped_ptr<sync_api::SyncManager> sync_manager_;
@@ -970,6 +974,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.sync_notifier_factory->CreateSyncNotifier(),
       options.restored_key_for_bootstrapping,
       options.setup_for_test_mode,
+      &encryptor_,
       options.unrecoverable_error_handler,
       options.report_unrecoverable_error_function);
   LOG_IF(ERROR, !success) << "Syncapi initialization failed!";

@@ -38,6 +38,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/sync/internal_api/includes/test_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/test/fake_encryptor.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -66,6 +67,7 @@ class TestDirectorySetterUpper {
   void RunInvariantCheck();
 
   ScopedTempDir temp_dir_;
+  FakeEncryptor encryptor_;
   scoped_ptr<syncable::Directory> directory_;
   std::string name_;
 

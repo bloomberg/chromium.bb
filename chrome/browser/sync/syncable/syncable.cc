@@ -94,6 +94,7 @@ bool VerifyReferenceIntegrityUnsafe(const syncable::MetahandlesIndex &index) {
 }  // namespace
 
 using std::string;
+using browser_sync::Encryptor;
 using browser_sync::ReportUnrecoverableErrorFunction;
 using browser_sync::UnrecoverableErrorHandler;
 
@@ -514,9 +515,11 @@ Directory::Kernel::~Kernel() {
 }
 
 Directory::Directory(
+    Encryptor* encryptor,
     UnrecoverableErrorHandler* unrecoverable_error_handler,
     ReportUnrecoverableErrorFunction report_unrecoverable_error_function)
-    : kernel_(NULL),
+    : cryptographer_(encryptor),
+      kernel_(NULL),
       store_(NULL),
       unrecoverable_error_handler_(unrecoverable_error_handler),
       report_unrecoverable_error_function_(

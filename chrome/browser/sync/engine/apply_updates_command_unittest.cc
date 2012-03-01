@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
+#include "chrome/browser/sync/test/fake_encryptor.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -208,6 +209,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
   }
 
   ApplyUpdatesCommand apply_updates_command_;
+  FakeEncryptor encryptor_;
   TestIdFactory id_factory_;
  private:
   int64 next_revision_;
@@ -627,7 +629,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
   }
   {
     // Create a new cryptographer, independent of the one in the session.
-    Cryptographer cryptographer;
+    Cryptographer cryptographer(&encryptor_);
     KeyParams params = {"localhost", "dummy", "bazqux"};
     cryptographer.AddKey(params);
 
@@ -678,7 +680,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   }
 
   // Nigori node updates should update the Cryptographer.
-  Cryptographer other_cryptographer;
+  Cryptographer other_cryptographer(&encryptor_);
   KeyParams params = {"localhost", "dummy", "foobar"};
   other_cryptographer.AddKey(params);
 
@@ -727,7 +729,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   }
 
   // Nigori node updates should update the Cryptographer.
-  Cryptographer other_cryptographer;
+  Cryptographer other_cryptographer(&encryptor_);
   KeyParams params = {"localhost", "dummy", "foobar"};
   other_cryptographer.AddKey(params);
 
@@ -948,7 +950,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
 
   // We encrypt with new keys, triggering the local cryptographer to be unready
   // and unable to decrypt data (once updated).
-  Cryptographer other_cryptographer;
+  Cryptographer other_cryptographer(&encryptor_);
   KeyParams params = {"localhost", "dummy", "foobar"};
   other_cryptographer.AddKey(params);
   sync_pb::EntitySpecifics specifics;

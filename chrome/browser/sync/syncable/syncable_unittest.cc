@@ -26,14 +26,17 @@
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/engine/test_syncable_utils.h"
+#include "chrome/browser/sync/test/fake_encryptor.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "chrome/browser/sync/test/null_transaction_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
-using browser_sync::TestIdFactory;
 using base::ExpectDictBooleanValue;
 using base::ExpectDictStringValue;
+using browser_sync::FakeEncryptor;
+using browser_sync::TestIdFactory;
+using browser_sync::TestUnrecoverableErrorHandler;
 
 namespace syncable {
 
@@ -94,12 +97,13 @@ class SyncableGeneralTest : public testing::Test {
   MessageLoop message_loop_;
   ScopedTempDir temp_dir_;
   NullDirectoryChangeDelegate delegate_;
+  FakeEncryptor encryptor_;
+  TestUnrecoverableErrorHandler handler_;
   FilePath db_path_;
 };
 
 TEST_F(SyncableGeneralTest, General) {
-  browser_sync::TestUnrecoverableErrorHandler handler;
-  Directory dir(&handler, NULL);
+  Directory dir(&encryptor_, &handler_, NULL);
   ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
                              NullTransactionObserver()));
 
@@ -199,8 +203,7 @@ TEST_F(SyncableGeneralTest, General) {
 }
 
 TEST_F(SyncableGeneralTest, ChildrenOps) {
-  browser_sync::TestUnrecoverableErrorHandler handler;
-  Directory dir(&handler, NULL);
+  Directory dir(&encryptor_, &handler_, NULL);
   ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
                              NullTransactionObserver()));
 
@@ -273,8 +276,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
 
   // Test creating a new meta entry.
   {
-    browser_sync::TestUnrecoverableErrorHandler handler;
-    Directory dir(&handler, NULL);
+    Directory dir(&encryptor_, &handler_, NULL);
     ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
                                NullTransactionObserver()));
     {
@@ -291,8 +293,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
 
   // The DB was closed. Now reopen it. This will cause index regeneration.
   {
-    browser_sync::TestUnrecoverableErrorHandler handler;
-    Directory dir(&handler, NULL);
+    Directory dir(&encryptor_, &handler_, NULL);
     ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest",
                                &delegate_, NullTransactionObserver()));
 
@@ -313,8 +314,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 
   // Test creating a deleted, unsynced, server meta entry.
   {
-    browser_sync::TestUnrecoverableErrorHandler handler;
-    Directory dir(&handler, NULL);
+    Directory dir(&encryptor_, &handler_, NULL);
     ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
                                 NullTransactionObserver()));
     {
@@ -333,8 +333,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   // The DB was closed. Now reopen it. This will cause index regeneration.
   // Should still be present and valid in the client tag index.
   {
-    browser_sync::TestUnrecoverableErrorHandler handler;
-    Directory dir(&handler, NULL);
+    Directory dir(&encryptor_, &handler_, NULL);
     ASSERT_EQ(OPENED, dir.Open(db_path_, "IndexTest", &delegate_,
                                NullTransactionObserver()));
 
@@ -349,8 +348,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 }
 
 TEST_F(SyncableGeneralTest, ToValue) {
-  browser_sync::TestUnrecoverableErrorHandler handler;
-  Directory dir(&handler, NULL);
+  Directory dir(&encryptor_, &handler_, NULL);
   ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
                              NullTransactionObserver()));
 
@@ -387,7 +385,7 @@ TEST_F(SyncableGeneralTest, ToValue) {
 // A Directory whose backing store always fails SaveChanges by returning false.
 class TestUnsaveableDirectory : public Directory {
  public:
-  TestUnsaveableDirectory() : Directory(&handler_, NULL) {}
+  TestUnsaveableDirectory() : Directory(&encryptor_, &handler_, NULL) {}
   class UnsaveableBackingStore : public DirectoryBackingStore {
    public:
      UnsaveableBackingStore(const std::string& dir_name,
@@ -403,7 +401,8 @@ class TestUnsaveableDirectory : public Directory {
     return new UnsaveableBackingStore(dir_name, backing_filepath);
   }
  private:
-  browser_sync::TestUnrecoverableErrorHandler handler_;
+  FakeEncryptor encryptor_;
+  TestUnrecoverableErrorHandler handler_;
 };
 
 // Test suite for syncable::Directory.
@@ -421,7 +420,7 @@ class SyncableDirectoryTest : public testing::Test {
     file_path_ = temp_dir_.path().Append(
         FILE_PATH_LITERAL("Test.sqlite3"));
     file_util::Delete(file_path_, true);
-    dir_.reset(new Directory(&handler_, NULL));
+    dir_.reset(new Directory(&encryptor_, &handler_, NULL));
     ASSERT_TRUE(dir_.get());
     ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
                                  &delegate_, NullTransactionObserver()));
@@ -436,7 +435,7 @@ class SyncableDirectoryTest : public testing::Test {
   }
 
   void ReloadDir() {
-    dir_.reset(new Directory(&handler_, NULL));
+    dir_.reset(new Directory(&encryptor_, &handler_, NULL));
     ASSERT_TRUE(dir_.get());
     ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
                                  &delegate_, NullTransactionObserver()));
@@ -489,7 +488,8 @@ class SyncableDirectoryTest : public testing::Test {
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(BOOKMARKS));
   }
 
-  browser_sync::TestUnrecoverableErrorHandler handler_;
+  FakeEncryptor encryptor_;
+  TestUnrecoverableErrorHandler handler_;
   scoped_ptr<Directory> dir_;
   FilePath file_path_;
   NullDirectoryChangeDelegate delegate_;
@@ -1209,8 +1209,7 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
   }
 
   dir_->SaveChanges();
-  browser_sync::TestUnrecoverableErrorHandler handler;
-  dir_.reset(new Directory(&handler, NULL));
+  dir_.reset(new Directory(&encryptor_, &handler_, NULL));
   ASSERT_TRUE(dir_.get());
   ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
                                &delegate_, NullTransactionObserver()));
@@ -1510,15 +1509,16 @@ class SyncableDirectoryManagement : public testing::Test {
  protected:
   MessageLoop message_loop_;
   ScopedTempDir temp_dir_;
+  FakeEncryptor encryptor_;
+  TestUnrecoverableErrorHandler handler_;
   NullDirectoryChangeDelegate delegate_;
 };
 
 TEST_F(SyncableDirectoryManagement, TestFileRelease) {
-  browser_sync::TestUnrecoverableErrorHandler handler;
   FilePath path = temp_dir_.path().Append(
       Directory::kSyncDatabaseFilename);
 
-  syncable::Directory dir(&handler, NULL);
+  syncable::Directory dir(&encryptor_, &handler_, NULL);
   DirOpenResult result =
       dir.Open(path, "ScopeTest", &delegate_, NullTransactionObserver());
   ASSERT_EQ(result, OPENED);
@@ -1573,9 +1573,10 @@ TEST(SyncableDirectory, StressTransactions) {
   MessageLoop message_loop;
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FakeEncryptor encryptor;
+  TestUnrecoverableErrorHandler handler;
   NullDirectoryChangeDelegate delegate;
-  browser_sync::TestUnrecoverableErrorHandler handler;
-  Directory dir(&handler, NULL);
+  Directory dir(&encryptor, &handler, NULL);
   FilePath path = temp_dir.path().Append(Directory::kSyncDatabaseFilename);
   file_util::Delete(path, true);
   std::string dirname = "stress";

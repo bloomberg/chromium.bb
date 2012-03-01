@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/test/fake_encryptor.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +32,7 @@ class MockDirectory : public Directory {
   MOCK_METHOD1(PurgeEntriesWithTypeIn, void(syncable::ModelTypeSet));
 
  private:
+  browser_sync::FakeEncryptor encryptor_;
   syncable::NullDirectoryChangeDelegate delegate_;
 };
 

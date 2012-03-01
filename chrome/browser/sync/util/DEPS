@@ -4,11 +4,9 @@ include_rules = [
   "+chrome/browser/sync/protocol",
   "+chrome/browser/sync/sessions",
   "+chrome/browser/sync/syncable",
+  "+chrome/browser/sync/test",
   "+chrome/browser/sync/util",
 
   # this file is weird.
   "+chrome/browser/sync/engine/syncproto.h",
-
-  # unittests need this for mac osx keychain overriding
-  "+chrome/browser/password_manager/encryptor.h",
 ]

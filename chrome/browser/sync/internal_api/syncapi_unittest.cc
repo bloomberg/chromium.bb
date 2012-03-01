@@ -23,7 +23,6 @@
 #include "base/test/values_test_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/polling_constants.h"
@@ -56,6 +55,7 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/test_user_share.h"
+#include "chrome/browser/sync/test/fake_encryptor.h"
 #include "chrome/browser/sync/test/fake_extensions_activity_monitor.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
@@ -66,6 +66,7 @@
 
 using base::ExpectDictStringValue;
 using browser_sync::Cryptographer;
+using browser_sync::FakeEncryptor;
 using browser_sync::FakeExtensionsActivityMonitor;
 using browser_sync::HasArgsAsList;
 using browser_sync::HasDetailsAsDictionary;
@@ -81,6 +82,7 @@ using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::sessions::SyncSessionSnapshot;
+using browser_sync::TestUnrecoverableErrorHandler;
 using browser_sync::WeakHandle;
 using content::BrowserThread;
 using syncable::IS_DEL;
@@ -758,7 +760,6 @@ class SyncManagerTest : public testing::Test,
     EXPECT_FALSE(sync_notifier_observer_);
     EXPECT_FALSE(js_backend_.IsInitialized());
 
-    browser_sync::TestUnrecoverableErrorHandler handler;
     // Takes ownership of |sync_notifier_mock_|.
     sync_manager_.Init(temp_dir_.path(),
                        WeakHandle<JsEventHandler>(),
@@ -767,7 +768,8 @@ class SyncManagerTest : public testing::Test,
                        &extensions_activity_monitor_, this, "bogus",
                        credentials, sync_notifier_mock_, "",
                        true /* setup_for_test_mode */,
-                       &handler,
+                       &encryptor_,
+                       &handler_,
                        NULL);
 
     EXPECT_TRUE(sync_notifier_observer_);
@@ -817,11 +819,6 @@ class SyncManagerTest : public testing::Test,
   // Helper methods.
   bool SetUpEncryption(NigoriStatus nigori_status,
                        EncryptionStatus encryption_status) {
-    // Mock the Mac Keychain service. The real Keychain can block on user input.
-    #if defined(OS_MACOSX)
-      Encryptor::UseMockKeychain(true);
-    #endif
-
     UserShare* share = sync_manager_.GetUserShare();
     share->directory->set_initial_sync_ended_for_type(syncable::NIGORI, true);
 
@@ -931,6 +928,8 @@ class SyncManagerTest : public testing::Test,
   StrictMock<SyncNotifierMock>* sync_notifier_mock_;
 
  protected:
+  FakeEncryptor encryptor_;
+  TestUnrecoverableErrorHandler handler_;
   SyncManager sync_manager_;
   WeakHandle<JsBackend> js_backend_;
   StrictMock<SyncManagerObserverMock> observer_;
@@ -1515,7 +1514,7 @@ TEST_F(SyncManagerTest, SetInitialGaiaPass) {
 // (case 1 in SyncManager::SyncInternalSetPassphrase)
 TEST_F(SyncManagerTest, UpdateGaiaPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  Cryptographer verifier;
+  Cryptographer verifier(&encryptor_);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1543,7 +1542,7 @@ TEST_F(SyncManagerTest, UpdateGaiaPass) {
 // and re-encrypt everything.
 // (case 2 in SyncManager::SyncInternalSetPassphrase)
 TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
-  Cryptographer verifier;
+  Cryptographer verifier(&encryptor_);
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1592,7 +1591,7 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
 // (case 3 in SyncManager::SyncInternalSetPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  Cryptographer other_cryptographer;
+  Cryptographer other_cryptographer(&encryptor_);
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1636,7 +1635,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
 // (case 4 in SyncManager::SyncInternalSetPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  Cryptographer other_cryptographer;
+  Cryptographer other_cryptographer(&encryptor_);
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1694,7 +1693,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
     EXPECT_TRUE(cryptographer->CanDecrypt(encrypted));
 
     // Verify the saved bootstrap token is based on the new gaia password.
-    Cryptographer temp_cryptographer;
+    Cryptographer temp_cryptographer(&encryptor_);
     temp_cryptographer.Bootstrap(bootstrap_token);
     EXPECT_TRUE(temp_cryptographer.CanDecrypt(encrypted));
   }
@@ -1706,7 +1705,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
 // (case 5 in SyncManager::SyncInternalSetPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  Cryptographer other_cryptographer;
+  Cryptographer other_cryptographer(&encryptor_);
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();

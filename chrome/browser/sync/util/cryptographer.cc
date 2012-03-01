@@ -5,8 +5,9 @@
 #include <algorithm>
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/browser/password_manager/encryptor.h"
+#include "chrome/browser/sync/util/encryptor.h"
 
 namespace browser_sync {
 
@@ -20,10 +21,13 @@ const char kNigoriKeyName[] = "nigori-key";
 
 Cryptographer::Observer::~Observer() {}
 
-Cryptographer::Cryptographer()
-    : default_nigori_(NULL),
+Cryptographer::Cryptographer(Encryptor* encryptor)
+    : encryptor_(encryptor),
+      default_nigori_(NULL),
       encrypted_types_(SensitiveTypes()),
-      encrypt_everything_(false) {}
+      encrypt_everything_(false) {
+  DCHECK(encryptor);
+}
 
 Cryptographer::~Cryptographer() {}
 
@@ -235,7 +239,7 @@ bool Cryptographer::PackBootstrapToken(const Nigori* nigori,
   }
 
   std::string encrypted_token;
-  if (!Encryptor::EncryptString(unencrypted_token, &encrypted_token)) {
+  if (!encryptor_->EncryptString(unencrypted_token, &encrypted_token)) {
     NOTREACHED();
     return false;
   }
@@ -258,7 +262,7 @@ Nigori* Cryptographer::UnpackBootstrapToken(const std::string& token) const {
   }
 
   std::string unencrypted_token;
-  if (!Encryptor::DecryptString(encrypted_data, &unencrypted_token)) {
+  if (!encryptor_->DecryptString(encrypted_data, &unencrypted_token)) {
     DLOG(WARNING) << "Decryption of bootstrap token failed.";
     return NULL;
   }

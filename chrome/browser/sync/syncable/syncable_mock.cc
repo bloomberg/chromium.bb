@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/null_transaction_observer.h"
 
 MockDirectory::MockDirectory(browser_sync::UnrecoverableErrorHandler* handler)
-    : Directory(handler, NULL) {
+    : Directory(&encryptor_, handler, NULL) {
   InitKernelForTest("myk", &delegate_, syncable::NullTransactionObserver());
 }
 
