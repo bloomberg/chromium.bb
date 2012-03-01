@@ -14950,8 +14950,11 @@ Battery full
     <message name="IDS_INTENT_PICKER_CHOOSE_SERVICE" desc="Prompt to the user to select one of the given services to complete a Web Intents action.">
       Which service do you want to use?
     </message>
+    <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
+      You have no services installed. Here are some app suggestions from the Chrome Web Store:
+    </message>
     <message name="IDS_INTENT_PICKER_GET_MORE_SERVICES" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store">
-      App suggestions from the Chrome Web Store
+      App suggestions from the Chrome Web Store:
     </message>
     <message name="IDS_INTENT_PICKER_MORE_SUGGESTIONS" desc="Link text providing a Chrome Web Store link to select more apps.">
       More suggestions
