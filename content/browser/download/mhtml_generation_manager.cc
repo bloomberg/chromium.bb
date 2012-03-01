@@ -8,6 +8,7 @@
 #include "base/platform_file.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/common/view_messages.h"
@@ -26,13 +27,18 @@ MHTMLGenerationManager::Job::Job()
 MHTMLGenerationManager::Job::~Job() {
 }
 
+MHTMLGenerationManager* MHTMLGenerationManager::GetInstance() {
+  return Singleton<MHTMLGenerationManager>::get();
+}
+
 MHTMLGenerationManager::MHTMLGenerationManager() {
 }
 
 MHTMLGenerationManager::~MHTMLGenerationManager() {
 }
 
-void MHTMLGenerationManager::GenerateMHTML(WebContents* web_contents,
+void MHTMLGenerationManager::GenerateMHTML(
+    WebContents* web_contents,
     const FilePath& file,
     const GenerateMHTMLCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -49,7 +55,7 @@ void MHTMLGenerationManager::GenerateMHTML(WebContents* web_contents,
   base::ProcessHandle renderer_process =
       web_contents->GetRenderProcessHost()->GetHandle();
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MHTMLGenerationManager::CreateFile, this,
+      base::Bind(&MHTMLGenerationManager::CreateFile, base::Unretained(this),
                  job_id, file, renderer_process));
 }
 
@@ -57,7 +63,8 @@ void MHTMLGenerationManager::MHTMLGenerated(int job_id, int64 mhtml_data_size) {
   JobFinished(job_id, mhtml_data_size);
 }
 
-void MHTMLGenerationManager::CreateFile(int job_id, const FilePath& file_path,
+void MHTMLGenerationManager::CreateFile(
+    int job_id, const FilePath& file_path,
     base::ProcessHandle renderer_process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFile browser_file = base::CreatePlatformFile(file_path,
@@ -72,7 +79,7 @@ void MHTMLGenerationManager::CreateFile(int job_id, const FilePath& file_path,
       IPC::GetFileHandleForProcess(browser_file, renderer_process, false);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&MHTMLGenerationManager::FileCreated, this,
+      base::Bind(&MHTMLGenerationManager::FileCreated, base::Unretained(this),
                  job_id, browser_file, renderer_file));
 }
 
@@ -118,7 +125,8 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
   job.callback.Run(job.file_path, file_size);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MHTMLGenerationManager::CloseFile, this, job.browser_file));
+      base::Bind(&MHTMLGenerationManager::CloseFile, base::Unretained(this),
+                 job.browser_file));
 
   id_to_job_.erase(job_id);
 }

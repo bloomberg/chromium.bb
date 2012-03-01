@@ -279,10 +279,6 @@ ui::Clipboard* ShellContentBrowserClient::GetClipboard() {
   return shell_browser_main_parts_->GetClipboard();
 }
 
-MHTMLGenerationManager* ShellContentBrowserClient::GetMHTMLGenerationManager() {
-  return NULL;
-}
-
 net::NetLog* ShellContentBrowserClient::GetNetLog() {
   return NULL;
 }

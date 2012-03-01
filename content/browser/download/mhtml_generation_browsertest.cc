@@ -9,7 +9,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,11 +57,8 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
       test_server()->GetURL("files/google/google.html"));
 
   WebContents* tab = browser()->GetSelectedWebContents();
-  MHTMLGenerationManager* mhtml_generation_manager =
-      g_browser_process->mhtml_generation_manager();
-
-  mhtml_generation_manager->GenerateMHTML(tab, path,
-      base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this));
+  tab->GenerateMHTML(path,
+                     base::Bind(&MHTMLGenerationTest::MHTMLGenerated, this));
 
   // Block until the MHTML is generated.
   ui_test_utils::RunMessageLoop();

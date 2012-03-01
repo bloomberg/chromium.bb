@@ -223,10 +223,6 @@ prerender::PrerenderTracker* TestingBrowserProcess::prerender_tracker() {
   return prerender_tracker_.get();
 }
 
-MHTMLGenerationManager* TestingBrowserProcess::mhtml_generation_manager() {
-  return NULL;
-}
-
 ComponentUpdateService* TestingBrowserProcess::component_updater() {
   return NULL;
 }

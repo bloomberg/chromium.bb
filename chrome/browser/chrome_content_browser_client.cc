@@ -1260,11 +1260,6 @@ ui::Clipboard* ChromeContentBrowserClient::GetClipboard() {
   return g_browser_process->clipboard();
 }
 
-MHTMLGenerationManager*
-    ChromeContentBrowserClient::GetMHTMLGenerationManager() {
-  return g_browser_process->mhtml_generation_manager();
-}
-
 net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
 }

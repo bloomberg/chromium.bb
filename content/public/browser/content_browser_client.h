@@ -20,7 +20,6 @@ class BrowserURLHandler;
 class CommandLine;
 class FilePath;
 class GURL;
-class MHTMLGenerationManager;
 class PluginProcessHost;
 class QuotaPermissionContext;
 class RenderViewHost;
@@ -322,7 +321,6 @@ class ContentBrowserClient {
 
   // Getters for common objects.
   virtual ui::Clipboard* GetClipboard() = 0;
-  virtual MHTMLGenerationManager* GetMHTMLGenerationManager() = 0;
   virtual net::NetLog* GetNetLog() = 0;
 
   // Creates a new AccessTokenStore for gelocation.

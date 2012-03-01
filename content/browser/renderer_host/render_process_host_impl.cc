@@ -1327,6 +1327,5 @@ void RenderProcessHostImpl::OnRevealFolderInOS(const FilePath& path) {
 }
 
 void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
-  content::GetContentClient()->browser()->GetMHTMLGenerationManager()->
-      MHTMLGenerated(job_id, data_size);
+  MHTMLGenerationManager::GetInstance()->MHTMLGenerated(job_id, data_size);
 }

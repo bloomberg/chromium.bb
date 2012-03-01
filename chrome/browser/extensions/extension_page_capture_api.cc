@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -127,11 +126,9 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
     return;
   }
 
-  MHTMLGenerationManager::GenerateMHTMLCallback callback =
-      base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this);
-
-  g_browser_process->mhtml_generation_manager()->GenerateMHTML(
-      web_contents, mhtml_path_, callback);
+  web_contents->GenerateMHTML(
+      mhtml_path_,
+      base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this));
 }
 
 void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(const FilePath& file_path,

@@ -255,10 +255,6 @@ ui::Clipboard* MockContentBrowserClient::GetClipboard() {
   return &clipboard;
 }
 
-MHTMLGenerationManager* MockContentBrowserClient::GetMHTMLGenerationManager() {
-  return NULL;
-}
-
 net::NetLog* MockContentBrowserClient::GetNetLog() {
   return NULL;
 }

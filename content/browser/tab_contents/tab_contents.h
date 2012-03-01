@@ -186,6 +186,9 @@ class CONTENT_EXPORT TabContents
   virtual bool SavePage(const FilePath& main_file,
                         const FilePath& dir_path,
                         content::SavePageType save_type) OVERRIDE;
+  virtual void GenerateMHTML(
+      const FilePath& file,
+      const base::Callback<void(const FilePath&, int64)>& callback) OVERRIDE;
   virtual bool IsActiveEntry(int32 page_id) OVERRIDE;
 
   virtual const std::string& GetContentsMimeType() const OVERRIDE;

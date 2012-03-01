@@ -7,11 +7,9 @@
 
 #include <map>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/singleton.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "content/common/content_export.h"
-#include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
 
 class FilePath;
@@ -20,12 +18,9 @@ namespace content {
 class WebContents;
 }
 
-class CONTENT_EXPORT MHTMLGenerationManager
-    : public base::RefCountedThreadSafe<
-          MHTMLGenerationManager, content::BrowserThread::DeleteOnUIThread> {
+class MHTMLGenerationManager {
  public:
-  MHTMLGenerationManager();
-  ~MHTMLGenerationManager();
+  static MHTMLGenerationManager* GetInstance();
 
   typedef base::Callback<void(const FilePath& /* path to the MHTML file */,
       int64 /* size of the file */)> GenerateMHTMLCallback;
@@ -42,6 +37,8 @@ class CONTENT_EXPORT MHTMLGenerationManager
   void MHTMLGenerated(int job_id, int64 mhtml_data_size);
 
  private:
+  friend struct DefaultSingletonTraits<MHTMLGenerationManager>;
+
   struct Job{
     Job();
     ~Job();
@@ -60,6 +57,9 @@ class CONTENT_EXPORT MHTMLGenerationManager
     // The callback to call once generation is complete.
     GenerateMHTMLCallback callback;
   };
+
+  MHTMLGenerationManager();
+  ~MHTMLGenerationManager();
 
   // Called on the file thread to create |file|.
   void CreateFile(int job_id,

@@ -31,7 +31,6 @@ class IconManager;
 class IntranetRedirectDetector;
 class IOThread;
 class MetricsService;
-class MHTMLGenerationManager;
 class NotificationUIManager;
 class PrefService;
 class Profile;
@@ -200,8 +199,6 @@ class BrowserProcess {
   virtual ChromeNetLog* net_log() = 0;
 
   virtual prerender::PrerenderTracker* prerender_tracker() = 0;
-
-  virtual MHTMLGenerationManager* mhtml_generation_manager() = 0;
 
   virtual ComponentUpdateService* component_updater() = 0;
 

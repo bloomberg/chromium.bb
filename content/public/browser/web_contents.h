@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
@@ -268,6 +269,12 @@ class WebContents : public PageNavigator {
   virtual bool SavePage(const FilePath& main_file,
                         const FilePath& dir_path,
                         SavePageType save_type) = 0;
+
+  // Generate an MHTML representation of the current page in the given file.
+  virtual void GenerateMHTML(
+      const FilePath& file,
+      const base::Callback<void(const FilePath& /* path to the MHTML file */,
+                                int64 /* size of the file */)>& callback) = 0;
 
   // Returns true if the active NavigationEntry's page_id equals page_id.
   virtual bool IsActiveEntry(int32 page_id) = 0;

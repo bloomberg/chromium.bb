@@ -120,7 +120,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   virtual ChromeNetLog* net_log() OVERRIDE;
   virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
-  virtual MHTMLGenerationManager* mhtml_generation_manager() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
 
@@ -238,8 +237,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   scoped_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
-
-  scoped_refptr<MHTMLGenerationManager> mhtml_generation_manager_;
 
   // Monitors the state of the 'DisablePluginFinder' policy.
   scoped_ptr<BooleanPrefMember> plugin_finder_disabled_pref_;

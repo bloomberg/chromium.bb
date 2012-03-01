@@ -67,7 +67,6 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -593,13 +592,6 @@ prerender::PrerenderTracker* BrowserProcessImpl::prerender_tracker() {
     prerender_tracker_.reset(new prerender::PrerenderTracker);
 
   return prerender_tracker_.get();
-}
-
-MHTMLGenerationManager* BrowserProcessImpl::mhtml_generation_manager() {
-  if (!mhtml_generation_manager_.get())
-    mhtml_generation_manager_ = new MHTMLGenerationManager();
-
-  return mhtml_generation_manager_.get();
 }
 
 ComponentUpdateService* BrowserProcessImpl::component_updater() {

@@ -17,6 +17,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/download/mhtml_generation_manager.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -1137,6 +1138,12 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
 
   save_package_ = new SavePackage(this, save_type, main_file, dir_path);
   return save_package_->Init();
+}
+
+void TabContents::GenerateMHTML(
+    const FilePath& file,
+    const base::Callback<void(const FilePath&, int64)>& callback) {
+  MHTMLGenerationManager::GetInstance()->GenerateMHTML(this, file, callback);
 }
 
 bool TabContents::IsActiveEntry(int32 page_id) {
