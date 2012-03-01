@@ -322,19 +322,7 @@ void GDataFileSystem::Shutdown() {
 }
 
 void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
-  if (documents_service_->IsFullyAuthenticated()) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, gdata::HTTP_SUCCESS,
-                   documents_service_->oauth2_auth_token()));
-  } else if (documents_service_->IsPartiallyAuthenticated()) {
-    // We have refresh token, let's gets authenticated.
-    documents_service_->StartAuthentication(callback);
-  } else {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, gdata::HTTP_SUCCESS, std::string()));
-  }
+  documents_service_->Authenticate(callback);
 }
 
 void GDataFileSystem::FindFileByPath(

@@ -213,7 +213,7 @@ void AuthOperation::OnGetTokenSuccess(const std::string& access_token) {
 
 // Callback for OAuth2AccessTokenFetcher on failure.
 void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "GDataService: token request using refresh token failed";
+  LOG(WARNING) << "AuthOperation: token request using refresh token failed";
   callback_.Run(HTTP_UNAUTHORIZED, std::string());
   delete this;
 }
@@ -715,9 +715,9 @@ bool ResumeUploadOperation::GetUploadData(std::string* upload_content_type,
   return true;
 }
 
-//================================ GDataService ================================
+//================================ GDataAuthService ============================
 
-void GDataService::Initialize(Profile* profile) {
+void GDataAuthService::Initialize(Profile* profile) {
   profile_ = profile;
   // Get OAuth2 refresh token (if we have any) and register for its updates.
   TokenService* service = profile->GetTokenService();
@@ -730,24 +730,26 @@ void GDataService::Initialize(Profile* profile) {
                  content::Source<TokenService>(service));
 
   if (!refresh_token_.empty())
-    OnOAuth2RefreshTokenChanged();
+    FOR_EACH_OBSERVER(Observer, observers_, OnOAuth2RefreshTokenChanged());
 }
 
-GDataService::GDataService() : profile_(NULL) {
+GDataAuthService::GDataAuthService()
+    : profile_(NULL),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
-GDataService::~GDataService() {
+GDataAuthService::~GDataAuthService() {
 }
 
-void GDataService::StartAuthentication(AuthStatusCallback callback) {
+void GDataAuthService::StartAuthentication(AuthStatusCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
   (new AuthOperation(profile_, GetOAuth2RefreshToken()))->Start(
-      base::Bind(&gdata::GDataService::OnAuthCompleted,
-                 AsWeakPtr(),
+      base::Bind(&gdata::GDataAuthService::OnAuthCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void GDataService::OnAuthCompleted(AuthStatusCallback callback,
+void GDataAuthService::OnAuthCompleted(AuthStatusCallback callback,
                                    GDataErrorCode error,
                                    const std::string& auth_token) {
   if (error == HTTP_SUCCESS)
@@ -757,9 +759,17 @@ void GDataService::OnAuthCompleted(AuthStatusCallback callback,
     callback.Run(error, auth_token);
 }
 
-void GDataService::Observe(int type,
-                           const content::NotificationSource& source,
-                           const content::NotificationDetails& details) {
+void GDataAuthService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void GDataAuthService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void GDataAuthService::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TOKEN_AVAILABLE ||
          type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED);
 
@@ -775,44 +785,64 @@ void GDataService::Observe(int type,
   } else {
     refresh_token_.clear();
   }
-  OnOAuth2RefreshTokenChanged();
+  FOR_EACH_OBSERVER(Observer, observers_, OnOAuth2RefreshTokenChanged());
 }
 
 //=============================== DocumentsService =============================
 
 DocumentsService::DocumentsService()
-    : get_documents_started_(false),
+    : profile_(NULL),
+      get_documents_started_(false),
+      gdata_auth_service_(new GDataAuthService()),
       uploader_(new GDataUploader(this)) {
 }
 
 DocumentsService::~DocumentsService() {
+  gdata_auth_service_->RemoveObserver(this);
 }
 
 void DocumentsService::Initialize(Profile* profile) {
+  profile_ = profile;
   // TODO(satorux,achuith): GDataUploader depends on DownloadStatusUpdater
   // which is not present in unit tests. Solve the dependency issue more
   // cleanly.
   if (g_browser_process->download_status_updater())
     uploader_->Initialize(profile);
-  GDataService::Initialize(profile);
+  // AddObserver() should be called before Initialize() as it could change
+  // the refresh token.
+  gdata_auth_service_->AddObserver(this);
+  gdata_auth_service_->Initialize(profile);
+}
+
+void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
+  if (gdata_auth_service_->IsFullyAuthenticated()) {
+    callback.Run(gdata::HTTP_SUCCESS, gdata_auth_service_->oauth2_auth_token());
+  } else if (gdata_auth_service_->IsPartiallyAuthenticated()) {
+    // We have refresh token, let's gets authenticated.
+    gdata_auth_service_->StartAuthentication(callback);
+  } else {
+    callback.Run(gdata::HTTP_UNAUTHORIZED, std::string());
+  }
 }
 
 void DocumentsService::GetDocuments(const GURL& url,
                                     const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
-  if (!IsFullyAuthenticated()) {
+  if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
-    StartAuthentication(base::Bind(&DocumentsService::GetDocumentsOnAuthRefresh,
-                                   base::Unretained(this),
-                                   url,
-                                   callback));
+    gdata_auth_service_->StartAuthentication(
+        base::Bind(&DocumentsService::GetDocumentsOnAuthRefresh,
+                   base::Unretained(this),
+                   url,
+                   callback));
     return;
   }
 
   get_documents_started_ = true;
   // operation is self-destructing, we don't need to clean it here.
-  GetDocumentsOperation* operation = new GetDocumentsOperation(profile_,
-      oauth2_auth_token());
+  GetDocumentsOperation* operation = new GetDocumentsOperation(
+      profile_,
+      gdata_auth_service_->oauth2_auth_token());
   if (!url.is_empty())
     operation->SetUrl(url);
 
@@ -831,7 +861,7 @@ void DocumentsService::GetDocumentsOnAuthRefresh(const GURL& url,
       callback.Run(error, NULL);
     return;
   }
-  DCHECK(IsPartiallyAuthenticated());
+  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
   GetDocuments(url, callback);
 }
 
@@ -842,7 +872,7 @@ void DocumentsService::OnGetDocumentsCompleted(const GURL& url,
   switch (error) {
   case HTTP_UNAUTHORIZED:
     DCHECK(!value);
-    auth_token_.clear();
+    gdata_auth_service_->ClearOAuth2Token();
     // User authentication might have expired - rerun the request to force
     // auth token refresh.
     GetDocuments(url, callback);
@@ -868,9 +898,9 @@ void DocumentsService::DownloadDocument(const GURL& document_url,
 void DocumentsService::DownloadFile(const GURL& document_url,
                                     DownloadActionCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
-  if (!IsFullyAuthenticated()) {
+  if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
-    StartAuthentication(
+    gdata_auth_service_->StartAuthentication(
         base::Bind(&DocumentsService::DownloadDocumentOnAuthRefresh,
                    base::Unretained(this),
                    callback,
@@ -879,7 +909,7 @@ void DocumentsService::DownloadFile(const GURL& document_url,
   }
   (new DownloadFileOperation(
       profile_,
-      oauth2_auth_token(),
+      gdata_auth_service_->oauth2_auth_token(),
       document_url))->Start(
           base::Bind(&DocumentsService::OnDownloadDocumentCompleted,
           base::Unretained(this),
@@ -896,7 +926,7 @@ void DocumentsService::DownloadDocumentOnAuthRefresh(
       callback.Run(error, document_url, FilePath());
     return;
   }
-  DCHECK(IsPartiallyAuthenticated());
+  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
   DownloadFile(document_url, callback);
 }
 
@@ -907,7 +937,7 @@ void DocumentsService::OnDownloadDocumentCompleted(
     const FilePath& file_path) {
   switch (error) {
     case HTTP_UNAUTHORIZED:
-      auth_token_.clear();
+      gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
       DownloadFile(document_url, callback);
@@ -922,9 +952,9 @@ void DocumentsService::OnDownloadDocumentCompleted(
 void DocumentsService::DeleteDocument(const GURL& document_url,
                                       EntryActionCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
-  if (!IsFullyAuthenticated()) {
+  if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
-    StartAuthentication(
+    gdata_auth_service_->StartAuthentication(
         base::Bind(&DocumentsService::DeleteDocumentOnAuthRefresh,
                    base::Unretained(this),
                    callback,
@@ -933,7 +963,7 @@ void DocumentsService::DeleteDocument(const GURL& document_url,
   }
   (new DeleteDocumentOperation(
       profile_,
-      oauth2_auth_token(),
+      gdata_auth_service_->oauth2_auth_token(),
       document_url))->Start(
           base::Bind(&DocumentsService::OnDeleteDocumentCompleted,
           base::Unretained(this),
@@ -950,7 +980,7 @@ void DocumentsService::DeleteDocumentOnAuthRefresh(
       callback.Run(error, document_url);
     return;
   }
-  DCHECK(IsPartiallyAuthenticated());
+  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
   DeleteDocument(document_url, callback);
 }
 
@@ -960,7 +990,7 @@ void DocumentsService::OnDeleteDocumentCompleted(
     const GURL& document_url) {
   switch (error) {
     case HTTP_UNAUTHORIZED:
-      auth_token_.clear();
+      gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
       DeleteDocument(document_url, callback);
@@ -1033,9 +1063,9 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
     return;
   }
 
-  if (!IsFullyAuthenticated()) {
+  if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
-    StartAuthentication(
+    gdata_auth_service_->StartAuthentication(
         base::Bind(&DocumentsService::InitiateUploadOnAuthRefresh,
                    base::Unretained(this),
                    callback,
@@ -1044,7 +1074,7 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
   }
   (new InitiateUploadOperation(
       profile_,
-      oauth2_auth_token(),
+      gdata_auth_service_->oauth2_auth_token(),
       upload_file_info,
       resumable_create_media_link->href()))->Start(
           base::Bind(&DocumentsService::OnInitiateUploadCompleted,
@@ -1062,7 +1092,7 @@ void DocumentsService::InitiateUploadOnAuthRefresh(
       callback.Run(error, upload_file_info, GURL());
     return;
   }
-  DCHECK(IsPartiallyAuthenticated());
+  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
   InitiateUpload(upload_file_info, callback);
 }
 
@@ -1073,7 +1103,7 @@ void DocumentsService::OnInitiateUploadCompleted(
     const GURL& upload_location) {
   switch (error) {
     case HTTP_UNAUTHORIZED:
-      auth_token_.clear();
+      gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
       InitiateUpload(upload_file_info, callback);
@@ -1089,9 +1119,9 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
                                     ResumeUploadCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
 
-  if (!IsFullyAuthenticated()) {
+  if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
-    StartAuthentication(
+    gdata_auth_service_->StartAuthentication(
         base::Bind(&DocumentsService::ResumeUploadOnAuthRefresh,
                    base::Unretained(this),
                    callback,
@@ -1101,7 +1131,7 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
 
   (new ResumeUploadOperation(
       profile_,
-      oauth2_auth_token(),
+      gdata_auth_service_->oauth2_auth_token(),
       upload_file_info))->Start(
           base::Bind(&DocumentsService::OnResumeUploadCompleted,
                      base::Unretained(this),
@@ -1118,7 +1148,7 @@ void DocumentsService::ResumeUploadOnAuthRefresh(
       callback.Run(error, upload_file_info, 0, 0);
     return;
   }
-  DCHECK(IsPartiallyAuthenticated());
+  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
   ResumeUpload(upload_file_info, callback);
 }
 
@@ -1130,7 +1160,7 @@ void DocumentsService::OnResumeUploadCompleted(
     int64 end_range_received) {
   switch (error) {
     case HTTP_UNAUTHORIZED:
-      auth_token_.clear();
+      gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
       ResumeUpload(upload_file_info, callback);
@@ -1149,7 +1179,7 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
   // TODO(zelidrag): Remove this block once we properly wire these API calls
   // through extension API.
   if (CommandLine::ForCurrentProcess()->HasSwitch("test-gdata")) {
-    if (!IsPartiallyAuthenticated())
+    if (!gdata_auth_service_->IsPartiallyAuthenticated())
       return;
 
     if (!feed_value_.get() && !get_documents_started_) {

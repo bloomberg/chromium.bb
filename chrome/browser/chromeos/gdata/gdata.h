@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
@@ -72,13 +73,31 @@ typedef base::Callback<void(GDataErrorCode error,
                             int64 end_range_received) >
     ResumeUploadCallback;
 
-// Base class for fetching content from GData based services. It integrates
-// specific service integration with OAuth2 stack (TokenService) and provides
-// OAuth2 token refresh infrastructure.
-class GDataService : public base::SupportsWeakPtr<GDataService>,
-                     public content::NotificationObserver {
+// This class provides authentication for GData based services.
+// It integrates specific service integration with OAuth2 stack
+// (TokenService) and provides OAuth2 token refresh infrastructure.
+class GDataAuthService : public content::NotificationObserver {
  public:
-  virtual void Initialize(Profile* profile);
+  class Observer {
+   public:
+    // Triggered when a new OAuth2 refresh token is received from TokenService.
+    virtual void OnOAuth2RefreshTokenChanged() = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
+  GDataAuthService();
+  virtual ~GDataAuthService();
+
+  // Adds and removes the observer. AddObserver() should be called before
+  // Initialize() as it can change the refresh token.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // Initializes the auth service. Starts TokenService to retrieve the
+  // refresh token.
+  void Initialize(Profile* profile);
 
   // Starts fetching OAuth2 auth token from the refresh token.
   void StartAuthentication(AuthStatusCallback callback);
@@ -93,12 +112,8 @@ class GDataService : public base::SupportsWeakPtr<GDataService>,
   // Gets OAuth2 auth token.
   const std::string& oauth2_auth_token() const { return auth_token_; }
 
- protected:
-  GDataService();
-  virtual ~GDataService();
-
-  // Triggered when a new OAuth2 refresh token is received from TokenService.
-  virtual void OnOAuth2RefreshTokenChanged() {}
+  // Clears OAuth2 token.
+  void ClearOAuth2Token() { auth_token_.clear(); }
 
   // Gets OAuth2 refresh token.
   const std::string& GetOAuth2RefreshToken() { return refresh_token_; }
@@ -113,25 +128,32 @@ class GDataService : public base::SupportsWeakPtr<GDataService>,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+ private:
   Profile* profile_;
   std::string refresh_token_;
   std::string auth_token_;
+  ObserverList<Observer> observers_;
 
- private:
   content::NotificationRegistrar registrar_;
+  base::WeakPtrFactory<GDataAuthService> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GDataService);
+  DISALLOW_COPY_AND_ASSIGN(GDataAuthService);
 };
 
 // This calls provides documents feed service calls.
-class DocumentsService : public GDataService {
+class DocumentsService : public GDataAuthService::Observer {
  public:
   // DocumentsService is usually owned and created by GDataFileSystem.
   DocumentsService();
   virtual ~DocumentsService();
 
-  // GDataService override.
-  virtual void Initialize(Profile* profile) OVERRIDE;
+  // Initializes the documents service.
+  void Initialize(Profile* profile);
+
+  // Authenticates the user by fetching the auth token as
+  // needed. |callback| will be run with the error code and the auth
+  // token, on the thread this function is run.
+  void Authenticate(const AuthStatusCallback& callback);
 
   // Gets the document feed from |feed_url|. If this URL is empty, the call
   // will fetch the default ('root') document feed. Upon completion,
@@ -191,7 +213,7 @@ class DocumentsService : public GDataService {
     GURL url;
   };
 
-  // GDataService overrides.
+  // GDataAuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   // TODO(zelidrag): Figure out how to declare/implement following
@@ -266,6 +288,7 @@ class DocumentsService : public GDataService {
   void UpdateFilelist(GDataErrorCode status, base::Value* data);
 
   // Data members.
+  Profile* profile_;
   scoped_ptr<base::Value> feed_value_;
 
   // True if GetDocuments has been started.
@@ -277,6 +300,7 @@ class DocumentsService : public GDataService {
   // via GetDocuments.
   InitiateUploadCallerQueue initiate_upload_callers_;
 
+  scoped_ptr<GDataAuthService> gdata_auth_service_;
   scoped_ptr<GDataUploader> uploader_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentsService);
