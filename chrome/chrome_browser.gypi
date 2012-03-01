@@ -4740,6 +4740,8 @@
             'browser/jankometer.cc',
             'browser/ui/sad_tab_observer.cc',
             'browser/ui/webui/certificate_viewer_webui.cc',
+            'browser/ui/window_sizer.cc',
+            'browser/ui/window_sizer.h',
           ],
           'sources/': [
             ['exclude', '^browser/themes/'],
