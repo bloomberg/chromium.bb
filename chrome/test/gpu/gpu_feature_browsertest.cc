@@ -47,7 +47,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpCommandLine(command_line);
 
     // Do not use mesa if real GPU is required.
-    if (!command_line->HasSwitch("enable-gpu")) {
+    if (!command_line->HasSwitch("use-gpu-in-tests")) {
 #if !defined(OS_MACOSX)
       CHECK(test_launcher_utils::OverrideGLImplementation(
           command_line, gfx::kGLImplementationOSMesaName)) <<

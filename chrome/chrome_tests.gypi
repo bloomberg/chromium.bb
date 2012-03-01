@@ -4097,6 +4097,7 @@
       'sources': [
         'test/base/chrome_test_launcher.cc',
         'test/gpu/gpu_crash_browsertest.cc',
+        'test/gpu/gpu_feature_browsertest.cc',
         'test/gpu/gpu_pixel_browsertest.cc',
         'test/gpu/webgl_conformance_tests.cc',
         'test/gpu/webgl_conformance_test_list_autogen.h',
