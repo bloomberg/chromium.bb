@@ -52,23 +52,27 @@ TEST(MetricsLogManagerTest, StandardFlow) {
 
   // Check that the normal flow works.
   MetricsLogBase* initial_log = new MetricsLogBase("id", 0, "version");
-  log_manager.BeginLoggingWithLog(initial_log);
+  log_manager.BeginLoggingWithLog(initial_log, MetricsLogManager::INITIAL_LOG);
   EXPECT_EQ(initial_log, log_manager.current_log());
   EXPECT_FALSE(log_manager.has_staged_log());
 
-  log_manager.StageCurrentLogForUpload();
+  log_manager.FinishCurrentLog();
   EXPECT_EQ(NULL, log_manager.current_log());
-  EXPECT_TRUE(log_manager.has_staged_log());
-  EXPECT_FALSE(log_manager.staged_log_text().empty());
+  EXPECT_TRUE(log_manager.has_unsent_logs());
+  EXPECT_FALSE(log_manager.has_staged_log());
 
   MetricsLogBase* second_log = new MetricsLogBase("id", 0, "version");
-  log_manager.BeginLoggingWithLog(second_log);
+  log_manager.BeginLoggingWithLog(second_log, MetricsLogManager::ONGOING_LOG);
   EXPECT_EQ(second_log, log_manager.current_log());
+
+  log_manager.StageNextLogForUpload();
   EXPECT_TRUE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.staged_log_text().empty());
 
   log_manager.DiscardStagedLog();
   EXPECT_EQ(second_log, log_manager.current_log());
   EXPECT_FALSE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.has_unsent_logs());
   EXPECT_TRUE(log_manager.staged_log_text().empty());
 
   EXPECT_FALSE(log_manager.has_unsent_logs());
@@ -78,7 +82,7 @@ TEST(MetricsLogManagerTest, AbandonedLog) {
   MetricsLogManager log_manager;
 
   MetricsLogBase* dummy_log = new MetricsLogBase("id", 0, "version");
-  log_manager.BeginLoggingWithLog(dummy_log);
+  log_manager.BeginLoggingWithLog(dummy_log, MetricsLogManager::INITIAL_LOG);
   EXPECT_EQ(dummy_log, log_manager.current_log());
 
   log_manager.DiscardCurrentLog();
@@ -92,24 +96,23 @@ TEST(MetricsLogManagerTest, InterjectedLog) {
   MetricsLogBase* ongoing_log = new MetricsLogBase("id", 0, "version");
   MetricsLogBase* temp_log = new MetricsLogBase("id", 0, "version");
 
-  log_manager.BeginLoggingWithLog(ongoing_log);
+  log_manager.BeginLoggingWithLog(ongoing_log, MetricsLogManager::ONGOING_LOG);
   EXPECT_EQ(ongoing_log, log_manager.current_log());
 
   log_manager.PauseCurrentLog();
   EXPECT_EQ(NULL, log_manager.current_log());
 
-  log_manager.BeginLoggingWithLog(temp_log);
+  log_manager.BeginLoggingWithLog(temp_log, MetricsLogManager::INITIAL_LOG);
   EXPECT_EQ(temp_log, log_manager.current_log());
-  log_manager.StageCurrentLogForUpload();
-  EXPECT_TRUE(log_manager.has_staged_log());
-  log_manager.DiscardStagedLog();
+  log_manager.FinishCurrentLog();
   EXPECT_EQ(NULL, log_manager.current_log());
-  EXPECT_FALSE(log_manager.has_staged_log());
 
   log_manager.ResumePausedLog();
   EXPECT_EQ(ongoing_log, log_manager.current_log());
-  EXPECT_FALSE(log_manager.has_staged_log());
 
+  EXPECT_FALSE(log_manager.has_staged_log());
+  log_manager.StageNextLogForUpload();
+  log_manager.DiscardStagedLog();
   EXPECT_FALSE(log_manager.has_unsent_logs());
 }
 
@@ -132,12 +135,12 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
 
     MetricsLogBase* log1 = new MetricsLogBase("id", 0, "version");
     MetricsLogBase* log2 = new MetricsLogBase("id", 0, "version");
-    log_manager.BeginLoggingWithLog(log1);
-    log_manager.StageCurrentLogForUpload();
-    log_manager.BeginLoggingWithLog(log2);
-    log_manager.StoreStagedLogAsUnsent(MetricsLogManager::INITIAL_LOG);
-    log_manager.StageCurrentLogForUpload();
-    log_manager.StoreStagedLogAsUnsent(MetricsLogManager::ONGOING_LOG);
+    log_manager.BeginLoggingWithLog(log1, MetricsLogManager::INITIAL_LOG);
+    log_manager.FinishCurrentLog();
+    log_manager.BeginLoggingWithLog(log2, MetricsLogManager::ONGOING_LOG);
+    log_manager.StageNextLogForUpload();
+    log_manager.StoreStagedLogAsUnsent();
+    log_manager.FinishCurrentLog();
 
     // Nothing should be written out until PersistUnsentLogs is called.
     EXPECT_EQ(0U, serializer->TypeCount(MetricsLogManager::INITIAL_LOG));
@@ -166,7 +169,7 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     log_manager.LoadPersistedUnsentLogs();
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
-    log_manager.StageNextStoredLogForUpload();
+    log_manager.StageNextLogForUpload();
     log_manager.DiscardStagedLog();
     // The initial log should be sent first; update the persisted storage to
     // verify.
@@ -175,12 +178,12 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     EXPECT_EQ(2U, serializer->TypeCount(MetricsLogManager::ONGOING_LOG));
 
     // Handle the first ongoing log.
-    log_manager.StageNextStoredLogForUpload();
+    log_manager.StageNextLogForUpload();
     log_manager.DiscardStagedLog();
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
     // Handle the last log.
-    log_manager.StageNextStoredLogForUpload();
+    log_manager.StageNextLogForUpload();
     log_manager.DiscardStagedLog();
     EXPECT_FALSE(log_manager.has_unsent_logs());
 
@@ -203,12 +206,10 @@ TEST(MetricsLogManagerTest, LargeLogDiscarding) {
 
   MetricsLogBase* log1 = new MetricsLogBase("id", 0, "version");
   MetricsLogBase* log2 = new MetricsLogBase("id", 0, "version");
-  log_manager.BeginLoggingWithLog(log1);
-  log_manager.StageCurrentLogForUpload();
-  log_manager.BeginLoggingWithLog(log2);
-  log_manager.StoreStagedLogAsUnsent(MetricsLogManager::INITIAL_LOG);
-  log_manager.StageCurrentLogForUpload();
-  log_manager.StoreStagedLogAsUnsent(MetricsLogManager::ONGOING_LOG);
+  log_manager.BeginLoggingWithLog(log1, MetricsLogManager::INITIAL_LOG);
+  log_manager.FinishCurrentLog();
+  log_manager.BeginLoggingWithLog(log2, MetricsLogManager::ONGOING_LOG);
+  log_manager.FinishCurrentLog();
 
   // Only the ongoing log should be written out, due to the threshold.
   log_manager.PersistUnsentLogs();

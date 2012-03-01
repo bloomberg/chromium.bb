@@ -219,11 +219,14 @@ class MetricsService : public content::NotificationObserver,
   // Starts the process of uploading metrics data.
   void StartScheduledUpload();
 
-  // Do not call OnMemoryDetailCollectionDone() or
-  // OnHistogramSynchronizationDone() directly; use
-  // StartSchedulerIfNecessary() to schedule a call.
+  // Starts collecting any data that should be added to a log just before it is
+  // closed.
+  void StartFinalLogInfoCollection();
+  // Callbacks for various stages of final log info collection. Do not call
+  // these directly.
   void OnMemoryDetailCollectionDone();
   void OnHistogramSynchronizationDone();
+  void OnFinalLogInfoCollectionDone();
 
   // Takes whatever log should be uploaded next (according to the state_)
   // and makes it the staged log.  If there is already a staged log, this is a
@@ -232,6 +235,9 @@ class MetricsService : public content::NotificationObserver,
 
   // Record stats, client ID, Session ID, etc. in a special "first" log.
   void PrepareInitialLog();
+
+  // Uploads the currently staged log (which must be non-null).
+  void SendStagedLog();
 
   // Prepared the staged log to be passed to the server. Upon return,
   // current_fetch_ should be reset with its upload data set to a compressed

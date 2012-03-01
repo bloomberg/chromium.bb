@@ -28,28 +28,43 @@ class MetricsLogManager {
     // Exposed to reduce code churn as we transition from the XML pipeline to
     // the protocol buffer pipeline.
     bool empty() const;
+    void swap(SerializedLog& log);
 
     std::string xml;
     std::string proto;
   };
 
-  // Takes ownership of |log|, and makes it the current_log.
-  // This should only be called if there is not a current log.
-  void BeginLoggingWithLog(MetricsLogBase* log);
+  enum LogType {
+    INITIAL_LOG,  // The first log of a session.
+    ONGOING_LOG,  // Subsequent logs in a session.
+  };
+
+  // Takes ownership of |log|, which has type |log_type|, and makes it the
+  // current_log. This should only be called if there is not a current log.
+  void BeginLoggingWithLog(MetricsLogBase* log, LogType log_type);
 
   // Returns the in-progress log.
   MetricsLogBase* current_log() { return current_log_.get(); }
 
-  // Closes |current_log| and stages it for upload, leaving |current_log| NULL.
-  void StageCurrentLogForUpload();
+  // Closes current_log(), compresses it, and stores the compressed log for
+  // later, leaving current_log() NULL.
+  void FinishCurrentLog();
+
+  // Returns true if there are any logs waiting to be uploaded.
+  bool has_unsent_logs() const {
+    return !unsent_initial_logs_.empty() || !unsent_ongoing_logs_.empty();
+  }
+
+  // Populates staged_log_text() with the next stored log to send.
+  // Should only be called if has_unsent_logs() is true.
+  void StageNextLogForUpload();
 
   // Returns true if there is a log that needs to be, or is being, uploaded.
-  // Note that this returns true even if compressing the log text failed.
   bool has_staged_log() const;
 
   // Returns true if there is a protobuf log that needs to be uploaded.
   // In the case that an XML upload needs to be re-issued due to a previous
-  // failure, |has_staged_log()| will return true while this returns false.
+  // failure, has_staged_log() will return true while this returns false.
   bool has_staged_log_proto() const;
 
   // The text of the staged log, in compressed XML or protobuf format. Empty if
@@ -76,32 +91,17 @@ class MetricsLogManager {
   // removed.
   void PauseCurrentLog();
 
-  // Restores the previously paused log (if any) to current_log.
+  // Restores the previously paused log (if any) to current_log().
   // This should only be called if there is not a current log.
   void ResumePausedLog();
 
-  // Returns true if there are any logs left over from previous sessions that
-  // need to be uploaded.
-  bool has_unsent_logs() const {
-    return !unsent_initial_logs_.empty() || !unsent_ongoing_logs_.empty();
-  }
+  // Saves the staged log, then clears staged_log().
+  // This can only be called if has_staged_log() is true.
+  void StoreStagedLogAsUnsent();
 
-  enum LogType {
-    INITIAL_LOG,  // The first log of a session.
-    ONGOING_LOG,  // Subsequent logs in a session.
-  };
-
-  // Saves the staged log as the given type (or discards it in accordance with
-  // set_max_ongoing_log_store_size), then clears the staged log.
-  // This can only be called after StageCurrentLogForUpload.
-  void StoreStagedLogAsUnsent(LogType log_type);
-
-  // Populates staged_log_text with the next stored log to send.
-  void StageNextStoredLogForUpload();
-
-  // Sets the threshold for how large an onging log can be and still be stored.
-  // Ongoing logs larger than this will be discarded. 0 is interpreted as no
-  // limit.
+  // Sets the threshold for how large an onging log can be and still be written
+  // to persistant storage. Ongoing logs larger than this will be discarded
+  // before persisting. 0 is interpreted as no limit.
   void set_max_ongoing_log_store_size(size_t max_size) {
     max_ongoing_log_store_size_ = max_size;
   }
@@ -138,23 +138,24 @@ class MetricsLogManager {
   void LoadPersistedUnsentLogs();
 
  private:
-  // Compresses |staged_log_| and stores the result in
-  // |compressed_staged_xml_log_text_|.
-  void CompressStagedLog();
+  // Saves |log_text| as the given type (or discards it in accordance with
+  // |max_ongoing_log_store_size_|).
+  // NOTE: This clears the contents of |log_text| (to avoid an expensive
+  // string copy), so the log should be discarded after this call.
+  void StoreLog(SerializedLog* log_text, LogType log_type);
+
+  // Compresses current_log_ into compressed_log.
+  void CompressCurrentLog(SerializedLog* compressed_log);
 
   // Compresses the text in |input| using bzip2, store the result in |output|.
   static bool Bzip2Compress(const std::string& input, std::string* output);
 
   // The log that we are still appending to.
   scoped_ptr<MetricsLogBase> current_log_;
+  LogType current_log_type_;
 
   // A paused, previously-current log.
   scoped_ptr<MetricsLogBase> paused_log_;
-
-  // The log that we are currently transmiting, or about to try to transmit.
-  // Note that when using StageNextStoredLogForUpload, this can be NULL while
-  // |compressed_staged_xml_log_text_| is non-NULL.
-  scoped_ptr<MetricsLogBase> staged_log_;
 
   // Helper class to handle serialization/deserialization of logs for persistent
   // storage. May be NULL.
@@ -164,6 +165,7 @@ class MetricsLogManager {
   // The first item in the pair is the compressed XML representation; the second
   // is the protobuf representation.
   SerializedLog staged_log_text_;
+  LogType staged_log_type_;
 
   // Logs from a previous session that have not yet been sent.
   // The first item in each pair is the XML representation; the second item is

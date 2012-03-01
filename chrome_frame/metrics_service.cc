@@ -366,8 +366,11 @@ void MetricsService::StartRecording() {
   if (log_manager_.current_log())
     return;
 
+  MetricsLogManager::LogType log_type = (state_ == INITIALIZED) ?
+      MetricsLogManager::INITIAL_LOG : MetricsLogManager::ONGOING_LOG;
   log_manager_.BeginLoggingWithLog(new MetricsLogBase(client_id_, session_id_,
-                                                      GetVersionString()));
+                                                      GetVersionString()),
+                                   log_type);
   if (state_ == INITIALIZED)
     state_ = ACTIVE;
 }
@@ -384,10 +387,12 @@ void MetricsService::StopRecording(bool save_log) {
     RecordCurrentHistograms();
   }
 
-  if (save_log)
-    log_manager_.StageCurrentLogForUpload();
-  else
+  if (save_log) {
+    log_manager_.FinishCurrentLog();
+    log_manager_.StageNextLogForUpload();
+  } else {
     log_manager_.DiscardCurrentLog();
+  }
 }
 
 void MetricsService::MakePendingLog() {
@@ -409,8 +414,6 @@ void MetricsService::MakePendingLog() {
       DCHECK(false);
       return;
   }
-
-  DCHECK(log_manager_.has_staged_log());
 }
 
 bool MetricsService::TransmissionPermitted() const {
@@ -434,19 +437,18 @@ bool MetricsService::UploadData() {
   }
 
   MakePendingLog();
-  DCHECK(log_manager_.has_staged_log());
 
   bool ret = true;
 
-  if (log_manager_.staged_log_text().empty()) {
-    NOTREACHED() << "Failed to compress log for transmission.";
-    ret = false;
-  } else {
+  if (log_manager_.has_staged_log()) {
     HRESULT hr = ChromeFrameMetricsDataUploader::UploadDataHelper(
         log_manager_.staged_log_text().xml);
     DCHECK(SUCCEEDED(hr));
+    log_manager_.DiscardStagedLog();
+  } else {
+    NOTREACHED();
+    ret = false;
   }
-  log_manager_.DiscardStagedLog();
 
   currently_uploading = 0;
   return ret;

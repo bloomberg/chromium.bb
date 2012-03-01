@@ -818,7 +818,8 @@ void MetricsService::StartRecording() {
   if (log_manager_.current_log())
     return;
 
-  log_manager_.BeginLoggingWithLog(new MetricsLog(client_id_, session_id_));
+  log_manager_.BeginLoggingWithLog(new MetricsLog(client_id_, session_id_),
+                                   MetricsLogManager::ONGOING_LOG);
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
@@ -863,7 +864,7 @@ void MetricsService::StopRecording() {
   current_log->RecordIncrementalStabilityElements(plugins_);
   RecordCurrentHistograms();
 
-  log_manager_.StageCurrentLogForUpload();
+  log_manager_.FinishCurrentLog();
 }
 
 void MetricsService::PushPendingLogsToPersistentStorage() {
@@ -871,19 +872,13 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
     return;  // We didn't and still don't have time to get plugin list etc.
 
   if (log_manager_.has_staged_log()) {
-    if (state_ == INITIAL_LOG_READY) {
-      // We may race here, and send second copy of initial log later.
-      log_manager_.StoreStagedLogAsUnsent(MetricsLogManager::INITIAL_LOG);
+    // We may race here, and send second copy of initial log later.
+    if (state_ == INITIAL_LOG_READY)
       state_ = SENDING_OLD_LOGS;
-    } else {
-      // TODO(jar): Verify correctness in other states, including sending unsent
-      // initial logs.
-      log_manager_.StoreStagedLogAsUnsent(MetricsLogManager::ONGOING_LOG);
-    }
+    log_manager_.StoreStagedLogAsUnsent();
   }
   DCHECK(!log_manager_.has_staged_log());
   StopRecording();
-  log_manager_.StoreStagedLogAsUnsent(MetricsLogManager::ONGOING_LOG);
   StoreUnsentLogs();
 }
 
@@ -903,6 +898,15 @@ void MetricsService::StartScheduledUpload() {
     return;
   }
 
+  StartFinalLogInfoCollection();
+}
+
+void MetricsService::StartFinalLogInfoCollection() {
+  // Begin the multi-step process of collecting memory usage histograms:
+  // First spawn a task to collect the memory details; when that task is
+  // finished, it will call OnMemoryDetailCollectionDone. That will in turn
+  // call HistogramSynchronization to collect histograms from all renderers and
+  // then call OnHistogramSynchronizationDone to continue processing.
   DCHECK(!waiting_for_asynchronus_reporting_step_);
   waiting_for_asynchronus_reporting_step_ = true;
 
@@ -927,13 +931,6 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   // step.
   DCHECK(waiting_for_asynchronus_reporting_step_);
 
-  // Right before the UMA transmission gets started, there's one more thing we'd
-  // like to record: the histogram of memory usage, so we spawn a task to
-  // collect the memory details and when that task is finished, it will call
-  // OnMemoryDetailCollectionDone, which will call HistogramSynchronization to
-  // collect histograms from all renderers and then we will call
-  // OnHistogramSynchronizationDone to continue processing.
-
   // Create a callback_task for OnHistogramSynchronizationDone.
   base::Closure callback = base::Bind(
       &MetricsService::OnHistogramSynchronizationDone,
@@ -951,7 +948,15 @@ void MetricsService::OnMemoryDetailCollectionDone() {
 
 void MetricsService::OnHistogramSynchronizationDone() {
   DCHECK(IsSingleThreaded());
+  // This function should only be called as the callback from an ansynchronous
+  // step.
+  DCHECK(waiting_for_asynchronus_reporting_step_);
 
+  waiting_for_asynchronus_reporting_step_ = false;
+  OnFinalLogInfoCollectionDone();
+}
+
+void MetricsService::OnFinalLogInfoCollectionDone() {
   // If somehow there is a fetch in progress, we return and hope things work
   // out. The scheduler isn't informed since if this happens, the scheduler
   // will get a response from the upload.
@@ -959,11 +964,6 @@ void MetricsService::OnHistogramSynchronizationDone() {
   DCHECK(!current_fetch_proto_.get());
   if (current_fetch_xml_.get() || current_fetch_proto_.get())
     return;
-
-  // This function should only be called as the callback from an ansynchronous
-  // step.
-  DCHECK(waiting_for_asynchronus_reporting_step_);
-  waiting_for_asynchronus_reporting_step_ = false;
 
   // If we're getting no notifications, then the log won't have much in it, and
   // it's possible the computer is about to go to sleep, so don't upload and
@@ -984,6 +984,80 @@ void MetricsService::OnHistogramSynchronizationDone() {
     scheduler_->UploadCancelled();
     return;
   }
+
+  SendStagedLog();
+}
+
+void MetricsService::MakeStagedLog() {
+  if (log_manager_.has_staged_log())
+    return;
+
+  switch (state_) {
+    case INITIALIZED:
+    case INIT_TASK_SCHEDULED:  // We should be further along by now.
+      DCHECK(false);
+      return;
+
+    case INIT_TASK_DONE:
+      // We need to wait for the initial log to be ready before sending
+      // anything, because the server will tell us whether it wants to hear
+      // from us.
+      PrepareInitialLog();
+      DCHECK(state_ == INIT_TASK_DONE);
+      log_manager_.LoadPersistedUnsentLogs();
+      state_ = INITIAL_LOG_READY;
+      break;
+
+    case SENDING_OLD_LOGS:
+      if (log_manager_.has_unsent_logs()) {
+        log_manager_.StageNextLogForUpload();
+        break;
+      }
+      state_ = SENDING_CURRENT_LOGS;
+      // Fall through.
+
+    case SENDING_CURRENT_LOGS:
+      StopRecording();
+      StartRecording();
+      log_manager_.StageNextLogForUpload();
+      break;
+
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  DCHECK(log_manager_.has_staged_log());
+}
+
+void MetricsService::PrepareInitialLog() {
+  DCHECK(state_ == INIT_TASK_DONE);
+
+  MetricsLog* log = new MetricsLog(client_id_, session_id_);
+  log->set_hardware_class(hardware_class_);  // Adds to initial log.
+  log->RecordEnvironment(plugins_, profile_dictionary_.get());
+
+  // Histograms only get written to the current log, so make the new log current
+  // before writing them.
+  log_manager_.PauseCurrentLog();
+  log_manager_.BeginLoggingWithLog(log, MetricsLogManager::INITIAL_LOG);
+  RecordCurrentHistograms();
+  log_manager_.FinishCurrentLog();
+  log_manager_.ResumePausedLog();
+
+  DCHECK(!log_manager_.has_staged_log());
+  log_manager_.StageNextLogForUpload();
+}
+
+void MetricsService::StoreUnsentLogs() {
+  if (state_ < INITIAL_LOG_READY)
+    return;  // We never Recalled the prior unsent logs.
+
+  log_manager_.PersistUnsentLogs();
+}
+
+void MetricsService::SendStagedLog() {
+  DCHECK(log_manager_.has_staged_log());
 
   PrepareFetchWithStagedLog();
 
@@ -1011,73 +1085,6 @@ void MetricsService::OnHistogramSynchronizationDone() {
     current_fetch_proto_->Start();
 
   HandleIdleSinceLastTransmission(true);
-}
-
-
-void MetricsService::MakeStagedLog() {
-  if (log_manager_.has_staged_log())
-    return;
-
-  switch (state_) {
-    case INITIALIZED:
-    case INIT_TASK_SCHEDULED:  // We should be further along by now.
-      DCHECK(false);
-      return;
-
-    case INIT_TASK_DONE:
-      // We need to wait for the initial log to be ready before sending
-      // anything, because the server will tell us whether it wants to hear
-      // from us.
-      PrepareInitialLog();
-      DCHECK(state_ == INIT_TASK_DONE);
-      log_manager_.LoadPersistedUnsentLogs();
-      state_ = INITIAL_LOG_READY;
-      break;
-
-    case SENDING_OLD_LOGS:
-      if (log_manager_.has_unsent_logs()) {
-        log_manager_.StageNextStoredLogForUpload();
-        break;
-      }
-      state_ = SENDING_CURRENT_LOGS;
-      // Fall through.
-
-    case SENDING_CURRENT_LOGS:
-      StopRecording();
-      StartRecording();
-      break;
-
-    default:
-      NOTREACHED();
-      return;
-  }
-
-  DCHECK(log_manager_.has_staged_log());
-}
-
-void MetricsService::PrepareInitialLog() {
-  DCHECK(state_ == INIT_TASK_DONE);
-
-  MetricsLog* log = new MetricsLog(client_id_, session_id_);
-  log->set_hardware_class(hardware_class_);  // Adds to initial log.
-  log->RecordEnvironment(plugins_, profile_dictionary_.get());
-
-  // Histograms only get written to the current log, so make the new log current
-  // before writing them.
-  log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(log);
-  RecordCurrentHistograms();
-
-  DCHECK(!log_manager_.has_staged_log());
-  log_manager_.StageCurrentLogForUpload();
-  log_manager_.ResumePausedLog();
-}
-
-void MetricsService::StoreUnsentLogs() {
-  if (state_ < INITIAL_LOG_READY)
-    return;  // We never Recalled the prior unsent logs.
-
-  log_manager_.PersistUnsentLogs();
 }
 
 void MetricsService::PrepareFetchWithStagedLog() {

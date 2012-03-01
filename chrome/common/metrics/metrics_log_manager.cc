@@ -22,7 +22,9 @@ const char kDiscardedLog[] = "Log discarded";
 
 }  // anonymous namespace
 
-MetricsLogManager::MetricsLogManager() : max_ongoing_log_store_size_(0) {}
+MetricsLogManager::MetricsLogManager() : current_log_type_(INITIAL_LOG),
+                                         staged_log_type_(INITIAL_LOG),
+                                         max_ongoing_log_store_size_(0) {}
 
 MetricsLogManager::~MetricsLogManager() {}
 
@@ -31,20 +33,41 @@ bool MetricsLogManager::SerializedLog::empty() const {
   return xml.empty();
 }
 
-void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log) {
-  DCHECK(!current_log_.get());
-  current_log_.reset(log);
+void MetricsLogManager::SerializedLog::swap(SerializedLog& log) {
+  xml.swap(log.xml);
+  proto.swap(log.proto);
 }
 
-void MetricsLogManager::StageCurrentLogForUpload() {
+void MetricsLogManager::BeginLoggingWithLog(MetricsLogBase* log,
+                                            LogType log_type) {
+  DCHECK(!current_log_.get());
+  current_log_.reset(log);
+  current_log_type_ = log_type;
+}
+
+void MetricsLogManager::FinishCurrentLog() {
   DCHECK(current_log_.get());
   current_log_->CloseLog();
-  staged_log_.reset(current_log_.release());
-  CompressStagedLog();
+  SerializedLog compressed_log;
+  CompressCurrentLog(&compressed_log);
+  if (!compressed_log.empty())
+    StoreLog(&compressed_log, current_log_type_);
+  current_log_.reset();
+}
+
+void MetricsLogManager::StageNextLogForUpload() {
+  // Prioritize initial logs for uploading.
+  std::vector<SerializedLog>* source_list =
+      unsent_initial_logs_.empty() ? &unsent_ongoing_logs_
+                                   : &unsent_initial_logs_;
+  DCHECK(!source_list->empty());
+  DCHECK(staged_log_text_.empty());
+  staged_log_text_.swap(source_list->back());
+  source_list->pop_back();
 }
 
 bool MetricsLogManager::has_staged_log() const {
-  return staged_log_.get() || !staged_log_text().empty();
+  return !staged_log_text().empty();
 }
 
 bool MetricsLogManager::has_staged_log_proto() const {
@@ -52,7 +75,6 @@ bool MetricsLogManager::has_staged_log_proto() const {
 }
 
 void MetricsLogManager::DiscardStagedLog() {
-  staged_log_.reset();
   staged_log_text_.xml.clear();
   staged_log_text_.proto.clear();
 }
@@ -76,49 +98,48 @@ void MetricsLogManager::ResumePausedLog() {
   current_log_.reset(paused_log_.release());
 }
 
-void MetricsLogManager::StoreStagedLogAsUnsent(LogType log_type) {
+void MetricsLogManager::StoreStagedLogAsUnsent() {
   DCHECK(has_staged_log());
 
   // If compressing the log failed, there's nothing to store.
-  if (staged_log_text().empty())
+  if (staged_log_text_.empty())
     return;
 
-  if (log_type == INITIAL_LOG) {
-    unsent_initial_logs_.push_back(staged_log_text_);
-  } else {
-    // If it's too large, just note that and discard it.
-    if (max_ongoing_log_store_size_ &&
-        staged_log_text().xml.length() > max_ongoing_log_store_size_) {
-      // TODO(isherman): We probably want a similar check for protobufs, but we
-      // don't want to prevent XML upload just because the protobuf version is
-      // too long.  In practice, I'm pretty sure the XML version should always
-      // be longer, or at least on the same order of magnitude in length.
-      UMA_HISTOGRAM_COUNTS(
-          "UMA.Large Accumulated Log Not Persisted",
-          static_cast<int>(staged_log_text().xml.length()));
-    } else {
-      unsent_ongoing_logs_.push_back(staged_log_text_);
-    }
-  }
+  StoreLog(&staged_log_text_, staged_log_type_);
   DiscardStagedLog();
 }
 
-void MetricsLogManager::StageNextStoredLogForUpload() {
-  // Prioritize initial logs for uploading.
-  std::vector<SerializedLog>* source_list =
-      unsent_initial_logs_.empty() ?
-      &unsent_ongoing_logs_ :
-      &unsent_initial_logs_;
-  DCHECK(!source_list->empty());
-  DCHECK(staged_log_text().empty());
-  staged_log_text_ = source_list->back();
-  source_list->pop_back();
+void MetricsLogManager::StoreLog(SerializedLog* log_text, LogType log_type) {
+  std::vector<SerializedLog>* destination_list =
+      (log_type == INITIAL_LOG) ? &unsent_initial_logs_
+                                : &unsent_ongoing_logs_;
+  destination_list->push_back(SerializedLog());
+  destination_list->back().swap(*log_text);
 }
 
 void MetricsLogManager::PersistUnsentLogs() {
   DCHECK(log_serializer_.get());
   if (!log_serializer_.get())
     return;
+  // Remove any ongoing logs that are over the serialization size limit.
+  if (max_ongoing_log_store_size_) {
+    for (std::vector<SerializedLog>::iterator it = unsent_ongoing_logs_.begin();
+         it != unsent_ongoing_logs_.end();) {
+      size_t log_size = it->xml.length();
+      if (log_size > max_ongoing_log_store_size_) {
+        // TODO(isherman): We probably want a similar check for protobufs, but
+        // we don't want to prevent XML upload just because the protobuf version
+        // is too long.  In practice, I'm pretty sure the XML version should
+        // always be longer, or at least on the same order of magnitude in
+        // length.
+        UMA_HISTOGRAM_COUNTS("UMA.Large Accumulated Log Not Persisted",
+                             static_cast<int>(log_size));
+        it = unsent_ongoing_logs_.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
   log_serializer_->SerializeLogs(unsent_initial_logs_, INITIAL_LOG);
   log_serializer_->SerializeLogs(unsent_ongoing_logs_, ONGOING_LOG);
 }
@@ -131,21 +152,21 @@ void MetricsLogManager::LoadPersistedUnsentLogs() {
   log_serializer_->DeserializeLogs(ONGOING_LOG, &unsent_ongoing_logs_);
 }
 
-void MetricsLogManager::CompressStagedLog() {
-  int text_size = staged_log_->GetEncodedLogSizeXml();
-  std::string staged_log_text;
+void MetricsLogManager::CompressCurrentLog(SerializedLog* compressed_log) {
+  int text_size = current_log_->GetEncodedLogSizeXml();
   DCHECK_GT(text_size, 0);
-  staged_log_->GetEncodedLogXml(WriteInto(&staged_log_text, text_size + 1),
-                                text_size);
+  std::string log_text;
+  current_log_->GetEncodedLogXml(WriteInto(&log_text, text_size + 1),
+                                 text_size);
 
-  bool success = Bzip2Compress(staged_log_text, &staged_log_text_.xml);
+  bool success = Bzip2Compress(log_text, &(compressed_log->xml));
   if (success) {
     // Allow security-conscious users to see all metrics logs that we send.
-    DVLOG(1) << "METRICS LOG: " << staged_log_text;
+    DVLOG(1) << "METRICS LOG: " << log_text;
 
     // Note that we only save the protobuf version if we succeeded in
     // compressing the XML, so that the two data streams are the same.
-    staged_log_->GetEncodedLogProto(&staged_log_text_.proto);
+    current_log_->GetEncodedLogProto(&(compressed_log->proto));
   } else {
     NOTREACHED() << "Failed to compress log for transmission.";
   }
