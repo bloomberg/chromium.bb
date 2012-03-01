@@ -9,41 +9,21 @@
  */
 
 label Chrome {
-  M18 = 0.1
+  M19 = 0.2
 };
-
-#inline c
-#pragma pack(push, 1)
-#endinl
 
 /**
  * The data for one gamepad device.
  */
-struct PP_GamepadData_Dev {
-    /**
-     * Is there a gamepad connected at this index? If this is false, no other
-     * data in this structure is valid.
-     */
-    char connected;
-
-    /**
-     * String identifier for the type of device/manufacturer.
-     */
-    uint16_t[128] id;
-
-    /**
-     * Monotonically increasing value that is incremented when the data have
-     * been updated.
-     */
-    uint64_t timestamp;
-
+[assert_size(472)]
+struct PP_GamepadSampleData_Dev {
     /**
      * Number of valid elements in the |axes| array.
      */
     uint32_t axes_length;
 
     /**
-     * Normalized values for the axes, indices valid up to |axesLength|-1. Axis
+     * Normalized values for the axes, indices valid up to |axes_length|-1. Axis
      * values range from -1..1, and are in order of "importance".
      */
     float_t[16] axes;
@@ -54,42 +34,62 @@ struct PP_GamepadData_Dev {
     uint32_t buttons_length;
 
     /**
-     * Normalized values for the buttons, indices valid up to |buttonsLength|
+     * Normalized values for the buttons, indices valid up to |buttons_length|
      * - 1. Button values range from 0..1, and are in order of importance.
      */
     float_t[32] buttons;
+
+    /**
+     * Monotonically increasing value that is incremented when the data have
+     * been updated.
+     */
+    double_t timestamp;
+
+    /**
+     * Identifier for the type of device/manufacturer.
+     */
+    uint16_t[128] id;
+
+    /**
+     * Is there a gamepad connected at this index? If this is false, no other
+     * data in this structure is valid.
+     */
+    PP_Bool connected;
+
+    /* Padding to make the struct the same size between 64 and 32. */
+    char[4] unused_pad_;
 };
 
 /**
  * The data for all gamepads connected to the system.
  */
-struct PP_GamepadsData_Dev {
+[assert_size(1896)]
+struct PP_GamepadsSampleData_Dev {
     /**
      * Number of valid elements in the |items| array.
      */
     uint32_t length;
 
+    /* Padding to make the struct the same size between 64 and 32. */
+    char[4] unused_pad_;
+
     /**
      * Data for an individual gamepad device connected to the system.
      */
-    PP_GamepadData_Dev[4] items;
+    PP_GamepadSampleData_Dev[4] items;
 };
-
-#inline c
-#pragma pack(pop)
-#endinl
 
 /**
  * The <code>PPB_Gamepad_Dev</code> interface allows retrieving data from
  * gamepad/joystick devices that are connected to the system.
  */
-[version=0.1, macro="PPB_GAMEPAD_DEV_INTERFACE"]
+[version=0.2, macro="PPB_GAMEPAD_DEV_INTERFACE"]
 interface PPB_Gamepad_Dev {
   /**
    * Samples the current state of the connected gamepads.
    */
-  void SampleGamepads(
+  void Sample(
       [in] PP_Instance instance,
-      [out] PP_GamepadsData_Dev data);
+      [out] PP_GamepadsSampleData_Dev data);
 
 };

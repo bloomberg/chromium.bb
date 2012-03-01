@@ -13,7 +13,7 @@ namespace thunk {
 
 namespace {
 
-void SampleGamepads(PP_Instance instance, PP_GamepadsData_Dev* data) {
+void SampleGamepads(PP_Instance instance, PP_GamepadsSampleData_Dev* data) {
   EnterFunction<PPB_Instance_FunctionAPI> enter(instance, true);
   if (enter.failed())
     return;
@@ -26,7 +26,7 @@ const PPB_Gamepad_Dev g_ppb_gamepad_thunk = {
 
 }  // namespace
 
-const PPB_Gamepad_Dev* GetPPB_Gamepad_Dev_0_1_Thunk() {
+const PPB_Gamepad_Dev* GetPPB_Gamepad_Dev_0_2_Thunk() {
   return &g_ppb_gamepad_thunk;
 }
 

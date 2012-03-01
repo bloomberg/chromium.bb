@@ -83,7 +83,7 @@ class PPB_Instance_FunctionAPI {
 
   // Gamepad.
   virtual void SampleGamepads(PP_Instance instance,
-                              PP_GamepadsData_Dev* data) = 0;
+                              PP_GamepadsSampleData_Dev* data) = 0;
 
   // InputEvent.
   virtual int32_t RequestInputEvents(PP_Instance instance,

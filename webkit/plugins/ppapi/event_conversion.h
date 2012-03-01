@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -18,6 +19,7 @@ struct InputEventData;
 }
 
 namespace WebKit {
+class WebGamepads;
 class WebInputEvent;
 }
 
@@ -46,6 +48,11 @@ std::vector<linked_ptr<WebKit::WebInputEvent> > CreateSimulatedWebInputEvents(
 // Returns the PPAPI event class for the given WebKit event type. The given
 // type should not be "Undefined" since there's no corresponding PPAPI class.
 PP_InputEvent_Class ClassifyInputEvent(WebKit::WebInputEvent::Type type);
+
+// Translate from WebGamepads to the Gamepad API format
+// PP_GamepadsSampleData_Dev.
+void ConvertWebKitGamepadData(WebKit::WebGamepads& webkit_data,
+                              PP_GamepadsSampleData_Dev* output_data);
 
 }  // namespace ppapi
 }  // namespace webkit

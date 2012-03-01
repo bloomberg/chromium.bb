@@ -295,7 +295,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool IsRectTopmost(const gfx::Rect& rect);
 
   // Implementation of PPB_Gamepad.
-  void SampleGamepads(PP_Instance instance, PP_GamepadsData_Dev* data)
+  void SampleGamepads(PP_Instance instance, PP_GamepadsSampleData_Dev* data)
       OVERRIDE;
 
   // Implementation of PPP_Messaging.

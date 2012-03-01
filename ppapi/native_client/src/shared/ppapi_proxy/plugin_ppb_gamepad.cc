@@ -14,14 +14,15 @@ namespace ppapi_proxy {
 
 namespace {
 
-void SampleGamepads(PP_Instance instance, struct PP_GamepadsData_Dev* pads) {
+void SampleGamepads(PP_Instance instance,
+                    struct PP_GamepadsSampleData_Dev* pads) {
   DebugPrintf("PPB_Gamepad::SampleGamepads: instance=%"NACL_PRId32"\n",
               instance);
   if (pads == NULL)
     return;
 
   nacl_abi_size_t pads_bytes =
-      static_cast<nacl_abi_size_t>(sizeof(struct PP_GamepadsData_Dev));
+      static_cast<nacl_abi_size_t>(sizeof(struct PP_GamepadsSampleData_Dev));
   NaClSrpcError srpc_result =
       PpbGamepadRpcClient::PPB_Gamepad_SampleGamepads(
           GetMainSrpcChannel(),

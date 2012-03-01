@@ -49,9 +49,6 @@ class MyInstance : public pp::Instance {
         pp::Module::Get()->GetBrowserInterface(PPB_GAMEPAD_DEV_INTERFACE));
     if (!gamepad_)
       return false;
-
-    RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE |
-                       PP_INPUTEVENT_CLASS_KEYBOARD);
     return true;
   }
 
@@ -92,27 +89,29 @@ class MyInstance : public pp::Instance {
     if (image.is_null())
       return image;
 
-    PP_GamepadsData_Dev gamepad_data;
-    gamepad_->SampleGamepads(pp_instance(), &gamepad_data);
+    PP_GamepadsSampleData_Dev gamepad_data;
+    gamepad_->Sample(pp_instance(), &gamepad_data);
 
-    int width2 = size.width() / 2;
-    int height2 = size.height() / 2;
-    // Draw 2 axes
-    for (size_t i = 0; i < gamepad_data.items[0].axes_length; i += 2) {
-      int x = static_cast<int>(
-          gamepad_data.items[0].axes[i + 0] * width2 + width2);
-      int y = static_cast<int>(
-          gamepad_data.items[0].axes[i + 1] * height2 + height2);
-      uint32_t box_bgra = 0x80000000;  // Alpha 50%.
-      FillRect(&image, x - 3, y - 3, 7, 7, box_bgra);
-    }
+    if (gamepad_data.length > 1 && gamepad_data.items[0].connected) {
+      int width2 = size.width() / 2;
+      int height2 = size.height() / 2;
+      // Draw 2 axes
+      for (size_t i = 0; i < gamepad_data.items[0].axes_length; i += 2) {
+        int x = static_cast<int>(
+            gamepad_data.items[0].axes[i + 0] * width2 + width2);
+        int y = static_cast<int>(
+            gamepad_data.items[0].axes[i + 1] * height2 + height2);
+        uint32_t box_bgra = 0x80000000;  // Alpha 50%.
+        FillRect(&image, x - 3, y - 3, 7, 7, box_bgra);
+      }
 
-    for (size_t i = 0; i < gamepad_data.items[0].buttons_length; ++i) {
-      float button_val = gamepad_data.items[0].buttons[i];
-      uint32_t colour = static_cast<uint32_t>((button_val * 192) + 63) << 24;
-      int x = i * 8 + 10;
-      int y = 10;
-      FillRect(&image, x - 3, y - 3, 7, 7, colour);
+      for (size_t i = 0; i < gamepad_data.items[0].buttons_length; ++i) {
+        float button_val = gamepad_data.items[0].buttons[i];
+        uint32_t colour = static_cast<uint32_t>((button_val * 192) + 63) << 24;
+        int x = i * 8 + 10;
+        int y = 10;
+        FillRect(&image, x - 3, y - 3, 7, 7, colour);
+      }
     }
     return image;
   }

@@ -72,8 +72,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                     PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool FlashGetScreenSize(PP_Instance instance, PP_Size* size)
       OVERRIDE;
-  virtual void SampleGamepads(PP_Instance instance, PP_GamepadsData_Dev* data)
-      OVERRIDE;
+  virtual void SampleGamepads(PP_Instance instance,
+                              PP_GamepadsSampleData_Dev* data) OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;
   virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
