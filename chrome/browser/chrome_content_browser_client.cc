@@ -1115,7 +1115,8 @@ void ChromeContentBrowserClient::RequestMediaAccessPermission(
   content::MediaStreamDevices devices;
   for (content::MediaStreamDeviceMap::const_iterator it =
        request->devices.begin(); it != request->devices.end(); ++it) {
-    devices.push_back(*it->second.begin());
+    if (!it->second.empty())
+      devices.push_back(*it->second.begin());
   }
 
   callback.Run(devices);
