@@ -123,6 +123,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void Hide();
   // Returns true if this window and all its ancestors are visible.
   bool IsVisible() const;
+  // Returns the visibility requested by this window. IsVisible() takes into
+  // account the visibility of the layer and ancestors, where as this tracks
+  // whether Show() without a Hide() has been invoked.
+  bool TargetVisibility() const { return visible_; }
 
   // Returns the window's bounds in screen coordinates.
   gfx::Rect GetScreenBounds() const;

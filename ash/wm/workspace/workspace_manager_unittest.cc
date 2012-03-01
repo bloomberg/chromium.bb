@@ -396,5 +396,30 @@ TEST_F(WorkspaceManagerTest, SingleFullscreenWindow) {
   EXPECT_EQ(gfx::Rect(0, 0, 250, 251), *GetRestoreBounds(w1.get()));
 }
 
+// Makes sure switching workspaces doesn't show transient windows.
+TEST_F(WorkspaceManagerTest, DontShowTransientsOnSwitch) {
+  scoped_ptr<Window> w1(CreateTestWindow());
+  scoped_ptr<Window> w2(CreateTestWindow());
+
+  w1->SetBounds(gfx::Rect(0, 0, 250, 251));
+  w2->SetBounds(gfx::Rect(0, 0, 250, 251));
+  w1->AddTransientChild(w2.get());
+
+  w1->Show();
+
+  scoped_ptr<Window> w3(CreateTestWindow());
+  w3->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  w3->Show();
+
+  EXPECT_FALSE(w1->layer()->IsDrawn());
+  EXPECT_FALSE(w2->layer()->IsDrawn());
+  EXPECT_TRUE(w3->layer()->IsDrawn());
+
+  w1->Show();
+  EXPECT_TRUE(w1->layer()->IsDrawn());
+  EXPECT_FALSE(w2->layer()->IsDrawn());
+  EXPECT_FALSE(w3->layer()->IsDrawn());
+}
+
 }  // namespace internal
 }  // namespace ash

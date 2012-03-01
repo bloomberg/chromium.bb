@@ -280,7 +280,8 @@ void WorkspaceManager::SetWindowLayerVisibility(
     bool value) {
   for (size_t i = 0; i < windows.size(); ++i) {
     ui::Layer* layer = windows[i]->layer();
-    if (layer) {
+    // Only show the layer for windows that want to be visible.
+    if (layer && (!value || windows[i]->TargetVisibility())) {
       windows[i]->SetProperty(aura::client::kAnimationsDisabledKey,
                               change_type == DONT_ANIMATE);
       bool update_layer = true;
