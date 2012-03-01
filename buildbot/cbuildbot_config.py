@@ -696,6 +696,8 @@ _release.add_config('autotest-experimental',
   usepkg_setup_board=True,
   usepkg_build_packages=True,
   chroot_replace=False,
+  vm_tests=None,
+  archive_build_debug=False,
 
   platform='netbook_ALEX',
   hw_tests=['bvt']

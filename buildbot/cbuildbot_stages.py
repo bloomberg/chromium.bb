@@ -695,7 +695,8 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
     # Build images and autotest tarball in parallel.
     steps = []
-    if build_autotest and self._build_config['archive_build_debug']:
+    if build_autotest and (self._build_config['hw_tests'] or
+                           self._build_config['archive_build_debug']):
       tarball_dir = tempfile.mkdtemp(prefix='autotest')
       self._autotest_tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
       steps.append(self._BuildAutotestTarball)
