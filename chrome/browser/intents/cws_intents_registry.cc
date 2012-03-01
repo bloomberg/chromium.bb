@@ -35,7 +35,9 @@ struct CWSIntentsRegistry::IntentsQuery {
   ResultsCallback callback_;
 };
 
-CWSIntentsRegistry::IntentExtensionInfo::IntentExtensionInfo() {
+CWSIntentsRegistry::IntentExtensionInfo::IntentExtensionInfo()
+    : num_ratings(0),
+      average_rating(0) {
 }
 
 CWSIntentsRegistry::IntentExtensionInfo::~IntentExtensionInfo() {
