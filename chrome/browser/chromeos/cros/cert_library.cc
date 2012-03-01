@@ -99,6 +99,9 @@ namespace chromeos {
 
 //////////////////////////////////////////////////////////////////////////////
 
+// base::Unretained(this) in the class is safe. By the time this object is
+// deleted as part of CrosLibrary, the DB thread and the UI message loop
+// are already terminated.
 class CertLibraryImpl
     : public CertLibrary,
       public net::CertDatabase::Observer {
@@ -239,7 +242,7 @@ class CertLibraryImpl
       BrowserThread::PostTask(
           BrowserThread::DB, FROM_HERE,
           base::Bind(&CertLibraryImpl::LoadCertificates,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     base::Unretained(this)));
     }
   }
 
@@ -250,7 +253,7 @@ class CertLibraryImpl
       BrowserThread::PostTask(
           BrowserThread::DB, FROM_HERE,
           base::Bind(&CertLibraryImpl::LoadCertificates,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     base::Unretained(this)));
     }
   }
 
@@ -270,7 +273,7 @@ class CertLibraryImpl
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&CertLibraryImpl::UpdateCertificates,
-                   weak_ptr_factory_.GetWeakPtr(), cert_list));
+                   base::Unretained(this), cert_list));
   }
 
   // Comparison functor for locale-sensitive sorting of certificates by name.
@@ -410,8 +413,7 @@ class CertLibraryImpl
     // tpm_token_name_ is set, load the certificates on the DB thread.
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&CertLibraryImpl::LoadCertificates,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&CertLibraryImpl::LoadCertificates, base::Unretained(this)));
   }
 
   // Observers.
