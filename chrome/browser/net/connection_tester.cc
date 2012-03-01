@@ -12,7 +12,6 @@
 #include "base/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/importer/firefox_proxy_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
@@ -33,6 +32,10 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_storage.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/importer/firefox_proxy_settings.h"
+#endif
 
 namespace {
 
@@ -227,6 +230,10 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
   // code.
   int CreateFirefoxProxyConfigService(
       scoped_ptr<net::ProxyConfigService>* config_service) {
+#if defined(OS_ANDROID)
+    // Chrome on Android does not support Firefox settings.
+    return net::ERR_NOT_IMPLEMENTED;
+#else
     // Fetch Firefox's proxy settings (can fail if Firefox is not installed).
     FirefoxProxySettings firefox_settings;
     if (!FirefoxProxySettings::GetSettings(&firefox_settings))
@@ -242,6 +249,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     }
 
     return net::ERR_FAILED;
+#endif
   }
 
   const scoped_refptr<net::URLRequestContext> proxy_request_context_;

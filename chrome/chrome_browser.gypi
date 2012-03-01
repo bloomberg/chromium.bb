@@ -4750,6 +4750,7 @@
             'browser/ui/window_sizer.h',
           ],
           'sources/': [
+            ['exclude', '^browser/importer/'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/tabs/'],

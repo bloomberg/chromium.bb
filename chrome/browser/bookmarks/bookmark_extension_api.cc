@@ -916,6 +916,10 @@ bool ImportBookmarksFunction::RunImpl() {
 void ImportBookmarksFunction::FileSelected(const FilePath& path,
                                            int index,
                                            void* params) {
+#if !defined(OS_ANDROID)
+  // Android does not have support for the standard importers.
+  // TODO(jgreenwald): remove ifdef once extensions are no longer built on
+  // Android.
   scoped_refptr<ImporterHost> importer_host(new ImporterHost);
   importer::SourceProfile source_profile;
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
@@ -925,6 +929,7 @@ void ImportBookmarksFunction::FileSelected(const FilePath& path,
                                      importer::FAVORITES,
                                      new ProfileWriter(profile()),
                                      true);
+#endif
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }
 
