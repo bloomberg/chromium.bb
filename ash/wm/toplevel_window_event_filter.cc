@@ -58,7 +58,9 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       } else {
         window_resizer_.reset();
       }
-      if (component == HTCAPTION && event->flags() & ui::EF_IS_DOUBLE_CLICK)
+      if (component == HTCAPTION &&
+          event->flags() & ui::EF_IS_DOUBLE_CLICK &&
+          event->flags() & ui::EF_LEFT_MOUSE_BUTTON)
         ToggleMaximizedState(target);
       return WindowResizer::GetBoundsChangeForWindowComponent(component) != 0;
     }
