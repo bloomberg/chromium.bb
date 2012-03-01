@@ -598,11 +598,18 @@ weston_compositor_repick(struct weston_compositor *compositor)
 static void
 weston_surface_unmap(struct weston_surface *surface)
 {
+	struct wl_input_device *device = surface->compositor->input_device;
+
 	weston_surface_damage_below(surface);
 	surface->output = NULL;
 	wl_list_remove(&surface->link);
 	wl_list_remove(&surface->layer_link);
 	weston_compositor_repick(surface->compositor);
+
+	if (device->keyboard_focus == &surface->surface)
+		wl_input_device_set_keyboard_focus(device, NULL,
+						   weston_compositor_get_time());
+
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
