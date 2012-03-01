@@ -3,14 +3,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import functools
 import os
+import signal
 import sys
 
 # We want to use correct version of libraries even when executed through symlink.
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 
-if __name__ == '__main__':
+def FindTarget(name):
   target = os.path.basename(sys.argv[0])
   # Compatibility for badly named scripts that can't yet be fixed.
   if target.endswith('.py'):
@@ -22,11 +24,52 @@ if __name__ == '__main__':
     module = getattr(module, attr)
 
   if hasattr(module, 'main'):
-    ret = module.main(sys.argv[1:])
-  else:
+    # This might seem pointless using functools here; we do it since down the
+    # line, the allowed 'main' prototypes will change.  Thus we define the
+    # FindTarget api to just return an invokable, allowing the consumer
+    # to not know nor care about the specifics.
+    return functools.partial(module.main, sys.argv[1:])
+  return None
+
+
+class _ShutDownException(SystemExit):
+
+  def __init__(self, signal, message):
+    self.signal = signal
+    # Setup a usage mesage primarily for any code that may intercept it
+    # while this exception is crashing back up the stack to us.
+    SystemExit.__init__(self, message)
+
+
+def _DefaultHandler(signum, frame):
+  raise _ShutDownException(
+      signum, "Received signal %i; shutting down" % (signum,))
+
+
+if __name__ == '__main__':
+  name = os.path.basename(sys.argv[0])
+  target = FindTarget(name)
+  if target is None:
     print >>sys.stderr, ("Internal error detected in wrapper.py: no main "
                          "functor found in module %r." % (target,))
     sys.exit(100)
+
+  signal.signal(signal.SIGTERM, _DefaultHandler)
+
+  ret = 1
+  try:
+    ret = target()
+  except _ShutDownException, e:
+    print >>sys.stderr, ("%s: Signaled to shutdown: caught %i signal." %
+                         (name, e.signal,))
+  except SystemExit, e:
+    # Right now, let this crash through- longer term, we'll update the scripts
+    # in question to not use sys.exit, and make this into a flagged error.
+    raise
+  except Exception, e:
+    print >>sys.stderr, ("%s: Unhandled exception:" % (name,))
+    raise
+
   if ret is None:
     ret = 0
   sys.exit(ret)
