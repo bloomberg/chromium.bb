@@ -23,10 +23,10 @@ GS_PENDING_SYNTHETIC_CLICK ->  GS_PENDING_SYNTHETIC_CLICK [label= "M0\n S0"];
 GS_PENDING_SYNTHETIC_CLICK ->  GS_NO_GESTURE [label= "C0\n R0"];
 }
 
-GS_SCROLL ->  GS_SCROLL [label= "M0\n M1"];
-GS_SCROLL ->  GS_NO_GESTURE [label= "C0\n R0\n C1\n R1"];
+GS_SCROLL ->  GS_SCROLL [label= "M0"];
+GS_SCROLL ->  GS_NO_GESTURE [label= "C0\n R0\n"];
 GS_PENDING_SYNTHETIC_CLICK ->  GS_PINCH [label= "D1"];
-GS_SCROLL ->  GS_PINCH [label= "D0\n D1"];
+GS_SCROLL ->  GS_PINCH [label= "D1"];
 GS_PINCH ->  GS_PINCH [label= "M0\n M1"];
 GS_PINCH ->  GS_SCROLL [label= "C0\n R0\n C1\n R1"];
 }
