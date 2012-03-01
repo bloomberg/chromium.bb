@@ -67,6 +67,9 @@ b0c4f04338234ee011d7b704621347ef232294fe
 d1604b3de96575195b219028e2c4f08b2259aa7d
   rbultje: h264: prevent overreads in intra PCM decoding.
 
+0ce4fe482c27abfa7eac503a52fdc50b70ccd871
+  rbultje: h264: error out on invalid bitdepth.
+
 Patches still existing from the pre-GIT workflow:
 
 to_upstream/
