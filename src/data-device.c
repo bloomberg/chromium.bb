@@ -80,7 +80,10 @@ static void
 destroy_offer_data_source(struct wl_listener *listener,
 			  struct wl_resource *resource, uint32_t time)
 {
-	struct wl_data_offer *offer = resource->data;
+	struct wl_data_offer *offer;
+
+	offer = container_of(listener, struct wl_data_offer,
+			     source_destroy_listener);
 
 	offer->source = NULL;
 }
