@@ -4,9 +4,6 @@
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_aura.h"
 
-// TODO(beng): USE_ASH
-#include "ash/shell.h"
-#include "ash/wm/visibility_controller.h"
 #include "base/event_types.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
@@ -25,6 +22,11 @@
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "webkit/glue/webdropdata.h"
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ash/wm/visibility_controller.h"
+#endif
 
 using content::RenderWidgetHostView;
 using content::WebContents;
@@ -59,7 +61,7 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
           gfx::Point screen_loc = ui::EventLocationFromNative(event);
           gfx::Point client_loc = screen_loc;
           aura::Window* window = rvh->view()->GetNativeView();
-          aura::Window::ConvertPointToWindow(ash::Shell::GetRootWindow(),
+          aura::Window::ConvertPointToWindow(window->GetRootWindow(),
               window, &client_loc);
           rvh->DragSourceMovedTo(client_loc.x(), client_loc.y(),
               screen_loc.x(), screen_loc.y());
@@ -69,6 +71,7 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
         break;
     }
   }
+
 
  private:
   NativeTabContentsViewAura* view_;
@@ -157,7 +160,11 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
   params.parent = NULL;
   params.can_activate = true;
   GetWidget()->Init(params);
+#if defined(USE_ASH)
   ash::SetChildWindowVisibilityChangesAnimated(GetWidget()->GetNativeView());
+#else
+  NOTIMPLEMENTED() << "Need to animate in";
+#endif
 
   // Hide the widget to prevent it from showing up on the root window. This is
   // needed for TabContentses that aren't immediately added to the tabstrip,
@@ -286,7 +293,8 @@ void NativeTabContentsViewAura::OnDragEntered(
   PrepareWebDropData(&drop_data, event.data());
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
 
-  gfx::Point screen_pt = ash::Shell::GetRootWindow()->last_mouse_location();
+  gfx::Point screen_pt =
+      GetNativeView()->GetRootWindow()->last_mouse_location();
   GetWebContents()->GetRenderViewHost()->DragTargetDragEnter(
       drop_data, event.location(), screen_pt, op);
 }
@@ -294,7 +302,8 @@ void NativeTabContentsViewAura::OnDragEntered(
 int NativeTabContentsViewAura::OnDragUpdated(
     const aura::DropTargetEvent& event) {
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
-  gfx::Point screen_pt = ash::Shell::GetRootWindow()->last_mouse_location();
+  gfx::Point screen_pt =
+      GetNativeView()->GetRootWindow()->last_mouse_location();
   GetWebContents()->GetRenderViewHost()->DragTargetDragOver(
       event.location(), screen_pt, op);
   return ConvertFromWeb(current_drag_op_);
@@ -307,7 +316,8 @@ void NativeTabContentsViewAura::OnDragExited() {
 int NativeTabContentsViewAura::OnPerformDrop(
     const aura::DropTargetEvent& event) {
   GetWebContents()->GetRenderViewHost()->DragTargetDrop(
-      event.location(), ash::Shell::GetRootWindow()->last_mouse_location());
+      event.location(),
+      GetNativeView()->GetRootWindow()->last_mouse_location());
   return current_drag_op_;
 }
 
@@ -315,13 +325,12 @@ int NativeTabContentsViewAura::OnPerformDrop(
 // NativeTabContentsViewAura, private:
 
 void NativeTabContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
-  gfx::Point screen_loc =
-      ash::Shell::GetRootWindow()->last_mouse_location();
+  aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
+  gfx::Point screen_loc = root_window->last_mouse_location();
   gfx::Point client_loc = screen_loc;
   RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
   aura::Window* window = rvh->view()->GetNativeView();
-  aura::Window::ConvertPointToWindow(ash::Shell::GetRootWindow(),
-      window, &client_loc);
+  aura::Window::ConvertPointToWindow(root_window, window, &client_loc);
   rvh->DragSourceEndedAt(client_loc.x(), client_loc.y(), screen_loc.x(),
       screen_loc.y(), ops);
 }

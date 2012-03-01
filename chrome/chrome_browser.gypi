@@ -5420,8 +5420,6 @@
                 ['include', '^browser/ui/gtk/omnibox/omnibox_view_gtk.cc'],
                 ['include', '^browser/ui/gtk/omnibox/omnibox_view_gtk.h'],
                 ['include', '^browser/ui/gtk/simple_message_box_gtk.cc'],
-                ['include', '^browser/ui/views/confirm_bubble_view.cc'],
-                ['include', '^browser/ui/views/confirm_bubble_view.h'],
                 ['include', '^browser/ui/views/omnibox/omnibox_view_views.cc'],
                 ['include', '^browser/ui/views/omnibox/omnibox_view_views.h'],
                 ['exclude', '^browser/extensions/extension_tts_api_linux.cc'],
@@ -5476,6 +5474,8 @@
             ['include', '^browser/ui/views/bookmarks/bookmark_editor_view.h'],
             ['include', '^browser/ui/views/collected_cookies_views.cc'],
             ['include', '^browser/ui/views/collected_cookies_views.h'],
+            ['include', '^browser/ui/views/confirm_bubble_view.cc'],
+            ['include', '^browser/ui/views/confirm_bubble_view.h'],
             ['include', '^browser/ui/views/constrained_html_delegate_views.cc'],
             ['include', '^browser/ui/views/constrained_window_views.cc'],
             ['include', '^browser/ui/views/cookie_info_view.cc'],
@@ -5524,6 +5524,12 @@
             ['include', '^browser/chromeos/notifications/system_notification.h'],
             ['include', '^browser/chromeos/notifications/system_notification_factory.cc'],
             ['include', '^browser/chromeos/notifications/system_notification_factory.h'],
+          ],
+        }],
+        # Build Aura on desktop linux
+        ['use_aura==1 and OS=="linux" and chromeos==0', {
+          'sources/': [
+            ['include', '^browser/ui/views/select_file_dialog_aura.cc'],
           ],
         }],
         ['use_aura==1', {

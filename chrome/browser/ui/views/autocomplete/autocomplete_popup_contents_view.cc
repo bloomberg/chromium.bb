@@ -45,7 +45,7 @@
 #include "ui/views/widget/native_widget_win.h"
 #endif
 #endif
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/wm/window_animations.h"
 #endif
 
@@ -360,8 +360,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     params.parent_widget = location_bar_->GetWidget();
     params.bounds = GetPopupBounds();
     popup_->Init(params);
-#if defined(USE_AURA)
-    // TODO(beng): This should be if defined(USE_ASH)
+#if defined(USE_ASH)
     ash::SetWindowVisibilityAnimationType(
         popup_->GetNativeView(),
         ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);

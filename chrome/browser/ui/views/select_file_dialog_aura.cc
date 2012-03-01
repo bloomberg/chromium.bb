@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@ using content::BrowserThread;
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if defined(OS_WIN)
-  return NULL;
+#if defined(USE_ASH) && defined(FILE_MANAGER_EXTENSION)
+  return SelectFileDialogExtension::Create(listener);
 #else
-  return new SelectFileDialogExtension(listener);
+  return NULL;
 #endif
 }

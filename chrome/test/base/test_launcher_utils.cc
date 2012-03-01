@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #endif
 
@@ -52,8 +52,7 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // The tests assume that file:// URIs can freely access other file:// URIs.
   command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
 
-  // TODO(beng): USE_ASH.
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   // Disable window animations under aura as the animations effect the
   // coordinates returned and result in flake.
   command_line->AppendSwitch(ash::switches::kAuraWindowAnimationsDisabled);
