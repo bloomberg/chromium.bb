@@ -20,6 +20,8 @@
 #include <link.h>
 #endif  /* __GLIBC__ */
 
+#include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 
@@ -74,7 +76,8 @@ static int PrintSegmentsOne(
   fprintf(ptd->core, "\"dlpi_name\": ");
   WriteJsonString(info->dlpi_name, ptd->core);
   fprintf(ptd->core, ",\n");
-  fprintf(ptd->core, "\"dlpi_addr\": %"PRIuPTR",\n", info->dlpi_addr);
+  fprintf(ptd->core, "\"dlpi_addr\": %"NACL_PRIuPTR",\n",
+          (uintptr_t)  info->dlpi_addr);
   fprintf(ptd->core, "\"dlpi_phdr\": [\n");
   for (i = 0; i < info->dlpi_phnum; i++) {
     /* Skip non-LOAD type segments. */
@@ -85,10 +88,10 @@ static int PrintSegmentsOne(
       fprintf(ptd->core, ",\n");
     }
     fprintf(ptd->core, "{\n");
-    fprintf(ptd->core, "\"p_vaddr\": %"PRIuPTR",\n",
-            info->dlpi_phdr[i].p_vaddr);
-    fprintf(ptd->core, "\"p_memsz\": %"PRIuPTR"\n",
-            info->dlpi_phdr[i].p_memsz);
+    fprintf(ptd->core, "\"p_vaddr\": %"NACL_PRIuPTR",\n",
+            (uintptr_t) info->dlpi_phdr[i].p_vaddr);
+    fprintf(ptd->core, "\"p_memsz\": %"NACL_PRIuPTR"\n",
+            (uintptr_t) info->dlpi_phdr[i].p_memsz);
     fprintf(ptd->core, "}\n");
   }
   fprintf(ptd->core, "]\n");
@@ -115,10 +118,13 @@ uintptr_t SafeRead(uintptr_t a) {
   return *(uintptr_t*)a;
 }
 
-static void StackWalk(FILE *core, uintptr_t prog_ctr, uintptr_t frame_ptr) {
+static void StackWalk(FILE *core, struct NaClExceptionContext *context) {
   uintptr_t next;
   uintptr_t i;
   int first = 1;
+  uintptr_t prog_ctr = context->prog_ctr;
+  uintptr_t frame_ptr = context->frame_ptr;
+  uintptr_t args_start;
 
   fprintf(core, "\"frames\": [\n");
   for (;;) {
@@ -132,35 +138,35 @@ static void StackWalk(FILE *core, uintptr_t prog_ctr, uintptr_t frame_ptr) {
       fprintf(core, ",");
     }
     fprintf(core, "{\n");
-    fprintf(core, "\"frame_ptr\": %"PRIuPTR",\n", frame_ptr);
-    fprintf(core, "\"prog_ctr\": %"PRIuPTR",\n", prog_ctr);
+    fprintf(core, "\"frame_ptr\": %"NACL_PRIuPTR",\n", frame_ptr);
+    fprintf(core, "\"prog_ctr\": %"NACL_PRIuPTR",\n", prog_ctr);
     fprintf(core, "\"data\": [\n");
-    for (i = frame_ptr + 8; i < next; i += 4) {
-      if (i != frame_ptr + 8) {
+#if defined(__x86_64__)
+    args_start = frame_ptr + 8;
+#else
+    args_start = frame_ptr + 16;
+#endif
+    for (i = args_start; i < next; i += 4) {
+      if (i != args_start) {
         fprintf(core, ",");
       }
-      fprintf(core, "%"PRIuPTR"\n", SafeRead(i));
+      fprintf(core, "%"NACL_PRIuPTR"\n", SafeRead(i));
     }
     fprintf(core, "]\n");
     fprintf(core, "}\n");
 
+#if defined(__x86_64__)
+    prog_ctr = SafeRead(frame_ptr + 8);
+#else
     prog_ctr = SafeRead(frame_ptr + 4);
+#endif
     frame_ptr = next;
   }
 
   fprintf(core, "]\n");
 }
 
-void CrashHandlerWrapper(int prog_ctr, int stack_ptr);
-asm(".pushsection .text, \"ax\", @progbits\n"
-    ".p2align NACLENTRYALIGN\n"
-    "CrashHandlerWrapper:\n"
-    "popl %eax\n"
-    "pushl %ebp\n"
-    "call CrashHandler\n"
-    ".popsection\n");
-
-void CrashHandler(int frame_ptr, int prog_ctr, int stack_ptr) {
+void CrashHandler(struct NaClExceptionContext *context) {
   FILE *core;
   const char *core_filename;
 
@@ -183,12 +189,12 @@ void CrashHandler(int frame_ptr, int prog_ctr, int stack_ptr) {
   fprintf(core, "],\n");
 
   fprintf(core, "\"handler\": {\n");
-  fprintf(core, "\"prog_ctr\": %"PRIuPTR",\n", prog_ctr);
-  fprintf(core, "\"stack_ptr\": %"PRIuPTR",\n", stack_ptr);
-  fprintf(core, "\"frame_ptr\": %"PRIuPTR"\n", frame_ptr);
+  fprintf(core, "\"prog_ctr\": %"NACL_PRIuPTR",\n", context->prog_ctr);
+  fprintf(core, "\"stack_ptr\": %"NACL_PRIuPTR",\n", context->stack_ptr);
+  fprintf(core, "\"frame_ptr\": %"NACL_PRIuPTR"\n", context->frame_ptr);
   fprintf(core, "},\n");
 
-  StackWalk(core, (uintptr_t) prog_ctr, (uintptr_t) frame_ptr);
+  StackWalk(core, context);
 
   fprintf(core, "}\n");
 
@@ -207,7 +213,7 @@ void NaClCrashDumpInit(void) {
   int result;
   result = pthread_key_create(&g_CrashStackKey, NaClCrashDumpThreadDestructor);
   assert(result == 0);
-  result = NACL_SYSCALL(exception_handler)(CrashHandlerWrapper, NULL);
+  result = NACL_SYSCALL(exception_handler)(CrashHandler, NULL);
   assert(result == 0);
   NaClCrashDumpInitThread();
 }

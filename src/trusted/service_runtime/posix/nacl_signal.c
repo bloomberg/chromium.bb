@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <signal.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -14,6 +15,7 @@
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -26,22 +28,10 @@ struct ExceptionFrame {
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
   nacl_reg_t return_addr;
 # if NACL_BUILD_SUBARCH == 32
-  uint32_t prog_ctr; /* Function argument 1 */
-  uint32_t stack_ptr; /* Function argument 2 */
+  uint32_t context_ptr;  /* Function argument */
 # endif
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  /*
-   * Empty structs are a corner case and can have different sizeof()s
-   * in C and C++, so to avoid potential confusion we have a dummy
-   * entry here.
-   * TODO(mseaborn): Eventually we will push a proper stack frame
-   * containing a full register dump, so this dummy field will go
-   * away.
-   */
-  uint32_t dummy;
-#else
-# error Unknown architecture
 #endif
+  struct NaClExceptionContext context;
 };
 
 /*
@@ -204,6 +194,7 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
   uintptr_t frame_addr;
   volatile struct ExceptionFrame *frame;
   uint32_t new_stack_ptr;
+  uintptr_t context_user_addr;
   /*
    * Returning from the exception handler is not possible, so to avoid
    * any confusion that might arise from jumping to an uninitialised
@@ -235,24 +226,20 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
     /* We cannot write the stack frame. */
     return 0;
   }
-  frame = (struct ExceptionFrame *) frame_addr;
+  context_user_addr = new_stack_ptr + offsetof(struct ExceptionFrame, context);
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
-  frame->return_addr = kReturnAddr;
-  regs->flags &= ~NACL_X86_DIRECTION_FLAG;
-#endif
+  frame = (struct ExceptionFrame *) frame_addr;
+  frame->context.prog_ctr = (uint32_t) regs->prog_ctr;
+  frame->context.stack_ptr = (uint32_t) regs->stack_ptr;
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
-  frame->prog_ctr = regs->prog_ctr; /* Argument 1 */
-  frame->stack_ptr = regs->stack_ptr; /* Argument 2 */
-
+  frame->context_ptr = context_user_addr;
+  frame->context.frame_ptr = regs->ebp;
   regs->prog_ctr = nap->exception_handler;
   regs->stack_ptr = new_stack_ptr;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
-  /* Truncate the saved %rsp and %rbp values for portability. */
-  regs->rdi = (uint32_t) regs->prog_ctr; /* Argument 1 */
-  regs->rsi = (uint32_t) regs->stack_ptr; /* Argument 2 */
-
+  frame->context.frame_ptr = regs->rbp;
+  regs->rdi = context_user_addr; /* Argument 1 */
   regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
   regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
   /*
@@ -268,23 +255,18 @@ static int DispatchToUntrustedHandler(struct NaClAppThread *natp,
    */
   regs->rbp = nap->mem_start;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-  /*
-   * We write to memory here to get consistent behaviour for
-   * unwritable stacks across architectures, to simplify testing.
-   * TODO(mseaborn): This will eventually be replaced with writing a
-   * register dump to the stack frame.
-   */
-  frame->dummy = 0;
-
+  frame->context.frame_ptr = regs->r11;
   regs->lr = kReturnAddr;
-
-  regs->r0 = regs->prog_ctr; /* Argument 1 */
-  regs->r1 = regs->stack_ptr; /* Argument 2 */
-
+  regs->r0 = context_user_addr;  /* Argument 1 */
   regs->prog_ctr = NaClUserToSys(nap, nap->exception_handler);
   regs->stack_ptr = NaClUserToSys(nap, new_stack_ptr);
 #else
 # error Unsupported architecture
+#endif
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+  frame->return_addr = kReturnAddr;
+  regs->flags &= ~NACL_X86_DIRECTION_FLAG;
 #endif
 
   return 1;
