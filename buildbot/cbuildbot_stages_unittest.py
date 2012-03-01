@@ -17,7 +17,6 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import builderstage as bs
-from chromite.buildbot import cbuildbot
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config as config
 from chromite.buildbot import cbuildbot_commands as commands
@@ -29,6 +28,7 @@ from chromite.buildbot import repository
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import cros_test_lib
+from chromite.scripts import cbuildbot
 
 
 # pylint: disable=E1120,W0212,R0904
