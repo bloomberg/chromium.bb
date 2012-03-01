@@ -1,5 +1,10 @@
 <div id=timeline-view-selection-div>
-<ul>
+  <div style="text-align: right">
+    <img id=timeline-view-selection-toggle
+         class=timeline-view-rotateleft
+         src='chrome://resources/images/select.png' />
+  </div>
+<ul id=timeline-view-selection-ul>
   <li id=timeline-view-open-sockets><label><input type=checkbox checked />
     &#9608; <span class=timeline-view-text>Open sockets</span></label>
   </input></li>
@@ -26,7 +31,6 @@
   </input></li>
 </ul>
 </div>
-<div id=timeline-view-vertical-splitter class=vertical-splitter></div>
 <div id=timeline-view-graph-div>
   <canvas id=timeline-view-graph-canvas>
   </canvas>

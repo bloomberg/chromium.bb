@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 var TimelineView = (function() {
   'use strict';
 
-  // We inherit from ResizableVerticalSplitView.
-  var superClass = ResizableVerticalSplitView;
+  // We inherit from HorizontalSplitView.
+  var superClass = HorizontalSplitView;
 
   /**
    * @constructor
@@ -26,12 +26,13 @@ var TimelineView = (function() {
         TimelineView.SCROLLBAR_INNER_DIV_ID);
 
     // Call superclass's constructor.
-    superClass.call(this,
-                    new DivView(TimelineView.SELECTION_DIV_ID),
-                    this.graphView_,
-                    new DivView(TimelineView.VERTICAL_SPLITTER_ID));
 
-    this.setLeftSplit(250);
+    var selectionView = new DivView(TimelineView.SELECTION_DIV_ID);
+    superClass.call(this, selectionView, this.graphView_);
+
+    this.selectionDivFullWidth_ = selectionView.getWidth();
+    $(TimelineView.SELECTION_TOGGLE_ID).onclick =
+        this.toggleSelectionDiv_.bind(this);
 
     // Interval id returned by window.setInterval for update timer.
     this.updateIntervalId_ = null;
@@ -60,8 +61,9 @@ var TimelineView = (function() {
   // IDs for special HTML elements in timeline_view.html
   TimelineView.GRAPH_DIV_ID = 'timeline-view-graph-div';
   TimelineView.GRAPH_CANVAS_ID = 'timeline-view-graph-canvas';
-  TimelineView.VERTICAL_SPLITTER_ID = 'timeline-view-vertical-splitter';
   TimelineView.SELECTION_DIV_ID = 'timeline-view-selection-div';
+  TimelineView.SELECTION_TOGGLE_ID = 'timeline-view-selection-toggle'
+  TimelineView.SELECTION_UL_ID = 'timeline-view-selection-ul'
   TimelineView.SCROLLBAR_DIV_ID = 'timeline-view-scrollbar-div';
   TimelineView.SCROLLBAR_INNER_DIV_ID = 'timeline-view-scrollbar-inner-div';
 
@@ -265,6 +267,31 @@ var TimelineView = (function() {
           timeutil.convertTimeTicksToDate(entries[entries.length - 1].time);
       this.graphView_.setDateRange(startDate, endDate);
       this.graphRangeInitialized_ = true;
+    },
+
+    toggleSelectionDiv_: function() {
+      var toggle = $(TimelineView.SELECTION_TOGGLE_ID);
+      var shouldCollapse = toggle.className == 'timeline-view-rotateleft';
+
+      setNodeDisplay($(TimelineView.SELECTION_UL_ID), !shouldCollapse);
+      toggle.className = shouldCollapse ?
+          'timeline-view-rotateright' : 'timeline-view-rotateleft';
+
+      // Figure out the appropriate width for the selection div.
+      var newWidth;
+      if (shouldCollapse) {
+        newWidth = toggle.offsetWidth;
+      } else {
+        newWidth = this.selectionDivFullWidth_;
+      }
+
+      // Change the width on the selection view (doesn't matter what we
+      // set the other values to, since we will re-layout in the next line).
+      this.leftView_.setGeometry(0, 0, newWidth, 100);
+
+      // Force a re-layout now that the left view has changed width.
+      this.setGeometry(this.getLeft(), this.getTop(), this.getWidth(),
+                       this.getHeight());
     }
   };
 
