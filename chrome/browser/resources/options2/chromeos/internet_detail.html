@@ -1,6 +1,16 @@
 <div id="detailsInternetPage" class="page" hidden>
-  <h1 id="inetTitle"></h1>
-  <div class="content-area">
+  <div id="internet-details-content-area" class="content-area">
+    <!-- Network header -->
+    <div>
+      <div id="network-details-header">
+        <div id="network-details-title"></div>
+        <div id="network-details-subtitle">
+          <span id="network-details-subtitle-status"></span>
+          <span id="network-details-subtitle-separator"> - </span> 
+          <span id="network-details-subtitle-type"></span>
+        </div>
+      </div>
+    </div>
     <!-- Navigation tabs -->
     <div id="details-tab-strip" class="subpages-nav-tabs">
       <span id="wifiNetworkNavTab" class="tab wifi-details"
@@ -317,10 +327,8 @@
             <span class="controlled-setting-indicator" data="ipconfigStatic"
                 for="ipTypeStatic"></span>
           </div>
-          <div class="suboption">
-            <div id="ipConfigManagement" class="settings-list">
-              <list id="ipConfigList"></list>
-            </div>
+          <div id="ipConfigManagement" class="settings-list">
+            <list id="ipConfigList"></list>
           </div>
         </div>
       </section>

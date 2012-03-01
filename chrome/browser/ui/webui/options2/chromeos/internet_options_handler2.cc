@@ -820,6 +820,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("connecting", network->connecting());
   dictionary.SetBoolean("connected", network->connected());
   dictionary.SetString("connectionState", network->GetStateString());
+  dictionary.SetString("networkName", network->name());
 
   // Only show proxy for remembered networks.
   chromeos::NetworkProfileType network_profile = network->profile_type();

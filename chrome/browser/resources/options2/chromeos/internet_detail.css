@@ -1,0 +1,58 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Force tab strip to extend to the left and right edges of the window. */
+#internet-details-content-area {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#network-details-header {
+  -webkit-padding-start: 20px;
+  margin: 0;
+  padding-bottom: 18px;
+  padding-top: 32px;
+}
+
+#network-details-title {
+  font-size: 18px;
+}
+
+#network-details-subtitle-status {
+  color: rgb(53, 174, 71);
+}
+
+#details-tab-strip.subpages-nav-tabs {
+  background-image: -webkit-gradient(
+                        linear,
+                        left top,
+                        left bottom,
+                        color-stop(0, rgb(255,255,255)),
+                        color-stop(0.6, rgb(255,255,255)),
+                        color-stop(0.8, rgb(250, 250, 250)),
+                        color-stop(1.0, rgb(242,242,242))
+  );
+  border-bottom: 1px solid #ddd;
+  padding: 4px 20px;
+}
+
+#details-tab-strip.subpages-nav-tabs > .active-tab {
+  -webkit-box-shadow: 8px -8px 12px -6px rgb(240,240,240);
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  border-top: 1px solid #ddd;
+}
+
+/* Fix the height of the subpages so that the dialog does not resize when the
+   user switches tabs. */
+#internet-details-content-area > .subpages-tab-contents {
+  -webkit-padding-end: 10px;
+  height: 350px;
+  overflow-y: auto;
+}
+
+#ipConfigList {
+  min-height: 96px !important;
+}
+

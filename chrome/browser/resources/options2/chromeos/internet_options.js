@@ -429,6 +429,40 @@ cr.define('options', function() {
 
   InternetOptions.showDetailedInfo = function(data) {
     var detailsPage = DetailsInternetPage.getInstance();
+
+    // Populate header
+    $('network-details-title').textContent = data.networkName;
+    var statusKey = data.connected ? 'networkConnected' :
+                                     'networkNotConnected';
+    $('network-details-subtitle-status').textContent =
+        localStrings.getString(statusKey);
+    var typeKey = null;
+    var Constants = options.internet.Constants;
+    switch (data.type) {
+    case Constants.TYPE_ETHERNET:
+      typeKey = 'ethernetTitle';
+      break;
+    case Constants.TYPE_WIFI:
+      typeKey = 'wifiTitle';
+      break;
+    case Constants.TYPE_CELLULAR:
+      typeKey = 'cellularTitle';
+      break;
+    case Constants.TYPE_VPN:
+      typeKey = 'vpnTitle';
+      break;
+    }
+    var typeLabel = $('network-details-subtitle-type');
+    var typeSeparator = $('network-details-subtitle-separator');
+    if (typeKey) {
+      typeLabel.textContent = localStrings.getString(typeKey);
+      typeLabel.hidden = false;
+      typeSeparator.hidden = false;
+    } else {
+      typeLabel.hidden = true;
+      typeSeparator.hidden = true;
+    }
+
     // TODO(chocobo): Is this hack to cache the data here reasonable?
     $('connectionState').data = data;
     $('buyplanDetails').hidden = true;
@@ -443,11 +477,6 @@ cr.define('options', function() {
     detailsPage.deviceConnected = data.deviceConnected;
     detailsPage.connecting = data.connecting;
     detailsPage.connected = data.connected;
-    if (data.connected) {
-      $('inetTitle').textContent = localStrings.getString('inetStatus');
-    } else {
-      $('inetTitle').textContent = localStrings.getString('inetConnect');
-    }
     $('connectionState').textContent = data.connectionState;
 
     var inetAddress = '';
