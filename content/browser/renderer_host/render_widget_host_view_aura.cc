@@ -168,15 +168,8 @@ void RenderWidgetHostViewAura::InitAsPopup(
   window_->SetName("RenderWidgetHostViewAura");
 
   window_->SetParent(NULL);
+  SetBounds(pos);
   Show();
-
-  // |pos| is in root window coordinates. So convert it to
-  // |popup_parent_host_view_|'s coordinates first.
-  gfx::Point origin = pos.origin();
-  aura::Window::ConvertPointToWindow(
-      window_->GetRootWindow(),
-      popup_parent_host_view_->window_, &origin);
-  SetBounds(gfx::Rect(origin, pos.size()));
 }
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
@@ -208,20 +201,7 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  gfx::Rect adjusted_rect = rect;
-
-  if (popup_parent_host_view_) {
-    gfx::Point translated_origin = adjusted_rect.origin();
-    // |rect| is relative to |popup_parent_host_view_|; translate it for the
-    // window's container.
-    aura::Window::ConvertPointToWindow(
-        popup_parent_host_view_->window_,
-        window_->parent(),
-        &translated_origin);
-    adjusted_rect.set_origin(translated_origin);
-  }
-
-  window_->SetBounds(adjusted_rect);
+  window_->SetBounds(rect);
   host_->WasResized();
 }
 
