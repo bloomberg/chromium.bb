@@ -20,22 +20,11 @@ using base::PlatformFile;
 using base::PlatformFileError;
 class FileSystemOperationContext;
 
-// A large part of this implementation is taken from base::FileUtilProxy.
+// A file utility interface that provides basic file utility methods for
+// FileSystem API.
 //
-// The default implementations of the virtual methods below (*1) assume the
-// given paths are native ones for the host platform.  The subclasses that
-// perform local path translation/obfuscation must override them.
-//  (*1) All virtual methods which receive FilePath as their arguments:
-//  CreateOrOpen, EnsureFileExists, GetLocalFilePath, GetFileInfo,
-//  ReadDirectory, CreateDirectory, CopyOrMoveFile, DeleteFile,
-//  DeleteSingleDirectory, Touch, Truncate, PathExists, DirectoryExists,
-//  IsDirectoryEmpty and CreateFileEnumerator.
-//
-// The methods below (*2) assume the given paths may not be native ones for the
-// host platform.  The subclasses should not override them.  They provide basic
-// meta logic by using other virtual methods.
-//  (*2) All non-virtual methods: Copy, Move, Delete, DeleteDirectoryRecursive,
-//  PerformCommonCheckAndPreparationForMoveAndCopy and CopyOrMoveDirectory.
+// TODO(kinuko): Move all the default implementation out of this class
+// and make this class pure abstract class.
 class FileSystemFileUtil {
  public:
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
@@ -67,6 +56,8 @@ class FileSystemFileUtil {
   // - (virtual) DeleteFile,
   // - (virtual) DeleteSingleDirectory or
   // - (non-virtual) DeleteDirectoryRecursive which calls two methods above.
+  //
+  // TODO(kinuko): Move this implementation outside FileSystemFileUtil.
   PlatformFileError Delete(
       FileSystemOperationContext* context,
       const FileSystemPath& path,
@@ -141,33 +132,38 @@ class FileSystemFileUtil {
       const FileSystemPath& file_system_path,
       FilePath* local_file_path);
 
-  // Touches a file.
-  // If the file doesn't exist, this fails with PLATFORM_FILE_ERROR_NOT_FOUND.
+  // Updates the file metadata information.  Unlike posix's touch, it does
+  // not create a file even if |path| does not exist, but instead fails
+  // with PLATFORM_FILE_ERROR_NOT_FOUND.
   virtual PlatformFileError Touch(
       FileSystemOperationContext* context,
       const FileSystemPath& path,
       const base::Time& last_access_time,
       const base::Time& last_modified_time);
 
-  // Truncates a file to the given length. If |length| is greater than the
+  // Truncates a file to the given length.  If |length| is greater than the
   // current length of the file, the file will be extended with zeroes.
   virtual PlatformFileError Truncate(
       FileSystemOperationContext* context,
       const FileSystemPath& path,
       int64 length);
 
+  // Returns true if a given |path| exists.
   virtual bool PathExists(
       FileSystemOperationContext* context,
       const FileSystemPath& path);
 
+  // Returns true if a given |path| exists and is a directory.
   virtual bool DirectoryExists(
       FileSystemOperationContext* context,
       const FileSystemPath& path);
 
+  // Returns true if a given |path| is an empty directory.
   virtual bool IsDirectoryEmpty(
       FileSystemOperationContext* context,
       const FileSystemPath& path);
 
+  // Copies or moves a single file from |src_path| to |dest_path|.
   virtual PlatformFileError CopyOrMoveFile(
       FileSystemOperationContext* context,
       const FileSystemPath& src_path,
@@ -175,7 +171,7 @@ class FileSystemFileUtil {
       bool copy);
 
   // Copies in a single file from a different filesystem.  The
-  // underlying_src_path is a local path which can be handled by the
+  // |underlying_src_path| is a local path which can be handled by the
   // underlying filesystem.
   virtual PlatformFileError CopyInForeignFile(
         FileSystemOperationContext* context,
@@ -184,18 +180,12 @@ class FileSystemFileUtil {
 
   // Deletes a single file.
   // It assumes the given path points a file.
-  //
-  // This method is called from DeleteDirectoryRecursive and Delete (both are
-  // non-virtual).
   virtual PlatformFileError DeleteFile(
       FileSystemOperationContext* context,
       const FileSystemPath& path);
 
   // Deletes a single empty directory.
   // It assumes the given path points an empty directory.
-  //
-  // This method is called from DeleteDirectoryRecursive and Delete (both are
-  // non-virtual).
   virtual PlatformFileError DeleteSingleDirectory(
       FileSystemOperationContext* context,
       const FileSystemPath& path);
@@ -211,10 +201,13 @@ class FileSystemFileUtil {
   // - (virtual) DeleteFile to delete files, and
   // - (virtual) DeleteSingleDirectory to delete empty directories after all
   // the files are deleted.
+  //
+  // TODO(kinuko): Move this method out of this class.
   PlatformFileError DeleteDirectoryRecursive(
       FileSystemOperationContext* context,
       const FileSystemPath& path);
 
+  // TODO(kinuko): We should stop FileUtil layering.
   FileSystemFileUtil* underlying_file_util() const {
     return underlying_file_util_.get();
   }

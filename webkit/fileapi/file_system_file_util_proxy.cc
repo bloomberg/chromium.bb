@@ -244,8 +244,7 @@ bool FileSystemFileUtilProxy::ReadDirectory(
         Bind(&ReadDirectoryHelper::Reply, Owned(helper), callback));
 }
 
-// Touches a file by calling |file_util|'s FileSystemFileUtil::Touch
-// on the given |message_loop_proxy|.
+// static
 bool FileSystemFileUtilProxy::Touch(
     MessageLoopProxy* message_loop_proxy,
     FileSystemOperationContext* context,
