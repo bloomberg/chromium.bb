@@ -27,8 +27,7 @@ GesturePoint::GesturePoint()
     : first_touch_time_(0.0),
       last_touch_time_(0.0),
       last_tap_time_(0.0),
-      velocity_calculator_(kBufferedPoints),
-      point_id_(-1) {
+      velocity_calculator_(kBufferedPoints) {
 }
 
 GesturePoint::~GesturePoint() {}
@@ -36,7 +35,6 @@ GesturePoint::~GesturePoint() {}
 void GesturePoint::Reset() {
   first_touch_time_ = last_touch_time_ = 0.0;
   velocity_calculator_.ClearHistory();
-  point_id_ = -1;
 }
 
 void GesturePoint::UpdateValues(const TouchEvent& event) {

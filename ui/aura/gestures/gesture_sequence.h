@@ -55,11 +55,7 @@ class AURA_EXPORT GestureSequence {
 
   GesturePoint& GesturePointForEvent(const TouchEvent& event);
 
-  // Do a linear scan through points_ to find the GesturePoint
-  // with id |point_id|.
-  GesturePoint* GetPointByPointId(int point_id);
-
-  // Functions to be called to add GestureEvents, after successful recognition.
+  // Functions to be called to add GestureEvents, after succesful recognition.
 
   // Tap gestures.
   void AppendTapDownGestureEvent(const GesturePoint& point, Gestures* gestures);
