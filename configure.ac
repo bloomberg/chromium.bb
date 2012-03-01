@@ -51,10 +51,6 @@ PKG_CHECK_MODULES(PTHREADSTUBS, pthread-stubs)
 AC_SUBST(PTHREADSTUBS_CFLAGS)
 AC_SUBST(PTHREADSTUBS_LIBS)
 
-PKG_CHECK_MODULES(PCIACCESS, [pciaccess >= 0.10])
-AC_SUBST(PCIACCESS_CFLAGS)
-AC_SUBST(PCIACCESS_LIBS)
-
 pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
 AC_ARG_ENABLE([udev],
@@ -260,6 +256,12 @@ if test "x$INTEL" != "xno" -o "x$RADEON" != "xno"; then
            fi
     fi
 fi
+
+if test "x$INTEL" != "xno"; then
+	PKG_CHECK_MODULES(PCIACCESS, [pciaccess >= 0.10])
+fi
+AC_SUBST(PCIACCESS_CFLAGS)
+AC_SUBST(PCIACCESS_LIBS)
 
 PKG_CHECK_MODULES(VALGRIND, [valgrind], [have_valgrind=yes], [have_valgrind=no])
 if test "x$have_valgrind" = "xyes"; then
