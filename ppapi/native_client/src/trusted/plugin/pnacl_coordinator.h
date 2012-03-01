@@ -261,12 +261,12 @@ class PnaclCoordinator {
   void DirectoryWasCreated(int32_t pp_error);
   // Invoked after we have checked the PNaCl cache for a translated version.
   void CachedFileDidOpen(int32_t pp_error);
+  // Invoked after we have started pulling down the bitcode file.
+  void BitcodeFileDidOpen(int32_t pp_error);
   // Invoked when the write descriptor for obj_file_ is created.
   void ObjectWriteDidOpen(int32_t pp_error);
   // Invoked when the read descriptor for obj_file_ is created.
   void ObjectReadDidOpen(int32_t pp_error);
-  // Invoked when the read descriptor for nexe_file_ is created.
-  void NexeWriteDidOpen(int32_t pp_error);
   // Invoked when the descriptors for obj_file_ have been closed.
   void ObjectFileWasClosed(int32_t pp_error);
   // Invoked when the obj_file_ temporary has been deleted.
@@ -277,6 +277,8 @@ class PnaclCoordinator {
   void NexeFileWasRenamed(int32_t pp_error);
   // Invoked when the read descriptor for nexe_file_ is created.
   void NexeReadDidOpen(int32_t pp_error);
+  // Invoked if there was an error and we've cleaned up the nexe_file_ temp.
+  void NexeFileWasDeleted(int32_t pp_error);
 
   // Once llc and ld nexes have been loaded and the two temporary files have
   // been created, this starts the translation.  Translation starts two
@@ -294,6 +296,10 @@ class PnaclCoordinator {
   void SetSubprocessesShouldDie(bool subprocesses_should_die);
   // Signal that Pnacl translation completed normally.
   void TranslateFinished(int32_t pp_error);
+  // Keeps track of the pp_error upon entry to TranslateFinished,
+  // for inspection after cleanup.
+  int32_t translate_finish_error_;
+
   // Signal that Pnacl translation failed, from the translation thread only.
   void TranslateFailed(const nacl::string& error_string);
 
@@ -346,7 +352,7 @@ class PnaclCoordinator {
   nacl::scoped_ptr<LocalTempFile> obj_file_;
   // Translated nexe file, produced by the linker and consumed by sel_ldr.
   nacl::scoped_ptr<LocalTempFile> nexe_file_;
-  // Callbacks to run when tasks or completed or an error has occurred.
+  // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;
 
   // Used to report information when errors (PPAPI or otherwise) are reported.

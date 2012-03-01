@@ -119,7 +119,7 @@ bool IsValidDictionary(const Json::Value& dictionary,
                               valid_keys,
                               valid_key_count)) {
       // TODO(jvoung): Should this set error_string and return false?
-      PLUGIN_PRINTF(("WARNING: '%s' property '%s' has unknown key '%s'.",
+      PLUGIN_PRINTF(("WARNING: '%s' property '%s' has unknown key '%s'.\n",
                      parent_key.c_str(),
                      container_key.c_str(), property_name.c_str()));
     }
@@ -236,10 +236,10 @@ bool IsValidISADictionary(const Json::Value& dictionary,
     // it could be "arch/portable" : { "pnacl-translate": URLSpec }
     // for executables that need to be translated.
     Json::Value property_value = dictionary[property_name];
-    if (!IsValidPnaclTranslateSpec(property_value, property_name,
-                                   parent_key, error_string) &&
-        !IsValidUrlSpec(property_value, property_name, parent_key,
-                        error_string)) {
+    if (!IsValidUrlSpec(property_value, property_name, parent_key,
+                        error_string) &&
+        !IsValidPnaclTranslateSpec(property_value, property_name,
+                                   parent_key, error_string)) {
       return false;
     }
   }

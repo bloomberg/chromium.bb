@@ -115,7 +115,6 @@ LocalTempFile::~LocalTempFile() {
 }
 
 void LocalTempFile::OpenWrite(const pp::CompletionCallback& cb) {
-  PLUGIN_PRINTF(("LocalTempFile::OpenWrite\n"));
   done_callback_ = cb;
   // If we don't already have a filename, generate one.
   if (filename_ == "") {
@@ -125,6 +124,7 @@ void LocalTempFile::OpenWrite(const pp::CompletionCallback& cb) {
     // Remember the ref used to open for writing and reading.
     file_ref_.reset(new pp::FileRef(*file_system_, filename_.c_str()));
   }
+  PLUGIN_PRINTF(("LocalTempFile::OpenWrite: %s\n", filename_.c_str()));
   // Open the writeable file.
   write_io_.reset(new pp::FileIO(plugin_));
   pp::CompletionCallback open_write_cb =
@@ -194,7 +194,7 @@ void LocalTempFile::WriteFileDidOpen(int32_t pp_error) {
 }
 
 void LocalTempFile::OpenRead(const pp::CompletionCallback& cb) {
-  PLUGIN_PRINTF(("LocalTempFile::OpenRead\n"));
+  PLUGIN_PRINTF(("LocalTempFile::OpenRead: %s\n", filename_.c_str()));
   done_callback_ = cb;
   // Open the read only file.
   read_io_.reset(new pp::FileIO(plugin_));
@@ -223,7 +223,7 @@ void LocalTempFile::ReadFileDidOpen(int32_t pp_error) {
 }
 
 void LocalTempFile::Close(const pp::CompletionCallback& cb) {
-  PLUGIN_PRINTF(("LocalTempFile::Close\n"));
+  PLUGIN_PRINTF(("LocalTempFile::Close: %s\n", filename_.c_str()));
   // Close the open DescWrappers and FileIOs.
   if (write_io_.get() != NULL) {
     write_io_->Close();
@@ -241,7 +241,7 @@ void LocalTempFile::Close(const pp::CompletionCallback& cb) {
 }
 
 void LocalTempFile::Delete(const pp::CompletionCallback& cb) {
-  PLUGIN_PRINTF(("LocalTempFile::Delete\n"));
+  PLUGIN_PRINTF(("LocalTempFile::Delete: %s\n", filename_.c_str()));
   file_ref_->Delete(cb);
 }
 
@@ -249,7 +249,9 @@ void LocalTempFile::Rename(const nacl::string& new_name,
                            const pp::CompletionCallback& cb) {
   // Rename the temporary file.
   filename_ = nacl::string(kPnaclTempDir) + "/" + new_name;
-  PLUGIN_PRINTF(("LocalTempFile::Rename to %s\n", filename_.c_str()));
+  PLUGIN_PRINTF(("LocalTempFile::Rename %s to %s\n",
+                 file_ref_->GetName().AsString().c_str(),
+                 filename_.c_str()));
   // Remember the old ref until the rename is complete.
   old_ref_.reset(file_ref_.release());
   file_ref_.reset(new pp::FileRef(*file_system_, filename_.c_str()));
@@ -437,21 +439,15 @@ int32_t PnaclCoordinator::GetLoadedFileDesc(int32_t pp_error,
   PLUGIN_PRINTF(("PnaclCoordinator::GetLoadedFileDesc (pp_error=%"
                  NACL_PRId32", url=%s, component=%s)\n", pp_error,
                  url.c_str(), component.c_str()));
-  PLUGIN_PRINTF(("PnaclCoordinator::GetLoadedFileDesc (pp_error=%d\n"));
   ErrorInfo error_info;
-  int32_t file_desc = plugin_->GetPOSIXFileDesc(url);
-  if (pp_error != PP_OK || file_desc == NACL_NO_FILE_DESC) {
+  int32_t file_desc_ok_to_close = plugin_->GetPOSIXFileDesc(url);
+  if (pp_error != PP_OK || file_desc_ok_to_close == NACL_NO_FILE_DESC) {
     if (pp_error == PP_ERROR_ABORTED) {
       plugin_->ReportLoadAbort();
     } else {
       ReportPpapiError(pp_error, component + " load failed.");
     }
-    return -1;
-  }
-  int32_t file_desc_ok_to_close = DUP(file_desc);
-  if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-    ReportPpapiError(PP_ERROR_FAILED, component + " could not dup fd.");
-    return -1;
+    return NACL_NO_FILE_DESC;
   }
   return file_desc_ok_to_close;
 }
@@ -505,7 +501,7 @@ void PnaclCoordinator::ReportPpapiError(int32_t pp_error,
 
 void PnaclCoordinator::ReportPpapiError(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::ReportPpappiError (pp_error=%"
-                 NACL_PRId32", error_code=%d, message=%s)\n",
+                 NACL_PRId32", error_code=%d, message='%s')\n",
                  pp_error, error_info_.error_code(),
                  error_info_.message().c_str()));
   plugin_->ReportLoadError(error_info_);
@@ -528,12 +524,14 @@ void PnaclCoordinator::ReportPpapiError(int32_t pp_error) {
 void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::TranslateFinished (pp_error=%"
                  NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error);
-    // TODO(sehr): Delete the object and nexe temporary files.
-    return;
-  }
-  // Close the object temporary file.
+  // Save the translate error code, and inspect after cleaning up junk files.
+  // Note: If there was a surfaway and the file objects were actually
+  // destroyed, then we are in trouble since the obj_file_, nexe_file_,
+  // etc. may have been destroyed.
+  // TODO(jvoung,sehr): Fix.
+  translate_finish_error_ = pp_error;
+
+  // Close the object temporary file (regardless of error code).
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::ObjectFileWasClosed);
   obj_file_->Close(cb);
@@ -572,6 +570,15 @@ void PnaclCoordinator::NexeFileWasClosed(int32_t pp_error) {
     ReportPpapiError(pp_error);
     return;
   }
+  // Now that cleanup of the obj file is done, check the old TranslateFinished
+  // error code to see if we should proceed normally or not.
+  if (translate_finish_error_ != PP_OK) {
+    pp::CompletionCallback cb =
+        callback_factory_.NewCallback(&PnaclCoordinator::NexeFileWasDeleted);
+    nexe_file_->Delete(cb);
+    return;
+  }
+
   // Rename the nexe file to the cache id.
   if (cache_identity_ != "") {
     pp::CompletionCallback cb =
@@ -614,9 +621,15 @@ void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
   translate_notify_callback_.Run(pp_error);
 }
 
+void PnaclCoordinator::NexeFileWasDeleted(int32_t pp_error) {
+  PLUGIN_PRINTF(("PnaclCoordinator::NexeFileWasDeleted (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+  ReportPpapiError(translate_finish_error_);
+}
+
 void PnaclCoordinator::TranslateFailed(const nacl::string& error_string) {
-  PLUGIN_PRINTF(("PnaclCoordinator::TranslateFailed (error_string=%"
-                 NACL_PRId32")\n", error_string.c_str()));
+  PLUGIN_PRINTF(("PnaclCoordinator::TranslateFailed (error_string='%s')\n",
+                 error_string.c_str()));
   pp::Core* core = pp::Module::Get()->core();
   error_info_.SetReport(ERROR_UNKNOWN,
                         nacl::string("PnaclCoordinator: ") + error_string);
@@ -675,11 +688,31 @@ void PnaclCoordinator::DirectoryWasCreated(int32_t pp_error) {
 }
 
 void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
-
+  PLUGIN_PRINTF(("PnaclCoordinator::CachedFileDidOpen (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
   if (pp_error == PP_OK) {
     NexeReadDidOpen(PP_OK);
     return;
   }
+  // Otherwise, load the pexe and set up temp files for translation.
+  pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::BitcodeFileDidOpen);
+  if (!plugin_->StreamAsFile(pexe_url_, cb.pp_completion_callback())) {
+    ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_ + ".");
+  }
+}
+
+void PnaclCoordinator::BitcodeFileDidOpen(int32_t pp_error) {
+  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeFileDidOpen (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+  // We have to get the fd immediately after streaming, otherwise it
+  // seems like the temp file will get GC'ed.
+  int32_t fd = GetLoadedFileDesc(pp_error, pexe_url_, "pexe");
+  if (fd < 0) {
+    // Error already reported by GetLoadedFileDesc().
+    return;
+  }
+  pexe_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
 
   obj_file_.reset(new LocalTempFile(plugin_, file_system_.get()));
   pp::CompletionCallback cb =
@@ -707,36 +740,16 @@ void PnaclCoordinator::ObjectReadDidOpen(int32_t pp_error) {
     return;
   }
   // Create the nexe file for connecting ld and sel_ldr.
+  // Start translation when done with this last step of setup!
   nexe_file_.reset(new LocalTempFile(plugin_, file_system_.get()));
   pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::NexeWriteDidOpen);
-  nexe_file_->OpenWrite(cb);
-}
-
-void PnaclCoordinator::NexeWriteDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::NexeWriteDidOpen (pp_error=%"
-                 NACL_PRId32")\n", pp_error));
-  if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error);
-    return;
-  }
-  // Load the pexe file and get the translation started.
-  pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::RunTranslate);
-
-  if (!plugin_->StreamAsFile(pexe_url_, cb.pp_completion_callback())) {
-    ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_ + ".");
-  }
+  nexe_file_->OpenWrite(cb);
 }
 
 void PnaclCoordinator::RunTranslate(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::RunTranslate (pp_error=%"
                  NACL_PRId32")\n", pp_error));
-  int32_t fd = GetLoadedFileDesc(pp_error, pexe_url_, "pexe");
-  if (fd < 0) {
-    return;
-  }
-  pexe_wrapper_.reset(plugin_->wrapper_factory()->MakeFileDesc(fd, O_RDONLY));
   // Invoke llc followed by ld off the main thread.  This allows use of
   // blocking RPCs that would otherwise block the JavaScript main thread.
   report_translate_finished_ =
