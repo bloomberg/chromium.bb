@@ -70,6 +70,7 @@
 #include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_dom_storage_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -333,9 +334,13 @@ WebWidget* TestWebViewDelegate::createPopupMenu(WebPopupType popup_type) {
 
 WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace(
     unsigned quota) {
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+  return SimpleDomStorageSystem::instance().CreateSessionStorageNamespace();
+#else
   // Enforce quota, ignoring the parameter from WebCore as in Chrome.
   return WebKit::WebStorageNamespace::createSessionStorageNamespace(
       WebStorageNamespace::m_sessionStorageQuota);
+#endif
 }
 
 WebGraphicsContext3D* TestWebViewDelegate::createGraphicsContext3D(

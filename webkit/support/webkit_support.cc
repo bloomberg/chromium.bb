@@ -38,6 +38,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLError.h"
 #if defined(TOOLKIT_USES_GTK)
@@ -62,6 +63,8 @@
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
+#include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_dom_storage_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
@@ -348,6 +351,14 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
     WebFrame*, WebKit::WebApplicationCacheHostClient* client) {
   return SimpleAppCacheSystem::CreateApplicationCacheHost(client);
+}
+
+WebKit::WebStorageNamespace* CreateSessionStorageNamespace(unsigned quota) {
+#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+  return SimpleDomStorageSystem::instance().CreateSessionStorageNamespace();
+#else
+  return WebKit::WebStorageNamespace::createSessionStorageNamespace(quota);
+#endif
 }
 
 WebKit::WebString GetWebKitRootDir() {

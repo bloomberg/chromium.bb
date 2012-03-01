@@ -24,6 +24,7 @@ class WebKitPlatformSupport;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebPlugin;
+class WebStorageNamespace;
 class WebString;
 class WebThemeEngine;
 class WebURL;
@@ -82,6 +83,9 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
 // This is used by WebFrameClient::createApplicationCacheHost().
 WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
     WebKit::WebFrame* frame, WebKit::WebApplicationCacheHostClient* client);
+
+// This is used by WebViewHost::createSessionStorageNamespace().
+WebKit::WebStorageNamespace* CreateSessionStorageNamespace(unsigned quota);
 
 // Returns the root directory of the WebKit code.
 WebKit::WebString GetWebKitRootDir();

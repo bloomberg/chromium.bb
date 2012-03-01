@@ -100,14 +100,6 @@ class DomStorageContext
       const DomStorageArea* area,
       const GURL& page_url);
 
- private:
-  friend class DomStorageSession;
-  friend class base::RefCountedThreadSafe<DomStorageContext>;
-  typedef std::map<int64, scoped_refptr<DomStorageNamespace> >
-      StorageNamespaceMap;
-
-  ~DomStorageContext();
-
   // May be called on any thread.
   int64 AllocateSessionId() {
     return session_id_sequence_.GetNext();
@@ -117,6 +109,13 @@ class DomStorageContext
   void CreateSessionNamespace(int64 namespace_id);
   void DeleteSessionNamespace(int64 namespace_id);
   void CloneSessionNamespace(int64 existing_id, int64 new_id);
+
+ private:
+  friend class base::RefCountedThreadSafe<DomStorageContext>;
+  typedef std::map<int64, scoped_refptr<DomStorageNamespace> >
+      StorageNamespaceMap;
+
+  ~DomStorageContext();
 
   // Collection of namespaces keyed by id.
   StorageNamespaceMap namespaces_;

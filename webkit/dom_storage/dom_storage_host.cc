@@ -21,6 +21,7 @@ DomStorageHost::~DomStorageHost() {
   AreaMap::const_iterator it = connections_.begin();
   for (; it != connections_.end(); ++it)
     it->second.namespace_->CloseStorageArea(it->second.area_);
+  connections_.clear();  // Clear prior to releasing the context_
 }
 
 // TODO(michaeln): have the caller pass in the 'connection_id' value

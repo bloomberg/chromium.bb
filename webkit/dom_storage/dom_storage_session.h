@@ -25,7 +25,7 @@ class DomStorageSession
   DomStorageSession* Clone();
 
  private:
-  friend class base::RefCountedThreadSafe<DomStorageContext>;
+  friend class base::RefCountedThreadSafe<DomStorageSession>;
 
   DomStorageSession(DomStorageContext* context, int64 namespace_id);
   ~DomStorageSession();
