@@ -91,8 +91,8 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     repeat_interval = self._repeat_interval * 60
     cmd = 'sudo -n true && sudo -n true < /dev/null > /dev/null 2>&1'
     # Anything other than a timeout results in us shutting down.
-    cmd = 'while :; do read -t %i; [ $? -le 128 ] && exit; %s; done'
-    cmd %= (repeat_interval, cmd)
+    cmd = ('while :; do read -t %i; [ $? -le 128 ] && exit; %s; done' %
+           (repeat_interval, cmd))
     self._proc = subprocess.Popen(['bash', '-c', cmd], shell=False,
                                   close_fds=True,
                                   stdin=subprocess.PIPE)
