@@ -1897,6 +1897,42 @@ weston_input_device_release(struct weston_input_device *device)
 	wl_input_device_release(&device->input_device);
 }
 
+static void
+device_setup_new_drag_surface(struct weston_input_device *device,
+			      struct weston_surface *surface)
+{
+	struct wl_input_device *input_device = &device->input_device;
+
+	device->drag_surface = surface;
+
+	weston_surface_set_position(device->drag_surface,
+				    input_device->x, input_device->y);
+
+	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
+		       &device->drag_surface_destroy_listener.link);
+}
+
+static void
+device_release_drag_surface(struct weston_input_device *device)
+{
+	undef_region(&device->drag_surface->input);
+	wl_list_remove(&device->drag_surface_destroy_listener.link);
+	device->drag_surface = NULL;
+}
+
+static void
+device_map_drag_surface(struct weston_input_device *device)
+{
+	if (device->drag_surface->output ||
+	    !device->drag_surface->buffer)
+		return;
+
+	wl_list_insert(&device->sprite->layer_link,
+		       &device->drag_surface->layer_link);
+	weston_surface_assign_output(device->drag_surface);
+	empty_region(&device->drag_surface->input);
+}
+
 static  void
 weston_input_update_drag_surface(struct wl_input_device *input_device,
 				 int dx, int dy)
@@ -1915,30 +1951,20 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 		surface_changed = 1;
 
 	if (!input_device->drag_surface || surface_changed) {
-		undef_region(&device->drag_surface->input);
-		wl_list_remove(&device->drag_surface_destroy_listener.link);
-		device->drag_surface = NULL;
+		device_release_drag_surface(device);
 		if (!surface_changed)
 			return;
 	}
 
 	if (!device->drag_surface || surface_changed) {
-		device->drag_surface = (struct weston_surface *)
+		struct weston_surface *surface = (struct weston_surface *)
 			input_device->drag_surface;
-
-		weston_surface_set_position(device->drag_surface,
-					    input_device->x, input_device->y);
-		wl_list_insert(device->drag_surface->surface.resource.destroy_listener_list.prev,
-			       &device->drag_surface_destroy_listener.link);
+		device_setup_new_drag_surface(device, surface);
 	}
 
-	if (device->drag_surface->output == NULL &&
-	    device->drag_surface->buffer) {
-		wl_list_insert(&device->sprite->layer_link,
-			       &device->drag_surface->layer_link);
-		weston_surface_assign_output(device->drag_surface);
-		empty_region(&device->drag_surface->input);
-	}
+	/* the client may not have attached a buffer to the drag surface
+	 * when we setup it up, so check if map is needed on every update */
+	device_map_drag_surface(device);
 
 	/* the client may have attached a buffer with a different size to
 	 * the drag surface, causing the input region to be reset */
