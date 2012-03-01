@@ -4,10 +4,12 @@
  * found in the LICENSE file.
  */
 
+#include <stddef.h>
 #include <stdio.h>
 #include <windows.h>
 
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -25,9 +27,9 @@ static int HandleException(HANDLE process_handle, DWORD windows_thread_id,
 struct ExceptionFrame {
   nacl_reg_t return_addr;
 #if NACL_BUILD_SUBARCH == 32
-  uint32_t prog_ctr;
-  uint32_t stack_ptr;
+  uint32_t context_ptr;
 #endif
+  struct NaClExceptionContext context;
 };
 
 
@@ -326,6 +328,7 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
   struct NaClAppThread *natp_remote;
   struct NaClAppThread appthread_copy;
   struct NaClApp app_copy;
+  uint32_t context_user_addr;
 
   context.ContextFlags = CONTEXT_SEGMENTS | CONTEXT_INTEGER | CONTEXT_CONTROL;
   if (!GetThreadContext(thread_handle, &context)) {
@@ -432,9 +435,21 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
   }
 
   new_stack.return_addr = 0;
+  context_user_addr = exception_stack +
+      offsetof(struct ExceptionFrame, context);
 #if NACL_BUILD_SUBARCH == 32
-  new_stack.prog_ctr = context.Eip;
-  new_stack.stack_ptr = context.Esp;
+  new_stack.context_ptr = context_user_addr;
+  new_stack.context.prog_ctr = context.Eip;
+  new_stack.context.stack_ptr = context.Esp;
+  new_stack.context.frame_ptr = context.Ebp;
+#else
+  /*
+   * Explicit downcast of %rip, %rsp, and %rbp required as we're truncating
+   * values for portability.
+   */
+  new_stack.context.prog_ctr = (uint32_t) context.Rip;
+  new_stack.context.stack_ptr = (uint32_t) context.Rsp;
+  new_stack.context.frame_ptr = (uint32_t) context.Rbp;
 #endif
   if (!WRITE_MEM(process_handle,
                  (struct ExceptionFrame *) (app_copy.mem_start
@@ -447,9 +462,7 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
   context.Eip = app_copy.exception_handler;
   context.Esp = exception_stack;
 #else
-  /* Truncate the saved %rsp and %rbp values for portability. */
-  context.Rdi = (uint32_t) context.Rip; /* Argument 1 */
-  context.Rsi = (uint32_t) context.Rsp; /* Argument 2 */
+  context.Rdi = context_user_addr;  /* Argument 1 */
   context.Rip = app_copy.mem_start + app_copy.exception_handler;
   context.Rsp = app_copy.mem_start + exception_stack;
   /*
