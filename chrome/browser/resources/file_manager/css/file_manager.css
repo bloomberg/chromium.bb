@@ -86,6 +86,12 @@ input[type='submit'][disabled]:hover {
 
 .butter-bar.before-show {
   top: -30px;
+  opacity: 0;
+}
+
+.butter-bar.after-show {
+  top: 50px;
+  opacity: 0;
 }
 
 .butter-bar .content {

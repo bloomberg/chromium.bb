@@ -130,7 +130,7 @@ FileManager.prototype = {
    * @return {string} The translated string.
    */
   function str(id) {
-    return localStrings.getString(id);
+    return localStrings.getString(id) || ('UNLOCALIZED STRING ' + id);
   }
 
   /**
@@ -944,7 +944,6 @@ FileManager.prototype = {
         self.hideButter();
 
       self.currentButter_ = butter;
-      self.currentButter_.classList.remove('before-show');
 
       self.updateButter(message, opt_options);
     });
@@ -976,13 +975,16 @@ FileManager.prototype = {
       var self = this;
       this.butterTimer_ = setTimeout(function() {
           self.hideButter();
-          self.butterTimer_ == null;
+          self.butterTimer_ = null;
       }, timeout);
     }
 
     var butter = this.currentButter_;
     butter.querySelector('.butter-message').textContent = message;
-
+    if (message) {
+      // The butter bar is made visible on the first non-empty message.
+      butter.classList.remove('before-show');
+    }
     if (opt_options && 'progress' in opt_options) {
       butter.querySelector('.progress-track').style.width =
           (opt_options.progress*100) + '%';
@@ -994,8 +996,7 @@ FileManager.prototype = {
 
   FileManager.prototype.hideButter = function() {
     if (this.currentButter_) {
-      this.currentButter_.style.top = '50px';
-      this.currentButter_.style.opacity = '0';
+      this.currentButter_.classList.add('after-show');
 
       var butter = this.currentButter_;
       setTimeout(function() {
@@ -1062,7 +1063,9 @@ FileManager.prototype = {
       event.preventDefault();
       // Here we need to use lower case as clipboardData.types return lower
       // case DomStringList.
-      if (event.clipboardData.types.contains('fs/iscut'))
+      if (event.clipboardData &&
+          event.clipboardData.types &&
+          event.clipboardData.types.indexOf('fs/iscut') != -1)
          canPaste = true;
     };
 
@@ -2867,7 +2870,9 @@ FileManager.prototype = {
     if (!event.clipboardData.getData('fs/isCut'))
       return;
 
-    this.showButter(str('PASTE_STARTED'), {timeout: 0});
+    // Pass an empty string so that the butter bar remains invisible until
+    // the first progress update. This prevents the flicker on short operations.
+    this.showButter('', {timeout: 0});
 
     var clipboard = {
       isCut: event.clipboardData.getData('fs/isCut'),
