@@ -82,11 +82,8 @@ class NativeThemeBase : public NativeTheme {
       const gfx::Rect& rect,
       const MenuListExtraParams& menu_list) const;
 
-  virtual void PaintMenuPopupBackground(
-      SkCanvas* canvas,
-      State state,
-      const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const;
+  virtual void PaintMenuPopupBackground(SkCanvas* canvas,
+                                        const gfx::Size& size) const;
 
   virtual void PaintMenuItemBackground(
       SkCanvas* canvas,

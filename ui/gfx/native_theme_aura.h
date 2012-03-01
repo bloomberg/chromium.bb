@@ -25,34 +25,24 @@ class NativeThemeAura : public NativeThemeBase {
   NativeThemeAura();
   virtual ~NativeThemeAura();
 
-  // NativeTheme overrides
+  // Overridden from NativeThemeBase:
   virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
-
-  // NativeThemeBase overrides
-  virtual void PaintMenuPopupBackground(
-      SkCanvas* canvas,
-      State state,
-      const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const OVERRIDE;
-
+  virtual void PaintMenuPopupBackground(SkCanvas* canvas,
+                                        const gfx::Size& size) const OVERRIDE;
   virtual void PaintScrollbarTrack(
       SkCanvas* canvas,
       Part part,
       State state,
       const ScrollbarTrackExtraParams& extra_params,
       const gfx::Rect& rect) const OVERRIDE;
-
-  virtual void PaintArrowButton(
-      SkCanvas* canvas,
-      const gfx::Rect& rect,
-      Part direction,
-      State state) const OVERRIDE;
-
-  virtual void PaintScrollbarThumb(
-      SkCanvas* canvas,
-      Part part,
-      State state,
-      const gfx::Rect& rect) const OVERRIDE;
+  virtual void PaintArrowButton(SkCanvas* canvas,
+                                const gfx::Rect& rect,
+                                Part direction,
+                                State state) const OVERRIDE;
+  virtual void PaintScrollbarThumb(SkCanvas* canvas,
+                                   Part part,
+                                   State state,
+                                   const gfx::Rect& rect) const OVERRIDE;
 
   SkBitmap* GetHorizontalBitmapNamed(int resource_id) const;
 

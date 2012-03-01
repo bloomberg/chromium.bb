@@ -78,11 +78,8 @@ class NativeThemeChromeos : public NativeThemeBase {
       const gfx::Rect& rect,
       const InnerSpinButtonExtraParams& spin_button) const OVERRIDE;
 
-  virtual void PaintMenuPopupBackground(
-      SkCanvas* canvas,
-      State state,
-      const gfx::Rect& rect,
-      const MenuListExtraParams& menu_list) const OVERRIDE;
+  virtual void PaintMenuPopupBackground(SkCanvas* canvas,
+                                        const gfx::Size& size) const OVERRIDE;
 
   // Draw the progress bar.
   virtual void PaintProgressBar(SkCanvas* canvas,

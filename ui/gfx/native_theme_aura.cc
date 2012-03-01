@@ -113,15 +113,11 @@ SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
       break;
   }
 
-  // Return InvalidColor
   return kInvalidColorIdColor;
 }
 
-void NativeThemeAura::PaintMenuPopupBackground(
-    SkCanvas* canvas,
-    State state,
-    const gfx::Rect& rect,
-    const MenuListExtraParams& menu_list) const {
+void NativeThemeAura::PaintMenuPopupBackground(SkCanvas* canvas,
+                                               const gfx::Size& size) const {
   canvas->drawColor(kMenuBackgroundColor, SkXfermode::kSrc_Mode);
 }
 

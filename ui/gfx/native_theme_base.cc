@@ -145,7 +145,7 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
       NOTIMPLEMENTED();
       break;
     case kMenuPopupBackground:
-      PaintMenuPopupBackground(canvas, state, rect, extra.menu_list);
+      PaintMenuPopupBackground(canvas, rect.size());
       break;
     case kMenuPopupGutter:
     case kMenuPopupSeparator:
@@ -666,11 +666,8 @@ void NativeThemeBase::PaintMenuList(
   canvas->drawPath(path, paint);
 }
 
-void NativeThemeBase::PaintMenuPopupBackground(
-    SkCanvas* canvas,
-    State state,
-    const gfx::Rect& rect,
-    const MenuListExtraParams& menu_list) const {
+void NativeThemeBase::PaintMenuPopupBackground(SkCanvas* canvas,
+                                               const gfx::Size& size) const {
   canvas->drawColor(kMenuPopupBackgroundColor, SkXfermode::kSrc_Mode);
 }
 
