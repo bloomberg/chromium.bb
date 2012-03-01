@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   ui::CompositorTestSupport::Initialize();
 
-  aura::RootWindow::GetInstance();
+  scoped_ptr<aura::RootWindow> root_window(new aura::RootWindow);
 
   // Create a hierarchy of test windows.
   DemoWindowDelegate window_delegate1(SK_ColorBLUE);
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
   window3.Show();
   window3.SetParent(&window2);
 
-  aura::RootWindow::GetInstance()->ShowRootWindow();
+  root_window->ShowRootWindow();
   MessageLoopForUI::current()->Run();
 
   ui::CompositorTestSupport::Terminate();

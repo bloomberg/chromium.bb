@@ -95,7 +95,7 @@ void DesktopNotificationsTest::SetUp() {
   WebKit::initialize(&webkit_platform_support_);
   // MockBalloonCollection retrieves information about the screen on creation.
   // So it is necessary to make sure the desktop gets created first.
-  ash::Shell::GetRootWindow();
+  ash::Shell::CreateInstance(NULL);
 #endif
 
   browser::RegisterLocalState(&local_state_);
@@ -112,7 +112,7 @@ void DesktopNotificationsTest::TearDown() {
   ui_manager_.reset(NULL);
   profile_.reset(NULL);
 #if defined(USE_AURA)
-  aura::RootWindow::DeleteInstance();
+  ash::Shell::DeleteInstance();
   aura::Env::DeleteInstance();
   WebKit::shutdown();
 #endif
