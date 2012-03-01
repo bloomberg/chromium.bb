@@ -702,8 +702,7 @@ function VideoControls(containerElement, onMediaError,
 VideoControls.RESUME_POSITIONS_CAPACITY = 100;
 VideoControls.RESUME_POSITION_LIFETIME = 30 * 24 * 60 * 60 * 1000;  // 30 days.
 VideoControls.RESUME_MARGIN = 0.03;
-// Ignore the tail margin for videos shorter than 5 minutes.
-VideoControls.RESUME_TAIL_MARGIN_THRESHOLD = 5 * 60;
+VideoControls.RESUME_THRESHOLD = 5 * 60; // No resume for videos < 5 min.
 VideoControls.RESUME_REWIND = 5;  // Rewind 5 seconds back when resuming.
 
 VideoControls.prototype = { __proto__: MediaControls.prototype };
@@ -752,7 +751,9 @@ VideoControls.prototype.togglePlayStateWithFeedback = function(e) {
 
 VideoControls.prototype.onMediaDuration_ = function() {
   MediaControls.prototype.onMediaDuration_.apply(this, arguments);
-  if (this.media_.duration && this.media_.seekable) {
+  if (this.media_.duration &&
+      this.media_.duration >= VideoControls.RESUME_THRESHOLD &&
+      this.media_.seekable) {
     var position = this.resumePositions_.getValue(this.media_.src);
     if (position) {
       this.media_.currentTime = position;
@@ -769,13 +770,13 @@ VideoControls.prototype.togglePlayState = function(e) {
 };
 
 VideoControls.prototype.savePosition = function() {
-  if (!this.media_.duration)
+  if (!this.media_.duration ||
+      this.media_.duration_ < VideoControls.RESUME_THRESHOLD)
     return;
 
   var ratio = this.media_.currentTime / this.media_.duration;
   if (ratio < VideoControls.RESUME_MARGIN ||
-      (this.media_.duration >= VideoControls.RESUME_TAIL_MARGIN_THRESHOLD &&
-      ratio > (1 - VideoControls.RESUME_MARGIN))) {
+      ratio > (1 - VideoControls.RESUME_MARGIN)) {
     // We are too close to the beginning or the end.
     // Remove the resume position so that next time we start from the beginning.
     this.resumePositions_.removeValue(this.media_.src);
