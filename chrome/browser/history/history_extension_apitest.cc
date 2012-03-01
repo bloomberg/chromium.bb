@@ -29,7 +29,13 @@ IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, TimedSearch) {
   ASSERT_TRUE(RunExtensionSubtest("history", "timed_search.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, Delete) {
+#if defined(OS_WIN)
+// Flaky on Windows: crbug.com/88318
+#define MAYBE_Delete DISABLED_Delete
+#else
+#define MAYBE_Delete Delete
+#endif
+IN_PROC_BROWSER_TEST_F(HistoryExtensionApiTest, MAYBE_Delete) {
   ASSERT_TRUE(RunExtensionSubtest("history", "delete.html")) << message_;
 }
 
