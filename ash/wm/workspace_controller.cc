@@ -23,7 +23,7 @@ namespace internal {
 namespace {
 
 // Size of the grid when a grid is enabled.
-const int kGridSize = 8;
+const int kGridSize = 16;
 
 }  // namespace
 
