@@ -4735,6 +4735,11 @@
             ['exclude', '^browser/speech/'],
           ],
         }],
+        ['notifications==0', {
+          'sources/': [
+            ['exclude', '^browser/notifications/'],
+          ],
+        }],
         ['OS=="android"', {
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',
@@ -4743,7 +4748,6 @@
             'browser/ui/webui/certificate_viewer_webui.cc',
           ],
           'sources/': [
-            ['exclude', '^browser/notifications/'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/panels/'],
             ['exclude', '^browser/ui/tabs/'],

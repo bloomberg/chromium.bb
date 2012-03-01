@@ -1127,6 +1127,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     int callback_context,
     int render_process_id,
     int render_view_id) {
+#if defined(ENABLE_NOTIFICATIONS)
   RenderViewHost* rvh = RenderViewHost::FromID(
       render_process_id, render_view_id);
   if (!rvh) {
@@ -1141,6 +1142,9 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   service->RequestPermission(
       source_origin, render_process_id, render_view_id, callback_context,
       tab_util::GetWebContentsByID(render_process_id, render_view_id));
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 WebKit::WebNotificationPresenter::Permission
@@ -1148,6 +1152,7 @@ WebKit::WebNotificationPresenter::Permission
         const GURL& source_origin,
         content::ResourceContext* context,
         int render_process_id) {
+#if defined(ENABLE_NOTIFICATIONS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   if (io_data->GetExtensionInfoMap()->SecurityOriginHasAPIPermission(
@@ -1160,6 +1165,9 @@ WebKit::WebNotificationPresenter::Permission
   return io_data->GetNotificationService() ?
       io_data->GetNotificationService()->HasPermission(source_origin) :
       WebKit::WebNotificationPresenter::PermissionNotAllowed;
+#else
+  return WebKit::WebNotificationPresenter::PermissionAllowed;
+#endif
 }
 
 void ChromeContentBrowserClient::ShowDesktopNotification(
@@ -1167,6 +1175,7 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
     int render_process_id,
     int render_view_id,
     bool worker) {
+#if defined(ENABLE_NOTIFICATIONS)
   RenderViewHost* rvh = RenderViewHost::FromID(
       render_process_id, render_view_id);
   if (!rvh) {
@@ -1182,12 +1191,16 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
     params, render_process_id, render_view_id,
     worker ? DesktopNotificationService::WorkerNotification :
         DesktopNotificationService::PageNotification);
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void ChromeContentBrowserClient::CancelDesktopNotification(
     int render_process_id,
     int render_view_id,
     int notification_id) {
+#if defined(ENABLE_NOTIFICATIONS)
   RenderViewHost* rvh = RenderViewHost::FromID(
       render_process_id, render_view_id);
   if (!rvh) {
@@ -1201,6 +1214,9 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
       DesktopNotificationServiceFactory::GetForProfile(profile);
   service->CancelDesktopNotification(
       render_process_id, render_view_id, notification_id);
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(

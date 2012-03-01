@@ -198,9 +198,11 @@ TestingProfile::TestingProfile(const FilePath& path,
 void TestingProfile::Init() {
   profile_dependency_manager_->CreateProfileServices(this, true);
 
+#if defined(ENABLE_NOTIFICATIONS)
   // Install profile keyed service factory hooks for dummy/test services
   DesktopNotificationServiceFactory::GetInstance()->SetTestingFactory(
       this, CreateTestDesktopNotificationService);
+#endif
 }
 
 void TestingProfile::FinishInit() {

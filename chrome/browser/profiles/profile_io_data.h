@@ -83,7 +83,10 @@ class ProfileIOData {
   ExtensionInfoMap* GetExtensionInfoMap() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
   CookieSettings* GetCookieSettings() const;
+
+#if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationService* GetNotificationService() const;
+#endif
 
   BooleanPrefMember* clear_local_state_on_exit()  const {
     return &clear_local_state_on_exit_;
@@ -137,7 +140,11 @@ class ProfileIOData {
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
     scoped_refptr<ExtensionInfoMap> extension_info_map;
+
+#if defined(ENABLE_NOTIFICATIONS)
     DesktopNotificationService* notification_service;
+#endif
+
     scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry;
     // We need to initialize the ProxyConfigService from the UI thread
     // because on linux it relies on initializing things through gconf,
@@ -280,7 +287,10 @@ class ProfileIOData {
   mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   mutable scoped_refptr<CookieSettings> cookie_settings_;
+
+#if defined(ENABLE_NOTIFICATIONS)
   mutable DesktopNotificationService* notification_service_;
+#endif
 
   mutable ResourceContext resource_context_;
 

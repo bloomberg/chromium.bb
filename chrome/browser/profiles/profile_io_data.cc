@@ -223,8 +223,12 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->cookie_monster_delegate =
       new ChromeCookieMonsterDelegate(profile_getter);
   params->extension_info_map = profile->GetExtensionInfoMap();
+
+#if defined(ENABLE_NOTIFICATIONS)
   params->notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
+#endif
+
   params->protocol_handler_registry = profile->GetProtocolHandlerRegistry();
 
   ChromeProxyConfigService* proxy_config_service =
@@ -271,7 +275,9 @@ ProfileIOData::ProfileParams::ProfileParams()
     : is_incognito(false),
       clear_local_state_on_exit(false),
       io_thread(NULL),
+#if defined(ENABLE_NOTIFICATIONS)
       notification_service(NULL),
+#endif
       profile(NULL) {}
 ProfileIOData::ProfileParams::~ProfileParams() {}
 
@@ -381,9 +387,11 @@ CookieSettings* ProfileIOData::GetCookieSettings() const {
   return cookie_settings_;
 }
 
+#if defined(ENABLE_NOTIFICATIONS)
 DesktopNotificationService* ProfileIOData::GetNotificationService() const {
   return notification_service_;
 }
+#endif
 
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
     : io_data_(io_data) {
@@ -507,7 +515,9 @@ void ProfileIOData::LazyInitialize() const {
   // Take ownership over these parameters.
   host_content_settings_map_ = profile_params_->host_content_settings_map;
   cookie_settings_ = profile_params_->cookie_settings;
+#if defined(ENABLE_NOTIFICATIONS)
   notification_service_ = profile_params_->notification_service;
+#endif
   extension_info_map_ = profile_params_->extension_info_map;
 
   resource_context_.host_resolver_ = io_thread_globals->host_resolver.get();
