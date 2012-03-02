@@ -56,13 +56,6 @@ TabContentsViewViews::~TabContentsViewViews() {
     view_storage->RemoveView(last_focused_view_storage_id_);
 }
 
-void TabContentsViewViews::AttachConstrainedWindow(
-    ConstrainedWindowGtk* constrained_window) {
-}
-void TabContentsViewViews::RemoveConstrainedWindow(
-    ConstrainedWindowGtk* constrained_window) {
-}
-
 void TabContentsViewViews::Unparent() {
   // Remember who our FocusManager is, we won't be able to access it once
   // un-parented.
