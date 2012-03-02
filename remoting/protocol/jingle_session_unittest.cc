@@ -52,6 +52,10 @@ void QuitCurrentThread() {
   MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
+ACTION(QuitThread) {
+  QuitCurrentThread();
+}
+
 ACTION_P(QuitThreadOnCounter, counter) {
   --(*counter);
   EXPECT_GE(*counter, 0);
@@ -230,7 +234,7 @@ class JingleSessionTest : public testing::Test {
     message_loop_->RunAllPending();
   }
 
-  void CreateChannel(bool expect_fail) {
+  void CreateChannel() {
     client_session_->CreateStreamChannel(kChannelName, base::Bind(
         &JingleSessionTest::OnClientChannelCreated, base::Unretained(this)));
     host_session_->CreateStreamChannel(kChannelName, base::Bind(
@@ -243,13 +247,8 @@ class JingleSessionTest : public testing::Test {
         .WillOnce(QuitThreadOnCounter(&counter));
     message_loop_->Run();
 
-    if (expect_fail) {
-      // At least one socket should fail to connect.
-      EXPECT_TRUE((!client_socket_.get()) || (!host_socket_.get()));
-    } else {
-      EXPECT_TRUE(client_socket_.get());
-      EXPECT_TRUE(host_socket_.get());
-    }
+    EXPECT_TRUE(client_socket_.get());
+    EXPECT_TRUE(host_socket_.get());
   }
 
   scoped_ptr<JingleThreadMessageLoop> message_loop_;
@@ -351,7 +350,7 @@ TEST_F(JingleSessionTest, TestStreamChannel) {
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
-  ASSERT_NO_FATAL_FAILURE(CreateChannel(false));
+  ASSERT_NO_FATAL_FAILURE(CreateChannel());
 
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
@@ -366,7 +365,7 @@ TEST_F(JingleSessionTest, TestMultistepAuthStreamChannel) {
   ASSERT_NO_FATAL_FAILURE(
       InitiateConnection(3, FakeAuthenticator::ACCEPT, false));
 
-  ASSERT_NO_FATAL_FAILURE(CreateChannel(false));
+  ASSERT_NO_FATAL_FAILURE(CreateChannel());
 
   StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
                                 kMessageSize, kMessages);
@@ -377,11 +376,25 @@ TEST_F(JingleSessionTest, TestMultistepAuthStreamChannel) {
 
 // Verify that we shutdown properly when channel authentication fails.
 TEST_F(JingleSessionTest, TestFailedChannelAuth) {
-  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  CreateSessionManagers(1, FakeAuthenticator::REJECT_CHANNEL);
   ASSERT_NO_FATAL_FAILURE(
-      InitiateConnection(1, FakeAuthenticator::REJECT_CHANNEL, false));
+      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
 
-  ASSERT_NO_FATAL_FAILURE(CreateChannel(true));
+  client_session_->CreateStreamChannel(kChannelName, base::Bind(
+      &JingleSessionTest::OnClientChannelCreated, base::Unretained(this)));
+  host_session_->CreateStreamChannel(kChannelName, base::Bind(
+      &JingleSessionTest::OnHostChannelCreated, base::Unretained(this)));
+
+  // Terminate the message loop when we get rejection notification
+  // from the host.
+  EXPECT_CALL(host_channel_callback_, OnDone(NULL))
+      .WillOnce(QuitThread());
+  EXPECT_CALL(client_channel_callback_, OnDone(_))
+      .Times(AtMost(1));
+
+  message_loop_->Run();
+
+  EXPECT_TRUE(!host_socket_.get());
 }
 
 }  // namespace protocol
