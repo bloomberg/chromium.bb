@@ -33,6 +33,16 @@
 
 namespace {
 
+class PrinterChangeHandleTraits {
+ public:
+  static bool CloseHandle(HANDLE handle) {
+    return ::FindClosePrinterChangeNotification(handle) != FALSE;
+  }
+};
+
+typedef base::win::GenericScopedHandle<PrinterChangeHandleTraits>
+    ScopedPrinterChangeHandle;
+
 class DevMode {
  public:
   DevMode() : dm_(NULL) {}
@@ -122,9 +132,7 @@ namespace cloud_print {
 class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
  public:
   PrintSystemWatcherWin()
-      : printer_(NULL),
-        printer_change_(NULL),
-        delegate_(NULL),
+      : delegate_(NULL),
         did_signal_(false) {
   }
   ~PrintSystemWatcherWin() {
@@ -151,11 +159,11 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
       printer_name_to_use = const_cast<LPTSTR>(printer_name_wide.c_str());
     }
     bool ret = false;
-    OpenPrinter(printer_name_to_use, &printer_, NULL);
-    if (printer_) {
-      printer_change_ = FindFirstPrinterChangeNotification(
-          printer_, PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB, 0, NULL);
-      if (printer_change_) {
+    OpenPrinter(printer_name_to_use, printer_.Receive(), NULL);
+    if (printer_.IsValid()) {
+      printer_change_.Set(FindFirstPrinterChangeNotification(
+          printer_, PRINTER_CHANGE_PRINTER|PRINTER_CHANGE_JOB, 0, NULL));
+      if (printer_change_.IsValid()) {
         ret = watcher_.StartWatching(printer_change_, this);
       }
     }
@@ -166,14 +174,8 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
   }
   bool Stop() {
     watcher_.StopWatching();
-    if (printer_) {
-      ClosePrinter(printer_);
-      printer_ = NULL;
-    }
-    if (printer_change_) {
-      FindClosePrinterChangeNotification(printer_change_);
-      printer_change_ = NULL;
-    }
+    printer_.Close();
+    printer_change_.Close();
     return true;
   }
 
@@ -203,7 +205,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
   bool GetCurrentPrinterInfo(printing::PrinterBasicInfo* printer_info) {
     DCHECK(printer_info);
-    if (!printer_)
+    if (!printer_.IsValid())
       return false;
 
     DWORD bytes_needed = 0;
@@ -234,10 +236,11 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
 
  private:
   base::win::ObjectWatcher watcher_;
-  HANDLE printer_;            // The printer being watched
-  HANDLE printer_change_;     // Returned by FindFirstPrinterChangeNotifier
-  Delegate* delegate_;        // Delegate to notify
-  bool did_signal_;           // DoneWaiting was called
+  printing::ScopedPrinterHandle printer_;  // The printer being watched
+  // Returned by FindFirstPrinterChangeNotifier.
+  ScopedPrinterChangeHandle printer_change_;
+  Delegate* delegate_;           // Delegate to notify
+  bool did_signal_;              // DoneWaiting was called
 };
 
 // This typedef is to workaround the issue with certain versions of
@@ -804,13 +807,13 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
                                    PlatformJobId job_id,
                                    PrintJobDetails *job_details) {
   DCHECK(job_details);
-  HANDLE printer_handle = NULL;
+  printing::ScopedPrinterHandle printer_handle;
   std::wstring printer_name_wide = UTF8ToWide(printer_name);
-  OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()), &printer_handle,
-              NULL);
-  DCHECK(printer_handle);
+  OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()),
+              printer_handle.Receive(), NULL);
+  DCHECK(printer_handle.IsValid());
   bool ret = false;
-  if (printer_handle) {
+  if (printer_handle.IsValid()) {
     DWORD bytes_needed = 0;
     GetJob(printer_handle, job_id, 1, NULL, 0, &bytes_needed);
     DWORD last_error = GetLastError();
@@ -840,7 +843,6 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
         ret = true;
       }
     }
-    ClosePrinter(printer_handle);
   }
   return ret;
 }

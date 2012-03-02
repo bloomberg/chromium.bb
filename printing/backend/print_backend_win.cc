@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,12 +131,11 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
       DCHECK(SUCCEEDED(hr));
       printer_info->caps_mime_type = "text/xml";
     }
-    // TODO(sanjeevr): Add ScopedPrinterHandle
-    HANDLE printer_handle = NULL;
-    OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()), &printer_handle,
-                NULL);
+    ScopedPrinterHandle printer_handle;
+    OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()),
+                printer_handle.Receive(), NULL);
     DCHECK(printer_handle);
-    if (printer_handle) {
+    if (printer_handle.IsValid()) {
       LONG devmode_size = DocumentProperties(
           NULL, printer_handle, const_cast<LPTSTR>(printer_name_wide.c_str()),
           NULL, NULL, 0);
@@ -166,7 +165,6 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
           printer_info->defaults_mime_type = "text/xml";
         }
       }
-      ClosePrinter(printer_handle);
     }
     XPSModule::CloseProvider(provider);
   }
@@ -175,15 +173,10 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 
 bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
   std::wstring printer_name_wide = UTF8ToWide(printer_name);
-  HANDLE printer_handle = NULL;
-  OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()), &printer_handle,
-              NULL);
-  bool ret = false;
-  if (printer_handle) {
-    ret = true;
-    ClosePrinter(printer_handle);
-  }
-  return ret;
+  ScopedPrinterHandle printer_handle;
+  OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()),
+              printer_handle.Receive(), NULL);
+  return printer_handle.IsValid();
 }
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
