@@ -36,7 +36,11 @@ class DownloadResourceThrottle
  private:
   virtual ~DownloadResourceThrottle();
 
+  void WillDownload(bool* defer);
   void ContinueDownload(bool allow);
+
+  // Set to true when we are querying the DownloadRequestLimiter.
+  bool querying_limiter_;
 
   // Set to true when we know that the request is allowed to start.
   bool request_allowed_;
