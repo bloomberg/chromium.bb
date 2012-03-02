@@ -80,7 +80,16 @@ cr.define('options', function() {
       }
 
       // On Startup section.
-      $('startup-set-pages').onclick = function() {
+      var startupSetPagesLink = $('startup-set-pages');
+      const showPagesValue = Number($('startup-show-pages').value);
+
+      Preferences.getInstance().addEventListener('session.restore_on_startup',
+                                                 function(event) {
+        startupSetPagesLink.disabled = event.value['disabled'] &&
+                                       event.value['value'] != showPagesValue;
+      });
+
+      startupSetPagesLink.onclick = function() {
         OptionsPage.navigateToPage('startup');
       };
 

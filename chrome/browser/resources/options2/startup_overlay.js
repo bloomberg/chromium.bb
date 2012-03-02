@@ -33,6 +33,11 @@ cr.define('options', function() {
      */
     autocompleteList_: null,
 
+    startup_pages_pref_: {
+      'name': 'session.urls_to_restore_on_startup',
+      'disabled': false
+    },
+
     /**
      * Initialize the page.
      */
@@ -48,6 +53,10 @@ cr.define('options', function() {
       $('startupUseCurrentButton').onclick = function(event) {
         chrome.send('setStartupPagesToCurrentPages');
       };
+
+      Preferences.getInstance().addEventListener(
+          this.startup_pages_pref_.name,
+          this.handleStartupPageListChange_.bind(this));
 
       var suggestionList = new cr.ui.AutocompleteList();
       suggestionList.autoExpands = true;
@@ -68,6 +77,34 @@ cr.define('options', function() {
     handleCancel: function() {
       SettingsDialog.prototype.handleCancel.call(this);
       chrome.send('cancelStartupPrefChanges');
+    },
+
+    /**
+     * Sets the enabled state of the custom startup page list controls
+     * based on the current startup radio button selection.
+     * @private
+     */
+    updateCustomStartupPageControlStates_: function() {
+      var disable = this.startup_pages_pref_.disabled;
+      var startupPagesList = $('startupPagesList');
+      startupPagesList.disabled = disable;
+      startupPagesList.setAttribute('tabindex', disable ? -1 : 0);
+      // Explicitly set disabled state for input text elements.
+      var inputs = startupPagesList.querySelectorAll("input[type='text']");
+      for (var i = 0; i < inputs.length; i++)
+        inputs[i].disabled = disable;
+      $('startupUseCurrentButton').disabled = disable;
+    },
+
+    /**
+     * Handles change events of the preference
+     * 'session.urls_to_restore_on_startup'.
+     * @param {event} preference changed event.
+     * @private
+     */
+    handleStartupPageListChange_: function(event) {
+      this.startup_pages_pref_.disabled = event.value['disabled'];
+      this.updateCustomStartupPageControlStates_();
     },
 
     /**
