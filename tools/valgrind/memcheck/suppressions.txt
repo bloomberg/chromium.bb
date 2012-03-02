@@ -1641,8 +1641,8 @@
    fun:_Znw*
    fun:_ZN27ChromeBrowserMainPartsPosix24PostMainMessageLoopStartEv
    ...
-   fun:_ZN7content16BrowserMainParts20MainMessageLoopStartEv
-   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
+   fun:ChromeMain
 }
 {
    bug_30346
