@@ -1,4 +1,4 @@
-SUBDIRS = table_test_corpuses tables doctests
+SUBDIRS = table_test_corpuses tables doctests harness
 
 AM_CPPFLAGS = -I$(top_srcdir)/liblouis
 
@@ -50,7 +50,8 @@ dist_check_SCRIPTS = \
 
 if HAVE_PYTHON
 dist_check_SCRIPTS += \
-	check_doctests.py
+	check_doctests.py \
+	runHarness.py
 endif
 
 # The present_progressive should not really fail but for the moment
@@ -65,4 +66,10 @@ TESTS =	\
 	$(check_PROGRAMS) \
 	$(dist_check_SCRIPTS)
 
-TESTS_ENVIRONMENT = LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables PYTHONPATH=$(top_srcdir)/python:$$PYTHONPATH PATH=../tools:$$PATH
+HARNESS_DIR = $(top_srcdir)/tests/harness
+
+TESTS_ENVIRONMENT = \
+	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables \
+	PYTHONPATH=$(HARNESS_DIR):$(top_srcdir)/python:$$PYTHONPATH \
+	HARNESS_DIR=$(HARNESS_DIR) \
+	PATH=../tools:$$PATH

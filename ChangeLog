@@ -1,3 +1,14 @@
+2012-03-02  Mesar Hameed <mesar.hameed@gmail.com>
+
+	* configure.ac:
+	* doc/liblouis.texi:
+	* tests/Makefile.am:
+	* tests/harness/Makefile.am:
+	* tests/harness/__init__.py:
+	* tests/harness/en-GB-g2_harness.py:
+	* tests/runHarness.py: Add a test harness, i.e. an infrastructure
+	to be able to do table tests in a simple and concise syntax.
+
 2012-03-01  Christian Egli  <christian.egli@sbs.ch>
 
 	* configure.ac:

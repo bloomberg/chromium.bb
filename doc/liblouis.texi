@@ -94,6 +94,7 @@ Fifth Floor, Boston, MA 02110-1301, USA.
 * Introduction::                
 * Test Programs::               
 * How to Write Translation Tables::  
+* How to Write a Translation Table Test Harness::  
 * Notes on Back-Translation::   
 * Programming with liblouis::   
 * Opcode Index::                
@@ -417,7 +418,7 @@ described in @ref{common options}.
 
 You will see a few lines telling you how to use the program.
 
-@node How to Write Translation Tables, Notes on Back-Translation, Test Programs, Top
+@node How to Write Translation Tables, How to Write a Translation Table Test Harness, Test Programs, Top
 @chapter How to Write Translation Tables
 
 Many translation (contraction) tables have already been made up. They
@@ -1734,7 +1735,48 @@ backward compatibility.
 @deprecatedopcode{literal, characters, compbrl}
 @end table
 
-@node  Notes on Back-Translation, Programming with liblouis, How to Write Translation Tables, Top
+
+@node  How to Write a Translation Table Test Harness, Notes on Back-Translation, How to Write Translation Tables, Top
+@chapter How to Write a Translation Table Test Harness
+
+The translation table test harness a set of tests to ensure the correctness of a given table.
+Having a harness ensures that the table is correct for all the listed tests, and if any fail, a report will be produced 
+showing the error and the actual and expected outputs.
+To ensure complete coverage, you should have at least one test for each contraction rule.
+
+Each harness file is a simple utf8 encoded python file, which has two entries.
+@table @code
+@item table 
+The name of the table which the tests should be run against.
+@item tests 
+The list of tests that should be run.
+@end table
+
+Each test case has the following entries:
+
+@table @code
+@item txt
+The unicode text to be tested (required).
+@item cursorPos
+The position of the cursor within the given text (optional). Useful
+when simulating screenreader interaction, to debug contraction and
+cursor behaviour.
+@item brl
+The expected braille output (required). The dots should be encoded in
+the liblouis ascii-braille like encoding.
+@item BRLCursorPos
+The expected position of the braille cursor in the braille output
+(optional). Useful when simulating screenreader interaction, to debug
+contraction and cursor behaviour.
+@item mode
+The liblouis translation mode that should be used for this test
+(optional). If not defined defaults to 0.
+@end table
+
+For a full example please see @file{en-GB-g2_harness.py} in the
+harness directory in the source distribution.
+
+@node  Notes on Back-Translation, Programming with liblouis, How to Write a Translation Table Test Harness, Top
 @chapter Notes on Back-Translation
 
 Back-translation is carried out by the function
