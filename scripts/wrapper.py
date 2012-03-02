@@ -9,8 +9,11 @@ import signal
 import sys
 
 # We want to use correct version of libraries even when executed through symlink.
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                '..', '..'))
+path = os.path.realpath(__file__)
+path = os.path.normpath(os.path.join(os.path.dirname(path), '..', '..'))
+sys.path.insert(0, path)
+del path
+
 
 def FindTarget(name):
   target = os.path.basename(sys.argv[0])
