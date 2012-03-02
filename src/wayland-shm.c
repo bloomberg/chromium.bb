@@ -178,10 +178,8 @@ bind_shm(struct wl_client *client,
 	resource = wl_client_add_object(client, &wl_shm_interface,
 					&shm_interface, id, data);
 
-	wl_resource_post_event(resource, WL_SHM_FORMAT,
-			       WL_SHM_FORMAT_ARGB8888);
-	wl_resource_post_event(resource, WL_SHM_FORMAT,
-			       WL_SHM_FORMAT_XRGB8888);
+	wl_shm_send_format(resource, WL_SHM_FORMAT_ARGB8888);
+	wl_shm_send_format(resource, WL_SHM_FORMAT_XRGB8888);
 }
 
 WL_EXPORT struct wl_shm *

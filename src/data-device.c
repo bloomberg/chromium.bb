@@ -38,8 +38,8 @@ data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 	 * this be a wl_data_device request? */
 
 	if (offer->source)
-		wl_resource_post_event(&offer->source->resource,
-				       WL_DATA_SOURCE_TARGET, mime_type);
+		wl_data_source_send_target(&offer->source->resource,
+					   mime_type);
 }
 
 static void
@@ -49,8 +49,8 @@ data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 	struct wl_data_offer *offer = resource->data;
 
 	if (offer->source)
-		wl_resource_post_event(&offer->source->resource,
-				       WL_DATA_SOURCE_SEND, mime_type, fd);
+		wl_data_source_send_send(&offer->source->resource,
+					 mime_type, fd);
 
 	close(fd);
 }
@@ -91,7 +91,7 @@ destroy_offer_data_source(struct wl_listener *listener,
 static void
 data_source_cancel(struct wl_data_source *source)
 {
-	wl_resource_post_event(&source->resource, WL_DATA_SOURCE_CANCELLED);
+	wl_data_source_send_cancelled(&source->resource);
 }
 
 static struct wl_resource *
@@ -120,13 +120,11 @@ wl_data_source_send_offer(struct wl_data_source *source,
 
 	wl_client_add_resource(target->client, &offer->resource);
 
-	wl_resource_post_event(target,
-			       WL_DATA_DEVICE_DATA_OFFER, &offer->resource);
+	wl_data_device_send_data_offer(target, &offer->resource);
 
 	end = source->mime_types.data + source->mime_types.size;
 	for (p = source->mime_types.data; p < end; p++)
-		wl_resource_post_event(&offer->resource,
-				       WL_DATA_OFFER_OFFER, *p);
+		wl_data_offer_send_offer(&offer->resource, *p);
 
 	return &offer->resource;
 }
@@ -190,8 +188,7 @@ drag_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 	struct wl_resource *resource, *offer;
 
 	if (device->drag_focus_resource) {
-		wl_resource_post_event(device->drag_focus_resource,
-				       WL_DATA_DEVICE_LEAVE);
+		wl_data_device_send_leave(device->drag_focus_resource);
 		wl_list_remove(&device->drag_focus_listener.link);
 		device->drag_focus_resource = NULL;
 		device->drag_focus = NULL;
@@ -204,9 +201,8 @@ drag_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 		offer = wl_data_source_send_offer(device->drag_data_source,
 						  resource);
 
-		wl_resource_post_event(resource,
-				       WL_DATA_DEVICE_ENTER,
-				       time, surface, x, y, offer);
+		wl_data_device_send_enter(resource, time, surface,
+					  x, y, offer);
 
 		device->drag_focus = surface;
 		device->drag_focus_listener.func = destroy_drag_focus;
@@ -225,8 +221,8 @@ drag_grab_motion(struct wl_pointer_grab *grab,
 		container_of(grab, struct wl_input_device, drag_grab);
 
 	if (device->drag_focus_resource)
-		wl_resource_post_event(device->drag_focus_resource,
-				       WL_DATA_DEVICE_MOTION, time, x, y);
+		wl_data_device_send_motion(device->drag_focus_resource,
+					   time, x, y);
 }
 
 static void
@@ -238,8 +234,7 @@ drag_grab_button(struct wl_pointer_grab *grab,
 
 	if (device->drag_focus_resource &&
 	    device->grab_button == button && state == 0)
-		wl_resource_post_event(device->drag_focus_resource,
-				       WL_DATA_DEVICE_DROP);
+		wl_data_device_send_drop(device->drag_focus_resource);
 
 	if (device->button_count == 0 && state == 0) {
 		wl_input_device_end_pointer_grab(device, time);
@@ -320,8 +315,7 @@ destroy_selection_data_source(struct wl_listener *listener,
 	if (focus) {
 		data_device = find_resource(&device->drag_resource_list,
 					    focus->client);
-		wl_resource_post_event(data_device,
-				       WL_DATA_DEVICE_SELECTION, NULL);
+		wl_data_device_send_selection(data_device, NULL);
 	}
 }
 
@@ -347,9 +341,7 @@ wl_input_device_set_selection(struct wl_input_device *device,
 		if (data_device) {
 			offer = wl_data_source_send_offer(device->selection_data_source,
 							  data_device);
-			wl_resource_post_event(data_device,
-					       WL_DATA_DEVICE_SELECTION,
-					       offer);
+			wl_data_device_send_selection(data_device, offer);
 		}
 	}
 
@@ -476,8 +468,7 @@ wl_data_device_set_keyboard_focus(struct wl_input_device *device)
 	source = device->selection_data_source;
 	if (source) {
 		offer = wl_data_source_send_offer(source, data_device);
-		wl_resource_post_event(data_device,
-				       WL_DATA_DEVICE_SELECTION, offer);
+		wl_data_device_send_selection(data_device, offer);
 	}
 }
 

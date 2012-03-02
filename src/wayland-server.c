@@ -467,8 +467,7 @@ default_grab_motion(struct wl_pointer_grab *grab,
 
 	resource = grab->input_device->pointer_focus_resource;
 	if (resource)
-		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
-				       time, x, y);
+		wl_input_device_send_motion(resource, time, x, y);
 }
 
 static void
@@ -480,8 +479,7 @@ default_grab_button(struct wl_pointer_grab *grab,
 
 	resource = device->pointer_focus_resource;
 	if (resource)
-		wl_resource_post_event(resource, WL_INPUT_DEVICE_BUTTON,
-				       time, button, state);
+		wl_input_device_send_button(resource, time, button, state);
 
 	if (device->button_count == 0 && state == 0)
 		wl_input_device_set_pointer_focus(device,
@@ -506,8 +504,7 @@ default_grab_key(struct wl_keyboard_grab *grab,
 
 	resource = device->keyboard_focus_resource;
 	if (resource)
-		wl_resource_post_event(resource, WL_INPUT_DEVICE_KEY,
-				       time, key, state);
+		wl_input_device_send_key(resource, time, key, state);
 }
 
 static const struct wl_keyboard_grab_interface
@@ -582,17 +579,16 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 		return;
 
 	if (device->pointer_focus_resource) {
-		wl_resource_post_event(device->pointer_focus_resource,
-				       WL_INPUT_DEVICE_POINTER_LEAVE,
-				       time, device->pointer_focus);
+		wl_input_device_send_pointer_leave(
+			device->pointer_focus_resource,
+			time, device->pointer_focus);
 		wl_list_remove(&device->pointer_focus_listener.link);
 	}
 
 	resource = find_resource_for_surface(&device->resource_list, surface);
 	if (resource) {
-		wl_resource_post_event(resource,
-				       WL_INPUT_DEVICE_POINTER_ENTER,
-				       time, surface, sx, sy);
+		wl_input_device_send_pointer_enter(resource, time,
+						   surface, sx, sy);
 		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->pointer_focus_listener.link);
 	}
@@ -614,17 +610,16 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 		return;
 
 	if (device->keyboard_focus_resource) {
-		wl_resource_post_event(device->keyboard_focus_resource,
-				       WL_INPUT_DEVICE_KEYBOARD_LEAVE,
-				       time, device->keyboard_focus);
+		wl_input_device_send_keyboard_leave(
+			device->keyboard_focus_resource,
+			time, device->keyboard_focus);
 		wl_list_remove(&device->keyboard_focus_listener.link);
 	}
 
 	resource = find_resource_for_surface(&device->resource_list, surface);
 	if (resource) {
-		wl_resource_post_event(resource,
-				       WL_INPUT_DEVICE_KEYBOARD_ENTER,
-				       time, surface, &device->keys);
+		wl_input_device_send_keyboard_enter(resource, time,
+						    surface, &device->keys);
 		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->keyboard_focus_listener.link);
 	}
@@ -703,7 +698,7 @@ display_sync(struct wl_client *client,
 
 	callback = wl_client_add_object(client,
 					&wl_callback_interface, NULL, id, NULL);
-	wl_resource_post_event(callback, WL_CALLBACK_DONE, 0);
+	wl_callback_send_done(callback, 0);
 	wl_resource_destroy(callback, 0);
 }
 
