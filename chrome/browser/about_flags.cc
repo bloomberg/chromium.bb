@@ -554,6 +554,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableStyleScoped)
   },
   {
+    "enable-css-regions",
+    IDS_FLAGS_CSS_REGIONS_NAME,
+    IDS_FLAGS_CSS_REGIONS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableCssRegions)
+  },
+  {
     "ntp-app-install-hint",
     IDS_FLAGS_APP_INSTALL_HINT_NAME,
     IDS_FLAGS_APP_INSTALL_HINT_DESCRIPTION,

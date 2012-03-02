@@ -5143,16 +5143,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable creating a browser window when dragging tabs.
       </message>
       <message name="IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_NAME" desc="Title for the flag to disable restoring (more) session state after restarts and crashes.">
-	Disable Better session restore
+        Disable Better session restore
       </message>
       <message name="IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_DESCRIPTION" desc="Description for the flag to disable restoring (more) session state after restarts and crashes.">
-	Disables the Better session restore features which restore more session state (e.g., session cookies) after restarts and crashes.
+        Disables the Better session restore features which restore more session state (e.g., session cookies) after restarts and crashes.
       </message>
       <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_NAME" desc="Title for the flag to disable using a software rasterizer.">
-	Disable 3D software rasterizer
+        Disable 3D software rasterizer
       </message>
       <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_DESCRIPTION" desc="Description for the flag to disable using a software renderer.">
-	Don't fall back to a 3D software rasterizer when the GPU cannot be used.
+        Don't fall back to a 3D software rasterizer when the GPU cannot be used.
       </message>
       <message name="IDS_FLAGS_MEDIA_STREAM_NAME" desc="Name for the flag to enable MediaStream, GetUserMedia and PeerConnection.">
         Enable MediaStream.
@@ -5171,6 +5171,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_STYLE_SCOPED_DESCRIPTION" desc="Description for the flag to enable &lt;style scoped&gt;.">
         Honor the 'scoped' attribute in &amp;lt;style&amp;gt; elements.
+      </message>
+      <message name="IDS_FLAGS_CSS_REGIONS_NAME" desc="Name for the flag to enable CSS Regions.">
+        Enable CSS Regions.
+      </message>
+      <message name="IDS_FLAGS_CSS_REGIONS_DESCRIPTION" desc="Description for the flag to enable CSS Regions.">
+        Enable CSS Regions.
       </message>
       <message name="IDS_FLAGS_WEBUI_TASK_MANAGER_NAME" desc="Title for the flag to use the WebUI task manager.">
         Enable experimental task manager.
