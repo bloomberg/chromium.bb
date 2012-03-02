@@ -5888,6 +5888,7 @@
 {
    bug_116475
    Memcheck:Uninitialized
+   ...
    fun:_ZNK4base9Histogram11BucketIndexEi
    fun:_ZN4base9Histogram3AddEi
    fun:_ZN11webkit_glue25WebKitPlatformSupportImpl21histogramCustomCountsEPKciiii
