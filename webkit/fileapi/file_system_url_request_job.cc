@@ -22,6 +22,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
@@ -181,15 +182,16 @@ void FileSystemURLRequestJob::StartAsync() {
                                 net::ERR_INVALID_URL));
     return;
   }
-  operation->GetMetadata(
+  operation->CreateSnapshotFile(
       request_->url(),
-      base::Bind(&FileSystemURLRequestJob::DidGetMetadata, this));
+      base::Bind(&FileSystemURLRequestJob::DidCreateSnapshot, this));
 }
 
-void FileSystemURLRequestJob::DidGetMetadata(
+void FileSystemURLRequestJob::DidCreateSnapshot(
     base::PlatformFileError error_code,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path) {
+    const FilePath& platform_path,
+    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   if (error_code != base::PLATFORM_FILE_OK) {
     NotifyFailed(error_code == base::PLATFORM_FILE_ERROR_INVALID_URL ?
                  net::ERR_INVALID_URL : net::ERR_FILE_NOT_FOUND);
@@ -201,6 +203,9 @@ void FileSystemURLRequestJob::DidGetMetadata(
     return;
 
   is_directory_ = file_info.is_directory;
+
+  // Keep the reference (if it's non-null) so that the file won't go away.
+  snapshot_ref_ = file_ref;
 
   if (!byte_range_.ComputeBounds(file_info.size)) {
     NotifyFailed(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);

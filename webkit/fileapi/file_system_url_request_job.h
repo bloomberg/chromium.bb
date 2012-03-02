@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
@@ -20,6 +21,10 @@ class FilePath;
 
 namespace net {
 class FileStream;
+}
+
+namespace webkit_blob {
+class ShareableFileReference;
 }
 
 namespace fileapi {
@@ -55,9 +60,11 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   virtual ~FileSystemURLRequestJob();
 
   void StartAsync();
-  void DidGetMetadata(base::PlatformFileError error_code,
-                      const base::PlatformFileInfo& file_info,
-                      const FilePath& platform_path);
+  void DidCreateSnapshot(
+      base::PlatformFileError error_code,
+      const base::PlatformFileInfo& file_info,
+      const FilePath& platform_path,
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
   void DidOpen(base::PlatformFileError error_code,
                base::PassPlatformFile file, bool created);
   void DidRead(int result);
@@ -67,6 +74,7 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
   scoped_ptr<net::FileStream> stream_;
+  scoped_refptr<webkit_blob::ShareableFileReference> snapshot_ref_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
   int64 remaining_bytes_;
