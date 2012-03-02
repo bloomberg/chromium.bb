@@ -17,8 +17,7 @@
 
 namespace aura {
 
-class RootWindowHostLinux : public RootWindowHost,
-                            public MessageLoop::DestructionObserver {
+class RootWindowHostLinux : public RootWindowHost {
  public:
   explicit RootWindowHostLinux(const gfx::Rect& bounds);
   virtual ~RootWindowHostLinux();
@@ -44,9 +43,6 @@ class RootWindowHostLinux : public RootWindowHost,
   virtual void UnConfineCursor() OVERRIDE;
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
-
-  // MessageLoop::DestructionObserver Overrides.
-  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   // Returns true if there's an X window manager present... in most cases.  Some
   // window managers (notably, ion3) don't implement enough of ICCCM for us to

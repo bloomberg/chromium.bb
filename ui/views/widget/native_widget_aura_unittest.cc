@@ -28,29 +28,29 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
 
 class NativeWidgetAuraTest : public testing::Test {
  public:
-  NativeWidgetAuraTest() : root_window_(NULL) {}
+  NativeWidgetAuraTest() {}
   virtual ~NativeWidgetAuraTest() {}
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    root_window_ = aura::RootWindow::GetInstance();
+    root_window_.reset(new aura::RootWindow);
     root_window_->SetBounds(gfx::Rect(0, 0, 640, 480));
     root_window_->SetHostSize(gfx::Size(640, 480));
     test_stacking_client_.reset(
-        new aura::test::TestStackingClient(root_window_));
+        new aura::test::TestStackingClient(root_window_.get()));
   }
   virtual void TearDown() OVERRIDE {
-    test_stacking_client_.reset();
-    aura::RootWindow::DeleteInstance();
     message_loop_.RunAllPending();
+    test_stacking_client_.reset();
+    root_window_.reset();
   }
 
  protected:
-  aura::RootWindow* root_window() { return root_window_; }
+  aura::RootWindow* root_window() { return root_window_.get(); }
 
  private:
   MessageLoopForUI message_loop_;
-  aura::RootWindow* root_window_;
+  scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);
@@ -154,7 +154,6 @@ TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
   params.show_state = ui::SHOW_STATE_MAXIMIZED;
   params.bounds = gfx::Rect(10, 10, 100, 200);
   widget->Init(params);
-  aura::RootWindow::DeleteInstance();
   EXPECT_FALSE(widget->did_size_change_more_than_once());
   widget->CloseNow();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,15 +121,16 @@ class AccessibilityEventRouterViewsTest
   virtual void SetUp() {
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
 #if defined(USE_AURA)
-    aura::RootWindow* root_window = aura::RootWindow::GetInstance();
+    root_window_.reset(new aura::RootWindow);
     test_stacking_client_.reset(
-        new aura::test::TestStackingClient(root_window));
+        new aura::test::TestStackingClient(root_window_.get()));
 #endif
   }
 
   virtual void TearDown() {
 #if defined(USE_AURA)
     test_stacking_client_.reset();
+    root_window_.reset();
 #endif
     delete views::ViewsDelegate::views_delegate;
     views::ViewsDelegate::views_delegate = NULL;
@@ -165,6 +166,7 @@ class AccessibilityEventRouterViewsTest
   std::string last_control_name_;
   std::string last_control_context_;
 #if defined(USE_AURA)
+  scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
 #endif
 };

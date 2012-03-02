@@ -83,19 +83,52 @@ bool RootWindow::hide_host_cursor_ = false;
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, public:
 
-// static
-RootWindow* RootWindow::GetInstance() {
-  if (!instance_) {
-    instance_ = new RootWindow;
-    instance_->Init();
-  }
-  return instance_;
+RootWindow::RootWindow()
+    : Window(NULL),
+      host_(aura::RootWindowHost::Create(GetInitialHostWindowBounds())),
+      ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
+      mouse_button_flags_(0),
+      last_cursor_(kCursorNull),
+      cursor_shown_(true),
+      ALLOW_THIS_IN_INITIALIZER_LIST(screen_(new ScreenAura(this))),
+      capture_window_(NULL),
+      mouse_pressed_handler_(NULL),
+      mouse_moved_handler_(NULL),
+      focused_window_(NULL),
+      touch_event_handler_(NULL),
+      gesture_handler_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          gesture_recognizer_(GestureRecognizer::Create(this))),
+      synthesize_mouse_move_(false),
+      waiting_on_compositing_end_(false),
+      draw_on_compositing_end_(false) {
+  SetName("RootWindow");
+  gfx::Screen::SetInstance(screen_);
+  last_mouse_location_ = host_->QueryMouseLocation();
+
+  ui::Compositor::Initialize(false);
+  compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget(),
+      host_->GetSize()));
+  DCHECK(compositor_.get());
+  compositor_->AddObserver(this);
+  Init();
 }
 
-// static
-void RootWindow::DeleteInstance() {
-  delete instance_;
-  instance_ = NULL;
+RootWindow::~RootWindow() {
+  compositor_->RemoveObserver(this);
+  // Make sure to destroy the compositor before terminating so that state is
+  // cleared and we don't hit asserts.
+  compositor_.reset();
+
+  // Tear down in reverse.  Frees any references held by the host.
+  host_.reset(NULL);
+
+  // An observer may have been added by an animation on the RootWindow.
+  layer()->GetAnimator()->RemoveObserver(this);
+  ui::Compositor::Terminate();
+  if (instance_ == this)
+    instance_ = NULL;
 }
 
 void RootWindow::ShowRootWindow() {
@@ -452,53 +485,6 @@ void RootWindow::OnCompositingEnded(ui::Compositor*) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, private:
-
-RootWindow::RootWindow()
-    : Window(NULL),
-      host_(aura::RootWindowHost::Create(GetInitialHostWindowBounds())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
-      mouse_button_flags_(0),
-      last_cursor_(kCursorNull),
-      cursor_shown_(true),
-      ALLOW_THIS_IN_INITIALIZER_LIST(screen_(new ScreenAura(this))),
-      capture_window_(NULL),
-      mouse_pressed_handler_(NULL),
-      mouse_moved_handler_(NULL),
-      focused_window_(NULL),
-      touch_event_handler_(NULL),
-      gesture_handler_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          gesture_recognizer_(GestureRecognizer::Create(this))),
-      synthesize_mouse_move_(false),
-      waiting_on_compositing_end_(false),
-      draw_on_compositing_end_(false) {
-  SetName("RootWindow");
-  gfx::Screen::SetInstance(screen_);
-  last_mouse_location_ = host_->QueryMouseLocation();
-
-  ui::Compositor::Initialize(false);
-  compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget(),
-      host_->GetSize()));
-  DCHECK(compositor_.get());
-  compositor_->AddObserver(this);
-}
-
-RootWindow::~RootWindow() {
-  compositor_->RemoveObserver(this);
-  // Make sure to destroy the compositor before terminating so that state is
-  // cleared and we don't hit asserts.
-  compositor_.reset();
-
-  // Tear down in reverse.  Frees any references held by the host.
-  host_.reset(NULL);
-
-  // An observer may have been added by an animation on the RootWindow.
-  layer()->GetAnimator()->RemoveObserver(this);
-  ui::Compositor::Terminate();
-  if (instance_ == this)
-    instance_ = NULL;
-}
 
 void RootWindow::HandleMouseCaptureChanged(Window* old_capture_window) {
   if (capture_window_)

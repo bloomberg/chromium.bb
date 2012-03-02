@@ -112,9 +112,9 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 }
 
 void DesktopNotificationsTest::SetUp() {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   // Make sure a root window has been instantiated.
-  ash::Shell::GetRootWindow();
+  ash::Shell::CreateInstance(NULL);
 #endif
   browser::RegisterLocalState(&local_state_);
   profile_.reset(new TestingProfile());
@@ -129,6 +129,9 @@ void DesktopNotificationsTest::TearDown() {
   service_.reset(NULL);
   ui_manager_.reset(NULL);
   profile_.reset(NULL);
+#if defined(USE_ASH)
+  ash::Shell::DeleteInstance();
+#endif
 }
 
 content::ShowDesktopNotificationHostMsgParams

@@ -50,8 +50,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public internal::FocusManager,
                                public ui::LayerAnimationObserver {
  public:
-  static RootWindow* GetInstance();
-  static void DeleteInstance();
+  RootWindow();
+  virtual ~RootWindow();
 
   static void set_use_fullscreen_host_window(bool use_fullscreen) {
     use_fullscreen_host_window_ = use_fullscreen;
@@ -199,9 +199,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
  private:
   friend class Window;
-
-  RootWindow();
-  virtual ~RootWindow();
 
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.

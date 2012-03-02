@@ -252,6 +252,8 @@ class ASH_EXPORT Shell {
   // when the screen is initially created.
   static bool initially_hide_cursor_;
 
+  scoped_ptr<aura::RootWindow> root_window_;
+
   internal::RootWindowEventFilter* root_filter_;  // not owned
 
   std::vector<WindowAndBoundsPair> to_restore_;

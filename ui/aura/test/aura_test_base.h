@@ -30,11 +30,11 @@ class AuraTestBase : public testing::Test {
  protected:
   void RunAllPendingInMessageLoop();
 
-  RootWindow* root_window() { return root_window_; }
+  RootWindow* root_window() { return root_window_.get(); }
 
  private:
   AuraTestHelper helper_;
-  RootWindow* root_window_;
+  scoped_ptr<RootWindow> root_window_;
   scoped_ptr<TestStackingClient> stacking_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);

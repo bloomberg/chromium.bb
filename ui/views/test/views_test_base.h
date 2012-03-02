@@ -53,10 +53,10 @@ class ViewsTestBase : public testing::Test {
   MessageLoopForUI message_loop_;
   scoped_ptr<TestViewsDelegate> views_delegate_;
 #if defined(USE_AURA)
+  scoped_ptr<aura::RootWindow> root_window_;
   scoped_ptr<aura::test::TestActivationClient> test_activation_client_;
   scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
-  aura::RootWindow* root_window_;
 #endif
   bool setup_called_;
   bool teardown_called_;

@@ -740,6 +740,12 @@
                  '../base/allocator/allocator.gyp:allocator',
               ],
             }],
+            ['use_aura==1', {
+              'sources/': [
+                ['exclude', '^browser/accessibility/accessibility_win_browsertest.cc'],
+                ['exclude', '^browser/accessibility/browser_views_accessibility_browsertest.cc'],
+              ],
+            }],
           ],
           'configurations': {
             'Debug_Base': {
