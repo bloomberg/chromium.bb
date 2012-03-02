@@ -5885,6 +5885,21 @@
    fun:_ZN10scoped_ptrIN5views4ViewEED1Ev
    fun:_ZN5views4View17DoRemoveChildViewEPS0_bbb
 }
+{
+   116475
+   Memcheck:Uninitialized
+   fun:_ZNK4base9Histogram11BucketIndexEi
+   fun:_ZN4base9Histogram3AddEi
+   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl21histogramCustomCountsEPKciiii
+   fun:_ZN7WebCore15PlatformSupport21histogramCustomCountsEPKciiii
+   fun:_ZN7WebCore19CCLayerTreeHostImpl20optimizeRenderPassesERN3WTF6VectorINS1_6OwnPtrINS_12CCRenderPassEEELj0EEE
+   fun:_ZN7WebCore19CCLayerTreeHostImpl10drawLayersEv
+   fun:_ZN7WebCore19CCSingleThreadProxy11doCompositeEv
+   fun:_ZN7WebCore19CCSingleThreadProxy20compositeImmediatelyEv
+   fun:_ZN7WebCore15CCLayerTreeHost9compositeEv
+   fun:_ZN6WebKit16WebLayerTreeView9compositeEv
+}
+
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
