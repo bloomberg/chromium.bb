@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_win.h"
 
-#include "chrome/browser/tab_contents/web_drop_target_win.h"
+#include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
+#include "content/browser/tab_contents/web_drag_dest_win.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -98,8 +99,9 @@ void NativeTabContentsViewWin::InitNativeTabContentsView() {
 
   // Remove the root view drop target so we can register our own.
   RevokeDragDrop(GetNativeView());
-  drop_target_ = new WebDropTarget(GetNativeView(),
-                                   delegate_->GetWebContents());
+  drag_dest_ = new WebDragDest(GetNativeView(), delegate_->GetWebContents());
+  bookmark_handler_.reset(new WebDragBookmarkHandlerWin());
+  drag_dest_->set_delegate(bookmark_handler_.get());
 }
 
 void NativeTabContentsViewWin::Unparent() {
@@ -147,7 +149,7 @@ bool NativeTabContentsViewWin::IsDoingDrag() const {
 
 void NativeTabContentsViewWin::SetDragCursor(
     WebKit::WebDragOperation operation) {
-  drop_target_->set_drag_cursor(operation);
+  drag_dest_->set_drag_cursor(operation);
 }
 
 views::NativeWidget* NativeTabContentsViewWin::AsNativeWidget() {
@@ -158,9 +160,9 @@ views::NativeWidget* NativeTabContentsViewWin::AsNativeWidget() {
 // NativeTabContentsViewWin, views::NativeWidgetWin overrides:
 
 void NativeTabContentsViewWin::OnDestroy() {
-  if (drop_target_.get()) {
+  if (drag_dest_.get()) {
     RevokeDragDrop(GetNativeView());
-    drop_target_ = NULL;
+    drag_dest_ = NULL;
   }
 
   NativeWidgetWin::OnDestroy();

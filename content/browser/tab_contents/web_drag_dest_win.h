@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DROP_TARGET_WIN_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WEB_DROP_TARGET_WIN_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_WIN_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_WIN_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/dragdrop/drop_target.h"
 
@@ -21,12 +22,12 @@ class WebDragDestDelegate;
 // A helper object that provides drop capabilities to a TabContents. The
 // DropTarget handles drags that enter the region of the WebContents by
 // passing on the events to the renderer.
-class WebDropTarget : public ui::DropTarget {
+class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
  public:
-  // Create a new WebDropTarget associating it with the given HWND and
+  // Create a new WebDragDest associating it with the given HWND and
   // WebContents.
-  WebDropTarget(HWND source_hwnd, content::WebContents* contents);
-  virtual ~WebDropTarget();
+  WebDragDest(HWND source_hwnd, content::WebContents* contents);
+  virtual ~WebDragDest();
 
   void set_drag_cursor(WebKit::WebDragOperation op) {
     drag_cursor_ = op;
@@ -74,7 +75,7 @@ class WebDropTarget : public ui::DropTarget {
   // A delegate that can receive drag information about drag events.
   content::WebDragDestDelegate* delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebDropTarget);
+  DISALLOW_COPY_AND_ASSIGN(WebDragDest);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DROP_TARGET_WIN_H_
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_DEST_WIN_H_

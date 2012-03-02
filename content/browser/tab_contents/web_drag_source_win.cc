@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/web_drag_source_win.h"
+#include "content/browser/tab_contents/web_drag_source_win.h"
 
 #include "base/bind.h"
-#include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/web_drag_utils_win.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"

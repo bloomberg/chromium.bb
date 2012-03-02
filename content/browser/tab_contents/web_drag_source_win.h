@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
 #pragma once
 
 #include "base/basictypes.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/dragdrop/drag_source.h"
@@ -23,8 +24,8 @@ class WebContents;
 // by an active drag-drop operation as the user mouses over other drop targets
 // on their system. This object tells Windows whether or not the drag should
 // continue, and supplies the appropriate cursors.
-class WebDragSource : public ui::DragSource,
-                      public content::NotificationObserver {
+class CONTENT_EXPORT WebDragSource : public ui::DragSource,
+                                     public content::NotificationObserver {
  public:
   // Create a new DragSource for a given HWND and WebContents.
   WebDragSource(gfx::NativeWindow source_wnd,
@@ -67,4 +68,4 @@ class WebDragSource : public ui::DragSource,
   DISALLOW_COPY_AND_ASSIGN(WebDragSource);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_

@@ -16,7 +16,7 @@ class RenderWidgetHostViewWin;
 class TabContentsViewWin : public content::WebContentsView,
                            public ui::WindowImpl {
  public:
-  // TODO(jam): make this take a WebContents once it's created from content.
+  // TODO(jam): make this take a TabContents once it's created from content.
   explicit TabContentsViewWin(content::WebContents* web_contents);
   virtual ~TabContentsViewWin();
 

@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/web_drop_target_win.h"
+#include "content/browser/tab_contents/web_drag_dest_win.h"
 
 #include <windows.h>
 #include <shlobj.h>
 
-#include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
-#include "chrome/browser/tab_contents/web_drag_utils_win.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/web_drag_dest_delegate.h"
+#include "content/browser/tab_contents/web_drag_utils_win.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -46,7 +45,7 @@ DWORD GetPreferredDropEffect(DWORD effect) {
 }  // namespace
 
 // InterstitialDropTarget is like a ui::DropTarget implementation that
-// WebDropTarget passes through to if an interstitial is showing.  Rather than
+// WebDragDest passes through to if an interstitial is showing.  Rather than
 // passing messages on to the renderer, we just check to see if there's a link
 // in the drop data and handle links as navigations.
 class InterstitialDropTarget {
@@ -87,26 +86,22 @@ class InterstitialDropTarget {
   DISALLOW_COPY_AND_ASSIGN(InterstitialDropTarget);
 };
 
-WebDropTarget::WebDropTarget(HWND source_hwnd, WebContents* web_contents)
+WebDragDest::WebDragDest(HWND source_hwnd, WebContents* web_contents)
     : ui::DropTarget(source_hwnd),
       web_contents_(web_contents),
       current_rvh_(NULL),
       drag_cursor_(WebDragOperationNone),
       interstitial_drop_target_(new InterstitialDropTarget(web_contents)),
-      delegate_(new WebDragBookmarkHandlerWin()) {
+      delegate_(NULL) {
 }
 
-WebDropTarget::~WebDropTarget() {
-  // TODO(jam): this will be owned by chrome when it moves, so no scoped
-  // pointer.
-  if (delegate_)
-    delete delegate_;
+WebDragDest::~WebDragDest() {
 }
 
-DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
-                                 DWORD key_state,
-                                 POINT cursor_position,
-                                 DWORD effects) {
+DWORD WebDragDest::OnDragEnter(IDataObject* data_object,
+                               DWORD key_state,
+                               POINT cursor_position,
+                               DWORD effects) {
   current_rvh_ = web_contents_->GetRenderViewHost();
 
   if (delegate_)
@@ -143,10 +138,10 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   return web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
 }
 
-DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
-                                DWORD key_state,
-                                POINT cursor_position,
-                                DWORD effects) {
+DWORD WebDragDest::OnDragOver(IDataObject* data_object,
+                              DWORD key_state,
+                              POINT cursor_position,
+                              DWORD effects) {
   DCHECK(current_rvh_);
   if (current_rvh_ != web_contents_->GetRenderViewHost())
     OnDragEnter(data_object, key_state, cursor_position, effects);
@@ -167,7 +162,7 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
   return web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
 }
 
-void WebDropTarget::OnDragLeave(IDataObject* data_object) {
+void WebDragDest::OnDragLeave(IDataObject* data_object) {
   DCHECK(current_rvh_);
   if (current_rvh_ != web_contents_->GetRenderViewHost())
     return;
@@ -182,10 +177,10 @@ void WebDropTarget::OnDragLeave(IDataObject* data_object) {
     delegate_->OnDragLeave(data_object);
 }
 
-DWORD WebDropTarget::OnDrop(IDataObject* data_object,
-                            DWORD key_state,
-                            POINT cursor_position,
-                            DWORD effect) {
+DWORD WebDragDest::OnDrop(IDataObject* data_object,
+                          DWORD key_state,
+                          POINT cursor_position,
+                          DWORD effect) {
   DCHECK(current_rvh_);
   if (current_rvh_ != web_contents_->GetRenderViewHost())
     OnDragEnter(data_object, key_state, cursor_position, effect);

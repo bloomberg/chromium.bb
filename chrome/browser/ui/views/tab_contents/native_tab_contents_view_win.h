@@ -9,7 +9,8 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view.h"
 #include "ui/views/widget/native_widget_win.h"
 
-class WebDropTarget;
+class WebDragBookmarkHandlerWin;
+class WebDragDest;
 class TabContentsDragWin;
 
 namespace content {
@@ -24,7 +25,7 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
       internal::NativeTabContentsViewDelegate* delegate);
   virtual ~NativeTabContentsViewWin();
 
-  WebDropTarget* drop_target() const { return drop_target_.get(); }
+  WebDragDest* drag_dest() const { return drag_dest_.get(); }
 
   content::WebContents* GetWebContents() const;
 
@@ -75,8 +76,9 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
 
   internal::NativeTabContentsViewDelegate* delegate_;
 
+  scoped_ptr<WebDragBookmarkHandlerWin> bookmark_handler_;
   // A drop target object that handles drags over this TabContents.
-  scoped_refptr<WebDropTarget> drop_target_;
+  scoped_refptr<WebDragDest> drag_dest_;
 
   // Used to handle the drag-and-drop.
   scoped_refptr<TabContentsDragWin> drag_handler_;

@@ -16,13 +16,13 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/tab_contents/web_drag_source_win.h"
-#include "chrome/browser/tab_contents/web_drag_utils_win.h"
-#include "chrome/browser/tab_contents/web_drop_target_win.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_win.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
+#include "content/browser/tab_contents/web_drag_dest_win.h"
+#include "content/browser/tab_contents/web_drag_source_win.h"
+#include "content/browser/tab_contents/web_drag_utils_win.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
@@ -133,8 +133,8 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
   }
 
   // We do not want to drag and drop the download to itself.
-  old_drop_target_suspended_state_ = view_->drop_target()->suspended();
-  view_->drop_target()->set_suspended(true);
+  old_drop_target_suspended_state_ = view_->drag_dest()->suspended();
+  view_->drag_dest()->set_suspended(true);
 
   // Start a background thread to do the drag-and-drop.
   DCHECK(!drag_drop_thread_.get());
@@ -334,7 +334,7 @@ void TabContentsDragWin::EndDragging(bool restore_suspended_state) {
   drag_ended_ = true;
 
   if (restore_suspended_state)
-    view_->drop_target()->set_suspended(old_drop_target_suspended_state_);
+    view_->drag_dest()->set_suspended(old_drop_target_suspended_state_);
 
   if (msg_hook) {
     AttachThreadInput(drag_out_thread_id, GetCurrentThreadId(), FALSE);
