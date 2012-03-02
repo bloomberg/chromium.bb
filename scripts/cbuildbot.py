@@ -916,6 +916,13 @@ def main(argv):
       parser.error('Reference path %s does not look to be the base of a '
                    'repo checkout; no .repo exists in the root.'
                    % (options.reference_repo,))
+  if options.buildbot:
+    if not options.cgroups:
+      parser.error('Options --buildbot and --nocgroups cannot be used '
+                   'together.  Cgroup support is required for buildbot mode.')
+    if not cgroups.Cgroup.CgroupsSupported():
+      parser.error('Option --buildbot was given, but this system does not '
+                   'support cgroups.   Failing.')
 
   if options.reference_repo:
     options.reference_repo = os.path.abspath(options.reference_repo)
@@ -930,12 +937,11 @@ def main(argv):
   if not options.buildroot:
     if options.buildbot:
       parser.error('Please specify a buildroot with the --buildroot option.')
-    else:
-      options.buildroot = _DetermineDefaultBuildRoot(build_config['internal'])
-      # We use a marker file in the buildroot to indicate the user has
-      # consented to using this directory.
-      if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):
-        _ConfirmBuildRoot(options.buildroot)
+    options.buildroot = _DetermineDefaultBuildRoot(build_config['internal'])
+    # We use a marker file in the buildroot to indicate the user has
+    # consented to using this directory.
+    if not os.path.exists(repository.GetTrybotMarkerPath(options.buildroot)):
+      _ConfirmBuildRoot(options.buildroot)
 
   # Sanity check of buildroot- specifically that it's not pointing into the
   # midst of an existing repo since git-repo doesn't support nesting.
