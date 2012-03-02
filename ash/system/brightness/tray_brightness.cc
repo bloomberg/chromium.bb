@@ -20,6 +20,9 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
+namespace ash {
+namespace internal {
+
 namespace tray {
 
 class BrightnessView : public views::View,
@@ -75,9 +78,6 @@ class BrightnessView : public views::View,
 };
 
 }  // namespace tray
-
-namespace ash {
-namespace internal {
 
 TrayBrightness::TrayBrightness() {}
 

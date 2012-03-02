@@ -8,7 +8,12 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -17,7 +22,74 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
+namespace ash {
+namespace internal {
+
+namespace {
+const int kVolumeImageWidth = 44;
+const int kVolumeImageHeight = 44;
+const int kVolumeLevel = 5;
+}
+
 namespace tray {
+
+class VolumeButton : public views::ToggleImageButton {
+ public:
+  explicit VolumeButton(views::ButtonListener* listener)
+      : views::ToggleImageButton(listener),
+        image_index_(-1) {
+    image_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_AURA_UBER_TRAY_VOLUME_LEVELS);
+    Update();
+  }
+
+  virtual ~VolumeButton() {}
+
+  void Update() {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    int level = static_cast<int>(delegate->GetVolumeLevel() * 100);
+    int image_index = level / (100 / kVolumeLevel);
+    if (level > 0 && image_index == 0)
+      ++image_index;
+    if (level == 100)
+      image_index = kVolumeLevel - 1;
+    else if (image_index == kVolumeLevel - 1)
+      --image_index;
+    if (image_index != image_index_) {
+      SkIRect region = SkIRect::MakeXYWH(0, image_index * kVolumeImageHeight,
+          kVolumeImageWidth, kVolumeImageHeight);
+      SkBitmap bitmap;
+      image_.ToSkBitmap()->extractSubset(&bitmap, region);
+      SetImage(views::CustomButton::BS_NORMAL, &bitmap);
+      image_index_ = image_index;
+    }
+    SchedulePaint();
+  }
+
+ private:
+  // Overridden from views::View.
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    views::ToggleImageButton::OnPaint(canvas);
+
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    if (!delegate->IsAudioMuted())
+      return;
+
+    SkPaint paint;
+    paint.setColor(SkColorSetARGB(63, 0, 0, 0));
+    paint.setStrokeWidth(SkIntToScalar(3));
+    canvas->GetSkCanvas()->drawLine(SkIntToScalar(width() - 10),
+        SkIntToScalar(10), SkIntToScalar(10), SkIntToScalar(height() - 10),
+        paint);
+  }
+
+  gfx::Image image_;
+  int image_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(VolumeButton);
+};
 
 class VolumeView : public views::View,
                    public views::ButtonListener,
@@ -27,24 +99,11 @@ class VolumeView : public views::View,
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
           0, 0, 5));
 
-    gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_AURA_UBER_TRAY_VOLUME);
-    icon_ = new views::ToggleImageButton(this);
-    icon_->SetImage(views::CustomButton::BS_NORMAL, image.ToSkBitmap());
-    icon_->SetImage(views::CustomButton::BS_HOT, image.ToSkBitmap());
-    icon_->SetImage(views::CustomButton::BS_PUSHED, image.ToSkBitmap());
-
-    image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_AURA_UBER_TRAY_VOLUME_MUTE);
-    icon_->SetToggledImage(views::CustomButton::BS_NORMAL, image.ToSkBitmap());
-    icon_->SetToggledImage(views::CustomButton::BS_HOT, image.ToSkBitmap());
-    icon_->SetToggledImage(views::CustomButton::BS_PUSHED, image.ToSkBitmap());
+    icon_ = new VolumeButton(this);
+    AddChildView(icon_);
 
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    icon_->SetToggled(delegate->IsAudioMuted());
-    AddChildView(icon_);
-
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
     slider_->SetValue(delegate->GetVolumeLevel());
     slider_->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 20));
@@ -56,7 +115,6 @@ class VolumeView : public views::View,
   }
 
  private:
-
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE {
@@ -64,10 +122,6 @@ class VolumeView : public views::View,
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
     delegate->SetAudioMuted(!delegate->IsAudioMuted());
-
-    // TODO(sad): Should the icon auto-update its state when mute/unmute happens
-    // above?
-    icon_->SetToggled(delegate->IsAudioMuted());
   }
 
   // Overridden from views:SliderListener.
@@ -75,21 +129,18 @@ class VolumeView : public views::View,
                                   float value,
                                   float old_value,
                                   views::SliderChangeReason reason) OVERRIDE {
-    if (reason != views::VALUE_CHANGED_BY_USER)
-      return;
-    ash::Shell::GetInstance()->tray_delegate()->SetVolumeLevel(value);
+    if (reason == views::VALUE_CHANGED_BY_USER)
+      ash::Shell::GetInstance()->tray_delegate()->SetVolumeLevel(value);
+    icon_->Update();
   }
 
-  views::ToggleImageButton* icon_;
+  VolumeButton* icon_;
   views::Slider* slider_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeView);
 };
 
 }  // namespace tray
-
-namespace ash {
-namespace internal {
 
 TrayVolume::TrayVolume() {
 }
@@ -98,10 +149,7 @@ TrayVolume::~TrayVolume() {
 }
 
 views::View* TrayVolume::CreateTrayView() {
-  tray_view_.reset(new views::ImageView());
-  tray_view_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-        IDR_AURA_UBER_TRAY_VOLUME).ToSkBitmap());
-  return tray_view_.get();
+  return NULL;
 }
 
 views::View* TrayVolume::CreateDefaultView() {
@@ -115,7 +163,6 @@ views::View* TrayVolume::CreateDetailedView() {
 }
 
 void TrayVolume::DestroyTrayView() {
-  tray_view_.reset();
 }
 
 void TrayVolume::DestroyDefaultView() {

@@ -10,16 +10,12 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
 
-namespace views {
-class ImageView;
-}
+namespace ash {
+namespace internal {
 
 namespace tray {
 class VolumeView;
 }
-
-namespace ash {
-namespace internal {
 
 class TrayVolume : public SystemTrayItem,
                    public AudioController {
@@ -28,7 +24,7 @@ class TrayVolume : public SystemTrayItem,
   virtual ~TrayVolume();
 
  private:
-  // Overridden from SystemTrayItem
+  // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView() OVERRIDE;
   virtual views::View* CreateDefaultView() OVERRIDE;
   virtual views::View* CreateDetailedView() OVERRIDE;
@@ -40,7 +36,6 @@ class TrayVolume : public SystemTrayItem,
   virtual void OnVolumeChanged(float percent) OVERRIDE;
 
   scoped_ptr<tray::VolumeView> volume_view_;
-  scoped_ptr<views::ImageView> tray_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayVolume);
 };

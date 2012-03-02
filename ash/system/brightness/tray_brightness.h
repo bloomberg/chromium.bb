@@ -10,12 +10,12 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "base/compiler_specific.h"
 
+namespace ash {
+namespace internal {
+
 namespace tray {
 class BrightnessView;
 }
-
-namespace ash {
-namespace internal {
 
 class TrayBrightness : public SystemTrayItem,
                        public BrightnessController {
@@ -24,7 +24,7 @@ class TrayBrightness : public SystemTrayItem,
   virtual ~TrayBrightness();
 
  private:
-  // Overridden from SystemTrayItem
+  // Overridden from SystemTrayItem.
   virtual views::View* CreateTrayView() OVERRIDE;
   virtual views::View* CreateDefaultView() OVERRIDE;
   virtual views::View* CreateDetailedView() OVERRIDE;
