@@ -56,11 +56,6 @@ a.no-link {
   cursor: inherit;
 }
 
-.no-expand {
-  width: 1px;
-  padding-right: 20px;
-}
-
 .connection-history-summary td {
   border-top: 1px solid #EBEBEB;
 }

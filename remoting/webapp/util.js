@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,4 +50,13 @@ function getUrlParameters() {
     result[pair[0]] = decodeURIComponent(pair[1]);
   }
   return result;
+}
+
+// This function can be called from the Javascript console to show all the UI,
+// for example prior to auditing the CSS. It is not useful otherwise.
+function unhideAll() {
+  var hidden = document.querySelectorAll('[hidden]');
+  for (var i in hidden) {
+    hidden[i].hidden = false;
+  }
 }
