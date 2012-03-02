@@ -370,7 +370,7 @@ void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {
   Workspace* new_workspace = NULL;
   if (Workspace::TypeForWindow(window) == Workspace::TYPE_MAXIMIZED) {
     // Unmaximized -> maximized; create a new workspace.
-    SetRestoreBounds(window, window->bounds());
+    SetRestoreBoundsIfNotSet(window);
     current_workspace->RemoveWindow(window);
     new_workspace = CreateWorkspace(Workspace::TYPE_MAXIMIZED);
     new_workspace->AddWindowAfter(window, NULL);

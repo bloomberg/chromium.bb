@@ -19,6 +19,10 @@ class TestWindowDelegate : public WindowDelegate {
   TestWindowDelegate();
   virtual ~TestWindowDelegate();
 
+  void set_window_component(int window_component) {
+    window_component_ = window_component;
+  }
+
   // Overridden from WindowDelegate:
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
@@ -39,6 +43,8 @@ class TestWindowDelegate : public WindowDelegate {
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
  private:
+  int window_component_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
 

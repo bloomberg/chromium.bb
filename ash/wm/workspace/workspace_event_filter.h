@@ -27,11 +27,11 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
   virtual bool PreHandleMouseEvent(aura::Window* target,
                                    aura::MouseEvent* event) OVERRIDE;
 
-  // Overriden from WindowObserver:
+  // Overridden from WindowObserver:
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
  protected:
-  // Overriden from ToplevelWindowEventFilter:
+  // Overridden from ToplevelWindowEventFilter:
   virtual WindowResizer* CreateWindowResizer(aura::Window* window,
                                              const gfx::Point& point,
                                              int window_component) OVERRIDE;
@@ -40,6 +40,13 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
   // Updates the top-level window under the mouse so that we can change
   // the look of the caption area based on mouse-hover.
   void UpdateHoveredWindow(aura::Window* toplevel);
+
+  // Determines if |event| corresponds to a double click on either the top or
+  // bottom vertical resize edge, and if so toggles the vertical height of the
+  // window between its restored state and the full available height of the
+  // workspace.
+  void HandleVerticalResizeDoubleClick(aura::Window* target,
+                                       aura::MouseEvent* event);
 
   // Top-level window under the mouse cursor.
   aura::Window* hovered_window_;

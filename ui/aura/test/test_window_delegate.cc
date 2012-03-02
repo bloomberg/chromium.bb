@@ -16,7 +16,7 @@ namespace test {
 ////////////////////////////////////////////////////////////////////////////////
 // TestWindowDelegate
 
-TestWindowDelegate::TestWindowDelegate() {
+TestWindowDelegate::TestWindowDelegate() : window_component_(HTCLIENT) {
 }
 
 TestWindowDelegate::~TestWindowDelegate() {
@@ -45,7 +45,7 @@ gfx::NativeCursor TestWindowDelegate::GetCursor(const gfx::Point& point) {
 }
 
 int TestWindowDelegate::GetNonClientComponent(const gfx::Point& point) const {
-  return HTCLIENT;
+  return window_component_;
 }
 
 bool TestWindowDelegate::OnMouseEvent(MouseEvent* event) {
