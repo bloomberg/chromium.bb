@@ -21,23 +21,10 @@ class CommandLine;
 class FilePath;
 class GURL;
 class PluginProcessHost;
-class QuotaPermissionContext;
 class RenderViewHost;
 class ResourceDispatcherHost;
 class SkBitmap;
 struct WebPreferences;
-
-namespace content {
-class AccessTokenStore;
-class BrowserMainParts;
-class RenderProcessHost;
-class SiteInstance;
-class SpeechInputManagerDelegate;
-class WebContents;
-class WebContentsView;
-struct MainFunctionParams;
-struct ShowDesktopNotificationHostMsgParams;
-}
 
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
@@ -61,9 +48,19 @@ class Clipboard;
 
 namespace content {
 
+class AccessTokenStore;
 class BrowserContext;
+class BrowserMainParts;
+class RenderProcessHost;
+class QuotaPermissionContext;
 class ResourceContext;
+class SiteInstance;
+class SpeechInputManagerDelegate;
+class WebContents;
+class WebContentsView;
 class WebUIControllerFactory;
+struct MainFunctionParams;
+struct ShowDesktopNotificationHostMsgParams;
 
 typedef base::Callback< void(const content::MediaStreamDevices&) >
     MediaResponseCallback;

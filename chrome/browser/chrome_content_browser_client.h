@@ -12,6 +12,10 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/content_browser_client.h"
 
+namespace content {
+class QuotaPermissionContext;
+}
+
 namespace chrome {
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
@@ -85,7 +89,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, content::ResourceContext* context) OVERRIDE;
-  virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
+  virtual content::QuotaPermissionContext*
+      CreateQuotaPermissionContext() OVERRIDE;
   virtual void OpenItem(const FilePath& path) OVERRIDE;
   virtual void ShowItemInFolder(const FilePath& path) OVERRIDE;
   virtual void AllowCertificateError(

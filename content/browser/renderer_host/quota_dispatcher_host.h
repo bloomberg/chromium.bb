@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,10 @@
 
 class GURL;
 
+namespace content {
+class QuotaPermissionContext;
+}
+
 namespace IPC {
 class Message;
 }
@@ -20,13 +24,11 @@ namespace quota {
 class QuotaManager;
 }
 
-class QuotaPermissionContext;
-
 class QuotaDispatcherHost : public content::BrowserMessageFilter {
  public:
   QuotaDispatcherHost(int process_id,
                       quota::QuotaManager* quota_manager,
-                      QuotaPermissionContext* permission_context);
+                      content::QuotaPermissionContext* permission_context);
   virtual ~QuotaDispatcherHost();
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
@@ -51,7 +53,7 @@ class QuotaDispatcherHost : public content::BrowserMessageFilter {
   int process_id_;
 
   quota::QuotaManager* quota_manager_;
-  scoped_refptr<QuotaPermissionContext> permission_context_;
+  scoped_refptr<content::QuotaPermissionContext> permission_context_;
 
   IDMap<RequestDispatcher, IDMapOwnPointer> outstanding_requests_;
 

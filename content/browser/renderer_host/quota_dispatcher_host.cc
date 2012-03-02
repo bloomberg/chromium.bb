@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,13 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/quota_permission_context.h"
 #include "content/common/quota_messages.h"
+#include "content/public/browser/quota_permission_context.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "webkit/quota/quota_manager.h"
 
+using content::QuotaPermissionContext;
 using quota::QuotaClient;
 using quota::QuotaManager;
 using quota::QuotaStatusCode;
@@ -153,8 +154,9 @@ class QuotaDispatcherHost::RequestQuotaDispatcher
     DidFinish(status, std::min(requested_quota_, quota));
   }
 
-  void DidGetPermissionResponse(QuotaPermissionContext::Response response) {
-    if (response != QuotaPermissionContext::kResponseAllow) {
+  void DidGetPermissionResponse(
+      QuotaPermissionContext::QuotaPermissionResponse response) {
+    if (response != QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_ALLOW) {
       // User didn't allow the new quota.  Just returning the current quota.
       DidFinish(quota::kQuotaStatusOk, current_quota_);
       return;

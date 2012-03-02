@@ -52,7 +52,6 @@ include_rules = [
   "+content/browser/net/url_request_slow_download_job.h",
   "+content/browser/net/url_request_slow_http_job.h",
   "+content/browser/plugin_service_filter.h",
-  "+content/browser/quota_permission_context.h",
   "+content/browser/renderer_host/dummy_resource_handler.h",
   "+content/browser/renderer_host/mock_render_process_host.h",
   "+content/browser/renderer_host/render_process_host_browsertest.h",
