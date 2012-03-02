@@ -346,6 +346,10 @@ class DocumentEntry : public GDataEntry {
   // unknown entry kind.
   std::string GetEntryKindText() const;
 
+  // Returns preferred file extension for hosted documents. If entry is not
+  // a hosted document, this call returns an empty string.
+  std::string GetHostedDocumentExtension() const;
+
   // True if document entry is remotely hosted.
   bool is_hosted_document() const { return (kind_ & 0x002000) != 0; }
   // True if document entry is a folder (collection).

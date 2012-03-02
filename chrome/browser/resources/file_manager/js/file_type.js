@@ -70,6 +70,18 @@ FileType.types = [
   {type: 'archive', name: 'TAR_GZIP_ARCHIVE_FILE_TYPE', subtype:'TGZ',
    pattern: /\.(tar.|t)gz$/i},
 
+  // Hosted docs.
+  {type: 'hosted', icon: 'gdoc', name: 'GDOC_DOCUMENT_FILE_TYPE',
+   pattern: /\.gdoc$/i},
+  {type: 'hosted', icon: 'gsheet', name: 'GSHEET_DOCUMENT_FILE_TYPE',
+   pattern: /\.gsheet$/i},
+  {type: 'hosted', icon: 'gslides', name: 'GSLIDES_DOCUMENT_FILE_TYPE',
+   pattern: /\.gslides$/i},
+  {type: 'hosted', icon: 'gdraw', name: 'GDRAW_DOCUMENT_FILE_TYPE',
+   pattern: /\.gdraw$/i},
+  {type: 'hosted', icon: 'gtable', name: 'GTABLE_DOCUMENT_FILE_TYPE',
+   pattern: /\.gtable$/i},
+
   // Others
   {type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
    pattern: /\.pdf$/i},

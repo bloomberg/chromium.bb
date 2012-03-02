@@ -164,6 +164,7 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
     file->file_info_.size = doc->file_size();
     file->file_md5_ = doc->file_md5();
   } else {
+    DCHECK(doc->is_hosted_document());
     // ... a hosted document.
     file->original_file_name_ = UTF16ToUTF8(doc->title());
     // Attach .g<something> extension to hosted documents so we can special
@@ -171,9 +172,7 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
     // TODO(zelidrag): Figure out better way how to pass entry info like kind
     // to UI through the File API stack.
     file->file_name_ = EscapeFileName(
-        base::StringPrintf("%s.g%s",
-                           file->original_file_name_.c_str(),
-                           doc->GetEntryKindText().c_str()));
+        file->original_file_name_ + doc->GetHostedDocumentExtension());
     // We don't know the size of hosted docs and it does not matter since
     // is has no effect on the quota.
     file->file_info_.size = 0;

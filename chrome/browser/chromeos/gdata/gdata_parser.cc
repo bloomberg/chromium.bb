@@ -36,19 +36,20 @@ const char kSchemeLabels[] = "http://schemas.google.com/g/2005/labels";
 struct EntryKindMap {
   DocumentEntry::EntryKind kind;
   const char* entry;
+  const char* extension;
 };
 
 const EntryKindMap kEntryKindMap[] = {
-    { DocumentEntry::ITEM,         "item" },
-    { DocumentEntry::DOCUMENT,     "document"},
-    { DocumentEntry::SPREADSHEET,  "spreadsheet" },
-    { DocumentEntry::PRESENTATION, "presentation" },
-    { DocumentEntry::DRAWING,      "drawing"},
-    { DocumentEntry::TABLE,        "table"},
-    { DocumentEntry::SITE,         "site"},
-    { DocumentEntry::FOLDER,       "folder"},
-    { DocumentEntry::FILE,         "file"},
-    { DocumentEntry::PDF,          "pdf"},
+    { DocumentEntry::ITEM,         "item",         NULL},
+    { DocumentEntry::DOCUMENT,     "document",     ".gdoc"},
+    { DocumentEntry::SPREADSHEET,  "spreadsheet",  ".gsheet"},
+    { DocumentEntry::PRESENTATION, "presentation", ".gslides" },
+    { DocumentEntry::DRAWING,      "drawing",      ".gdraw"},
+    { DocumentEntry::TABLE,        "table",        ".gtable"},
+    { DocumentEntry::SITE,         "site",         NULL},
+    { DocumentEntry::FOLDER,       "folder",       NULL},
+    { DocumentEntry::FILE,         "file",         NULL},
+    { DocumentEntry::PDF,          "pdf",          NULL},
 };
 
 struct LinkTypeMap {
@@ -346,18 +347,16 @@ void DocumentEntry::RegisterJSONConverter(
       kSuggestedFileNameField, &DocumentEntry::suggested_filename_);
 }
 
-std::string DocumentEntry::GetEntryKindText() const {
-  return std::string(GetEntryKindDescription(kind_));
-}
-
-// static
-const char* DocumentEntry::GetEntryKindDescription(
-    DocumentEntry::EntryKind kind) {
+std::string DocumentEntry::GetHostedDocumentExtension() const {
   for (size_t i = 0; i < arraysize(kEntryKindMap); i++) {
-    if (kEntryKindMap[i].kind == kind)
-      return kEntryKindMap[i].entry;
+    if (kEntryKindMap[i].kind == kind_) {
+      if (kEntryKindMap[i].extension)
+        return std::string(kEntryKindMap[i].extension);
+      else
+        return std::string();
+    }
   }
-  return "";
+  return std::string();
 }
 
 // static

@@ -865,6 +865,26 @@ li.table-row {
   background-image: url(../images/filetype_word.png);
 }
 
+.detail-icon[iconType="gdoc"] {
+  background-image: url(../images/filetype_doc.png);
+}
+
+.detail-icon[iconType="gsheet"] {
+  background-image: url(../images/filetype_spreadsheet.png);
+}
+
+.detail-icon[iconType="gslides"] {
+  background-image: url(../images/filetype_presentation.png);
+}
+
+.detail-icon[iconType="gdraw"] {
+  background-image: url(../images/filetype_drawing.png);
+}
+
+.detail-icon[iconType="gtable"] {
+  background-image: url(../images/filetype_table.png);
+}
+
 /* The filename text in the preview pane. */
 .preview-filename {
   -webkit-margin-start: 8px;

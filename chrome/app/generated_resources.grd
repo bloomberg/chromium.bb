@@ -10280,6 +10280,22 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Excel spreadsheet
       </message>
 
+      <message name="IDS_FILE_BROWSER_GDOC_DOCUMENT_FILE_TYPE" desc="Google document file type">
+        Google document
+      </message>
+      <message name="IDS_FILE_BROWSER_GSHEET_DOCUMENT_FILE_TYPE" desc="Google spreadsheet file type">
+        Google spreadsheet
+      </message>
+      <message name="IDS_FILE_BROWSER_GSLIDES_DOCUMENT_FILE_TYPE" desc="Google presentation file type">
+        Google presentation
+      </message>
+      <message name="IDS_FILE_BROWSER_GDRAW_DOCUMENT_FILE_TYPE" desc="Google drawing file type">
+        Google drawing
+      </message>
+      <message name="IDS_FILE_BROWSER_GTABLE_DOCUMENT_FILE_TYPE" desc="Google table file type">
+        Google table
+      </message>
+
       <message name="IDS_FILE_BROWSER_ENQUEUE" desc="Enqueue file menu item used for media playback">
         Enqueue
       </message>

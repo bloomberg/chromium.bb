@@ -1798,9 +1798,13 @@ FileManager.prototype = {
     if (navigator.language == 'he')
       div.className = 'align-end-weakrtl';
     div.textContent = '...';
+    var self = this;
     cacheEntrySize(entry, function(entry) {
       if (entry.cachedSize_ == -1) {
         div.textContent = '';
+      } else if (entry.cachedSize_ == 0 &&
+                 self.getFileType(entry).type == 'hosted') {
+        div.textContent = '--';
       } else {
         div.textContent = util.bytesToSi(entry.cachedSize_);
       }

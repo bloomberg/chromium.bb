@@ -220,7 +220,7 @@ TEST_F(GDataFileSystemTest, SearchExistingDocument) {
       .Times(1);
 
   file_system_->FindFileByPath(
-      FilePath(FILE_PATH_LITERAL("gdata/Document 1.gdocument")),
+      FilePath(FILE_PATH_LITERAL("gdata/Document 1.gdoc")),
       mock_find_file_delegate);
 }
 
