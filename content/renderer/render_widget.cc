@@ -738,7 +738,11 @@ void RenderWidget::AnimateIfNeeded() {
       base::TimeDelta::FromMilliseconds(16) : base::TimeDelta();
 
   base::Time now = base::Time::Now();
-  if (now >= animation_floor_time_ || is_accelerated_compositing_active_) {
+
+  // animation_floor_time_ is the earliest time that we should animate when
+  // using the dead reckoning software scheduler. If we're using swapbuffers
+  // complete callbacks to rate limit, we can ignore this floor.
+  if (now >= animation_floor_time_ || num_swapbuffers_complete_pending_ > 0) {
     TRACE_EVENT0("renderer", "RenderWidget::AnimateIfNeeded")
     animation_floor_time_ = now + animationInterval;
     // Set a timer to call us back after animationInterval before
