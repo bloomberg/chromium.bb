@@ -20,6 +20,7 @@ SyncPrefObserver::~SyncPrefObserver() {}
 
 SyncPrefs::SyncPrefs(PrefService* pref_service)
     : pref_service_(pref_service) {
+  RegisterPrefGroups();
   if (pref_service_) {
     RegisterPreferences();
     // Watch the preference that indicates sync is managed so we can take
@@ -124,8 +125,8 @@ syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     return syncable::ModelTypeSet();
   }
 
-  // First remove any datatypes that are inconsistent with the current
-  // policies on the client.
+  // First remove any datatypes that are inconsistent with the current policies
+  // on the client (so that "keep everything synced" doesn't include them).
   if (pref_service_->HasPrefPath(prefs::kSavingBrowserHistoryDisabled) &&
       pref_service_->GetBoolean(prefs::kSavingBrowserHistoryDisabled)) {
     registered_types.Remove(syncable::TYPED_URLS);
@@ -135,50 +136,14 @@ syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     return registered_types;
   }
 
-  // Remove autofill_profile since it's controlled by autofill, and
-  // search_engines since it's controlled by preferences (see code below).
-  syncable::ModelTypeSet user_selectable_types(registered_types);
-  DCHECK(!user_selectable_types.Has(syncable::NIGORI));
-  user_selectable_types.Remove(syncable::AUTOFILL_PROFILE);
-  user_selectable_types.Remove(syncable::SEARCH_ENGINES);
-
-  // Remove app_notifications since it's controlled by apps (see
-  // code below).
-  // TODO(akalin): Centralize notion of all user selectable data types.
-  user_selectable_types.Remove(syncable::APP_NOTIFICATIONS);
-
   syncable::ModelTypeSet preferred_types;
-
-  for (syncable::ModelTypeSet::Iterator it = user_selectable_types.First();
+  for (syncable::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     if (GetDataTypePreferred(it.Get())) {
       preferred_types.Put(it.Get());
     }
   }
-
-  // Group the enabled/disabled state of autofill_profile with autofill, and
-  // search_engines with preferences (since only autofill and preferences are
-  // shown on the UI).
-  if (registered_types.Has(syncable::AUTOFILL) &&
-      registered_types.Has(syncable::AUTOFILL_PROFILE) &&
-      GetDataTypePreferred(syncable::AUTOFILL)) {
-    preferred_types.Put(syncable::AUTOFILL_PROFILE);
-  }
-  if (registered_types.Has(syncable::PREFERENCES) &&
-      registered_types.Has(syncable::SEARCH_ENGINES) &&
-      GetDataTypePreferred(syncable::PREFERENCES)) {
-    preferred_types.Put(syncable::SEARCH_ENGINES);
-  }
-
-  // Set app_notifications to the same enabled/disabled state as
-  // apps (since only apps is shown on the UI).
-  if (registered_types.Has(syncable::APPS) &&
-      registered_types.Has(syncable::APP_NOTIFICATIONS) &&
-      GetDataTypePreferred(syncable::APPS)) {
-    preferred_types.Put(syncable::APP_NOTIFICATIONS);
-  }
-
-  return preferred_types;
+  return ResolvePrefGroups(registered_types, preferred_types);
 }
 
 void SyncPrefs::SetPreferredDataTypes(
@@ -187,42 +152,10 @@ void SyncPrefs::SetPreferredDataTypes(
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(pref_service_);
   DCHECK(registered_types.HasAll(preferred_types));
-  syncable::ModelTypeSet preferred_types_with_dependents(preferred_types);
-  // Set autofill_profile to the same enabled/disabled state as
-  // autofill (since only autofill is shown in the UI).
-  if (registered_types.Has(syncable::AUTOFILL) &&
-      registered_types.Has(syncable::AUTOFILL_PROFILE)) {
-    if (preferred_types_with_dependents.Has(syncable::AUTOFILL)) {
-      preferred_types_with_dependents.Put(syncable::AUTOFILL_PROFILE);
-    } else {
-      preferred_types_with_dependents.Remove(syncable::AUTOFILL_PROFILE);
-    }
-  }
-  // Set app_notifications to the same enabled/disabled state as
-  // apps (since only apps is shown in the UI).
-  if (registered_types.Has(syncable::APPS) &&
-      registered_types.Has(syncable::APP_NOTIFICATIONS)) {
-    if (preferred_types_with_dependents.Has(syncable::APPS)) {
-      preferred_types_with_dependents.Put(syncable::APP_NOTIFICATIONS);
-    } else {
-      preferred_types_with_dependents.Remove(syncable::APP_NOTIFICATIONS);
-    }
-  }
-  // Set search_engines to the same enabled/disabled state as
-  // preferences (since only preferences is shown in the UI).
-  if (registered_types.Has(syncable::PREFERENCES) &&
-      registered_types.Has(syncable::SEARCH_ENGINES)) {
-    if (preferred_types_with_dependents.Has(syncable::PREFERENCES)) {
-      preferred_types_with_dependents.Put(syncable::SEARCH_ENGINES);
-    } else {
-      preferred_types_with_dependents.Remove(syncable::SEARCH_ENGINES);
-    }
-  }
-
-  for (syncable::ModelTypeSet::Iterator it = registered_types.First();
-       it.Good(); it.Inc()) {
-    SetDataTypePreferred(
-        it.Get(), preferred_types_with_dependents.Has(it.Get()));
+  preferred_types = ResolvePrefGroups(registered_types, preferred_types);
+  for (syncable::ModelTypeSet::Iterator i = registered_types.First();
+       i.Good(); i.Inc()) {
+    SetDataTypePreferred(i.Get(), preferred_types.Has(i.Get()));
   }
 }
 
@@ -405,6 +338,17 @@ const char* GetPrefNameForDataType(syncable::ModelType data_type) {
 
 }  // namespace
 
+void SyncPrefs::RegisterPrefGroups() {
+  pref_groups_[syncable::APPS].Put(syncable::APP_NOTIFICATIONS);
+  pref_groups_[syncable::APPS].Put(syncable::APP_SETTINGS);
+
+  pref_groups_[syncable::AUTOFILL].Put(syncable::AUTOFILL_PROFILE);
+
+  pref_groups_[syncable::EXTENSIONS].Put(syncable::EXTENSION_SETTINGS);
+
+  pref_groups_[syncable::PREFERENCES].Put(syncable::SEARCH_ENGINES);
+}
+
 void SyncPrefs::RegisterPreferences() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(pref_service_);
@@ -516,6 +460,22 @@ void SyncPrefs::SetDataTypePreferred(
     return;
   }
   pref_service_->SetBoolean(pref_name, is_preferred);
+}
+
+syncable::ModelTypeSet SyncPrefs::ResolvePrefGroups(
+    syncable::ModelTypeSet registered_types,
+    syncable::ModelTypeSet types) const {
+  DCHECK(registered_types.HasAll(types));
+  syncable::ModelTypeSet types_with_groups = types;
+  for (PrefGroupsMap::const_iterator i = pref_groups_.begin();
+      i != pref_groups_.end(); ++i) {
+    if (types.Has(i->first))
+      types_with_groups.PutAll(i->second);
+    else
+      types_with_groups.RemoveAll(i->second);
+  }
+  types_with_groups.RetainAll(registered_types);
+  return types_with_groups;
 }
 
 }  // namespace browser_sync

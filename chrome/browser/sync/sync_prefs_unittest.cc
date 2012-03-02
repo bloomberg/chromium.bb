@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,9 +36,11 @@ syncable::ModelTypeSet GetNonPassiveTypes() {
 // Returns all types visible from the setup UI.
 syncable::ModelTypeSet GetUserVisibleTypes() {
   syncable::ModelTypeSet user_visible_types(GetNonPassiveTypes());
-  user_visible_types.Remove(syncable::AUTOFILL_PROFILE);
-  user_visible_types.Remove(syncable::SEARCH_ENGINES);
   user_visible_types.Remove(syncable::APP_NOTIFICATIONS);
+  user_visible_types.Remove(syncable::APP_SETTINGS);
+  user_visible_types.Remove(syncable::AUTOFILL_PROFILE);
+  user_visible_types.Remove(syncable::EXTENSION_SETTINGS);
+  user_visible_types.Remove(syncable::SEARCH_ENGINES);
   return user_visible_types;
 }
 
@@ -112,6 +114,10 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     }
     if (it.Get() == syncable::APPS) {
       expected_preferred_types.Put(syncable::APP_NOTIFICATIONS);
+      expected_preferred_types.Put(syncable::APP_SETTINGS);
+    }
+    if (it.Get() == syncable::EXTENSIONS) {
+      expected_preferred_types.Put(syncable::EXTENSION_SETTINGS);
     }
     sync_prefs.SetPreferredDataTypes(non_passive_types, preferred_types);
     EXPECT_TRUE(expected_preferred_types.Equals(

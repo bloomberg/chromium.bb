@@ -104,10 +104,8 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
   bool sync_extensions;
   if (!result->GetBoolean("syncExtensions", &sync_extensions))
     return false;
-  if (sync_extensions) {
+  if (sync_extensions)
     config->data_types.Put(syncable::EXTENSIONS);
-    config->data_types.Put(syncable::EXTENSION_SETTINGS);
-  }
 
   bool sync_typed_urls;
   if (!result->GetBoolean("syncTypedUrls", &sync_typed_urls))
@@ -124,10 +122,8 @@ bool GetConfiguration(const std::string& json, SyncConfiguration* config) {
   bool sync_apps;
   if (!result->GetBoolean("syncApps", &sync_apps))
     return false;
-  if (sync_apps) {
+  if (sync_apps)
     config->data_types.Put(syncable::APPS);
-    config->data_types.Put(syncable::APP_SETTINGS);
-  }
 
   // Encryption settings.
   if (!result->GetBoolean("encryptAllData", &config->encrypt_all))

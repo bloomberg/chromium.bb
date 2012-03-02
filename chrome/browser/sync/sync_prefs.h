@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,12 +118,19 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   syncable::ModelTypeSet GetAcknowledgeSyncedTypesForTest() const;
 
  private:
+  void RegisterPrefGroups();
   void RegisterPreferences();
 
   void RegisterDataTypePreferredPref(
       syncable::ModelType type, bool is_preferred);
   bool GetDataTypePreferred(syncable::ModelType type) const;
   void SetDataTypePreferred(syncable::ModelType type, bool is_preferred);
+
+  // Returns a ModelTypeSet based on |types| expanded to include pref groups
+  // (see |pref_groups_|), but as a subset of |registered_types|.
+  syncable::ModelTypeSet ResolvePrefGroups(
+      syncable::ModelTypeSet registered_types,
+      syncable::ModelTypeSet types) const;
 
   base::NonThreadSafe non_thread_safe_;
 
@@ -135,6 +142,16 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   // The preference that controls whether sync is under control by
   // configuration management.
   BooleanPrefMember pref_sync_managed_;
+
+  // Groups of prefs that always have the same value as a "master" pref.
+  // For example, the APPS group has {APP_NOTIFICATIONS, APP_SETTINGS}
+  // (as well as APPS, but that is implied), so
+  //   pref_groups_[syncable::APPS] =       { syncable::APP_NOTIFICATIONS,
+  //                                          syncable::APP_SETTINGS }
+  //   pref_groups_[syncable::EXTENSIONS] = { syncable::EXTENSION_SETTINGS }
+  // etc.
+  typedef std::map<syncable::ModelType, syncable::ModelTypeSet> PrefGroupsMap;
+  PrefGroupsMap pref_groups_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPrefs);
 };
