@@ -190,13 +190,27 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   file->file_info_.last_modified = doc->updated_time();
   file->file_info_.last_accessed = doc->updated_time();
   file->file_info_.creation_time = doc->published_time();
+
+  const Link* thumbnail_link = doc->GetLinkByType(Link::THUMBNAIL);
+  if (thumbnail_link)
+    file->thumbnail_url_ = thumbnail_link->href();
+
+  const Link* edit_link = doc->GetLinkByType(Link::EDIT);
+  if (edit_link)
+    file->edit_url_ = edit_link->href();
+
+  // TODO(gspencer): Add support for fetching cache state from the cache,
+  // when the cache code is done.
+
   return file;
 }
 
 // GDataFile class implementation.
 
 GDataFile::GDataFile(GDataDirectory* parent)
-    : GDataFileBase(parent), kind_(gdata::DocumentEntry::UNKNOWN) {
+    : GDataFileBase(parent),
+      kind_(gdata::DocumentEntry::UNKNOWN),
+      cache_state_(CACHE_STATE_NONE) {
   DCHECK(parent);
 }
 

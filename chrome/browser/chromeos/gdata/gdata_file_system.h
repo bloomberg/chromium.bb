@@ -72,6 +72,14 @@ typedef std::map<FilePath::StringType, GDataFileBase*> GDataFileCollection;
 // this could be either a regular file or a server side document.
 class GDataFile : public GDataFileBase {
  public:
+  // This is used as a bitmask for the cache state.
+  enum CacheState {
+    CACHE_STATE_NONE    = 0x0,
+    CACHE_STATE_PINNED  = 0x1 << 0,
+    CACHE_STATE_PRESENT = 0x1 << 1,
+    CACHE_STATE_DIRTY   = 0x1 << 2,
+  };
+
   explicit GDataFile(GDataDirectory* parent);
   virtual ~GDataFile();
   virtual GDataFile* AsGDataFile() OVERRIDE;
@@ -80,20 +88,27 @@ class GDataFile : public GDataFileBase {
                                           DocumentEntry* doc);
 
   DocumentEntry::EntryKind kind() const { return kind_; }
+  const GURL& thumbnail_url() const { return thumbnail_url_; }
+  const GURL& edit_url() const { return edit_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
   const std::string& etag() const { return etag_; }
   const std::string& resource() const { return resource_id_; }
   const std::string& id() const { return id_; }
   const std::string& file_md5() const { return file_md5_; }
+  // Returns a bitmask of CacheState enum values.
+  const int cache_state() const { return cache_state_; }
 
  private:
   // Content URL for files.
   DocumentEntry::EntryKind kind_;
+  GURL thumbnail_url_;
+  GURL edit_url_;
   std::string content_mime_type_;
   std::string etag_;
   std::string resource_id_;
   std::string id_;
   std::string file_md5_;
+  int cache_state_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataFile);
 };
@@ -411,7 +426,7 @@ class GDataFileSystemFactory : public ProfileKeyedServiceFactory {
   // yet created.
   static GDataFileSystem* GetForProfile(Profile* profile);
 
-  // Returns the GDataFileSystemFactory instance.
+  // Returns the GDataFileSystemFactory instance.
   static GDataFileSystemFactory* GetInstance();
 
  private:
