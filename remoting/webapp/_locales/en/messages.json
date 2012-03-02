@@ -139,6 +139,10 @@
     "message": "The access code is invalid. Please try again.",
     "description": "Error displayed if an invalid access code is entered."
   },
+  "ERROR_NETWORK_FAILURE": {
+    "message": "Unable to reach the host. This is probably due to the configuration of the network you are using.",
+    "description": "Error displayed when the host is online, but we are unable to connect to it due to network configuration."
+  },
   "ERROR_MISSING_PLUGIN": {
     "message": "Some components required for Chromoting are missing. Please make sure you're running the latest version of Chromium and try again.",
     "description": "Error displayed if the client plugin fails to load."

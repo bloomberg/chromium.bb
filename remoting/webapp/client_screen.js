@@ -247,7 +247,7 @@ function onClientStateChange_(oldState, newState) {
       showConnectError_(remoting.Error.INCOMPATIBLE_PROTOCOL);
     } else if (remoting.clientSession.error ==
                remoting.ClientSession.ConnectionError.NETWORK_FAILURE) {
-      showConnectError_(remoting.Error.GENERIC);
+      showConnectError_(remoting.Error.NETWORK_FAILURE);
     } else {
       showConnectError_(remoting.Error.GENERIC);
     }
