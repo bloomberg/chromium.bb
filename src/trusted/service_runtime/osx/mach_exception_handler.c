@@ -10,6 +10,7 @@
 #include <mach/mach_vm.h>
 #include <mach/thread_status.h>
 #include <pthread.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -19,6 +20,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -52,8 +54,8 @@ boolean_t nacl_exc_server(
 /* TODO(bradnelson): merge this into a common location. */
 struct ExceptionFrame {
   uint32_t return_addr;
-  uint32_t prog_ctr;
-  uint32_t stack_ptr;
+  uint32_t context_ptr;
+  struct NaClExceptionContext context;
 };
 
 struct MachExceptionParameters {
@@ -173,8 +175,11 @@ static int HandleException(mach_port_t thread_port,
 
   /* Set up the stack frame for the handler invocation. */
   frame.return_addr = 0;
-  frame.prog_ctr = regs.uts.ts32.__eip;
-  frame.stack_ptr = regs.uts.ts32.__esp;
+  frame.context_ptr = frame_addr_user +
+                      offsetof(struct ExceptionFrame, context);
+  frame.context.prog_ctr = regs.uts.ts32.__eip;
+  frame.context.stack_ptr = regs.uts.ts32.__esp;
+  frame.context.frame_ptr = regs.uts.ts32.__ebp;
 
   /*
    * Write the stack frame into untrusted address space.  We do not
@@ -193,13 +198,7 @@ static int HandleException(mach_port_t thread_port,
   /* Set up thread context to resume at handler. */
   natp->user.new_prog_ctr = nap->exception_handler;
   natp->user.stack_ptr.ptr_32.ptr = frame_addr_user;
-  /*
-   * Preserve %ebp for consistency with x86-32 Linux and Windows, and
-   * because it is needed for doing stack backtraces.
-   * TODO(mseaborn): Save %ebp in the exception frame rather than
-   * preserving it.
-   */
-  natp->user.frame_ptr.ptr_32.ptr = regs.uts.ts32.__ebp;
+  /* TODO(bradnelson): put all registers in some default state. */
 
   /*
    * Put registers in right place to land at NaClSwitchNoSSEViaECX

@@ -14,11 +14,12 @@
 #include <string.h>
 #include <sys/nacl_syscalls.h>
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 
-typedef void (*handler_func_t)(int prog_ctr, int stack_ptr);
+typedef void (*handler_func_t)(struct NaClExceptionContext *context);
 
 #ifndef __pnacl__
 void crash_at_known_address(void);
@@ -37,7 +38,7 @@ uint32_t exception_handler_esp = -1;
 uint64_t exception_handler_rsp = -1;
 uint64_t exception_handler_rbp = -1;
 #endif
-void exception_handler_wrapper(int prog_ctr, int stack_ptr);
+void exception_handler_wrapper(struct NaClExceptionContext *context);
 
 char stack[4096];
 
@@ -88,7 +89,7 @@ void check_stack_is_aligned() {
 }
 
 
-void exception_handler(int eip, int esp) {
+void exception_handler(struct NaClExceptionContext *context) {
   printf("handler called\n");
 
   check_stack_is_aligned();
@@ -99,22 +100,22 @@ void exception_handler(int eip, int esp) {
    * large.  We assume the stack grows down.
    */
   const int kMaxStackFrameSize = 0x1000;
-  assert(main_stack - kMaxStackFrameSize < (char *) esp);
-  assert((char *) esp < main_stack);
+  assert(main_stack - kMaxStackFrameSize < (char *) context->stack_ptr);
+  assert((char *) context->stack_ptr < main_stack);
   /*
    * If we can link in assembly code, we can check the saved values
    * more exactly.
    */
 #ifndef __pnacl__
-  assert(esp == stack_ptr_at_crash);
-  assert(eip == (uintptr_t) prog_ctr_at_crash);
+  assert(context->stack_ptr == stack_ptr_at_crash);
+  assert(context->prog_ctr == (uintptr_t) prog_ctr_at_crash);
 #endif
 
   char *stack_top;
   char local_var;
   if (g_registered_stack == NULL) {
     /* Check that our current stack is just below the saved stack pointer. */
-    stack_top = (char *) esp - kRedZoneSize;
+    stack_top = (char *) context->stack_ptr - kRedZoneSize;
     assert(stack_top - kMaxStackFrameSize < &local_var);
     assert(&local_var < stack_top);
   } else {
@@ -132,8 +133,10 @@ void exception_handler(int eip, int esp) {
   /* Skip over the 4 byte return address. */
   uintptr_t frame_base = exception_handler_esp + 4;
   assert(frame_base % STACK_ALIGNMENT == 0);
-  /* Skip over the 2 arguments, which are 4 bytes each. */
-  char *frame_top = (char *) (frame_base + 2 * 4);
+  /* Skip over the arguments + context. */
+  char *frame_top = (char *) (frame_base +
+                              sizeof(struct NaClExceptionContext *) +
+                              sizeof(struct NaClExceptionContext));
   /* Check that no more than the stack alignment size is wasted. */
   assert(stack_top - STACK_ALIGNMENT < frame_top);
   assert(frame_top <= stack_top);
@@ -141,8 +144,9 @@ void exception_handler(int eip, int esp) {
   /* Skip over the 8 byte return address. */
   uintptr_t frame_base = ((uint32_t) exception_handler_rsp) + 8;
   assert(frame_base % STACK_ALIGNMENT == 0);
-  /* Nothing else is pushed onto the stack yet. */
-  char *frame_top = (char *) frame_base;
+  /* Skip over the context (argument in registers). */
+  char *frame_top = (char *) (frame_base +
+                              sizeof(struct NaClExceptionContext));
   /* Check that no more than the stack alignment size is wasted. */
   assert(stack_top - STACK_ALIGNMENT < frame_top);
   assert(frame_top <= stack_top);
@@ -301,7 +305,7 @@ void test_get_x86_direction_flag() {
   assert(flag == 1);
 }
 
-void direction_flag_exception_handler(int prog_ctr, int stack_ptr) {
+void direction_flag_exception_handler(struct NaClExceptionContext *context) {
   assert(get_x86_direction_flag() == 0);
   /* Return from exception handler. */
   int rc = NACL_SYSCALL(exception_clear_flag)();
@@ -332,41 +336,28 @@ void test_unsetting_x86_direction_flag() {
   memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
 }
 
-#endif
-
-#if defined(__i386__)
-
-/*
- * TODO(mseaborn): %ebp is preserved when entering the exception
- * handler because its value is needed for doing stack backtraces, but
- * it would be better to save its value in the exception frame.
- */
-
-uint32_t saved_ebp;
-
-void ebp_exception_handler_wrapper(int prog_ctr, int stack_ptr);
-asm(".pushsection .text, \"ax\", @progbits\n"
-    ".p2align NACLENTRYALIGN\n"
-    "ebp_exception_handler_wrapper:\n"
-    "mov %ebp, saved_ebp\n"
-    "jmp ebp_exception_handler\n"
-    ".popsection\n");
-
-void ebp_exception_handler() {
-  assert(saved_ebp == 0x12345678);
+void frame_ptr_exception_handler(struct NaClExceptionContext *context) {
+  assert(context->frame_ptr == 0x12345678);
   /* Return from exception handler. */
   int rc = NACL_SYSCALL(exception_clear_flag)();
   assert(rc == 0);
   longjmp(g_jmp_buf, 1);
 }
 
-void test_preserving_ebp() {
-  int rc = NACL_SYSCALL(exception_handler)(ebp_exception_handler_wrapper, NULL);
+void test_preserving_frame_ptr() {
+  int rc = NACL_SYSCALL(exception_handler)(frame_ptr_exception_handler, NULL);
   assert(rc == 0);
   if (!setjmp(g_jmp_buf)) {
-    /* Cause a crash with %ebp set to a known value. */
-    asm("mov $0x12345678, %ebp\n"
-        "movl $0, 0\n");
+    /* Crash with frame_ptr set to a known value. */
+#if defined(__i386__)
+    asm("mov $0x12345678, %ebp\n");
+#elif defined(__x86_64__)
+    asm("movl $0x12345678, %ebp\n"
+        "addq %r15, %rbp\n");
+#else
+#  error Unsupported aritecture
+#endif
+    *((volatile int *) 0) = 0;
     /* Should not reach here. */
     exit(1);
   }
@@ -396,10 +387,7 @@ int TestMain() {
 #if defined(__i386__) || defined(__x86_64__)
   RUN_TEST(test_get_x86_direction_flag);
   RUN_TEST(test_unsetting_x86_direction_flag);
-#endif
-
-#if defined(__i386__)
-  RUN_TEST(test_preserving_ebp);
+  RUN_TEST(test_preserving_frame_ptr);
 #endif
 
   fprintf(stderr, "** intended_exit_status=0\n");

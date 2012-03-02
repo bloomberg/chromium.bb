@@ -17,7 +17,8 @@ sys.path.insert(0, CRASH_DUMP_DIR)
 import decode_dump
 
 
-def CheckStackTrace(core, main_nexe, nmf_filename, addr2line, nacl_sdk_lib):
+def CheckStackTrace(core, main_nexe, nmf_filename, addr2line,
+                    lib_dir, nacl_sdk_lib, platform):
   """Check that a core dump yields an expected stack trace.
 
   Args:
@@ -25,13 +26,16 @@ def CheckStackTrace(core, main_nexe, nmf_filename, addr2line, nacl_sdk_lib):
     main_nexe: the main nexe in question.
     nmf_filename: the manifest for main_nexe.
     addr2line: location of addr2line for the relevant toolchain.
+    lib_dir: path to search for shared libaries.
     nacl_sdk_lib: location of the system dylibs for this nexe.
+    platform: platform string to use in nmf files.
   """
   decoder = decode_dump.CoreDecoder(
       main_nexe=main_nexe,
       nmf_filename=nmf_filename,
       addr2line=addr2line,
-      toolchain_libs=nacl_sdk_lib)
+      library_paths=[lib_dir, nacl_sdk_lib],
+      platform=platform)
   info = decoder.LoadAndDecode(core)
   trace = decoder.StackTrace(info)
   expected = [
@@ -42,18 +46,29 @@ def CheckStackTrace(core, main_nexe, nmf_filename, addr2line, nacl_sdk_lib):
       ('layer2', 'layer3(i, j, 7);'),
       ('layer1', 'layer2(junk[0], t + 1);'),
   ]
+  actual = []
   for i in range(len(expected)):
     scope = trace[i]
     lineno = int(scope['lineno'])
     line = linecache.getline(scope['filename'], lineno).strip()
-    actual = (scope['function'], line)
-    assert expected[i] == actual
+    actual.append((scope['function'], line))
+  if expected != actual:
+    sys.stderr.write('ERROR - stack trace does not match expected\n')
+    sys.stderr.write('Expected:\n')
+    for i in expected:
+      sys.stderr.write('%s\n' % str(i))
+    sys.stderr.write('Actual:\n')
+    for i in actual:
+      sys.stderr.write('%s\n' % str(i))
+    sys.exit(1)
+
 
 
 if __name__ == '__main__':
-  if len(sys.argv) != 6:
+  if len(sys.argv) != 8:
     sys.stderr.write(
-        'USAGE: %s <core.json> <nexe> <nmf> <addr2line> <nacl_sdk_lib>\n' %
+        'USAGE: %s <core.json> <nexe> <nmf> <addr2line> '
+        '<lib_dir> <nacl_sdk_lib> <platform>\n' %
         sys.argv[0])
     sys.exit(1)
   CheckStackTrace(*sys.argv[1:])
