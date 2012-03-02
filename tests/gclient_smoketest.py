@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -1159,7 +1159,7 @@ class GClientSmokeBoth(GClientSmokeBase):
         '{"name": "src-git",'
         '"url": "' + self.git_base + 'repo_1"}]'])
     self.gclient(['sync', '--deps', 'mac'])
-    results = self.gclient(['recurse', 'sh', '-c',
+    results = self.gclient(['recurse', '-j1', 'sh', '-c',
                             'echo $GCLIENT_SCM,$GCLIENT_URL,`pwd`'])
 
     entries = [tuple(line.split(','))

@@ -525,7 +525,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # When running runhooks, there's no need to consult the SCM.
     # All known hooks are expected to run unconditionally regardless of working
     # copy state, so skip the SCM status check.
-    run_scm = command not in ('runhooks', None)
+    run_scm = command not in ('runhooks', 'recurse', None)
     parsed_url = self.LateOverride(self.url)
     file_list = []
     if run_scm and parsed_url:
@@ -565,6 +565,23 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         # Strip any leading path separators.
         while file_list[i].startswith(('\\', '/')):
           file_list[i] = file_list[i][1:]
+    elif command is 'recurse':
+      if not isinstance(parsed_url, self.FileImpl):
+        # Skip file only checkout.
+        scm = gclient_scm.GetScmName(parsed_url)
+        if not options.scm or scm in options.scm:
+          cwd = os.path.normpath(os.path.join(self.root.root_dir, self.name))
+          # Pass in the SCM type as an env variable
+          env = os.environ.copy()
+          if scm:
+            env['GCLIENT_SCM'] = scm
+          if parsed_url:
+            env['GCLIENT_URL'] = parsed_url
+          if os.path.isdir(cwd):
+            gclient_utils.CheckCallAndFilter(
+                args, cwd=cwd, env=env, print_stdout=True)
+          else:
+            print >> sys.stderr, 'Skipped missing %s' % cwd
 
     # Always parse the DEPS file.
     self.ParseDepsFile()
@@ -965,12 +982,18 @@ solutions = [
     """
     if not self.dependencies:
       raise gclient_utils.Error('No solution specified')
-    revision_overrides = self._EnforceRevisions()
+    revision_overrides = {}
+    # It's unnecessary to check for revision overrides for 'recurse'.
+    # Save a few seconds by not calling _EnforceRevisions() in that case.
+    if command is not 'recurse':
+      revision_overrides = self._EnforceRevisions()
     pm = None
     # Disable progress for non-tty stdout.
-    if (command in ('update', 'revert') and sys.stdout.isatty() and not
-        self._options.verbose):
-      pm = Progress('Syncing projects', 1)
+    if (sys.stdout.isatty() and not self._options.verbose):
+      if command in ('update', 'revert'):
+        pm = Progress('Syncing projects', 1)
+      elif command is 'recurse':
+        pm = Progress(' '.join(args), 1)
     work_queue = gclient_utils.ExecutionQueue(self._options.jobs, pm)
     for s in self.dependencies:
       work_queue.enqueue(s)
@@ -1131,7 +1154,6 @@ def CMDrecurse(parser, args):
   parser.disable_interspersed_args()
   parser.add_option('-s', '--scm', action='append', default=[],
                     help='choose scm types to operate upon')
-  parser.remove_option('--jobs')
   options, args = parser.parse_args(args)
   if not args:
     print >> sys.stderr, 'Need to supply a command!'
@@ -1142,28 +1164,16 @@ def CMDrecurse(parser, args):
         'You need to run gclient sync at least once to use \'recurse\'.\n'
         'This is because .gclient_entries needs to exist and be up to date.')
     return 1
-  root, entries = root_and_entries
+
+  # Normalize options.scm to a set()
   scm_set = set()
   for scm in options.scm:
     scm_set.update(scm.split(','))
+  options.scm = scm_set
 
-  # Pass in the SCM type as an env variable
-  env = os.environ.copy()
-
-  for path, url in entries.iteritems():
-    scm = gclient_scm.GetScmName(url)
-    if scm_set and scm not in scm_set:
-      continue
-    cwd = os.path.normpath(os.path.join(root, path))
-    if scm:
-      env['GCLIENT_SCM'] = scm
-    if url:
-      env['GCLIENT_URL'] = url
-    if os.path.isdir(cwd):
-      subprocess2.call(args, cwd=cwd, env=env)
-    else:
-      print >> sys.stderr, 'Skipped missing %s' % cwd
-  return 0
+  options.nohooks = True
+  client = GClient.LoadCurrentConfig(options)
+  return client.RunOnDeps('recurse', args)
 
 
 @attr('usage', '[args ...]')
@@ -1172,8 +1182,8 @@ def CMDfetch(parser, args):
 
 Completely git-specific. Simply runs 'git fetch [args ...]' for each module.
 """
-  (_, args) = parser.parse_args(args)
-  args = ['-s', 'git', 'git', 'fetch'] + args
+  (options, args) = parser.parse_args(args)
+  args = ['-j%d' % options.jobs, '-s', 'git', 'git', 'fetch'] + args
   return CMDrecurse(parser, args)
 
 
