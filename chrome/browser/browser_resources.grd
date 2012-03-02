@@ -66,8 +66,8 @@
       <include name="IDR_GPU_BLACKLIST" file="resources\software_rendering_list\software_rendering_list.json" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_HTML" file="resources\gpu_internals\gpu_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_GPU_INTERNALS_JS" file="resources\gpu_internals\gpu_internals.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_HISTORY_HTML" file="resources\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_HISTORY_JS" file="resources\history.js" type="BINDATA" />
+      <include name="IDR_HISTORY_HTML" file="resources\history\history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_HISTORY_JS" file="resources\history\history.js" type="BINDATA" />
       <include name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_MANIFEST" file="resources\keyboard\manifest.json" type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_HTML" file="resources\media_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
