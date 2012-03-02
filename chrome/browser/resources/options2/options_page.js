@@ -921,7 +921,7 @@ cr.define('options', function() {
 
         if (this.isOverlay) {
           var content = this.pageDiv.querySelector('.content-area');
-          this.pageDiv.insertBefore(bannerDiv, content);
+          content.parentElement.insertBefore(bannerDiv, content);
         } else {
           bannerDiv.classList.add('main-page-banner');
           var header = this.pageDiv.querySelector('header');
