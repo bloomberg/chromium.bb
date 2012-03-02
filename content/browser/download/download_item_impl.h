@@ -209,6 +209,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual std::string DebugString(bool verbose) const OVERRIDE;
   virtual void MockDownloadOpenForTesting() OVERRIDE;
   virtual ExternalData* GetExternalData(const void* key) OVERRIDE;
+  virtual const ExternalData* GetExternalData(const void* key) const OVERRIDE;
   virtual void SetExternalData(const void* key, ExternalData* data) OVERRIDE;
 
  private:

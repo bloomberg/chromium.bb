@@ -116,6 +116,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
   MOCK_METHOD0(MockDownloadOpenForTesting, void());
   MOCK_METHOD1(GetExternalData, ExternalData*(const void*));
+  MOCK_CONST_METHOD1(GetExternalData, const ExternalData*(const void*));
   MOCK_METHOD2(SetExternalData, void(const void*, ExternalData*));
 };
 

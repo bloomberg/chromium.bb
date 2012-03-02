@@ -294,9 +294,11 @@ class TestExternalData : public DownloadItem::ExternalData {
 
 TEST_F(DownloadItemTest, ExternalData) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  const DownloadItem* const_item = item;
 
   // Shouldn't be anything there before set.
   EXPECT_EQ(NULL, item->GetExternalData(&external_data_test_string));
+  EXPECT_EQ(NULL, const_item->GetExternalData(&external_data_test_string));
 
   TestExternalData* test1(new TestExternalData());
   test1->value = 2;
@@ -307,6 +309,13 @@ TEST_F(DownloadItemTest, ExternalData) {
       static_cast<TestExternalData*>(
           item->GetExternalData(&external_data_test_string));
   EXPECT_EQ(test1, test_result);
+
+  // Ditto for const lookup.
+  const TestExternalData* test_const_result =
+      static_cast<const TestExternalData*>(
+          const_item->GetExternalData(&external_data_test_string));
+  EXPECT_EQ(static_cast<const TestExternalData*>(test1),
+            test_const_result);
 
   // Destructor should be called if value overwritten.  New value
   // should then be retrievable.

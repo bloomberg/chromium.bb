@@ -1131,9 +1131,17 @@ void DownloadItemImpl::MockDownloadOpenForTesting() { open_enabled_ = false; }
 
 DownloadItem::ExternalData*
 DownloadItemImpl::GetExternalData(const void* key) {
-  if (!ContainsKey(external_data_map_, key))
-    return NULL;
-  return external_data_map_[key];
+  // The behavior of the const overload is identical with the exception of the
+  // constness of |this| and the return value.
+  return const_cast<DownloadItem::ExternalData*>(
+      static_cast<const DownloadItemImpl&>(*this).GetExternalData(key));
+}
+
+const DownloadItem::ExternalData*
+DownloadItemImpl::GetExternalData(const void* key) const {
+  std::map<const void*, ExternalData*>::const_iterator it =
+      external_data_map_.find(key);
+  return (it == external_data_map_.end()) ? NULL : it->second;
 }
 
 void DownloadItemImpl::SetExternalData(

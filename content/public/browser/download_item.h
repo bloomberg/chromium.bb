@@ -344,7 +344,8 @@ class CONTENT_EXPORT DownloadItem {
   // If an object is already held by the DownloadItem associated with
   // the passed key, it will be destroyed if overwriten by a new pointer
   // (overwrites by the same pointer are ignored).
-  virtual ExternalData* GetExternalData(const void* key) = 0;
+  virtual       ExternalData* GetExternalData(const void* key) = 0;
+  virtual const ExternalData* GetExternalData(const void* key) const = 0;
   virtual void SetExternalData(const void* key, ExternalData* data) = 0;
 
   virtual std::string DebugString(bool verbose) const = 0;
