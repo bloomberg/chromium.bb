@@ -2,22 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
+from json_schema import LoadJSON
 import model
 import unittest
 
 class ModelTest(unittest.TestCase):
   def setUp(self):
     self.model = model.Model()
-    self.permissions_json = json.loads(open('test/permissions.json').read())
+    self.permissions_json = LoadJSON('test/permissions.json')
     self.model.AddNamespace(self.permissions_json[0],
         'path/to/permissions.json')
     self.permissions = self.model.namespaces.get('permissions')
-    self.windows_json = json.loads(open('test/windows.json').read())
+    self.windows_json = LoadJSON('test/windows.json')
     self.model.AddNamespace(self.windows_json[0],
         'path/to/window.json')
     self.windows = self.model.namespaces.get('windows')
-    self.tabs_json = json.loads(open('test/tabs.json').read())
+    self.tabs_json = LoadJSON('test/tabs.json')
     self.model.AddNamespace(self.tabs_json[0],
         'path/to/tabs.json')
     self.tabs = self.model.namespaces.get('tabs')

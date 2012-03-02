@@ -11,7 +11,7 @@ import code
 import cpp_type_generator
 import cpp_util
 import h_generator
-import json
+from json_schema import LoadJSON
 import model
 import optparse
 import os
@@ -188,8 +188,7 @@ updateEverything();
 
     try:
       # Get main json file
-      with open(json_file_path) as json_file:
-        api_defs = json.loads(json_file.read())
+      api_defs = LoadJSON(json_file_path)
       namespace = api_model.AddNamespace(api_defs[0], json_file_path)
       if not namespace:
         body.Append("<pre>Target file %s is marked nocompile</pre>" %
@@ -201,8 +200,7 @@ updateEverything();
       # Get json file depedencies
       for dependency in api_defs[0].get('dependencies', []):
         json_file_path = os.path.join(filedir, dependency + '.json')
-        with open(json_file_path) as json_file:
-          api_defs = json.loads(json_file.read())
+        api_defs = LoadJSON(json_file_path)
         referenced_namespace = api_model.AddNamespace(api_defs[0],
             json_file_path)
         if referenced_namespace:
