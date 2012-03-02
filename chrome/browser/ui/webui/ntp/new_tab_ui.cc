@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
@@ -55,6 +54,10 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
+#endif
 
 using content::BrowserThread;
 using content::UserMetricsAction;
@@ -114,8 +117,11 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
       web_ui->AddMessageHandler(new SuggestionsHandler());
     web_ui->AddMessageHandler(new RecentlyClosedTabsHandler());
     web_ui->AddMessageHandler(new MetricsHandler());
+#if !defined(OS_ANDROID)
+    // Android doesn't have a sync promo/username on NTP.
     if (GetProfile()->IsSyncAccessible())
       web_ui->AddMessageHandler(new NewTabPageSyncHandler());
+#endif
     ExtensionService* service = GetProfile()->GetExtensionService();
     // We might not have an ExtensionService (on ChromeOS when not logged in
     // for example).

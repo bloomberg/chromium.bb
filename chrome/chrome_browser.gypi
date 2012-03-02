@@ -4747,6 +4747,7 @@
             'browser/jankometer.cc',
             'browser/ui/sad_tab_observer.cc',
             'browser/ui/webui/certificate_viewer_webui.cc',
+            'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
             'browser/ui/window_sizer.cc',
             'browser/ui/window_sizer.h',
           ],
