@@ -230,7 +230,6 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   if (chromeos::KioskModeHelper::IsKioskModeEnabled())
     chromeos::ShutdownKioskModeScreensaver();
   cryptohome::AsyncMethodCaller::Shutdown();
-  chromeos::imageburner::BurnManager::Shutdown();
   chromeos::disks::DiskMountManager::Shutdown();
 
   // CrosLibrary is shut down before DBusThreadManager even though the former
@@ -292,7 +291,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
 
   chromeos::disks::DiskMountManager::Initialize();
-  chromeos::imageburner::BurnManager::Initialize();
   cryptohome::AsyncMethodCaller::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network
@@ -328,6 +326,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   chromeos::AudioHandler::Initialize();
+  chromeos::imageburner::BurnManager::Initialize();
 
   // Listen for system key events so that the user will be able to adjust the
   // volume on the login screen, if Chrome is running on Chrome OS
@@ -535,6 +534,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // chromeos::SystemKeyEventListener::Shutdown() is always safe to call,
   // even if Initialize() wasn't called.
   chromeos::SystemKeyEventListener::Shutdown();
+  chromeos::imageburner::BurnManager::Shutdown();
   chromeos::AudioHandler::Shutdown();
 
   chromeos::WebSocketProxyController::Shutdown();

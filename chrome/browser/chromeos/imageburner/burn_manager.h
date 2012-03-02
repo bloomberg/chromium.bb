@@ -12,11 +12,18 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/file_stream.h"
+
+namespace content {
+class WebContents;
+}
+
+namespace net {
+class FileStream;
+}
 
 namespace chromeos {
 namespace imageburner {
@@ -197,10 +204,7 @@ class StateMachine {
   DISALLOW_COPY_AND_ASSIGN(StateMachine);
 };
 
-class BurnManager
-    : public content::DownloadManager::Observer,
-      public content::DownloadItem::Observer,
-      public Downloader::Listener {
+class BurnManager : content::URLFetcherDelegate {
  public:
 
   class Delegate : public base::SupportsWeakPtr<Delegate> {
@@ -220,20 +224,12 @@ class BurnManager
   // Initialize() should already have been called.
   static BurnManager* GetInstance();
 
-  // content::DownloadItem::Observer interface.
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
-
-  // content::DownloadManager::Observer interface.
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
-
-  // Downloader::Listener interface.
-  virtual void OnBurnDownloadStarted(bool success) OVERRIDE;
-
   // Creates URL image should be fetched from.
   // Must be called from UI thread.
-  void FetchConfigFile(content::WebContents* web_content,
-                       Delegate* delegate);
+  void FetchConfigFile(Delegate* delegate);
+
+  // URLFetcherDelegate override.
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Creates directory image will be downloaded to.
   // Must be called from FILE thread.
@@ -271,29 +267,24 @@ class BurnManager
   virtual ~BurnManager();
 
   void OnImageDirCreated(Delegate* delegate, bool success);
-  void OnConfigFileDownloaded();
   void ConfigFileFetched(bool fetched, const std::string& content);
+
+  bool config_file_fetched() const { return !config_file_.empty(); }
 
   base::WeakPtrFactory<BurnManager> weak_ptr_factory_;
 
   FilePath image_dir_;
   FilePath target_device_path_;
   FilePath target_file_path_;
-  FilePath config_file_path_;
-
-  content::DownloadManager* download_manager_;
-  bool download_item_observer_added_;
-  content::DownloadItem*  active_download_item_;
 
   ConfigFile config_file_;
   GURL config_file_url_;
-  bool config_file_requested_;
-  bool config_file_fetched_;
   std::vector<base::WeakPtr<Delegate> > downloaders_;
 
   scoped_ptr<StateMachine> state_machine_;
 
   scoped_ptr<Downloader> downloader_;
+  scoped_ptr<content::URLFetcher> config_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(BurnManager);
 };

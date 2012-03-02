@@ -211,7 +211,7 @@ class BurnControllerImpl
     if (success) {
       zip_image_file_path_ =
           burn_manager_->GetImageDir().Append(kImageZipFileName);
-      burn_manager_->FetchConfigFile(web_contents_, this);
+      burn_manager_->FetchConfigFile(this);
     } else {
       DownloadCompleted(success);
     }

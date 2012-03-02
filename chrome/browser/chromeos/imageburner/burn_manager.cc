@@ -8,18 +8,19 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_fetcher.h"
+#include "net/base/file_stream.h"
+#include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
-using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
 
@@ -31,7 +32,6 @@ namespace {
 const char kConfigFileUrl[] =
     "https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf";
 const char kTempImageFolderName[] = "chromeos_image";
-const char kConfigFileName[] = "recovery.conf";
 
 BurnManager* g_burn_manager = NULL;
 
@@ -41,16 +41,6 @@ void CreateDirectory(const FilePath& path,
   const bool success = file_util::CreateDirectory(path);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(callback, success));
-}
-
-// Reads file content and calls |callback| with the result on UI thread.
-void ReadFile(const FilePath& path,
-              base::Callback<void(bool success,
-                                  const std::string& file_content)> callback) {
-  std::string file_content;
-  const bool success = file_util::ReadFileToString(path, &file_content);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, success, file_content));
 }
 
 // Creates a FileStream and calls |callback| with the result on UI thread.
@@ -229,12 +219,7 @@ void StateMachine::OnCancelation() {
 
 BurnManager::BurnManager()
     : weak_ptr_factory_(this),
-      download_manager_(NULL),
-      download_item_observer_added_(false),
-      active_download_item_(NULL),
       config_file_url_(kConfigFileUrl),
-      config_file_requested_(false),
-      config_file_fetched_(false),
       state_machine_(new StateMachine()),
       downloader_(NULL) {
 }
@@ -243,10 +228,6 @@ BurnManager::~BurnManager() {
   if (!image_dir_.empty()) {
     file_util::Delete(image_dir_, true);
   }
-  if (active_download_item_)
-    active_download_item_->RemoveObserver(this);
-  if (download_manager_)
-    download_manager_->RemoveObserver(this);
 }
 
 // static
@@ -275,49 +256,6 @@ BurnManager* BurnManager::GetInstance() {
   return g_burn_manager;
 }
 
-void BurnManager::OnDownloadUpdated(DownloadItem* download) {
-  if (download->IsCancelled()) {
-    ConfigFileFetched(false, "");
-    DCHECK(!download_item_observer_added_);
-    DCHECK(active_download_item_ == NULL);
-  } else if (download->IsComplete()) {
-    OnConfigFileDownloaded();
-  }
-}
-
-void BurnManager::OnConfigFileDownloaded() {
-  BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(ReadFile,
-                 config_file_path_,
-                 base::Bind(&BurnManager::ConfigFileFetched,
-                            weak_ptr_factory_.GetWeakPtr())));
-}
-
-void BurnManager::ModelChanged(DownloadManager* manager) {
-  DCHECK_EQ(download_manager_, manager);
-
-  std::vector<DownloadItem*> downloads;
-  download_manager_->GetTemporaryDownloads(GetImageDir(), &downloads);
-  if (download_item_observer_added_)
-    return;
-  for (std::vector<DownloadItem*>::const_iterator it = downloads.begin();
-      it != downloads.end();
-      ++it) {
-    if ((*it)->GetURL() == config_file_url_) {
-      download_item_observer_added_ = true;
-      (*it)->AddObserver(this);
-      active_download_item_ = *it;
-      break;
-    }
-  }
-}
-
-void BurnManager::OnBurnDownloadStarted(bool success) {
-  if (!success)
-    ConfigFileFetched(false, "");
-}
-
 void BurnManager::CreateImageDir(Delegate* delegate) {
   if (image_dir_.empty()) {
     CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &image_dir_));
@@ -343,38 +281,37 @@ const FilePath& BurnManager::GetImageDir() {
   return image_dir_;
 }
 
-void BurnManager::FetchConfigFile(WebContents* web_contents,
-                                  Delegate* delegate) {
-  if (config_file_fetched_) {
+void BurnManager::FetchConfigFile(Delegate* delegate) {
+  if (config_file_fetched()) {
     delegate->OnConfigFileFetched(config_file_, true);
     return;
   }
   downloaders_.push_back(delegate->AsWeakPtr());
 
-  if (config_file_requested_)
+  if (config_fetcher_.get())
     return;
-  config_file_requested_ = true;
 
-  config_file_path_ = GetImageDir().Append(kConfigFileName);
-  download_manager_ = web_contents->GetBrowserContext()->GetDownloadManager();
-  download_manager_->AddObserver(this);
-  downloader()->AddListener(this, config_file_url_);
-  downloader()->DownloadFile(config_file_url_, config_file_path_, web_contents);
+  config_fetcher_.reset(content::URLFetcher::Create(
+      config_file_url_, content::URLFetcher::GET, this));
+  config_fetcher_->StartWithRequestContextGetter(
+      g_browser_process->system_request_context());
+}
+
+void BurnManager::OnURLFetchComplete(const content::URLFetcher* source) {
+  if (source == config_fetcher_.get()) {
+    std::string data;
+    const bool success =
+        source->GetStatus().status() == net::URLRequestStatus::SUCCESS;
+    if (success)
+      config_fetcher_->GetResponseAsString(&data);
+    config_fetcher_.reset();
+    ConfigFileFetched(success, data);
+  }
 }
 
 void BurnManager::ConfigFileFetched(bool fetched, const std::string& content) {
-  if (config_file_fetched_)
+  if (config_file_fetched())
     return;
-
-  if (active_download_item_) {
-    active_download_item_->RemoveObserver(this);
-    active_download_item_ = NULL;
-  }
-  download_item_observer_added_ = false;
-  if (download_manager_)
-    download_manager_->RemoveObserver(this);
-
-  config_file_fetched_ = fetched;
 
   if (fetched) {
     config_file_.reset(content);
