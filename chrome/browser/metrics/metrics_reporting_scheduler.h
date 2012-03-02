@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
+#include "base/timer.h"
 
 // Scheduler task to drive a MetricsService object's uploading.
 class MetricsReportingScheduler {
@@ -46,7 +47,7 @@ class MetricsReportingScheduler {
   // The MetricsService method to call when uploading should happen.
   base::Closure upload_callback_;
 
-  base::WeakPtrFactory<MetricsReportingScheduler> weak_ptr_factory_;
+  base::OneShotTimer<MetricsReportingScheduler> upload_timer_;
 
   // The interval between being told an upload is done and starting the next
   // upload.
@@ -55,10 +56,6 @@ class MetricsReportingScheduler {
   // Indicates that the scheduler is running (i.e., that Start has been called
   // more recently than Stop).
   bool running_;
-
-  // Indicates that a timer for triggering the next upload has already been
-  // started.
-  bool timer_pending_;
 
   // Indicates that the last triggered upload hasn't resolved yet.
   bool callback_pending_;

@@ -33,10 +33,8 @@ static const int kMaxBackoffMultiplier = 10;
 MetricsReportingScheduler::MetricsReportingScheduler(
     const base::Closure& upload_callback)
     : upload_callback_(upload_callback),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       upload_interval_(TimeDelta::FromSeconds(kInitialUploadIntervalSeconds)),
       running_(false),
-      timer_pending_(false),
       callback_pending_(false) {
 }
 
@@ -49,6 +47,8 @@ void MetricsReportingScheduler::Start() {
 
 void MetricsReportingScheduler::Stop() {
   running_ = false;
+  if (upload_timer_.IsRunning())
+    upload_timer_.Stop();
 }
 
 void MetricsReportingScheduler::UploadFinished(bool server_is_healthy,
@@ -78,23 +78,17 @@ void MetricsReportingScheduler::UploadCancelled() {
 }
 
 void MetricsReportingScheduler::TriggerUpload() {
-  timer_pending_ = false;
   callback_pending_ = true;
   upload_callback_.Run();
 }
 
 void MetricsReportingScheduler::ScheduleNextCallback() {
   DCHECK(running_);
-  if (timer_pending_ || callback_pending_)
+  if (upload_timer_.IsRunning() || callback_pending_)
     return;
 
-  timer_pending_ = true;
-
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&MetricsReportingScheduler::TriggerUpload,
-                 weak_ptr_factory_.GetWeakPtr()),
-      upload_interval_);
+  upload_timer_.Start(FROM_HERE, upload_interval_, this,
+                      &MetricsReportingScheduler::TriggerUpload);
 }
 
 void MetricsReportingScheduler::BackOffUploadInterval() {
