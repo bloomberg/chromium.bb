@@ -53,8 +53,16 @@ class GesturePoint {
   double last_touch_time() const { return last_touch_time_; }
   const gfx::Point& last_touch_position() const { return last_touch_position_; }
 
-  void set_touch_id(unsigned int touch_id) { touch_id_ = touch_id; }
-  unsigned int touch_id() const { return touch_id_; }
+  // point_id_ is used to drive GestureSequence::ProcessTouchEventForGesture.
+  // point_ids are maintained such that the set of point_ids is always
+  // contiguous, from 0 to the number of current touches.
+  // A lower point_id indicates that a touch occurred first.
+  // A negative point_id indicates that the GesturePoint is not currently
+  // associated with a touch.
+  void set_point_id(int point_id) { point_id_ = point_id; }
+  const int point_id() const { return point_id_; }
+
+  const bool in_use() const { return point_id_ >= 0; }
 
   double x_delta() const {
     return last_touch_position_.x() - first_touch_position_.x();
@@ -87,7 +95,7 @@ class GesturePoint {
 
   VelocityCalculator velocity_calculator_;
 
-  unsigned int touch_id_;
+  int point_id_;
   DISALLOW_COPY_AND_ASSIGN(GesturePoint);
 };
 

@@ -518,7 +518,8 @@ TEST_F(WindowTest, CaptureTests) {
   generator.PressLeftButton();
   EXPECT_EQ(1, delegate.mouse_event_count());
 
-  root_window()->DispatchTouchEvent(&touchev);
+  TouchEvent touchev2(ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 1);
+  root_window()->DispatchTouchEvent(&touchev2);
   EXPECT_EQ(0, delegate.touch_event_count());
 
   // Removing the capture window from parent should reset the capture window

@@ -325,7 +325,7 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
   press_point = w1->bounds().CenterPoint();
   aura::Window::ConvertPointToWindow(w1->parent(), root_window, &press_point);
   d1.set_activate(false);
-  aura::TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, 0);
+  aura::TouchEvent touchev2(ui::ET_TOUCH_PRESSED, press_point, 1);
   root_window->DispatchTouchEvent(&touchev2);
 
   // Window2 should still be active and focused.
@@ -547,13 +547,15 @@ TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
 
   aura::MouseEvent mouse_moved(
       ui::ET_MOUSE_MOVED, gfx::Point(0, 0), gfx::Point(0, 0), 0x0);
-  aura::TouchEvent touch_pressed(
+  aura::TouchEvent touch_pressed1(
       ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0);
+  aura::TouchEvent touch_pressed2(
+      ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 1);
 
   root_window_filter->set_update_cursor_visibility(true);
   root_window->DispatchMouseEvent(&mouse_moved);
   EXPECT_TRUE(root_window->cursor_shown());
-  root_window->DispatchTouchEvent(&touch_pressed);
+  root_window->DispatchTouchEvent(&touch_pressed1);
   EXPECT_FALSE(root_window->cursor_shown());
   root_window->DispatchMouseEvent(&mouse_moved);
   EXPECT_TRUE(root_window->cursor_shown());
@@ -563,7 +565,7 @@ TEST_F(RootWindowEventFilterTest, UpdateCursorVisibility) {
   root_window->DispatchMouseEvent(&mouse_moved);
   EXPECT_FALSE(root_window->cursor_shown());
   root_window->ShowCursor(true);
-  root_window->DispatchTouchEvent(&touch_pressed);
+  root_window->DispatchTouchEvent(&touch_pressed2);
   EXPECT_TRUE(root_window->cursor_shown());
 }
 

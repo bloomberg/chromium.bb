@@ -12,11 +12,6 @@
 #include "ui/aura/gestures/gesture_configuration.h"
 #include "ui/base/events.h"
 
-// TODO(sad): Pinch gestures currently always assume that the first two
-//            touch-points (i.e. at indices 0 and 1) are involved. This may not
-//            always be the case. This needs to be fixed eventually.
-//            http://crbug.com/113144
-
 namespace {
 
 // TODO(girard): Make these configurable in sync with this CL
@@ -99,18 +94,6 @@ enum EdgeStateSignatureType {
   GST_SCROLL_FIRST_CANCELLED =
       G(GS_SCROLL, 0, TS_CANCELLED, false),
 
-  GST_SCROLL_FIRST_PRESSED =
-      G(GS_SCROLL, 0, TS_PRESSED, false),
-
-  GST_SCROLL_SECOND_RELEASED =
-      G(GS_SCROLL, 1, TS_RELEASED, false),
-
-  GST_SCROLL_SECOND_MOVED =
-      G(GS_SCROLL, 1, TS_MOVED, false),
-
-  GST_SCROLL_SECOND_CANCELLED =
-      G(GS_SCROLL, 1, TS_CANCELLED, false),
-
   GST_SCROLL_SECOND_PRESSED =
       G(GS_SCROLL, 1, TS_PRESSED, false),
 
@@ -164,9 +147,6 @@ GestureSequence::GestureSequence(RootWindow* root_window)
       long_press_timer_(CreateTimer()),
       point_count_(0),
       root_window_(root_window) {
-  for (int i = 0; i < kMaxGesturePoints; ++i) {
-    points_[i].set_touch_id(i);
-  }
 }
 
 GestureSequence::~GestureSequence() {
@@ -185,7 +165,14 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   if (event.type() == ui::ET_TOUCH_PRESSED) {
     if (point_count_ == kMaxGesturePoints)
       return NULL;
-    ++point_count_;
+    GesturePoint* new_point = &points_[event.touch_id()];
+    // Eventually, we shouldn't be able to get two PRESSED events without either
+    // a RELEASE or CANCEL. Currently if a RELEASE is preventDefaulted,
+    // this could occur: crbug.com/116537
+    // TODO(tdresser): Enable this DCHECK, and remove the following condition
+    // DCHECK(!points_[event.touch_id()].in_use());
+    if (!points_[event.touch_id()].in_use())
+      new_point->set_point_id(point_count_++);
   }
 
   GestureState last_state = state_;
@@ -195,7 +182,10 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   GesturePoint& point = GesturePointForEvent(event);
   point.UpdateValues(event);
   flags_ = event.flags();
-  switch (Signature(state_, event.touch_id(), event.type(), false)) {
+  const int point_id = points_[event.touch_id()].point_id();
+  if (point_id < 0)
+    return NULL;
+  switch (Signature(state_, point_id, event.type(), false)) {
     case GST_NO_GESTURE_FIRST_PRESSED:
       TouchDown(event, point, gestures.get());
       set_state(GS_PENDING_SYNTHETIC_CLICK);
@@ -217,7 +207,6 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       NoGesture(event, point, gestures.get());
       break;
     case GST_SCROLL_FIRST_MOVED:
-    case GST_SCROLL_SECOND_MOVED:
       if (scroll_type_ == ST_VERTICAL ||
           scroll_type_ == ST_HORIZONTAL)
         BreakRailScroll(event, point, gestures.get());
@@ -226,12 +215,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       break;
     case GST_SCROLL_FIRST_RELEASED:
     case GST_SCROLL_FIRST_CANCELLED:
-    case GST_SCROLL_SECOND_RELEASED:
-    case GST_SCROLL_SECOND_CANCELLED:
       ScrollEnd(event, point, gestures.get());
       set_state(GS_NO_GESTURE);
       break;
-    case GST_SCROLL_FIRST_PRESSED:
     case GST_SCROLL_SECOND_PRESSED:
     case GST_PENDING_SYNTHETIC_CLICK_SECOND_PRESSED:
       PinchStart(event, point, gestures.get());
@@ -240,8 +226,8 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     case GST_PINCH_FIRST_MOVED:
     case GST_PINCH_SECOND_MOVED:
       if (PinchUpdate(event, point, gestures.get())) {
-        points_[0].UpdateForScroll();
-        points_[1].UpdateForScroll();
+        GetPointByPointId(0)->UpdateForScroll();
+        GetPointByPointId(1)->UpdateForScroll();
       }
       break;
     case GST_PINCH_FIRST_RELEASED:
@@ -265,15 +251,27 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   if (last_state == GS_PENDING_SYNTHETIC_CLICK && state_ != last_state)
     long_press_timer_->Stop();
 
-  if (event.type() == ui::ET_TOUCH_RELEASED)
+  // The set of point_ids must be contiguous and include 0.
+  // When a touch point is released, all points with ids greater than the
+  // released point must have their ids decremented, or the set of point_ids
+  // could end up with gaps.
+  if (event.type() == ui::ET_TOUCH_RELEASED) {
+    GesturePoint& old_point = points_[event.touch_id()];
+    for (int i = 0; i < kMaxGesturePoints; ++i) {
+      GesturePoint& point = points_[i];
+      if (point.point_id() > old_point.point_id())
+        point.set_point_id(point.point_id() - 1);
+    }
+    old_point.Reset();
     --point_count_;
+  }
 
   return gestures.release();
 }
 
 void GestureSequence::Reset() {
   set_state(GS_NO_GESTURE);
-  for (int i = 0; i < point_count_; ++i)
+  for (int i = 0; i < kMaxGesturePoints; ++i)
     points_[i].Reset();
 }
 
@@ -290,6 +288,17 @@ base::OneShotTimer<GestureSequence>* GestureSequence::CreateTimer() {
 GesturePoint& GestureSequence::GesturePointForEvent(
     const TouchEvent& event) {
   return points_[event.touch_id()];
+}
+
+GesturePoint* GestureSequence::GetPointByPointId(int point_id) {
+  DCHECK(0 <= point_id && point_id < kMaxGesturePoints);
+  for (int i = 0; i < kMaxGesturePoints; ++i) {
+    GesturePoint& point = points_[i];
+    if (point.in_use() && point.point_id() == point_id)
+      return &point;
+  }
+  NOTREACHED();
+  return NULL;
 }
 
 void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
@@ -482,16 +491,14 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
 }
 
 void GestureSequence::AppendLongPressGestureEvent() {
-  // TODO(tdresser) - this may not always be the first point
-  const GesturePoint& point = points_[0];
+  const GesturePoint* point = GetPointByPointId(0);
   GestureEvent* gesture = new GestureEvent(
       ui::ET_GESTURE_LONG_PRESS,
-      point.first_touch_position().x(),
-      point.first_touch_position().y(),
+      point->first_touch_position().x(),
+      point->first_touch_position().y(),
       flags_,
-      base::Time::FromDoubleT(point.last_touch_time()),
-      point.touch_id(), 0.f);
-
+      base::Time::FromDoubleT(point->last_touch_time()),
+      point->point_id(), 0.f);
   root_window_->DispatchGestureEvent(gesture);
 }
 
@@ -514,13 +521,16 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
          state_ == GS_PENDING_SYNTHETIC_CLICK);
   AppendTapDownGestureEvent(point, gestures);
 
-  pinch_distance_current_ = points_[0].Distance(points_[1]);
+  const GesturePoint* point1 = GetPointByPointId(0);
+  const GesturePoint* point2 = GetPointByPointId(1);
+
+  pinch_distance_current_ = point1->Distance(*point2);
   pinch_distance_start_ = pinch_distance_current_;
-  AppendPinchGestureBegin(points_[0], points_[1], gestures);
+  AppendPinchGestureBegin(*point1, *point2, gestures);
 
   if (state_ == GS_PENDING_SYNTHETIC_CLICK) {
-    gfx::Point center = points_[0].last_touch_position().Middle(
-        points_[1].last_touch_position());
+    gfx::Point center = point1->last_touch_position().Middle(
+        point2->last_touch_position());
     AppendScrollGestureBegin(point, center, gestures);
   }
 
@@ -530,23 +540,27 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
 bool GestureSequence::PinchUpdate(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PINCH);
-  float distance = points_[0].Distance(points_[1]);
+
+  const GesturePoint* point1 = GetPointByPointId(0);
+  const GesturePoint* point2 = GetPointByPointId(1);
+
+  float distance = point1->Distance(*point2);
   if (abs(distance - pinch_distance_current_) <
       GestureConfiguration::minimum_pinch_update_distance_in_pixels()) {
     // The fingers didn't move towards each other, or away from each other,
     // enough to constitute a pinch. But perhaps they moved enough in the same
     // direction to do a two-finger scroll.
-    if (!points_[0].DidScroll(event,
+    if (!point1->DidScroll(event,
         GestureConfiguration::minimum_distance_for_pinch_scroll_in_pixels()) ||
-        !points_[1].DidScroll(event,
+        !point2->DidScroll(event,
         GestureConfiguration::minimum_distance_for_pinch_scroll_in_pixels()))
       return false;
 
-    gfx::Point center = points_[0].last_touch_position().Middle(
-                        points_[1].last_touch_position());
+    gfx::Point center = point1->last_touch_position().Middle(
+                        point2->last_touch_position());
     AppendScrollGestureUpdate(point, center, gestures);
   } else {
-    AppendPinchGestureUpdate(points_[0], points_[1],
+    AppendPinchGestureUpdate(*point1, *point2,
         distance / pinch_distance_current_, gestures);
     pinch_distance_current_ = distance;
   }
@@ -556,8 +570,12 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
 bool GestureSequence::PinchEnd(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PINCH);
-  float distance = points_[0].Distance(points_[1]);
-  AppendPinchGestureEnd(points_[0], points_[1],
+
+  const GesturePoint* point1 = GetPointByPointId(0);
+  const GesturePoint* point2 = GetPointByPointId(1);
+
+  float distance = point1->Distance(*point2);
+  AppendPinchGestureEnd(*point1, *point2,
       distance / pinch_distance_start_, gestures);
 
   pinch_distance_start_ = 0;
