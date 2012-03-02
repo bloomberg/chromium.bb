@@ -436,10 +436,11 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
       prefs.gl_multisampling_enabled = false;
 
     // Accelerated video and animation are slower than regular when using a
-    // software 3d rasterizer.
+    // software 3d rasterizer. 3D CSS may also be too slow to be worthwhile.
     if (gpu_data_manager->ShouldUseSoftwareRendering()) {
       prefs.accelerated_video_enabled = false;
       prefs.accelerated_animation_enabled = false;
+      prefs.accelerated_layers_enabled = false;
     }
   }
 
