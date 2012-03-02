@@ -58,6 +58,80 @@ function declareTests(tester) {
       'nonexistent_pexe_only',
       'pnacl_bad_doesnotexist_pexe_only.nmf',
       'NaCl module load failed: PnaclCoordinator: pexe load failed.');
+
+  tester.addAsyncTest('Test clean directory',
+    // All that should be left after all tests run is empty directories.
+    // This means we will need to update this test with a whitelist,
+    // if we start adding metadata files or things like that.
+    function(test_status) {
+
+      var errorHandler = test_status.wrap(function() {
+        test_status.fail('Unexpected failure in intermediate steps');
+      });
+
+      function toArray(list) {
+        return Array.prototype.slice.call(list || [], 0);
+      }
+
+      function CheckDirectoriesRecursively(dir, doneCallback) {
+        var dirReader = dir.createReader();
+        var entries = [];
+
+        var checkMoreEntries = test_status.wrap(function(entries) {
+          // Done when it's actually an empty directory.
+          if (entries.length == 0) {
+             doneCallback();
+             return;
+          }
+
+          var expected_callbacks = entries.length;
+          var current_callbacks = 0;
+          var nextCallback = test_status.wrap(function() {
+            current_callbacks += 1;
+            if (current_callbacks == expected_callbacks) {
+              doneCallback();
+            }
+          });
+
+          entries.forEach(test_status.wrap(function(entry, i) {
+            if (entry.isDirectory) {
+              CheckDirectoriesRecursively(entry, nextCallback);
+            } else {
+              test_status.fail('Found a left over file ' + entry.name);
+            }
+          }));
+        });
+
+        // Call the reader.readEntries() until no more results are returned.
+        var readEntries = test_status.wrap(function() {
+          dirReader.readEntries (
+            test_status.wrap(function(results) {
+              if (!results.length) {
+                checkMoreEntries(entries);
+              } else {
+                entries = entries.concat(toArray(results));
+                readEntries();
+              }
+            }), errorHandler);
+        });
+
+        readEntries(); // Start reading dirs.
+      }
+
+      var onInitFs = test_status.wrap(function(fs) {
+        var doneCallback = test_status.wrap(function() {
+          test_status.pass();
+        });
+        CheckDirectoriesRecursively(fs.root, doneCallback);
+      });
+
+      // Note: The file system has been prefixed as of Google Chrome 12:
+      window.requestFileSystem =
+        window.requestFileSystem || window.webkitRequestFileSystem;
+      window.requestFileSystem(window.TEMPORARY,
+                               1024*1024, onInitFs, errorHandler);
+    }
+  );
 }
 
 
