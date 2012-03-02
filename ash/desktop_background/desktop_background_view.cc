@@ -30,7 +30,7 @@ static int RoundPositive(double x) {
 
 DesktopBackgroundView::DesktopBackgroundView() {
   wallpaper_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_AURA_WALLPAPER).ToSkBitmap();
+      IDR_AURA_WALLPAPER_1).ToSkBitmap();
   wallpaper_.buildMipMap(false);
 }
 
@@ -71,8 +71,7 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
        wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(),
        0, 0, width(), height(),
        true);
-  }
-  else {
+  } else {
     // Center the wallpaper in the destination rectangle (Skia will crop
     // as needed). We might decide later to tile small solid color images.
     canvas->DrawBitmapInt(wallpaper_, (width() - wallpaper_.width()) / 2,
