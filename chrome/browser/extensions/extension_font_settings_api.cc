@@ -12,11 +12,13 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "content/public/browser/font_list_async.h"
 
 namespace {
 
 const char kGenericFamilyKey[] = "genericFamily";
 const char kFontNameKey[] = "fontName";
+const char kLocalizedNameKey[] = "localizedName";
 const char kScriptKey[] = "script";
 
 // Format for per-script font preference keys.
@@ -43,11 +45,11 @@ bool GetFontNamePrefPath(DictionaryValue* details, std::string* pref_path)
     std::string script;
     if (!details->GetString(kScriptKey, &script))
       return false;
-    *pref_path = base::StringPrintf(kWebKitPerScriptFontPrefFormat,
+    *pref_path = StringPrintf(kWebKitPerScriptFontPrefFormat,
                                    generic_family.c_str(),
                                    script.c_str());
   } else {
-    *pref_path = base::StringPrintf(kWebKitGlobalFontPrefFormat,
+    *pref_path = StringPrintf(kWebKitGlobalFontPrefFormat,
                                    generic_family.c_str());
   }
 
@@ -93,6 +95,49 @@ bool SetFontNameFunction::RunImpl() {
   ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
   prefs->SetExtensionControlledPref(extension_id(), pref_path.c_str(),
                                     kExtensionPrefsScopeRegular,
-                                    base::Value::CreateStringValue(font_name));
+                                    Value::CreateStringValue(font_name));
+  return true;
+}
+
+bool GetFontListFunction::RunImpl() {
+  content::GetFontListAsync(
+      Bind(&GetFontListFunction::FontListHasLoaded, this));
+  return true;
+}
+
+void GetFontListFunction::FontListHasLoaded(scoped_ptr<ListValue> list) {
+  bool success = CopyFontsToResult(list.get());
+  SendResponse(success);
+}
+
+bool GetFontListFunction::CopyFontsToResult(ListValue* fonts)
+{
+  scoped_ptr<ListValue> result(new ListValue());
+  for (ListValue::iterator it = fonts->begin(); it != fonts->end(); ++it) {
+    ListValue* font_list_value;
+    if (!(*it)->GetAsList(&font_list_value)) {
+      NOTREACHED();
+      return false;
+    }
+
+    std::string name;
+    if (!font_list_value->GetString(0, &name)) {
+      NOTREACHED();
+      return false;
+    }
+
+    std::string localized_name;
+    if (!font_list_value->GetString(1, &localized_name)) {
+      NOTREACHED();
+      return false;
+    }
+
+    DictionaryValue* font_name = new DictionaryValue();
+    font_name->Set(kFontNameKey, Value::CreateStringValue(name));
+    font_name->Set(kLocalizedNameKey, Value::CreateStringValue(localized_name));
+    result->Append(font_name);
+  }
+
+  result_.reset(result.release());
   return true;
 }

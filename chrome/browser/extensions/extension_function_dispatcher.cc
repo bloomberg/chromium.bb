@@ -458,6 +458,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetContentSettingFunction>();
 
   // Font settings.
+  RegisterFunction<GetFontListFunction>();
   RegisterFunction<GetFontNameFunction>();
   RegisterFunction<SetFontNameFunction>();
 

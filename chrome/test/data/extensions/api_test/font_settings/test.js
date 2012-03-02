@@ -45,5 +45,16 @@ chrome.test.runTests([
     fs.getFontName({
       genericFamily: 'sansserif'
     }, expect({fontName: expected}, message));
+  },
+
+  function getFontList() {
+    var message = 'getFontList should return an array of objects with ' +
+        'fontName and localizedName properties.';
+    fs.getFontList(chrome.test.callbackPass(function(value) {
+      chrome.test.assertTrue(value.length > 0,
+                             "Font list is not expected to be empty.");
+      chrome.test.assertEq('string', typeof(value[0].fontName), message);
+      chrome.test.assertEq('string', typeof(value[0].localizedName), message);
+    }));
   }
 ]);

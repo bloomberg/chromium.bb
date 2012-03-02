@@ -20,4 +20,14 @@ class SetFontNameFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.setFontName")
 };
 
+class GetFontListFunction : public AsyncExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.getFontList")
+
+ private:
+  void FontListHasLoaded(scoped_ptr<base::ListValue> list);
+  bool CopyFontsToResult(base::ListValue* fonts);
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__

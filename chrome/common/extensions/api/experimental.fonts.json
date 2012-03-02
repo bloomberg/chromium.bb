@@ -1,11 +1,28 @@
 [
   {
     "namespace": "experimental.fontSettings",
+    "types": [
+      {
+        "id": "FontName",
+        "type": "object",
+        "description": "Represents a font name.",
+        "properties": {
+          "fontName": {
+            "type": "string",
+            "description": "The font name."
+          },
+          "localizedName": {
+            "type": "string",
+            "description": "The font name localized for the current locale."
+          }
+        }
+      }
+    ],
     "functions": [
       {
         "name": "getFontName",
         "type": "function",
-        "description": "Gets the font name of the current setting for a given script and font family.",
+        "description": "Gets the font name of the current setting for a given script and generic font family.",
         "parameters": [
           {
             "name": "details",
@@ -46,7 +63,7 @@
       {
         "name": "setFontName",
         "type": "function",
-        "description": "Sets the font name of the current setting for a given script and font family.",
+        "description": "Sets the font name of the current setting for a given script and generic font family.",
         "parameters": [
           {
             "name": "details",
@@ -74,6 +91,24 @@
             "name": "callback",
             "optional": "true",
             "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getFontList",
+        "type": "function",
+        "description": "Gets a list of fonts on the system.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "results",
+                "type": "array",
+                "items": { "$ref": "FontName" }
+              }
+            ]
           }
         ]
       }
