@@ -214,10 +214,12 @@ var TimelineView = (function() {
                               LogEventType.UDP_BYTES_SENT),
                           TimelineView.BYTES_SENT_ID);
 
-      this.addDataSeries_(new DiskCacheTransferRateDataSeries(),
+      this.addDataSeries_(new DiskCacheTransferRateDataSeries(
+                              LogEventType.ENTRY_READ_DATA),
                           TimelineView.DISK_CACHE_BYTES_READ_ID);
 
-      this.addDataSeries_(new DiskCacheTransferRateDataSeries(),
+      this.addDataSeries_(new DiskCacheTransferRateDataSeries(
+                              LogEventType.ENTRY_WRITE_DATA),
                           TimelineView.DISK_CACHE_BYTES_WRITTEN_ID);
 
       this.graphView_.setDataSeries(this.dataSeries_);
