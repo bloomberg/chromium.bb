@@ -1518,7 +1518,7 @@ def main(argv):
   # again. We preserve SUDO_USER here in case an ebuild depends on it.
   if portage_upgrade:
     args = ["sudo", "-E", "SUDO_USER=%s" % os.environ.get("SUDO_USER", "")]
-    args += ['parallel_emerge'] + parallel_emerge_args
+    args += [os.path.abspath(sys.argv[0])] + parallel_emerge_args
     args += ["--exclude=sys-apps/portage"]
     os.execvp("sudo", args)
 
