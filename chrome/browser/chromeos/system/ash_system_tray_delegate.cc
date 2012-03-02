@@ -32,7 +32,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual ~SystemTrayDelegate() {
-    AudioHandler::GetInstance()->RemoveVolumeObserver(this);
+    AudioHandler* audiohandler = AudioHandler::GetInstance();
+    if (audiohandler)
+      audiohandler->RemoveVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   }
 
