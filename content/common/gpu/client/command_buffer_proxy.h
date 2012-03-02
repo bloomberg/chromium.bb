@@ -148,6 +148,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   GpuChannelHost* channel_;
   int route_id_;
   unsigned int flush_count_;
+  int32 last_put_offset_;
 
   // Tasks to be invoked in echo responses.
   std::queue<base::Closure> echo_tasks_;
