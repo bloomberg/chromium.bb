@@ -73,10 +73,8 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
   }
 
   // Control messages are not deferred and can be handled out of order with
-  // respect to routed ones. Except for Echo, which must be deferred in order
-  // to respect the asynchronous Mac SwapBuffers.
-  if (message.routing_id() == MSG_ROUTING_CONTROL &&
-      message.type() != GpuChannelMsg_Echo::ID)
+  // respect to routed ones.
+  if (message.routing_id() == MSG_ROUTING_CONTROL)
     return OnControlMessageReceived(message);
 
   if (message.type() == GpuCommandBufferMsg_GetStateFast::ID) {
@@ -229,7 +227,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                                     OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_DestroyCommandBuffer,
                                     OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_Echo, OnEcho);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_WillGpuSwitchOccur,
                                     OnWillGpuSwitchOccur)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CloseChannel, OnCloseChannel)
@@ -250,9 +247,7 @@ void GpuChannel::HandleMessage() {
     processed_get_state_fast_ =
         (message->type() == GpuCommandBufferMsg_GetStateFast::ID);
     // Handle deferred control messages.
-    if (message->routing_id() == MSG_ROUTING_CONTROL)
-      OnControlMessageReceived(*message);
-    else if (!router_.RouteMessage(*message)) {
+    if (!router_.RouteMessage(*message)) {
       // Respond to sync messages even if router failed to route.
       if (message->is_sync()) {
         IPC::Message* reply = IPC::SyncMessage::GenerateReply(&*message);
@@ -374,10 +369,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id,
     Send(reply_message);
 }
 
-void GpuChannel::OnEcho(const IPC::Message& message) {
-  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEcho");
-  Send(new IPC::Message(message));
-}
 
 void GpuChannel::OnWillGpuSwitchOccur(bool is_creating_context,
                                       gfx::GpuPreference gpu_preference,

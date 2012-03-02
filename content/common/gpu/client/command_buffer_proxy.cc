@@ -349,7 +349,8 @@ bool CommandBufferProxy::Echo(const base::Closure& callback) {
     return false;
   }
 
-  if (!Send(new GpuChannelMsg_Echo(GpuCommandBufferMsg_EchoAck(route_id_)))) {
+  if (!Send(new GpuCommandBufferMsg_Echo(route_id_,
+                    GpuCommandBufferMsg_EchoAck(route_id_)))) {
     return false;
   }
 

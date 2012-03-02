@@ -103,6 +103,7 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                                     OnSetSharedStateBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_SetParent,
                                     OnSetParent);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Echo, OnEcho);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetState, OnGetState);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_GetStateFast,
                                     OnGetStateFast);
@@ -139,6 +140,11 @@ bool GpuCommandBufferStub::IsScheduled() {
 
 bool GpuCommandBufferStub::HasMoreWork() {
   return scheduler_.get() && scheduler_->HasMoreWork();
+}
+
+void GpuCommandBufferStub::OnEcho(const IPC::Message& message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEcho");
+  Send(new IPC::Message(message));
 }
 
 void GpuCommandBufferStub::Destroy() {

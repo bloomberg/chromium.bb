@@ -127,8 +127,6 @@ class GpuChannel : public IPC::Channel::Listener,
       IPC::Message* reply_message);
   void OnDestroyCommandBuffer(int32 route_id, IPC::Message* reply_message);
 
-  void OnEcho(const IPC::Message& message);
-
   void OnWillGpuSwitchOccur(bool is_creating_context,
                             gfx::GpuPreference gpu_preference,
                             IPC::Message* reply_message);

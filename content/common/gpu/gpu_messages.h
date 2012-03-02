@@ -298,10 +298,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
-// Request that the GPU process reply with the given message.
-IPC_MESSAGE_CONTROL1(GpuChannelMsg_Echo,
-                     IPC::Message /* reply */)
-
 // Asks the GPU process whether the creation or destruction of a
 // command buffer on the given GPU (integrated or discrete) will cause
 // the system to switch which GPU it is using. All contexts that share
@@ -424,6 +420,11 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetWindowSize,
 // destroyed for some reason.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Destroyed,
                     gpu::error::ContextLostReason /* reason */)
+
+// Request that the GPU process reply with the given message. Reply may be
+// delayed.
+IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_Echo,
+                    IPC::Message /* reply */)
 
 // Response to a GpuChannelMsg_Echo message.
 IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EchoAck)
