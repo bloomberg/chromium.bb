@@ -5,6 +5,10 @@
 
 Import('env')
 
+# This test does not make any sense for pure pnacl
+if env.Bit('pnacl_stop_with_pexe'):
+  Return()
+
 # If this test is failing on the bots, you can find the seed
 # from the output of the bot. Look for "--seed=".
 # To reproduce the exact problem, set settings['seed'] below

@@ -214,7 +214,10 @@ def _SetEnvForPnacl(env, root):
   arch = env['TARGET_FULLARCH']
   assert arch in ['arm', 'arm-thumb2', 'x86-32', 'x86-64']
 
-  arch_flag = ' -arch %s' % arch
+  if env.Bit('pnacl_stop_with_pexe'):
+    arch_flag = ''
+  else:
+    arch_flag = ' -arch %s' % arch
 
   if env.Bit('nacl_glibc'):
     subroot = root + '/glibc'
@@ -269,7 +272,6 @@ def _SetEnvForPnacl(env, root):
   # tests. Don't add flags here unless they always need to be preserved.
   pnacl_cxx_flags = ''
   pnacl_cc_flags = ' -std=gnu99'
-  pnacl_cc_native_flags = ' -std=gnu99' + arch_flag
   pnacl_ld_flags = ' ' + ' '.join(env['PNACL_BCLDFLAGS'])
 
   if env.Bit('nacl_pic'):
@@ -335,6 +337,11 @@ def _SetEnvForSdkManually(env):
 
 def PNaClForceNative(env):
   assert(env.Bit('bitcode'))
+  if env.Bit('pnacl_stop_with_pexe'):
+    env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
+                CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
+    return
+
   env.Replace(OBJSUFFIX='.o',
               SHLIBSUFFIX='.so')
   arch_flag = ' -arch ${TARGET_FULLARCH}'
@@ -368,13 +375,17 @@ def PNaClGetNNaClEnv(env):
   # clear the bitcode bit, and then reload naclsdk.py
   native_env = env.Clone()
   native_env.ClearBits('bitcode')
-  native_env = native_env.Clone(tools = ['naclsdk'])
-  # These are unfortunately clobbered by running Tool.
-  native_env.Replace(EXTRA_CFLAGS=env['EXTRA_CFLAGS'],
-                     EXTRA_CXXFLAGS=env['EXTRA_CXXFLAGS'],
-                     CCFLAGS=env['CCFLAGS'],
-                     CFLAGS=env['CFLAGS'],
-                     CXXFLAGS=env['CXXFLAGS'])
+  native_env = native_env.Clone(tools=['naclsdk'])
+  if native_env.Bit('pnacl_stop_with_pexe'):
+    native_env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
+                       CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
+  else:
+    # These are unfortunately clobbered by running Tool.
+    native_env.Replace(EXTRA_CFLAGS=env['EXTRA_CFLAGS'],
+                       EXTRA_CXXFLAGS=env['EXTRA_CXXFLAGS'],
+                       CCFLAGS=env['CCFLAGS'],
+                       CFLAGS=env['CFLAGS'],
+                       CXXFLAGS=env['CXXFLAGS'])
   return native_env
 
 
@@ -383,6 +394,10 @@ def PNaClGetNNaClEnv(env):
 # For example: __i686__, __arm__, __x86_64__
 def AddBiasForPNaCl(env):
   assert(env.Bit('bitcode'))
+  if env.Bit('pnacl_stop_with_pexe'):
+    env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
+                CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
+    return
 
   if env.Bit('target_arm'):
     env.AppendUnique(CCFLAGS=['--pnacl-arm-bias'],
@@ -506,12 +521,17 @@ def generate(env):
   env.Tool('ar')
   env.Tool('as')
 
+  if env.Bit('pnacl_stop_with_pexe'):
+    suffix = '.pexe'
+  else:
+    suffix = '.nexe'
+
   env.Replace(
       COMPONENT_LINKFLAGS=[''],
       COMPONENT_LIBRARY_LINK_SUFFIXES=['.pso', '.so', '.a'],
       _RPATH='',
       COMPONENT_LIBRARY_DEBUG_SUFFIXES=[],
-      PROGSUFFIX='.nexe',
+      PROGSUFFIX=suffix,
       # adding BASE_ AND EXTRA_ flags to common command lines
       # The suggested usage pattern is:
       # BASE_XXXFLAGS can only be set in this file

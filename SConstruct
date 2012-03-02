@@ -315,6 +315,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
 
+  BitFromArgument(env, 'pnacl_stop_with_pexe', default=False,
+    desc='use pnacl to generate just pexes instead of nexes')
+
   # This only controls whether the sandboxed translator is itself dynamically
   # linked, not whether it generates dynamic nexes (or links against glibc)
   #  --nacl_glibc should still control that.
@@ -3404,9 +3407,12 @@ nacl_env.AddMethod(RawSyscallObjects)
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
-# For ARM: Can only build arm IRT w/ bitcode=1.
-if not nacl_irt_env.Bit('target_arm'):
+# For x86 systems we build the IRT using the nnacl TC even when
+# the pnacl TC is used otherwise
+if nacl_irt_env.Bit('target_x86_64') or nacl_irt_env.Bit('target_x86_32'):
   nacl_irt_env.ClearBits('bitcode')
+# The irt is not subject to the pexe contraint!
+nacl_irt_env.ClearBits('pnacl_stop_with_pexe')
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
 # we needed to do to get the destination directory reset.

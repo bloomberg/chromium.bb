@@ -5,6 +5,10 @@
 
 Import('env')
 
+# This test does not make any sense for pure pnacl
+if env.Bit('pnacl_stop_with_pexe'):
+  Return()
+
 # Case-by-case calling Convention Test for PNaCl and nacl-gcc compatibility.
 
 # We make 4 modules.
