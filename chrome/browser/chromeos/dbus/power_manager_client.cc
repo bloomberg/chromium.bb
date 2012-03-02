@@ -66,6 +66,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kPowerManagerServiceName,
         dbus::ObjectPath(power_manager::kPowerManagerServicePath));
 
+    session_manager_proxy_ = bus->GetObjectProxy(
+        login_manager::kSessionManagerServiceName,
+        dbus::ObjectPath(login_manager::kSessionManagerServicePath));
+
     // Monitor the D-Bus signal for brightness changes. Only the power
     // manager knows the actual brightness level. We don't cache the
     // brightness level in Chrome as it'll make things less reliable.
@@ -101,7 +105,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    power_manager_proxy_->ConnectToSignal(
+    session_manager_proxy_->ConnectToSignal(
         chromium::kChromiumInterface,
         chromium::kLockScreenSignal,
         base::Bind(&PowerManagerClientImpl::ScreenLockSignalReceived,
@@ -109,14 +113,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    power_manager_proxy_->ConnectToSignal(
+    session_manager_proxy_->ConnectToSignal(
         chromium::kChromiumInterface,
         chromium::kUnlockScreenSignal,
         base::Bind(&PowerManagerClientImpl::ScreenUnlockSignalReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
-    power_manager_proxy_->ConnectToSignal(
+    session_manager_proxy_->ConnectToSignal(
         chromium::kChromiumInterface,
         chromium::kUnlockScreenFailedSignal,
         base::Bind(&PowerManagerClientImpl::ScreenUnlockFailedSignalReceived,
@@ -406,6 +410,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
 
   dbus::ObjectProxy* power_manager_proxy_;
+  dbus::ObjectProxy* session_manager_proxy_;
   ObserverList<Observer> observers_;
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_;
 
