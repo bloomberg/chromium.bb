@@ -17,7 +17,7 @@ bool ChromeEncryptor::EncryptString(const std::string& plaintext,
 
 bool ChromeEncryptor::DecryptString(const std::string& ciphertext,
                                     std::string* plaintext) {
-  return ::Encryptor::EncryptString(ciphertext, plaintext);
+  return ::Encryptor::DecryptString(ciphertext, plaintext);
 }
 
 }  // namespace browser_sync
