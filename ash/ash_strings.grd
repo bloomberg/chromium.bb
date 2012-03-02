@@ -122,6 +122,20 @@ This file contains the strings for ash.
       <message name="IDS_AURA_LAUNCHER_OVERFLOW_NAME" desc="The title used for the Aura overflow button in the launcher">
         Overflow Button
       </message>
+
+      <!-- Status tray items -->
+      <message name="IDS_ASH_STATUS_TRAY_HELP_AND_SETTINGS" desc="The label used for the help-and-settings item in the status tray.">
+        Help and Settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SHUT_DOWN" desc="The label used for the button in the status tray to shut down the system.">
+        Shut down
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_SIGN_OUT" desc="The label used for the button in the status tray to sign out of the system.">
+        Sign out
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
+        Lock
+      </message>
     </messages>
   </release>
 </grit>

@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/utf_string_conversions.h"
-#include "grit/ui_resources.h"
+#include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/button.h"
@@ -23,8 +23,8 @@ namespace {
 // alignment and hover-effects.
 class TrayButton : public views::TextButton {
  public:
-  TrayButton(views::ButtonListener* listener, std::string text)
-      : views::TextButton(listener, ASCIIToUTF16(text)),
+  TrayButton(views::ButtonListener* listener, const string16& text)
+      : views::TextButton(listener, text),
         hover_(false),
         hover_bg_(views::Background::CreateSolidBackground(SkColorSetARGB(
                10, 0, 0, 0))) {
@@ -91,9 +91,14 @@ class UserView : public views::View,
     layout->set_spread_blank_space(true);
     button_container->SetLayoutManager(layout);
 
-    shutdown_ = new TrayButton(this, std::string("Shut down"));
-    signout_ = new TrayButton(this, std::string("Sign out"));
-    lock_ = new TrayButton(this, std::string("Lock"));
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+
+    shutdown_ = new TrayButton(this, bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_SHUT_DOWN));
+    signout_ = new TrayButton(this, bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_SIGN_OUT));
+    lock_ = new TrayButton(this, bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_LOCK));
     button_container->AddChildView(shutdown_);
     button_container->AddChildView(signout_);
     button_container->AddChildView(lock_);

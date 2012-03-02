@@ -8,6 +8,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -26,12 +27,14 @@ class SettingsView : public views::View {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
           0, 0, 3));
 
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* icon = new views::ImageView;
-    icon->SetImage(ui::ResourceBundle::GetSharedInstance().
-        GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToSkBitmap());
+    icon->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).
+        ToSkBitmap());
     AddChildView(icon);
 
-    label_ = new views::Label(ASCIIToUTF16("Help and Settings"));
+    label_ = new views::Label(bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_HELP_AND_SETTINGS));
     AddChildView(label_);
   }
 
