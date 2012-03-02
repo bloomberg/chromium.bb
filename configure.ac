@@ -61,5 +61,6 @@ AC_CONFIG_FILES([Makefile
 		 src/Makefile
 		 src/wayland-server.pc
 		 src/wayland-client.pc
-		 protocol/Makefile])
+		 protocol/Makefile
+		 tests/Makefile])
 AC_OUTPUT
