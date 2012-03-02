@@ -8,17 +8,18 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // Manages vertex attributes.
-class VertexAttribManager {
+class GPU_EXPORT VertexAttribManager {
  public:
   // Info about Vertex Attributes. This is used to track what the user currently
   // has bound on each Vertex Attribute so that checking can be done at
   // glDrawXXX time.
-  class VertexAttribInfo {
+  class GPU_EXPORT VertexAttribInfo {
    public:
     typedef std::list<VertexAttribInfo*> VertexAttribInfoList;
     struct Vec4 {

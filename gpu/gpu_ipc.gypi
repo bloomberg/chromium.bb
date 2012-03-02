@@ -4,8 +4,7 @@
 
 {
   'dependencies': [
-    'gles2_c_lib',
-    '../base/base.gyp:base',
+    '../ipc/ipc.gyp:ipc',
   ],
   'include_dirs': [
     '..',

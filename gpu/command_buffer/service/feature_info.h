@@ -9,12 +9,13 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // FeatureInfo records the features that are available for a ContextGroup.
-class FeatureInfo : public base::RefCounted<FeatureInfo> {
+class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
  public:
   typedef scoped_refptr<FeatureInfo> Ref;
 

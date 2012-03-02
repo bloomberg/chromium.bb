@@ -10,16 +10,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // This class keeps track of the renderbuffers and whether or not they have
 // been cleared.
-class RenderbufferManager {
+class GPU_EXPORT RenderbufferManager {
  public:
   // Info about Renderbuffers currently in the system.
-  class RenderbufferInfo : public base::RefCounted<RenderbufferInfo> {
+  class GPU_EXPORT RenderbufferInfo
+      : public base::RefCounted<RenderbufferInfo> {
    public:
     typedef scoped_refptr<RenderbufferInfo> Ref;
 
