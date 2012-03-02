@@ -81,7 +81,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Return whether this context is incognito. Default is false.
   // This doesn't belong here; http://crbug.com/89628
-  virtual bool IsOffTheRecord() = 0;
+  virtual bool IsOffTheRecord() const = 0;
 
   // Returns the DownloadManager associated with this context.
   virtual content::DownloadManager* GetDownloadManager() = 0;

@@ -117,7 +117,7 @@ FilePath ShellBrowserContext::GetPath() {
   return path_;
 }
 
-bool ShellBrowserContext::IsOffTheRecord()  {
+bool ShellBrowserContext::IsOffTheRecord() const {
   return false;
 }
 

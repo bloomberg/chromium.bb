@@ -370,7 +370,7 @@ class MockTestingProfile : public TestingProfile {
  public:
   MockTestingProfile() {}
   MOCK_METHOD0(GetExtensionEventRouter, ExtensionEventRouter*());
-  MOCK_METHOD0(IsOffTheRecord, bool());
+  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTestingProfile);

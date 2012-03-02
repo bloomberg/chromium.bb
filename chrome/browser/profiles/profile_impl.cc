@@ -563,7 +563,7 @@ ProfileImpl::~ProfileImpl() {
     if (session_restore_enabled_)
       BrowserContext::SaveSessionState(this);
   } else if (clear_local_state_on_exit_) {
-    BrowserContext::ClearLocalOnDestruction(this);    
+    BrowserContext::ClearLocalOnDestruction(this);
   }
 
   StopCreateSessionServiceTimer();
@@ -651,7 +651,7 @@ FilePath ProfileImpl::GetPath() {
   return path_;
 }
 
-bool ProfileImpl::IsOffTheRecord() {
+bool ProfileImpl::IsOffTheRecord() const {
   return false;
 }
 

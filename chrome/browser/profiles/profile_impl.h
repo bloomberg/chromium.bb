@@ -66,7 +66,7 @@ class ProfileImpl : public Profile,
 
   // Profile implementation:
   virtual std::string GetProfileName() OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
+  virtual bool IsOffTheRecord() const OVERRIDE;
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;

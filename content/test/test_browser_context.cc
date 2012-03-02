@@ -31,7 +31,7 @@ FilePath TestBrowserContext::GetPath() {
   return browser_context_dir_.path();
 }
 
-bool TestBrowserContext::IsOffTheRecord() {
+bool TestBrowserContext::IsOffTheRecord() const {
   return false;
 }
 

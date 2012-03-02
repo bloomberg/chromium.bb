@@ -439,7 +439,7 @@ std::string TestingProfile::GetProfileName() {
   return std::string("testing_profile");
 }
 
-bool TestingProfile::IsOffTheRecord() {
+bool TestingProfile::IsOffTheRecord() const {
   return incognito_;
 }
 

@@ -188,9 +188,6 @@ class Profile : public content::BrowserContext {
   // the browser frame.
   virtual std::string GetProfileName() = 0;
 
-  // Return whether this profile is incognito. Default is false.
-  virtual bool IsOffTheRecord() = 0;
-
   // Return the incognito version of this profile. The returned pointer
   // is owned by the receiving profile. If the receiving profile is off the
   // record, the same profile is returned.

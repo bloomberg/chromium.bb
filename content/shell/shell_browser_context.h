@@ -28,7 +28,7 @@ class ShellBrowserContext : public BrowserContext {
 
   // BrowserContext implementation.
   virtual FilePath GetPath() OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
+  virtual bool IsOffTheRecord() const OVERRIDE;
   virtual DownloadManager* GetDownloadManager() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_H_
 #pragma once
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -38,16 +41,18 @@ class PasswordManager : public LoginModel,
   // on the page.
   void Autofill(const webkit::forms::PasswordForm& form_for_autofill,
                 const webkit::forms::PasswordFormMap& best_matches,
-                const webkit::forms::PasswordForm* const preferred_match,
+                const webkit::forms::PasswordForm& preferred_match,
                 bool wait_for_username) const;
 
   // LoginModel implementation.
   virtual void SetObserver(LoginModelObserver* observer) OVERRIDE;
 
+  // TODO(isherman): This should not be public, but is currently being used by
+  // the LoginPrompt code.
   // When a form is submitted, we prepare to save the password but wait
   // until we decide the user has successfully logged in. This is step 1
   // of 2 (see SavePassword).
-  void ProvisionallySavePassword(webkit::forms::PasswordForm form);
+  void ProvisionallySavePassword(const webkit::forms::PasswordForm& form);
 
   // content::WebContentsObserver overrides.
   virtual void DidStopLoading() OVERRIDE;
@@ -56,14 +61,14 @@ class PasswordManager : public LoginModel,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // TODO(isherman): This should not be public, but is currently being used by
+  // the LoginPrompt code.
   void OnPasswordFormsFound(
       const std::vector<webkit::forms::PasswordForm>& forms);
   void OnPasswordFormsVisible(
       const std::vector<webkit::forms::PasswordForm>& visible_forms);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PasswordManagerTest, FormSeenThenLeftPage);
-
   // Note about how a PasswordFormManager can transition from
   // pending_login_managers_ to provisional_save_manager_ and the infobar.
   //
@@ -78,20 +83,10 @@ class PasswordManager : public LoginModel,
   // When a form is "seen" on a page, a PasswordFormManager is created
   // and stored in this collection until user navigates away from page.
 
-  // Clear any pending saves
-  void ClearProvisionalSave();
+  // Is password autofill enabled for the current profile?
+  bool IsEnabled() const;
 
-  // Notification that the user navigated away from the current page.
-  // Unless this is a password form submission, for our purposes this
-  // means we're done with the current page, so we can clean-up.
-  void DidNavigate();
-
-  typedef std::vector<PasswordFormManager*> LoginManagers;
-  LoginManagers pending_login_managers_;
-
-  // Deleter for pending_login_managers_ when PasswordManager is deleted (e.g
-  // tab closes) on a page with a password form, thus containing login managers.
-  STLElementDeleter<LoginManagers> login_managers_deleter_;
+  ScopedVector<PasswordFormManager> pending_login_managers_;
 
   // When the user submits a password/credential, this contains the
   // PasswordFormManager for the form in question until we deem the login
@@ -103,7 +98,7 @@ class PasswordManager : public LoginModel,
 
   // Our delegate for carrying out external operations.  This is typically the
   // containing TabContents.
-  PasswordManagerDelegate* delegate_;
+  PasswordManagerDelegate* const delegate_;
 
   // The LoginModelObserver (i.e LoginView) requiring autofill.
   LoginModelObserver* observer_;

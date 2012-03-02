@@ -149,7 +149,7 @@ class TestingProfile : public Profile {
 
   // content::BrowserContext
   virtual FilePath GetPath() OVERRIDE;
-  virtual bool IsOffTheRecord() OVERRIDE;
+  virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::DownloadManager* GetDownloadManager() OVERRIDE;
   // Returns a testing ContextGetter (if one has been created via
   // CreateRequestContext) or NULL. This is not done on-demand for two reasons:

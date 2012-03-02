@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,8 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -206,10 +208,49 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   manager()->OnPasswordFormsFound(observed);  // The initial load.
   manager()->OnPasswordFormsVisible(observed);  // The initial layout.
 
-  manager()->DidNavigate();
+  content::LoadCommittedDetails details;
+  content::FrameNavigateParams params;
+  params.password_form = form;
+  manager()->DidNavigateAnyFrame(details, params);
 
   // No expected calls.
   manager()->DidStopLoading();
+}
+
+TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
+  // Test that navigating a subframe does not prevent us from showing the save
+  // password infobar.
+  std::vector<PasswordForm*> result;  // Empty password store.
+  EXPECT_CALL(delegate_, FillPasswordForm(_)).Times(Exactly(0));
+  EXPECT_CALL(*store_, GetLogins(_,_))
+      .WillOnce(DoAll(WithArg<1>(InvokeConsumer(0, result)), Return(0)));
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  manager()->OnPasswordFormsFound(observed);  // The initial load.
+  manager()->OnPasswordFormsVisible(observed);  // The initial layout.
+
+  scoped_ptr<PasswordFormManager> form_to_save;
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_to_save)));
+
+  // Simulate navigating a sub-frame.
+  content::LoadCommittedDetails details;
+  content::FrameNavigateParams params;
+  manager()->DidNavigateAnyFrame(details, params);
+
+  // Simulate navigating the real page.
+  params.password_form = form;
+  manager()->DidNavigateAnyFrame(details, params);
+
+  // Now the password manager waits for the navigation to complete.
+  manager()->DidStopLoading();
+
+  ASSERT_FALSE(NULL == form_to_save.get());
+  EXPECT_CALL(*store_, AddLogin(FormMatches(form)));
+
+  // Simulate saving the form, as if the info bar was accepted.
+  form_to_save->Save();
 }
 
 TEST_F(PasswordManagerTest, FormSubmitFailedLogin) {

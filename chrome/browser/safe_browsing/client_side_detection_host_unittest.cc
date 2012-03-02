@@ -123,7 +123,7 @@ class MockTestingProfile : public TestingProfile {
   MockTestingProfile() {}
   virtual ~MockTestingProfile() {}
 
-  MOCK_METHOD0(IsOffTheRecord, bool());
+  MOCK_CONST_METHOD0(IsOffTheRecord, bool());
 };
 
 class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {

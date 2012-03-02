@@ -169,7 +169,7 @@ FilePath OffTheRecordProfileImpl::GetPath() {
   return profile_->GetPath();
 }
 
-bool OffTheRecordProfileImpl::IsOffTheRecord() {
+bool OffTheRecordProfileImpl::IsOffTheRecord() const {
   return true;
 }
 
