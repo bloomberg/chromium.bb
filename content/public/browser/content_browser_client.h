@@ -339,6 +339,7 @@ class ContentBrowserClient {
   // the renderer. The content layer will add its own settings, and then it's up
   // to the embedder to update it if it wants.
   virtual void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+                                   const GURL& url,
                                    WebPreferences* prefs) = 0;
 
   // Inspector setting was changed and should be persisted.

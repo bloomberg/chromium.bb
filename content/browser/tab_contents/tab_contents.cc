@@ -470,7 +470,7 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.default_device_scale_factor = default_device_scale_factor;
 
-  content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, &prefs);
+  content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 
   return prefs;
 }

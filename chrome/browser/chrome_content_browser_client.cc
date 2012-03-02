@@ -1302,7 +1302,7 @@ bool ChromeContentBrowserClient::IsFastShutdownPossible() {
 }
 
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
-    RenderViewHost* rvh, WebPreferences* web_prefs) {
+    RenderViewHost* rvh, const GURL& url, WebPreferences* web_prefs) {
   Profile* profile = Profile::FromBrowserContext(
       rvh->process()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
@@ -1442,6 +1442,16 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->accelerated_painting_enabled = false;
     web_prefs->accelerated_plugins_enabled = false;
   }
+
+#if defined(FILE_MANAGER_EXTENSION)
+  // Override the default of suppressing HW compositing for WebUI pages for the
+  // file manager, which is implemented using WebUI but wants HW acceleration
+  // for video decode & render.
+  if (url.spec() == chrome::kChromeUIFileManagerURL) {
+    web_prefs->accelerated_compositing_enabled = true;
+    web_prefs->accelerated_2d_canvas_enabled = true;
+  }
+#endif
 }
 
 void ChromeContentBrowserClient::UpdateInspectorSetting(

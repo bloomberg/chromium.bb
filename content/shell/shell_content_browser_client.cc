@@ -300,6 +300,7 @@ bool ShellContentBrowserClient::IsFastShutdownPossible() {
 }
 
 void ShellContentBrowserClient::OverrideWebkitPrefs(RenderViewHost* rvh,
+                                                    const GURL& url,
                                                     WebPreferences* prefs) {
 }
 

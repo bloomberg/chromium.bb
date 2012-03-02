@@ -273,6 +273,7 @@ bool MockContentBrowserClient::IsFastShutdownPossible() {
 }
 
 void MockContentBrowserClient::OverrideWebkitPrefs(RenderViewHost* rvh,
+                                                   const GURL& url,
                                                    WebPreferences* prefs) {
 }
 

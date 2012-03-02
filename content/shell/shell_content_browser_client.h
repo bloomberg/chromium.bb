@@ -151,6 +151,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
   virtual void OverrideWebkitPrefs(RenderViewHost* rvh,
+                                   const GURL& url,
                                    WebPreferences* prefs) OVERRIDE;
   virtual void UpdateInspectorSetting(RenderViewHost* rvh,
                                       const std::string& key,
