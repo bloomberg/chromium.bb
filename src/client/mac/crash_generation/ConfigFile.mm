@@ -117,7 +117,9 @@ BOOL ConfigFile::AppendCrashTimeParameters(const char *processStartTimeString) {
   if (processStartTimeString) {
     time_t processStartTime = strtol(processStartTimeString, NULL, 10);
     time_t processUptime = tv.tv_sec - processStartTime;
-    sprintf(processUptimeString, "%zd", processUptime);
+    // Store the uptime in milliseconds.
+    sprintf(processUptimeString, "%llu",
+        static_cast<unsigned long long int>(processUptime) * 1000);
     if (!AppendConfigString(BREAKPAD_PROCESS_UP_TIME, processUptimeString))
       return false;
   }

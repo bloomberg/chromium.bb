@@ -131,13 +131,15 @@ typedef bool (*BreakpadFilterCallback)(int exception_type,
 // completeness.  They are calculated by Breakpad during initialization &
 // crash-dump generation, or entered in by the user.
 //
-// BREAKPAD_PROCESS_START_TIME       The time the process started.
+// BREAKPAD_PROCESS_START_TIME       The time, in seconds since the Epoch, the
+//                                   process started
 //
-// BREAKPAD_PROCESS_CRASH_TIME       The time the process crashed.
+// BREAKPAD_PROCESS_CRASH_TIME       The time, in seconds since the Epoch, the
+//                                   process crashed.
 //
-// BREAKPAD_PROCESS_UP_TIME          The total time the process has been
-//                                   running.  This parameter is not set
-//                                   until the crash-dump-generation phase.
+// BREAKPAD_PROCESS_UP_TIME          The total time in milliseconds the process
+//                                   has been running.  This parameter is not
+//                                   set until the crash-dump-generation phase.
 //
 // BREAKPAD_SERVER_PARAMETER_PREFIX  This prefix is used by Breakpad
 //                                   internally, because Breakpad uses
