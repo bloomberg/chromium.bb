@@ -15,6 +15,17 @@ import urllib
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
+# Contains the valid build types in the order that they are dumped.
+BUILD_TYPE_DUMP_ORDER = [
+    constants.PALADIN_TYPE,
+    constants.INCREMENTAL_TYPE,
+    constants.BUILD_FROM_SOURCE_TYPE,
+    constants.CANARY_TYPE,
+    constants.CHROOT_BUILDER_TYPE,
+    constants.CHROOT_BUILDER_BOARD,
+    constants.CHROME_PFQ_TYPE,
+    constants.REFRESH_PACKAGES_TYPE]
+
 
 def OverrideConfigForTrybot(build_config):
   """Apply trybot-specific configuration settings.
@@ -75,6 +86,9 @@ config = {}
 # All settings must be documented.
 
 _settings = dict(
+
+# name -- The name of the config.
+  name=None,
 
 # boards -- A list of boards to build.
   boards=None,
@@ -177,7 +191,7 @@ _settings = dict(
   gs_path=GS_PATH_DEFAULT,
 
 # TODO(sosa): Deprecate binary.
-# build_type -- Type of builder.  Checks constants.VALID_BUILD_TYPES.
+# build_type -- Type of builder.  Check constants.BUILD_TYPE_DUMP_ORDER.
   build_type=constants.PFQ_TYPE,
 
   archive_build_debug=False,
@@ -238,7 +252,6 @@ _settings = dict(
 
 # git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
   git_sync=False,
-
 )
 
 
@@ -290,6 +303,7 @@ class _config(dict):
     config_dict = _default.derive(self, *inherits, **overrides)
     config_dict.update((key, urllib.quote(config_dict[key]))
       for key in self._URLQUOTED_PARAMS if config_dict.get(key))
+    config_dict['name'] = name
 
     config[name] = config_dict
 
@@ -531,6 +545,7 @@ _config.add_raw_config('x86-generic-asan',
   profile='asan',
   prebuilts=False,
   useflags=['asan'],
+  build_type=constants.BUILD_FROM_SOURCE_TYPE,
 )
 
 #
@@ -713,6 +728,20 @@ _arm_release.add_config('arm-ironhide-release',
 )
 
 
+def _InjectDisplayPosition(config_source):
+  """Add field to help buildbot masters order builders on the waterfall."""
+  def _GetSortKey(items):
+    config = items[1]
+    # Allow configs to override the display_position.
+    return (config.get('display_position', 1000000),
+            BUILD_TYPE_DUMP_ORDER.index(config['build_type']),
+            config['internal'], config['vm_tests'])
+
+  source = sorted(config_source.iteritems(), key=_GetSortKey)
+  return dict((name, dict(value.items() + [('display_position', idx)]))
+              for idx, (name, value) in enumerate(source))
+
+
 def main(argv=None):
   if not argv:
     argv = sys.argv[1:]
@@ -724,25 +753,33 @@ def main(argv=None):
                     default=None, metavar='file_name',
                     help=('Compare current config against a saved on disk '
                           'serialized version of a config.'))
-
   parser.add_option('-d', '--dump', action='store_true', default=False,
                     help=('Dump the configs in JSON format.'))
+  parser.add_option('--for-buildbot', action='store_true', default=False,
+                    help="Include the display position in json data.")
 
   (options, args) = parser.parse_args(argv)
+
   if options.compare and options.dump:
     parser.error('Cannot run with --load and --dump at the same time!')
   elif not options.compare and not options.dump:
     parser.print_help()
     sys.exit(0)
 
+  convert = lambda x:x
+  if options.for_buildbot:
+    convert = _InjectDisplayPosition
+
+  my_config = convert(config)
+
   if options.dump:
-      print json.dumps(config)
+    print json.dumps(my_config)
   elif options.compare:
     with open(options.compare, 'rb') as f:
-      original = json.load(f)
+      original = convert(json.load(f))
 
-    for key in sorted(set(config.keys() + original.keys())):
-      obj1, obj2 = original.get(key), config.get(key)
+    for key in sorted(set(my_config.keys() + original.keys())):
+      obj1, obj2 = original.get(key), my_config.get(key)
       if obj1 == obj2:
         continue
       elif obj1 is None:

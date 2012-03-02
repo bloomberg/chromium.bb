@@ -48,6 +48,11 @@ class CBuildBotTest(mox.MoxTestBase):
       self.assertFalse(missing_keys, ('Config %s is missing values %s' %
                                       (build_name, list(missing_keys))))
 
+  def testConfigsHaveName(self):
+    """ Configs must have names set."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      self.assertTrue(build_name == config['name'])
+
   def testConfigUseflags(self):
     """ Useflags must be lists.
         Strings are interpreted as arrays of characters for this, which is not
@@ -122,7 +127,7 @@ class CBuildBotTest(mox.MoxTestBase):
     """Verifies that all configs use valid build types."""
     for build_name, config in cbuildbot_config.config.iteritems():
       self.assertTrue(
-          config['build_type'] in constants.VALID_BUILD_TYPES,
+          config['build_type'] in cbuildbot_config.BUILD_TYPE_DUMP_ORDER,
           'Config %s: has unexpected build_type value.' % build_name)
 
   def testGccDependancy(self):
@@ -191,6 +196,18 @@ class CBuildBotTest(mox.MoxTestBase):
     configs = json.loads(output)
     self.assertFalse(not configs)
 
+
+  def testJSONBuildbotDumpHasOrder(self):
+    """Make sure config export functionality works."""
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    output = subprocess.Popen(['./cbuildbot_config.py', '--dump',
+                               '--for-buildbot'],
+                              stdout=subprocess.PIPE, cwd=cwd).communicate()[0]
+    configs = json.loads(output)
+    for name, cfg in configs.iteritems():
+      self.assertTrue(cfg['display_position'] is not None)
+
+    self.assertFalse(not configs)
 
 if __name__ == '__main__':
   unittest.main()
