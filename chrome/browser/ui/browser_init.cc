@@ -127,7 +127,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
 #include "chrome/installer/util/auto_launch_util.h"
 #endif
 
@@ -493,7 +492,7 @@ enum LaunchMode {
   LM_SHORTCUT_UNKNOWN,        // Launched from user-defined shortcut.
   LM_SHORTCUT_QUICKLAUNCH,    // Launched from the quick launch bar.
   LM_SHORTCUT_DESKTOP,        // Launched from a desktop shortcut.
-  LM_SHORTCUT_TASKBAR,        // Launched from the taskbar.
+  LM_SHORTCUT_STARTMENU,      // Launched from start menu.
   LM_LINUX_MAC_BEOS           // Other OS buckets start here.
 };
 
@@ -507,14 +506,10 @@ LaunchMode GetLaunchShortcutKind() {
   if (si.dwFlags & 0x800) {
     if (!si.lpTitle)
       return LM_SHORTCUT_NONAME;
-    string16 shortcut(si.lpTitle);
+    std::wstring shortcut(si.lpTitle);
     // The windows quick launch path is not localized.
-    if (shortcut.find(L"\\Quick Launch\\") != string16::npos) {
-      if (base::win::GetVersion() >= base::win::VERSION_WIN7)
-        return LM_SHORTCUT_TASKBAR;
-      else
-        return LM_SHORTCUT_QUICKLAUNCH;
-    }
+    if (shortcut.find(L"\\Quick Launch\\") != std::wstring::npos)
+      return LM_SHORTCUT_QUICKLAUNCH;
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string appdata_path;
     env->GetVar("USERPROFILE", &appdata_path);
