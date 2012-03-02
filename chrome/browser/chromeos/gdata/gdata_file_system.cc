@@ -472,6 +472,10 @@ void GDataFileSystem::CreateDirectoryInternal(
       // this function.
       break;
     }
+    default: {
+      NOTREACHED();
+      break;
+    }
   }
 
   // Do we have a parent directory here as well? We can't then create target
@@ -588,10 +592,11 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   // Not done yet with recursive directory creation?
   if (params.target_directory_path != params.created_directory_path &&
       params.is_recursive) {
-    CreateDirectory(params.target_directory_path,
-                    params.is_exclusive,
-                    params.is_recursive,
-                    params.callback);
+    CreateDirectoryInternal(params.target_directory_path,
+                            params.is_exclusive,
+                            params.is_recursive,
+                            params.callback,
+                            params.proxy);
     return;
   }
 
@@ -755,7 +760,6 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   return base::PLATFORM_FILE_OK;
 }
 
-
 base::PlatformFileError GDataFileSystem::AddNewDirectory(
     const FilePath& directory_path, base::Value* entry_value) {
   if (!entry_value)
@@ -779,6 +783,9 @@ base::PlatformFileError GDataFileSystem::AddNewDirectory(
   if (!file)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
+  // Check if parent is a directory since in theory since this is a callback
+  // something could in the meantime have nuked the parent dir and created a
+  // file with the exact same name.
   GDataDirectory* parent_dir = file->AsGDataDirectory();
   if (!parent_dir)
     return base::PLATFORM_FILE_ERROR_FAILED;

@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include <string>
 #include <vector>
 
@@ -45,7 +46,7 @@ class GDataFileSystemTest : public testing::Test {
 
   // Loads test json file as root ("/gdata") element.
   void LoadRootFeedDocument(const std::string& filename) {
-    LoadSubdirFeedDocument(FilePath("gdata"), filename);
+    LoadSubdirFeedDocument(FilePath(FILE_PATH_LITERAL("gdata")), filename);
   }
 
   // Loads test json file as subdirectory content of |directory_path|.
@@ -183,10 +184,10 @@ TEST_F(GDataFileSystemTest, SearchRootDirectory) {
       new MockFindFileDelegate();
 
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnDirectoryFound(FilePath("gdata"), _))
+              OnDirectoryFound(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1);
 
-  file_system_->FindFileByPath(FilePath("gdata"),
+  file_system_->FindFileByPath(FilePath(FILE_PATH_LITERAL("gdata")),
                                mock_find_file_delegate);
 }
 
@@ -196,13 +197,13 @@ TEST_F(GDataFileSystemTest, SearchExistingFile) {
       new MockFindFileDelegate();
 
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnEnterDirectory(FilePath("gdata"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
   EXPECT_CALL(*mock_find_file_delegate.get(), OnFileFound(_))
       .Times(1);
 
-  file_system_->FindFileByPath(FilePath("gdata/File 1.txt"),
+  file_system_->FindFileByPath(FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")),
                                mock_find_file_delegate);
 }
 
@@ -212,14 +213,15 @@ TEST_F(GDataFileSystemTest, SearchExistingDocument) {
       new MockFindFileDelegate();
 
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnEnterDirectory(FilePath("gdata"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
   EXPECT_CALL(*mock_find_file_delegate.get(), OnFileFound(_))
       .Times(1);
 
-  file_system_->FindFileByPath(FilePath("gdata/Document 1.gdocument"),
-                               mock_find_file_delegate);
+  file_system_->FindFileByPath(
+      FilePath(FILE_PATH_LITERAL("gdata/Document 1.gdocument")),
+      mock_find_file_delegate);
 }
 
 TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
@@ -228,24 +230,26 @@ TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
   scoped_refptr<MockFindFileDelegate> mock_find_file_delegate =
       new MockFindFileDelegate();
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnEnterDirectory(FilePath("gdata"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
   EXPECT_CALL(*mock_find_file_delegate.get(), OnFileFound(_))
       .Times(1);
-  file_system_->FindFileByPath(FilePath("gdata/Duplicate Name.txt"),
-                               mock_find_file_delegate);
+  file_system_->FindFileByPath(
+      FilePath(FILE_PATH_LITERAL("gdata/Duplicate Name.txt")),
+      mock_find_file_delegate);
 
   scoped_refptr<MockFindFileDelegate> mock_find_file_delegate2 =
       new MockFindFileDelegate();
   EXPECT_CALL(*mock_find_file_delegate2.get(),
-              OnEnterDirectory(FilePath("gdata"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
   EXPECT_CALL(*mock_find_file_delegate2.get(), OnFileFound(_))
       .Times(1);
-  file_system_->FindFileByPath(FilePath("gdata/Duplicate Name (2).txt"),
-                               mock_find_file_delegate2);
+  file_system_->FindFileByPath(
+      FilePath(FILE_PATH_LITERAL("gdata/Duplicate Name (2).txt")),
+      mock_find_file_delegate2);
 }
 
 TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
@@ -254,13 +258,13 @@ TEST_F(GDataFileSystemTest, SearchExistingDirectory) {
       new MockFindFileDelegate();
 
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnEnterDirectory(FilePath("gdata"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
   EXPECT_CALL(*mock_find_file_delegate.get(), OnDirectoryFound(_, _))
       .Times(1);
 
-  file_system_->FindFileByPath(FilePath("gdata/Directory 1"),
+  file_system_->FindFileByPath(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
                                mock_find_file_delegate);
 }
 
@@ -271,15 +275,16 @@ TEST_F(GDataFileSystemTest, SearchNonExistingFile) {
       new MockFindFileDelegate();
 
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnEnterDirectory(FilePath("gdata"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
   EXPECT_CALL(*mock_find_file_delegate.get(),
               OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND))
       .Times(1);
 
-  file_system_->FindFileByPath(FilePath("gdata/nonexisting.file"),
-                               mock_find_file_delegate);
+  file_system_->FindFileByPath(
+      FilePath(FILE_PATH_LITERAL("gdata/nonexisting.file")),
+      mock_find_file_delegate);
 }
 
 TEST_F(GDataFileSystemTest, StopFileSearch) {
@@ -289,28 +294,30 @@ TEST_F(GDataFileSystemTest, StopFileSearch) {
 
   // Stop on first directory entry.
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnEnterDirectory(FilePath("gdata"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_TERMINATES));
 
-  file_system_->FindFileByPath(FilePath("gdata/Directory 1"),
+  file_system_->FindFileByPath(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
                                mock_find_file_delegate);
 }
 
 TEST_F(GDataFileSystemTest, SearchInSubdir) {
   LoadRootFeedDocument("root_feed.json");
-  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+  LoadSubdirFeedDocument(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+                         "subdir_feed.json");
 
   scoped_refptr<MockFindFileDelegate> mock_find_file_delegate =
       new MockFindFileDelegate();
 
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnEnterDirectory(FilePath("gdata"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata")), _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
 
   EXPECT_CALL(*mock_find_file_delegate.get(),
-              OnEnterDirectory(FilePath("gdata/Directory 1"), _))
+              OnEnterDirectory(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+                               _))
       .Times(1)
       .WillOnce(Return(FindFileDelegate::FIND_FILE_CONTINUES));
 
@@ -318,27 +325,31 @@ TEST_F(GDataFileSystemTest, SearchInSubdir) {
       .Times(1);
 
   file_system_->FindFileByPath(
-      FilePath("gdata/Directory 1/SubDirectory File 1.txt"),
+      FilePath(FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt")),
       mock_find_file_delegate);
 }
 
 TEST_F(GDataFileSystemTest, FilePathTests) {
   LoadRootFeedDocument("root_feed.json");
-  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+  LoadSubdirFeedDocument(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+                         "subdir_feed.json");
 
-  FindAndTestFilePath(FilePath("gdata/File 1.txt"));
-  FindAndTestFilePath(FilePath("gdata/Directory 1"));
-  FindAndTestFilePath(FilePath("gdata/Directory 1/SubDirectory File 1.txt"));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")));
+  FindAndTestFilePath(
+      FilePath(FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt")));
 }
 
 TEST_F(GDataFileSystemTest, RemoveFiles) {
   LoadRootFeedDocument("root_feed.json");
-  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+  LoadSubdirFeedDocument(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+                         "subdir_feed.json");
 
-  FilePath nonexisting_file("gdata/Dummy file.txt");
-  FilePath file_in_root("gdata/File 1.txt");
-  FilePath dir_in_root("gdata/Directory 1");
-  FilePath file_in_subdir("gdata/Directory 1/SubDirectory File 1.txt");
+  FilePath nonexisting_file(FILE_PATH_LITERAL("gdata/Dummy file.txt"));
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  FilePath dir_in_root(FILE_PATH_LITERAL("gdata/Directory 1"));
+  FilePath file_in_subdir(
+      FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt"));
 
   EXPECT_TRUE(FindFile(file_in_root) != NULL);
   EXPECT_TRUE(FindFile(dir_in_root) != NULL);
@@ -363,22 +374,22 @@ TEST_F(GDataFileSystemTest, RemoveFiles) {
   EXPECT_FALSE(RemoveFile(nonexisting_file));
 
   // Try removing root file element.
-  EXPECT_FALSE(RemoveFile(FilePath("gdata")));
+  EXPECT_FALSE(RemoveFile(FilePath(FILE_PATH_LITERAL("gdata"))));
 }
-
 
 TEST_F(GDataFileSystemTest, CreateDirectory) {
   LoadRootFeedDocument("root_feed.json");
-  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+  LoadSubdirFeedDocument(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+                         "subdir_feed.json");
 
   // Create directory in root.
-  FilePath dir_path("gdata/New Folder 1");
+  FilePath dir_path(FILE_PATH_LITERAL("gdata/New Folder 1"));
   EXPECT_TRUE(FindFile(dir_path) == NULL);
   AddDirectoryFromFile(dir_path, "directory_entry_atom.json");
   EXPECT_TRUE(FindFile(dir_path) != NULL);
 
   // Create directory in a sub dirrectory.
-  FilePath subdir_path("gdata/New Folder 1/New Folder 2");
+  FilePath subdir_path(FILE_PATH_LITERAL("gdata/New Folder 1/New Folder 2"));
   EXPECT_TRUE(FindFile(subdir_path) == NULL);
   AddDirectoryFromFile(subdir_path, "directory_entry_atom.json");
   EXPECT_TRUE(FindFile(subdir_path) != NULL);
@@ -386,56 +397,60 @@ TEST_F(GDataFileSystemTest, CreateDirectory) {
 
 TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
   LoadRootFeedDocument("root_feed.json");
-  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+  LoadSubdirFeedDocument(FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
+                         "subdir_feed.json");
 
   GURL last_dir_content_url;
   FilePath first_missing_parent_path;
 
   // Create directory in root.
-  FilePath dir_path("gdata/New Folder 1");
+  FilePath dir_path(FILE_PATH_LITERAL("gdata/New Folder 1"));
   EXPECT_EQ(
+      GDataFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path,
           &last_dir_content_url,
-          &first_missing_parent_path),
-      GDataFileSystem::FOUND_MISSING);
-  EXPECT_EQ(dir_path, first_missing_parent_path);
+          &first_missing_parent_path));
+  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("gdata/New Folder 1")),
+            first_missing_parent_path);
   EXPECT_TRUE(last_dir_content_url.is_empty());    // root directory.
 
   // Missing folders in subdir of an existing folder.
-  FilePath dir_path2("gdata/Directory 1/New Folder 2");
+  FilePath dir_path2(FILE_PATH_LITERAL("gdata/Directory 1/New Folder 2"));
   EXPECT_EQ(
+      GDataFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path2,
           &last_dir_content_url,
-          &first_missing_parent_path),
-      GDataFileSystem::FOUND_MISSING);
-  EXPECT_EQ(dir_path2, first_missing_parent_path);
+          &first_missing_parent_path));
+  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("gdata/Directory 1/New Folder 2")),
+            first_missing_parent_path);
   EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
 
   // Missing two folders on the path.
-  FilePath dir_path3 = dir_path2.Append("Another Foder");
+  FilePath dir_path3 = dir_path2.Append(FILE_PATH_LITERAL("Another Foder"));
   EXPECT_EQ(
+      GDataFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path3,
           &last_dir_content_url,
-          &first_missing_parent_path),
-      GDataFileSystem::FOUND_MISSING);
-  EXPECT_EQ(dir_path3.DirName(), first_missing_parent_path);
+          &first_missing_parent_path));
+  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("gdata/Directory 1/New Folder 2")),
+            first_missing_parent_path);
   EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
 
   // Folders on top of an existing file.
   EXPECT_EQ(
+      GDataFileSystem::FOUND_INVALID,
       file_system_->FindFirstMissingParentDirectory(
-          FilePath("gdata/File 1.txt/BadDir"),
+          FilePath(FILE_PATH_LITERAL("gdata/File 1.txt/BadDir")),
           &last_dir_content_url,
-          &first_missing_parent_path),
-      GDataFileSystem::FOUND_INVALID);
+          &first_missing_parent_path));
 
   // Existing folder.
   EXPECT_EQ(
+      GDataFileSystem::DIRECTORY_ALREADY_PRESENT,
       file_system_->FindFirstMissingParentDirectory(
-          FilePath("gdata/Directory 1"),
+          FilePath(FILE_PATH_LITERAL("gdata/Directory 1")),
           &last_dir_content_url,
-          &first_missing_parent_path),
-      GDataFileSystem::DIRECTORY_ALREADY_PRESENT);
+          &first_missing_parent_path));
 }
 
 }   // namespace gdata

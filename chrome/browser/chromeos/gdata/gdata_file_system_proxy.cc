@@ -50,10 +50,7 @@ class FindFileDelegateReplyBase : public FindFileDelegate {
       : file_system_(file_system),
         search_file_path_(search_file_path),
         require_content_(require_content) {
-    BrowserThread::ID thread_id;
-    CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));
-    replay_message_proxy_ =
-        BrowserThread::GetMessageLoopProxyForThread(thread_id);
+    reply_message_proxy_ = MessageLoopProxy::current();
   }
 
   virtual ~FindFileDelegateReplyBase() {}
@@ -98,7 +95,7 @@ class FindFileDelegateReplyBase : public FindFileDelegate {
   FilePath search_file_path_;
   // True if the final directory content is required.
   bool require_content_;
-  scoped_refptr<MessageLoopProxy> replay_message_proxy_;
+  scoped_refptr<MessageLoopProxy> reply_message_proxy_;
 };
 
 // GetFileInfoDelegate is used to handle results of proxy's content search
@@ -138,7 +135,7 @@ class GetFileInfoDelegate : public FindFileDelegateReplyBase {
              const base::PlatformFileInfo& file_info,
              const FilePath& platform_path) {
     if (!callback_.is_null()) {
-      replay_message_proxy_->PostTask(FROM_HERE,
+      reply_message_proxy_->PostTask(FROM_HERE,
           Bind(&GetFileInfoDelegate::ReplyOnCallingThread,
                this,
                result,
@@ -218,7 +215,7 @@ class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
              const std::vector<base::FileUtilProxy::Entry>& file_list,
              bool has_more) {
     if (!callback_.is_null()) {
-      replay_message_proxy_->PostTask(FROM_HERE,
+      reply_message_proxy_->PostTask(FROM_HERE,
           Bind(&ReadDirectoryDelegate::ReplyOnCallingThread,
                this,
                result,

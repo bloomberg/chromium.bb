@@ -305,7 +305,7 @@ class GDataFileSystem : public ProfileKeyedService {
     FOUND_INVALID,
     // Found missing directory segment while searching for given directory.
     FOUND_MISSING,
-    // Found target directory, it's already exists.
+    // Found target directory, it already exists.
     DIRECTORY_ALREADY_PRESENT,
   };
 
