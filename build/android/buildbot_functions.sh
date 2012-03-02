@@ -118,6 +118,16 @@ function bb_setup_goma_internal {
 # $@: make args.
 # Use goma if possible; degrades to non-Goma if needed.
 function bb_goma_make {
+  # Disable Goma
+  # Seems to work on "Android FYI" 
+  #  http://build.chromium.org/p/chromium.fyi/builders/Chromium%20Linux%20Android/builds/6421/steps/Compile/logs/stdio
+  # and Linux trybots
+  #  http://build.chromium.org/p/chromium/builders/Linux%20x64/builds/23995/steps/compile/logs/stdio
+  # But not on Android trybots?
+  #  http://build.chromium.org/p/tryserver.chromium/builders/android/builds/2136/steps/Compile/logs/stdio
+  make -j${JOBS} "$@"
+  return
+
   bb_setup_goma_internal
 
   if [ "${GOMA_DIR}" = "" ]; then
