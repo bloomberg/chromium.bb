@@ -183,7 +183,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Delete) {
 }
 
 // TCM ID - 7573511
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DeleteAll) {
+// Flaky on Mac and Windows: http://crbug.com/111399
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_DeleteAll DISABLED_DeleteAll
+#else
+#define MAYBE_DeleteAll DeleteAll
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, MAYBE_DeleteAll) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
