@@ -536,6 +536,29 @@
             "description": "Device's mount path."
           }
         ]
+      },
+      {
+        "name": "toggleFullscreen",
+        "description": "Switches fullscreen mode on/off for the File Browser.",
+        "parameters": []
+      },
+      {
+        "name": "isFullscreen",
+        "description": "Checks if the browser is in fullscreen mode.",
+        "parameters": [
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": false,
+            "parameters": [
+              {
+                "name" : "result",
+                "type": "boolean",
+                "description": "Whether the browser is in fullscreen mode."
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

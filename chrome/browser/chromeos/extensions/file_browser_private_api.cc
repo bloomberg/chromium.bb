@@ -28,6 +28,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -1608,6 +1609,22 @@ void GetVolumeMetadataFunction::GetLocalPathsResponseOnUIThread(
 #endif
 
   SendResponse(true);
+}
+
+bool ToggleFullscreenFunction::RunImpl() {
+  Browser* browser = GetCurrentBrowser();
+  if (browser) {
+    browser->ToggleFullscreenModeWithExtension(
+        file_manager_util::GetFileBrowserExtensionUrl());
+  }
+  return true;
+}
+
+bool IsFullscreenFunction::RunImpl() {
+  Browser* browser = GetCurrentBrowser();
+  result_.reset(Value::CreateBooleanValue(
+      browser && browser->window() && browser->window()->IsFullscreen()));
+  return true;
 }
 
 bool FileDialogStringsFunction::RunImpl() {

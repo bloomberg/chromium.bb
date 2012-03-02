@@ -410,6 +410,8 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetSizeStatsFunction>();
   RegisterFunction<FormatDeviceFunction>();
   RegisterFunction<ViewFilesFunction>();
+  RegisterFunction<ToggleFullscreenFunction>();
+  RegisterFunction<IsFullscreenFunction>();
 
   // Mediaplayer
   RegisterFunction<PlayMediaplayerFunction>();

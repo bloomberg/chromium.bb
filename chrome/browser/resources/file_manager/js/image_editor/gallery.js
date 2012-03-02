@@ -229,6 +229,10 @@ Gallery.prototype.initDom_ = function(shareActions) {
   } else {
     this.shareMode_ = null;
   }
+
+  Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
+    this.originalFullscreen_ = fullscreen;
+  }.bind(this));
 };
 
 Gallery.blobToURL_ = function(blob) {
@@ -437,24 +441,32 @@ Gallery.prototype.isRenaming_ = function() {
   return this.container_.hasAttribute('renaming');
 };
 
-Gallery.prototype.toggleFullscreen_ = function() {
-  if (this.document_.webkitIsFullScreen) {
-    this.document_.webkitCancelFullScreen();
-  } else {
-    this.document_.body.webkitRequestFullScreen();
-  }
+Gallery.getFileBrowserPrivate = function() {
+  return chrome.fileBrowserPrivate || window.top.chrome.fileBrowserPrivate;
 };
 
+Gallery.prototype.toggleFullscreen_ = function() {
+  Gallery.getFileBrowserPrivate().toggleFullscreen();
+};
+
+/**
+ * Close the Gallery.
+ */
+Gallery.prototype.close_ = function() {
+  Gallery.getFileBrowserPrivate().isFullscreen(function(fullscreen) {
+    if (this.originalFullscreen_ != fullscreen) {
+      Gallery.getFileBrowserPrivate().toggleFullscreen();
+    }
+    this.closeCallback_();
+  }.bind(this));
+};
+
+/**
+ * Handle user's 'Close' action (Escape or a click on the X icon).
+ */
 Gallery.prototype.onClose_ = function() {
-  if (this.document_.webkitIsFullScreen) {
-    // Closing the Gallery iframe while in full screen will crash the tab.
-    this.document_.addEventListener(
-        'webkitfullscreenchange', this.onClose_.bind(this));
-    this.document_.webkitCancelFullScreen();
-    return;
-  }
   // TODO: handle write errors gracefully (suggest retry or saving elsewhere).
-  this.saveChanges_(this.closeCallback_);
+  this.saveChanges_(this.close_.bind(this));
 };
 
 Gallery.prototype.prefetchImage = function(id, content, metadata) {

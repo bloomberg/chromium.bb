@@ -352,6 +352,22 @@ class GetVolumeMetadataFunction
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getVolumeMetadata");
 };
 
+// Toggles fullscreen mode for the browser.
+class ToggleFullscreenFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.toggleFullscreen");
+};
+
+// Checks if the browser is in fullscreen mode.
+class IsFullscreenFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.isFullscreen");
+};
+
 // File Dialog Strings.
 class FileDialogStringsFunction : public SyncExtensionFunction {
  public:
