@@ -30,6 +30,7 @@ remoting.Error = {
  * Entry point for app initialization.
  */
 remoting.init = function() {
+  remoting.logExtensionInfoAsync_();
   l10n.localize();
   var button = document.getElementById('toggle-scaling');
   button.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_SCALING');
@@ -74,6 +75,23 @@ remoting.init = function() {
     var button = document.getElementById('share-button');
     button.disabled = true;
   }
+};
+
+/**
+ * Log information about the current extension.
+ * The extension manifest is loaded and parsed to extract this info.
+ */
+remoting.logExtensionInfoAsync_ = function() {
+  /** @type {XMLHttpRequest} */
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'manifest.json');
+  xhr.onload = function(e) {
+    var manifest =
+        /** @type {{name: string, version: string, default_locale: string}} */
+        JSON.parse(xhr.responseText);
+    console.log(manifest.name + ' version: ' + manifest.version);
+  }
+  xhr.send(null);
 };
 
 /**
