@@ -168,6 +168,7 @@ bool FileAPIMessageFilter::OnMessageReceived(
 void FileAPIMessageFilter::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size, bool create) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (type == fileapi::kFileSystemTypeTemporary) {
     content::RecordAction(UserMetricsAction("OpenFileSystemTemporary"));
   } else if (type == fileapi::kFileSystemTypePersistent) {
@@ -179,6 +180,7 @@ void FileAPIMessageFilter::OnOpen(
 
 void FileAPIMessageFilter::OnMove(
     int request_id, const GURL& src_path, const GURL& dest_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   const int src_permissions = kReadFilePermissions | kWriteFilePermissions;
   if (!HasPermissionsForFile(src_path, src_permissions, &error) ||
@@ -194,6 +196,7 @@ void FileAPIMessageFilter::OnMove(
 
 void FileAPIMessageFilter::OnCopy(
     int request_id, const GURL& src_path, const GURL& dest_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   if (!HasPermissionsForFile(src_path, kReadFilePermissions, &error) ||
       !HasPermissionsForFile(dest_path, kCreateFilePermissions, &error)) {
@@ -208,6 +211,7 @@ void FileAPIMessageFilter::OnCopy(
 
 void FileAPIMessageFilter::OnRemove(
     int request_id, const GURL& path, bool recursive) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kWriteFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
@@ -221,6 +225,7 @@ void FileAPIMessageFilter::OnRemove(
 
 void FileAPIMessageFilter::OnReadMetadata(
     int request_id, const GURL& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
@@ -235,6 +240,7 @@ void FileAPIMessageFilter::OnReadMetadata(
 void FileAPIMessageFilter::OnCreate(
     int request_id, const GURL& path, bool exclusive,
     bool is_directory, bool recursive) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kCreateFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
@@ -254,6 +260,7 @@ void FileAPIMessageFilter::OnCreate(
 
 void FileAPIMessageFilter::OnExists(
     int request_id, const GURL& path, bool is_directory) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
@@ -273,6 +280,7 @@ void FileAPIMessageFilter::OnExists(
 
 void FileAPIMessageFilter::OnReadDirectory(
     int request_id, const GURL& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kReadFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
@@ -289,6 +297,7 @@ void FileAPIMessageFilter::OnWrite(
     const GURL& path,
     const GURL& blob_url,
     int64 offset) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!request_context_) {
     // We can't write w/o a request context, trying to do so will crash.
     NOTREACHED();
@@ -326,6 +335,7 @@ void FileAPIMessageFilter::OnTouchFile(
     const GURL& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   if (!HasPermissionsForFile(path, kCreateFilePermissions, &error)) {
     Send(new FileSystemMsg_DidFail(request_id, error));
@@ -340,6 +350,7 @@ void FileAPIMessageFilter::OnTouchFile(
 void FileAPIMessageFilter::OnCancel(
     int request_id,
     int request_id_to_cancel) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   FileSystemOperationInterface* write = operations_.Lookup(
       request_id_to_cancel);
   if (write) {
@@ -356,6 +367,7 @@ void FileAPIMessageFilter::OnCancel(
 
 void FileAPIMessageFilter::OnOpenFile(
     int request_id, const GURL& path, int file_flags) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::PlatformFileError error;
   const int open_permissions = base::PLATFORM_FILE_OPEN |
                                (file_flags & kOpenFilePermissions);
@@ -371,6 +383,7 @@ void FileAPIMessageFilter::OnOpenFile(
 
 void FileAPIMessageFilter::OnWillUpdate(const GURL& path) {
   GURL origin_url;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   fileapi::FileSystemType type;
   if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
     return;
@@ -381,6 +394,7 @@ void FileAPIMessageFilter::OnWillUpdate(const GURL& path) {
 }
 
 void FileAPIMessageFilter::OnDidUpdate(const GURL& path, int64 delta) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   GURL origin_url;
   fileapi::FileSystemType type;
   if (!CrackFileSystemURL(path, &origin_url, &type, NULL))
@@ -497,6 +511,7 @@ void FileAPIMessageFilter::DidFinish(int request_id,
 
 void FileAPIMessageFilter::DidCancel(int request_id,
                                      base::PlatformFileError result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (result == base::PLATFORM_FILE_OK)
     Send(new FileSystemMsg_DidSucceed(request_id));
   else
@@ -562,6 +577,7 @@ void FileAPIMessageFilter::DidOpenFileSystem(int request_id,
                                              base::PlatformFileError result,
                                              const std::string& name,
                                              const GURL& root) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (result == base::PLATFORM_FILE_OK) {
     DCHECK(root.is_valid());
     Send(new FileSystemMsg_DidOpenFileSystem(request_id, name, root));
@@ -578,6 +594,7 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     const base::PlatformFileInfo& info,
     const FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& unused) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (result != base::PLATFORM_FILE_OK) {
     Send(new FileSystemMsg_DidFail(request_id, result));
     return;
@@ -657,6 +674,7 @@ FileSystemOperationInterface* FileAPIMessageFilter::GetNewOperation(
 }
 
 void FileAPIMessageFilter::UnregisterOperation(int request_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(operations_.Lookup(request_id));
   operations_.Remove(request_id);
 }
