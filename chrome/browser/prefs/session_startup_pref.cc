@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/values.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -21,7 +20,7 @@ namespace {
 
 // For historical reasons the enum and value registered in the prefs don't line
 // up. These are the values registered in prefs.
-const int kPrefValueHomePage = 0;  // Deprecated
+const int kPrefValueHomePage = 0;
 const int kPrefValueLast = 1;
 const int kPrefValueURLs = 4;
 const int kPrefValueNewTab = 5;
@@ -29,17 +28,11 @@ const int kPrefValueNewTab = 5;
 // Converts a SessionStartupPref::Type to an integer written to prefs.
 int TypeToPrefValue(SessionStartupPref::Type type) {
   switch (type) {
+    case SessionStartupPref::HOMEPAGE: return kPrefValueHomePage;
     case SessionStartupPref::LAST:     return kPrefValueLast;
     case SessionStartupPref::URLS:     return kPrefValueURLs;
     default:                           return kPrefValueNewTab;
   }
-}
-
-void SetNewUrlList(PrefService* prefs) {
-  ListValue new_url_pref_list;
-  StringValue* home_page = new StringValue(prefs->GetString(prefs::kHomePage));
-  new_url_pref_list.Append(home_page);
-  prefs->Set(prefs::kURLsToRestoreOnStartup, new_url_pref_list);
 }
 
 }  // namespace
@@ -107,16 +100,6 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   DCHECK(prefs);
   SessionStartupPref pref(
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
-
-  // Migrate from "Open the home page" to "Open the following URLs". If the user
-  // had the "Open the homepage" option selected, then we need to switch them to
-  // "Open the following URLs" and set the list of URLs to a list containing
-  // just the user's homepage.
-  if (pref.type == SessionStartupPref::HOMEPAGE) {
-    prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueURLs);
-    pref.type = SessionStartupPref::URLS;
-    SetNewUrlList(prefs);
-  }
 
   // Always load the urls, even if the pref type isn't URLS. This way the
   // preferences panels can show the user their last choice.

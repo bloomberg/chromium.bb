@@ -20,7 +20,7 @@ struct SessionStartupPref {
     // Indicates the user wants to open the New Tab page.
     DEFAULT,
 
-    // Deprecated. See comment in session_startup_pref.cc
+    // TODO(tbreisacher) Deprecate this option.
     HOMEPAGE,
 
     // Indicates the user wants to restore the last session.
