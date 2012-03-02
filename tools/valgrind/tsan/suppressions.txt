@@ -559,11 +559,11 @@
 {
   bug_93932_g
   ThreadSanitizer:Race
+  ...
   fun:frame_thread_free
   ...
   fun:avcodec_close
   ...
-  fun:media::FFmpegVideoDecoder::ReleaseFFmpegResources
 }
 {
   bug_100020
