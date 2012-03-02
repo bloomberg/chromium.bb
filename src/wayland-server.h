@@ -226,6 +226,7 @@ struct wl_input_device {
 
 	struct wl_list drag_resource_list;
 	struct wl_data_source *drag_data_source;
+	struct wl_listener drag_data_source_listener;
 	struct wl_surface *drag_focus;
 	struct wl_resource *drag_focus_resource;
 	struct wl_listener drag_focus_listener;

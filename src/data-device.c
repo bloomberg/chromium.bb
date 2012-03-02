@@ -226,6 +226,28 @@ drag_grab_motion(struct wl_pointer_grab *grab,
 }
 
 static void
+data_device_end_drag_grab(struct wl_input_device *device, uint32_t time)
+{
+	struct wl_resource *surface_resource;
+	struct wl_surface_interface *implementation;
+
+	if (device->drag_surface) {
+		surface_resource = &device->drag_surface->resource;
+		implementation = (struct wl_surface_interface *)
+			surface_resource->object.implementation;
+
+		implementation->attach(surface_resource->client,
+				       surface_resource, NULL, 0, 0);
+		wl_list_remove(&device->drag_icon_listener.link);
+	}
+
+	wl_input_device_end_pointer_grab(device, time);
+
+	device->drag_data_source = NULL;
+	device->drag_surface = NULL;
+}
+
+static void
 drag_grab_button(struct wl_pointer_grab *grab,
 		 uint32_t time, int32_t button, int32_t state)
 {
@@ -237,22 +259,8 @@ drag_grab_button(struct wl_pointer_grab *grab,
 		wl_data_device_send_drop(device->drag_focus_resource);
 
 	if (device->button_count == 0 && state == 0) {
-		wl_input_device_end_pointer_grab(device, time);
-
-		if (device->drag_surface) {
-			struct wl_resource *surface_resource =
-				&device->drag_surface->resource;
-			struct wl_surface_interface *implementation =
-				(struct wl_surface_interface *)
-				surface_resource->object.implementation;
-
-			implementation->attach(surface_resource->client,
-					       surface_resource, NULL, 0, 0);
-			wl_list_remove(&device->drag_icon_listener.link);
-		}
-
-		device->drag_data_source = NULL;
-		device->drag_surface = NULL;
+		data_device_end_drag_grab(device, time);
+		wl_list_remove(&device->drag_data_source_listener.link);
 	}
 }
 
@@ -261,6 +269,18 @@ static const struct wl_pointer_grab_interface drag_grab_interface = {
 	drag_grab_motion,
 	drag_grab_button,
 };
+
+static void
+destroy_data_device_source(struct wl_listener *listener,
+			   struct wl_resource *resource, uint32_t time)
+{
+	struct wl_input_device *device;
+
+	device = container_of(listener, struct wl_input_device,
+			      drag_data_source_listener);
+
+	data_device_end_drag_grab(device, time);
+}
 
 static void
 destroy_data_device_icon(struct wl_listener *listener,
@@ -288,7 +308,11 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	/* FIXME: Check that the data source type array isn't empty. */
 
 	device->drag_grab.interface = &drag_grab_interface;
+
 	device->drag_data_source = source_resource->data;
+	device->drag_data_source_listener.func = destroy_data_device_source;
+	wl_list_insert(source_resource->destroy_listener_list.prev,
+		       &device->drag_data_source_listener.link);
 
 	if (icon_resource) {
 		device->drag_surface = icon_resource->data;
