@@ -5,6 +5,10 @@
 // This file implements a standalone host process for Me2Me, which is currently
 // used for the Linux-only Virtual Me2Me build.
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include <string>
 
 #include "base/at_exit.h"
@@ -15,6 +19,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -59,6 +64,18 @@ const FilePath::CharType kDefaultHostConfigFile[] =
 const int kMinPortNumber = 12400;
 const int kMaxPortNumber = 12409;
 
+FilePath GetDefaultConfigDir() {
+  FilePath default_config_dir;
+
+#if defined(OS_WIN)
+  PathService::Get(base::DIR_PROFILE, &default_config_dir);
+#else
+  default_config_dir = file_util::GetHomeDir();
+#endif
+
+  return default_config_dir.Append(kDefaultConfigDir);
+}
+
 }  // namespace
 
 namespace remoting {
@@ -78,9 +95,7 @@ class HostProcess {
   }
 
   void InitWithCommandLine(const CommandLine* cmd_line) {
-    FilePath default_config_dir =
-        file_util::GetHomeDir().Append(kDefaultConfigDir);
-
+    FilePath default_config_dir = GetDefaultConfigDir();
     if (cmd_line->HasSwitch(kAuthConfigSwitchName)) {
       auth_config_path_ = cmd_line->GetSwitchValuePath(kAuthConfigSwitchName);
     } else {
@@ -121,14 +136,14 @@ class HostProcess {
     scoped_refptr<JsonHostConfig> auth_config =
         new JsonHostConfig(auth_config_path_, io_message_loop);
 
-    std::string failed_path;
+    FilePath failed_path;
     if (!host_config->Read()) {
-      failed_path = host_config_path_.value();
+      failed_path = host_config_path_;
     } else if (!auth_config->Read()) {
-      failed_path = auth_config_path_.value();
+      failed_path = auth_config_path_;
     }
     if (!failed_path.empty()) {
-      LOG(ERROR) << "Failed to read configuration file " << failed_path;
+      LOG(ERROR) << "Failed to read configuration file " << failed_path.value();
       return false;
     }
 
@@ -223,7 +238,7 @@ class HostProcess {
 
     log_to_server_.reset(
         new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get()));
-    host_event_logger_.reset(new HostEventLogger(host_, kApplicationName));
+    host_event_logger_ = HostEventLogger::Create(host_, kApplicationName);
 
     host_->Start();
 
@@ -311,3 +326,16 @@ int main(int argc, char** argv) {
 
   return me2me_host.Run();
 }
+
+#if defined(OS_WIN)
+
+int CALLBACK WinMain(HINSTANCE instance,
+                     HINSTANCE previous_instance,
+                     LPSTR command_line,
+                     int show_command) {
+  // CommandLine::Init() ignores the passed |argc| and |argv| on Windows getting
+  // the command line from GetCommandLineW(), so we can safely pass NULL here.
+  return main(0, NULL);
+}
+
+#endif

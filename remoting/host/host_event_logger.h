@@ -9,38 +9,25 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/host/host_status_observer.h"
 
 namespace remoting {
 
 class ChromotingHost;
-class SystemEventLogger;
 
-class HostEventLogger : public HostStatusObserver {
+class HostEventLogger {
  public:
-  HostEventLogger(ChromotingHost* host, const std::string& application_name);
-  virtual ~HostEventLogger();
+  virtual ~HostEventLogger() {}
 
-  // HostStatusObserver implementation.  These methods will be called from the
-  // network thread.
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
-  virtual void OnClientRouteChange(
-      const std::string& jid,
-      const std::string& channel_name,
-      const net::IPEndPoint& remote_end_point,
-      const net::IPEndPoint& local_end_point) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
+  // Creates an event-logger that monitors host status changes and logs
+  // corresponding events to the OS-specific log (syslog/EventLog).
+  static scoped_ptr<HostEventLogger> Create(
+      ChromotingHost* host, const std::string& application_name);
+
+ protected:
+  HostEventLogger() {}
 
  private:
-  void Log(const std::string& message);
-
-  scoped_refptr<ChromotingHost> host_;
-  scoped_ptr<SystemEventLogger> system_event_logger_;
-
   DISALLOW_COPY_AND_ASSIGN(HostEventLogger);
 };
 

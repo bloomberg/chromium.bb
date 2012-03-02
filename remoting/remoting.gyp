@@ -212,7 +212,7 @@
             '../media/media.gyp:media',
           ],
           'sources': [
-            'host/host_event_logger.cc',
+            'host/host_event_logger_linux.cc',
             'host/host_event_logger.h',
             'host/remoting_me2me_host.cc',
             'host/system_event_logger_linux.cc',
@@ -222,8 +222,57 @@
 
       ],  # end of 'targets'
     }],  # 'OS=="linux"'
+
     ['OS=="win"', {
       'targets': [
+        {
+          'target_name': 'remoting_me2me_host',
+          'type': 'executable',
+          'dependencies': [
+            'remoting_base',
+            'remoting_host',
+            'remoting_jingle_glue',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../media/media.gyp:media',
+          ],
+          'sources': [
+            'host/host_event_logger_win.cc',
+            'host/host_event_logger.h',
+            'host/remoting_host_messages.mc',
+            'host/remoting_me2me_host.cc',
+            'host/system_event_logger.h',
+          ],
+          'include_dirs': [
+            '<(INTERMEDIATE_DIR)',
+          ],
+          # Rule to run the message compiler.
+          'rules': [
+            {
+              'rule_name': 'message_compiler',
+              'extension': 'mc',
+              'inputs': [ ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/remoting_host_messages.h',
+                '<(INTERMEDIATE_DIR)/remoting_host_messages.rc',
+              ],
+              'msvs_cygwin_shell': 0,
+              'msvs_quote_cmd': 0,
+              'action': [
+                'mc.exe -h <(INTERMEDIATE_DIR) -r <(INTERMEDIATE_DIR) <(RULE_INPUT_PATH)',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Running message compiler on <(RULE_INPUT_PATH).',
+            },
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
+            },
+          },
+        },  # end of target 'remoting_me2me_host'
+
         {
           'target_name': 'remoting_service',
           'type': 'executable',
@@ -252,8 +301,9 @@
             },
           },
         },  # end of target 'remoting_service'
-      ],
+      ],  # end of 'targets'
     }],  # 'OS=="win"'
+
   ],  # end of 'conditions'
 
   'targets': [
