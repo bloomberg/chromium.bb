@@ -74,6 +74,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"sahook.dll",                  // McAfee Site Advisor.
   L"sbrige.dll",                  // Unknown.
   L"sc2hook.dll",                 // Supercopier 2.
+  L"sdhook32.dll",                // Spybot - Search & Destroy Live Protection.
   L"sguard.dll",                  // Iolo (System Guard).
   L"smum32.dll",                  // Spyware Doctor version 6.
   L"smumhook.dll",                // Spyware Doctor version 5.
