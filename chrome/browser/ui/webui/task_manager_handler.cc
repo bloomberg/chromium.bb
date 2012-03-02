@@ -191,8 +191,9 @@ DictionaryValue* CreateTaskGroupValue(
   val->SetInteger("index", index);
   val->SetBoolean("isBackgroundResource",
                   tm->IsBackgroundResource(index));
-  CreateGroupColumnList(tm, "uniqueId", index, length, val);
   CreateGroupColumnList(tm, "processId", index, 1, val);
+  CreateGroupColumnList(tm, "type", index, length, val);
+  CreateGroupColumnList(tm, "uniqueId", index, length, val);
 
   for (size_t i = 0; i < arraysize(kColumnsList); ++i) {
     const std::string column_id = kColumnsList[i].column_id;
