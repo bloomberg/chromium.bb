@@ -5,16 +5,20 @@
 
 Import('env')
 
+extra_flags = []
+if env.IsRunningUnderValgrind():
+  extra_flags.extend(['-E', 'RUNNING_ON_VALGRIND=1'])
 mmap_test_nexe = env.ComponentProgram('mmap_test',
                                       'mmap_test.cc',
-                                      EXTRA_LIBS=['${PTHREAD_LIBS}',
-                                                  '${NONIRT_LIBS}'])
+                                      EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'mmap_test.out',
     mmap_test_nexe,
     args=[env.File('test-file')],
     stdout_golden=env.File('mmap_test.stdout'),
-    sel_ldr_flags=['-a'])
+    # '-a' enables file access for opening the test file.
+    # '-e' enables exception handling for testing unreadable pages.
+    sel_ldr_flags=['-a', '-e'] + extra_flags)
 
 # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
 env.AddNodeToTestSuite(node,

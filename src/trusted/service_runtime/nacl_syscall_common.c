@@ -1241,15 +1241,10 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
     /*
      * We stat the file to figure out its actual size.
      *
-     * This is needed since we allow an app to mmap in a odd-sized
-     * file and will zero fill the allocation page containing the last
-     * byte(s) of the file, but if the app asked for a length that
-     * goes beyond the last allocation page, that memory is actually
-     * inaccessible.  Of course, the underlying OS deals with real
-     * pages, and we may need to simulate this behavior (i.e., OSX and
-     * Linux, we will need to put zero-filled pages between the last
-     * 4K system page containing file data and the rest of the
-     * simulated windows allocation 64K page.
+     * This is necessary because the POSIXy interface we provide
+     * allows mapping beyond the extent of a file but Windows'
+     * interface does not.  We simulate the POSIX behaviour on
+     * Windows.
      */
     map_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                   Fstat)(ndp, &stbuf);
@@ -1317,7 +1312,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
 
   /*
    * Now, we map, relative to usraddr, bytes [0, length) from the file
-   * starting at offset, zero-filled pages for the memory region
+   * starting at offset, inaccessible pages for the memory region
    * [length, start_of_inaccessible), and inaccessible pages for the
    * memory region [start_of_inaccessible, alloc_rounded_length).
    */
@@ -1516,24 +1511,53 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
   } else {
     map_result = sysaddr;
   }
-  /* zero fill [length, start_of_inaccessible) */
+  /*
+   * If we are mapping beyond the end of the file, we fill this space
+   * with PROT_NONE pages.
+   *
+   * Windows forces us to expose a mixture of 64k and 4k pages, and we
+   * expose the same mappings on other platforms.  For example,
+   * suppose untrusted code requests to map 0x40000 bytes from a file
+   * of extent 0x100.  We will create the following regions:
+   *
+   *       0-  0x100  A: Bytes from the file
+   *   0x100- 0x1000  B: The rest of the 4k page is accessible but undefined
+   *  0x1000-0x10000  C: The rest of the 64k page is inaccessible (PROT_NONE)
+   * 0x10000-0x40000  D: Further 64k pages are also inaccessible (PROT_NONE)
+   *
+   * On Windows, a single MapViewOfFileEx() call creates A, B and C.
+   * This call will not accept a size greater than 0x100, so we have
+   * to create D separately.  The hardware requires B to be accessible
+   * (whenever A is accessible), but Windows does not allow C to be
+   * mapped as accessible.  This is unfortunate because it interferes
+   * with how ELF dynamic linkers usually like to set up an ELF
+   * object's BSS.
+   */
+#if !NACL_WINDOWS
+  /*
+   * Map region C (see above) as inaccessible.  This is only necessary
+   * on Unix.  On Windows, this region has already been made
+   * inaccessible.
+   */
   if (length < start_of_inaccessible) {
     size_t  map_len = start_of_inaccessible - length;
 
     NaClLog(2,
-            ("zero-filling pages for memory range"
+            ("inaccessible pages for memory range"
              " [0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR
              "), length 0x%"NACL_PRIxS"\n"),
             sysaddr + length, sysaddr + start_of_inaccessible, map_len);
     map_result = NaClHostDescMap((struct NaClHostDesc *) NULL,
                                  (void *) (sysaddr + length),
                                  map_len,
-                                 prot,
-                                 NACL_ABI_MAP_ANONYMOUS | NACL_ABI_MAP_PRIVATE,
+                                 NACL_ABI_PROT_NONE,
+                                 (NACL_ABI_MAP_ANONYMOUS
+                                  | NACL_ABI_MAP_PRIVATE
+                                  | NACL_ABI_MAP_FIXED),
                                  (off_t) 0);
     if (NaClPtrIsNegErrno(&map_result)) {
       NaClLog(LOG_ERROR,
-              ("Could not create zero-filled pages for memory range"
+              ("Could not create inaccessible pages for memory range"
                " [0x%08"NACL_PRIxPTR", 0x%08"NACL_PRIxPTR")\n"),
               sysaddr + length, sysaddr + start_of_inaccessible);
       goto cleanup;
@@ -1542,6 +1566,13 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
                                 NaClProtMap(prot),
                                 (struct NaClDesc *) NULL, 0, (off_t) 0, 0);
   }
+#endif
+  /*
+   * TODO(mseaborn): The block below is broken because it does not use
+   * NACL_ABI_MAP_FIXED.  Fix it to correctly map this region as
+   * inaccessible.
+   * See http://code.google.com/p/nativeclient/issues/detail?id=824
+   */
   /* inaccessible: [start_of_inaccessible, alloc_rounded_length) */
   if (start_of_inaccessible < alloc_rounded_length) {
     size_t  map_len = alloc_rounded_length - start_of_inaccessible;

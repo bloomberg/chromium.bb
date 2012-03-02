@@ -4,13 +4,18 @@
  * found in the LICENSE file.
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <setjmp.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+
 
 #define PRINT_HEADER 0
 #define TEXT_LINE_SIZE 1024
@@ -36,6 +41,44 @@ bool passed(const char *testname, const char *msg) {
   printf("TEST PASSED: %s: %s\n", testname, msg);
   return true;
 }
+
+
+static jmp_buf g_jmp_buf;
+
+static void exception_handler(struct NaClExceptionContext *context) {
+  /* We got an exception as expected.  Return from the handler. */
+  int rc = NACL_SYSCALL(exception_clear_flag)();
+  assert(rc == 0);
+  longjmp(g_jmp_buf, 1);
+}
+
+static void assert_addr_is_unreadable(volatile char *addr) {
+  /*
+   * TODO(mseaborn): It would be better to use Valgrind annotations to
+   * turn off the memory access checks temporarily.
+   */
+  if (getenv("RUNNING_ON_VALGRIND") != NULL) {
+    fprintf(stderr, "Skipping assert_addr_is_unreadable() under Valgrind\n");
+    return;
+  }
+
+  int rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
+  assert(rc == 0);
+  if (!setjmp(g_jmp_buf)) {
+    char value = *addr;
+    /* If we reach here, the assertion failed. */
+    fprintf(stderr, "Address %p was readable, and contained %i\n",
+            addr, value);
+    exit(1);
+  }
+  /*
+   * Clean up: Unregister the exception handler so that we do not
+   * accidentally return through g_jmp_buf if an exception occurs.
+   */
+  rc = NACL_SYSCALL(exception_handler)(NULL, NULL);
+  assert(rc == 0);
+}
+
 
 /*
  * function test*()
@@ -162,15 +205,22 @@ bool test_mmap_end_of_file() {
     return false;
   }
   /*
-   * TODO(mseaborn): Extend from 4k to 64k when zero-fill works on Linux.
+   * TODO(mseaborn): Extend this to 0x20000 or larger and check that
+   * the later 64k pages are inaccessible.
    * See http://code.google.com/p/nativeclient/issues/detail?id=824
    */
-  size_t map_size = 0x1000;
-  char *alloc = (char *) mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, fd, 0);
-  if (alloc == MAP_FAILED) {
-    printf("mmap() failed\n");
-    return false;
-  }
+  size_t map_size = 0x10000;
+  /*
+   * First, map an address range as readable+writable, in order to
+   * check that these mappings are properly overwritten by the second
+   * mmap() call.
+   */
+  char *alloc = (char *) mmap(NULL, map_size, PROT_READ | PROT_WRITE,
+                              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  assert(alloc != MAP_FAILED);
+  char *addr = (char *) mmap((void *) alloc, map_size, PROT_READ,
+                             MAP_PRIVATE | MAP_FIXED, fd, 0);
+  assert(addr == alloc);
   int rc = close(fd);
   if (rc != 0) {
     printf("close() failed\n");
@@ -183,12 +233,26 @@ bool test_mmap_end_of_file() {
     printf("Unexpected contents: %s\n", alloc);
     return false;
   }
-  for (size_t i = strlen(expected_data); i < map_size; i++) {
+  /* The first 4k page should be readable. */
+  for (size_t i = strlen(expected_data); i < 0x1000; i++) {
     if (alloc[i] != 0) {
       printf("Unexpected padding byte: %i\n", alloc[i]);
       return false;
     }
   }
+  /*
+   * Addresses beyond the first 4k should not be readable.  This is
+   * one case where we expose a 4k page size rather than a 64k page
+   * size.  Windows forces us to expose a mixture of 4k and 64k page
+   * sizes for end-of-file mappings.
+   */
+  assert_addr_is_unreadable(alloc + 0x1000);
+  assert_addr_is_unreadable(alloc + 0x2000);
+  /*
+   * TODO(mseaborn): Also check the following:
+   *   assert_addr_is_unreadable(alloc + 0x10000);
+   * See http://code.google.com/p/nativeclient/issues/detail?id=824
+   */
   rc = munmap(alloc, map_size);
   if (rc != 0) {
     printf("munmap() failed\n");
