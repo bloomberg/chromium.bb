@@ -467,7 +467,6 @@ void Pipeline::OnVideoTimeUpdate(base::TimeDelta max_time) {
     return;
 
   DCHECK(!waiting_for_clock_update_);
-  DCHECK(clock_->Elapsed() <= max_time);
   clock_->SetMaxTime(max_time);
 }
 
