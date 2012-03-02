@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/tab_first_render_watcher.h"
+#include "chrome/browser/tab_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -39,7 +39,7 @@ namespace chromeos {
 class WebUILoginView : public views::WidgetDelegateView,
                        public StatusAreaButton::Delegate,
                        public content::WebContentsDelegate,
-                       public TabFirstRenderWatcher::Delegate {
+                       public TabRenderWatcher::Delegate {
  public:
   static const int kStatusAreaCornerPadding;
 
@@ -93,10 +93,10 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual StatusAreaButton::TextStyle GetStatusAreaTextStyle() const OVERRIDE;
   virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 
-  // TabFirstRenderWatcher::Delegate implementation.
+  // TabRenderWatcher::Delegate implementation.
   virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE;
   virtual void OnTabMainFrameLoaded() OVERRIDE;
-  virtual void OnTabMainFrameFirstRender() OVERRIDE;
+  virtual void OnTabMainFrameRender() OVERRIDE;
 
   // Creates and adds the status area (separate window).
   virtual void InitStatusArea();
@@ -147,7 +147,7 @@ class WebUILoginView : public views::WidgetDelegateView,
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
 
   // Watches webui_login_'s TabContents rendering.
-  scoped_ptr<TabFirstRenderWatcher> tab_watcher_;
+  scoped_ptr<TabRenderWatcher> tab_watcher_;
 
   // Whether the host window is frozen.
   bool host_window_frozen_;

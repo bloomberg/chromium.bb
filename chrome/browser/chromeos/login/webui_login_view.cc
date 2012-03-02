@@ -158,7 +158,7 @@ void WebUILoginView::Init(views::Widget* login_window) {
   WebContents* web_contents = webui_login_->dom_contents()->web_contents();
   web_contents->SetDelegate(this);
 
-  tab_watcher_.reset(new TabFirstRenderWatcher(web_contents, this));
+  tab_watcher_.reset(new TabRenderWatcher(web_contents, this));
 }
 
 std::string WebUILoginView::GetClassName() const {
@@ -289,8 +289,9 @@ void WebUILoginView::OnTabMainFrameLoaded() {
   VLOG(1) << "WebUI login main frame loaded.";
 }
 
-void WebUILoginView::OnTabMainFrameFirstRender() {
+void WebUILoginView::OnTabMainFrameRender() {
   VLOG(1) << "WebUI login main frame rendered.";
+  tab_watcher_.reset();
   StatusAreaViewChromeos::SetScreenMode(GetScreenMode());
   // In aura there's a global status area shown already.
 #if defined(USE_AURA)

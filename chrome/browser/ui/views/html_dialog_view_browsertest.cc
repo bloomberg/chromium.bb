@@ -69,8 +69,8 @@ class TestHtmlDialogView: public HtmlDialogView {
     HtmlDialogView::OnDialogClosed(json_retval);
   }
 
-  virtual void OnTabMainFrameFirstRender() OVERRIDE {
-    HtmlDialogView::OnTabMainFrameFirstRender();
+  virtual void OnTabMainFrameRender() OVERRIDE {
+    HtmlDialogView::OnTabMainFrameRender();
     painted_ = true;
     MessageLoop::current()->Quit();
   }
@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, DISABLED_WebContentRendered) {
   html_view->InitDialog();
   html_view->GetWidget()->Show();
 
-  // TestHtmlDialogView::OnTabMainFrameFirstRender() will Quit().
+  // TestHtmlDialogView::OnTabMainFrameRender() will Quit().
   MessageLoopForUI::current()->Run();
 
   EXPECT_TRUE(html_view->painted());

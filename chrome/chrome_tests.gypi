@@ -2749,7 +2749,7 @@
         'browser/ssl/ssl_browser_tests.cc',
         'browser/tab_contents/render_view_context_menu_browsertest.cc',
         'browser/tab_contents/spelling_menu_observer_browsertest.cc',
-        'browser/tab_first_render_watcher_browsertest.cc',
+        'browser/tab_render_watcher_browsertest.cc',
         'browser/task_manager/task_manager_browsertest.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/task_manager/task_manager_browsertest_util.h',
@@ -3155,7 +3155,7 @@
           'sources!': [
             'browser/extensions/browser_action_test_util_views.cc',
             'browser/extensions/extension_input_apitest.cc',
-            'browser/tab_first_render_watcher_browsertest.cc',
+            'browser/tab_render_watcher_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
             'browser/ui/views/browser_actions_container_browsertest.cc',
             'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',

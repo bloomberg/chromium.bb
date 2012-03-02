@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_first_render_watcher.h"
+#include "chrome/browser/tab_render_watcher.h"
 
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -13,9 +13,8 @@
 
 using content::WebContents;
 
-TabFirstRenderWatcher::TabFirstRenderWatcher(WebContents* tab,
-                                             Delegate* delegate)
-    : state_(NONE),
+TabRenderWatcher::TabRenderWatcher(WebContents* tab, Delegate* delegate)
+    : loaded_(false),
       web_contents_(tab),
       delegate_(delegate) {
   registrar_.Add(this,
@@ -26,9 +25,9 @@ TabFirstRenderWatcher::TabFirstRenderWatcher(WebContents* tab,
       content::Source<WebContents>(web_contents_));
 }
 
-void TabFirstRenderWatcher::Observe(int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void TabRenderWatcher::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       RenderWidgetHost* rwh = content::Details<RenderWidgetHost>(details).ptr();
@@ -40,18 +39,16 @@ void TabFirstRenderWatcher::Observe(int type,
       break;
     }
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
-      if (state_ == NONE) {
-        state_ = LOADED;
+      if (!loaded_) {
+        loaded_ = true;
         delegate_->OnTabMainFrameLoaded();
       }
       break;
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
-      if (state_ == LOADED) {
-        state_ = FIRST_PAINT;
-        delegate_->OnTabMainFrameFirstRender();
-      }
+      if (loaded_)
+        delegate_->OnTabMainFrameRender();
       break;
     default:
-      NOTREACHED() << "unknown type" << type;
+      NOTREACHED() << "Unknown notification " << type;
   }
 }

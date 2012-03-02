@@ -11,7 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tab_first_render_watcher.h"
+#include "chrome/browser/tab_render_watcher.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -40,7 +40,7 @@ class HtmlDialogView
       public HtmlDialogTabContentsDelegate,
       public HtmlDialogUIDelegate,
       public views::WidgetDelegate,
-      public TabFirstRenderWatcher::Delegate {
+      public TabRenderWatcher::Delegate {
  public:
   HtmlDialogView(Profile* profile,
                  Browser* browser,
@@ -103,10 +103,10 @@ class HtmlDialogView
   // Register accelerators for this dialog.
   virtual void RegisterDialogAccelerators();
 
-  // TabFirstRenderWatcher::Delegate implementation.
+  // TabRenderWatcher::Delegate implementation.
   virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE;
   virtual void OnTabMainFrameLoaded() OVERRIDE;
-  virtual void OnTabMainFrameFirstRender() OVERRIDE;
+  virtual void OnTabMainFrameRender() OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HtmlDialogBrowserTest, WebContentRendered);
@@ -117,7 +117,7 @@ class HtmlDialogView
   bool initialized_;
 
   // Watches for TabContents rendering.
-  scoped_ptr<TabFirstRenderWatcher> tab_watcher_;
+  scoped_ptr<TabRenderWatcher> tab_watcher_;
 
   // This view is a delegate to the HTML content since it needs to get notified
   // about when the dialog is closing. For all other actions (besides dialog

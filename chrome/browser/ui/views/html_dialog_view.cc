@@ -300,7 +300,7 @@ void HtmlDialogView::InitDialog() {
   // the comment above HtmlDialogUI in its header file for why.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(
       web_contents->GetPropertyBag(), this);
-  tab_watcher_.reset(new TabFirstRenderWatcher(web_contents, this));
+  tab_watcher_.reset(new TabRenderWatcher(web_contents, this));
 
   DOMView::LoadURL(GetDialogContentURL());
 }
@@ -316,7 +316,8 @@ void HtmlDialogView::OnRenderHostCreated(RenderViewHost* host) {
 void HtmlDialogView::OnTabMainFrameLoaded() {
 }
 
-void HtmlDialogView::OnTabMainFrameFirstRender() {
+void HtmlDialogView::OnTabMainFrameRender() {
+  tab_watcher_.reset();
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
   if (initialized_) {
     views::NativeWidgetGtk::UpdateFreezeUpdatesProperty(
