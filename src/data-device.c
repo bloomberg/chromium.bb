@@ -201,7 +201,7 @@ drag_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 		offer = wl_data_source_send_offer(device->drag_data_source,
 						  resource);
 
-		wl_data_device_send_enter(resource, time, surface,
+		wl_data_device_send_enter(resource, time, &surface->resource,
 					  x, y, offer);
 
 		device->drag_focus = surface;

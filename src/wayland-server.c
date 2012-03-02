@@ -581,14 +581,15 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 	if (device->pointer_focus_resource) {
 		wl_input_device_send_pointer_leave(
 			device->pointer_focus_resource,
-			time, device->pointer_focus);
+			time, &device->pointer_focus->resource);
 		wl_list_remove(&device->pointer_focus_listener.link);
 	}
 
 	resource = find_resource_for_surface(&device->resource_list, surface);
 	if (resource) {
 		wl_input_device_send_pointer_enter(resource, time,
-						   surface, sx, sy);
+						   &surface->resource,
+						   sx, sy);
 		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->pointer_focus_listener.link);
 	}
@@ -612,14 +613,15 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 	if (device->keyboard_focus_resource) {
 		wl_input_device_send_keyboard_leave(
 			device->keyboard_focus_resource,
-			time, device->keyboard_focus);
+			time, &device->keyboard_focus->resource);
 		wl_list_remove(&device->keyboard_focus_listener.link);
 	}
 
 	resource = find_resource_for_surface(&device->resource_list, surface);
 	if (resource) {
 		wl_input_device_send_keyboard_enter(resource, time,
-						    surface, &device->keys);
+						    &surface->resource,
+						    &device->keys);
 		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->keyboard_focus_listener.link);
 	}
