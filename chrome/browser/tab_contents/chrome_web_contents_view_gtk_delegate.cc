@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_gtk_delegate.h"
 
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_gtk.h"
@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/gtk_floating_container.h"
 
-ChromeTabContentsViewWrapperGtk::ChromeTabContentsViewWrapperGtk()
+ChromeWebContentsViewGtkDelegate::ChromeWebContentsViewGtkDelegate()
     : floating_(gtk_floating_container_new()),
       view_(NULL),
       constrained_window_(NULL) {
@@ -24,11 +24,11 @@ ChromeTabContentsViewWrapperGtk::ChromeTabContentsViewWrapperGtk()
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
 }
 
-ChromeTabContentsViewWrapperGtk::~ChromeTabContentsViewWrapperGtk() {
+ChromeWebContentsViewGtkDelegate::~ChromeWebContentsViewGtkDelegate() {
   floating_.Destroy();
 }
 
-void ChromeTabContentsViewWrapperGtk::AttachConstrainedWindow(
+void ChromeWebContentsViewGtkDelegate::AttachConstrainedWindow(
     ConstrainedWindowGtk* constrained_window) {
   DCHECK(constrained_window_ == NULL);
 
@@ -37,7 +37,7 @@ void ChromeTabContentsViewWrapperGtk::AttachConstrainedWindow(
                                       constrained_window->widget());
 }
 
-void ChromeTabContentsViewWrapperGtk::RemoveConstrainedWindow(
+void ChromeWebContentsViewGtkDelegate::RemoveConstrainedWindow(
     ConstrainedWindowGtk* constrained_window) {
   DCHECK(constrained_window == constrained_window_);
 
@@ -46,7 +46,7 @@ void ChromeTabContentsViewWrapperGtk::RemoveConstrainedWindow(
                        constrained_window->widget());
 }
 
-void ChromeTabContentsViewWrapperGtk::WrapView(
+void ChromeWebContentsViewGtkDelegate::WrapView(
     content::TabContentsViewGtk* view) {
   view_ = view;
 
@@ -55,18 +55,18 @@ void ChromeTabContentsViewWrapperGtk::WrapView(
   gtk_widget_show(floating_.get());
 }
 
-gfx::NativeView ChromeTabContentsViewWrapperGtk::GetNativeView() const {
+gfx::NativeView ChromeWebContentsViewGtkDelegate::GetNativeView() const {
   return floating_.get();
 }
 
-void ChromeTabContentsViewWrapperGtk::OnCreateViewForWidget() {
+void ChromeWebContentsViewGtkDelegate::OnCreateViewForWidget() {
   // We install a chrome specific handler to intercept bookmark drags for the
   // bookmark manager/extension API.
   bookmark_handler_gtk_.reset(new WebDragBookmarkHandlerGtk);
   view_->SetDragDestDelegate(bookmark_handler_gtk_.get());
 }
 
-void ChromeTabContentsViewWrapperGtk::Focus() {
+void ChromeWebContentsViewGtkDelegate::Focus() {
   if (!constrained_window_) {
     GtkWidget* widget = view_->GetContentNativeView();
     if (widget)
@@ -74,7 +74,7 @@ void ChromeTabContentsViewWrapperGtk::Focus() {
   }
 }
 
-gboolean ChromeTabContentsViewWrapperGtk::OnNativeViewFocusEvent(
+gboolean ChromeWebContentsViewGtkDelegate::OnNativeViewFocusEvent(
     GtkWidget* widget,
     GtkDirectionType type,
     gboolean* return_value) {
@@ -96,7 +96,7 @@ gboolean ChromeTabContentsViewWrapperGtk::OnNativeViewFocusEvent(
   return FALSE;
 }
 
-void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
+void ChromeWebContentsViewGtkDelegate::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // Find out the RenderWidgetHostView that corresponds to the render widget on
   // which this context menu is showed, so that we can retrieve the last mouse
@@ -128,7 +128,7 @@ void ChromeTabContentsViewWrapperGtk::ShowContextMenu(
   context_menu_->Popup(point);
 }
 
-void ChromeTabContentsViewWrapperGtk::OnSetFloatingPosition(
+void ChromeWebContentsViewGtkDelegate::OnSetFloatingPosition(
     GtkWidget* floating_container, GtkAllocation* allocation) {
   if (!constrained_window_)
     return;

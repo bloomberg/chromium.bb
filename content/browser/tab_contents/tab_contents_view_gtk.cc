@@ -18,10 +18,10 @@
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/browser/tab_contents/tab_contents_view_wrapper_gtk.h"
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/browser/tab_contents/web_drag_source_gtk.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view_gtk_delegate.h"
 #include "ui/base/gtk/gtk_expanded_container.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -79,10 +79,10 @@ namespace content {
 
 TabContentsViewGtk::TabContentsViewGtk(
     content::WebContents* web_contents,
-    content::TabContentsViewWrapperGtk* view_wrapper)
+    content::WebContentsViewGtkDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
       expanded_(gtk_expanded_container_new()),
-      view_wrapper_(view_wrapper),
+      delegate_(delegate),
       overlaid_view_(NULL) {
   gtk_widget_set_name(expanded_.get(), "chrome-tab-contents-view");
   g_signal_connect(expanded_.get(), "size-allocate",
@@ -93,8 +93,8 @@ TabContentsViewGtk::TabContentsViewGtk(
   gtk_widget_show(expanded_.get());
   drag_source_.reset(new content::WebDragSourceGtk(web_contents));
 
-  if (view_wrapper_.get())
-    view_wrapper_->WrapView(this);
+  if (delegate_.get())
+    delegate_->WrapView(this);
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -135,15 +135,15 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   // Renderer target DnD.
   drag_dest_.reset(new content::WebDragDestGtk(tab_contents_, content_view));
 
-  if (view_wrapper_.get())
-    view_wrapper_->OnCreateViewForWidget();
+  if (delegate_.get())
+    delegate_->OnCreateViewForWidget();
 
   return view;
 }
 
 gfx::NativeView TabContentsViewGtk::GetNativeView() const {
-  if (view_wrapper_.get())
-    return view_wrapper_->GetNativeView();
+  if (delegate_.get())
+    return delegate_->GetNativeView();
 
   return expanded_.get();
 }
@@ -209,8 +209,8 @@ void TabContentsViewGtk::RenderViewCreated(RenderViewHost* host) {
 void TabContentsViewGtk::Focus() {
   if (tab_contents_->ShowingInterstitialPage()) {
     tab_contents_->GetInterstitialPage()->Focus();
-  } else if (wrapper()) {
-    wrapper()->Focus();
+  } else if (delegate_.get()) {
+    delegate_->Focus();
   }
 }
 
@@ -315,9 +315,9 @@ void TabContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
 gboolean TabContentsViewGtk::OnFocus(GtkWidget* widget,
                                      GtkDirectionType focus) {
   // Give our view wrapper first chance at this event.
-  if (view_wrapper_.get()) {
+  if (delegate_.get()) {
     gboolean return_value = FALSE;
-    if (view_wrapper_->OnNativeViewFocusEvent(widget, focus, &return_value))
+    if (delegate_->OnNativeViewFocusEvent(widget, focus, &return_value))
       return return_value;
   }
 
@@ -385,8 +385,8 @@ void TabContentsViewGtk::ShowContextMenu(
     return;
   }
 
-  if (wrapper())
-    wrapper()->ShowContextMenu(params);
+  if (delegate_.get())
+    delegate_->ShowContextMenu(params);
   else
     DLOG(ERROR) << "Cannot show context menus without a delegate.";
 }

@@ -2507,8 +2507,8 @@
         'browser/tab_first_render_watcher.h',
         'browser/tab_contents/background_contents.cc',
         'browser/tab_contents/background_contents.h',
-        'browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.cc',
-        'browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h',
+        'browser/tab_contents/chrome_web_contents_view_gtk_delegate.cc',
+        'browser/tab_contents/chrome_web_contents_view_gtk_delegate.h',
         'browser/tab_contents/chrome_web_contents_view_mac_delegate.h',
         'browser/tab_contents/chrome_web_contents_view_mac_delegate.mm',
         'browser/tab_contents/confirm_infobar_delegate.cc',
@@ -4723,7 +4723,14 @@
               ],
             }],
           ],
-        }],
+        }, {
+      'sources!': [
+          # The rules only catch files that start or end with gtk, but these
+          # files would be incorrectly named if we forced the gtk at the end.
+          'browser/tab_contents/chrome_web_contents_view_gtk_delegate.cc',
+          'browser/tab_contents/chrome_web_contents_view_gtk_delegate.h',
+        ],
+      }],
         ['input_speech==0', {
           'sources/': [
             ['exclude', '^browser/speech/'],

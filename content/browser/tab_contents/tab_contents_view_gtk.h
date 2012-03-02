@@ -20,7 +20,7 @@
 
 namespace content {
 
-class TabContentsViewWrapperGtk;
+class WebContentsViewGtkDelegate;
 class WebDragDestDelegate;
 class WebDragDestGtk;
 class WebDragSourceGtk;
@@ -33,15 +33,15 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
   // |wrapper| which creates an intermediary widget layer for features from the
   // Embedding layer that lives with the WebContentsView.
   // TODO(jam): make this take a WebContents once it's created from content.
-  explicit TabContentsViewGtk(content::WebContents* web_contents,
-                              TabContentsViewWrapperGtk* wrapper);
+  TabContentsViewGtk(content::WebContents* web_contents,
+                     WebContentsViewGtkDelegate* delegate);
   virtual ~TabContentsViewGtk();
 
   // Override the stored focus widget. This call only makes sense when the
   // tab contents is not focused.
   void SetFocusedWidget(GtkWidget* widget);
 
-  TabContentsViewWrapperGtk* wrapper() const { return view_wrapper_.get(); }
+  WebContentsViewGtkDelegate* delegate() const { return delegate_.get(); }
   TabContents* tab_contents() { return tab_contents_; }
   GtkWidget* expanded_container() { return expanded_.get(); }
   WebContents* web_contents();
@@ -149,7 +149,7 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
   // Our optional views wrapper. If non-NULL, we return this widget as our
   // GetNativeView() and insert |expanded_| as its child in the GtkWidget
   // hierarchy.
-  scoped_ptr<TabContentsViewWrapperGtk> view_wrapper_;
+  scoped_ptr<WebContentsViewGtkDelegate> delegate_;
 
   // The size we want the tab contents view to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.

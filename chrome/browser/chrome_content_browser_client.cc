@@ -123,7 +123,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_gtk_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/tab_contents/chrome_web_contents_view_mac_delegate.h"
@@ -346,7 +346,7 @@ content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
   return new TabContentsViewViews(web_contents);
 #elif defined(TOOLKIT_USES_GTK)
   return new content::TabContentsViewGtk(web_contents,
-                                         new ChromeTabContentsViewWrapperGtk);
+                                         new ChromeWebContentsViewGtkDelegate);
 #elif defined(OS_MACOSX)
   return web_contents_view_mac::CreateWebContentsView(
       web_contents,

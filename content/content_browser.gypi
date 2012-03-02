@@ -124,6 +124,7 @@
     'public/browser/web_contents_observer.cc',
     'public/browser/web_contents_observer.h',
     'public/browser/web_contents_view.h',
+    'public/browser/web_contents_view_gtk_delegate.h',
     'public/browser/web_contents_view_mac_delegate.h',
     'public/browser/web_intents_dispatcher.h',
     'public/browser/web_ui.h',
@@ -647,7 +648,6 @@
     'browser/tab_contents/tab_contents_view_gtk.h',
     'browser/tab_contents/tab_contents_view_helper.cc',
     'browser/tab_contents/tab_contents_view_helper.h',
-    'browser/tab_contents/tab_contents_view_wrapper_gtk.h',
     'browser/tab_contents/title_updated_details.h',
     'browser/tab_contents/web_contents_view_android.cc',
     'browser/tab_contents/web_contents_view_android.h',
@@ -748,6 +748,12 @@
         # For XShm* in backing_store_x.cc
         '../build/linux/system.gyp:x11',
         '../dbus/dbus.gyp:dbus',
+      ],
+    }, {
+      'sources!': [
+        # The rules only catch files that start or end with gtk, but this file
+        # would be incorrectly named if we forced the gtk at the end.
+        'public/browser/web_contents_view_gtk_delegate.h',
       ],
     }],
     ['OS=="linux"', {

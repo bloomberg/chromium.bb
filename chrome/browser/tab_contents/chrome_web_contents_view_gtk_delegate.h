@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_TAB_CONTENTS_VIEW_WRAPPER_GTK_H_
-#define CHROME_BROWSER_TAB_CONTENTS_CHROME_TAB_CONTENTS_VIEW_WRAPPER_GTK_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_GTK_DELEGATE_H_
+#define CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_GTK_DELEGATE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/tab_contents/tab_contents_view_wrapper_gtk.h"
+#include "content/public/browser/web_contents_view_gtk_delegate.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -19,18 +19,18 @@ class WebDragBookmarkHandlerGtk;
 
 // A chrome/ specific class that extends TabContentsViewGtk with features like
 // constrained windows, which live in chrome/.
-class ChromeTabContentsViewWrapperGtk
-    : public content::TabContentsViewWrapperGtk {
+class ChromeWebContentsViewGtkDelegate
+    : public content::WebContentsViewGtkDelegate {
  public:
-  ChromeTabContentsViewWrapperGtk();
-  virtual ~ChromeTabContentsViewWrapperGtk();
+  ChromeWebContentsViewGtkDelegate();
+  virtual ~ChromeWebContentsViewGtkDelegate();
 
   // Unlike Windows, ConstrainedWindows need to collaborate with the
   // TabContentsViewGtk to position the dialogs.
   void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
   void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
-  // Overridden from TabContentsViewGtkWrapper:
+  // Overridden from WebContentsViewGtkDelegate:
   virtual void WrapView(content::TabContentsViewGtk* view) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual void OnCreateViewForWidget() OVERRIDE;
@@ -43,7 +43,7 @@ class ChromeTabContentsViewWrapperGtk
 
  private:
   // Sets the location of the constrained windows.
-  CHROMEGTK_CALLBACK_1(ChromeTabContentsViewWrapperGtk, void,
+  CHROMEGTK_CALLBACK_1(ChromeWebContentsViewGtkDelegate, void,
                        OnSetFloatingPosition,
                        GtkAllocation*);
 
@@ -65,4 +65,4 @@ class ChromeTabContentsViewWrapperGtk
   scoped_ptr<WebDragBookmarkHandlerGtk> bookmark_handler_gtk_;
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_TAB_CONTENTS_VIEW_WRAPPER_GTK_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_CHROME_WEB_CONTENTS_VIEW_GTK_DELEGATE_H_

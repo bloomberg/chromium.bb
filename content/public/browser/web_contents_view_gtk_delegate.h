@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_WRAPPER_GTK_H_
-#define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_WRAPPER_GTK_H_
+#ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_GTK_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_GTK_DELEGATE_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -20,9 +20,9 @@ struct ContextMenuParams;
 // An object that supplies the Gtk parent of TabContentsViewGtk. Embedders may
 // want to insert widgets that provide features that live with the
 // TabContentsViewGtk.
-class CONTENT_EXPORT TabContentsViewWrapperGtk {
+class CONTENT_EXPORT WebContentsViewGtkDelegate {
  public:
-  // Initializes the TabContentsViewGtkWrapper by taking |view| and adding it
+  // Initializes the WebContentsViewGtkDelegate by taking |view| and adding it
   // this object's GtkContainer.
   virtual void WrapView(TabContentsViewGtk* view) = 0;
 
@@ -37,7 +37,7 @@ class CONTENT_EXPORT TabContentsViewWrapperGtk {
   // Handles a focus event from the renderer process.
   virtual void Focus() = 0;
 
-  // Gives TabContentsViewGtkWrapper a first chance at focus events from our
+  // Gives WebContentsViewGtkDelegate a first chance at focus events from our
   // render widget host, before the main view invokes its default
   // behaviour. Returns TRUE if |return_value| has been set and that value
   // should be returned to GTK+.
@@ -49,9 +49,9 @@ class CONTENT_EXPORT TabContentsViewWrapperGtk {
   // specific crud.
   virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
 
-  virtual ~TabContentsViewWrapperGtk() {}
+  virtual ~WebContentsViewGtkDelegate() {}
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_WRAPPER_GTK_H_
+#endif  // CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_VIEW_GTK_DELEGATE_H_

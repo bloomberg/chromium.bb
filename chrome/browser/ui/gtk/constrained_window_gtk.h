@@ -20,7 +20,7 @@ typedef struct _GdkColor GdkColor;
 #if defined(TOOLKIT_VIEWS)
 class NativeTabContentsViewGtk;
 #else
-class ChromeTabContentsViewWrapperGtk;
+class ChromeWebContentsViewGtkDelegate;
 #endif
 
 class ConstrainedWindowGtkDelegate {
@@ -52,7 +52,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
 #if defined(TOOLKIT_VIEWS)
    typedef NativeTabContentsViewGtk TabContentsViewType;
 #else
-   typedef ChromeTabContentsViewWrapperGtk TabContentsViewType;
+   typedef ChromeWebContentsViewGtkDelegate TabContentsViewType;
 #endif
 
   ConstrainedWindowGtk(TabContentsWrapper* wrapper,
