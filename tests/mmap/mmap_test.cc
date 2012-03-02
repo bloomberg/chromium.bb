@@ -61,6 +61,10 @@ static void assert_addr_is_unreadable(volatile char *addr) {
     fprintf(stderr, "Skipping assert_addr_is_unreadable() under Valgrind\n");
     return;
   }
+  if (getenv("RUNNING_ON_ASAN") != NULL) {
+    fprintf(stderr, "Skipping assert_addr_is_unreadable() under ASan\n");
+    return;
+  }
 
   int rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
   assert(rc == 0);
