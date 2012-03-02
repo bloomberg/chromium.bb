@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,8 +69,10 @@ class SortHelper {
         model_(model) {}
 
   bool operator()(int a, int b) {
-    std::pair<int, int> group_range1 = model_->GetGroupRangeForResource(a);
-    std::pair<int, int> group_range2 = model_->GetGroupRangeForResource(b);
+    TaskManagerModel::GroupRange group_range1 =
+        model_->GetGroupRangeForResource(a);
+    TaskManagerModel::GroupRange group_range2 =
+        model_->GetGroupRangeForResource(b);
     if (group_range1 == group_range2) {
       // The two rows are in the same group, sort so that items in the same
       // group always appear in the same order. |ascending_| is intentionally
@@ -359,7 +361,7 @@ class SortHelper {
     if (taskManager_->IsBrowserProcess(modelIndex))
       selectionContainsBrowserProcess = true;
 
-    std::pair<int, int> rangePair =
+    TaskManagerModel::GroupRange rangePair =
         model_->GetGroupRangeForResource(modelIndex);
     NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
     for (int j = 0; j < rangePair.second; ++j)

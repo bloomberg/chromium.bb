@@ -9,6 +9,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
@@ -83,7 +84,7 @@ string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
     : update_requests_(0),
       update_state_(IDLE),
-      goat_salt_(rand()),
+      goat_salt_(base::RandUint64()),
       last_unique_id_(0) {
   AddResourceProvider(
       new TaskManagerBrowserProcessResourceProvider(task_manager));
@@ -309,8 +310,8 @@ SkBitmap TaskManagerModel::GetResourceIcon(int index) const {
   return *default_icon;
 }
 
-std::pair<int, int> TaskManagerModel::GetGroupRangeForResource(int index)
-    const {
+TaskManagerModel::GroupRange
+TaskManagerModel::GetGroupRangeForResource(int index) const {
   CHECK_LT(index, ResourceCount());
   TaskManager::Resource* resource = resources_[index];
   GroupMap::const_iterator group_iter =
@@ -337,7 +338,7 @@ int TaskManagerModel::GetGroupIndexForResource(int index) const {
         group_index++;
   }
 
-  DCHECK(group_index != -1);
+  DCHECK_NE(group_index, -1);
   return group_index;
 }
 
@@ -498,7 +499,7 @@ bool TaskManagerModel::GetPrivateMemory(int index, size_t* result) const {
   base::ProcessHandle handle = resources_[index]->GetProcess();
   MemoryUsageMap::const_iterator iter = memory_usage_map_.find(handle);
   if (iter == memory_usage_map_.end()) {
-    std::pair<size_t, size_t> usage;
+    MemoryUsageEntry usage;
     if (!GetAndCacheMemoryMetrics(handle, &usage))
       return false;
 
@@ -514,7 +515,7 @@ bool TaskManagerModel::GetSharedMemory(int index, size_t* result) const {
   base::ProcessHandle handle = resources_[index]->GetProcess();
   MemoryUsageMap::const_iterator iter = memory_usage_map_.find(handle);
   if (iter == memory_usage_map_.end()) {
-    std::pair<size_t, size_t> usage;
+    MemoryUsageEntry usage;
     if (!GetAndCacheMemoryMetrics(handle, &usage))
       return false;
 
@@ -850,7 +851,7 @@ void TaskManagerModel::Refresh() {
     return;
   }
 
-  goat_salt_ = rand();
+  goat_salt_ = base::RandUint64();
 
   // Compute the CPU usage values.
   // Note that we compute the CPU usage for all resources (instead of doing it
@@ -1104,9 +1105,8 @@ void TaskManager::OpenAboutMemory() {
   browser->window()->Show();
 }
 
-bool TaskManagerModel::GetAndCacheMemoryMetrics(
-    base::ProcessHandle handle,
-    std::pair<size_t, size_t>* usage) const {
+bool TaskManagerModel::GetAndCacheMemoryMetrics(base::ProcessHandle handle,
+                                                MemoryUsageEntry* usage) const {
   MetricsMap::const_iterator iter = metrics_map_.find(handle);
   if (iter == metrics_map_.end())
     return false;

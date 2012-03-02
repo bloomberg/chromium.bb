@@ -866,8 +866,10 @@ gint TaskManagerGtk::CompareImpl(GtkTreeModel* model, GtkTreeIter* a,
     return model_->CompareValues(row1, row2, id);
 
   // Otherwise, make sure grouped resources are shown together.
-  std::pair<int, int> group_range1 = model_->GetGroupRangeForResource(row1);
-  std::pair<int, int> group_range2 = model_->GetGroupRangeForResource(row2);
+  TaskManagerModel::GroupRange group_range1 =
+      model_->GetGroupRangeForResource(row1);
+  TaskManagerModel::GroupRange group_range2 =
+      model_->GetGroupRangeForResource(row2);
 
   if (group_range1 == group_range2) {
     // Sort within groups.
@@ -929,7 +931,7 @@ void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
   AutoReset<bool> autoreset(&ignore_selection_changed_, true);
 
   // The set of groups that should be selected.
-  std::set<std::pair<int, int> > ranges;
+  std::set<TaskManagerModel::GroupRange> ranges;
   bool selection_contains_browser_process = false;
 
   GtkTreeModel* model;
@@ -947,7 +949,7 @@ void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
   g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
   g_list_free(paths);
 
-  for (std::set<std::pair<int, int> >::iterator iter = ranges.begin();
+  for (std::set<TaskManagerModel::GroupRange>::iterator iter = ranges.begin();
        iter != ranges.end(); ++iter) {
     for (int i = 0; i < iter->second; ++i) {
       GtkTreePath* child_path = gtk_tree_path_new_from_indices(iter->first + i,

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,7 +170,8 @@ SkBitmap TaskManagerTableModel::GetIcon(int row) {
 
 void TaskManagerTableModel::GetGroupRangeForItem(int item,
                                                  views::GroupRange* range) {
-  std::pair<int, int> range_pair = model_->GetGroupRangeForResource(item);
+  TaskManagerModel::GroupRange range_pair =
+      model_->GetGroupRangeForResource(item);
   range->start = range_pair.first;
   range->length = range_pair.second;
 }

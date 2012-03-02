@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
@@ -26,7 +27,7 @@
 namespace {
 
 Value* CreateColumnValue(const TaskManagerModel* tm,
-                         const std::string column_name,
+                         const std::string& column_name,
                          const int i) {
   if (column_name == "uniqueId")
     return Value::CreateIntegerValue(tm->GetResourceUniqueId(i));
@@ -134,7 +135,7 @@ void CreateGroupColumnList(const TaskManagerModel* tm,
                            const int index,
                            const int length,
                            DictionaryValue* val) {
-  ListValue *list = new ListValue();
+  ListValue* list = new ListValue();
   for (int i = index; i < (index + length); ++i) {
     list->Append(CreateColumnValue(tm, column_name, i));
   }
@@ -184,9 +185,7 @@ DictionaryValue* CreateTaskGroupValue(
      return val;
 
   int index = tm->GetResourceIndexForGroup(group_index, 0);
-  std::pair<int, int> group_range;
-  group_range = tm->GetGroupRangeForResource(index);
-  int length = group_range.second;
+  int length = tm->GetGroupRangeForResource(index).second;
 
   // Forces to set following 3 columns regardless of |enable_columns|.
   val->SetInteger("index", index);
