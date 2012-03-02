@@ -31,32 +31,17 @@
 
 #define _GNU_SOURCE
 
-#include <libbacklight.h>
+#include "libbacklight.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <linux/types.h>
 #include <dirent.h>
-#include <drm/drm_mode.h>
+#include <drm.h>
 #include <fcntl.h>
 #include <malloc.h>
 #include <string.h>
 #include <errno.h>
-
-static const char *output_names[] = { "Unknown",
-                                      "VGA",
-                                      "DVI-I",
-                                      "DVI-D",
-                                      "DVI-A",
-                                      "Composite",
-                                      "SVIDEO",
-                                      "LVDS",
-                                      "Component",
-                                      "9-pin DIN",
-				      "DisplayPort"
-                                      "HDMI Type A",
-                                      "HDMI Type B",
-                                      "TV",
-				      "Embedded DisplayPort"
-};
 
 static long backlight_get(struct backlight *backlight, char *node)
 {
@@ -169,7 +154,7 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 	enum backlight_type type = 0;
 	char buffer[100];
 	struct backlight *backlight;
-	int err, ret;
+	int ret;
 
 	if (!drm_device)
 		return NULL;
