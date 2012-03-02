@@ -305,12 +305,6 @@ FileManager.prototype = {
       invokeCallback(successCallback, !!opt_sync, entry);
       return;
     }
-
-    batchAsyncCall(entry, 'file', function(file) {
-      entry.cachedSize_ = file.size;
-      if (successCallback)
-        successCallback(entry);
-    }, opt_errorCallback);
   }
 
   /**
@@ -334,8 +328,9 @@ FileManager.prototype = {
     }
 
     if (entry.isFile) {
-      batchAsyncCall(entry, 'file', function(file) {
-        entry.cachedMtime_ = file.lastModifiedDate;
+      batchAsyncCall(entry, 'getMetadata', function(metadata) {
+        entry.cachedMtime_ = metadata.modificationTime;
+        entry.cachedSize_ = metadata.size;
         if (successCallback)
           successCallback(entry);
       });
