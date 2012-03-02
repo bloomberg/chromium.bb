@@ -1515,6 +1515,27 @@ bool Extension::LoadBackgroundPersistent(
   return true;
 }
 
+bool Extension::LoadBackgroundAllowJsAccess(
+    const ExtensionAPIPermissionSet& api_permissions,
+    string16* error) {
+  Value* allow_js_access = NULL;
+  if (!manifest_->Get(keys::kBackgroundAllowJsAccess, &allow_js_access))
+    return true;
+
+  if (!allow_js_access->IsType(Value::TYPE_BOOLEAN) ||
+      !allow_js_access->GetAsBoolean(&allow_background_js_access_)) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundAllowJsAccess);
+    return false;
+  }
+
+  if (!has_background_page()) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundAllowJsAccessNoPage);
+    return false;
+  }
+
+  return true;
+}
+
 // static
 bool Extension::IsTrustedId(const std::string& id) {
   // See http://b/4946060 for more details.
@@ -1528,6 +1549,7 @@ Extension::Extension(const FilePath& path,
       offline_enabled_(false),
       converted_from_user_script_(false),
       background_page_persists_(true),
+      allow_background_js_access_(true),
       manifest_(manifest.release()),
       is_storage_isolated_(false),
       launch_container_(extension_misc::LAUNCH_TAB),
@@ -2323,6 +2345,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
     return false;
 
   if (!LoadBackgroundPersistent(api_permissions, error))
+    return false;
+
+  if (!LoadBackgroundAllowJsAccess(api_permissions, error))
     return false;
 
   if (manifest_->HasKey(keys::kDefaultLocale)) {

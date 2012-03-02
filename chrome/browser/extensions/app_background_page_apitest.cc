@@ -143,6 +143,44 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, ManifestBackgroundPage) {
           GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
 }
 
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, NoJsManifestBackgroundPage) {
+  host_resolver()->AddRule("a.com", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+
+  std::string app_manifest = base::StringPrintf(
+      "{"
+      "  \"name\": \"App\","
+      "  \"version\": \"0.1\","
+      "  \"manifest_version\": 2,"
+      "  \"app\": {"
+      "    \"urls\": ["
+      "      \"http://a.com/\""
+      "    ],"
+      "    \"launch\": {"
+      "      \"web_url\": \"http://a.com:%d/\""
+      "    }"
+      "  },"
+      "  \"permissions\": [\"background\"],"
+      "  \"background\": {"
+      "    \"page\": \"http://a.com:%d/bg.html\","
+      "    \"allow_js_access\": false"
+      "  }"
+      "}",
+      test_server()->host_port_pair().port(),
+      test_server()->host_port_pair().port());
+
+  FilePath app_dir;
+  ASSERT_TRUE(CreateApp(app_manifest, &app_dir));
+  ASSERT_TRUE(LoadExtension(app_dir));
+
+  // The background page should load, but window.open should return null.
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(
+      BackgroundContentsServiceFactory::GetForProfile(browser()->profile())->
+          GetAppBackgroundContents(ASCIIToUTF16(extension->id())));
+  ASSERT_TRUE(RunExtensionTest("app_background_page/no_js")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, OpenTwoBackgroundPages) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());

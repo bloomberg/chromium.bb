@@ -454,15 +454,19 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
     return false;
 
   // If the URL is part of a hosted app that does not have the background
-  // permission, we want to give each instance its own process to improve
+  // permission, or that does not allow JavaScript access to the background
+  // page, we want to give each instance its own process to improve
   // responsiveness.
-  if (extension->GetType() == Extension::TYPE_HOSTED_APP &&
-      !extension->HasAPIPermission(ExtensionAPIPermission::kBackground))
-    return false;
+  if (extension->GetType() == Extension::TYPE_HOSTED_APP) {
+    if (!extension->HasAPIPermission(ExtensionAPIPermission::kBackground) ||
+        !extension->allow_background_js_access()) {
+      return false;
+    }
+  }
 
-  // Hosted apps that have the background permission must use process per site,
-  // since all instances can make synchronous calls to the background window.
-  // Other extensions should use process per site as well.
+  // Hosted apps that have script access to their background page must use
+  // process per site, since all instances can make synchronous calls to the
+  // background window.  Other extensions should use process per site as well.
   return true;
 }
 
@@ -1239,7 +1243,21 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   // the appropriate permission, fail the attempt.
   if (container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-    return io_data->GetExtensionInfoMap()->SecurityOriginHasAPIPermission(
+    ExtensionInfoMap* map = io_data->GetExtensionInfoMap();
+
+    // If the opener is not allowed to script its background window, then return
+    // false so that the window.open call returns null.  In this case, only
+    // the manifest is permitted to create a background window.
+    // Note: this use of GetExtensionOrAppByURL is safe but imperfect.  It may
+    // return a recently installed Extension even if this CanCreateWindow call
+    // was made by an old copy of the page in a normal web process.  That's ok,
+    // because the permission check below will still fail.
+    const Extension* extension = map->extensions().GetExtensionOrAppByURL(
+        ExtensionURLInfo(source_origin));
+    if (extension && !extension->allow_background_js_access())
+      return false;
+
+    return map->SecurityOriginHasAPIPermission(
         source_origin, render_process_id, ExtensionAPIPermission::kBackground);
   }
   return true;

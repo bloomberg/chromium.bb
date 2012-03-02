@@ -17,10 +17,11 @@ namespace extension_manifest_keys {
   extern const char kAltKey[];
   extern const char kApp[];
   extern const char kBackground[];
+  extern const char kBackgroundAllowJsAccess[];
   extern const char kBackgroundPage[];
   extern const char kBackgroundPageLegacy[];
-  extern const char kBackgroundScripts[];
   extern const char kBackgroundPersistent[];
+  extern const char kBackgroundScripts[];
   extern const char kBrowserAction[];
   extern const char kBrowseURLs[];
   extern const char kChromeURLOverrides[];
@@ -162,6 +163,8 @@ namespace extension_manifest_errors {
   extern const char kFeatureNotAllowed[];
   extern const char kInvalidAllFrames[];
   extern const char kInvalidBackground[];
+  extern const char kInvalidBackgroundAllowJsAccess[];
+  extern const char kInvalidBackgroundAllowJsAccessNoPage[];
   extern const char kInvalidBackgroundCombination[];
   extern const char kInvalidBackgroundScript[];
   extern const char kInvalidBackgroundScripts[];

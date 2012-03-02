@@ -16,10 +16,11 @@ const char kAllFrames[] = "all_frames";
 const char kAltKey[] = "altKey";
 const char kApp[] = "app";
 const char kBackground[] = "background";
+const char kBackgroundAllowJsAccess[] = "background.allow_js_access";
 const char kBackgroundPage[] = "background.page";
 const char kBackgroundPageLegacy[] = "background_page";
-const char kBackgroundScripts[] = "background.scripts";
 const char kBackgroundPersistent[] = "background.persistent";
+const char kBackgroundScripts[] = "background.scripts";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";
 const char kCommands[] = "commands";
@@ -179,6 +180,11 @@ const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidBackground[] =
     "Invalid value for 'background_page'.";
+const char kInvalidBackgroundAllowJsAccess[] =
+    "Invalid value for 'background.allow_js_access'.";
+const char kInvalidBackgroundAllowJsAccessNoPage[] =
+    "Must specify one of background.page or background.scripts to use"
+    " background.allow_js_access.";
 const char kInvalidBackgroundCombination[] =
     "The background.page and background.scripts properties cannot be used at "
     "the same time.";

@@ -557,6 +557,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool has_background_page() const {
     return background_url_.is_valid() || !background_scripts_.empty();
   }
+  bool allow_background_js_access() const {
+    return allow_background_js_access_;
+  }
   const std::vector<std::string>& background_scripts() const {
     return background_scripts_;
   }
@@ -702,6 +705,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadBackgroundPage(const ExtensionAPIPermissionSet& api_permissions,
                           string16* error);
   bool LoadBackgroundPersistent(
+      const ExtensionAPIPermissionSet& api_permissions,
+      string16* error);
+  bool LoadBackgroundAllowJsAccess(
       const ExtensionAPIPermissionSet& api_permissions,
       string16* error);
 
@@ -856,6 +862,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // True if the background page should stay loaded forever; false if it should
   // load on-demand (when it needs to handle an event). Defaults to true.
   bool background_page_persists_;
+
+  // True if the background page can be scripted by pages of the app or
+  // extension, in which case all such pages must run in the same process.
+  // False if such pages are not permitted to script the background page,
+  // allowing them to run in different processes.
+  bool allow_background_js_access_;
 
   // Optional URL to a page for setting options/preferences.
   GURL options_url_;

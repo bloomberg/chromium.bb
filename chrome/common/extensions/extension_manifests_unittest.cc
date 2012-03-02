@@ -1037,6 +1037,7 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
       LoadAndExpectSuccess("background_page.json"));
   ASSERT_TRUE(extension);
   EXPECT_EQ("/foo.html", extension->GetBackgroundURL().path());
+  EXPECT_TRUE(extension->allow_background_js_access());
 
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
@@ -1075,6 +1076,13 @@ TEST_F(ExtensionManifestTest, BackgroundScripts) {
   manifest->SetString("background_page", "monkey.html");
   LoadAndExpectError(Manifest(manifest.get(), ""),
                      errors::kInvalidBackgroundCombination);
+}
+
+TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {
+  scoped_refptr<Extension> extension;
+  extension = LoadAndExpectSuccess("background_allow_no_js_access.json");
+  ASSERT_TRUE(extension);
+  EXPECT_FALSE(extension->allow_background_js_access());
 }
 
 TEST_F(ExtensionManifestTest, PageActionManifestVersion2) {
