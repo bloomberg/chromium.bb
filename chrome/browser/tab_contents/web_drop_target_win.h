@@ -12,10 +12,10 @@
 
 class InterstitialDropTarget;
 class RenderViewHost;
-class TabContentsWrapper;
 
 namespace content {
 class WebContents;
+class WebDragDestDelegate;
 }
 
 // A helper object that provides drop capabilities to a TabContents. The
@@ -31,6 +31,9 @@ class WebDropTarget : public ui::DropTarget {
   void set_drag_cursor(WebKit::WebDragOperation op) {
     drag_cursor_ = op;
   }
+
+  content::WebDragDestDelegate* delegate() const { return delegate_; }
+  void set_delegate(content::WebDragDestDelegate* d) { delegate_ = d; }
 
  protected:
   virtual DWORD OnDragEnter(IDataObject* data_object,
@@ -54,11 +57,6 @@ class WebDropTarget : public ui::DropTarget {
   // Our associated WebContents.
   content::WebContents* web_contents_;
 
-  // The TabContentsWrapper for |tab_contents_|.
-  // Weak reference; may be NULL if the contents aren't contained in a wrapper
-  // (e.g. WebUI dialogs).
-  TabContentsWrapper* tab_;
-
   // We keep track of the render view host we're dragging over.  If it changes
   // during a drag, we need to re-send the DragEnter message.  WARNING:
   // this pointer should never be dereferenced.  We only use it for comparing
@@ -72,6 +70,9 @@ class WebDropTarget : public ui::DropTarget {
   // A special drop target handler for when we try to d&d while an interstitial
   // page is showing.
   scoped_ptr<InterstitialDropTarget> interstitial_drop_target_;
+
+  // A delegate that can receive drag information about drag events.
+  content::WebDragDestDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDropTarget);
 };

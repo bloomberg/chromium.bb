@@ -7,13 +7,10 @@
 #include <windows.h>
 #include <shlobj.h>
 
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
+#include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
 #include "chrome/browser/tab_contents/web_drag_utils_win.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/web_drag_dest_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -93,13 +90,17 @@ class InterstitialDropTarget {
 WebDropTarget::WebDropTarget(HWND source_hwnd, WebContents* web_contents)
     : ui::DropTarget(source_hwnd),
       web_contents_(web_contents),
-      tab_(NULL),
       current_rvh_(NULL),
       drag_cursor_(WebDragOperationNone),
-      interstitial_drop_target_(new InterstitialDropTarget(web_contents)) {
+      interstitial_drop_target_(new InterstitialDropTarget(web_contents)),
+      delegate_(new WebDragBookmarkHandlerWin()) {
 }
 
 WebDropTarget::~WebDropTarget() {
+  // TODO(jam): this will be owned by chrome when it moves, so no scoped
+  // pointer.
+  if (delegate_)
+    delete delegate_;
 }
 
 DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
@@ -108,8 +109,8 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
                                  DWORD effects) {
   current_rvh_ = web_contents_->GetRenderViewHost();
 
-  if (!tab_)
-    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
+  if (delegate_)
+    delegate_->DragInitialize(web_contents_);
 
   // Don't pass messages to the renderer if an interstitial page is showing
   // because we don't want the interstitial page to navigate.  Instead,
@@ -134,16 +135,8 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
       gfx::Point(cursor_position.x, cursor_position.y),
       web_drag_utils_win::WinDragOpMaskToWebDragOpMask(effects));
 
-  // This is non-null if web_contents_ is showing an ExtensionWebUI with
-  // support for (at the moment experimental) drag and drop extensions.
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
-    ui::OSExchangeData os_exchange_data(
-        new ui::OSExchangeDataProviderWin(data_object));
-    BookmarkNodeData bookmark_drag_data;
-    if (bookmark_drag_data.Read(os_exchange_data))
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragEnter(
-          bookmark_drag_data);
-  }
+  if (delegate_)
+      delegate_->OnDragEnter(data_object);
 
   // We lie here and always return a DROPEFFECT because we don't want to
   // wait for the IPC call to return.
@@ -168,14 +161,8 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
       gfx::Point(cursor_position.x, cursor_position.y),
       web_drag_utils_win::WinDragOpMaskToWebDragOpMask(effects));
 
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
-    ui::OSExchangeData os_exchange_data(
-        new ui::OSExchangeDataProviderWin(data_object));
-    BookmarkNodeData bookmark_drag_data;
-    if (bookmark_drag_data.Read(os_exchange_data))
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragOver(
-          bookmark_drag_data);
-  }
+  if (delegate_)
+    delegate_->OnDragOver(data_object);
 
   return web_drag_utils_win::WebDragOpToWinDragOp(drag_cursor_);
 }
@@ -191,14 +178,8 @@ void WebDropTarget::OnDragLeave(IDataObject* data_object) {
     web_contents_->GetRenderViewHost()->DragTargetDragLeave();
   }
 
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
-    ui::OSExchangeData os_exchange_data(
-        new ui::OSExchangeDataProviderWin(data_object));
-    BookmarkNodeData bookmark_drag_data;
-    if (bookmark_drag_data.Read(os_exchange_data))
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragLeave(
-          bookmark_drag_data);
-  }
+  if (delegate_)
+    delegate_->OnDragLeave(data_object);
 }
 
 DWORD WebDropTarget::OnDrop(IDataObject* data_object,
@@ -221,22 +202,10 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y));
 
-  if (tab_ && tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()) {
-    ui::OSExchangeData os_exchange_data(
-        new ui::OSExchangeDataProviderWin(data_object));
-    BookmarkNodeData bookmark_drag_data;
-    if (bookmark_drag_data.Read(os_exchange_data))
-      tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDrop(
-          bookmark_drag_data);
-  }
+  if (delegate_)
+    delegate_->OnDrop(data_object);
 
   current_rvh_ = NULL;
-
-  // Focus the target browser.
-  Browser* browser = Browser::GetBrowserForController(
-      &web_contents_->GetController(), NULL);
-  if (browser)
-    browser->window()->Show();
 
   // This isn't always correct, but at least it's a close approximation.
   // For now, we always map a move to a copy to prevent potential data loss.

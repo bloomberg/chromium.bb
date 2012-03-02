@@ -11,7 +11,10 @@
 #endif  // TOOLKIT_USES_GTK
 
 #include "base/string16.h"
-#include "content/common/content_export.h"
+
+#if defined(OS_WIN)
+#include "ui/base/dragdrop/drop_target.h"
+#endif
 
 class GURL;
 
@@ -20,7 +23,7 @@ namespace content {
 class WebContents;
 
 // An optional delegate that listens for drags of bookmark data.
-class CONTENT_EXPORT WebDragDestDelegate {
+class WebDragDestDelegate {
  public:
   // Announces that a drag has started. It's valid that a drag starts, along
   // with over/enter/leave/drop notifications without receiving any bookmark
@@ -28,9 +31,18 @@ class CONTENT_EXPORT WebDragDestDelegate {
   virtual void DragInitialize(WebContents* contents) = 0;
 
   // Notifications of drag progression.
+#if defined(OS_WIN)
+  virtual void OnDragOver(IDataObject* data_object) = 0;
+  virtual void OnDragEnter(IDataObject* data_object) = 0;
+  virtual void OnDrop(IDataObject* data_object) = 0;
+  virtual void OnDragLeave(IDataObject* data_object) = 0;
+#else
   virtual void OnDragOver() = 0;
   virtual void OnDragEnter() = 0;
   virtual void OnDrop() = 0;
+  // This should also clear any state kept about this drag.
+  virtual void OnDragLeave() = 0;
+#endif
 
 #if defined(TOOLKIT_USES_GTK)
   // Returns the bookmark atom type. GTK and Views return different values here.
@@ -42,9 +54,6 @@ class CONTENT_EXPORT WebDragDestDelegate {
   virtual void OnReceiveProcessedData(const GURL& url,
                                       const string16& title) = 0;
 #endif  // TOOLKIT_USES_GTK
-
-  // This should also clear any state kept about this drag.
-  virtual void OnDragLeave() = 0;
 
   virtual ~WebDragDestDelegate() {}
 };

@@ -2545,6 +2545,8 @@
         'browser/tab_contents/web_drag_bookmark_handler_gtk.h',
         'browser/tab_contents/web_drag_bookmark_handler_mac.h',
         'browser/tab_contents/web_drag_bookmark_handler_mac.mm',
+        'browser/tab_contents/web_drag_bookmark_handler_win.cc',
+        'browser/tab_contents/web_drag_bookmark_handler_win.h',
         'browser/tab_contents/web_drag_source_win.cc',
         'browser/tab_contents/web_drag_source_win.h',
         'browser/tab_contents/web_drag_utils_win.cc',
