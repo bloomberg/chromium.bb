@@ -90,10 +90,70 @@ function bb_baseline_setup {
 }
 
 
+# Setup goma.  Used internally to buildbot_functions.sh.
+function bb_setup_goma_internal {
+  local goma_ctl=$(which goma_ctl.sh)
+  if [ "${goma_ctl}" != "" ]; then
+    local goma_dir=$(dirname ${goma_ctl})
+  fi
+  goma_dir=${goma_dir:-/b/build/goma}
+
+  if [ ! -f ${goma_dir}/goma_ctl.sh ]; then
+    echo "@@@STEP_WARNINGS@@@"
+    echo "Goma not found on this machine; defaulting to make"
+    return
+  fi
+  export GOMA_DIR=${goma_dir}
+  echo "GOMA_DIR: " $GOMA_DIR
+
+  ${GOMA_DIR}/goma_ctl.sh start
+  if [ -f ${goma_dir}/goma.key ]; then
+    export GOMA_API_KEY_FILE=${GOMA_DIR}/goma.key
+  fi
+  export GOMA_COMPILER_PROXY_DAEMON_MODE=true
+  export GOMA_COMPILER_PROXY_RPC_TIMEOUT_SECS=300
+  export PATH=$GOMA_DIR:$PATH
+}
+
+# $@: make args.
+# Use goma if possible; degrades to non-Goma if needed.
+function bb_goma_make {
+  bb_setup_goma_internal
+
+  if [ "${GOMA_DIR}" = "" ]; then
+    make -j${JOBS} "$@"
+    return
+  fi
+
+  HOST_CC=$GOMA_DIR/gcc
+  HOST_CXX=$GOMA_DIR/g++
+  TARGET_CC=$(/bin/ls $ANDROID_TOOLCHAIN/*-gcc | head -n1)
+  TARGET_CXX=$(/bin/ls $ANDROID_TOOLCHAIN/*-g++ | head -n1)
+  TARGET_CC="$GOMA_DIR/gomacc $TARGET_CC"
+  TARGET_CXX="$GOMA_DIR/gomacc $TARGET_CXX"
+  COMMON_JAVAC="$GOMA_DIR/gomacc /usr/bin/javac -J-Xmx512M \
+    -target 1.5 -Xmaxerrs 9999999"
+
+  make \
+    -j100 \
+    -l20 \
+    HOST_CC="$HOST_CC" \
+    HOST_CXX="$HOST_CXX" \
+    TARGET_CC="$TARGET_CC" \
+    TARGET_CXX="$TARGET_CXX" \
+    CC.host="$HOST_CC" \
+    CXX.host="$HOST_CXX" \
+    CC.target="$TARGET_CC" \
+    CXX.target="$TARGET_CXX" \
+    LINK.target="$TARGET_CXX" \
+    COMMON_JAVAC="$COMMON_JAVAC" \
+    "$@"
+}
+
 # Compile step
 function bb_compile {
   echo "@@@BUILD_STEP Compile@@@"
-  make -j${JOBS}
+  bb_goma_make
 }
 
 # Experimental compile step; does not turn the tree red if it fails.
@@ -103,7 +163,7 @@ function bb_compile_experimental {
   for target in ${EXPERIMENTAL_TARGETS} ; do
     echo "@@@BUILD_STEP Experimental Compile $target @@@"
     set +e
-    make -k -j4 "${target}"
+    bb_goma_make -k "${target}"
     if [ $? -ne 0 ] ; then
       echo "@@@STEP_WARNINGS@@@"
     fi
