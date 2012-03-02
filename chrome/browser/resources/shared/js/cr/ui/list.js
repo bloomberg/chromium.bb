@@ -1120,8 +1120,6 @@ cr.define('cr.ui', function() {
           listItem = newCachedItems[y];
       }
 
-      this.scrollTop = scrollTop;
-
       this.firstIndex_ = firstIndex;
       this.lastIndex_ = lastIndex;
 
