@@ -80,8 +80,8 @@ class CookiesTest(pyauto.PyUITest):
                     msg='Cookie did not exist after loading %s' % https_url)
     # Restart and verify that the cookie persists.
     self.RestartBrowser(clear_profile=False)
-    self.assertTrue(cookie_data, self.GetCookie(pyauto.GURL(https_url)),
-                    msg='Cookie did not persist after restarting session.')
+    self.assertEqual(cookie_data, self.GetCookie(pyauto.GURL(https_url)),
+                     msg='Cookie did not persist after restarting session.')
 
   def testCookiesFile(self):
     """Test cookies set from file:// url for incognito and regular windows."""
