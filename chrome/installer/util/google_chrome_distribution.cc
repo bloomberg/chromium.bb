@@ -255,18 +255,25 @@ bool LaunchSetupAsConsoleUser(const FilePath& setup_path,
   }
 
   DWORD console_id = ::WTSGetActiveConsoleSessionId();
-  if (console_id == 0xFFFFFFFF)
+  if (console_id == 0xFFFFFFFF) {
+    PLOG(ERROR) << __FUNCTION__ << " failed to get active session id";
     return false;
+  }
   HANDLE user_token;
-  if (!::WTSQueryUserToken(console_id, &user_token))
+  if (!::WTSQueryUserToken(console_id, &user_token)) {
+    PLOG(ERROR) << __FUNCTION__ << " failed to get user token for console_id "
+                << console_id;
     return false;
+  }
   // Note: Handle inheritance must be true in order for the child process to be
   // able to use the duplicated handle above (Google Update results).
   base::LaunchOptions options;
   options.as_user = user_token;
   options.inherit_handles = true;
+  VLOG(1) << __FUNCTION__ << " launching " << cmd_line.GetCommandLineString();
   bool launched = base::LaunchProcess(cmd_line, options, NULL);
   ::CloseHandle(user_token);
+  VLOG(1) << __FUNCTION__ << "   result: " << launched;
   return launched;
 }
 
@@ -707,6 +714,10 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     const FilePath& setup_path, installer::InstallStatus status,
     const Version& version, const installer::Product& product,
     bool system_level) {
+  VLOG(1) << "LaunchUserExperiment status: " << status << " product: "
+          << product.distribution()->GetAppShortCutName()
+          << " system_level: " << system_level;
+
   if (system_level) {
     if (installer::NEW_VERSION_UPDATED == status) {
       // We need to relaunch as the interactive user.
