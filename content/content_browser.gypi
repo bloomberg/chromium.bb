@@ -828,6 +828,8 @@
         ['exclude', '^browser/renderer_host/render_widget_host_view_win.cc'],
         ['exclude', '^browser/renderer_host/render_widget_host_view_win.h'],
         ['exclude', '^browser/renderer_host/render_message_filter_win.cc'],
+        ['exclude', '^browser/tab_contents/web_drag_source_win.cc'],
+        ['exclude', '^browser/tab_contents/web_drag_source_win.h'],
       ],
     }, {
       'sources/': [

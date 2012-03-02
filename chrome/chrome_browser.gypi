@@ -4559,8 +4559,6 @@
             ['exclude', '^browser/google/google_update.h'],
             ['exclude', '^browser/hang_monitor/'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
-            ['exclude', '^browser/tab_contents/web_drag_source_win.cc'],
-            ['exclude', '^browser/tab_contents/web_drag_source_win.h'],
             ['exclude', '^browser/ui/panels/auto_hiding_desktop_bar_win.cc'],
             ['exclude', '^browser/ui/tabs/dock_info_win.cc'],
             ['exclude', '^browser/ui/views/about_ipc_dialog.cc'],
