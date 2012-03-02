@@ -314,11 +314,9 @@ def main(argv):
     else:
       raise Exception('Unknown option: %s' % opt)
 
-  print 'arch =', arch, 'subarch =', subarch
   if subarch != '':
     arch = arch + '-' + subarch
 
-  print 'arch =', arch
   if not ARG_REGISTERS.has_key(arch):
     raise Exception()
 
