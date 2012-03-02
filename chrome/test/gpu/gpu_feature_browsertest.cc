@@ -11,6 +11,7 @@
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/tracing.h"
@@ -55,6 +56,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 #endif
     }
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
+    command_line->AppendSwitchASCII(switches::kWindowSize, "400,300");
   }
 
   void SetupBlacklist(const std::string& json_blacklist) {
@@ -321,6 +323,19 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest,
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, CanOpenPopupAndRenderWith2DCanvas) {
   const FilePath url(FILE_PATH_LITERAL("canvas_popup.html"));
   RunTest(url, "\"SUCCESS\"", false);
+}
+
+class ThreadedCompositorTest : public GpuFeatureTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    GpuFeatureTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableThreadedCompositing);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, FLAKY_ThreadedCompositor) {
+  const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 }  // namespace anonymous
