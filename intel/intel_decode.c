@@ -3005,6 +3005,22 @@ gen7_3DSTATE_WM(struct drm_intel_decode *ctx)
 }
 
 static int
+gen4_3DPRIMITIVE(struct drm_intel_decode *ctx)
+{
+	instr_out(ctx, 0,
+		  "3DPRIMITIVE: %s %s\n",
+		  get_965_prim_type(ctx->data[0]),
+		  (ctx->data[0] & (1 << 15)) ? "random" : "sequential");
+	instr_out(ctx, 1, "vertex count\n");
+	instr_out(ctx, 2, "start vertex\n");
+	instr_out(ctx, 3, "instance count\n");
+	instr_out(ctx, 4, "start instance\n");
+	instr_out(ctx, 5, "index bias\n");
+
+	return 6;
+}
+
+static int
 decode_3d_965(struct drm_intel_decode *ctx)
 {
 	uint32_t opcode;
@@ -3105,7 +3121,7 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7918, 0x00ff, 4, 4, "3DSTATE_SO_BUFFER" },
 		{ 0x7a00, 0x00ff, 4, 6, "PIPE_CONTROL" },
 		{ 0x7b00, 0x00ff, 7, 7, "3DPRIMITIVE", 7 },
-		{ 0x7b00, 0x00ff, 6, 6, "3DPRIMITIVE" },
+		{ 0x7b00, 0x00ff, 6, 6, NULL, 0, gen4_3DPRIMITIVE },
 	}, *opcode_3d = NULL;
 
 	opcode = (data[0] & 0xffff0000) >> 16;
@@ -3593,20 +3609,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 			instr_out(ctx, 3, "immediate dword high\n");
 			return len;
 		}
-	case 0x7b00:
-		if (ctx->gen == 7)
-			break;
-
-		instr_out(ctx, 0,
-			  "3DPRIMITIVE: %s %s\n",
-			  get_965_prim_type(data[0]),
-			  (data[0] & (1 << 15)) ? "random" : "sequential");
-		instr_out(ctx, 1, "vertex count\n");
-		instr_out(ctx, 2, "start vertex\n");
-		instr_out(ctx, 3, "instance count\n");
-		instr_out(ctx, 4, "start instance\n");
-		instr_out(ctx, 5, "index bias\n");
-		return len;
 	}
 
 	if (opcode_3d) {
