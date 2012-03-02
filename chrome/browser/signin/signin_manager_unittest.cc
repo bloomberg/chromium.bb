@@ -7,12 +7,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,6 +24,22 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+const char kGetTokenPairValidResponse[] =
+    "{"
+    "  \"refresh_token\": \"rt1\","
+    "  \"access_token\": \"at1\","
+    "  \"expires_in\": 3600,"
+    "  \"token_type\": \"Bearer\""
+    "}";
+
+const char kUberAuthTokenURLFormat[] =
+    "%s?source=%s&issueuberauth=1";
+
+}  // namespace
+
 
 class SigninManagerTest : public TokenServiceTestHarness {
  public:
@@ -33,6 +51,72 @@ class SigninManagerTest : public TokenServiceTestHarness {
         content::Source<Profile>(profile_.get()));
     google_login_failure_.ListenFor(chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                                     content::Source<Profile>(profile_.get()));
+  }
+
+  void SimulateValidResponseSignInWithCredentials() {
+    // Simulate the correct StartOAuthLoginTokenFetch response.  This involves
+    // two separate fetches.
+    TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+    DCHECK(fetcher);
+    DCHECK(fetcher->delegate());
+
+    fetcher->set_url(
+      GURL(GaiaUrls::GetInstance()->client_login_to_oauth2_url()));
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString(kGetTokenPairValidResponse);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+    fetcher = factory_.GetFetcherByID(0);
+    DCHECK(fetcher);
+    DCHECK(fetcher->delegate());
+
+    fetcher->set_url(
+        GURL(GaiaUrls::GetInstance()->oauth2_token_url()));
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString(kGetTokenPairValidResponse);
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+    // Simulate the correct StartUberAuthTokenFetch response.
+    GURL url(base::StringPrintf(
+        kUberAuthTokenURLFormat,
+        GaiaUrls::GetInstance()->oauth1_login_url().c_str(),
+        GaiaConstants::kChromeSource));
+    fetcher = factory_.GetFetcherByID(0);
+    DCHECK(fetcher);
+    DCHECK(fetcher->delegate());
+    fetcher->set_url(url);
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString("token");
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+    // Simulate the correct StartTokenAuth response.
+    fetcher = factory_.GetFetcherByID(0);
+    DCHECK(fetcher);
+    DCHECK(fetcher->delegate());
+
+    fetcher->set_url(
+        GURL(GaiaUrls::GetInstance()->token_auth_url()));
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    net::ResponseCookies cookies;
+    cookies.push_back("SID=sid");
+    cookies.push_back("LSID=lsid");
+    fetcher->set_cookies(cookies);
+    fetcher->SetResponseString("data");
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+    // Simulate the correct GetUserInfo response.
+    fetcher = factory_.GetFetcherByID(0);
+    DCHECK(fetcher);
+    DCHECK(fetcher->delegate());
+    fetcher->set_url(GURL(GaiaUrls::GetInstance()->get_user_info_url()));
+    fetcher->set_status(net::URLRequestStatus());
+    fetcher->set_response_code(200);
+    fetcher->SetResponseString("email=user@gmail.com\nallServices=");
+    fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
   void SimulateValidResponseClientLogin(bool isGPlusUser) {
@@ -74,12 +158,32 @@ TEST_F(SigninManagerTest, SignInClientLogin) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  manager_->StartSignIn("username", "password", "", "");
+  manager_->StartSignIn("user@gmail.com", "password", "", "");
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   SimulateValidResponseClientLogin(true);
   EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
   EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kIsGooglePlusUser));
+
+  // Should go into token service and stop.
+  EXPECT_EQ(1U, google_login_success_.size());
+  EXPECT_EQ(0U, google_login_failure_.size());
+
+  // Should persist across resets.
+  manager_.reset(new SigninManager());
+  manager_->Initialize(profile_.get());
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
+}
+
+TEST_F(SigninManagerTest, SignInWithCredentials) {
+  manager_->Initialize(profile_.get());
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  manager_->StartSignInWithCredentials("user@gmail.com", "password");
+  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
+
+  SimulateValidResponseSignInWithCredentials();
+  EXPECT_FALSE(manager_->GetAuthenticatedUsername().empty());
 
   // Should go into token service and stop.
   EXPECT_EQ(1U, google_login_success_.size());

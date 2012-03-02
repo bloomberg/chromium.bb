@@ -82,6 +82,11 @@ class SigninManager : public GaiaAuthConsumer,
   // attempt.
   void ProvideSecondFactorAccessCode(const std::string& access_code);
 
+  // Attempt to sign in this user with existing credentials from the cookie jar.
+  // Otherwise the result is the same as StartSignIn().
+  virtual void StartSignInWithCredentials(const std::string& username,
+                                          const std::string& password);
+
   // Sign a user out, removing the preference, erasing all keys
   // associated with the user, and canceling all auth in progress.
   virtual void SignOut();
@@ -101,10 +106,20 @@ class SigninManager : public GaiaAuthConsumer,
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
   virtual void OnClientLoginFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnOAuthLoginTokenSuccess(const std::string& refresh_token,
+                                        const std::string& access_token,
+                                        int expires_in_secs) OVERRIDE;
+  virtual void OnOAuthLoginTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
   virtual void OnGetUserInfoFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnTokenAuthSuccess(const net::ResponseCookies& cookies,
+                                  const std::string& data) OVERRIDE;
   virtual void OnTokenAuthFailure(const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnUberAuthTokenSuccess(const std::string& token) OVERRIDE;
+  virtual void OnUberAuthTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -122,6 +137,11 @@ class SigninManager : public GaiaAuthConsumer,
   // Will clear in memory data but leaves the db as such so when the browser
   // restarts we can use the old token(which might throw a password error).
   void ClearTransientSigninData();
+
+  // Called to handle an error from a GAIA auth fetch.  Sets the last error
+  // to |error|, sends out a notification of login failure, and clears the
+  // transient signin data.
+  void HandleAuthError(const GoogleServiceAuthError& error);
 
   Profile* profile_;
 

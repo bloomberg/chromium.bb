@@ -20,6 +20,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
+#include "net/base/cookie_monster.h"
 
 const char kGetInfoEmailKey[] = "email";
 const char kGetInfoServicesKey[] = "allServices";
@@ -152,6 +153,33 @@ void SigninManager::ProvideSecondFactorAccessCode(
                                   GaiaAuthFetcher::HostedAccountsNotAllowed);
 }
 
+void SigninManager::StartSignInWithCredentials(const std::string& username,
+                                               const std::string& password) {
+  DCHECK(authenticated_username_.empty());
+  PrepareForSignin();
+  possibly_invalid_username_.assign(username);
+  password_.assign(password);
+
+  client_login_.reset(new GaiaAuthFetcher(this,
+                                          GaiaConstants::kChromeSource,
+                                          profile_->GetRequestContext()));
+
+  // This function starts with the current state of the web session's cookie
+  // jar and mints a new ClientLogin-style SID/LSID pair.  This involves going
+  // throug the follow process or requests to GAIA and LSO:
+  //
+  // - call /o/oauth2/programmatic_auth with the returned token to get oauth2
+  //   access and refresh tokens
+  // - call /accounts/OAuthLogin with the oauth2 access token and get an uber
+  //   auth token
+  // - call /TokenAuth with the uber auth token to get a SID/LSID pair for use
+  //   by the token service
+  //
+  // The resulting SID/LSID can then be used just as if
+  // client_login_->StartClientLogin() had completed successfully.
+  client_login_->StartOAuthLoginTokenFetch("");
+}
+
 void SigninManager::ClearTransientSigninData() {
   DCHECK(IsInitialized());
 
@@ -161,6 +189,16 @@ void SigninManager::ClearTransientSigninData() {
   possibly_invalid_username_.clear();
   password_.clear();
   had_two_factor_error_ = false;
+}
+
+void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
+  last_login_auth_error_ = error;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
+      content::Source<Profile>(profile_),
+      content::Details<const GoogleServiceAuthError>(&last_login_auth_error_));
+
+  ClearTransientSigninData();
 }
 
 void SigninManager::SignOut() {
@@ -188,10 +226,57 @@ bool SigninManager::AuthInProgress() const {
   return !possibly_invalid_username_.empty();
 }
 
+void SigninManager::OnGetUserInfoKeyNotFound(const std::string& key) {
+  DCHECK(key == kGetInfoEmailKey);
+  LOG(ERROR) << "Account is not associated with a valid email address. "
+             << "Login failed.";
+  OnClientLoginFailure(GoogleServiceAuthError(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+}
+
 void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
   last_result_ = result;
   // Make a request for the canonical email address and services.
   client_login_->StartGetUserInfo(result.lsid);
+}
+
+void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
+  // If we got a bad ASP, prompt for an ASP again by forcing another TWO_FACTOR
+  // error.  This function does not call HandleAuthError() because dealing
+  // with TWO_FACTOR errors neds special handling: we don't want to clear the
+  // transient signin data in such error cases.
+  bool invalid_gaia = error.state() ==
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS;
+  last_login_auth_error_ = (invalid_gaia && had_two_factor_error_) ?
+      GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR) : error;
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
+      content::Source<Profile>(profile_),
+      content::Details<const GoogleServiceAuthError>(&last_login_auth_error_));
+
+  // We don't sign-out if the password was valid and we're just dealing with
+  // a second factor error, and we don't sign out if we're dealing with
+  // an invalid access code (again, because the password was valid).
+  if (last_login_auth_error_.state() == GoogleServiceAuthError::TWO_FACTOR) {
+    had_two_factor_error_ = true;
+    return;
+  }
+
+  ClearTransientSigninData();
+}
+
+void SigninManager::OnOAuthLoginTokenSuccess(const std::string& refresh_token,
+                                             const std::string& access_token,
+                                             int expires_in_secs) {
+  DVLOG(1) << "SigninManager::OnOAuthLoginTokenSuccess access_token="
+           << access_token;
+  client_login_->StartUberAuthTokenFetch(access_token);
+}
+
+void SigninManager::OnOAuthLoginTokenFailure(
+    const GoogleServiceAuthError& error) {
+  LOG(WARNING) << "SigninManager::OnOAuthLoginTokenFailure";
+  HandleAuthError(error);
 }
 
 void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
@@ -235,47 +320,53 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
   profile_->GetTokenService()->StartFetchingTokens();
 }
 
-void SigninManager::OnGetUserInfoKeyNotFound(const std::string& key) {
-  DCHECK(key == kGetInfoEmailKey);
-  LOG(ERROR) << "Account is not associated with a valid email address. "
-             << "Login failed.";
-  OnClientLoginFailure(GoogleServiceAuthError(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-}
-
 void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
   LOG(ERROR) << "Unable to retreive the canonical email address. Login failed.";
+  // REVIEW: why does this call OnClientLoginFailure?
   OnClientLoginFailure(error);
 }
 
-void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
-#if !defined(OS_CHROMEOS)
-  DVLOG(1) << "Unable to retrieve the token auth.";
-  CleanupNotificationRegistration();
-#endif
-}
+void SigninManager::OnTokenAuthSuccess(const net::ResponseCookies& cookies,
+                                       const std::string& data) {
+  DVLOG(1) << "SigninManager::OnTokenAuthSuccess";
 
-void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
-  // If we got a bad ASP, prompt for an ASP again by forcing another TWO_FACTOR
-  // error.
-  bool invalid_gaia = error.state() ==
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS;
-  last_login_auth_error_ = (invalid_gaia && had_two_factor_error_) ?
-      GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR) : error;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-      content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceAuthError>(&last_login_auth_error_));
-
-  // We don't sign-out if the password was valid and we're just dealing with
-  // a second factor error, and we don't sign out if we're dealing with
-  // an invalid access code (again, because the password was valid).
-  if (last_login_auth_error_.state() == GoogleServiceAuthError::TWO_FACTOR) {
-    had_two_factor_error_ = true;
-    return;
+  // The SID and LSID from this request is equivalent the pair returned by
+  // ClientLogin.
+  std::string sid;
+  std::string lsid;
+  for (net::ResponseCookies::const_iterator i = cookies.begin();
+       i != cookies.end(); ++i) {
+    net::CookieMonster::ParsedCookie parsed(*i);
+    if (parsed.Name() == "SID") {
+      sid = parsed.Value();
+    } else if (parsed.Name() == "LSID") {
+      lsid = parsed.Value();
+    }
   }
 
-  ClearTransientSigninData();
+  if (!sid.empty() && !lsid.empty()) {
+    OnClientLoginSuccess(
+        GaiaAuthConsumer::ClientLoginResult(sid, lsid, "", data));
+  } else {
+    OnTokenAuthFailure(
+        GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+  }
+}
+
+void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
+  DVLOG(1) << "Unable to retrieve the token auth.";
+  HandleAuthError(error);
+}
+
+void SigninManager::OnUberAuthTokenSuccess(const std::string& token) {
+  DVLOG(1) << "SigninManager::OnUberAuthTokenSuccess token=" << token;
+  client_login_->StartTokenAuth(token);
+}
+
+void SigninManager::OnUberAuthTokenFailure(
+    const GoogleServiceAuthError& error) {
+  LOG(WARNING) << "SigninManager::OnUberAuthTokenFailure";
+  HandleAuthError(error);
 }
 
 void SigninManager::Observe(int type,
