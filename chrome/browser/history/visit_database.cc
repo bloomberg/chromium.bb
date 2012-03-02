@@ -75,15 +75,32 @@ class VisitDatabase::VisitAnalysis {
 
  private:
   enum VA_EVENTS {
-    VA_VISIT = 0,
-    VA_PRERENDER_STARTED_1 = 1,
-    VA_PRERENDER_USED_1 = 2,
-    VA_PRERENDER_STARTED_3 = 3,
-    VA_PRERENDER_USED_3 = 4,
-    VA_PRERENDER_STARTED_5 = 5,
-    VA_PRERENDER_USED_5 = 6,
-    VA_EVENT_MAX = 7
+    VA_VISIT = 10,
+    VA_VISIT_EXCLUDE_BACK_FORWARD = 11,
+    VA_VISIT_EXCLUDE_HOME_PAGE = 12,
+    VA_VISIT_EXCLUDE_REDIRECT_CHAIN = 13,
+    VA_PRERENDER_STARTED_1 = 14,
+    VA_PRERENDER_USED_1 = 15,
+    VA_PRERENDER_STARTED_3 = 16,
+    VA_PRERENDER_USED_3 = 17,
+    VA_PRERENDER_STARTED_5 = 18,
+    VA_PRERENDER_USED_5 = 19,
+    VA_EVENT_MAX = 20
   };
+  bool IsBackForward(content::PageTransition transition) {
+    return (transition & content::PAGE_TRANSITION_FORWARD_BACK) != 0;
+  }
+  bool IsHomePage(content::PageTransition transition) {
+    return (transition & content::PAGE_TRANSITION_HOME_PAGE) != 0;
+  }
+  bool IsIntermediateRedirect(content::PageTransition transition) {
+    return (transition & content::PAGE_TRANSITION_CHAIN_END) == 0;
+  }
+  bool ShouldExcludeTransitionForPrediction(
+      content::PageTransition transition) {
+    return IsBackForward(transition) || IsHomePage(transition) ||
+        IsIntermediateRedirect(transition);
+  }
   void RecordEvent(VA_EVENTS event, base::Time timestamp) {
     int64 ts = timestamp.ToInternalValue();
     if (time_event_bitmaps_.count(ts) < 1)
@@ -183,7 +200,23 @@ class VisitDatabase::VisitAnalysis {
   };
   void ProcessVisit(const VisitRow& visit) {
     VLOG(1) << "processing visit to " << visit.url_id;
+    if (IsBackForward(visit.transition)) {
+      RecordEvent(VA_VISIT_EXCLUDE_BACK_FORWARD, visit.visit_time);
+      return;
+    }
+    if (IsHomePage(visit.transition)) {
+      RecordEvent(VA_VISIT_EXCLUDE_HOME_PAGE, visit.visit_time);
+      return;
+    }
+    if (IsIntermediateRedirect(visit.transition)) {
+      RecordEvent(VA_VISIT_EXCLUDE_REDIRECT_CHAIN, visit.visit_time);
+      return;
+    }
     RecordEvent(VA_VISIT, visit.visit_time);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Prerender.LocalVisitCoreTransition",
+        visit.transition & content::PAGE_TRANSITION_CORE_MASK,
+        content::PAGE_TRANSITION_LAST_CORE + 1);
     for (int i = 0; i < static_cast<int>(emulated_prerender_managers_.size());
          i++) {
       emulated_prerender_managers_[i]->MaybeRecordPrerenderUsed(visit);
@@ -199,19 +232,23 @@ class VisitDatabase::VisitAnalysis {
     URLID best_prerender = 0;
     int best_count = 0;
     for (int i = 0; i < static_cast<int>(visits_.size()); i++) {
-      VLOG(1) << visits_[i].visit_time.ToInternalValue()/1000000 << " "
-              << visits_[i].url_id;
-      if (visits_[i].url_id == visit.url_id) {
-        VLOG(1) << "****";
-        last_started = visits_[i].visit_time;
-        num_occurrences++;
-        currently_found.clear();
-        continue;
-      }
-      if (last_started > visits_[i].visit_time - max_age &&
-          last_started < visits_[i].visit_time - min_age) {
-        currently_found.insert(visits_[i].url_id);
-        VLOG(1) << "OK";
+      if (!ShouldExcludeTransitionForPrediction(visits_[i].transition)) {
+        VLOG(1) << visits_[i].visit_time.ToInternalValue()/1000000 << " "
+                  << visits_[i].url_id;
+        if (visits_[i].url_id == visit.url_id) {
+          VLOG(1) << "****";
+          last_started = visits_[i].visit_time;
+          num_occurrences++;
+          currently_found.clear();
+          continue;
+        }
+        if (last_started > visits_[i].visit_time - max_age &&
+            last_started < visits_[i].visit_time - min_age) {
+          currently_found.insert(visits_[i].url_id);
+          VLOG(1) << "OK";
+        }
+      } else {
+        VLOG(1) << i << " (skipping)";
       }
       if (i == static_cast<int>(visits_.size()) - 1 ||
           visits_[i+1].url_id == visit.url_id) {
@@ -263,8 +300,8 @@ class VisitDatabase::VisitAnalysis {
   }
   void FetchHistory() {
     VLOG(1) << "VDB: fetching history";
-    visit_database_->GetAllVisitsInRange(base::Time(), base::Time(), 0,
-                                         &visits_);
+    visit_database_->GetAllVisitsInRange(base::Time(), base::Time(),
+                                         kMaxVisitRecords, &visits_);
     VLOG(1) << "READ visits " << visits_.size();
     if (logging::GetVlogVerbosity() >= 1) {
       for (int i = 0; i < static_cast<int>(visits_.size()); i++) {
@@ -277,9 +314,10 @@ class VisitDatabase::VisitAnalysis {
     visits_fetched_ = true;
     MaybeProcessVisits();
   }
+  static const int kMaxVisitRecords = 100 * 1000;
   static const int kFetchDelayMs = 30 * 1000;
   static const int kPrerenderExpirationSeconds = 300;
-  static const int kMinSpacingMilliseconds = 1000;
+  static const int kMinSpacingMilliseconds = 500;
   VisitDatabase* visit_database_;
   base::OneShotTimer<VisitAnalysis> timer_;
   VisitVector visits_;
