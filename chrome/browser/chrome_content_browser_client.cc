@@ -1491,9 +1491,28 @@ std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME);
 }
 
-bool ChromeContentBrowserClient::AllowSocketAPI(const GURL& url) {
-  return url.is_valid() &&
-      allowed_socket_origins_.find(url.host()) != allowed_socket_origins_.end();
+bool ChromeContentBrowserClient::AllowSocketAPI(
+    content::BrowserContext* browser_context, const GURL& url) {
+  if (!url.is_valid())
+    return false;
+
+  std::string host = url.host();
+  if (allowed_socket_origins_.count(host))
+    return true;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile || !profile->GetExtensionService())
+    return false;
+
+  const Extension* extension = profile->GetExtensionService()->extensions()->
+      GetExtensionOrAppByURL(ExtensionURLInfo(url));
+  if (!extension)
+    return false;
+
+  if (extension->HasAPIPermission(ExtensionAPIPermission::kSocket))
+    return true;
+
+  return false;
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

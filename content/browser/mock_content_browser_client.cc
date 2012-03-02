@@ -308,7 +308,8 @@ std::string MockContentBrowserClient::GetDefaultDownloadName() {
   return std::string();
 }
 
-bool MockContentBrowserClient::AllowSocketAPI(const GURL& url) {
+bool MockContentBrowserClient::AllowSocketAPI(BrowserContext* browser_context,
+                                              const GURL& url) {
   return false;
 }
 

@@ -328,7 +328,8 @@ std::string ShellContentBrowserClient::GetDefaultDownloadName() {
   return "download";
 }
 
-bool ShellContentBrowserClient::AllowSocketAPI(const GURL& url) {
+bool ShellContentBrowserClient::AllowSocketAPI(BrowserContext* browser_context,
+                                               const GURL& url) {
   return false;
 }
 
