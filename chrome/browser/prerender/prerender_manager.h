@@ -69,6 +69,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     PRERENDER_MODE_ENABLED,
     PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP,
     PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP,
+    PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP,
     PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP,
     PRERENDER_MODE_MAX
   };
@@ -317,6 +318,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // automatically be cancelled.
   void PostCleanupTask();
 
+  base::TimeDelta GetMaxAge() const;
   bool IsPrerenderElementFresh(const base::Time start) const;
   void DeleteOldEntries();
   virtual base::Time GetCurrentTime() const;

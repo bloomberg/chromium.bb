@@ -292,8 +292,8 @@ TEST_F(PrerenderManagerTest, ExpireTest) {
   EXPECT_TRUE(prerender_manager()->AddSimplePrerender(url));
   EXPECT_EQ(null, prerender_manager()->next_prerender_contents());
   EXPECT_TRUE(prerender_contents->has_started());
-  prerender_manager()->AdvanceTime(prerender_manager()->config().max_age
-                                   + base::TimeDelta::FromSeconds(1));
+  prerender_manager()->AdvanceTime(prerender_manager()->GetMaxAge() +
+                                   base::TimeDelta::FromSeconds(1));
   ASSERT_EQ(null, prerender_manager()->GetEntry(url));
 }
 

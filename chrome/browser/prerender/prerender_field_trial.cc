@@ -43,30 +43,41 @@ void SetupPrefetchFieldTrial() {
 
 void SetupPrerenderFieldTrial() {
   base::FieldTrial::Probability divisor = 1000;
-  base::FieldTrial::Probability exp1_probability = 200;
-  base::FieldTrial::Probability control1_probability = 200;
-  base::FieldTrial::Probability no_use1_probability = 100;
-  base::FieldTrial::Probability exp2_probability = 200;
-  base::FieldTrial::Probability control2_probability = 200;
-  base::FieldTrial::Probability no_use2_probability = 100;
+
+  base::FieldTrial::Probability exp1_probability = 166;
+  base::FieldTrial::Probability exp1_5min_ttl_probability = 83;
+  base::FieldTrial::Probability control1_probability = 166;
+  base::FieldTrial::Probability no_use1_probability = 83;
+
+  base::FieldTrial::Probability exp2_probability = 167;
+  base::FieldTrial::Probability exp2_5min_ttl_probability = 84;
+  base::FieldTrial::Probability control2_probability = 167;
+  base::FieldTrial::Probability no_use2_probability = 84;
+
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
       channel == chrome::VersionInfo::CHANNEL_BETA) {
-    exp1_probability = 495;
+    exp1_probability = 490;
+    exp1_5min_ttl_probability = 5;
     control1_probability = 5;
     no_use1_probability = 0;
-    exp2_probability = 495;
+    exp2_probability = 490;
+    exp2_5min_ttl_probability = 5;
     control2_probability = 5;
     no_use2_probability = 0;
   }
-  CHECK_EQ(divisor, exp1_probability + control1_probability +
-           no_use1_probability + exp2_probability +
-           control2_probability + no_use2_probability);
+  CHECK_EQ(divisor, exp1_probability + exp1_5min_ttl_probability +
+           control1_probability + no_use1_probability + exp2_probability +
+           exp2_5min_ttl_probability + control2_probability +
+           no_use2_probability);
   scoped_refptr<base::FieldTrial> trial(
       new base::FieldTrial("Prerender", divisor,
                            "ContentPrefetchPrerender1", 2012, 6, 30));
 
   const int kExperiment1Group = trial->kDefaultGroupNumber;
+  const int kExperiment15minTTLGroup =
+      trial->AppendGroup("ContentPrefetchPrerenderExp5minTTL1",
+                         exp1_5min_ttl_probability);
   const int kControl1Group =
       trial->AppendGroup("ContentPrefetchPrerenderControl1",
                          control1_probability);
@@ -76,6 +87,9 @@ void SetupPrerenderFieldTrial() {
   const int kExperiment2Group =
       trial->AppendGroup("ContentPrefetchPrerender2",
                          exp2_probability);
+  const int kExperiment25minTTLGroup =
+      trial->AppendGroup("ContentPrefetchPrerenderExp5minTTL2",
+                         exp2_5min_ttl_probability);
   const int kControl2Group =
       trial->AppendGroup("ContentPrefetchPrerenderControl2",
                          control2_probability);
@@ -87,6 +101,10 @@ void SetupPrerenderFieldTrial() {
       trial_group == kExperiment2Group) {
     PrerenderManager::SetMode(
         PrerenderManager::PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP);
+  } else if (trial_group == kExperiment15minTTLGroup ||
+             trial_group == kExperiment25minTTLGroup) {
+    PrerenderManager::SetMode(
+        PrerenderManager::PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP);
   } else if (trial_group == kControl1Group ||
              trial_group == kControl2Group) {
     PrerenderManager::SetMode(

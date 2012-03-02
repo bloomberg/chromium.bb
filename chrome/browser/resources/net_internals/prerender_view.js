@@ -57,9 +57,9 @@ var PrerenderView = (function() {
       if (prerenderInfo && ('enabled' in prerenderInfo)) {
         this.prerenderEnabledSpan_.textContent =
             prerenderInfo.enabled.toString();
-        if (prerenderInfo.disabled_reason) {
+        if (prerenderInfo.enabled_note) {
           this.prerenderEnabledSpan_.textContent +=
-              ' ' + prerenderInfo.disabled_reason;
+              ' ' + prerenderInfo.enabled_note;
         }
       }
 

@@ -415,7 +415,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   if (!prerender_contents->load_start_time().is_null()) {
     histograms_->RecordTimeUntilUsed(GetCurrentTimeTicks() -
                                      prerender_contents->load_start_time(),
-                                     config_.max_age);
+                                     GetMaxAge());
   }
 
   histograms_->RecordPerSessionCount(++prerenders_per_session_count_);
@@ -591,10 +591,7 @@ void PrerenderManager::SetMode(PrerenderManagerMode mode) {
 
 // static
 bool PrerenderManager::IsPrerenderingPossible() {
-  return GetMode() == PRERENDER_MODE_ENABLED ||
-         GetMode() == PRERENDER_MODE_EXPERIMENT_PRERENDER_GROUP ||
-         GetMode() == PRERENDER_MODE_EXPERIMENT_CONTROL_GROUP ||
-         GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP;
+  return GetMode() != PRERENDER_MODE_DISABLED;
 }
 
 // static
@@ -724,10 +721,14 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
   dict_value->SetBoolean("enabled", enabled_);
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   // If prerender is disabled via a flag this method is not even called.
+  std::string enabled_note;
   if (IsControlGroup())
-    dict_value->SetString("disabled_reason", "(Disabled for testing)");
+    enabled_note += "(Control group: Not actually prerendering) ";
   if (IsNoUseGroup())
-    dict_value->SetString("disabled_reason", "(Not using prerendered pages)");
+    enabled_note += "(No-use group: Not swapping in prerendered pages) ";
+  if (GetMode() == PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP)
+    enabled_note += "(5 min TTL group: Extended prerender eviction to 5 mins) ";
+  dict_value->SetString("enabled_note", enabled_note);
   return dict_value;
 }
 
@@ -984,10 +985,15 @@ void PrerenderManager::PostCleanupTask() {
                  weak_factory_.GetWeakPtr()));
 }
 
+base::TimeDelta PrerenderManager::GetMaxAge() const {
+  return (GetMode() == PRERENDER_MODE_EXPERIMENT_5MIN_TTL_GROUP ?
+      base::TimeDelta::FromSeconds(300) : config_.max_age);
+}
+
 bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
   DCHECK(CalledOnValidThread());
   base::Time now = GetCurrentTime();
-  return (now - start < config_.max_age);
+  return (now - start < GetMaxAge());
 }
 
 void PrerenderManager::DeleteOldEntries() {
