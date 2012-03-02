@@ -1,0 +1,308 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_HISTORY_ANDROID_ANDROID_HISTORY_TYPES_H_
+#define CHROME_BROWSER_HISTORY_ANDROID_ANDROID_HISTORY_TYPES_H_
+
+#include <map>
+
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/search_engines/template_url_id.h"
+#include "sql/statement.h"
+
+namespace sql {
+class Statement;
+}
+
+namespace history {
+
+typedef int64 AndroidURLID;
+
+// Wraps all columns needed to support android.provider.Browser.BookmarkColumns.
+// It is used in insert() and update() to specify the columns need to insert or
+// update.
+// The column is not valid until it set. Using is_valid() to find out whether
+// the specific column could be used.
+//
+// The defult copy constructor is used.
+class BookmarkRow {
+ public:
+  enum BookmarkColumnID {
+    ID,
+    URL,
+    TITLE,
+    CREATED,
+    LAST_VISIT_TIME,
+    VISIT_COUNT,
+    FAVICON,
+    BOOKMARK,
+    RAW_URL,
+    PARENT_ID,
+    URL_ID,
+    COLUMN_END // This must be the last.
+  };
+
+  BookmarkRow();
+  virtual ~BookmarkRow();
+
+  // Returns the column name defined in Android.
+  static std::string GetAndroidName(BookmarkColumnID id);
+
+  static BookmarkColumnID GetBookmarkColumnID(const std::string& name);
+
+  // URLs for the page.
+  void set_url(const GURL& url) {
+    set_value_explicitly(URL);
+    url_ = url;
+  }
+  const GURL& url() const {
+    return url_;
+  }
+
+  // Raw input URL
+  void set_raw_url(const std::string& raw_url) {
+    set_value_explicitly(RAW_URL);
+    raw_url_ = raw_url;
+  }
+  const std::string& raw_url() const {
+    return raw_url_;
+  }
+
+  // The title of page.
+  void set_title(const string16& title) {
+    set_value_explicitly(TITLE);
+    title_ = title;
+  }
+  const string16& title() const {
+    return title_;
+  }
+
+  // The page's first visit time.
+  void set_created(const base::Time created) {
+    set_value_explicitly(CREATED);
+    created_ = created;
+  }
+  const base::Time& created() const {
+    return created_;
+  }
+
+  // The page's last visit time.
+  void set_last_visit_time(const base::Time last_visit_time) {
+    set_value_explicitly(LAST_VISIT_TIME);
+    last_visit_time_ = last_visit_time;
+  }
+  const base::Time& last_visit_time() const {
+    return last_visit_time_;
+  }
+
+  // The visit times
+  void set_visit_count(int visit_count) {
+    set_value_explicitly(VISIT_COUNT);
+    visit_count_ = visit_count;
+  }
+  int visit_count() const {
+    return visit_count_;
+  }
+
+  // Whether the page is bookmarked.
+  void set_is_bookmark(bool is_bookmark) {
+    set_value_explicitly(BOOKMARK);
+    is_bookmark_ = is_bookmark;
+  }
+  bool is_bookmark() const {
+    return is_bookmark_;
+  }
+
+  // The favicon related to page if any.
+  void set_favicon(const std::vector<unsigned char>& data) {
+    set_value_explicitly(FAVICON);
+    favicon_ = data;
+  }
+  const std::vector<unsigned char>& favicon() const {
+    return favicon_;
+  }
+
+  // The id of android url.
+  void set_id(AndroidURLID id) {
+    set_value_explicitly(ID);
+    id_ = id;
+  }
+  AndroidURLID id() const {
+    return id_;
+  }
+
+  // The id of the parent folder containing the bookmark, if any.
+  void set_parent_id(int64 parent_id) {
+    set_value_explicitly(PARENT_ID);
+    parent_id_ = parent_id;
+  }
+  const int64 parent_id() const {
+    return parent_id_;
+  }
+
+  // The internal URLID
+  void set_url_id(URLID url_id) {
+    set_value_explicitly(URL_ID);
+    url_id_ = url_id;
+  }
+  URLID url_id() const {
+    return url_id_;
+  }
+
+  // Returns true if the given |id| has been set explicitly.
+  bool is_value_set_explicitly(BookmarkColumnID id) const {
+    return values_set_.find(id) != values_set_.end();
+  }
+
+ private:
+  void set_value_explicitly(BookmarkColumnID id) {
+    values_set_.insert(id);
+  }
+
+  AndroidURLID id_;
+  GURL url_;
+  std::string raw_url_;
+  string16 title_;
+  base::Time created_;
+  base::Time last_visit_time_;
+  std::vector<unsigned char> favicon_;
+  int visit_count_;
+  bool is_bookmark_;
+  int64 parent_id_;
+  URLID url_id_;
+
+  // Used to find whether a column has been set a value explicitly.
+  std::set<BookmarkColumnID> values_set_;
+
+  // We support the implicit copy constuctor and operator=.
+};
+
+// Wraps all columns needed to support android.provider.Browser.SearchColumns.
+// It is used in insert() and update() to specify the columns need to insert or
+// update.
+//
+// The column is not valid until it set. Using is_valid() to find out whether
+// the specific column could be used.
+//
+// The defult copy constructor is used.
+class SearchRow {
+ public:
+  enum SearchColumnID {
+    ID,
+    SEARCH_TERM,
+    SEARCH_TIME,
+    URL,
+    TEMPLATE_URL,
+    COLUMN_END
+  };
+
+  SearchRow();
+  virtual ~SearchRow();
+
+  // Returns the column name defined in Android.
+  static std::string GetAndroidName(SearchColumnID id);
+
+  static SearchColumnID GetSearchColumnID(const std::string& name);
+
+  const string16& search_term() const {
+    return search_term_;
+  }
+  void set_search_term(const string16& search_term) {
+    set_value_explicitly(SearchRow::SEARCH_TERM);
+    search_term_ = search_term;
+  }
+
+  const base::Time search_time() const {
+    return search_time_;
+  }
+  void set_search_time(const base::Time& time) {
+    set_value_explicitly(SearchRow::SEARCH_TIME);
+    search_time_ = time;
+  }
+
+  const GURL& url() const {
+    return url_;
+  }
+  void set_url(const GURL& url) {
+    set_value_explicitly(SearchRow::URL);
+    url_ = url;
+  }
+
+  TemplateURLID template_url_id() const {
+    return template_url_id_;
+  }
+  void set_template_url_id(TemplateURLID template_url_id) {
+    set_value_explicitly(SearchRow::TEMPLATE_URL);
+    template_url_id_ = template_url_id;
+  }
+
+ // Returns true if the given |id| has been set explicitly.
+  bool is_value_set_explicitly(SearchColumnID id) const {
+    return values_set_.find(id) != values_set_.end();
+  }
+
+ private:
+  void set_value_explicitly(SearchColumnID id) {
+    values_set_.insert(id);
+  }
+
+  int64 id_;
+  string16 search_term_;
+  base::Time search_time_;
+  GURL url_;
+  TemplateURLID template_url_id_;
+
+  // Used to find whether a column has been set a value.
+  std::set<SearchColumnID> values_set_;
+
+  // We support the implicit copy constuctor and operator=.
+};
+
+// Defines the row stored in android_urls table.
+struct AndroidURLRow {
+  AndroidURLRow()
+      :id(0),
+       url_id(0) {
+  }
+
+  // The unique id of the row
+  AndroidURLID id;
+  // The corresponding URLID in the url table.
+  URLID url_id;
+  // The orignal URL string passed in by client.
+  std::string raw_url;
+};
+
+// This class wraps the sql statement and favicon column index in statement if
+// any. It is returned by AndroidProviderBackend::Query().
+//
+// Using favicon_index() to get the index of favicon; The value of that column
+// is the Favicon ID, Client should call HistoryService::GetFavicon() to get the
+// actual value.
+class AndroidStatement {
+ public:
+  AndroidStatement(sql::Statement* statement, int favicon_index);
+  ~AndroidStatement();
+
+  sql::Statement* statement() {
+    return statement_.get();
+  }
+
+  // The favicon index in statement; -1 is returned if favicon is not in
+  // the statement.
+  int favicon_index() const {
+    return favicon_index_;
+  }
+
+ private:
+  scoped_ptr<sql::Statement> statement_;
+  int favicon_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(AndroidStatement);
+};
+
+}  // namespace history
+
+#endif  // CHROME_BROWSER_HISTORY_ANDROID_ANDROID_HISTORY_TYPES_H_
