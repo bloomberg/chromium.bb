@@ -5,9 +5,11 @@
 #include "chrome/browser/google/google_util.h"
 
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/string16.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -25,6 +27,51 @@
 namespace {
 
 const char* brand_for_testing = NULL;
+
+// True iff |str| contains a "q=" query parameter with a non-empty value.
+// |str| should be a URL parameter or a hash fragment, without the ? or # (as
+// returned by GURL::query() or GURL::ref().
+bool HasQueryParameter(const std::string& str) {
+  std::vector<std::string> parameters;
+
+  base::SplitString(str, '&', &parameters);
+  for (std::vector<std::string>::const_iterator itr = parameters.begin();
+       itr != parameters.end();
+       ++itr) {
+    if (StartsWithASCII(*itr, "q=", false) && itr->size() > 2)
+      return true;
+  }
+  return false;
+}
+
+// True if |url| is an HTTP[S] request with host "[www.]google.<TLD>".
+bool IsGoogleDomainUrl(const GURL& url) {
+  if (!url.is_valid())
+    return false;
+
+  // Make sure the scheme is valid.
+  if (!url.SchemeIs("http") && !url.SchemeIs("https"))
+    return false;
+
+  // Make sure port is default for the respective scheme.
+  if (!url.port().empty())
+    return false;
+
+  // Accept only valid TLD.
+  size_t tld_length = net::RegistryControlledDomainService::GetRegistryLength(
+      url, false);
+  if (tld_length == 0 || tld_length == std::string::npos)
+    return false;
+
+  // We only accept "[www.]google." in front of the TLD.
+  std::string host = url.host();
+  host = host.substr(0, host.length() - tld_length);
+  if (!LowerCaseEqualsASCII(host, "www.google.") &&
+      !LowerCaseEqualsASCII(host, "google."))
+    return false;
+
+  return true;
+}
 
 }  // anonymous namespace
 
@@ -119,39 +166,49 @@ bool GetReactivationBrand(std::string* brand) {
 
 bool IsGoogleHomePageUrl(const std::string& url) {
   GURL original_url(url);
-  if (!original_url.is_valid())
-    return false;
 
-  // Make sure the scheme is valid.
-  if (!original_url.SchemeIs("http") && !original_url.SchemeIs("https"))
-    return false;
-
-  // Make sure port is default for the respective scheme.
-  if (!original_url.port().empty())
-    return false;
-
-  // Accept only valid TLD.
-  size_t tld_length = net::RegistryControlledDomainService::GetRegistryLength(
-      original_url, false);
-  if (tld_length == 0 || tld_length == std::string::npos)
-    return false;
-
-  // We only accept "www.google." in front of the TLD.
-  std::string host = original_url.host();
-  host = host.substr(0, host.length() - tld_length);
-  if (!LowerCaseEqualsASCII(host, "www.google.") &&
-      !LowerCaseEqualsASCII(host, "google."))
+  // First check to see if this has a Google domain.
+  if (!IsGoogleDomainUrl(original_url))
     return false;
 
   // Make sure the path is a known home page path.
   std::string path(original_url.path());
-  if (!LowerCaseEqualsASCII(path, "/") &&
-      !LowerCaseEqualsASCII(path, "/webhp") &&
+  if (path != "/" && path != "/webhp" &&
       !StartsWithASCII(path, "/ig", false)) {
     return false;
   }
 
   return true;
+}
+
+bool IsGoogleSearchUrl(const std::string& url) {
+  GURL original_url(url);
+
+  // First check to see if this has a Google domain.
+  if (!IsGoogleDomainUrl(original_url))
+    return false;
+
+  // Make sure the path is a known search path.
+  std::string path(original_url.path());
+  bool has_valid_path = false;
+  bool is_home_page_base = false;
+  if (path == "/search") {
+    has_valid_path = true;
+  } else if (path == "/webhp" || path == "/") {
+    // Note that we allow both "/" and "" paths, but GURL spits them
+    // both out as just "/".
+    has_valid_path = true;
+    is_home_page_base = true;
+  }
+  if (!has_valid_path)
+    return false;
+
+  // Check for query parameter in URL parameter and hash fragment, depending on
+  // the path type.
+  std::string query(original_url.query());
+  std::string ref(original_url.ref());
+  return HasQueryParameter(ref) ||
+      (!is_home_page_base && HasQueryParameter(query));
 }
 
 bool IsOrganic(const std::string& brand) {

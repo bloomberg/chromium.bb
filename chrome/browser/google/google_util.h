@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -40,6 +40,9 @@ bool GetReactivationBrand(std::string* brand);
 
 // True if |url| represents a valid Google home page URL.
 bool IsGoogleHomePageUrl(const std::string& url);
+
+// True if |url| represents a valid Google search URL.
+bool IsGoogleSearchUrl(const std::string& url);
 
 // True if a build is strictly organic, according to its brand code.
 bool IsOrganic(const std::string& brand);

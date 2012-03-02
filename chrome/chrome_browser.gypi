@@ -1437,6 +1437,8 @@
         'browser/geolocation/wifi_data_provider_chromeos.h',
         'browser/global_keyboard_shortcuts_mac.h',
         'browser/global_keyboard_shortcuts_mac.mm',
+        'browser/google/google_search_metrics.cc',
+        'browser/google/google_search_metrics.h',
         'browser/google/google_update.cc',
         'browser/google/google_update.h',
         'browser/google/google_update_settings_posix.cc',
