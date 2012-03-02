@@ -10,9 +10,11 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#include "webkit/glue/webdropdata.h"
 
 using content::WebContents;
 
@@ -88,4 +90,28 @@ void WebDragBookmarkHandlerWin::OnDragLeave(IDataObject* data_object) {
       tab_->bookmark_tab_helper()->GetBookmarkDragDelegate()->OnDragLeave(
           bookmark_drag_data);
   }
+}
+
+bool WebDragBookmarkHandlerWin::AddDragData(const WebDropData& drop_data,
+                                            ui::OSExchangeData* data) {
+  if (!drop_data.url.SchemeIs(chrome::kJavaScriptScheme))
+    return false;
+
+  // We don't want to allow javascript URLs to be dragged to the desktop,
+  // but we do want to allow them to be added to the bookmarks bar
+  // (bookmarklets). So we create a fake bookmark entry (BookmarkNodeData
+  // object) which explorer.exe cannot handle, and write the entry to data.
+  BookmarkNodeData::Element bm_elt;
+  bm_elt.is_url = true;
+  bm_elt.url = drop_data.url;
+  bm_elt.title = drop_data.url_title;
+
+  BookmarkNodeData bm_drag_data;
+  bm_drag_data.elements.push_back(bm_elt);
+
+  // Pass in NULL as the profile so that the bookmark always adds the url
+  // rather than trying to move an existing url.
+  bm_drag_data.Write(NULL, data);
+
+  return true;
 }

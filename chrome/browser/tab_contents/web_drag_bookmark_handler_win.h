@@ -25,6 +25,8 @@ class WebDragBookmarkHandlerWin : public content::WebDragDestDelegate {
   virtual void OnDragEnter(IDataObject* data_object) OVERRIDE;
   virtual void OnDrop(IDataObject* data_object) OVERRIDE;
   virtual void OnDragLeave(IDataObject* data_object) OVERRIDE;
+  virtual bool AddDragData(const WebDropData& drop_data,
+                           ui::OSExchangeData* data) OVERRIDE;
 
  private:
   // The TabContentsWrapper for the drag.

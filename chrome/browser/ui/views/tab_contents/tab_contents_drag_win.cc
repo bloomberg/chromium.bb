@@ -15,11 +15,9 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_win.h"
-#include "chrome/common/url_constants.h"
 #include "content/browser/download/drag_download_file.h"
 #include "content/browser/download/drag_download_util.h"
+#include "content/browser/tab_contents/web_drag_dest_delegate.h"
 #include "content/browser/tab_contents/web_drag_dest_win.h"
 #include "content/browser/tab_contents/web_drag_source_win.h"
 #include "content/browser/tab_contents/web_drag_utils_win.h"
@@ -29,6 +27,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/gfx/size.h"
 #include "ui/views/drag_utils.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -101,11 +100,18 @@ class DragDropThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(DragDropThread);
 };
 
-TabContentsDragWin::TabContentsDragWin(NativeTabContentsViewWin* view)
+TabContentsDragWin::TabContentsDragWin(
+    gfx::NativeWindow source_window,
+    content::WebContents* web_contents,
+    WebDragDest* drag_dest,
+    const base::Callback<void()>& drag_end_callback)
     : drag_drop_thread_id_(0),
-      view_(view),
+      source_window_(source_window),
+      web_contents_(web_contents),
+      drag_dest_(drag_dest),
       drag_ended_(false),
-      old_drop_target_suspended_state_(false) {
+      old_drop_target_suspended_state_(false),
+      drag_end_callback_(drag_end_callback) {
 }
 
 TabContentsDragWin::~TabContentsDragWin() {
@@ -119,11 +125,10 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
                                        const gfx::Point& image_offset) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  drag_source_ = new WebDragSource(view_->GetNativeView(),
-                                   view_->GetWebContents());
+  drag_source_ = new WebDragSource(source_window_, web_contents_);
 
-  const GURL& page_url = view_->GetWebContents()->GetURL();
-  const std::string& page_encoding = view_->GetWebContents()->GetEncoding();
+  const GURL& page_url = web_contents_->GetURL();
+  const std::string& page_encoding = web_contents_->GetEncoding();
 
   // If it is not drag-out, do the drag-and-drop in the current UI thread.
   if (drop_data.download_metadata.empty()) {
@@ -133,8 +138,8 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
   }
 
   // We do not want to drag and drop the download to itself.
-  old_drop_target_suspended_state_ = view_->drag_dest()->suspended();
-  view_->drag_dest()->set_suspended(true);
+  old_drop_target_suspended_state_ = drag_dest_->suspended();
+  drag_dest_->set_suspended(true);
 
   // Start a background thread to do the drag-and-drop.
   DCHECK(!drag_drop_thread_.get());
@@ -215,7 +220,7 @@ void TabContentsDragWin::PrepareDragForDownload(
                            download_url,
                            page_url,
                            page_encoding,
-                           view_->GetWebContents());
+                           web_contents_);
   ui::OSExchangeData::DownloadFileInfo file_download(FilePath(),
                                                      download_file.get());
   data->SetDownloadFileInfo(file_download);
@@ -247,25 +252,10 @@ void TabContentsDragWin::PrepareDragForFileContents(
 
 void TabContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
                                            ui::OSExchangeData* data) {
-  if (drop_data.url.SchemeIs(chrome::kJavaScriptScheme)) {
-    // We don't want to allow javascript URLs to be dragged to the desktop,
-    // but we do want to allow them to be added to the bookmarks bar
-    // (bookmarklets). So we create a fake bookmark entry (BookmarkNodeData
-    // object) which explorer.exe cannot handle, and write the entry to data.
-    BookmarkNodeData::Element bm_elt;
-    bm_elt.is_url = true;
-    bm_elt.url = drop_data.url;
-    bm_elt.title = drop_data.url_title;
+  if (drag_dest_->delegate()->AddDragData(drop_data, data))
+    return;
 
-    BookmarkNodeData bm_drag_data;
-    bm_drag_data.elements.push_back(bm_elt);
-
-    // Pass in NULL as the profile so that the bookmark always adds the url
-    // rather than trying to move an existing url.
-    bm_drag_data.Write(NULL, data);
-  } else {
-    data->SetURL(drop_data.url, drop_data.url_title);
-  }
+  data->SetURL(drop_data.url, drop_data.url_title);
 }
 
 void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
@@ -334,7 +324,7 @@ void TabContentsDragWin::EndDragging(bool restore_suspended_state) {
   drag_ended_ = true;
 
   if (restore_suspended_state)
-    view_->drag_dest()->set_suspended(old_drop_target_suspended_state_);
+    drag_dest_->set_suspended(old_drop_target_suspended_state_);
 
   if (msg_hook) {
     AttachThreadInput(drag_out_thread_id, GetCurrentThreadId(), FALSE);
@@ -342,7 +332,7 @@ void TabContentsDragWin::EndDragging(bool restore_suspended_state) {
     msg_hook = NULL;
   }
 
-  view_->EndDragging();
+  drag_end_callback_.Run();
 }
 
 void TabContentsDragWin::CancelDrag() {

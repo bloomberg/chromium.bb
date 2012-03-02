@@ -6,18 +6,24 @@
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_DRAG_WIN_H_
 #pragma once
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
 class DragDropThread;
-class NativeTabContentsViewWin;
+class WebDragDest;
 class WebDragSource;
 struct WebDropData;
+
+namespace content {
+class WebContents;
+}
 
 // Windows-specific drag-and-drop handling in WebContentsView.
 // If we are dragging a virtual file out of the browser, we use a background
@@ -28,7 +34,10 @@ class TabContentsDragWin
     : public ui::DataObjectImpl::Observer,
       public base::RefCountedThreadSafe<TabContentsDragWin> {
  public:
-  explicit TabContentsDragWin(NativeTabContentsViewWin* view);
+  TabContentsDragWin(gfx::NativeWindow source_window,
+                     content::WebContents* web_contents,
+                     WebDragDest* drag_dest,
+                     const base::Callback<void()>& drag_end_callback);
   virtual ~TabContentsDragWin();
 
   // Called on UI thread.
@@ -76,8 +85,9 @@ class TabContentsDragWin
 
   // All the member variables below are accessed on UI thread.
 
-  // Keep track of the TabContentsViewViews it is associated with.
-  NativeTabContentsViewWin* view_;
+  gfx::NativeWindow source_window_;
+  content::WebContents* web_contents_;
+  WebDragDest* drag_dest_;
 
   // |drag_source_| is our callback interface passed to the system when we
   // want to initiate a drag and drop operation.  We use it to tell if a
@@ -93,6 +103,8 @@ class TabContentsDragWin
 
   // Keep track of the old suspended state of the drop target.
   bool old_drop_target_suspended_state_;
+
+  base::Callback<void()> drag_end_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDragWin);
 };

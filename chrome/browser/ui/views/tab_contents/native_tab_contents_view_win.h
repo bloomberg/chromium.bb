@@ -29,8 +29,6 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
 
   content::WebContents* GetWebContents() const;
 
-  void EndDragging();
-
  private:
   // Overridden from NativeTabContentsView:
   virtual void InitNativeTabContentsView() OVERRIDE;
@@ -73,6 +71,8 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
   void ScrollCommon(UINT message, int scroll_type, short position,
                     HWND scrollbar);
   bool ScrollZoom(int scroll_type);
+
+  void EndDragging();
 
   internal::NativeTabContentsViewDelegate* delegate_;
 

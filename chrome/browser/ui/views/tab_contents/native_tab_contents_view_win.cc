@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_win.h"
 
+#include "base/bind.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
@@ -135,7 +136,12 @@ void NativeTabContentsViewWin::StartDragging(const WebDropData& drop_data,
                                              WebKit::WebDragOperationsMask ops,
                                              const SkBitmap& image,
                                              const gfx::Point& image_offset) {
-  drag_handler_ = new TabContentsDragWin(this);
+  drag_handler_ = new TabContentsDragWin(
+      GetNativeView(),
+      delegate_->GetWebContents(),
+      drag_dest_,
+      base::Bind(&NativeTabContentsViewWin::EndDragging,
+                 base::Unretained(this)));
   drag_handler_->StartDragging(drop_data, ops, image, image_offset);
 }
 

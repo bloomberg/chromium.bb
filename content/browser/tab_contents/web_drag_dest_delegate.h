@@ -17,6 +17,11 @@
 #endif
 
 class GURL;
+struct WebDropData;
+
+namespace ui {
+class OSExchangeData;
+}
 
 namespace content {
 
@@ -53,6 +58,11 @@ class WebDragDestDelegate {
   virtual void OnReceiveDataFromGtk(GtkSelectionData* data) = 0;
   virtual void OnReceiveProcessedData(const GURL& url,
                                       const string16& title) = 0;
+#elif defined(OS_WIN)
+  // Allows the delegate to set data on the drag. If it doesn't want to set
+  // data, it should return false.
+  virtual bool AddDragData(const WebDropData& drop_data,
+                           ui::OSExchangeData* data) = 0;
 #endif  // TOOLKIT_USES_GTK
 
   virtual ~WebDragDestDelegate() {}
