@@ -38,16 +38,16 @@ const int kTransportInfoSendDelayMs = 2;
 // |transport-info|.
 const int kMessageResponseTimeoutSeconds = 10;
 
-Session::Error AuthRejectionReasonToError(
+ErrorCode AuthRejectionReasonToErrorCode(
     Authenticator::RejectionReason reason) {
   switch (reason) {
     case Authenticator::INVALID_CREDENTIALS:
-      return Session::AUTHENTICATION_FAILED;
+      return AUTHENTICATION_FAILED;
     case Authenticator::PROTOCOL_ERROR:
-      return Session::INCOMPATIBLE_PROTOCOL;
+      return INCOMPATIBLE_PROTOCOL;
   }
   NOTREACHED();
-  return Session::UNKNOWN_ERROR;
+  return UNKNOWN_ERROR;
 }
 
 }  // namespace
@@ -79,7 +79,7 @@ void JingleSession::SetRouteChangeCallback(
   route_change_callback_ = callback;
 }
 
-Session::Error JingleSession::error() {
+ErrorCode JingleSession::error() {
   DCHECK(CalledOnValidThread());
   return error_;
 }
@@ -148,7 +148,7 @@ void JingleSession::AcceptIncomingConnection(
   DCHECK_EQ(authenticator_->state(), Authenticator::WAITING_MESSAGE);
   authenticator_->ProcessMessage(first_auth_message);
   if (authenticator_->state() == Authenticator::REJECTED) {
-    CloseInternal(AuthRejectionReasonToError(
+    CloseInternal(AuthRejectionReasonToErrorCode(
         authenticator_->rejection_reason()));
     return;
   }
@@ -290,15 +290,12 @@ void JingleSession::OnMessageResponse(
     JingleMessage::ActionType request_type,
     IqRequest* request,
     const buzz::XmlElement* response) {
-  Error error = OK;
-
   std::string type_str = JingleMessage::GetActionName(request_type);
+  CleanupPendingRequests(request);
 
   if (!response) {
     LOG(ERROR) << type_str << " request timed out.";
-    // Most likely the session-initiate timeout indicates a problem
-    // with the signaling.
-    error = UNKNOWN_ERROR;
+    CloseInternal(SIGNALING_TIMEOUT);
   } else {
     const std::string& type = response->Attr(buzz::QName("", "type"));
     if (type != "result") {
@@ -310,20 +307,15 @@ void JingleSession::OnMessageResponse(
         case JingleMessage::SESSION_INFO:
           // session-info is used for the new authentication protocol,
           // and wasn't previously supported.
-          error = INCOMPATIBLE_PROTOCOL;
+          CloseInternal(INCOMPATIBLE_PROTOCOL);
+          break;
 
         default:
           // TODO(sergeyu): There may be different reasons for error
           // here. Parse the response stanza to find failure reason.
-          error = PEER_IS_OFFLINE;
+          CloseInternal(PEER_IS_OFFLINE);
       }
     }
-  }
-
-  CleanupPendingRequests(request);
-
-  if (error != OK) {
-    CloseInternal(error);
   }
 }
 
@@ -528,7 +520,7 @@ void JingleSession::ProcessAuthenticationStep() {
   if (authenticator_->state() == Authenticator::ACCEPTED) {
     SetState(AUTHENTICATED);
   } else if (authenticator_->state() == Authenticator::REJECTED) {
-    CloseInternal(AuthRejectionReasonToError(
+    CloseInternal(AuthRejectionReasonToErrorCode(
         authenticator_->rejection_reason()));
   }
 }
@@ -539,7 +531,7 @@ void JingleSession::SendTransportInfo() {
   SendMessage(message);
 }
 
-void JingleSession::CloseInternal(Error error) {
+void JingleSession::CloseInternal(ErrorCode error) {
   DCHECK(CalledOnValidThread());
 
   if (state_ == CONNECTING || state_ == CONNECTED || state_ == AUTHENTICATED) {

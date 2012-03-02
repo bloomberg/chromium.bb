@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/buffered_socket_writer.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/protocol/session_config.h"
 
 namespace net {
@@ -53,17 +54,6 @@ class Session : public base::NonThreadSafe {
     FAILED,
   };
 
-  // TODO(sergeyu): Move error codes to a separate file.
-  enum Error {
-    OK = 0,
-    PEER_IS_OFFLINE,
-    SESSION_REJECTED,
-    INCOMPATIBLE_PROTOCOL,
-    AUTHENTICATION_FAILED,
-    CHANNEL_CONNECTION_ERROR,
-    UNKNOWN_ERROR,
-  };
-
   // State change callbacks are called after session state has
   // changed. It is not safe to destroy the session from within the
   // handler unless |state| is CLOSED or FAILED.
@@ -95,7 +85,7 @@ class Session : public base::NonThreadSafe {
   virtual void SetRouteChangeCallback(const RouteChangeCallback& callback) = 0;
 
   // Returns error code for a failed session.
-  virtual Error error() = 0;
+  virtual ErrorCode error() = 0;
 
   // Creates new channels for this connection. The specified callback
   // is called when then new channel is created and connected. The

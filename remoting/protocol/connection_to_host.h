@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/session.h"
@@ -52,20 +53,12 @@ class ConnectionToHost : public SignalStrategy::Listener,
     CLOSED,
   };
 
-  enum Error {
-    OK,
-    HOST_IS_OFFLINE,
-    SESSION_REJECTED,
-    INCOMPATIBLE_PROTOCOL,
-    NETWORK_FAILURE,
-  };
-
   class HostEventCallback {
    public:
     virtual ~HostEventCallback() {}
 
     // Called when state of the connection changes.
-    virtual void OnConnectionState(State state, Error error) = 0;
+    virtual void OnConnectionState(State state, ErrorCode error) = 0;
   };
 
   ConnectionToHost(base::MessageLoopProxy* message_loop,
@@ -116,12 +109,12 @@ class ConnectionToHost : public SignalStrategy::Listener,
   // Callback for |video_reader_|.
   void OnVideoPacket(VideoPacket* packet);
 
-  void CloseOnError(Error error);
+  void CloseOnError(ErrorCode error);
 
   // Stops writing in the channels.
   void CloseChannels();
 
-  void SetState(State state, Error error);
+  void SetState(State state, ErrorCode error);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   pp::Instance* pp_instance_;
@@ -148,7 +141,7 @@ class ConnectionToHost : public SignalStrategy::Listener,
 
   // Internal state of the connection.
   State state_;
-  Error error_;
+  ErrorCode error_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionToHost);

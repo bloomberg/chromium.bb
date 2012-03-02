@@ -74,7 +74,7 @@ class ClientSession : public protocol::HostStub,
   virtual void OnConnectionClosed(
       protocol::ConnectionToClient* connection) OVERRIDE;
   virtual void OnConnectionFailed(protocol::ConnectionToClient* connection,
-                                  protocol::Session::Error error) OVERRIDE;
+                                  protocol::ErrorCode error) OVERRIDE;
   virtual void OnSequenceNumberUpdated(
       protocol::ConnectionToClient* connection, int64 sequence_number) OVERRIDE;
   virtual void OnRouteChange(

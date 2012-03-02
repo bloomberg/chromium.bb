@@ -43,7 +43,7 @@ class JingleSession : public Session,
       const StateChangeCallback& callback) OVERRIDE;
   virtual void SetRouteChangeCallback(
       const RouteChangeCallback& callback) OVERRIDE;
-  virtual Error error() OVERRIDE;
+  virtual ErrorCode error() OVERRIDE;
   virtual void CreateStreamChannel(
       const std::string& name,
       const StreamChannelCallback& callback) OVERRIDE;
@@ -119,7 +119,7 @@ class JingleSession : public Session,
   // Terminates the session and sends session-terminate if it is
   // necessary. |error| specifies the error code in case when the
   // session is being closed due to an error.
-  void CloseInternal(Error error);
+  void CloseInternal(ErrorCode error);
 
   // Sets |state_| to |new_state| and calls state change callback.
   void SetState(State new_state);
@@ -132,7 +132,7 @@ class JingleSession : public Session,
 
   std::string session_id_;
   State state_;
-  Error error_;
+  ErrorCode error_;
 
   SessionConfig config_;
   bool config_is_set_;

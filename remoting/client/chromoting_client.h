@@ -52,7 +52,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // ConnectionToHost::HostEventCallback implementation.
   virtual void OnConnectionState(
       protocol::ConnectionToHost::State state,
-      protocol::ConnectionToHost::Error error) OVERRIDE;
+      protocol::ErrorCode error) OVERRIDE;
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(const VideoPacket* packet,

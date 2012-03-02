@@ -83,6 +83,7 @@ remoting.ClientSession.State = {
 
 /** @enum {number} */
 remoting.ClientSession.ConnectionError = {
+  UNKNOWN: -1,
   NONE: 0,
   HOST_IS_OFFLINE: 1,
   SESSION_REJECTED: 2,

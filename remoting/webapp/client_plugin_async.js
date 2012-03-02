@@ -119,16 +119,22 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
   } else if (message.method == 'onConnectionStatus') {
     if (typeof message.data['state'] != 'string' ||
         !(message.data['state'] in remoting.ClientSession.State) ||
-        typeof message.data['error'] != 'string' ||
-        !(message.data['error'] in remoting.ClientSession.ConnectionError)) {
+        typeof message.data['error'] != 'string') {
       console.error('Received invalid onConnectionState message: ' +
                     message_str);
       return;
     }
+
     /** @type {remoting.ClientSession.State} */
     var state = remoting.ClientSession.State[message.data['state']];
-    /** @type {remoting.ClientSession.ConnectionError} */
-    var error = remoting.ClientSession.ConnectionError[message.data['error']];
+    var error;
+    if (message.data['error'] in remoting.ClientSession.ConnectionError) {
+      error = /** @type {remoting.ClientSession.ConnectionError} */
+          remoting.ClientSession.ConnectionError[message.data['error']];
+    } else {
+      error = remoting.ClientSession.ConnectionError.UNKNOWN;
+    }
+
     this.onConnectionStatusUpdateHandler(state, error);
   } else if (message.method == 'onDesktopSize') {
     if (typeof message.data['width'] != 'number' ||

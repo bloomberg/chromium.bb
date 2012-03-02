@@ -38,7 +38,7 @@ class PepperView : public ChromotingView,
   virtual void TearDown() OVERRIDE;
   virtual void SetConnectionState(
       protocol::ConnectionToHost::State state,
-      protocol::ConnectionToHost::Error error) OVERRIDE;
+      protocol::ErrorCode error) OVERRIDE;
 
   // FrameConsumer implementation.
   virtual void ApplyBuffer(const SkISize& view_size,

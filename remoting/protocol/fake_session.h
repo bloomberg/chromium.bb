@@ -140,7 +140,7 @@ class FakeSession : public Session {
     message_loop_ = message_loop;
   }
 
-  void set_error(Session::Error error) { error_ = error; }
+  void set_error(ErrorCode error) { error_ = error; }
 
   bool is_closed() const { return closed_; }
 
@@ -154,7 +154,7 @@ class FakeSession : public Session {
   virtual void SetRouteChangeCallback(
       const RouteChangeCallback& callback) OVERRIDE;
 
-  virtual Session::Error error() OVERRIDE;
+  virtual ErrorCode error() OVERRIDE;
 
   virtual void CreateStreamChannel(
       const std::string& name, const StreamChannelCallback& callback) OVERRIDE;
@@ -182,7 +182,7 @@ class FakeSession : public Session {
 
   std::string jid_;
 
-  Session::Error error_;
+  ErrorCode error_;
   bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSession);

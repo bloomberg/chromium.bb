@@ -46,7 +46,7 @@ class MockConnectionToClientEventHandler :
   MOCK_METHOD1(OnConnectionOpened, void(ConnectionToClient* connection));
   MOCK_METHOD1(OnConnectionClosed, void(ConnectionToClient* connection));
   MOCK_METHOD2(OnConnectionFailed, void(ConnectionToClient* connection,
-                                        Session::Error error));
+                                        ErrorCode error));
   MOCK_METHOD2(OnSequenceNumberUpdated, void(ConnectionToClient* connection,
                                              int64 sequence_number));
   MOCK_METHOD4(OnRouteChange, void(
@@ -111,7 +111,7 @@ class MockSession : public Session {
                void(const StateChangeCallback& callback));
   MOCK_METHOD1(SetRouteChangeCallback,
                void(const RouteChangeCallback& callback));
-  MOCK_METHOD0(error, Session::Error());
+  MOCK_METHOD0(error, ErrorCode());
   MOCK_METHOD2(CreateStreamChannel, void(
       const std::string& name, const StreamChannelCallback& callback));
   MOCK_METHOD2(CreateDatagramChannel, void(

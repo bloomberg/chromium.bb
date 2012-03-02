@@ -166,7 +166,7 @@ void ChromotingClient::DispatchPacket() {
 
 void ChromotingClient::OnConnectionState(
     protocol::ConnectionToHost::State state,
-    protocol::ConnectionToHost::Error error) {
+    protocol::ErrorCode error) {
   DCHECK(message_loop()->BelongsToCurrentThread());
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
   if (state == protocol::ConnectionToHost::CONNECTED)

@@ -25,7 +25,7 @@ class ChromotingView {
 
   // Record the update the state of the connection, updating the UI as needed.
   virtual void SetConnectionState(protocol::ConnectionToHost::State state,
-                                  protocol::ConnectionToHost::Error error) = 0;
+                                  protocol::ErrorCode error) = 0;
 };
 
 }  // namespace remoting

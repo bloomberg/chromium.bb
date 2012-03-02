@@ -247,7 +247,7 @@ void FakeSession::SetRouteChangeCallback(const RouteChangeCallback& callback) {
   NOTIMPLEMENTED();
 }
 
-Session::Error FakeSession::error() {
+ErrorCode FakeSession::error() {
   return error_;
 }
 

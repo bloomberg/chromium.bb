@@ -792,6 +792,7 @@
         'protocol/connection_to_host.h',
         'protocol/content_description.cc',
         'protocol/content_description.h',
+        'protocol/errors.h',
         'protocol/host_control_dispatcher.cc',
         'protocol/host_control_dispatcher.h',
         'protocol/host_event_dispatcher.cc',

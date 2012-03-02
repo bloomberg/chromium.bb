@@ -16,6 +16,7 @@
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/pepper_transport_factory.h"
 #include "remoting/protocol/video_reader.h"
@@ -114,7 +115,7 @@ void ConnectionToHost::OnSignalStrategyStateChange(
     VLOG(1) << "Connected as: " << signal_strategy_->GetLocalJid();
   } else if (state == SignalStrategy::DISCONNECTED) {
     VLOG(1) << "Connection closed.";
-    CloseOnError(NETWORK_FAILURE);
+    CloseOnError(SIGNALING_ERROR);
   }
 }
 
@@ -176,24 +177,19 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::FAILED:
-      switch (session_->error()) {
-        case Session::PEER_IS_OFFLINE:
-          CloseOnError(HOST_IS_OFFLINE);
-          break;
-        case Session::SESSION_REJECTED:
-        case Session::AUTHENTICATION_FAILED:
-          CloseOnError(SESSION_REJECTED);
-          break;
-        case Session::INCOMPATIBLE_PROTOCOL:
-          CloseOnError(INCOMPATIBLE_PROTOCOL);
-          break;
-        case Session::CHANNEL_CONNECTION_ERROR:
-        case Session::UNKNOWN_ERROR:
-          CloseOnError(NETWORK_FAILURE);
-          break;
-        case Session::OK:
-          DLOG(FATAL) << "Error code isn't set";
-          CloseOnError(NETWORK_FAILURE);
+      // If we were connected then treat signaling timeout error as if
+      // the connection was closed by the peer.
+      //
+      // TODO(sergeyu): This logic belongs to the webapp, but we
+      // currently don't expose this error code to the webapp, and it
+      // would be hard to add it because client plugin and webapp
+      // versions may not be in sync. It should be easy to do after we
+      // are finished moving the client plugin to NaCl.
+      if (state_ == CONNECTED && session_->error() == SIGNALING_TIMEOUT) {
+        CloseChannels();
+        SetState(CLOSED, OK);
+      } else {
+        CloseOnError(session_->error());
       }
       break;
   }
@@ -202,7 +198,7 @@ void ConnectionToHost::OnSessionStateChange(
 void ConnectionToHost::OnChannelInitialized(bool successful) {
   if (!successful) {
     LOG(ERROR) << "Failed to connect video channel";
-    CloseOnError(NETWORK_FAILURE);
+    CloseOnError(CHANNEL_CONNECTION_ERROR);
     return;
   }
 
@@ -220,7 +216,7 @@ void ConnectionToHost::NotifyIfChannelsReady() {
   }
 }
 
-void ConnectionToHost::CloseOnError(Error error) {
+void ConnectionToHost::CloseOnError(ErrorCode error) {
   CloseChannels();
   SetState(FAILED, error);
 }
@@ -232,7 +228,7 @@ void ConnectionToHost::CloseChannels() {
   video_reader_.reset();
 }
 
-void ConnectionToHost::SetState(State state, Error error) {
+void ConnectionToHost::SetState(State state, ErrorCode error) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   // |error| should be specified only when |state| is set to FAILED.
   DCHECK(state == FAILED || error == OK);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,9 +100,8 @@ TEST_F(ConnectionToClientTest, StateChange) {
   session_->state_change_callback().Run(protocol::Session::CLOSED);
   message_loop_.RunAllPending();
 
-  EXPECT_CALL(handler_, OnConnectionFailed(
-      viewer_.get(), Session::SESSION_REJECTED));
-  session_->set_error(Session::SESSION_REJECTED);
+  EXPECT_CALL(handler_, OnConnectionFailed(viewer_.get(), SESSION_REJECTED));
+  session_->set_error(SESSION_REJECTED);
   session_->state_change_callback().Run(protocol::Session::FAILED);
   message_loop_.RunAllPending();
 }

@@ -31,18 +31,30 @@ namespace {
 // The maximum number of image buffers to be allocated at any point of time.
 const size_t kMaxPendingBuffersCount = 2;
 
+// TODO(sergeyu): Ideally we should just pass ErrorCode to the webapp
+// and let it handle it, but it would be hard to fix it now because
+// client plugin and webapp versions may not be in sync. It should be
+// easy to do after we are finished moving the client plugin to NaCl.
 ChromotingInstance::ConnectionError ConvertConnectionError(
-    protocol::ConnectionToHost::Error error) {
+    protocol::ErrorCode error) {
   switch (error) {
-    case protocol::ConnectionToHost::OK:
+    case protocol::OK:
       return ChromotingInstance::ERROR_NONE;
-    case protocol::ConnectionToHost::HOST_IS_OFFLINE:
+
+    case protocol::PEER_IS_OFFLINE:
       return ChromotingInstance::ERROR_HOST_IS_OFFLINE;
-    case protocol::ConnectionToHost::SESSION_REJECTED:
+
+    case protocol::SESSION_REJECTED:
+    case protocol::AUTHENTICATION_FAILED:
       return ChromotingInstance::ERROR_SESSION_REJECTED;
-    case protocol::ConnectionToHost::INCOMPATIBLE_PROTOCOL:
+
+    case protocol::INCOMPATIBLE_PROTOCOL:
       return ChromotingInstance::ERROR_INCOMPATIBLE_PROTOCOL;
-    case protocol::ConnectionToHost::NETWORK_FAILURE:
+
+    case protocol::CHANNEL_CONNECTION_ERROR:
+    case protocol::SIGNALING_ERROR:
+    case protocol::SIGNALING_TIMEOUT:
+    case protocol::UNKNOWN_ERROR:
       return ChromotingInstance::ERROR_NETWORK_FAILURE;
   }
   DLOG(FATAL) << "Unknown error code" << error;
@@ -97,7 +109,7 @@ void PepperView::TearDown() {
 }
 
 void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
-                                    protocol::ConnectionToHost::Error error) {
+                                    protocol::ErrorCode error) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   switch (state) {
