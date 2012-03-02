@@ -76,6 +76,7 @@ typedef base::Callback<void(GDataErrorCode error,
 // This class provides authentication for GData based services.
 // It integrates specific service integration with OAuth2 stack
 // (TokenService) and provides OAuth2 token refresh infrastructure.
+// All public functions must be called on UI thread.
 class GDataAuthService : public content::NotificationObserver {
  public:
   class Observer {
@@ -141,14 +142,18 @@ class GDataAuthService : public content::NotificationObserver {
 };
 
 // This calls provides documents feed service calls.
+// All public functions must be called on UI thread.
 class DocumentsService : public GDataAuthService::Observer {
  public:
   // DocumentsService is usually owned and created by GDataFileSystem.
   DocumentsService();
   virtual ~DocumentsService();
 
-  // Initializes the documents service.
+  // Initializes the documents service tied with |profile|.
   void Initialize(Profile* profile);
+
+  // Returns a weak pointer of this documents service.
+  base::WeakPtr<DocumentsService> AsWeakPtr();
 
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth

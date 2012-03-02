@@ -42,10 +42,6 @@ namespace gdata {
 
 namespace {
 
-// All gdata api calls will be initated and processed from this thread.
-// TODO(zelidrag): We might want to change this to its own thread
-const BrowserThread::ID kGDataAPICallThread = BrowserThread::UI;
-
 // Template for optional OAuth2 authorization HTTP header.
 const char kAuthorizationHeaderFormat[] =
     "Authorization: Bearer %s";
@@ -742,7 +738,7 @@ GDataAuthService::~GDataAuthService() {
 }
 
 void GDataAuthService::StartAuthentication(AuthStatusCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   (new AuthOperation(profile_, GetOAuth2RefreshToken()))->Start(
       base::Bind(&gdata::GDataAuthService::OnAuthCompleted,
@@ -753,7 +749,7 @@ void GDataAuthService::StartAuthentication(AuthStatusCallback callback) {
 void GDataAuthService::OnAuthCompleted(AuthStatusCallback callback,
                                    GDataErrorCode error,
                                    const std::string& auth_token) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == HTTP_SUCCESS)
     auth_token_ = auth_token;
@@ -818,7 +814,13 @@ void DocumentsService::Initialize(Profile* profile) {
   gdata_auth_service_->Initialize(profile);
 }
 
+base::WeakPtr<DocumentsService> DocumentsService::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (gdata_auth_service_->IsFullyAuthenticated()) {
     callback.Run(gdata::HTTP_SUCCESS, gdata_auth_service_->oauth2_auth_token());
   } else if (gdata_auth_service_->IsPartiallyAuthenticated()) {
@@ -831,7 +833,8 @@ void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
 
 void DocumentsService::GetDocuments(const GURL& url,
                                     const GetDataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
@@ -860,7 +863,7 @@ void DocumentsService::GetDocumentsOnAuthRefresh(const GURL& url,
     const GetDataCallback& callback,
     GDataErrorCode error,
     const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
@@ -875,7 +878,7 @@ void DocumentsService::OnGetDocumentsCompleted(const GURL& url,
     const GetDataCallback& callback,
     GDataErrorCode error,
     base::Value* value) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (error) {
   case HTTP_UNAUTHORIZED:
@@ -896,7 +899,7 @@ void DocumentsService::OnGetDocumentsCompleted(const GURL& url,
 void DocumentsService::DownloadDocument(const GURL& document_url,
                                         DocumentExportFormat format,
                                         DownloadActionCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadFile(
       chrome_browser_net::AppendQueryParameter(document_url,
@@ -907,7 +910,7 @@ void DocumentsService::DownloadDocument(const GURL& document_url,
 
 void DocumentsService::DownloadFile(const GURL& document_url,
                                     DownloadActionCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
@@ -931,7 +934,7 @@ void DocumentsService::DownloadDocumentOnAuthRefresh(
     const GURL& document_url,
     GDataErrorCode error,
     const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
@@ -947,7 +950,7 @@ void DocumentsService::OnDownloadDocumentCompleted(
     GDataErrorCode error,
     const GURL& document_url,
     const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (error) {
     case HTTP_UNAUTHORIZED:
@@ -965,7 +968,8 @@ void DocumentsService::OnDownloadDocumentCompleted(
 
 void DocumentsService::DeleteDocument(const GURL& document_url,
                                       EntryActionCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
@@ -989,7 +993,7 @@ void DocumentsService::DeleteDocumentOnAuthRefresh(
     const GURL& document_url,
     GDataErrorCode error,
     const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
@@ -1004,7 +1008,7 @@ void DocumentsService::OnDeleteDocumentCompleted(
     EntryActionCallback callback,
     GDataErrorCode error,
     const GURL& document_url) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (error) {
     case HTTP_UNAUTHORIZED:
@@ -1022,7 +1026,7 @@ void DocumentsService::OnDeleteDocumentCompleted(
 
 void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
                                       InitiateUploadCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If we don't have doucment feed, queue caller of InitiateUpload.
   if (!feed_value_.get()) {
@@ -1105,7 +1109,7 @@ void DocumentsService::InitiateUploadOnAuthRefresh(
     const UploadFileInfo& upload_file_info,
     GDataErrorCode error,
     const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
@@ -1121,7 +1125,7 @@ void DocumentsService::OnInitiateUploadCompleted(
     GDataErrorCode error,
     const UploadFileInfo& upload_file_info,
     const GURL& upload_location) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (error) {
     case HTTP_UNAUTHORIZED:
@@ -1139,7 +1143,7 @@ void DocumentsService::OnInitiateUploadCompleted(
 
 void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
                                     ResumeUploadCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
@@ -1165,7 +1169,7 @@ void DocumentsService::ResumeUploadOnAuthRefresh(
     const UploadFileInfo& upload_file_info,
     GDataErrorCode error,
     const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
@@ -1182,7 +1186,7 @@ void DocumentsService::OnResumeUploadCompleted(
     const UploadFileInfo& upload_file_info,
     int64 start_range_received,
     int64 end_range_received) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (error) {
     case HTTP_UNAUTHORIZED:
@@ -1200,7 +1204,7 @@ void DocumentsService::OnResumeUploadCompleted(
 }
 
 void DocumentsService::OnOAuth2RefreshTokenChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(zelidrag): Remove this block once we properly wire these API calls
   // through extension API.
@@ -1218,7 +1222,7 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
 
 void DocumentsService::UpdateFilelist(GDataErrorCode status,
                                       base::Value* data) {
-  DCHECK(BrowserThread::CurrentlyOn(kGDataAPICallThread));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   get_documents_started_ = false;
 

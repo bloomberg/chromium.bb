@@ -9,6 +9,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
@@ -198,11 +200,9 @@ class ReadOnlyFindFileDelegate : public FindFileDelegate {
 };
 
 
-// GData file system abstraction layer. This class is refcounted since we
-// access it from different threads and aggregate into number of other objects.
+// GData file system abstraction layer.
 // GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
-class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
-                        public ProfileKeyedService {
+class GDataFileSystem : public ProfileKeyedService {
  public:
   struct FindFileParams {
     FindFileParams(const FilePath& in_file_path,
@@ -230,12 +230,16 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
+  //
+  // Must be called on UI thread.
   void Authenticate(const AuthStatusCallback& callback);
 
   // Finds file info by using virtual |file_path|. If |require_content| is set,
   // the found directory will be pre-populated before passed back to the
   // |delegate|. If |allow_refresh| is not set, directories' content
   // won't be performed.
+  //
+  // Can be called from any thread.
   void FindFileByPath(const FilePath& file_path,
                       scoped_refptr<FindFileDelegate> delegate);
 
@@ -244,21 +248,27 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
   // contained children elements. The file entry represented by |file_path|
   // needs to be present in in-memory representation of the file system that
   // in order to be removed.
+  //
+  // |callback| is run on UI thread, when |file_path| is removed on the
+  // thread where Remove() is called.
+  //
   // TODO(zelidrag): Wire |is_recursive| through gdata api
   // (find appropriate call for it).
+  //
+  // Can be called from any thread.
   void Remove(const FilePath& file_path,
               bool is_recursive,
               const FileOperationCallback& callback);
 
-  // Initiates directory feed fetching operation and continues previously
   // initiated FindFileByPath() attempt upon its completion. Safe to be called
   // from any thread. Internally, it will route content refresh request to
-  // RefreshFeedOnUIThread() method which will initiated content fetching from
-  // UI thread as required by gdata library (UrlFetcher).
+  // DocumentsService::GetDocuments() which will initiated content
+  // fetching from UI thread as required by gdata library (UrlFetcher).
+  //
+  // Can be called from any thread.
   void StartDirectoryRefresh(const FindFileParams& params);
 
  private:
-  friend class base::RefCountedThreadSafe<GDataFileSystem>;
   friend class GDataFileSystemFactory;
   friend class GDataFileSystemTest;
 
@@ -268,15 +278,6 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
   // Unsafe (unlocked) version of the function above.
   void UnsafeFindFileByPath(const FilePath& file_path,
                             scoped_refptr<FindFileDelegate> delegate);
-
-  // Initiates document feed fetching from UI thread.
-  void RefreshFeedOnUIThread(const GURL& feed_url,
-                             const GetDataCallback& callback);
-
-  // Initiates |file_path| entry deletion from UI thread.
-  void RemoveOnUIThread(const FilePath& file_path,
-                        bool is_recursive,
-                        const EntryActionCallback& callback);
 
   // Finds file object by |file_path| and returns its gdata self-url.
   // Returns empty GURL if it does not find the file.
@@ -297,11 +298,14 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
                       GDataErrorCode status,
                       base::Value* data);
 
-  // Callback for handling document remove attempt.
+  // Callback for handling document remove attempt. |message_loop_proxy| is
+  // used to post a task to the thread where Remove() was called.
   void OnRemovedDocument(
       const FileOperationCallback& callback,
       const FilePath& file_path,
-      GDataErrorCode status, const GURL& document_url);
+      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+      GDataErrorCode status,
+      const GURL& document_url);
 
   // Removes file under |file_path| from in-memory snapshot of the file system.
   // Return PLATFORM_FILE_OK if successful.
@@ -325,6 +329,10 @@ class GDataFileSystem : public base::RefCountedThreadSafe<GDataFileSystem>,
 
   // The document service for the GDataFileSystem.
   scoped_ptr<DocumentsService> documents_service_;
+
+  base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
+  base::WeakPtr<GDataFileSystem> file_system_bound_to_ui_thread_;
+  base::WeakPtr<DocumentsService> documents_service_bound_to_ui_thread_;
 };
 
 // Singleton that owns all GDataFileSystems and associates them with

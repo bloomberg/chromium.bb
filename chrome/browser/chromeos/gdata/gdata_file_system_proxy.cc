@@ -44,7 +44,7 @@ base::FileUtilProxy::Entry GDataFileToFileUtilProxyEntry(
 class FindFileDelegateReplyBase : public FindFileDelegate {
  public:
   FindFileDelegateReplyBase(
-      scoped_refptr<GDataFileSystem> file_system,
+      GDataFileSystem* file_system,
       const FilePath& search_file_path,
       bool require_content)
       : file_system_(file_system),
@@ -93,7 +93,7 @@ class FindFileDelegateReplyBase : public FindFileDelegate {
   }
 
  protected:
-  scoped_refptr<GDataFileSystem> file_system_;
+  GDataFileSystem* file_system_;
   // Search file path.
   FilePath search_file_path_;
   // True if the final directory content is required.
@@ -106,7 +106,7 @@ class FindFileDelegateReplyBase : public FindFileDelegate {
 class GetFileInfoDelegate : public FindFileDelegateReplyBase {
  public:
   GetFileInfoDelegate(
-      scoped_refptr<GDataFileSystem> file_system,
+      GDataFileSystem* file_system,
       const FilePath& search_file_path,
       const FileSystemOperationInterface::GetMetadataCallback& callback)
       : FindFileDelegateReplyBase(file_system,
@@ -166,7 +166,7 @@ class GetFileInfoDelegate : public FindFileDelegateReplyBase {
 class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
  public:
   ReadDirectoryDelegate(
-      scoped_refptr<GDataFileSystem> file_system,
+      GDataFileSystem* file_system,
       const FilePath& search_file_path,
       const FileSystemOperationInterface::ReadDirectoryCallback& callback)
       : FindFileDelegateReplyBase(file_system,
@@ -243,9 +243,14 @@ class ReadDirectoryDelegate : public FindFileDelegateReplyBase {
 
 GDataFileSystemProxy::GDataFileSystemProxy(Profile* profile)
     : file_system_(GDataFileSystemFactory::GetForProfile(profile)) {
+  // Should be created from the file browser extension API (AddMountFunction)
+  // on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 GDataFileSystemProxy::~GDataFileSystemProxy() {
+  // Should be deleted from the CrosMountPointProvider on IO thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,

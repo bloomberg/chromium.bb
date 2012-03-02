@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/utf_string_conversions.h"
 #include "base/platform_file.h"
 #include "base/stringprintf.h"
@@ -307,21 +308,37 @@ GDataFileSystem::FindFileParams::~FindFileParams() {
 
 GDataFileSystem::GDataFileSystem(Profile* profile)
     : profile_(profile),
-      documents_service_(new DocumentsService) {
+      documents_service_(new DocumentsService),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   documents_service_->Initialize(profile_);
   root_.reset(new GDataDirectory(NULL));
   root_->set_file_name(kGDataRootDirectory);
+
+  // Should be created from the file browser extension API on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // These weak pointers are used to post tasks to UI thread.
+  file_system_bound_to_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
+  documents_service_bound_to_ui_thread_ = documents_service_->AsWeakPtr();
 }
 
 GDataFileSystem::~GDataFileSystem() {
+  // Should be deleted as part of Profile on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void GDataFileSystem::Shutdown() {
   // TODO(satorux): We should probably cancel or wait for the in-flight
   // operation here.
+
+  // Should be called on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
+  // TokenFetcher, used in DocumentsService, must be run on UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   documents_service_->Authenticate(callback);
 }
 
@@ -338,29 +355,39 @@ void GDataFileSystem::StartDirectoryRefresh(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &GDataFileSystem::RefreshFeedOnUIThread,
-          this,
+          &DocumentsService::GetDocuments,
+          documents_service_bound_to_ui_thread_,
           params.feed_url,
           base::Bind(&GDataFileSystem::OnGetDocuments,
-                     this,
+                     file_system_bound_to_ui_thread_,
                      params)));
 }
 
 void GDataFileSystem::Remove(const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  // Kick off document deletion.
+  GURL document_url = GetDocumentUrlFromPath(file_path);
+  if (document_url.is_empty()) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    }
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          &GDataFileSystem::RemoveOnUIThread,
-          this,
-          file_path,
-          is_recursive,
+          &DocumentsService::DeleteDocument,
+          documents_service_bound_to_ui_thread_,
+          document_url,
           base::Bind(&GDataFileSystem::OnRemovedDocument,
-                     this,
+                     file_system_bound_to_ui_thread_,
                      callback,
-                     file_path)));
+                     file_path,
+                     // MessageLoopProxy is used to run |callback| on the
+                     // thread where Remove() was called.
+                     base::MessageLoopProxy::current())));
 }
 
 void GDataFileSystem::UnsafeFindFileByPath(
@@ -414,27 +441,6 @@ void GDataFileSystem::UnsafeFindFileByPath(
   delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
 }
 
-void GDataFileSystem::RefreshFeedOnUIThread(const GURL& feed_url,
-    const GetDataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  documents_service_->GetDocuments(feed_url, callback);
-}
-
-void GDataFileSystem::RemoveOnUIThread(
-    const FilePath& file_path, bool is_recursive,
-    const EntryActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  GURL document_url = GetDocumentUrlFromPath(file_path);
-  if (document_url.is_empty()) {
-    if (!callback.is_null())
-      callback.Run(HTTP_NOT_FOUND, GURL());
-
-    return;
-  }
-  documents_service_->DeleteDocument(document_url, callback);
-}
-
 GURL GDataFileSystem::GetDocumentUrlFromPath(const FilePath& file_path) {
   base::AutoLock lock(lock_);
   // Find directory element within the cached file system snapshot.
@@ -451,6 +457,8 @@ void GDataFileSystem::OnGetDocuments(
     const FindFileParams& params,
     GDataErrorCode status,
     base::Value* data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (error == base::PLATFORM_FILE_OK &&
@@ -493,14 +501,19 @@ void GDataFileSystem::OnGetDocuments(
 void GDataFileSystem::OnRemovedDocument(
     const FileOperationCallback& callback,
     const FilePath& file_path,
-    GDataErrorCode status, const GURL& document_url) {
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+    GDataErrorCode status,
+    const GURL& document_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (error == base::PLATFORM_FILE_OK)
     error = RemoveFileFromFileSystem(file_path);
 
-  if (!callback.is_null())
-    callback.Run(error);
+  if (!callback.is_null()) {
+    message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+  }
 }
 
 base::PlatformFileError GDataFileSystem::RemoveFileFromFileSystem(

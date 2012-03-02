@@ -38,7 +38,7 @@ class GDataFileSystemTest : public testing::Test {
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile);
-    file_system_ = new GDataFileSystem(profile_.get());
+    file_system_ = GDataFileSystemFactory::GetForProfile(profile_.get());
   }
 
   // Loads test json file as root ("/gdata") element.
@@ -129,7 +129,7 @@ class GDataFileSystemTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_refptr<GDataFileSystem> file_system_;
+  GDataFileSystem* file_system_;
 };
 
 

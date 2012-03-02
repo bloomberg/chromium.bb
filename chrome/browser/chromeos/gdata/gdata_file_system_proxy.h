@@ -40,12 +40,16 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const fileapi::FileSystemOperationInterface::StatusCallback& callback,
       base::PlatformFileError result);
 
-    // Checks if a given |url| belongs to this file system. If it does,
+  // Checks if a given |url| belongs to this file system. If it does,
   // the call will return true and fill in |file_path| with a file path of
   // a corresponding element within this file system.
   static bool ValidateUrl(const GURL& url, FilePath* file_path);
 
-  scoped_refptr<GDataFileSystem> file_system_;
+  // GDataFileSystemProxy is owned by Profile, which outlives
+  // GDataFileSystemProxy, which is owned by CrosMountPointProvider (i.e. by
+  // the time Profile is removed, the file manager is already gone). Hence
+  // it's safe to use this as a raw pointer.
+  GDataFileSystem* file_system_;
 };
 
 }  // namespace chromeos
