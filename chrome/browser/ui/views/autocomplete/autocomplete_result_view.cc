@@ -153,6 +153,9 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
         gfx::NativeTheme::kColorId_TextfieldDefaultBackground);
     colors[NORMAL][TEXT] = theme->GetSystemColor(
         gfx::NativeTheme::kColorId_TextfieldDefaultColor);
+    colors[NORMAL][URL] = SkColorSetARGB(0xff, 0x00, 0x99, 0x33);
+    colors[SELECTED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
+    colors[HOVERED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
 #elif defined(TOOLKIT_USES_GTK)
     GdkColor bg_color, selected_bg_color, text_color, selected_text_color;
     gtk_util::GetTextColors(
@@ -175,8 +178,10 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
     for (int i = 0; i < NUM_STATES; ++i) {
       colors[i][DIMMED_TEXT] =
           color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 128);
+#if !defined(USE_AURA)
       colors[i][URL] = color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
                                                      colors[i][BACKGROUND]);
+#endif
     }
     initialized = true;
   }

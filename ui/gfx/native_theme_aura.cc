@@ -38,7 +38,7 @@ const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
 const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
 const SkColor kTextfieldSelectionColor = SK_ColorWHITE;
 const SkColor kTextfieldSelectionBackgroundFocused =
-    SkColorSetRGB(0x1D, 0x90, 0xFF);
+    SkColorSetARGB(0x54, 0x4D, 0x90, 0xFE);
 const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
 
 }  // namespace
