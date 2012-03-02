@@ -11,11 +11,10 @@
 #include <sys/nacl_syscalls.h>
 #include <unistd.h>
 
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 
-typedef void (*handler_func_t)(struct NaClExceptionContext *context);
+typedef void (*handler_func_t)(int prog_ctr, int stack_ptr);
 
 char stack_in_rwdata[0x1000];
 
@@ -78,7 +77,7 @@ void error_exit() {
 #else
 
 /* TODO(mseaborn): Implement a stack switcher, like the one above, for ARM. */
-void bad_stack_exception_handler(struct NaClExceptionContext *context) {
+void bad_stack_exception_handler(int prog_ctr, int stack_ptr) {
   _exit(1);
 }
 

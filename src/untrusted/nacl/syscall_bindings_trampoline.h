@@ -3,10 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-/*
- * TODO(bradchen): figure out where to move this include file and then
- * move it.
- */
+/* TODO(bradchen): figure out where to move this include file and then move it */
 
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_NACL_SYSCALL_BINDINGS_TRAMPOLINE_H
 #define NATIVE_CLIENT_SRC_UNTRUSTED_NACL_SYSCALL_BINDINGS_TRAMPOLINE_H
@@ -21,11 +18,10 @@ extern "C" {
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-struct NaClExceptionContext;
 struct NaClImcMsgHdr;
 struct stat;
-struct timespec;
 struct timeval;
+struct timespec;
 
 #define NACL_SYSCALL(s) ((TYPE_nacl_ ## s) NACL_SYSCALL_ADDR(NACL_sys_ ## s))
 
@@ -200,8 +196,8 @@ typedef int (*TYPE_nacl_dyncode_modify) (void *dest, const void *src,
 typedef int (*TYPE_nacl_dyncode_delete) (void *dest, size_t size);
 
 typedef int (*TYPE_nacl_exception_handler) (
-    void (*handler)(struct NaClExceptionContext *context),
-    void (**old_handler)(struct NaClExceptionContext *context));
+                  void (*handler) (int eip, int esp),
+                  void (**old_handler) (int eip, int esp));
 
 typedef int (*TYPE_nacl_exception_stack) (void* stack, size_t size);
 
