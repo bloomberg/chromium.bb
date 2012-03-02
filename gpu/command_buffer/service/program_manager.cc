@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/program_manager.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -166,6 +167,10 @@ void ProgramManager::ProgramInfo::Link() {
   ClearLinkStatus();
   if (!CanLink()) {
     set_log_info("missing shaders");
+    return;
+  }
+  if (DetectAttribLocationBindingConflicts()) {
+    set_log_info("glBindAttribLocation() conflicts");
     return;
   }
 
@@ -440,6 +445,31 @@ bool ProgramManager::ProgramInfo::CanLink() const {
     }
   }
   return true;
+}
+
+bool ProgramManager::ProgramInfo::DetectAttribLocationBindingConflicts() const {
+  std::set<GLint> location_binding_used;
+  for (std::map<std::string, GLint>::const_iterator it =
+           bind_attrib_location_map_.begin();
+       it != bind_attrib_location_map_.end(); ++it) {
+    // Find out if an attribute is declared in this program's shaders.
+    bool active = false;
+    for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+      if (!attached_shaders_[ii] || !attached_shaders_[ii]->IsValid())
+        continue;
+      if (attached_shaders_[ii]->GetAttribInfo(it->first)) {
+        active = true;
+        break;
+      }
+    }
+    if (active) {
+      std::pair<std::set<GLint>::iterator, bool> result =
+          location_binding_used.insert(it->second);
+      if (!result.second)
+        return true;
+    }
+  }
+  return false;
 }
 
 static uint32 ComputeOffset(const void* start, const void* position) {

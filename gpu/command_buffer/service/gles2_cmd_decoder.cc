@@ -3802,6 +3802,7 @@ void GLES2DecoderImpl::DoBindAttribLocation(
   if (!info) {
     return;
   }
+  info->SetAttribLocationBinding(name, static_cast<GLint>(index));
   glBindAttribLocation(info->service_id(), index, name);
 }
 

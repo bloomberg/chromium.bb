@@ -334,7 +334,6 @@ class ProgramManagerWithShaderTest : public testing::Test {
     }
   }
 
-
   void SetupDefaultShaderExpectations() {
     SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
                 kServiceProgramId);
@@ -342,6 +341,20 @@ class ProgramManagerWithShaderTest : public testing::Test {
 
   virtual void TearDown() {
     ::gfx::GLInterface::SetGLInterface(NULL);
+  }
+
+  // Return true if link status matches expected_link_status
+  bool LinkAsExpected(ProgramManager::ProgramInfo* program_info,
+                      bool expected_link_status) {
+    GLuint service_id = program_info->service_id();
+    if (expected_link_status) {
+      SetupShader(kAttribs, kNumAttribs, kUniforms, kNumUniforms,
+                  service_id);
+    }
+    program_info->Link();
+    GLint link_status;
+    program_info->GetProgramiv(GL_LINK_STATUS, &link_status);
+    return (static_cast<bool>(link_status) == expected_link_status);
   }
 
   static AttribInfo kAttribs[];
@@ -936,6 +949,73 @@ TEST_F(ProgramManagerWithShaderTest, ProgramInfoGetProgramInfo) {
   }
   EXPECT_EQ(header->num_attribs + header->num_uniforms,
             static_cast<uint32>(input - inputs));
+}
+
+TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
+  // Set up shader
+  const GLuint kVShaderClientId = 1;
+  const GLuint kVShaderServiceId = 11;
+  const GLuint kFShaderClientId = 2;
+  const GLuint kFShaderServiceId = 12;
+  MockShaderTranslator shader_translator;
+  ShaderTranslator::VariableMap attrib_map;
+  for (uint32 ii = 0; ii < kNumAttribs; ++ii) {
+    attrib_map[kAttribs[ii].name] = ShaderTranslatorInterface::VariableInfo(
+        kAttribs[ii].type, kAttribs[ii].size, kAttribs[ii].name);
+  }
+  ShaderTranslator::VariableMap uniform_map;
+  EXPECT_CALL(shader_translator, attrib_map())
+      .WillRepeatedly(ReturnRef(attrib_map));
+  EXPECT_CALL(shader_translator, uniform_map())
+      .WillRepeatedly(ReturnRef(uniform_map));
+  // Check we can create shader.
+  ShaderManager::ShaderInfo* vshader = shader_manager_.CreateShaderInfo(
+      kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
+  ShaderManager::ShaderInfo* fshader = shader_manager_.CreateShaderInfo(
+      kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
+  // Check shader got created.
+  ASSERT_TRUE(vshader != NULL && fshader != NULL);
+  // Set Status
+  vshader->SetStatus(true, "", &shader_translator);
+  // Check attrib infos got copied.
+  for (ShaderTranslator::VariableMap::const_iterator it = attrib_map.begin();
+       it != attrib_map.end(); ++it) {
+    const ShaderManager::ShaderInfo::VariableInfo* variable_info =
+        vshader->GetAttribInfo(it->first);
+    ASSERT_TRUE(variable_info != NULL);
+    EXPECT_EQ(it->second.type, variable_info->type);
+    EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.name, variable_info->name);
+  }
+  fshader->SetStatus(true, "", NULL);
+
+  // Set up program
+  const GLuint kClientProgramId = 6666;
+  const GLuint kServiceProgramId = 8888;
+  ProgramManager::ProgramInfo* program_info =
+      manager_.CreateProgramInfo(kClientProgramId, kServiceProgramId);
+  ASSERT_TRUE(program_info != NULL);
+  EXPECT_TRUE(program_info->AttachShader(&shader_manager_, vshader));
+  EXPECT_TRUE(program_info->AttachShader(&shader_manager_, fshader));
+
+  EXPECT_FALSE(program_info->DetectAttribLocationBindingConflicts());
+  EXPECT_TRUE(LinkAsExpected(program_info, true));
+
+  program_info->SetAttribLocationBinding(kAttrib1Name, 0);
+  EXPECT_FALSE(program_info->DetectAttribLocationBindingConflicts());
+  EXPECT_TRUE(LinkAsExpected(program_info, true));
+
+  program_info->SetAttribLocationBinding("xxx", 0);
+  EXPECT_FALSE(program_info->DetectAttribLocationBindingConflicts());
+  EXPECT_TRUE(LinkAsExpected(program_info, true));
+
+  program_info->SetAttribLocationBinding(kAttrib2Name, 1);
+  EXPECT_FALSE(program_info->DetectAttribLocationBindingConflicts());
+  EXPECT_TRUE(LinkAsExpected(program_info, true));
+
+  program_info->SetAttribLocationBinding(kAttrib2Name, 0);
+  EXPECT_TRUE(program_info->DetectAttribLocationBindingConflicts());
+  EXPECT_TRUE(LinkAsExpected(program_info, false));
 }
 
 }  // namespace gles2

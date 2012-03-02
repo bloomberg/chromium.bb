@@ -154,6 +154,17 @@ class GPU_EXPORT ProgramManager {
       return use_count_ != 0;
     }
 
+    // Sets attribute-location binding from a glBindAttribLocation() call.
+    void SetAttribLocationBinding(const std::string& attrib,
+                                  GLint location) {
+      bind_attrib_location_map_[attrib] = location;
+    }
+
+    // Detects if there are attribute location conflicts from
+    // glBindAttribLocation() calls.
+    // We only consider the declared attributes in the program.
+    bool DetectAttribLocationBindingConflicts() const;
+
     static inline GLint GetFakeLocation(
         GLint fake_base_location, GLint element_index) {
       return fake_base_location | element_index << 16;
@@ -248,6 +259,9 @@ class GPU_EXPORT ProgramManager {
 
     // Log info
     scoped_ptr<std::string> log_info_;
+
+    // attribute-location binding map from glBindAttribLocation() calls.
+    std::map<std::string, GLint> bind_attrib_location_map_;
   };
 
   ProgramManager();
