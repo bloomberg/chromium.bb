@@ -26,10 +26,6 @@ namespace internal {
 namespace {
 
 ShadowType GetShadowTypeFromWindow(aura::Window* window) {
-  // No shadow for transparent window.
-  if (window->transparent())
-    return SHADOW_TYPE_NONE;
-
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_PANEL:

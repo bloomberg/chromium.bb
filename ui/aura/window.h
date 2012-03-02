@@ -225,6 +225,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
 
+  // When non-zero insets the window's bounds by |inset| when performing hit
+  // tests for event handling.  Pass a negative value for |inset| to respond to
+  // events that occur slightly outside a window's bounds.
+  void set_hit_test_bounds_inset(int inset) { hit_test_bounds_inset_ = inset; }
+  int hit_test_bounds_inset() const { return hit_test_bounds_inset_; }
+
   // Returns true if the |point_in_root| in root window's coordinate falls
   // within this window's bounds. Returns false if the window is detached
   // from root window.
@@ -410,6 +416,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Makes the window pass all events through to any windows behind it.
   bool ignore_events_;
+
+  // Inset the window bounds by this amount when doing hit testing for events.
+  int hit_test_bounds_inset_;
 
   ObserverList<WindowObserver> observers_;
 

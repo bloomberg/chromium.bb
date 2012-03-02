@@ -273,13 +273,18 @@ TEST_F(WindowTest, HitTest) {
   Window w1(new ColorTestWindowDelegate(SK_ColorWHITE));
   w1.set_id(1);
   w1.Init(ui::Layer::LAYER_TEXTURED);
-  w1.SetBounds(gfx::Rect(10, 10, 50, 50));
+  w1.SetBounds(gfx::Rect(10, 20, 50, 60));
   w1.Show();
   w1.SetParent(NULL);
 
   // Points are in the Window's coordinates.
   EXPECT_TRUE(w1.HitTest(gfx::Point(1, 1)));
   EXPECT_FALSE(w1.HitTest(gfx::Point(-1, -1)));
+
+  // We can expand the bounds slightly to track events outside our border.
+  w1.set_hit_test_bounds_inset(-1);
+  EXPECT_TRUE(w1.HitTest(gfx::Point(-1, -1)));
+  EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
 
   // TODO(beng): clip Window to parent.
 }

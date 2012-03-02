@@ -305,7 +305,11 @@ void RootView::OnMouseMoved(const MouseEvent& event) {
       widget_->SetCursor(mouse_move_handler_->GetCursor(moved_event));
   } else if (mouse_move_handler_ != NULL) {
     mouse_move_handler_->OnMouseExited(e);
-    widget_->SetCursor(gfx::kNullCursor);
+    // On Aura the non-client area extends slightly outside the root view for
+    // some windows.  Let the non-client cursor handling code set the cursor
+    // as we do above.
+    if (!(e.flags() & ui::EF_IS_NON_CLIENT))
+      widget_->SetCursor(gfx::kNullCursor);
   }
 }
 

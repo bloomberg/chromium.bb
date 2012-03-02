@@ -6,213 +6,93 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"  // Accessibility names
+#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/aura/cursor.h"
-#include "ui/base/animation/throb_animation.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkShader.h"
+#include "ui/aura/window.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/compositor/layer.h"
-#include "ui/views/controls/button/custom_button.h"
+#include "ui/gfx/font.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
-// Our window is larger than it appears, as it includes space around the edges
-// where resize handles can appear.
-const int kResizeBorderThickness = 8;
-// The top edge is a little thinner, as it is not draggable for resize.
-const int kTopBorderThickness = 4;
-// Offset between top of non-client frame and top edge of opaque frame
-// background at start of slide-in animation.
-const int kFrameBackgroundTopOffset = 25;
 
-// Width of a persistent border that we show around the window (using
-// FrameBackground) even when the resize border isn't visible.
-const int kPersistentBorderThickness = 2;
+// Size of border along top edge, used for resize handle computations.
+const int kTopThickness = 1;
+// TODO(jamescook): Border is specified to be a single pixel overlapping
+// the web content and may need to be built into the shadow layers instead.
+const int kBorderThickness = 0;
+// Number of pixels outside the window frame to look for resize events.
+const int kResizeAreaOutsideBounds = 6;
+// In the window corners, the resize areas don't actually expand bigger, but the
+// 16 px at the end of each edge triggers diagonal resizing.
+const int kResizeAreaCornerSize = 16;
+// Space between left edge of window and popup window icon.
+const int kIconOffsetX = 4;
+// Space between top of window and popup window icon.
+const int kIconOffsetY = 4;
+// Height and width of window icon.
+const int kIconSize = 16;
+// Space between the title text and the caption buttons.
+const int kTitleLogoSpacing = 5;
+// Space between title text and icon.
+const int kTitleOffsetX = 4;
+// Space between title text and top of window.
+const int kTitleOffsetY = 6;
+// Space between close button and right edge of window.
+const int kCloseButtonOffsetX = 0;
+// Space between close button and top edge of window.
+const int kCloseButtonOffsetY = 0;
+// Space between left edge of window and tabstrip.
+const int kTabstripLeftSpacing = 4;
+// Space between right edge of tabstrip and maximize button.
+const int kTabstripRightSpacing = 10;
+// Space between top of window and top of tabstrip for restored windows.
+const int kTabstripTopSpacingRestored = 10;
+// Space between top of window and top of tabstrip for maximized windows.
+const int kTabstripTopSpacingMaximized = 1;
 
-// The color used to fill the frame.  Opacity is handled in the layer.
-const SkColor kFrameColor = SK_ColorBLACK;
-// Radius of rounded rectangle corners.
-const int kRoundedRectRadius = 3;
-// Frame border fades in over this range of opacity.
-const double kFrameBorderStartOpacity = 0.2;
-const double kFrameBorderEndOpacity = 0.3;
-// How long the hover animation takes if uninterrupted.
-const int kHoverFadeDurationMs = 250;
+// Tiles an image into an area, rounding the top corners.
+void TileRoundRect(gfx::Canvas* canvas,
+                   int x, int y, int w, int h,
+                   const SkBitmap& bitmap,
+                   int corner_radius) {
+  SkRect rect;
+  rect.iset(x, y, x + w, y + h);
+  const SkScalar kRadius = SkIntToScalar(corner_radius);
+  SkScalar radii[8] = {
+      kRadius, kRadius,  // top-left
+      kRadius, kRadius,  // top-right
+      0, 0,   // bottom-right
+      0, 0};  // bottom-left
+  SkPath path;
+  path.addRoundRect(rect, radii, SkPath::kCW_Direction);
 
-// Color shown when window control is hovered.
-const SkColor kMaximizeButtonBackgroundColor = SkColorSetRGB(0, 255, 0);
-const SkColor kCloseButtonBackgroundColor = SkColorSetRGB(255, 0, 0);
-
-bool HitVisibleView(views::View* view, gfx::Point point) {
-  return view->visible() && view->GetMirroredBounds().Contains(point);
+  SkPaint paint;
+  SkShader* shader = SkShader::CreateBitmapShader(bitmap,
+                                                  SkShader::kRepeat_TileMode,
+                                                  SkShader::kRepeat_TileMode);
+  paint.setShader(shader);
+  paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+  // CreateBitmapShader returns a Shader with a reference count of one, we
+  // need to unref after paint takes ownership of the shader.
+  shader->unref();
+  canvas->GetSkCanvas()->drawPath(path, paint);
 }
 
 }  // namespace
-
-// Buttons for window controls - close, zoom, etc.
-// Note that views::CustomButton is already a ui::AnimationDelegate.
-class WindowControlButton : public views::CustomButton {
- public:
-  WindowControlButton(BrowserNonClientFrameViewAura* owner,
-                      SkColor color,
-                      const SkBitmap& icon)
-      : views::CustomButton(owner),
-        owner_(owner),
-        color_(color),
-        icon_(icon),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            show_animation_(new ui::SlideAnimation(this))) {
-    show_animation_->SetSlideDuration(kHoverFadeDurationMs);
-    SetPaintToLayer(true);
-    layer()->SetFillsBoundsOpaquely(false);
-    layer()->SetOpacity(0.f);
-  }
-  virtual ~WindowControlButton() {}
-
-  void Show() {
-    show_animation_->Show();
-  }
-  void Hide() {
-    show_animation_->Hide();
-  }
-
-  // Overridden from views::View:
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
-    // Ensure the caption/frame background shows when we hover this button.
-    owner_->ShowFrameBackground();
-    views::CustomButton::OnMouseEntered(event);
-  }
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
-    owner_->HideFrameBackground();
-    views::CustomButton::OnMouseExited(event);
-  }
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    canvas->FillRect(GetLocalBounds(), GetBackgroundColor());
-    canvas->DrawBitmapInt(icon_, 0, 0);
-  }
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(icon_.width(), icon_.height());
-  }
-
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
-    if (animation == show_animation_.get()) {
-      double opacity = show_animation_->GetCurrentValue();
-      layer()->SetOpacity(static_cast<float>(opacity));
-      return;
-    }
-    views::CustomButton::AnimationProgressed(animation);
-  }
-
- private:
-  SkColor GetBackgroundColor() {
-    // Background animates in separately, so handle opacity manually.
-    return SkColorSetARGB(hover_animation_->CurrentValueBetween(0, 150),
-                          SkColorGetR(color_),
-                          SkColorGetG(color_),
-                          SkColorGetB(color_));
-  }
-
-  BrowserNonClientFrameViewAura* owner_;
-  SkColor color_;
-  SkBitmap icon_;
-  scoped_ptr<ui::SlideAnimation> show_animation_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowControlButton);
-};
-
-// Layer that visually sits "behind" the window contents and expands out to
-// provide visual resize handles on the sides.  Hit testing and resize handling
-// is in the parent NonClientFrameView.
-class FrameBackgroundView : public views::View,
-                            public ui::AnimationDelegate {
- public:
-  FrameBackgroundView()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(
-            size_animation_(new ui::SlideAnimation(this))),
-        ALLOW_THIS_IN_INITIALIZER_LIST(
-            color_animation_(new ui::SlideAnimation(this))) {
-    size_animation_->SetSlideDuration(kHoverFadeDurationMs);
-    color_animation_->SetSlideDuration(kHoverFadeDurationMs);
-    SetPaintToLayer(true);
-    UpdateOpacity();
-  }
-  virtual ~FrameBackgroundView() {
-  }
-
-  void Configure(const gfx::Rect& start_bounds, const gfx::Rect& end_bounds) {
-    start_bounds_ = start_bounds;
-    end_bounds_ = end_bounds;
-    UpdateBounds();
-  }
-  void SetEndBounds(const gfx::Rect& end_bounds) {
-    end_bounds_ = end_bounds;
-    UpdateBounds();
-  }
-  void Show() {
-    size_animation_->Show();
-    color_animation_->Show();
-  }
-  void Hide() {
-    size_animation_->Hide();
-    color_animation_->Hide();
-  }
-
- protected:
-  // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    SkRect rect = { SkIntToScalar(0), SkIntToScalar(0),
-                    SkIntToScalar(width()), SkIntToScalar(height()) };
-    SkScalar radius = SkIntToScalar(kRoundedRectRadius);
-    SkPaint paint;
-    // Animation handles setting the opacity for the whole layer.
-    paint.setColor(kFrameColor);
-    paint.setStyle(SkPaint::kFill_Style);
-    canvas->GetSkCanvas()->drawRoundRect(rect, radius, radius, paint);
-  }
-
-  // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
-    if (animation == color_animation_.get()) {
-      UpdateOpacity();
-    } else if (animation == size_animation_.get()) {
-      UpdateBounds();
-    }
-  }
-
- private:
-  void UpdateOpacity() {
-    double opacity = color_animation_->CurrentValueBetween(
-        kFrameBorderStartOpacity, kFrameBorderEndOpacity);
-    layer()->SetOpacity(static_cast<float>(opacity));
-  }
-
-  void UpdateBounds() {
-    gfx::Rect current_bounds =
-        size_animation_->CurrentValueBetween(start_bounds_, end_bounds_);
-    SetBoundsRect(current_bounds);
-    SchedulePaint();
-  }
-
-  scoped_ptr<ui::SlideAnimation> size_animation_;
-  scoped_ptr<ui::SlideAnimation> color_animation_;
-  // Default "hidden" rectangle.
-  gfx::Rect default_bounds_;
-  // When moving mouse from one target to another (e.g. from edge to corner)
-  // the size animation start point may not be the default size.
-  gfx::Rect start_bounds_;
-  // Expanded bounds, with edges visible from behind the client area.
-  gfx::Rect end_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameBackgroundView);
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAura, public:
@@ -220,163 +100,67 @@ class FrameBackgroundView : public views::View,
 BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
     BrowserFrame* frame, BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
-      last_hittest_code_(HTNOWHERE) {
-  frame_background_ = new FrameBackgroundView();
-  AddChildView(frame_background_);
+      maximize_button_(NULL),
+      close_button_(NULL),
+      window_icon_(NULL),
+      button_separator_(NULL),
+      top_left_corner_(NULL),
+      top_edge_(NULL),
+      top_right_corner_(NULL),
+      header_left_edge_(NULL),
+      header_right_edge_(NULL) {
+}
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  maximize_button_ =
-      new WindowControlButton(this,
-                              kMaximizeButtonBackgroundColor,
-                              *rb.GetBitmapNamed(IDR_AURA_WINDOW_ZOOM_ICON));
+BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
+}
+
+void BrowserNonClientFrameViewAura::Init() {
+  // Ensure we get resize cursors for a few pixels outside our bounds.
+  frame()->GetNativeWindow()->set_hit_test_bounds_inset(
+      -kResizeAreaOutsideBounds);
+
+  // Caption buttons.
+  maximize_button_ = new views::ImageButton(this);
+  SetButtonImages(maximize_button_,
+                  IDR_AURA_WINDOW_MAXIMIZE,
+                  IDR_AURA_WINDOW_MAXIMIZE_H,
+                  IDR_AURA_WINDOW_MAXIMIZE_P);
   maximize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);
-
-  close_button_ =
-      new WindowControlButton(this,
-                              kCloseButtonBackgroundColor,
-                              *rb.GetBitmapNamed(IDR_AURA_WINDOW_CLOSE_ICON));
+  close_button_ = new views::ImageButton(this);
+  SetButtonImages(close_button_,
+                  IDR_AURA_WINDOW_CLOSE,
+                  IDR_AURA_WINDOW_CLOSE_H,
+                  IDR_AURA_WINDOW_CLOSE_P);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
-  // The BrowserFrame will become our owning window/widget.
-  frame->AsWidget()->AddObserver(this);
-  // Associate our WindowFrame interface with our owning window/widget so
-  // we get callbacks from aura_shell.
-  frame->AsWidget()->GetNativeWindow()->SetProperty(
-      ash::kWindowFrameKey,
-      static_cast<ash::WindowFrame*>(this));
-}
+  // Window frame image parts.
+  ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+  button_separator_ =
+      bundle.GetBitmapNamed(IDR_AURA_WINDOW_BUTTON_SEPARATOR);
+  top_left_corner_ =
+      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT);
+  top_edge_ =
+      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP);
+  top_right_corner_ =
+      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT);
+  header_left_edge_ =
+      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_LEFT);
+  header_right_edge_ =
+      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT);
+  // TODO(jamescook): Should we paint the header bottom edge here, or keep
+  // it in BrowserFrameAura::ToolbarBackground as we do now?
 
-BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
-  // Don't need to remove the Widget observer, the window is deleted before us.
-}
-
-void BrowserNonClientFrameViewAura::ShowFrameBackground() {
-  UpdateFrameBackground(ShouldPaintAsActive());
-  frame_background_->Show();
-}
-
-void BrowserNonClientFrameViewAura::HideFrameBackground() {
-  frame_background_->Hide();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// BrowserNonClientFrameViewAura, private:
-
-int BrowserNonClientFrameViewAura::NonClientHitTestImpl(
-    const gfx::Point& point) {
-  if (!GetLocalBounds().Contains(point))
-    return HTNOWHERE;
-
-  // Window controls get first try because they overlap the client area.
-  if (HitVisibleView(maximize_button_, point))
-    return HTMAXBUTTON;
-  if (HitVisibleView(close_button_, point))
-    return HTCLOSE;
-
-  int frame_component = GetWidget()->client_view()->NonClientHitTest(point);
-  if (frame_component != HTNOWHERE)
-    return frame_component;
-
-  // Test window resize components.
-  bool can_resize = GetWidget()->widget_delegate()->CanResize();
-  // TODO(derat): Disallow resizing via the top border in the Aura shell
-  // instead of enforcing it here.  See http://crbug.com/101830.
-  frame_component = GetHTComponentForFrame(point,
-                                           0,
-                                           kResizeBorderThickness,
-                                           kResizeBorderThickness,
-                                           kResizeBorderThickness,
-                                           can_resize);
-  if (frame_component != HTNOWHERE)
-    return frame_component;
-  // Use HTCAPTION as a final fallback.
-  return HTCAPTION;
-}
-
-// Pass |active_window| explicitly because deactivating a window causes
-// OnWidgetActivationChanged() to be called before GetWidget()->IsActive()
-// changes state.
-gfx::Rect BrowserNonClientFrameViewAura::GetFrameBackgroundBounds(
-    int hittest_code,
-    bool active_window) {
-  bool show_left = false;
-  bool show_top = false;
-  bool show_right = false;
-  bool show_bottom = false;
-  switch (hittest_code) {
-    case HTBOTTOM:
-      show_bottom = true;
-      break;
-    case HTBOTTOMLEFT:
-      show_bottom = true;
-      show_left = true;
-      break;
-    case HTBOTTOMRIGHT:
-      show_bottom = true;
-      show_right = true;
-      break;
-    case HTCAPTION:
-      show_top = true;
-      break;
-    case HTCLOSE:
-      show_top = true;
-      break;
-    case HTLEFT:
-      show_left = true;
-      break;
-    case HTMAXBUTTON:
-      show_top = true;
-      break;
-    case HTRIGHT:
-      show_right = true;
-      break;
-    case HTTOP:
-      show_top = true;
-      break;
-    case HTTOPLEFT:
-      show_top = true;
-      show_left = true;
-      break;
-    case HTTOPRIGHT:
-      show_top = true;
-      show_right = true;
-      break;
-    default:
-      break;
+  // Initializing the TabIconView is expensive, so only do it if we need to.
+  if (browser_view()->ShouldShowWindowIcon()) {
+    window_icon_ = new TabIconView(this);
+    window_icon_->set_is_light(true);
+    AddChildView(window_icon_);
+    window_icon_->Update();
   }
-  // Always show top edge for the active window so that you can tell which
-  // window has focus.
-  if (active_window)
-    show_top = true;
-  gfx::Rect target = bounds();
-  // Inset the sides that are not showing.
-  target.Inset(
-      (show_left ? 0 : kResizeBorderThickness - kPersistentBorderThickness),
-      (show_top ? 0 : kTopBorderThickness + kFrameBackgroundTopOffset),
-      (show_right ? 0 : kResizeBorderThickness - kPersistentBorderThickness),
-      (show_bottom ? 0 : kResizeBorderThickness - kPersistentBorderThickness));
-  return target;
-}
-
-void BrowserNonClientFrameViewAura::UpdateFrameBackground(bool active_window) {
-  gfx::Rect start_bounds = GetFrameBackgroundBounds(HTNOWHERE, active_window);
-  gfx::Rect end_bounds =
-      GetFrameBackgroundBounds(last_hittest_code_, active_window);
-  frame_background_->Configure(start_bounds, end_bounds);
-}
-
-void BrowserNonClientFrameViewAura::ActiveStateChanged() {
-  bool active = ShouldPaintAsActive();
-  // Active windows have different background bounds.
-  UpdateFrameBackground(active);
-  if (active)
-    frame_background_->Show();
-  else
-    frame_background_->Hide();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -386,56 +170,83 @@ gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
-  // TODO(jamescook): Avatar icon support.
-  // Reserve space on the right for close/maximize buttons.
-  int tabstrip_x = kResizeBorderThickness;
-  int tabstrip_width = maximize_button_->x() - tabstrip_x;
-  return gfx::Rect(tabstrip_x,
-                   GetHorizontalTabStripVerticalOffset(false),
-                   tabstrip_width,
+  bool restored = !frame()->IsMaximized();
+  return gfx::Rect(kTabstripLeftSpacing,
+                   GetHorizontalTabStripVerticalOffset(restored),
+                   maximize_button_->x() - kTabstripRightSpacing,
                    tabstrip->GetPreferredSize().height());
-
 }
 
 int BrowserNonClientFrameViewAura::GetHorizontalTabStripVerticalOffset(
     bool restored) const {
-  return kTopBorderThickness;
+  return NonClientTopBorderHeight(restored);
 }
 
 void BrowserNonClientFrameViewAura::UpdateThrobber(bool running) {
-  // TODO(jamescook): Do we need this?
+  if (window_icon_)
+    window_icon_->Update();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView overrides:
 
 gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForClientView() const {
-  gfx::Rect bounds = GetLocalBounds();
-  bounds.Inset(kResizeBorderThickness,
-               kTopBorderThickness,
-               kResizeBorderThickness,
-               kResizeBorderThickness);
-  return bounds;
+  int top_height = NonClientTopBorderHeight(false);
+  return gfx::Rect(kBorderThickness,
+                   top_height,
+                   std::max(0, width() - (2 * kBorderThickness)),
+                   std::max(0, height() - top_height - kBorderThickness));
 }
 
 gfx::Rect BrowserNonClientFrameViewAura::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  gfx::Rect bounds = client_bounds;
-  bounds.Inset(-kResizeBorderThickness,
-               -kTopBorderThickness,
-               -kResizeBorderThickness,
-               -kResizeBorderThickness);
-  return bounds;
+  int top_height = NonClientTopBorderHeight(false);
+  return gfx::Rect(std::max(0, client_bounds.x() - kBorderThickness),
+                   std::max(0, client_bounds.y() - top_height),
+                   client_bounds.width() + (2 * kBorderThickness),
+                   client_bounds.height() + top_height + kBorderThickness);
 }
 
 int BrowserNonClientFrameViewAura::NonClientHitTest(const gfx::Point& point) {
-  last_hittest_code_ = NonClientHitTestImpl(point);
-  return last_hittest_code_;
+  gfx::Rect expanded_bounds = bounds();
+  expanded_bounds.Inset(-kResizeAreaOutsideBounds, -kResizeAreaOutsideBounds);
+  if (!expanded_bounds.Contains(point))
+    return HTNOWHERE;
+
+  // No avatar button for Chrome OS.
+
+  // Check the client view first, as it overlaps the window caption area.
+  int client_component = frame()->client_view()->NonClientHitTest(point);
+  if (client_component != HTNOWHERE)
+    return client_component;
+
+  // Then see if the point is within any of the window controls.
+  if (close_button_->visible() &&
+      close_button_->GetMirroredBounds().Contains(point))
+    return HTCLOSE;
+  if (maximize_button_->visible() &&
+      maximize_button_->GetMirroredBounds().Contains(point))
+    return HTMAXBUTTON;
+
+  bool can_resize = frame()->widget_delegate() ?
+      frame()->widget_delegate()->CanResize() :
+      false;
+  int frame_component = GetHTComponentForFrame(point,
+                                               kTopThickness,
+                                               kBorderThickness,
+                                               kResizeAreaCornerSize,
+                                               kResizeAreaCornerSize,
+                                               can_resize);
+  if (frame_component != HTNOWHERE)
+    return frame_component;
+
+  // Caption is a safe default.
+  return HTCAPTION;
 }
 
 void BrowserNonClientFrameViewAura::GetWindowMask(const gfx::Size& size,
                                                   gfx::Path* window_mask) {
-  // Nothing.
+  // Aura does not use window masks.
 }
 
 void BrowserNonClientFrameViewAura::ResetWindowControls() {
@@ -444,104 +255,92 @@ void BrowserNonClientFrameViewAura::ResetWindowControls() {
 }
 
 void BrowserNonClientFrameViewAura::UpdateWindowIcon() {
-  // TODO(jamescook): We will need this for app frames.
-}
-
-void BrowserNonClientFrameViewAura::ShouldPaintAsActiveChanged() {
-  ActiveStateChanged();
+  if (window_icon_)
+    window_icon_->SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // views::View overrides:
 
+void BrowserNonClientFrameViewAura::OnPaint(gfx::Canvas* canvas) {
+  if (frame()->IsFullscreen())
+    return;  // Nothing visible, don't paint.
+  PaintHeader(canvas);
+  PaintTitleBar(canvas);
+  // Paint the view hierarchy, which draws the caption buttons.
+  BrowserNonClientFrameView::OnPaint(canvas);
+}
+
 void BrowserNonClientFrameViewAura::Layout() {
-  // Layout window buttons from right to left.
-  int right = width() - kResizeBorderThickness;
-  gfx::Size preferred = close_button_->GetPreferredSize();
-  close_button_->SetBounds(right - preferred.width(), kTopBorderThickness,
-                           preferred.width(), preferred.height());
-  right -= preferred.width();  // No padding.
-  preferred = maximize_button_->GetPreferredSize();
-  maximize_button_->SetBounds(right - preferred.width(), kTopBorderThickness,
-                              preferred.width(), preferred.height());
-  UpdateFrameBackground(ShouldPaintAsActive());
+  // Maximized windows and app/popup windows use shorter buttons.
+  if (frame()->IsMaximized() ||
+      !browser_view()->IsBrowserTypeNormal()) {
+    SetButtonImages(close_button_,
+                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
+                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
+                    IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
+    SetButtonImages(maximize_button_,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
+                    IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
+  } else {
+    SetButtonImages(close_button_,
+                    IDR_AURA_WINDOW_CLOSE,
+                    IDR_AURA_WINDOW_CLOSE_H,
+                    IDR_AURA_WINDOW_CLOSE_P);
+    SetButtonImages(maximize_button_,
+                    IDR_AURA_WINDOW_MAXIMIZE,
+                    IDR_AURA_WINDOW_MAXIMIZE_H,
+                    IDR_AURA_WINDOW_MAXIMIZE_P);
+  }
+
+  gfx::Size close_size = close_button_->GetPreferredSize();
+  close_button_->SetBounds(
+      width() - close_size.width() - kCloseButtonOffsetX,
+      kCloseButtonOffsetY,
+      close_size.width(),
+      close_size.height());
+
+  gfx::Size maximize_size = maximize_button_->GetPreferredSize();
+  maximize_button_->SetBounds(
+      close_button_->x() - button_separator_->width() - maximize_size.width(),
+      close_button_->y(),
+      maximize_size.width(),
+      maximize_size.height());
+
+  if (window_icon_)
+    window_icon_->SetBoundsRect(
+        gfx::Rect(kIconOffsetX, kIconOffsetY, kIconSize, kIconSize));
+
+  BrowserNonClientFrameView::Layout();
 }
 
-views::View* BrowserNonClientFrameViewAura::GetEventHandlerForPoint(
-    const gfx::Point& point) {
-  // Mouse hovers near the resizing edges result in the animation starting and
-  // stopping as the frame background changes size.  Just ignore events
-  // destined for the frame background and handle them at this level.
-  views::View* view = View::GetEventHandlerForPoint(point);
-  if (view == frame_background_)
-    return this;
-  return view;
-}
+bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& l) const {
+  // If the point is outside the bounds of the client area, claim it.
+  if (NonClientFrameView::HitTest(l))
+    return true;
 
-bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& p) const {
-  // Claim all events outside the client area.
-  bool in_client = GetWidget()->client_view()->bounds().Contains(p);
-  if (!in_client)
-    return true;
-  // Window controls overlap the client area, so explicitly check for points
-  // inside of them.
-  if (close_button_->bounds().Contains(p) ||
-      maximize_button_->bounds().Contains(p))
-    return true;
   // Otherwise claim it only if it's in a non-tab portion of the tabstrip.
   if (!browser_view()->tabstrip())
     return false;
   gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
   gfx::Point tabstrip_origin(tabstrip_bounds.origin());
-  View::ConvertPointToView(
-      frame()->client_view(), this, &tabstrip_origin);
+  View::ConvertPointToView(frame()->client_view(), this, &tabstrip_origin);
   tabstrip_bounds.set_origin(tabstrip_origin);
-  if (p.y() > tabstrip_bounds.bottom())
+  if (l.y() > tabstrip_bounds.bottom())
     return false;
 
   // We convert from our parent's coordinates since we assume we fill its bounds
   // completely. We need to do this since we're not a parent of the tabstrip,
   // meaning ConvertPointToView would otherwise return something bogus.
-  gfx::Point browser_view_point(p);
+  gfx::Point browser_view_point(l);
   View::ConvertPointToView(parent(), browser_view(), &browser_view_point);
   return browser_view()->IsPositionInWindowCaption(browser_view_point);
 }
 
-void BrowserNonClientFrameViewAura::OnMouseMoved(
-    const views::MouseEvent& event) {
-  // We may be hovering over the resize edge.
-  ShowFrameBackground();
-}
-
-void BrowserNonClientFrameViewAura::OnMouseExited(
-    const views::MouseEvent& event) {
-  // We hovered away from the resize edge.
-  HideFrameBackground();
-}
-
-gfx::NativeCursor BrowserNonClientFrameViewAura::GetCursor(
-    const views::MouseEvent& event) {
-  switch (last_hittest_code_) {
-    case HTBOTTOM:
-      return aura::kCursorSouthResize;
-    case HTBOTTOMLEFT:
-      return aura::kCursorSouthWestResize;
-    case HTBOTTOMRIGHT:
-      return aura::kCursorSouthEastResize;
-    case HTLEFT:
-      return aura::kCursorWestResize;
-    case HTRIGHT:
-      return aura::kCursorEastResize;
-    case HTTOP:
-      // Resizing from the top edge is not allowed.
-      return aura::kCursorNull;
-    case HTTOPLEFT:
-      return aura::kCursorWestResize;
-    case HTTOPRIGHT:
-      return aura::kCursorEastResize;
-    default:
-      return aura::kCursorNull;
-  }
+void BrowserNonClientFrameViewAura::GetAccessibleState(
+    ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_TITLEBAR;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -549,34 +348,191 @@ gfx::NativeCursor BrowserNonClientFrameViewAura::GetCursor(
 
 void BrowserNonClientFrameViewAura::ButtonPressed(views::Button* sender,
                                                   const views::Event& event) {
-  if (sender == close_button_) {
-    frame()->Close();
-  } else if (sender == maximize_button_) {
+  if (sender == maximize_button_) {
     if (frame()->IsMaximized())
       frame()->Restore();
     else
       frame()->Maximize();
+    // The maximize button may have moved out from under the cursor.
+    ResetWindowControls();
+  } else if (sender == close_button_) {
+    frame()->Close();
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// views::Widget::Observer overrides:
+// TabIconView::TabIconViewModel overrides:
 
-void BrowserNonClientFrameViewAura::OnWidgetActivationChanged(
-    views::Widget* widget,
-    bool active) {
-  ActiveStateChanged();
+bool BrowserNonClientFrameViewAura::ShouldTabIconViewAnimate() const {
+  // This function is queried during the creation of the window as the
+  // TabIconView we host is initialized, so we need to NULL check the selected
+  // WebContents because in this condition there is not yet a selected tab.
+  content::WebContents* current_tab = browser_view()->GetSelectedWebContents();
+  return current_tab ? current_tab->IsLoading() : false;
+}
+
+SkBitmap BrowserNonClientFrameViewAura::GetFaviconForTabIconView() {
+  views::WidgetDelegate* delegate = frame()->widget_delegate();
+  if (!delegate)
+    return SkBitmap();
+  return delegate->GetWindowIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ash::WindowFrame overrides:
+// BrowserNonClientFrameViewAura, private:
 
-void BrowserNonClientFrameViewAura::OnWindowHoverChanged(bool hovered) {
-  if (hovered) {
-    maximize_button_->Show();
-    close_button_->Show();
+void BrowserNonClientFrameViewAura::SetButtonImages(views::ImageButton* button,
+                                                    int normal_bitmap_id,
+                                                    int hot_bitmap_id,
+                                                    int pushed_bitmap_id) {
+  ui::ThemeProvider* tp = frame()->GetThemeProvider();
+  button->SetImage(views::CustomButton::BS_NORMAL,
+                   tp->GetBitmapNamed(normal_bitmap_id));
+  button->SetImage(views::CustomButton::BS_HOT,
+                   tp->GetBitmapNamed(hot_bitmap_id));
+  button->SetImage(views::CustomButton::BS_PUSHED,
+                   tp->GetBitmapNamed(pushed_bitmap_id));
+}
+
+int BrowserNonClientFrameViewAura::NonClientTopBorderHeight(
+    bool restored) const {
+  if (frame()->widget_delegate() &&
+      frame()->widget_delegate()->ShouldShowWindowTitle()) {
+    // For popups ensure we have enough space to see the full window buttons.
+    return kCloseButtonOffsetY + close_button_->height();
+  }
+  if (restored)
+    return kTabstripTopSpacingRestored;
+  return kTabstripTopSpacingMaximized;
+}
+
+void BrowserNonClientFrameViewAura::PaintHeader(gfx::Canvas* canvas) {
+  // The primary header image changes based on window activation state and
+  // theme, so we look it up for each paint.
+  SkBitmap* theme_frame = GetThemeFrameBitmap();
+  SkBitmap* theme_frame_overlay = GetThemeFrameOverlayBitmap();
+
+  // Draw the header background, clipping the corners to be rounded.
+  const int kCornerRadius = 2;
+  TileRoundRect(canvas,
+                0, 0, width(), theme_frame->height(),
+                *theme_frame,
+                kCornerRadius);
+
+  // Draw the theme frame overlay, if available.
+  if (theme_frame_overlay)
+    canvas->DrawBitmapInt(*theme_frame_overlay, 0, 0);
+
+  // Separator between the maximize and close buttons.
+  canvas->DrawBitmapInt(*button_separator_,
+                        close_button_->x() - button_separator_->width(),
+                        close_button_->y());
+
+  // Draw the top corners and edge.
+  int top_left_height = top_left_corner_->height();
+  canvas->DrawBitmapInt(*top_left_corner_,
+                        0, 0, top_left_corner_->width(), top_left_height,
+                        0, 0, top_left_corner_->width(), top_left_height,
+                        false);
+  canvas->TileImageInt(*top_edge_,
+      top_left_corner_->width(),
+      0,
+      width() - top_left_corner_->width() - top_right_corner_->width(),
+      top_edge_->height());
+  int top_right_height = top_right_corner_->height();
+  canvas->DrawBitmapInt(*top_right_corner_,
+                        0, 0,
+                        top_right_corner_->width(), top_right_height,
+                        width() - top_right_corner_->width(), 0,
+                        top_right_corner_->width(), top_right_height,
+                        false);
+
+  // Header left edge.
+  int header_left_height = theme_frame->height() - top_left_height;
+  canvas->TileImageInt(*header_left_edge_,
+                       0, top_left_height,
+                       header_left_edge_->width(), header_left_height);
+
+  // Header right edge.
+  int header_right_height = theme_frame->height() - top_right_height;
+  canvas->TileImageInt(*header_right_edge_,
+                       width() - header_right_edge_->width(), top_right_height,
+                       header_right_edge_->width(), header_right_height);
+
+  // We don't draw edges around the content area.  Web content goes flush
+  // to the edge of the window.
+}
+
+void BrowserNonClientFrameViewAura::PaintTitleBar(gfx::Canvas* canvas) {
+  // The window icon is painted by the TabIconView.
+  views::WidgetDelegate* delegate = frame()->widget_delegate();
+  if (delegate && delegate->ShouldShowWindowTitle()) {
+    int icon_right = window_icon_ ? window_icon_->bounds().right() : 0;
+    gfx::Rect title_bounds(
+        icon_right + kTitleOffsetX,
+        kTitleOffsetY,
+        std::max(0, maximize_button_->x() - kTitleLogoSpacing - icon_right),
+        BrowserFrame::GetTitleFont().GetHeight());
+    canvas->DrawStringInt(delegate->GetWindowTitle(),
+                          BrowserFrame::GetTitleFont(),
+                          SK_ColorWHITE,
+                          GetMirroredXForRect(title_bounds),
+                          title_bounds.y(),
+                          title_bounds.width(),
+                          title_bounds.height());
+  }
+}
+
+SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameBitmap() const {
+  bool is_incognito = browser_view()->IsOffTheRecord();
+  int resource_id;
+  if (browser_view()->IsBrowserTypeNormal()) {
+    if (ShouldPaintAsActive()) {
+      // Use the standard resource ids to allow users to theme the frames.
+      // TODO(jamescook): If this becomes the only frame we use on Aura, define
+      // the resources to use the standard ids like IDR_THEME_FRAME, etc.
+      if (is_incognito) {
+        return GetCustomBitmap(IDR_THEME_FRAME_INCOGNITO,
+                               IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE);
+      }
+      return GetCustomBitmap(IDR_THEME_FRAME,
+                             IDR_AURA_WINDOW_HEADER_BASE_ACTIVE);
+    }
+    if (is_incognito) {
+      return GetCustomBitmap(IDR_THEME_FRAME_INCOGNITO_INACTIVE,
+                             IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE);
+    }
+    return GetCustomBitmap(IDR_THEME_FRAME_INACTIVE,
+                           IDR_AURA_WINDOW_HEADER_BASE_INACTIVE);
+  }
+  // Never theme app and popup windows.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (ShouldPaintAsActive()) {
+    resource_id = is_incognito ?
+        IDR_THEME_FRAME_INCOGNITO : IDR_FRAME;
   } else {
-    maximize_button_->Hide();
-    close_button_->Hide();
+    resource_id = is_incognito ?
+        IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
   }
+  return rb.GetBitmapNamed(resource_id);
+}
+
+SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameOverlayBitmap() const {
+  ui::ThemeProvider* tp = GetThemeProvider();
+  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
+      browser_view()->IsBrowserTypeNormal() &&
+      !browser_view()->IsOffTheRecord()) {
+    return tp->GetBitmapNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
+  }
+  return NULL;
+}
+
+SkBitmap* BrowserNonClientFrameViewAura::GetCustomBitmap(
+    int bitmap_id,
+    int fallback_bitmap_id) const {
+  ui::ThemeProvider* tp = GetThemeProvider();
+  if (tp->HasCustomImage(bitmap_id))
+    return tp->GetBitmapNamed(bitmap_id);
+  return tp->GetBitmapNamed(fallback_bitmap_id);
 }

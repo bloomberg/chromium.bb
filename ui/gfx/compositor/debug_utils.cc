@@ -48,6 +48,8 @@ void PrintLayerHierarchyImp(const Layer* layer, int indent,
       break;
     case Layer::LAYER_TEXTURED:
       buf << L" textured";
+      if (layer->fills_bounds_opaquely())
+        buf << L" opaque";
       break;
     case Layer::LAYER_SOLID_COLOR:
       buf << L" solid";

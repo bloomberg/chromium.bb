@@ -27,13 +27,17 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
   if (ash::Shell::GetInstance()->IsWindowModeCompact())
     return new CompactBrowserFrameView(frame, browser_view);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(ash::switches::kAuraTranslucentFrames))
-    return new BrowserNonClientFrameViewAura(frame, browser_view);
-
   // If this is an app window and it's maximized, use the special frame_view.
   if (browser_view->browser()->is_app() && browser_view->IsMaximized())
     return new AppNonClientFrameViewAura(frame, browser_view);
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(ash::switches::kAuraTranslucentFrames)) {
+    BrowserNonClientFrameViewAura* frame_view =
+        new BrowserNonClientFrameViewAura(frame, browser_view);
+    frame_view->Init();
+    return frame_view;
+  }
 
   return new OpaqueBrowserFrameView(frame, browser_view);
 }

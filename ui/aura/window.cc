@@ -54,7 +54,8 @@ Window::Window(WindowDelegate* delegate)
       transparent_(false),
       user_data_(NULL),
       stops_event_propagation_(false),
-      ignore_events_(false) {
+      ignore_events_(false),
+      hit_test_bounds_inset_(0) {
 }
 
 Window::~Window() {
@@ -401,8 +402,10 @@ bool Window::ContainsPoint(const gfx::Point& local_point) {
 }
 
 bool Window::HitTest(const gfx::Point& local_point) {
+  gfx::Rect local_bounds(gfx::Point(), bounds().size());
+  local_bounds.Inset(hit_test_bounds_inset_, hit_test_bounds_inset_);
   // TODO(beng): hittest masks.
-  return ContainsPoint(local_point);
+  return local_bounds.Contains(local_point);
 }
 
 Window* Window::GetEventHandlerForPoint(const gfx::Point& local_point) {

@@ -196,13 +196,42 @@
         <include name="IDR_AURA_WALLPAPER_8_THUMB" file="aura/wallpaper_8_thumb.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPER_9" file="aura/wallpaper_9.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPER_9_THUMB" file="aura/wallpaper_9_thumb.jpg" type="BINDATA" />
+        <!-- TODO(jamescook): Delete these two corners if we ship translucent frames on all platforms. -->
         <include name="IDR_AURA_WINDOW_BOTTOM_LEFT" file="aura/window_bottom_left.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_BOTTOM_RIGHT" file="aura/window_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="aura/window_button_separator.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_CLOSE_H" file="aura/window_close_hot.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_CLOSE_P" file="aura/window_close_pressed.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="aura/window_fullscreen_close.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="aura/window_fullscreen_restore.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="aura/window_fullscreen_separator.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_FULLSCREEN_SHADOW" file="aura/window_fullscreen_shadow.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_BASE_ACTIVE" file="aura/window_header_base_active.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_BASE_INACTIVE" file="aura/window_header_base_inactive.png" type="BINDATA" />
+        <!-- TODO(jamescook): We need updated incognito art for Aura. -->
+        <include name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE" file="aura/window_header_base_incognito_active.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE" file="aura/window_header_base_incognito_inactive.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM" file="aura/window_header_shade_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM_LEFT" file="aura/window_header_shade_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_BOTTOM_RIGHT" file="aura/window_header_shade_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_LEFT" file="aura/window_header_shade_left.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_MIDDLE" file="aura/window_header_shade_middle.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_RIGHT" file="aura/window_header_shade_right.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP" file="aura/window_header_shade_top.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT" file="aura/window_header_shade_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT" file="aura/window_header_shade_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZE" file="aura/window_maximize_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZE_H" file="aura/window_maximize_hot.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZE_P" file="aura/window_maximize_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="aura/window_maximized_close_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="aura/window_maximized_close_hot.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="aura/window_maximized_close_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="aura/window_maximized_restore_normal.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="aura/window_maximized_restore_hot.png" type="BINDATA" />
+        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="aura/window_maximized_restore_pressed.png" type="BINDATA" />
+        <!-- TODO(jamescook): Delete these two corners if we ship translucent frames on all platforms. -->
         <include name="IDR_AURA_WINDOW_TOP_LEFT" file="aura/window_top_left.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_TOP_RIGHT" file="aura/window_top_right.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" type="BINDATA" />
