@@ -13,17 +13,10 @@
 #include "base/process.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/object_watcher.h"
 
 #include "remoting/host/wts_console_observer_win.h"
-
-namespace base {
-namespace win {
-
-class ScopedHandle;
-
-} // namespace win
-} // namespace base
 
 namespace remoting {
 
