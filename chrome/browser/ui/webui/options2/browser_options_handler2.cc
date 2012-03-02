@@ -250,7 +250,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "sslCheckRevocation", IDS_OPTIONS_SSL_CHECKREVOCATION },
     { "sslGroupDescription", IDS_OPTIONS_SSL_GROUP_DESCRIPTION },
     { "startupSetPages", IDS_OPTIONS2_STARTUP_SET_PAGES },
-    { "startupShowHomePage", IDS_OPTIONS2_STARTUP_SHOW_HOME_PAGE },
     { "startupShowNewTab", IDS_OPTIONS2_STARTUP_SHOW_NEWTAB },
     { "startupShowLastSession", IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION },
     { "startupShowPages", IDS_OPTIONS2_STARTUP_SHOW_PAGES },
