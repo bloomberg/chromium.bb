@@ -157,6 +157,8 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libpng12-0 \
   libpng12-dev \
   libselinux1 \
+  libudev0 \
+  libudev-dev \
   libxext-dev \
   libxext6 \
   libxau-dev \
@@ -435,8 +437,7 @@ CleanupJailSymlinks() {
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
   local tmpdir="${TMP}/qemu.nacl"
-  # We have not ported out local patch yet to /qemu-1.0-rc1
-  #local patch=$(readlink -f tools/patches/qemu-0.10.1.patch_arm)
+  # We have not ported out local patch yet to qemu-1.0
   local tarball=$(readlink -f ../third_party/qemu/qemu-1.0.tar.gz)
   Banner "Building qemu in ${tmpdir}"
   rm -rf ${tmpdir}

@@ -42,6 +42,8 @@ main/p/pixman/libpixman-1-dev_0.20.2-0ubuntu1_armel.deb
 main/libp/libpng/libpng12-0_1.2.44-1ubuntu3_armel.deb
 main/libp/libpng/libpng12-dev_1.2.44-1ubuntu3_armel.deb
 main/libs/libselinux/libselinux1_2.0.96-1ubuntu2_armel.deb
+main/u/udev/libudev0_167-0ubuntu3_armel.deb
+main/u/udev/libudev-dev_167-0ubuntu3_armel.deb
 main/libx/libxext/libxext-dev_1.2.0-2ubuntu1_armel.deb
 main/libx/libxext/libxext6_1.2.0-2ubuntu1_armel.deb
 main/libx/libxau/libxau-dev_1.0.6-1ubuntu1_armel.deb
