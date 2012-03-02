@@ -1,6 +1,7 @@
 Name: tlslite
 URL: http://trevp.net/tlslite/
-Version: unknown
+Version: 0.3.8
+Security Critical: No
 
 Local Modifications:
 
@@ -26,3 +27,6 @@ Local Modifications:
   default to a certificate_types of [rsa_sign] in CertificateRequest. Apple's
   Secure Transport library rejects an empty list and raises an SSL protocol
   error.
+- patches/parse_chain.patch: tlslite/X509CertChain.py and tlslite/X509.py were
+  updated to add a parseChain method, that can parse multiple certificates from
+  a PEM string.

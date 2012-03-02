@@ -1,6 +1,7 @@
 """Class representing an X.509 certificate chain."""
 
 from utils import cryptomath
+from X509 import X509
 
 class X509CertChain:
     """This class represents a chain of X.509 certificates.
@@ -23,6 +24,66 @@ class X509CertChain:
             self.x509List = x509List
         else:
             self.x509List = []
+
+    def parseChain(self, s):
+        """Parse a PEM-encoded X.509 certificate file chain file.
+
+        @type s: str
+        @param s: A PEM-encoded (eg: Base64) X.509 certificate file, with every
+        certificate wrapped within "-----BEGIN CERTIFICATE-----" and
+        "-----END CERTIFICATE-----" tags). Extraneous data outside such tags,
+        such as human readable representations, will be ignored.
+        """
+
+        class PEMIterator(object):
+            """Simple iterator over PEM-encoded certificates within a string.
+
+            @type data: string
+            @ivar data: A string containing PEM-encoded (Base64) certificates,
+            with every certificate wrapped within "-----BEGIN CERTIFICATE-----"
+            and "-----END CERTIFICATE-----" tags). Extraneous data outside such
+            tags, such as human readable representations, will be ignored.
+
+            @type index: integer
+            @ivar index: The current offset within data to begin iterating from.
+            """
+
+            _CERTIFICATE_HEADER = "-----BEGIN CERTIFICATE-----"
+            """The PEM encoding block header for X.509 certificates."""
+
+            _CERTIFICATE_FOOTER = "-----END CERTIFICATE-----"
+            """The PEM encoding block footer for X.509 certificates."""
+
+            def __init__(self, s):
+                self.data = s
+                self.index = 0
+
+            def __iter__(self):
+                return self
+
+            def next(self):
+                """Iterates and returns the next L{tlslite.X509.X509}
+                certificate in data.
+
+                @rtype tlslite.X509.X509
+                """
+
+                self.index = self.data.find(self._CERTIFICATE_HEADER,
+                                            self.index)
+                if self.index == -1:
+                    raise StopIteration
+                end = self.data.find(self._CERTIFICATE_FOOTER, self.index)
+                if end == -1:
+                    raise StopIteration
+
+                certStr = self.data[self.index+len(self._CERTIFICATE_HEADER) :
+                                    end]
+                self.index = end + len(self._CERTIFICATE_FOOTER)
+                bytes = cryptomath.base64ToBytes(certStr)
+                return X509().parseBinary(bytes)
+
+        self.x509List = list(PEMIterator(s))
+        return self
 
     def getNumCerts(self):
         """Get the number of certificates in this chain.

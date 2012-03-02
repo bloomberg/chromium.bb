@@ -99,6 +99,7 @@ class X509:
 
         #Create a public key instance
         self.publicKey = _createPublicRSAKey(n, e)
+        return self
 
     def getFingerprint(self):
         """Get the hex-encoded fingerprint of this certificate.
