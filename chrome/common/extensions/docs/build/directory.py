@@ -12,7 +12,6 @@ import re
 import hashlib
 import zipfile
 import simplejson as json
-import json_minify as minify
 
 # Make sure we get consistent string sorting behavior by explicitly using the
 # default C locale.
@@ -49,8 +48,7 @@ def parse_json_file(path, encoding="utf-8"):
     raise Exception("Failed to read the file at %s: %s" % (path, msg))
 
   try:
-    json_str = json_file.read()
-    json_obj = json.loads(minify.json_minify(json_str), encoding)
+    json_obj = json.load(json_file, encoding)
   except ValueError, msg:
     raise Exception("Failed to parse JSON out of file %s: %s" % (path, msg))
   finally:

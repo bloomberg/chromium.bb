@@ -183,7 +183,7 @@ function fetchSchema() {
   schema = [];
 
   function onSchemaContent(content) {
-    schema = schema.concat(JSON.parse(JSON.minify(content)));
+    schema = schema.concat(JSON.parse(content));
     if (++schemas_retrieved < schemas_to_retrieve.length)
       return;
     if (pageName.toLowerCase() == 'samples') {
@@ -204,7 +204,7 @@ function fetchSchema() {
 function fetchSamples() {
   // If we're rendering the samples directory, fetch the samples manifest.
   fetchContent(SAMPLES, function(sampleManifest) {
-    var data = JSON.parse(JSON.minify(sampleManifest));
+    var data = JSON.parse(sampleManifest);
     samples = data.samples;
     apiMapping = data.api;
     renderTemplate();

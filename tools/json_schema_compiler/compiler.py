@@ -19,7 +19,7 @@ Usage example:
 import cc_generator
 import cpp_type_generator
 import h_generator
-from json_schema import LoadJSON
+import json
 import model
 import optparse
 import os.path
@@ -49,7 +49,8 @@ if __name__ == '__main__':
 
 
   # Actually generate for source file.
-  api_defs = LoadJSON(schema)
+  with open(schema, 'r') as schema_file:
+    api_defs = json.loads(schema_file.read())
 
   for target_namespace in api_defs:
     referenced_schemas = target_namespace.get('dependencies', [])
@@ -57,7 +58,8 @@ if __name__ == '__main__':
     for referenced_schema in referenced_schemas:
       referenced_schema_path = os.path.join(
           os.path.dirname(schema), referenced_schema + '.json')
-      referenced_api_defs = LoadJSON(referenced_schema_path)
+      with open(referenced_schema_path, 'r') as referenced_schema_file:
+        referenced_api_defs = json.loads(referenced_schema_file.read())
 
       for namespace in referenced_api_defs:
         api_model.AddNamespace(namespace,
