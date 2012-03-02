@@ -466,7 +466,7 @@ cr.define('options', function() {
      * @private
      */
     toggleAdvancedSettings_: function() {
-      if ($('advanced-settings').style.height == '0px')
+      if ($('advanced-settings').style.height == '')
         this.showAdvancedSettings_();
       else
         this.hideAdvancedSettings_();
@@ -479,7 +479,7 @@ cr.define('options', function() {
     showAdvancedSettings_: function() {
       $('advanced-settings').style.height =
           $('advanced-settings-container').offsetHeight + 20 + 'px';
-      $('advanced-settings-expander').innerHTML =
+      $('advanced-settings-expander').textContent =
           localStrings.getString('hideAdvancedSettings');
     },
 
@@ -488,8 +488,8 @@ cr.define('options', function() {
      * @private
      */
     hideAdvancedSettings_: function() {
-      $('advanced-settings').style.height = '0px';
-      $('advanced-settings-expander').innerHTML =
+      $('advanced-settings').style.height = '';
+      $('advanced-settings-expander').textContent =
           localStrings.getString('showAdvancedSettings');
     },
 
