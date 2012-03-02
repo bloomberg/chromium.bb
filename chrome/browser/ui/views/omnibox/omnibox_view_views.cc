@@ -594,8 +594,9 @@ bool OmniboxViewViews::OnAfterPossibleChange() {
       (new_sel.start() <= sel_before_change_.GetMin());
 
   const bool something_changed = model_->OnAfterPossibleChange(
-      new_text, new_sel.start(), new_sel.end(), selection_differs,
-      text_changed, just_deleted_text, !textfield_->IsIMEComposing());
+      text_before_change_, new_text, new_sel.start(), new_sel.end(),
+      selection_differs, text_changed, just_deleted_text,
+      !textfield_->IsIMEComposing());
 
   // If only selection was changed, we don't need to call |model_|'s
   // OnChanged() method, which is called in TextChanged().

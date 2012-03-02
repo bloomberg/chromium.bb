@@ -915,8 +915,8 @@ bool OmniboxViewWin::OnAfterPossibleChangeInternal(bool force_text_changed) {
                                  sel_before_change_.cpMax));
 
   const bool something_changed = model_->OnAfterPossibleChange(
-      new_text, new_sel.cpMin, new_sel.cpMax, selection_differs,
-      text_differs, just_deleted_text, !IsImeComposing());
+      text_before_change_, new_text, new_sel.cpMin, new_sel.cpMax,
+      selection_differs, text_differs, just_deleted_text, !IsImeComposing());
 
   if (selection_differs)
     controller_->OnSelectionBoundsChanged();

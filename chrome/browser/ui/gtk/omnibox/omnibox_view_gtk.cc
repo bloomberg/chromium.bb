@@ -724,11 +724,8 @@ bool OmniboxViewGtk::OnAfterPossibleChange() {
 
   // See if the text or selection have changed since OnBeforePossibleChange().
   const string16 new_text(GetText());
-  text_changed_ = (new_text != text_before_change_);
-  if (supports_pre_edit_) {
-    text_changed_ =
-        text_changed_ || (pre_edit_.size() != pre_edit_size_before_change_);
-  }
+  text_changed_ = (new_text != text_before_change_) || (supports_pre_edit_ &&
+      (pre_edit_.size() != pre_edit_size_before_change_));
 
   if (text_changed_)
     AdjustTextJustification();
@@ -746,9 +743,9 @@ bool OmniboxViewGtk::OnAfterPossibleChange() {
   delete_at_end_pressed_ = false;
 
   const bool something_changed = model_->OnAfterPossibleChange(
-      new_text, new_sel.selection_min(), new_sel.selection_max(),
-      selection_differs, text_changed_, just_deleted_text,
-      !IsImeComposing());
+      text_before_change_, new_text, new_sel.selection_min(),
+      new_sel.selection_max(), selection_differs, text_changed_,
+      just_deleted_text, !IsImeComposing());
 
   // If only selection was changed, we don't need to call |controller_|'s
   // OnChanged() method, which is called in TextChanged().

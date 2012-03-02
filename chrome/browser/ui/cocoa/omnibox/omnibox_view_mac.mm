@@ -696,9 +696,9 @@ bool OmniboxViewMac::OnAfterPossibleChange() {
   delete_at_end_pressed_ = false;
 
   const bool something_changed = model_->OnAfterPossibleChange(
-      new_text, new_selection.location, NSMaxRange(new_selection),
-      selection_differs, text_differs, just_deleted_text,
-      !IsImeComposing());
+      text_before_change_, new_text, new_selection.location,
+      NSMaxRange(new_selection), selection_differs, text_differs,
+      just_deleted_text, !IsImeComposing());
 
   if (delete_was_pressed_ && at_end_of_edit)
     delete_at_end_pressed_ = true;

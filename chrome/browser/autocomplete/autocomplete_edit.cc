@@ -832,6 +832,7 @@ void AutocompleteEditModel::OnPopupDataChanged(
 }
 
 bool AutocompleteEditModel::OnAfterPossibleChange(
+    const string16& old_text,
     const string16& new_text,
     size_t selection_start,
     size_t selection_end,
@@ -863,7 +864,6 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
     return false;
   }
 
-  const string16 old_user_text = user_text_;
   // If the user text has not changed, we do not want to change the model's
   // state associated with the text.  Otherwise, we can get surprising behavior
   // where the autocompleted text unexpectedly reappears, e.g. crbug.com/55983
@@ -881,21 +881,29 @@ bool AutocompleteEditModel::OnAfterPossibleChange(
   // Update the popup for the change, in the process changing to keyword mode
   // if the user hit space in mid-string after a keyword.
   // |allow_exact_keyword_match_| will be used by StartAutocomplete() method,
-  // which will be called by |view_->UpdatePopup()|. So we can safely clear
-  // this flag afterwards.
-  allow_exact_keyword_match_ =
-      text_differs && allow_keyword_ui_change &&
+  // which will be called by |view_->UpdatePopup()|; so after that returns we
+  // can safely reset this flag.
+  allow_exact_keyword_match_ = text_differs && allow_keyword_ui_change &&
       !just_deleted_text && no_selection &&
-      ShouldAllowExactKeywordMatch(old_user_text, user_text_, selection_start);
+      CreatedKeywordSearchByInsertingSpaceInMiddle(old_text, user_text_,
+                                                   selection_start);
   view_->UpdatePopup();
   allow_exact_keyword_match_ = false;
 
-  // Change to keyword mode if the user has typed a keyword name and is now
-  // pressing space after the name. Accepting the keyword will update our
-  // state, so in that case there's no need to also return true here.
+  // Change to keyword mode if the user is now pressing space after a keyword
+  // name.  Note that if this is the case, then even if there was no keyword
+  // hint when we entered this function (e.g. if the user has used space to
+  // replace some selected text that was adjoined to this keyword), there will
+  // be one now because of the call to UpdatePopup() above; so it's safe for
+  // MaybeAcceptKeywordBySpace() to look at |keyword_| and |is_keyword_hint_| to
+  // determine what keyword, if any, is applicable.
+  //
+  // If MaybeAcceptKeywordBySpace() accepts the keyword and returns true, that
+  // will have updated our state already, so in that case we don't also return
+  // true from this function.
   return !(text_differs && allow_keyword_ui_change && !just_deleted_text &&
-           no_selection && selection_start == user_text_.length() &&
-           MaybeAcceptKeywordBySpace(old_user_text, user_text_));
+           no_selection && (selection_start == user_text_.length()) &&
+           MaybeAcceptKeywordBySpace(user_text_));
 }
 
 void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
@@ -1030,44 +1038,41 @@ void AutocompleteEditModel::RevertTemporaryText(bool revert_popup) {
 }
 
 bool AutocompleteEditModel::MaybeAcceptKeywordBySpace(
-    const string16& old_user_text,
-    const string16& new_user_text) {
+    const string16& new_text) {
+  size_t keyword_length = new_text.length() - 1;
   return (paste_state_ == NONE) && is_keyword_hint_ && !keyword_.empty() &&
-      inline_autocomplete_text_.empty() && new_user_text.length() >= 2 &&
-      IsSpaceCharForAcceptingKeyword(*new_user_text.rbegin()) &&
-      !IsWhitespace(*(new_user_text.rbegin() + 1)) &&
-      (old_user_text.length() + 1 >= new_user_text.length()) &&
-      !new_user_text.compare(0, new_user_text.length() - 1, old_user_text,
-                             0, new_user_text.length() - 1) &&
+      inline_autocomplete_text_.empty() &&
+      (keyword_.length() == keyword_length) &&
+      IsSpaceCharForAcceptingKeyword(new_text[keyword_length]) &&
+      !new_text.compare(0, keyword_length, keyword_, 0, keyword_length) &&
       AcceptKeyword();
 }
 
-bool AutocompleteEditModel::ShouldAllowExactKeywordMatch(
-    const string16& old_user_text,
-    const string16& new_user_text,
-    size_t caret_position) {
+bool AutocompleteEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
+    const string16& old_text,
+    const string16& new_text,
+    size_t caret_position) const {
+  DCHECK_GE(new_text.length(), caret_position);
+
   // Check simple conditions first.
-  if (paste_state_ != NONE || caret_position < 2 ||
-      new_user_text.length() <= caret_position ||
-      old_user_text.length() < caret_position ||
-      !IsSpaceCharForAcceptingKeyword(new_user_text[caret_position - 1]) ||
-      IsSpaceCharForAcceptingKeyword(new_user_text[caret_position - 2]) ||
-      new_user_text.compare(0, caret_position - 1, old_user_text,
-                            0, caret_position - 1) ||
-      !new_user_text.compare(caret_position - 1,
-                             new_user_text.length() - caret_position + 1,
-                             old_user_text, caret_position - 1,
-                             old_user_text.length() - caret_position + 1)) {
+  if ((paste_state_ != NONE) || (caret_position < 2) ||
+      (old_text.length() < caret_position) ||
+      (new_text.length() == caret_position))
+    return false;
+  size_t space_position = caret_position - 1;
+  if (!IsSpaceCharForAcceptingKeyword(new_text[space_position]) ||
+      IsWhitespace(new_text[space_position - 1]) ||
+      new_text.compare(0, space_position, old_text, 0, space_position) ||
+      !new_text.compare(space_position, new_text.length() - space_position,
+                        old_text, space_position,
+                        old_text.length() - space_position)) {
     return false;
   }
 
   // Then check if the text before the inserted space matches a keyword.
   string16 keyword;
-  TrimWhitespace(new_user_text.substr(0, caret_position - 1),
-                 TRIM_LEADING, &keyword);
-
-  // Only allow exact keyword match if |keyword| represents a keyword hint.
-  return keyword.length() &&
+  TrimWhitespace(new_text.substr(0, space_position), TRIM_LEADING, &keyword);
+  return !keyword.empty() &&
       !autocomplete_controller_->keyword_provider()->
           GetKeywordForText(keyword).empty();
 }

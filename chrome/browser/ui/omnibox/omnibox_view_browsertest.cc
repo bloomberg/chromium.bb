@@ -54,6 +54,7 @@ using base::TimeDelta;
 namespace {
 
 const char kSearchKeyword[] = "foo";
+const char kSearchKeyword2[] = "footest.com";
 const wchar_t kSearchKeywordKeys[] = {
   ui::VKEY_F, ui::VKEY_O, ui::VKEY_O, 0
 };
@@ -290,6 +291,12 @@ class OmniboxViewTest : public InProcessBrowserTest,
     template_url->set_short_name(ASCIIToUTF16(kSearchShortName));
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
+
+    TemplateURL* second_url = new TemplateURL();
+    second_url->SetURL(kSearchURL, 0, 0);
+    second_url->set_keyword(ASCIIToUTF16(kSearchKeyword2));
+    second_url->set_short_name(ASCIIToUTF16(kSearchShortName));
+    model->Add(second_url);
   }
 
   void AddHistoryEntry(const TestHistoryEntry& entry, const Time& time) {
@@ -874,6 +881,57 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
     ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
     ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
+    ASSERT_TRUE(omnibox_view->GetText().empty());
+
+    // Space in the middle of a temporary text, which separates the text into
+    // keyword and replacement portions, should trigger keyword mode.
+    omnibox_view->SetUserText(string16());
+    ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
+    ASSERT_TRUE(popup_model->IsOpen());
+    ASSERT_EQ(ASCIIToUTF16("foobar.com"), omnibox_view->GetText());
+    omnibox_view->model()->OnUpOrDownKeyPressed(1);
+    omnibox_view->model()->OnUpOrDownKeyPressed(-1);
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
+    ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
+    ASSERT_EQ(ASCIIToUTF16("bar.com"), omnibox_view->GetText());
+
+    // Space after temporary text that looks like a keyword, when the original
+    // input does not look like a keyword, should trigger keyword mode.
+    omnibox_view->SetUserText(string16());
+    const TestHistoryEntry kHistoryFoo = {
+      "http://footest.com", "Page footest", kSearchText, 1000, 1000, true
+    };
+
+    // Add a history entry to trigger HQP matching with text == keyword when
+    // typing "fo te".
+    ASSERT_NO_FATAL_FAILURE(
+        AddHistoryEntry(kHistoryFoo, Time::Now() - TimeDelta::FromMinutes(10)));
+
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_F, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_O, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_T, 0));
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_E, 0));
+    ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+    ASSERT_TRUE(popup_model->IsOpen());
+    string16 search_keyword2(ASCIIToUTF16(kSearchKeyword2));
+    while ((omnibox_view->GetText() != search_keyword2) &&
+           (popup_model->selected_line() < popup_model->result().size() - 1))
+      omnibox_view->model()->OnUpOrDownKeyPressed(1);
+    ASSERT_EQ(search_keyword2, omnibox_view->GetText());
+    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
+    ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
+    ASSERT_EQ(search_keyword2, omnibox_view->model()->keyword());
     ASSERT_TRUE(omnibox_view->GetText().empty());
   }
 

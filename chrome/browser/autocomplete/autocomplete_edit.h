@@ -319,11 +319,15 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
 
   // Called by the OmniboxView after something changes, with details about what
   // state changes occured.  Updates internal state, updates the popup if
-  // necessary, and returns true if any significant changes occurred.
+  // necessary, and returns true if any significant changes occurred.  Note that
+  // |text_differs| may be set even if |old_text| == |new_text|, e.g. if we've
+  // just committed an IME composition.
+  //
   // If |allow_keyword_ui_change| is false then the change should not affect
   // keyword ui state, even if the text matches a keyword exactly. This value
   // may be false when the user is composing a text with an IME.
-  bool OnAfterPossibleChange(const string16& new_text,
+  bool OnAfterPossibleChange(const string16& old_text,
+                             const string16& new_text,
                              size_t selection_start,
                              size_t selection_end,
                              bool selection_differs,
@@ -412,20 +416,20 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   // If |revert_popup| is true then the popup will be reverted as well.
   void RevertTemporaryText(bool revert_popup);
 
-  // Accepts current keyword if the user only typed a space at the end of
-  // |new_user_text| comparing to the |old_user_text|.
+  // Accepts current keyword if the user just typed a space at the end of
+  // |new_text|.  This handles both of the following cases:
+  //   (assume "foo" is a keyword, | is the input caret, [] is selected text)
+  //   foo| -> foo |      (a space was appended to a keyword)
+  //   foo[bar] -> foo |  (a space replaced other text after a keyword)
   // Returns true if the current keyword is accepted.
-  bool MaybeAcceptKeywordBySpace(const string16& old_user_text,
-                                 const string16& new_user_text);
+  bool MaybeAcceptKeywordBySpace(const string16& new_text);
 
-  // Checks if |allow_exact_keyword_match_| should be set to true according to
-  // the old and new user text and the current caret position. It does not take
-  // other factors into account, e.g. if the view is ready to change the keyword
-  // ui or not. This is only for the case of inserting a space character in the
-  // middle of the text. See the comment of |allow_exact_keyword_match_| below.
-  bool ShouldAllowExactKeywordMatch(const string16& old_user_text,
-                                    const string16& new_user_text,
-                                    size_t caret_position);
+  // Checks whether the user inserted a space into |old_text| and by doing so
+  // created a |new_text| that looks like "<keyword> <search phrase>".
+  bool CreatedKeywordSearchByInsertingSpaceInMiddle(
+      const string16& old_text,
+      const string16& new_text,
+      size_t caret_position) const;
 
   // Tries to start an instant preview for |match|. Returns true if instant
   // processed the match.
@@ -547,18 +551,10 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   bool in_revert_;
 
   // Indicates if the upcoming autocomplete search is allowed to be treated as
-  // an exact keyword match. If it's true then keyword mode will be triggered
-  // automatically if the input is "<keyword> <search string>". We only allow
-  // such trigger when:
-  // 1.A single space character is added at the end of a keyword, such as:
-  //   (assume "foo" is a keyword, | is the input caret)
-  //   foo| -> foo |
-  //   foo[bar] -> foo |  ([bar] indicates a selected text "bar")
-  // 2.A single space character is inserted after a keyword when the caret is
-  //   not at the end of the line, such as:
-  //   foo|bar -> foo |bar
-  //
-  // It has no effect if a keyword is already selected.
+  // an exact keyword match.  If this is true then keyword mode will be
+  // triggered automatically if the input is "<keyword> <search string>".  We
+  // allow this when CreatedKeywordSearchByInsertingSpaceInMiddle() is true.
+  // This has no effect if we're already in keyword mode.
   bool allow_exact_keyword_match_;
 
   // Last value of InstantCompleteBehavior supplied to |SetSuggestedText|.
