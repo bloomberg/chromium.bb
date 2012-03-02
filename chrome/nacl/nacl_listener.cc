@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/trusted/service_runtime/sel_main_chrome.h"
 
 #if defined(OS_LINUX)
 #include "content/public/common/child_process_sandbox_support_linux.h"
@@ -23,15 +24,6 @@
 #include <fcntl.h>
 #include <io.h>
 #endif
-
-// This is ugly.  We need an interface header file for the exported
-// sel_ldr interfaces.
-// TODO(gregoryd,sehr): Add an interface header.
-#if defined(OS_WIN)
-typedef HANDLE NaClHandle;
-#else
-typedef int NaClHandle;
-#endif  // NaClHandle
 
 #if defined(OS_MACOSX)
 namespace {
@@ -68,11 +60,6 @@ int CreateMemoryObject(size_t size, bool executable) {
 
 }  // namespace
 #endif  // defined(OS_MACOSX)
-
-extern "C" void NaClMainForChromium(int handle_count,
-                                    const NaClHandle* handles,
-                                    int debug);
-extern "C" void NaClSetIrtFileDesc(int fd);
 
 NaClListener::NaClListener() : debug_enabled_(false) {}
 
