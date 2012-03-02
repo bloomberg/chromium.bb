@@ -4042,6 +4042,7 @@
         'browser/ui/webui/ntp/new_tab_ui.h',
         'browser/ui/webui/ntp/ntp_login_handler.cc',
         'browser/ui/webui/ntp/ntp_login_handler.h',
+        'browser/ui/webui/ntp/ntp_resource_cache_android.cc',
         'browser/ui/webui/ntp/ntp_resource_cache.cc',
         'browser/ui/webui/ntp/ntp_resource_cache.h',
         'browser/ui/webui/ntp/ntp_resource_cache_factory.cc',
@@ -4750,6 +4751,7 @@
             'browser/ui/webui/ntp/new_tab_page_sync_handler.cc',
             'browser/ui/window_sizer.cc',
             'browser/ui/window_sizer.h',
+            'browser/ui/webui/ntp/ntp_resource_cache.cc',
           ],
           'sources/': [
             ['exclude', '^browser/importer/'],

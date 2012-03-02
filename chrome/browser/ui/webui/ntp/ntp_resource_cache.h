@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,14 +37,16 @@ class NTPResourceCache : public content::NotificationObserver,
  private:
   Profile* profile_;
 
+  void CreateNewTabHTML();
+  scoped_refptr<RefCountedMemory> new_tab_html_;
+
+#if !defined(OS_ANDROID)
   // Returns a message describing any newly-added sync types, or an empty
   // string if all types have already been acknowledged.
   string16 GetSyncTypeMessage();
 
   void CreateNewTabIncognitoHTML();
   scoped_refptr<RefCountedMemory> new_tab_incognito_html_;
-  void CreateNewTabHTML();
-  scoped_refptr<RefCountedMemory> new_tab_html_;
 
   void CreateNewTabIncognitoCSS();
   scoped_refptr<RefCountedMemory> new_tab_incognito_css_;
@@ -53,6 +55,7 @@ class NTPResourceCache : public content::NotificationObserver,
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };
