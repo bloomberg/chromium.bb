@@ -40,9 +40,6 @@ void TestShellDelegate::LockScreen() {
 void TestShellDelegate::Exit() {
 }
 
-void TestShellDelegate::BuildAppListModel(AppListModel* model) {
-}
-
 AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
 }

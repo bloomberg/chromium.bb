@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,16 +6,23 @@
 #define ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #pragma once
 
+#include <string>
+
 #include "ash/ash_export.h"
 
 namespace ash {
 
 class AppListItemModel;
+class AppListModel;
 
 class ASH_EXPORT AppListViewDelegate {
  public:
   // AppListView owns the delegate.
   virtual ~AppListViewDelegate() {}
+
+  // Invoked to ask the delegate to populate the |model| for given |query|.
+  virtual void BuildAppListModel(const std::string& query,
+                                 AppListModel* model) = 0;
 
   // Invoked an AppListeItemModelView is  activated by click or enter key.
   virtual void OnAppListItemActivated(AppListItemModel* item,

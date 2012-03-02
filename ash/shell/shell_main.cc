@@ -178,10 +178,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
     MessageLoopForUI::current()->Quit();
   }
 
-  virtual void BuildAppListModel(ash::AppListModel* model) OVERRIDE {
-    ash::shell::BuildAppListModel(model);
-  }
-
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE {
     return ash::shell::CreateAppListViewDelegate();
   }

@@ -4,50 +4,38 @@
 
 #include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
 
-#include "ash/app_list/app_list_item_group_model.h"
+#include "base/string_util.h"
+#include "base/i18n/case_conversion.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/aura/app_list/browser_command_item.h"
 #include "chrome/browser/ui/views/aura/app_list/extension_app_item.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
-// Gets or creates group for given |extension| in |model|. The created group
-// is added to |model| and owned by it.
-ash::AppListItemGroupModel* GetOrCreateGroup(
-    int page_index,
-    const ListValue* app_page_names,
-    ash::AppListModel* model) {
-  if (page_index >= model->group_count()) {
-    for (int i = model->group_count(); i <= page_index; ++i) {
-      std::string title;
-      if (!app_page_names->GetString(i, &title))
-        title = l10n_util::GetStringUTF8(IDS_APP_DEFAULT_PAGE_NAME);
+// Data struct used to define BrowserCommand.
+struct BrowserCommandData {
+  int command_id;
+  int title_id;
+  int icon_id;
+};
 
-      ash::AppListItemGroupModel* group =
-          new ash::AppListItemGroupModel(title);
-      model->AddGroup(group);
-    }
-  }
-
-  return model->GetGroup(page_index);
+// Binary predict to sort app list items alphabetically.
+bool AppPrecedes(const ash::AppListItemModel* a,
+                 const ash::AppListItemModel* b) {
+  return a->title() < b->title();
 }
 
-// Binary predict to sort extension apps. Smaller launch ordinal takes
-// precedence.
-bool ExtensionAppPrecedes(const ExtensionAppItem* a,
-                          const ExtensionAppItem* b) {
-  return a->launch_ordinal().LessThan(b->launch_ordinal());
+// Returns true if given |str| matches |query|. Currently, it returns
+// if |query| is a substr of |str|.
+bool MatchesQuery(const string16& query, const string16& str) {
+  return query.empty() || str.find(query) != string16::npos;
 }
 
 }  // namespace
@@ -61,60 +49,65 @@ AppListModelBuilder::AppListModelBuilder(Profile* profile,
 AppListModelBuilder::~AppListModelBuilder() {
 }
 
-void AppListModelBuilder::Build() {
-  GetExtensionApps();
-  GetBrowserCommands();
+void AppListModelBuilder::Build(const std::string& query) {
+  string16 normalized_query(base::i18n::ToLower(UTF8ToUTF16(query)));
+
+  Items items;
+  GetExtensionApps(normalized_query, &items);
+  GetBrowserCommands(normalized_query, &items);
+
+  std::sort(items.begin(), items.end(), &AppPrecedes);
+  for (Items::const_iterator it = items.begin(); it != items.end(); ++it) {
+    model_->AddItem(*it);
+  }
 }
 
-void AppListModelBuilder::GetExtensionApps() {
+void AppListModelBuilder::GetExtensionApps(const string16& query,
+                                           Items* items) {
   DCHECK(profile_);
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return;
 
   // Get extension apps.
-  std::vector<ExtensionAppItem*> items;
   const ExtensionSet* extensions = service->extensions();
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
-    if ((*app)->ShouldDisplayInLauncher())
-      items.push_back(new ExtensionAppItem(profile_, *app));
-  }
-
-  // Sort by launch ordinal.
-  std::sort(items.begin(), items.end(), &ExtensionAppPrecedes);
-
-  // Put all items into model and group them by page ordinal.
-  PrefService* prefs = profile_->GetPrefs();
-  const ListValue* app_page_names = prefs->GetList(prefs::kNtpAppPageNames);
-  for (size_t i = 0; i < items.size(); ++i) {
-    ExtensionAppItem* item = items[i];
-
-    ash::AppListItemGroupModel* group = GetOrCreateGroup(
-        item->page_index(),
-        app_page_names,
-        model_);
-
-    group->AddItem(item);
+    if ((*app)->ShouldDisplayInLauncher() &&
+        MatchesQuery(query,
+                     base::i18n::ToLower(UTF8ToUTF16((*app)->name())))) {
+      items->push_back(new ExtensionAppItem(profile_, *app));
+    }
   }
 }
 
-void AppListModelBuilder::GetBrowserCommands() {
+void AppListModelBuilder::GetBrowserCommands(const string16& query,
+                                             Items* items) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   if (!browser)
     return;
 
-  // Uses the first group to put browser commands
-  if (model_->group_count() == 0)
-    model_->AddGroup(new ash::AppListItemGroupModel(""));
-  ash::AppListItemGroupModel* group = model_->GetGroup(0);
+  const BrowserCommandData kBrowserCommands[] = {
+    {
+      IDC_NEW_INCOGNITO_WINDOW,
+      IDS_APP_LIST_INCOGNITO,
+      IDR_APP_LIST_INCOGNITO,
+    },
+    {
+      IDC_OPTIONS,
+      IDS_APP_LIST_SETTINGS,
+      IDR_APP_LIST_SETTINGS,
 
-  group->AddItem(new BrowserCommandItem(browser,
-                                        IDC_NEW_INCOGNITO_WINDOW,
-                                        IDS_APP_LIST_INCOGNITO,
-                                        IDR_APP_LIST_INCOGNITO));
-  group->AddItem(new BrowserCommandItem(browser,
-                                        IDC_OPTIONS,
-                                        IDS_APP_LIST_SETTINGS,
-                                        IDR_APP_LIST_SETTINGS));
+    },
+  };
+
+  for (size_t i = 0; i < arraysize(kBrowserCommands); ++i) {
+    string16 title = l10n_util::GetStringUTF16(kBrowserCommands[i].title_id);
+    if (MatchesQuery(query, base::i18n::ToLower(title))) {
+      items->push_back(new BrowserCommandItem(browser,
+                                              kBrowserCommands[i].command_id,
+                                              kBrowserCommands[i].title_id,
+                                              kBrowserCommands[i].icon_id));
+    }
+  }
 }

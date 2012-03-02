@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
+#include "base/string16.h"
 #include "ash/app_list/app_list_model.h"
 
 class Profile;
@@ -17,13 +18,15 @@ class AppListModelBuilder {
   virtual ~AppListModelBuilder();
 
   // Populates the model.
-  void Build();
+  void Build(const std::string& query);
 
  private:
+  typedef std::vector<ash::AppListItemModel*> Items;
+
   FRIEND_TEST_ALL_PREFIXES(AppListModelBuilderTest, GetExtensionApps);
 
-  void GetExtensionApps();
-  void GetBrowserCommands();
+  void GetExtensionApps(const string16& query, Items* items);
+  void GetBrowserCommands(const string16& query, Items* items);
 
   Profile* profile_;
   ash::AppListModel* model_;

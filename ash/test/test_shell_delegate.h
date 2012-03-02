@@ -25,7 +25,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual void LockScreen() OVERRIDE;
 #endif
   virtual void Exit() OVERRIDE;
-  virtual void BuildAppListModel(AppListModel* model) OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(
       CycleSource source,

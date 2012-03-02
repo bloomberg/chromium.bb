@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/event_filter.h"
+#include "ui/aura/root_window_observer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/views/widget/widget.h"
 
@@ -20,6 +21,7 @@ namespace internal {
 // While the UI is visible, it monitors things such as app list widget's
 // activation state and desktop mouse click to auto dismiss the UI.
 class AppList : public aura::EventFilter,
+                public aura::RootWindowObserver,
                 public ui::ImplicitAnimationObserver,
                 public views::Widget::Observer {
  public:
@@ -53,6 +55,9 @@ class AppList : public aura::EventFilter,
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
+
+  // aura::RootWindowObserver overrides:
+  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
 
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;

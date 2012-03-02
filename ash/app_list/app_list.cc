@@ -4,15 +4,12 @@
 
 #include "ash/app_list/app_list.h"
 
-#include "ash/app_list/app_list_model.h"
 #include "ash/app_list/app_list_view.h"
-#include "ash/ash_switches.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "base/bind.h"
-#include "base/command_line.h"
 #include "ui/aura/event.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
@@ -22,19 +19,11 @@ namespace internal {
 
 namespace {
 
-// Gets preferred bounds of app list window in show/hide state.
-gfx::Rect GetPreferredBounds(bool show) {
-  // The y-axis offset used at the beginning of showing animation.
-  static const int kMoveUpAnimationOffset = 50;
-
+// Gets preferred bounds of app list window.
+gfx::Rect GetPreferredBounds() {
   gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
-  gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestPoint(cursor);
-  gfx::Rect widget_bounds(work_area);
-  widget_bounds.Inset(100, 100);
-  if (!show)
-    widget_bounds.Offset(0, kMoveUpAnimationOffset);
-
-  return widget_bounds;
+  // Use full monitor rect so that the app list shade goes behind the launcher.
+  return gfx::Screen::GetMonitorAreaNearestPoint(cursor);
 }
 
 ui::Layer* GetLayer(views::Widget* widget) {
@@ -62,15 +51,11 @@ void AppList::SetVisible(bool visible) {
   if (widget_) {
     ScheduleAnimation();
   } else if (is_visible_) {
-    scoped_ptr<AppListModel> model(new AppListModel);
-    Shell::GetInstance()->delegate()->BuildAppListModel(model.get());
-
     // AppListModel and AppListViewDelegate are owned by AppListView. They
     // will be released with AppListView on close.
     AppListView* app_list_view = new AppListView(
-        model.release(),
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate(),
-        GetPreferredBounds(false));
+        GetPreferredBounds());
     SetWidget(app_list_view->GetWidget());
   }
 }
@@ -89,12 +74,13 @@ void AppList::SetWidget(views::Widget* widget) {
     widget_ = widget;
     widget_->AddObserver(this);
     Shell::GetInstance()->AddRootWindowEventFilter(this);
+    Shell::GetRootWindow()->AddRootWindowObserver(this);
 
-    widget_->SetBounds(GetPreferredBounds(false));
     widget_->SetOpacity(0);
     ScheduleAnimation();
 
     widget_->Show();
+    widget_->Activate();
   } else {
     widget->Close();
   }
@@ -107,6 +93,7 @@ void AppList::ResetWidget() {
   widget_->RemoveObserver(this);
   GetLayer(widget_)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemoveRootWindowEventFilter(this);
+  Shell::GetRootWindow()->RemoveRootWindowObserver(this);
   widget_ = NULL;
 }
 
@@ -124,7 +111,6 @@ void AppList::ScheduleAnimation() {
 
   ui::ScopedLayerAnimationSettings app_list_animation(layer->GetAnimator());
   app_list_animation.AddObserver(this);
-  layer->SetBounds(GetPreferredBounds(is_visible_));
   layer->SetOpacity(is_visible_ ? 1.0 : 0.0);
 
   ui::Layer* default_container_layer = default_container->layer();
@@ -143,7 +129,7 @@ bool AppList::PreHandleKeyEvent(aura::Window* target,
 }
 
 bool AppList::PreHandleMouseEvent(aura::Window* target,
-                                 aura::MouseEvent* event) {
+                                  aura::MouseEvent* event) {
   if (widget_ && is_visible_ && event->type() == ui::ET_MOUSE_PRESSED) {
     aura::MouseEvent translated(*event, target, widget_->GetNativeView());
     if (!widget_->GetNativeView()->ContainsPoint(translated.location()))
@@ -161,6 +147,13 @@ ui::GestureStatus AppList::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AppList,  ura::RootWindowObserver implementation:
+void AppList::OnRootWindowResized(const gfx::Size& new_size) {
+  if (widget_ && is_visible_)
+    widget_->SetBounds(gfx::Rect(new_size));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,53 +1,68 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ash/app_list/app_list_item_view.h"
 
-#include "ash/app_list/app_list_item_group_view.h"
 #include "ash/app_list/app_list_item_model.h"
-#include "ash/app_list/app_list_item_view_listener.h"
 #include "ash/app_list/drop_shadow_label.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
 namespace {
 
-const double kFocusedScale = 1.1;
+const int kIconTitleSpacing = 5;
 
 const SkColor kTitleColor = SK_ColorWHITE;
+const SkColor kHoverColor = SkColorSetARGB(0x33, 0xFF, 0xFF, 0xFF); // 0.2 white
 
 gfx::Font GetTitleFont() {
   static gfx::Font* font = NULL;
   if (!font) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     font = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont).DeriveFont(
-        2, gfx::Font::BOLD));
+        1, gfx::Font::BOLD));
   }
   return *font;
 }
 
+// An image view that is not interactive.
+class StaticImageView : public views::ImageView {
+ public:
+  StaticImageView() : ImageView() {
+  }
+
+ private:
+  // views::View overrides:
+  virtual bool HitTest(const gfx::Point& l) const OVERRIDE {
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StaticImageView);
+};
+
 }  // namespace
 
-AppListItemView::AppListItemView(AppListItemModel* model,
-                                 AppListItemViewListener* listener)
-    : model_(model),
-      listener_(listener),
-      icon_(new views::ImageView),
-      title_(new DropShadowLabel) {
-  set_focusable(true);
+// static
+const char AppListItemView::kViewClassName[] = "ash/app_list/AppListItemView";
 
+AppListItemView::AppListItemView(AppListItemModel* model,
+                                 views::ButtonListener* listener)
+    : CustomButton(listener),
+      model_(model),
+      icon_(new StaticImageView),
+      title_(new DropShadowLabel) {
   title_->SetFont(GetTitleFont());
   title_->SetBackgroundColor(0);
   title_->SetEnabledColor(kTitleColor);
+  title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   AddChildView(icon_);
   AddChildView(title_);
@@ -61,11 +76,6 @@ AppListItemView::~AppListItemView() {
   model_->RemoveObserver(this);
 }
 
-void AppListItemView::NotifyActivated(int event_flags) {
-  if (listener_)
-    listener_->AppListItemActivated(this, event_flags);
-}
-
 void AppListItemView::ItemIconChanged() {
   icon_->SetImage(model_->icon());
 }
@@ -74,89 +84,42 @@ void AppListItemView::ItemTitleChanged() {
   title_->SetText(UTF8ToUTF16(model_->title()));
 }
 
+std::string AppListItemView::GetClassName() const {
+  return kViewClassName;
+}
+
 gfx::Size AppListItemView::GetPreferredSize() {
-  return gfx::Size(kTileSize, kTileSize);
+  gfx::Size icon_size = icon_->GetPreferredSize();
+  gfx::Size title_size = title_->GetPreferredSize();
+
+  return gfx::Size(icon_size.width() + kIconTitleSpacing + title_size.width(),
+                   std::max(icon_size.height(), title_size.height()));
 }
 
 void AppListItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  gfx::Size title_size = title_->GetPreferredSize();
 
-  if (!HasFocus()) {
-    const int horiz_padding = (kTileSize - kIconSize) / 2;
-    const int vert_padding = (kTileSize - title_size.height() - kIconSize) / 2;
-    rect.Inset(horiz_padding, vert_padding);
-  }
-
-  icon_->SetBounds(rect.x(), rect.y(),
-      rect.width(), rect.height() - title_size.height());
-
-  title_->SetBounds(rect.x(), rect.bottom() - title_size.height(),
-      rect.width(), title_size.height());
-}
-
-void AppListItemView::OnFocus() {
-  View::OnFocus();
-
-  gfx::Size icon_size = icon_->GetPreferredSize();
-  icon_size.set_width(icon_size.width() * kFocusedScale);
-  icon_size.set_height(icon_size.height() * kFocusedScale);
-
-  gfx::Size max_size = GetPreferredSize();
-  if (icon_size.width() > max_size.width() ||
-      icon_size.height() > max_size.height()) {
-    double aspect =
-        static_cast<double>(icon_size.width()) / icon_size.height();
-
-    if (aspect > 1) {
-      icon_size.set_width(max_size.width());
-      icon_size.set_height(icon_size.width() / aspect);
-    } else {
-      icon_size.set_height(max_size.height());
-      icon_size.set_width(icon_size.height() * aspect);
-    }
-  }
-
+  int preferred_icon_size = rect.height() - 2 * kPadding;
+  gfx::Size icon_size(preferred_icon_size, preferred_icon_size);
   icon_->SetImageSize(icon_size);
-  Layout();
+  icon_->SetBounds(rect.x() + kPadding, rect.y(),
+                   icon_size.width(), rect.height());
 
-  AppListItemGroupView* group_view =
-      static_cast<AppListItemGroupView*>(parent());
-  group_view->UpdateFocusedTile(this);
+  title_->SetBounds(
+      icon_->bounds().right() + kIconTitleSpacing,
+      rect.y(),
+      rect.right() - kPadding - icon_->bounds().right() - kIconTitleSpacing,
+      rect.height());
 }
 
-void AppListItemView::OnBlur() {
-  icon_->ResetImageSize();
-  Layout();
-  SchedulePaint();
-}
-
-bool AppListItemView::OnKeyPressed(const views::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_RETURN) {
-    NotifyActivated(event.flags());
-    return true;
+void AppListItemView::OnPaint(gfx::Canvas* canvas) {
+  gfx::Rect rect(GetContentsBounds());
+  if (hover_animation_->is_animating()) {
+    int alpha = SkColorGetA(kHoverColor) * hover_animation_->GetCurrentValue();
+    canvas->FillRect(rect, SkColorSetA(kHoverColor, alpha));
+  } else if (state() == BS_HOT) {
+    canvas->FillRect(rect, kHoverColor);
   }
-
-  return false;
-}
-
-bool AppListItemView::OnMousePressed(const views::MouseEvent& event) {
-  views::View* hit_view = GetEventHandlerForPoint(event.location());
-  bool hit = hit_view != this;
-  if (hit)
-    RequestFocus();
-
-  return hit;
-}
-
-void AppListItemView::OnMouseReleased(const views::MouseEvent& event) {
-  views::View* hit_view = GetEventHandlerForPoint(event.location());
-  if (hit_view != this)
-    NotifyActivated(event.flags());
-}
-
-void AppListItemView::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  // No focus border for AppListItemView.
 }
 
 }  // namespace ash

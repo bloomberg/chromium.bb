@@ -86,7 +86,8 @@ const Extension* ExtensionAppItem::GetExtension() const {
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
   ExtensionResource icon = extension->GetIconResource(
-      ash::AppListItemView::kIconSize, ExtensionIconSet::MATCH_BIGGER);
+      ExtensionIconSet::EXTENSION_ICON_LARGE,
+      ExtensionIconSet::MATCH_BIGGER);
   if (icon.relative_path().empty()) {
     LoadDefaultImage();
     return;
@@ -121,8 +122,8 @@ void ExtensionAppItem::LoadImage(const Extension* extension) {
   tracker_.reset(new ImageLoadingTracker(this));
   tracker_->LoadImage(extension,
                       icon,
-                      gfx::Size(ash::AppListItemView::kIconSize,
-                                ash::AppListItemView::kIconSize),
+                      gfx::Size(ExtensionIconSet::EXTENSION_ICON_LARGE,
+                                ExtensionIconSet::EXTENSION_ICON_LARGE),
                       ImageLoadingTracker::DONT_CACHE);
 }
 

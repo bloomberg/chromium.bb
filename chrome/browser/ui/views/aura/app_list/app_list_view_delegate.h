@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,8 @@ class AppListViewDelegate : public ash::AppListViewDelegate {
 
  private:
   // Overridden from ash::AppListViewDelegate:
+  virtual void BuildAppListModel(const std::string& query,
+                                 ash::AppListModel* model) OVERRIDE;
   virtual void OnAppListItemActivated(ash::AppListItemModel* item,
                                       int event_flags) OVERRIDE;
 

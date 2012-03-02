@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_item_group_model.h"
 #include "ash/app_list/app_list_item_model.h"
 #include "ash/app_list/app_list_item_view.h"
 #include "ash/app_list/app_list_model.h"
@@ -36,17 +35,16 @@ class WindowTypeLauncherItem : public ash::AppListItemModel {
 
   static SkBitmap GetIcon(Type type) {
     static const SkColor kColors[] = {
-        SkColorSetA(SK_ColorRED, 0x4F),
-        SkColorSetA(SK_ColorGREEN, 0x4F),
-        SkColorSetA(SK_ColorBLUE, 0x4F),
-        SkColorSetA(SK_ColorYELLOW, 0x4F),
-        SkColorSetA(SK_ColorCYAN, 0x4F),
+        SK_ColorRED,
+        SK_ColorGREEN,
+        SK_ColorBLUE,
+        SK_ColorYELLOW,
+        SK_ColorCYAN,
     };
 
+    const int kIconSize = 128;
     SkBitmap icon;
-    icon.setConfig(SkBitmap::kARGB_8888_Config,
-                   ash::AppListItemView::kIconSize,
-                   ash::AppListItemView::kIconSize);
+    icon.setConfig(SkBitmap::kARGB_8888_Config, kIconSize, kIconSize);
     icon.allocPixels();
     icon.eraseColor(kColors[static_cast<int>(type) % arraysize(kColors)]);
     return icon;
@@ -111,6 +109,21 @@ class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
   ExampleAppListViewDelegate() {}
 
  private:
+  // Overridden from ash::AppListViewDelegate:
+  virtual void BuildAppListModel(const std::string& query,
+                                 AppListModel* model) OVERRIDE {
+    for (int i = 0;
+         i < static_cast<int>(WindowTypeLauncherItem::LAST_TYPE);
+         ++i) {
+      WindowTypeLauncherItem::Type type =
+          static_cast<WindowTypeLauncherItem::Type>(i);
+
+      std::string title = WindowTypeLauncherItem::GetTitle(type);
+      if (title.find(query) != std::string::npos)
+        model->AddItem(new WindowTypeLauncherItem(type));
+    }
+  }
+
   virtual void OnAppListItemActivated(ash::AppListItemModel* item,
                                       int event_flags) OVERRIDE {
     static_cast<WindowTypeLauncherItem*>(item)->Activate(event_flags);
@@ -119,32 +132,7 @@ class ExampleAppListViewDelegate : public ash::AppListViewDelegate {
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);
 };
 
-ash::AppListItemGroupModel* CreateGroup(
-    const std::string& title,
-    WindowTypeLauncherItem::Type start_type,
-    WindowTypeLauncherItem::Type end_type) {
-  ash::AppListItemGroupModel* group =
-      new ash::AppListItemGroupModel(title);
-  for (int i = static_cast<int>(start_type);
-       i < static_cast<int>(end_type);
-       ++i) {
-    WindowTypeLauncherItem::Type type =
-      static_cast<WindowTypeLauncherItem::Type>(i);
-    group->AddItem(new WindowTypeLauncherItem(type));
-  }
-  return group;
-}
-
 }  // namespace
-
-void BuildAppListModel(ash::AppListModel* model) {
-  model->AddGroup(CreateGroup("Windows",
-      WindowTypeLauncherItem::TOPLEVEL_WINDOW,
-      WindowTypeLauncherItem::WIDGETS_WINDOW));
-  model->AddGroup(CreateGroup("Samples",
-      WindowTypeLauncherItem::WIDGETS_WINDOW,
-      WindowTypeLauncherItem::LAST_TYPE));
-}
 
 ash::AppListViewDelegate* CreateAppListViewDelegate() {
   return new ExampleAppListViewDelegate;

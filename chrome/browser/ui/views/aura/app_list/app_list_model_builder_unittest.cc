@@ -1,8 +1,7 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_item_group_model.h"
 #include "ash/app_list/app_list_item_model.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,7 +16,7 @@ class AppListModelBuilderTest : public ExtensionServiceTestBase {
   virtual ~AppListModelBuilderTest() {}
 };
 
-TEST_F(AppListModelBuilderTest, GetExtensionApps) {
+TEST_F(AppListModelBuilderTest, Build) {
   // Load "app_list" extensions test profile. The test profile has 4 extensions:
   // 1 dummy extension, 2 packaged extension apps and 1 hosted extension app.
   FilePath source_install_dir = data_dir_
@@ -35,16 +34,12 @@ TEST_F(AppListModelBuilderTest, GetExtensionApps) {
 
   scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
   AppListModelBuilder builder(profile_.get(), model.get());
-  builder.GetExtensionApps();
+  builder.Build(std::string());
 
-  // Expect to have two app groups.
-  EXPECT_EQ(2, model->group_count());
-
-  // Two packaged apps are on the first page and hosted app on the 2nd page.
-  ash::AppListItemGroupModel* group1 = model->GetGroup(0);
-  EXPECT_EQ("Packaged App 1", group1->GetItem(0)->title());
-  EXPECT_EQ("Packaged App 2", group1->GetItem(1)->title());
-
-  ash::AppListItemGroupModel* group2 = model->GetGroup(1);
-  EXPECT_EQ("Hosted App", group2->GetItem(0)->title());
+  // Since we are in unit_tests and there is no browser, the model would have
+  // only 3 extension apps in the profile.
+  EXPECT_EQ(3, model->item_count());
+  EXPECT_EQ("Hosted App", model->GetItem(0)->title());
+  EXPECT_EQ("Packaged App 1", model->GetItem(1)->title());
+  EXPECT_EQ("Packaged App 2", model->GetItem(2)->title());
 }

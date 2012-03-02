@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,21 +12,20 @@ AppListModel::AppListModel() {
 AppListModel::~AppListModel() {
 }
 
-void AppListModel::AddGroup(AppListItemGroupModel* group) {
-  groups_.Add(group);
+void AppListModel::AddItem(AppListItemModel* item) {
+  items_.Add(item);
 }
 
-AppListItemGroupModel* AppListModel::GetGroup(int index) {
-  DCHECK(index >= 0 && index < group_count());
-  return groups_.item_at(index);
+AppListItemModel* AppListModel::GetItem(int index) {
+  return items_.item_at(index);
 }
 
 void AppListModel::AddObserver(ui::ListModelObserver* observer) {
-  groups_.AddObserver(observer);
+  items_.AddObserver(observer);
 }
 
 void AppListModel::RemoveObserver(ui::ListModelObserver* observer) {
-  groups_.RemoveObserver(observer);
+  items_.RemoveObserver(observer);
 }
 
 }  // namespace ash

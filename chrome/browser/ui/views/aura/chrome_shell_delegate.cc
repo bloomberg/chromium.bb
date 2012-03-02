@@ -9,10 +9,8 @@
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/aura/app_list/app_list_model_builder.h"
 #include "chrome/browser/ui/views/aura/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/aura/launcher/chrome_launcher_delegate.h"
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
@@ -76,12 +74,6 @@ void ChromeShellDelegate::LockScreen() {
 
 void ChromeShellDelegate::Exit() {
   BrowserList::AttemptUserExit();
-}
-
-void ChromeShellDelegate::BuildAppListModel(ash::AppListModel* model) {
-  AppListModelBuilder builder(ProfileManager::GetDefaultProfile(),
-                              model);
-  builder.Build();
 }
 
 ash::AppListViewDelegate*

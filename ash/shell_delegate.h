@@ -23,7 +23,6 @@ class Widget;
 
 namespace ash {
 
-class AppListModel;
 class AppListViewDelegate;
 class LauncherDelegate;
 class LauncherModel;
@@ -62,9 +61,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Invoked when a user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
-
-  // Invoked to ask the delegate to populate the |model|.
-  virtual void BuildAppListModel(AppListModel* model) = 0;
 
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
