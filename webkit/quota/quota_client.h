@@ -35,9 +35,8 @@ class QuotaClient {
     kDatabase = 1 << 2,
     kAppcache = 1 << 3,
     kIndexedDatabase = 1 << 4,
+    kAllClientsMask = -1,
   };
-
-  static const int kAllClientsMask = -1;
 
   virtual ID id() const = 0;
 
