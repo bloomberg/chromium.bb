@@ -5,7 +5,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
-#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/test/test_server.h"
@@ -45,7 +44,9 @@ class SyncHttpBridgeTest : public testing::Test {
 
   HttpBridge* BuildBridge() {
     if (!fake_default_request_context_getter_) {
-      fake_default_request_context_getter_ = new TestURLRequestContextGetter();
+      fake_default_request_context_getter_ =
+          new TestURLRequestContextGetter(
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
       fake_default_request_context_getter_->AddRef();
     }
     HttpBridge* bridge = new HttpBridge(
@@ -148,7 +149,8 @@ TEST_F(SyncHttpBridgeTest, TestUsesSameHttpNetworkSession) {
 // Test the HttpBridge without actually making any network requests.
 TEST_F(SyncHttpBridgeTest, TestMakeSynchronousPostShunted) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new TestURLRequestContextGetter());
+      new TestURLRequestContextGetter(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   scoped_refptr<HttpBridge> http_bridge(new ShuntedHttpBridge(
       ctx_getter, this, false));
   http_bridge->SetUserAgent("bob");
@@ -272,7 +274,8 @@ TEST_F(SyncHttpBridgeTest, TestResponseHeader) {
 
 TEST_F(SyncHttpBridgeTest, Abort) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new TestURLRequestContextGetter());
+      new TestURLRequestContextGetter(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   scoped_refptr<ShuntedHttpBridge> http_bridge(new ShuntedHttpBridge(
       ctx_getter, this, true));
   http_bridge->SetUserAgent("bob");
@@ -291,7 +294,8 @@ TEST_F(SyncHttpBridgeTest, Abort) {
 
 TEST_F(SyncHttpBridgeTest, AbortLate) {
   scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new TestURLRequestContextGetter());
+      new TestURLRequestContextGetter(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   scoped_refptr<ShuntedHttpBridge> http_bridge(new ShuntedHttpBridge(
       ctx_getter, this, false));
   http_bridge->SetUserAgent("bob");

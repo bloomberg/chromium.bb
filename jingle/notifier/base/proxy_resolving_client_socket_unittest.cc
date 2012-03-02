@@ -5,6 +5,7 @@
 #include "jingle/notifier/base/proxy_resolving_client_socket.h"
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/test_completion_callback.h"
@@ -14,36 +15,34 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-// TODO(sanjeevr): Move this to net_test_support.
-// Used to return a dummy context.
-class TestURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  TestURLRequestContextGetter()
-      : message_loop_proxy_(base::MessageLoopProxy::current()) {
-  }
-  virtual ~TestURLRequestContextGetter() { }
 
-  // net::URLRequestContextGetter:
-  virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      CreateURLRequestContext();
-    return context_.get();
+class ProxyTestURLRequestContextGetter : public TestURLRequestContextGetter {
+ public:
+  ProxyTestURLRequestContextGetter()
+      : TestURLRequestContextGetter(base::MessageLoopProxy::current()),
+        set_context_members_(false) {}
+
+  // Override GetURLRequestContext to set the host resolver and proxy
+  // service (used by the unit tests).
+  virtual TestURLRequestContext* GetURLRequestContext() OVERRIDE {
+    TestURLRequestContext* context =
+        TestURLRequestContextGetter::GetURLRequestContext();
+    if (!set_context_members_) {
+      context->set_host_resolver(new net::MockHostResolver());
+      context->set_proxy_service(net::ProxyService::CreateFixedFromPacResult(
+          "PROXY bad:99; PROXY maybe:80; DIRECT"));
+      set_context_members_ = true;
+    }
+    return context;
   }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return message_loop_proxy_;
-  }
+
+ protected:
+  virtual ~ProxyTestURLRequestContextGetter() {}
 
  private:
-  void CreateURLRequestContext() {
-    context_ = new TestURLRequestContext();
-    context_->set_host_resolver(new net::MockHostResolver());
-    context_->set_proxy_service(net::ProxyService::CreateFixedFromPacResult(
-        "PROXY bad:99; PROXY maybe:80; DIRECT"));
-  }
-
-  scoped_refptr<net::URLRequestContext> context_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  bool set_context_members_;
 };
+
 }  // namespace
 
 namespace notifier {
@@ -51,7 +50,7 @@ namespace notifier {
 class ProxyResolvingClientSocketTest : public testing::Test {
  protected:
   ProxyResolvingClientSocketTest()
-      : url_request_context_getter_(new TestURLRequestContextGetter()) {}
+      : url_request_context_getter_(new ProxyTestURLRequestContextGetter()) {}
 
   virtual ~ProxyResolvingClientSocketTest() {}
 
@@ -61,9 +60,8 @@ class ProxyResolvingClientSocketTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  // Needed by XmppConnection.
-  MessageLoopForIO message_loop_;
-  scoped_refptr<TestURLRequestContextGetter> url_request_context_getter_;
+  MessageLoop message_loop_;
+  scoped_refptr<ProxyTestURLRequestContextGetter> url_request_context_getter_;
 };
 
 // TODO(sanjeevr): Fix this test on Linux.

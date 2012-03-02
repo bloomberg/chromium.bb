@@ -17,8 +17,8 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/test/test_browser_thread.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,7 +39,9 @@ class SyncNotifierFactoryTest : public testing::Test {
   virtual ~SyncNotifierFactoryTest() {}
 
   virtual void SetUp() OVERRIDE {
-    request_context_getter_ = new TestURLRequestContextGetter;
+    request_context_getter_ =
+        new TestURLRequestContextGetter(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
     factory_.reset(new SyncNotifierFactory(
         "fake_client_info",
         request_context_getter_,

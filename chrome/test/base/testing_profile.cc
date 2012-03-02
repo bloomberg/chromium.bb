@@ -44,7 +44,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/bookmark_load_observer.h"
-#include "chrome/test/base/test_url_request_context_getter.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/mock_resource_context.h"
@@ -595,7 +594,9 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
 
 void TestingProfile::CreateRequestContext() {
   if (!request_context_)
-    request_context_ = new TestURLRequestContextGetter();
+    request_context_ =
+        new TestURLRequestContextGetter(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 }
 
 void TestingProfile::ResetRequestContext() {

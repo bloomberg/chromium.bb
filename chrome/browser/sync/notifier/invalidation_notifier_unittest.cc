@@ -11,12 +11,12 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/util/weak_handle.h"
-#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/test/test_browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/host_resolver.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +37,8 @@ class InvalidationNotifierTest : public testing::Test {
     notifier::NotifierOptions notifier_options;
     // Note: URLRequestContextGetters are ref-counted.
     notifier_options.request_context_getter =
-        new TestURLRequestContextGetter();
+        new TestURLRequestContextGetter(
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
     invalidation_notifier_.reset(
         new InvalidationNotifier(
             notifier_options,

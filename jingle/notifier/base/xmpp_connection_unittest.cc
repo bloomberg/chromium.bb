@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "jingle/notifier/base/mock_task.h"
@@ -31,32 +32,6 @@ class CryptString;
 class SocketAddress;
 class Task;
 }  // namespace talk_base
-
-namespace {
-// TODO(sanjeevr): Move this to net_test_support.
-// Used to return a dummy context.
-class TestURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  TestURLRequestContextGetter()
-      : message_loop_proxy_(base::MessageLoopProxy::current()) {
-  }
-  virtual ~TestURLRequestContextGetter() { }
-
-  // net::URLRequestContextGetter:
-  virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_.get();
-  }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return message_loop_proxy_;
-  }
-
- private:
-  scoped_refptr<net::URLRequestContext> context_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
-};
-}  // namespace
 
 namespace notifier {
 
@@ -98,7 +73,8 @@ class XmppConnectionTest : public testing::Test {
  protected:
   XmppConnectionTest()
       : mock_pre_xmpp_auth_(new MockPreXmppAuth()),
-        url_request_context_getter_(new TestURLRequestContextGetter()) {}
+        url_request_context_getter_(new TestURLRequestContextGetter(
+            message_loop_.message_loop_proxy())) {}
 
   virtual ~XmppConnectionTest() {}
 

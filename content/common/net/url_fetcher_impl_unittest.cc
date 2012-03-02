@@ -32,30 +32,6 @@ namespace {
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 const char kTestServerFilePrefix[] = "files/";
 
-class TestURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  explicit TestURLRequestContextGetter(
-      base::MessageLoopProxy* io_message_loop_proxy)
-          : io_message_loop_proxy_(io_message_loop_proxy) {
-  }
-  virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_;
-  }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return io_message_loop_proxy_;
-  }
-
- protected:
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
-
- private:
-  virtual ~TestURLRequestContextGetter() {}
-
-  scoped_refptr<net::URLRequestContext> context_;
-};
-
 }  // namespace
 
 class URLFetcherTest : public testing::Test,

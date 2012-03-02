@@ -1,8 +1,6 @@
 include_rules = [
   "-chrome",
 
-  "+chrome/test/base",
-
   "+chrome/browser/sync/notifier",
   "+chrome/browser/sync/syncable/model_type.h",
   "+chrome/browser/sync/syncable/model_type_payload_map.h",

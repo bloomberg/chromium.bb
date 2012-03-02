@@ -16,6 +16,7 @@
         '<(DEPTH)/chrome/chrome.gyp:test_support_common',
         '<(DEPTH)/content/content.gyp:content_browser',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/net/net.gyp:net_test_support',
       ],
     },
   ],

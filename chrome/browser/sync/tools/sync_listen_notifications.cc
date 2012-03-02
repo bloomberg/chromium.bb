@@ -21,9 +21,9 @@
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
-#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/test_browser_thread.h"
+#include "net/url_request/url_request_test_util.h"
 
 using content::BrowserThread;
 
@@ -125,7 +125,8 @@ int main(int argc, char* argv[]) {
 
   const char kClientInfo[] = "sync_listen_notifications";
   scoped_refptr<TestURLRequestContextGetter> request_context_getter(
-      new TestURLRequestContextGetter());
+      new TestURLRequestContextGetter(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   NullInvalidationVersionTracker null_invalidation_version_tracker;
   sync_notifier::SyncNotifierFactory sync_notifier_factory(
       kClientInfo, request_context_getter,

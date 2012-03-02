@@ -13,11 +13,11 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
-#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,6 +43,8 @@ enum HistogramField {
   FIELD_STATUS,
 };
 
+using content::BrowserThread;
+
 class HttpPipeliningCompatibilityClientTest : public testing::Test {
  public:
   HttpPipeliningCompatibilityClientTest()
@@ -50,13 +52,14 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
           net::TestServer::TYPE_HTTP,
           net::TestServer::kLocalhost,
           FilePath(FILE_PATH_LITERAL("chrome/test/data/http_pipelining"))),
-        io_thread_(content::BrowserThread::IO, &message_loop_) {
+        io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(test_server_.Start());
-    context_ = new TestURLRequestContextGetter;
+    context_ = new TestURLRequestContextGetter(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
     context_->AddRef();
 
     for (size_t i = 0; i < arraysize(kHistogramNames); ++i) {
@@ -69,8 +72,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    content::BrowserThread::ReleaseSoon(content::BrowserThread::IO,
-                                        FROM_HERE, context_);
+    BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, context_);
     message_loop_.RunAllPending();
   }
 

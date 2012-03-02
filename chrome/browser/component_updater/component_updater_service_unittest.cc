@@ -14,16 +14,14 @@
 #include "chrome/browser/component_updater/component_updater_interceptor.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/test/test_browser_thread.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/test/test_notification_tracker.h"
-
 #include "googleurl/src/gurl.h"
 #include "libxml/globals.h"
-
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -65,7 +63,8 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
   virtual size_t UrlSizeLimit() OVERRIDE { return 256; }
 
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE {
-    return new TestURLRequestContextGetter();
+    return new TestURLRequestContextGetter(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 
   // Don't use the utility process to decode files.

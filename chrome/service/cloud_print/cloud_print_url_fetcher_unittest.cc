@@ -26,31 +26,18 @@ namespace {
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 int g_request_context_getter_instances = 0;
-class TestURLRequestContextGetter : public net::URLRequestContextGetter {
+class TrackingTestURLRequestContextGetter
+    : public TestURLRequestContextGetter {
  public:
-  explicit TestURLRequestContextGetter(
+  explicit TrackingTestURLRequestContextGetter(
       base::MessageLoopProxy* io_message_loop_proxy)
-          : io_message_loop_proxy_(io_message_loop_proxy) {
+          : TestURLRequestContextGetter(io_message_loop_proxy) {
     g_request_context_getter_instances++;
   }
-  virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_;
-  }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return io_message_loop_proxy_;
-  }
-
  protected:
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
-
- private:
-  virtual ~TestURLRequestContextGetter() {
+  virtual ~TrackingTestURLRequestContextGetter() {
     g_request_context_getter_instances--;
   }
-
-  scoped_refptr<net::URLRequestContext> context_;
 };
 
 class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
@@ -61,7 +48,8 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
   }
 
   virtual net::URLRequestContextGetter* GetRequestContextGetter() {
-    return new TestURLRequestContextGetter(io_message_loop_proxy_.get());
+    return new TrackingTestURLRequestContextGetter(
+        io_message_loop_proxy_.get());
   }
  private:
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;

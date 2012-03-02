@@ -8,8 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/test/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -91,17 +91,18 @@ class CWSIntentsRegistryTest : public testing::Test {
   CWSIntentsRegistry::IntentExtensionList extensions_;
   FakeURLFetcherFactory test_factory_;
 
- private:
+ protected:
   MessageLoop ui_loop_;
 };
 
 }  // namespace
 
 TEST_F(CWSIntentsRegistryTest, ValidQuery) {
-  TestURLRequestContextGetter context_getter;
+  const scoped_refptr<TestURLRequestContextGetter> context_getter(
+      new TestURLRequestContextGetter(ui_loop_.message_loop_proxy()));
   test_factory_.SetFakeResponse(kCWSQueryValid, kCWSResponseValid, true);
 
-  CWSIntentsRegistry registry(&context_getter);
+  CWSIntentsRegistry registry(context_getter);
   registry.GetIntentServices(ASCIIToUTF16("http://webintents.org/edit"),
                              ASCIIToUTF16("*/png"),
                              base::Bind(&CWSIntentsRegistryTest::Callback,
@@ -117,10 +118,11 @@ TEST_F(CWSIntentsRegistryTest, ValidQuery) {
 }
 
 TEST_F(CWSIntentsRegistryTest, InvalidQuery) {
-  TestURLRequestContextGetter context_getter;
+  const scoped_refptr<TestURLRequestContextGetter> context_getter(
+      new TestURLRequestContextGetter(ui_loop_.message_loop_proxy()));
   test_factory_.SetFakeResponse(kCWSQueryInvalid, kCWSResponseInvalid, true);
 
-  CWSIntentsRegistry registry(&context_getter);
+  CWSIntentsRegistry registry(context_getter);
   registry.GetIntentServices(ASCIIToUTF16("foo"),
                              ASCIIToUTF16("foo"),
                              base::Bind(&CWSIntentsRegistryTest::Callback,

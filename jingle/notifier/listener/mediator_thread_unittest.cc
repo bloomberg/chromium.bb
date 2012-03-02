@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,30 +22,6 @@ namespace {
 
 using ::testing::StrictMock;
 
-// TODO(sanjeevr): Move this to net_test_support.
-// Used to return a dummy context.
-class TestURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  TestURLRequestContextGetter()
-      : message_loop_proxy_(base::MessageLoopProxy::current()) {
-  }
-  virtual ~TestURLRequestContextGetter() { }
-
-  // net::URLRequestContextGetter:
-  virtual net::URLRequestContext* GetURLRequestContext() {
-    if (!context_)
-      context_ = new TestURLRequestContext();
-    return context_.get();
-  }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
-    return message_loop_proxy_;
-  }
-
- private:
-  scoped_refptr<net::URLRequestContext> context_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
-};
-
 class MockObserver : public MediatorThread::Observer {
  public:
   MOCK_METHOD1(OnConnectionStateChange, void(bool));
@@ -60,7 +36,7 @@ class MediatorThreadTest : public testing::Test {
  protected:
   MediatorThreadTest() {
     notifier_options_.request_context_getter =
-        new TestURLRequestContextGetter();
+        new TestURLRequestContextGetter(message_loop_.message_loop_proxy());
   }
 
   virtual ~MediatorThreadTest() {}
@@ -78,8 +54,7 @@ class MediatorThreadTest : public testing::Test {
     mediator_thread_.reset();
   }
 
-  // Needed by TestURLRequestContextGetter.
-  MessageLoopForIO message_loop_;
+  MessageLoop message_loop_;
   NotifierOptions notifier_options_;
   StrictMock<MockObserver> mock_observer_;
   scoped_ptr<MediatorThreadImpl> mediator_thread_;
