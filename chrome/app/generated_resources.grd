@@ -10261,6 +10261,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PDF_DOCUMENT_FILE_TYPE" desc="PDF document file type">
         PDF document
       </message>
+      <message name="IDS_FILE_BROWSER_WORD_DOCUMENT_FILE_TYPE" desc="Word document file type">
+        Word document
+      </message>
+      <message name="IDS_FILE_BROWSER_POWERPOINT_PRESENTATION_FILE_TYPE" desc="PowerPoint presentation file type">
+        PowerPoint presentation
+      </message>
+      <message name="IDS_FILE_BROWSER_EXCEL_FILE_TYPE" desc="Excel spreadsheet file type">
+        Excel spreadsheet
+      </message>
 
       <message name="IDS_FILE_BROWSER_ENQUEUE" desc="Enqueue file menu item used for media playback">
         Enqueue

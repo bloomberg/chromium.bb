@@ -71,10 +71,16 @@ FileType.types = [
    pattern: /\.(tar.|t)gz$/i},
 
   // Others
-  {type: 'text', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE', subtype: 'PDF',
+  {type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
    pattern: /\.pdf$/i},
-  {type: 'text', icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE', subtype: 'HTML',
-   pattern: /\.html?$/i}
+  {type: 'document', icon: 'html', name: 'HTML_DOCUMENT_FILE_TYPE',
+   pattern: /\.html?$/i},
+  {type: 'docuemnt', icon: 'word', name: 'WORD_DOCUMENT_FILE_TYPE',
+   pattern: /\.(doc|docx)$/i},
+  {type: 'document', icon: 'ppt', name: 'POWERPOINT_PRESENTATION_FILE_TYPE',
+   pattern: /\.(ppt|pptx)$/i},
+  {type: 'document', icon: 'excel', name: 'EXCEL_FILE_TYPE',
+   pattern: /\.(xls|xlsx)$/i},
 ];
 
 FileType.previewArt = {

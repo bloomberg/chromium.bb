@@ -800,6 +800,10 @@ li.table-row {
 }
 
 /* Icon for files in the detail list. */
+.detail-icon[iconType="archive"] {
+  background-image: url(../images/filetype_archive.png);
+}
+
 .detail-icon[iconType="audio"] {
   background-image: url(../images/filetype_audio.png);
 }
@@ -810,6 +814,10 @@ li.table-row {
 
 .detail-icon[iconType="doc"] {
   background-image: url(../images/filetype_doc.png);
+}
+
+.detail-icon[iconType="excel"] {
+  background-image: url(../images/filetype_excel.png);
 }
 
 .detail-icon[iconType="folder"] {
@@ -826,6 +834,10 @@ li.table-row {
 
 .detail-icon[iconType="pdf"] {
   background-image: url(../images/filetype_pdf.png);
+}
+
+.detail-icon[iconType="ppt"] {
+  background-image: url(../images/filetype_ppt.png);
 }
 
 .detail-icon[iconType="presentation"] {
@@ -846,6 +858,10 @@ li.table-row {
 
 .detail-icon[iconType="video"] {
   background-image: url(../images/filetype_video.png);
+}
+
+.detail-icon[iconType="word"] {
+  background-image: url(../images/filetype_word.png);
 }
 
 /* The filename text in the preview pane. */

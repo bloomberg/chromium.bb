@@ -426,7 +426,10 @@ chrome.fileBrowserPrivate = {
       TAR_BZIP2_ARCHIVE_FILE_TYPE: 'Bzip2 compressed tar archive',
       TAR_GZIP_ARCHIVE_FILE_TYPE: 'Gzip compressed tar archive',
       PLAIN_TEXT_FILE_TYPE: 'Plain text file',
-      PDF_DOCUMENT_FILE_TYPE: 'PDF document'
+      PDF_DOCUMENT_FILE_TYPE: 'PDF document',
+      WORD_DOCUMENT_FILE_TYPE: 'Word document',
+      POWERPOINT_PRESENTATION_FILE_TYPE: 'PowerPoint presentation',
+      EXCEL_FILE_TYPE: 'Excel spreadsheet'
     });
   }
 };
