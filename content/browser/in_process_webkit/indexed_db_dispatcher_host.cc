@@ -29,11 +29,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "webkit/database/database_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::UserMetricsAction;
+using webkit_database::DatabaseUtil;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
@@ -206,22 +208,10 @@ WebIDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 cursor_id) {
 void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
     const IndexedDBHostMsg_FactoryGetDatabaseNames_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  FilePath base_path = indexed_db_context_->data_path();
-  FilePath indexed_db_path;
-  if (!base_path.empty()) {
-    indexed_db_path = base_path.Append(
-        IndexedDBContextImpl::kIndexedDBDirectory);
-  }
+  FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  // TODO(jorlow): This doesn't support file:/// urls properly. We probably need
-  //               to add some toString method to WebSecurityOrigin that doesn't
-  //               return null for them.  Look at
-  //               DatabaseUtil::GetOriginFromIdentifier.
   WebSecurityOrigin origin(
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
-  GURL origin_url(origin.toString());
-
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
   Context()->GetIDBFactory()->getDatabaseNames(
       new IndexedDBCallbacks<WebDOMStringList>(this, params.thread_id,
@@ -232,20 +222,11 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const IndexedDBHostMsg_FactoryOpen_Params& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  FilePath base_path = indexed_db_context_->data_path();
-  FilePath indexed_db_path;
-  if (!base_path.empty()) {
-    indexed_db_path = base_path.Append(
-        IndexedDBContextImpl::kIndexedDBDirectory);
-  }
+  FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  // TODO(jorlow): This doesn't support file:/// urls properly. We probably need
-  //               to add some toString method to WebSecurityOrigin that doesn't
-  //               return null for them.  Look at
-  //               DatabaseUtil::GetOriginFromIdentifier.
+  GURL origin_url = DatabaseUtil::GetOriginFromIdentifier(params.origin);
   WebSecurityOrigin origin(
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
-  GURL origin_url(origin.toString());
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
@@ -260,12 +241,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
     const IndexedDBHostMsg_FactoryDeleteDatabase_Params& params) {
-  FilePath base_path = indexed_db_context_->data_path();
-  FilePath indexed_db_path;
-  if (!base_path.empty()) {
-    indexed_db_path = base_path.Append(
-        IndexedDBContextImpl::kIndexedDBDirectory);
-  }
+  FilePath indexed_db_path = indexed_db_context_->data_path();
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   Context()->GetIDBFactory()->deleteDatabase(
@@ -1208,6 +1184,7 @@ void IndexedDBDispatcherHost::
     return;
 
   // TODO(dgrogan): Tell the page the transaction aborted because of quota.
+  // http://crbug.com/113118
   if (parent_->Context()->WouldBeOverQuota(
       transaction_url_map_[transaction_id],
       transaction_size_map_[transaction_id])) {

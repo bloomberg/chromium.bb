@@ -144,6 +144,7 @@ quota::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
 
 // TODO(kinuko): Merge these two methods (conversion methods between
 // origin url <==> identifier) with the ones in the database module.
+// http://crbug.com/116476
 std::string GetOriginIdentifierFromURL(const GURL& url) {
   WebKit::WebSecurityOrigin web_security_origin =
       WebKit::WebSecurityOrigin::createFromString(UTF8ToUTF16(url.spec()));

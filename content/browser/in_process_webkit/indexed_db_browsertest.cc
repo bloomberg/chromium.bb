@@ -333,8 +333,7 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
 
 };
 
-// No longer testable with file: URL: http://crbug.com/104748
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, DISABLED_QuotaTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("quota_test.html"))));
 }
 
