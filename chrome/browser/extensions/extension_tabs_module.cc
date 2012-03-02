@@ -65,7 +65,7 @@
 #if defined(USE_AURA)
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
-#include "chrome/browser/ui/views/aura/panel_view_aura.h"
+#include "chrome/browser/ui/views/ash/panel_view_aura.h"
 #endif
 
 namespace keys = extension_tabs_module_constants;

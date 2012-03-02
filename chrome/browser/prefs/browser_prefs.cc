@@ -95,8 +95,8 @@
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/views/aura/launcher/chrome_launcher_delegate.h"
+#if defined(USE_ASH)
+#include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #endif
 
 namespace browser {
@@ -207,7 +207,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   ChromeLauncherDelegate::RegisterUserPrefs(user_prefs);
 #endif
 

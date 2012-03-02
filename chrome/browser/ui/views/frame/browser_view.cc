@@ -108,8 +108,8 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
-#include "chrome/browser/ui/views/aura/launcher/launcher_updater.h"
+#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
 #include "ui/gfx/screen.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"

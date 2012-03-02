@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "grit/theme_resources_standard.h"

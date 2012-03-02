@@ -104,7 +104,7 @@ SystemKeyEventListener::SystemKeyEventListener()
 
   // TODO(yusukes): For Aura, the X11 API calls for grabbing keys should be
   // moved to the aura::RootWindowHostLinux class or volume_controller.cc in
-  // chrome/browser/ui/views/aura/.
+  // chrome/browser/ui/views/ash/.
   if (key_brightness_down_)
     GrabKey(key_brightness_down_, 0);
   if (key_brightness_up_)

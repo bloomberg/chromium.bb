@@ -213,7 +213,7 @@
 #if defined(USE_AURA)
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "chrome/browser/ui/views/aura/panel_view_aura.h"
+#include "chrome/browser/ui/views/ash/panel_view_aura.h"
 #endif
 
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 
 #if defined(USE_AURA)
-#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #endif
 
 namespace chromeos {

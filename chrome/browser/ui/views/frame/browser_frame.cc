@@ -29,7 +29,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
-#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
