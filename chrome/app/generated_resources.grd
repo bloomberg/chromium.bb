@@ -4049,7 +4049,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         Settings that specify whether websites can use features such as cookies, JavaScript, and plug-ins
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_PRIVACY" desc="Permission string for access to privacy settings.">
-        Privacy-related settings.
+        Privacy-related settings
       </message>
 
       <!-- Extension/App error messages -->
