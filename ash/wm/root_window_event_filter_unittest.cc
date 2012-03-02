@@ -351,6 +351,9 @@ TEST_F(RootWindowEventFilterTest, ActivateOnTouch) {
 
 TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
   aura::RootWindow* root_window = Shell::GetRootWindow();
+  // Disable ash grid so that test can place a window at
+  // specific location.
+  ash::Shell::GetInstance()->DisableWorkspaceGridLayout();
 
   // Create a window.
   const int kWindowLeft = 123;
@@ -414,6 +417,10 @@ TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
 }
 
 TEST_F(RootWindowEventFilterTest, TransformActivate) {
+  // Disable ash grid so that test can place a window at
+  // specific location.
+  ash::Shell::GetInstance()->DisableWorkspaceGridLayout();
+
   aura::RootWindow* root_window = Shell::GetRootWindow();
   gfx::Size size = root_window->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),

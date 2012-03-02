@@ -343,7 +343,7 @@ void WorkspaceManager::SetWindowBoundsFromRestoreBounds(aura::Window* window) {
     bounds = restore->AdjustToFit(GetWorkAreaBounds());
   else
     bounds = window->bounds().AdjustToFit(GetWorkAreaBounds());
-  SetWindowBounds(window, AlignRectToGrid(bounds, grid_size_));
+  SetWindowBounds(window, bounds);
   ash::ClearRestoreBounds(window);
 }
 

@@ -226,6 +226,9 @@ class ASH_EXPORT Shell {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, MouseEventCursors);
+  FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, TransformActivate);
+
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
   explicit Shell(ShellDelegate* delegate);
@@ -245,6 +248,9 @@ class ASH_EXPORT Shell {
   // Sets the LayoutManager of the container with the specified id to NULL. This
   // has the effect of deleting the current LayoutManager.
   void ResetLayoutManager(int container_id);
+
+  // Disables the workspace grid layout.
+  void DisableWorkspaceGridLayout();
 
   static Shell* instance_;
 

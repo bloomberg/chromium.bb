@@ -277,7 +277,7 @@ Shell::Shell(ShellDelegate* delegate)
       audio_controller_(NULL),
       brightness_controller_(NULL),
       shelf_(NULL),
-      window_mode_(MODE_OVERLAPPING),
+      window_mode_(MODE_MANAGED),
       desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
       status_widget_(NULL) {
@@ -495,8 +495,8 @@ Shell::WindowMode Shell::ComputeWindowMode(CommandLine* command_line) const {
       return MODE_OVERLAPPING;
   }
 
-  // Overlapping is the default.
-  return Shell::MODE_OVERLAPPING;
+  // Managed is the default.
+  return Shell::MODE_MANAGED;
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
@@ -669,6 +669,11 @@ void Shell::SetupNonCompactWindowMode() {
 
 void Shell::ResetLayoutManager(int container_id) {
   GetContainer(container_id)->SetLayoutManager(NULL);
+}
+
+void Shell::DisableWorkspaceGridLayout() {
+  if (workspace_controller_.get())
+    workspace_controller_->workspace_manager()->set_grid_size(0);
 }
 
 }  // namespace ash

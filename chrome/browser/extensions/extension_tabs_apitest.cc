@@ -29,11 +29,19 @@
 #define MAYBE_UpdateWindowResize DISABLED_UpdateWindowResize
 #define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
 #else
+
+#if defined(USE_AURA)
+// Maximizing/fullscreen popup window doesn't work on aura's managed mode.
+// See bug crbug.com/116305.
+#define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
+#else
+#define MAYBE_UpdateWindowShowState UpdateWindowShowState
+#endif  // defined(USE_AURA)
+
 #define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
 #define MAYBE_UpdateWindowResize UpdateWindowResize
-#define MAYBE_UpdateWindowShowState UpdateWindowShowState
-#endif
+#endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   // The test creates a tab and checks that the URL of the new tab

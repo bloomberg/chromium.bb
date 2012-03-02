@@ -288,11 +288,11 @@ TEST_F(ShellTest, IsScreenLocked) {
 }
 
 TEST_F(ShellTest, ComputeWindowMode) {
-  // By default, we use overlapping mode.
+  // By default, we use managed mode.
   Shell* shell = Shell::GetInstance();
   Shell::TestApi test_api(shell);
   CommandLine command_line_blank(CommandLine::NO_PROGRAM);
-  EXPECT_EQ(Shell::MODE_OVERLAPPING,
+  EXPECT_EQ(Shell::MODE_MANAGED,
             test_api.ComputeWindowMode(&command_line_blank));
 
   // Sometimes we force compact mode.
@@ -300,6 +300,14 @@ TEST_F(ShellTest, ComputeWindowMode) {
   command_line_force.AppendSwitch(switches::kAuraForceCompactWindowMode);
   EXPECT_EQ(Shell::MODE_COMPACT,
             test_api.ComputeWindowMode(&command_line_force));
+
+  // The user can set overlapping mode.
+  CommandLine command_line_overlapping(CommandLine::NO_PROGRAM);
+  command_line_overlapping.AppendSwitchASCII(
+      switches::kAuraWindowMode,
+      switches::kAuraWindowModeOverlapping);
+  EXPECT_EQ(Shell::MODE_OVERLAPPING,
+            test_api.ComputeWindowMode(&command_line_overlapping));
 
   // The user can set compact mode.
   CommandLine command_line_compact(CommandLine::NO_PROGRAM);
