@@ -474,5 +474,19 @@ var util = {
     }
 
     return element;
+  },
+
+  /**
+   * Returns a string '[Ctrl-][Alt-][Shift-][Meta-]' depending on the event
+   * modifiers. Convenient for writing out conditions in keyboard handlers.
+   *
+   * @param {Event} event
+   * @return {string}
+   */
+  getKeyModifiers: function(event) {
+    return (event.ctrlKey ? 'Ctrl-' : '') +
+           (event.altKey ? 'Alt-' : '') +
+           (event.shiftKey ? 'Shift-' : '') +
+           (event.metaKey ? 'Meta-' : '');
   }
 };

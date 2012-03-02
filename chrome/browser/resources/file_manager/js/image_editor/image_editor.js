@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -414,7 +414,7 @@ ImageEditor.prototype.leaveModeGently = function() {
 };
 
 ImageEditor.prototype.onKeyDown = function(event) {
-  switch(event.keyIdentifier) {
+  switch(util.getKeyModifiers(event) + event.keyIdentifier) {
     case 'U+001B': // Escape
     case 'Enter':
       if (this.getMode()) {
@@ -423,19 +423,17 @@ ImageEditor.prototype.onKeyDown = function(event) {
       }
       break;
 
-    case 'U+005A':  // 'z'
-      if (event.ctrlKey) {
-        if (event.shiftKey) {
-          if (this.commandQueue_.canRedo()) {
-            this.redo();
-            return true;
-          }
-        } else {
-          if (this.commandQueue_.canUndo()) {
-            this.undo();
-            return true;
-          }
-        }
+    case 'Ctrl-U+005A':  // Ctrl+Z
+      if (this.commandQueue_.canUndo()) {
+        this.undo();
+        return true;
+      }
+      break;
+
+    case 'Ctrl-Shift-U+005A':  // Ctrl+Shift-Z
+      if (this.commandQueue_.canRedo()) {
+        this.redo();
+        return true;
       }
       break;
   }

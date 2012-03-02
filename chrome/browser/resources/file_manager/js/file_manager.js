@@ -2514,6 +2514,7 @@ FileManager.prototype = {
       self.document_.title = str('GALLERY');
       galleryFrame.contentWindow.ImageUtil.metrics = metrics;
       galleryFrame.contentWindow.FileType = FileType;
+      galleryFrame.contentWindow.util = util;
 
       galleryFrame.contentWindow.Gallery.open(
           self.directoryModel_.currentEntry,
@@ -3359,16 +3360,13 @@ FileManager.prototype = {
       event.stopPropagation();
     }
 
-    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
-      return;
-
-    switch (event.keyCode) {
-      case 27:  // Escape
+    switch (util.getKeyModifiers(event) + event.keyCode) {
+      case '27':  // Escape
         this.cancelRename_();
         event.preventDefault();
         break;
 
-      case 13:  // Enter
+      case '13':  // Enter
         this.commitRename_();
         event.preventDefault();
         break;
@@ -3440,9 +3438,8 @@ FileManager.prototype = {
 
   FileManager.prototype.onFilenameInputKeyUp_ = function(event) {
     var enabled = this.updateOkButton_();
-    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
-      return;
-    if (enabled && event.keyCode == 13 /* Enter */)
+    if (enabled &&
+        (util.getKeyModifiers(event) + event.keyCode) == '13' /* Enter */)
       this.onOk_();
   };
 
@@ -3563,40 +3560,34 @@ FileManager.prototype = {
       return;
     }
 
-    if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
-      switch (event.keyCode) {
-        case 190:  // Ctrl-. => Toggle filter files.
-          var dm = this.directoryModel_;
-          dm.filterHidden = !dm.filterHidden;
+    switch (util.getKeyModifiers(event) + event.keyCode) {
+      case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
+        var dm = this.directoryModel_;
+        dm.filterHidden = !dm.filterHidden;
+        event.preventDefault();
+        return;
+
+      case '27':  // Escape => Cancel dialog.
+        if (this.copyManager_.getStatus().totalFiles != 0) {
+          // If there is a copy in progress, ESC will cancel it.
           event.preventDefault();
+          this.copyManager_.requestCancel();
           return;
-      }
-    }
+        }
 
-    if (!event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
-      switch (event.keyCode) {
-        case 27:  // Escape => Cancel dialog.
-          if (this.copyManager_.getStatus().totalFiles != 0) {
-            // If there is a copy in progress, ESC will cancel it.
-            event.preventDefault();
-            this.copyManager_.requestCancel();
-            return;
-          }
+        if (this.butterTimer_) {
+          // Allow the user to manually dismiss timed butter messages.
+          event.preventDefault();
+          this.hideButter();
+          return;
+        }
 
-          if (this.butterTimer_) {
-            // Allow the user to manually dismiss timed butter messages.
-            event.preventDefault();
-            this.hideButter();
-            return;
-          }
-
-          if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
-            // If there is nothing else for ESC to do, then cancel the dialog.
-            event.preventDefault();
-            this.onCancel_();
-          }
-          break;
-      }
+        if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
+          // If there is nothing else for ESC to do, then cancel the dialog.
+          event.preventDefault();
+          this.onCancel_();
+        }
+        break;
     }
   };
 
@@ -3619,35 +3610,28 @@ FileManager.prototype = {
       self.commands_[name].execute();
     }
 
-    if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
-      switch (event.keyCode) {
-        case 32:  // Ctrl-Space => New Folder.
-          handleCommand('newfolder');
-          break;
+    switch (util.getKeyModifiers(event) + event.keyCode) {
+      case 'Ctrl-32':  // Ctrl-Space => New Folder.
+        handleCommand('newfolder');
+        break;
 
-        case 88:  // Ctrl-X => Cut.
-          handleCommand('cut');
-          break;
+      case 'Ctrl-88':  // Ctrl-X => Cut.
+        handleCommand('cut');
+        break;
 
-        case 67:  // Ctrl-C => Copy.
-          handleCommand('copy');
-          break;
+      case 'Ctrl-67':  // Ctrl-C => Copy.
+        handleCommand('copy');
+        break;
 
-        case 86:  // Ctrl-V => Paste.
-          handleCommand('paste');
-          break;
+      case 'Ctrl-86':  // Ctrl-V => Paste.
+        handleCommand('paste');
+        break;
 
-        case 69:  // Ctrl-E => Rename.
-          handleCommand('rename');
-          break;
-      }
-    }
+      case 'Ctrl-69':  // Ctrl-E => Rename.
+        handleCommand('rename');
+        break;
 
-    if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
-      return;
-
-    switch (event.keyCode) {
-      case 8:  // Backspace => Up one directory.
+      case '8':  // Backspace => Up one directory.
         event.preventDefault();
         var path = this.getCurrentDirectory();
         if (path && !DirectoryModel.isRootPath(path)) {
@@ -3656,7 +3640,7 @@ FileManager.prototype = {
         }
         break;
 
-      case 13:  // Enter => Change directory or perform default action.
+      case '13':  // Enter => Change directory or perform default action.
         if (this.selection.totalCount == 1 &&
             this.selection.entries[0].isDirectory &&
             this.dialogType_ != FileManager.SELECT_FOLDER) {
@@ -3667,7 +3651,7 @@ FileManager.prototype = {
         }
         break;
 
-      case 46:  // Delete.
+      case '46':  // Delete.
         handleCommand('delete');
         break;
     }

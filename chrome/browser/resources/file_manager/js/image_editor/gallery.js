@@ -589,7 +589,12 @@ Gallery.prototype.onKeyDown_ = function(event) {
   if (this.isEditing_() && this.editor_.onKeyDown(event))
     return;
 
-  switch (event.keyIdentifier) {
+  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+    case 'U+0008': // Backspace.
+      // The default handler would call history.back and close the Gallery.
+      event.preventDefault();
+      break;
+
     case 'U+001B':  // Escape
       if (this.isEditing_()) {
         this.onEdit_();
@@ -625,9 +630,8 @@ Gallery.prototype.onKeyDown_ = function(event) {
       this.ribbon_.selectLast();
       break;
 
-    case 'U+00DD':
-      if (event.ctrlKey)  // Ctrl+] (cryptic on purpose).
-        this.ribbon_.toggleDebugSlideshow();
+    case 'Ctrl-U+00DD':  // Ctrl+] (cryptic on purpose).
+      this.ribbon_.toggleDebugSlideshow();
       break;
   }
 };
