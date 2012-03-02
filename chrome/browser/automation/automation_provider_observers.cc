@@ -118,6 +118,10 @@ InitialLoadObserver::InitialLoadObserver(size_t tab_count,
       crashed_tab_count_(0),
       outstanding_tab_count_(tab_count),
       init_time_(base::TimeTicks::Now()) {
+#if defined(OS_CHROMEOS)
+  LOG(ERROR) << "InitialLoadObserver::Observe type=" << tab_count;
+#endif
+
   if (outstanding_tab_count_ > 0) {
     registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                    content::NotificationService::AllSources());
@@ -134,6 +138,10 @@ InitialLoadObserver::~InitialLoadObserver() {
 void InitialLoadObserver::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
+#if defined(OS_CHROMEOS)
+  LOG(ERROR) << "InitialLoadObserver::Observe type=" << type;
+#endif
+
   if (type == content::NOTIFICATION_LOAD_START) {
     if (outstanding_tab_count_ > loading_tabs_.size())
       loading_tabs_.insert(TabTimeMap::value_type(
@@ -175,6 +183,13 @@ void InitialLoadObserver::Observe(int type,
   } else {
     NOTREACHED();
   }
+
+#if defined(OS_CHROMEOS)
+  LOG(ERROR) << "InitialLoadObserver::Observe type=" << type
+             << ", finished=" << finished_tabs_.size()
+             << ", crashed=" << crashed_tab_count_
+             << ", outstanding=" << outstanding_tab_count_;
+#endif
 
   if (finished_tabs_.size() + crashed_tab_count_ >= outstanding_tab_count_)
     ConditionMet();

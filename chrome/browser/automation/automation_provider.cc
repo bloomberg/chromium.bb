@@ -263,6 +263,7 @@ std::string AutomationProvider::GetProtocolVersion() {
 }
 
 void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
+  VLOG(2) << "SetExpectedTabCount:" << expected_tabs;
   if (expected_tabs == 0)
     OnInitialTabLoadsComplete();
   else
