@@ -69,6 +69,7 @@
     "chrome.experimental.devtools.console.getMessages": "experimental.devtools.console.html#method-getMessages",
     "chrome.experimental.devtools.console.onMessageAdded": "experimental.devtools.console.html#event-onMessageAdded",
     "chrome.experimental.extension.onInstalled": "experimental.extension.html#event-onInstalled",
+    "chrome.experimental.fontSettings.getFontList": "experimental.fontSettings.html#method-getFontList",
     "chrome.experimental.fontSettings.getFontName": "experimental.fontSettings.html#method-getFontName",
     "chrome.experimental.fontSettings.setFontName": "experimental.fontSettings.html#method-setFontName",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
@@ -523,6 +524,30 @@
       "zip_path": "examples\/api\/browsingData\/basic.zip"
     },
     {
+      "api_calls": [],
+      "crx_path": null,
+      "description": "Add numbers. Now includes subtraction!",
+      "features": [],
+      "icon": "icon_128.png",
+      "id": "3fb3045783163c0eaaf0d0ce139f254502192a92",
+      "name": "Calculator (Platform App)",
+      "packaged_app": true,
+      "path": "examples\/extensions\/calculator\/",
+      "protocols": [],
+      "search_string": "CALCULATOR (PLATFORM APP) ADD NUMBERS. NOW INCLUDES SUBTRACTION!",
+      "source_files": [
+        "calculator.html",
+        "controller.js",
+        "jquery\/jquery.min.js",
+        "manifest.json",
+        "model.js",
+        "style.css",
+        "view.js"
+      ],
+      "source_hash": "d0f67b54f087636494dbdfc85b778dc8b2969803",
+      "zip_path": "examples\/extensions\/calculator.zip"
+    },
+    {
       "api_calls": [
         "chrome.webRequest.onBeforeRequest"
       ],
@@ -826,6 +851,41 @@
       ],
       "source_hash": "699c4bffce6b427dec806441036bbb2fe83076c7",
       "zip_path": "examples\/api\/cookies.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.extension.onRequest",
+        "chrome.extension.sendRequest",
+        "chrome.tabs.executeScript",
+        "chrome.tabs.query",
+        "chrome.windows.get",
+        "chrome.windows.getCurrent"
+      ],
+      "crx_path": null,
+      "description": "Select links on a page and download them.",
+      "features": [
+        "browser_action",
+        "experimental",
+        "tabs"
+      ],
+      "icon": null,
+      "id": "9e4fd06300ee2b3a171e1f30d1b70f8f10152c2b",
+      "name": "Download Selected Links",
+      "packaged_app": false,
+      "path": "examples\/api\/downloads\/download_links\/",
+      "protocols": [
+        "http:\/\/",
+        "https:\/\/"
+      ],
+      "search_string": "DOWNLOAD SELECTED LINKS SELECT LINKS ON A PAGE AND DOWNLOAD THEM. BROWSER_ACTION EXPERIMENTAL TABS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
+      "source_files": [
+        "manifest.json",
+        "popup.html",
+        "popup.js",
+        "send_links.js"
+      ],
+      "source_hash": "9e80e668e1605243ca746022842e5d33b7d467ba",
+      "zip_path": "examples\/api\/downloads\/download_links.zip"
     },
     {
       "api_calls": [
