@@ -25,3 +25,4 @@ pending upstreaming by danielwh):
 * Don't ignore SIGCHLD, since the proxy launcher depends on it for determining
   chrome's exit code.
 * Removed a "set but never used" variable, to fix build for gcc 4.6.
+* Fixed a compiler warning (-Wmaybe-uninitialized).

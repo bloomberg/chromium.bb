@@ -2820,6 +2820,8 @@ static void prepare_cgi_environment(struct mg_connection *conn,
   blk->len = blk->nvars = 0;
   blk->conn = conn;
 
+  memset(&root, 0, sizeof(root));
+
   get_document_root(conn, &root);
 
   addenv(blk, "SERVER_NAME=%s", conn->ctx->config[AUTHENTICATION_DOMAIN]);
@@ -2915,6 +2917,8 @@ static void handle_cgi_request(struct mg_connection *conn, const char *prog) {
   struct cgi_env_block blk;
   FILE *in, *out;
   pid_t pid;
+
+  memset(&ri, 0, sizeof(ri));
 
   prepare_cgi_environment(conn, prog, &blk);
 

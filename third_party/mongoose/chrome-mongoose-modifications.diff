@@ -108,3 +108,22 @@ diff --git a/third_party/mongoose/mongoose.c b/third_party/mongoose/mongoose.c
    // Forward client's request to the target
    mg_printf(conn->peer, "%s %s HTTP/%s\r\n", ri->request_method, ri->uri + len,
              ri->http_version);
+@@ -2820,6 +2820,8 @@ static void prepare_cgi_environment(struct mg_connection *conn,
+   blk->len = blk->nvars = 0;
+   blk->conn = conn;
+ 
++  memset(&root, 0, sizeof(root));
++
+   get_document_root(conn, &root);
+ 
+   addenv(blk, "SERVER_NAME=%s", conn->ctx->config[AUTHENTICATION_DOMAIN]);
+@@ -2916,6 +2918,8 @@ static void handle_cgi_request(struct mg_connection *conn, const char *prog) {
+   FILE *in, *out;
+   pid_t pid;
+ 
++  memset(&ri, 0, sizeof(ri));
++
+   prepare_cgi_environment(conn, prog, &blk);
+ 
+   // CGI must be executed in its own directory. 'dir' must point to the
+
