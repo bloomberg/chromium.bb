@@ -28,9 +28,12 @@ ugly/
   breakpad support.  See http://crbug.com/115170
 
 from_upstream/
-58_libav_mp3_fixes.patch
-  dalecurtis: Cherry-pick of fixes from libav for checked bitstream reader
-  issues with seeking.
+http://git.libav.org/?p=libav.git;a=commit;h=464f26889c99f194d112fcf1197795d341fad38b
+http://git.libav.org/?p=libav.git;a=commit;h=b7165426917f91ebcad84bdff366824f03b32bfe
+  dalecurtis: Fixes for mp3 and checked bistream reading.  Not in FFmpeg.
+
+1fa4692479f9c8a908b944e353d05984a44fcefd
+  dalecurtis: Fixes Clang compile errors by removing duplicate initializers.
 
 Patches still existing from the pre-GIT workflow:
 
