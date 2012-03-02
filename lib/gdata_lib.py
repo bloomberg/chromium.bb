@@ -11,13 +11,18 @@ import getpass
 import os
 import pickle
 import re
+import urllib
+import xml.dom.minidom
 
+# pylint: disable=W0404
+import gdata.projecthosting.client
 import gdata.spreadsheet.service
 
 import chromite.lib.operation as operation
 
 # pylint: disable=W0201,E0203
 
+TOKEN_FILE = os.path.join(os.environ['HOME'], '.gdata_token')
 CRED_FILE = os.path.join(os.environ['HOME'], '.gdata_cred.txt')
 
 oper = operation.Operation('gdata_lib')
@@ -55,51 +60,81 @@ def ScrubValFromSS(val):
 class Creds(object):
   """Class to manage user/password credentials."""
 
-  __slots__ = [
-      'auth_token',  # Client auth token
-      'auth_token_loaded', # Boolean
-      'creds_loaded', # Boolean
-      'password',    # User password
-      'user',        # User account (foo@chromium.org)
-      ]
+  __slots__ = (
+    'docs_auth_token',    # Docs Client auth token string
+    'creds_dirty',        # True if user/password set and not, yet, saved
+    'password',           # User password
+    'token_dirty',        # True if auth token(s) set and not, yet, saved
+    'tracker_auth_token', # Tracker Client auth token string
+    'user',               # User account (foo@chromium.org)
+    )
+
+  SAVED_TOKEN_ATTRS = ('docs_auth_token', 'tracker_auth_token', 'user')
 
   def __init__(self):
     self.user = None
     self.password = None
-    self.auth_token = None
 
-    self.auth_token_loaded = False
-    self.creds_loaded = False
+    self.docs_auth_token = None
+    self.tracker_auth_token = None
 
-  def SetAuthToken(self, auth_token):
-    """Set the auth_token."""
-    self.auth_token = auth_token
-    self.auth_token_loaded = False
+    self.token_dirty = False
+    self.creds_dirty = False
+
+  def SetDocsAuthToken(self, auth_token):
+    """Set the Docs auth_token string."""
+    self.docs_auth_token = auth_token
+    self.token_dirty = True
+
+  def SetTrackerAuthToken(self, auth_token):
+    """Set the Tracker auth_token string."""
+    self.tracker_auth_token = auth_token
+    self.token_dirty = True
 
   def LoadAuthToken(self, filepath):
-    """Load previously picked auth token from |filepath|."""
-    self.auth_token = None
+    """Load previously saved auth token(s) from |filepath|.
+
+    This first clears both docs_auth_token and tracker_auth_token.
+    """
+    self.docs_auth_token = None
+    self.tracker_auth_token = None
     try:
       f = open(filepath, 'r')
       obj = pickle.load(f)
       f.close()
       if obj.has_key('auth_token'):
-        self.auth_token = obj['auth_token']
-      oper.Notice('Loaded Docs/Tracker auth token from "%s"' % filepath)
-      self.auth_token_loaded = True
+        # Backwards compatability.  Default 'auth_token' is what
+        # docs_auth_token used to be saved as.
+        self.docs_auth_token = obj['auth_token']
+        self.token_dirty = True
+      for attr in self.SAVED_TOKEN_ATTRS:
+        if obj.has_key(attr):
+          setattr(self, attr, obj[attr])
+      oper.Notice('Loaded Docs/Tracker auth token(s) from "%s"' % filepath)
     except IOError:
       oper.Error('Unable to load auth token file at "%s"' % filepath)
 
+  def StoreAuthTokenIfNeeded(self, filepath):
+    """Store auth token(s) to |filepath| if anything changed."""
+    if self.token_dirty:
+      self.StoreAuthToken(filepath)
+
   def StoreAuthToken(self, filepath):
-    """Store picked auth token to |filepath|."""
+    """Store auth token(s) to |filepath|."""
     obj = {}
-    if self.auth_token:
-      obj['auth_token'] = self.auth_token
+
+    for attr in self.SAVED_TOKEN_ATTRS:
+      val = getattr(self, attr)
+      if val:
+        obj[attr] = val
+
     try:
-      oper.Notice('Storing Docs/Tracker auth token to "%s"' % filepath)
+      oper.Notice('Storing Docs and/or Tracker auth token to "%s"' % filepath)
       f = open(filepath, 'w')
       pickle.dump(obj, f)
       f.close()
+
+      self.token_dirty = False
     except IOError:
       oper.Error('Unable to store auth token to file at "%s"' % filepath)
 
@@ -112,7 +147,7 @@ class Creds(object):
 
     self.user = user
     self.password = password
-    self.creds_loaded = False
+    self.creds_dirty = True
 
   def LoadCreds(self, filepath):
     """Load email/password credentials from |filepath|."""
@@ -121,7 +156,11 @@ class Creds(object):
     with open(filepath, 'r') as f:
       (self.user, self.password) = (l.strip() for l in f.readlines())
     oper.Notice('Loaded Docs/Tracker login credentials from "%s"' % filepath)
-    self.creds_loaded = True
+
+  def StoreCredsIfNeeded(self, filepath):
+    """Store email/password credentials to |filepath| if anything changed."""
+    if self.creds_dirty:
+      self.StoreCreds(filepath)
 
   def StoreCreds(self, filepath):
     """Store email/password credentials to |filepath|."""
@@ -130,6 +169,172 @@ class Creds(object):
     with open(filepath, 'w') as f:
       f.write(self.user + '\n')
       f.write(self.password + '\n')
+
+    self.creds_dirty = False
+
+class IssueComment(object):
+  """Represent a Tracker issue comment."""
+
+  __slots__ = ['title', 'text']
+
+  def __init__(self, title, text):
+    self.title = title
+    self.text = text
+
+  def __str__(self):
+    text = '<no comment>'
+    if self.text:
+      text = '\n  '.join(self.text.split('\n'))
+    return '%s:\n  %s' % (self.title, text)
+
+class Issue(object):
+  """Represents one Tracker Issue."""
+
+  SlotDefaults = {
+    'comments': [], # List of IssueComment objects
+    'id': 0,        # Issue id number (int)
+    'labels': [],   # List of text labels
+    'owner': None,  # Current owner (text, chromium.org account)
+    'status': None, # Current issue status (text) (e.g. Assigned)
+    'summary': None,# Issue summary (first comment)
+    'title': None,  # Title text
+    }
+
+  __slots__ = SlotDefaults.keys()
+
+  def __init__(self, **kwargs):
+    """Init for one Issue object.
+
+    |kwargs| - key/value arguments to give initial values to
+    any additional attributes on |self|.
+    """
+    # Use SlotDefaults overwritten by kwargs for starting slot values.
+    slotvals = self.SlotDefaults.copy()
+    slotvals.update(kwargs)
+    for slot in self.__slots__:
+      setattr(self, slot, slotvals.pop(slot))
+    if slotvals:
+      raise ValueError('I do not know what to do with %r' % slotvals)
+
+  def __str__(self):
+    """Pretty print of issue."""
+    lines = ['Issue %d - %s' % (self.id, self.title),
+             'Status: %s, Owner: %s' % (self.status, self.owner),
+             'Labels: %s' % ', '.join(self.labels),
+             ]
+
+    if self.summary:
+      lines.append('Summary: %s' % self.summary)
+
+    if self.comments:
+      lines.extend(self.comments)
+
+    return '\n'.join(lines)
+
+  def InitFromTracker(self, t_issue, project_name):
+    """Initialize |self| from tracker issue |t_issue|"""
+
+    self.id = int(t_issue.id.text.split('/')[-1])
+    self.labels = [label.text for label in t_issue.label]
+    if t_issue.owner:
+      self.owner = t_issue.owner.username.text
+    self.status = t_issue.status.text
+    self.summary = t_issue.content.text
+    self.title = t_issue.title.text
+    self.comments = self.GetTrackerIssueComments(self.id, project_name)
+
+  def GetTrackerIssueComments(self, issue_id, project_name):
+    """Retrieve comments for |issue_id| from comments URL"""
+    comments = []
+
+    feeds = 'http://code.google.com/feeds'
+    url = '%s/issues/p/%s/issues/%d/comments/full' % (feeds, project_name,
+                                                      issue_id)
+    doc = xml.dom.minidom.parse(urllib.urlopen(url))
+    entries = doc.getElementsByTagName('entry')
+    for entry in entries:
+      title_text_list = []
+      for key in ('title', 'content'):
+        child = entry.getElementsByTagName(key)[0].firstChild
+        title_text_list.append(child.nodeValue if child else None)
+      comments.append(IssueComment(*title_text_list))
+
+    return comments
+
+
+class TrackerComm(object):
+  """Class to manage communication with Tracker."""
+
+  __slots__ = [
+    'author',       # Author when creating/editing Tracker issues
+    'it_client',    # Issue Tracker client
+    'project_name', # Tracker project name
+    ]
+
+  def __init__(self):
+    self.author = None
+    self.it_client = None
+    self.project_name = None
+
+  def Connect(self, creds, project_name, source='chromiumos'):
+    self.project_name = project_name
+
+    it_client = gdata.projecthosting.client.ProjectHostingClient()
+    it_client.source = source
+
+    if creds.tracker_auth_token:
+      oper.Notice('Logging into Tracker using previous auth token.')
+      it_client.auth_token = gdata.gauth.ClientLoginToken(
+        creds.tracker_auth_token)
+    else:
+      oper.Notice('Logging into Tracker as "%s".' % creds.user)
+      it_client.ClientLogin(creds.user, creds.password,
+                            source=source, service='code',
+                            account_type='GOOGLE')
+      creds.SetTrackerAuthToken(it_client.auth_token.token_string)
+
+    self.author = creds.user
+    self.it_client = it_client
+
+  # TODO(mtennant): This method works today, but is not being actively used.
+  # Leaving it in, because a logical use of the method is for to verify
+  # that a Tracker issue in the package spreadsheet is open, and to add
+  # comments to it when new upstream versions become available.
+  def GetTrackerIssueById(self, tid):
+    """Get tracker issue given |tid| number.  Return Issue object if found."""
+
+    query = gdata.projecthosting.client.Query(issue_id=str(tid))
+
+    try:
+      feed = self.it_client.get_issues(self.project_name, query=query)
+    except gdata.client.RequestError:
+      return None
+
+    if feed.entry:
+      issue = Issue()
+      issue.InitFromTracker(feed.entry[0], self.project_name)
+      return issue
+    return None
+
+  def CreateTrackerIssue(self, issue):
+    """Create a new issue in Tracker according to |issue|."""
+    created = self.it_client.add_issue(project_name=self.project_name,
+                                       title=issue.title,
+                                       content=issue.summary,
+                                       author=self.author,
+                                       status=issue.status,
+                                       owner=issue.owner,
+                                       labels=issue.labels)
+    issue.id = int(created.id.text.split('/')[-1])
+    return issue.id
+
+  def AppendTrackerIssueById(self, issue_id, comment):
+    """Append |comment| to issue |issue_id| in Tracker"""
+    self.it_client.update_issue(project_name=self.project_name,
+                                issue_id=issue_id,
+                                author=self.author,
+                                comment=comment)
+    return issue_id
 
 
 class SpreadsheetRow(dict):
@@ -263,15 +468,15 @@ class SpreadsheetComm(object):
 
     # Login using previous auth token if available, otherwise
     # use email/password from creds.
-    if creds.auth_token:
+    if creds.docs_auth_token:
       oper.Notice('Logging into Docs using previous auth token.')
-      gd_client.SetClientLoginToken(creds.auth_token)
+      gd_client.SetClientLoginToken(creds.docs_auth_token)
     else:
       oper.Notice('Logging into Docs as "%s".' % creds.user)
       gd_client.email = creds.user
       gd_client.password = creds.password
       gd_client.ProgrammaticLogin()
-      creds.SetAuthToken(gd_client.GetClientLoginToken())
+      creds.SetDocsAuthToken(gd_client.GetClientLoginToken())
 
     self.gd_client = gd_client
 

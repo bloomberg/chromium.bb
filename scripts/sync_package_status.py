@@ -8,11 +8,6 @@
 import optparse
 import os
 import sys
-import urllib
-import xml.dom.minidom
-
-import gdata.projecthosting.client
-import gdata.spreadsheet.service
 
 import chromite.lib.cros_build_lib as cros_lib
 import chromite.lib.gdata_lib as gdata_lib
@@ -44,232 +39,6 @@ oper = operation.Operation('sync_package_status')
 class SyncError(RuntimeError):
   """Extend RuntimeError for use in this module."""
 
-class IssueComment(object):
-  """Represent a Tracker issue comment."""
-
-  __slots__ = ['title', 'text']
-
-  def __init__(self, title, text):
-    self.title = title
-    self.text = text
-
-  def __str__(self):
-    text = '\n  '.join(self.text.split('\n'))
-    return '%s:\n  %s' % (self.title, text)
-
-class Issue(object):
-  """Represents one Tracker Issue."""
-
-  SlotDefaults = {
-    'comments': [], # List of IssueComment objects
-    'id': 0,        # Issue id number (int)
-    'labels': [],   # List of text labels
-    'owner': None,  # Current owner (text, chromium.org account)
-    'status': None, # Current issue status (text) (e.g. Assigned)
-    'summary': None,# Issue summary (first comment)
-    'title': None,  # Title text
-    }
-
-  __slots__ = SlotDefaults.keys()
-
-  def __init__(self, tracker_issue=None, **kwargs):
-    """Init for one Issue object.
-
-    |tracker_issue| - Optional, Tracker issue object to use to
-    initialize attributes.
-    |kwargs| - key/value arguments to give initial values to
-    any additional attributes on |self|.
-    """
-    # Start every attribute with a default value.
-    for slot in self.__slots__:
-      setattr(self, slot, self.SlotDefaults[slot])
-
-    # Initialize from real Tracker issue if given.
-    if tracker_issue:
-      self.InitFromTracker(tracker_issue)
-
-    # Optional overwrite of any attribute using kwargs.
-    for slot in self.__slots__:
-      if slot in kwargs:
-        setattr(self, slot, kwargs[slot])
-
-  def __str__(self):
-    """Pretty print of issue."""
-    lines = ['Issue %d - %s' % (self.id, self.title),
-             'Status: %s, Owner: %s' % (self.status, self.owner),
-             'Labels: %s' % ', '.join(self.labels),
-             ]
-
-    if self.summary:
-      lines.append('Summary: %s' % self.summary)
-
-    if self.comments:
-      for comment in self.comments:
-        lines.append('%s' % comment)
-
-    return '\n'.join(lines)
-
-  def InitFromTracker(self, t_issue):
-    """Initialize |self| from tracker issue |t_issue|"""
-
-    self.id = int(t_issue.id.text.split('/')[-1])
-    self.labels = [label.text for label in t_issue.label]
-    if t_issue.owner:
-      self.owner = t_issue.owner.username.text
-    self.status = t_issue.status.text
-    self.summary = t_issue.content.text
-    self.title = t_issue.title.text
-    self.comments = self.GetTrackerIssueComments(self.id)
-
-  def GetTrackerIssueComments(self, issue_id):
-    """Retrieve comments for |issue_id| from comments URL"""
-    comments = []
-
-    feeds = 'http://code.google.com/feeds'
-    url = '%s/issues/p/%s/issues/%d/comments/full' % (feeds, PROJECT_NAME,
-                                                      issue_id)
-    doc = xml.dom.minidom.parse(urllib.urlopen(url))
-    entries = doc.getElementsByTagName('entry')
-    for entry in entries:
-      title = entry.getElementsByTagName('title')[0].firstChild.nodeValue
-      text = entry.getElementsByTagName('content')[0].firstChild.nodeValue
-      comments.append(IssueComment(title, text))
-
-    return comments
-
-class TrackerComm(object):
-  """Class to manage communication with Tracker."""
-
-  __slots__ = [
-    'creds',       # gdata_lib.Creds object
-    'it_client',   # Issue Tracker client
-    ]
-
-  def __init__(self, creds):
-    self.creds = creds
-
-    self.it_client = gdata.projecthosting.client.ProjectHostingClient()
-    self.it_client.source = 'package_status_upgrade'
-    # TODO(mtennant): See if there is an analogous login option that uses
-    # an auth token instead (as with spreadsheet login).
-    self.it_client.ClientLogin(creds.user, creds.password,
-                               source=self.it_client.source,
-                               service='code',
-                               account_type='GOOGLE')
-
-  def GetTrackerIssueById(self, tid):
-    """Get tracker issue given |tid| number.  Return Issue object if found."""
-
-    query = gdata.projecthosting.client.Query(issue_id=str(tid))
-    feed = self.it_client.get_issues('chromium-os', query=query)
-
-    if feed.entry:
-      return Issue(feed.entry[0])
-    return None
-
-  def CreateTrackerIssue(self, issue):
-    """Create a new issue in Tracker according to |issue|."""
-    created = self.it_client.add_issue(project_name=PROJECT_NAME,
-                                       title=issue.title,
-                                       content=issue.summary,
-                                       author=self.creds.user,
-                                       status=issue.status,
-                                       owner=issue.owner,
-                                       labels=issue.labels)
-    issue.id = int(created.id.text.split('/')[-1])
-    return issue.id
-
-  def AppendTrackerIssueById(self, issue_id, comment):
-    """Append |comment| to issue |issue_id| in Tracker"""
-    self.it_client.update_issue(project_name=PROJECT_NAME,
-                                issue_id=issue_id,
-                                author=self.creds.user,
-                                comment=comment)
-    return issue_id
-
-# TODO(mtennant): Remove this class;  Use refactored version in gdata_lib.
-class SpreadsheetComm(object):
-  """Class to manage communication with one Google Spreadsheet worksheet."""
-
-  __slots__ = [
-    'columns',     # List of column names
-    'creds',       # gdata_lib.Creds object
-    'gd_client',   # Google Data client
-    'ss_key',      # Spreadsheet key
-    'ws_key',      # Worksheet key
-    ]
-
-  def __init__(self, creds, ss_key, ws_name):
-    self.creds = creds
-    self._LoginWithUserPassword(creds.user, creds.password)
-
-    self.ss_key = ss_key
-    self.ws_key = self._GetWorksheetKey(ss_key, ws_name)
-
-    self.columns = self._GetColumns()
-
-  def _LoginWithUserPassword(self, user, password):
-    """Set up and connect the Google Doc client using email/password."""
-    gd_client = gdata_lib.RetrySpreadsheetsService()
-
-    gd_client.source = 'Sync Package Status'
-    gd_client.email = user
-    gd_client.password = password
-    gd_client.ProgrammaticLogin()
-    self.gd_client = gd_client
-
-  def _GetWorksheetKey(self, ss_key, ws_name):
-    """Get the worksheet key with name |ws_name| in spreadsheet |ss_key|."""
-    feed = self.gd_client.GetWorksheetsFeed(ss_key)
-    # The worksheet key is the last component in the URL (after last '/')
-    for entry in feed.entry:
-      if ws_name == entry.title.text:
-        return entry.id.text.split('/')[-1]
-
-    oper.Die('Unable to find worksheet "%s" in spreadsheet "%s"' %
-             (ws_name, ss_key))
-
-  def _GetColumns(self):
-    """Return list of column names in worksheet."""
-    columns = []
-
-    query = gdata.spreadsheet.service.CellQuery()
-    query['max-row'] = '1'
-    feed = self.gd_client.GetCellsFeed(self.ss_key, self.ws_key, query=query)
-    for entry in feed.entry:
-      columns.append(entry.content.text)
-
-    return columns
-
-  def GetColumnIndex(self, colName):
-    """Get the column index (starting at 1) for column |colName|"""
-    for ix, col in enumerate(self.columns):
-      if colName == col:
-        # Spreadsheet column indices start at 1.
-        return ix + 1
-
-    return None
-
-  def GetAllRowsAsDicts(self):
-    """Get every row in spreadsheet as dicts of key/value pairs."""
-    feed = self.gd_client.GetListFeed(self.ss_key, self.ws_key)
-    rows = []
-    for entry in feed.entry:
-      row = {}
-      for key, val in entry.custom.items():
-        row[key] = gdata_lib.ScrubValFromSS(val.text)
-
-      rows.append(row)
-
-    return rows
-
-  def ReplaceCellValue(self, rowIx, colIx, val):
-    """Replace cell value at |rowIx| and |colIx| with |val|"""
-    self.gd_client.UpdateCell(rowIx, colIx, val, self.ss_key, self.ws_key)
-
-  def ClearCellValue(self, rowIx, colIx):
-    """Clear cell value at |rowIx| and |colIx|"""
-    self.ReplaceCellValue(rowIx, colIx, None)
 
 class Syncer(object):
   """Class to manage synchronizing between spreadsheet and Tracker."""
@@ -385,7 +154,7 @@ class Syncer(object):
     errors = []
 
     # Go over each row in Spreadsheet.
-    rows = self.scomm.GetAllRowsAsDicts()
+    rows = self.scomm.GetRows()
     for rowIx, row in enumerate(rows):
       # Spreadsheet row index starts at 1, and we don't count
       # the header row.  So add 2.
@@ -497,12 +266,12 @@ class Syncer(object):
 
     summary = '\n'.join(lines)
 
-    issue = Issue(title=title,
-                  summary=summary,
-                  status=status,
-                  owner=owner,
-                  labels=labels,
-                  )
+    issue = gdata_lib.Issue(title=title,
+                            summary=summary,
+                            status=status,
+                            owner=owner,
+                            labels=labels,
+                            )
     return issue
 
   def _GetRowTrackerId(self, row):
@@ -549,6 +318,31 @@ class Syncer(object):
                   (rowIx, pkg))
 
 
+def PrepareCreds(cred_file, token_file, email):
+  """Return a Creds object from given credentials.
+
+  If |email| is given, the Creds object will contain that |email|
+  and a password entered at a prompt.
+
+  Otherwise, if |token_file| is given then the Creds object will have
+  the auth_token from that file.
+
+  Otherwise, if |cred_file| is given then the Creds object will have
+  the email/password from that file.
+  """
+
+  creds = gdata_lib.Creds()
+
+  if email:
+    creds.SetCreds(email)
+  elif token_file and os.path.exists(token_file):
+    creds.LoadAuthToken(token_file)
+  elif cred_file and os.path.exists(cred_file):
+    creds.LoadCreds(cred_file)
+
+  return creds
+
+
 def _CreateOptParser():
   """Create the optparser.parser object for command-line args."""
   usage = 'Usage: %prog [options]'
@@ -592,6 +386,9 @@ def _CreateOptParser():
   teamhelp = '[%s]' % ', '.join(Syncer.VALID_TEAMS.keys())
 
   parser = MyOptParser(usage=usage, epilog=epilog)
+  parser.add_option('--auth-token-file', dest='token_file', type='string',
+                    action='store', default=gdata_lib.TOKEN_FILE,
+                    help='File for reading/writing Docs auth token.')
   parser.add_option('--cred-file', dest='cred_file', type='string',
                     action='store', default=gdata_lib.CRED_FILE,
                     help='Path to gdata credentials file [default: "%default"]')
@@ -654,14 +451,13 @@ def main(argv):
 
   _CheckOptions(options)
 
-  creds = gdata_lib.Creds()
-  if options.email:
-    creds.SetCreds(options.email)
-  elif options.cred_file and os.path.exists(options.cred_file):
-    creds.LoadCreds(options.cred_file)
+  # Prepare credentials for Docs and Tracker access.
+  creds = PrepareCreds(options.cred_file, options.token_file, options.email)
 
-  tcomm = TrackerComm(creds)
-  scomm = SpreadsheetComm(creds, SS_KEY, PKGS_WS_NAME)
+  scomm = gdata_lib.SpreadsheetComm()
+  scomm.Connect(creds, SS_KEY, PKGS_WS_NAME, source='Sync Package Status')
+  tcomm = gdata_lib.TrackerComm()
+  tcomm.Connect(creds, PROJECT_NAME, source='Sync Package Status')
 
   syncer = Syncer(tcomm, scomm,
                   pretend=options.pretend, verbose=options.verbose)

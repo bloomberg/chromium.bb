@@ -33,6 +33,7 @@ def _ChrootPathToExternalPath(path):
 
 
 class OutsideChroot(object):
+  """Class for managing functionality when run outside chroot."""
 
   def __init__(self, args):
     self.args = args
@@ -65,33 +66,49 @@ class OutsideChroot(object):
 
 
 class InsideChroot(object):
+  """Class for managing functionality when run inside chroot.
+
+  Note that some additional imports happen within code in this class
+  because those imports are only available inside the chroot.
+  """
 
   def __init__(self):
-    self.creds = None
-    self.gd_client = None
+    self.creds = None     # gdata_lib.Creds object.
+    self.gd_client = None # For interacting with Google Docs.
+    self.it_client = None # For interacting with Issue Tracker.
 
-  def _ValidateToken(self):
-    """Validate the existing token file."""
-    # pylint: disable=W0404
-    import gdata.service
-
+  def _LoadTokenFile(self):
+    """Load existing auth token file."""
     if not os.path.exists(TOKEN_FILE):
       oper.Warning('No current token file at %r.' % TOKEN_FILE)
       return False
 
     # Load token file, if it exists.
     self.creds.LoadAuthToken(TOKEN_FILE)
+    return True
+
+  def _SaveTokenFile(self):
+    """Save to auth toke file if anything changed."""
+    self.creds.StoreAuthTokenIfNeeded(TOKEN_FILE)
+
+  def _ValidateDocsToken(self):
+    """Validate the existing Docs token."""
+    # pylint: disable=W0404
+    import gdata.service
+
+    if not self.creds.docs_auth_token:
+      return False
 
     oper.Notice('Attempting to log into Docs using auth token.')
     self.gd_client.source = 'Package Status'
-    self.gd_client.SetClientLoginToken(self.creds.auth_token)
+    self.gd_client.SetClientLoginToken(self.creds.docs_auth_token)
 
     try:
       # Try to access generic spreadsheets feed, which will check access.
       self.gd_client.GetSpreadsheetsFeed()
 
       # Token accepted.  We're done here.
-      oper.Notice('Token validated.')
+      oper.Notice('Docs token validated.')
       return True
     except gdata.service.RequestError as ex:
       reason = ex[0]['reason']
@@ -100,26 +117,76 @@ class InsideChroot(object):
 
       raise
 
-  def _GenerateToken(self):
-    """Generate a new token from credentials."""
+  def _GenerateDocsToken(self):
+    """Generate a new Docs token from credentials."""
     # pylint: disable=W0404
     import gdata.service
 
-    oper.Warning('Token has expired.  Will try to generate a new one.')
+    oper.Warning('Docs token not valid.  Will try to generate a new one.')
     self.creds.LoadCreds(CRED_FILE)
     self.gd_client.email = self.creds.user
     self.gd_client.password = self.creds.password
 
     try:
       self.gd_client.ProgrammaticLogin()
-      self.creds.SetAuthToken(self.gd_client.GetClientLoginToken())
+      self.creds.SetDocsAuthToken(self.gd_client.GetClientLoginToken())
 
-      oper.Notice('New token generated.  Saving now.')
-      self.creds.StoreAuthToken(TOKEN_FILE)
+      oper.Notice('New Docs token generated.')
       return True
     except gdata.service.BadAuthentication:
       oper.Error('Credentials from %r not accepted.'
-                 '  Unable to generate new token.' % CRED_FILE)
+                 '  Unable to generate new Docs token.' % CRED_FILE)
+      return False
+
+  def _ValidateTrackerToken(self):
+    """Validate the existing Tracker token."""
+    # pylint: disable=W0404
+    import gdata.gauth
+    import gdata.projecthosting.client
+
+    if not self.creds.tracker_auth_token:
+      return False
+
+    oper.Notice('Attempting to log into Tracker using auth token.')
+    self.it_client.source = 'Package Status'
+    self.it_client.auth_token = gdata.gauth.ClientLoginToken(
+      self.creds.tracker_auth_token)
+
+    try:
+      # Try to access Tracker Issue #1, which will check access.
+      query = gdata.projecthosting.client.Query(issue_id='1')
+      self.it_client.get_issues('chromium-os', query=query)
+
+      # Token accepted.  We're done here.
+      oper.Notice('Tracker token validated.')
+      return True
+    except gdata.client.Error:
+      # Exception is gdata.client.Unauthorized in the case of bad token, but
+      # I do not know what the error is for an expired token so I do not
+      # want to limit the catching here.  All the errors for gdata.client
+      # functionality extend gdata.client.Error (I do not see one that is
+      # obviously about an expired token).
+      return False
+
+  def _GenerateTrackerToken(self):
+    """Generate a new Tracker token from credentials."""
+    # pylint: disable=W0404
+    import gdata.client
+
+    oper.Warning('Tracker token not valid.  Will try to generate a new one.')
+    self.creds.LoadCreds(CRED_FILE)
+
+    try:
+      self.it_client.ClientLogin(self.creds.user, self.creds.password,
+                                 source='Package Status', service='code',
+                                 account_type='GOOGLE')
+      self.creds.SetTrackerAuthToken(self.it_client.auth_token.token_string)
+
+      oper.Notice('New Tracker token generated.')
+      return True
+    except gdata.client.BadAuthentication:
+      oper.Error('Credentials from %r not accepted.'
+                 '  Unable to generate new Tracker token.' % CRED_FILE)
       return False
 
   def Run(self):
@@ -130,10 +197,19 @@ class InsideChroot(object):
 
     self.creds = gdata_lib.Creds()
     self.gd_client = gdata.spreadsheet.service.SpreadsheetsService()
+    self.it_client = gdata.projecthosting.client.ProjectHostingClient()
 
-    if not self._ValidateToken():
-      if not self._GenerateToken():
-        oper.Die('Failed to validate or generate token.')
+    self._LoadTokenFile()
+
+    if not self._ValidateTrackerToken():
+      if not self._GenerateTrackerToken():
+        oper.Die('Failed to validate or generate Tracker token.')
+
+    if not self._ValidateDocsToken():
+      if not self._GenerateDocsToken():
+        oper.Die('Failed to validate or generate Docs token.')
+
+    self._SaveTokenFile()
 
 
 def _CreateParser():

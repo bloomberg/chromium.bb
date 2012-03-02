@@ -287,12 +287,15 @@ def main(argv):
   for ws_name in ws_names:
     uploader.Upload(ss_key, ws_name=ws_name)
 
-  # If email/password given, as well as path to cred_file, write
+  # If cred_file given and new credentials were used then write
   # credentials out to that location.
-  if options.email and options.cred_file:
-    creds.StoreCreds(options.cred_file)
+  if options.cred_file:
+    creds.StoreCredsIfNeeded(options.cred_file)
 
-  # If token_file path given, write auth_token out to that location
-  # if it was not loaded from there in the first place.
-  if options.token_file and not creds.auth_token_loaded:
-    creds.StoreAuthToken(options.token_file)
+  # If token_file path given and new auth token was used then
+  # write auth_token out to that location.
+  if options.token_file:
+    creds.StoreAuthTokenIfNeeded(options.token_file)
+
+if __name__ == '__main__':
+  main()

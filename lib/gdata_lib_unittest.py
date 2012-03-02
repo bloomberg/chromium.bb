@@ -10,6 +10,7 @@ import re
 import unittest
 
 import atom.service
+import gdata.projecthosting.client as gd_ph_client
 import gdata.spreadsheet.service
 import mox
 
@@ -96,7 +97,8 @@ class CredsTest(test_lib.MoxTestCase):
 
   USER = 'somedude@chromium.org'
   PASSWORD = 'worldsbestpassword'
-  TOKEN = 'someauthtoken'
+  DOCS_TOKEN = 'SomeDocsAuthToken'
+  TRACKER_TOKEN = 'SomeTrackerAuthToken'
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -112,11 +114,12 @@ class CredsTest(test_lib.MoxTestCase):
       gdata_lib.Creds.SetCreds(mocked_creds, self.USER, self.PASSWORD)
       self.assertEquals(self.USER, mocked_creds.user)
       self.assertEquals(self.PASSWORD, mocked_creds.password)
-      self.assertFalse(mocked_creds.creds_loaded)
+      self.assertTrue(mocked_creds.creds_dirty)
 
       gdata_lib.Creds.StoreCreds(mocked_creds, self.tempfile)
       self.assertEquals(self.USER, mocked_creds.user)
       self.assertEquals(self.PASSWORD, mocked_creds.password)
+      self.assertFalse(mocked_creds.creds_dirty)
 
       # Clear user/password before loading from just-created file.
       mocked_creds.user = None
@@ -127,7 +130,7 @@ class CredsTest(test_lib.MoxTestCase):
       gdata_lib.Creds.LoadCreds(mocked_creds, self.tempfile)
       self.assertEquals(self.USER, mocked_creds.user)
       self.assertEquals(self.PASSWORD, mocked_creds.password)
-      self.assertTrue(mocked_creds.creds_loaded)
+      self.assertFalse(mocked_creds.creds_dirty)
 
     self.mox.VerifyAll()
 
@@ -135,25 +138,33 @@ class CredsTest(test_lib.MoxTestCase):
   def testStoreLoadToken(self):
     # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    mocked_creds.user = self.USER
     self.mox.ReplayAll()
 
     # This is the test verification.
     with self.OutputCapturer():
-      gdata_lib.Creds.SetAuthToken(mocked_creds, self.TOKEN)
-      self.assertEquals(self.TOKEN, mocked_creds.auth_token)
-      self.assertFalse(mocked_creds.auth_token_loaded)
+      gdata_lib.Creds.SetDocsAuthToken(mocked_creds, self.DOCS_TOKEN)
+      self.assertEquals(self.DOCS_TOKEN, mocked_creds.docs_auth_token)
+      self.assertTrue(mocked_creds.token_dirty)
+      gdata_lib.Creds.SetTrackerAuthToken(mocked_creds, self.TRACKER_TOKEN)
+      self.assertEquals(self.TRACKER_TOKEN, mocked_creds.tracker_auth_token)
+      self.assertTrue(mocked_creds.token_dirty)
 
       gdata_lib.Creds.StoreAuthToken(mocked_creds, self.tempfile)
-      self.assertEquals(self.TOKEN, mocked_creds.auth_token)
-      self.assertFalse(mocked_creds.auth_token_loaded)
+      self.assertEquals(self.DOCS_TOKEN, mocked_creds.docs_auth_token)
+      self.assertEquals(self.TRACKER_TOKEN, mocked_creds.tracker_auth_token)
+      self.assertFalse(mocked_creds.token_dirty)
 
-      # Clear auth_token before loading from just-created file.
-      mocked_creds.auth_token = None
-      self.assertEquals(None, mocked_creds.auth_token)
+      # Clear auth_tokens before loading from just-created file.
+      mocked_creds.docs_auth_token = None
+      mocked_creds.tracker_auth_token = None
+      mocked_creds.user = None
 
       gdata_lib.Creds.LoadAuthToken(mocked_creds, self.tempfile)
-      self.assertEquals(self.TOKEN, mocked_creds.auth_token)
-      self.assertTrue(mocked_creds.auth_token_loaded)
+      self.assertEquals(self.DOCS_TOKEN, mocked_creds.docs_auth_token)
+      self.assertEquals(self.TRACKER_TOKEN, mocked_creds.tracker_auth_token)
+      self.assertFalse(mocked_creds.token_dirty)
+      self.assertEquals(self.USER, mocked_creds.user)
 
     self.mox.VerifyAll()
 
@@ -168,7 +179,7 @@ class CredsTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
     self.assertEquals(self.USER, mocked_creds.user)
     self.assertEquals(self.PASSWORD, mocked_creds.password)
-    self.assertFalse(mocked_creds.creds_loaded)
+    self.assertTrue(mocked_creds.creds_dirty)
 
   def testSetCredsNoPassword(self):
     # Add test-specific mocks/stubs
@@ -184,19 +195,29 @@ class CredsTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
     self.assertEquals(self.USER, mocked_creds.user)
     self.assertEquals(self.PASSWORD, mocked_creds.password)
-    self.assertFalse(mocked_creds.creds_loaded)
+    self.assertTrue(mocked_creds.creds_dirty)
 
-  def testSetToken(self):
+  def testSetDocsToken(self):
     # This is the replay script for the test.
     mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
     self.mox.ReplayAll()
 
     # This is the test verification.
-    gdata_lib.Creds.SetAuthToken(mocked_creds, self.TOKEN)
+    gdata_lib.Creds.SetDocsAuthToken(mocked_creds, self.DOCS_TOKEN)
     self.mox.VerifyAll()
-    self.assertEquals(self.TOKEN, mocked_creds.auth_token)
-    self.assertFalse(mocked_creds.auth_token_loaded)
+    self.assertEquals(self.DOCS_TOKEN, mocked_creds.docs_auth_token)
+    self.assertTrue(mocked_creds.token_dirty)
 
+  def testSetTrackerToken(self):
+    # This is the replay script for the test.
+    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    self.mox.ReplayAll()
+
+    # This is the test verification.
+    gdata_lib.Creds.SetTrackerAuthToken(mocked_creds, self.TRACKER_TOKEN)
+    self.mox.VerifyAll()
+    self.assertEquals(self.TRACKER_TOKEN, mocked_creds.tracker_auth_token)
+    self.assertTrue(mocked_creds.token_dirty)
 
 class SpreadsheetRowTest(test_lib.TestCase):
 
@@ -298,7 +319,7 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
       creds.password = self.PASSWORD
 
     if not skip_token:
-      creds.auth_token = self.TOKEN
+      creds.docs_auth_token = self.TOKEN
 
     return creds
 
@@ -468,7 +489,7 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
     self.mox.VerifyAll()
     self.assertEquals(self.USER, mocked_gdclient.email)
     self.assertEquals(self.PASSWORD, mocked_gdclient.password)
-    self.assertEquals(self.TOKEN, creds.auth_token)
+    self.assertEquals(self.TOKEN, creds.docs_auth_token)
     self.assertEquals(source, mocked_gdclient.source)
     self.assertEquals(mocked_gdclient, mocked_scomm.gd_client)
 
@@ -484,7 +505,7 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
     # This is the replay script for the test.
     gdata_lib.RetrySpreadsheetsService.__new__(
         gdata_lib.RetrySpreadsheetsService).AndReturn(mocked_gdclient)
-    mocked_gdclient.SetClientLoginToken(creds.auth_token)
+    mocked_gdclient.SetClientLoginToken(creds.docs_auth_token)
     self.mox.ReplayAll()
 
     # This is the test verification.
@@ -689,6 +710,220 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
     # Verify
     gdata_lib.SpreadsheetComm.ClearCellValue(mocked_scomm, rowIx, colIx)
     self.mox.VerifyAll()
+
+
+class IssueCommentTest(unittest.TestCase):
+
+  def testInit(self):
+    title = 'Greetings, Earthlings'
+    text = 'I come in peace.'
+    ic = gdata_lib.IssueComment(title, text)
+
+    self.assertEquals(title, ic.title)
+    self.assertEquals(text, ic.text)
+
+
+class IssueTest(mox.MoxTestBase):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+
+  def testInitOverride(self):
+    owner = 'somedude@chromium.org'
+    status = 'Assigned'
+    issue = gdata_lib.Issue(owner=owner, status=status)
+
+    self.assertEquals(owner, issue.owner)
+    self.assertEquals(status, issue.status)
+
+  def testInitInvalidOverride(self):
+    self.assertRaises(ValueError, gdata_lib.Issue,
+                      foobar='NotARealAttr')
+
+  def testInitFromTracker(self):
+    # Need to create a dummy Tracker Issue object.
+    tissue_id = 123
+    tissue_labels = ['Iteration-10', 'Effort-2']
+    tissue_owner = 'thedude@chromium.org'
+    tissue_status = 'Available'
+    tissue_content = 'The summary message'
+    tissue_title = 'The Big Title'
+
+    tissue = test_lib.EasyAttr()
+    tissue.id = test_lib.EasyAttr(text='http://www/some/path/%d' % tissue_id)
+    tissue.label = [test_lib.EasyAttr(text=l) for l in tissue_labels]
+    tissue.owner = test_lib.EasyAttr(
+      username=test_lib.EasyAttr(text=tissue_owner))
+    tissue.status = test_lib.EasyAttr(text=tissue_status)
+    tissue.content = test_lib.EasyAttr(text=tissue_content)
+    tissue.title = test_lib.EasyAttr(text=tissue_title)
+
+    mocked_issue = self.mox.CreateMock(gdata_lib.Issue)
+
+    # Replay script
+    mocked_issue.GetTrackerIssueComments(tissue_id, 'TheProject').AndReturn([])
+    self.mox.ReplayAll()
+
+    # Verify
+    gdata_lib.Issue.InitFromTracker(mocked_issue, tissue, 'TheProject')
+    self.mox.VerifyAll()
+    self.assertEquals(tissue_id, mocked_issue.id)
+    self.assertEquals(tissue_labels, mocked_issue.labels)
+    self.assertEquals(tissue_owner, mocked_issue.owner)
+    self.assertEquals(tissue_status, mocked_issue.status)
+    self.assertEquals(tissue_content, mocked_issue.summary)
+    self.assertEquals(tissue_title, mocked_issue.title)
+    self.assertEquals([], mocked_issue.comments)
+
+
+class TrackerCommTest(test_lib.MoxTestCase):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+
+  def testConnectEmail(self):
+    source = 'TheSource'
+    token = 'TheToken'
+    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    mocked_creds.user = 'dude'
+    mocked_creds.password = 'shhh'
+    mocked_creds.tracker_auth_token = None
+    mocked_itclient = self.mox.CreateMock(
+      gdata.projecthosting.client.ProjectHostingClient)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
+
+    def set_token(*_args, **_kwargs):
+      mocked_itclient.auth_token = test_lib.EasyAttr(token_string=token)
+
+    self.mox.StubOutWithMock(gd_ph_client.ProjectHostingClient, '__new__')
+
+    # Replay script
+    gd_ph_client.ProjectHostingClient.__new__(
+      gd_ph_client.ProjectHostingClient).AndReturn(mocked_itclient)
+    mocked_itclient.ClientLogin(mocked_creds.user, mocked_creds.password,
+                                source=source, service='code',
+                                account_type='GOOGLE'
+                                ).WithSideEffects(set_token)
+    mocked_creds.SetTrackerAuthToken(token)
+    self.mox.ReplayAll()
+
+    # Verify
+    with self.OutputCapturer():
+      gdata_lib.TrackerComm.Connect(mocked_tcomm, mocked_creds, 'TheProject',
+                                    source=source)
+    self.mox.VerifyAll()
+    self.assertEquals(mocked_tcomm.it_client, mocked_itclient)
+
+  def testConnectToken(self):
+    source = 'TheSource'
+    token = 'TheToken'
+    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    mocked_creds.user = 'dude'
+    mocked_creds.password = 'shhh'
+    mocked_creds.tracker_auth_token = token
+    mocked_itclient = self.mox.CreateMock(
+      gdata.projecthosting.client.ProjectHostingClient)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
+
+    self.mox.StubOutWithMock(gd_ph_client.ProjectHostingClient, '__new__')
+    self.mox.StubOutWithMock(gdata.gauth.ClientLoginToken, '__new__')
+
+    # Replay script
+    gd_ph_client.ProjectHostingClient.__new__(
+      gd_ph_client.ProjectHostingClient).AndReturn(mocked_itclient)
+    gdata.gauth.ClientLoginToken.__new__(gdata.gauth.ClientLoginToken,
+                                         token).AndReturn('TokenObj')
+    self.mox.ReplayAll()
+
+    # Verify
+    with self.OutputCapturer():
+      gdata_lib.TrackerComm.Connect(mocked_tcomm, mocked_creds, 'TheProject',
+                                    source=source)
+    self.mox.VerifyAll()
+    self.assertEquals(mocked_tcomm.it_client, mocked_itclient)
+    self.assertEquals(mocked_itclient.auth_token, 'TokenObj')
+
+  def testGetTrackerIssueById(self):
+    mocked_itclient = self.mox.CreateMock(gd_ph_client.ProjectHostingClient)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
+    mocked_tcomm.it_client = mocked_itclient
+    mocked_tcomm.project_name = 'TheProject'
+    mocked_issue = self.mox.CreateMock(gdata_lib.Issue)
+
+    self.mox.StubOutWithMock(gd_ph_client.Query, '__new__')
+    self.mox.StubOutWithMock(gdata_lib.Issue, '__new__')
+    self.mox.StubOutWithMock(gdata_lib.Issue, 'InitFromTracker')
+
+    issue_id = 12345
+    feed = test_lib.EasyAttr(entry=['hi', 'there'])
+
+    # Replay script
+    gd_ph_client.Query.__new__(gd_ph_client.Query,
+                               issue_id=str(issue_id)).AndReturn('Q')
+    mocked_itclient.get_issues('TheProject', query='Q').AndReturn(feed)
+    gdata_lib.Issue.__new__(gdata_lib.Issue).AndReturn(mocked_issue)
+    mocked_issue.InitFromTracker(feed.entry[0], 'TheProject')
+    self.mox.ReplayAll()
+
+    # Verify
+    gdata_lib.TrackerComm.GetTrackerIssueById(mocked_tcomm, issue_id)
+    self.mox.VerifyAll()
+
+  def testCreateTrackerIssue(self):
+    author = 'TheAuthor'
+    mocked_itclient = self.mox.CreateMock(gd_ph_client.ProjectHostingClient)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
+    mocked_tcomm.author = author
+    mocked_tcomm.it_client = mocked_itclient
+    mocked_tcomm.project_name = 'TheProject'
+
+    issue = test_lib.EasyAttr(title='TheTitle',
+                     summary='TheSummary',
+                     status='TheStatus',
+                     owner='TheOwner',
+                     labels='TheLabels')
+
+    # Replay script
+    issue_id = test_lib.EasyAttr(id=test_lib.EasyAttr(text='foo/bar/123'))
+    mocked_itclient.add_issue(project_name='TheProject',
+                              title=issue.title,
+                              content=issue.summary,
+                              author=author,
+                              status=issue.status,
+                              owner=issue.owner,
+                              labels=issue.labels,
+                              ).AndReturn(issue_id)
+    self.mox.ReplayAll()
+
+    # Verify
+    result = gdata_lib.TrackerComm.CreateTrackerIssue(mocked_tcomm, issue)
+    self.mox.VerifyAll()
+    self.assertEquals(123, result)
+
+  def testAppendTrackerIssueById(self):
+    author = 'TheAuthor'
+    project_name = 'TheProject'
+    mocked_itclient = self.mox.CreateMock(gd_ph_client.ProjectHostingClient)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
+    mocked_tcomm.author = author
+    mocked_tcomm.it_client = mocked_itclient
+    mocked_tcomm.project_name = project_name
+
+    issue_id = 54321
+    comment = 'TheComment'
+
+    # Replay script
+    mocked_itclient.update_issue(project_name=project_name,
+                                 issue_id=issue_id,
+                                 author=author,
+                                 comment=comment)
+    self.mox.ReplayAll()
+
+    # Verify
+    result = gdata_lib.TrackerComm.AppendTrackerIssueById(mocked_tcomm,
+                                                          issue_id, comment)
+    self.mox.VerifyAll()
+    self.assertEquals(issue_id, result)
 
 
 class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):

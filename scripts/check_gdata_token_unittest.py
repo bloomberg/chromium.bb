@@ -8,11 +8,10 @@
 
 import filecmp
 import os
-import re
 import shutil
-import sys
 import unittest
 
+import gdata.projecthosting.client as gdata_ph_client
 import gdata.service
 import gdata.spreadsheet.service as gdata_ss_service
 import mox
@@ -240,14 +239,61 @@ class InsideChrootTest(test_lib.MoxTestCase):
 
     mic.creds = self.mox.CreateMock(gdata_lib.Creds)
     mic.gd_client = self.mox.CreateMock(gdata_ss_service.SpreadsheetsService)
+    mic.it_client = self.mox.CreateMock(gdata_ph_client.ProjectHostingClient)
 
     return mic
+
+  def testLoadTokenFile(self):
+    mocked_insidechroot = self._MockInsideChroot()
+
+    self.mox.StubOutWithMock(os.path, 'exists')
+
+    # Create replay script
+    os.path.exists(cgt.TOKEN_FILE).AndReturn(True)
+    mocked_insidechroot.creds.LoadAuthToken(cgt.TOKEN_FILE)
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      result = cgt.InsideChroot._LoadTokenFile(mocked_insidechroot)
+    self.mox.VerifyAll()
+    self.assertTrue(result)
+
+  def testSaveTokenFile(self):
+    mocked_insidechroot = self._MockInsideChroot()
+
+    # Create replay script.
+    mocked_insidechroot.creds.StoreAuthTokenIfNeeded(cgt.TOKEN_FILE)
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      cgt.InsideChroot._SaveTokenFile(mocked_insidechroot)
+    self.mox.VerifyAll()
+
+  def testLoadTokenFileMissing(self):
+    mocked_insidechroot = self._MockInsideChroot()
+
+    self.mox.StubOutWithMock(os.path, 'exists')
+
+    # Create replay script
+    os.path.exists(cgt.TOKEN_FILE).AndReturn(False)
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      result = cgt.InsideChroot._LoadTokenFile(mocked_insidechroot)
+    self.mox.VerifyAll()
+    self.assertFalse(result)
 
   def testInsideChrootValidateOK(self):
     mocked_insidechroot = self._MockInsideChroot()
 
     # Create replay script.
-    mocked_insidechroot._ValidateToken().AndReturn(True)
+    mocked_insidechroot._LoadTokenFile()
+    mocked_insidechroot._ValidateTrackerToken().AndReturn(True)
+    mocked_insidechroot._ValidateDocsToken().AndReturn(True)
+    mocked_insidechroot._SaveTokenFile()
     self.mox.ReplayAll()
 
     # Run test verification.
@@ -255,12 +301,15 @@ class InsideChrootTest(test_lib.MoxTestCase):
       cgt.InsideChroot.Run(mocked_insidechroot)
     self.mox.VerifyAll()
 
-  def testInsideChrootValidateFailGenerateOK(self):
+  def testInsideChrootTrackerValidateFailGenerateOK(self):
     mocked_insidechroot = self._MockInsideChroot()
 
     # Create replay script.
-    mocked_insidechroot._ValidateToken().AndReturn(False)
-    mocked_insidechroot._GenerateToken().AndReturn(True)
+    mocked_insidechroot._LoadTokenFile()
+    mocked_insidechroot._ValidateTrackerToken().AndReturn(True)
+    mocked_insidechroot._ValidateDocsToken().AndReturn(False)
+    mocked_insidechroot._GenerateDocsToken().AndReturn(True)
+    mocked_insidechroot._SaveTokenFile()
     self.mox.ReplayAll()
 
     # Run test verification.
@@ -268,12 +317,29 @@ class InsideChrootTest(test_lib.MoxTestCase):
       cgt.InsideChroot.Run(mocked_insidechroot)
     self.mox.VerifyAll()
 
-  def testInsideChrootValidateFailGenerateFail(self):
+  def testInsideChrootDocsValidateFailGenerateOK(self):
     mocked_insidechroot = self._MockInsideChroot()
 
     # Create replay script.
-    mocked_insidechroot._ValidateToken().AndReturn(False)
-    mocked_insidechroot._GenerateToken().AndReturn(False)
+    mocked_insidechroot._LoadTokenFile()
+    mocked_insidechroot._ValidateTrackerToken().AndReturn(False)
+    mocked_insidechroot._GenerateTrackerToken().AndReturn(True)
+    mocked_insidechroot._ValidateDocsToken().AndReturn(True)
+    mocked_insidechroot._SaveTokenFile()
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      cgt.InsideChroot.Run(mocked_insidechroot)
+    self.mox.VerifyAll()
+
+  def testInsideChrootTrackerValidateFailGenerateFail(self):
+    mocked_insidechroot = self._MockInsideChroot()
+
+    # Create replay script.
+    mocked_insidechroot._LoadTokenFile()
+    mocked_insidechroot._ValidateTrackerToken().AndReturn(False)
+    mocked_insidechroot._GenerateTrackerToken().AndReturn(False)
     self.mox.ReplayAll()
 
     # Run test verification.
@@ -285,36 +351,145 @@ class InsideChrootTest(test_lib.MoxTestCase):
 
     self.AssertOutputContainsError()
 
-  def testGenerateTokenOK(self):
+  def testInsideChrootDocsValidateFailGenerateFail(self):
+    mocked_insidechroot = self._MockInsideChroot()
+
+    # Create replay script.
+    mocked_insidechroot._LoadTokenFile()
+    mocked_insidechroot._ValidateTrackerToken().AndReturn(True)
+    mocked_insidechroot._ValidateDocsToken().AndReturn(False)
+    mocked_insidechroot._GenerateDocsToken().AndReturn(False)
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      # Test should exit with failure.
+      self.AssertFuncSystemExitNonZero(cgt.InsideChroot.Run,
+                                       mocked_insidechroot)
+    self.mox.VerifyAll()
+
+    self.AssertOutputContainsError()
+
+  def testGenerateTrackerTokenOK(self):
+    mocked_insidechroot = self._MockInsideChroot()
+
+    # Create replay script.
+    mocked_creds = mocked_insidechroot.creds
+    mocked_itclient = mocked_insidechroot.it_client
+    mocked_creds.user = 'joe@chromium.org'
+    mocked_creds.password = 'shhh'
+    auth_token = 'SomeToken'
+    mocked_itclient.auth_token = test_lib.EasyAttr(token_string=auth_token)
+
+    mocked_creds.LoadCreds(cgt.CRED_FILE)
+    mocked_itclient.ClientLogin(mocked_creds.user, mocked_creds.password,
+                                source='Package Status', service='code',
+                                account_type='GOOGLE')
+    mocked_creds.SetTrackerAuthToken(auth_token)
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      result = cgt.InsideChroot._GenerateTrackerToken(mocked_insidechroot)
+      self.assertTrue(result, '_GenerateTrackerToken should have passed')
+    self.mox.VerifyAll()
+
+  def testGenerateTrackerTokenFail(self):
+    mocked_insidechroot = self._MockInsideChroot()
+
+    # Create replay script.
+    mocked_creds = mocked_insidechroot.creds
+    mocked_itclient = mocked_insidechroot.it_client
+    mocked_creds.user = 'joe@chromium.org'
+    mocked_creds.password = 'shhh'
+
+    mocked_creds.LoadCreds(cgt.CRED_FILE)
+    mocked_itclient.ClientLogin(mocked_creds.user, mocked_creds.password,
+                                source='Package Status', service='code',
+                                account_type='GOOGLE'
+                                ).AndRaise(gdata.client.BadAuthentication())
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      result = cgt.InsideChroot._GenerateTrackerToken(mocked_insidechroot)
+      self.assertFalse(result, '_GenerateTrackerToken should have failed')
+    self.mox.VerifyAll()
+
+    self.AssertOutputContainsError()
+
+  def testValidateTrackerTokenOK(self):
+    mocked_insidechroot = self._MockInsideChroot()
+    mocked_itclient = mocked_insidechroot.it_client
+
+    self.mox.StubOutWithMock(gdata.gauth.ClientLoginToken, '__new__')
+
+    # Create replay script.
+    auth_token = 'SomeToken'
+    mocked_insidechroot.creds.tracker_auth_token = auth_token
+
+    gdata.gauth.ClientLoginToken.__new__(gdata.gauth.ClientLoginToken,
+                                         auth_token).AndReturn('TokenObj')
+    mocked_itclient.get_issues('chromium-os', query=mox.IgnoreArg())
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      result = cgt.InsideChroot._ValidateTrackerToken(mocked_insidechroot)
+    self.mox.VerifyAll()
+    self.assertTrue(result, '_ValidateTrackerToken should have passed')
+
+  def testValidateTrackerTokenFail(self):
+    mocked_insidechroot = self._MockInsideChroot()
+    mocked_itclient = mocked_insidechroot.it_client
+
+    self.mox.StubOutWithMock(gdata.gauth.ClientLoginToken, '__new__')
+
+    # Create replay script.
+    auth_token = 'SomeToken'
+    mocked_insidechroot.creds.tracker_auth_token = auth_token
+
+    gdata.gauth.ClientLoginToken.__new__(gdata.gauth.ClientLoginToken,
+                                         auth_token).AndReturn('TokenObj')
+    mocked_itclient.get_issues('chromium-os', query=mox.IgnoreArg()
+                               ).AndRaise(gdata.client.Error())
+    self.mox.ReplayAll()
+
+    # Run test verification.
+    with self.OutputCapturer():
+      result = cgt.InsideChroot._ValidateTrackerToken(mocked_insidechroot)
+      self.assertFalse(result, '_ValidateTrackerToken should have failed')
+    self.mox.VerifyAll()
+
+  def testGenerateDocsTokenOK(self):
     mocked_insidechroot = self._MockInsideChroot()
 
     # Create replay script.
     mocked_creds = mocked_insidechroot.creds
     mocked_gdclient = mocked_insidechroot.gd_client
-    mocked_creds.email = 'joe@chromium.org'
+    mocked_creds.user = 'joe@chromium.org'
     mocked_creds.password = 'shhh'
     auth_token = 'SomeToken'
 
     mocked_creds.LoadCreds(cgt.CRED_FILE)
     mocked_gdclient.ProgrammaticLogin()
     mocked_gdclient.GetClientLoginToken().AndReturn(auth_token)
-    mocked_creds.SetAuthToken(auth_token)
-    mocked_creds.StoreAuthToken(cgt.TOKEN_FILE)
+    mocked_creds.SetDocsAuthToken(auth_token)
     self.mox.ReplayAll()
 
     # Run test verification.
     with self.OutputCapturer():
-      result = cgt.InsideChroot._GenerateToken(mocked_insidechroot)
-      self.assertTrue(result, '_GenerateToken should have passed')
+      result = cgt.InsideChroot._GenerateDocsToken(mocked_insidechroot)
+      self.assertTrue(result, '_GenerateDocsToken should have passed')
     self.mox.VerifyAll()
 
-  def testGenerateTokenFail(self):
+  def testGenerateDocsTokenFail(self):
     mocked_insidechroot = self._MockInsideChroot()
 
     # Create replay script.
     mocked_creds = mocked_insidechroot.creds
     mocked_gdclient = mocked_insidechroot.gd_client
-    mocked_creds.email = 'joe@chromium.org'
+    mocked_creds.user = 'joe@chromium.org'
     mocked_creds.password = 'shhh'
 
     mocked_creds.LoadCreds(cgt.CRED_FILE)
@@ -324,59 +499,36 @@ class InsideChrootTest(test_lib.MoxTestCase):
 
     # Run test verification.
     with self.OutputCapturer():
-      result = cgt.InsideChroot._GenerateToken(mocked_insidechroot)
-      self.assertFalse(result, '_GenerateToken should have failed')
+      result = cgt.InsideChroot._GenerateDocsToken(mocked_insidechroot)
+      self.assertFalse(result, '_GenerateTrackerToken should have failed')
     self.mox.VerifyAll()
 
     self.AssertOutputContainsError()
 
-  def testValidateTokenMissing(self):
-    mocked_insidechroot = self._MockInsideChroot()
-
-    # Create replay script.
-    self.mox.StubOutWithMock(os.path, 'exists')
-
-    os.path.exists(cgt.TOKEN_FILE).AndReturn(False)
-    self.mox.ReplayAll()
-
-    # Run test verification.
-    with self.OutputCapturer():
-      result = cgt.InsideChroot._ValidateToken(mocked_insidechroot)
-      self.assertFalse(result, '_ValidateToken should have failed')
-    self.mox.VerifyAll()
-
-  def testValidateTokenOK(self):
+  def testValidateDocsTokenOK(self):
     mocked_insidechroot = self._MockInsideChroot()
 
     # Create replay script.
     auth_token = 'SomeToken'
-    mocked_insidechroot.creds.auth_token = auth_token
+    mocked_insidechroot.creds.docs_auth_token = auth_token
 
-    self.mox.StubOutWithMock(os.path, 'exists')
-
-    os.path.exists(cgt.TOKEN_FILE).AndReturn(True)
-    mocked_insidechroot.creds.LoadAuthToken(cgt.TOKEN_FILE)
     mocked_insidechroot.gd_client.SetClientLoginToken(auth_token)
     mocked_insidechroot.gd_client.GetSpreadsheetsFeed()
     self.mox.ReplayAll()
 
     # Run test verification.
     with self.OutputCapturer():
-      result = cgt.InsideChroot._ValidateToken(mocked_insidechroot)
-      self.assertTrue(result, '_ValidateToken should have passed')
+      result = cgt.InsideChroot._ValidateDocsToken(mocked_insidechroot)
+      self.assertTrue(result, '_ValidateDocsToken should have passed')
     self.mox.VerifyAll()
 
-  def testValidateTokenFail(self):
+  def testValidateDocsTokenFail(self):
     mocked_insidechroot = self._MockInsideChroot()
 
     # Create replay script.
     auth_token = 'SomeToken'
-    mocked_insidechroot.creds.auth_token = auth_token
+    mocked_insidechroot.creds.docs_auth_token = auth_token
 
-    self.mox.StubOutWithMock(os.path, 'exists')
-
-    os.path.exists(cgt.TOKEN_FILE).AndReturn(True)
-    mocked_insidechroot.creds.LoadAuthToken(cgt.TOKEN_FILE)
     mocked_insidechroot.gd_client.SetClientLoginToken(auth_token)
     expired_error = gdata.service.RequestError({'reason': 'Token expired'})
     mocked_insidechroot.gd_client.GetSpreadsheetsFeed().AndRaise(expired_error)
@@ -384,10 +536,9 @@ class InsideChrootTest(test_lib.MoxTestCase):
 
     # Run test verification.
     with self.OutputCapturer():
-      result = cgt.InsideChroot._ValidateToken(mocked_insidechroot)
-      self.assertFalse(result, '_ValidateToken should have failed')
+      result = cgt.InsideChroot._ValidateDocsToken(mocked_insidechroot)
+      self.assertFalse(result, '_ValidateDocsToken should have failed')
     self.mox.VerifyAll()
-
 
 if __name__ == '__main__':
   unittest.main()

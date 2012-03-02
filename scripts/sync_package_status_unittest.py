@@ -10,8 +10,6 @@ import os
 import sys
 import unittest
 
-import gdata.projecthosting.client as gd_client
-import gdata.spreadsheet.service as gd_service
 import mox
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -22,363 +20,6 @@ import chromite.lib.upgrade_table as utable
 import sync_package_status as sps
 
 # pylint: disable=W0212,R0904
-
-class IssueCommentTest(unittest.TestCase):
-
-  def testInit(self):
-    title = 'Greetings, Earthlings'
-    text = 'I come in peace.'
-    ic = sps.IssueComment(title, text)
-
-    self.assertEquals(title, ic.title)
-    self.assertEquals(text, ic.text)
-
-
-class IssueTest(mox.MoxTestBase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-  def testInitOverride(self):
-    owner = 'somedude@chromium.org'
-    status = 'Assigned'
-    issue = sps.Issue(owner=owner, status=status)
-
-    self.assertEquals(owner, issue.owner)
-    self.assertEquals(status, issue.status)
-
-  def testInitInitFromTracker(self):
-    mocked_issue = self.mox.CreateMock(sps.Issue)
-    t_issue = 'TheTrackerIssue'
-
-    # Replay script
-    mocked_issue.InitFromTracker(t_issue)
-    self.mox.ReplayAll()
-
-    # Verify
-    sps.Issue.__init__(mocked_issue, tracker_issue=t_issue)
-    self.mox.VerifyAll()
-
-  def testInitFromTracker(self):
-    # Need to create a dummy Tracker Issue object.
-    tissue_id = 123
-    tissue_labels = ['Iteration-10', 'Effort-2']
-    tissue_owner = 'thedude@chromium.org'
-    tissue_status = 'Available'
-    tissue_content = 'The summary message'
-    tissue_title = 'The Big Title'
-
-    tissue = test_lib.EasyAttr()
-    tissue.id = test_lib.EasyAttr(text='http://www/some/path/%d' % tissue_id)
-    tissue.label = [test_lib.EasyAttr(text=l) for l in tissue_labels]
-    tissue.owner = test_lib.EasyAttr(
-      username=test_lib.EasyAttr(text=tissue_owner))
-    tissue.status = test_lib.EasyAttr(text=tissue_status)
-    tissue.content = test_lib.EasyAttr(text=tissue_content)
-    tissue.title = test_lib.EasyAttr(text=tissue_title)
-
-    mocked_issue = self.mox.CreateMock(sps.Issue)
-
-    # Replay script
-    mocked_issue.GetTrackerIssueComments(tissue_id).AndReturn([])
-    self.mox.ReplayAll()
-
-    # Verify
-    sps.Issue.InitFromTracker(mocked_issue, tissue)
-    self.mox.VerifyAll()
-    self.assertEquals(tissue_id, mocked_issue.id)
-    self.assertEquals(tissue_labels, mocked_issue.labels)
-    self.assertEquals(tissue_owner, mocked_issue.owner)
-    self.assertEquals(tissue_status, mocked_issue.status)
-    self.assertEquals(tissue_content, mocked_issue.summary)
-    self.assertEquals(tissue_title, mocked_issue.title)
-    self.assertEquals([], mocked_issue.comments)
-
-
-class TrackerCommTest(mox.MoxTestBase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-  def testInit(self):
-    creds = test_lib.EasyAttr(user='dude', password='shhh')
-    mocked_itclient = self.mox.CreateMock(gd_client.ProjectHostingClient)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
-
-    self.mox.StubOutWithMock(gd_client.ProjectHostingClient, '__new__')
-
-    # Replay script
-    gd_client.ProjectHostingClient.__new__(
-      gd_client.ProjectHostingClient).AndReturn(mocked_itclient)
-    mocked_itclient.ClientLogin(creds.user, creds.password,
-                                source='package_status_upgrade',
-                                service='code',
-                                account_type='GOOGLE')
-    self.mox.ReplayAll()
-
-    # Verify
-    sps.TrackerComm.__init__(mocked_tcomm, creds)
-    self.mox.VerifyAll()
-    self.assertEquals(mocked_tcomm.creds, creds)
-
-  def testGetTrackerIssueById(self):
-    mocked_itclient = self.mox.CreateMock(gd_client.ProjectHostingClient)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
-    mocked_tcomm.it_client = mocked_itclient
-
-    self.mox.StubOutWithMock(gd_client.Query, '__new__')
-    self.mox.StubOutWithMock(sps.Issue, '__new__')
-
-    issue_id = 12345
-    feed = test_lib.EasyAttr(entry=['hi', 'there'])
-
-    # Replay script
-    gd_client.Query.__new__(gd_client.Query,
-                            issue_id=str(issue_id)).AndReturn('Q')
-    mocked_itclient.get_issues(sps.PROJECT_NAME, query='Q').AndReturn(feed)
-    sps.Issue.__new__(sps.Issue, 'hi').AndReturn('EndResult')
-    self.mox.ReplayAll()
-
-    # Verify
-    result = sps.TrackerComm.GetTrackerIssueById(mocked_tcomm, issue_id)
-    self.mox.VerifyAll()
-    self.assertEquals('EndResult', result)
-
-  def testCreateTrackerIssue(self):
-    creds = test_lib.EasyAttr(user='dude', password='shhh')
-    mocked_itclient = self.mox.CreateMock(gd_client.ProjectHostingClient)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
-    mocked_tcomm.it_client = mocked_itclient
-    mocked_tcomm.creds = creds
-
-    issue = test_lib.EasyAttr(title='TheTitle',
-                     summary='TheSummary',
-                     status='TheStatus',
-                     owner='TheOwner',
-                     labels='TheLabels')
-
-    # Replay script
-    issue_id = test_lib.EasyAttr(id=test_lib.EasyAttr(text='foo/bar/123'))
-    mocked_itclient.add_issue(project_name=sps.PROJECT_NAME,
-                              title=issue.title,
-                              content=issue.summary,
-                              author=creds.user,
-                              status=issue.status,
-                              owner=issue.owner,
-                              labels=issue.labels,
-                              ).AndReturn(issue_id)
-    self.mox.ReplayAll()
-
-    # Verify
-    result = sps.TrackerComm.CreateTrackerIssue(mocked_tcomm, issue)
-    self.mox.VerifyAll()
-    self.assertEquals(123, result)
-
-  def testAppendTrackerIssueById(self):
-    creds = test_lib.EasyAttr(user='dude', password='shhh')
-    mocked_itclient = self.mox.CreateMock(gd_client.ProjectHostingClient)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
-    mocked_tcomm.it_client = mocked_itclient
-    mocked_tcomm.creds = creds
-
-    issue_id = 54321
-    comment = 'TheComment'
-
-    # Replay script
-    mocked_itclient.update_issue(project_name=sps.PROJECT_NAME,
-                                 issue_id=issue_id,
-                                 author=creds.user,
-                                 comment=comment)
-    self.mox.ReplayAll()
-
-    # Verify
-    result = sps.TrackerComm.AppendTrackerIssueById(mocked_tcomm, issue_id,
-                                                    comment)
-    self.mox.VerifyAll()
-    self.assertEquals(issue_id, result)
-
-
-class SpreadsheetCommTest(mox.MoxTestBase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-  def testInit(self):
-    creds = test_lib.EasyAttr(user='dude', password='shhh')
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_scomm.creds = creds
-
-    ss_key = 'TheSSKey'
-    ws_name = 'TheWSName'
-    ws_key = 'TheWSKey'
-    cols = 'TheColumns'
-
-    # Replay script
-    mocked_scomm._LoginWithUserPassword(creds.user, creds.password)
-    mocked_scomm._GetWorksheetKey(ss_key, ws_name).AndReturn(ws_key)
-    mocked_scomm._GetColumns().AndReturn(cols)
-    self.mox.ReplayAll()
-
-    # Verify
-    sps.SpreadsheetComm.__init__(mocked_scomm, creds, ss_key, ws_name)
-    self.mox.VerifyAll()
-    self.assertEquals(ss_key, mocked_scomm.ss_key)
-    self.assertEquals(ws_key, mocked_scomm.ws_key)
-    self.assertEquals(cols, mocked_scomm.columns)
-
-  def testLoginWithUserPassword(self):
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
-
-    self.mox.StubOutWithMock(gdata_lib.RetrySpreadsheetsService, '__new__')
-
-    user = 'dude'
-    password = 'shhh'
-
-    # Replay script
-    gdata_lib.RetrySpreadsheetsService.__new__(
-        gdata_lib.RetrySpreadsheetsService).AndReturn(mocked_gdclient)
-    mocked_gdclient.ProgrammaticLogin()
-    self.mox.ReplayAll()
-
-    # Verify
-    sps.SpreadsheetComm._LoginWithUserPassword(mocked_scomm, user, password)
-    self.mox.VerifyAll()
-    self.assertEquals(user, mocked_gdclient.email)
-    self.assertEquals(password, mocked_gdclient.password)
-    self.assertEquals(mocked_gdclient, mocked_scomm.gd_client)
-
-  def testGetWorksheetKey(self):
-    mocked_gdclient = self.mox.CreateMock(gd_service.SpreadsheetsService)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_scomm.gd_client = mocked_gdclient
-
-    ss_key = 'TheSSKey'
-    ws_name = 'TheWSName'
-    ws_key = 'TheWSKey'
-
-    entrylist = [
-      test_lib.EasyAttr(title=test_lib.EasyAttr(text='Foo'), id='NotImportant'),
-      test_lib.EasyAttr(title=test_lib.EasyAttr(text=ws_name),
-               id=test_lib.EasyAttr(text='/some/path/%s' % ws_key)),
-      test_lib.EasyAttr(title=test_lib.EasyAttr(text='Bar'), id='NotImportant'),
-      ]
-    feed = test_lib.EasyAttr(entry=entrylist)
-
-    # Replay script
-    mocked_gdclient.GetWorksheetsFeed(ss_key).AndReturn(feed)
-    self.mox.ReplayAll()
-
-    # Verify
-    sps.SpreadsheetComm._GetWorksheetKey(mocked_scomm, ss_key, ws_name)
-    self.mox.VerifyAll()
-
-  def testGetColumns(self):
-    mocked_gdclient = self.mox.CreateMock(gd_service.SpreadsheetsService)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_scomm.gd_client = mocked_gdclient
-    mocked_scomm.ss_key = 'TheSSKey'
-    mocked_scomm.ws_key = 'TheWSKey'
-
-    self.mox.StubOutWithMock(gd_service.CellQuery, '__new__')
-
-    columns = ['These', 'Are', 'Column', 'Names']
-    entrylist = [test_lib.EasyAttr(
-      content=test_lib.EasyAttr(text=c)) for c in columns]
-    feed = test_lib.EasyAttr(entry=entrylist)
-    query = {'max-row': '1'}
-
-    # Replay script
-    gd_service.CellQuery.__new__(gd_service.CellQuery).AndReturn({})
-    mocked_gdclient.GetCellsFeed(mocked_scomm.ss_key, mocked_scomm.ws_key,
-                                 query=query).AndReturn(feed)
-    self.mox.ReplayAll()
-
-    # Verify
-    result = sps.SpreadsheetComm._GetColumns(mocked_scomm)
-    self.mox.VerifyAll()
-    self.assertEquals(columns, result)
-
-  def testGetColumnIndex(self):
-    # Note that spreadsheet column indices start at 1.
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_scomm.columns = ['These', 'Are', 'Column', 'Names']
-
-    # Replay script
-    self.mox.ReplayAll()
-
-    # Verify
-    result = sps.SpreadsheetComm.GetColumnIndex(mocked_scomm, 'Are')
-    self.mox.VerifyAll()
-    self.assertEquals(2, result)
-
-  def testGetAllRowsAsDicts(self):
-    mocked_gdclient = self.mox.CreateMock(gd_service.SpreadsheetsService)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_scomm.gd_client = mocked_gdclient
-    mocked_scomm.ss_key = 'TheSSKey'
-    mocked_scomm.ws_key = 'TheWSKey'
-
-    rows = [
-      { 'Greeting': 'Hi', 'Name': 'George', },
-      { 'Greeting': 'Howdy', 'Name': 'Billy Bob', },
-      { 'Greeting': 'Yo', 'Name': 'Dane', },
-      ]
-    # Construct a simulation of the funky gdata representation of rows.
-    entrylist = []
-    for row in rows:
-      entryhash = dict([(k, test_lib.EasyAttr(text=v))
-                        for (k, v) in row.items()])
-      entrylist.append(test_lib.EasyAttr(custom=entryhash))
-    feed = test_lib.EasyAttr(entry=entrylist)
-
-    # Replay script
-    mocked_gdclient.GetListFeed(mocked_scomm.ss_key,
-                                mocked_scomm.ws_key).AndReturn(feed)
-    self.mox.ReplayAll()
-
-    # Verify
-    result = sps.SpreadsheetComm.GetAllRowsAsDicts(mocked_scomm)
-    self.mox.VerifyAll()
-    self.assertEquals(rows, result)
-
-  def testReplaceCellValue(self):
-    mocked_gdclient = self.mox.CreateMock(gd_service.SpreadsheetsService)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_scomm.gd_client = mocked_gdclient
-    mocked_scomm.ss_key = 'TheSSKey'
-    mocked_scomm.ws_key = 'TheWSKey'
-
-    rowIx = 14
-    colIx = 4
-    val = 'TheValue'
-
-    # Replay script
-    mocked_gdclient.UpdateCell(rowIx, colIx, val,
-                               mocked_scomm.ss_key, mocked_scomm.ws_key)
-    self.mox.ReplayAll()
-
-    # Verify
-    sps.SpreadsheetComm.ReplaceCellValue(mocked_scomm, rowIx, colIx, val)
-    self.mox.VerifyAll()
-
-  def testClearCellValue(self):
-    mocked_gdclient = self.mox.CreateMock(gd_service.SpreadsheetsService)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_scomm.gd_client = mocked_gdclient
-    mocked_scomm.ss_key = 'TheSSKey'
-    mocked_scomm.ws_key = 'TheWSKey'
-
-    rowIx = 14
-    colIx = 4
-
-    # Replay script
-    mocked_scomm.ReplaceCellValue(rowIx, colIx, None)
-    self.mox.ReplayAll()
-
-    # Verify
-    sps.SpreadsheetComm.ClearCellValue(mocked_scomm, rowIx, colIx)
-    self.mox.VerifyAll()
 
 
 class SyncerTest(test_lib.MoxTestCase):
@@ -398,8 +39,8 @@ class SyncerTest(test_lib.MoxTestCase):
 
   def testInit(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
 
     tracker_col_ix = 8
 
@@ -607,8 +248,8 @@ class SyncerTest(test_lib.MoxTestCase):
 
   def testSyncNewIssues(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
     mocked_syncer.scomm = mocked_scomm
     mocked_syncer.tcomm = mocked_tcomm
 
@@ -618,7 +259,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
-    mocked_scomm.GetAllRowsAsDicts().AndReturn(rows)
+    mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):
       mocked_syncer._RowPassesFilters(rows[ix]).AndReturn(True)
@@ -633,8 +274,8 @@ class SyncerTest(test_lib.MoxTestCase):
 
   def testSyncClearIssues(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
     mocked_syncer.scomm = mocked_scomm
     mocked_syncer.tcomm = mocked_tcomm
 
@@ -644,7 +285,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
-    mocked_scomm.GetAllRowsAsDicts().AndReturn(rows)
+    mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):
       mocked_syncer._RowPassesFilters(rows[ix]).AndReturn(True)
@@ -659,8 +300,8 @@ class SyncerTest(test_lib.MoxTestCase):
 
   def testSyncFilteredOut(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
     mocked_syncer.scomm = mocked_scomm
     mocked_syncer.tcomm = mocked_tcomm
 
@@ -670,7 +311,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
-    mocked_scomm.GetAllRowsAsDicts().AndReturn(rows)
+    mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):
       mocked_syncer._RowPassesFilters(rows[ix]).AndReturn(False)
@@ -850,8 +491,8 @@ class SyncerTest(test_lib.MoxTestCase):
 
   def testCreateRowIssue(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
-    mocked_tcomm = self.mox.CreateMock(sps.TrackerComm)
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
+    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
     mocked_syncer.scomm = mocked_scomm
     mocked_syncer.tcomm = mocked_tcomm
     mocked_syncer.tracker_col_ix = 8
@@ -890,7 +531,7 @@ class SyncerTest(test_lib.MoxTestCase):
 
   def testClearRowIssue(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
     mocked_syncer.scomm = mocked_scomm
     mocked_syncer.tracker_col_ix = 8
     mocked_syncer.pretend = False
@@ -909,7 +550,7 @@ class SyncerTest(test_lib.MoxTestCase):
 
   def testClearRowIssuePretend(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
-    mocked_scomm = self.mox.CreateMock(sps.SpreadsheetComm)
+    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
     mocked_syncer.scomm = mocked_scomm
     mocked_syncer.tracker_col_ix = 8
     mocked_syncer.pretend = True

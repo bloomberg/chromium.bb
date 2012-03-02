@@ -407,7 +407,7 @@ class MainTest(test_lib.MoxTestCase):
     mps.FinalizeTable('csv_table')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Packages')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Dependencies')
-    mocked_creds.StoreCreds(creds_file)
+    mocked_creds.StoreCredsIfNeeded(creds_file)
     self.mox.ReplayAll()
 
     ups.main(['--email=%s' % email,
@@ -437,7 +437,8 @@ class MainTest(test_lib.MoxTestCase):
     mps.FinalizeTable('csv_table')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
-    mocked_creds.StoreAuthToken(token_file)
+    mocked_creds.StoreCredsIfNeeded(creds_file)
+    mocked_creds.StoreAuthTokenIfNeeded(token_file)
     self.mox.ReplayAll()
 
     ups.main(['--cred-file=%s' % creds_file,
@@ -467,6 +468,8 @@ class MainTest(test_lib.MoxTestCase):
     mps.FinalizeTable('csv_table')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
+    mocked_creds.StoreCredsIfNeeded(creds_file)
+    mocked_creds.StoreAuthTokenIfNeeded(token_file)
     self.mox.ReplayAll()
 
     ups.main(['--cred-file=%s' % creds_file,
