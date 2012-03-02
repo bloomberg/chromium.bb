@@ -259,6 +259,7 @@ void BrowserMainLoop::EarlyInitialization() {
   } else {
     init_nspr = true;
   }
+  UMA_HISTOGRAM_BOOLEAN("Chrome.CommandLineUseSystemSSL", !init_nspr);
 #elif defined(USE_NSS)
   init_nspr = true;
 #endif

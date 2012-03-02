@@ -47,6 +47,8 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
     if (parameters.command_line.HasSwitch(switches::kWaitForDebugger))
       ChildProcess::WaitForDebugger("Browser");
 
+    statistics_.reset(new base::StatisticsRecorder);
+
     notification_service_.reset(new NotificationServiceImpl);
 
     main_loop_.reset(new content::BrowserMainLoop(parameters));
@@ -76,8 +78,6 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
     com_initializer_.reset(new base::win::ScopedCOMInitializer);
 #endif  // OS_WIN
 
-    statistics_.reset(new base::StatisticsRecorder);
-
     main_loop_->CreateThreads();
     int result_code = main_loop_->GetResultCode();
     if (result_code > 0)
@@ -103,8 +103,6 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
     if (created_threads_)
       main_loop_->ShutdownThreadsAndCleanUp();
 
-    statistics_.reset(NULL);
-
 #if defined(OS_WIN)
     com_initializer_.reset(NULL);
 #endif
@@ -112,6 +110,8 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
     main_loop_.reset(NULL);
 
     notification_service_.reset(NULL);
+
+    statistics_.reset(NULL);
 
     is_shutdown_ = true;
   }
