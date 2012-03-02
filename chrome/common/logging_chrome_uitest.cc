@@ -159,7 +159,7 @@ class RendererCrashTest : public UITest {
 #if defined(OS_MACOSX)
 // Crash service doesn't exist for the Mac yet: http://crbug.com/45243
 #define MAYBE_Crash DISABLED_Crash
-#elif defined(OS_CHROME)
+#elif defined(OS_CHROMEOS)
 #define MAYBE_Crash DISABLED_Crash
 #else
 #define MAYBE_Crash Crash
