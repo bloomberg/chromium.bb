@@ -10,10 +10,13 @@
       'variables': {
         'chromium_code': 1,
         'json_schema_files': [
+          'any.json',
+          'additionalProperties.json',
           'arrays.json',
           'choices.json',
           'crossref.json',
           'enums.json',
+          'functionsOnTypes.json',
           'objects.json',
           'simple_api.json',
         ],

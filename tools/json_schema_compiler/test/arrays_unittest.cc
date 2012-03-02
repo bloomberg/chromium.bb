@@ -93,6 +93,22 @@ TEST(JsonSchemaCompilerArrayTest, IntegerArrayParamsCreate) {
   EXPECT_EQ(8, params->nums[2]);
 }
 
+TEST(JsonSchemaCompilerArrayTest, AnyArrayParamsCreate) {
+  scoped_ptr<ListValue> params_value(new ListValue());
+  scoped_ptr<ListValue> any_array(new ListValue());
+  any_array->Append(Value::CreateIntegerValue(1));
+  any_array->Append(Value::CreateStringValue("test"));
+  any_array->Append(CreateItemValue(2));
+  params_value->Append(any_array.release());
+  scoped_ptr<AnyArray::Params> params(
+      AnyArray::Params::Create(*params_value));
+  EXPECT_TRUE(params.get());
+  EXPECT_EQ((size_t) 3, params->anys.size());
+  int int_temp = 0;
+  EXPECT_TRUE(params->anys[0]->value().GetAsInteger(&int_temp));
+  EXPECT_EQ(1, int_temp);
+}
+
 TEST(JsonSchemaCompilerArrayTest, RefArrayParamsCreate) {
   scoped_ptr<ListValue> params_value(new ListValue());
   scoped_ptr<ListValue> item_array(new ListValue());

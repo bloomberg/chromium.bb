@@ -37,11 +37,6 @@ class ModelTest(unittest.TestCase):
     self.assertEquals(["contains", "getAll", "remove", "request"],
         sorted(self.permissions.functions.keys()))
 
-  def testFunctionNoCallback(self):
-    del (self.permissions_json[0]['functions'][0]['parameters'][0])
-    self.assertRaises(AssertionError, self.model.AddNamespace,
-        self.permissions_json[0], 'path/to/something.json')
-
   def testFunctionNoCompile(self):
     # tabs.json has 2 functions marked as nocompile (connect, sendRequest)
     self.assertEquals(["captureVisibleTab", "create", "detectLanguage",
@@ -57,9 +52,9 @@ class ModelTest(unittest.TestCase):
     self.assertEquals(['Window'], self.windows.types.keys())
 
   def testHasProperties(self):
-    self.assertEquals(["active", "favIconUrl", "highlighted", "id",
+    self.assertEquals(["active", "fav_icon_url", "highlighted", "id",
         "incognito", "index", "pinned", "selected", "status", "title", "url",
-        "windowId"],
+        "window_id"],
         sorted(self.tabs.types['Tab'].properties.keys()))
 
   def testProperties(self):
@@ -75,7 +70,7 @@ class ModelTest(unittest.TestCase):
     self.assertEquals(model.PropertyType.OBJECT, object_prop.type_)
     self.assertEquals(
         ["active", "highlighted", "pinned", "status", "title", "url",
-         "windowId", "windowType"],
+         "window_id", "window_type"],
         sorted(object_prop.properties.keys()))
 
   def testChoices(self):
@@ -85,7 +80,7 @@ class ModelTest(unittest.TestCase):
   def testPropertyNotImplemented(self):
     (self.permissions_json[0]['types'][0]
         ['properties']['permissions']['type']) = 'something'
-    self.assertRaises(NotImplementedError, self.model.AddNamespace,
+    self.assertRaises(model.ParseException, self.model.AddNamespace,
         self.permissions_json[0], 'path/to/something.json')
 
   def testDescription(self):

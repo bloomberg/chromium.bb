@@ -52,7 +52,6 @@ def GetValueType(prop):
       PropertyType.REF: 'Value::TYPE_DICTIONARY',
       PropertyType.OBJECT: 'Value::TYPE_DICTIONARY',
       PropertyType.ARRAY: 'Value::TYPE_LIST',
-      PropertyType.ANY: 'Value::TYPE_DICTIONARY',
   }[prop.type_]
 
 def GetParameterDeclaration(param, type_):

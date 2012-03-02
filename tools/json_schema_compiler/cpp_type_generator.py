@@ -4,6 +4,7 @@
 
 from code import Code
 from model import PropertyType
+import any_helper
 import cpp_util
 
 class CppTypeGenerator(object):
@@ -134,8 +135,12 @@ class CppTypeGenerator(object):
       cpp_type = 'std::string'
     elif prop.type_ == PropertyType.ENUM:
       cpp_type = cpp_util.Classname(prop.name)
-    elif prop.type_ == PropertyType.ANY:
+    elif prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
       cpp_type = 'DictionaryValue'
+    elif prop.type_ == PropertyType.ANY:
+      cpp_type = any_helper.ANY_CLASS
+    elif prop.type_ == PropertyType.OBJECT:
+      cpp_type = cpp_util.Classname(prop.name)
     elif prop.type_ == PropertyType.ARRAY:
       if prop.item_type.type_ in (
           PropertyType.REF, PropertyType.ANY, PropertyType.OBJECT):
@@ -144,8 +149,6 @@ class CppTypeGenerator(object):
         cpp_type = 'std::vector<%s> '
       cpp_type = cpp_type % self.GetType(
           prop.item_type, pad_for_generics=True)
-    elif prop.type_ == PropertyType.OBJECT:
-      cpp_type = cpp_util.Classname(prop.name)
     else:
       raise NotImplementedError(prop.type_)
 

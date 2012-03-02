@@ -10,6 +10,7 @@
     'target_name': 'api_gen_util',
     'type': 'static_library',
     'sources': [
+        'any.cc',
         'util.cc',
     ],
     'dependencies': ['<(DEPTH)/base/base.gyp:base'],

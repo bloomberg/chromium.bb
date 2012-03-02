@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 
 from model import PropertyType
+import any_helper
 import code
 import cpp_util
+import model
 import util_cc_helper
 
 class CCGenerator(object):
@@ -17,6 +19,7 @@ class CCGenerator(object):
         self._cpp_type_generator.GetCppNamespaceName(self._namespace))
     self._util_cc_helper = (
         util_cc_helper.UtilCCHelper(self._cpp_type_generator))
+    self._any_helper = any_helper.AnyHelper()
 
   def Generate(self):
     """Generates a code.Code object with the .cc for a single namespace.
@@ -40,6 +43,7 @@ class CCGenerator(object):
       .Append('using base::Value;')
       .Append('using base::DictionaryValue;')
       .Append('using base::ListValue;')
+      .Append('using %s;' % any_helper.ANY_CLASS)
       .Append()
       .Concat(self._cpp_type_generator.GetRootNamespaceStart())
       .Concat(self._cpp_type_generator.GetNamespaceStart())
@@ -62,7 +66,8 @@ class CCGenerator(object):
         .Append()
       )
     for function in self._namespace.functions.values():
-      (c.Concat(self._GenerateFunction(function))
+      (c.Concat(self._GenerateFunction(
+          cpp_util.Classname(function.name), function))
         .Append()
       )
     (c.Concat(self._cpp_type_generator.GetNamespaceEnd())
@@ -78,25 +83,43 @@ class CCGenerator(object):
     classname = cpp_util.Classname(type_.name)
     c = code.Code()
 
-    (c.Concat(self._GeneratePropertyFunctions(
-        cpp_namespace, type_.properties.values()))
-      .Append('%(namespace)s::%(classname)s() {}')
-      .Append('%(namespace)s::~%(classname)s() {}')
-      .Append()
-    )
-    if type_.from_json:
-      (c.Concat(self._GenerateTypePopulate(cpp_namespace, type_))
+    if type_.functions:
+      # Types with functions are not instantiable in C++ because they are
+      # handled in pure Javascript and hence have no properties or
+      # additionalProperties.
+      if type_.properties:
+        raise NotImplementedError('\n'.join(model.GetModelHierarchy(type_)) +
+            '\nCannot generate both functions and properties on a type')
+      for function in type_.functions.values():
+        (c.Concat(
+            self._GenerateFunction(
+                cpp_namespace + '::' + cpp_util.Classname(function.name),
+                function))
+          .Append()
+        )
+    else:
+      (c.Concat(self._GeneratePropertyFunctions(
+          cpp_namespace, type_.properties.values()))
+        .Append('%(namespace)s::%(classname)s() {}')
+        .Append('%(namespace)s::~%(classname)s() {}')
         .Append()
       )
-    if type_.from_client:
-      c.Concat(self._GenerateTypeToValue(cpp_namespace, type_))
-    c.Append()
+      if type_.from_json:
+        (c.Concat(self._GenerateTypePopulate(cpp_namespace, type_))
+          .Append()
+        )
+      if type_.from_client:
+        (c.Concat(self._GenerateTypeToValue(cpp_namespace, type_))
+          .Append()
+        )
     c.Substitute({'classname': classname, 'namespace': cpp_namespace})
 
     return c
 
   def _GenerateTypePopulate(self, cpp_namespace, type_):
     """Generates the function for populating a type given a pointer to it.
+
+    E.g for type "Foo", generates Foo::Populate()
     """
     classname = cpp_util.Classname(type_.name)
     c = code.Code()
@@ -112,7 +135,16 @@ class CCGenerator(object):
     for prop in type_.properties.values():
       c.Concat(self._InitializePropertyToDefault(prop, 'out'))
     for prop in type_.properties.values():
-      c.Concat(self._GenerateTypePopulateProperty(prop, 'dict', 'out'))
+      if prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
+        c.Append('out->additional_properties.MergeDictionary(dict);')
+        # remove all keys that are actual properties
+        for cur_prop in type_.properties.values():
+          if prop != cur_prop:
+            c.Append('out->additional_properties'
+                '.RemoveWithoutPathExpansion("%s", NULL);' % cur_prop.name)
+        c.Append()
+      else:
+        c.Concat(self._GenerateTypePopulateProperty(prop, 'dict', 'out'))
     (c.Append('return true;')
       .Eblock('}')
     )
@@ -149,6 +181,8 @@ class CCGenerator(object):
 
   def _GenerateTypeToValue(self, cpp_namespace, type_):
     """Generates a function that serializes the type into a |DictionaryValue|.
+
+    E.g. for type "Foo" generates Foo::ToValue()
     """
     c = code.Code()
     (c.Sblock('scoped_ptr<DictionaryValue> %s::ToValue() const {' %
@@ -157,51 +191,54 @@ class CCGenerator(object):
         .Append()
     )
     for prop in type_.properties.values():
-      if prop.optional:
-        if prop.type_ == PropertyType.ENUM:
-          c.Sblock('if (%s != %s)' %
-              (prop.unix_name, self._cpp_type_generator.GetEnumNoneValue(prop)))
-        else:
-          c.Sblock('if (%s.get())' % prop.unix_name)
-      c.Append('value->SetWithoutPathExpansion("%s", %s);' % (
-          prop.name,
-          self._CreateValueFromProperty(prop, prop.unix_name)))
-      if prop.optional:
-        c.Eblock();
+      if prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
+        c.Append('value->MergeDictionary(&%s);' % prop.unix_name)
+      else:
+        if prop.optional:
+          if prop.type_ == PropertyType.ENUM:
+            c.Sblock('if (%s != %s)' %
+                (prop.unix_name,
+                    self._cpp_type_generator.GetEnumNoneValue(prop)))
+          else:
+            c.Sblock('if (%s.get())' % prop.unix_name)
+        c.Append('value->SetWithoutPathExpansion("%s", %s);' % (
+            prop.name,
+            self._CreateValueFromProperty(prop, prop.unix_name)))
+        if prop.optional:
+          c.Eblock();
     (c.Append()
       .Append('return value.Pass();')
       .Eblock('}')
     )
     return c
 
-  def _GenerateFunction(self, function):
+  def _GenerateFunction(self, cpp_namespace, function):
     """Generates the definitions for function structs.
     """
-    classname = cpp_util.Classname(function.name)
     c = code.Code()
 
     # Params::Populate function
     if function.params:
-      c.Concat(self._GeneratePropertyFunctions(classname + '::Params',
+      c.Concat(self._GeneratePropertyFunctions(cpp_namespace + '::Params',
           function.params))
-      (c.Append('%(name)s::Params::Params() {}')
-        .Append('%(name)s::Params::~Params() {}')
+      (c.Append('%(cpp_namespace)s::Params::Params() {}')
+        .Append('%(cpp_namespace)s::Params::~Params() {}')
         .Append()
-        .Concat(self._GenerateFunctionParamsCreate(function))
+        .Concat(self._GenerateFunctionParamsCreate(cpp_namespace, function))
         .Append()
       )
 
     # Result::Create function
     if function.callback:
-      c.Concat(self._GenerateFunctionResultCreate(function))
+      c.Concat(self._GenerateFunctionResultCreate(cpp_namespace, function))
 
-    c.Substitute({'name': classname})
+    c.Substitute({'cpp_namespace': cpp_namespace})
 
     return c
 
   def _GenerateCreateEnumValue(self, cpp_namespace, prop):
-    """Generates a function that returns the |StringValue| representation of an
-    enum.
+    """Generates CreateEnumValue() that returns the |StringValue|
+    representation of an enum.
     """
     c = code.Code()
     c.Append('// static')
@@ -233,15 +270,18 @@ class CCGenerator(object):
     return c
 
   def _CreateValueFromProperty(self, prop, var):
-    """Creates a Value given a single property. Generated code passes ownership
+    """Creates a Value given a property. Generated code passes ownership
     to caller.
 
     var: variable or variable*
+
+    E.g for std::string, generate Value::CreateStringValue(var)
     """
     if prop.type_ == PropertyType.CHOICES:
-      # CHOICES conversion not implemented because it's not used. If needed,
-      # write something to generate a function that returns a scoped_ptr<Value>
-      # and put it in _GeneratePropertyFunctions.
+      # CHOICES conversion not implemented. If needed, write something to
+      # generate a function that returns a scoped_ptr<Value> and put it in
+      # _GeneratePropertyFunctions, then use it here. Look at CreateEnumValue()
+      # for reference.
       raise NotImplementedError(
           'Conversion of CHOICES to Value not implemented')
     if prop.type_ in (PropertyType.REF, PropertyType.OBJECT):
@@ -249,6 +289,10 @@ class CCGenerator(object):
         return '%s->ToValue().release()' % var
       else:
         return '%s.ToValue().release()' % var
+    elif prop.type_ == PropertyType.ANY:
+      return '%s.DeepCopy()' % self._any_helper.GetValue(prop, var)
+    elif prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
+      return '%s.DeepCopy()' % var
     elif prop.type_ == PropertyType.ENUM:
       return 'CreateEnumValue(%s).release()' % var
     elif prop.type_ == PropertyType.ARRAY:
@@ -291,19 +335,20 @@ class CCGenerator(object):
     })
     return c
 
-  def _GenerateFunctionParamsCreate(self, function):
+  def _GenerateFunctionParamsCreate(self, cpp_namespace, function):
     """Generate function to create an instance of Params. The generated
     function takes a ListValue of arguments.
+
+    E.g for function "Bar", generate Bar::Params::Create()
     """
-    classname = cpp_util.Classname(function.name)
     c = code.Code()
     (c.Append('// static')
-      .Sblock('scoped_ptr<%(classname)s::Params> %(classname)s::Params::Create'
-               '(const ListValue& args) {')
+      .Sblock('scoped_ptr<%(cpp_namespace)s::Params> '
+        '%(cpp_namespace)s::Params::Create(const ListValue& args) {')
       .Concat(self._GenerateParamsCheck(function, 'args'))
       .Append('scoped_ptr<Params> params(new Params());')
     )
-    c.Substitute({'classname': classname})
+    c.Substitute({'cpp_namespace': cpp_namespace})
 
     for param in function.params:
       c.Concat(self._InitializePropertyToDefault(param, 'params'))
@@ -353,7 +398,8 @@ class CCGenerator(object):
     c = code.Code()
     c.Sblock('{')
 
-    if check_type and prop.type_ != PropertyType.CHOICES:
+    if check_type and prop.type_ not in (
+        PropertyType.CHOICES, PropertyType.ANY):
       (c.Append('if (!%(value_var)s->IsType(%(value_type)s))')
         .Append('  return %(failure_value)s;')
       )
@@ -389,6 +435,10 @@ class CCGenerator(object):
               'if (!%(ctype)s::Populate(*dictionary, &%(dst)s->%(name)s))')
           .Append('  return %(failure_value)s;')
         )
+    elif prop.type_ == PropertyType.ANY:
+      if prop.optional:
+        c.Append('%(dst)s->%(name)s.reset(new Any());')
+      c.Append(self._any_helper.Init(prop, value_var, dst) + ';')
     elif prop.type_ == PropertyType.ARRAY:
       # util_cc_helper deals with optional and required arrays
       (c.Append('ListValue* list = NULL;')
@@ -442,7 +492,7 @@ class CCGenerator(object):
         'dst': dst,
         'failure_value': failure_value,
     }
-    if prop.type_ != PropertyType.CHOICES:
+    if prop.type_ not in (PropertyType.CHOICES, PropertyType.ANY):
       sub['ctype'] = self._cpp_type_generator.GetType(prop)
       sub['value_type'] = cpp_util.GetValueType(prop)
     c.Substitute(sub)
@@ -459,20 +509,24 @@ class CCGenerator(object):
             param_namespace + '::' + cpp_util.Classname(param.name),
             param))
         c.Append()
+      elif param.type_ == PropertyType.CHOICES:
+        c.Concat(self._GeneratePropertyFunctions(
+            param_namespace, param.choices.values()))
       elif param.type_ == PropertyType.ENUM:
         c.Concat(self._GenerateCreateEnumValue(param_namespace, param))
         c.Append()
     return c
 
-  def _GenerateFunctionResultCreate(self, function):
+  def _GenerateFunctionResultCreate(self, cpp_namespace, function):
     """Generate function to create a Result given the return value.
+
+    E.g for function "Bar", generate Bar::Result::Create
     """
-    classname = cpp_util.Classname(function.name)
     c = code.Code()
     params = function.callback.params
 
     if not params:
-      (c.Append('Value* %s::Result::Create() {' % classname)
+      (c.Append('Value* %s::Result::Create() {' % cpp_namespace)
         .Append('  return Value::CreateNullValue();')
         .Append('}')
       )
@@ -480,22 +534,26 @@ class CCGenerator(object):
       expanded_params = self._cpp_type_generator.GetExpandedChoicesInParams(
           params)
       c.Concat(self._GeneratePropertyFunctions(
-          classname + '::Result', expanded_params))
+          cpp_namespace + '::Result', expanded_params))
 
       # If there is a single parameter, this is straightforward. However, if
       # the callback parameter is of 'choices', this generates a Create method
       # for each choice. This works because only 1 choice can be returned at a
       # time.
       for param in expanded_params:
+        if param.type_ == PropertyType.ANY:
+          # Generation of Value* Create(Value*) is redundant.
+          continue
         # We treat this argument as 'required' to avoid wrapping it in a
         # scoped_ptr if it's optional.
         param_copy = param.Copy()
         param_copy.optional = False
-        c.Sblock('Value* %(classname)s::Result::Create(const %(arg)s) {')
+        c.Sblock('Value* %(cpp_namespace)s::Result::Create(const %(arg)s) {')
         c.Append('return %s;' %
            self._CreateValueFromProperty(param_copy, param_copy.unix_name))
         c.Eblock('}')
-        c.Substitute({'classname': classname,
+        c.Substitute({
+            'cpp_namespace': cpp_namespace,
             'arg': cpp_util.GetParameterDeclaration(
                 param_copy, self._cpp_type_generator.GetType(param_copy))
         })
@@ -504,6 +562,8 @@ class CCGenerator(object):
 
   def _InitializePropertyToDefault(self, prop, dst):
     """Initialize a model.Property to its default value inside an object.
+
+    E.g for optional enum "state", generate dst->state = STATE_NONE;
 
     dst: Type*
     """

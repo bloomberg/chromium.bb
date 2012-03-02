@@ -14,11 +14,15 @@ class Code(object):
     self._indent_size = indent_size
     self._comment_length = comment_length
 
-  def Append(self, line=''):
+  def Append(self, line='', substitute=True):
     """Appends a line of code at the current indent level or just a newline if
     line is not specified. Trailing whitespace is stripped.
+
+    substitute: indicated whether this line should be affected by
+    code.Substitute().
     """
-    self._code.append(((' ' * self._indent_level) + line).rstrip())
+    self._code.append(Line(((' ' * self._indent_level) + line).rstrip(),
+        substitute=substitute))
     return self
 
   def IsEmpty(self):
@@ -40,9 +44,13 @@ class Code(object):
     for line in obj._code:
       try:
         # line % () will fail if any substitution tokens are left in line
-        self._code.append(((' ' * self._indent_level) + line % ()).rstrip())
+        if line.substitute:
+          line.value %= ()
       except TypeError:
         raise TypeError('Unsubstituted value when concatting\n' + line)
+      except ValueError:
+        raise ValueError('Stray % character when concatting\n' + line)
+      self.Append(line.value, line.substitute)
 
     return self
 
@@ -66,16 +74,15 @@ class Code(object):
     self.Append(line)
     return self
 
-  # TODO(calamity): Make comment its own class or something and Render at
-  # self.Render() time
-  def Comment(self, comment):
+  def Comment(self, comment, comment_prefix='// '):
     """Adds the given string as a comment.
 
     Will split the comment if it's too long. Use mainly for variable length
     comments. Otherwise just use code.Append('// ...') for comments.
+
+    Unaffected by code.Substitute().
     """
-    comment_symbol = '// '
-    max_len = self._comment_length - self._indent_level - len(comment_symbol)
+    max_len = self._comment_length - self._indent_level - len(comment_prefix)
     while len(comment) >= max_len:
       line = comment[0:max_len]
       last_space = line.rfind(' ')
@@ -84,8 +91,8 @@ class Code(object):
         comment = comment[last_space + 1:]
       else:
         comment = comment[max_len:]
-      self.Append(comment_symbol + line)
-    self.Append(comment_symbol + comment)
+      self.Append(comment_prefix + line, substitute=False)
+    self.Append(comment_prefix + comment, substitute=False)
     return self
 
   def Substitute(self, d):
@@ -100,16 +107,24 @@ class Code(object):
     if not isinstance(d, dict):
       raise TypeError('Passed argument is not a dictionary: ' + d)
     for i, line in enumerate(self._code):
-      # Only need to check %s because arg is a dict and python will allow
-      # '%s %(named)s' but just about nothing else
-      if '%s' in self._code[i] or '%r' in self._code[i]:
-        raise TypeError('"%s" or "%r" found in substitution. '
-                        'Named arguments only. Use "%" to escape')
-      self._code[i] = line % d
+      if self._code[i].substitute:
+        # Only need to check %s because arg is a dict and python will allow
+        # '%s %(named)s' but just about nothing else
+        if '%s' in self._code[i].value or '%r' in self._code[i].value:
+          raise TypeError('"%s" or "%r" found in substitution. '
+                          'Named arguments only. Use "%" to escape')
+        self._code[i].value = line.value % d
+        self._code[i].substitute = False
     return self
 
   def Render(self):
     """Renders Code as a string.
     """
-    return '\n'.join(self._code)
+    return '\n'.join([l.value for l in self._code])
 
+class Line(object):
+  """A line of code.
+  """
+  def __init__(self, value, substitute=True):
+    self.value = value
+    self.substitute = substitute

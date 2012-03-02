@@ -1,6 +1,7 @@
 [
   {
     "namespace": "devtools.inspectedWindow",
+    "nocompile": true,
     "types": [
       {
         "id": "Resource",
@@ -188,6 +189,7 @@
   },
   {
     "namespace": "devtools.panels",
+    "nocompile": true,
     "types": [
       {
         "id": "ElementsPanel",
@@ -496,6 +498,7 @@
   },
   {
     "namespace": "devtools.network",
+    "nocompile": true,
     "types": [
       {
         "id": "Request",
@@ -575,6 +578,7 @@
   },
   {
     "namespace": "experimental.devtools.console",
+    "nocompile": true,
     "functions": [
       {
         "name": "addMessage",
@@ -667,6 +671,7 @@
   },
   {
     "namespace": "experimental.devtools.audits",
+    "nocompile": true,
     "functions": [
       {
         "name": "addCategory",

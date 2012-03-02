@@ -208,7 +208,12 @@
         "description": "Sets a preference value with the store login.",
         "parameters": [
           { "name": "login", "type": "string" },
-          { "name": "callback", "type": "function", "optional": "true" }
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }
         ]
       },
       {

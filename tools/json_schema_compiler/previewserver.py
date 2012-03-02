@@ -196,7 +196,7 @@ updateEverything();
             json_file_path)
         return
       type_generator = cpp_type_generator.CppTypeGenerator(
-         'preview::api', namespace, cpp_util.Classname(filename).lower())
+         'preview::api', namespace, namespace.unix_name)
 
       # Get json file depedencies
       for dependency in api_defs[0].get('dependencies', []):

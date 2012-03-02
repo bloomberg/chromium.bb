@@ -63,6 +63,23 @@
         ]
       },
       {
+        "name": "anyArray",
+        "type": "function",
+        "description": "Takes some Items.",
+        "parameters": [
+          {
+            "name": "anys",
+            "type": "array",
+            "items": {"type": "any"}
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "refArray",
         "type": "function",
         "description": "Takes some Items.",

@@ -149,10 +149,8 @@
               {
                 "name": "control",
                 "description": "Details of the currently focused control, or null if nothing is focused.",
-                "choices": [
-                  { "$ref": "AccessibilityObject" },
-                  { "type": "null" }
-                ]
+                "$ref": "AccessibilityObject",
+                "optional": true
               }
             ]
           }

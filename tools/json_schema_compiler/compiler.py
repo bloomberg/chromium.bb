@@ -75,8 +75,8 @@ if __name__ == '__main__':
     # The output filename must match the input filename for gyp to deal with it
     # properly.
     out_file = namespace.name
-    type_generator = cpp_type_generator.CppTypeGenerator(root_namespace,
-                                                         namespace, out_file)
+    type_generator = cpp_type_generator.CppTypeGenerator(
+        root_namespace, namespace, namespace.unix_name)
     for referenced_namespace in api_model.namespaces.values():
       type_generator.AddNamespace(
           referenced_namespace,

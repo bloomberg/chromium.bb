@@ -5,6 +5,7 @@
 from model import PropertyType
 import code
 import cpp_util
+import model
 import os
 
 class HGenerator(object):
@@ -38,6 +39,7 @@ class HGenerator(object):
       .Append('#include "base/memory/linked_ptr.h"')
       .Append('#include "base/memory/scoped_ptr.h"')
       .Append('#include "base/values.h"')
+      .Append('#include "tools/json_schema_compiler/any.h"')
       .Append()
     )
 
@@ -76,8 +78,7 @@ class HGenerator(object):
         (c.Concat(self._GenerateFunction(function))
           .Append()
         )
-    (c.Append()
-      .Concat(self._cpp_type_generator.GetNamespaceEnd())
+    (c.Concat(self._cpp_type_generator.GetNamespaceEnd())
       .Concat(self._cpp_type_generator.GetRootNamespaceEnd())
       .Append()
       .Append('#endif  // %s' % ifndef_name)
@@ -109,6 +110,7 @@ class HGenerator(object):
       if prop.type_ == PropertyType.CHOICES:
         enum_name = self._cpp_type_generator.GetChoicesEnumType(prop)
         c.Append('%s %s_type;' % (enum_name, prop.unix_name))
+        c.Append()
     for prop in self._cpp_type_generator.GetExpandedChoicesInParams(props):
       if prop.description:
         c.Comment(prop.description)
@@ -123,33 +125,50 @@ class HGenerator(object):
     """
     classname = cpp_util.Classname(type_.name)
     c = code.Code()
-    if type_.description:
-      c.Comment(type_.description)
-    (c.Sblock('struct %(classname)s {')
-        .Append('~%(classname)s();')
-        .Append('%(classname)s();')
-        .Append()
-        .Concat(self._GeneratePropertyStructures(type_.properties.values()))
-        .Concat(self._GenerateFields(type_.properties.values()))
-    )
-    if type_.from_json:
-      (c.Comment('Populates a %s object from a Value. Returns'
-                 ' whether |out| was successfully populated.' % classname)
-        .Append('static bool Populate(const Value& value, %(classname)s* out);')
-        .Append()
-      )
 
-    if type_.from_client:
-      (c.Comment('Returns a new DictionaryValue representing the'
-                 ' serialized form of this %s object. Passes '
-                 'ownership to caller.' % classname)
-        .Append('scoped_ptr<DictionaryValue> ToValue() const;')
+    if type_.functions:
+      # Types with functions are not instantiable in C++ because they are
+      # handled in pure Javascript and hence have no properties or
+      # additionalProperties.
+      if type_.properties:
+        raise NotImplementedError('\n'.join(model.GetModelHierarchy(type_)) +
+            '\nCannot generate both functions and properties on a type')
+      c.Sblock('namespace %(classname)s {')
+      for function in type_.functions.values():
+        (c.Concat(self._GenerateFunction(function))
+          .Append()
+        )
+      c.Eblock('}')
+    else:
+      if type_.description:
+        c.Comment(type_.description)
+      (c.Sblock('struct %(classname)s {')
+          .Append('~%(classname)s();')
+          .Append('%(classname)s();')
+          .Append()
+          .Concat(self._GeneratePropertyStructures(type_.properties.values()))
+          .Concat(self._GenerateFields(type_.properties.values()))
       )
-    (c.Eblock()
-      .Sblock(' private:')
-        .Append('DISALLOW_COPY_AND_ASSIGN(%(classname)s);')
-      .Eblock('};')
-    )
+      if type_.from_json:
+        (c.Comment('Populates a %s object from a Value. Returns'
+                   ' whether |out| was successfully populated.' % classname)
+          .Append(
+              'static bool Populate(const Value& value, %(classname)s* out);')
+          .Append()
+        )
+
+      if type_.from_client:
+        (c.Comment('Returns a new DictionaryValue representing the'
+                   ' serialized form of this %s object. Passes '
+                   'ownership to caller.' % classname)
+          .Append('scoped_ptr<DictionaryValue> ToValue() const;')
+        )
+
+      (c.Eblock()
+        .Sblock(' private:')
+          .Append('DISALLOW_COPY_AND_ASSIGN(%(classname)s);')
+        .Eblock('};')
+      )
     c.Substitute({'classname': classname})
     return c
 
@@ -205,6 +224,7 @@ class HGenerator(object):
             self._cpp_type_generator.GetChoicesEnumType(prop),
             prop,
             [choice.type_.name for choice in prop.choices.values()]))
+        c.Concat(self._GeneratePropertyStructures(prop.choices.values()))
       elif prop.type_ == PropertyType.ENUM:
         enum_name = self._cpp_type_generator.GetType(prop)
         c.Concat(self._GenerateEnumDeclaration(
@@ -234,6 +254,10 @@ class HGenerator(object):
       for param in self._cpp_type_generator.GetExpandedChoicesInParams(params):
         if param.description:
           c.Comment(param.description)
+        if param.type_ == PropertyType.ANY:
+          c.Comment("Value* Result::Create(Value*) not generated "
+                    "because it's redundant.")
+          continue
         c.Append('Value* Create(const %s);' % cpp_util.GetParameterDeclaration(
             param, self._cpp_type_generator.GetType(param)))
     c.Eblock('};')
