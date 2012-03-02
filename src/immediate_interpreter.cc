@@ -41,6 +41,23 @@ void TapRecord::NoteTouch(short the_id, const FingerState& fs) {
     Err("Error! Bad FingerState!");
     return;
   }
+  // New finger must be close enough to an existing finger
+  if (!touched_.empty()) {
+    bool reject_new_finger = true;
+    const float kMaxSeparationDistSq =
+        immediate_interpreter_->two_finger_close_distance_thresh_.val_ *
+        immediate_interpreter_->two_finger_close_distance_thresh_.val_;
+    for (map<short, FingerState, kMaxTapFingers>::const_iterator it =
+             touched_.begin(), e = touched_.end(); it != e; ++it) {
+      const FingerState& existing_fs = (*it).second;
+      if (DistSq(existing_fs, fs) <= kMaxSeparationDistSq) {
+        reject_new_finger = false;
+        break;
+      }
+    }
+    if (reject_new_finger)
+      return;
+  }
   touched_[the_id] = fs;
 }
 
