@@ -17,7 +17,6 @@
 #include "../common/scoped_ptr.h"
 #include "../client/gles2_cmd_helper.h"
 #include "../client/ring_buffer.h"
-#include "gles2_impl_export.h"
 
 #if !defined(NDEBUG) && !defined(__native_client__) && !defined(GLES2_CONFORMANCE_TESTS)  // NOLINT
   #if defined(GLES2_INLINE_OPTIMIZATION)
@@ -105,7 +104,7 @@ class IdHandlerInterface {
 // be had by changing your code to use command buffers directly by using the
 // GLES2CmdHelper but that entails changing your code to use and deal with
 // shared memory and synchronization issues.
-class GLES2_IMPL_EXPORT GLES2Implementation {
+class GLES2Implementation {
  public:
   // Stores client side cached GL state.
   struct GLState {

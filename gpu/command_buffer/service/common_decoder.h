@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
-#include "gpu/gpu_export.h"
 
 namespace gpu {
 
@@ -19,7 +18,7 @@ class CommandBufferEngine;
 
 // This class is a helper base class for implementing the common parts of the
 // o3d/gl2 command buffer decoder.
-class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
+class CommonDecoder : public AsyncAPIInterface {
  public:
   typedef error::Error Error;
 
@@ -47,7 +46,7 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   // arbitary size, the service puts the string in a bucket. The client can
   // then query the size of a bucket and request sections of the bucket to
   // be passed across shared memory.
-  class GPU_EXPORT Bucket {
+  class Bucket {
    public:
     Bucket();
     ~Bucket();

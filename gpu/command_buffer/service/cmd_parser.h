@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
-#include "gpu/gpu_export.h"
 
 namespace gpu {
 
@@ -17,7 +16,7 @@ class AsyncAPIInterface;
 
 // Command parser class. This class parses commands from a shared memory
 // buffer, to implement some asynchronous RPC mechanism.
-class GPU_EXPORT CommandParser {
+class CommandParser {
  public:
   explicit CommandParser(AsyncAPIInterface* handler);
 

@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_TRANSFER_BUFFER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_TRANSFER_BUFFER_H_
 
-#include "../../gpu_export.h"
 #include "../common/buffer.h"
 #include "../common/compiler_specific.h"
 #include "../common/gles2_cmd_utils.h"
@@ -51,7 +50,7 @@ class AlignedRingBuffer : public RingBufferWrapper {
 };
 
 // Interface for managing the transfer buffer.
-class GPU_EXPORT TransferBufferInterface {
+class TransferBufferInterface {
  public:
   TransferBufferInterface() { }
   virtual ~TransferBufferInterface() { }
@@ -85,7 +84,7 @@ class GPU_EXPORT TransferBufferInterface {
 };
 
 // Class that manages the transfer buffer.
-class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
+class TransferBuffer : public TransferBufferInterface {
  public:
   TransferBuffer(CommandBufferHelper* helper);
   virtual ~TransferBuffer();
@@ -157,7 +156,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
 };
 
 // A class that will manage the lifetime of a transferbuffer allocation.
-class GPU_EXPORT ScopedTransferBufferPtr {
+class ScopedTransferBufferPtr {
  public:
   ScopedTransferBufferPtr(
       unsigned int size,

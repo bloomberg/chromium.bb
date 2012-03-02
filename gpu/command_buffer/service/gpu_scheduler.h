@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/gpu_export.h"
 
 namespace gfx {
 class GLFence;
@@ -28,8 +27,8 @@ namespace gpu {
 // a command buffer and forwarded to a command parser. TODO(apatrick): This
 // class should not know about the decoder. Do not add additional dependencies
 // on it.
-class GPU_EXPORT GpuScheduler
-    : NON_EXPORTED_BASE(public CommandBufferEngine),
+class GpuScheduler
+    : public CommandBufferEngine,
       public base::SupportsWeakPtr<GpuScheduler> {
  public:
   GpuScheduler(CommandBuffer* command_buffer,

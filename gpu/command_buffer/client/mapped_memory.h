@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "../../gpu_export.h"
 #include "../common/types.h"
 #include "../client/fenced_allocator.h"
 #include "../common/buffer.h"
@@ -17,7 +16,7 @@ namespace gpu {
 class CommandBufferHelper;
 
 // Manages a shared memory segment.
-class GPU_EXPORT MemoryChunk {
+class MemoryChunk {
  public:
   MemoryChunk(int32 shm_id, gpu::Buffer shm, CommandBufferHelper* helper);
 
@@ -105,7 +104,7 @@ class GPU_EXPORT MemoryChunk {
 };
 
 // Manages MemoryChucks.
-class GPU_EXPORT MappedMemoryManager {
+class MappedMemoryManager {
  public:
   explicit MappedMemoryManager(CommandBufferHelper* helper);
 

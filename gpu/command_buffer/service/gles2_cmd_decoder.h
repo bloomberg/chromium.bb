@@ -40,7 +40,7 @@ struct DisallowedFeatures {
 
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
-class GPU_EXPORT GLES2Decoder : public CommonDecoder {
+class GLES2Decoder : public CommonDecoder {
  public:
   typedef error::Error Error;
   typedef base::Callback<void(int32 id, const std::string& msg)> MsgCallback;

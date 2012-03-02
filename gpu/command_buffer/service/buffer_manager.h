@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -22,10 +21,10 @@ namespace gles2 {
 //
 // NOTE: To support shared resources an instance of this class will need to be
 // shared by multiple GLES2Decoders.
-class GPU_EXPORT BufferManager {
+class BufferManager {
  public:
   // Info about Buffers currently in the system.
-  class GPU_EXPORT BufferInfo : public base::RefCounted<BufferInfo> {
+  class BufferInfo : public base::RefCounted<BufferInfo> {
    public:
     typedef scoped_refptr<BufferInfo> Ref;
 

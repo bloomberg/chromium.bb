@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -24,7 +23,7 @@ class GLES2Decoder;
 //
 // NOTE: To support shared resources an instance of this class will need to be
 // shared by multiple GLES2Decoders.
-class GPU_EXPORT TextureManager {
+class TextureManager {
  public:
   enum DefaultAndBlackTextures {
     kTexture2D,
@@ -35,7 +34,7 @@ class GPU_EXPORT TextureManager {
   };
 
   // Info about Textures currently in the system.
-  class GPU_EXPORT TextureInfo : public base::RefCounted<TextureInfo> {
+  class TextureInfo : public base::RefCounted<TextureInfo> {
    public:
     typedef scoped_refptr<TextureInfo> Ref;
 

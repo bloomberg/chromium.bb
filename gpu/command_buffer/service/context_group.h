@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/gpu_export.h"
 
 namespace gpu {
 
@@ -33,7 +32,7 @@ struct DisallowedFeatures;
 
 // A Context Group helps manage multiple GLES2Decoders that share
 // resources.
-class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
+class ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   typedef scoped_refptr<ContextGroup> Ref;
 

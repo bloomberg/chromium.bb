@@ -19,7 +19,7 @@ namespace gpu {
 
 // An object that implements a shared memory command buffer and a synchronous
 // API to manage the put and get pointers.
-class GPU_EXPORT CommandBufferService : public CommandBuffer {
+class CommandBufferService : public CommandBuffer {
  public:
   typedef base::Callback<bool(int32)> GetBufferChangedCallback;
   CommandBufferService();

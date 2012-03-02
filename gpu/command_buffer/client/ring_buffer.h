@@ -8,8 +8,6 @@
 #define GPU_COMMAND_BUFFER_CLIENT_RING_BUFFER_H_
 
 #include <deque>
-
-#include "../../gpu_export.h"
 #include "../common/logging.h"
 #include "../common/types.h"
 
@@ -19,7 +17,7 @@ class CommandBufferHelper;
 // RingBuffer manages a piece of memory as a ring buffer. Memory is allocated
 // with Alloc and then a is freed pending a token with FreePendingToken.  Old
 // allocations must not be kept past new allocations.
-class GPU_EXPORT RingBuffer {
+class RingBuffer {
  public:
   typedef unsigned int Offset;
 

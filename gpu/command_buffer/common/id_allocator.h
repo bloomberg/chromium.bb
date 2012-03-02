@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 
-#include "../../gpu_export.h"
 #include "../common/types.h"
 
 namespace gpu {
@@ -22,7 +21,7 @@ typedef uint32 ResourceId;
 // Invalid resource ID.
 static const ResourceId kInvalidResource = 0u;
 
-class GPU_EXPORT IdAllocatorInterface {
+class IdAllocatorInterface {
  public:
   virtual ~IdAllocatorInterface();
 
@@ -44,7 +43,7 @@ class GPU_EXPORT IdAllocatorInterface {
 };
 
 // A class to manage the allocation of resource IDs.
-class GPU_EXPORT IdAllocator : public IdAllocatorInterface {
+class IdAllocator : public IdAllocatorInterface {
  public:
   IdAllocator();
   virtual ~IdAllocator();
