@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -287,6 +287,11 @@ PageInfoModel::PageInfoModel(Profile* profile,
         base::Bind(&PageInfoModel::OnGotVisitCountToHost,
                    base::Unretained(this)));
   }
+
+  if (ssl.cert_id) {
+    certificate_label_ = l10n_util::GetStringUTF16(
+        IDS_PAGEINFO_CERT_INFO_BUTTON);
+  }
 }
 
 PageInfoModel::~PageInfoModel() {}
@@ -342,6 +347,10 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
         SECTION_INFO_FIRST_VISIT));
   }
   observer_->OnPageInfoModelChanged();
+}
+
+string16 PageInfoModel::GetCertificateLabel() const {
+  return certificate_label_;
 }
 
 PageInfoModel::PageInfoModel() : observer_(NULL) {

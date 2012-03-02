@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,6 +95,9 @@ class PageInfoModel {
                              int count,
                              base::Time first_visit);
 
+  // Returns the label for the "Certificate Information", if needed.
+  string16 GetCertificateLabel() const;
+
  protected:
   // Testing constructor. DO NOT USE.
   PageInfoModel();
@@ -111,6 +114,9 @@ class PageInfoModel {
 
   // Used to request number of visits.
   CancelableRequestConsumer request_consumer_;
+
+  // Label for "Certificate Information", if needed.
+  string16 certificate_label_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageInfoModel);
