@@ -588,6 +588,7 @@ div.img-container > img {
 
 /* Text box used for renaming in the detail list. */
 .table-row-cell input.rename {
+  line-height: 20px;
   -webkit-margin-start: -3px;
 }
 
