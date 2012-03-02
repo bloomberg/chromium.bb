@@ -176,11 +176,12 @@ IPC_MESSAGE_ROUTED4(ExtensionMsg_Response,
 // If |extension_id| is non-empty, the function will be invoked only in
 // contexts owned by the extension. |args| is a list of primitive Value types
 // that are passed to the function.
-IPC_MESSAGE_ROUTED4(ExtensionMsg_MessageInvoke,
+IPC_MESSAGE_ROUTED5(ExtensionMsg_MessageInvoke,
                     std::string /* extension_id */,
                     std::string /* function_name */,
                     ListValue /* args */,
-                    GURL /* event URL */)
+                    GURL /* event URL */,
+                    bool /* delivered as part of a user gesture */)
 
 // Tell the renderer process all known extension function names.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetFunctionNames,

@@ -30,6 +30,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
@@ -54,6 +55,7 @@ using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
+using WebKit::WebScopedUserGesture;
 using WebKit::WebVector;
 using WebKit::WebView;
 using content::RenderThread;
@@ -166,7 +168,13 @@ void ExtensionDispatcher::OnSetFunctionNames(
 void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
                                           const std::string& function_name,
                                           const ListValue& args,
-                                          const GURL& event_url) {
+                                          const GURL& event_url,
+                                          bool user_gesture) {
+  scoped_ptr<WebScopedUserGesture> web_user_gesture;
+  if (user_gesture) {
+    web_user_gesture.reset(new WebScopedUserGesture);
+  }
+
   v8_context_set_.DispatchChromeHiddenMethod(
       extension_id, function_name, args, NULL, event_url);
 

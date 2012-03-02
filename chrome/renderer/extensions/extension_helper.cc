@@ -26,6 +26,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/resource_fetcher.h"
@@ -36,6 +37,7 @@ using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebURLRequest;
+using WebKit::WebScopedUserGesture;
 using WebKit::WebView;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::ResourceFetcher;
@@ -194,7 +196,13 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
                                                const std::string& function_name,
                                                const ListValue& args,
-                                               const GURL& event_url) {
+                                               const GURL& event_url,
+                                               bool user_gesture) {
+  scoped_ptr<WebScopedUserGesture> web_user_gesture;
+  if (user_gesture) {
+    web_user_gesture.reset(new WebScopedUserGesture);
+  }
+
   extension_dispatcher_->v8_context_set().DispatchChromeHiddenMethod(
       extension_id, function_name, args, render_view(), event_url);
 }

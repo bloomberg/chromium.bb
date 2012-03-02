@@ -99,7 +99,8 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   void OnMessageInvoke(const std::string& extension_id,
                        const std::string& function_name,
                        const base::ListValue& args,
-                       const GURL& event_url);
+                       const GURL& event_url,
+                       bool user_gesture);
   void OnDeliverMessage(int target_port_id, const std::string& message);
   void OnSetFunctionNames(const std::vector<std::string>& names);
   void OnLoaded(

@@ -67,17 +67,20 @@ struct ExtensionEventRouter::ExtensionEvent {
   GURL event_url;
   Profile* restrict_to_profile;
   std::string cross_incognito_args;
+  UserGestureState user_gesture;
 
   ExtensionEvent(const std::string& event_name,
                  const std::string& event_args,
                  const GURL& event_url,
                  Profile* restrict_to_profile,
-                 const std::string& cross_incognito_args)
+                 const std::string& cross_incognito_args,
+                 UserGestureState user_gesture)
     : event_name(event_name),
       event_args(event_args),
       event_url(event_url),
       restrict_to_profile(restrict_to_profile),
-      cross_incognito_args(cross_incognito_args) {}
+      cross_incognito_args(cross_incognito_args),
+      user_gesture(user_gesture) {}
 };
 
 // static
@@ -85,12 +88,14 @@ void ExtensionEventRouter::DispatchEvent(IPC::Message::Sender* ipc_sender,
                                          const std::string& extension_id,
                                          const std::string& event_name,
                                          const std::string& event_args,
-                                         const GURL& event_url) {
+                                         const GURL& event_url,
+                                         UserGestureState user_gesture) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, Value::CreateStringValue(event_args));
   ipc_sender->Send(new ExtensionMsg_MessageInvoke(MSG_ROUTING_CONTROL,
-      extension_id, kDispatchEvent, args, event_url));
+      extension_id, kDispatchEvent, args, event_url,
+      user_gesture == USER_GESTURE_ENABLED));
 }
 
 ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
@@ -225,7 +230,7 @@ void ExtensionEventRouter::DispatchEventToRenderers(
     const GURL& event_url) {
   linked_ptr<ExtensionEvent> event(
       new ExtensionEvent(event_name, event_args, event_url,
-                         restrict_to_profile, ""));
+                         restrict_to_profile, "", USER_GESTURE_UNKNOWN));
   DispatchEventImpl("", event, false);
 }
 
@@ -238,7 +243,21 @@ void ExtensionEventRouter::DispatchEventToExtension(
   DCHECK(!extension_id.empty());
   linked_ptr<ExtensionEvent> event(
       new ExtensionEvent(event_name, event_args, event_url,
-                         restrict_to_profile, ""));
+                         restrict_to_profile, "", USER_GESTURE_UNKNOWN));
+  DispatchEventImpl(extension_id, event, false);
+}
+
+void ExtensionEventRouter::DispatchEventToExtension(
+    const std::string& extension_id,
+    const std::string& event_name,
+    const std::string& event_args,
+    Profile* restrict_to_profile,
+    const GURL& event_url,
+    UserGestureState user_gesture) {
+  DCHECK(!extension_id.empty());
+  linked_ptr<ExtensionEvent> event(
+      new ExtensionEvent(event_name, event_args, event_url,
+                         restrict_to_profile, "", user_gesture));
   DispatchEventImpl(extension_id, event, false);
 }
 
@@ -250,7 +269,8 @@ void ExtensionEventRouter::DispatchEventsToRenderersAcrossIncognito(
     const GURL& event_url) {
   linked_ptr<ExtensionEvent> event(
       new ExtensionEvent(event_name, event_args, event_url,
-                         restrict_to_profile, cross_incognito_args));
+                         restrict_to_profile, cross_incognito_args,
+                         USER_GESTURE_UNKNOWN));
   DispatchEventImpl("", event, false);
 }
 
@@ -328,14 +348,15 @@ void ExtensionEventRouter::DispatchEventImpl(
       if (!event->cross_incognito_args.empty()) {
         DispatchEvent(listener->process, listener->extension_id,
                       event->event_name, event->cross_incognito_args,
-                      event->event_url);
+                      event->event_url, event->user_gesture);
         IncrementInFlightEvents(extension);
       }
       continue;
     }
 
     DispatchEvent(listener->process, listener->extension_id,
-                  event->event_name, event->event_args, event->event_url);
+                  event->event_name, event->event_args,
+                  event->event_url, event->user_gesture);
     IncrementInFlightEvents(extension);
   }
 }

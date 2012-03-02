@@ -77,7 +77,8 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
       new ExtensionMsg_MessageInvoke(
           port.routing_id,
           target_extension_id,
-          ExtensionMessageService::kDispatchOnConnect, args, GURL()));
+          ExtensionMessageService::kDispatchOnConnect, args, GURL(),
+          false));  // Not a user gesture
 }
 
 static void DispatchOnDisconnect(
@@ -87,7 +88,8 @@ static void DispatchOnDisconnect(
   args.Set(0, Value::CreateIntegerValue(source_port_id));
   args.Set(1, Value::CreateBooleanValue(connection_error));
   port.sender->Send(new ExtensionMsg_MessageInvoke(port.routing_id,
-      "", ExtensionMessageService::kDispatchOnDisconnect, args, GURL()));
+      "", ExtensionMessageService::kDispatchOnDisconnect, args, GURL(),
+      false));  // Not a user gesture
 }
 
 static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,

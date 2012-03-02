@@ -352,11 +352,13 @@ class MockExtensionEventRouter : public ExtensionEventRouter {
   explicit MockExtensionEventRouter(Profile* profile) :
       ExtensionEventRouter(profile) {}
 
-  MOCK_METHOD5(DispatchEventToExtension, void(const std::string& extension_id,
-                                              const std::string& event_name,
-                                              const std::string& event_args,
-                                              Profile* source_profile,
-                                              const GURL& event_url));
+  MOCK_METHOD6(DispatchEventToExtension,
+               void(const std::string& extension_id,
+                    const std::string& event_name,
+                    const std::string& event_args,
+                    Profile* source_profile,
+                    const GURL& event_url,
+                    ExtensionEventRouter::UserGestureState state));
 
 
  private:
@@ -450,11 +452,13 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   std::string event_args;
   std::string expected_event_name = "contextMenus";
   EXPECT_CALL(*mock_event_router.get(),
-              DispatchEventToExtension(item->extension_id(),
-                                       expected_event_name,
-                                       _,
-                                       &profile,
-                                       GURL()))
+              DispatchEventToExtension(
+                  item->extension_id(),
+                  expected_event_name,
+                  _,
+                  &profile,
+                  GURL(),
+                  ExtensionEventRouter::USER_GESTURE_ENABLED))
       .Times(1)
       .WillOnce(SaveArg<2>(&event_args));
 
@@ -584,4 +588,3 @@ TEST_F(ExtensionMenuManagerTest, SanitizeRadioButtons) {
   ASSERT_FALSE(new_item->checked());
   ASSERT_TRUE(child1->checked());
 }
-

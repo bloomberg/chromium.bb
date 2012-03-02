@@ -28,13 +28,22 @@ class RenderProcessHost;
 
 class ExtensionEventRouter : public content::NotificationObserver {
  public:
+  // These constants convey the state of our knowledge of whether we're in
+  // a user-caused gesture as part of DispatchEvent.
+  enum UserGestureState {
+    USER_GESTURE_UNKNOWN = 0,
+    USER_GESTURE_ENABLED = 1,
+    USER_GESTURE_NOT_ENABLED = 2,
+  };
+
   // Sends an event via ipc_sender to the given extension. Can be called on
   // any thread.
   static void DispatchEvent(IPC::Message::Sender* ipc_sender,
                             const std::string& extension_id,
                             const std::string& event_name,
                             const std::string& event_args,
-                            const GURL& event_url);
+                            const GURL& event_url,
+                            UserGestureState user_gesture);
 
   explicit ExtensionEventRouter(Profile* profile);
   virtual ~ExtensionEventRouter();
@@ -85,6 +94,16 @@ class ExtensionEventRouter : public content::NotificationObserver {
       const std::string& event_args,
       Profile* restrict_to_profile,
       const GURL& event_url);
+
+  // Dispatch an event to particular extension. Also include an
+  // explicit user gesture indicator.
+  virtual void DispatchEventToExtension(
+      const std::string& extension_id,
+      const std::string& event_name,
+      const std::string& event_args,
+      Profile* restrict_to_profile,
+      const GURL& event_url,
+      UserGestureState user_gesture);
 
   // Send different versions of an event to extensions in different profiles.
   // This is used in the case of sending one event to extensions that have
