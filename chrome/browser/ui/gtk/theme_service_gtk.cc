@@ -109,6 +109,8 @@ const int kAutocompleteImages[] = {
   IDR_OMNIBOX_SEARCH_DARK,
   IDR_OMNIBOX_STAR,
   IDR_OMNIBOX_STAR_DARK,
+  IDR_OMNIBOX_TTS,
+  IDR_OMNIBOX_TTS_DARK,
   IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON,
   IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON,
 };
@@ -965,6 +967,7 @@ SkBitmap* ThemeServiceGtk::GenerateGtkThemeBitmap(int id) const {
     case IDR_OMNIBOX_HTTP:
     case IDR_OMNIBOX_SEARCH:
     case IDR_OMNIBOX_STAR:
+    case IDR_OMNIBOX_TTS:
     case IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON:
     case IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON: {
       return GenerateTintedIcon(id, entry_tint_);
@@ -977,7 +980,8 @@ SkBitmap* ThemeServiceGtk::GenerateGtkThemeBitmap(int id) const {
     case IDR_OMNIBOX_HISTORY_DARK:
     case IDR_OMNIBOX_HTTP_DARK:
     case IDR_OMNIBOX_SEARCH_DARK:
-    case IDR_OMNIBOX_STAR_DARK: {
+    case IDR_OMNIBOX_STAR_DARK:
+    case IDR_OMNIBOX_TTS_DARK: {
       return GenerateTintedIcon(id, selected_entry_tint_);
     }
     default: {

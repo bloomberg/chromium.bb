@@ -79,7 +79,15 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   // Accept a line of the results, for example, when the user clicks a line.
   void AcceptLine(size_t line, WindowOpenDisposition disposition);
 
-  const gfx::Image* IconForMatch(const AutocompleteMatch& match, bool selected);
+  const gfx::Image* IconForMatch(const AutocompleteMatch& match,
+                                 bool selected,
+                                 bool is_selected_keyword);
+
+  // Returns the |index|th element of match, unless we're selected and showing
+  // the associated keyword match.
+  void GetVisibleMatchForInput(size_t index,
+                               const AutocompleteMatch** match,
+                               bool* is_selected_keyword);
 
   CHROMEGTK_CALLBACK_1(OmniboxPopupViewGtk, gboolean, HandleMotion,
                        GdkEventMotion*);
