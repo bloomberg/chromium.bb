@@ -152,6 +152,20 @@ def SudoRunCommand(cmd, **kwds):
   return RunCommand(final_command, **kwds)
 
 
+def _RelaySignal(handler, signum, frame):
+  """Notify a listener returned from getsignal of receipt of a signal.
+  Return True if it was relayed to the target, False otherwise.
+  False in particular occurs if the target isn't relayable."""
+  if handler in (None, signal.SIG_IGN):
+    return True
+  elif handler == signal.SIG_DFL:
+    # This scenario is a fairly painful to handle fully, thus we just
+    # state we couldn't handle it and leave it to client code.
+    return False
+  handler(signum, frame)
+  return True
+
+
 def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
   """Functor that when curried w/ the appropriate arguments, is used as a signal
   handler by RunCommand.
@@ -184,9 +198,7 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
     # Ensure our child process has been reaped.
     proc.wait()
 
-  if original_handler:
-    original_handler(signum, frame)
-  elif signum is not None:
+  if not _RelaySignal(original_handler, signum, frame):
     # Mock up our own, matching exit code for signalling.
     raise TerminateRunCommandError("Received signal %i" % signum, cmd,
                                    signum << 8)
