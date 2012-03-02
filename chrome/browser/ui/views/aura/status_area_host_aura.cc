@@ -147,12 +147,9 @@ bool StatusAreaHostAura::ShouldExecuteStatusAreaCommand(
 #if defined(OS_CHROMEOS)
   if (chromeos::StatusAreaViewChromeos::IsLoginMode()) {
     // In login mode network options command means proxy settings dialog.
-    if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS)
-      return true;
-    else
-      return false;
+    return command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS;
   } else {
-    return true;
+    return !chromeos::StatusAreaViewChromeos::IsScreenLockMode();
   }
 #else
   // TODO(stevenjb): system options for non-chromeos Aura?
