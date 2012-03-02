@@ -202,11 +202,11 @@
 0x12300324:      0x11230000:    (X, Y, 0.0, 1.0), dst offset 0x00 bytes
 0x12300328:      0x02400008:    buffer 0: invalid, type 0x0040, src offset 0x0008 bytes
 0x1230032c:      0x11130000:    (X, Y, Z, 1.0), dst offset 0x00 bytes
-0x12300330:      0x7b000005: 3DPRIMITIVE
-0x12300334:      0x00000007:    dword 1
-0x12300338:      0x00000004:    dword 2
-0x1230033c:      0x00000000:    dword 3
-0x12300340:      0x00000001:    dword 4
-0x12300344:      0x00000000:    dword 5
-0x12300348:      0x00000000:    dword 6
+0x12300330:      0x7b000005: 3DPRIMITIVE: 
+0x12300334:      0x00000007:    quad list sequential
+0x12300338:      0x00000004:    vertex count
+0x1230033c:      0x00000000:    start vertex
+0x12300340:      0x00000001:    instance count
+0x12300344:      0x00000000:    start instance
+0x12300348:      0x00000000:    index bias
 0x1230034c:      0x05000000: MI_BATCH_BUFFER_END

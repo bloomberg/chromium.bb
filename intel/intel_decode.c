@@ -2577,10 +2577,8 @@ static const char *get_965_element_component(uint32_t data, int component)
 	}
 }
 
-static const char *get_965_prim_type(uint32_t data)
+static const char *get_965_prim_type(uint32_t primtype)
 {
-	uint32_t primtype = (data >> 10) & 0x1f;
-
 	switch (primtype) {
 	case 0x01:
 		return "point list";
@@ -3009,7 +3007,7 @@ gen4_3DPRIMITIVE(struct drm_intel_decode *ctx)
 {
 	instr_out(ctx, 0,
 		  "3DPRIMITIVE: %s %s\n",
-		  get_965_prim_type(ctx->data[0]),
+		  get_965_prim_type((ctx->data[0] >> 10) & 0x1f),
 		  (ctx->data[0] & (1 << 15)) ? "random" : "sequential");
 	instr_out(ctx, 1, "vertex count\n");
 	instr_out(ctx, 2, "start vertex\n");
@@ -3018,6 +3016,27 @@ gen4_3DPRIMITIVE(struct drm_intel_decode *ctx)
 	instr_out(ctx, 5, "index bias\n");
 
 	return 6;
+}
+
+static int
+gen7_3DPRIMITIVE(struct drm_intel_decode *ctx)
+{
+	bool indirect = !!(ctx->data[0] & (1 << 10));
+
+	instr_out(ctx, 0,
+		  "3DPRIMITIVE: %s%s\n",
+		  indirect ? " indirect" : "",
+		  (ctx->data[0] & (1 << 8)) ? " predicated" : "");
+	instr_out(ctx, 1, "%s %s\n",
+		  get_965_prim_type(ctx->data[1] & 0x3f),
+		  (ctx->data[1] & (1 << 8)) ? "random" : "sequential");
+	instr_out(ctx, 2, indirect ? "ignored" : "vertex count\n");
+	instr_out(ctx, 3, indirect ? "ignored" : "start vertex\n");
+	instr_out(ctx, 4, indirect ? "ignored" : "instance count\n");
+	instr_out(ctx, 5, indirect ? "ignored" : "start instance\n");
+	instr_out(ctx, 6, indirect ? "ignored" : "index bias\n");
+
+	return 7;
 }
 
 static int
@@ -3120,7 +3139,7 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		{ 0x7917, 0x00ff, 2, 2+128*2, "3DSTATE_SO_DECL_LIST" },
 		{ 0x7918, 0x00ff, 4, 4, "3DSTATE_SO_BUFFER" },
 		{ 0x7a00, 0x00ff, 4, 6, "PIPE_CONTROL" },
-		{ 0x7b00, 0x00ff, 7, 7, "3DPRIMITIVE", 7 },
+		{ 0x7b00, 0x00ff, 7, 7, NULL, 7, gen7_3DPRIMITIVE },
 		{ 0x7b00, 0x00ff, 6, 6, NULL, 0, gen4_3DPRIMITIVE },
 	}, *opcode_3d = NULL;
 
