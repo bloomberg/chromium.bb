@@ -30,7 +30,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
         tray_(tray),
         items_(items),
         detailed_(detailed) {
-    set_margin(1);
+    set_margin(0);
   }
 
   virtual ~SystemTrayBubble() {
@@ -77,7 +77,9 @@ SystemTray::SystemTray()
     : items_(),
       popup_(NULL) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        5, 10, 3));
+      5, 0, 3));
+  set_background(views::Background::CreateSolidBackground(
+      SkColorSetARGB(127, 0, 0, 0)));
 }
 
 SystemTray::~SystemTray() {

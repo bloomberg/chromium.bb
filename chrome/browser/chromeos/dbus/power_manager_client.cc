@@ -24,6 +24,7 @@
 
 namespace chromeos {
 
+#if !defined(USE_ASH)
 PowerSupplyStatus::PowerSupplyStatus()
     : line_power_on(false),
       battery_is_present(false),
@@ -55,6 +56,7 @@ std::string PowerSupplyStatus::ToString() const {
                       battery_seconds_to_full);
   return result;
 }
+#endif  // !defined(USE_ASH)
 
 // The PowerManagerClient implementation used in production.
 class PowerManagerClientImpl : public PowerManagerClient {

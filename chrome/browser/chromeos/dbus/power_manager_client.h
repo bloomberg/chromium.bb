@@ -10,6 +10,10 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 
+#if defined(USE_ASH)
+#include "ash/system/power/power_supply_status.h"
+#endif
+
 namespace base {
 class TimeTicks;
 }
@@ -19,6 +23,9 @@ class Bus;
 
 namespace chromeos {
 
+#if defined(USE_ASH)
+typedef struct ash::PowerSupplyStatus PowerSupplyStatus;
+#else
 // This is the local struct that is used in Chrome.
 struct PowerSupplyStatus {
   bool line_power_on;
@@ -35,6 +42,7 @@ struct PowerSupplyStatus {
   PowerSupplyStatus();
   std::string ToString() const;
 };
+#endif
 
 // Callback used for processing the idle time.  The int64 param is the number of
 // seconds the user has been idle.

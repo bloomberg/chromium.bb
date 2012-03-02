@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/audio/audio_controller.h"
 #include "ash/system/brightness/brightness_controller.h"
+#include "ash/system/power/power_status_controller.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/logging.h"
@@ -29,6 +30,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   explicit SystemTrayDelegate(ash::SystemTray* tray) : tray_(tray) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
+    DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
+        PowerManagerClient::UPDATE_USER);
   }
 
   virtual ~SystemTrayDelegate() {
@@ -104,8 +107,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         OnBrightnessChanged(level / 100.f, user_initiated);
   }
 
+  virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE {
+    ash::Shell::GetInstance()->power_status_controller()->
+        OnPowerStatusChanged(power_status);
+  }
+
   // TODO(sad): Override more from PowerManagerClient::Observer here (e.g.
-  // PowerChanged, PowerButtonStateChanged etc.).
+  // PowerButtonStateChanged etc.).
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };

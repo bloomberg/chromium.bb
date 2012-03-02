@@ -18,6 +18,8 @@
 #include "ash/system/audio/tray_volume.h"
 #include "ash/system/brightness/tray_brightness.h"
 #include "ash/system/settings/tray_settings.h"
+#include "ash/system/power/power_status_controller.h"
+#include "ash/system/power/tray_power_date.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray_user.h"
@@ -427,10 +429,13 @@ void Shell::Init() {
 
     internal::TrayVolume* tray_volume = new internal::TrayVolume();
     internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
+    internal::TrayPowerDate* tray_power_date = new internal::TrayPowerDate();
     audio_controller_ = tray_volume;
     brightness_controller_ = tray_brightness;
+    power_status_controller_ = tray_power_date;
 
     tray_->AddTrayItem(new internal::TrayUser());
+    tray_->AddTrayItem(tray_power_date);
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());
