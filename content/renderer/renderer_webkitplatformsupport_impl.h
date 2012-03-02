@@ -82,8 +82,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       const WebKit::WebString& keyPath) OVERRIDE;
   virtual WebKit::WebFileSystem* fileSystem() OVERRIDE;
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository() OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
   virtual double audioHardwareSampleRate() OVERRIDE;
   virtual size_t audioHardwareBufferSize() OVERRIDE;
   virtual WebKit::WebAudioDevice* createAudioDevice(

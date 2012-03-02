@@ -14,7 +14,6 @@
 #include "content/common/fileapi/webblobregistry_impl.h"
 #include "content/common/fileapi/webfilesystem_impl.h"
 #include "content/common/file_utilities_messages.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/indexed_db/proxy_webidbfactory_impl.h"
 #include "content/common/mime_registry_messages.h"
 #include "content/common/npobject_util.h"
@@ -50,7 +49,6 @@
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 #if defined(OS_WIN)
 #include "content/common/child_process_messages.h"
@@ -578,25 +576,6 @@ RendererWebKitPlatformSupportImpl::sharedWorkerRepository() {
     return shared_worker_repository_.get();
   } else {
     return NULL;
-  }
-}
-
-WebKit::WebGraphicsContext3D*
-RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
-    const WebGraphicsContext3D::Attributes& attributes) {
-  // The WebGraphicsContext3DInProcessImpl code path is used for
-  // layout tests (though not through this code) as well as for
-  // debugging and bringing up new ports.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
-    return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
-            attributes, false);
-  } else {
-    base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
-    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-        new WebGraphicsContext3DCommandBufferImpl(0, GURL(), null_client));
-    if (!context->Initialize(attributes))
-      return NULL;
-    return context.release();
   }
 }
 

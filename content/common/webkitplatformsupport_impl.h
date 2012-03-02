@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,8 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
   virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketBridge(
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
+  virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
 };
 
 }  // namespace content
