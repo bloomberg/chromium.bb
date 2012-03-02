@@ -794,8 +794,10 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
         return;
       }
 
-      if (i->typed_count() > 0)
+      if (i->typed_count() > 0) {
         modified->changed_urls.push_back(*i);
+        modified->changed_urls.back().set_id(url_id);  // *i likely has |id_| 0.
+      }
     }
 
     // Add the page to the full text index. This function is also used for

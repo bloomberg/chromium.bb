@@ -28,15 +28,6 @@
 #include "content/public/browser/notification_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Autocomplete test is flaky on ChromeOS.
-// http://crbug.com/52928
-#if defined(OS_CHROMEOS)
-#define MAYBE_Autocomplete DISABLED_Autocomplete
-#else
-#define MAYBE_Autocomplete Autocomplete
-#endif
-
-
 namespace {
 
 string16 AutocompleteResultAsString(const AutocompleteResult& result) {
@@ -102,6 +93,14 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
             location_bar->location_entry()->GetText());
   EXPECT_FALSE(location_bar->location_entry()->IsSelectAll());
 }
+
+// Autocomplete test is flaky on ChromeOS.
+// http://crbug.com/52928
+#if defined(OS_CHROMEOS)
+#define MAYBE_Autocomplete DISABLED_Autocomplete
+#else
+#define MAYBE_Autocomplete Autocomplete
+#endif
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   // The results depend on the history backend being loaded. Make sure it is
