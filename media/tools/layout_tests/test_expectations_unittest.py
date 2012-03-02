@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,7 +11,7 @@ from test_expectations import TestExpectations
 class TestTestExpectations(unittest.TestCase):
 
   def testParseLine(self):
-    line = "BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE"
+    line = 'BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE'
     comments = 'Comments'
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
                     'Comments': 'Comments', 'MAC': True, 'GPU': True}
@@ -19,7 +19,7 @@ class TestTestExpectations(unittest.TestCase):
                       expected_map)
 
   def testParseLineWithLineComments(self):
-    line = "BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE // foo"
+    line = 'BUGCR86714 MAC GPU : media/video-zoom.html = CRASH IMAGE // foo'
     comments = 'Comments'
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
                     'Comments': 'Comments foo', 'MAC': True, 'GPU': True}
@@ -27,7 +27,7 @@ class TestTestExpectations(unittest.TestCase):
                       expected_map)
 
   def testParseLineWithLineGPUComments(self):
-    line = "BUGCR86714 MAC : media/video-zoom.html = CRASH IMAGE // GPU"
+    line = 'BUGCR86714 MAC : media/video-zoom.html = CRASH IMAGE // GPU'
     comments = 'Comments'
     expected_map = {'CRASH': True, 'IMAGE': True, 'Bugs': ['BUGCR86714'],
                     'Comments': 'Comments GPU', 'MAC': True}

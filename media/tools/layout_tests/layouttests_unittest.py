@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 import unittest
 
 from layouttests import LayoutTests
@@ -31,7 +30,7 @@ class TestLayoutTests(unittest.TestCase):
     self.assertEquals(desc1,
                       ('Test that play() from EMPTY network state triggers '
                        'load() and async play event.'),
-                       msg='Extracted test description is wrong')
+                      msg='Extracted test description is wrong')
     desc2 = LayoutTests.GetTestDescriptionFromSVN('jquery/data.html')
     self.assertEquals(desc2, 'UNKNOWN',
                       msg='Extracted test description is wrong')

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,11 +29,11 @@ class TestTrendGraph(unittest.TestCase):
     f = open(test_graph_file_path)
     lines2 = f.readlines()
     f.close()
-    lineCount = 0
+    line_count = 0
     for line in lines2:
       if '2008,0,1,13,45,00' in line:
-        lineCount += 1
-    self.assertEqual(lineCount, 2)
+        line_count += 1
+    self.assertEqual(line_count, 2)
 
 
 if __name__ == '__main__':

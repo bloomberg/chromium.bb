@@ -1,16 +1,16 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """A module for the history of the test expectation file."""
 
+from datetime import datetime
+from datetime import timedelta
+
 import re
 import sys
 import time
 import pysvn
-
-from datetime import datetime
-from datetime import timedelta
 
 # Default Webkit SVN location for chromium test expectation file.
 # TODO(imasaki): support multiple test expectation files.
@@ -19,7 +19,7 @@ DEFAULT_TEST_EXPECTATION_LOCATION = (
     'LayoutTests/platform/chromium/test_expectations.txt')
 
 
-class TestExpectationsHistory:
+class TestExpectationsHistory(object):
   """A class to represent history of the test expectation file.
 
   The history is obtained by calling PySVN.log()/diff() APIs.

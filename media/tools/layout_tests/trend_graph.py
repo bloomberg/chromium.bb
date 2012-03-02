@@ -1,11 +1,10 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """A module for manipulating trend graph with analyzer result history."""
 
 import os
-import sys
 
 import layouttest_analyzer_helpers
 
@@ -52,7 +51,7 @@ class TrendGraph(object):
     # After the below conversion, for example, in the case of the year 2008,
     # |datetime_string| ranges from '2008,0,1,0,0,00' to '2008,11,31,23,59,99'.
     str_list = datetime_string.split(',')
-    str_list[1] = str(int(str_list[1])-1) # month
+    str_list[1] = str(int(str_list[1])-1)  # Month
     datetime_string = ','.join(str_list)
     for key in ['whole', 'skip', 'nonskip']:
       joined_str += str(len(data_map[key][0])) + ','

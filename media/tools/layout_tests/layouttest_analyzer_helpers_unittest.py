@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -122,9 +122,9 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
       diff_map = None
     else:
       diff_map = {
-        'whole': [[], []],
-        'skip': [[(testname, 'te_info1')], []],
-        'nonskip': [[], []],
+          'whole': [[], []],
+          'skip': [[(testname, 'te_info1')], []],
+          'nonskip': [[], []],
       }
     (rev_str, simple_rev_str, rev_number, rev_date) = (
         layouttest_analyzer_helpers.GetRevisionString(prev_time, current_time,
@@ -142,9 +142,11 @@ class TestLayoutTestAnalyzerHelpers(unittest.TestCase):
                         '94377</a>\n'
                         '<li>jamesr@google.com</li>\n'
                         '<li>2011-09-01 18:00:23</li>\n'
-                        '<ul><li>-BUGWK63878 : fast/dom/dom-constructors.html'
-                        ' = TEXT</li>\n'
-                        '</ul></ul>')
+                        '<ul><li>-<a href="http://webkit.org/b/63878">'
+                        'BUGWK63878</a> : <a href=\'http://test-results.'
+                        'appspot.com/dashboards/flakiness_dashboard.html#'
+                        'tests=fast/dom/dom-constructors.html\'>fast/dom/'
+                        'dom-constructors.html</a> = TEXT</li>\n</ul></ul>')
     expected_simple_rev_str = ('<a href="http://trac.webkit.org/changeset?'
                                'new=94377@trunk/LayoutTests/platform/chromium/'
                                'test_expectations.txt&old=94366@trunk/'

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,8 +12,9 @@ import os
 import sys
 import time
 
-import layouttests
 import layouttest_analyzer_helpers
+import layouttests
+
 from test_expectations import TestExpectations
 from trend_graph import TrendGraph
 
@@ -73,9 +74,9 @@ def ParseOption():
                            default=None)
   option_parser.add_option('-x', '--test-group-name',
                            dest='test_group_name',
-                           help='A name of test group. Either '
-                                '--test_group_file_location or this option '
-                                'needs to be specified.')
+                           help=('A name of test group. Either '
+                                 '--test_group_file_location or this option '
+                                 'needs to be specified.'))
   option_parser.add_option('-d', '--result-directory-location',
                            dest='result_directory_location',
                            help=('Name of result directory location '
@@ -100,6 +101,12 @@ def ParseOption():
                            help=('Location of dashboard file. The results are '
                                  'not reported to the dashboard if this '
                                  'option is not specified.'))
+  option_parser.add_option('-z', '--issue-detail-mode',
+                           dest='issue_detail_mode',
+                           help=('With this mode, email includes issue details '
+                                 '(links to the flakiness dashboard)'
+                                 ' (off by default)'),
+                           action='store_true', default=False)
   return option_parser.parse_args()[0]
 
 
@@ -160,7 +167,7 @@ def GetCurrentAndPreviousResults(debug, test_group_file_location,
     analyzer_result_map = layouttest_analyzer_helpers.AnalyzerResultMap(
         layouttests_object.JoinWithTestExpectation(TestExpectations()))
     result = layouttest_analyzer_helpers.FindLatestResult(
-                 result_directory_location)
+        result_directory_location)
     if result:
       (prev_time, prev_analyzer_result_map) = result
     else:
@@ -217,7 +224,7 @@ def ReadEmailInformation(bug_annotation_file_location,
 
 def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
               anno_map, appended_text_to_email, email_only_change_mode, debug,
-              receiver_email_address, test_group_name):
+              receiver_email_address, test_group_name, issue_detail_mode):
   """Send result status email.
 
   Args:
@@ -232,6 +239,7 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
     debug: please refer to |options|.
     receiver_email_address: please refer to |options|.
     test_group_name: please refer to |options|.
+    issue_detail_mode: please refer to |options|.
 
   Returns:
     a tuple of the following:
@@ -253,7 +261,7 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
     diff_map = analyzer_result_map.CompareToOtherResultMap(
         prev_analyzer_result_map)
     result_change = (any(diff_map['whole']) or any(diff_map['skip']) or
-                        any(diff_map['nonskip']))
+                     any(diff_map['nonskip']))
     # Email only when |email_only_change_mode| is False or there
     # is a change in the result compared to the last result.
     simple_rev_str = ''
@@ -270,8 +278,10 @@ def SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
           layouttest_analyzer_helpers.GetRevisionString(prev_time_in_float,
                                                         cur_time_in_float,
                                                         diff_map))
-      email_content = analyzer_result_map.ConvertToString(prev_time, diff_map,
-                                                          anno_map)
+      email_content = analyzer_result_map.ConvertToString(prev_time,
+                                                          diff_map,
+                                                          anno_map,
+                                                          issue_detail_mode)
       if receiver_email_address:
         layouttest_analyzer_helpers.SendStatusEmail(
             prev_time, analyzer_result_map, diff_map, anno_map,
@@ -403,13 +413,13 @@ def UpdateDashboard(dashboard_file_location, test_group_name, data_map,
     sorted_testnames = data_map[tg][0].keys()
     sorted_testnames.sort()
     for testname in sorted_testnames:
-      file_object.write(('<tr><td><a href="%s">%s</a></td>'
-                         '<td><a href="%s">dashboard</a></td>'
-                         '<td>%s</td></tr>') % (
-          layouttest_root_path + testname, testname,
-          ('http://test-results.appspot.com/dashboards/'
-           'flakiness_dashboard.html#tests=%s') % testname,
-          data_map[tg][0][testname]))
+      file_object.write((
+          '<tr><td><a href="%s">%s</a></td><td><a href="%s">dashboard</a>'
+          '</td><td>%s</td></tr>') % (
+              layouttest_root_path + testname, testname,
+              ('http://test-results.appspot.com/dashboards/'
+               'flakiness_dashboard.html#tests=%s') % testname,
+              data_map[tg][0][testname]))
     file_object.write('</table>')
     file_object.close()
   email_content_with_link = ''
@@ -459,7 +469,8 @@ def main():
       SendEmail(prev_time, prev_analyzer_result_map, analyzer_result_map,
                 anno_map, appended_text_to_email,
                 options.email_only_change_mode, options.debug,
-                options.receiver_email_address, options.test_group_name))
+                options.receiver_email_address, options.test_group_name,
+                options.issue_detail_mode))
 
   # Create CSV texts and save them for bug spreadsheet.
   (stats, issues_txt) = analyzer_result_map.ConvertToCSVText(

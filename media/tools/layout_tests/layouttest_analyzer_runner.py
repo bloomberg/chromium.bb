@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -74,6 +74,12 @@ def ParseOption():
                                  'only when there is a change in the '
                                  'analyzer result compared to the previous '
                                  'result (off by default)'),
+                           action='store_true', default=False)
+  option_parser.add_option('-z', '--issue-detail-mode',
+                           dest='issue_detail_mode',
+                           help=('With this mode, email includes issue details'
+                                 ' including links to the flakiness dashboard'
+                                 ' (off by default)'),
                            action='store_true', default=False)
   return option_parser.parse_args()[0]
 
@@ -194,6 +200,8 @@ def main():
       cmd += ' -b ' + options.email_appended_text_file_location
     if options.email_only_change_mode:
       cmd += ' -c '
+    if options.issue_detail_mode:
+      cmd += ' -z '
     print 'Running ' + cmd
     proc = Popen(cmd, shell=True)
     proc.communicate()

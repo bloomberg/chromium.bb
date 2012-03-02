@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,11 +11,11 @@ layout test cases (including description).
 import copy
 import csv
 import locale
-import pysvn
 import re
 import sys
 import urllib2
 
+import pysvn
 
 # Webkit SVN root location.
 DEFAULT_LAYOUTTEST_LOCATION = (
@@ -69,7 +69,7 @@ class LayoutTests(object):
     self.name_map = copy.copy(name_map)
     if filter_names:
       # Filter names.
-      for lt_name in name_map.keys():
+      for lt_name in name_map.iterkeys():
         match = False
         for filter_name in filter_names:
           if re.search(filter_name, lt_name):
@@ -78,7 +78,7 @@ class LayoutTests(object):
         if not match:
           del self.name_map[lt_name]
     # We get description only for the filtered names.
-    for lt_name in self.name_map.keys():
+    for lt_name in self.name_map.iterkeys():
       self.name_map[lt_name] = LayoutTests.GetTestDescriptionFromSVN(lt_name)
 
   @staticmethod
@@ -110,7 +110,7 @@ class LayoutTests(object):
       pattern = r'<p>(.*' + keyword + '.*)</p>'
       matches = re.search(pattern, txt)
       if matches is not None:
-          return matches.group(1).strip()
+        return matches.group(1).strip()
 
     # (2) Try to find it by using more generic keywords such as 'PASS' etc.
     for keyword in KEYWORD_FOR_TEST_DESCRIPTION_FAIL_SAFE:
@@ -118,16 +118,16 @@ class LayoutTests(object):
       pattern = r'\n(.*' + keyword + '.*)\n'
       matches = re.search(pattern, txt)
       if matches is not None:
-          # Remove 'p' tag.
-          text = matches.group(1).strip()
-          return text.replace('<p>', '').replace('</p>', '')
+        # Remove 'p' tag.
+        text = matches.group(1).strip()
+        return text.replace('<p>', '').replace('</p>', '')
 
     # (3) Try to find it by using HTML tag such as title.
     for tag in TAGS_FOR_TEST_DESCRIPTION:
       pattern = r'<' + tag + '>(.*)</' + tag + '>'
       matches = re.search(pattern, txt)
       if matches is not None:
-          return matches.group(1).strip()
+        return matches.group(1).strip()
 
     # (4) Try to find it by using test description and remove 'p' tag.
     for keyword in KEYWORDS_FOR_TEST_DESCRIPTION:
@@ -135,9 +135,9 @@ class LayoutTests(object):
       pattern = r'\n(.*' + keyword + '.*)\n'
       matches = re.search(pattern, txt)
       if matches is not None:
-          # Remove 'p' tag.
-          text = matches.group(1).strip()
-          return text.replace('<p>', '').replace('</p>', '')
+        # Remove 'p' tag.
+        text = matches.group(1).strip()
+        return text.replace('<p>', '').replace('</p>', '')
 
     # (5) cannot find test description using existing rules.
     return 'UNKNOWN'
@@ -184,6 +184,9 @@ class LayoutTests(object):
       csv_file_path: the path for the CSV file containing test names (including
           regular expression patterns). The CSV file content has one column and
           each row contains a test name.
+
+    Returns:
+       a list of test names in string.
     """
     file_object = file(csv_file_path, 'r')
     reader = csv.reader(file_object)
@@ -198,6 +201,9 @@ class LayoutTests(object):
     Args:
       names: a list of test names. The test names also have path information as
           well (e.g., media/video-zoom.html).
+
+    Returns:
+      a list of parent directories for the given test names.
     """
     pd_map = {}
     for name in names:
