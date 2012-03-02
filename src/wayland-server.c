@@ -393,19 +393,20 @@ WL_EXPORT void
 wl_resource_destroy(struct wl_resource *resource, uint32_t time)
 {
 	struct wl_client *client = resource->client;
+	uint32_t id;
 
-	if (resource->object.id < WL_SERVER_ID_START) {
+	id = resource->object.id;
+	destroy_resource(resource, &time);
+
+	if (id < WL_SERVER_ID_START) {
 		if (client->display_resource) {
 			wl_resource_queue_event(client->display_resource,
-						WL_DISPLAY_DELETE_ID,
-						resource->object.id);
+						WL_DISPLAY_DELETE_ID, id);
 		}
-		wl_map_insert_at(&client->objects, resource->object.id, NULL);
+		wl_map_insert_at(&client->objects, id, NULL);
 	} else {
-		wl_map_remove(&client->objects, resource->object.id);
+		wl_map_remove(&client->objects, id);
 	}
-
-	destroy_resource(resource, &time);
 }
 
 WL_EXPORT void
