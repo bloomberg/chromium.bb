@@ -39,7 +39,6 @@ button {
 }
 
 #inner-container {
-  -webkit-transition: height 200ms ease-in-out;
   height: 294px;
   padding: 20px;
   position: relative;
