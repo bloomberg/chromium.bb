@@ -190,42 +190,42 @@
     },
     {
       "name": "pepper_18",
-      "description": "Chrome 18 bundle, revision 122699",
+      "description": "Chrome 18 bundle, revision 124251",
       "stability": "dev",
       "recommended": "yes",
       "version": 18,
       "repath": "pepper_18",
       "archives": [
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/18.0.1025.38/naclsdk_mac.bz2",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/18.0.1025.46/naclsdk_mac.bz2",
           "checksum": {
-            "sha1": "ff2b04514d8e4c62510b334b4d5f437fd28ed5dd"
+            "sha1": "6ff19441a604d4e2a4faae27602e33c5bc4b56b5"
           },
           "host_os": "mac",
-          "size": 113518667
+          "size": 113524972
         },
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/18.0.1025.38/naclsdk_linux.bz2",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/18.0.1025.46/naclsdk_linux.bz2",
           "checksum": {
-            "sha1": "1cce34a345585090b59be4068e2203fa3121ea48"
+            "sha1": "eeaa074e38cb14f8e3468a711257a96b4d909c0d"
           },
           "host_os": "linux",
-          "size": 113473525
+          "size": 113394999
         },
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/18.0.1025.38/naclsdk_win.bz2",
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/18.0.1025.46/naclsdk_win.bz2",
           "checksum": {
-            "sha1": "98f65e2692db71b278fa96c3aed635da50bc9b6c"
+            "sha1": "491c71d0962b223be9589462ee1319c5cfb5e39a"
           },
           "host_os": "win",
-          "size": 108894412
+          "size": 108755610
         }
       ],
-      "revision": 122699
+      "revision": 124251
     },
     {
       "name": "pepper_19",
-      "description": "Chrome 19 bundle, revision 120222",
+      "description": "Chrome 19 bundle, revision 124251",
       "stability": "canary",
       "recommended": "no",
       "version": 19,
