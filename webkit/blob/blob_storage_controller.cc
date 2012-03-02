@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -198,6 +198,11 @@ void BlobStorageController::ResolveBlobReferencesInUploadData(
     if (blob_data->items().empty())
       continue;
 
+    // Ensure the blob and any attached shareable files survive until
+    // upload completion.
+    upload_data->SetUserData(blob_data,
+                             new base::UserDataAdapter<BlobData>(blob_data));
+
     // Insert the elements in the referred blob data.
     // Note that we traverse from the bottom so that the elements can be
     // inserted in the original order.
@@ -208,13 +213,13 @@ void BlobStorageController::ResolveBlobReferencesInUploadData(
       switch (item.type) {
         case BlobData::TYPE_DATA:
           // TODO(jianli): Figure out how to avoid copying the data.
+          // TODO(michaeln): Now that blob_data surives for the duration,
+          // maybe UploadData could take a raw ptr without having to copy.
           iter->SetToBytes(
               &item.data.at(0) + static_cast<int>(item.offset),
               static_cast<int>(item.length));
           break;
         case BlobData::TYPE_FILE:
-          // TODO(michaeln): Ensure that any temp files survive till the
-          // net::URLRequest is done with the upload.
           iter->SetToFilePathRange(
               item.file_path,
               item.offset,
