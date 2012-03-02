@@ -392,8 +392,8 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (exe_path.empty())
     return false;
 
-  CommandLine* cmd_line = new CommandLine(exe_path);
-  nacl::CopyNaClCommandLineArguments(cmd_line);
+  scoped_ptr<CommandLine> cmd_line(new CommandLine(exe_path));
+  nacl::CopyNaClCommandLineArguments(cmd_line.get());
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kNaClLoaderProcess);
@@ -410,12 +410,12 @@ bool NaClProcessHost::LaunchSelLdr() {
     return NaClBrokerService::GetInstance()->LaunchLoader(
         this, ASCIIToWide(channel_id));
   } else {
-    process_->Launch(FilePath(), cmd_line);
+    process_->Launch(FilePath(), cmd_line.release());
   }
 #elif defined(OS_POSIX)
   process_->Launch(nacl_loader_prefix.empty(),  // use_zygote
                    base::EnvironmentVector(),
-                   cmd_line);
+                   cmd_line.release());
 #endif
 
   return true;
