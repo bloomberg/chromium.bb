@@ -5886,7 +5886,7 @@
    fun:_ZN5views4View17DoRemoveChildViewEPS0_bbb
 }
 {
-   116475
+   bug_116475
    Memcheck:Uninitialized
    fun:_ZNK4base9Histogram11BucketIndexEi
    fun:_ZN4base9Histogram3AddEi
