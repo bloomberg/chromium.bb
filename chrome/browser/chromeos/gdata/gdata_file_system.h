@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -36,6 +37,7 @@ class GDataFileBase {
   virtual GDataFile* AsGDataFile();
   virtual GDataDirectory* AsGDataDirectory();
   GDataDirectory* parent() { return parent_; }
+  const GURL& content_url() const { return content_url_; }
   const base::PlatformFileInfo& file_info() const { return file_info_; }
   const FilePath::StringType& file_name() const { return file_name_; }
   const FilePath::StringType& original_file_name() const {
@@ -57,6 +59,7 @@ class GDataFileBase {
   // For example, two files in the same directory with the same name "Foo"
   // will show up in the virtual directory as "Foo" and "Foo (2)".
   GURL self_url_;
+  GURL content_url_;
   GDataDirectory* parent_;
 
  private:
@@ -77,7 +80,6 @@ class GDataFile : public GDataFileBase {
                                           DocumentEntry* doc);
 
   DocumentEntry::EntryKind kind() const { return kind_; }
-  const GURL& content_url() const { return content_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
   const std::string& etag() const { return etag_; }
   const std::string& resource() const { return resource_id_; }
@@ -87,7 +89,6 @@ class GDataFile : public GDataFileBase {
  private:
   // Content URL for files.
   DocumentEntry::EntryKind kind_;
-  GURL content_url_;
   std::string content_mime_type_;
   std::string etag_;
   std::string resource_id_;
@@ -249,17 +250,26 @@ class GDataFileSystem : public ProfileKeyedService {
   // needs to be present in in-memory representation of the file system that
   // in order to be removed.
   //
-  // |callback| is run on UI thread, when |file_path| is removed on the
-  // thread where Remove() is called.
-  //
   // TODO(zelidrag): Wire |is_recursive| through gdata api
-  // (find appropriate call for it).
+  // (find appropriate calls for it).
   //
-  // Can be called from any thread.
+  // Can be called from any thread. |callback| is run on the calling thread.
   void Remove(const FilePath& file_path,
               bool is_recursive,
               const FileOperationCallback& callback);
 
+  // Creates new directory under |directory_path|. If |is_exclusive| is true,
+  // an error is raised in case a directory is already present at the
+  // |directory_path|. If |is_recursive| is true, the call creates parent
+  // directories as needed just like mkdir -p does.
+  //
+  // Can be called from any thread. |callback| is run on the calling thread.
+  void CreateDirectory(const FilePath& directory_path,
+                       bool is_exclusive,
+                       bool is_recursive,
+                       const FileOperationCallback& callback);
+
+  // Initiates directory feed fetching operation and continues previously
   // initiated FindFileByPath() attempt upon its completion. Safe to be called
   // from any thread. Internally, it will route content refresh request to
   // DocumentsService::GetDocuments() which will initiated content
@@ -271,6 +281,37 @@ class GDataFileSystem : public ProfileKeyedService {
  private:
   friend class GDataFileSystemFactory;
   friend class GDataFileSystemTest;
+  FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
+                           FindFirstMissingParentDirectory);
+
+  // Defines possible search results of FindFirstMissingParentDirectory().
+  enum FindMissingDirectoryResult {
+    // Target directory found, it's not a directory.
+    FOUND_INVALID,
+    // Found missing directory segment while searching for given directory.
+    FOUND_MISSING,
+    // Found target directory, it's already exists.
+    DIRECTORY_ALREADY_PRESENT,
+  };
+
+  // Defines set of parameters passes to intermediate callbacks during
+  // execution of CreateDirectory() method.
+  struct CreateDirectoryParams {
+    CreateDirectoryParams(const FilePath& created_directory_path,
+                          const FilePath& target_directory_path,
+                          bool is_exclusive,
+                          bool is_recursive,
+                          const FileOperationCallback& callback,
+                          scoped_refptr<base::MessageLoopProxy> proxy);
+    ~CreateDirectoryParams();
+
+    const FilePath created_directory_path;
+    const FilePath target_directory_path;
+    const bool is_exclusive;
+    const bool is_recursive;
+    FileOperationCallback callback;
+    scoped_refptr<base::MessageLoopProxy> proxy;
+  };
 
   explicit GDataFileSystem(Profile* profile);
   virtual ~GDataFileSystem();
@@ -307,6 +348,12 @@ class GDataFileSystem : public ProfileKeyedService {
       GDataErrorCode status,
       const GURL& document_url);
 
+  // Callback for handling directory create requests.
+  void OnCreateDirectoryCompleted(
+      const CreateDirectoryParams& params,
+      GDataErrorCode status,
+      base::Value* created_entry);
+
   // Removes file under |file_path| from in-memory snapshot of the file system.
   // Return PLATFORM_FILE_OK if successful.
   base::PlatformFileError RemoveFileFromFileSystem(const FilePath& file_path);
@@ -320,6 +367,27 @@ class GDataFileSystem : public ProfileKeyedService {
       base::Value* data,
       bool is_initial_feed,
       GURL* next_feed);
+
+  // Converts |entry_value| into GFileDocument instance and adds it
+  // to virtual file system at |directory_path|.
+  base::PlatformFileError AddNewDirectory(const FilePath& directory_path,
+                                          base::Value* entry_value);
+
+  // Internal version of CreateDirectory() that let us pass explicit message
+  // loop proxy.
+  void CreateDirectoryInternal(
+      const FilePath& directory_path,
+      bool is_exclusive,
+      bool is_recursive,
+      const FileOperationCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> reply_proxy);
+
+  // Given non-existing |directory_path|, finds the first missing parent
+  // directory of |directory_path|.
+  FindMissingDirectoryResult FindFirstMissingParentDirectory(
+      const FilePath& directory_path,
+      GURL* last_dir_content_url,
+      FilePath* first_missing_parent_path);
 
   scoped_ptr<GDataDirectory> root_;
   base::Lock lock_;

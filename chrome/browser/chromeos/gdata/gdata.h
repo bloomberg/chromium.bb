@@ -57,7 +57,11 @@ enum DocumentExportFormat {
 typedef base::Callback<void(GDataErrorCode error,
                             const std::string& token)> AuthStatusCallback;
 typedef base::Callback<void(GDataErrorCode error,
-                            base::Value* data)> GetDataCallback;
+                            base::Value* feed_data)> GetDataCallback;
+// Callback for directory creation calls. If successful, |entry| will be a
+// dictionary containing gdata entry represeting newly created directory.
+typedef base::Callback<void(GDataErrorCode error,
+                            base::Value* entry)> CreateEntryCallback;
 typedef base::Callback<void(GDataErrorCode error,
                             const GURL& document_url)> EntryActionCallback;
 typedef base::Callback<void(GDataErrorCode error,
@@ -168,31 +172,39 @@ class DocumentsService : public GDataAuthService::Observer {
   // Delete a document identified by its 'self' |url| and |etag|.
   // Upon completion, invokes |callback| with results.
   void DeleteDocument(const GURL& document_url,
-                      EntryActionCallback callback);
+                      const EntryActionCallback& callback);
 
   // Downloads a document identified by its |content_url| in a given |format|.
   // Upon completion, invokes |callback| with results.
   void DownloadDocument(const GURL& content_url,
                         DocumentExportFormat format,
-                        DownloadActionCallback callback);
+                        const DownloadActionCallback& callback);
+
+  // Creates new collection with |directory_name| under parent directory
+  // identified with |parent_content_url|. If |parent_content_url| is empty,
+  // the new collection will be created in the root. Upon completion,
+  // invokes |callback| and passes newly created entry.
+  void CreateDirectory(const GURL& parent_content_url,
+                       const FilePath::StringType& directory_name,
+                       const CreateEntryCallback& callback);
 
   // Downloads a file identified by its |content_url|. Upon completion, invokes
   // |callback| with results.
   void DownloadFile(const GURL& content_url,
-                    DownloadActionCallback callback);
+                    const DownloadActionCallback& callback);
 
   // Initiate uploading of a document/file.
   void InitiateUpload(const UploadFileInfo& upload_file_info,
-                      InitiateUploadCallback callback);
+                      const InitiateUploadCallback& callback);
 
   // Resume uploading of a document/file.
   void ResumeUpload(const UploadFileInfo& upload_file_info,
-                    ResumeUploadCallback callback);
+                    const ResumeUploadCallback& callback);
 
  private:
   // Used to queue callers of InitiateUpload when document feed is not ready.
   struct InitiateUploadCaller {
-    InitiateUploadCaller(InitiateUploadCallback in_callback,
+    InitiateUploadCaller(const InitiateUploadCallback& in_callback,
                          const UploadFileInfo& in_upload_file_info)
         : callback(in_callback),
           upload_file_info(in_upload_file_info) {
@@ -239,53 +251,68 @@ class DocumentsService : public GDataAuthService::Observer {
                                base::Value* root);
 
   // Callback when re-authenticating user during document delete call.
-  void DownloadDocumentOnAuthRefresh(DownloadActionCallback callback,
+  void DownloadDocumentOnAuthRefresh(const DownloadActionCallback& callback,
                                      const GURL& content_url,
                                      GDataErrorCode error,
                                      const std::string& token);
 
   // Pass-through callback for re-authentication during document
   // download request.
-  void OnDownloadDocumentCompleted(DownloadActionCallback callback,
+  void OnDownloadDocumentCompleted(const DownloadActionCallback& callback,
                                    GDataErrorCode error,
                                    const GURL& content_url,
                                    const FilePath& temp_file_path);
 
   // Callback when re-authenticating user during document delete call.
-  void DeleteDocumentOnAuthRefresh(EntryActionCallback callback,
+  void DeleteDocumentOnAuthRefresh(const EntryActionCallback& callback,
                                    const GURL& document_url,
                                    GDataErrorCode error,
                                    const std::string& token);
 
   // Pass-through callback for re-authentication during document delete request.
-  void OnDeleteDocumentCompleted(EntryActionCallback callback,
+  void OnDeleteDocumentCompleted(const EntryActionCallback& callback,
                                  GDataErrorCode error,
                                  const GURL& document_url);
 
   // Callback when re-authenticating user during initiate upload call.
-  void InitiateUploadOnAuthRefresh(InitiateUploadCallback callback,
+  void InitiateUploadOnAuthRefresh(const InitiateUploadCallback& callback,
                                    const UploadFileInfo& upload_file_info,
                                    GDataErrorCode error,
                                    const std::string& token);
 
   // Pass-through callback for re-authentication during initiate upload request.
-  void OnInitiateUploadCompleted(InitiateUploadCallback callback,
+  void OnInitiateUploadCompleted(const InitiateUploadCallback& callback,
                                  GDataErrorCode error,
                                  const UploadFileInfo& upload_file_info,
                                  const GURL& upload_location);
 
   // Callback when re-authenticating user during resume upload call.
-  void ResumeUploadOnAuthRefresh(ResumeUploadCallback callback,
+  void ResumeUploadOnAuthRefresh(const ResumeUploadCallback& callback,
                                  const UploadFileInfo& upload_file_info,
                                  GDataErrorCode error,
                                  const std::string& token);
 
   // Pass-through callback for re-authentication during resume upload request.
-  void OnResumeUploadCompleted(ResumeUploadCallback callback,
+  void OnResumeUploadCompleted(const ResumeUploadCallback& callback,
                                GDataErrorCode error,
                                const UploadFileInfo& upload_file_info,
                                int64 start_range_received,
                                int64 end_range_received);
+
+  // Pass-through callback for re-authentication during directory create
+  // request.
+  void CreateDirectoryOnAuthRefresh(const GURL& parent_content_url,
+                                    const FilePath::StringType& directory_name,
+                                    const CreateEntryCallback& callback,
+                                    GDataErrorCode error,
+                                    const std::string& token);
+
+  // Pass-through callback for CreateDirectory() completion request.
+  void OnCreateDirectoryCompleted(const GURL& parent_content_url,
+                                  const FilePath::StringType& directory_name,
+                                  const CreateEntryCallback& callback,
+                                  GDataErrorCode error,
+                                  base::Value* document_entry);
 
   // TODO(zelidrag): Remove this one once we figure out where the metadata will
   // really live.

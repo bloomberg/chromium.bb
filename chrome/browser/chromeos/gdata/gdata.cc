@@ -15,6 +15,7 @@
 #include "base/message_loop.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
@@ -37,6 +38,8 @@
 #include "net/http/http_util.h"
 
 using content::BrowserThread;
+using content::URLFetcher;
+using content::URLFetcherDelegate;
 
 namespace gdata {
 
@@ -55,6 +58,10 @@ const char kIfMatchHeaderFormat[] = "If-Match: %s";
 // (handled with '-/mine' part).
 const char kGetDocumentListURL[] =
     "https://docs.google.com/feeds/default/private/full/-/mine";
+
+// Root document list url.
+const char kDocumentListRootURL[] =
+    "https://docs.google.com/feeds/default/private/full";
 
 #ifndef NDEBUG
 // Use smaller 'page' size while debugging to ensure we hit feed reload
@@ -114,7 +121,7 @@ const char* GetExportFormatParam(DocumentExportFormat format) {
   }
 }
 
-std::string GetResponseHeadersAsString(const content::URLFetcher* url_fetcher) {
+std::string GetResponseHeadersAsString(const URLFetcher* url_fetcher) {
   // net::HttpResponseHeaders::raw_headers(), as the name implies, stores
   // all headers in their raw format, i.e each header is null-terminated.
   // So logging raw_headers() only shows the first header, which is probably
@@ -124,7 +131,7 @@ std::string GetResponseHeadersAsString(const content::URLFetcher* url_fetcher) {
   // Check that response code indicates response headers are valid (i.e. not
   // malformed) before we retrieve the headers.
   if (url_fetcher->GetResponseCode() ==
-      content::URLFetcher::RESPONSE_CODE_INVALID) {
+      URLFetcher::RESPONSE_CODE_INVALID) {
     headers.assign("Response headers are malformed!!");
   } else {
     url_fetcher->GetResponseHeaders()->GetNormalizedHeaders(&headers);
@@ -218,7 +225,7 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
 
 // Base class for operation that are fetching URLs.
 template <typename T>
-class UrlFetchOperation : public content::URLFetcherDelegate {
+class UrlFetchOperation : public URLFetcherDelegate {
  public:
   UrlFetchOperation(Profile* profile, const std::string& auth_token)
       : profile_(profile), auth_token_(auth_token), save_temp_file_(false) {
@@ -228,7 +235,7 @@ class UrlFetchOperation : public content::URLFetcherDelegate {
     DCHECK(!auth_token_.empty());
     callback_ = callback;
     GURL url = GetURL();
-    url_fetcher_.reset(content::URLFetcher::Create(
+    url_fetcher_.reset(URLFetcher::Create(
         url, GetRequestType(), this));
     url_fetcher_->SetRequestContext(profile_->GetRequestContext());
     // Always set flags to neither send nor save cookies.
@@ -255,7 +262,7 @@ class UrlFetchOperation : public content::URLFetcherDelegate {
     // Set upload data if available.
     std::string upload_content_type;
     std::string upload_content;
-    if (GetUploadData(&upload_content_type, &upload_content)) {
+    if (GetContentData(&upload_content_type, &upload_content)) {
       url_fetcher_->SetUploadData(upload_content_type, upload_content);
     }
 
@@ -266,14 +273,14 @@ class UrlFetchOperation : public content::URLFetcherDelegate {
   virtual ~UrlFetchOperation() {}
   // Gets URL for GET request.
   virtual GURL GetURL() const = 0;
-  virtual content::URLFetcher::RequestType GetRequestType() const {
-    return content::URLFetcher::GET;
+  virtual URLFetcher::RequestType GetRequestType() const {
+    return URLFetcher::GET;
   }
   virtual std::vector<std::string> GetExtraRequestHeaders() const {
     return std::vector<std::string>();
   }
-  virtual bool GetUploadData(std::string* upload_content_type,
-                             std::string* upload_content) {
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) {
     return false;
   }
 
@@ -281,7 +288,7 @@ class UrlFetchOperation : public content::URLFetcherDelegate {
   Profile* profile_;
   std::string auth_token_;
   bool save_temp_file_;
-  scoped_ptr<content::URLFetcher> url_fetcher_;
+  scoped_ptr<URLFetcher> url_fetcher_;
 };
 
 //============================= EntryActionOperation ===========================
@@ -305,8 +312,8 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
     return AddStandardUrlParams(document_url_);
   }
 
-  // content::URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
+  // URLFetcherDelegate overrides.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
     DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
@@ -335,8 +342,8 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
  protected:
   virtual ~GetDataOperation() {}
 
-  // content::URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
+  // URLFetcherDelegate overrides.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
     std::string data;
     source->GetResponseAsString(&data);
     scoped_ptr<base::Value> root_value;
@@ -345,7 +352,8 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
     DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
     switch (code) {
-      case HTTP_SUCCESS: {
+      case HTTP_SUCCESS:
+      case HTTP_CREATED: {
         root_value.reset(ParseResponse(data));
         if (!root_value.get())
           code = GDATA_PARSE_ERROR;
@@ -439,8 +447,8 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
 
   virtual GURL GetURL() const OVERRIDE { return document_url_; }
 
-  // content::URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE {
+  // URLFetcherDelegate overrides.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
     DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
@@ -477,7 +485,7 @@ class DeleteDocumentOperation : public EntryActionOperation  {
 
  private:
   // Overrides from EntryActionOperation.
-  virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 };
 
@@ -487,9 +495,9 @@ DeleteDocumentOperation::DeleteDocumentOperation(Profile* profile,
     : EntryActionOperation(profile, auth_token, document_url) {
 }
 
-content::URLFetcher::RequestType
+URLFetcher::RequestType
 DeleteDocumentOperation::GetRequestType() const {
-  return content::URLFetcher::DELETE_REQUEST;
+  return URLFetcher::DELETE_REQUEST;
 }
 
 std::vector<std::string>
@@ -499,6 +507,85 @@ DeleteDocumentOperation::GetExtraRequestHeaders() const {
   return headers;
 }
 
+
+//=========================== CreateDirectoryOperation =========================
+
+class CreateDirectoryOperation
+    : public GetDataOperation {
+ public:
+  // Empty |parent_content_url| will create the directory in the the root
+  // folder.
+  CreateDirectoryOperation(Profile* profile,
+                           const std::string& auth_token,
+                           const GURL& parent_content_url,
+                           const FilePath::StringType& directory_name);
+
+ protected:
+  virtual ~CreateDirectoryOperation() {}
+
+  // Overrides from UrlFetcherOperation.
+  virtual GURL GetURL() const OVERRIDE;
+
+  // URLFetcherDelegate overrides.
+  virtual URLFetcher::RequestType GetRequestType() const;
+
+ private:
+  // Overrides from UrlFetcherOperation.
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+
+  const GURL parent_content_url_;
+  const FilePath::StringType directory_name_;
+
+  DISALLOW_COPY_AND_ASSIGN(CreateDirectoryOperation);
+};
+
+CreateDirectoryOperation::CreateDirectoryOperation(
+    Profile* profile,
+    const std::string& auth_token,
+    const GURL& parent_content_url,
+    const FilePath::StringType& directory_name)
+    : GetDataOperation(profile, auth_token),
+      parent_content_url_(parent_content_url),
+      directory_name_(directory_name) {
+}
+
+GURL CreateDirectoryOperation::GetURL() const {
+  if (!parent_content_url_.is_empty())
+    return AddStandardUrlParams(parent_content_url_);
+
+  return AddStandardUrlParams(GURL(kDocumentListRootURL));
+}
+
+URLFetcher::RequestType
+CreateDirectoryOperation::GetRequestType() const {
+  return URLFetcher::POST;
+}
+
+bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
+                                              std::string* upload_content) {
+  upload_content_type->assign("application/atom+xml");
+  XmlWriter xml_writer;
+  xml_writer.StartWriting();
+  xml_writer.StartElement("entry");
+  xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
+
+  xml_writer.StartElement("category");
+  xml_writer.AddAttribute("scheme",
+                          "http://schemas.google.com/g/2005#kind");
+  xml_writer.AddAttribute("term",
+                          "http://schemas.google.com/docs/2007#folder");
+  xml_writer.EndElement();  // Ends "category" element.
+
+  xml_writer.WriteElement("title", directory_name_);
+
+  xml_writer.EndElement();  // Ends "entry" element.
+  xml_writer.StopWriting();
+  upload_content->assign(xml_writer.GetWrittenString());
+  DVLOG(1) << "CreateDirectory data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
 
 //=========================== InitiateUploadOperation ==========================
 
@@ -516,17 +603,17 @@ class InitiateUploadOperation
   // Overrides from UrlFetcherOperation.
   virtual GURL GetURL() const OVERRIDE;
 
-  // content::URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate overrides.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  private:
   // Overrides from UrlFetcherOperation.
-  virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
-  virtual bool GetUploadData(std::string* upload_content_type,
-                             std::string* upload_content) OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
 
   UploadFileInfo upload_file_info_;
   GURL initiate_upload_url_;
@@ -552,7 +639,7 @@ GURL InitiateUploadOperation::GetURL() const {
 }
 
 void InitiateUploadOperation::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
   VLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
@@ -577,9 +664,9 @@ void InitiateUploadOperation::OnURLFetchComplete(
   delete this;
 }
 
-content::URLFetcher::RequestType
+URLFetcher::RequestType
     InitiateUploadOperation::GetRequestType() const {
-  return content::URLFetcher::POST;
+  return URLFetcher::POST;
 }
 
 std::vector<std::string>
@@ -587,8 +674,8 @@ std::vector<std::string>
   return upload_file_info_.GetContentTypeAndLengthHeaders();
 }
 
-bool InitiateUploadOperation::GetUploadData(std::string* upload_content_type,
-                                            std::string* upload_content) {
+bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
+                                             std::string* upload_content) {
   upload_content_type->assign("application/atom+xml");
   XmlWriter xml_writer;
   xml_writer.StartWriting();
@@ -619,17 +706,17 @@ class ResumeUploadOperation
 
   virtual GURL GetURL() const OVERRIDE;
 
-  // content::URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate overrides.
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  private:
   // Overrides from UrlFetcherOperation.
-  virtual content::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 
-  virtual bool GetUploadData(std::string* upload_content_type,
-                             std::string* upload_content) OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
 
   UploadFileInfo upload_file_info_;
 
@@ -649,7 +736,7 @@ GURL ResumeUploadOperation::GetURL() const {
 }
 
 void ResumeUploadOperation::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+    const URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
@@ -693,8 +780,8 @@ void ResumeUploadOperation::OnURLFetchComplete(
   delete this;
 }
 
-content::URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
-  return content::URLFetcher::PUT;
+URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
+  return URLFetcher::PUT;
 }
 
 std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
@@ -703,8 +790,8 @@ std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
   return headers;
 }
 
-bool ResumeUploadOperation::GetUploadData(std::string* upload_content_type,
-                                          std::string* upload_content) {
+bool ResumeUploadOperation::GetContentData(std::string* upload_content_type,
+                                           std::string* upload_content) {
   *upload_content_type = upload_file_info_.content_type;
   // TODO(achuith): Get rid of this unnecessary copy.
   *upload_content = upload_file_info_.GetContent().as_string();
@@ -896,9 +983,10 @@ void DocumentsService::OnGetDocumentsCompleted(const GURL& url,
     callback.Run(error, root_value.release());
 }
 
-void DocumentsService::DownloadDocument(const GURL& document_url,
-                                        DocumentExportFormat format,
-                                        DownloadActionCallback callback) {
+void DocumentsService::DownloadDocument(
+    const GURL& document_url,
+    DocumentExportFormat format,
+    const DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadFile(
@@ -909,7 +997,7 @@ void DocumentsService::DownloadDocument(const GURL& document_url,
 }
 
 void DocumentsService::DownloadFile(const GURL& document_url,
-                                    DownloadActionCallback callback) {
+                                    const DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
@@ -930,7 +1018,7 @@ void DocumentsService::DownloadFile(const GURL& document_url,
 }
 
 void DocumentsService::DownloadDocumentOnAuthRefresh(
-    DownloadActionCallback callback,
+    const DownloadActionCallback& callback,
     const GURL& document_url,
     GDataErrorCode error,
     const std::string& token) {
@@ -946,7 +1034,7 @@ void DocumentsService::DownloadDocumentOnAuthRefresh(
 }
 
 void DocumentsService::OnDownloadDocumentCompleted(
-    DownloadActionCallback callback,
+    const DownloadActionCallback& callback,
     GDataErrorCode error,
     const GURL& document_url,
     const FilePath& file_path) {
@@ -967,7 +1055,7 @@ void DocumentsService::OnDownloadDocumentCompleted(
 }
 
 void DocumentsService::DeleteDocument(const GURL& document_url,
-                                      EntryActionCallback callback) {
+                                      const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
@@ -989,7 +1077,7 @@ void DocumentsService::DeleteDocument(const GURL& document_url,
 }
 
 void DocumentsService::DeleteDocumentOnAuthRefresh(
-    EntryActionCallback callback,
+    const EntryActionCallback& callback,
     const GURL& document_url,
     GDataErrorCode error,
     const std::string& token) {
@@ -1005,7 +1093,7 @@ void DocumentsService::DeleteDocumentOnAuthRefresh(
 }
 
 void DocumentsService::OnDeleteDocumentCompleted(
-    EntryActionCallback callback,
+    const EntryActionCallback& callback,
     GDataErrorCode error,
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1024,8 +1112,81 @@ void DocumentsService::OnDeleteDocumentCompleted(
     callback.Run(error, document_url);
 }
 
+void DocumentsService::CreateDirectory(
+    const GURL& parent_content_url,
+    const FilePath::StringType& directory_name,
+    const CreateEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!gdata_auth_service_->IsFullyAuthenticated()) {
+    // Fetch OAuth2 authetication token from the refresh token first.
+    gdata_auth_service_->StartAuthentication(
+        base::Bind(&DocumentsService::CreateDirectoryOnAuthRefresh,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   parent_content_url,
+                   directory_name,
+                   callback));
+    return;
+  }
+  (new CreateDirectoryOperation(
+      profile_,
+      gdata_auth_service_->oauth2_auth_token(),
+      parent_content_url,
+      directory_name))->Start(
+          base::Bind(&DocumentsService::OnCreateDirectoryCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     parent_content_url,
+                     directory_name,
+                     callback));
+}
+
+void DocumentsService::CreateDirectoryOnAuthRefresh(
+    const GURL& parent_content_url,
+    const FilePath::StringType& directory_name,
+    const CreateEntryCallback& callback,
+    GDataErrorCode error,
+    const std::string& token) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != HTTP_SUCCESS) {
+    if (!callback.is_null())
+      callback.Run(error, NULL);
+    return;
+  }
+  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
+  CreateDirectory(parent_content_url, directory_name, callback);
+}
+
+void DocumentsService::OnCreateDirectoryCompleted(
+    const GURL& parent_content_url,
+    const FilePath::StringType& directory_name,
+    const CreateEntryCallback& callback,
+    GDataErrorCode error,
+    base::Value* value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  switch (error) {
+    case HTTP_UNAUTHORIZED:
+      gdata_auth_service_->ClearOAuth2Token();
+      // User authentication might have expired - rerun the request to force
+      // auth token refresh.
+      CreateDirectory(parent_content_url, directory_name, callback);
+      return;
+    default:
+      break;
+  }
+
+  DictionaryValue* dict_value = NULL;
+  Value* entry_value = NULL;
+  if (value && value->GetAsDictionary(&dict_value))
+    dict_value->Get("entry", &entry_value);
+
+  if (!callback.is_null())
+    callback.Run(error, entry_value);
+}
+
 void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
-                                      InitiateUploadCallback callback) {
+                                      const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If we don't have doucment feed, queue caller of InitiateUpload.
@@ -1105,7 +1266,7 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
 }
 
 void DocumentsService::InitiateUploadOnAuthRefresh(
-    InitiateUploadCallback callback,
+    const InitiateUploadCallback& callback,
     const UploadFileInfo& upload_file_info,
     GDataErrorCode error,
     const std::string& token) {
@@ -1121,7 +1282,7 @@ void DocumentsService::InitiateUploadOnAuthRefresh(
 }
 
 void DocumentsService::OnInitiateUploadCompleted(
-    InitiateUploadCallback callback,
+    const InitiateUploadCallback& callback,
     GDataErrorCode error,
     const UploadFileInfo& upload_file_info,
     const GURL& upload_location) {
@@ -1142,7 +1303,7 @@ void DocumentsService::OnInitiateUploadCompleted(
 }
 
 void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
-                                    ResumeUploadCallback callback) {
+                                    const ResumeUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
@@ -1165,7 +1326,7 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
 }
 
 void DocumentsService::ResumeUploadOnAuthRefresh(
-    ResumeUploadCallback callback,
+    const ResumeUploadCallback& callback,
     const UploadFileInfo& upload_file_info,
     GDataErrorCode error,
     const std::string& token) {
@@ -1181,7 +1342,7 @@ void DocumentsService::ResumeUploadOnAuthRefresh(
 }
 
 void DocumentsService::OnResumeUploadCompleted(
-    ResumeUploadCallback callback,
+    const ResumeUploadCallback& callback,
     GDataErrorCode error,
     const UploadFileInfo& upload_file_info,
     int64 start_range_received,

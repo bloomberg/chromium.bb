@@ -287,24 +287,27 @@ void GDataFileSystemProxy::Remove(const GURL& file_url, bool recursive,
     const FileSystemOperationInterface::StatusCallback& callback) {
   FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    OnFileOperationCompleted(MessageLoopProxy::current(), callback,
-        base::PLATFORM_FILE_ERROR_NOT_FOUND);
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     return;
   }
 
-  file_system_->Remove(file_path, recursive,
-      base::Bind(&GDataFileSystemProxy::OnFileOperationCompleted,
-                 MessageLoopProxy::current(),
-                 callback));
+  file_system_->Remove(file_path, recursive, callback);
 }
 
-// static.
-void GDataFileSystemProxy::OnFileOperationCompleted(
-    scoped_refptr<MessageLoopProxy> proxy,
-    const FileSystemOperationInterface::StatusCallback& callback,
-    base::PlatformFileError result) {
-  if (!callback.is_null())
-    proxy->PostTask(FROM_HERE, base::Bind(callback, result));
+void GDataFileSystemProxy::CreateDirectory(
+    const GURL& file_url,
+    bool exclusive,
+    bool recursive,
+    const FileSystemOperationInterface::StatusCallback& callback) {
+  FilePath file_path;
+  if (!ValidateUrl(file_url, &file_path)) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  file_system_->CreateDirectory(file_path, exclusive, recursive, callback);
 }
 
 // static.

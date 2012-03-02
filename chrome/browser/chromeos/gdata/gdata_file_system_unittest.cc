@@ -1,6 +1,8 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -56,6 +58,32 @@ class GDataFileSystemTest : public testing::Test {
     GURL unused;
     ASSERT_TRUE(UpdateContent(directory_path, document.get()));
   }
+
+  void AddDirectoryFromFile(const FilePath& directory_path,
+                            const std::string& filename) {
+    std::string error;
+    scoped_ptr<Value> atom(LoadJSONFile(filename));
+    ASSERT_TRUE(atom.get());
+    ASSERT_TRUE(atom->GetType() == Value::TYPE_DICTIONARY);
+
+    DictionaryValue* dict_value = NULL;
+    Value* entry_value = NULL;
+    ASSERT_TRUE(atom->GetAsDictionary(&dict_value));
+    ASSERT_TRUE(dict_value->Get("entry", &entry_value));
+
+    DictionaryValue* entry_dict = NULL;
+    ASSERT_TRUE(entry_value->GetAsDictionary(&entry_dict));
+
+    // Tweak entry title to match the last segment of the directory path
+    // (new directory name).
+    std::vector<FilePath::StringType> dir_parts;
+    directory_path.GetComponents(&dir_parts);
+    entry_dict->SetString("title.$t", dir_parts[dir_parts.size() - 1]);
+
+    ASSERT_EQ(file_system_->AddNewDirectory(directory_path, entry_value),
+              base::PLATFORM_FILE_OK);
+  }
+
 
   // Updates the content of directory under |directory_path| with parsed feed
   // |value|.
@@ -336,6 +364,78 @@ TEST_F(GDataFileSystemTest, RemoveFiles) {
 
   // Try removing root file element.
   EXPECT_FALSE(RemoveFile(FilePath("gdata")));
+}
+
+
+TEST_F(GDataFileSystemTest, CreateDirectory) {
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+
+  // Create directory in root.
+  FilePath dir_path("gdata/New Folder 1");
+  EXPECT_TRUE(FindFile(dir_path) == NULL);
+  AddDirectoryFromFile(dir_path, "directory_entry_atom.json");
+  EXPECT_TRUE(FindFile(dir_path) != NULL);
+
+  // Create directory in a sub dirrectory.
+  FilePath subdir_path("gdata/New Folder 1/New Folder 2");
+  EXPECT_TRUE(FindFile(subdir_path) == NULL);
+  AddDirectoryFromFile(subdir_path, "directory_entry_atom.json");
+  EXPECT_TRUE(FindFile(subdir_path) != NULL);
+}
+
+TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(FilePath("gdata/Directory 1"), "subdir_feed.json");
+
+  GURL last_dir_content_url;
+  FilePath first_missing_parent_path;
+
+  // Create directory in root.
+  FilePath dir_path("gdata/New Folder 1");
+  EXPECT_EQ(
+      file_system_->FindFirstMissingParentDirectory(dir_path,
+          &last_dir_content_url,
+          &first_missing_parent_path),
+      GDataFileSystem::FOUND_MISSING);
+  EXPECT_EQ(dir_path, first_missing_parent_path);
+  EXPECT_TRUE(last_dir_content_url.is_empty());    // root directory.
+
+  // Missing folders in subdir of an existing folder.
+  FilePath dir_path2("gdata/Directory 1/New Folder 2");
+  EXPECT_EQ(
+      file_system_->FindFirstMissingParentDirectory(dir_path2,
+          &last_dir_content_url,
+          &first_missing_parent_path),
+      GDataFileSystem::FOUND_MISSING);
+  EXPECT_EQ(dir_path2, first_missing_parent_path);
+  EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
+
+  // Missing two folders on the path.
+  FilePath dir_path3 = dir_path2.Append("Another Foder");
+  EXPECT_EQ(
+      file_system_->FindFirstMissingParentDirectory(dir_path3,
+          &last_dir_content_url,
+          &first_missing_parent_path),
+      GDataFileSystem::FOUND_MISSING);
+  EXPECT_EQ(dir_path3.DirName(), first_missing_parent_path);
+  EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
+
+  // Folders on top of an existing file.
+  EXPECT_EQ(
+      file_system_->FindFirstMissingParentDirectory(
+          FilePath("gdata/File 1.txt/BadDir"),
+          &last_dir_content_url,
+          &first_missing_parent_path),
+      GDataFileSystem::FOUND_INVALID);
+
+  // Existing folder.
+  EXPECT_EQ(
+      file_system_->FindFirstMissingParentDirectory(
+          FilePath("gdata/Directory 1"),
+          &last_dir_content_url,
+          &first_missing_parent_path),
+      GDataFileSystem::DIRECTORY_ALREADY_PRESENT);
 }
 
 }   // namespace gdata

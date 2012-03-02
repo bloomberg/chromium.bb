@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/platform_file.h"
 #include "base/values.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 namespace chromeos {
@@ -62,15 +63,18 @@ void RemoteFileSystemOperation::Remove(const GURL& path, bool recursive,
 }
 
 
-void RemoteFileSystemOperation::CreateFile(const GURL& path,
-                                           bool exclusive,
-                                           const StatusCallback& callback) {
-  NOTIMPLEMENTED();
-}
-
 void RemoteFileSystemOperation::CreateDirectory(
     const GURL& path, bool exclusive, bool recursive,
     const StatusCallback& callback) {
+  DCHECK(SetPendingOperationType(kOperationCreateDirectory));
+  remote_proxy_->CreateDirectory(path, exclusive, recursive,
+      base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
+}
+
+void RemoteFileSystemOperation::CreateFile(const GURL& path,
+                                           bool exclusive,
+                                           const StatusCallback& callback) {
   NOTIMPLEMENTED();
 }
 
@@ -128,6 +132,7 @@ RemoteFileSystemOperation::AsFileSystemOperation() {
 void RemoteFileSystemOperation::CreateSnapshotFile(
     const GURL& path,
     const SnapshotFileCallback& callback) {
+  LOG(WARNING) << "No implementation for " << path.spec();
   NOTIMPLEMENTED();
 }
 

@@ -233,6 +233,7 @@ GDataFileBase* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
   dir->file_info_.creation_time = doc->published_time();
   // Extract feed link.
   dir->start_feed_url_ = doc->content_url();
+  dir->content_url_ = doc->content_url();
   return dir;
 }
 
@@ -303,6 +304,27 @@ GDataFileSystem::FindFileParams::FindFileParams(
 
 GDataFileSystem::FindFileParams::~FindFileParams() {
 }
+
+// GDataFileSystem::CreateDirectoryParams struct implementation.
+
+GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
+    const FilePath& created_directory_path,
+    const FilePath& target_directory_path,
+    bool is_exclusive,
+    bool is_recursive,
+    const FileOperationCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> proxy)
+    : created_directory_path(created_directory_path),
+      target_directory_path(target_directory_path),
+      is_exclusive(is_exclusive),
+      is_recursive(is_recursive),
+      callback(callback),
+      proxy(proxy) {
+}
+
+GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
+}
+
 
 // GDataFileSystem class implementatsion.
 
@@ -390,6 +412,81 @@ void GDataFileSystem::Remove(const FilePath& file_path,
                      base::MessageLoopProxy::current())));
 }
 
+void GDataFileSystem::CreateDirectory(
+    const FilePath& directory_path,
+    bool is_exclusive,
+    bool is_recursive,
+    const FileOperationCallback& callback) {
+  CreateDirectoryInternal(directory_path, is_exclusive, is_recursive, callback,
+                          base::MessageLoopProxy::current());
+}
+
+void GDataFileSystem::CreateDirectoryInternal(
+    const FilePath& directory_path,
+    bool is_exclusive,
+    bool is_recursive,
+    const FileOperationCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> reply_proxy) {
+  FilePath last_parent_dir_path;
+  FilePath first_missing_path;
+  GURL last_parent_dir_url;
+  FindMissingDirectoryResult result =
+      FindFirstMissingParentDirectory(directory_path,
+                                      &last_parent_dir_url,
+                                      &first_missing_path);
+  switch (result) {
+    case FOUND_INVALID: {
+      if (!callback.is_null()) {
+        reply_proxy->PostTask(FROM_HERE,
+            base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+      }
+
+      return;
+    }
+    case DIRECTORY_ALREADY_PRESENT: {
+      if (!callback.is_null()) {
+        reply_proxy->PostTask(FROM_HERE,
+            base::Bind(callback,
+                       is_exclusive ? base::PLATFORM_FILE_ERROR_EXISTS :
+                                      base::PLATFORM_FILE_OK));
+      }
+
+      return;
+    }
+    case FOUND_MISSING: {
+      // There is a missing folder to be created here, move on with the rest of
+      // this function.
+      break;
+    }
+  }
+
+  // Do we have a parent directory here as well? We can't then create target
+  // directory if this is not a recursive operation.
+  if (directory_path !=  first_missing_path && !is_recursive) {
+    if (!callback.is_null()) {
+      reply_proxy->PostTask(FROM_HERE,
+           base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    }
+    return;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DocumentsService::CreateDirectory,
+                 documents_service_bound_to_ui_thread_,
+                 last_parent_dir_url,
+                 first_missing_path.BaseName().value(),
+                 base::Bind(&GDataFileSystem::OnCreateDirectoryCompleted,
+                            file_system_bound_to_ui_thread_,
+                            CreateDirectoryParams(
+                                first_missing_path,
+                                directory_path,
+                                is_exclusive,
+                                is_recursive,
+                                callback,
+                                reply_proxy))));
+}
+
 void GDataFileSystem::UnsafeFindFileByPath(
     const FilePath& file_path, scoped_refptr<FindFileDelegate> delegate) {
   lock_.AssertAcquired();
@@ -451,6 +548,44 @@ GURL GDataFileSystem::GetDocumentUrlFromPath(const FilePath& file_path) {
     return GURL();
 
   return find_delegate->file()->self_url();
+}
+
+void GDataFileSystem::OnCreateDirectoryCompleted(
+    const CreateDirectoryParams& params,
+    GDataErrorCode status,
+    base::Value* created_entry) {
+  base::PlatformFileError error = GDataToPlatformError(status);
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!params.callback.is_null())
+      params.proxy->PostTask(FROM_HERE, base::Bind(params.callback, error));
+
+    return;
+  }
+
+  error = AddNewDirectory(params.created_directory_path, created_entry);
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!params.callback.is_null())
+      params.proxy->PostTask(FROM_HERE, base::Bind(params.callback, error));
+
+    return;
+  }
+
+  // Not done yet with recursive directory creation?
+  if (params.target_directory_path != params.created_directory_path &&
+      params.is_recursive) {
+    CreateDirectory(params.target_directory_path,
+                    params.is_exclusive,
+                    params.is_recursive,
+                    params.callback);
+    return;
+  }
+
+  if (!params.callback.is_null()) {
+    // Finally done with the create request.
+    params.proxy->PostTask(FROM_HERE, base::Bind(params.callback,
+                                                 base::PLATFORM_FILE_OK));
+  }
 }
 
 void GDataFileSystem::OnGetDocuments(
@@ -604,6 +739,79 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
       dir->AddFile(file);
   }
   return base::PLATFORM_FILE_OK;
+}
+
+
+base::PlatformFileError GDataFileSystem::AddNewDirectory(
+    const FilePath& directory_path, base::Value* entry_value) {
+  if (!entry_value)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  scoped_ptr<DocumentEntry> entry(DocumentEntry::CreateFrom(entry_value));
+
+  if (!entry.get())
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  // We need to lock here as well (despite FindFileByPath lock) since directory
+  // instance below is a 'live' object.
+  base::AutoLock lock(lock_);
+
+  // Find parent directory element within the cached file system snapshot.
+  scoped_refptr<ReadOnlyFindFileDelegate> update_delegate(
+      new ReadOnlyFindFileDelegate());
+  UnsafeFindFileByPath(directory_path.DirName(), update_delegate);
+
+  GDataFileBase* file = update_delegate->file();
+  if (!file)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  GDataDirectory* parent_dir = file->AsGDataDirectory();
+  if (!parent_dir)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  GDataFileBase* new_file = GDataFileBase::FromDocumentEntry(parent_dir,
+                                                             entry.get());
+  if (!new_file)
+    return base::PLATFORM_FILE_ERROR_FAILED;
+
+  parent_dir->AddFile(new_file);
+
+  return base::PLATFORM_FILE_OK;
+}
+
+
+GDataFileSystem::FindMissingDirectoryResult
+GDataFileSystem::FindFirstMissingParentDirectory(
+    const FilePath& directory_path,
+    GURL* last_dir_content_url,
+    FilePath* first_missing_parent_path) {
+  // Let's find which how deep is the existing directory structure and
+  // get the first element that's missing.
+  std::vector<FilePath::StringType> path_parts;
+  directory_path.GetComponents(&path_parts);
+  FilePath current_path;
+
+  base::AutoLock lock(lock_);
+  for (std::vector<FilePath::StringType>::const_iterator iter =
+          path_parts.begin();
+       iter != path_parts.end(); ++iter) {
+    current_path = current_path.Append(*iter);
+    scoped_refptr<ReadOnlyFindFileDelegate> find_delegate(
+        new ReadOnlyFindFileDelegate());
+    UnsafeFindFileByPath(current_path, find_delegate);
+    if (find_delegate->file()) {
+      if (find_delegate->file()->file_info().is_directory) {
+        *last_dir_content_url = find_delegate->file()->content_url();
+      } else {
+        // Huh, the segment found is a file not a directory?
+        return FOUND_INVALID;
+      }
+    } else {
+      *first_missing_parent_path = current_path;
+      return FOUND_MISSING;
+    }
+  }
+  return DIRECTORY_ALREADY_PRESENT;
 }
 
 // static
