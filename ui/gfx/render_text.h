@@ -156,6 +156,10 @@ class UI_EXPORT RenderText {
   const StyleRange& default_style() const { return default_style_; }
   void set_default_style(const StyleRange& style) { default_style_ = style; }
 
+  // In an obscured (password) field, all text is drawn as asterisks or bullets.
+  bool is_obscured() const { return obscured_; }
+  void SetObscured(bool obscured);
+
   const Rect& display_rect() const { return display_rect_; }
   void SetDisplayRect(const Rect& r);
 
@@ -334,6 +338,10 @@ class UI_EXPORT RenderText {
   // Draw the text.
   virtual void DrawVisualText(Canvas* canvas) = 0;
 
+  // Like text() except that it returns asterisks or bullets if this is an
+  // obscured field.
+  string16 GetDisplayText() const;
+
   // Apply composition style (underline) to composition range and selection
   // style (foreground) to selection range.
   void ApplyCompositionAndSelectionStyles(StyleRanges* style_ranges);
@@ -366,6 +374,7 @@ class UI_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, CustomDefaultStyle);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyleRange);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, StyleRangesAdjust);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, PasswordCensorship);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GraphemePositions);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SelectionModels);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, OriginForSkiaDrawing);
@@ -421,6 +430,9 @@ class UI_EXPORT RenderText {
   StyleRanges style_ranges_;
   // The default text style.
   StyleRange default_style_;
+
+  // True if this is an obscured (password) field.
+  bool obscured_;
 
   // Fade text head and/or tail, if text doesn't fit into |display_rect_|.
   bool fade_head_;

@@ -51,11 +51,11 @@ class RenderTextLinux : public RenderText {
   // Returns the run that contains |position|. Return NULL if not found.
   GSList* GetRunContainingPosition(size_t position) const;
 
-  // Given |utf8_index_of_current_grapheme|, returns the UTF-8 index of the
-  // |next| or previous grapheme in logical order. Returns 0 if there is no
-  // previous grapheme, or the |text_| length if there is no next grapheme.
-  size_t Utf8IndexOfAdjacentGrapheme(size_t utf8_index_of_current_grapheme,
-                                     LogicalCursorDirection direction) const;
+  // Given |layout_index_of_current_grapheme|, returns the layout (UTF-8) index
+  // of the |next| or previous grapheme in logical order. Returns 0 if there is
+  // no previous grapheme, or the |text_| length if there is no next grapheme.
+  size_t LayoutIndexOfAdjacentGrapheme(size_t layout_index_of_current_grapheme,
+                                       LogicalCursorDirection direction) const;
 
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
@@ -75,8 +75,9 @@ class RenderTextLinux : public RenderText {
                             PangoAttribute* pango_attr,
                             PangoAttrList* attrs);
 
-  size_t Utf16IndexToUtf8Index(size_t index) const;
-  size_t Utf8IndexToUtf16Index(size_t index) const;
+  // Convert between indices into text() and indices into |layout_text_|.
+  size_t TextIndexToLayoutIndex(size_t index) const;
+  size_t LayoutIndexToTextIndex(size_t index) const;
 
   // Calculate the visual bounds containing the logical substring within |from|
   // to |to|.

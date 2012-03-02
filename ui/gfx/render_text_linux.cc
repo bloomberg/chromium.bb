@@ -12,11 +12,10 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/pango_util.h"
-#include "unicode/uchar.h"
-#include "unicode/ustring.h"
 
 namespace gfx {
 
@@ -113,8 +112,8 @@ SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
   }
 
   return SelectionModel(
-      Utf8IndexToUtf16Index(selection_end),
-      Utf8IndexToUtf16Index(caret_pos),
+      LayoutIndexToTextIndex(selection_end),
+      LayoutIndexToTextIndex(caret_pos),
       trailing > 0 ? SelectionModel::TRAILING : SelectionModel::LEADING);
 }
 
@@ -125,7 +124,7 @@ Rect RenderTextLinux::GetCursorBounds(const SelectionModel& selection,
   size_t caret_pos = insert_mode ? selection.caret_pos() :
                                    selection.selection_end();
   PangoRectangle pos;
-  pango_layout_index_to_pos(layout_, Utf16IndexToUtf8Index(caret_pos), &pos);
+  pango_layout_index_to_pos(layout_, TextIndexToLayoutIndex(caret_pos), &pos);
 
   SelectionModel::CaretPlacement caret_placement = selection.caret_placement();
   int x = pos.x;
@@ -172,9 +171,8 @@ SelectionModel RenderTextLinux::AdjacentCharSelectionModel(
 
   PangoLayoutRun* layout_run = reinterpret_cast<PangoLayoutRun*>(run->data);
   PangoItem* item = layout_run->item;
-  size_t run_start = Utf8IndexToUtf16Index(item->offset);
-  size_t run_end = Utf8IndexToUtf16Index(item->offset + item->length);
-
+  size_t run_start = LayoutIndexToTextIndex(item->offset);
+  size_t run_end = LayoutIndexToTextIndex(item->offset + item->length);
   if (!IsForwardMotion(direction, item)) {
     if (caret_placement == SelectionModel::TRAILING)
       return SelectionModel(caret, caret, SelectionModel::LEADING);
@@ -209,6 +207,9 @@ SelectionModel RenderTextLinux::AdjacentCharSelectionModel(
 SelectionModel RenderTextLinux::AdjacentWordSelectionModel(
     const SelectionModel& selection,
     VisualCursorDirection direction) {
+  if (is_obscured())
+    return EdgeSelectionModel(direction);
+
   base::i18n::BreakIterator iter(text(), base::i18n::BreakIterator::BREAK_WORD);
   bool success = iter.Init();
   DCHECK(success);
@@ -243,12 +244,11 @@ SelectionModel RenderTextLinux::EdgeSelectionModel(
       PangoLayoutRun* end_run = reinterpret_cast<PangoLayoutRun*>(run->data);
       PangoItem* item = end_run->item;
       if (IsForwardMotion(direction, item)) {
-        size_t caret = Utf8IndexToUtf16Index(
-            Utf8IndexOfAdjacentGrapheme(item->offset + item->length,
-                                        CURSOR_BACKWARD));
+        size_t caret = LayoutIndexToTextIndex(LayoutIndexOfAdjacentGrapheme(
+            item->offset + item->length, CURSOR_BACKWARD));
         return SelectionModel(text().length(), caret, SelectionModel::TRAILING);
       } else {
-        size_t caret = Utf8IndexToUtf16Index(item->offset);
+        size_t caret = LayoutIndexToTextIndex(item->offset);
         return SelectionModel(text().length(), caret, SelectionModel::LEADING);
       }
     }
@@ -285,8 +285,8 @@ bool RenderTextLinux::IsCursorablePosition(size_t position) {
     return true;
 
   EnsureLayout();
-  return (position < static_cast<size_t>(num_log_attrs_) &&
-          log_attrs_[position].is_cursor_position);
+  ptrdiff_t offset = ui::UTF16IndexToOffset(text(), 0, position);
+  return (offset < num_log_attrs_ && log_attrs_[offset].is_cursor_position);
 }
 
 void RenderTextLinux::UpdateLayout() {
@@ -302,7 +302,7 @@ void RenderTextLinux::EnsureLayout() {
     layout_ = pango_cairo_create_layout(cr);
     SetupPangoLayoutWithFontDescription(
         layout_,
-        text(),
+        GetDisplayText(),
         font_list().GetFontDescriptionString(),
         display_rect().width(),
         base::i18n::GetFirstStrongCharacterDirection(text()),
@@ -315,15 +315,17 @@ void RenderTextLinux::EnsureLayout() {
     // TODO(xji): If RenderText will be used for displaying purpose, such as
     // label, we will need to remove the single-line-mode setting.
     pango_layout_set_single_paragraph_mode(layout_, true);
+
+    // These are used by SetupPangoAttributes.
+    layout_text_ = pango_layout_get_text(layout_);
+    layout_text_len_ = strlen(layout_text_);
+
     SetupPangoAttributes(layout_);
 
     current_line_ = pango_layout_get_line_readonly(layout_, 0);
     pango_layout_line_ref(current_line_);
 
     pango_layout_get_log_attrs(layout_, &log_attrs_, &num_log_attrs_);
-
-    layout_text_ = pango_layout_get_text(layout_);
-    layout_text_len_ = strlen(layout_text_);
   }
 }
 
@@ -345,8 +347,8 @@ void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
           derived_font_list.GetFontDescriptionString().c_str());
 
       PangoAttribute* pango_attr = pango_attr_font_desc_new(desc);
-      pango_attr->start_index = Utf16IndexToUtf8Index(i->range.start());
-      pango_attr->end_index = Utf16IndexToUtf8Index(i->range.end());
+      pango_attr->start_index = TextIndexToLayoutIndex(i->range.start());
+      pango_attr->end_index = TextIndexToLayoutIndex(i->range.end());
       pango_attr_list_insert(attrs, pango_attr);
       pango_font_description_free(desc);
     }
@@ -375,7 +377,7 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   style_ranges_utf8.reserve(styles.size());
   size_t start_index = 0;
   for (size_t i = 0; i < styles.size(); ++i) {
-    size_t end_index = Utf16IndexToUtf8Index(styles[i].range.end());
+    size_t end_index = TextIndexToLayoutIndex(styles[i].range.end());
     style_ranges_utf8.push_back(ui::Range(start_index, end_index));
     start_index = end_index;
   }
@@ -470,16 +472,16 @@ size_t RenderTextLinux::IndexOfAdjacentGrapheme(
   if (index > text().length())
     return text().length();
   EnsureLayout();
-  return Utf8IndexToUtf16Index(
-      Utf8IndexOfAdjacentGrapheme(Utf16IndexToUtf8Index(index), direction));
+  return LayoutIndexToTextIndex(
+      LayoutIndexOfAdjacentGrapheme(TextIndexToLayoutIndex(index), direction));
 }
 
 GSList* RenderTextLinux::GetRunContainingPosition(size_t position) const {
   GSList* run = current_line_->runs;
   while (run) {
     PangoItem* item = reinterpret_cast<PangoLayoutRun*>(run->data)->item;
-    size_t run_start = Utf8IndexToUtf16Index(item->offset);
-    size_t run_end = Utf8IndexToUtf16Index(item->offset + item->length);
+    size_t run_start = LayoutIndexToTextIndex(item->offset);
+    size_t run_end = LayoutIndexToTextIndex(item->offset + item->length);
 
     if (position >= run_start && position < run_end)
       return run;
@@ -488,10 +490,10 @@ GSList* RenderTextLinux::GetRunContainingPosition(size_t position) const {
   return NULL;
 }
 
-size_t RenderTextLinux::Utf8IndexOfAdjacentGrapheme(
-    size_t utf8_index_of_current_grapheme,
+size_t RenderTextLinux::LayoutIndexOfAdjacentGrapheme(
+    size_t layout_index_of_current_grapheme,
     LogicalCursorDirection direction) const {
-  const char* ch = layout_text_ + utf8_index_of_current_grapheme;
+  const char* ch = layout_text_ + layout_index_of_current_grapheme;
   int char_offset = static_cast<int>(g_utf8_pointer_to_offset(layout_text_,
                                                               ch));
   int start_char_offset = char_offset;
@@ -516,15 +518,15 @@ size_t RenderTextLinux::Utf8IndexOfAdjacentGrapheme(
 
 SelectionModel RenderTextLinux::FirstSelectionModelInsideRun(
     const PangoItem* item) const {
-  size_t caret = Utf8IndexToUtf16Index(item->offset);
-  size_t cursor = Utf8IndexToUtf16Index(
-      Utf8IndexOfAdjacentGrapheme(item->offset, CURSOR_FORWARD));
+  size_t caret = LayoutIndexToTextIndex(item->offset);
+  size_t cursor = LayoutIndexToTextIndex(
+      LayoutIndexOfAdjacentGrapheme(item->offset, CURSOR_FORWARD));
   return SelectionModel(cursor, caret, SelectionModel::TRAILING);
 }
 
 SelectionModel RenderTextLinux::LastSelectionModelInsideRun(
     const PangoItem* item) const {
-  size_t caret = Utf8IndexToUtf16Index(Utf8IndexOfAdjacentGrapheme(
+  size_t caret = LayoutIndexToTextIndex(LayoutIndexOfAdjacentGrapheme(
       item->offset + item->length, CURSOR_BACKWARD));
   return SelectionModel(caret, caret, SelectionModel::LEADING);
 }
@@ -551,37 +553,30 @@ void RenderTextLinux::ResetLayout() {
   layout_text_len_ = 0;
 }
 
-size_t RenderTextLinux::Utf16IndexToUtf8Index(size_t index) const {
-  int32_t utf8_index = 0;
-  UErrorCode ec = U_ZERO_ERROR;
-  u_strToUTF8(NULL, 0, &utf8_index, text().data(), index, &ec);
-  // Even given a destination buffer as NULL and destination capacity as 0,
-  // if the output length is equal to or greater than the capacity, then the
-  // UErrorCode is set to U_STRING_NOT_TERMINATED_WARNING or
-  // U_BUFFER_OVERFLOW_ERROR respectively.
-  // Please refer to
-  // http://userguide.icu-project.org/strings#TOC-Using-C-Strings:-NUL-Terminated-vs
-  // for detail (search for "Note that" below "Preflighting").
-  DCHECK(ec == U_BUFFER_OVERFLOW_ERROR ||
-         ec == U_STRING_NOT_TERMINATED_WARNING);
-  return utf8_index;
+size_t RenderTextLinux::TextIndexToLayoutIndex(size_t text_index) const {
+  // If the text is obscured then |layout_text_| is not the same as |text()|,
+  // but whether or not the text is obscured, the character (code point) offset
+  // in |layout_text_| is the same as that in |text()|.
+  DCHECK(layout_);
+  ptrdiff_t offset = ui::UTF16IndexToOffset(text(), 0, text_index);
+  const char* layout_pointer = g_utf8_offset_to_pointer(layout_text_, offset);
+  return (layout_pointer - layout_text_);
 }
 
-size_t RenderTextLinux::Utf8IndexToUtf16Index(size_t index) const {
-  int32_t utf16_index = 0;
-  UErrorCode ec = U_ZERO_ERROR;
-  u_strFromUTF8(NULL, 0, &utf16_index, layout_text_, index, &ec);
-  DCHECK(ec == U_BUFFER_OVERFLOW_ERROR ||
-         ec == U_STRING_NOT_TERMINATED_WARNING);
-  return utf16_index;
+size_t RenderTextLinux::LayoutIndexToTextIndex(size_t layout_index) const {
+  // See |TextIndexToLayoutIndex()|.
+  DCHECK(layout_);
+  const char* layout_pointer = layout_text_ + layout_index;
+  long offset = g_utf8_pointer_to_offset(layout_text_, layout_pointer);
+  return ui::UTF16OffsetToIndex(text(), 0, offset);
 }
 
 std::vector<Rect> RenderTextLinux::CalculateSubstringBounds(size_t from,
                                                             size_t to) {
   int* ranges;
   int n_ranges;
-  size_t from_in_utf8 = Utf16IndexToUtf8Index(from);
-  size_t to_in_utf8 = Utf16IndexToUtf8Index(to);
+  size_t from_in_utf8 = TextIndexToLayoutIndex(from);
+  size_t to_in_utf8 = TextIndexToLayoutIndex(to);
   pango_layout_line_get_x_ranges(
       current_line_,
       std::min(from_in_utf8, to_in_utf8),

@@ -13,6 +13,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/range/range.h"
+#include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/render_text.h"
@@ -361,9 +362,12 @@ bool TextfieldViewsModel::Backspace() {
     DeleteSelection();
     return true;
   }
-  if (GetCursorPosition() > 0) {
-    size_t cursor_position = GetCursorPosition();
-    ExecuteAndRecordDelete(cursor_position, cursor_position - 1, true);
+  size_t cursor_position = GetCursorPosition();
+  if (cursor_position > 0) {
+    // Delete one code point, which may be two UTF-16 words.
+    size_t previous_char =
+        ui::UTF16OffsetToIndex(GetText(), cursor_position, -1);
+    ExecuteAndRecordDelete(cursor_position, previous_char, true);
     return true;
   }
   return false;
@@ -498,7 +502,7 @@ bool TextfieldViewsModel::Redo() {
 }
 
 bool TextfieldViewsModel::Cut() {
-  if (!HasCompositionText() && HasSelection()) {
+  if (!HasCompositionText() && HasSelection() && !render_text_->is_obscured()) {
     ui::ScopedClipboardWriter(
         views::ViewsDelegate::views_delegate->GetClipboard(),
         ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());
@@ -516,7 +520,7 @@ bool TextfieldViewsModel::Cut() {
 }
 
 bool TextfieldViewsModel::Copy() {
-  if (!HasCompositionText() && HasSelection()) {
+  if (!HasCompositionText() && HasSelection() && !render_text_->is_obscured()) {
     ui::ScopedClipboardWriter(
         views::ViewsDelegate::views_delegate->GetClipboard(),
         ui::Clipboard::BUFFER_STANDARD).WriteText(GetSelectedText());

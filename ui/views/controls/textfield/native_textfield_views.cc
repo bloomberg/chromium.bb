@@ -320,7 +320,8 @@ void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
 
 int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
                                                    const gfx::Point& p) {
-  if (!textfield_->enabled() || !GetRenderText()->IsPointInSelection(p))
+  if (!textfield_->enabled() || textfield_->IsObscured() ||
+      !GetRenderText()->IsPointInSelection(p))
     return ui::DragDropTypes::DRAG_NONE;
   if (sender == this && !textfield_->read_only())
     return ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
@@ -426,7 +427,7 @@ void NativeTextfieldViews::UpdateFont() {
 }
 
 void NativeTextfieldViews::UpdateIsObscured() {
-  // TODO(benrg): GetRenderText()->SetObscured(textfield_->IsObscured());
+  GetRenderText()->SetObscured(textfield_->IsObscured());
   OnCaretBoundsChanged();
   SchedulePaint();
   OnTextInputTypeChanged();
@@ -567,9 +568,9 @@ bool NativeTextfieldViews::IsCommandIdEnabled(int command_id) const {
   string16 result;
   switch (command_id) {
     case IDS_APP_CUT:
-      return editable && model_->HasSelection();
+      return editable && model_->HasSelection() && !textfield_->IsObscured();
     case IDS_APP_COPY:
-      return model_->HasSelection();
+      return model_->HasSelection() && !textfield_->IsObscured();
     case IDS_APP_PASTE:
       ViewsDelegate::views_delegate->GetClipboard()
           ->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
@@ -589,24 +590,23 @@ bool NativeTextfieldViews::GetAcceleratorForCommandId(int command_id,
 }
 
 void NativeTextfieldViews::ExecuteCommand(int command_id) {
+  if (!IsCommandIdEnabled(command_id))
+    return;
+
   bool text_changed = false;
-  bool editable = !textfield_->read_only();
   OnBeforeUserAction();
   switch (command_id) {
     case IDS_APP_CUT:
-      if (editable)
-        text_changed = Cut();
+      text_changed = Cut();
       break;
     case IDS_APP_COPY:
       Copy();
       break;
     case IDS_APP_PASTE:
-      if (editable)
-        text_changed = Paste();
+      text_changed = Paste();
       break;
     case IDS_APP_DELETE:
-      if (editable)
-        text_changed = model_->Delete();
+      text_changed = model_->Delete();
       break;
     case IDS_APP_SELECT_ALL:
       SelectAll();
@@ -860,6 +860,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
 
     OnBeforeUserAction();
     bool editable = !textfield_->read_only();
+    bool readable = !textfield_->IsObscured();
     bool selection = key_event.IsShiftDown();
     bool control = key_event.IsControlDown();
     bool text_changed = false;
@@ -880,11 +881,11 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         }
         break;
       case ui::VKEY_X:
-        if (control && editable)
+        if (control && editable && readable)
           cursor_changed = text_changed = Cut();
         break;
       case ui::VKEY_C:
-        if (control)
+        if (control && readable)
           Copy();
         break;
       case ui::VKEY_V:

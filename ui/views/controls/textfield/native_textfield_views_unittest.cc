@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
+#include "grit/ui_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -496,6 +497,20 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   // the actual text instead of "*".
   EXPECT_STR_EQ("my password", textfield_->text());
   EXPECT_TRUE(last_contents_.empty());
+
+  // Cut and copy should be disabled in the context menu.
+  model_->SelectAll();
+  EXPECT_FALSE(IsCommandIdEnabled(IDS_APP_CUT));
+  EXPECT_FALSE(IsCommandIdEnabled(IDS_APP_COPY));
+
+  // Cut and copy keyboard shortcuts and menu commands should do nothing.
+  SetClipboardText("foo");
+  SendKeyEvent(ui::VKEY_C, false, true);
+  SendKeyEvent(ui::VKEY_X, false, true);
+  ExecuteCommand(IDS_APP_COPY);
+  ExecuteCommand(IDS_APP_CUT);
+  EXPECT_STR_EQ("foo", string16(GetClipboardText()));
+  EXPECT_STR_EQ("my password", textfield_->text());
 }
 
 TEST_F(NativeTextfieldViewsTest, InputTypeSetsObscured) {
@@ -812,6 +827,11 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_InitiateDrag) {
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_view_->GetDragOperationsForView(NULL, kStringPoint));
   textfield_->SelectRange(kStringRange);
+  // Ensure that password textfields do not support drag operations.
+  textfield_->SetObscured(true);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
+            textfield_view_->GetDragOperationsForView(NULL, kStringPoint));
+  textfield_->SetObscured(false);
   // Ensure that textfields only initiate drag operations inside the selection.
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_view_->GetDragOperationsForView(NULL, gfx::Point()));

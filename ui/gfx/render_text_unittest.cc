@@ -281,6 +281,81 @@ TEST_F(RenderTextTest, StyleRangesAdjust) {
   EXPECT_EQ(ui::Range(0, 1), render_text->style_ranges()[0].range);
 }
 
+void TestVisualCursorMotionInObscuredField(RenderText* render_text,
+                                           const string16& text,
+                                           bool select) {
+  render_text->SetText(text);
+  int len = text.length();
+  render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, select);
+  EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(
+      select ? 0 : len, len, len - 1, SelectionModel::TRAILING)));
+  render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, select);
+  EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(
+      0, 0, SelectionModel::LEADING)));
+  for (int j = 1; j <= len; ++j) {
+    render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, select);
+    EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(
+        select ? 0 : j, j, j - 1, SelectionModel::TRAILING)));
+  }
+  for (int j = len - 1; j >= 0; --j) {
+    render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, select);
+    EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(
+        select ? 0 : j, j, j, SelectionModel::LEADING)));
+  }
+  render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, select);
+  EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(
+      select ? 0 : len, len, len - 1, SelectionModel::TRAILING)));
+  render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, select);
+  EXPECT_TRUE(render_text->selection_model().Equals(SelectionModel(
+      0, 0, SelectionModel::LEADING)));
+}
+
+TEST_F(RenderTextTest, PasswordCensorship) {
+  const string16 seuss = ASCIIToUTF16("hop on pop");
+  const string16 no_seuss = ASCIIToUTF16("**********");
+  scoped_ptr<RenderText> render_text(RenderText::CreateRenderText());
+
+  // GetObscuredText returns asterisks when the obscured bit is set.
+  render_text->SetText(seuss);
+  render_text->SetObscured(true);
+  EXPECT_EQ(seuss, render_text->text());
+  EXPECT_EQ(no_seuss, render_text->GetDisplayText());
+  render_text->SetObscured(false);
+  EXPECT_EQ(seuss, render_text->text());
+  EXPECT_EQ(seuss, render_text->GetDisplayText());
+
+// TODO(benrg): No Windows implementation yet.
+#if !defined(OS_WIN)
+
+  render_text->SetObscured(true);
+
+  // Surrogate pairs are counted as one code point.
+  const char16 invalid_surrogates[] = {0xDC00, 0xD800, 0};
+  render_text->SetText(invalid_surrogates);
+  EXPECT_EQ(ASCIIToUTF16("**"), render_text->GetDisplayText());
+  const char16 valid_surrogates[] = {0xD800, 0xDC00, 0};
+  render_text->SetText(valid_surrogates);
+  EXPECT_EQ(ASCIIToUTF16("*"), render_text->GetDisplayText());
+  EXPECT_EQ(0U, render_text->GetCursorPosition());
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, false);
+  EXPECT_EQ(2U, render_text->GetCursorPosition());
+
+  // Cursoring is independent of the underlying characters when the text is
+  // obscured.
+  const wchar_t* const texts[] = {
+    L"hop on pop",           // word boundaries
+    L"ab \x5D0\x5D1" L"12",  // bidi embedding level of 2
+    L"\x5D0\x5D1" L"12",     // RTL paragraph direction on Linux
+    L"\x5D0\x5D1"            // pure RTL
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(texts); ++i) {
+    string16 text = WideToUTF16(texts[i]);
+    TestVisualCursorMotionInObscuredField(render_text.get(), text, false);
+    TestVisualCursorMotionInObscuredField(render_text.get(), text, true);
+  }
+#endif  // !defined(OS_WIN)
+}
+
 void RunMoveCursorLeftRightTest(RenderText* render_text,
     const std::vector<SelectionModel>& expected,
     bool move_right) {

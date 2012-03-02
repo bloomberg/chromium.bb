@@ -502,16 +502,42 @@ TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
   string16 clipboard_text;
   TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO WORLD"));
-  model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
 
-  // Test for cut: Empty selection.
+  // Cut with an empty selection should do nothing.
+  model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_FALSE(model.Cut());
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
-  EXPECT_STR_EQ(UTF16ToUTF8(initial_clipboard_text), clipboard_text);
+  EXPECT_EQ(initial_clipboard_text, clipboard_text);
   EXPECT_STR_EQ("HELLO WORLD", model.GetText());
   EXPECT_EQ(11U, model.GetCursorPosition());
 
-  // Test for cut: Non-empty selection.
+  // Copy with an empty selection should do nothing.
+  model.Copy();
+  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
+  EXPECT_EQ(initial_clipboard_text, clipboard_text);
+  EXPECT_STR_EQ("HELLO WORLD", model.GetText());
+  EXPECT_EQ(11U, model.GetCursorPosition());
+
+  // Cut on obscured (password) text should do nothing.
+  model.render_text()->SetObscured(true);
+  model.SelectAll();
+  EXPECT_FALSE(model.Cut());
+  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
+  EXPECT_EQ(initial_clipboard_text, clipboard_text);
+  EXPECT_STR_EQ("HELLO WORLD", model.GetText());
+  EXPECT_STR_EQ("HELLO WORLD", model.GetSelectedText());
+
+  // Copy on obscured text should do nothing.
+  model.SelectAll();
+  EXPECT_FALSE(model.Copy());
+  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
+  EXPECT_EQ(initial_clipboard_text, clipboard_text);
+  EXPECT_STR_EQ("HELLO WORLD", model.GetText());
+  EXPECT_STR_EQ("HELLO WORLD", model.GetSelectedText());
+
+  // Cut with non-empty selection.
+  model.render_text()->SetObscured(false);
+  model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
   EXPECT_TRUE(model.Cut());
   clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
@@ -519,14 +545,7 @@ TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
   EXPECT_STR_EQ("HELLO ", model.GetText());
   EXPECT_EQ(6U, model.GetCursorPosition());
 
-  // Test for copy: Empty selection.
-  model.Copy();
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
-  EXPECT_STR_EQ("WORLD", clipboard_text);
-  EXPECT_STR_EQ("HELLO ", model.GetText());
-  EXPECT_EQ(6U, model.GetCursorPosition());
-
-  // Test for copy: Non-empty selection.
+  // Copy with non-empty selection.
   model.Append(ASCIIToUTF16("HELLO WORLD"));
   model.SelectAll();
   model.Copy();
@@ -544,6 +563,16 @@ TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
   EXPECT_STR_EQ("HELLO HELLO WORLD", clipboard_text);
   EXPECT_STR_EQ("HELLO HELLO HELLO HELLO WORLD", model.GetText());
   EXPECT_EQ(29U, model.GetCursorPosition());
+
+  // Paste ignores the obscured bit.
+  model.render_text()->SetObscured(true);
+  model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
+  ui::ScopedClipboardWriter(
+      clipboard,
+      ui::Clipboard::BUFFER_STANDARD).WriteText(initial_clipboard_text);
+  EXPECT_TRUE(model.Paste());
+  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_text);
+  EXPECT_STR_EQ("HELLO HELLO HELLO HELLO initial text", model.GetText());
 }
 
 static void SelectWordTestVerifier(const TextfieldViewsModel& model,
