@@ -412,6 +412,7 @@ int NavigationControllerImpl::GetLastCommittedEntryIndex() const {
 }
 
 int NavigationControllerImpl::GetEntryCount() const {
+  DCHECK(entries_.size() <= max_entry_count());
   return static_cast<int>(entries_.size());
 }
 
@@ -1077,6 +1078,12 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   // Remove all the entries leaving the active entry.
   PruneAllButActive();
 
+  // We now have zero or one entries.  Ensure that adding the entries from
+  // source won't put us over the limit.
+  DCHECK(GetEntryCount() == 0 || GetEntryCount() == 1);
+  if (GetEntryCount() > 0)
+    source->PruneOldestEntryIfFull();
+
   // Insert the entries from source. Don't use source->GetCurrentEntryIndex as
   // we don't want to copy over the transient entry.
   int max_source_index = source->pending_entry_index_ != -1 ?
@@ -1237,17 +1244,22 @@ void NavigationControllerImpl::InsertOrReplaceEntry(NavigationEntryImpl* entry,
       NotifyPrunedEntries(this, false, num_pruned);
   }
 
-  if (entries_.size() >= max_entry_count()) {
-    DCHECK(last_committed_entry_index_ > 0);
-    RemoveEntryAtIndex(0);
-    NotifyPrunedEntries(this, true, 1);
-  }
+  PruneOldestEntryIfFull();
 
   entries_.push_back(linked_ptr<NavigationEntryImpl>(entry));
   last_committed_entry_index_ = static_cast<int>(entries_.size()) - 1;
 
   // This is a new page ID, so we need everybody to know about it.
   tab_contents_->UpdateMaxPageID(entry->GetPageID());
+}
+
+void NavigationControllerImpl::PruneOldestEntryIfFull() {
+  if (entries_.size() >= max_entry_count()) {
+    DCHECK_EQ(max_entry_count(), entries_.size());
+    DCHECK(last_committed_entry_index_ > 0);
+    RemoveEntryAtIndex(0);
+    NotifyPrunedEntries(this, true, 1);
+  }
 }
 
 void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {

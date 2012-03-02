@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -247,6 +247,10 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // Discards the transient entry.
   void DiscardTransientEntry();
+
+  // If we have the maximum number of entries, remove the oldest one in
+  // preparation to add another.
+  void PruneOldestEntryIfFull();
 
   // Returns true if the navigation is redirect.
   bool IsRedirect(const ViewHostMsg_FrameNavigate_Params& params);

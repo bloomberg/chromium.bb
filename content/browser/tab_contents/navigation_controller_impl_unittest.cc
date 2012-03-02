@@ -2186,6 +2186,57 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
 }
 
+// Tests CopyStateFromAndPrune with 3 urls in source, 1 in dest,
+// when the max entry count is 3.  We should prune one entry.
+TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntries) {
+  NavigationControllerImpl& controller = controller_impl();
+  size_t original_count = NavigationControllerImpl::max_entry_count();
+  const int kMaxEntryCount = 3;
+
+  NavigationControllerImpl::set_max_entry_count_for_testing(kMaxEntryCount);
+
+  const GURL url1("http://foo/1");
+  const GURL url2("http://foo/2");
+  const GURL url3("http://foo/3");
+  const GURL url4("http://foo/4");
+
+  // Create a PrunedListener to observe prune notifications.
+  PrunedListener listener(&controller);
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  NavigateAndCommit(url3);
+
+  scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
+  NavigationControllerImpl& other_controller =
+      other_contents->GetControllerImpl();
+  other_contents->NavigateAndCommit(url4);
+  other_contents->ExpectSetHistoryLengthAndPrune(
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0)), 2,
+      other_controller.GetEntryAtIndex(0)->GetPageID());
+  other_controller.CopyStateFromAndPrune(&controller);
+
+  // We should have received a pruned notification.
+  EXPECT_EQ(1, listener.notification_count_);
+  EXPECT_TRUE(listener.details_.from_front);
+  EXPECT_EQ(1, listener.details_.count);
+
+  // other_controller should now contain only 3 urls: url2, url3 and url4.
+
+  ASSERT_EQ(3, other_controller.GetEntryCount());
+
+  ASSERT_EQ(2, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url2, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url3, other_controller.GetEntryAtIndex(1)->GetURL());
+  EXPECT_EQ(url4, other_controller.GetEntryAtIndex(2)->GetURL());
+  EXPECT_EQ(1, other_controller.GetEntryAtIndex(0)->GetPageID());
+  EXPECT_EQ(2, other_controller.GetEntryAtIndex(1)->GetPageID());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(2)->GetPageID());
+
+  NavigationControllerImpl::set_max_entry_count_for_testing(original_count);
+}
+
 // Tests that navigations initiated from the page (with the history object)
 // work as expected without navigation entries.
 TEST_F(NavigationControllerTest, HistoryNavigate) {
