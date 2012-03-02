@@ -8,7 +8,7 @@ namespace remoting {
 namespace protocol {
 
 TransportConfig::TransportConfig()
-    : nat_traversal(false),
+    : nat_traversal_mode(NAT_TRAVERSAL_DISABLED),
       min_port(0),
       max_port(0) {
 }

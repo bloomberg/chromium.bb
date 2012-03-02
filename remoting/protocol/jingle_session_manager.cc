@@ -40,7 +40,7 @@ void JingleSessionManager::Init(
   signal_strategy_ = signal_strategy;
   iq_sender_.reset(new IqSender(signal_strategy_));
 
-  transport_config_.nat_traversal = network_settings.allow_nat_traversal;
+  transport_config_.nat_traversal_mode = network_settings.nat_traversal_mode;
   transport_config_.min_port = network_settings.min_port;
   transport_config_.max_port = network_settings.max_port;
 
@@ -107,7 +107,8 @@ void JingleSessionManager::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
   // If NAT traversal is enabled then we need to request STUN/Relay info.
   if (state == SignalStrategy::CONNECTED) {
-    if (transport_config_.nat_traversal) {
+    if (transport_config_.nat_traversal_mode ==
+        TransportConfig::NAT_TRAVERSAL_ENABLED) {
       jingle_info_request_.reset(new JingleInfoRequest(signal_strategy_));
       jingle_info_request_->Send(base::Bind(&JingleSessionManager::OnJingleInfo,
                                             base::Unretained(this)));

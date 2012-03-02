@@ -344,8 +344,10 @@ int main(int argc, char** argv) {
     simple_host.set_protocol_config(config.release());
   }
 
-  simple_host.network_settings()->allow_nat_traversal =
-      !cmd_line->HasSwitch(kDisableNatTraversalSwitchName);
+  simple_host.network_settings()->nat_traversal_mode =
+      cmd_line->HasSwitch(kDisableNatTraversalSwitchName) ?
+      remoting::protocol::TransportConfig::NAT_TRAVERSAL_DISABLED :
+      remoting::protocol::TransportConfig::NAT_TRAVERSAL_ENABLED;
 
   if (cmd_line->HasSwitch(kMinPortSwitchName)) {
     std::string min_port_str =

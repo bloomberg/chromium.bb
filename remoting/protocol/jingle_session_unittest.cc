@@ -148,7 +148,8 @@ class JingleSessionTest : public testing::Test {
     client_server_.reset(new JingleSessionManager(
         scoped_ptr<TransportFactory>(new LibjingleTransportFactory())));
     client_server_->Init(client_signal_strategy_.get(),
-                         &client_server_listener_, NetworkSettings());
+                         &client_server_listener_, NetworkSettings(
+                             TransportConfig::NAT_TRAVERSAL_OUTGOING));
   }
 
   void CloseSessionManager() {

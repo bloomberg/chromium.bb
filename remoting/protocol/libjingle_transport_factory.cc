@@ -140,7 +140,7 @@ void LibjingleStreamTransport::Connect(
   // when it is used together with TCP the performance is very bad
   // so we explicitly disable TCP connections.
   int port_allocator_flags = cricket::PORTALLOCATOR_DISABLE_TCP;
-  if (config_.nat_traversal) {
+  if (config_.nat_traversal_mode == TransportConfig::NAT_TRAVERSAL_ENABLED) {
     http_port_allocator_ = new cricket::HttpPortAllocator(
         network_manager_, socket_factory_, "");
     port_allocator_.reset(http_port_allocator_);
@@ -164,6 +164,8 @@ void LibjingleStreamTransport::Connect(
       this, &LibjingleStreamTransport::OnCandidateReady);
   channel_->SignalRouteChange.connect(
       this, &LibjingleStreamTransport::OnRouteChange);
+  if (config_.nat_traversal_mode == TransportConfig::NAT_TRAVERSAL_DISABLED)
+    channel_->set_incoming_only(true);
 
   channel_->Connect();
 

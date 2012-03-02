@@ -149,7 +149,7 @@ void PepperStreamTransport::Connect(
     LOG(ERROR) << "Failed to set TCP ACK delay.";
   }
 
-  if (config_.nat_traversal) {
+  if (config_.nat_traversal_mode == TransportConfig::NAT_TRAVERSAL_ENABLED) {
     if (transport->SetProperty(
             PP_TRANSPORTPROPERTY_STUN_SERVER,
             pp::Var(config_.stun_server)) != PP_OK) {

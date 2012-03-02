@@ -208,8 +208,7 @@ class HostProcess {
     if (!desktop_environment_.get())
       desktop_environment_.reset(DesktopEnvironment::Create(&context_));
 
-    protocol::NetworkSettings network_settings;
-    network_settings.allow_nat_traversal = allow_nat_traversal_;
+    protocol::NetworkSettings network_settings(allow_nat_traversal_);
     if (!allow_nat_traversal_) {
       network_settings.min_port = kMinPortNumber;
       network_settings.max_port = kMaxPortNumber;

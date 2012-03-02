@@ -14,7 +14,21 @@ struct TransportConfig {
   TransportConfig();
   ~TransportConfig();
 
-  bool nat_traversal;
+  enum NatTraversalMode {
+    // Don't use STUN or relay servers. Accept incoming P2P connection
+    // attempts, but don't initiate any. This ensures that the peer is
+    // on the same network. Note that connection will always fail if
+    // both ends use this mode.
+    NAT_TRAVERSAL_DISABLED,
+
+    // Don't use STUN or relay servers but make outgoing connections.
+    NAT_TRAVERSAL_OUTGOING,
+
+    // Active NAT traversal using STUN and relay servers.
+    NAT_TRAVERSAL_ENABLED,
+  };
+
+  NatTraversalMode nat_traversal_mode;
   std::string stun_server;
   std::string relay_server;
   std::string relay_token;
