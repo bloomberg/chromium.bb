@@ -158,6 +158,11 @@ class CONTENT_EXPORT RenderWidget
   // For unit tests.
   friend class RenderWidgetTest;
 
+  enum ResizeAck {
+    SEND_RESIZE_ACK,
+    NO_RESIZE_ACK,
+  };
+
   RenderWidget(WebKit::WebPopupType popup_type,
                const WebKit::WebScreenInfo& screen_info);
   virtual ~RenderWidget();
@@ -202,6 +207,12 @@ class CONTENT_EXPORT RenderWidget
   // tiled in both directions if it isn't big enough to fill the area. This is
   // mainly intended to be used in conjuction with WebView::SetIsTransparent().
   virtual void SetBackground(const SkBitmap& bitmap);
+
+  // Resizes the render widget.
+  void Resize(const gfx::Size& new_size,
+              const gfx::Rect& resizer_rect,
+              bool is_fullscreen,
+              ResizeAck resize_ack);
 
   // RenderWidget IPC message handlers
   void OnClose();

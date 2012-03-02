@@ -4220,6 +4220,11 @@ void Browser::UpdatePreferredSize(WebContents* source,
   window_->UpdatePreferredSize(source, pref_size);
 }
 
+void Browser::ResizeDueToAutoResize(WebContents* source,
+                                    const gfx::Size& new_size) {
+  window_->ResizeDueToAutoResize(source, new_size);
+}
+
 void Browser::RequestToLockMouse(WebContents* tab) {
   fullscreen_controller_->RequestToLockMouse(tab);
 }

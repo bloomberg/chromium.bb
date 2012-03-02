@@ -57,7 +57,8 @@ void DetachedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
 }
 
 void DetachedPanelStrip::ResizePanelWindow(
-    Panel* panel, const gfx::Size& preferred_window_size) {
+    Panel* panel,
+    const gfx::Size& preferred_window_size) {
   NOTIMPLEMENTED();
 }
 

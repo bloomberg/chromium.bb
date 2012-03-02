@@ -151,7 +151,8 @@ void OverflowPanelStrip::CloseAll() {
 }
 
 void OverflowPanelStrip::ResizePanelWindow(
-    Panel* panel, const gfx::Size& preferred_window_size) {
+    Panel* panel,
+    const gfx::Size& preferred_window_size) {
   // Overflow uses its own panel window sizes.
 }
 

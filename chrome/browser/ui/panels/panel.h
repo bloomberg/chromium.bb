@@ -182,8 +182,8 @@ class Panel : public BrowserWindow,
   virtual void ShowMobileSetup() OVERRIDE;
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE;
 #endif
-  virtual void UpdatePreferredSize(content::WebContents* web_contents,
-                                   const gfx::Size& pref_size) OVERRIDE;
+  virtual void ResizeDueToAutoResize(content::WebContents* web_contents,
+                                     const gfx::Size& new_size) OVERRIDE;
   virtual void ShowAvatarBubble(content::WebContents* web_contents,
                                 const gfx::Rect& rect) OVERRIDE;
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE;

@@ -1048,6 +1048,8 @@ class Browser : public TabHandlerDelegate,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
   virtual void UpdatePreferredSize(content::WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
+  virtual void ResizeDueToAutoResize(content::WebContents* source,
+                                     const gfx::Size& new_size) OVERRIDE;
 
   virtual void FindReply(content::WebContents* tab,
                          int request_id,

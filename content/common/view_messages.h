@@ -1057,6 +1057,10 @@ IPC_MESSAGE_ROUTED2(ViewMsg_EnableAutoResize,
                     gfx::Size /* min_size */,
                     gfx::Size /* max_size */)
 
+// Used to instruct the RenderView to disalbe automatically resize.
+IPC_MESSAGE_ROUTED1(ViewMsg_DisableAutoResize,
+                    gfx::Size /* new_size */)
+
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
                     WebKit::WebTextDirection /* direction */)

@@ -328,10 +328,12 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
 
   Panel* panel = static_cast<Panel*>(panel_browser->window());
 
-  if (params.bounds.width() || params.bounds.height())
+  if (!PanelManager::GetInstance()->auto_sizing_enabled() ||
+      params.bounds.width() || params.bounds.height()) {
     EXPECT_FALSE(panel->auto_resizable());
-  else
+  } else {
     EXPECT_TRUE(panel->auto_resizable());
+  }
 
 #if defined(OS_LINUX)
   // On bots, we might have a simple window manager which always activates new

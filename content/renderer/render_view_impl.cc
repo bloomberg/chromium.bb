@@ -780,6 +780,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableAutoResize, OnEnableAutoResize)
+    IPC_MESSAGE_HANDLER(ViewMsg_DisableAutoResize, OnDisableAutoResize)
     IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
@@ -4163,7 +4164,16 @@ void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
   DCHECK(disable_scrollbars_size_limit_.IsEmpty());
   if (!webview())
     return;
-  webview()->enableAutoResizeMode(true, min_size, max_size);
+  webview()->enableAutoResizeMode(min_size, max_size);
+}
+
+void RenderViewImpl::OnDisableAutoResize(const gfx::Size& new_size) {
+  DCHECK(disable_scrollbars_size_limit_.IsEmpty());
+  if (!webview())
+    return;
+  webview()->disableAutoResizeMode();
+
+  Resize(new_size, resizer_rect_, is_fullscreen_, NO_RESIZE_ACK);
 }
 
 void RenderViewImpl::OnEnablePreferredSizeChangedMode() {

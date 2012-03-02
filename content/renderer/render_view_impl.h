@@ -822,6 +822,7 @@ class RenderViewImpl : public RenderWidget,
                             WebKit::WebDragOperationsMask operations_allowed);
   void OnEnablePreferredSizeChangedMode();
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
+  void OnDisableAutoResize(const gfx::Size& new_size);
   void OnEnumerateDirectoryResponse(int id, const std::vector<FilePath>& paths);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnFileChooserResponse(const std::vector<FilePath>& paths);

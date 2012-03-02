@@ -174,22 +174,15 @@ void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
   docked_strip_->OnPanelExpansionStateChanged(panel);
 }
 
-void PanelManager::OnPreferredWindowSizeChanged(
-    Panel* panel, const gfx::Size& preferred_window_size) {
-  if (!auto_sizing_enabled_) {
-    LOG(INFO) << "Resizing auto-resizable Panels is not supported yet.";
-    return;
-  }
+void PanelManager::OnWindowAutoResized(Panel* panel,
+                                       const gfx::Size& preferred_window_size) {
+  DCHECK(auto_sizing_enabled_);
   docked_strip_->ResizePanelWindow(panel, preferred_window_size);
 }
 
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
-  // Explicit resizing is not allowed for auto-resizable panels for now.
-  // http://crbug.com/109343
-  if (panel->auto_resizable())
-    return;
-
   docked_strip_->ResizePanelWindow(panel, new_size);
+  panel->SetAutoResizable(false);
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {

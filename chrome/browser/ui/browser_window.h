@@ -333,6 +333,10 @@ class BrowserWindow : public BaseWindow {
   virtual void UpdatePreferredSize(content::WebContents* web_contents,
                                    const gfx::Size& pref_size) {}
 
+  // Invoked when the contents auto-resized and the container should match it.
+  virtual void ResizeDueToAutoResize(content::WebContents* web_contents,
+                                     const gfx::Size& new_size) {}
+
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 

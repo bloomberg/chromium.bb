@@ -312,6 +312,7 @@ class CONTENT_EXPORT TabContents
   virtual void ToggleFullscreenMode(bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
+  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
   virtual void WebUISend(RenderViewHost* render_view_host,
                        const GURL& source_url,
                        const std::string& name,

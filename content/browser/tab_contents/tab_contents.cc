@@ -970,6 +970,11 @@ void TabContents::UpdatePreferredSize(const gfx::Size& pref_size) {
     delegate_->UpdatePreferredSize(this, pref_size);
 }
 
+void TabContents::ResizeDueToAutoResize(const gfx::Size& new_size) {
+  if (delegate_)
+    delegate_->ResizeDueToAutoResize(this, new_size);
+}
+
 void TabContents::WebUISend(RenderViewHost* render_view_host,
                             const GURL& source_url,
                             const std::string& name,

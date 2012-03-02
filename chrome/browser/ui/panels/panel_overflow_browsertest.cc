@@ -1305,7 +1305,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ResizePanel) {
   // docked: P1 (250), P2 (200), P3 (100)
   // overflow: P4 (250)*
   gfx::Size new_size(250, 200);
-  panel_manager->OnPreferredWindowSizeChanged(panel4, new_size);
+  panel_manager->OnWindowAutoResized(panel4, new_size);
   EXPECT_EQ(3, docked_strip->num_panels());
   EXPECT_EQ(1, overflow_strip->num_panels());
   EXPECT_EQ(PanelStrip::IN_OVERFLOW, panel4->panel_strip()->type());
@@ -1326,7 +1326,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ResizePanel) {
   // panel to overflow.
   // docked: P1 (250), P2 (200), P3 (250)*
   // overflow: P5 (100), P4 (250)
-  panel_manager->OnPreferredWindowSizeChanged(panel3, gfx::Size(250, 200));
+  panel_manager->OnWindowAutoResized(panel3, gfx::Size(250, 200));
   EXPECT_EQ(3, docked_strip->num_panels());
   EXPECT_EQ(2, overflow_strip->num_panels());
   EXPECT_EQ(PanelStrip::IN_OVERFLOW, panel4->panel_strip()->type());
@@ -1338,7 +1338,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ResizePanel) {
   // Resize panel smaller so that panel from overflow can fit.
   // docked: P1 (250), P2 (200), P3 (100)*, P5 (100)
   // overflow: P4 (250)
-  panel_manager->OnPreferredWindowSizeChanged(panel3, gfx::Size(100, 200));
+  panel_manager->OnWindowAutoResized(panel3, gfx::Size(100, 200));
   EXPECT_EQ(4, docked_strip->num_panels());
   EXPECT_EQ(1, overflow_strip->num_panels());
   EXPECT_EQ(PanelStrip::DOCKED, panel5->panel_strip()->type());
@@ -1347,7 +1347,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ResizePanel) {
   // Resize smaller again but not small enough to fit overflow panel.
   // docked: P1 (250), P2 (100)*, P3 (100), P5 (100)
   // overflow: P4 (250)
-  panel_manager->OnPreferredWindowSizeChanged(panel2, gfx::Size(100, 200));
+  panel_manager->OnWindowAutoResized(panel2, gfx::Size(100, 200));
   EXPECT_EQ(4, docked_strip->num_panels());
   EXPECT_EQ(1, overflow_strip->num_panels());
   EXPECT_EQ(PanelStrip::IN_OVERFLOW, panel4->panel_strip()->type());  // same
@@ -1358,7 +1358,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ResizePanel) {
   // overflow: P4 (251)*
   gfx::Rect bounds_before_resize = panel4->GetBounds();
   new_size.SetSize(251, 200);
-  panel_manager->OnPreferredWindowSizeChanged(panel4, new_size);
+  panel_manager->OnWindowAutoResized(panel4, new_size);
   EXPECT_EQ(4, docked_strip->num_panels());
   EXPECT_EQ(1, overflow_strip->num_panels());
   EXPECT_EQ(PanelStrip::IN_OVERFLOW, panel4->panel_strip()->type());
@@ -1368,7 +1368,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ResizePanel) {
   // Resize overflow panel to make it fit.
   // docked: P1 (250), P2 (100), P3 (100), P5 (100), P4 (100)*
   // overflow: empty
-  panel_manager->OnPreferredWindowSizeChanged(panel4, gfx::Size(100, 200));
+  panel_manager->OnWindowAutoResized(panel4, gfx::Size(100, 200));
   EXPECT_EQ(5, docked_strip->num_panels());
   EXPECT_EQ(0, overflow_strip->num_panels());
   EXPECT_EQ(PanelStrip::DOCKED, panel4->panel_strip()->type());
@@ -1376,14 +1376,14 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, ResizePanel) {
   // Resize a panel bigger, but not enough to cause overflow.
   // docked: P1 (250), P2 (100), P3 (150)*, P5 (100), P4 (100)
   // overflow: empty
-  panel_manager->OnPreferredWindowSizeChanged(panel3, gfx::Size(150, 200));
+  panel_manager->OnWindowAutoResized(panel3, gfx::Size(150, 200));
   EXPECT_EQ(5, docked_strip->num_panels());
   EXPECT_EQ(0, overflow_strip->num_panels());
 
   // Resize a panel to bump more than one panel to overflow.
   // docked: P1 (250), P2 (250)*, P3 (150)
   // overflow: P5 (100), P4 (100)
-  panel_manager->OnPreferredWindowSizeChanged(panel2, gfx::Size(250, 200));
+  panel_manager->OnWindowAutoResized(panel2, gfx::Size(250, 200));
   EXPECT_EQ(3, docked_strip->num_panels());
   EXPECT_EQ(2, overflow_strip->num_panels());
   EXPECT_EQ(PanelStrip::IN_OVERFLOW, panel4->panel_strip()->type());

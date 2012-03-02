@@ -54,8 +54,8 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
 
   // Invoked when the preferred window size of the given panel might need to
   // get changed.
-  void OnPreferredWindowSizeChanged(
-      Panel* panel, const gfx::Size& preferred_window_size);
+  void OnWindowAutoResized(Panel* panel,
+                           const gfx::Size& preferred_window_size);
 
   // Resizes the panel. Explicitly setting the panel size is not allowed
   // for panels that are auto-sized.
@@ -112,6 +112,11 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
       return interval / 100.0;
     else
       return interval;
+  }
+
+
+  bool auto_sizing_enabled() const {
+    return auto_sizing_enabled_;
   }
 
 #ifdef UNIT_TEST

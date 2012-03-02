@@ -1108,7 +1108,7 @@ void RenderViewHost::OnMsgDidContentsPreferredSizeChange(
 }
 
 void RenderViewHost::OnRenderAutoResized(const gfx::Size& new_size) {
-  delegate_->UpdatePreferredSize(new_size);
+  delegate_->ResizeDueToAutoResize(new_size);
 }
 
 void RenderViewHost::OnMsgDidChangeScrollbarsForMainFrame(
@@ -1430,6 +1430,11 @@ void RenderViewHost::EnableAutoResize(const gfx::Size& min_size,
                                       const gfx::Size& max_size) {
   SetShouldAutoResize(true);
   Send(new ViewMsg_EnableAutoResize(routing_id(), min_size, max_size));
+}
+
+void RenderViewHost::DisableAutoResize(const gfx::Size& new_size) {
+  SetShouldAutoResize(false);
+  Send(new ViewMsg_DisableAutoResize(routing_id(), new_size));
 }
 
 void RenderViewHost::ExecuteCustomContextMenuCommand(

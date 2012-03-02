@@ -136,7 +136,7 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
 
   } else {
     // Initialize the newly created panel. Does not bump any panels from strip.
-    if (height == 0 && width == 0) {
+    if (height == 0 && width == 0 && panel_manager_->auto_sizing_enabled()) {
       // Auto resizable is enabled only if no initial size is provided.
       panel->SetAutoResizable(true);
     } else {
@@ -458,7 +458,8 @@ void DockedPanelStrip::DecrementMinimizedPanels() {
 }
 
 void DockedPanelStrip::ResizePanelWindow(
-    Panel* panel, const gfx::Size& preferred_window_size) {
+    Panel* panel,
+    const gfx::Size& preferred_window_size) {
   // The panel width:
   // * cannot grow or shrink to go beyond [min_width, max_width]
   int new_width = preferred_window_size.width();

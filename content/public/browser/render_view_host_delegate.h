@@ -387,6 +387,9 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // The contents' preferred size changed.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
+  // The contents auto-resized and the container should match it.
+  virtual void ResizeDueToAutoResize(const gfx::Size& new_size) {}
+
   // Notification message from HTML UI.
   virtual void WebUISend(RenderViewHost* render_view_host,
                          const GURL& source_url,

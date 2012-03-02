@@ -458,6 +458,9 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHostImpl {
   // for the new size.
   void EnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
 
+  // Turns off auto-resize and gives a new size that the view should be.
+  void DisableAutoResize(const gfx::Size& new_size);
+
   // Executes custom context menu action that was provided from WebKit.
   void ExecuteCustomContextMenuCommand(
       int action, const content::CustomContextMenuContext& context);

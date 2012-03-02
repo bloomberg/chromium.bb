@@ -362,6 +362,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void UpdatePreferredSize(WebContents* tab,
                                    const gfx::Size& pref_size) {}
 
+  // Invoked when the contents auto-resized and the container should match it.
+  virtual void ResizeDueToAutoResize(WebContents* tab,
+                                     const gfx::Size& new_size) {}
+
   // Notification message from HTML UI.
   virtual void WebUISend(WebContents* tab,
                          const GURL& source_url,

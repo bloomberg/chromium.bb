@@ -941,17 +941,7 @@ bool RenderWidgetHostImpl::IsFullscreen() const {
 }
 
 void RenderWidgetHostImpl::SetShouldAutoResize(bool enable) {
-  // Note if this switches from true to false then one has to verify that the
-  // mechanics about all the messaging works. For example, what happens to a
-  // update message rect that was in progress from the render widget. Perhaps,
-  // on a transition to false, this should do a WasResized, but what if that
-  // will not trigger a resize message...etc. Due to these complications it is
-  // fitting that this method doesn't look like a simple set method.
-  DCHECK(enable);
-
-  // TODO: Change this to enable instead of true when this supports turning
-  // off auto-resize.
-  should_auto_resize_ = true;
+  should_auto_resize_ = enable;
 }
 
 void RenderWidgetHostImpl::Destroy() {
@@ -1077,12 +1067,10 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
 
   // resize_ack_pending_ needs to be cleared before we call DidPaintRect, since
   // that will end up reaching GetBackingStore.
-  if (is_resize_ack || should_auto_resize_) {
-    if (is_resize_ack) {
-      DCHECK(resize_ack_pending_);
-      resize_ack_pending_ = false;
-      in_flight_size_.SetSize(0, 0);
-    }
+  if (is_resize_ack) {
+    DCHECK(resize_ack_pending_);
+    resize_ack_pending_ = false;
+    in_flight_size_.SetSize(0, 0);
   }
 
   bool is_repaint_ack =

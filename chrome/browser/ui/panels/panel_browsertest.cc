@@ -960,9 +960,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
 
 // Flaky: http://crbug.com/105445
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
-  PanelManager::GetInstance()->enable_auto_sizing(true);
-  PanelManager::GetInstance()->SetWorkAreaForTesting(
-      gfx::Rect(0, 0, 1200, 900));  // bigger space is needed by this test
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  panel_manager->enable_auto_sizing(true);
+  // Bigger space is needed by this test.
+  panel_manager->SetWorkAreaForTesting(gfx::Rect(0, 0, 1200, 900));
 
   // Create a test panel with tab contents loaded.
   CreatePanelParams params("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1000,6 +1001,27 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   EXPECT_GT(bounds_on_shrink.width(), initial_bounds.width());
   EXPECT_EQ(bounds_on_shrink.height(), initial_bounds.height());
 
+  // Verify resizing turns off auto-resizing and that it works.
+  gfx::Rect previous_bounds = panel->GetBounds();
+  // These should be identical because the panel is expanded.
+  EXPECT_EQ(previous_bounds.size(), panel->GetRestoredBounds().size());
+  gfx::Size new_size(previous_bounds.size());
+  new_size.Enlarge(5, 5);
+  panel_manager->ResizePanel(panel, new_size);
+  EXPECT_FALSE(panel->auto_resizable());
+  EXPECT_EQ(new_size, panel->GetBounds().size());
+  EXPECT_EQ(new_size, panel->GetRestoredBounds().size());
+
+  // Turn back on auto-resize and verify that it works.
+  ui_test_utils::WindowedNotificationObserver auto_resize_enabled(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      content::Source<Panel>(panel));
+  panel->SetAutoResizable(true);
+  auto_resize_enabled.Wait();
+  gfx::Rect bounds_auto_resize_enabled = panel->GetBounds();
+  EXPECT_EQ(bounds_on_shrink.width(), bounds_auto_resize_enabled.width());
+  EXPECT_EQ(bounds_on_shrink.height(), bounds_auto_resize_enabled.height());
+
   panel->Close();
 }
 
@@ -1011,17 +1033,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
   EXPECT_TRUE(panel->auto_resizable());
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
 
-  // Verify resizing an auto-resizable panel is a no-op for now.
-  // http://crbug.com/109343
+  // Verify resizing turns off auto-resizing and that it works.
   gfx::Rect original_bounds = panel->GetBounds();
-  gfx::Rect original_restored_bounds = panel->GetRestoredBounds();
-  gfx::Size new_size(150, 200);
-  panel_manager->ResizePanel(panel, new_size);
-  EXPECT_EQ(original_bounds, panel->GetBounds());
-  EXPECT_EQ(original_restored_bounds, panel->GetRestoredBounds());
-
-  // Verify resizing adjusts bounds correctly when not auto-resizable.
-  panel->SetAutoResizable(false);
+  // These should be identical because the panel is expanded.
+  EXPECT_EQ(original_bounds.size(), panel->GetRestoredBounds().size());
+  gfx::Size new_size(original_bounds.size());
+  new_size.Enlarge(5, 5);
   panel_manager->ResizePanel(panel, new_size);
   EXPECT_FALSE(panel->auto_resizable());
   EXPECT_EQ(new_size, panel->GetBounds().size());

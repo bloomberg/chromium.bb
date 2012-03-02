@@ -119,14 +119,21 @@ void Panel::SetAutoResizable(bool resizable) {
     return;
 
   auto_resizable_ = resizable;
+  WebContents* web_contents = browser()->GetSelectedWebContents();
   if (auto_resizable_) {
     browser()->tabstrip_model()->AddObserver(this);
-    WebContents* web_contents = browser()->GetSelectedWebContents();
     if (web_contents)
       EnableWebContentsAutoResize(web_contents);
   } else {
     browser()->tabstrip_model()->RemoveObserver(this);
     registrar_.RemoveAll();
+
+    if (web_contents) {
+      // NULL might be returned if the tab has not been added.
+      RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
+      if (render_view_host)
+        render_view_host->DisableAutoResize(restored_size_);
+    }
   }
 }
 
@@ -620,12 +627,12 @@ void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
 }
 #endif
 
-void Panel::UpdatePreferredSize(WebContents* web_contents,
-                                const gfx::Size& pref_size) {
-  if (auto_resizable_) {
-    return manager()->OnPreferredWindowSizeChanged(this,
-        native_panel_->WindowSizeFromContentSize(pref_size));
-  }
+void Panel::ResizeDueToAutoResize(WebContents* web_contents,
+                                  const gfx::Size& pref_size) {
+  DCHECK(auto_resizable_);
+  return manager()->OnWindowAutoResized(
+      this,
+      native_panel_->WindowSizeFromContentSize(pref_size));
 }
 
 void Panel::ShowAvatarBubble(WebContents* web_contents, const gfx::Rect& rect) {
