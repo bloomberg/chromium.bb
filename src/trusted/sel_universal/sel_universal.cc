@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -85,7 +85,7 @@ static map<string, string> initial_vars;
 static vector<string> initial_commands;
 static bool abort_on_error = false;
 static bool silence_nexe = false;
-static string command_prefix = "";
+static vector<string> command_prefix;
 static bool uses_reverse_service = false;
 
 // When given argc and argv this function (a) extracts the nexe argument,
@@ -131,7 +131,7 @@ static nacl::string ProcessArguments(int argc,
                 "not enough args for --command_prefix option\n");
       }
       ++i;
-      command_prefix = argv[i];
+      command_prefix.push_back(argv[i]);
     } else if (flag == "--command_file") {
       if (argc <= i + 1) {
         NaClLog(LOG_FATAL, "not enough args for --command_file option\n");
@@ -202,9 +202,6 @@ int raii_main(int argc, char* argv[]) {
   nacl::string app_name =
     ProcessArguments(argc, argv, &sel_ldr_argv, &app_argv);
 
-  // Add '-X 5' to sel_ldr arguments to create communication socket
-  sel_ldr_argv.push_back("-X");
-  sel_ldr_argv.push_back("5");
   if (silence_nexe) {
     // redirect stdout/stderr in the nexe to /dev/null
     std::stringstream ss_stdout;
@@ -222,12 +219,7 @@ int raii_main(int argc, char* argv[]) {
   nacl::SelLdrLauncher launcher;
   nacl::DescWrapperFactory factory;  // DescWrapper "namespace"
 
-  if (command_prefix != "") {
-    launcher.SetCommandPrefix(command_prefix);
-  }
-
-  launcher.InitCommandLine(5, sel_ldr_argv, app_argv);
-  if (!launcher.LaunchFromCommandLine()) {
+  if (!launcher.StartViaCommandLine(command_prefix, sel_ldr_argv, app_argv)) {
     NaClLog(LOG_FATAL, "sel_universal: Failed to launch sel_ldr\n");
   }
 
