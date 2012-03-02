@@ -2720,6 +2720,14 @@ FileManager.prototype = {
       callback(iconType, FileType.getPreviewArt(iconType));
     }
 
+    if (DirectoryModel.getRootType(entry.fullPath) ==
+        DirectoryModel.RootType.GDATA) {
+      // TODO(serya): retrieve thumbnail URL with getGDataFileProperties
+      // (see http://crosbug/27030)
+      returnStockIcon();
+      return;
+    }
+
     this.metadataProvider_.fetch(entry.toURL(), function (metadata) {
       if (metadata.thumbnailURL) {
         callback(iconType, metadata.thumbnailURL, metadata.thumbnailTransform);
