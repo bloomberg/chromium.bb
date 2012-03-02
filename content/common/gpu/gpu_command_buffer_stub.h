@@ -129,6 +129,9 @@ class GpuCommandBufferStub
   // Whether this command buffer needs to be polled again in the future.
   bool HasMoreWork();
 
+  // Whether there are commands in the buffer that haven't been processed.
+  bool HasUnprocessedCommands();
+
   gpu::gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 

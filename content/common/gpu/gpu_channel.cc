@@ -260,7 +260,7 @@ void GpuChannel::HandleMessage() {
       // buffer that became unscheduled.
       GpuCommandBufferStub* stub = stubs_.Lookup(message->routing_id());
       if (stub) {
-        if (!stub->IsScheduled() || stub->HasMoreWork()) {
+        if (stub->HasUnprocessedCommands() || stub->HasMoreWork()) {
           deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
               stub->route_id()));
         }

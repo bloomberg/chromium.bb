@@ -142,6 +142,14 @@ bool GpuCommandBufferStub::HasMoreWork() {
   return scheduler_.get() && scheduler_->HasMoreWork();
 }
 
+bool GpuCommandBufferStub::HasUnprocessedCommands() {
+  if (command_buffer_.get()) {
+    gpu::CommandBuffer::State state = command_buffer_->GetLastState();
+    return state.put_offset != state.get_offset;
+  }
+  return false;
+}
+
 void GpuCommandBufferStub::OnEcho(const IPC::Message& message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnEcho");
   Send(new IPC::Message(message));
