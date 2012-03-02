@@ -36,6 +36,7 @@ remoting.AppMode = {
       CLIENT_CONNECT_FAILED_ME2ME: 'home.client.connect-failed.me2me',
       CLIENT_SESSION_FINISHED_IT2ME: 'home.client.session-finished.it2me',
       CLIENT_SESSION_FINISHED_ME2ME: 'home.client.session-finished.me2me',
+    HISTORY: 'home.history',
   IN_SESSION: 'in-session'
 };
 
@@ -62,7 +63,7 @@ remoting.updateModalUi = function(mode, attr) {
     }
     element.hidden = hidden;
   }
-}
+};
 
 /**
  * @type {remoting.AppMode} The current app mode

@@ -33,10 +33,6 @@ table {
     border-collapse: separate;
     border-spacing: 0;
 }
-caption,th,td {
-    text-align: left;
-    font-weight: normal;
-}
 blockquote:before,blockquote:after,
 q:before,q:after {
     content: "";
@@ -4451,7 +4447,7 @@ h1.icon-label {
   font-family: "Open sans", "Ariel", sans-serif
 }
 
-h2 {
+section > h2 {
   color: #666;
 }
 
@@ -4759,14 +4755,6 @@ td {
   height: 100%;
   background-color: #fff;
   opacity: 0.75;
-}
-
-#divider-top {
-  margin: 10px 0 15px 0;
-}
-
-#divider-bottom {
-  margin: 25px 0 10px 0;
 }
 
 #email-status {

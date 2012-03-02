@@ -12,6 +12,7 @@ found in the LICENSE file.
           rel="stylesheet" type="text/css">
     <link rel="icon" type="image/png" href="chromoting16.png">
     <link rel="stylesheet" href="connection_stats.css">
+    <link rel="stylesheet" href="connection_history.css">
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="toolbar.css">
     <script src="ask_pin_dialog.js"></script>
@@ -19,6 +20,7 @@ found in the LICENSE file.
     <script src="client_plugin_v1.js"></script>
     <script src="client_screen.js"></script>
     <script src="client_session.js"></script>
+    <script src="connection_history.js"></script>
     <script src="connection_stats.js"></script>
     <script src="daemon_plugin.js"></script>
     <script src="event_handlers.js"></script>
@@ -64,8 +66,10 @@ found in the LICENSE file.
         <span id="current-email"></span>
         <span data-ui-mode="home">
           <a id="clear-oauth" href="#" i18n-content="SIGN_OUT_BUTTON"></a> |
+          <!-- TODO(jamiewalch): Add this back in when we support it.
           <a id="connection-history" href="#"
              i18n-content="CONNECTION_HISTORY_BUTTON"></a> |
+          -->
         </span>
         <a href="https://www.google.com/support/chrome/bin/answer.py?answer=1649523"
            target="_blank" i18n-content="HELP"></a>
@@ -159,11 +163,11 @@ found in the LICENSE file.
     </div> <!-- home -->
 
     <div id="dialog-screen"
-         data-ui-mode="home.host home.client home.auth"
+         data-ui-mode="home.host home.client home.auth home.history"
          hidden></div>
 
     <div id="dialog-container"
-         data-ui-mode="home.host home.client home.auth"
+         data-ui-mode="home.host home.client home.auth home.history"
          hidden>
 
       <div class="box-spacer"></div>
@@ -182,7 +186,7 @@ found in the LICENSE file.
           <button id="daemon-pin-ok" type="submit" i18n-content="OK"></button>
           <img id="start-daemon-spinner" src="spinner.gif" hidden>
         </form>
-      </div>
+      </div> <!-- ask-pin-dialog -->
 
       <div id="auth-dialog"
            data-ui-mode="home.auth"
@@ -337,7 +341,7 @@ found in the LICENSE file.
                   i18n-content="OK"
                   autofocus="autofocus">
           </button>
-        </div> <!-- client.connect-failed.it2me client.session-finished.it2me -->
+        </div> <!-- connect-failed.it2me session-finished.it2me -->
 
         <div data-ui-mode="home.client.connect-failed.me2me home.client.session-finished.me2me"
              class="centered-button">
@@ -352,9 +356,51 @@ found in the LICENSE file.
                   class="kd-button"
                   i18n-content="RECONNECT">
           </button>
-        </div> <!-- client.connect-failed.me2me client.session-finished.me2me -->
+        </div> <!-- connect-failed.me2me session-finished.me2me -->
 
       </div> <!-- client-dialog -->
+
+      <div id="connection-history-dialog"
+           class="kd-modaldialog visible"
+           data-ui-mode="home.history"
+           hidden>
+        <div class="internal-frame-of-reference">
+          <h2 i18n-content="CONNECTION_HISTORY_TITLE"></h2>
+          <div id="connection-history-options">
+            <div class="link-list">
+              <a id="history-view-all"
+                 i18n-content="ALL_CONNECTIONS"
+                 class="no-link"></a>
+              <a id="history-view-outgoing"
+                 i18n-content="OUTGOING_CONNECTIONS"></a>
+              <a id="history-view-incoming"
+                 i18n-content="INCOMING_CONNECTIONS"></a>
+            </div>
+            <div class="box-spacer"></div>
+            <a id="clear-connection-history" i18n-content="CLEAR_HISTORY"></a>
+          </div>
+          <div id="connection-history-scroller">
+            <table id="connection-history-table">
+              <thead>
+                <tr>
+                  <td></td>
+                  <td i18n-content="TIME_HEADER"></td>
+                  <td></td>
+                  <td i18n-content="CONNECTION_FROM_HEADER"></td>
+                  <td i18n-content="CONNECTION_TO_HEADER"></td>
+                  <td i18n-content="DURATION_HEADER"></td>
+                </tr>
+              </thead>
+              <tbody id="connection-history-entries" class="selectable">
+              </tbody>
+            </table>
+          </div>
+          <button id="close-connection-history"
+                  i18n-content="CLOSE"
+                  class="kd-button"
+                  type="button"></button>
+        </div>
+      </div> <!-- connection-history-dialog -->
 
       <div class="box-spacer"></div>
 

@@ -13,6 +13,10 @@
       }
     }
   },
+  "ALL_CONNECTIONS": {
+    "message": "All connections",
+    "description": "In the connection history dialog, clicking this button shows all recent connections unfiltered."
+  },
   "ASK_PIN_DIALOG_DESCRIPTION": {
     "message": "To protect access to this computer, please choose a PIN. This PIN will be required when connecting from another location.",
     "description": "Explanatory text displayed when the user enables remote access or changes the PIN."
@@ -29,6 +33,14 @@
     "message": "Cancel",
     "description": "Label for general-purpose Cancel buttons."
   },
+  "CLEAR_HISTORY": {
+    "message": "Clear history",
+    "description": "In the connection history dialog, clicking this button will delete the connection history."
+  },
+  "CLOSE": {
+    "message": "Close",
+    "description": "Label for general-purpose Close buttons."
+  },
   "CLOSE_PROMPT": {
     "message": "Leaving this page will end your Chromoting session.",
     "description": "Message shown when the Chromoting client tab is closed while a connection is active."
@@ -37,9 +49,21 @@
     "message": "Connect",
     "description": "Label for the connect button. Clicking this button will start the Chromoting session if the access code is correct."
   },
+  "CONNECTION_FROM_HEADER": {
+    "message": "From",
+    "description": "Column header in the connection history table showing the email address of the client end of the connection (the initiator) which may be this or another computer."
+  },
   "CONNECTION_HISTORY_BUTTON": {
     "message": "Connection history",
     "description": "Label for the connection history button. Clicking this button opens a dialog showing recent connections."
+  },
+  "CONNECTION_HISTORY_TITLE": {
+    "message": "Connection History",
+    "description": "Title for the connection history dialog. This dialog shows recent connections made to and from this computer"
+  },
+  "CONNECTION_TO_HEADER": {
+    "message": "To",
+    "description": "Column header in the connection history table showing the email address of the host end of the connection (the connectee) which may be this or another computer."
   },
   "CONTINUE_BUTTON": {
     "message": "Continue",
@@ -86,6 +110,10 @@
   "DISCONNECT_OTHER_BUTTON": {
     "message": "Disconnect",
     "description": "Label for the host-side disconnect button, without keyboard shortcuts. Only used in case we aren't able to enable hot-key support. Clicking this button disconnects the remote user."
+  },
+  "DURATION_HEADER": {
+    "message": "Duration",
+    "description": "Column header in the connection history table showing the length of time for which a connection was active, if available."
   },
   "ERROR_AUTHENTICATION_FAILED": {
     "message": "Authentication failed. Please sign out of Chromoting and try again.",
@@ -175,6 +203,10 @@
     "message": "(this feature is not yet available for Chromebooks\u2026 stay tuned)",
     "description": "Text displayed below the description of the 'share' or 'host' functionality on ChromeOS devices, where it is not yet supported."
   },
+  "INCOMING_CONNECTIONS": {
+    "message": "To this computer",
+    "description": "In the connection history dialog, clicking this button shows only recent connections to this computer."
+  },
   "INSTRUCTIONS_SHARE_ABOVE": {
     "message": "To begin sharing your desktop, give the access code below to the person who will be assisting you.",
     "description": "Instructions shown above the access code when it is ready to be conveyed to the client."
@@ -231,6 +263,10 @@
       }
     }
   },
+  "OUTGOING_CONNECTIONS": {
+    "message": "From this computer",
+    "description": "In the connection history dialog, clicking this button shows only recent connections from this computer."
+  },
   "PIN": {
     "message": "PIN",
     "description": "Label for the PIN entry box."
@@ -254,6 +290,10 @@
   "STOP_SHARING_BUTTON": {
     "message": "Stop Sharing",
     "description": "Label for the 'stop sharing' button on the host-side. Clicking this button disconnects the client."
+  },
+  "TIME_HEADER": {
+    "message": "Time",
+    "description": "Column header in the connection history table showing the time and date of a connection."
   },
   "TOOLTIP_CONNECT": {
     "message": "Connect to $hostname$",
