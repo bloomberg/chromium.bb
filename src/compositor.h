@@ -91,7 +91,8 @@ struct weston_output {
 	struct weston_mode *current;
 	struct wl_list mode_list;
 
-	void (*repaint)(struct weston_output *output);
+	void (*repaint)(struct weston_output *output,
+			pixman_region32_t *damage);
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
 
@@ -106,6 +107,7 @@ struct weston_input_device {
 	struct weston_compositor *compositor;
 	struct weston_surface *sprite;
 	struct weston_surface *drag_surface;
+	struct wl_listener drag_surface_destroy_listener;
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	uint32_t modifier_state;
@@ -162,6 +164,11 @@ enum {
 
 struct screenshooter;
 
+struct weston_layer {
+	struct wl_list surface_list;
+	struct wl_list link;
+};
+
 struct weston_compositor {
 	struct wl_shm *shm;
 	struct weston_xserver *wxs;
@@ -180,8 +187,12 @@ struct weston_compositor {
 	/* There can be more than one, but not right now... */
 	struct wl_input_device *input_device;
 
+	struct weston_layer fade_layer;
+	struct weston_layer cursor_layer;
+
 	struct wl_list output_list;
 	struct wl_list input_device_list;
+	struct wl_list layer_list;
 	struct wl_list surface_list;
 	struct wl_list binding_list;
 	struct wl_list animation_list;
@@ -198,8 +209,8 @@ struct weston_compositor {
 	int idle_time;			/* effective timeout, s */
 
 	/* Repaint state. */
-	struct timespec previous_swap;
 	struct wl_array vertices, indices;
+	pixman_region32_t damage;
 
 	uint32_t focus;
 
@@ -260,11 +271,13 @@ struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
 	GLuint texture;
+	pixman_region32_t clip;
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
 	pixman_region32_t input;
 	int32_t pitch;
 	struct wl_list link;
+	struct wl_list layer_link;
 	struct wl_list buffer_link;
 	struct weston_shader *shader;
 	GLfloat color[4];
@@ -341,7 +354,8 @@ void
 weston_surface_activate(struct weston_surface *surface,
 			struct weston_input_device *device, uint32_t time);
 void
-weston_surface_draw(struct weston_surface *es, struct weston_output *output);
+weston_surface_draw(struct weston_surface *es,
+		    struct weston_output *output, pixman_region32_t *damage);
 
 void
 notify_motion(struct wl_input_device *device,
@@ -367,6 +381,9 @@ notify_keyboard_focus(struct wl_input_device *device,
 void
 notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 	     int x, int y, int touch_type);
+
+void
+weston_layer_init(struct weston_layer *layer, struct wl_list *below);
 
 void
 weston_output_finish_frame(struct weston_output *output, int msecs);
@@ -419,6 +436,9 @@ weston_surface_create(struct weston_compositor *compositor);
 void
 weston_surface_configure(struct weston_surface *surface,
 			 GLfloat x, GLfloat y, int width, int height);
+
+void
+weston_surface_restack(struct weston_surface *surface, struct wl_list *below);
 
 void
 weston_surface_set_position(struct weston_surface *surface,

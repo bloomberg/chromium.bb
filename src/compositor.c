@@ -211,6 +211,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	wl_list_init(&surface->surface.resource.destroy_listener_list);
 
 	wl_list_init(&surface->link);
+	wl_list_init(&surface->layer_link);
 	wl_list_init(&surface->buffer_link);
 
 	surface->surface.resource.client = NULL;
@@ -225,6 +226,7 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
+	pixman_region32_init(&surface->clip);
 	undef_region(&surface->input);
 	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
@@ -281,17 +283,15 @@ surface_to_global_float(struct weston_surface *surface,
 WL_EXPORT void
 weston_surface_damage_below(struct weston_surface *surface)
 {
-	struct weston_surface *below;
+	struct weston_compositor *compositor = surface->compositor;
+	pixman_region32_t damage;
 
-	if (surface->output == NULL)
-		return;
-
-	if (surface->link.next == &surface->compositor->surface_list)
-		return;
-
-	below = container_of(surface->link.next, struct weston_surface, link);
-	pixman_region32_union(&below->damage, &below->damage,
-			      &surface->transform.boundingbox);
+	pixman_region32_init(&damage);
+	pixman_region32_subtract(&damage, &surface->transform.boundingbox,
+				 &surface->clip);
+	pixman_region32_union(&compositor->damage,
+			      &compositor->damage, &damage);
+	pixman_region32_fini(&damage);
 }
 
 static void
@@ -510,21 +510,6 @@ weston_surface_damage(struct weston_surface *surface)
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
-static void
-weston_surface_flush_damage(struct weston_surface *surface)
-{
-	struct weston_surface *below;
-
-	if (surface->output &&
-	    surface->link.next != &surface->compositor->surface_list) {
-		below = container_of(surface->link.next,
-				     struct weston_surface, link);
-
-		pixman_region32_union(&below->damage,
-				      &below->damage, &surface->damage);
-	}
-}
-
 WL_EXPORT void
 weston_surface_configure(struct weston_surface *surface,
 			 GLfloat x, GLfloat y, int width, int height)
@@ -613,11 +598,18 @@ weston_compositor_repick(struct weston_compositor *compositor)
 static void
 weston_surface_unmap(struct weston_surface *surface)
 {
+	struct wl_input_device *device = surface->compositor->input_device;
+
 	weston_surface_damage_below(surface);
-	weston_surface_flush_damage(surface);
 	surface->output = NULL;
 	wl_list_remove(&surface->link);
+	wl_list_remove(&surface->layer_link);
 	weston_compositor_repick(surface->compositor);
+
+	if (device->keyboard_focus == &surface->surface)
+		wl_input_device_set_keyboard_focus(device, NULL,
+						   weston_compositor_get_time());
+
 	weston_compositor_schedule_repaint(surface->compositor);
 }
 
@@ -647,6 +639,7 @@ destroy_surface(struct wl_resource *resource)
 	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
 	pixman_region32_fini(&surface->opaque);
+	pixman_region32_fini(&surface->clip);
 	if (!region_is_undefined(&surface->input))
 		pixman_region32_fini(&surface->input);
 
@@ -762,7 +755,8 @@ texture_region(struct weston_surface *es, pixman_region32_t *region)
 }
 
 WL_EXPORT void
-weston_surface_draw(struct weston_surface *es, struct weston_output *output)
+weston_surface_draw(struct weston_surface *es, struct weston_output *output,
+		    pixman_region32_t *damage)
 {
 	struct weston_compositor *ec = es->compositor;
 	GLfloat *v;
@@ -771,12 +765,9 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output)
 	int n;
 
 	pixman_region32_init(&repaint);
-	pixman_region32_intersect(&repaint, &es->transform.boundingbox,
-				  &output->region);
-	pixman_region32_intersect(&repaint, &repaint, &es->damage);
-
-	/* Clear damage, assume outputs do not overlap. */
-	pixman_region32_subtract(&es->damage, &es->damage, &output->region);
+	pixman_region32_intersect(&repaint,
+				  &es->transform.boundingbox, damage);
+	pixman_region32_subtract(&repaint, &repaint, &es->clip);
 
 	if (!pixman_region32_not_empty(&repaint))
 		goto out;
@@ -826,37 +817,15 @@ out:
 	pixman_region32_fini(&repaint);
 }
 
-WL_EXPORT struct wl_list *
-weston_compositor_top(struct weston_compositor *compositor)
-{
-	struct weston_input_device *input_device;
-	struct wl_list *list;
-
-	input_device = (struct weston_input_device *) compositor->input_device;
-
-	/* Insert below pointer */
-	list = &compositor->surface_list;
-	if (compositor->fade.surface &&
-	    list->next == &compositor->fade.surface->link)
-		list = list->next;
-	if (list->next == &input_device->sprite->link)
-		list = list->next;
-	if (input_device->drag_surface &&
-	    list->next == &input_device->drag_surface->link)
-		list = list->next;
-
-	return list;
-}
-
-static void
-weston_surface_raise(struct weston_surface *surface)
+WL_EXPORT void
+weston_surface_restack(struct weston_surface *surface, struct wl_list *below)
 {
 	struct weston_compositor *compositor = surface->compositor;
-	struct wl_list *list = weston_compositor_top(compositor);
 
-	wl_list_remove(&surface->link);
-	wl_list_insert(list, &surface->link);
+	wl_list_remove(&surface->layer_link);
+	wl_list_insert(below, &surface->layer_link);
 	weston_compositor_repick(compositor);
+	weston_surface_damage_below(surface);
 	weston_surface_damage(surface);
 }
 
@@ -883,14 +852,9 @@ WL_EXPORT void
 weston_output_damage(struct weston_output *output)
 {
 	struct weston_compositor *compositor = output->compositor;
-	struct weston_surface *es;
 
-	if (wl_list_empty(&compositor->surface_list))
-		return;
-
-	es = container_of(compositor->surface_list.next,
-			  struct weston_surface, link);
-	pixman_region32_union(&es->damage, &es->damage, &output->region);
+	pixman_region32_union(&compositor->damage,
+			      &compositor->damage, &output->region);
 	weston_compositor_schedule_repaint(compositor);
 }
 
@@ -935,9 +899,10 @@ weston_output_repaint(struct weston_output *output, int msecs)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es;
+	struct weston_layer *layer;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
-	pixman_region32_t opaque, new_damage, total_damage;
+	pixman_region32_t opaque, new_damage, output_damage;
 	int32_t width, height;
 
 	weston_compositor_update_drag_surfaces(ec);
@@ -948,13 +913,14 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		output->border.top + output->border.bottom;
 	glViewport(0, 0, width, height);
 
-	pixman_region32_init(&new_damage);
-	pixman_region32_init(&opaque);
-
-	wl_list_for_each(es, &ec->surface_list, link)
-		/* Update surface transform now to avoid calling it ever
-		 * again from the repaint sub-functions. */
-		weston_surface_update_transform(es);
+	/* Rebuild the surface list and update surface transforms up front. */
+	wl_list_init(&ec->surface_list);
+	wl_list_for_each(layer, &ec->layer_list, link) {
+		wl_list_for_each(es, &layer->surface_list, layer_link) {
+			weston_surface_update_transform(es);
+			wl_list_insert(ec->surface_list.prev, &es->link);
+		}
+	}
 
 	if (output->assign_planes)
 		/*
@@ -965,33 +931,36 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		 */
 		output->assign_planes(output);
 
+	pixman_region32_init(&new_damage);
+	pixman_region32_init(&opaque);
+
 	wl_list_for_each(es, &ec->surface_list, link) {
 		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
 		pixman_region32_union(&new_damage, &new_damage, &es->damage);
+		empty_region(&es->damage);
+		pixman_region32_copy(&es->clip, &opaque);
 		pixman_region32_union(&opaque, &opaque, &es->transform.opaque);
 	}
 
-	pixman_region32_init(&total_damage);
-	pixman_region32_union(&total_damage, &new_damage,
-			      &output->previous_damage);
-	pixman_region32_intersect(&output->previous_damage,
-				  &new_damage, &output->region);
+	pixman_region32_union(&ec->damage, &ec->damage, &new_damage);
+
+	pixman_region32_init(&output_damage);
+	pixman_region32_union(&output_damage,
+			      &ec->damage, &output->previous_damage);
+	pixman_region32_copy(&output->previous_damage, &ec->damage);
+	pixman_region32_intersect(&output_damage,
+				  &output_damage, &output->region);
+	pixman_region32_subtract(&ec->damage, &ec->damage, &output->region);
 
 	pixman_region32_fini(&opaque);
 	pixman_region32_fini(&new_damage);
 
-	wl_list_for_each(es, &ec->surface_list, link) {
-		pixman_region32_copy(&es->damage, &total_damage);
-		pixman_region32_subtract(&total_damage,
-					 &total_damage, &es->transform.opaque);
-	}
-
 	if (output->dirty)
 		weston_output_update_matrix(output);
 
-	output->repaint(output);
+	output->repaint(output, &output_damage);
 
-	pixman_region32_fini(&total_damage);
+	pixman_region32_fini(&output_damage);
 
 	output->repaint_needed = 0;
 
@@ -1023,6 +992,13 @@ weston_output_finish_frame(struct weston_output *output, int msecs)
 		weston_output_repaint(output, msecs);
 	else
 		output->repaint_scheduled = 0;
+}
+
+WL_EXPORT void
+weston_layer_init(struct weston_layer *layer, struct wl_list *below)
+{
+	wl_list_init(&layer->surface_list);
+	wl_list_insert(below, &layer->link);
 }
 
 WL_EXPORT void
@@ -1064,7 +1040,8 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 		surface = weston_surface_create(compositor);
 		weston_surface_configure(surface, 0, 0, 8192, 8192);
 		weston_surface_set_color(surface, 0.0, 0.0, 0.0, 0.0);
-		wl_list_insert(&compositor->surface_list, &surface->link);
+		wl_list_insert(&compositor->fade_layer.surface_list,
+			       &surface->layer_link);
 		weston_surface_assign_output(surface);
 		compositor->fade.surface = surface;
 		pixman_region32_init(&surface->input);
@@ -1512,7 +1489,6 @@ WL_EXPORT void
 weston_surface_activate(struct weston_surface *surface,
 			struct weston_input_device *device, uint32_t time)
 {
-	weston_surface_raise(surface);
 	wl_input_device_set_keyboard_focus(&device->input_device,
 					   &surface->surface, time);
 	wl_data_device_set_keyboard_focus(&device->input_device);
@@ -1837,13 +1813,14 @@ input_device_attach(struct wl_client *client,
 
 	if (!buffer_resource && device->sprite->output) {
 		wl_list_remove(&device->sprite->link);
+		wl_list_remove(&device->sprite->layer_link);
 		device->sprite->output = NULL;
 		return;
 	}
 
 	if (!device->sprite->output) {
-		wl_list_insert(&compositor->surface_list,
-			       &device->sprite->link);
+		wl_list_insert(&compositor->cursor_layer.surface_list,
+			       &device->sprite->layer_link);
 		weston_surface_assign_output(device->sprite);
 	}
 
@@ -1856,11 +1833,24 @@ input_device_attach(struct wl_client *client,
 				 buffer->width, buffer->height);
 
 	weston_buffer_attach(buffer, &device->sprite->surface);
+	weston_surface_damage(device->sprite);
 }
 
 const static struct wl_input_device_interface input_device_interface = {
 	input_device_attach,
 };
+
+static void
+handle_drag_surface_destroy(struct wl_listener *listener,
+			    struct wl_resource *resource, uint32_t time)
+{
+	struct weston_input_device *device;
+
+	device = container_of(listener, struct weston_input_device,
+			      drag_surface_destroy_listener);
+
+	device->drag_surface = NULL;
+}
 
 static void unbind_input_device(struct wl_resource *resource)
 {
@@ -1898,6 +1888,8 @@ weston_input_device_init(struct weston_input_device *device,
 	device->modifier_state = 0;
 	device->num_tp = 0;
 
+	device->drag_surface_destroy_listener.func = handle_drag_surface_destroy;
+
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 }
 
@@ -1911,6 +1903,42 @@ weston_input_device_release(struct weston_input_device *device)
 		destroy_surface(&device->sprite->surface.resource);
 
 	wl_input_device_release(&device->input_device);
+}
+
+static void
+device_setup_new_drag_surface(struct weston_input_device *device,
+			      struct weston_surface *surface)
+{
+	struct wl_input_device *input_device = &device->input_device;
+
+	device->drag_surface = surface;
+
+	weston_surface_set_position(device->drag_surface,
+				    input_device->x, input_device->y);
+
+	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
+		       &device->drag_surface_destroy_listener.link);
+}
+
+static void
+device_release_drag_surface(struct weston_input_device *device)
+{
+	undef_region(&device->drag_surface->input);
+	wl_list_remove(&device->drag_surface_destroy_listener.link);
+	device->drag_surface = NULL;
+}
+
+static void
+device_map_drag_surface(struct weston_input_device *device)
+{
+	if (device->drag_surface->output ||
+	    !device->drag_surface->buffer)
+		return;
+
+	wl_list_insert(&device->sprite->layer_link,
+		       &device->drag_surface->layer_link);
+	weston_surface_assign_output(device->drag_surface);
+	empty_region(&device->drag_surface->input);
 }
 
 static  void
@@ -1931,27 +1959,20 @@ weston_input_update_drag_surface(struct wl_input_device *input_device,
 		surface_changed = 1;
 
 	if (!input_device->drag_surface || surface_changed) {
-		undef_region(&device->drag_surface->input);
-		device->drag_surface = NULL;
+		device_release_drag_surface(device);
 		if (!surface_changed)
 			return;
 	}
 
 	if (!device->drag_surface || surface_changed) {
-		device->drag_surface = (struct weston_surface *)
+		struct weston_surface *surface = (struct weston_surface *)
 			input_device->drag_surface;
-
-		weston_surface_set_position(device->drag_surface,
-					    input_device->x, input_device->y);
+		device_setup_new_drag_surface(device, surface);
 	}
 
-	if (device->drag_surface->output == NULL &&
-	    device->drag_surface->buffer) {
-		wl_list_insert(&device->sprite->link,
-			       &device->drag_surface->link);
-		weston_surface_assign_output(device->drag_surface);
-		empty_region(&device->drag_surface->input);
-	}
+	/* the client may not have attached a buffer to the drag surface
+	 * when we setup it up, so check if map is needed on every update */
+	device_map_drag_surface(device);
 
 	/* the client may have attached a buffer with a different size to
 	 * the drag surface, causing the input region to be reset */
@@ -2293,6 +2314,7 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 		ec->bind_display(ec->display, ec->wl_display);
 
 	wl_list_init(&ec->surface_list);
+	wl_list_init(&ec->layer_list);
 	wl_list_init(&ec->input_device_list);
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->binding_list);
@@ -2300,6 +2322,9 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);
+
+	weston_layer_init(&ec->fade_layer, &ec->layer_list);
+	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
 
 	ec->screenshooter = screenshooter_create(ec);
 
