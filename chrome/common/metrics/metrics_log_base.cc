@@ -123,12 +123,12 @@ class MetricsLogBase::XmlWrapper {
 
 MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
                                const std::string& version_string)
-    : start_time_(Time::Now()),
+    : num_events_(0),
+      start_time_(Time::Now()),
       client_id_(client_id),
       session_id_(base::IntToString(session_id)),
       locked_(false),
-      xml_wrapper_(new XmlWrapper),
-      num_events_(0) {
+      xml_wrapper_(new XmlWrapper) {
   int64_t build_time = GetBuildTime();
 
   // Write the XML version.

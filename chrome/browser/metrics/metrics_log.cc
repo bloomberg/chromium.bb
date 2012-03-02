@@ -48,19 +48,19 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 using content::GpuDataManager;
 using metrics::OmniboxEventProto;
 using metrics::SystemProfileProto;
+typedef base::FieldTrial::NameGroupId NameGroupId;
 
 namespace {
 
 // Returns the date at which the current metrics client ID was created as
 // a string containing milliseconds since the epoch, or "0" if none was found.
-std::string GetInstallDate() {
-  PrefService* pref = g_browser_process->local_state();
-  if (pref) {
-    return pref->GetString(prefs::kMetricsClientIDTimestamp);
-  } else {
+std::string GetInstallDate(PrefService* pref) {
+  if (!pref) {
     NOTREACHED();
     return "0";
   }
+
+  return pref->GetString(prefs::kMetricsClientIDTimestamp);
 }
 
 OmniboxEventProto::InputType AsOmniboxEventInputType(
@@ -171,6 +171,17 @@ void SetPluginInfo(const webkit::WebPluginInfo& plugin_info,
     plugin->set_is_disabled(!plugin_prefs->IsPluginEnabled(plugin_info));
 }
 
+void WriteFieldTrials(const std::vector<NameGroupId>& field_trial_ids,
+                      SystemProfileProto* system_profile) {
+  for (std::vector<NameGroupId>::const_iterator it = field_trial_ids.begin();
+       it != field_trial_ids.end(); ++it) {
+    SystemProfileProto::FieldTrial* field_trial =
+        system_profile->add_field_trial();
+    field_trial->set_name_id(it->name);
+    field_trial->set_group_id(it->group);
+  }
+}
+
 }  // namespace
 
 static base::LazyInstance<std::string>::Leaky
@@ -230,9 +241,9 @@ const std::string& MetricsLog::version_extension() {
 
 void MetricsLog::RecordIncrementalStabilityElements(
     const std::vector<webkit::WebPluginInfo>& plugin_list) {
-  DCHECK(!locked_);
+  DCHECK(!locked());
 
-  PrefService* pref = g_browser_process->local_state();
+  PrefService* pref = GetPrefService();
   DCHECK(pref);
 
   OPEN_ELEMENT_FOR_SCOPE("profile");
@@ -249,10 +260,28 @@ void MetricsLog::RecordIncrementalStabilityElements(
   }
 }
 
+PrefService* MetricsLog::GetPrefService() {
+  return g_browser_process->local_state();
+}
+
+gfx::Size MetricsLog::GetScreenSize() const {
+  return gfx::Screen::GetPrimaryMonitorSize();
+}
+
+int MetricsLog::GetScreenCount() const {
+  return gfx::Screen::GetNumMonitors();
+}
+
+
+void MetricsLog::GetFieldTrialIds(
+    std::vector<NameGroupId>* field_trial_ids) const {
+  base::FieldTrialList::GetFieldTrialNameGroupIds(field_trial_ids);
+}
+
 void MetricsLog::WriteStabilityElement(
     const std::vector<webkit::WebPluginInfo>& plugin_list,
     PrefService* pref) {
-  DCHECK(!locked_);
+  DCHECK(!locked());
 
   // Get stability attributes out of Local State, zeroing out stored values.
   // NOTE: This could lead to some data loss if this report isn't successfully
@@ -292,7 +321,7 @@ void MetricsLog::WriteStabilityElement(
 
   // Write the protobuf version.
   SystemProfileProto::Stability* stability =
-      uma_proto_.mutable_system_profile()->mutable_stability();
+      uma_proto()->mutable_system_profile()->mutable_stability();
   stability->set_incomplete_shutdown_count(incomplete_shutdown_count);
   stability->set_breakpad_registration_success_count(
       breakpad_registration_success_count);
@@ -315,7 +344,7 @@ void MetricsLog::WritePluginStabilityElements(
 
   OPEN_ELEMENT_FOR_SCOPE("plugins");
   SystemProfileProto::Stability* stability =
-      uma_proto_.mutable_system_profile()->mutable_stability();
+      uma_proto()->mutable_system_profile()->mutable_stability();
   PluginPrefs* plugin_prefs = GetPluginPrefs();
   for (ListValue::const_iterator iter = plugin_stats_list->begin();
        iter != plugin_stats_list->end(); ++iter) {
@@ -400,7 +429,7 @@ void MetricsLog::WriteRequiredStabilityAttributes(PrefService* pref) {
 
   // Write the protobuf version.
   SystemProfileProto::Stability* stability =
-      uma_proto_.mutable_system_profile()->mutable_stability();
+      uma_proto()->mutable_system_profile()->mutable_stability();
   stability->set_launch_count(launch_count);
   stability->set_crash_count(crash_count);
 }
@@ -411,7 +440,7 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
   // are aggergated (summed) server side.
 
   SystemProfileProto::Stability* stability =
-      uma_proto_.mutable_system_profile()->mutable_stability();
+      uma_proto()->mutable_system_profile()->mutable_stability();
   int count = pref->GetInteger(prefs::kStabilityPageLoadCount);
   if (count) {
     WriteIntAttribute("pageloadcount", count);
@@ -476,12 +505,12 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
 
 void MetricsLog::WritePluginList(
     const std::vector<webkit::WebPluginInfo>& plugin_list) {
-  DCHECK(!locked_);
+  DCHECK(!locked());
 
   PluginPrefs* plugin_prefs = GetPluginPrefs();
 
   OPEN_ELEMENT_FOR_SCOPE("plugins");
-  SystemProfileProto* system_profile = uma_proto_.mutable_system_profile();
+  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   for (std::vector<webkit::WebPluginInfo>::const_iterator iter =
            plugin_list.begin();
        iter != plugin_list.end(); ++iter) {
@@ -516,7 +545,7 @@ void MetricsLog::WritePluginList(
 }
 
 void MetricsLog::WriteInstallElement() {
-  std::string install_date = GetInstallDate();
+  std::string install_date = GetInstallDate(GetPrefService());
 
   // Write the XML version.
   OPEN_ELEMENT_FOR_SCOPE("install");
@@ -527,15 +556,15 @@ void MetricsLog::WriteInstallElement() {
   int numeric_install_date;
   bool success = base::StringToInt(install_date, &numeric_install_date);
   DCHECK(success);
-  uma_proto_.mutable_system_profile()->set_install_date(numeric_install_date);
+  uma_proto()->mutable_system_profile()->set_install_date(numeric_install_date);
 }
 
 void MetricsLog::RecordEnvironment(
          const std::vector<webkit::WebPluginInfo>& plugin_list,
          const DictionaryValue* profile_metrics) {
-  DCHECK(!locked_);
+  DCHECK(!locked());
 
-  PrefService* pref = g_browser_process->local_state();
+  PrefService* pref = GetPrefService();
 
   OPEN_ELEMENT_FOR_SCOPE("profile");
   WriteCommonEventAttributes();
@@ -546,7 +575,7 @@ void MetricsLog::RecordEnvironment(
 
   WriteStabilityElement(plugin_list, pref);
 
-  SystemProfileProto* system_profile = uma_proto_.mutable_system_profile();
+  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   system_profile->set_application_locale(
       content::GetContentClient()->browser()->GetApplicationLocale());
 
@@ -619,10 +648,10 @@ void MetricsLog::RecordEnvironment(
   }
 
   {
-    const gfx::Size display_size = gfx::Screen::GetPrimaryMonitorSize();
+    const gfx::Size display_size = GetScreenSize();
     int display_width = display_size.width();
     int display_height = display_size.height();
-    int screen_count = gfx::Screen::GetNumMonitors();
+    int screen_count = GetScreenCount();
 
     // Write the XML version.
     OPEN_ELEMENT_FOR_SCOPE("display");
@@ -670,6 +699,10 @@ void MetricsLog::RecordEnvironment(
 
   if (profile_metrics)
     WriteAllProfilesMetrics(*profile_metrics);
+
+  std::vector<NameGroupId> field_trial_ids;
+  GetFieldTrialIds(&field_trial_ids);
+  WriteFieldTrials(field_trial_ids, system_profile);
 }
 
 void MetricsLog::WriteAllProfilesMetrics(
@@ -736,7 +769,7 @@ void MetricsLog::WriteProfileMetrics(const std::string& profileidhash,
 }
 
 void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
-  DCHECK(!locked_);
+  DCHECK(!locked());
 
   // Write the XML version.
   OPEN_ELEMENT_FOR_SCOPE("uielement");
@@ -785,7 +818,7 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
   }
 
   // Write the protobuf version.
-  OmniboxEventProto* omnibox_event = uma_proto_.add_omnibox_event();
+  OmniboxEventProto* omnibox_event = uma_proto()->add_omnibox_event();
   omnibox_event->set_time(MetricsLogBase::GetCurrentTime());
   if (log.tab_id != -1) {
     // If we know what tab the autocomplete URL was opened in, log it.

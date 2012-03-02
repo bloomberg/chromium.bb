@@ -104,6 +104,7 @@ class MetricsLogBase {
 
   // Returns a string containing the current time.
   // Virtual so that it can be overridden for testing.
+  // TODO(isherman): Remove this method once the XML pipeline is old news.
   virtual std::string GetCurrentTimeString();
   // Helper class that invokes StartElement from constructor, and EndElement
   // from destructor.
@@ -147,6 +148,17 @@ class MetricsLogBase {
   // Write the attributes that are common to every metrics event type.
   void WriteCommonEventAttributes();
 
+  bool locked() const { return locked_; }
+
+  metrics::ChromeUserMetricsExtension* uma_proto() { return &uma_proto_; }
+  const metrics::ChromeUserMetricsExtension* uma_proto() const {
+    return &uma_proto_;
+  }
+
+  // TODO(isherman): Remove this once the XML pipeline is outta here.
+  int num_events_;  // the number of events recorded in this log
+
+ private:
   base::Time start_time_;
   base::Time end_time_;
 
@@ -162,12 +174,9 @@ class MetricsLogBase {
   // Isolated to limit the dependency on the XML library for our consumers.
   XmlWrapper* xml_wrapper_;
 
-  int num_events_;  // the number of events recorded in this log
-
   // Stores the protocol buffer representation for this log.
   metrics::ChromeUserMetricsExtension uma_proto_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(MetricsLogBase);
 };
 

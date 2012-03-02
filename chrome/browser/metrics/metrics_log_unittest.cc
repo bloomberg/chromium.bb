@@ -1,55 +1,88 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/size.h"
 #include "webkit/plugins/webplugininfo.h"
 
 using base::TimeDelta;
 
 namespace {
 
-// Since buildtime is highly variable, this function will scan an output log and
-// replace it with a consistent number.
-void NormalizeBuildtime(std::string* xml_encoded) {
-  std::string prefix = "buildtime=\"";
-  const char postfix = '\"';
-  size_t offset = xml_encoded->find(prefix);
-  ASSERT_NE(std::string::npos, offset);
-  offset += prefix.size();
-  size_t postfix_position = xml_encoded->find(postfix, offset);
-  ASSERT_NE(std::string::npos, postfix_position);
-  for (size_t i = offset; i < postfix_position; ++i) {
-    char digit = xml_encoded->at(i);
-    ASSERT_GE(digit, '0');
-    ASSERT_LE(digit, '9');
+const char kClientId[] = "bogus client ID";
+const int kSessionId = 127;
+const int kScreenWidth = 1024;
+const int kScreenHeight = 768;
+const int kScreenCount = 3;
+const base::FieldTrial::NameGroupId kFieldTrialIds[] = {
+  {37, 43},
+  {13, 47},
+  {23, 17}
+};
+
+class TestMetricsLog : public MetricsLog {
+ public:
+  TestMetricsLog(const std::string& client_id, int session_id)
+      : MetricsLog(client_id, session_id) {
+    browser::RegisterLocalState(&prefs_);
+
+#if defined(OS_CHROMEOS)
+    prefs_.SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
+    prefs_.SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
+    prefs_.SetInteger(prefs::kStabilityKernelCrashCount, 12);
+    prefs_.SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 13);
+#endif  // OS_CHROMEOS
+  }
+  virtual ~TestMetricsLog() {}
+
+  virtual PrefService* GetPrefService() OVERRIDE {
+    return &prefs_;
   }
 
-  // Insert a single fake buildtime.
-  xml_encoded->replace(offset, postfix_position - offset, "123246");
-}
+  const metrics::SystemProfileProto& system_profile() const {
+    return uma_proto()->system_profile();
+  }
 
-class NoTimeMetricsLog : public MetricsLog {
- public:
-  NoTimeMetricsLog(std::string client_id, int session_id):
-      MetricsLog(client_id, session_id) {}
-  virtual ~NoTimeMetricsLog() {}
-
-  // Override this so that output is testable.
-  virtual std::string GetCurrentTimeString() {
+ private:
+  virtual std::string GetCurrentTimeString() OVERRIDE {
     return std::string();
   }
+
+  virtual void GetFieldTrialIds(
+      std::vector<base::FieldTrial::NameGroupId>* field_trial_ids) const
+      OVERRIDE {
+    ASSERT_TRUE(field_trial_ids->empty());
+
+    for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+      field_trial_ids->push_back(kFieldTrialIds[i]);
+    }
+  }
+
+  virtual gfx::Size GetScreenSize() const OVERRIDE {
+    return gfx::Size(kScreenWidth, kScreenHeight);
+  }
+
+  virtual int GetScreenCount() const OVERRIDE {
+    return kScreenCount;
+  }
+
+  TestingPrefService prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
 
 }  // namespace
@@ -57,35 +90,45 @@ class NoTimeMetricsLog : public MetricsLog {
 class MetricsLogTest : public testing::Test {
 };
 
-#if defined(OS_CHROMEOS)
-TEST(MetricsLogTest, ChromeOSStabilityData) {
-  NoTimeMetricsLog log("bogus client ID", 0);
-  TestingPrefService prefs;
-  browser::RegisterLocalState(&prefs);
-
-  prefs.SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
-  prefs.SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
-  prefs.SetInteger(prefs::kStabilityKernelCrashCount, 12);
-  prefs.SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 13);
+TEST_F(MetricsLogTest, RecordEnvironment) {
+  // Everything except build_timestamp and app_version
+  TestMetricsLog log(kClientId, kSessionId);
 
   std::vector<webkit::WebPluginInfo> plugins;
+  log.RecordEnvironment(plugins, NULL);
 
-  std::string expected_output = base::StringPrintf(
-      "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
-          "appversion=\"%s\">\n"
-      "<stability stuff>\n", MetricsLog::GetVersionString().c_str());
+  const metrics::SystemProfileProto& system_profile = log.system_profile();
+  ASSERT_EQ(arraysize(kFieldTrialIds),
+            static_cast<size_t>(system_profile.field_trial_size()));
+  for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+    const metrics::SystemProfileProto::FieldTrial& field_trial =
+        system_profile.field_trial(i);
+    EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
+    EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
+  }
+
+  // TODO(isherman): Verify other data written into the protobuf as a result of
+  // this call.
+}
+
+#if defined(OS_CHROMEOS)
+TEST_F(MetricsLogTest, ChromeOSStabilityData) {
+  TestMetricsLog log(kClientId, kSessionId);
+
   // Expect 3 warnings about not yet being able to send the
   // Chrome OS stability stats.
-  log.WriteStabilityElement(plugins, &prefs);
+  std::vector<webkit::WebPluginInfo> plugins;
+  PrefService* prefs = log.GetPrefService();
+  log.WriteStabilityElement(plugins, prefs);
   log.CloseLog();
 
   int size = log.GetEncodedLogSizeXml();
   ASSERT_GT(size, 0);
 
-  EXPECT_EQ(0, prefs.GetInteger(prefs::kStabilityChildProcessCrashCount));
-  EXPECT_EQ(0, prefs.GetInteger(prefs::kStabilityOtherUserCrashCount));
-  EXPECT_EQ(0, prefs.GetInteger(prefs::kStabilityKernelCrashCount));
-  EXPECT_EQ(0, prefs.GetInteger(prefs::kStabilitySystemUncleanShutdownCount));
+  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityChildProcessCrashCount));
+  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityOtherUserCrashCount));
+  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityKernelCrashCount));
+  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilitySystemUncleanShutdownCount));
 
   std::string encoded;
   // Leave room for the NUL terminator.

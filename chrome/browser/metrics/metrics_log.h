@@ -13,7 +13,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/common/metrics/metrics_log_base.h"
+#include "ui/gfx/size.h"
 
 struct AutocompleteLog;
 class PrefService;
@@ -70,6 +72,23 @@ class MetricsLog : public MetricsLogBase {
   // synchronously from the UI thread.
   void RecordIncrementalStabilityElements(
       const std::vector<webkit::WebPluginInfo>& plugin_list);
+
+ protected:
+  // Exposed for the sake of mocking in test code.
+
+  // Returns the PrefService from which to log metrics data.
+  virtual PrefService* GetPrefService();
+
+  // Returns the screen size for the primary monitor.
+  virtual gfx::Size GetScreenSize() const;
+
+  // Returns the number of monitors the user is using.
+  virtual int GetScreenCount() const;
+
+  // Fills |field_trial_ids| with the list of initialized field trials name and
+  // group ids.
+  virtual void GetFieldTrialIds(
+    std::vector<base::FieldTrial::NameGroupId>* field_trial_ids) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
