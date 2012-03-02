@@ -237,7 +237,7 @@ class VIEWS_EXPORT Label : public View {
   // Returns where the text is drawn, in the receivers coordinate system.
   gfx::Rect GetTextBounds() const;
 
-  int ComputeMultiLineFlags() const;
+  int ComputeDrawStringFlags() const;
 
   gfx::Rect GetAvailableRect() const;
 

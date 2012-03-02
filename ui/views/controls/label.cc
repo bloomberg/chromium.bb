@@ -215,7 +215,7 @@ int Label::GetHeightForWidth(int w) {
   w = std::max(0, w - GetInsets().width());
   int h = font_.GetHeight();
   gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h,
-                                 ComputeMultiLineFlags());
+                                 ComputeDrawStringFlags());
   return h + GetInsets().height();
 }
 
@@ -290,7 +290,7 @@ gfx::Size Label::GetTextSize() const {
     int h = font_.GetHeight();
     // For single-line strings, ignore the available width and calculate how
     // wide the text wants to be.
-    int flags = ComputeMultiLineFlags();
+    int flags = ComputeDrawStringFlags();
     if (!is_multi_line_)
       flags |= gfx::Canvas::NO_ELLIPSIS;
     gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, flags);
@@ -426,11 +426,22 @@ gfx::Rect Label::GetTextBounds() const {
   return gfx::Rect(text_origin, text_size);
 }
 
-int Label::ComputeMultiLineFlags() const {
-  if (!is_multi_line_)
-    return 0;
+int Label::ComputeDrawStringFlags() const {
+  int flags = 0;
 
-  int flags = gfx::Canvas::MULTI_LINE;
+  if (directionality_mode_ == AUTO_DETECT_DIRECTIONALITY) {
+    base::i18n::TextDirection direction =
+        base::i18n::GetFirstStrongCharacterDirection(GetText());
+    if (direction == base::i18n::RIGHT_TO_LEFT)
+      flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
+    else
+      flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
+  }
+
+  if (!is_multi_line_)
+    return flags;
+
+  flags |= gfx::Canvas::MULTI_LINE;
 #if !defined(OS_WIN)
     // Don't elide multiline labels on Linux.
     // Todo(davemoore): Do we depend on eliding multiline text?
@@ -452,6 +463,7 @@ int Label::ComputeMultiLineFlags() const {
       flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
       break;
   }
+
   return flags;
 }
 
@@ -492,16 +504,7 @@ void Label::CalculateDrawStringParams(string16* paint_text,
   }
 
   *text_bounds = GetTextBounds();
-  *flags = ComputeMultiLineFlags();
-
-  if (directionality_mode_ == AUTO_DETECT_DIRECTIONALITY) {
-    base::i18n::TextDirection direction =
-        base::i18n::GetFirstStrongCharacterDirection(GetText());
-    if (direction == base::i18n::RIGHT_TO_LEFT)
-      *flags |= gfx::Canvas::FORCE_RTL_DIRECTIONALITY;
-    else
-      *flags |= gfx::Canvas::FORCE_LTR_DIRECTIONALITY;
-  }
+  *flags = ComputeDrawStringFlags();
 }
 
 }  // namespace views
