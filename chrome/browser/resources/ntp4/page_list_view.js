@@ -153,10 +153,21 @@ cr.define('ntp', function() {
       this.shownPage = templateData.shown_page_type;
       this.shownPageIndex = templateData.shown_page_index;
 
-      // Request data on the apps so we can fill them in.
-      // Note that this is kicked off asynchronously.  'getAppsCallback' will be
-      // invoked at some point after this function returns.
-      chrome.send('getApps');
+      if (templateData.showAppsPage) {
+        // Request data on the apps so we can fill them in.
+        // Note that this is kicked off asynchronously.  'getAppsCallback' will
+        // be invoked at some point after this function returns.
+        chrome.send('getApps');
+      } else {
+        // No apps page.
+        if (this.shownPage == templateData['apps_page_id']) {
+          this.shownPage = templateData['most_visited_page_id'];
+          this.shownPageIndex = 0;
+        }
+
+        // Mark section ready asynchronously soon after.
+        window.setTimeout(this.markSectionReady_.bind(this), 0);
+      }
 
       document.addEventListener('keydown', this.onDocKeyDown_.bind(this));
       // Prevent touch events from triggering any sort of native scrolling
@@ -366,18 +377,25 @@ cr.define('ntp', function() {
 
       this.cardSlider.currentCard = prevCurrentCard;
 
-      // Tell the slider about the pages.
-      this.updateSliderCards();
-
       if (highlightApp)
         this.appAdded(highlightApp, true);
 
-      // Mark the current page.
-      this.cardSlider.currentCardValue.navigationDot.classList.add('selected');
       logEvent('apps.layout: ' + (Date.now() - startTime));
 
-      document.documentElement.classList.remove('starting-up');
+      this.markSectionReady_();
+    },
 
+    /**
+     * Marks section ready.
+     * @private
+     */
+   markSectionReady_: function() {
+      // Tell the slider about the pages.
+      this.updateSliderCards();
+      // Mark the current page.
+      this.cardSlider.currentCardValue.navigationDot.classList.add('selected');
+
+      document.documentElement.classList.remove('starting-up');
       cr.dispatchSimpleEvent(document, 'sectionready', true, true);
     },
 

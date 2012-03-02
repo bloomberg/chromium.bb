@@ -168,6 +168,9 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
   values->SetInteger("shown_page_type", shown_page & ~INDEX_MASK);
   values->SetInteger("shown_page_index", shown_page & INDEX_MASK);
 
+#if !defined(USE_AURA)
+  // Only show intro bubble for non-aura build.
+
   PrefService* local_state = g_browser_process->local_state();
   int intro_displays = local_state->GetInteger(prefs::kNtp4IntroDisplayCount);
   // This preference used to exist in profile, so check the profile if it has
@@ -186,6 +189,7 @@ void NewTabPageHandler::GetLocalizedValues(Profile* profile,
     values->SetString("learn_more",
                       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   }
+#endif
 }
 
 // static

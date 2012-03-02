@@ -348,6 +348,7 @@ void NTPResourceCache::CreateNewTabHTML() {
       NewTabUI::ShouldShowAppInstallHint());
   localized_strings.SetBoolean("isSuggestionsPageEnabled",
       NewTabUI::IsSuggestionsPageEnabled());
+  localized_strings.SetBoolean("showAppsPage", NewTabUI::ShouldShowAppsPage());
 
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",

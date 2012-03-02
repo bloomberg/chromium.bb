@@ -42,6 +42,9 @@ class NewTabUI : public content::WebUIController,
   // Returns whether or not to show the app install hint.
   static bool ShouldShowAppInstallHint();
 
+  // Returns whether or not to show the apps page.
+  static bool ShouldShowAppsPage();
+
   // Returns whether or not the "suggestions links page" is enabled.
   static bool IsSuggestionsPageEnabled();
 

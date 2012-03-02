@@ -122,11 +122,14 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     if (GetProfile()->IsSyncAccessible())
       web_ui->AddMessageHandler(new NewTabPageSyncHandler());
 #endif
-    ExtensionService* service = GetProfile()->GetExtensionService();
-    // We might not have an ExtensionService (on ChromeOS when not logged in
-    // for example).
-    if (service)
-      web_ui->AddMessageHandler(new AppLauncherHandler(service));
+
+    if (ShouldShowAppsPage()) {
+      ExtensionService* service = GetProfile()->GetExtensionService();
+      // We might not have an ExtensionService (on ChromeOS when not logged in
+      // for example).
+      if (service)
+        web_ui->AddMessageHandler(new AppLauncherHandler(service));
+    }
 
     web_ui->AddMessageHandler(new NewTabPageHandler());
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
@@ -285,6 +288,16 @@ bool NewTabUI::ShouldShowAppInstallHint() {
   const CommandLine* cli = CommandLine::ForCurrentProcess();
   return cli->HasSwitch(switches::kNtpAppInstallHint) ||
       WebStoreLinkExperimentGroupIs(g_hint_group);
+}
+
+// static
+bool NewTabUI::ShouldShowAppsPage() {
+#if defined(USE_AURA)
+  // Ash shows apps in app list thus should not show apps page in NTP4.
+  return false;
+#else
+  return true;
+#endif
 }
 
 // static
