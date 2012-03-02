@@ -30,7 +30,6 @@ extern "C" {
 #include <sys/types.h>
 #include <stdint.h>
 #include "wayland-util.h"
-#include "wayland-server-protocol.h"
 
 enum {
 	WL_EVENT_READABLE = 0x01,
@@ -121,6 +120,13 @@ struct wl_resource {
 	void *data;
 };
 
+struct wl_buffer {
+	struct wl_resource resource;
+	int32_t width, height;
+	uint32_t busy_count;
+	void *user_data;
+};
+
 struct wl_shm_callbacks {
 	void (*buffer_created)(struct wl_buffer *buffer);
 
@@ -129,13 +135,6 @@ struct wl_shm_callbacks {
 			      int32_t width, int32_t height);
 
 	void (*buffer_destroyed)(struct wl_buffer *buffer);
-};
-
-struct wl_buffer {
-	struct wl_resource resource;
-	int32_t width, height;
-	uint32_t busy_count;
-	void *user_data;
 };
 
 struct wl_listener {
@@ -264,6 +263,8 @@ void wl_resource_queue_event(struct wl_resource *resource,
 void wl_resource_post_error(struct wl_resource *resource,
 			    uint32_t code, const char *msg, ...);
 void wl_resource_post_no_memory(struct wl_resource *resource);
+
+#include "wayland-server-protocol.h"
 
 void
 wl_display_post_frame(struct wl_display *display, struct wl_surface *surface,

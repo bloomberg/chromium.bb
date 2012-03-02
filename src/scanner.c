@@ -560,6 +560,47 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	}
 }
 
+static void
+emit_event_wrappers(struct wl_list *message_list, struct interface *interface)
+{
+	struct message *m;
+	struct arg *a;
+
+	/* We provide hand written functions for the display object */
+	if (strcmp(interface->name, "wl_display") == 0)
+		return;
+
+	wl_list_for_each(m, message_list, link) {
+		printf("static inline void\n"
+		       "%s_send_%s(struct wl_resource *resource_",
+		       interface->name, m->name);
+
+		wl_list_for_each(a, &m->arg_list, link) {
+			printf(", ");
+			switch (a->type) {
+			case NEW_ID:
+			case OBJECT:
+				printf("struct wl_resource *");
+				break;
+			default:
+				emit_type(a);
+			}
+			printf("%s", a->name);
+		}
+
+		printf(")\n"
+		       "{\n"
+		       "\twl_resource_post_event(resource_, %s_%s",
+		       interface->uppercase_name, m->uppercase_name);
+
+		wl_list_for_each(a, &m->arg_list, link)
+			printf(", %s", a->name);
+
+		printf(");\n");
+		printf("}\n\n");
+	}
+}
+
 static const char *indent(int n)
 {
 	const char *whitespace[] = {
@@ -774,6 +815,7 @@ emit_header(struct protocol *protocol, int server)
 		if (server) {
 			emit_structs(&i->request_list, i);
 			emit_opcodes(&i->event_list, i);
+			emit_event_wrappers(&i->event_list, i);
 		} else {
 			emit_structs(&i->event_list, i);
 			emit_opcodes(&i->request_list, i);
