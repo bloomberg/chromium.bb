@@ -604,6 +604,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableDevToolsExperiments)
   },
+  {
+    "enable-suggestions-ntp",
+    IDS_FLAGS_NTP_SUGGESTIONS_PAGE_NAME,
+    IDS_FLAGS_NTP_SUGGESTIONS_PAGE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSuggestionsTabPage)
+  },
 };
 
 const Experiment* experiments = kExperiments;
