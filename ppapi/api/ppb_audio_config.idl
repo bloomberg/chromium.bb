@@ -45,7 +45,7 @@ enum PP_AudioSampleRate {
  * This interface only supports 16-bit stereo output.
  *
  * Refer to the
- * <a href="/chrome/nativeclient/docs/audio.html">Pepper
+ * <a href="/native-client/{{pepperversion}}/devguide/coding/audio">Pepper
  * Audio API</a> for information on using this interface.
  */
 [macro="PPB_AUDIO_CONFIG_INTERFACE"]
