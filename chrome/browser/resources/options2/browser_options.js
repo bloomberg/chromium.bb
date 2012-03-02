@@ -282,10 +282,8 @@ cr.define('options', function() {
         options.system.bluetooth.BluetoothDeviceList.decorate(
             $('bluetooth-paired-devices-list'));
 
-        $('bluetooth-add-device').onclick = function(event) {
-          this.findBluetoothDevices_(true);
-          OptionsPage.navigateToPage('bluetooth');
-        };
+        $('bluetooth-add-device').onclick =
+            this.handleAddBluetoothDevice_.bind(this);
 
         $('enable-bluetooth').onchange = function(event) {
           var state = $('enable-bluetooth').checked;
@@ -923,14 +921,13 @@ cr.define('options', function() {
     },
 
     /**
-     * Scan for bluetooth devices.
-     * @param {boolean} reset Indicates if the list of unpaired devices should
-     *     be cleared.
+     * Handle the 'add device' button click.
      * @private
      */
-    findBluetoothDevices_: function(reset) {
+    handleAddBluetoothDevice_: function() {
       $('bluetooth-unpaired-devices-list').clear();
       chrome.send('findBluetoothDevices');
+      OptionsPage.navigateToPage('bluetooth');
     },
 
     /**
