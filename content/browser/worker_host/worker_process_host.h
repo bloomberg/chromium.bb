@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,6 +173,10 @@ class WorkerProcessHost : public content::BrowserChildProcessHostDelegate,
   void OnAllowFileSystem(int worker_route_id,
                          const GURL& url,
                          bool* result);
+  void OnAllowIndexedDB(int worker_route_id,
+                        const GURL& url,
+                        const string16& name,
+                        bool* result);
 
   // Relays a message to the given endpoint.  Takes care of parsing the message
   // if it contains a message port and sending it a valid route id.

@@ -80,6 +80,11 @@ class MockContentBrowserClient : public ContentBrowserClient {
       const GURL& url,
       content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
+  virtual bool AllowWorkerIndexedDB(
+      const GURL& url,
+      const string16& name,
+      content::ResourceContext* context,
+      const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;

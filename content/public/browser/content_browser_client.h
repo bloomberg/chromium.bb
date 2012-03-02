@@ -207,6 +207,15 @@ class ContentBrowserClient {
       content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) = 0;
 
+  // Allow the embedder to control if access to IndexedDB by a shared worker
+  // is allowed.
+  // This is called on the IO thread.
+  virtual bool AllowWorkerIndexedDB(
+      const GURL& url,
+      const string16& name,
+      content::ResourceContext* context,
+      const std::vector<std::pair<int, int> >& render_views) = 0;
+
   // Allows the embedder to override the request context based on the URL for
   // certain operations, like cookie access. Returns NULL to indicate the
   // regular request context should be used.

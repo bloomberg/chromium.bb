@@ -168,6 +168,13 @@ void WebSharedWorkerClientProxy::openFileSystem(
       size, create, new WebFileSystemCallbackDispatcher(callbacks));
 }
 
+bool WebSharedWorkerClientProxy::allowIndexedDB(const WebKit::WebString& name) {
+  bool result = false;
+  Send(new WorkerProcessHostMsg_AllowIndexedDB(
+      route_id_, stub_->url().GetOrigin(), name, &result));
+  return result;
+}
+
 void WebSharedWorkerClientProxy::dispatchDevToolsMessage(
     const WebString& message) {
   if (devtools_agent_)

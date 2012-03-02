@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,6 +133,13 @@ IPC_SYNC_MESSAGE_CONTROL5_1(WorkerProcessHostMsg_AllowDatabase,
 IPC_SYNC_MESSAGE_CONTROL2_1(WorkerProcessHostMsg_AllowFileSystem,
                             int /* worker_route_id */,
                             GURL /* origin url */,
+                            bool /* result */)
+
+// Sent by the worker process to check whether access to IndexedDB is allowed.
+IPC_SYNC_MESSAGE_CONTROL3_1(WorkerProcessHostMsg_AllowIndexedDB,
+                            int /* worker_route_id */,
+                            GURL /* origin url */,
+                            string16 /* database name */,
                             bool /* result */)
 
 //-----------------------------------------------------------------------------

@@ -334,6 +334,7 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
                         OnWorkerContextClosed)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowFileSystem, OnAllowFileSystem)
+    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP_EX()
 
@@ -395,6 +396,14 @@ void WorkerProcessHost::OnAllowFileSystem(int worker_route_id,
                                           bool* result) {
   *result = content::GetContentClient()->browser()->AllowWorkerFileSystem(
       url, resource_context_, GetRenderViewIDsForWorker(worker_route_id));
+}
+
+void WorkerProcessHost::OnAllowIndexedDB(int worker_route_id,
+                                         const GURL& url,
+                                         const string16& name,
+                                         bool* result) {
+  *result = content::GetContentClient()->browser()->AllowWorkerIndexedDB(
+      url, name, resource_context_, GetRenderViewIDsForWorker(worker_route_id));
 }
 
 void WorkerProcessHost::RelayMessage(

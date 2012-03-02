@@ -77,6 +77,7 @@ class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
                               long long size,
                               bool create,
                               WebKit::WebFileSystemCallbacks* callbacks);
+  virtual bool allowIndexedDB(const WebKit::WebString&);
   virtual void dispatchDevToolsMessage(const WebKit::WebString&);
   virtual void saveDevToolsAgentState(const WebKit::WebString&);
 

@@ -154,6 +154,14 @@ bool MockContentBrowserClient::AllowWorkerFileSystem(
   return true;
 }
 
+bool MockContentBrowserClient::AllowWorkerIndexedDB(
+    const GURL& url,
+    const string16& name,
+    content::ResourceContext* context,
+    const std::vector<std::pair<int, int> >& render_views) {
+  return true;
+}
+
 QuotaPermissionContext*
     MockContentBrowserClient::CreateQuotaPermissionContext() {
   return NULL;

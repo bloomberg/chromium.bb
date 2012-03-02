@@ -179,6 +179,14 @@ bool ShellContentBrowserClient::AllowWorkerFileSystem(
   return true;
 }
 
+bool ShellContentBrowserClient::AllowWorkerIndexedDB(
+    const GURL& url,
+    const string16& name,
+    content::ResourceContext* context,
+    const std::vector<std::pair<int, int> >& render_views) {
+  return true;
+}
+
 QuotaPermissionContext*
     ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return NULL;
