@@ -70,6 +70,8 @@ Gallery.FIRST_FADE_TIMEOUT = 1000;
 Gallery.prototype.initDom_ = function(shareActions) {
   var doc = this.document_;
 
+  doc.oncontextmenu = function(e) { e.preventDefault(); };
+
   // Clean up after the previous instance of Gallery.
   this.container_.removeAttribute('editing');
   this.container_.removeAttribute('tools');

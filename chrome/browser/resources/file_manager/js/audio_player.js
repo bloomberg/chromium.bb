@@ -51,6 +51,7 @@ function AudioPlayer(container) {
 
 AudioPlayer.load = function() {
   document.ondragstart = function(e) { e.preventDefault() };
+  document.oncontextmenu = function(e) { e.preventDefault(); };
 
   var player = new AudioPlayer(document.querySelector('.audio-player'));
   function getPlaylist() {
