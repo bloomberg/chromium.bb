@@ -82,12 +82,12 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   if (form.password_value.empty())
     return;
 
-  PasswordFormManager* manager = NULL;
+  scoped_ptr<PasswordFormManager> manager;
   for (ScopedVector<PasswordFormManager>::iterator iter =
            pending_login_managers_.begin();
        iter != pending_login_managers_.end(); ++iter) {
     if ((*iter)->DoesManage(form)) {
-      manager = *iter;
+      manager.reset(*iter);
       pending_login_managers_.weak_erase(iter);
       break;
     }
@@ -95,7 +95,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // If we didn't find a manager, this means a form was submitted without
   // first loading the page containing the form. Don't offer to save
   // passwords in this case.
-  if (!manager)
+  if (!manager.get())
     return;
 
   // If we found a manager but it didn't finish matching yet, the user has
@@ -115,7 +115,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
       !delegate_->DidLastPageLoadEncounterSSLErrors();
   provisionally_saved_form.preferred = true;
   manager->ProvisionallySave(provisionally_saved_form);
-  provisional_save_manager_.reset(manager);
+  provisional_save_manager_.swap(manager);
 }
 
 void PasswordManager::SetObserver(LoginModelObserver* observer) {

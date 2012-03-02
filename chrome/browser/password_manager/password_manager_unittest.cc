@@ -208,12 +208,16 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   manager()->OnPasswordFormsFound(observed);  // The initial load.
   manager()->OnPasswordFormsVisible(observed);  // The initial layout.
 
+  PasswordForm empty_form(form);
+  empty_form.username_value = string16();
+  empty_form.password_value = string16();
   content::LoadCommittedDetails details;
   content::FrameNavigateParams params;
-  params.password_form = form;
+  params.password_form = empty_form;
   manager()->DidNavigateAnyFrame(details, params);
 
   // No expected calls.
+  EXPECT_CALL(delegate_, AddSavePasswordInfoBar(_)).Times(0);
   manager()->DidStopLoading();
 }
 
