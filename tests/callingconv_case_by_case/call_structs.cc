@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -65,11 +65,11 @@ extern int should_be_true;
 
 #define MOD3_DECL(TYPE)                                                 \
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                               \
-  extern __attribute__((noinline,pnaclcall)) void mod3_##TYPE(TYPE z)
+  extern __attribute__((noinline, pnaclcall)) void mod3_##TYPE(TYPE z)
 #define MOD2_TO_3_CALL(TYPE, arg)               \
   mod3_##TYPE(arg)
 #define MOD1_DECL(TYPE)                                         \
-  __attribute__((pnaclcall,noinline)) void mod1_##TYPE(TYPE z)
+  __attribute__((noinline, pnaclcall)) void mod1_##TYPE(TYPE z)
 
 #elif defined(TEST_ATTRIBUTE_VIA_FP)
 
@@ -81,9 +81,9 @@ extern int should_be_true;
     void (__attribute__((pnaclcall)) *temp_fp)(TYPE z) =            \
         (void (__attribute__((pnaclcall)) *)(TYPE)) &mod3_##TYPE;   \
     (*temp_fp)(arg);                                                \
-  } while(0)
+  } while (0)
 #define MOD1_DECL(TYPE)                                         \
-  __attribute__((pnaclcall,noinline)) void mod1_##TYPE(TYPE z)
+  __attribute__((noinline, pnaclcall)) void mod1_##TYPE(TYPE z)
 
 #else /* Testing with just the commandline flag / or nothing at all. */
 
@@ -194,10 +194,7 @@ extern int should_be_true;
 #error "Must define MODULE0. or MODULE1, 2 or 3 in preprocessor!"
 #endif  /* defined(MODULE0) */
 
-/* See comment in for_each_type.h for why we need this for now. */
-extern "C" {
 #include "native_client/tests/callingconv_case_by_case/for_each_type.h"
-}
 #undef DO_FOR_TYPE
 
 /* Place Main in Module 0 */
