@@ -416,7 +416,12 @@ TEST_F(RootWindowEventFilterTest, MouseEventCursors) {
   EXPECT_EQ(aura::kCursorNull, root_window->last_cursor());
 }
 
-TEST_F(RootWindowEventFilterTest, TransformActivate) {
+#if defined(OS_MACOSX)
+#define MAYBE_TransformActivate FAILS_TransformActivate
+#else
+#define MAYBE_TransformActivate TransformActivate
+#endif
+TEST_F(RootWindowEventFilterTest, MAYBE_TransformActivate) {
   // Disable ash grid so that test can place a window at
   // specific location.
   ash::Shell::GetInstance()->DisableWorkspaceGridLayout();

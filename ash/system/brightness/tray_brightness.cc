@@ -62,6 +62,7 @@ class BrightnessView : public views::View,
     // TODO(sad|davemoore): This isn't correct, since we are unable to pass on
     // the amount the brightness should be increased/decreased.
     // http://crosbug.com/26935
+#if !defined(OS_MACOSX)
     ash::Shell* shell = ash::Shell::GetInstance();
     if (value < old_value) {
       shell->accelerator_controller()->brightness_control_delegate()->
@@ -70,6 +71,7 @@ class BrightnessView : public views::View,
       shell->accelerator_controller()->brightness_control_delegate()->
           HandleBrightnessUp(ui::Accelerator());
     }
+#endif  // OS_MACOSX
   }
 
   views::Slider* slider_;

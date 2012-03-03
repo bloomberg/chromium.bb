@@ -17,12 +17,12 @@ namespace aura {
 class EnvObserver;
 class Window;
 
+#if !defined(OS_MACOSX)
 class Dispatcher : public MessageLoop::Dispatcher {
  public:
   virtual ~Dispatcher() {}
 };
 
-#if !defined(OS_MACOSX)
 // Creates a platform-specific native event dispatcher.
 Dispatcher* CreateDispatcher();
 #endif

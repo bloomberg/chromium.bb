@@ -123,7 +123,12 @@ TEST_F(CompactLayoutManagerTest, StatusAreaVisibility) {
   EXPECT_TRUE(widget->IsVisible());
 }
 
-TEST_F(CompactLayoutManagerTest, TransitionTest) {
+#if defined(OS_MACOSX)
+#define MAYBE_TransitionTest FAILS_TransitionTest
+#else
+#define MAYBE_TransitionTest TransitionTest
+#endif
+TEST_F(CompactLayoutManagerTest, MAYBE_TransitionTest) {
   // Assert on viewport size to be the host size.
   ASSERT_EQ(kMaxWidth, default_container_layer_width());
   // Create 3 windows, check that the layer grow as each one is added

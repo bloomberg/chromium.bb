@@ -60,9 +60,9 @@ class GesturePoint {
   // A negative point_id indicates that the GesturePoint is not currently
   // associated with a touch.
   void set_point_id(int point_id) { point_id_ = point_id; }
-  const int point_id() const { return point_id_; }
+  int point_id() const { return point_id_; }
 
-  const bool in_use() const { return point_id_ >= 0; }
+  bool in_use() const { return point_id_ >= 0; }
 
   double x_delta() const {
     return last_touch_position_.x() - first_touch_position_.x();

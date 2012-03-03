@@ -434,7 +434,12 @@ TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
 }
 
 // Verifies pressing escape resets the bounds to the original bounds.
-TEST_F(ToplevelWindowEventFilterTest, EscapeReverts) {
+#if defined(OS_MACOSX)
+#define MAYBE_EscapeReverts FAILS_EscapeReverts
+#else
+#define MAYBE_EscapeReverts EscapeReverts
+#endif
+TEST_F(ToplevelWindowEventFilterTest, MAYBE_EscapeReverts) {
   aura::RootWindow* root = Shell::GetRootWindow();
   aura::client::ActivationClient* original_client =
       aura::client::GetActivationClient(root);
