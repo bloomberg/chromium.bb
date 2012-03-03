@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_helper.h"
+#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_screensaver.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -362,7 +363,11 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Initialize the screen locker now so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
-  chromeos::ScreenLocker::InitClass();
+  if (chromeos::KioskModeHelper::IsKioskModeEnabled()) {
+    chromeos::InitializeKioskModeIdleLogout();
+  } else {
+    chromeos::ScreenLocker::InitClass();
+  }
 
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.

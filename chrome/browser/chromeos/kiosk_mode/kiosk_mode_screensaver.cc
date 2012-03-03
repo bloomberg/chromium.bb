@@ -34,7 +34,6 @@ KioskModeScreensaver::~KioskModeScreensaver() {
 }
 
 void KioskModeScreensaver::Setup() {
-
   // We should NOT be created if already logged in.
   CHECK(!chromeos::UserManager::Get()->user_is_logged_in());
 
@@ -96,11 +95,6 @@ void InitializeKioskModeScreensaver() {
 }
 
 void ShutdownKioskModeScreensaver() {
-  if (!g_kiosk_mode_screensaver) {
-    LOG(WARNING) << "Screensaver shutdown called when uninitialized.";
-    return;
-  }
-
   delete g_kiosk_mode_screensaver;
   g_kiosk_mode_screensaver = NULL;
 }

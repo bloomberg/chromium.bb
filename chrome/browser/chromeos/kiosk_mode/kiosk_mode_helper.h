@@ -43,6 +43,8 @@ class KioskModeHelper {
   // Getters for various Kiosk Mode values.
   std::string GetScreensaverPath() const;
   int64 GetScreensaverTimeout() const;
+  int64 GetIdleLogoutTimeout() const;
+  int64 GetIdleLogoutWarningTimeout() const;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<KioskModeHelper>;

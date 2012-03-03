@@ -16,6 +16,8 @@
 namespace {
 
 const int64 kScreensaverIdleTimeout = 60;
+const int64 kLoginIdleTimeout = 100;
+const int64 kLoginIdleCountdownTimeout = 20;
 
 }  // namespace
 
@@ -63,6 +65,20 @@ int64 KioskModeHelper::GetScreensaverTimeout() const {
 
   return kScreensaverIdleTimeout;
 }
+
+int64 KioskModeHelper::GetIdleLogoutTimeout() const {
+  if (!is_initialized_)
+    return -1;
+
+  return kLoginIdleTimeout;
+}
+int64 KioskModeHelper::GetIdleLogoutWarningTimeout() const {
+  if (!is_initialized_)
+    return -1;
+
+  return kLoginIdleCountdownTimeout;
+}
+
 
 KioskModeHelper::KioskModeHelper() : is_initialized_(false) {
 }

@@ -1362,6 +1362,7 @@
         'browser/chromeos/input_method/input_method_util_unittest.cc',
         'browser/chromeos/input_method/virtual_keyboard_selector_unittest.cc',
         'browser/chromeos/input_method/xkeyboard_unittest.cc',
+        'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_screensaver_unittest.cc',
         'browser/chromeos/language_preferences_unittest.cc',
         'browser/chromeos/login/authenticator_unittest.cc',
