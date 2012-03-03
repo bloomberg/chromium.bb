@@ -8,7 +8,6 @@
 import os.path
 import sys
 
-
 TOP_DIR = 'native_client'
 MAIN_DEPS = os.path.join(TOP_DIR, 'DEPS')
 
