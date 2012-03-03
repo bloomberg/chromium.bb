@@ -329,7 +329,8 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       pointer_down_context_(false),
       focus_on_editable_field_(false),
       received_focus_change_after_pointer_down_(false),
-      transparent_region_(0) {
+      transparent_region_(0),
+      touch_events_enabled_(false) {
   render_widget_host_ = static_cast<RenderWidgetHostImpl*>(widget);
   render_widget_host_->SetView(this);
   registrar_.Add(this,
@@ -910,7 +911,57 @@ void RenderWidgetHostViewWin::UnhandledWheelEvent(
     const WebKit::WebMouseWheelEvent& event) {
 }
 
-void RenderWidgetHostViewWin::ProcessTouchAck(bool processed) {
+void RenderWidgetHostViewWin::ProcessTouchAck(
+    WebKit::WebInputEvent::Type type, bool processed) {
+  if (type == WebKit::WebInputEvent::TouchStart)
+    UpdateDesiredTouchMode(processed);
+}
+
+void RenderWidgetHostViewWin::SetToGestureMode() {
+  UnregisterTouchWindow(m_hWnd);
+  // Single finger panning is consistent with other windows applications.
+  const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
+                              GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+  const DWORD gesture_block = GC_PAN_WITH_GUTTER;
+  GESTURECONFIG gc[] = {
+      { GID_ZOOM, GC_ZOOM, 0 },
+      { GID_PAN, gesture_allow , gesture_block},
+      { GID_TWOFINGERTAP, GC_TWOFINGERTAP , 0},
+      { GID_PRESSANDTAP, GC_PRESSANDTAP , 0}
+  };
+  if (!SetGestureConfig(m_hWnd, 0, arraysize(gc), gc,
+      sizeof(GESTURECONFIG))) {
+    NOTREACHED();
+  }
+  touch_events_enabled_ = false;
+}
+
+bool RenderWidgetHostViewWin::SetToTouchMode() {
+  bool touch_mode = RegisterTouchWindow(m_hWnd, TWF_WANTPALM) == TRUE;
+  touch_events_enabled_ = touch_mode;
+  return touch_mode;
+}
+
+void RenderWidgetHostViewWin::UpdateDesiredTouchMode(bool touch_mode) {
+  // Make sure that touch events even make sense.
+  bool touch_mode_valid = base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTouchEvents);
+  touch_mode = touch_mode && touch_mode_valid;
+
+  // Already in correct mode, nothing to do.
+  if ((touch_mode && touch_events_enabled_) ||
+      (!touch_mode && !touch_events_enabled_))
+    return;
+
+  // Now we know that the window's current state doesn't match the desired
+  // state. If we want touch mode, then we attempt to register for touch
+  // events, and otherwise to unregister.
+  if (touch_mode) {
+    touch_mode = SetToTouchMode();
+  }
+  if (!touch_mode) {
+    SetToGestureMode();
+  }
 }
 
 void RenderWidgetHostViewWin::SetHasHorizontalScrollbar(
@@ -932,27 +983,8 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   // scrolled when under the mouse pointer even if inactive.
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    // Use gestures if touch event switch isn't present or registration fails.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableTouchEvents) ||
-        !RegisterTouchWindow(m_hWnd, TWF_WANTPALM)) {
-      // Single finger panning is consistent with other windows applications.
-      const DWORD gesture_allow = GC_PAN_WITH_SINGLE_FINGER_VERTICALLY |
-                                  GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
-      const DWORD gesture_block = GC_PAN_WITH_GUTTER;
-      GESTURECONFIG gc[] = {
-          { GID_ZOOM, GC_ZOOM, 0 },
-          { GID_PAN, gesture_allow , gesture_block},
-          { GID_TWOFINGERTAP, GC_TWOFINGERTAP , 0},
-          { GID_PRESSANDTAP, GC_PRESSANDTAP , 0}
-      };
-      if (!SetGestureConfig(m_hWnd, 0, arraysize(gc), gc,
-          sizeof(GESTURECONFIG))) {
-        NOTREACHED();
-      }
-    }
-  }
+  SetToGestureMode();
+
   return 0;
 }
 
@@ -1907,6 +1939,23 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
       render_widget_host_->ForwardWheelEvent(
           MakeFakeScrollWheelEvent(m_hWnd, start, delta));
     }
+  } else if (gi.dwID == GID_BEGIN) {
+    // Send a touch event at this location; if the touch start is handled
+    // then we switch to touch mode, rather than gesture mode (in the ACK).
+    TOUCHINPUT fake_touch;
+    fake_touch.x = gi.ptsLocation.x * 100;
+    fake_touch.y = gi.ptsLocation.y * 100;
+    fake_touch.cxContact = 100;
+    fake_touch.cyContact = 100;
+    fake_touch.dwMask = 0;
+    fake_touch.dwFlags = TOUCHEVENTF_DOWN | TOUCHEVENTF_PRIMARY;
+    fake_touch.dwID = gi.dwInstanceID;
+    touch_state_.UpdateTouchPoints(&fake_touch, 1);
+    if (touch_state_.is_changed())
+      render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
+  } else if (gi.dwID == GID_END) {
+    if (touch_state_.ReleaseTouchPoints())
+      render_widget_host_->ForwardTouchEvent(touch_state_.touch_event());
   }
   ::CloseGestureInfoHandle(gi_handle);
   return 0;

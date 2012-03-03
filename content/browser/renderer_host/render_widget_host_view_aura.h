@@ -106,7 +106,8 @@ class RenderWidgetHostViewAura
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
-  virtual void ProcessTouchAck(bool processed) OVERRIDE;
+  virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
+                               bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
