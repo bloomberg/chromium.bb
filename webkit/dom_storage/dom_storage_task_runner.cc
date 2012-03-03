@@ -31,8 +31,7 @@ bool DomStorageTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  return message_loop_->PostDelayedTask(from_here, task,
-                                        delay.InMilliseconds());
+  return message_loop_->PostDelayedTask(from_here, task, delay);
 }
 
 // DomStorageWorkerPoolTaskRunner
@@ -68,7 +67,7 @@ bool DomStorageWorkerPoolTaskRunner::PostDelayedTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&DomStorageWorkerPoolTaskRunner::PostTask),
                  this, from_here, task),
-      delay.InMilliseconds());
+      delay);
 }
 
 // MockDomStorageTaskRunner
