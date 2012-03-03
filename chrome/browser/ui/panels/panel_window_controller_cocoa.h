@@ -55,7 +55,6 @@ class PanelBrowserWindowCocoa;
   BOOL throbberShouldSpin_;
   BOOL playingMinimizeAnimation_;
   float animationStopToShowTitlebarOnly_;
-  BOOL canBecomeKeyWindow_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
@@ -132,9 +131,6 @@ class PanelBrowserWindowCocoa;
 
 // Removes the Key status from the panel to some other window.
 - (void)deactivate;
-
-// Changes the canBecomeKeyWindow state
-- (void)preventBecomingKeyWindow:(BOOL)prevent;
 
 // See Panel::FullScreenModeChanged.
 - (void)fullScreenModeChanged:(bool)isFullScreen;

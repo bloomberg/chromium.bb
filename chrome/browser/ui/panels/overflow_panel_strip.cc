@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_overflow_indicator.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -180,11 +179,6 @@ void OverflowPanelStrip::RestorePanel(Panel* panel) {
   PanelStrip* docked_strip = panel_manager_->docked_strip();
   panel->MoveToStrip(docked_strip);
   docked_strip->RestorePanel(panel);
-}
-
-bool OverflowPanelStrip::IsPanelMinimized(Panel* panel) const {
-  // All overflow panels are considered minimized.
-  return true;
 }
 
 bool OverflowPanelStrip::CanShowPanelAsActive(const Panel* panel) const {

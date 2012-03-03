@@ -156,11 +156,6 @@ bool PanelBrowserWindowCocoa::IsPanelActive() const {
   return [[controller_ window] isMainWindow];
 }
 
-void PanelBrowserWindowCocoa::PreventActivationByOS(bool prevent_activation) {
-  [controller_ preventBecomingKeyWindow:prevent_activation];
-  return;
-}
-
 gfx::NativeWindow PanelBrowserWindowCocoa::GetNativePanelHandle() {
   return [controller_ window];
 }

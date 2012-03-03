@@ -79,7 +79,6 @@ enum {
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     windowShim_.reset(window);
     animateOnBoundsChange_ = YES;
-    canBecomeKeyWindow_ = YES;
   }
   contentsController_.reset(
       [[TabContentsController alloc] initWithContents:nil]);
@@ -624,10 +623,6 @@ enum {
     [NSApp deactivate];
 }
 
-- (void)preventBecomingKeyWindow:(BOOL)prevent {
-  canBecomeKeyWindow_ = !prevent;
-}
-
 - (void)fullScreenModeChanged:(bool)isFullScreen {
   NSWindow* window = [self window];
   [window setLevel:(isFullScreen ? NSNormalWindowLevel : NSStatusWindowLevel)];
@@ -639,6 +634,6 @@ enum {
   // TODO(dimich): If it will be ever desired to expand/focus the Panel on
   // keyboard navigation or via main menu, the care should be taken to avoid
   // cases when minimized Panel is getting keyboard input, invisibly.
-  return canBecomeKeyWindow_;
+  return windowShim_->panel()->expansion_state() == Panel::EXPANDED;
 }
 @end

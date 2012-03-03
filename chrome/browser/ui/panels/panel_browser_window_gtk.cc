@@ -97,6 +97,10 @@ void PanelBrowserWindowGtk::Init() {
   ui::WorkAreaWatcherX::AddObserver(this);
   registrar_.Add(
       this,
+      chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
+      content::Source<Panel>(panel_.get()));
+  registrar_.Add(
+      this,
       chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
       content::Source<Panel>(panel_.get()));
   registrar_.Add(
@@ -271,6 +275,9 @@ void PanelBrowserWindowGtk::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE:
       titlebar()->UpdateCustomFrame(true);
+      // No break. Accept focus code should execute for both cases.
+    case chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE:
+      gtk_window_set_accept_focus(window(), !panel_->IsMinimized());
       break;
     case chrome::NOTIFICATION_WINDOW_CLOSED:
       // Cleanup.
@@ -378,11 +385,6 @@ void PanelBrowserWindowGtk::DeactivatePanel() {
 
 bool PanelBrowserWindowGtk::IsPanelActive() const {
   return IsActive();
-}
-
-void PanelBrowserWindowGtk::PreventActivationByOS(bool prevent_activation) {
-  gtk_window_set_accept_focus(window(), !prevent_activation);
-  return;
 }
 
 gfx::NativeWindow PanelBrowserWindowGtk::GetNativePanelHandle() {

@@ -37,7 +37,6 @@ class DetachedPanelStrip : public PanelStrip {
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
-  virtual bool IsPanelMinimized(Panel* panel) const OVERRIDE;
   virtual bool CanShowPanelAsActive(const Panel* panel) const OVERRIDE;
   virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
   virtual void StartDraggingPanel(Panel* panel) OVERRIDE;

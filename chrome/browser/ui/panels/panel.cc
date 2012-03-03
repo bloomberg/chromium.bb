@@ -164,8 +164,6 @@ void Panel::MoveToStrip(PanelStrip* new_strip) {
   panel_strip_ = new_strip;
   panel_strip_->AddPanel(this);
 
-  native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
-
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
       content::Source<Panel>(this),
@@ -183,8 +181,6 @@ void Panel::SetExpansionState(ExpansionState new_state) {
   // The minimized panel should not get the focus.
   if (expansion_state_ == MINIMIZED)
     Deactivate();
-
-  native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
