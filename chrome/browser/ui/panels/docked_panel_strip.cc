@@ -244,6 +244,11 @@ bool DockedPanelStrip::RemovePanel(Panel* panel) {
   return true;
 }
 
+bool DockedPanelStrip::IsPanelMinimized(Panel* panel) const {
+  DCHECK_EQ(this, panel->panel_strip());
+  return panel->expansion_state() != Panel::EXPANDED;
+}
+
 bool DockedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
   // Panels with temporary layout cannot be shown as active.
   return !panel->has_temporary_layout();

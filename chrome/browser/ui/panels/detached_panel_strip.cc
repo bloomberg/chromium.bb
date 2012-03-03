@@ -77,6 +77,12 @@ void DetachedPanelStrip::RestorePanel(Panel* panel) {
   NOTIMPLEMENTED();
 }
 
+bool DetachedPanelStrip::IsPanelMinimized(Panel* panel) const {
+  DCHECK_EQ(this, panel->panel_strip());
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool DetachedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
   // All detached panels can be shown as active.
   return true;

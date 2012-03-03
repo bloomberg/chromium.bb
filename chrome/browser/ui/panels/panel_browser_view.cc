@@ -303,6 +303,23 @@ bool PanelBrowserView::IsPanelActive() const {
   return IsActive();
 }
 
+void PanelBrowserView::PreventActivationByOS(bool prevent_activation) {
+  // Set the flags "NoActivate" and "AppWindow" to make sure
+  // the minimized panels do not get activated by the OS, but
+  // do appear in the taskbar and Alt-Tab menu.
+  gfx::NativeWindow native_window = GetNativePanelHandle();
+  int style = ::GetWindowLong(native_window, GWL_EXSTYLE);
+
+  if (prevent_activation)
+    ::SetWindowLong(native_window, GWL_EXSTYLE,
+        style |  WS_EX_NOACTIVATE | WS_EX_APPWINDOW);
+  else // allow activation
+    ::SetWindowLong(native_window, GWL_EXSTYLE,
+        style & ~WS_EX_NOACTIVATE & ~WS_EX_APPWINDOW);
+
+}
+
+
 gfx::NativeWindow PanelBrowserView::GetNativePanelHandle() {
   return GetNativeHandle();
 }
