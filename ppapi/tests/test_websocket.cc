@@ -42,11 +42,6 @@ const char* const kInvalidURLs[] = {
   NULL
 };
 
-// Connection close code is defined in WebSocket protocol specification.
-// The magic number 1000 means gracefull closure without any error.
-// See section 7.4.1. of RFC 6455.
-const uint16_t kCloseCodeNormalClosure = 1000U;
-
 // Internal packet sizes.
 const uint64_t kCloseFrameSize = 6;
 const uint64_t kMessageFrameOverhead = 6;
@@ -433,7 +428,7 @@ std::string TestWebSocket::TestInvalidClose() {
   // Close before connect.
   PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
   int32_t result = websocket_interface_->Close(
-      ws, kCloseCodeNormalClosure, reason,
+      ws, PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_ERROR_FAILED, result);
   core_interface_->ReleaseResource(ws);
@@ -464,7 +459,8 @@ std::string TestWebSocket::TestValidClose() {
   PP_Resource ws = Connect(kEchoServerURL, &result, NULL);
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
-  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = callback.WaitForResult();
@@ -478,7 +474,8 @@ std::string TestWebSocket::TestValidClose() {
   result = websocket_interface_->Connect(ws, url, protocols, 0U,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
       static_cast<pp::CompletionCallback>(
           another_callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
@@ -494,10 +491,12 @@ std::string TestWebSocket::TestValidClose() {
   ws = Connect(kEchoServerURL, &result, NULL);
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
-  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
       static_cast<pp::CompletionCallback>(
           another_callback).pp_completion_callback());
   ASSERT_EQ(PP_ERROR_INPROGRESS, result);
@@ -513,7 +512,8 @@ std::string TestWebSocket::TestValidClose() {
   result = websocket_interface_->ReceiveMessage(ws, &receive_message_var,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
       static_cast<pp::CompletionCallback>(
           another_callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
@@ -645,7 +645,8 @@ std::string TestWebSocket::TestBufferedAmount() {
   std::string reason_str = "close while busy";
   PP_Var reason = CreateVarString(reason_str.c_str());
   TestCompletionCallback callback(instance_->pp_instance());
-  result = websocket_interface_->Close(ws, kCloseCodeNormalClosure, reason,
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
       static_cast<pp::CompletionCallback>(callback).pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSING,
@@ -736,14 +737,15 @@ std::string TestWebSocket::TestCcInterfaces() {
 
   TestCompletionCallback close_callback(instance_->pp_instance());
   std::string reason("bye");
-  result = ws.Close(kCloseCodeNormalClosure, pp::Var(reason), close_callback);
+  result = ws.Close(
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var(reason), close_callback);
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = close_callback.WaitForResult();
   ASSERT_EQ(PP_OK, result);
 
   // Check initialized properties access.
   ASSERT_EQ(0, ws.GetBufferedAmount());
-  ASSERT_EQ(kCloseCodeNormalClosure, ws.GetCloseCode());
+  ASSERT_EQ(PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, ws.GetCloseCode());
   ASSERT_TRUE(AreEqualWithString(ws.GetCloseReason().pp_var(), reason.c_str()));
   ASSERT_EQ(true, ws.GetCloseWasClean());
   ASSERT_TRUE(AreEqualWithString(ws.GetExtensions().pp_var(), ""));
@@ -845,7 +847,8 @@ std::string TestWebSocket::TestUtilityInvalidClose() {
   // Close before connect.
   {
     TestWebSocketAPI websocket(instance_);
-    int32_t result = websocket.Close(kCloseCodeNormalClosure, reason);
+    int32_t result = websocket.Close(
+        PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason);
     ASSERT_EQ(PP_ERROR_FAILED, result);
     ASSERT_EQ(0U, websocket.GetSeenEvents().size());
   }
@@ -877,7 +880,8 @@ std::string TestWebSocket::TestUtilityValidClose() {
     int32_t result = websocket.Connect(url, NULL, 0U);
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
     websocket.WaitForConnected();
-    result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason));
+    result = websocket.Close(
+        PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var(reason));
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
     websocket.WaitForClosed();
     const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
@@ -885,7 +889,7 @@ std::string TestWebSocket::TestUtilityValidClose() {
     ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[0].event_type);
     ASSERT_EQ(WebSocketEvent::EVENT_CLOSE, events[1].event_type);
     ASSERT_TRUE(events[1].was_clean);
-    ASSERT_EQ(kCloseCodeNormalClosure, events[1].close_code);
+    ASSERT_EQ(PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, events[1].close_code);
     ASSERT_TRUE(AreEqualWithString(events[1].var.pp_var(), reason.c_str()));
   }
 
@@ -896,7 +900,8 @@ std::string TestWebSocket::TestUtilityValidClose() {
     TestWebSocketAPI websocket(instance_);
     int32_t result = websocket.Connect(url, NULL, 0U);
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-    result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason));
+    result = websocket.Close(
+        PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var(reason));
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
     websocket.WaitForClosed();
     const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
@@ -915,9 +920,11 @@ std::string TestWebSocket::TestUtilityValidClose() {
   {
     TestWebSocketAPI websocket(instance_);
     int32_t result = websocket.Connect(url, NULL, 0U);
-    result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason));
+    result = websocket.Close(
+        PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var(reason));
     ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
-    result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason));
+    result = websocket.Close(
+        PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var(reason));
     ASSERT_EQ(PP_ERROR_INPROGRESS, result);
     websocket.WaitForClosed();
     const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
@@ -1049,7 +1056,8 @@ std::string TestWebSocket::TestUtilityBufferedAmount() {
 
   // Close connection.
   std::string reason_str = "close while busy";
-  result = websocket.Close(kCloseCodeNormalClosure, pp::Var(reason_str));
+  result = websocket.Close(
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, pp::Var(reason_str));
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSING, websocket.GetReadyState());
   websocket.WaitForClosed();
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED, websocket.GetReadyState());
