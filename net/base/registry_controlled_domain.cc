@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,6 @@
 #include "net/base/registry_controlled_domain.h"
 
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
@@ -143,11 +142,7 @@ size_t RegistryControlledDomainService::GetRegistryLength(
 // static
 void RegistryControlledDomainService::UseFindDomainFunction(
     FindDomainPtr function) {
-  if (function) {
-    find_domain_function_ = function;
-  } else {
-    find_domain_function_ = Perfect_Hash::FindDomain;
-  }
+  find_domain_function_ = function ? function : Perfect_Hash::FindDomain;
 }
 
 // static
