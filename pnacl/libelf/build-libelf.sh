@@ -16,7 +16,7 @@
 #   CC
 #   AR
 #   RANLIB
-#   CC_IS_PNACL (true/false)
+#   EXTRA_HEADERS (true/false)
 #
 # The destination directory will be used with the following layout:
 #   source/  - Untar'd source
@@ -40,8 +40,8 @@ readonly INSTALL_DIR="${DEST_DIR}/install"
 readonly LABEL="elfutils-0.153"
 
 CFLAGS="${CFLAGS:-}"
-# Extra headers for the pnacl build
-if ${CC_IS_PNACL}; then
+# Extra headers for the pnacl/darwin build
+if ${EXTRA_HEADERS}; then
   CFLAGS+=" -I${ROOT_DIR}"/include
 fi
 

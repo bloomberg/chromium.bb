@@ -2071,6 +2071,12 @@ arm-ncval-core ${INSTALL_ROOT}/tools-x86
 #+ libelf-host           - Build and install libelf (using the host CC)
 libelf-host() {
   StepBanner "LIBELF-HOST" "Building and installing libelf"
+
+  local extra_headers=false
+  if ${BUILD_PLATFORM_MAC}; then
+    extra_headers=true
+  fi
+
   RunWithLog "libelf-host" \
     env -i \
       PATH="/usr/bin:/bin" \
@@ -2078,7 +2084,7 @@ libelf-host() {
       CC="${CC}" \
       AR="${AR}" \
       RANLIB="${RANLIB}" \
-      CC_IS_PNACL=false \
+      EXTRA_HEADERS=${extra_headers} \
       "${PNACL_ROOT}"/libelf/build-libelf.sh
 }
 
@@ -2092,7 +2098,7 @@ libelf-sb() {
       CC="${PNACL_CC_NEWLIB}" \
       AR="${PNACL_AR}" \
       RANLIB="${PNACL_RANLIB}" \
-      CC_IS_PNACL=true \
+      EXTRA_HEADERS=true \
       "${PNACL_ROOT}"/libelf/build-libelf.sh
 }
 
@@ -2109,8 +2115,7 @@ binutils() {
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
-  # TODO(pdox): Enable when this is verified to work on the Mac bots.
-  #libelf-host
+  libelf-host
   if binutils-needs-configure; then
     binutils-clean
     binutils-configure

@@ -59,7 +59,7 @@ diff -ur elfutils-orig/libelf/elf32_checksum.c elfutils-0.153/libelf/elf32_check
  #include <stdbool.h>
  #include <stddef.h>
  #include <string.h>
-+#ifdef __pnacl__
++#if defined(__pnacl__) || defined(__APPLE__)
 +#include <byteorder.h>
 +#endif
  
@@ -109,7 +109,7 @@ diff -ur elfutils-orig/libelf/elf32_xlatetof.c elfutils-0.153/libelf/elf32_xlate
  #include <assert.h>
  #include <endian.h>
  #include <string.h>
-+#ifdef __pnacl__
++#if defined(__pnacl__) || defined(__APPLE__)
 +#include <byteorder.h>
 +#endif
  
@@ -182,7 +182,7 @@ diff -ur elfutils-orig/libelf/elf_getarsym.c elfutils-0.153/libelf/elf_getarsym.
  
  #include <assert.h>
  #include <byteswap.h>
-+#ifdef __pnacl__
++#if defined(__pnacl__) || defined(__APPLE__)
 +#include <byteorder.h>
 +#endif
  #include <endian.h>
@@ -202,7 +202,7 @@ diff -ur elfutils-orig/libelf/elf.h elfutils-0.153/libelf/elf.h
 diff -ur elfutils-orig/libelf/libelf.h elfutils-0.153/libelf/libelf.h
 --- elfutils-orig/libelf/libelf.h	2011-07-19 13:42:41.000000000 -0700
 +++ elfutils-0.153/libelf/libelf.h	2012-02-25 05:29:03.020348847 -0800
-@@ -52,6 +52,12 @@
+@@ -52,6 +52,16 @@
  
  #include <sys/types.h>
  
@@ -212,6 +212,49 @@ diff -ur elfutils-orig/libelf/libelf.h elfutils-0.153/libelf/libelf.h
 +typedef _off64_t off64_t;
 +#endif
 +
++#ifdef __APPLE__
++typedef int64_t loff_t;
++typedef int64_t off64_t;
++#endif
  /* Get the ELF types.  */
  #include <elf.h>
  
+--- elfutils-orig/lib/eu-config.h	2012-03-03 01:11:58.493856074 -0800
++++ elfutils-0.153/lib/eu-config.h	2012-03-03 01:13:46.976621949 -0800
+@@ -75,9 +75,16 @@
+ /* gettext helper macro.  */
+ #define N_(Str) Str
+ 
++#ifdef __APPLE__
++/* Darwin does not support strong aliases */
++#define MAYBE_WEAK  weak,
++#else
++#define MAYBE_WEAK
++#endif
++
+ /* Compiler-specific definitions.  */
+ #define strong_alias(name, aliasname) \
+-  extern __typeof (name) aliasname __attribute__ ((alias (#name)));
++  extern __typeof (name) aliasname __attribute__ ((MAYBE_WEAK alias (#name)));
+ 
+ #ifdef __i386__
+ # define internal_function __attribute__ ((regparm (3), stdcall))
+@@ -86,7 +93,7 @@
+ #endif
+ 
+ #define internal_strong_alias(name, aliasname) \
+-  extern __typeof (name) aliasname __attribute__ ((alias (#name))) internal_function;
++  extern __typeof (name) aliasname __attribute__ ((MAYBE_WEAK alias (#name))) internal_function;
+ 
+ #define attribute_hidden \
+   __attribute__ ((visibility ("hidden")))
+@@ -169,7 +176,7 @@
+ # define _INTUSE(name) __##name##_internal
+ # define INTDEF(name) _INTDEF(name)
+ # define _INTDEF(name) \
+-  extern __typeof__ (name) __##name##_internal __attribute__ ((alias (#name)));
++  extern __typeof__ (name) __##name##_internal __attribute__ ((MAYBE_WEAK alias (#name)));
+ # define INTDECL(name) _INTDECL(name)
+ # define _INTDECL(name) \
+   extern __typeof__ (name) __##name##_internal attribute_hidden;
+
