@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/instant/instant_field_trial.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -43,6 +44,10 @@ std::string SearchTermsData::GoogleBaseSuggestURLValue() const {
   repl.ClearQuery();
   repl.ClearRef();
   return base_url.ReplaceComponents(repl).spec();
+}
+
+std::string SearchTermsData::InstantEnabledParam() const {
+  return std::string();
 }
 
 std::string SearchTermsData::InstantFieldTrialUrlParam() const {
@@ -90,6 +95,16 @@ string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
   return rlz_string;
 }
 #endif
+
+std::string UIThreadSearchTermsData::InstantEnabledParam() const {
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (profile_ && InstantController::IsEnabled(profile_) &&
+      !InstantFieldTrial::IsHiddenExperiment(profile_)) {
+    return "&ion=1";
+  }
+  return std::string();
+}
 
 std::string UIThreadSearchTermsData::InstantFieldTrialUrlParam() const {
   DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
