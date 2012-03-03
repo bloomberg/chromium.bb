@@ -96,15 +96,16 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
                                  redirect_stdout=True, error_code_ok=True)
     if (result.returncode == 0 and
         result.output.rstrip() == manifest_repo):
-      reinitialize = False
+      logging.info('Updating manifest-versions checkout.')
+      result = cros_lib.RunCommand(['git', 'pull', '--force'],
+                                   cwd=manifest_dir, error_code_ok=True)
+      if result.returncode == 0:
+        reinitialize = False
 
   if reinitialize:
     logging.info('Cloning fresh manifest-versions checkout.')
     _RemoveDirs(manifest_dir)
     repository.CloneGitRepo(manifest_dir, manifest_repo)
-  else:
-    logging.info('Updating manifest-versions checkout.')
-    cros_lib.RunCommand(['git', 'remote', 'update'], cwd=manifest_dir)
 
 
 def _PushGitChanges(git_repo, message, dry_run=True):
