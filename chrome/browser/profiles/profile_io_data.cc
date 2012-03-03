@@ -23,6 +23,8 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
@@ -222,7 +224,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                  profile);
   params->cookie_monster_delegate =
       new ChromeCookieMonsterDelegate(profile_getter);
-  params->extension_info_map = profile->GetExtensionInfoMap();
+  params->extension_info_map =
+      ExtensionSystemFactory::GetForProfile(profile)->info_map();
 
 #if defined(ENABLE_NOTIFICATIONS)
   params->notification_service =

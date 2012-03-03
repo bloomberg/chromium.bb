@@ -5,6 +5,8 @@
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 
@@ -31,7 +33,7 @@ syncable::ModelType ExtensionDataTypeController::type() const {
 }
 
 bool ExtensionDataTypeController::StartModels() {
-  profile_->InitExtensions(true);
+  ExtensionSystemFactory::GetForProfile(profile_)->Init(true);
   return true;
 }
 

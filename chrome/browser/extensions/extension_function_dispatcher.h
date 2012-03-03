@@ -18,6 +18,7 @@ class Browser;
 class ChromeRenderMessageFilter;
 class Extension;
 class ExtensionFunction;
+class ExtensionInfoMap;
 class Profile;
 class RenderViewHost;
 struct ExtensionHostMsg_Request_Params;
