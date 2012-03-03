@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/panels/panel_manager.h"
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -64,7 +65,8 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
 PanelManager::PanelManager()
     : panel_mouse_watcher_(PanelMouseWatcher::Create()),
       auto_sizing_enabled_(true),
-      is_full_screen_(false) {
+      is_full_screen_(false),
+      is_processing_overflow_(false) {
   detached_strip_.reset(new DetachedPanelStrip(this));
   docked_strip_.reset(new DockedPanelStrip(this));
   overflow_strip_.reset(new OverflowPanelStrip(this));
@@ -117,7 +119,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   int width = browser->override_bounds().width();
   int height = browser->override_bounds().height();
   Panel* panel = new Panel(browser, gfx::Size(width, height));
-  panel->MoveToStrip(docked_strip_.get());
+  docked_strip_->AddPanel(panel);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_ADDED,
@@ -147,10 +149,11 @@ void PanelManager::CheckFullScreenMode() {
 }
 
 void PanelManager::OnPanelClosed(Panel* panel) {
-  if (num_panels() == 0)
+  if (num_panels() == 1)
     full_screen_mode_timer_.Stop();
 
   drag_controller_->OnPanelClosed(panel);
+  panel->panel_strip()->RemovePanel(panel);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CLOSED,
@@ -183,6 +186,59 @@ void PanelManager::OnWindowAutoResized(Panel* panel,
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
   docked_strip_->ResizePanelWindow(panel, new_size);
   panel->SetAutoResizable(false);
+}
+
+void PanelManager::MovePanelToStrip(Panel* panel,
+                                    PanelStrip::Type new_layout) {
+  DCHECK(panel);
+  PanelStrip* current_strip = panel->panel_strip();
+  DCHECK(current_strip);
+  DCHECK_NE(current_strip->type(), new_layout);
+  current_strip->RemovePanel(panel);
+
+  PanelStrip* target_strip = NULL;
+  switch (new_layout) {
+    case PanelStrip::DETACHED:
+      target_strip = detached_strip_.get();
+      break;
+    case PanelStrip::DOCKED:
+      target_strip = docked_strip_.get();
+      break;
+    case PanelStrip::IN_OVERFLOW:
+      target_strip = overflow_strip_.get();
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  target_strip->AddPanel(panel);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
+      content::Source<Panel>(panel),
+      content::NotificationService::NoDetails());
+}
+
+void PanelManager::MovePanelsToOverflow(Panel* last_panel_to_move) {
+  AutoReset<bool> processing_overflow(&is_processing_overflow_, true);
+  // Move panels to overflow in reverse to maintain their order.
+  Panel* bumped_panel;
+  while ((bumped_panel = docked_strip_->last_panel())) {
+    MovePanelToStrip(bumped_panel, PanelStrip::IN_OVERFLOW);
+    if (bumped_panel == last_panel_to_move)
+      break;
+  }
+  DCHECK(!docked_strip_->panels().empty());
+}
+
+void PanelManager::MovePanelsOutOfOverflowIfCanFit() {
+  if (is_processing_overflow_)
+    return;
+
+  Panel* overflow_panel;
+  while ((overflow_panel = overflow_strip_->first_panel()) &&
+         docked_strip_->CanFitPanel(overflow_panel))
+    MovePanelToStrip(overflow_panel, PanelStrip::DOCKED);
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {

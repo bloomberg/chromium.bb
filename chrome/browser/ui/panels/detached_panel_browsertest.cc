@@ -12,8 +12,7 @@
 class DetachedPanelBrowserTest : public BasePanelBrowserTest {
 };
 
-IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
-                       DISABLED_CheckDetachedPanelProperties) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
 
@@ -27,14 +26,13 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
   // Move panels to detached strip.
   EXPECT_EQ(2, panel_manager->num_panels());
   EXPECT_EQ(0, detached_strip->num_panels());
-  panel1->MoveToStrip(detached_strip);
-  panel2->MoveToStrip(detached_strip);
+  panel_manager->MovePanelToStrip(panel1, PanelStrip::DETACHED);
+  panel_manager->MovePanelToStrip(panel2, PanelStrip::DETACHED);
   EXPECT_EQ(2, panel_manager->num_panels());
   EXPECT_EQ(2, detached_strip->num_panels());
 
-  std::vector<Panel*> panels = panel_manager->panels();
-  EXPECT_EQ(panel1, panels[0]);
-  EXPECT_EQ(panel2, panels[1]);
+  EXPECT_TRUE(detached_strip->HasPanel(panel1));
+  EXPECT_TRUE(detached_strip->HasPanel(panel2));
 
   EXPECT_TRUE(panel1->draggable());
   EXPECT_TRUE(panel2->draggable());
@@ -44,11 +42,10 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DragDetachedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
-  DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
 
   // Create one detached panel.
   Panel* panel = CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 250, 200));
-  panel->MoveToStrip(detached_strip);
+  panel_manager->MovePanelToStrip(panel, PanelStrip::DETACHED);
 
   // Test that the detached panel can be dragged anywhere.
   scoped_ptr<NativePanelTesting> panel_testing(
@@ -101,10 +98,10 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CloseDetachedPanelOnDrag) {
   Panel* panel2 = CreatePanelWithBounds("Panel2", gfx::Rect(0, 0, 110, 110));
   Panel* panel3 = CreatePanelWithBounds("Panel3", gfx::Rect(0, 0, 120, 120));
   Panel* panel4 = CreatePanelWithBounds("Panel4", gfx::Rect(0, 0, 130, 130));
-  panel1->MoveToStrip(detached_strip);
-  panel2->MoveToStrip(detached_strip);
-  panel3->MoveToStrip(detached_strip);
-  panel4->MoveToStrip(detached_strip);
+  panel_manager->MovePanelToStrip(panel1, PanelStrip::DETACHED);
+  panel_manager->MovePanelToStrip(panel2, PanelStrip::DETACHED);
+  panel_manager->MovePanelToStrip(panel3, PanelStrip::DETACHED);
+  panel_manager->MovePanelToStrip(panel4, PanelStrip::DETACHED);
   ASSERT_EQ(4, detached_strip->num_panels());
 
   scoped_ptr<NativePanelTesting> panel1_testing(

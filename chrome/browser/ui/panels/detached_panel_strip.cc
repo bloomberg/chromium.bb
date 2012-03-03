@@ -34,12 +34,15 @@ void DetachedPanelStrip::RefreshLayout() {
 }
 
 void DetachedPanelStrip::AddPanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_NE(this, panel->panel_strip());
+  panel->set_panel_strip(this);
   panels_.insert(panel);
 }
 
-bool DetachedPanelStrip::RemovePanel(Panel* panel) {
-  return panels_.erase(panel) != 0;
+void DetachedPanelStrip::RemovePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  panel->set_panel_strip(NULL);
+  panels_.erase(panel);
 }
 
 void DetachedPanelStrip::CloseAll() {
@@ -75,6 +78,12 @@ void DetachedPanelStrip::MinimizePanel(Panel* panel) {
 void DetachedPanelStrip::RestorePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
   NOTIMPLEMENTED();
+}
+
+bool DetachedPanelStrip::IsPanelMinimized(const Panel* panel) const {
+  DCHECK_EQ(this, panel->panel_strip());
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool DetachedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {

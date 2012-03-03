@@ -254,9 +254,9 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, UpdateDraggableStatus) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanel("panel");
   EXPECT_TRUE(panel->draggable());
-  panel->MoveToStrip(panel_manager->overflow_strip());
+  panel_manager->MovePanelToStrip(panel, PanelStrip::IN_OVERFLOW);
   EXPECT_FALSE(panel->draggable());
-  panel->MoveToStrip(panel_manager->docked_strip());
+  panel_manager->MovePanelToStrip(panel, PanelStrip::DOCKED);
   EXPECT_TRUE(panel->draggable());
   panel->Close();
 }

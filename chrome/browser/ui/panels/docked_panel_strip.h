@@ -43,7 +43,7 @@ class DockedPanelStrip : public PanelStrip,
   // Adds a panel to the strip. The panel may be a newly created panel or one
   // that is transitioning from another grouping of panels.
   virtual void AddPanel(Panel* panel) OVERRIDE;
-  virtual bool RemovePanel(Panel* panel) OVERRIDE;
+  virtual void RemovePanel(Panel* panel) OVERRIDE;
   virtual void CloseAll() OVERRIDE;
   virtual void ResizePanelWindow(
       Panel* panel,
@@ -52,6 +52,7 @@ class DockedPanelStrip : public PanelStrip,
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
+  virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual bool CanShowPanelAsActive(const Panel* panel) const OVERRIDE;
   virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
   virtual void StartDraggingPanel(Panel* panel) OVERRIDE;
@@ -78,6 +79,7 @@ class DockedPanelStrip : public PanelStrip,
   // do NOT have a temporary layout.
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
+  Panel* last_panel() const { return panels_.empty() ? NULL : panels_.back(); }
 
   gfx::Rect display_area() const { return display_area_; }
 
@@ -90,6 +92,9 @@ class DockedPanelStrip : public PanelStrip,
       AutoHidingDesktopBar::Visibility visibility);
 
   void OnFullScreenModeChanged(bool is_full_screen);
+
+  // Returns |true| if panel can fit in the dock strip.
+  bool CanFitPanel(const Panel* panel) const;
 
 #ifdef UNIT_TEST
   int num_temporary_layout_panels() const {
@@ -123,6 +128,12 @@ class DockedPanelStrip : public PanelStrip,
 
   int GetRightMostAvailablePosition() const;
 
+  // Determines position in strip where a panel of |width| will fit.
+  // Other panels in the strip may be moved to overflow to make room.
+  // Returns x position where a panel of |width| wide can fit.
+  // |width| is in screen coordinates.
+  int FitPanelWithWidth(int width);
+
   // Called by AddPanel() after a delay to move a newly created panel from
   // the panel strip to overflow because the panel could not fit
   // within the bounds of the panel strip. New panels are first displayed
@@ -145,10 +156,6 @@ class DockedPanelStrip : public PanelStrip,
 
   int minimized_panel_count_;
   bool are_titlebars_up_;
-
-  // |True| to temporarily prevent refreshing panel layout, e.g. while
-  // moving panels to overflow area to make room for a panel in this strip.
-  bool disable_layout_refresh_;
 
   // Referring to current position in |panels_| where the dragging panel
   // resides.

@@ -68,8 +68,8 @@ void Panel::Initialize(const gfx::Rect& bounds) {
 void Panel::OnNativePanelClosed() {
   if (auto_resizable_)
     native_panel_->GetPanelBrowser()->tabstrip_model()->RemoveObserver(this);
-  panel_strip_->RemovePanel(this);
   manager()->OnPanelClosed(this);
+  DCHECK(!panel_strip_);
 }
 
 PanelManager* Panel::manager() const {
@@ -77,7 +77,7 @@ PanelManager* Panel::manager() const {
 }
 
 bool Panel::draggable() const {
-  return panel_strip()->CanDragPanel(this);
+  return panel_strip_ && panel_strip_->CanDragPanel(this);
 }
 
 const Extension* Panel::GetExtension() const {
@@ -89,7 +89,7 @@ const Extension* Panel::GetExtension() const {
 // being resized vs a change in current display bounds, e.g. from overflow
 // size change. Change this when refactoring panel resize logic.
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
-  if (panel_strip_->type() == PanelStrip::DOCKED &&
+  if (panel_strip_ && panel_strip_->type() == PanelStrip::DOCKED &&
       expansion_state_ == Panel::EXPANDED)
     restored_size_ = bounds.size();
 
@@ -102,7 +102,7 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
 }
 
 void Panel::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
-  if (panel_strip_->type() == PanelStrip::DOCKED &&
+  if (panel_strip_ && panel_strip_->type() == PanelStrip::DOCKED &&
       expansion_state_ == Panel::EXPANDED)
     restored_size_ = bounds.size();
 
@@ -156,20 +156,6 @@ void Panel::SetAppIconVisibility(bool visible) {
   native_panel_->SetPanelAppIconVisibility(visible);
 }
 
-void Panel::MoveToStrip(PanelStrip* new_strip) {
-  DCHECK_NE(panel_strip_, new_strip);
-  if (panel_strip_)
-    panel_strip_->RemovePanel(this);
-
-  panel_strip_ = new_strip;
-  panel_strip_->AddPanel(this);
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
-      content::Source<Panel>(this),
-      content::NotificationService::NoDetails());
-}
-
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
@@ -197,7 +183,7 @@ void Panel::FullScreenModeChanged(bool is_full_screen) {
 }
 
 void Panel::Show() {
-  if (manager()->is_full_screen())
+  if (manager()->is_full_screen() || !panel_strip_)
     return;
 
   if (panel_strip_->CanShowPanelAsActive(this))
@@ -207,7 +193,7 @@ void Panel::Show() {
 }
 
 void Panel::ShowInactive() {
-  if (manager()->is_full_screen())
+  if (manager()->is_full_screen() || !panel_strip_)
     return;
 
   native_panel_->ShowPanelInactive();
@@ -225,6 +211,9 @@ void Panel::Close() {
 }
 
 void Panel::Activate() {
+  if (!panel_strip_)
+    return;
+
   panel_strip_->ActivatePanel(this);
   native_panel_->ActivatePanel();
 }
@@ -238,7 +227,7 @@ bool Panel::IsActive() const {
 }
 
 void Panel::FlashFrame(bool flash) {
-  if (IsDrawingAttention() == flash)
+  if (IsDrawingAttention() == flash || !panel_strip_)
     return;
 
   // Don't draw attention for an active panel.
@@ -323,9 +312,7 @@ bool Panel::IsMaximized() const {
 }
 
 bool Panel::IsMinimized() const {
-  PanelStrip::Type strip_type = panel_strip_->type();
-  return strip_type == PanelStrip::IN_OVERFLOW ||
-      (strip_type == PanelStrip::DOCKED && expansion_state_ != EXPANDED);
+  return !panel_strip_ || panel_strip()->IsPanelMinimized(this);
 }
 
 void Panel::Maximize() {
@@ -333,11 +320,13 @@ void Panel::Maximize() {
 }
 
 void Panel::Minimize() {
-  panel_strip_->MinimizePanel(this);
+  if (panel_strip_)
+    panel_strip_->MinimizePanel(this);
 }
 
 void Panel::Restore() {
-  panel_strip_->RestorePanel(this);
+  if (panel_strip_)
+    panel_strip_->RestorePanel(this);
 }
 
 void Panel::EnterFullscreen(

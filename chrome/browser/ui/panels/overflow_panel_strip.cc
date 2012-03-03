@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/panels/overflow_panel_strip.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/panels/panel_overflow_indicator.h"
@@ -82,7 +81,9 @@ void OverflowPanelStrip::UpdateCurrentWidth() {
 void OverflowPanelStrip::AddPanel(Panel* panel) {
   // TODO(jianli): consider using other container to improve the perf for
   // inserting to the front. http://crbug.com/106222
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_NE(this, panel->panel_strip());
+  panel->set_panel_strip(this);
+
   // Newly created panels that were temporarily in the panel strip
   // are added to the back of the overflow, whereas panels that are
   // bumped from the panel strip by other panels go to the front
@@ -115,14 +116,16 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
   }
 }
 
-bool OverflowPanelStrip::RemovePanel(Panel* panel) {
+void OverflowPanelStrip::RemovePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  panel->set_panel_strip(NULL);
+
   size_t index = 0;
   Panels::iterator iter = panels_.begin();
   for (; iter != panels_.end(); ++iter, ++index)
     if (*iter == panel)
       break;
-  if (iter == panels_.end())
-    return false;
+  DCHECK(iter != panels_.end());
 
   panels_.erase(iter);
   DoRefresh(index, panels_.size() - 1);
@@ -136,8 +139,6 @@ bool OverflowPanelStrip::RemovePanel(Panel* panel) {
     overflow_indicator_.reset();
   else
     UpdateOverflowIndicatorCount();
-
-  return true;
 }
 
 void OverflowPanelStrip::CloseAll() {
@@ -164,9 +165,8 @@ void OverflowPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
 void OverflowPanelStrip::ActivatePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
   // Activating an overflow panel moves it to the docked panel strip.
-  PanelStrip* docked_strip = panel_manager_->docked_strip();
-  panel->MoveToStrip(docked_strip);
-  docked_strip->ActivatePanel(panel);
+  panel_manager_->MovePanelToStrip(panel, PanelStrip::DOCKED);
+  panel->panel_strip()->ActivatePanel(panel);
 }
 
 void OverflowPanelStrip::MinimizePanel(Panel* panel) {
@@ -176,9 +176,13 @@ void OverflowPanelStrip::MinimizePanel(Panel* panel) {
 
 void OverflowPanelStrip::RestorePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
-  PanelStrip* docked_strip = panel_manager_->docked_strip();
-  panel->MoveToStrip(docked_strip);
-  docked_strip->RestorePanel(panel);
+  panel_manager_->MovePanelToStrip(panel, PanelStrip::DOCKED);
+  panel->panel_strip()->RestorePanel(panel);
+}
+
+bool OverflowPanelStrip::IsPanelMinimized(const Panel* panel) const {
+  // All overflow panels are considered minimized.
+  return true;
 }
 
 bool OverflowPanelStrip::CanShowPanelAsActive(const Panel* panel) const {

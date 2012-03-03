@@ -36,8 +36,7 @@ class PanelStrip {
 
   // Removes |panel| from the collection of panels. Invoked asynchronously
   // after a panel has been closed.
-  // Returns |false| if the panel is not in the strip.
-  virtual bool RemovePanel(Panel* panel) = 0;
+  virtual void RemovePanel(Panel* panel) = 0;
 
   // Closes all panels in the collection. Panels will be removed after closing.
   virtual void CloseAll() = 0;
@@ -61,6 +60,8 @@ class PanelStrip {
   // Updates the display to show |panel| as  minimized/restored.
   virtual void MinimizePanel(Panel* panel) = 0;
   virtual void RestorePanel(Panel* panel) = 0;
+
+  virtual bool IsPanelMinimized(const Panel* panel) const = 0;
 
   // Returns true if |panel| can be shown as active.
   virtual bool CanShowPanelAsActive(const Panel* panel) const = 0;

@@ -221,9 +221,8 @@ class Panel : public BrowserWindow,
   // May be NULL if panel is newly created and has not been positioned yet.
   PanelStrip* panel_strip() const { return panel_strip_; }
 
-  // Moves the panel to the |new_strip|, removing the panel from its
-  // current strip.
-  void MoveToStrip(PanelStrip* new_strip);
+  // Sets the current panel strip that contains this panel.
+  void set_panel_strip(PanelStrip* new_strip) { panel_strip_ = new_strip; }
 
   ExpansionState expansion_state() const { return expansion_state_; }
   ExpansionState old_expansion_state() const { return old_expansion_state_; }

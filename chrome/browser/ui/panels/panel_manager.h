@@ -13,6 +13,7 @@
 #include "base/timer.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
+#include "chrome/browser/ui/panels/panel_strip.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -60,6 +61,15 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
   // Resizes the panel. Explicitly setting the panel size is not allowed
   // for panels that are auto-sized.
   void ResizePanel(Panel* panel, const gfx::Size& new_size);
+
+  // Moves the |panel| to a different type of panel strip.
+  void MovePanelToStrip(Panel* panel, PanelStrip::Type new_layout);
+
+  // Move all panels up to, and including, the |last_panel_to_move| to overflow.
+  void MovePanelsToOverflow(Panel* last_panel_to_move);
+
+  // Moves as many panels out of overflow as space allows.
+  void MovePanelsOutOfOverflowIfCanFit();
 
   // Returns true if we should bring up the titlebars, given the current mouse
   // point.
@@ -210,6 +220,10 @@ class PanelManager : public AutoHidingDesktopBar::Observer {
 
   // True if current active app is in full screen mode.
   bool is_full_screen_;
+
+  // True only while moving panels to overflow. Used to prevent moving panels
+  // out of overflow while in the process of moving panels to overflow.
+  bool is_processing_overflow_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };

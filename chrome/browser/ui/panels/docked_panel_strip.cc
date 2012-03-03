@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/panels/overflow_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -59,7 +58,6 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       panel_manager_(panel_manager),
       minimized_panel_count_(0),
       are_titlebars_up_(false),
-      disable_layout_refresh_(false),
       delayed_titlebar_action_(NO_ACTION),
       titlebar_action_factory_(this) {
   dragging_panel_current_iterator_ = dragging_panel_original_iterator_ =
@@ -86,9 +84,10 @@ void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
 }
 
 void DockedPanelStrip::AddPanel(Panel* panel) {
-  DCHECK_EQ(this, panel->panel_strip());
+  DCHECK_NE(this, panel->panel_strip());
+  panel->set_panel_strip(this);
 
-  // Always update limits, even for exiting panels, in case the maximums changed
+  // Always update limits, even on existing panels, in case the limits changed
   // while panel was out of the strip.
   int max_panel_width = GetMaxPanelWidth();
   int max_panel_height = GetMaxPanelHeight();
@@ -100,16 +99,7 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
   int width = restored_size.width();
 
   if (panel->initialized()) {
-    // Bump panels in the strip to make room for this panel.
-    // Prevent layout refresh when panel is removed from this strip.
-    disable_layout_refresh_ = true;
-    PanelStrip* overflow_strip = panel_manager_->overflow_strip();
-    int x;
-    while ((x = GetRightMostAvailablePosition() - width) < display_area_.x()) {
-      DCHECK(!panels_.empty());
-      panels_.back()->MoveToStrip(overflow_strip);
-    }
-    disable_layout_refresh_ = false;
+    int x = FitPanelWithWidth(width);
 
     Panel::ExpansionState expansion_state_to_restore;
     if (panel->expansion_state() == Panel::EXPANDED) {
@@ -124,7 +114,6 @@ void DockedPanelStrip::AddPanel(Panel* panel) {
       }
       IncrementMinimizedPanels();
     }
-
     int y =
         GetBottomPositionForExpansionState(expansion_state_to_restore) - height;
     panel->SetPanelBounds(gfx::Rect(x, y, width, height));
@@ -203,45 +192,43 @@ int DockedPanelStrip::GetRightMostAvailablePosition() const {
       (panels_.back()->GetBounds().x() - kPanelsHorizontalSpacing);
 }
 
-bool DockedPanelStrip::RemovePanel(Panel* panel) {
-  if (panel->has_temporary_layout()) {
-    panels_in_temporary_layout_.erase(panel);
-    return true;
-  }
-
-  Panels::iterator iter = find(panels_.begin(), panels_.end(), panel);
-  if (iter == panels_.end())
-    return false;
+void DockedPanelStrip::RemovePanel(Panel* panel) {
+  DCHECK_EQ(this, panel->panel_strip());
+  panel->set_panel_strip(NULL);
 
   if (panel->expansion_state() != Panel::EXPANDED)
     DecrementMinimizedPanels();
 
-  // Removing an element from the list will invalidate the iterator that refers
-  // to it. So we need to check if the dragging panel iterators are affected.
-  bool update_original_dragging_iterator_after_erase = false;
-  if (dragging_panel_original_iterator_ != panels_.end()) {
-    if (dragging_panel_current_iterator_ == iter) {
-      // If the dragging panel is being removed, set both dragging iterators to
-      // the end of the list.
-      dragging_panel_current_iterator_ = dragging_panel_original_iterator_ =
-          panels_.end();
-    } else if (dragging_panel_original_iterator_ == iter) {
-      // If |dragging_panel_original_iterator_| refers to the element being
-      // removed, set the flag so that the iterator can be updated to next
-      // element.
-      update_original_dragging_iterator_after_erase = true;
-    }
+  if (panel->has_temporary_layout()) {
+    panels_in_temporary_layout_.erase(panel);
+    return;
   }
 
-  iter = panels_.erase(iter);
+  // Removing an element from the list will invalidate the iterator that refers
+  // to it. We need to update the iterator in that case.
+  DCHECK(dragging_panel_current_iterator_ == panels_.end() ||
+         *dragging_panel_current_iterator_ != panel);
+  bool update_iterator_after_erase =
+      (dragging_panel_original_iterator_ != panels_.end() &&
+       *dragging_panel_original_iterator_ == panel);
 
-  if (update_original_dragging_iterator_after_erase)
-    dragging_panel_original_iterator_ = iter;
-
-  if (!disable_layout_refresh_)
+  // Optimize for the common case of removing the last panel.
+  DCHECK(!panels_.empty());
+  if (panels_.back() == panel) {
+    panels_.pop_back();
+    if (update_iterator_after_erase)
+      dragging_panel_original_iterator_ = panels_.end();
+    // No need to refresh layout as the remaining panels are unaffected.
+    // Just check if other panels can now fit in the freed up space.
+    panel_manager_->MovePanelsOutOfOverflowIfCanFit();
+  } else {
+    Panels::iterator iter = find(panels_.begin(), panels_.end(), panel);
+    DCHECK(iter != panels_.end());
+    iter = panels_.erase(iter);
+    if (update_iterator_after_erase)
+      dragging_panel_original_iterator_ = iter;
     RefreshLayout();
-
-  return true;
+  }
 }
 
 bool DockedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
@@ -441,6 +428,10 @@ void DockedPanelStrip::MinimizePanel(Panel* panel) {
 void DockedPanelStrip::RestorePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
   panel->SetExpansionState(Panel::EXPANDED);
+}
+
+bool DockedPanelStrip::IsPanelMinimized(const Panel* panel) const {
+  return panel->expansion_state() != Panel::EXPANDED;
 }
 
 void DockedPanelStrip::IncrementMinimizedPanels() {
@@ -680,6 +671,29 @@ void DockedPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
   }
 }
 
+bool DockedPanelStrip::CanFitPanel(const Panel* panel) const {
+  int width = panel->GetRestoredBounds().width();
+  return GetRightMostAvailablePosition() - width >= display_area_.x();
+}
+
+int DockedPanelStrip::FitPanelWithWidth(int width) {
+  int x = GetRightMostAvailablePosition() - width;
+  if (x < display_area_.x()) {
+    // Insufficient space for the requested width. Bump panels to overflow.
+    Panel* last_panel_to_send_to_overflow;
+    for (Panels::reverse_iterator iter = panels_.rbegin();
+         iter != panels_.rend(); ++iter) {
+      last_panel_to_send_to_overflow = *iter;
+      x = last_panel_to_send_to_overflow->GetRestoredBounds().right() - width;
+      if (x >= display_area_.x()) {
+        panel_manager_->MovePanelsToOverflow(last_panel_to_send_to_overflow);
+        break;
+      }
+    }
+  }
+  return x;
+}
+
 void DockedPanelStrip::RefreshLayout() {
   int rightmost_position = StartingRightPosition();
 
@@ -706,40 +720,16 @@ void DockedPanelStrip::RefreshLayout() {
 
   // Add/remove panels from/to overflow. A change in work area or the
   // resize/removal of a panel may affect how many panels fit in the strip.
-  OverflowPanelStrip* overflow_strip = panel_manager_->overflow_strip();
-  if (panel_iter != panels_.end()) {
-    // Prevent layout refresh when panel is removed from this strip.
-    disable_layout_refresh_ = true;
-
-    // Keep track of panels to move to overflow in a separate storage since
-    // removing it from the list will invalidate the iterator.
-    std::vector<Panel*> panels_to_move_to_overflow;
-    for (; panel_iter != panels_.end(); ++panel_iter)
-      panels_to_move_to_overflow.push_back(*panel_iter);
-
-    // Move panels to overflow in reverse to maintain their order.
-    for (std::vector<Panel*>::reverse_iterator iter =
-             panels_to_move_to_overflow.rbegin();
-         iter != panels_to_move_to_overflow.rend(); ++iter) {
-      (*iter)->MoveToStrip(overflow_strip);
-    }
-
-    disable_layout_refresh_ = false;
-  } else {
-    // Attempt to add more panels from overflow to the strip.
-    Panel* overflow_panel;
-    while ((overflow_panel = overflow_strip->first_panel()) &&
-           GetRightMostAvailablePosition() >=
-               display_area_.x() + overflow_panel->restored_size().width()) {
-      overflow_panel->MoveToStrip(this);
-    }
-  }
+  if (panel_iter != panels_.end())
+    panel_manager_->MovePanelsToOverflow(*panel_iter);
+  else
+    panel_manager_->MovePanelsOutOfOverflowIfCanFit();
 }
 
 void DockedPanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
   if (panels_in_temporary_layout_.erase(panel)) {
       DCHECK(panel->has_temporary_layout());
-      panel->MoveToStrip(panel_manager_->overflow_strip());
+      panel_manager_->MovePanelToStrip(panel, PanelStrip::IN_OVERFLOW);
   }
 }
 
