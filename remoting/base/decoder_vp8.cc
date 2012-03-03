@@ -121,6 +121,15 @@ void DecoderVp8::RenderFrame(const SkISize& view_size,
                              SkRegion* output_region) {
   SkIRect source_clip = SkIRect::MakeWH(last_image_->d_w, last_image_->d_h);
 
+  // ScaleYUVToRGB32WithRect doesn't support up-scaling, and our web-app never
+  // intentionally up-scales, so if we see up-scaling (e.g. during host resize
+  // or if the user applies page zoom) just don't render anything.
+  // TODO(wez): Remove this hack when ScaleYUVToRGB32WithRect can up-scale.
+  if (source_clip.width() < view_size.width() ||
+      source_clip.height() < view_size.height()) {
+    return;
+  }
+
   for (SkRegion::Iterator i(updated_region_); !i.done(); i.next()) {
     // Determine the scaled area affected by this rectangle changing.
     SkIRect rect = i.rect();

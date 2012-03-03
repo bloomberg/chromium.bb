@@ -139,19 +139,12 @@ void PepperView::SetConnectionState(protocol::ConnectionToHost::State state,
   }
 }
 
-void PepperView::SetView(const SkISize& view_size,
-                         const SkIRect& clip_area) {
+void PepperView::SetView(const SkISize& view_size, const SkIRect& clip_area) {
   bool view_changed = false;
 
-  // TODO(alexeypa): Prevent upscaling because the YUV-to-RGB conversion code
-  // currently does not support upscaling. Once it does, this code be removed.
-  SkISize size = SkISize::Make(
-                     std::min(view_size.width(), source_size_.width()),
-                     std::min(view_size.height(), source_size_.height()));
-
-  if (view_size_ != size) {
+  if (view_size_ != view_size) {
     view_changed = true;
-    view_size_ = size;
+    view_size_ = view_size;
 
     pp::Size pp_size = pp::Size(view_size_.width(), view_size_.height());
     graphics2d_ = pp::Graphics2D(instance_, pp_size, true);
