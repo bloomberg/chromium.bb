@@ -1,8 +1,4 @@
-/*
- * FNV1A64 Hash
- * http://www.isthe.com/chongo/tech/comp/fnv/index.html#FNV-param
- *
- * ***** BEGIN LICENSE BLOCK *****
+/* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
  * The contents of this file are subject to the Mozilla Public License Version
@@ -18,12 +14,11 @@
  * The Original Code is the Netscape security libraries.
  *
  * The Initial Developer of the Original Code is
- * Netscape Communications Corporation.
- * Portions created by the Initial Developer are Copyright (C) 1994-2000
+ * Red Hat, Inc
+ * Portions created by the Initial Developer are Copyright (C) 2009
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Adam Langley, Google Inc.
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -38,35 +33,34 @@
  * the terms of any one of the MPL, the GPL or the LGPL.
  *
  * ***** END LICENSE BLOCK ***** */
+#include "prerror.h"
+#include "sslerr.h"
+#include "prinit.h"
+#include "nssutil.h"
+#include "ssl.h"
 
-/* $Id: fnv1a64.c,v 1.0 2010/08/09 13:00:00 agl%google.com Exp $ */
+#define ER3(name, value, str) {#name, str},
 
-#include "prtypes.h"
-#include "prnetdb.h"
+static const struct PRErrorMessage ssltext[] = {
+#include "SSLerrs.h"
+    {0,0}
+};
 
-/* Older versions of Visual C++ don't support the 'ull' suffix. */
-#ifdef _MSC_VER
-static const PRUint64 FNV1A64_OFFSET_BASIS = 14695981039346656037ui64;
-static const PRUint64 FNV1A64_PRIME = 1099511628211ui64;
-#else
-static const PRUint64 FNV1A64_OFFSET_BASIS = 14695981039346656037ull;
-static const PRUint64 FNV1A64_PRIME = 1099511628211ull;
-#endif
+static const struct PRErrorTable ssl_et = {
+    ssltext, "sslerr", SSL_ERROR_BASE,
+        (sizeof ssltext)/(sizeof ssltext[0])
+};
 
-void FNV1A64_Init(PRUint64* digest) {
-    *digest = FNV1A64_OFFSET_BASIS;
+static PRStatus
+ssl_InitializePRErrorTableOnce(void) {
+    return PR_ErrorInstallTable(&ssl_et);
 }
 
-void FNV1A64_Update(PRUint64* digest, const unsigned char *data,
-                    unsigned int length) {
-    unsigned int i;
+static PRCallOnceType once;
 
-    for (i = 0; i < length; i++) {
-        *digest ^= data[i];
-        *digest *= FNV1A64_PRIME;
-    }
-}
-
-void FNV1A64_Final(PRUint64 *digest) {
-    *digest = PR_htonll(*digest);
+SECStatus
+ssl_InitializePRErrorTable(void)
+{
+    return (PR_SUCCESS == PR_CallOnce(&once, ssl_InitializePRErrorTableOnce))
+		? SECSuccess : SECFailure;
 }
