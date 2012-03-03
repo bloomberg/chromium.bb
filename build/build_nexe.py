@@ -163,9 +163,7 @@ class Builder(object):
       ecode = subprocess.call(cmd_line)
     except Exception, err:
       ErrOut('\n%s\nFAILED: %s\n\n' % (' '.join(cmd_line), str(err)))
-    if ecode == 0:
-      print '    nacl-%s %s' % (os.path.basename(cmd_line[0]), out)
-    else:
+    if ecode != 0:
       print 'Err %d: nacl-%s %s' % (ecode, os.path.basename(cmd_line[0]), out)
       print '>>%s<<' % '<< >>'.join(cmd_line)
     return ecode
