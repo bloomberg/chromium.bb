@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -31,6 +32,9 @@ class ASH_EXPORT SystemTray : public views::View,
 
   // Shows details of a particular item.
   void ShowDetailedView(SystemTrayItem* item);
+
+  // Updates the items when the login status of the system changes.
+  void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
   const std::vector<SystemTrayItem*>& items() const { return items_; }
 

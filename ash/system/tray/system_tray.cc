@@ -4,8 +4,11 @@
 
 #include "ash/system/tray/system_tray.h"
 
+#include "ash/shell.h"
 #include "ash/shell/panel_window.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/user/login_status.h"
 #include "ash/wm/shadow_types.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -50,11 +53,16 @@ class SystemTrayBubble : public views::BubbleDelegateView {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
           0, 0, 1));
 
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    ash::user::LoginStatus login_status = delegate->GetUserLoginStatus();
     for (std::vector<ash::SystemTrayItem*>::iterator it = items_.begin();
         it != items_.end();
         ++it) {
-      views::View* view = detailed_ ? (*it)->CreateDetailedView() :
-                                      (*it)->CreateDefaultView();
+      views::View* view = detailed_ ? (*it)->CreateDetailedView(login_status) :
+                                      (*it)->CreateDefaultView(login_status);
+      if (!view)
+        continue;
       if (it != items_.begin())
         view->set_border(views::Border::CreateSolidSidedBorder(
               1, 0, 0, 0, SkColorSetARGB(25, 0, 0, 0)));
@@ -95,7 +103,8 @@ SystemTray::~SystemTray() {
 void SystemTray::AddTrayItem(SystemTrayItem* item) {
   items_.push_back(item);
 
-  views::View* tray_item = item->CreateTrayView();
+  SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+  views::View* tray_item = item->CreateTrayView(delegate->GetUserLoginStatus());
   if (tray_item) {
     AddChildViewAt(tray_item, 0);
     PreferredSizeChanged();
@@ -114,6 +123,27 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item) {
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
   ShowItems(items, true);
+}
+
+void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
+  if (popup_)
+    popup_->CloseNow();
+
+  for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
+      it != items_.end();
+      ++it) {
+    (*it)->DestroyTrayView();
+  }
+  RemoveAllChildViews(true);
+
+  for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
+      it != items_.end();
+      ++it) {
+    views::View* view = (*it)->CreateTrayView(login_status);
+    if (view)
+      AddChildViewAt(view, 0);
+  }
+  PreferredSizeChanged();
 }
 
 void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {

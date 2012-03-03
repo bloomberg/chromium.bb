@@ -18,6 +18,9 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -25,13 +28,18 @@ namespace {
 
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public AudioHandler::VolumeObserver,
-                           public PowerManagerClient::Observer {
+                           public PowerManagerClient::Observer,
+                           public content::NotificationObserver {
  public:
   explicit SystemTrayDelegate(ash::SystemTray* tray) : tray_(tray) {
     AudioHandler::GetInstance()->AddVolumeObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
         PowerManagerClient::UPDATE_USER);
+
+    registrar_.Add(this,
+                   chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                   content::NotificationService::AllSources());
   }
 
   virtual ~SystemTrayDelegate() {
@@ -52,6 +60,17 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual const SkBitmap& GetUserImage() OVERRIDE {
     return UserManager::Get()->logged_in_user().image();
+  }
+
+  virtual ash::user::LoginStatus GetUserLoginStatus() OVERRIDE {
+    UserManager* manager = UserManager::Get();
+    if (!manager->user_is_logged_in())
+      return ash::user::LOGGED_IN_NONE;
+    if (manager->current_user_is_owner())
+      return ash::user::LOGGED_IN_OWNER;
+    if (manager->IsLoggedInAsGuest())
+      return ash::user::LOGGED_IN_GUEST;
+    return ash::user::LOGGED_IN_USER;
   }
 
   virtual void ShowSettings() OVERRIDE {
@@ -92,8 +111,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
  private:
-  ash::SystemTray* tray_;
-
   // Overridden from AudioHandler::VolumeObserver.
   virtual void OnVolumeChanged() OVERRIDE {
     float level = AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
@@ -114,6 +131,23 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // TODO(sad): Override more from PowerManagerClient::Observer here (e.g.
   // PowerButtonStateChanged etc.).
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    switch (type) {
+      case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
+        tray_->UpdateAfterLoginStatusChange(GetUserLoginStatus());
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+  }
+
+  ash::SystemTray* tray_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);
 };

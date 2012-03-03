@@ -85,16 +85,16 @@ TrayBrightness::TrayBrightness() {}
 
 TrayBrightness::~TrayBrightness() {}
 
-views::View* TrayBrightness::CreateTrayView() {
+views::View* TrayBrightness::CreateTrayView(user::LoginStatus status) {
   return NULL;
 }
 
-views::View* TrayBrightness::CreateDefaultView() {
+views::View* TrayBrightness::CreateDefaultView(user::LoginStatus status) {
   brightness_view_.reset(new tray::BrightnessView);
   return brightness_view_.get();
 }
 
-views::View* TrayBrightness::CreateDetailedView() {
+views::View* TrayBrightness::CreateDetailedView(user::LoginStatus status) {
   brightness_view_.reset(new tray::BrightnessView);
   return brightness_view_.get();
 }

@@ -148,16 +148,16 @@ TrayVolume::TrayVolume() {
 TrayVolume::~TrayVolume() {
 }
 
-views::View* TrayVolume::CreateTrayView() {
+views::View* TrayVolume::CreateTrayView(user::LoginStatus status) {
   return NULL;
 }
 
-views::View* TrayVolume::CreateDefaultView() {
+views::View* TrayVolume::CreateDefaultView(user::LoginStatus status) {
   volume_view_.reset(new tray::VolumeView);
   return volume_view_.get();
 }
 
-views::View* TrayVolume::CreateDetailedView() {
+views::View* TrayVolume::CreateDetailedView(user::LoginStatus status) {
   volume_view_.reset(new tray::VolumeView);
   return volume_view_.get();
 }

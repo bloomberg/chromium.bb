@@ -73,11 +73,14 @@ TraySettings::TraySettings() {}
 
 TraySettings::~TraySettings() {}
 
-views::View* TraySettings::CreateTrayView() {
+views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
   return NULL;
 }
 
-views::View* TraySettings::CreateDefaultView() {
+views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
+  if (status == user::LOGGED_IN_NONE)
+    return NULL;
+
   views::View* container = new views::View;
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5);
@@ -89,7 +92,7 @@ views::View* TraySettings::CreateDefaultView() {
   return container;
 }
 
-views::View* TraySettings::CreateDetailedView() {
+views::View* TraySettings::CreateDetailedView(user::LoginStatus status) {
   NOTIMPLEMENTED();
   return NULL;
 }

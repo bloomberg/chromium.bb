@@ -18,9 +18,9 @@ class TraySettings : public SystemTrayItem {
 
  private:
   // Overridden from SystemTrayItem
-  virtual views::View* CreateTrayView() OVERRIDE;
-  virtual views::View* CreateDefaultView() OVERRIDE;
-  virtual views::View* CreateDetailedView() OVERRIDE;
+  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;

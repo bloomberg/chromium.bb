@@ -22,7 +22,7 @@
 #include "ash/system/power/tray_power_date.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray_user.h"
+#include "ash/system/user/tray_user.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/base_layout_manager.h"
@@ -203,6 +203,10 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
   virtual const SkBitmap& GetUserImage() OVERRIDE {
     return null_image_;
+  }
+
+  virtual user::LoginStatus GetUserLoginStatus() OVERRIDE {
+    return user::LOGGED_IN_USER;
   }
 
   virtual void ShowSettings() OVERRIDE {

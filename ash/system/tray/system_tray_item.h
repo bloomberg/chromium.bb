@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -23,15 +24,15 @@ class ASH_EXPORT SystemTrayItem {
 
   // Returns a view to be displayed in the system tray. If this returns NULL,
   // then this item is not displayed in the tray.
-  virtual views::View* CreateTrayView() = 0;
+  virtual views::View* CreateTrayView(user::LoginStatus status) = 0;
 
   // Returns a view for the item to be displayed in the list. This view can be
   // displayed with a number of other tray items, so this should not be too
   // big.
-  virtual views::View* CreateDefaultView() = 0;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) = 0;
 
   // Returns a detailed view for the item. This view is displayed standalone.
-  virtual views::View* CreateDetailedView() = 0;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) = 0;
 
   // These functions are called when the corresponding view item is about to be
   // removed. An item should do appropriate cleanup in these functions.

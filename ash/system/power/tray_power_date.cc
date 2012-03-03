@@ -234,7 +234,7 @@ TrayPowerDate::TrayPowerDate()
 TrayPowerDate::~TrayPowerDate() {
 }
 
-views::View* TrayPowerDate::CreateTrayView() {
+views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
   date_tray_.reset(new tray::DateView(base::k24HourClock,
                                       tray::DateView::TIME));
   date_tray_->SetFont(date_tray_->font().DeriveFont(-1, gfx::Font::BOLD));
@@ -252,7 +252,7 @@ views::View* TrayPowerDate::CreateTrayView() {
   return container;
 }
 
-views::View* TrayPowerDate::CreateDefaultView() {
+views::View* TrayPowerDate::CreateDefaultView(user::LoginStatus status) {
   date_.reset(new tray::DateView(base::k24HourClock,
                                  tray::DateView::DATE));
   power_.reset(new tray::PowerPopupView());
@@ -269,7 +269,7 @@ views::View* TrayPowerDate::CreateDefaultView() {
   return container;
 }
 
-views::View* TrayPowerDate::CreateDetailedView() {
+views::View* TrayPowerDate::CreateDetailedView(user::LoginStatus status) {
   return NULL;
 }
 

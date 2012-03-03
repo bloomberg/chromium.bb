@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TRAY_USER_H_
-#define ASH_SYSTEM_TRAY_USER_H_
+#ifndef ASH_SYSTEM_USER_TRAY_USER_H_
+#define ASH_SYSTEM_USER_TRAY_USER_H_
 #pragma once
 
 #include "ash/system/tray/system_tray_item.h"
@@ -18,9 +18,9 @@ class TrayUser : public SystemTrayItem {
 
  private:
   // Overridden from SystemTrayItem
-  virtual views::View* CreateTrayView() OVERRIDE;
-  virtual views::View* CreateDefaultView() OVERRIDE;
-  virtual views::View* CreateDetailedView() OVERRIDE;
+  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
+  virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE;
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
@@ -31,4 +31,4 @@ class TrayUser : public SystemTrayItem {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TRAY_USER_H_
+#endif  // ASH_SYSTEM_USER_TRAY_USER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray_user.h"
+#include "ash/system/user/tray_user.h"
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -65,25 +65,34 @@ class TrayButton : public views::TextButton {
 class UserView : public views::View,
                  public views::ButtonListener {
  public:
-  UserView() {
+  explicit UserView(ash::user::LoginStatus status)
+      : username_(NULL),
+        email_(NULL),
+        shutdown_(NULL),
+        signout_(NULL),
+        lock_(NULL) {
+    CHECK(status != ash::user::LOGGED_IN_NONE);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
           0, 0, 3));
 
-    views::View* user = new views::View;
-    user->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-          14, 5, 0));
-    ash::SystemTrayDelegate* tray = ash::Shell::GetInstance()->tray_delegate();
-    username_ = new views::Label(ASCIIToUTF16(tray->GetUserDisplayName()));
-    username_->SetFont(username_->font().DeriveFont(2));
-    username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    user->AddChildView(username_);
+    if (status != ash::user::LOGGED_IN_GUEST) {
+      views::View* user = new views::View;
+      user->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
+            14, 5, 0));
+      ash::SystemTrayDelegate* tray =
+          ash::Shell::GetInstance()->tray_delegate();
+      username_ = new views::Label(ASCIIToUTF16(tray->GetUserDisplayName()));
+      username_->SetFont(username_->font().DeriveFont(2));
+      username_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      user->AddChildView(username_);
 
-    email_ = new views::Label(ASCIIToUTF16(tray->GetUserEmail()));
-    email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    email_->SetEnabled(false);
-    user->AddChildView(email_);
+      email_ = new views::Label(ASCIIToUTF16(tray->GetUserEmail()));
+      email_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      email_->SetEnabled(false);
+      user->AddChildView(email_);
 
-    AddChildView(user);
+      AddChildView(user);
+    }
 
     views::View* button_container = new views::View;
     views::BoxLayout *layout = new
@@ -95,18 +104,22 @@ class UserView : public views::View,
 
     shutdown_ = new TrayButton(this, bundle.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_SHUT_DOWN));
-    signout_ = new TrayButton(this, bundle.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_SIGN_OUT));
-    lock_ = new TrayButton(this, bundle.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_LOCK));
-    button_container->AddChildView(shutdown_);
-    button_container->AddChildView(signout_);
-    button_container->AddChildView(lock_);
-
     shutdown_->set_border(NULL);
+    button_container->AddChildView(shutdown_);
+
+    signout_ = new TrayButton(this, bundle.GetLocalizedString(
+        status == ash::user::LOGGED_IN_GUEST ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
+                                               IDS_ASH_STATUS_TRAY_SIGN_OUT));
     signout_->set_border(views::Border::CreateSolidSidedBorder(
           0, 1, 0, 1, SkColorSetARGB(25, 0, 0, 0)));
-    lock_->set_border(NULL);
+    button_container->AddChildView(signout_);
+
+    if (status != ash::user::LOGGED_IN_GUEST) {
+      lock_ = new TrayButton(this, bundle.GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_LOCK));
+      button_container->AddChildView(lock_);
+      lock_->set_border(NULL);
+    }
 
     AddChildView(button_container);
   }
@@ -145,18 +158,21 @@ TrayUser::TrayUser() {
 TrayUser::~TrayUser() {
 }
 
-views::View* TrayUser::CreateTrayView() {
+views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   views::ImageView* avatar = new views::ImageView;
-  avatar->SetImage(ash::Shell::GetInstance()->tray_delegate()->GetUserImage());
-  avatar->SetImageSize(gfx::Size(32, 32));
+  if (status == user::LOGGED_IN_USER || status == user::LOGGED_IN_OWNER) {
+    avatar->SetImage(
+        ash::Shell::GetInstance()->tray_delegate()->GetUserImage());
+    avatar->SetImageSize(gfx::Size(32, 32));
+  }
   return avatar;
 }
 
-views::View* TrayUser::CreateDefaultView() {
-  return new UserView;
+views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
+  return status == user::LOGGED_IN_NONE ? NULL : new UserView(status);
 }
 
-views::View* TrayUser::CreateDetailedView() {
+views::View* TrayUser::CreateDetailedView(user::LoginStatus status) {
   return NULL;
 }
 

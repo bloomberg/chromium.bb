@@ -6,6 +6,8 @@
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_DELEGATE_H_
 #pragma once
 
+#include "ash/system/user/login_status.h"
+
 class SkBitmap;
 
 namespace ash {
@@ -18,6 +20,7 @@ class SystemTrayDelegate {
   virtual const std::string GetUserDisplayName() = 0;
   virtual const std::string GetUserEmail() = 0;
   virtual const SkBitmap& GetUserImage() = 0;
+  virtual user::LoginStatus GetUserLoginStatus() = 0;
 
   // Shows settings.
   virtual void ShowSettings() = 0;
