@@ -68,25 +68,10 @@ cr.define('cr.ui.table', function() {
       }
     },
 
-    batchCount_: 0,
-
-    startBatchUpdates: function() {
-      this.batchCount_++;
-    },
-
-    endBatchUpdates: function() {
-      this.batchCount_--;
-      if (this.batchCount_ == 0)
-        this.redraw();
-    },
-
     /**
      * Redraws table header.
      */
     redraw: function() {
-      if (this.batchCount_ != 0)
-        return;
-
       var cm = this.table_.columnModel;
       var dm = this.table_.dataModel;
 

@@ -204,16 +204,6 @@ cr.define('cr.ui', function() {
       this.header_.redraw();
     },
 
-    startBatchUpdates: function() {
-      this.list_.startBatchUpdates();
-      this.header_.startBatchUpdates();
-    },
-
-    endBatchUpdates: function() {
-      this.list_.endBatchUpdates();
-      this.header_.endBatchUpdates();
-    },
-
     /**
      * Resize the table columns.
      */

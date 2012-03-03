@@ -522,26 +522,10 @@ DirectoryModel.prototype = {
     this.dispatchEvent(e);
   },
 
-  /**
-   * Change the state of the model to reflect the specified path (either a
-   * file or directory).
-   *
-   * @param {string} path The root path to use
-   * @param {Function=} opt_loadedCallback Invoked when the entire directory
-   *     has been loaded and any default file selected.
-   * @param {Function=} opt_pathResolveCallback Invoked as soon as the path has
-   *     been resolved, and called with the base and leaf portions of the path
-   *     name, and a flag indicating if the entry exists.
-   */
-  setupPath: function(path, opt_loadedCallback, opt_pathResolveCallback) {
+  setupPath: function(path, opt_pathResolveCallback, opt_fileSelectCallback) {
     // Split the dirname from the basename.
     var ary = path.match(/^(?:(.*)\/)?([^\/]*)$/);
-    var autoSelect = function() {
-          this.selectIndex(this.autoSelectIndex_);
-          if (opt_loadedCallback)
-            opt_loadedCallback();
-    }.bind(this);
-
+    var autoSelect = this.selectIndex.bind(this, this.autoSelectIndex_);
     if (!ary) {
       console.warn('Unable to split default path: ' + path);
       this.changeDirectoryEntry_(this.root_, autoSelect, true);
@@ -570,8 +554,8 @@ DirectoryModel.prototype = {
       this.changeDirectoryEntry_(baseDirEntry,
                                  function() {
                                    this.selectEntry(leafEntry.name);
-                                   if (opt_loadedCallback)
-                                     opt_loadedCallback();
+                                   if (opt_fileSelectCallback)
+                                     opt_fileSelectCallback();
                                  }.bind(this),
                                  false /*HACK*/);
       // TODO(kaznacheev): Fix history.replaceState for the File Browser and
@@ -593,11 +577,11 @@ DirectoryModel.prototype = {
                   baseName + '": ' + err);
       if (path != '/' + DirectoryModel.DOWNLOADS_DIRECTORY) {
         // Can't find the provided path, let's go to default one instead.
-        this.setupDefaultPath(opt_loadedCallback);
+        this.setupDefaultPath();
       } else {
         // Well, we can't find the downloads dir. Let's just show something,
         // or we will get an infinite recursion.
-        this.changeDirectory('/', opt_loadedCallback, true);
+        this.changeDirectory('/', undefined, true);
       }
     }.bind(this);
 
@@ -626,10 +610,8 @@ DirectoryModel.prototype = {
     }
   },
 
-  setupDefaultPath: function(opt_callback) {
-    this.getDefaultDirectory_(function(path) {
-      this.setupPath(path, opt_callback);
-    }.bind(this));
+  setupDefaultPath: function() {
+    this.getDefaultDirectory_(this.setupPath.bind(this));
   },
 
   getDefaultDirectory_: function(callback) {
@@ -774,7 +756,7 @@ DirectoryModel.prototype = {
                       onGData, onGDataError);
   },
 
-  updateRoots: function(opt_callback) {
+  updateRoots: function(opt_changeDirectoryTo) {
     var self = this;
     this.resolveRoots_(function(rootEntries) {
       var dm = self.rootsList_;
@@ -782,8 +764,9 @@ DirectoryModel.prototype = {
       dm.splice.apply(dm, args);
 
       self.updateRootsListSelection_();
-      if (opt_callback)
-        opt_callback();
+
+      if (opt_changeDirectoryTo)
+        self.changeDirectory(opt_changeDirectoryTo);
     });
   },
 
