@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
-#include "third_party/libjingle/source/talk/base/byteorder.h"
+#include "third_party/libjingle/overrides/talk/base/byteorder.h"
 
 namespace {
 

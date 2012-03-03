@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "net/base/io_buffer.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/proto/internal.pb.h"
-#include "third_party/libjingle/source/talk/base/byteorder.h"
+#include "third_party/libjingle/overrides/talk/base/byteorder.h"
 
 namespace remoting {
 namespace protocol {
