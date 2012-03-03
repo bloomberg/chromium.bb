@@ -140,10 +140,6 @@ SkShader* CreateFadeShader(const gfx::Rect& text_rect,
                            SkColor color) {
   // Fade alpha of 51/255 corresponds to a fade of 0.2 of the original color.
   const SkColor fade_color = SkColorSetA(color, 51);
-  const SkPoint points[2] = {
-    SkPoint::Make(text_rect.x(), text_rect.y()),
-    SkPoint::Make(text_rect.right(), text_rect.y())
-  };
   std::vector<SkScalar> positions;
   std::vector<SkColor> colors;
 
@@ -161,11 +157,13 @@ SkShader* CreateFadeShader(const gfx::Rect& text_rect,
     colors.push_back(colors.back());
   }
 
-  return SkGradientShader::CreateLinear(&points[0], &colors[0], &positions[0],
-                                        colors.size(),
-                                        SkShader::kClamp_TileMode);
-}
+  SkPoint points[2];
+  points[0].iset(text_rect.x(), text_rect.y());
+  points[1].iset(text_rect.right(), text_rect.y());
 
+  return SkGradientShader::CreateLinear(&points[0], &colors[0], &positions[0],
+      colors.size(), SkShader::kClamp_TileMode);
+}
 
 }  // namespace
 

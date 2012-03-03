@@ -399,18 +399,13 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   } else {
     x = mini_title_animation_->CurrentValueBetween(x1, x2);
   }
+  SkPoint center_point;
+  center_point.iset(x, 0);
+  SkColor colors[2] = { kMiniTitleChangeGradientColor1,
+                        kMiniTitleChangeGradientColor2 };
+  SkShader* shader = SkGradientShader::CreateRadial(center_point,
+      SkIntToScalar(radius), colors, NULL, 2, SkShader::kClamp_TileMode);
   SkPaint paint;
-  SkPoint loc = { SkIntToScalar(x), SkIntToScalar(0) };
-  SkColor colors[2];
-  colors[0] = kMiniTitleChangeGradientColor1;
-  colors[1] = kMiniTitleChangeGradientColor2;
-  SkShader* shader = SkGradientShader::CreateRadial(
-      loc,
-      SkIntToScalar(radius),
-      colors,
-      NULL,
-      2,
-      SkShader::kClamp_TileMode);
   paint.setShader(shader);
   shader->unref();
   hover_canvas.DrawRect(gfx::Rect(x - radius, -radius, radius * 2, radius * 2),

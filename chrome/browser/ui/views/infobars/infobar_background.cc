@@ -24,14 +24,10 @@ InfoBarBackground::~InfoBarBackground() {
 }
 
 void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
-  SkPoint gradient_points[2] = {
-    {SkIntToScalar(0), SkIntToScalar(0)},
-    {SkIntToScalar(0), SkIntToScalar(view->height())}
-  };
-  SkColor gradient_colors[2] = {
-    top_color_,
-    bottom_color_
-  };
+  SkPoint gradient_points[2];
+  gradient_points[0].iset(0, 0);
+  gradient_points[1].iset(0, view->height());
+  SkColor gradient_colors[2] = { top_color_, bottom_color_ };
   SkShader* gradient_shader = SkGradientShader::CreateLinear(
       gradient_points, gradient_colors, NULL, 2, SkShader::kClamp_TileMode);
   SkPaint paint;

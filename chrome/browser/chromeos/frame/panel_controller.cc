@@ -74,8 +74,9 @@ class TitleBackgroundPainter : public views::Painter {
  private:
   // Overridden from views::Painter:
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
-    SkRect rect = { 0, 0, size.width(), size.height() };
     SkPath path;
+    SkRect rect;
+    rect.iset(0, 0, size.width(), size.height());
     SkScalar corners[] = {
         kTitleCornerRadius, kTitleCornerRadius,
         kTitleCornerRadius, kTitleCornerRadius,
@@ -83,17 +84,19 @@ class TitleBackgroundPainter : public views::Painter {
         0, 0
     };
     path.addRoundRect(rect, corners);
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
-    SkPoint p[2] = { {0, 0}, {0, size.height()} };
-    SkColor colors[2] = {kTitleActiveGradientStart, kTitleActiveGradientEnd};
+    SkPoint points[2];
+    points[0].iset(0, 0);
+    points[1].iset(0, size.height());
+    SkColor colors[2] = { kTitleActiveGradientStart, kTitleActiveGradientEnd };
     if (panel_controller_->urgent()) {
       colors[0] = kTitleUrgentGradientStart;
       colors[1] = kTitleUrgentGradientEnd;
     }
     SkShader* s = SkGradientShader::CreateLinear(
-        p, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);
+        points, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setAntiAlias(true);
     paint.setShader(s);
     // Need to unref shader, otherwise never deleted.
     s->unref();
