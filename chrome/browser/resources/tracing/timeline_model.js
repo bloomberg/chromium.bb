@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -502,7 +502,28 @@ cr.define('tracing', function() {
    */
   TimelineModel.registerImporter = function(importerConstructor) {
     importerConstructors.push(importerConstructor);
-  }
+  };
+
+  function TimelineModelEmptyImporter(events) {
+  };
+
+  TimelineModelEmptyImporter.canImport = function(eventData) {
+    if (eventData instanceof Array && eventData.length == 0)
+      return true;
+    if (typeof(eventData) === 'string' || eventData instanceof String) {
+      return eventData.length == 0;
+    }
+    return false;
+  };
+
+  TimelineModelEmptyImporter.prototype = {
+    __proto__: Object.prototype,
+
+    importEvents : function() {
+    }
+  };
+
+  TimelineModel.registerImporter(TimelineModelEmptyImporter);
 
   TimelineModel.prototype = {
     __proto__: cr.EventTarget.prototype,
@@ -787,4 +808,5 @@ cr.define('tracing', function() {
     TimelineCpu: TimelineCpu,
     TimelineModel: TimelineModel
   };
+
 });

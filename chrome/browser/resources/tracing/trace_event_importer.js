@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ cr.define('tracing', function() {
     }
 
     // Might just be an array of events
-    if (eventData instanceof Array && eventData[0].ph)
+    if (eventData instanceof Array && eventData.length && eventData[0].ph)
       return true;
 
     // Might be an object with a traceEvents field in it.
