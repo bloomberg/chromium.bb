@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -63,7 +63,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
             ptr_factory_.GetWeakPtr(),
             false, utterance_id, TTS_EVENT_END, utterance.size(),
             std::string()),
-        0);
+        base::TimeDelta());
   }
 
   void SendEndEventWhenQueueNotEmpty(
@@ -76,7 +76,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
             &MockExtensionTtsPlatformImpl::SendEvent,
             ptr_factory_.GetWeakPtr(),
             true, utterance_id, TTS_EVENT_END, utterance.size(), std::string()),
-        0);
+        base::TimeDelta());
   }
 
   void SendWordEvents(int utterance_id,
@@ -91,7 +91,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
                 ptr_factory_.GetWeakPtr(),
                 false, utterance_id, TTS_EVENT_WORD, i,
                 std::string()),
-            0);
+            base::TimeDelta());
       }
     }
   }
@@ -108,7 +108,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
               &MockExtensionTtsPlatformImpl::SendEvent,
               ptr_factory_.GetWeakPtr(),
               true, utterance_id, event_type, char_index, message),
-          100);
+          base::TimeDelta::FromMilliseconds(100));
       return;
     }
 
