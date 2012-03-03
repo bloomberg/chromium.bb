@@ -149,8 +149,8 @@ static void NTAPI on_tls_callback(HINSTANCE h, DWORD dwReason, PVOID pv) {
 
 #ifdef _MSC_VER
 
-// extern "C" suppresses C++ name mangling so we know the symbol names
-// for the linker /INCLUDE:symbol pragmas above.
+// extern "C" suppresses C++ name mangling so we know the symbol names for the
+// linker /INCLUDE:symbol pragmas above.
 extern "C" {
 // This tells the linker to run these functions.
 #pragma data_seg(push, old_seg)
@@ -218,6 +218,10 @@ extern "C" int perftools_pthread_once(pthread_once_t *once_control,
 
 // -----------------------------------------------------------------------
 // These functions replace system-alloc.cc
+
+// The current system allocator. Because we don't link with system-alloc.cc,
+// we need to define our own.
+SysAllocator* sys_alloc = NULL;
 
 // This is mostly like MmapSysAllocator::Alloc, except it does these weird
 // munmap's in the middle of the page, which is forbidden in windows.
@@ -333,9 +337,6 @@ bool RegisterSystemAllocator(SysAllocator *allocator, int priority) {
 void DumpSystemAllocatorStats(TCMalloc_Printer* printer) {
   // We don't dump stats on windows, right now
 }
-
-// The current system allocator
-SysAllocator* sys_alloc = NULL;
 
 
 // -----------------------------------------------------------------------

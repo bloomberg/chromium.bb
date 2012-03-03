@@ -33,7 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include "gperftools/malloc_extension.h"
+#include "google/malloc_extension.h"
 #include "base/logging.h"
 
 using std::vector;
@@ -75,10 +75,7 @@ static int test_counter = 0;    // incremented every time the macro is called
 // This flag won't be compiled in in opt mode.
 DECLARE_int32(max_free_queue_size);
 
-// Test match as well as mismatch rules.  But do not test on OS X; on
-// OS X the OS converts new/new[] to malloc before it gets to us, so
-// we are unable to catch these mismatch errors.
-#ifndef __APPLE__
+// Test match as well as mismatch rules:
 TEST(DebugAllocationTest, DeallocMismatch) {
   // malloc can be matched only by free
   // new can be matched only by delete and delete(nothrow)
@@ -135,7 +132,6 @@ TEST(DebugAllocationTest, DeallocMismatch) {
     ::operator delete[](y, std::nothrow);
   }
 }
-#endif  // #ifdef OS_MACOSX
 
 TEST(DebugAllocationTest, DoubleFree) {
   int* pint = new int;

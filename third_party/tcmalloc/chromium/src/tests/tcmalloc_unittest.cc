@@ -88,57 +88,24 @@
 #include <new>
 #include "base/logging.h"
 #include "base/simple_mutex.h"
-#include "gperftools/malloc_hook.h"
-#include "gperftools/malloc_extension.h"
-#include "gperftools/tcmalloc.h"
+#include "google/malloc_hook.h"
+#include "google/malloc_extension.h"
+#include "google/tcmalloc.h"
 #include "thread_cache.h"
 #include "tests/testutil.h"
 
 // Windows doesn't define pvalloc and a few other obsolete unix
 // functions; nor does it define posix_memalign (which is not obsolete).
-#if defined(_WIN32)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 # define cfree free         // don't bother to try to test these obsolete fns
 # define valloc malloc
 # define pvalloc malloc
 // I'd like to map posix_memalign to _aligned_malloc, but _aligned_malloc
 // must be paired with _aligned_free (not normal free), which is too
 // invasive a change to how we allocate memory here.  So just bail
-static bool kOSSupportsMemalign = false;
-static inline void* Memalign(size_t align, size_t size) {
-  //LOG(FATAL) << "memalign not supported on windows";
-  exit(1);
-  return NULL;
-}
-static inline int PosixMemalign(void** ptr, size_t align, size_t size) {
-  //LOG(FATAL) << "posix_memalign not supported on windows";
-  exit(1);
-  return -1;
-}
-
-// OS X defines posix_memalign in some OS versions but not others;
-// it's confusing enough to check that it's easiest to just not to test.
-#elif defined(__APPLE__)
-static bool kOSSupportsMemalign = false;
-static inline void* Memalign(size_t align, size_t size) {
-  //LOG(FATAL) << "memalign not supported on OS X";
-  exit(1);
-  return NULL;
-}
-static inline int PosixMemalign(void** ptr, size_t align, size_t size) {
-  //LOG(FATAL) << "posix_memalign not supported on OS X";
-  exit(1);
-  return -1;
-}
-
-#else
-static bool kOSSupportsMemalign = true;
-static inline void* Memalign(size_t align, size_t size) {
-  return memalign(align, size);
-}
-static inline int PosixMemalign(void** ptr, size_t align, size_t size) {
-  return posix_memalign(ptr, align, size);
-}
-
+# include <errno.h>
+# define memalign(alignment, size)         malloc(size)
+# define posix_memalign(pptr, align, size) ((*(pptr)=malloc(size)) ? 0 : ENOMEM)
 #endif
 
 // On systems (like freebsd) that don't define MAP_ANONYMOUS, use the old
@@ -182,12 +149,7 @@ static const size_t kMaxSize = ~static_cast<size_t>(0);
 static const size_t kMaxSignedSize = ((size_t(1) << (kSizeBits-1)) - 1);
 
 static const size_t kNotTooBig = 100000;
-// We want an allocation that is definitely more than main memory.  OS
-// X has special logic to discard very big allocs before even passing
-// the request along to the user-defined memory allocator; we're not
-// interested in testing their logic, so we have to make sure we're
-// not *too* big.
-static const size_t kTooBig = kMaxSize - 100000;
+static const size_t kTooBig = kMaxSize;
 
 static int news_handled = 0;
 
@@ -284,18 +246,16 @@ int TestHarness::PickType() {
 
 class AllocatorState : public TestHarness {
  public:
-  explicit AllocatorState(int seed) : TestHarness(seed), memalign_fraction_(0) {
-    if (kOSSupportsMemalign) {
-      CHECK_GE(FLAGS_memalign_max_fraction, 0);
-      CHECK_LE(FLAGS_memalign_max_fraction, 1);
-      CHECK_GE(FLAGS_memalign_min_fraction, 0);
-      CHECK_LE(FLAGS_memalign_min_fraction, 1);
-      double delta = FLAGS_memalign_max_fraction - FLAGS_memalign_min_fraction;
-      CHECK_GE(delta, 0);
-      memalign_fraction_ = (Uniform(10000)/10000.0 * delta +
-                            FLAGS_memalign_min_fraction);
-      //fprintf(LOGSTREAM, "memalign fraction: %f\n", memalign_fraction_);
-    }
+  explicit AllocatorState(int seed) : TestHarness(seed) {
+    CHECK_GE(FLAGS_memalign_max_fraction, 0);
+    CHECK_LE(FLAGS_memalign_max_fraction, 1);
+    CHECK_GE(FLAGS_memalign_min_fraction, 0);
+    CHECK_LE(FLAGS_memalign_min_fraction, 1);
+    double delta = FLAGS_memalign_max_fraction - FLAGS_memalign_min_fraction;
+    CHECK_GE(delta, 0);
+    memalign_fraction_ = (Uniform(10000)/10000.0 * delta +
+                          FLAGS_memalign_min_fraction);
+    //fprintf(LOGSTREAM, "memalign fraction: %f\n", memalign_fraction_);
   }
   virtual ~AllocatorState() {}
 
@@ -309,7 +269,7 @@ class AllocatorState : public TestHarness {
             (size < sizeof(intptr_t) ||
              alignment < FLAGS_memalign_max_alignment_ratio * size)) {
           void *result = reinterpret_cast<void*>(static_cast<intptr_t>(0x1234));
-          int err = PosixMemalign(&result, alignment, size);
+          int err = posix_memalign(&result, alignment, size);
           if (err != 0) {
             CHECK_EQ(err, ENOMEM);
           }
@@ -931,42 +891,44 @@ static void OnNoMemory() {
 static void TestSetNewMode() {
   int old_mode = tc_set_new_mode(1);
 
+  // DebugAllocation will try to catch huge allocations.  We need to avoid this
+  // by requesting a smaller malloc block, that still can't be satisfied.
+  const size_t kHugeRequest = kTooBig - 1024;
+
   g_old_handler = std::set_new_handler(&OnNoMemory);
   g_no_memory = false;
-  void* ret = malloc(kTooBig);
+  void* ret = malloc(kHugeRequest);
   EXPECT_EQ(NULL, ret);
   EXPECT_TRUE(g_no_memory);
 
   g_old_handler = std::set_new_handler(&OnNoMemory);
   g_no_memory = false;
-  ret = calloc(1, kTooBig);
+  ret = calloc(1, kHugeRequest);
   EXPECT_EQ(NULL, ret);
   EXPECT_TRUE(g_no_memory);
 
   g_old_handler = std::set_new_handler(&OnNoMemory);
   g_no_memory = false;
-  ret = realloc(NULL, kTooBig);
+  ret = realloc(NULL, kHugeRequest);
   EXPECT_EQ(NULL, ret);
   EXPECT_TRUE(g_no_memory);
 
-  if (kOSSupportsMemalign) {
-    // Not really important, but must be small enough such that
-    // kAlignment + kTooBig does not overflow.
-    const int kAlignment = 1 << 5;
+  // Not really important, but must be small enough such that kAlignment +
+  // kHugeRequest does not overflow.
+  const int kAlignment = 1 << 5;
 
-    g_old_handler = std::set_new_handler(&OnNoMemory);
-    g_no_memory = false;
-    ret = Memalign(kAlignment, kTooBig);
-    EXPECT_EQ(NULL, ret);
-    EXPECT_TRUE(g_no_memory);
+  g_old_handler = std::set_new_handler(&OnNoMemory);
+  g_no_memory = false;
+  ret = memalign(kAlignment, kHugeRequest);
+  EXPECT_EQ(NULL, ret);
+  EXPECT_TRUE(g_no_memory);
 
-    g_old_handler = std::set_new_handler(&OnNoMemory);
-    g_no_memory = false;
-    EXPECT_EQ(ENOMEM,
-              PosixMemalign(&ret, kAlignment, kTooBig));
-    EXPECT_EQ(NULL, ret);
-    EXPECT_TRUE(g_no_memory);
-  }
+  g_old_handler = std::set_new_handler(&OnNoMemory);
+  g_no_memory = false;
+  EXPECT_EQ(ENOMEM,
+            posix_memalign(&ret, kAlignment, kHugeRequest));
+  EXPECT_EQ(NULL, ret);
+  EXPECT_TRUE(g_no_memory);
 
   tc_set_new_mode(old_mode);
 }
@@ -1070,24 +1032,21 @@ static int RunAllTests(int argc, char** argv) {
     cfree(p1);  // synonym for free
     VerifyDeleteHookWasCalled();
 
-    if (kOSSupportsMemalign) {
-      CHECK_EQ(PosixMemalign(&p1, sizeof(p1), 40), 0);
-      CHECK(p1 != NULL);
-      VerifyNewHookWasCalled();
-      free(p1);
-      VerifyDeleteHookWasCalled();
+    CHECK_EQ(posix_memalign(&p1, sizeof(p1), 40), 0);
+    CHECK(p1 != NULL);
+    VerifyNewHookWasCalled();
+    free(p1);
+    VerifyDeleteHookWasCalled();
 
-      p1 = Memalign(sizeof(p1) * 2, 50);
-      CHECK(p1 != NULL);
-      VerifyNewHookWasCalled();
-      free(p1);
-      VerifyDeleteHookWasCalled();
-    }
+    p1 = memalign(sizeof(p1) * 2, 50);
+    CHECK(p1 != NULL);
+    VerifyNewHookWasCalled();
+    free(p1);
+    VerifyDeleteHookWasCalled();
 
     // Windows has _aligned_malloc.  Let's test that that's captured too.
 #if (defined(_MSC_VER) || defined(__MINGW32__)) && !defined(PERFTOOLS_NO_ALIGNED_MALLOC)
     p1 = _aligned_malloc(sizeof(p1) * 2, 64);
-    CHECK(p1 != NULL);
     VerifyNewHookWasCalled();
     _aligned_free(p1);
     VerifyDeleteHookWasCalled();

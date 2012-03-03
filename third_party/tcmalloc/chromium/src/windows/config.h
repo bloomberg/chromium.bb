@@ -94,9 +94,6 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 #define HAVE_MALLOC_H 1
 
-/* Define to 1 if you have the <malloc/malloc.h> header file. */
-#undef HAVE_MALLOC_MALLOC_H
-
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -138,12 +135,6 @@
 
 /* Define to 1 if the system has the type `struct mallinfo'. */
 #undef HAVE_STRUCT_MALLINFO
-
-/* Define to 1 if you have the <sys/cdefs.h> header file. */
-#undef HAVE_SYS_CDEFS_H
-
-/* Define to 1 if you have the <sys/malloc.h> header file. */
-#undef HAVE_SYS_MALLOC_H
 
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
@@ -206,32 +197,29 @@
    */
 #undef LT_OBJDIR
 
-/* Define to 'volatile' if __malloc_hook is declared volatile */
-#undef MALLOC_HOOK_MAYBE_VOLATILE
-
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O
 
 /* Name of package */
-#define PACKAGE "gperftools"
+#define PACKAGE "google-perftools"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT "opensource@google.com"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "gperftools"
+#define PACKAGE_NAME "google-perftools"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gperftools 2.0"
+#define PACKAGE_STRING "google-perftools 1.7"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "gperftools"
+#define PACKAGE_TARNAME "google-perftools"
 
 /* Define to the home page for this package. */
 #undef PACKAGE_URL
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "2.0"
+#define PACKAGE_VERSION "1.7"
 
 /* How to access the PC from a struct ucontext */
 #undef PC_FROM_UCONTEXT
@@ -255,12 +243,6 @@
 
 /* printf format code for printing a size_t and ssize_t */
 #define PRIxS  "Ix"
-
-/* Mark the systems where we know it's bad if pthreads runs too
-   early before main (before threads are initialized, presumably).  */
-#ifdef __FreeBSD__
-#define PTHREADS_CRASHES_IF_RUN_TOO_EARLY 1
-#endif
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */

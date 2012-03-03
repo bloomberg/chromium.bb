@@ -33,7 +33,7 @@
 #include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
 
 #if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
+#include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
 #endif
 
 static void SaveSUIDUnsafeEnvironmentVariables() {
