@@ -57,7 +57,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
+#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColorName.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"

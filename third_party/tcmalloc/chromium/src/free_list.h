@@ -40,7 +40,7 @@
 #define TCMALLOC_FREE_LIST_H_
 
 #include <stddef.h>
-#include "internal_logging.h"  // For CRASH() macro.
+#include "internal_logging.h"
 #include "linked_list.h"
 
 // Remove to enable singly linked lists (the default for open source tcmalloc).
@@ -77,7 +77,7 @@ inline void FL_Push(void **list, void *element) {
     SLL_Push(list,element);
     return;
   }
-  CRASH("Double Free of %p detected", element);
+  Log(kCrash, __FILE__, __LINE__, "Double Free of %p detected", element);
 }
 
 inline void *FL_Pop(void **list) {

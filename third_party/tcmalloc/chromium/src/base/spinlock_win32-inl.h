@@ -42,6 +42,13 @@ void SpinLockDelay(volatile Atomic32 *w, int32 value, int loop) {
   } else if (loop == 1) {
     Sleep(0);
   } else {
+    // TODO(dmikurube): Re-enable the commented-out code.
+    // We commented out the following line and used the old code "Sleep(1)"
+    // since base/atomicops-internals-windows.h doesn't support 64-bit
+    // operations.
+    //
+    // Commended-out code:
+    //   Sleep(base::internal::SuggestedDelayNS(loop) / 1000000);
     Sleep(1);
   }
 }

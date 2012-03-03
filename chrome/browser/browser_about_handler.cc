@@ -17,7 +17,7 @@
 #include "content/public/browser/sensors_provider.h"
 
 #if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
+#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
 #endif
 
 namespace {

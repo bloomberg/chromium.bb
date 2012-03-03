@@ -91,7 +91,7 @@
 #include <vector>
 #include <base/logging.h>
 #include "base/spinlock.h"
-#include "google/malloc_hook.h"
+#include "gperftools/malloc_hook.h"
 #include "malloc_hook-inl.h"
 #include "preamble_patcher.h"
 
@@ -181,6 +181,8 @@ class LibcInfo {
     kNewNothrow, kNewArrayNothrow, kDeleteNothrow, kDeleteArrayNothrow,
     // These are windows-only functions from malloc.h
     k_Msize, k_Expand,
+    // A MS CRT "internal" function, implemented using _calloc_impl
+    k_CallocCrt,
     kNumFunctions
   };
 
@@ -404,7 +406,7 @@ const char* const LibcInfo::function_name_[] = {
   NULL,  // kMangledNewArrayNothrow,
   NULL,  // kMangledDeleteNothrow,
   NULL,  // kMangledDeleteArrayNothrow,
-  "_msize", "_expand",
+  "_msize", "_expand", "_calloc_crt",
 };
 
 // For mingw, I can't patch the new/delete here, because the
@@ -435,6 +437,7 @@ const GenericFnPtr LibcInfo::static_fn_[] = {
 #endif
   (GenericFnPtr)&::_msize,
   (GenericFnPtr)&::_expand,
+  (GenericFnPtr)&::calloc,
 };
 
 template<int T> GenericFnPtr LibcInfoWithPatchFunctions<T>::origstub_fn_[] = {
@@ -457,6 +460,7 @@ const GenericFnPtr LibcInfoWithPatchFunctions<T>::perftools_fn_[] = {
   (GenericFnPtr)&Perftools_deletearray_nothrow,
   (GenericFnPtr)&Perftools__msize,
   (GenericFnPtr)&Perftools__expand,
+  (GenericFnPtr)&Perftools_calloc,
 };
 
 /*static*/ WindowsInfo::FunctionInfo WindowsInfo::function_info_[] = {
@@ -822,7 +826,7 @@ void* LibcInfoWithPatchFunctions<T>::Perftools_realloc(
   return do_realloc_with_callback(
       old_ptr, new_size,
       (void (*)(void*))origstub_fn_[kFree],
-      (size_t (*)(void*))origstub_fn_[k_Msize]);
+      (size_t (*)(const void*))origstub_fn_[k_Msize]);
 }
 
 template<int T>
@@ -900,7 +904,7 @@ void LibcInfoWithPatchFunctions<T>::Perftools_deletearray_nothrow(
 
 template<int T>
 size_t LibcInfoWithPatchFunctions<T>::Perftools__msize(void* ptr) __THROW {
-  return GetSizeWithCallback(ptr, (size_t (*)(void*))origstub_fn_[k_Msize]);
+  return GetSizeWithCallback(ptr, (size_t (*)(const void*))origstub_fn_[k_Msize]);
 }
 
 // We need to define this because internal windows functions like to
