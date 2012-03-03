@@ -59,7 +59,6 @@ int main(int argc, char *argv[])
 
 	pass = 0;
 	for (t = &__start_test_section; t < &__stop_test_section; t++) {
-		fprintf(stderr, "running \"%s\"... ", t->name);
 		pid = fork();
 		assert(pid >= 0);
 		if (pid == 0) { 
@@ -71,6 +70,7 @@ int main(int argc, char *argv[])
 			abort();
 		}
 
+		fprintf(stderr, "test \"%s\"... ", t->name);
 		switch (info.si_code) {
 		case CLD_EXITED:
 			fprintf(stderr, "exit status %d\n", info.si_status);
