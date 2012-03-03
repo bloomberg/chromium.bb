@@ -605,8 +605,9 @@ Chromium is unable to recover your settings.
       </message>
 
       <!-- Extension alerts. -->
-      <message name="IDS_EXTENSION_ALERT_ITEM_EXTERNAL" desc="A statement that an external extension has been newly installed. End users have no idea what an 'external' extension is, so we simply call them extensions.">
-The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added to Chromium.
+      <message name="IDS_EXTENSION_ALERT_ITEM_EXTERNAL" desc="A statement that an external extension has been newly installed. End users have no idea what an 'external' extension is, so we simply call them extensions. The trailing character must be a newline.">
+The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been added.
+
 '''
       </message>
 

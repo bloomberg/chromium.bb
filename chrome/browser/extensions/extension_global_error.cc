@@ -86,14 +86,16 @@ string16 ExtensionGlobalError::GenerateMessage() {
   return GenerateMessageSection(external_extension_ids_.get(),
                                 IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
          GenerateMessageSection(blacklisted_extension_ids_.get(),
-                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL) +
+                                IDS_EXTENSION_ALERT_ITEM_BLACKLISTED) +
          GenerateMessageSection(orphaned_extension_ids_.get(),
-                                IDS_EXTENSION_ALERT_ITEM_EXTERNAL);
+                                IDS_EXTENSION_ALERT_ITEM_ORPHANED);
 }
 
 string16 ExtensionGlobalError::GetBubbleViewMessage() {
   if (message_.empty()) {
     message_ = GenerateMessage();
+    if (message_[message_.size()-1] == '\n')
+      message_.resize(message_.size()-1);
   }
   return message_;
 }
