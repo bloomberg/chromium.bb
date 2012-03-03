@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -11,15 +11,15 @@ if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
 
-# The debug stub currently only works on x86-64.
-if not env.Bit('target_x86_64'):
-  Return()
 # The test has to be able to kill the subprocess.
 if sys.version_info < (2, 6):
   Return()
 # Our test uses inline assembly.
 if env.Bit('bitcode'):
   Return()
+
+debug_stub_works = (env.Bit('host_linux') or
+                    (env.Bit('windows') and env.Bit('build_x86_64')))
 
 test_prog = env.ComponentProgram('debugger_test', 'debugger_test.c',
                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
@@ -38,13 +38,15 @@ dependencies = [sel_ldr, test_prog]
 # http://code.google.com/p/nativeclient/issues/detail?id=1724
 node = env.CommandTest(
     'debug_stub_test.out',
-    command=['${PYTHON}', env.File('debug_stub_test.py'), '-v'],
+    command=['${PYTHON}', env.File('debug_stub_test.py'),
+             env.get('TARGET_FULLARCH'), '-v'],
     osenv=env_vars,
     extra_deps=dependencies)
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test',
                        # TODO(mseaborn): Make this work with dynamic linking.
                        is_broken=((not env.Bit('nacl_static_link'))
-                                  or env.Bit('asan')))
+                                  or env.Bit('asan')
+                                  or not debug_stub_works))
 
 
 # Test debug_stub in Chrome -- currently this ONLY works on Windows

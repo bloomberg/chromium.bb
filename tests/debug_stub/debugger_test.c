@@ -1,18 +1,32 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 void set_registers_and_stop() {
-  /* Set most registers to fixed values before faulting, so that we
-     can test that the debug stub successfully returns the same
-     values. */
-#if defined(__x86_64__)
+  /*
+   * We set most registers to fixed values before faulting, so that we
+   * can test that the debug stub successfully returns the same
+   * values.
+   *
+   * Additionally, we push a value onto the stack in order to test
+   * memory accesses.
+   */
+#if defined(__i386__)
+  __asm__("push $0x4bb00ccc\n"
+          "mov $0x11000022, %eax\n"
+          "mov $0x22000033, %ebx\n"
+          "mov $0x33000044, %ecx\n"
+          "mov $0x44000055, %edx\n"
+          "mov $0x55000066, %esi\n"
+          "mov $0x66000077, %edi\n"
+          "mov $0x77000088, %ebp\n"
+          "hlt\n");
+#elif defined(__x86_64__)
   /* Note that we cannot assign arbitrary test values to %r15, %rsp
      and %rbp in the x86-64 sandbox. */
-  __asm__("mov $0xbbb0000000000ccc, %rax\n"
-          "push %rax\n"
+  __asm__("push $0x4bb00ccc\n"
           "mov $0x1100000000000022, %rax\n"
           "mov $0x2200000000000033, %rbx\n"
           "mov $0x3300000000000044, %rcx\n"
