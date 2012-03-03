@@ -1125,6 +1125,14 @@ cr.define('options', function() {
     },
 
     /**
+     * Dectivates the bluetooth settings section from the System settings page.
+     * @private
+     */
+    hideBluetoothSettings_: function() {
+      $('bluetooth-devices').hidden = true;
+    },
+
+    /**
      * Sets the state of the checkbox indicating if bluetooth is turned on. The
      * state of the "Find devices" button and the list of discovered devices may
      * also be affected by a change to the state.
@@ -1180,6 +1188,7 @@ cr.define('options', function() {
     'addBluetoothDevice',
     'getStartStopSyncButton',
     'guestModeActive',
+    'hideBluetoothSettings',
     'removeCloudPrintConnectorSection',
     'setAutoOpenFileTypesDisabledAttribute',
     'setBackgroundModeCheckboxState',
