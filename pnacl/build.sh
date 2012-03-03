@@ -135,6 +135,8 @@ readonly TC_BUILD_GMP="${TC_BUILD}/gmp"
 readonly TC_BUILD_MPFR="${TC_BUILD}/mpfr"
 readonly TC_BUILD_MPC="${TC_BUILD}/mpc"
 readonly TC_BUILD_DRAGONEGG="${TC_BUILD}/dragonegg"
+readonly TC_BUILD_LIBELF="${TC_BUILD}/libelf"
+readonly TC_BUILD_LIBELF_SB="${TC_BUILD}/libelf-sb"
 
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
@@ -309,6 +311,7 @@ readonly REPO_DRAGONEGG="http://llvm.org/svn/llvm-project/dragonegg/trunk"
 CC=${CC:-gcc}
 CXX=${CXX:-g++}
 AR=${AR:-ar}
+RANLIB=${RANLIB:-ranlib}
 if ${HOST_ARCH_X8632} ; then
   # These are simple compiler wrappers to force 32bit builds
   # For bots and releases we build the toolchains
@@ -2062,13 +2065,43 @@ arm-ncval-core ${INSTALL_ROOT}/tools-x86
   fi
 }
 
+#########################################################################
+#     < LIBELF >
+#########################################################################
+#+ libelf-host           - Build and install libelf (using the host CC)
+libelf-host() {
+  StepBanner "LIBELF-HOST" "Building and installing libelf"
+  RunWithLog "libelf-host" \
+    env -i \
+      PATH="/usr/bin:/bin" \
+      DEST_DIR="${TC_BUILD_LIBELF}" \
+      CC="${CC}" \
+      AR="${AR}" \
+      RANLIB="${RANLIB}" \
+      CC_IS_PNACL=false \
+      "${PNACL_ROOT}"/libelf/build-libelf.sh
+}
+
+#+ libelf-sb            - Build and install libelf (using pnacl-clang)
+libelf-sb() {
+  StepBanner "LIBELF-SB" "Building and installing sandboxed libelf"
+  RunWithLog "libelf-sb" \
+    env -i \
+      PATH="/usr/bin:/bin" \
+      DEST_DIR="${TC_BUILD_LIBELF_SB}" \
+      CC="${PNACL_CC_NEWLIB}" \
+      AR="${PNACL_AR}" \
+      RANLIB="${PNACL_RANLIB}" \
+      CC_IS_PNACL=true \
+      "${PNACL_ROOT}"/libelf/build-libelf.sh
+}
 
 #########################################################################
 #     < BINUTILS >
 #########################################################################
 
 #+-------------------------------------------------------------------------
-#+ binutils          - Build and install binutils for ARM
+#+ binutils          - Build and install binutils (cross-tools)
 binutils() {
   StepBanner "BINUTILS (HOST)"
 
@@ -2076,6 +2109,8 @@ binutils() {
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
+  # TODO(pdox): Enable when this is verified to work on the Mac bots.
+  #libelf-host
   if binutils-needs-configure; then
     binutils-clean
     binutils-configure
@@ -2657,6 +2692,7 @@ binutils-sb() {
   local srcdir="${TC_SRC_BINUTILS}"
   assert-dir "${srcdir}" "You need to checkout binutils."
 
+  libelf-sb
   if binutils-sb-needs-configure ; then
     binutils-sb-clean
     binutils-sb-configure
