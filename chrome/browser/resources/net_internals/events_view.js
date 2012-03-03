@@ -50,7 +50,7 @@ var EventsView = (function() {
     this.splitterView_ = new ResizableVerticalSplitView(
         leftPane, this.detailsView_, new DivView(EventsView.SIZER_ID));
 
-    g_browser.sourceTracker.addSourceEntryObserver(this);
+    SourceTracker.getInstance().addSourceEntryObserver(this);
 
     this.tableBody_ = $(EventsView.TBODY_ID);
 

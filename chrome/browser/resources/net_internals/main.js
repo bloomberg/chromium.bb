@@ -168,7 +168,7 @@ var MainView = (function() {
     onLoadLog: function(opt_fileName) {
       isViewingLoadedLog = true;
 
-      g_browser.sourceTracker.setSecurityStripping(false);
+      SourceTracker.getInstance().setSecurityStripping(false);
       this.stopCapturing();
       if (opt_fileName != undefined) {
         // If there's a file name, a log file was loaded, so swap out the status

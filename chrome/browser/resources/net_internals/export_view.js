@@ -65,7 +65,7 @@ var ExportView = (function() {
      * cookies and passwords from log dumps and displayed events.
      */
     onSetSecurityStripping_: function(securityStrippingCheckbox) {
-      g_browser.sourceTracker.setSecurityStripping(
+      SourceTracker.getInstance().setSecurityStripping(
           securityStrippingCheckbox.checked);
     },
 
@@ -130,7 +130,8 @@ var ExportView = (function() {
 
       this.setSaveFileStatus('Preparing data...', true);
 
-      var securityStripping = g_browser.sourceTracker.getSecurityStripping();
+      var securityStripping =
+          SourceTracker.getInstance().getSecurityStripping();
 
       // If we have a cached log dump, update it synchronously.
       if (this.loadedLogDump_) {

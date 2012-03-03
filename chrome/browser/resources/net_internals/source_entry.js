@@ -108,7 +108,7 @@ var SourceEntry = (function() {
           if (e.params.source_dependency != undefined) {
             var parentId = e.params.source_dependency.id;
             this.description_ =
-                g_browser.sourceTracker.getDescription(parentId);
+                SourceTracker.getInstance().getDescription(parentId);
           }
           break;
         case LogSourceType.UDP_SOCKET:
@@ -119,7 +119,7 @@ var SourceEntry = (function() {
             if (this.entries_[0].type == LogEventType.SOCKET_ALIVE &&
                 this.entries_[0].params.source_dependency != undefined) {
               var parentId = this.entries_[0].params.source_dependency.id;
-              var parent = g_browser.sourceTracker.getSourceEntry(parentId);
+              var parent = SourceTracker.getInstance().getSourceEntry(parentId);
               if (parent &&
                   parent.getSourceType() ==
                       LogSourceType.HOST_RESOLVER_IMPL_JOB &&

@@ -79,7 +79,7 @@ printLogEntriesAsText = function(logEntries, parent) {
       tablePrinter.setNewRowCellIndent(5 + entry.getDepth());
       addRowsForExtraParams(tablePrinter,
                             entry.orig,
-                            g_browser.sourceTracker.getSecurityStripping());
+                            SourceTracker.getInstance().getSecurityStripping());
       tablePrinter.setNewRowCellIndent(0);
     }
   }

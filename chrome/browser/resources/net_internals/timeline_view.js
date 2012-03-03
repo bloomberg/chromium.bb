@@ -51,7 +51,7 @@ var TimelineView = (function() {
     // them on to each DataSource.  We initialize the graph range to initially
     // include all events, but after that, we only update it to be the current
     // time on a timer.
-    g_browser.sourceTracker.addLogEntryObserver(this);
+    EventsTracker.getInstance().addLogEntryObserver(this);
     this.graphRangeInitialized_ = false;
   }
 
@@ -233,8 +233,7 @@ var TimelineView = (function() {
     },
 
     /**
-     * When log entries are deleted, simpler to recreate the DataSeries, rather
-     * than clearing them.
+     * When all log entries are deleted, recreate the DataSeries.
      */
     onAllLogEntriesDeleted: function() {
       this.graphRangeInitialized_ = false;
@@ -243,7 +242,7 @@ var TimelineView = (function() {
 
     onReceivedLogEntries: function(entries) {
       // Pass each entry to every DataSeries, one at a time.  Not having each
-      // data series get data directly from the SourceTracker saves us from
+      // data series get data directly from the EventsTracker saves us from
       // having very un-Javascript-like destructors for when we load new,
       // constants and slightly simplifies DataSeries objects.
       for (var entry = 0; entry < entries.length; ++entry) {

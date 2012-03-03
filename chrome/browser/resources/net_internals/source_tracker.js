@@ -6,16 +6,14 @@ var SourceTracker = (function() {
   'use strict';
 
   /**
-   * This class keeps track of all NetLog events.
-   * It receives events from the browser and when loading a log file, and passes
+   * This class keeps track of all NetLog events, grouped into per-source
+   * streams. It receives events from EventsTracker, and passes
    * them on to all its observers.
    *
    * @constructor
    */
   function SourceTracker() {
-    // Observers that are sent all events as they happen.  This allows for easy
-    // watching for particular events.
-    this.logEntryObservers_ = [];
+    assertFirstConstructorCall(SourceTracker);
 
     // Observers that only want to receive lists of updated SourceEntries.
     this.sourceEntryObservers_ = [];
@@ -26,7 +24,11 @@ var SourceTracker = (function() {
     this.enableSecurityStripping_ = true;
 
     this.clearEntries_();
+
+    EventsTracker.getInstance().addLogEntryObserver(this);
   }
+
+  cr.addSingletonGetter(SourceTracker);
 
   SourceTracker.prototype = {
     /**
@@ -48,25 +50,10 @@ var SourceTracker = (function() {
     },
 
     /**
-     * Returns a list of all captured events.
-     */
-    getAllCapturedEvents: function() {
-      return this.capturedEvents_;
-    },
-
-    /**
      * Returns a list of all SourceEntries.
      */
     getAllSourceEntries: function() {
       return this.sourceEntries_;
-    },
-
-    /**
-     * Returns the number of events that were captured while we were
-     * listening for events.
-     */
-    getNumCapturedEvents: function() {
-      return this.capturedEvents_.length;
     },
 
     /**
@@ -130,19 +117,15 @@ var SourceTracker = (function() {
         this.sourceEntryObservers_[i].onSourceEntriesUpdated(
             updatedSourceEntries);
       }
-      for (var i = 0; i < this.logEntryObservers_.length; ++i)
-        this.logEntryObservers_[i].onReceivedLogEntries(logEntries);
     },
 
     /**
-     * Deletes all captured events.
+     * Called when all log events have been deleted.
      */
-    deleteAllSourceEntries: function() {
+    onAllLogEntriesDeleted: function() {
       this.clearEntries_();
       for (var i = 0; i < this.sourceEntryObservers_.length; ++i)
         this.sourceEntryObservers_[i].onAllSourceEntriesDeleted();
-      for (var i = 0; i < this.logEntryObservers_.length; ++i)
-        this.logEntryObservers_[i].onAllLogEntriesDeleted();
     },
 
     /**
@@ -176,17 +159,6 @@ var SourceTracker = (function() {
      */
     addSourceEntryObserver: function(observer) {
       this.sourceEntryObservers_.push(observer);
-    },
-
-    /**
-     * Adds a listener of log entries. |observer| will be called back when new
-     * log data arrives or all entries are deleted:
-     *
-     *   observer.onReceivedLogEntries(entries)
-     *   ovserver.onAllLogEntriesDeleted()
-     */
-    addLogEntryObserver: function(observer) {
-      this.logEntryObservers_.push(observer);
     }
   };
 

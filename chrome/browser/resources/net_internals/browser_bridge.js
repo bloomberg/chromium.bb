@@ -65,10 +65,6 @@ var BrowserBridge = (function() {
         new PollableDataHelper('onHttpPipeliningStatusChanged',
                                this.sendGetHttpPipeliningStatus.bind(this));
 
-    // NetLog entries are all sent to the |SourceTracker|, which both tracks
-    // them and manages its own observer list.
-    this.sourceTracker = new SourceTracker();
-
     // Setting this to true will cause messages from the browser to be ignored,
     // and no messages will be sent to the browser, either.  Intended for use
     // when viewing log files.
@@ -258,7 +254,7 @@ var BrowserBridge = (function() {
     },
 
     receivedLogEntries: function(logEntries) {
-      this.sourceTracker.onReceivedLogEntries(logEntries);
+      EventsTracker.getInstance().addLogEntries(logEntries);
     },
 
     receivedProxySettings: function(proxySettings) {

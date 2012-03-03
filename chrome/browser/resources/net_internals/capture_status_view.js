@@ -17,8 +17,8 @@ var CaptureStatusView = (function() {
     $(CaptureStatusView.STOP_BUTTON_ID).onclick = switchToViewOnlyMode_;
 
     $(CaptureStatusView.RESET_BUTTON_ID).onclick =
-        g_browser.sourceTracker.deleteAllSourceEntries.bind(
-            g_browser.sourceTracker);
+        EventsTracker.getInstance().deleteAllLogEntries.bind(
+            EventsTracker.getInstance());
     $(CaptureStatusView.CLEAR_CACHE_BUTTON_ID).onclick =
         g_browser.sendClearAllCache.bind(g_browser);
     $(CaptureStatusView.FLUSH_SOCKETS_BUTTON_ID).onclick =
@@ -31,7 +31,7 @@ var CaptureStatusView = (function() {
         $(CaptureStatusView.CAPTURED_EVENTS_COUNT_ID);
     this.updateEventCounts_();
 
-    g_browser.sourceTracker.addSourceEntryObserver(this);
+    EventsTracker.getInstance().addLogEntryObserver(this);
   }
 
   // IDs for special HTML elements in status_view.html
@@ -51,16 +51,16 @@ var CaptureStatusView = (function() {
     __proto__: superClass.prototype,
 
     /**
-     * Called whenever a new event is received.
+     * Called whenever new log entries have been received.
      */
-    onSourceEntriesUpdated: function(sourceEntries) {
+    onReceivedLogEntries: function(logEntries) {
       this.updateEventCounts_();
     },
 
     /**
      * Called whenever all log events are deleted.
      */
-    onAllSourceEntriesDeleted: function() {
+    onAllLogEntriesDeleted: function() {
       this.updateEventCounts_();
     },
 
@@ -69,7 +69,7 @@ var CaptureStatusView = (function() {
      */
     updateEventCounts_: function() {
       this.capturedEventsCountBox_.textContent =
-          g_browser.sourceTracker.getNumCapturedEvents();
+          EventsTracker.getInstance().getNumCapturedEvents();
     },
 
     /**

@@ -13,6 +13,7 @@
 <include src="test_view.js"/>
 <include src="hsts_view.js"/>
 <include src="browser_bridge.js"/>
+<include src="events_tracker.js"/>
 <include src="source_tracker.js"/>
 <include src="resizable_vertical_split_view.js"/>
 <include src="main.js"/>

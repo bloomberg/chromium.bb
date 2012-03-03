@@ -63,13 +63,14 @@ log_util = (function() {
         oldLogDump.constants.clientInfo.numericDate) {
       numericDate = oldLogDump.constants.clientInfo.numericDate;
     }
-    var logDump = createLogDump(userComments,
-                                Constants,
-                                g_browser.sourceTracker.getAllCapturedEvents(),
-                                oldLogDump.polledData,
-                                getTabData_(),
-                                numericDate,
-                                securityStripping);
+    var logDump = createLogDump(
+        userComments,
+        Constants,
+        EventsTracker.getInstance().getAllCapturedEvents(),
+        oldLogDump.polledData,
+        getTabData_(),
+        numericDate,
+        securityStripping);
     return JSON.stringify(logDump, null, ' ');
   }
 
@@ -79,13 +80,14 @@ log_util = (function() {
    */
   function onUpdateAllCompleted(userComments, callback, securityStripping,
                                 polledData) {
-    var logDump = createLogDump(userComments,
-                                Constants,
-                                g_browser.sourceTracker.getAllCapturedEvents(),
-                                polledData,
-                                getTabData_(),
-                                timeutil.getCurrentTime(),
-                                securityStripping);
+    var logDump = createLogDump(
+        userComments,
+        Constants,
+        EventsTracker.getInstance().getAllCapturedEvents(),
+        polledData,
+        getTabData_(),
+        timeutil.getCurrentTime(),
+        securityStripping);
     callback(JSON.stringify(logDump, null, ' '));
   }
 
@@ -214,7 +216,7 @@ log_util = (function() {
     MainView.getInstance().onLoadLog(opt_fileName);
 
     // Delete all events.  This will also update all logObservers.
-    g_browser.sourceTracker.deleteAllSourceEntries();
+    EventsTracker.getInstance().deleteAllLogEntries();
 
     // Inform all the views that a log file is being loaded, and pass in
     // view-specific saved state, if any.
@@ -224,7 +226,7 @@ log_util = (function() {
       var view = categoryTabSwitcher.findTabById(tabIds[i]).contentView;
       view.onLoadLogStart(logDump.polledData, logDump.tabData[tabIds[i]]);
     }
-    g_browser.sourceTracker.onReceivedLogEntries(validEvents);
+    EventsTracker.getInstance().addLogEntries(validEvents);
 
     var numInvalidEvents = logDump.events.length -
         (validEvents.length + numDeprecatedPassiveEvents);
