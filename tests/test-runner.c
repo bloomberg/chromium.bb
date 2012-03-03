@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <string.h>
 #include <assert.h>
 #include "test-runner.h"
 
@@ -51,7 +52,7 @@ int main(int argc, char *argv[])
 {
 	const struct test *t;
 	pid_t pid;
-	int i, total, pass;
+	int total, pass;
 	siginfo_t info;
 
 	if (argc == 2)
