@@ -175,13 +175,14 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None):
 def RefreshPackageStatus(buildroot, boards, debug):
   """Wrapper around refresh_package_status"""
   cwd = os.path.join(buildroot, 'src', 'scripts')
+  chromite_bin_dir = os.path.join('..', '..', constants.CHROMITE_BIN_SUBDIR)
 
   # First run check_gdata_token to validate or refresh auth token.
-  cmd = ['../../chromite/bin/check_gdata_token']
+  cmd = [os.path.join(chromite_bin_dir, 'check_gdata_token')]
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=False)
 
-  # Prepare refresh_package_status command.
-  cmd = ['../../chromite/bin/refresh_package_status']
+  # Prepare refresh_package_status command to update the package spreadsheet.
+  cmd = [os.path.join(chromite_bin_dir, 'refresh_package_status')]
 
   # Skip the host board if present.
   board = ':'.join([b for b in boards if b != 'amd64-host'])
@@ -191,7 +192,22 @@ def RefreshPackageStatus(buildroot, boards, debug):
   if debug:
     cmd.append('--test-spreadsheet')
 
+  # Actually run prepared refresh_package_status command.
   cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
+
+  # Run sync_package_status to create Tracker issues for outdated
+  # packages.  At the moment, this runs only for groups that have opted in.
+  basecmd = [os.path.join(chromite_bin_dir, 'sync_package_status')]
+  if debug:
+    basecmd.extend(['--pretend', '--test-spreadsheet'])
+
+  cmdargslist = [['--team=build'],
+                 ['--team=kernel', '--default-owner=arscott'],
+                 ]
+
+  for cmdargs in cmdargslist:
+    cmd = basecmd + cmdargs
+    cros_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True)
 
 
 def SetupBoard(buildroot, board, usepkg, latest_toolchain, extra_env=None,

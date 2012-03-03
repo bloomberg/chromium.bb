@@ -24,8 +24,7 @@ if not cros_build_lib.IsInsideChroot():
 import portage
 
 
-EMERGE_CMD = os.path.join(
-    constants.SOURCE_ROOT, 'chromite/bin/parallel_emerge')
+EMERGE_CMD = os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')
 CROS_OVERLAY_LIST_CMD = os.path.join(
     constants.SOURCE_ROOT, 'src/platform/dev/host/cros_overlay_list')
 PACKAGE_STABLE = '[stable]'

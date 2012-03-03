@@ -44,7 +44,7 @@ _DEFAULT_LOG_DIR = 'cbuildbot_logs'
 _BUILDBOT_LOG_FILE = 'cbuildbot.log'
 _DEFAULT_EXT_BUILDROOT = 'trybot'
 _DEFAULT_INT_BUILDROOT = 'trybot-internal'
-_PATH_TO_CBUILDBOT = 'chromite/bin/cbuildbot'
+_PATH_TO_CBUILDBOT = os.path.join(constants.CHROMITE_BIN_SUBDIR, 'cbuildbot')
 _DISTRIBUTED_TYPES = [constants.COMMIT_QUEUE_TYPE, constants.PFQ_TYPE,
                       constants.CANARY_TYPE, constants.CHROME_PFQ_TYPE,
                       constants.PALADIN_TYPE]

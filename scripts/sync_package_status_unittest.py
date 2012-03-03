@@ -312,6 +312,7 @@ class SyncerTest(test_lib.MoxTestCase):
   def _TestGenIssueForRowNeedsUpgrade(self, row):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
     mocked_syncer.default_owner = None
+    mocked_syncer.scomm = test_lib.EasyAttr(ss_key='SomeSSKey')
 
     # Replay script
     for arch in sps.ARCHES:

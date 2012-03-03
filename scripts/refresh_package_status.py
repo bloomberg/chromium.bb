@@ -8,7 +8,6 @@
 import optparse
 import os
 import shutil
-import sys
 
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import operation
@@ -18,6 +17,7 @@ oper.verbose = True # Without verbose Info messages don't show up.
 
 TMP_ROOT = '/tmp'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+# TODO(mtennant): Remove these two and replace with variables in gdata_lib.
 GDATA_CRED_FILE = '.gdata_cred.txt'
 GDATA_TOKEN_FILE = '.gdata_token'
 GENTOO_DIR = 'gentoo-portage'

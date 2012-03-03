@@ -13,19 +13,18 @@ from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import gdata_lib
 from chromite.lib import operation
 from chromite.lib import upgrade_table as utable
+from chromite.scripts import upload_package_status as ups
 
 # pylint: disable=W0201,R0904
 
 PROJECT_NAME = 'chromium-os'
 
-SS_KEY = '0AsXDKtaHikmcdEp1dVN1SG1yRU1xZEw1Yjhka2dCSUE'
 PKGS_WS_NAME = 'Packages'
 
 CROS_ORG = 'chromium.org'
 CHROMIUMOS_SITE = 'http://www.%s/%s' % (CROS_ORG, PROJECT_NAME)
 PKG_UPGRADE_PAGE = '%s/gentoo-package-upgrade-process' % CHROMIUMOS_SITE
 DOCS_SITE = 'https://docs.google.com/a'
-PKG_STATUS_PAGE = '%s/%s/spreadsheet/ccc?key=%s' % (DOCS_SITE, CROS_ORG, SS_KEY)
 
 COL_PACKAGE = gdata_lib.PrepColNameForSS(utable.UpgradeTable.COL_PACKAGE)
 COL_TEAM = gdata_lib.PrepColNameForSS('Team/Lead')
@@ -35,6 +34,10 @@ COL_TRACKER = gdata_lib.PrepColNameForSS('Tracker')
 ARCHES = ('amd64', 'arm', 'x86')
 
 oper = operation.Operation('sync_package_status')
+
+
+def _GetPkgSpreadsheetURL(ss_key):
+  return '%s/%s/spreadsheet/ccc?key=%s' % (DOCS_SITE, CROS_ORG, ss_key)
 
 
 class SyncError(RuntimeError):
@@ -262,7 +265,7 @@ class Syncer(object):
     lines.append('')
     lines.append('Check the latest status for this package, including '
                  'which upstream versions are available, at:\n  %s' %
-                 PKG_STATUS_PAGE)
+                 _GetPkgSpreadsheetURL(self.scomm.ss_key))
     lines.append('For help upgrading see: %s' % PKG_UPGRADE_PAGE)
 
     summary = '\n'.join(lines)
@@ -347,36 +350,35 @@ def PrepareCreds(cred_file, token_file, email):
 def _CreateOptParser():
   """Create the optparser.parser object for command-line args."""
   usage = 'Usage: %prog [options]'
-  epilog = ('\n'
-            'Use this script to synchronize tracker issues between the '
-            'package status spreadsheet and the chromium-os Tracker.\n'
-            'It uses the "Tracker" column of the package spreadsheet. '
-            'If a package needs an upgrade and has no tracker issue\n'
-            'in that column then a tracker issue is created.  If it '
-            'does not need an upgrade then that column is cleared.\n'
-            '\n'
-            'Credentials must be specified using --cred-file or '
-            '--email.  The former has a default value which you can\n'
-            'rely on if valid, the latter will prompt for your password.  '
-            'If you specify --email you will be given a chance to save\n'
-            'your email/password out as a credentials file for next time.\n'
-            '\n'
-            'Uses spreadsheet key %s (worksheet "%s").\n'
-            '\n'
-            'Use the --team and --owner options to operate only on '
-            'packages assigned to particular owners or teams.\n'
-            'Generally, running without a team or owner filter is '
-            'not intended, so use --team=all and/or --owner=all.\n'
-            '\n'
-            'Issues will be assigned to the owner of the package in the '
-            'spreadsheet, if available.  If not, the owner defaults\n'
-            'to value given to --default-owner.\n'
-            '\n'
-            'The --owner and --default-owner options accept "me" as an '
-            'argument, which is only useful if your username matches\n'
-            'your chromium account name.\n'
-            '\n' %
-            (SS_KEY, PKGS_WS_NAME)
+  epilog = ("""
+Use this script to synchronize tracker issues between the package status
+spreadsheet and the chromium-os Tracker.  It uses the "Tracker" column of the
+package spreadsheet.  If a package needs an upgrade and has no tracker issue in
+that column then a tracker issue is created.  If it does not need an upgrade
+then that column is cleared.
+
+Credentials must be specified using --auth-token-file, --cred-file or --email.
+The first two have default values which you can rely on if valid, the latter
+will prompt for your password.  If you specify --email you will be given a
+chance to save your email/password out as a credentials file for next time.
+
+Uses spreadsheet key %(ss_key)s, worksheet "%(ws_name)s".
+(if --test-spreadsheet is set then spreadsheet
+%(test_ss_key)s is used).
+
+Use the --team and --owner options to operate only on packages assigned to
+particular owners or teams.  Generally, running without a team or owner filter
+is not intended, so use --team=all and/or --owner=all.
+
+Issues will be assigned to the owner of the package in the spreadsheet, if
+available.  If not, the owner defaults to value given to --default-owner.
+
+The --owner and --default-owner options accept "me" as an argument, which is
+only useful if your username matches your chromium account name.
+
+""" %
+            {'ss_key': ups.REAL_SS_KEY, 'ws_name': PKGS_WS_NAME,
+             'test_ss_key': ups.TEST_SS_KEY}
             )
 
   class MyOptParser(optparse.OptionParser):
@@ -389,7 +391,8 @@ def _CreateOptParser():
   parser = MyOptParser(usage=usage, epilog=epilog)
   parser.add_option('--auth-token-file', dest='token_file', type='string',
                     action='store', default=gdata_lib.TOKEN_FILE,
-                    help='File for reading/writing Docs auth token.')
+                    help='File for reading/writing Docs auth token.'
+                    ' [default: "%default"]')
   parser.add_option('--cred-file', dest='cred_file', type='string',
                     action='store', default=gdata_lib.CRED_FILE,
                     help='Path to gdata credentials file [default: "%default"]')
@@ -409,6 +412,9 @@ def _CreateOptParser():
                     default=None,
                     help='Filter by package owner;'
                     ' colon-separated chromium.org accounts')
+  parser.add_option('--test-spreadsheet', dest='test_ss',
+                    action='store_true', default=False,
+                    help='Sync to the testing spreadsheet (implies --pretend).')
   parser.add_option('--verbose', dest='verbose', action='store_true',
                     default=False,
                     help='Enable verbose output (for debugging)')
@@ -442,6 +448,10 @@ def _CheckOptions(options):
     options.owner = me
     oper.Notice('Using %r for owner filter (from $USER envvar)' % options.owner)
 
+  if options.test_ss and not options.pretend:
+    oper.Notice('Running in --pretend mode because of --test-spreadsheet')
+    options.pretend = True
+
 
 def main(argv):
   """Main function."""
@@ -452,14 +462,17 @@ def main(argv):
 
   _CheckOptions(options)
 
+  ss_key = ups.TEST_SS_KEY if options.test_ss else ups.REAL_SS_KEY
+
   # Prepare credentials for Docs and Tracker access.
   creds = PrepareCreds(options.cred_file, options.token_file, options.email)
 
   scomm = gdata_lib.SpreadsheetComm()
-  scomm.Connect(creds, SS_KEY, PKGS_WS_NAME, source='Sync Package Status')
+  scomm.Connect(creds, ss_key, PKGS_WS_NAME, source='Sync Package Status')
   tcomm = gdata_lib.TrackerComm()
   tcomm.Connect(creds, PROJECT_NAME, source='Sync Package Status')
 
+  oper.Notice('Syncing between Tracker and spreadsheet %s' % ss_key)
   syncer = Syncer(tcomm, scomm,
                   pretend=options.pretend, verbose=options.verbose)
 
