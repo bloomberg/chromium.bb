@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_aura.h"
 
+#include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/web_contents.h"
@@ -267,6 +268,7 @@ void BrowserNonClientFrameViewAura::OnPaint(gfx::Canvas* canvas) {
     return;  // Nothing visible, don't paint.
   PaintHeader(canvas);
   PaintTitleBar(canvas);
+  PaintToolbarBackground(canvas);
   // Paint the view hierarchy, which draws the caption buttons.
   BrowserNonClientFrameView::OnPaint(canvas);
 }
@@ -463,6 +465,60 @@ void BrowserNonClientFrameViewAura::PaintHeader(gfx::Canvas* canvas) {
   // to the edge of the window.
 }
 
+void BrowserNonClientFrameViewAura::PaintToolbarBackground(
+    gfx::Canvas* canvas) {
+  gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
+  if (toolbar_bounds.IsEmpty())
+    return;
+  gfx::Point toolbar_origin(toolbar_bounds.origin());
+  ConvertPointToView(browser_view(), this, &toolbar_origin);
+  toolbar_bounds.set_origin(toolbar_origin);
+
+  int x = toolbar_bounds.x();
+  int w = toolbar_bounds.width();
+  int y = toolbar_bounds.y();
+  int h = toolbar_bounds.height();
+
+  // Gross hack: We split the toolbar images into two pieces, since sometimes
+  // (popup mode) the toolbar isn't tall enough to show the whole image.  The
+  // split happens between the top shadow section and the bottom gradient
+  // section so that we never break the gradient.
+  int split_point = kFrameShadowThickness * 2;
+  int bottom_y = y + split_point;
+  ui::ThemeProvider* tp = GetThemeProvider();
+  SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
+  int bottom_edge_height = std::min(theme_toolbar->height(), h) - split_point;
+
+  canvas->FillRect(gfx::Rect(x, bottom_y, w, bottom_edge_height),
+                   tp->GetColor(ThemeService::COLOR_TOOLBAR));
+
+  // Paint the main toolbar image.  Since this image is also used to draw the
+  // tab background, we must use the tab strip offset to compute the image
+  // source y position.  If you have to debug this code use an image editor
+  // to paint a diagonal line through the toolbar image and ensure it lines up
+  // across the tab and toolbar.
+  bool restored = !frame()->IsMaximized();
+  canvas->TileImageInt(
+      *theme_toolbar,
+      x, bottom_y - GetHorizontalTabStripVerticalOffset(restored),
+      x, bottom_y,
+      w, theme_toolbar->height());
+
+  SkBitmap* toolbar_center =
+      tp->GetBitmapNamed(IDR_CONTENT_TOP_CENTER);
+  canvas->TileImageInt(*toolbar_center,
+                       0, 0,
+                       x, y,
+                       w, split_point);
+
+  // Draw the content/toolbar separator.
+  canvas->FillRect(gfx::Rect(x + kClientEdgeThickness,
+                             toolbar_bounds.bottom() - kClientEdgeThickness,
+                             w - (2 * kClientEdgeThickness),
+                             kClientEdgeThickness),
+      ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
+}
+
 void BrowserNonClientFrameViewAura::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
   views::WidgetDelegate* delegate = frame()->widget_delegate();
@@ -475,7 +531,7 @@ void BrowserNonClientFrameViewAura::PaintTitleBar(gfx::Canvas* canvas) {
         BrowserFrame::GetTitleFont().GetHeight());
     canvas->DrawStringInt(delegate->GetWindowTitle(),
                           BrowserFrame::GetTitleFont(),
-                          SK_ColorWHITE,
+                          SK_ColorBLACK,
                           GetMirroredXForRect(title_bounds),
                           title_bounds.y(),
                           title_bounds.width(),
@@ -509,10 +565,12 @@ SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameBitmap() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (ShouldPaintAsActive()) {
     resource_id = is_incognito ?
-        IDR_THEME_FRAME_INCOGNITO : IDR_FRAME;
+        IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
+        IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
   } else {
     resource_id = is_incognito ?
-        IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
+        IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE :
+        IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
   }
   return rb.GetBitmapNamed(resource_id);
 }

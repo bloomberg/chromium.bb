@@ -66,6 +66,7 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
 
   void PaintHeader(gfx::Canvas* canvas);
   void PaintTitleBar(gfx::Canvas* canvas);
+  void PaintToolbarBackground(gfx::Canvas* canvas);
 
   // Returns the correct bitmap for the frame header based on activation state
   // and incognito mode.
