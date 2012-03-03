@@ -88,11 +88,13 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
     }
   }
 
-  virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
-                             int index) {
-    if (image) {
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE {
+    if (!image.IsEmpty()) {
       std::vector<unsigned char> image_data;
-      if (!gfx::PNGCodec::EncodeBGRASkBitmap(*image, false, &image_data)) {
+      if (!gfx::PNGCodec::EncodeBGRASkBitmap(*image.ToSkBitmap(), false,
+                                             &image_data)) {
         NOTREACHED() << "Could not encode extension favicon";
       }
       ForwardResult(RefCountedBytes::TakeVector(&image_data));

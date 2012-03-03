@@ -162,7 +162,7 @@ void UpdateShortcutWorker::OnIconDownloaded(int download_id,
 
   if (!errored && !image.isNull()) {
     // Update icon with download image and update shortcut.
-    shortcut_info_.favicon = image;
+    shortcut_info_.favicon = gfx::Image(image);
     tab_contents_->extension_tab_helper()->SetAppIcon(image);
     UpdateShortcuts();
   } else {
@@ -309,7 +309,8 @@ void GetShortcutInfoForTab(TabContentsWrapper* tab_contents_wrapper,
                                           web_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
-  info->favicon = tab_contents_wrapper->favicon_tab_helper()->GetFavicon();
+  info->favicon =
+      gfx::Image(tab_contents_wrapper->favicon_tab_helper()->GetFavicon());
 }
 
 void UpdateShortcutForTabContents(TabContentsWrapper* tab_contents) {

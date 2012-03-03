@@ -114,8 +114,9 @@ bool PageActionDecoration::OnMousePressed(NSRect frame) {
   return true;
 }
 
-void PageActionDecoration::OnImageLoaded(
-    SkBitmap* image, const ExtensionResource& resource, int index) {
+void PageActionDecoration::OnImageLoaded(const gfx::Image& image,
+                                         const std::string& extension_id,
+                                         int index) {
   // We loaded icons()->size() icons, plus one extra if the Page Action had
   // a default icon.
   int total_icons = static_cast<int>(page_action_->icon_paths()->size());
@@ -125,11 +126,12 @@ void PageActionDecoration::OnImageLoaded(
 
   // Map the index of the loaded image back to its name. If we ever get an
   // index greater than the number of icons, it must be the default icon.
-  if (image) {
+  if (!image.IsEmpty()) {
+    const SkBitmap* bitmap = image.ToSkBitmap();
     if (index < static_cast<int>(page_action_->icon_paths()->size()))
-      page_action_icons_[page_action_->icon_paths()->at(index)] = *image;
+      page_action_icons_[page_action_->icon_paths()->at(index)] = *bitmap;
     else
-      page_action_icons_[page_action_->default_icon_path()] = *image;
+      page_action_icons_[page_action_->default_icon_path()] = *bitmap;
   }
 
   // If we have no owner, that means this class is still being constructed and

@@ -116,8 +116,8 @@ class CreateChromeApplicationShortcutView
   // Implement ImageLoadingTracker::Observer.  |tracker_| is used to
   // load the app's icon.  This method recieves the icon, and adds
   // it to the "Create Shortcut" dailog box.
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
  private:

@@ -56,13 +56,13 @@ class ExtensionUninstallDialog : public ImageLoadingTracker::Observer {
   SkBitmap icon_;
 
  private:
-  // Sets the icon that will be used in the dialog. If |icon| is NULL, or
-  // contains an empty bitmap, then we use a default icon instead.
-  void SetIcon(SkBitmap* icon);
+  // Sets the icon that will be used in the dialog. If |icon| contains an empty
+  // bitmap, then we use a default icon instead.
+  void SetIcon(const gfx::Image& image);
 
   // ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
   // Displays the prompt. This should only be called after loading the icon.

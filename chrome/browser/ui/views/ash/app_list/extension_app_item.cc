@@ -137,11 +137,11 @@ void ExtensionAppItem::LoadDefaultImage() {
   SetIcon(*rb.GetImageNamed(resource).ToSkBitmap());
 }
 
-void ExtensionAppItem::OnImageLoaded(SkBitmap* image,
-                                     const ExtensionResource& resource,
+void ExtensionAppItem::OnImageLoaded(const gfx::Image& image,
+                                     const std::string& extension_id,
                                      int tracker_index) {
-  if (image && !image->empty())
-    SetIcon(*image);
+  if (!image.IsEmpty())
+    SetIcon(*image.ToSkBitmap());
   else
     LoadDefaultImage();
 }

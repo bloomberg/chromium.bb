@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 // Size of extension icon in top left of dialog.
 static const int kIconSize = 69;
@@ -41,12 +42,8 @@ void ExtensionUninstallDialog::ConfirmUninstall(const Extension* extension) {
                      ImageLoadingTracker::DONT_CACHE);
 }
 
-void ExtensionUninstallDialog::SetIcon(SkBitmap* image) {
-  if (image)
-    icon_ = *image;
-  else
-    icon_ = SkBitmap();
-  if (icon_.empty()) {
+void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
+  if (image.IsEmpty()) {
     if (extension_->is_app()) {
       icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_APP_DEFAULT_ICON);
@@ -54,11 +51,13 @@ void ExtensionUninstallDialog::SetIcon(SkBitmap* image) {
       icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_EXTENSION_DEFAULT_ICON);
     }
+  } else {
+    icon_ = *image.ToSkBitmap();
   }
 }
 
-void ExtensionUninstallDialog::OnImageLoaded(SkBitmap* image,
-                                             const ExtensionResource& resource,
+void ExtensionUninstallDialog::OnImageLoaded(const gfx::Image& image,
+                                             const std::string& extension_id,
                                              int index) {
   SetIcon(image);
 

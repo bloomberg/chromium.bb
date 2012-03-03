@@ -50,11 +50,11 @@ class ExtensionIconColorManager : public ExtensionIconManager {
         handler_(handler) {}
   virtual ~ExtensionIconColorManager() {}
 
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE {
-    ExtensionIconManager::OnImageLoaded(image, resource, index);
-    handler_->NotifyAppIconReady(resource.extension_id());
+    ExtensionIconManager::OnImageLoaded(image, extension_id, index);
+    handler_->NotifyAppIconReady(extension_id);
   }
 
  private:

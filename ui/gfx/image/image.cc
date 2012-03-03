@@ -307,7 +307,7 @@ NSImage* Image::ToNSImage() const {
 }
 #endif
 
-const SkBitmap* Image::CopySkBitmap() const {
+SkBitmap* Image::CopySkBitmap() const {
   return new SkBitmap(*ToSkBitmap());
 }
 

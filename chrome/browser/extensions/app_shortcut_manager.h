@@ -24,8 +24,8 @@ class AppShortcutManager : public ImageLoadingTracker::Observer,
   // load the application's icon, which is done when we start creating an
   // application's shortcuts. This method receives the icon, and completes
   // the process of installing the shortcuts.
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
   // content::NotificationObserver

@@ -136,11 +136,11 @@ void BrowserActionButton::ButtonPressed(views::Button* sender,
   panel_->OnBrowserActionExecuted(this, false);
 }
 
-void BrowserActionButton::OnImageLoaded(SkBitmap* image,
-                                        const ExtensionResource& resource,
+void BrowserActionButton::OnImageLoaded(const gfx::Image& image,
+                                        const std::string& extension_id,
                                         int index) {
-  if (image)
-    default_icon_ = *image;
+  if (!image.IsEmpty())
+    default_icon_ = *image.ToSkBitmap();
 
   // Call back to UpdateState() because a more specific icon might have been set
   // while the load was outstanding.

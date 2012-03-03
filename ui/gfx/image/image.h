@@ -110,7 +110,7 @@ class UI_EXPORT Image {
   // backing pixels are shared amongst all copies (a fact of each of the
   // converted representations, rather than a limitation imposed by Image) and
   // so the result should be considered immutable.
-  const SkBitmap* CopySkBitmap() const;
+  SkBitmap* CopySkBitmap() const;
 #if defined(TOOLKIT_USES_GTK)
   GdkPixbuf* CopyGdkPixbuf() const;
 #elif defined(OS_MACOSX)

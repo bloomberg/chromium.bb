@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 
@@ -79,13 +80,11 @@ void ExtensionIconManager::RemoveIcon(const std::string& extension_id) {
   pending_icons_.erase(extension_id);
 }
 
-void ExtensionIconManager::OnImageLoaded(SkBitmap* image,
-                                         const ExtensionResource& resource,
+void ExtensionIconManager::OnImageLoaded(const gfx::Image& image,
+                                         const std::string& extension_id,
                                          int index) {
-  if (!image)
+  if (image.IsEmpty())
     return;
-
-  const std::string extension_id = resource.extension_id();
 
   // We may have removed the icon while waiting for it to load. In that case,
   // do nothing.
@@ -93,7 +92,7 @@ void ExtensionIconManager::OnImageLoaded(SkBitmap* image,
     return;
 
   pending_icons_.erase(extension_id);
-  icons_[extension_id] = ApplyTransforms(*image);
+  icons_[extension_id] = ApplyTransforms(*image.ToSkBitmap());
 }
 
 void ExtensionIconManager::EnsureDefaultIcon() {

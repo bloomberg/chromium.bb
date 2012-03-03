@@ -30,8 +30,8 @@ class LauncherIconLoader : public ChromeLauncherDelegate::AppIconLoader,
   virtual void FetchImage(const std::string& id) OVERRIDE;
 
   // ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
  private:

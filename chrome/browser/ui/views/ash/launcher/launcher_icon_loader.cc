@@ -51,8 +51,8 @@ void LauncherIconLoader::FetchImage(const std::string& id) {
       ImageLoadingTracker::CACHE);
 }
 
-void LauncherIconLoader::OnImageLoaded(SkBitmap* image,
-                                       const ExtensionResource& resource,
+void LauncherIconLoader::OnImageLoaded(const gfx::Image& image,
+                                       const std::string& extension_id,
                                        int index) {
   ImageLoaderIDToExtensionIDMap::iterator i = map_.find(index);
   if (i == map_.end())
@@ -60,7 +60,10 @@ void LauncherIconLoader::OnImageLoaded(SkBitmap* image,
 
   std::string id = i->second;
   map_.erase(i);
-  host_->SetAppImage(id, image);
+  if (image.IsEmpty())
+    host_->SetAppImage(id, NULL);
+  else
+    host_->SetAppImage(id, image.ToSkBitmap());
 }
 
 const Extension* LauncherIconLoader::GetExtensionForTab(

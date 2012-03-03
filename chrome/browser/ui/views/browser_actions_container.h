@@ -84,8 +84,8 @@ class BrowserActionButton : public views::MenuButton,
                              const views::Event& event) OVERRIDE;
 
   // Overridden from ImageLoadingTracker.
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
   // Overridden from content::NotificationObserver:

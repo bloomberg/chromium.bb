@@ -1556,7 +1556,9 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
 }
 
 void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
-    SkBitmap* image, const ExtensionResource& resource, int index) {
+    const gfx::Image& image,
+    const std::string& extension_id,
+    int index) {
   // We loaded icons()->size() icons, plus one extra if the page action had
   // a default icon.
   int total_icons = static_cast<int>(page_action_->icon_paths()->size());
@@ -1566,8 +1568,9 @@ void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
 
   // Map the index of the loaded image back to its name. If we ever get an
   // index greater than the number of icons, it must be the default icon.
-  if (image) {
-    GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(image);
+  if (!image.IsEmpty()) {
+    GdkPixbuf* pixbuf =
+        static_cast<GdkPixbuf*>(g_object_ref(image.ToGdkPixbuf()));
     if (index < static_cast<int>(page_action_->icon_paths()->size()))
       pixbufs_[page_action_->icon_paths()->at(index)] = pixbuf;
     else

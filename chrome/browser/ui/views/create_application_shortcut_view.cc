@@ -57,7 +57,7 @@ class AppInfoView : public views::View {
   void UpdateText(const string16& title, const string16& description);
 
   // Updates the icon of the web app.
-  void UpdateIcon(const SkBitmap& new_icon);
+  void UpdateIcon(const gfx::Image& image);
 
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas);
@@ -159,8 +159,9 @@ void AppInfoView::UpdateText(const string16& title,
   SetupLayout();
 }
 
-void AppInfoView::UpdateIcon(const SkBitmap& new_icon) {
-  icon_->SetImage(new_icon);
+void AppInfoView::UpdateIcon(const gfx::Image& image) {
+  if (!image.IsEmpty())
+    icon_->SetImage(image.ToSkBitmap());
 }
 
 void AppInfoView::OnPaint(gfx::Canvas* canvas) {
@@ -469,7 +470,7 @@ void CreateUrlApplicationShortcutView::OnIconDownloaded(bool errored,
   pending_download_ = NULL;
 
   if (!errored && !image.isNull()) {
-    shortcut_info_.favicon = image;
+    shortcut_info_.favicon = gfx::Image(image);
     static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
   } else {
     FetchIcon();
@@ -524,11 +525,16 @@ CreateChromeApplicationShortcutView::~CreateChromeApplicationShortcutView() {}
 
 // Called by tracker_ when the app's icon is loaded.
 void CreateChromeApplicationShortcutView::OnImageLoaded(
-    SkBitmap* image, const ExtensionResource& resource, int index) {
-  if (!image || image->isNull())
-    image = ExtensionIconSource::LoadImageByResourceId(IDR_APP_DEFAULT_ICON);
+    const gfx::Image& image,
+    const std::string& extension_id,
+    int index) {
+  if (image.IsEmpty()) {
+    shortcut_info_.favicon = ui::ResourceBundle::GetSharedInstance().
+        GetImageNamed(IDR_APP_DEFAULT_ICON);
+  } else {
+    shortcut_info_.favicon = image;
+  }
 
-  shortcut_info_.favicon = *image;
   CHECK(app_info_);
   static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
 }

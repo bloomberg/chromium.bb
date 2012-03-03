@@ -35,6 +35,48 @@ NSBitmapImageRep* SkBitmapToImageRep(const SkBitmap& bitmap) {
       [[image representations] lastObject]);
 }
 
+// Adds |image_rep| to |icon_family|. Returns true on success, false on failure.
+bool AddBitmapImageRepToIconFamily(IconFamily* icon_family,
+                                   NSBitmapImageRep* image_rep) {
+  NSSize size = [image_rep size];
+  if (size.width != size.height)
+    return false;
+
+  switch (static_cast<int>(size.width)) {
+    case 512:
+      return [icon_family setIconFamilyElement:kIconServices512PixelDataARGB
+                            fromBitmapImageRep:image_rep];
+    case 256:
+      return [icon_family setIconFamilyElement:kIconServices256PixelDataARGB
+                            fromBitmapImageRep:image_rep];
+    case 128:
+      return [icon_family setIconFamilyElement:kThumbnail32BitData
+                            fromBitmapImageRep:image_rep] &&
+             [icon_family setIconFamilyElement:kThumbnail8BitMask
+                            fromBitmapImageRep:image_rep];
+    case 32:
+      return [icon_family setIconFamilyElement:kLarge32BitData
+                            fromBitmapImageRep:image_rep] &&
+             [icon_family setIconFamilyElement:kLarge8BitData
+                            fromBitmapImageRep:image_rep] &&
+             [icon_family setIconFamilyElement:kLarge8BitMask
+                            fromBitmapImageRep:image_rep] &&
+             [icon_family setIconFamilyElement:kLarge1BitMask
+                            fromBitmapImageRep:image_rep];
+    case 16:
+      return [icon_family setIconFamilyElement:kSmall32BitData
+                            fromBitmapImageRep:image_rep] &&
+             [icon_family setIconFamilyElement:kSmall8BitData
+                            fromBitmapImageRep:image_rep] &&
+             [icon_family setIconFamilyElement:kSmall8BitMask
+                            fromBitmapImageRep:image_rep] &&
+             [icon_family setIconFamilyElement:kSmall1BitMask
+                            fromBitmapImageRep:image_rep];
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 
@@ -150,26 +192,26 @@ bool WebAppShortcutCreator::UpdatePlist(const FilePath& app_path) const {
 }
 
 bool WebAppShortcutCreator::UpdateIcon(const FilePath& app_path) const {
-  // TODO(sail): Add support for multiple icon sizes.
-  if (info_.favicon.empty() || info_.favicon.width() != 32 ||
-      info_.favicon.height() != 32) {
+  if (info_.favicon.IsEmpty())
     return true;
-  }
-
-  NSBitmapImageRep* image_rep = SkBitmapToImageRep(info_.favicon);
-  if (!image_rep)
-    return false;
 
   scoped_nsobject<IconFamily> icon_family([[IconFamily alloc] init]);
-  bool success = [icon_family setIconFamilyElement:kLarge32BitData
-                                fromBitmapImageRep:image_rep] &&
-                 [icon_family setIconFamilyElement:kLarge8BitData
-                                fromBitmapImageRep:image_rep] &&
-                 [icon_family setIconFamilyElement:kLarge8BitMask
-                                fromBitmapImageRep:image_rep] &&
-                 [icon_family setIconFamilyElement:kLarge1BitMask
-                                fromBitmapImageRep:image_rep];
-  if (!success)
+  bool image_added = false;
+  for (size_t i = 0; i < info_.favicon.GetNumberOfSkBitmaps(); ++i) {
+    NSBitmapImageRep* image_rep =
+        SkBitmapToImageRep(*info_.favicon.GetSkBitmapAtIndex(i));
+    if (!image_rep)
+      continue;
+
+    // Missing an icon size is not fatal so don't fail if adding the bitmap
+    // doesn't work.
+    if (!AddBitmapImageRepToIconFamily(icon_family, image_rep))
+      continue;
+
+    image_added = true;
+  }
+
+  if (!image_added)
     return false;
 
   FilePath resources_path = app_path.Append("Contents").Append("Resources");

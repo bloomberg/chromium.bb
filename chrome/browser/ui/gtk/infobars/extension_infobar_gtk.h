@@ -36,8 +36,9 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
                               double* r, double* g, double* b) OVERRIDE;
 
   // Overridden from ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE;
 
   // Overridden from MenuGtk::Delegate:
   virtual void StoppedShowing() OVERRIDE;

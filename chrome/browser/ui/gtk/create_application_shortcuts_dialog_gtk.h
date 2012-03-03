@@ -43,7 +43,7 @@ class CreateApplicationShortcutsDialogGtk
                        OnToggleCheckbox);
 
   virtual void CreateDialogBox(GtkWindow* parent);
-  virtual void CreateIconPixBuf(const SkBitmap& bitmap);
+  virtual void CreateIconPixBuf(const gfx::Image& image);
 
   // This method is called after a shortcut is created.
   // Subclasses can override it to take some action at that time.
@@ -111,8 +111,8 @@ class CreateChromeApplicationShortcutsDialogGtk
   // Implement ImageLoadingTracker::Observer.  |tracker_| is used to
   // load the app's icon.  This method recieves the icon, and adds
   // it to the "Create Shortcut" dailog box.
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
  private:

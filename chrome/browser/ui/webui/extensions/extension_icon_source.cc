@@ -37,9 +37,9 @@ scoped_refptr<RefCountedMemory> BitmapToMemory(const SkBitmap* image) {
   return image_bytes;
 }
 
-void DesaturateImage(SkBitmap* image) {
+SkBitmap DesaturateImage(const SkBitmap* image) {
   color_utils::HSL shift = {-1, 0, 0.6};
-  *image = SkBitmapOperations::CreateHSLShiftedBitmap(*image, shift);
+  return SkBitmapOperations::CreateHSLShiftedBitmap(*image, shift);
 }
 
 SkBitmap* ToBitmap(const unsigned char* data, size_t size) {
@@ -168,13 +168,16 @@ const SkBitmap* ExtensionIconSource::GetDefaultExtensionImage() {
   return default_extension_data_.get();
 }
 
-void ExtensionIconSource::FinalizeImage(SkBitmap* image,
+void ExtensionIconSource::FinalizeImage(const SkBitmap* image,
                                         int request_id) {
+  SkBitmap bitmap;
   if (GetData(request_id)->grayscale)
-    DesaturateImage(image);
+    bitmap = DesaturateImage(image);
+  else
+    bitmap = *image;
 
   ClearData(request_id);
-  SendResponse(request_id, BitmapToMemory(image));
+  SendResponse(request_id, BitmapToMemory(&bitmap));
 }
 
 void ExtensionIconSource::LoadDefaultImage(int request_id) {
@@ -274,16 +277,16 @@ void ExtensionIconSource::OnFaviconDataAvailable(
   }
 }
 
-void ExtensionIconSource::OnImageLoaded(SkBitmap* image,
-                                        const ExtensionResource& resource,
+void ExtensionIconSource::OnImageLoaded(const gfx::Image& image,
+                                        const std::string& extension_id,
                                         int index) {
   int request_id = tracker_map_[index];
   tracker_map_.erase(tracker_map_.find(index));
 
-  if (!image || image->empty())
+  if (image.IsEmpty())
     LoadIconFailed(request_id);
   else
-    FinalizeImage(image, request_id);
+    FinalizeImage(image.ToSkBitmap(), request_id);
 }
 
 bool ExtensionIconSource::ParseData(const std::string& path,

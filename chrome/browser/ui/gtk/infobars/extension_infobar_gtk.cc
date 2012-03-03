@@ -63,17 +63,20 @@ void ExtensionInfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
   *r = *g = *b = 218.0 / 255.0;
 }
 
-void ExtensionInfoBarGtk::OnImageLoaded(
-    SkBitmap* image, const ExtensionResource& resource, int index) {
+void ExtensionInfoBarGtk::OnImageLoaded(const gfx::Image& image,
+                                        const std::string& extension_id,
+                                        int index) {
   if (!delegate_)
     return;  // The delegate can go away while we asynchronously load images.
 
   // TODO(erg): IDR_EXTENSIONS_SECTION should have an IDR_INFOBAR_EXTENSIONS
   // icon of the correct size with real subpixel shading and such.
-  SkBitmap* icon = image;
+  const SkBitmap* icon = NULL;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (!image || image->empty())
+  if (image.IsEmpty())
     icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
+  else
+    icon = image.ToSkBitmap();
 
   SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 
@@ -110,15 +113,11 @@ void ExtensionInfoBarGtk::BuildWidgets() {
   const Extension* extension = delegate_->extension_host()->extension();
   ExtensionResource icon_resource = extension->GetIconResource(
       ExtensionIconSet::EXTENSION_ICON_BITTY, ExtensionIconSet::MATCH_EXACTLY);
-  if (!icon_resource.relative_path().empty()) {
-    // Create a tracker to load the image. It will report back on OnImageLoaded.
-    tracker_.LoadImage(extension, icon_resource,
-                       gfx::Size(ExtensionIconSet::EXTENSION_ICON_BITTY,
-                                 ExtensionIconSet::EXTENSION_ICON_BITTY),
-                       ImageLoadingTracker::DONT_CACHE);
-  } else {
-    OnImageLoaded(NULL, icon_resource, 0);
-  }
+  // Create a tracker to load the image. It will report back on OnImageLoaded.
+  tracker_.LoadImage(extension, icon_resource,
+                     gfx::Size(ExtensionIconSet::EXTENSION_ICON_BITTY,
+                               ExtensionIconSet::EXTENSION_ICON_BITTY),
+                     ImageLoadingTracker::DONT_CACHE);
 
   // Pad the bottom of the infobar by one pixel for the border.
   alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);

@@ -13,11 +13,37 @@
 #include "content/public/browser/notification_service.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #include "webkit/glue/image_decoder.h"
 
 using content::BrowserThread;
 
+////////////////////////////////////////////////////////////////////////////////
+// ImageLoadingTracker::Observer
+
 ImageLoadingTracker::Observer::~Observer() {}
+
+////////////////////////////////////////////////////////////////////////////////
+// ImageLoadingTracker::ImageInfo
+
+ImageLoadingTracker::ImageInfo::ImageInfo(
+    const ExtensionResource resource, gfx::Size max_size)
+    : resource(resource), max_size(max_size) {
+}
+
+ImageLoadingTracker::ImageInfo::~ImageInfo() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ImageLoadingTracker::PendingLoadInfo
+
+ImageLoadingTracker::PendingLoadInfo::PendingLoadInfo()
+  : extension(NULL),
+    pending_count(0) {
+}
+
+ImageLoadingTracker::PendingLoadInfo::~PendingLoadInfo() {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoadingTracker::ImageLoader
@@ -102,7 +128,7 @@ class ImageLoadingTracker::ImageLoader
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
     if (tracker_)
-      tracker_->OnImageLoaded(image, resource, original_size, id);
+      tracker_->OnImageLoaded(image, resource, original_size, id, true);
 
     delete image;
   }
@@ -139,46 +165,93 @@ void ImageLoadingTracker::LoadImage(const Extension* extension,
                                     const ExtensionResource& resource,
                                     const gfx::Size& max_size,
                                     CacheParam cache) {
-  // If we don't have a path we don't need to do any further work, just respond
-  // back.
+  std::vector<ImageInfo> info_list;
+  info_list.push_back(ImageInfo(resource, max_size));
+  LoadImages(extension, info_list, cache);
+}
+
+void ImageLoadingTracker::LoadImages(const Extension* extension,
+                                     const std::vector<ImageInfo>& info_list,
+                                     CacheParam cache) {
+  PendingLoadInfo load_info;
+  load_info.extension = extension;
+  load_info.cache = cache;
+  load_info.extension_id = extension->id();
+  load_info.pending_count = info_list.size();
   int id = next_id_++;
-  if (resource.relative_path().empty()) {
-    OnImageLoaded(NULL, resource, max_size, id);
-    return;
+  load_map_[id] = load_info;
+
+  for (std::vector<ImageInfo>::const_iterator it = info_list.begin();
+       it != info_list.end(); ++it) {
+    // If we don't have a path we don't need to do any further work, just
+    // respond back.
+    if (it->resource.relative_path().empty()) {
+      OnImageLoaded(NULL, it->resource, it->max_size, id, false);
+      continue;
+    }
+
+    DCHECK(extension->path() == it->resource.extension_root());
+
+    // See if the extension has the image already.
+    if (extension->HasCachedImage(it->resource, it->max_size)) {
+      SkBitmap image = extension->GetCachedImage(it->resource, it->max_size);
+      OnImageLoaded(&image, it->resource, it->max_size, id, false);
+      continue;
+    }
+
+    // Instruct the ImageLoader to load this on the File thread. LoadImage does
+    // not block.
+    if (!loader_)
+      loader_ = new ImageLoader(this);
+    loader_->LoadImage(it->resource, it->max_size, id);
   }
-
-  DCHECK(extension->path() == resource.extension_root());
-
-  // See if the extension has the image already.
-  if (extension->HasCachedImage(resource, max_size)) {
-    SkBitmap image = extension->GetCachedImage(resource, max_size);
-    OnImageLoaded(&image, resource, max_size, id);
-    return;
-  }
-
-  if (cache == CACHE)
-    load_map_[id] = extension;
-
-  // Instruct the ImageLoader to load this on the File thread. LoadImage does
-  // not block.
-  if (!loader_)
-    loader_ = new ImageLoader(this);
-  loader_->LoadImage(resource, max_size, id);
 }
 
 void ImageLoadingTracker::OnImageLoaded(
     SkBitmap* image,
     const ExtensionResource& resource,
     const gfx::Size& original_size,
-    int id) {
-  LoadMap::iterator i = load_map_.find(id);
-  if (i != load_map_.end()) {
-    i->second->SetCachedImage(resource, image ? *image : SkBitmap(),
-                              original_size);
-    load_map_.erase(i);
+    int id,
+    bool should_cache) {
+  LoadMap::iterator load_map_it = load_map_.find(id);
+  DCHECK(load_map_it != load_map_.end());
+  PendingLoadInfo* info = &load_map_it->second;
+
+  // Save the pending results.
+  DCHECK(info->pending_count > 0);
+  info->pending_count--;
+  if (image)
+    info->bitmaps.push_back(*image);
+
+  // Add to the extension's image cache if requested.
+  DCHECK(info->cache != CACHE || info->extension);
+  if (should_cache && info->cache == CACHE  &&
+      !info->extension->HasCachedImage(resource, original_size)) {
+    info->extension->SetCachedImage(resource, image ? *image : SkBitmap(),
+                                    original_size);
   }
 
-  observer_->OnImageLoaded(image, resource, id);
+  // If all pending images are done then report back.
+  if (info->pending_count == 0) {
+    gfx::Image image;
+    std::string extension_id = info->extension_id;
+
+    if (info->bitmaps.size() > 0) {
+      std::vector<const SkBitmap*> bitmaps;
+      for (std::vector<SkBitmap>::const_iterator it = info->bitmaps.begin();
+           it != info->bitmaps.end(); ++it) {
+        // gfx::Image takes ownership of this bitmap.
+        bitmaps.push_back(new SkBitmap(*it));
+      }
+      image = gfx::Image(bitmaps);
+    }
+
+    load_map_.erase(load_map_it);
+
+    // ImageLoadingTracker might be deleted after the callback so don't
+    // anything after this statement.
+    observer_->OnImageLoaded(image, extension_id, id);
+  }
 }
 
 void ImageLoadingTracker::Observe(int type,
@@ -189,12 +262,13 @@ void ImageLoadingTracker::Observe(int type,
   const Extension* extension =
       content::Details<UnloadedExtensionInfo>(details)->extension;
 
-  // Remove all entries in the load_map_ referencing the extension. This ensures
-  // we don't attempt to cache the image when the load completes.
-  for (LoadMap::iterator i = load_map_.begin(); i != load_map_.end();) {
-    if (i->second == extension)
-      load_map_.erase(i++);
-    else
-      ++i;
+  // Remove reference to this extension from all pending load entries. This
+  // ensures we don't attempt to cache the image when the load completes.
+  for (LoadMap::iterator i = load_map_.begin(); i != load_map_.end(); ++i) {
+    PendingLoadInfo* info = &i->second;
+    if (info->extension == extension) {
+      info->extension = NULL;
+      info->cache = DONT_CACHE;
+    }
   }
 }

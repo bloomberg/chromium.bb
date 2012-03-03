@@ -23,6 +23,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/image/image.h"
 
 using content::WebContents;
 
@@ -256,11 +257,11 @@ void ExtensionTabHelper::SetAppIcon(const SkBitmap& app_icon) {
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
-void ExtensionTabHelper::OnImageLoaded(SkBitmap* image,
-                                       const ExtensionResource& resource,
+void ExtensionTabHelper::OnImageLoaded(const gfx::Image& image,
+                                       const std::string& extension_id,
                                        int index) {
-  if (image) {
-    extension_app_icon_ = *image;
+  if (!image.IsEmpty()) {
+    extension_app_icon_ = *image.ToSkBitmap();
     web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   }
 }

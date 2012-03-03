@@ -25,6 +25,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 
 using content::BrowserThread;
@@ -66,10 +67,11 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
 }
 
 void CreateApplicationShortcutsDialogGtk::CreateIconPixBuf(
-    const SkBitmap& bitmap) {
+    const gfx::Image& image) {
   // Prepare the icon. Try to scale it if it's too small, otherwise it would
   // look weird.
-  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&shortcut_info_.favicon);
+  GdkPixbuf* pixbuf =
+      static_cast<GdkPixbuf*>(g_object_ref(image.ToGdkPixbuf()));
   int pixbuf_width = gdk_pixbuf_get_width(pixbuf);
   int pixbuf_height = gdk_pixbuf_get_height(pixbuf);
   if (pixbuf_width == pixbuf_height && pixbuf_width < kIconPreviewSizePixels) {
@@ -332,12 +334,16 @@ CreateChromeApplicationShortcutsDialogGtk::
 
 // Called by tracker_ when the app's icon is loaded.
 void CreateChromeApplicationShortcutsDialogGtk::OnImageLoaded(
-    SkBitmap* image, const ExtensionResource& resource, int index) {
-  if (!image || image->isNull())
-    image = ExtensionIconSource::LoadImageByResourceId(IDR_APP_DEFAULT_ICON);
+    const gfx::Image& image,
+    const std::string& extension_id,
+    int index) {
+  if (image.IsEmpty()) {
+    shortcut_info_.favicon =
+        ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
+  } else {
+    shortcut_info_.favicon = image;
+  }
 
-  shortcut_info_.favicon = *image;
-
-  CreateIconPixBuf(*image);
+  CreateIconPixBuf(shortcut_info_.favicon);
   CreateDialogBox(parent_);
 }

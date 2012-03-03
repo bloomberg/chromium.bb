@@ -122,7 +122,8 @@ class ExtensionTabHelper
   void UpdateExtensionAppIcon(const Extension* extension);
 
   // ImageLoadingTracker::Observer.
-  virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
   // WebstoreInlineInstaller::Delegate.

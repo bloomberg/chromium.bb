@@ -351,7 +351,7 @@ std::string ChromeLauncherDelegate::GetAppID(TabContentsWrapper* tab) {
 }
 
 void ChromeLauncherDelegate::SetAppImage(const std::string& id,
-                                         SkBitmap* image) {
+                                         const SkBitmap* image) {
   for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ++i) {
     if (i->second.app_id == id) {

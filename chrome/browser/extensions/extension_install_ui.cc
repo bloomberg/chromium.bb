@@ -41,6 +41,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 using content::WebContents;
 using extensions::BundleInstaller;
@@ -323,7 +324,7 @@ void ExtensionInstallUI::OnInstallFailure(const string16& error) {
       error);
 }
 
-void ExtensionInstallUI::SetIcon(SkBitmap* image) {
+void ExtensionInstallUI::SetIcon(const SkBitmap* image) {
   if (image)
     icon_ = *image;
   else
@@ -332,9 +333,10 @@ void ExtensionInstallUI::SetIcon(SkBitmap* image) {
     icon_ = Extension::GetDefaultIcon(extension_->is_app());
 }
 
-void ExtensionInstallUI::OnImageLoaded(
-    SkBitmap* image, const ExtensionResource& resource, int index) {
-  SetIcon(image);
+void ExtensionInstallUI::OnImageLoaded(const gfx::Image& image,
+                                       const std::string& extension_id,
+                                       int index) {
+  SetIcon(image.IsEmpty() ? NULL : image.ToSkBitmap());
 
   switch (prompt_type_) {
     case PERMISSIONS_PROMPT:

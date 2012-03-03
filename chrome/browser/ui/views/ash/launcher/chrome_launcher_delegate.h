@@ -135,7 +135,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   // Sets the image for an app tab. This is intended to be invoked from the
   // AppIconLoader.
-  void SetAppImage(const std::string& app_id, SkBitmap* image);
+  void SetAppImage(const std::string& app_id, const SkBitmap* image);
 
   ash::LauncherModel* model() { return model_; }
 

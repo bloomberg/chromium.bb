@@ -174,8 +174,9 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   virtual void OnInstallFailure(const string16& error);
 
   // ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE;
 
   // Opens a new tab page and animates the app icon for the app with id
   // |app_id|.
@@ -201,7 +202,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
   // Sets the icon that will be used in any UI. If |icon| is NULL, or contains
   // an empty bitmap, then a default icon will be used instead.
-  void SetIcon(SkBitmap* icon);
+  void SetIcon(const SkBitmap* icon);
 
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.

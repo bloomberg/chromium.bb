@@ -37,8 +37,9 @@ class PageActionDecoration : public ImageDecoration,
   bool preview_enabled() const { return preview_enabled_; }
 
   // Overridden from |ImageLoadingTracker::Observer|.
-  virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE;
 
   // Called to notify the Page Action that it should determine whether
   // to be visible or hidden. |contents| is the WebContents that is

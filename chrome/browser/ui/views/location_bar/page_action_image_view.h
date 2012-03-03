@@ -53,8 +53,8 @@ class PageActionImageView : public views::ImageView,
                                bool is_mouse_gesture) OVERRIDE;
 
   // Overridden from ImageLoadingTracker.
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
   // Overridden from ExtensionContextMenuModelModel::Delegate

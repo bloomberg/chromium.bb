@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 
 class CommandLine;
 
@@ -77,7 +78,7 @@ class ShellIntegration {
     string16 title;
     string16 description;
     FilePath extension_path;
-    SkBitmap favicon;
+    gfx::Image favicon;
 
     // Shortcuts to platform apps are created differently. They start up with
     // their own user data directory and load the app from |extension_path|.

@@ -37,8 +37,8 @@ class ExtensionInfoBar : public InfoBarView,
   virtual int ContentMinimumWidth() const OVERRIDE;
 
   // ImageLoadingTracker::Observer:
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int index) OVERRIDE;
 
   // ExtensionInfoBarDelegate::DelegateObserver:

@@ -43,8 +43,8 @@ class ExtensionAppItem : public ChromeAppListItem,
   void LoadDefaultImage();
 
   // Overridden from ImageLoadingTracker::Observer
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int tracker_index) OVERRIDE;
 
   // Overridden from ChromeAppListItem:

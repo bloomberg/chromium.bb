@@ -23,6 +23,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 const CGFloat kAnimationDuration = 0.12;
@@ -72,32 +73,29 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
     ExtensionResource icon_resource =
         extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_BITTY,
                                    ExtensionIconSet::MATCH_EXACTLY);
-    if (!icon_resource.relative_path().empty()) {
-      tracker_.LoadImage(extension, icon_resource,
-                         gfx::Size(ExtensionIconSet::EXTENSION_ICON_BITTY,
-                                   ExtensionIconSet::EXTENSION_ICON_BITTY),
-                         ImageLoadingTracker::DONT_CACHE);
-    } else {
-      OnImageLoaded(NULL, icon_resource, 0);
-    }
+    tracker_.LoadImage(extension, icon_resource,
+                       gfx::Size(ExtensionIconSet::EXTENSION_ICON_BITTY,
+                                 ExtensionIconSet::EXTENSION_ICON_BITTY),
+                       ImageLoadingTracker::DONT_CACHE);
   }
 
   // ImageLoadingTracker::Observer implementation.
   // TODO(andybons): The infobar view implementations share a lot of the same
   // code. Come up with a strategy to share amongst them.
-  virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index) {
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE {
     if (!delegate_)
       return;  // The delegate can go away while the image asynchronously loads.
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
     // Fall back on the default extension icon on failure.
-    SkBitmap* icon;
-    if (!image || image->empty())
+    const SkBitmap* icon;
+    if (image.IsEmpty())
       icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
     else
-      icon = image;
+      icon = image.ToSkBitmap();
 
     SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 

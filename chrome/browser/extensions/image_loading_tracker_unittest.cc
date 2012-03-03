@@ -15,6 +15,7 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 
 using content::BrowserThread;
@@ -30,15 +31,13 @@ class ImageLoadingTrackerTest : public testing::Test,
         io_thread_(BrowserThread::IO) {
   }
 
-  virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
-                             int index) {
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE {
     image_loaded_count_++;
     if (quit_in_image_loaded_)
       MessageLoop::current()->Quit();
-    if (image)
-      image_ = *image;
-    else
-      image_.reset();
+    image_ = image;
   }
 
   void WaitForImageLoad() {
@@ -80,7 +79,7 @@ class ImageLoadingTrackerTest : public testing::Test,
         Extension::STRICT_ERROR_CHECKS, &error);
   }
 
-  SkBitmap image_;
+  gfx::Image image_;
 
  private:
   virtual void SetUp() {
@@ -106,7 +105,7 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
                                  ExtensionIconSet::MATCH_EXACTLY);
   gfx::Size max_size(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
                      ExtensionIconSet::EXTENSION_ICON_SMALLISH);
-  ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
+  ImageLoadingTracker loader(this);
   loader.LoadImage(extension.get(),
                    image_resource,
                    max_size,
@@ -121,7 +120,8 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, image_.width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+            image_.ToSkBitmap()->width());
 
   // The image should be cached in the Extension.
   EXPECT_TRUE(extension->HasCachedImage(image_resource, max_size));
@@ -139,7 +139,8 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, image_.width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+            image_.ToSkBitmap()->width());
 }
 
 // Tests deleting an extension while waiting for the image to load doesn't cause
@@ -151,7 +152,7 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   ExtensionResource image_resource =
       extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
                                  ExtensionIconSet::MATCH_EXACTLY);
-  ImageLoadingTracker loader(static_cast<ImageLoadingTracker::Observer*>(this));
+  ImageLoadingTracker loader(this);
   loader.LoadImage(extension.get(),
                    image_resource,
                    gfx::Size(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
@@ -180,5 +181,43 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that the image was loaded.
-  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, image_.width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+            image_.ToSkBitmap()->width());
+}
+
+// Tests loading multiple dimensions of the same image.
+TEST_F(ImageLoadingTrackerTest, MultipleImages) {
+  scoped_refptr<Extension> extension(CreateExtension());
+  ASSERT_TRUE(extension.get() != NULL);
+
+  std::vector<ImageLoadingTracker::ImageInfo> info_list;
+  int sizes[] = {ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+                 ExtensionIconSet::EXTENSION_ICON_BITTY};
+  for (size_t i = 0; i < arraysize(sizes); ++i) {
+    ExtensionResource resource =
+        extension->GetIconResource(sizes[i], ExtensionIconSet::MATCH_EXACTLY);
+    info_list.push_back(ImageLoadingTracker::ImageInfo(
+        resource, gfx::Size(sizes[i], sizes[i])));
+  }
+
+  ImageLoadingTracker loader(this);
+  loader.LoadImages(extension.get(), info_list, ImageLoadingTracker::CACHE);
+
+  // The image isn't cached, so we should not have received notification.
+  EXPECT_EQ(0, image_loaded_count());
+
+  WaitForImageLoad();
+
+  // We should have gotten the image.
+  EXPECT_EQ(1, image_loaded_count());
+
+  // Check that all images were loaded.
+  ASSERT_EQ(2u, image_.GetNumberOfSkBitmaps());
+  const SkBitmap* bmp1 = image_.GetSkBitmapAtIndex(0);
+  const SkBitmap* bmp2 = image_.GetSkBitmapAtIndex(1);
+  if (bmp1->width() > bmp2->width()) {
+    std::swap(bmp1, bmp2);
+  }
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_BITTY, bmp1->width());
+  EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, bmp2->width());
 }

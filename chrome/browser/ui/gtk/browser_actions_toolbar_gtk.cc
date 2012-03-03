@@ -39,6 +39,7 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 
@@ -160,11 +161,13 @@ class BrowserActionButton : public content::NotificationObserver,
   }
 
   // ImageLoadingTracker::Observer implementation.
-  void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
-                     int index) {
-    if (image) {
-      default_skbitmap_ = *image;
-      default_icon_ = gfx::GdkPixbufFromSkBitmap(image);
+  void OnImageLoaded(const gfx::Image& image,
+                     const std::string& extension_id,
+                     int index) OVERRIDE {
+    if (!image.IsEmpty()) {
+      default_skbitmap_ = *image.ToSkBitmap();
+      default_icon_ =
+          static_cast<GdkPixbuf*>(g_object_ref(image.ToGdkPixbuf()));
     }
     UpdateState();
   }

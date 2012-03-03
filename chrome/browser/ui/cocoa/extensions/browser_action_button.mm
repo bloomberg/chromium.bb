@@ -22,6 +22,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/gfx/canvas_skia_paint.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/gfx/size.h"
@@ -66,10 +67,11 @@ class ExtensionImageTrackerBridge : public content::NotificationObserver,
   ~ExtensionImageTrackerBridge() {}
 
   // ImageLoadingTracker::Observer implementation.
-  void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
-                     int index) {
-    if (image)
-      [owner_ setDefaultIcon:gfx::SkBitmapToNSImage(*image)];
+  void OnImageLoaded(const gfx::Image& image,
+                     const std::string& extension_id,
+                     int index) OVERRIDE {
+    if (!image.IsEmpty())
+      [owner_ setDefaultIcon:image.ToNSImage()];
     [owner_ updateState];
   }
 

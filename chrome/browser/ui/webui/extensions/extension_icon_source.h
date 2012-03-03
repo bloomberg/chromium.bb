@@ -90,7 +90,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   // Performs any remaining transformations (like desaturating the |image|),
   // then returns the |image| to the client and clears up any temporary data
   // associated with the |request_id|.
-  void FinalizeImage(SkBitmap* image, int request_id);
+  void FinalizeImage(const SkBitmap* image, int request_id);
 
   // Loads the default image for |request_id| and returns to the client.
   void LoadDefaultImage(int request_id);
@@ -114,8 +114,8 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
                               history::FaviconData favicon);
 
   // ImageLoadingTracker::Observer
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
                              int id) OVERRIDE;
 
   // Called when the extension doesn't have an icon. We fall back to multiple

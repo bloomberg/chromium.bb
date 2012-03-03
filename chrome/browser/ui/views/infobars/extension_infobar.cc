@@ -16,6 +16,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/widget/widget.h"
@@ -93,29 +94,27 @@ void ExtensionInfoBar::ViewHierarchyChanged(bool is_add,
   ExtensionIconSet::Icons image_size = ExtensionIconSet::EXTENSION_ICON_BITTY;
   ExtensionResource icon_resource = extension->GetIconResource(
       image_size, ExtensionIconSet::MATCH_EXACTLY);
-  if (!icon_resource.relative_path().empty()) {
-    tracker_.LoadImage(extension, icon_resource,
-        gfx::Size(image_size, image_size), ImageLoadingTracker::DONT_CACHE);
-  } else {
-    OnImageLoaded(NULL, icon_resource, 0);
-  }
+  tracker_.LoadImage(extension, icon_resource,
+      gfx::Size(image_size, image_size), ImageLoadingTracker::DONT_CACHE);
 }
 
 int ExtensionInfoBar::ContentMinimumWidth() const {
   return menu_->GetPreferredSize().width() + kMenuHorizontalMargin;
 }
 
-void ExtensionInfoBar::OnImageLoaded(SkBitmap* image,
-                                     const ExtensionResource& resource,
+void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image,
+                                     const std::string& extension_id,
                                      int index) {
   if (!GetDelegate())
     return;  // The delegate can go away while we asynchronously load images.
 
-  SkBitmap* icon = image;
+  const SkBitmap* icon = NULL;
   // Fall back on the default extension icon on failure.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (!image || image->empty())
+  if (image.IsEmpty())
     icon = rb.GetBitmapNamed(IDR_EXTENSIONS_SECTION);
+  else
+    icon = image.ToSkBitmap();
 
   SkBitmap* drop_image = rb.GetBitmapNamed(IDR_APP_DROPARROW);
 

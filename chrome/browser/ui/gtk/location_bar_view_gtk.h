@@ -228,8 +228,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
     void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
     // A callback from ImageLoadingTracker for when the image has loaded.
-    virtual void OnImageLoaded(
-        SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
+    virtual void OnImageLoaded(const gfx::Image& image,
+                               const std::string& extension_id,
+                               int index) OVERRIDE;
 
     // Simulate left mouse click on the page action button.
     void TestActivatePageAction();

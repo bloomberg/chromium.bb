@@ -23,6 +23,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/l10n/l10n_util_collator.h"
+#include "ui/gfx/image/image.h"
 
 class ExtensionNameComparator {
  public:
@@ -55,9 +56,9 @@ class BackgroundApplicationListModel::Application
   virtual ~Application();
 
   // Invoked when a request icon is available.
-  virtual void OnImageLoaded(SkBitmap* image,
-                             const ExtensionResource& resource,
-                             int index);
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int index) OVERRIDE;
 
   // Uses the FILE thread to request this extension's icon, sized
   // appropriately.
@@ -129,12 +130,12 @@ BackgroundApplicationListModel::Application::Application(
 }
 
 void BackgroundApplicationListModel::Application::OnImageLoaded(
-    SkBitmap* image,
-    const ExtensionResource& resource,
+    const gfx::Image& image,
+    const std::string& extension_id,
     int index) {
-  if (!image)
+  if (image.IsEmpty())
     return;
-  icon_.reset(new SkBitmap(*image));
+  icon_.reset(image.CopySkBitmap());
   model_->SendApplicationDataChangedNotifications(extension_);
 }
 

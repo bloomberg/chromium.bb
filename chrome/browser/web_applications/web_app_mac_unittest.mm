@@ -103,8 +103,8 @@ TEST(WebAppShortcutCreatorTest, UpdateIcon) {
   FilePath dst_path = scoped_temp_dir.path();
 
   ShellIntegration::ShortcutInfo info = GetShortcutInfo();
-  info.favicon = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_PRODUCT_LOGO_32).ToSkBitmap();
+  info.favicon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_PRODUCT_LOGO_32);
   WebAppShortcutCreatorMock shortcut_creator(info);
 
   shortcut_creator.UpdateIcon(dst_path);
@@ -114,8 +114,8 @@ TEST(WebAppShortcutCreatorTest, UpdateIcon) {
   scoped_nsobject<NSImage> image([[NSImage alloc] initWithContentsOfFile:
       base::mac::FilePathToNSString(icon_path)]);
   EXPECT_TRUE(image);
-  EXPECT_EQ(info.favicon.width(), [image size].width);
-  EXPECT_EQ(info.favicon.height(), [image size].height);
+  EXPECT_EQ(info.favicon.ToSkBitmap()->width(), [image size].width);
+  EXPECT_EQ(info.favicon.ToSkBitmap()->height(), [image size].height);
 }
 
 }  // namespace web_app
