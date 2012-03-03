@@ -3,7 +3,7 @@ TESTS = $(check_PROGRAMS)
 
 check_PROGRAMS = array-test map-test connection-test
 
-map_test_SOURCES = map-test.c test-runner.c
+map_test_SOURCES = map-test.c test-runner.c test-runner.h
 array_test_SOURCES = array-test.c test-runner.c
 connection_test_SOURCES = connection-test.c test-runner.c
 
