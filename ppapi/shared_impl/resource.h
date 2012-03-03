@@ -44,6 +44,8 @@
   F(PPB_InputEvent_API) \
   F(PPB_LayerCompositor_API) \
   F(PPB_MessageLoop_API) \
+  F(PPB_NetworkList_Private_API) \
+  F(PPB_NetworkMonitor_Private_API) \
   F(PPB_PDFFont_API) \
   F(PPB_ResourceArray_API) \
   F(PPB_Scrollbar_API) \

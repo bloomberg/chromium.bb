@@ -20,6 +20,7 @@
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
+#include "ppapi/c/private/ppb_network_monitor_private.h"
 #include "ppapi/shared_impl/api_id.h"
 
 struct PP_Flash_Menu;
@@ -103,6 +104,10 @@ class ResourceCreationAPI {
       const PP_Point* mouse_position,
       int32_t click_count,
       const PP_Point* mouse_movement) = 0;
+  virtual PP_Resource CreateNetworkMonitor(
+      PP_Instance instance,
+      PPB_NetworkMonitor_Callback callback,
+      void* user_data) = 0;
   virtual PP_Resource CreateResourceArray(PP_Instance instance,
                                           const PP_Resource elements[],
                                           uint32_t size) = 0;
