@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_helpers.h"
 #include "base/observer_list.h"

@@ -4,18 +4,15 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
-
+#include "base/lazy_instance.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/ui/browser_window.h"
-#if defined(OS_MACOSX)
-#include "chrome/browser/extensions/extension_host_mac.h"
-#endif
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_view_type.h"
@@ -29,6 +26,10 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/extensions/extension_host_mac.h"
+#endif
 
 using content::BrowserThread;
 using content::OpenURLParams;
@@ -263,7 +264,6 @@ ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(
       return host;
   }
   return NULL;
-
 }
 
 std::set<RenderViewHost*>
@@ -332,7 +332,7 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
     return 0;
 
   int& count = ::GetLazyKeepaliveCount(GetProfile(), extension);
-  DCHECK(count > 0);
+  DCHECK_GT(count, 0);
   if (--count == 0)
     OnLazyBackgroundPageIdle(extension->id());
 

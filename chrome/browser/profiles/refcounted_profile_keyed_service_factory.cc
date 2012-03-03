@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/refcounted_profile_keyed_service_factory.h"
 
+#include "base/logging.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 #include "content/public/browser/browser_thread.h"

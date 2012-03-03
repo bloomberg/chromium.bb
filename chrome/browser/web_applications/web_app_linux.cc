@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 
 #include "base/environment.h"
+#include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace web_app {

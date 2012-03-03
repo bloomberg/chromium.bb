@@ -4,12 +4,15 @@
 
 #include "content/browser/download/drag_download_util.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -66,11 +69,11 @@ FileStream* CreateFileStreamForDrop(FilePath* file_path, net::NetLog* net_log) {
     if (seq == 0) {
       new_file_path = *file_path;
     } else {
- #if defined(OS_WIN)
+#if defined(OS_WIN)
       string16 suffix = ASCIIToUTF16("-") + base::IntToString16(seq);
- #else
+#else
       std::string suffix = std::string("-") + base::IntToString(seq);
- #endif
+#endif
       new_file_path = file_path->InsertBeforeExtension(suffix);
     }
 

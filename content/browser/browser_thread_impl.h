@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 #pragma once
 
-#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"

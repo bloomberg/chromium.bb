@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -30,8 +30,10 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "googleurl/src/gurl.h"

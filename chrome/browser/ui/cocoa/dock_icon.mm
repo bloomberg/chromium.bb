@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/dock_icon.h"
 
+#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_nsobject.h"
 #include "content/public/browser/browser_thread.h"

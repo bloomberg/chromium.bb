@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -418,24 +419,24 @@ void LoginPerformer::ResolveInitialNetworkAuthFailure() {
 
 void LoginPerformer::ResolveLockLoginFailure() {
   if (last_login_failure_.reason() == LoginFailure::LOGIN_TIMED_OUT) {
-     LOG(WARNING) << "Online login timed out - unlocking screen. "
-                  << "Granting user access based on offline auth only.";
-     RequestScreenUnlock();
-     return;
-   } else if (last_login_failure_.reason() ==
-                  LoginFailure::NETWORK_AUTH_FAILED) {
-     ResolveLockNetworkAuthFailure();
-     return;
-   } else if (last_login_failure_.reason() ==
-                  LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME ||
-              last_login_failure_.reason() ==
-                  LoginFailure::DATA_REMOVAL_FAILED) {
-     LOG(ERROR) << "Cryptohome error, forcing sign out.";
-   } else {
-     // COULD_NOT_MOUNT_TMPFS, UNLOCK_FAILED should not happen here.
-     NOTREACHED();
-   }
-   ScreenLocker::default_screen_locker()->Signout();
+    LOG(WARNING) << "Online login timed out - unlocking screen. "
+                 << "Granting user access based on offline auth only.";
+    RequestScreenUnlock();
+    return;
+  } else if (last_login_failure_.reason() ==
+             LoginFailure::NETWORK_AUTH_FAILED) {
+    ResolveLockNetworkAuthFailure();
+    return;
+  } else if (last_login_failure_.reason() ==
+             LoginFailure::COULD_NOT_MOUNT_CRYPTOHOME ||
+             last_login_failure_.reason() ==
+             LoginFailure::DATA_REMOVAL_FAILED) {
+    LOG(ERROR) << "Cryptohome error, forcing sign out.";
+  } else {
+    // COULD_NOT_MOUNT_TMPFS, UNLOCK_FAILED should not happen here.
+    NOTREACHED();
+  }
+  ScreenLocker::default_screen_locker()->Signout();
 }
 
 void LoginPerformer::ResolveLockNetworkAuthFailure() {

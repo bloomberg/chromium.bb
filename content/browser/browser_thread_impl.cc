@@ -4,6 +4,8 @@
 
 #include "content/browser/browser_thread_impl.h"
 
+#include <string>
+
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -12,6 +14,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/browser/browser_thread_delegate.h"
 
 namespace content {
 
@@ -32,10 +35,9 @@ static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
 struct BrowserThreadGlobals {
   BrowserThreadGlobals()
       : blocking_pool(new base::SequencedWorkerPool(3, "BrowserBlocking")) {
-    memset(threads, 0,
-           BrowserThread::ID_COUNT * sizeof(BrowserThreadImpl*));
+    memset(threads, 0, BrowserThread::ID_COUNT * sizeof(threads[0]));
     memset(thread_delegates, 0,
-           BrowserThread::ID_COUNT * sizeof(BrowserThreadDelegate*));
+           BrowserThread::ID_COUNT * sizeof(thread_delegates[0]));
   }
 
   // This lock protects |threads|. Do not read or modify that array

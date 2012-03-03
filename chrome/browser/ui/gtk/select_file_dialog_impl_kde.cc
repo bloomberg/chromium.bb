@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/gtk/select_file_dialog_impl.h"
 #include "content/public/browser/browser_thread.h"
