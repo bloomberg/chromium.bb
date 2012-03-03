@@ -1,53 +1,69 @@
 if HAVE_PUBLICAN
-noinst_DATA = Wayland
+noinst_DATA = Wayland $(publican_targets)
+pubdir = $(docdir)/Wayland/en-US
 
 publican_sources = \
-	$(srcdir)/en-US/Wayland.ent \
-	$(srcdir)/en-US/Architecture.xml \
-	$(srcdir)/en-US/Author_Group.xml \
-	$(srcdir)/en-US/Book_Info.xml \
-	$(srcdir)/en-US/Chapter.xml \
-	$(srcdir)/en-US/Preface.xml \
-	$(srcdir)/en-US/Wayland.xml \
-	$(srcdir)/en-US/Revision_History.xml \
-	$(srcdir)/en-US/images/icon.svg  \
-	$(srcdir)/en-US/images/wayland-architecture.png \
-	$(srcdir)/en-US/images/wayland.png  \
-	$(srcdir)/en-US/images/x-architecture.png
+	$(srcdir)/en_US/Wayland.ent \
+	$(srcdir)/en_US/Architecture.xml \
+	$(srcdir)/en_US/Author_Group.xml \
+	$(srcdir)/en_US/Book_Info.xml \
+	$(srcdir)/en_US/Chapter.xml \
+	$(srcdir)/en_US/Preface.xml \
+	$(srcdir)/en_US/Wayland.xml \
+	$(srcdir)/en_US/Revision_History.xml \
+	$(srcdir)/en_US/images/icon.svg  \
+	$(srcdir)/en_US/images/wayland-architecture.png \
+	$(srcdir)/en_US/images/wayland.png  \
+	$(srcdir)/en_US/images/x-architecture.png
 
-# publican does not support out-of-tree builds and during make distcheck the
-# source tree is read-only so we can't chdir and/or dump the protocol there
-# copy the tree into _build, leaving a marker file to clean up after
-# distclean
-# See https://bugzilla.redhat.com/show_bug.cgi?id=798484 for the chmod
-copy-sources:
-	if ! test -e "en-US/"; then \
-		mkdir en-US/; \
-		touch en-US/need-distclean; \
-		cp -r $(srcdir)/en-US/* en-US; \
-		chmod u+w en-US/images; \
-	fi
+publican_targets = $(publican_sources:$(srcdir)/en_US%=$(builddir)/en-US%) \
+	en-US/Protocol.xml
 
-Wayland: docbook-xsl publican.cfg $(publican_sources)
-	publican build --config=$(srcdir)/publican.cfg --lang en-US --format html,pdf
+# The Protocol.xml is purely generated and required before running publican
+en-US/Protocol.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-to-docbook.xsl
+	$(AM_V_GEN)$(MKDIR_P) en-US/images
+	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-to-docbook.xsl \
+		$(top_srcdir)/protocol/wayland.xml > en-US/Protocol.xml
 
-# This must be run befor the publican run
-docbook-xsl: copy-sources $(top_srcdir)/protocol/wayland.xml $(srcdir)/protocol-to-docbook.xsl
-	$(AM_V_GEN)$(XSLTPROC) $(srcdir)/protocol-to-docbook.xsl $(top_srcdir)/protocol/wayland.xml > $(builddir)/en-US/Protocol.xml
+# Copy the en_US source files into en-US destination
+# This is required for out-of-source-tree build as publican does not allow us
+# to specify the location of the source code.
+$(builddir)/en-US/%: $(srcdir)/en_US/% en-US/Protocol.xml $(publican_sources)
+	$(AM_V_GEN)cp -f $< $@
+
+# Run publican for the builddir on the generated (or copied) source
+# The output formats are generated in the Wayland sub directory
+Wayland: $(publican_targets)
+	$(AM_V_GEN)$(PUBLICAN) build --lang en-US --format html,pdf \
+		--config $(srcdir)/publican.cfg
+
+CLEANFILES = en-US/Protocol.xml $(publican_targets)
 
 clean-local:
-	-rm -rf Wayland
-	if test -e "en-US/need-distclean"; then \
-		rm -rf en-US; \
-	fi
+	$(AM_V_at)rm -fr en-US
+	$(AM_V_at)rm -fr Wayland
 
 install-data-local:
-	$(MKDIR_P) $(DESTDIR)$(docdir)
-	cp -R $(builddir)/Wayland $(DESTDIR)$(docdir)
+	test -z "$(pubdir)/html/Common_Content/css" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html/Common_Content/css"
+	test -z "$(pubdir)/html/Common_Content/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html/Common_Content/images"
+	test -z "$(pubdir)/html/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/html/images"
+	test -z "$(pubdir)/pdf" || $(mkdir_p) "$(DESTDIR)$(pubdir)/pdf"
+	test -z "$(pubdir)/xml/Common_Content/css" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/Common_Content/css"
+	test -z "$(pubdir)/xml/Common_Content/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/Common_Content/images"
+	test -z "$(pubdir)/xml/images" || $(mkdir_p) "$(DESTDIR)$(pubdir)/xml/images"
+	list=`find $(builddir)/Wayland/en-US -path './Wayland/en-US/xml_tmp' -prune -o -type f`; \
+	for p in $$list; do \
+	  echo " $(INSTALL_DATA) '$$p' '$(DESTDIR)$(docdir)/$$p'"; \
+	  $(INSTALL_DATA) "$$p" "$(DESTDIR)$(docdir)/$$p"; \
+	done;
 
 uninstall-local:
-	-rm -rf $(DESTDIR)$(docdir)/Wayland/*
-	-rmdir $(DESTDIR)$(docdir)/Wayland
+	@if test -n $(DESTDIR)$(docdir); then \
+	  if test -d $(DESTDIR)$(docdir); then \
+	    echo " rm -fr $(DESTDIR)$(docdir)/Wayland;"; \
+	    rm -fr $(DESTDIR)$(docdir)/Wayland; \
+	  fi; \
+	fi;
 
 EXTRA_DIST = $(publican_sources) publican.cfg protocol-to-docbook.xsl
 
