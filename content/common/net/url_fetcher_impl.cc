@@ -99,19 +99,17 @@ class URLFetcherImpl::Core
     DISALLOW_COPY_AND_ASSIGN(Registry);
   };
 
-  // Class TempFileWriter encapsulates all state involved in writing
-  // response bytes to a temporary file. It is only used if
-  // |Core::response_destination_| == TEMP_FILE.  Each instance of
-  // TempFileWriter is owned by a URLFetcher::Core, which manages
+  // Class FileWriter encapsulates all state involved in writing response bytes
+  // to a file. It is only used if |Core::response_destination_| == FILE.
+  // Each instance of FileWriter is owned by a URLFetcher::Core, which manages
   // its lifetime and never transfers ownership.  While writing to
   // a file, all function calls happen on the IO thread.
-  class TempFileWriter {
+  class FileWriter {
    public:
-    TempFileWriter(
-        URLFetcherImpl::Core* core,
-        scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
+    FileWriter(URLFetcherImpl::Core* core,
+               scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
 
-    ~TempFileWriter();
+    ~FileWriter();
     void CreateTempFile();
     void DidCreateTempFile(base::PlatformFileError error_code,
                            base::PassPlatformFile file_handle,
@@ -122,26 +120,25 @@ class URLFetcherImpl::Core
 
     // Called when a write has been done.  Continues writing if there are
     // any more bytes to write.  Otherwise, initiates a read in core_.
-    void ContinueWrite(base::PlatformFileError error_code,
-                       int bytes_written);
+    void ContinueWrite(base::PlatformFileError error_code, int bytes_written);
 
-    // Drop ownership of the file at path |temp_file_|. This class
-    // will not delete it or write to it again.
-    void DisownTempFile();
+    // Drop ownership of the file at |file_path_|.
+    // This class will not delete it or write to it again.
+    void DisownFile();
 
-    // Close the temp file if it is open.
-    void CloseTempFileAndCompleteRequest();
+    // Close the file if it is open.
+    void CloseFileAndCompleteRequest();
 
-    // Remove the temp file if we we created one.
-    void RemoveTempFile();
+    // Remove the file if we have created one.
+    void RemoveFile();
 
-    const FilePath& temp_file() const { return temp_file_; }
+    const FilePath& file_path() const { return file_path_; }
     int64 total_bytes_written() { return total_bytes_written_; }
     base::PlatformFileError error_code() const { return error_code_; }
 
    private:
-    // Callback which gets the result of closing the temp file.
-    void DidCloseTempFile(base::PlatformFileError error);
+    // Callback which gets the result of closing the file.
+    void DidCloseFile(base::PlatformFileError error);
 
     // The URLFetcherImpl::Core which instantiated this class.
     URLFetcherImpl::Core* core_;
@@ -151,17 +148,16 @@ class URLFetcherImpl::Core
     base::PlatformFileError error_code_;
 
     // Callbacks are created for use with base::FileUtilProxy.
-    base::WeakPtrFactory<URLFetcherImpl::Core::TempFileWriter> weak_factory_;
+    base::WeakPtrFactory<URLFetcherImpl::Core::FileWriter> weak_factory_;
 
     // Message loop on which file operations should happen.
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
 
-    // Path to the temporary file.  This path is empty when there
-    // is no temp file.
-    FilePath temp_file_;
+    // Path to the file.  This path is empty when there is no file.
+    FilePath file_path_;
 
-    // Handle to the temp file.
-    base::PlatformFile temp_file_handle_;
+    // Handle to the file.
+    base::PlatformFile file_handle_;
 
     // We always append to the file.  Track the total number of bytes
     // written, so that writes know the offset to give.
@@ -215,8 +211,8 @@ class URLFetcherImpl::Core
   // Read response bytes from the request.
   void ReadResponse();
 
-  // Drop ownership of any temp file managed by |temp_file_|.
-  void DisownTempFile();
+  // Drop ownership of any file managed by |file_path_|.
+  void DisownFile();
 
   // Notify Delegate about the progress of downloading.
   void InformDelegateDownloadProgress();
@@ -279,9 +275,9 @@ class URLFetcherImpl::Core
   // True if the URLFetcher has been cancelled.
   bool was_cancelled_;
 
-  // If writing results to a file, |temp_file_writer_| will manage creation,
+  // If writing results to a file, |file_writer_| will manage creation,
   // writing, and destruction of that file.
-  scoped_ptr<TempFileWriter> temp_file_writer_;
+  scoped_ptr<FileWriter> file_writer_;
 
   // Where should responses be saved?
   ResponseDestinationType response_destination_;
@@ -329,31 +325,31 @@ void URLFetcherImpl::Core::Registry::CancelAll() {
 base::LazyInstance<URLFetcherImpl::Core::Registry>
     URLFetcherImpl::Core::g_registry = LAZY_INSTANCE_INITIALIZER;
 
-URLFetcherImpl::Core::TempFileWriter::TempFileWriter(
+URLFetcherImpl::Core::FileWriter::FileWriter(
     URLFetcherImpl::Core* core,
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy)
     : core_(core),
       error_code_(base::PLATFORM_FILE_OK),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       file_message_loop_proxy_(file_message_loop_proxy),
-      temp_file_handle_(base::kInvalidPlatformFileValue) {
+      file_handle_(base::kInvalidPlatformFileValue) {
 }
 
-URLFetcherImpl::Core::TempFileWriter::~TempFileWriter() {
-  RemoveTempFile();
+URLFetcherImpl::Core::FileWriter::~FileWriter() {
+  RemoveFile();
 }
 
-void URLFetcherImpl::Core::TempFileWriter::CreateTempFile() {
+void URLFetcherImpl::Core::FileWriter::CreateTempFile() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(file_message_loop_proxy_.get());
   base::FileUtilProxy::CreateTemporary(
       file_message_loop_proxy_,
       0,  // No additional file flags.
-      base::Bind(&URLFetcherImpl::Core::TempFileWriter::DidCreateTempFile,
+      base::Bind(&URLFetcherImpl::Core::FileWriter::DidCreateTempFile,
                  weak_factory_.GetWeakPtr()));
 }
 
-void URLFetcherImpl::Core::TempFileWriter::DidCreateTempFile(
+void URLFetcherImpl::Core::FileWriter::DidCreateTempFile(
     base::PlatformFileError error_code,
     base::PassPlatformFile file_handle,
     const FilePath& file_path) {
@@ -361,24 +357,24 @@ void URLFetcherImpl::Core::TempFileWriter::DidCreateTempFile(
 
   if (base::PLATFORM_FILE_OK != error_code) {
     error_code_ = error_code;
-    RemoveTempFile();
+    RemoveFile();
     core_->delegate_loop_proxy_->PostTask(
         FROM_HERE, base::Bind(&Core::InformDelegateFetchIsComplete, core_));
     return;
   }
 
-  temp_file_ = file_path;
-  temp_file_handle_ = file_handle.ReleaseValue();
+  file_path_ = file_path;
+  file_handle_ = file_handle.ReleaseValue();
   total_bytes_written_ = 0;
 
   core_->io_message_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&Core::StartURLRequestWhenAppropriate, core_));
 }
 
-void URLFetcherImpl::Core::TempFileWriter::WriteBuffer(int num_bytes) {
+void URLFetcherImpl::Core::FileWriter::WriteBuffer(int num_bytes) {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
-  // Start writing to the temp file by setting the initial state
+  // Start writing to the file by setting the initial state
   // of |pending_bytes_| and |buffer_offset_| to indicate that the
   // entire buffer has not yet been written.
   pending_bytes_ = num_bytes;
@@ -386,12 +382,12 @@ void URLFetcherImpl::Core::TempFileWriter::WriteBuffer(int num_bytes) {
   ContinueWrite(base::PLATFORM_FILE_OK, 0);
 }
 
-void URLFetcherImpl::Core::TempFileWriter::ContinueWrite(
+void URLFetcherImpl::Core::FileWriter::ContinueWrite(
     base::PlatformFileError error_code,
     int bytes_written) {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (temp_file_handle_ == base::kInvalidPlatformFileValue) {
+  if (file_handle_ == base::kInvalidPlatformFileValue) {
     // While a write was being done on the file thread, a request
     // to close or disown the file occured on the IO thread.  At
     // this point a request to close the file is pending on the
@@ -400,16 +396,15 @@ void URLFetcherImpl::Core::TempFileWriter::ContinueWrite(
   }
 
   // Every code path that resets |core_->request_| should reset
-  // |core->temp_file_writer_| or cause the temp file writer to
-  // disown the temp file.  In the former case, this callback can
-  // not be called, because the weak pointer to |this| will be NULL.
-  // In the latter case, the check of |temp_file_handle_| at the start
-  // of this method ensures that we can not reach this point.
+  // |core->file_writer_| or cause the file writer to disown the file.  In the
+  // former case, this callback can not be called, because the weak pointer to
+  // |this| will be NULL. In the latter case, the check of |file_handle_| at the
+  // start of this method ensures that we can not reach this point.
   CHECK(core_->request_.get());
 
   if (base::PLATFORM_FILE_OK != error_code) {
     error_code_ = error_code;
-    RemoveTempFile();
+    RemoveFile();
     core_->delegate_loop_proxy_->PostTask(
         FROM_HERE, base::Bind(&Core::InformDelegateFetchIsComplete, core_));
     return;
@@ -421,10 +416,10 @@ void URLFetcherImpl::Core::TempFileWriter::ContinueWrite(
 
   if (pending_bytes_ > 0) {
     base::FileUtilProxy::Write(
-        file_message_loop_proxy_, temp_file_handle_,
+        file_message_loop_proxy_, file_handle_,
         total_bytes_written_,  // Append to the end
         (core_->buffer_->data() + buffer_offset_), pending_bytes_,
-        base::Bind(&URLFetcherImpl::Core::TempFileWriter::ContinueWrite,
+        base::Bind(&URLFetcherImpl::Core::FileWriter::ContinueWrite,
                    weak_factory_.GetWeakPtr()));
   } else {
     // Finished writing core_->buffer_ to the file. Read some more.
@@ -432,36 +427,36 @@ void URLFetcherImpl::Core::TempFileWriter::ContinueWrite(
   }
 }
 
-void URLFetcherImpl::Core::TempFileWriter::DisownTempFile() {
+void URLFetcherImpl::Core::FileWriter::DisownFile() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
   // Disowning is done by the delegate's OnURLFetchComplete method.
-  // The temp file should be closed by the time that method is called.
-  DCHECK(temp_file_handle_ == base::kInvalidPlatformFileValue);
+  // The file should be closed by the time that method is called.
+  DCHECK(file_handle_ == base::kInvalidPlatformFileValue);
 
-  // Forget about any temp file by reseting the path.
-  temp_file_ = FilePath();
+  // Forget about any file by reseting the path.
+  file_path_.clear();
 }
 
-void URLFetcherImpl::Core::TempFileWriter::CloseTempFileAndCompleteRequest() {
+void URLFetcherImpl::Core::FileWriter::CloseFileAndCompleteRequest() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (temp_file_handle_ != base::kInvalidPlatformFileValue) {
+  if (file_handle_ != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
-        file_message_loop_proxy_, temp_file_handle_,
-        base::Bind(&URLFetcherImpl::Core::TempFileWriter::DidCloseTempFile,
+        file_message_loop_proxy_, file_handle_,
+        base::Bind(&URLFetcherImpl::Core::FileWriter::DidCloseFile,
                    weak_factory_.GetWeakPtr()));
-    temp_file_handle_ = base::kInvalidPlatformFileValue;
+    file_handle_ = base::kInvalidPlatformFileValue;
   }
 }
 
-void URLFetcherImpl::Core::TempFileWriter::DidCloseTempFile(
-  base::PlatformFileError error_code) {
+void URLFetcherImpl::Core::FileWriter::DidCloseFile(
+    base::PlatformFileError error_code) {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (base::PLATFORM_FILE_OK != error_code) {
     error_code_ = error_code;
-    RemoveTempFile();
+    RemoveFile();
     core_->delegate_loop_proxy_->PostTask(
         FROM_HERE, base::Bind(&Core::InformDelegateFetchIsComplete, core_));
     return;
@@ -471,23 +466,23 @@ void URLFetcherImpl::Core::TempFileWriter::DidCloseTempFile(
   core_->RetryOrCompleteUrlFetch();
 }
 
-void URLFetcherImpl::Core::TempFileWriter::RemoveTempFile() {
+void URLFetcherImpl::Core::FileWriter::RemoveFile() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
 
-  // Close the temp file if it is open.
-  if (temp_file_handle_ != base::kInvalidPlatformFileValue) {
+  // Close the file if it is open.
+  if (file_handle_ != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(
-        file_message_loop_proxy_, temp_file_handle_,
+        file_message_loop_proxy_, file_handle_,
         base::FileUtilProxy::StatusCallback());  // No callback: Ignore errors.
-    temp_file_handle_ = base::kInvalidPlatformFileValue;
+    file_handle_ = base::kInvalidPlatformFileValue;
   }
 
-  if (!temp_file_.empty()) {
+  if (!file_path_.empty()) {
     base::FileUtilProxy::Delete(
-        file_message_loop_proxy_, temp_file_,
+        file_message_loop_proxy_, file_path_,
         false,  // No need to recurse, as the path is to a file.
         base::FileUtilProxy::StatusCallback());  // No callback: Ignore errors.
-    DisownTempFile();
+    DisownFile();
   }
 }
 
@@ -588,16 +583,16 @@ void URLFetcherImpl::Core::StartOnIOThread() {
       StartURLRequestWhenAppropriate();
       break;
 
-    case TEMP_FILE:
+    case FILE:
       DCHECK(file_message_loop_proxy_.get())
-        << "Need to set the file message loop proxy.";
+          << "Need to set the file message loop proxy.";
 
-      temp_file_writer_.reset(
-          new TempFileWriter(this, file_message_loop_proxy_));
+      file_writer_.reset(
+          new FileWriter(this, file_message_loop_proxy_));
 
       // If the temp file is successfully created,
       // Core::StartURLRequestWhenAppropriate() will be called.
-      temp_file_writer_->CreateTempFile();
+      file_writer_->CreateTempFile();
       break;
 
     default:
@@ -606,9 +601,9 @@ void URLFetcherImpl::Core::StartOnIOThread() {
 }
 
 void URLFetcherImpl::Core::Stop() {
-  if (delegate_loop_proxy_) {  // May be NULL in tests.
+  if (delegate_loop_proxy_)  // May be NULL in tests.
     DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
-  }
+
   delegate_ = NULL;
   fetcher_ = NULL;
   if (io_message_loop_proxy_.get()) {
@@ -654,7 +649,7 @@ void URLFetcherImpl::Core::CompleteAddingUploadDataChunk(
 }
 
 void URLFetcherImpl::Core::AppendChunkToUpload(const std::string& content,
-                                           bool is_last_chunk) {
+                                               bool is_last_chunk) {
   DCHECK(delegate_loop_proxy_);
   DCHECK(io_message_loop_proxy_.get());
   io_message_loop_proxy_->PostTask(
@@ -674,8 +669,8 @@ bool URLFetcherImpl::Core::WriteBuffer(int num_bytes) {
       write_complete = true;
       break;
 
-    case TEMP_FILE:
-      temp_file_writer_->WriteBuffer(num_bytes);
+    case FILE:
+      file_writer_->WriteBuffer(num_bytes);
       // WriteBuffer() sends a request the file thread.
       // The write is not done yet.
       write_complete = false;
@@ -688,7 +683,7 @@ bool URLFetcherImpl::Core::WriteBuffer(int num_bytes) {
 }
 
 void URLFetcherImpl::Core::OnReadCompleted(net::URLRequest* request,
-                                       int bytes_read) {
+                                           int bytes_read) {
   DCHECK(request == request_);
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
@@ -723,11 +718,11 @@ void URLFetcherImpl::Core::OnReadCompleted(net::URLRequest* request,
     status_ = status;
     ReleaseRequest();
 
-    // If a temp file is open, close it.
-    if (temp_file_writer_.get()) {
+    // If a file is open, close it.
+    if (file_writer_.get()) {
       // If the file is open, close it.  After closing the file,
       // RetryOrCompleteUrlFetch() will be called.
-      temp_file_writer_->CloseTempFileAndCompleteRequest();
+      file_writer_->CloseFileAndCompleteRequest();
     } else {
       // Otherwise, complete or retry the URL request directly.
       RetryOrCompleteUrlFetch();
@@ -754,8 +749,7 @@ void URLFetcherImpl::Core::RetryOrCompleteUrlFetch() {
     if (backoff_delay < base::TimeDelta())
       backoff_delay = base::TimeDelta();
 
-    if (automatically_retry_on_5xx_ &&
-        num_retries_ <= max_retries_) {
+    if (automatically_retry_on_5xx_ && num_retries_ <= max_retries_) {
       StartOnIOThread();
       return;
     }
@@ -782,8 +776,8 @@ void URLFetcherImpl::Core::ReadResponse() {
   OnReadCompleted(request_.get(), bytes_read);
 }
 
-void URLFetcherImpl::Core::DisownTempFile() {
-  temp_file_writer_->DisownTempFile();
+void URLFetcherImpl::Core::DisownFile() {
+  file_writer_->DisownFile();
 }
 
 void URLFetcherImpl::Core::StartURLRequest() {
@@ -802,9 +796,9 @@ void URLFetcherImpl::Core::StartURLRequest() {
   current_response_bytes_ = 0;
   request_.reset(new net::URLRequest(original_url_, this));
   int flags = request_->load_flags() | load_flags_;
-  if (!g_interception_enabled) {
+  if (!g_interception_enabled)
     flags = flags | net::LOAD_DISABLE_INTERCEPT;
-  }
+
   if (is_chunked_upload_)
     request_->EnableChunkedUpload();
   request_->set_load_flags(flags);
@@ -849,8 +843,7 @@ void URLFetcherImpl::Core::StartURLRequest() {
 
   // If we are writing the response to a file, the only caller
   // of this function should have created it and not written yet.
-  DCHECK(!temp_file_writer_.get() ||
-         temp_file_writer_->total_bytes_written() == 0);
+  DCHECK(!file_writer_.get() || file_writer_->total_bytes_written() == 0);
 
   request_->Start();
 }
@@ -891,7 +884,7 @@ void URLFetcherImpl::Core::CancelURLRequest() {
   // context.
   request_context_getter_ = NULL;
   was_cancelled_ = true;
-  temp_file_writer_.reset();
+  file_writer_.reset();
 }
 
 void URLFetcherImpl::Core::OnCompletedURLRequest(
@@ -922,9 +915,8 @@ void URLFetcherImpl::Core::InformDelegateDownloadProgressInDelegateThread(
 
 void URLFetcherImpl::Core::InformDelegateFetchIsComplete() {
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
-  if (delegate_) {
+  if (delegate_)
     delegate_->OnURLFetchComplete(fetcher_);
-  }
 }
 
 void URLFetcherImpl::Core::NotifyMalformedContent() {
@@ -1043,7 +1035,7 @@ base::TimeDelta URLFetcherImpl::GetBackoffDelay() const {
 void URLFetcherImpl::SaveResponseToTemporaryFile(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
   core_->file_message_loop_proxy_ = file_message_loop_proxy;
-  core_->response_destination_ = TEMP_FILE;
+  core_->response_destination_ = FILE;
 }
 
 net::HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {
@@ -1104,11 +1096,10 @@ bool URLFetcherImpl::FileErrorOccurred(
     base::PlatformFileError* out_error_code) const {
 
   // Can't have a file error if no file is being created or written to.
-  if (!core_->temp_file_writer_.get()) {
+  if (!core_->file_writer_.get())
     return false;
-  }
 
-  base::PlatformFileError error_code = core_->temp_file_writer_->error_code();
+  base::PlatformFileError error_code = core_->file_writer_->error_code();
   if (error_code == base::PLATFORM_FILE_OK)
     return false;
 
@@ -1135,15 +1126,14 @@ bool URLFetcherImpl::GetResponseAsString(
 bool URLFetcherImpl::GetResponseAsFilePath(bool take_ownership,
                                            FilePath* out_response_path) const {
   DCHECK(core_->delegate_loop_proxy_->BelongsToCurrentThread());
-  if (core_->response_destination_ != TEMP_FILE ||
-      !core_->temp_file_writer_.get())
+  if (core_->response_destination_ != FILE || !core_->file_writer_.get())
     return false;
 
-  *out_response_path = core_->temp_file_writer_->temp_file();
+  *out_response_path = core_->file_writer_->file_path();
 
   if (take_ownership) {
     core_->io_message_loop_proxy_->PostTask(
-        FROM_HERE, base::Bind(&Core::DisownTempFile, core_.get()));
+        FROM_HERE, base::Bind(&Core::DisownFile, core_.get()));
   }
   return true;
 }

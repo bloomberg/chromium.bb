@@ -83,7 +83,7 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
   // How should the response be stored?
   enum ResponseDestinationType {
     STRING,  // Default: In a std::string
-    TEMP_FILE  // Write to a temp file
+    FILE  // Write to a file
   };
 
   // Returns the delegate.
