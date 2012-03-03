@@ -148,7 +148,7 @@
         "returns": {
           "type": "array",
           "description": "Array of global objects",
-          "items": { "type": "object", "isInstanceOf": "Window", "additionalProperties": { "type": "any" } }
+          "items": { "type": "object", "isInstanceOf": "global", "additionalProperties": { "type": "any" } }
         }
       },
       {
@@ -157,7 +157,7 @@
         "description": "Returns the JavaScript 'window' object for the background page running inside the current extension. Returns null if the extension has no background page.",
         "parameters": [],
         "returns": {
-          "type": "object", "isInstanceOf": "Window", "additionalProperties": { "type": "any" }
+          "type": "object", "isInstanceOf": "global", "additionalProperties": { "type": "any" }
          }
       },
       {
@@ -172,7 +172,7 @@
         "returns": {
           "type": "array",
           "description": "Array of global window objects",
-          "items": { "type": "object", "isInstanceOf": "Window", "additionalProperties": { "type": "any" } }
+          "items": { "type": "object", "isInstanceOf": "global", "additionalProperties": { "type": "any" } }
         }
       },
       {

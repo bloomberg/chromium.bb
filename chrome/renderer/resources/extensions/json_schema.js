@@ -280,27 +280,10 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
   // If "instanceof" property is set, check that this object inherits from
   // the specified constructor (function).
   if (schema.isInstanceOf) {
-    var isInstance = function() {
-      var constructor = this[schema.isInstanceOf];
-      if (constructor) {
-        return (instance instanceof constructor);
-      }
-
-      // Special-case constructors that can not always be found on the global
-      // object, but for which we to allow validation.
-      var allowedNamedConstructors = {
-        "Window": true,
-        "ImageData": true
-      }
-      if (!allowedNamedConstructors[schema.isInstanceOf]) {
-        throw "Attempt to validate against an instance ctor that could not be" +
-              "found: " + schema.isInstanceOf;
-      }
-      return (schema.isInstanceOf == instance.constructor.name)
-    }();
-
-    if (!isInstance)
+    if (Object.prototype.toString.call(instance) !=
+        "[object " + schema.isInstanceOf + "]") {
       this.addError(propPath, "notInstance", [schema.isInstanceOf]);
+    }
   }
 
   // Exit early from additional property check if "type":"any" is defined.

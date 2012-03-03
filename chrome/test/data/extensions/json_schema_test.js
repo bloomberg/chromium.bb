@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -167,16 +167,6 @@ function testExtends() {
   assertValid("", 43, schema);
 }
 
-function ClassA() {
-  this.a = "a";
-}
-function ClassB() {
-}
-ClassB.prototype = new ClassA();
-function ClassC() {
-  this.a = "a";
-}
-
 function testObject() {
   var schema = {
     properties: {
@@ -214,28 +204,6 @@ function testObject() {
   assertValid("Object", {foo:"foo", bar:undefined}, schema);
   assertNotValid("Object", {foo:"foo", bar:"42"}, schema,
                  [formatError("invalidType", ["integer", "string"])]);
-
-  var classASchema = {
-    properties: {
-      "a": { type: "string" }
-    },
-    isInstanceOf: "ClassA"
-  };
-
-  var classBSchema = {
-    properties: {},
-    isInstanceOf: "ClassB"
-  };
-
-  var a = new ClassA();
-  var b = new ClassB();
-  var c = new ClassC();
-
-  assertValid("Object", a, classASchema);
-  assertValid("Object", b, classBSchema);
-  assertValid("Object", b, classASchema);
-  assertNotValid("Object", c, classASchema,
-                 [formatError("notInstance", [classASchema.isInstanceOf])]);
 }
 
 function testTypeReference() {
