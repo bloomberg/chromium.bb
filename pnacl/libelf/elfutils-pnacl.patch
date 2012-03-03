@@ -212,7 +212,7 @@ diff -ur elfutils-orig/libelf/libelf.h elfutils-0.153/libelf/libelf.h
 +typedef _off64_t off64_t;
 +#endif
 +
-+#ifdef __APPLE__
++#if defined(__APPLE__) || defined(__CYGWIN__)
 +typedef int64_t loff_t;
 +typedef int64_t off64_t;
 +#endif

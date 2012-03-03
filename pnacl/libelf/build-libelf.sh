@@ -56,7 +56,7 @@ Clean() {
 
 UntarAndPatch() {
   mkdir -p "${DEST_DIR}"
-  tar -jxvf "${ROOT_DIR}"/${LABEL}.tar.bz2 -C "${DEST_DIR}"
+  tar -jxvof "${ROOT_DIR}"/${LABEL}.tar.bz2 -C "${DEST_DIR}"
   mv "${DEST_DIR}"/${LABEL} "${SOURCE_DIR}"
   pushd "${SOURCE_DIR}"
   patch -p1 < "${ROOT_DIR}"/elfutils-portability.patch
