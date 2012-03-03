@@ -17,6 +17,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/plugin_service_impl.h"
@@ -430,6 +431,14 @@ void BrowserMainLoop::CreateThreads() {
   // If the UI thread blocks, the whole UI is unresponsive.
   // Do not allow disk IO from the UI thread.
   base::ThreadRestrictions::SetIOAllowed(false);
+
+  BrowserThread::PostDelayedTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(
+          base::IgnoreResult(&GpuProcessHost::GetForClient),
+          1,  // Arbitrary non-0 (to cause sandboxing) client_id.
+          content::CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP),
+      // Arbitrary delay to avoid allow browser init precious CPU cycles.
+      base::TimeDelta::FromSeconds(5));
 }
 
 void BrowserMainLoop::RunMainMessageLoopParts() {

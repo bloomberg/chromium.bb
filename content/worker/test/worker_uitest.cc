@@ -85,7 +85,7 @@ class WorkerTest : public UILayoutTest {
     ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   }
 
-  bool WaitForProcessCountToBe(int tabs, int workers) {
+  bool WaitForProcessCountToBeAtLeast(int tabs, int workers) {
     // The 1 is for the browser process.
     int number_of_processes = 1 + workers + tabs;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -98,7 +98,7 @@ class WorkerTest : public UILayoutTest {
       cur_process_count = 0;
       if (!GetBrowserProcessCount(&cur_process_count))
         return false;
-      if (cur_process_count == number_of_processes)
+      if (cur_process_count >= number_of_processes)
         return true;
 
       // Sometimes the worker processes can take a while to shut down on the
@@ -106,7 +106,7 @@ class WorkerTest : public UILayoutTest {
       base::PlatformThread::Sleep(TestTimeouts::action_max_timeout() / 100);
     }
 
-    EXPECT_EQ(number_of_processes, cur_process_count);
+    EXPECT_GE(cur_process_count, number_of_processes);
     return false;
   }
 
@@ -194,10 +194,10 @@ TEST_F(WorkerTest, MultipleSharedWorkers) {
 #define DISABLED_TerminateQueuedWorkers DISABLED_TerminateQueuedWorkers
 #endif
 TEST_F(WorkerTest, DISABLED_TerminateQueuedWorkers) {
-  ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(1, 0));
   RunTest(FilePath(FILE_PATH_LITERAL("terminate_queued_workers.html")), "");
   // Make sure all workers exit.
-  ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(1, 0));
 }
 
 #if defined(OS_LINUX)
@@ -486,7 +486,7 @@ TEST_F(WorkerTest, LimitPerPage) {
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab + 1));
 
   NavigateToURL(url);
-  ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(1, max_workers_per_tab));
 }
 
 // http://crbug.com/36800
@@ -517,7 +517,7 @@ TEST_F(WorkerTest, MAYBE_LimitTotal) {
   }
 
   // Check that we didn't create more than the max number of workers.
-  ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(tab_count, total_workers));
 
   // Now close a page and check that the queued workers were started.
   const FilePath::CharType* kGoogleDir = FILE_PATH_LITERAL("google");
@@ -526,7 +526,7 @@ TEST_F(WorkerTest, MAYBE_LimitTotal) {
       tab->NavigateToURL(ui_test_utils::GetTestUrl(FilePath(kGoogleDir),
                                                    FilePath(kGoogleFile))));
 
-  ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(tab_count, total_workers));
 }
 
 // Flaky, http://crbug.com/59786.
@@ -539,7 +539,7 @@ TEST_F(WorkerTest, DISABLED_WorkerClose) {
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
       kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
-  ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(1, 0));
 }
 
 // Flaky, http://crbug.com/70861.
@@ -557,7 +557,7 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerShutdown) {
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
       kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
-  ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(1, max_workers_per_tab));
 }
 
 // Flaky, http://crbug.com/69881.
@@ -572,14 +572,14 @@ TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(url));
-  ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(1, max_workers_per_tab));
 
   // Create same set of workers in new tab (leaves one worker queued from this
   // tab).
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
   ASSERT_TRUE(window->AppendTab(url));
-  ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(2, max_workers_per_tab));
 
   // Now shutdown one of the shared workers - this will fire both queued
   // workers, but only one instance should be started
@@ -591,7 +591,7 @@ TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
       kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
-  ASSERT_TRUE(WaitForProcessCountToBe(3, max_workers_per_tab));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(3, max_workers_per_tab));
 }
 
 // Flaky: http://crbug.com/48148
@@ -606,7 +606,7 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(url));
-  ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(1, max_workers_per_tab));
   // First window has hit its limit. Now launch second window which creates
   // the same worker that was queued in the first window, to ensure it gets
   // connected to the first window too.
@@ -620,5 +620,5 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
       kTestCompleteCookie, TestTimeouts::action_max_timeout_ms());
   ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
-  ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
+  ASSERT_TRUE(WaitForProcessCountToBeAtLeast(2, max_workers_per_tab+1));
 }
