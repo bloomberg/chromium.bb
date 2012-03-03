@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,13 +32,35 @@ class Channel::ChannelImpl : public MessageLoopForIO::IOHandler {
   void set_listener(Listener* listener) { listener_ = listener; }
   bool Send(Message* message);
   static bool IsNamedServerInitialized(const std::string& channel_id);
+
  private:
+  enum ReadState { READ_SUCCEEDED, READ_FAILED, READ_PENDING };
+
+  // This will become the virtual interface implemented by this class to
+  // handle platform-specific reading.
+  // TODO(brettw) finish refactoring.
+  ReadState ReadData(char* buffer, int buffer_len, int* bytes_read);
+  bool WillDispatchInputMessage(Message* msg);
+  void HandleHelloMessage(const Message& msg);
+  bool DidEmptyInputBuffers();
+
+  bool DispatchInputData(const char* input_data, int input_data_len);
+
+  // Returns true if the given message is the hello message.
+  bool IsHelloMessage(const Message& m) const;
+
+  // Handles asynchronously read data.
+  //
+  // Optionally call this after returning READ_PENDING from ReadData to
+  // indicate that buffer was filled with the given number of bytes of
+  // data. See ReadData for more.
+  bool AsyncReadComplete(int bytes_read);
+
   static const std::wstring PipeName(const std::string& channel_id);
   bool CreatePipe(const IPC::ChannelHandle &channel_handle, Mode mode);
 
   bool ProcessConnection();
-  bool ProcessIncomingMessages(MessageLoopForIO::IOContext* context,
-                               DWORD bytes_read);
+  bool ProcessIncomingMessages();
   bool ProcessOutgoingMessages(MessageLoopForIO::IOContext* context,
                                DWORD bytes_written);
 
