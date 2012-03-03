@@ -197,8 +197,7 @@ class RenderWidgetHostViewWin
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
-  virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
-                               bool processed) OVERRIDE;
+  virtual void ProcessTouchAck(bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
@@ -368,16 +367,6 @@ class RenderWidgetHostViewWin
   // Invoked in a delayed task to reset the fact that we are in the context of
   // a WM_POINTERDOWN message.
   void ResetPointerDownContext();
-
-  // Switches between raw-touches mode and gesture mode. Currently touch mode
-  // will only take effect when kEnableTouchEvents is in effect.
-  void UpdateDesiredTouchMode(bool touch);
-
-  // Set window to receive gestures.
-  void SetToGestureMode();
-
-  // Set window to raw touch events. Returns whether registering was successful.
-  bool SetToTouchMode();
 
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last
@@ -556,9 +545,6 @@ class RenderWidgetHostViewWin
 
   // Region in which the view will be transparent to clicks.
   gfx::ScopedSkRegion transparent_region_;
-
-  // Are touch events currently enabled?
-  bool touch_events_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

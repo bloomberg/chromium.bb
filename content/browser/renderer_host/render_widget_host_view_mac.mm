@@ -1038,8 +1038,7 @@ void RenderWidgetHostViewMac::UnhandledWheelEvent(
   [cocoa_view_ gotUnhandledWheelEvent];
 }
 
-void RenderWidgetHostViewMac::ProcessTouchAck(
-    WebKit::WebInputEvent::Type type, bool processed) {
+void RenderWidgetHostViewMac::ProcessTouchAck(bool processed) {
 }
 
 void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(

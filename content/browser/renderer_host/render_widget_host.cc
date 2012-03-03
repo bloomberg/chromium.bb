@@ -1240,7 +1240,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
   } else if (type == WebInputEvent::MouseWheel) {
     ProcessWheelAck(processed);
   } else if (WebInputEvent::isTouchEventType(type)) {
-    ProcessTouchAck(event_type, processed);
+    ProcessTouchAck(processed);
   }
   // This is used only for testing.
   content::NotificationService::current()->Notify(
@@ -1264,10 +1264,9 @@ void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
     view_->UnhandledWheelEvent(current_wheel_event_);
 }
 
-void RenderWidgetHostImpl::ProcessTouchAck(
-    WebInputEvent::Type type, bool processed) {
+void RenderWidgetHostImpl::ProcessTouchAck(bool processed) {
   if (view_)
-    view_->ProcessTouchAck(type, processed);
+    view_->ProcessTouchAck(processed);
 }
 
 void RenderWidgetHostImpl::OnMsgFocus() {

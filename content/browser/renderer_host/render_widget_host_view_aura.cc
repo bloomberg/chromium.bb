@@ -469,8 +469,7 @@ void RenderWidgetHostViewAura::UnhandledWheelEvent(
   // Not needed. Mac-only.
 }
 
-void RenderWidgetHostViewAura::ProcessTouchAck(
-    WebKit::WebInputEvent::Type type, bool processed) {
+void RenderWidgetHostViewAura::ProcessTouchAck(bool processed) {
   // The ACKs for the touch-events arrive in the same sequence as they were
   // dispatched.
   aura::RootWindow* root_window = window_->GetRootWindow();

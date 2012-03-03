@@ -278,8 +278,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // to be reloaded.
   void ForceTextureReload();
 
-  virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
-                               bool processed) OVERRIDE;
+  virtual void ProcessTouchAck(bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(
