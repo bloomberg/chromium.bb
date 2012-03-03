@@ -33,7 +33,6 @@
 class Browser;
 class Extension;
 class PrefsTabHelper;
-struct WebPreferences;
 
 namespace content {
 class RenderProcessHost;

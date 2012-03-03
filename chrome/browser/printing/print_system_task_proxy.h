@@ -20,7 +20,6 @@ class PrintPreviewHandler;
 
 namespace base {
 class DictionaryValue;
-class StringValue;
 }
 
 namespace printing {

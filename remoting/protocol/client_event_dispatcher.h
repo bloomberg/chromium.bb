@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_CLIENT_INPUT_DISPATCHER_H_
-#define REMOTING_PROTOCOL_CLIENT_INPUT_DISPATCHER_H_
+#ifndef REMOTING_PROTOCOL_CLIENT_EVENT_DISPATCHER_H_
+#define REMOTING_PROTOCOL_CLIENT_EVENT_DISPATCHER_H_
 
 #include "base/memory/ref_counted.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
@@ -38,4 +38,4 @@ class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_CLIENT_INPUT_DISPATCHER_H_
+#endif  // REMOTING_PROTOCOL_CLIENT_EVENT_DISPATCHER_H_
