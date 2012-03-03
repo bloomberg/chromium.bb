@@ -5,6 +5,15 @@
 // downloads api test
 // browser_tests.exe --gtest_filter=DownloadsApiTest.Downloads
 
+// Uncomment this when the apitest is re-enabled.
+// console.debug = function() {};
+
+function debugObject(obj) {
+  for (var property in obj) {
+    console.debug(property + ': ' + obj[property]);
+  }
+}
+
 var downloads = chrome.experimental.downloads;
 
 chrome.test.getConfig(function(testConfig) {
@@ -55,6 +64,12 @@ chrome.test.getConfig(function(testConfig) {
   var HEADERS_URL = getURL('files/downloads/a_zip_file.zip?' +
                            'expected_headers=Foo:bar&expected_headers=Qx:yo');
 
+  // A simple handler that requires http auth basic.
+  var AUTH_BASIC_URL = getURL('auth-basic');
+
+  // This is just base64 of 'username:secret'.
+  var AUTHORIZATION = 'dXNlcm5hbWU6c2VjcmV0';
+
   chrome.test.runTests([
     // TODO(benjhayden): Test onErased using remove().
 
@@ -82,7 +97,7 @@ chrome.test.getConfig(function(testConfig) {
     function downloadSimple() {
       // Test that we can begin a download.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
       downloads.download(
           {'url': SAFE_FAST_URL},
           chrome.test.callback(function(id) {
@@ -90,28 +105,136 @@ chrome.test.getConfig(function(testConfig) {
           }));
     },
 
-    function downloadPostSuccess() {
-      // Test the |method| download option.
+    function downloadOnChanged() {
+      // Test that download completion is detectable by an onChanged event
+      // listener.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
+      var callbackCompleted = chrome.test.callbackAdded();
+      function myListener(delta) {
+        console.debug(delta.id);
+        if ((delta.id != downloadId) ||
+            !delta.state)
+          return;
+        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        console.debug(downloadId);
+        downloads.onChanged.removeListener(myListener);
+        callbackCompleted();
+      }
+      downloads.onChanged.addListener(myListener);
+      downloads.download(
+        {"url": SAFE_FAST_URL},
+        chrome.test.callback(function(id) {
+          console.debug(downloadId);
+          chrome.test.assertEq(downloadId, id);
+      }));
+    },
+
+    function downloadAuthBasicFail() {
+      var downloadId = getNextId();
+      console.debug(downloadId);
+
       var changedCompleted = chrome.test.callbackAdded();
       function changedListener(delta) {
-        console.log(delta.id);
+        console.debug(delta.id);
         // Ignore onChanged events for downloads besides our own, or events that
         // signal any change besides completion.
         if ((delta.id != downloadId) ||
             !delta.state ||
-            (delta.state.new != downloads.STATE_COMPLETE))
+            !delta.error)
           return;
-        console.log(downloadId);
+        console.debug(downloadId);
+        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
+        chrome.test.assertEq(30, delta.error.new);
+        downloads.onChanged.removeListener(changedListener);
+        if (changedCompleted) {
+          changedCompleted();
+          changedCompleted = null;
+        }
+      }
+      downloads.onChanged.addListener(changedListener);
+
+      // Sometimes the DownloadsEventRouter detects the item for the first time
+      // after the item has already been interrupted. In this case, the
+      // onChanged event never fires, so run the changedListener manually. If
+      // the DownloadsEventRouter detects the item before it's interrupted, then
+      // the onChanged event should fire correctly.
+      var createdCompleted = chrome.test.callbackAdded();
+      function createdListener(createdItem) {
+        console.debug(createdItem.id);
+        // Ignore events for any download besides our own.
+        if (createdItem.id != downloadId)
+          return;
+        console.debug(downloadId);
+        downloads.onCreated.removeListener(createdListener);
+        createdCompleted();
+        if (createdItem.state == downloads.STATE_INTERRUPTED) {
+          changedListener({id: downloadId, state: {new: createdItem.state},
+                                           error: {new: createdItem.error}});
+        }
+      }
+      downloads.onCreated.addListener(createdListener);
+
+      downloads.download(
+          {'url': AUTH_BASIC_URL,
+           'filename': downloadId + '.txt'},
+          chrome.test.callback(function(id) {
+            console.debug(downloadId);
+            chrome.test.assertEq(downloadId, id);
+          }));
+    },
+
+    function downloadAuthBasicSucceed() {
+      var downloadId = getNextId();
+      console.debug(downloadId);
+
+      var changedCompleted = chrome.test.callbackAdded();
+      function changedListener(delta) {
+        console.debug(delta.id);
+        // Ignore onChanged events for downloads besides our own, or events that
+        // signal any change besides completion.
+        if ((delta.id != downloadId) ||
+            !delta.state)
+          return;
+        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        console.debug(downloadId);
+        downloads.onChanged.removeListener(changedListener);
+        changedCompleted();
+      }
+      downloads.onChanged.addListener(changedListener);
+
+      downloads.download(
+          {'url': AUTH_BASIC_URL,
+           'headers': [{'name': 'Authorization',
+                        'value': 'Basic ' + AUTHORIZATION}],
+           'filename': downloadId + '.txt'},
+          chrome.test.callback(function(id) {
+            console.debug(downloadId);
+            chrome.test.assertEq(downloadId, id);
+          }));
+    },
+
+    function downloadPostSuccess() {
+      // Test the |method| download option.
+      var downloadId = getNextId();
+      console.debug(downloadId);
+      var changedCompleted = chrome.test.callbackAdded();
+      function changedListener(delta) {
+        console.debug(delta.id);
+        // Ignore onChanged events for downloads besides our own, or events that
+        // signal any change besides completion.
+        if ((delta.id != downloadId) ||
+            !delta.state)
+          return;
+        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        console.debug(downloadId);
         downloads.search({id: downloadId},
                           chrome.test.callback(function(items) {
-          console.log(downloadId);
+          console.debug(downloadId);
           chrome.test.assertEq(1, items.length);
           chrome.test.assertEq(downloadId, items[0].id);
+          debugObject(items[0]);
           var EXPECTED_SIZE = 164;
-          chrome.test.assertEq(EXPECTED_SIZE, items[0].totalBytes);
-          chrome.test.assertEq(EXPECTED_SIZE, items[0].fileSize);
           chrome.test.assertEq(EXPECTED_SIZE, items[0].bytesReceived);
         }));
         downloads.onChanged.removeListener(changedListener);
@@ -125,7 +248,7 @@ chrome.test.getConfig(function(testConfig) {
            'filename': downloadId + '.txt',
            'body': 'BODY'},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
     },
@@ -137,38 +260,55 @@ chrome.test.getConfig(function(testConfig) {
       // it should fail, and this tests how the downloads extension api exposes
       // the failure to extensions.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
 
       var changedCompleted = chrome.test.callbackAdded();
       function changedListener(delta) {
-        console.log(delta.id);
+        console.debug(delta.id);
         // Ignore onChanged events for downloads besides our own, or events that
         // signal any change besides interruption.
         if ((delta.id != downloadId) ||
             !delta.state ||
-            (delta.state.new != downloads.STATE_COMPLETE))
+            !delta.error)
           return;
-        console.log(downloadId);
-        // TODO(benjhayden): Change COMPLETE to INTERRUPTED after
-        // http://crbug.com/112342
-        downloads.search({id: downloadId},
-                          chrome.test.callback(function(items) {
-          console.log(downloadId);
-          chrome.test.assertEq(1, items.length);
-          chrome.test.assertEq(downloadId, items[0].id);
-          chrome.test.assertEq(0, items[0].totalBytes);
-        }));
+        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
+        chrome.test.assertEq(33, delta.error.new);
+        console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
-        changedCompleted();
+        if (changedCompleted) {
+          changedCompleted();
+          changedCompleted = null;
+        }
       }
       downloads.onChanged.addListener(changedListener);
+
+      // Sometimes the DownloadsEventRouter detects the item for the first time
+      // after the item has already been interrupted. In this case, the
+      // onChanged event never fires, so run the changedListener manually. If
+      // the DownloadsEventRouter detects the item before it's interrupted, then
+      // the onChanged event should fire correctly.
+      var createdCompleted = chrome.test.callbackAdded();
+      function createdListener(createdItem) {
+        console.debug(createdItem.id);
+        // Ignore events for any download besides our own.
+        if (createdItem.id != downloadId)
+          return;
+        console.debug(downloadId);
+        downloads.onCreated.removeListener(createdListener);
+        createdCompleted();
+        if (createdItem.state == downloads.STATE_INTERRUPTED) {
+          changedListener({id: downloadId, state: {new: createdItem.state},
+                                           error: {new: createdItem.error}});
+        }
+      }
+      downloads.onCreated.addListener(createdListener);
 
       downloads.download(
           {'url': POST_URL,
            'filename': downloadId + '.txt',  // Prevent 'file' danger.
            'body': 'BODY'},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
     },
@@ -180,38 +320,56 @@ chrome.test.getConfig(function(testConfig) {
       // does not succeed when it should fail, and this tests how the downloads
       // extension api exposes the failure to extensions.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
 
       var changedCompleted = chrome.test.callbackAdded();
       function changedListener(delta) {
-        console.log(delta.id);
+        console.debug(delta.id);
         // Ignore onChanged events for downloads besides our own, or events that
         // signal any change besides interruption.
         if ((delta.id != downloadId) ||
             !delta.state ||
-            (delta.state.new != downloads.STATE_COMPLETE))
+            !delta.error)
           return;
-        console.log(downloadId);
-        // TODO(benjhayden): Change COMPLETE to INTERRUPTED after
-        // http://crbug.com/112342
-        downloads.search({id: downloadId},
-                          chrome.test.callback(function(items) {
-          console.log(downloadId);
-          chrome.test.assertEq(1, items.length);
-          chrome.test.assertEq(downloadId, items[0].id);
-          chrome.test.assertEq(0, items[0].totalBytes);
-        }));
+        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
+        chrome.test.assertEq(33, delta.error.new);
+        if (delta.error) console.debug(delta.error.new);
+        console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
-        changedCompleted();
+        if (changedCompleted) {
+          changedCompleted();
+          changedCompleted = null;
+        }
       }
       downloads.onChanged.addListener(changedListener);
+
+      // Sometimes the DownloadsEventRouter detects the item for the first time
+      // after the item has already been interrupted. In this case, the
+      // onChanged event never fires, so run the changedListener manually. If
+      // the DownloadsEventRouter detects the item before it's interrupted, then
+      // the onChanged event should fire correctly.
+      var createdCompleted = chrome.test.callbackAdded();
+      function createdListener(createdItem) {
+        console.debug(createdItem.id);
+        // Ignore events for any download besides our own.
+        if (createdItem.id != downloadId)
+          return;
+        console.debug(downloadId);
+        downloads.onCreated.removeListener(createdListener);
+        createdCompleted();
+        if (createdItem.state == downloads.STATE_INTERRUPTED) {
+          changedListener({id: downloadId, state: {new: createdItem.state},
+                                           error: {new: createdItem.error}});
+        }
+      }
+      downloads.onCreated.addListener(createdListener);
 
       downloads.download(
           {'url': POST_URL,
            'filename': downloadId + '.txt',  // Prevent 'file' danger.
            'method': 'POST'},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
     },
@@ -219,25 +377,24 @@ chrome.test.getConfig(function(testConfig) {
     function downloadHeadersSuccess() {
       // Test the |header| download option.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
       var changedCompleted = chrome.test.callbackAdded();
       function changedListener(delta) {
-        console.log(delta.id);
+        console.debug(delta.id);
         // Ignore onChanged events for downloads besides our own, or events that
         // signal any change besides completion.
         if ((delta.id != downloadId) ||
-            !delta.state ||
-            (delta.state.new != downloads.STATE_COMPLETE))
+            !delta.state)
           return;
-        console.log(downloadId);
+        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        console.debug(downloadId);
         downloads.search({id: downloadId},
                           chrome.test.callback(function(items) {
-          console.log(downloadId);
+          console.debug(downloadId);
           chrome.test.assertEq(1, items.length);
           chrome.test.assertEq(downloadId, items[0].id);
+          debugObject(items[0]);
           var EXPECTED_SIZE = 164;
-          chrome.test.assertEq(EXPECTED_SIZE, items[0].totalBytes);
-          chrome.test.assertEq(EXPECTED_SIZE, items[0].fileSize);
           chrome.test.assertEq(EXPECTED_SIZE, items[0].bytesReceived);
         }));
         downloads.onChanged.removeListener(changedListener);
@@ -251,7 +408,46 @@ chrome.test.getConfig(function(testConfig) {
            'headers': [{'name': 'Foo', 'value': 'bar'},
                        {'name': 'Qx', 'value': 'yo'}]},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
+            chrome.test.assertEq(downloadId, id);
+          }));
+    },
+
+    function downloadHeadersBinarySuccess() {
+      // Test the |header| download option.
+      var downloadId = getNextId();
+      console.debug(downloadId);
+      var changedCompleted = chrome.test.callbackAdded();
+      function changedListener(delta) {
+        console.debug(delta.id);
+        // Ignore onChanged events for downloads besides our own, or events that
+        // signal any change besides completion.
+        if ((delta.id != downloadId) ||
+            !delta.state)
+          return;
+        chrome.test.assertEq(downloads.STATE_COMPLETE, delta.state.new);
+        console.debug(downloadId);
+        downloads.search({id: downloadId},
+                          chrome.test.callback(function(items) {
+          console.debug(downloadId);
+          chrome.test.assertEq(1, items.length);
+          chrome.test.assertEq(downloadId, items[0].id);
+          debugObject(items[0]);
+          var EXPECTED_SIZE = 164;
+          chrome.test.assertEq(EXPECTED_SIZE, items[0].bytesReceived);
+        }));
+        downloads.onChanged.removeListener(changedListener);
+        changedCompleted();
+      }
+      downloads.onChanged.addListener(changedListener);
+
+      downloads.download(
+          {'url': HEADERS_URL,
+           'filename': downloadId + '.txt',  // Prevent 'file' danger.
+           'headers': [{'name': 'Foo', 'binaryValue': [98, 97, 114]},
+                       {'name': 'Qx', 'binaryValue': [121, 111]}]},
+          chrome.test.callback(function(id) {
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
     },
@@ -263,36 +459,53 @@ chrome.test.getConfig(function(testConfig) {
       // fail as well as how the downloads extension api exposes the
       // failure to extensions.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
 
       var changedCompleted = chrome.test.callbackAdded();
       function changedListener(delta) {
-        console.log(delta.id);
+        console.debug(delta.id);
         // Ignore onChanged events for downloads besides our own, or events that
         // signal any change besides interruption.
         if ((delta.id != downloadId) ||
             !delta.state ||
-            (delta.state.new != downloads.STATE_COMPLETE))
+            !delta.error)
           return;
-        console.log(downloadId);
-        // TODO(benjhayden): Change COMPLETE to INTERRUPTED after
-        // http://crbug.com/112342
-        downloads.search({id: downloadId},
-                          chrome.test.callback(function(items) {
-          console.log(downloadId);
-          chrome.test.assertEq(1, items.length);
-          chrome.test.assertEq(downloadId, items[0].id);
-          chrome.test.assertEq(0, items[0].totalBytes);
-        }));
+        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
+        chrome.test.assertEq(33, delta.error.new);
+        console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
-        changedCompleted();
+        if (changedCompleted) {
+          changedCompleted();
+          changedCompleted = null;
+        }
       }
       downloads.onChanged.addListener(changedListener);
+
+      // Sometimes the DownloadsEventRouter detects the item for the first time
+      // after the item has already been interrupted. In this case, the
+      // onChanged event never fires, so run the changedListener manually. If
+      // the DownloadsEventRouter detects the item before it's interrupted, then
+      // the onChanged event should fire correctly.
+      var createdCompleted = chrome.test.callbackAdded();
+      function createdListener(createdItem) {
+        console.debug(createdItem.id);
+        // Ignore events for any download besides our own.
+        if (createdItem.id != downloadId)
+          return;
+        console.debug(downloadId);
+        downloads.onCreated.removeListener(createdListener);
+        createdCompleted();
+        if (createdItem.state == downloads.STATE_INTERRUPTED) {
+          changedListener({id: downloadId, state: {new: createdItem.state},
+                                           error: {new: createdItem.error}});
+        }
+      }
+      downloads.onCreated.addListener(createdListener);
 
       downloads.download(
           {'url': HEADERS_URL},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
     },
@@ -304,20 +517,20 @@ chrome.test.getConfig(function(testConfig) {
       // TODO(benjhayden): Test other sources of interruptions such as server
       // death.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
 
       var createdCompleted = chrome.test.callbackAdded();
       function createdListener(createdItem) {
-        console.log(createdItem.id);
+        console.debug(createdItem.id);
         // Ignore onCreated events for any download besides our own.
         if (createdItem.id != downloadId)
           return;
-        console.log(downloadId);
+        console.debug(downloadId);
         // TODO(benjhayden) Move this cancel() into the download() callback
         // after ensuring that DownloadItems are created before that callback
         // is fired.
         downloads.cancel(downloadId, chrome.test.callback(function() {
-          console.log(downloadId);
+          console.debug(downloadId);
         }));
         downloads.onCreated.removeListener(createdListener);
         createdCompleted();
@@ -326,16 +539,16 @@ chrome.test.getConfig(function(testConfig) {
 
       var changedCompleted = chrome.test.callbackAdded();
       function changedListener(delta) {
-        console.log(delta.id);
+        console.debug(delta.id);
         // Ignore onChanged events for downloads besides our own, or events that
         // signal any change besides interruption.
         if ((delta.id != downloadId) ||
             !delta.state ||
-            (delta.state.new != downloads.STATE_INTERRUPTED) ||
-            !delta.error ||
-            (delta.error.new != 40))
+            !delta.error)
           return;
-        console.log(downloadId);
+        chrome.test.assertEq(downloads.STATE_INTERRUPTED, delta.state.new);
+        chrome.test.assertEq(40, delta.error.new);
+        console.debug(downloadId);
         downloads.onChanged.removeListener(changedListener);
         changedCompleted();
       }
@@ -344,34 +557,9 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': NEVER_FINISH_URL},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
-    },
-
-    function downloadOnChanged() {
-      // Test that download completion is detectable by an onChanged event
-      // listener.
-      var downloadId = getNextId();
-      console.log(downloadId);
-      var callbackCompleted = chrome.test.callbackAdded();
-      function myListener(delta) {
-        console.log(delta.id);
-        if ((delta.id != downloadId) ||
-            !delta.state ||
-            (delta.state.new != downloads.STATE_COMPLETE))
-          return;
-          console.log(downloadId);
-        downloads.onChanged.removeListener(myListener);
-        callbackCompleted();
-      }
-      downloads.onChanged.addListener(myListener);
-      downloads.download(
-        {"url": SAFE_FAST_URL},
-        chrome.test.callback(function(id) {
-          console.log(downloadId);
-          chrome.test.assertEq(downloadId, id);
-      }));
     },
 
     function downloadFilename() {
@@ -379,15 +567,15 @@ chrome.test.getConfig(function(testConfig) {
       // we can detect filename changes with an onChanged event listener.
       var FILENAME = 'owiejtoiwjrfoiwjroiwjroiwjroiwjrfi';
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
       var callbackCompleted = chrome.test.callbackAdded();
       function myListener(delta) {
-        console.log(delta.id);
+        console.debug(delta.id);
         if ((delta.id != downloadId) ||
             !delta.filename ||
             (delta.filename.new.indexOf(FILENAME) == -1))
           return;
-        console.log(downloadId);
+        console.debug(downloadId);
         downloads.onChanged.removeListener(myListener);
         callbackCompleted();
       }
@@ -395,7 +583,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL, 'filename': FILENAME},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
     },
@@ -403,13 +591,13 @@ chrome.test.getConfig(function(testConfig) {
     function downloadOnCreated() {
       // Test that the onCreated event fires when we start a download.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
       var createdCompleted = chrome.test.callbackAdded();
       function createdListener(item) {
-        console.log(item.id);
+        console.debug(item.id);
         if (item.id != downloadId)
           return;
-        console.log(downloadId);
+        console.debug(downloadId);
         createdCompleted();
         downloads.onCreated.removeListener(createdListener);
       };
@@ -417,7 +605,7 @@ chrome.test.getConfig(function(testConfig) {
       downloads.download(
           {'url': SAFE_FAST_URL},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
     },
@@ -506,7 +694,7 @@ chrome.test.getConfig(function(testConfig) {
     function downloadAllowFragments() {
       // Valid URLs plus fragments are still valid URLs.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
       downloads.download(
           {'url': SAFE_FAST_URL + '#frag'},
           chrome.test.callback(function(id) {
@@ -517,7 +705,7 @@ chrome.test.getConfig(function(testConfig) {
     function downloadAllowDataURLs() {
       // Valid data URLs are valid URLs.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
       downloads.download(
           {'url': 'data:text/plain,hello'},
           chrome.test.callback(function(id) {
@@ -528,7 +716,7 @@ chrome.test.getConfig(function(testConfig) {
     function downloadAllowFileURLs() {
       // Valid file URLs are valid URLs.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
       downloads.download(
           {'url': 'file:///'},
           chrome.test.callback(function(id) {
@@ -540,7 +728,7 @@ chrome.test.getConfig(function(testConfig) {
     // function downloadAllowFTPURLs() {
     //   // Valid ftp URLs are valid URLs.
     //   var downloadId = getNextId();
-    //   console.log(downloadId);
+    //   console.debug(downloadId);
     //   downloads.download(
     //       {'url': 'ftp://localhost:' + testConfig.testServer.port + '/'},
     //       chrome.test.callback(function(id) {
@@ -623,7 +811,7 @@ chrome.test.getConfig(function(testConfig) {
     function downloadCancelInvalidId() {
       // Canceling a non-existent download is not considered an error.
       downloads.cancel(-42, chrome.test.callback(function() {
-        console.log('');
+        console.debug('');
       }));
     },
 
@@ -636,11 +824,11 @@ chrome.test.getConfig(function(testConfig) {
     function downloadNoComplete() {
       // This is used partly to test cleanUp.
       var downloadId = getNextId();
-      console.log(downloadId);
+      console.debug(downloadId);
       downloads.download(
           {'url': NEVER_FINISH_URL},
           chrome.test.callback(function(id) {
-            console.log(downloadId);
+            console.debug(downloadId);
             chrome.test.assertEq(downloadId, id);
           }));
     },
@@ -648,10 +836,10 @@ chrome.test.getConfig(function(testConfig) {
     function cleanUp() {
       // cleanUp must come last. It clears out all in-progress downloads
       // so the browser can shutdown cleanly.
-      console.log(nextId);
+      console.debug(nextId);
       function makeCallback(id) {
         return function() {
-          console.log(id);
+          console.debug(id);
         }
       }
       for (var id = 0; id < nextId; ++id) {
@@ -662,7 +850,7 @@ chrome.test.getConfig(function(testConfig) {
     function callNotifyPass() {
       chrome.test.notifyPass();
       setTimeout(chrome.test.callback(function() {
-        console.log('');
+        console.debug('');
       }), 0);
     }
   ]);

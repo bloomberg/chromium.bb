@@ -44,6 +44,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/render_process_host.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 
@@ -89,6 +90,7 @@ const char kFilenameKey[] = "filename";
 const char kFilenameRegexKey[] = "filenameRegex";
 const char kHeaderNameKey[] = "name";
 const char kHeaderValueKey[] = "value";
+const char kHeaderBinaryValueKey[] = "binaryValue";
 const char kHeadersKey[] = "headers";
 const char kIdKey[] = "id";
 const char kLimitKey[] = "limit";
@@ -404,13 +406,25 @@ bool DownloadsDownloadFunction::ParseArgs() {
   if (iodata_->extra_headers != NULL) {
     for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
       base::DictionaryValue* header = NULL;
-      std::string name, value;
+      std::string name;
       EXTENSION_FUNCTION_VALIDATE(iodata_->extra_headers->GetDictionary(
             index, &header));
       EXTENSION_FUNCTION_VALIDATE(header->GetString(
             kHeaderNameKey, &name));
-      EXTENSION_FUNCTION_VALIDATE(header->GetString(
-            kHeaderValueKey, &value));
+      if (header->HasKey(kHeaderBinaryValueKey)) {
+        base::ListValue* binary_value = NULL;
+        EXTENSION_FUNCTION_VALIDATE(header->GetList(
+              kHeaderBinaryValueKey, &binary_value));
+        for (size_t char_i = 0; char_i < binary_value->GetSize(); ++char_i) {
+          int char_value = 0;
+          EXTENSION_FUNCTION_VALIDATE(binary_value->GetInteger(
+                char_i, &char_value));
+        }
+      } else if (header->HasKey(kHeaderValueKey)) {
+        std::string value;
+        EXTENSION_FUNCTION_VALIDATE(header->GetString(
+              kHeaderValueKey, &value));
+      }
       if (!net::HttpUtil::IsSafeHeader(name)) {
         error_ = download_extension_errors::kGenericError;
         return false;
@@ -451,8 +465,21 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
       base::DictionaryValue* header = NULL;
       std::string name, value;
       CHECK(iodata_->extra_headers->GetDictionary(index, &header));
-      CHECK(header->GetString("name", &name));
-      CHECK(header->GetString("value", &value));
+      CHECK(header->GetString(kHeaderNameKey, &name));
+      if (header->HasKey(kHeaderBinaryValueKey)) {
+        base::ListValue* binary_value = NULL;
+        CHECK(header->GetList(kHeaderBinaryValueKey, &binary_value));
+        for (size_t char_i = 0; char_i < binary_value->GetSize(); ++char_i) {
+          int char_value = 0;
+          CHECK(binary_value->GetInteger(char_i, &char_value));
+          if ((0 <= char_value) &&
+              (char_value <= 0xff)) {
+            value.push_back(char_value);
+          }
+        }
+      } else if (header->HasKey(kHeaderValueKey)) {
+        CHECK(header->GetString(kHeaderValueKey, &value));
+      }
       request->SetExtraRequestHeaderByName(name, value, false/*overwrite*/);
     }
   }
@@ -460,6 +487,11 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
     request->AppendBytesToUpload(iodata_->post_body.data(),
                                  iodata_->post_body.size());
   }
+
+  // Prevent login prompts for 401/407 responses.
+  request->set_load_flags(request->load_flags() |
+                          net::LOAD_DO_NOT_PROMPT_FOR_LOGIN);
+
   net::Error error = iodata_->rdh->BeginDownload(
       request.Pass(),
       false,  // prefer_cache
