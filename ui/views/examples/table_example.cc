@@ -15,7 +15,7 @@
 namespace views {
 namespace examples {
 
-TableExample::TableExample() : ExampleBase("Table") {
+TableExample::TableExample() : ExampleBase("Table") , table_(NULL) {
 }
 
 TableExample::~TableExample() {
