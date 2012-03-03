@@ -10,6 +10,7 @@
 #include "webkit/fileapi/cross_file_util_helper.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
+#include "webkit/fileapi/file_util_helper.h"
 
 namespace fileapi {
 
@@ -100,8 +101,7 @@ bool FileSystemFileUtilProxy::Delete(
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       message_loop_proxy, FROM_HERE,
-      base::Bind(&FileSystemFileUtil::Delete, base::Unretained(file_util),
-                 context, path, recursive),
+      Bind(&FileUtilHelper::Delete, context, file_util, path, recursive),
       callback);
 }
 
@@ -115,10 +115,10 @@ bool FileSystemFileUtilProxy::CreateOrOpen(
     const CreateOrOpenCallback& callback) {
   return base::FileUtilProxy::RelayCreateOrOpen(
       message_loop_proxy,
-      base::Bind(&FileSystemFileUtil::CreateOrOpen, base::Unretained(file_util),
-                 context, path, file_flags),
-      base::Bind(&FileSystemFileUtil::Close, base::Unretained(file_util),
-                 context),
+      Bind(&FileSystemFileUtil::CreateOrOpen, Unretained(file_util),
+           context, path, file_flags),
+      Bind(&FileSystemFileUtil::Close, Unretained(file_util),
+           context),
       callback);
 }
 
@@ -187,9 +187,8 @@ bool FileSystemFileUtilProxy::CreateDirectory(
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       message_loop_proxy, FROM_HERE,
-      base::Bind(&FileSystemFileUtil::CreateDirectory,
-                 base::Unretained(file_util),
-                 context, path, exclusive, recursive),
+      Bind(&FileSystemFileUtil::CreateDirectory, Unretained(file_util),
+           context, path, exclusive, recursive),
       callback);
 }
 
@@ -234,8 +233,8 @@ bool FileSystemFileUtilProxy::Touch(
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       message_loop_proxy, FROM_HERE,
-      base::Bind(&FileSystemFileUtil::Touch, base::Unretained(file_util),
-                 context, path, last_access_time, last_modified_time),
+      Bind(&FileSystemFileUtil::Touch, Unretained(file_util),
+           context, path, last_access_time, last_modified_time),
       callback);
 }
 
@@ -249,8 +248,8 @@ bool FileSystemFileUtilProxy::Truncate(
     const StatusCallback& callback) {
   return base::FileUtilProxy::RelayFileTask(
       message_loop_proxy, FROM_HERE,
-      base::Bind(&FileSystemFileUtil::Truncate, base::Unretained(file_util),
-                 context, path, length),
+      Bind(&FileSystemFileUtil::Truncate, Unretained(file_util),
+           context, path, length),
       callback);
 }
 

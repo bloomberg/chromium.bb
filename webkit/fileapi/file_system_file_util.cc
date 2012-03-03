@@ -22,20 +22,6 @@ FileSystemFileUtil::FileSystemFileUtil(FileSystemFileUtil* underlying_file_util)
 FileSystemFileUtil::~FileSystemFileUtil() {
 }
 
-PlatformFileError FileSystemFileUtil::Delete(
-    FileSystemOperationContext* context,
-    const FileSystemPath& path,
-    bool recursive) {
-  if (DirectoryExists(context, path)) {
-    if (!recursive)
-      return DeleteSingleDirectory(context, path);
-    else
-      return DeleteDirectoryRecursive(context, path);
-  } else {
-    return DeleteFile(context, path);
-  }
-}
-
 PlatformFileError FileSystemFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
     const FileSystemPath& path, int file_flags,
@@ -244,39 +230,6 @@ PlatformFileError FileSystemFileUtil::DeleteSingleDirectory(
   NOTREACHED() << "Subclasses must provide implementation if they have no"
                << "underlying_file_util";
   return base::PLATFORM_FILE_ERROR_FAILED;
-}
-
-PlatformFileError FileSystemFileUtil::DeleteDirectoryRecursive(
-    FileSystemOperationContext* context,
-    const FileSystemPath& path) {
-  scoped_ptr<AbstractFileEnumerator> file_enum(
-      CreateFileEnumerator(context, path));
-  FilePath file_path_each;
-  std::stack<FilePath> directories;
-  while (!(file_path_each = file_enum->Next()).empty()) {
-    if (file_enum->IsDirectory()) {
-      directories.push(file_path_each);
-    } else {
-      // DeleteFile here is the virtual overridden member function.
-      PlatformFileError error = DeleteFile(
-          context, path.WithInternalPath(file_path_each));
-      if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
-        return base::PLATFORM_FILE_ERROR_FAILED;
-      else if (error != base::PLATFORM_FILE_OK)
-        return error;
-    }
-  }
-
-  while (!directories.empty()) {
-    PlatformFileError error = DeleteSingleDirectory(
-        context, path.WithInternalPath(directories.top()));
-    if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND)
-      return base::PLATFORM_FILE_ERROR_FAILED;
-    else if (error != base::PLATFORM_FILE_OK)
-      return error;
-    directories.pop();
-  }
-  return DeleteSingleDirectory(context, path);
 }
 
 }  // namespace fileapi

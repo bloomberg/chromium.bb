@@ -54,6 +54,8 @@
         'file_system_usage_cache.h',
         'file_system_util.cc',
         'file_system_util.h',
+        'file_util_helper.cc',
+        'file_util_helper.h',
         'file_writer_delegate.cc',
         'file_writer_delegate.h',
         'isolated_context.cc',

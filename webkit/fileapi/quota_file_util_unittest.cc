@@ -14,6 +14,7 @@
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/quota_file_util.h"
 
 namespace fileapi {
@@ -510,9 +511,8 @@ TEST_F(QuotaFileUtilTest, Remove) {
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            quota_file_util()->Delete(context.get(),
-                                      Path(file),
-                                      false));
+            FileUtilHelper::Delete(context.get(), quota_file_util(),
+                                   Path(file), false));
   ASSERT_EQ(1140, quota_test_helper().GetCachedOriginUsage());
   ASSERT_EQ(quota_test_helper().ComputeCurrentOriginUsage(),
             quota_test_helper().GetCachedOriginUsage());
@@ -520,9 +520,8 @@ TEST_F(QuotaFileUtilTest, Remove) {
   context.reset(NewContext());
   context->set_allowed_bytes_growth(QuotaFileUtil::kNoLimit);
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-            quota_file_util()->Delete(context.get(),
-                                      Path(dir),
-                                      true));
+            FileUtilHelper::Delete(context.get(), quota_file_util(),
+                                   Path(dir), true));
   ASSERT_EQ(0, quota_test_helper().GetCachedOriginUsage());
   ASSERT_EQ(quota_test_helper().ComputeCurrentOriginUsage(),
             quota_test_helper().GetCachedOriginUsage());

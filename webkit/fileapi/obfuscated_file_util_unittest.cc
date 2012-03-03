@@ -19,6 +19,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_test_helper.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
+#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/test_file_set.h"
@@ -1183,7 +1184,8 @@ TEST_F(ObfuscatedFileUtilTest, TestEnumerator) {
   context.reset(NewContext(NULL));
   recursive = true;
   ASSERT_EQ(base::PLATFORM_FILE_OK,
-      ofu()->Delete(context.get(), dest_path, recursive));
+            FileUtilHelper::Delete(context.get(), ofu(),
+                                   dest_path, recursive));
   context.reset(NewContext(NULL));
   EXPECT_FALSE(ofu()->DirectoryExists(context.get(), dest_path));
 }

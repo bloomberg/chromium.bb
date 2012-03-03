@@ -51,8 +51,8 @@ class FileSystemFileUtilProxy {
                               const std::vector<Entry>&,
                               bool has_more)> ReadDirectoryCallback;
 
-  // Deletes a file or a directory by calling |file_util|'s
-  // Delete method on the given |message_loop_proxy|.
+  // Deletes a file or a directory on the given |message_loop_proxy|.
+  // It is an error to delete a non-empty directory with recursive=false.
   static bool Delete(
       MessageLoopProxy* message_loop_proxy,
       FileSystemOperationContext* context,

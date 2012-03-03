@@ -47,22 +47,6 @@ class FileSystemFileUtil {
 
   virtual ~FileSystemFileUtil();
 
-  // Deletes a file or a directory.
-  // It is an error to delete a non-empty directory with recursive=false.
-  //
-  // This method calls one of the following methods depending on whether the
-  // target is a directory or not, and whether the |recursive| flag is given or
-  // not.
-  // - (virtual) DeleteFile,
-  // - (virtual) DeleteSingleDirectory or
-  // - (non-virtual) DeleteDirectoryRecursive which calls two methods above.
-  //
-  // TODO(kinuko): Move this implementation outside FileSystemFileUtil.
-  PlatformFileError Delete(
-      FileSystemOperationContext* context,
-      const FileSystemPath& path,
-      bool recursive);
-
   // Creates or opens a file with the given flags.
   // If PLATFORM_FILE_CREATE is set in |file_flags| it always tries to create
   // a new file at the given |path| and calls back with
@@ -193,19 +177,6 @@ class FileSystemFileUtil {
  protected:
   FileSystemFileUtil();
   explicit FileSystemFileUtil(FileSystemFileUtil* underlying_file_util);
-
-  // Deletes a directory and all entries under the directory.
-  //
-  // This method is called from Delete.  It internally calls two following
-  // virtual methods,
-  // - (virtual) DeleteFile to delete files, and
-  // - (virtual) DeleteSingleDirectory to delete empty directories after all
-  // the files are deleted.
-  //
-  // TODO(kinuko): Move this method out of this class.
-  PlatformFileError DeleteDirectoryRecursive(
-      FileSystemOperationContext* context,
-      const FileSystemPath& path);
 
   // TODO(kinuko): We should stop FileUtil layering.
   FileSystemFileUtil* underlying_file_util() const {

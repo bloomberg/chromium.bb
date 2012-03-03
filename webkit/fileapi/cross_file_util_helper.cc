@@ -7,6 +7,7 @@
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_path.h"
+#include "webkit/fileapi/file_util_helper.h"
 
 using base::PlatformFileError;
 
@@ -83,7 +84,7 @@ CrossFileUtilHelper::PerformErrorCheckAndPreparationForMoveAndCopy() {
     // the file_util's Copy or Move method doesn't perform overwrite
     // on all platforms, so we delete the destination directory here.
     if (base::PLATFORM_FILE_OK !=
-        dest_util_->Delete(context_, dest_root_path_, false /* recursive */)) {
+        dest_util_->DeleteSingleDirectory(context_, dest_root_path_)) {
       if (!dest_util_->IsDirectoryEmpty(context_, dest_root_path_))
         return base::PLATFORM_FILE_ERROR_NOT_EMPTY;
       return base::PLATFORM_FILE_ERROR_FAILED;
@@ -142,7 +143,9 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
   }
 
   if (operation_ == OPERATION_MOVE) {
-    PlatformFileError error = src_util_->Delete(context_, src_path, true);
+    PlatformFileError error =
+        FileUtilHelper::Delete(context_, src_util_,
+                               src_path, true /* recursive */);
     if (error != base::PLATFORM_FILE_OK)
       return error;
   }
