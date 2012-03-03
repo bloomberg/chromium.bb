@@ -66,6 +66,8 @@ void wl_connection_copy(struct wl_connection *connection, void *data, size_t siz
 void wl_connection_consume(struct wl_connection *connection, size_t size);
 int wl_connection_data(struct wl_connection *connection, uint32_t mask);
 int wl_connection_write(struct wl_connection *connection, const void *data, size_t count);
+int wl_connection_queue(struct wl_connection *connection,
+			const void *data, size_t count);
 
 struct wl_closure *
 wl_connection_vmarshal(struct wl_connection *connection,

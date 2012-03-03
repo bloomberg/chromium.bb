@@ -349,7 +349,7 @@ wl_connection_write(struct wl_connection *connection,
 	return 0;
 }
 
-static int
+int
 wl_connection_queue(struct wl_connection *connection,
 		    const void *data, size_t count)
 {
