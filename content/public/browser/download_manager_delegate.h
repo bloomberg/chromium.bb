@@ -43,7 +43,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // give the answer.
   virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
-                                  void* data) {}
+                                  int32 download_id) {}
 
   // Allows the embedder to set an intermediate name for the download until it's
   // complete. If the embedder doesn't want this return the suggested path.

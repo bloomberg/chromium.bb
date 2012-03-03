@@ -226,8 +226,8 @@ class CONTENT_EXPORT DownloadManager
   virtual void ClearLastDownloadPath() = 0;
 
   // Called by the delegate after the save as dialog is closed.
-  virtual void FileSelected(const FilePath& path, void* params) = 0;
-  virtual void FileSelectionCanceled(void* params) = 0;
+  virtual void FileSelected(const FilePath& path, int32 download_id) = 0;
+  virtual void FileSelectionCanceled(int32 download_id) = 0;
 
   // Called by the delegate if it delayed the download in
   // DownloadManagerDelegate::ShouldStartDownload and now is ready.

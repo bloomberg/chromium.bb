@@ -81,8 +81,8 @@ class CONTENT_EXPORT DownloadManagerImpl
       bool is_otr,
       content::DownloadItem::Observer* observer) OVERRIDE;
   virtual void ClearLastDownloadPath() OVERRIDE;
-  virtual void FileSelected(const FilePath& path, void* params) OVERRIDE;
-  virtual void FileSelectionCanceled(void* params) OVERRIDE;
+  virtual void FileSelected(const FilePath& path, int32 download_id) OVERRIDE;
+  virtual void FileSelectionCanceled(int32 download_id) OVERRIDE;
   virtual void RestartDownload(int32 download_id) OVERRIDE;
   virtual void CheckForHistoryFilesRemoval() OVERRIDE;
   virtual content::DownloadItem* GetDownloadItem(int id) OVERRIDE;

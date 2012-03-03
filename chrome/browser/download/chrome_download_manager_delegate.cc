@@ -136,10 +136,10 @@ bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
 void ChromeDownloadManagerDelegate::ChooseDownloadPath(
     WebContents* web_contents,
     const FilePath& suggested_path,
-    void* data) {
+    int32 download_id) {
   // Deletes itself.
   new DownloadFilePicker(
-      download_manager_, web_contents, suggested_path, data);
+      download_manager_, web_contents, suggested_path, download_id);
 }
 
 FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(

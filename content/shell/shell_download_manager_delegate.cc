@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,7 +104,7 @@ void ShellDownloadManagerDelegate::RestartDownload(
 void ShellDownloadManagerDelegate::ChooseDownloadPath(
     WebContents* web_contents,
     const FilePath& suggested_path,
-    void* data) {
+    int32 download_id) {
   FilePath result;
 #if defined(OS_WIN)
   std::wstring file_part = FilePath(suggested_path).BaseName().value();
@@ -132,9 +132,9 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
 #endif
 
   if (result.empty()) {
-    download_manager_->FileSelectionCanceled(data);
+    download_manager_->FileSelectionCanceled(download_id);
   } else {
-    download_manager_->FileSelected(result, data);
+    download_manager_->FileSelected(result, download_id);
   }
 }
 

@@ -76,8 +76,8 @@ class MockDownloadManager : public content::DownloadManager {
       bool is_otr,
       content::DownloadItem::Observer* observer));
   MOCK_METHOD0(ClearLastDownloadPath, void());
-  MOCK_METHOD2(FileSelected, void(const FilePath& path, void* params));
-  MOCK_METHOD1(FileSelectionCanceled, void(void* params));
+  MOCK_METHOD2(FileSelected, void(const FilePath& path, int32 download_id));
+  MOCK_METHOD1(FileSelectionCanceled, void(int32 download_id));
   MOCK_METHOD1(RestartDownload, void(int32 download_id));
   MOCK_METHOD0(CheckForHistoryFilesRemoval, void());
   MOCK_METHOD1(GetDownloadItem, content::DownloadItem*(int id));

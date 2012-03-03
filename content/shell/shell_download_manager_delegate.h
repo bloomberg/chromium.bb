@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ class ShellDownloadManagerDelegate
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
   virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
-                                  void* data) OVERRIDE;
+                                  int32 download_id) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<ShellDownloadManagerDelegate>;

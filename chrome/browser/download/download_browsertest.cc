@@ -138,9 +138,9 @@ class PickSuggestedFileDelegate : public ChromeDownloadManagerDelegate {
 
   virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
-                                  void* data) OVERRIDE {
+                                  int32 download_id) OVERRIDE {
     if (download_manager_)
-      download_manager_->FileSelected(suggested_path, data);
+      download_manager_->FileSelected(suggested_path, download_id);
   }
 };
 

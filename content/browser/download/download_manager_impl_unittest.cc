@@ -132,7 +132,7 @@ class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
 
   virtual void ChooseDownloadPath(WebContents* web_contents,
                                   const FilePath& suggested_path,
-                                  void* data) OVERRIDE {
+                                  int32 download_id) OVERRIDE {
     if (!expected_suggested_path_.empty()) {
       EXPECT_STREQ(expected_suggested_path_.value().c_str(),
                    suggested_path.value().c_str());
@@ -142,14 +142,14 @@ class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
           BrowserThread::UI, FROM_HERE,
           base::Bind(&DownloadManager::FileSelectionCanceled,
                      download_manager_,
-                     base::Unretained(data)));
+                     download_id));
     } else {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&DownloadManager::FileSelected,
                      download_manager_,
                      file_selection_response_,
-                     base::Unretained(data)));
+                     download_id));
     }
     expected_suggested_path_.clear();
     file_selection_response_.clear();
@@ -248,8 +248,8 @@ class DownloadManagerTest : public testing::Test {
     download_manager_->OnResponseCompleted(download_id, size, hash);
   }
 
-  void FileSelected(const FilePath& path, void* params) {
-    download_manager_->FileSelected(path, params);
+  void FileSelected(const FilePath& path, int32 download_id) {
+    download_manager_->FileSelected(path, download_id);
   }
 
   void ContinueDownloadWithPath(DownloadItem* download, const FilePath& path) {
@@ -911,14 +911,12 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     state.danger = kDownloadRenameCases[i].danger;
     download->SetFileCheckResults(state);
 
-    int32* id_ptr = new int32;
-    *id_ptr = i;  // Deleted in FileSelected().
     if (kDownloadRenameCases[i].finish_before_rename) {
       OnResponseCompleted(i, 1024, std::string("fake_hash"));
       message_loop_.RunAllPending();
-      FileSelected(new_path, id_ptr);
+      FileSelected(new_path, i);
     } else {
-      FileSelected(new_path, id_ptr);
+      FileSelected(new_path, i);
       message_loop_.RunAllPending();
       OnResponseCompleted(i, 1024, std::string("fake_hash"));
     }

@@ -360,10 +360,6 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
     // We must ask the user for the place to put the download.
     WebContents* contents = download->GetWebContents();
 
-    // |id_ptr| will be deleted in either FileSelected() or
-    // FileSelectionCancelled().
-    int32* id_ptr = new int32;
-    *id_ptr = download_id;
     FilePath target_path;
     // If |download| is a potentially dangerous file, then |suggested_path|
     // contains the intermediate name instead of the final download
@@ -375,7 +371,7 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
       target_path = suggested_path;
 
     delegate_->ChooseDownloadPath(contents, target_path,
-                                  reinterpret_cast<void*>(id_ptr));
+                                  download_id);
     FOR_EACH_OBSERVER(Observer, observers_,
                       SelectFileDialogDisplayed(this, download_id));
   } else {
@@ -862,13 +858,9 @@ void DownloadManagerImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void DownloadManagerImpl::FileSelected(const FilePath& path, void* params) {
+void DownloadManagerImpl::FileSelected(const FilePath& path,
+                                       int32 download_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  int32* id_ptr = reinterpret_cast<int32*>(params);
-  DCHECK(id_ptr != NULL);
-  int32 download_id = *id_ptr;
-  delete id_ptr;
 
   DownloadItem* download = GetActiveDownloadItem(download_id);
   if (!download)
@@ -883,14 +875,10 @@ void DownloadManagerImpl::FileSelected(const FilePath& path, void* params) {
   ContinueDownloadWithPath(download, path);
 }
 
-void DownloadManagerImpl::FileSelectionCanceled(void* params) {
+void DownloadManagerImpl::FileSelectionCanceled(int32 download_id) {
   // The user didn't pick a place to save the file, so need to cancel the
   // download that's already in progress to the temporary location.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int32* id_ptr = reinterpret_cast<int32*>(params);
-  DCHECK(id_ptr != NULL);
-  int32 download_id = *id_ptr;
-  delete id_ptr;
 
   DownloadItem* download = GetActiveDownloadItem(download_id);
   if (!download)

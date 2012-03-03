@@ -56,8 +56,9 @@ DownloadFilePicker::DownloadFilePicker(
     DownloadManager* download_manager,
     WebContents* web_contents,
     const FilePath& suggested_path,
-    void* params)
+    int32 download_id)
     : download_manager_(download_manager),
+      download_id_(download_id),
       suggested_path_(suggested_path) {
   DCHECK(download_manager_);
   select_file_dialog_ = SelectFileDialog::Create(this);
@@ -76,7 +77,7 @@ DownloadFilePicker::DownloadFilePicker(
                                   string16(),
                                   suggested_path,
                                   &file_type_info, 0, FILE_PATH_LITERAL(""),
-                                  web_contents, owning_window, params);
+                                  web_contents, owning_window, NULL);
 }
 
 DownloadFilePicker::~DownloadFilePicker() {
@@ -96,13 +97,13 @@ void DownloadFilePicker::FileSelected(const FilePath& path,
   FilePickerResult result = ComparePaths(suggested_path_, path);
   RecordFilePickerResult(download_manager_, result);
   if (download_manager_)
-    download_manager_->FileSelected(path, params);
+    download_manager_->FileSelected(path, download_id_);
   delete this;
 }
 
 void DownloadFilePicker::FileSelectionCanceled(void* params) {
   RecordFilePickerResult(download_manager_, FILE_PICKER_CANCEL);
   if (download_manager_)
-    download_manager_->FileSelectionCanceled(params);
+    download_manager_->FileSelectionCanceled(download_id_);
   delete this;
 }

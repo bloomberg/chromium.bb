@@ -22,7 +22,7 @@ class DownloadFilePicker : public content::DownloadManager::Observer,
   DownloadFilePicker(content::DownloadManager* download_manager,
                      content::WebContents* web_contents,
                      const FilePath& suggested_path,
-                     void* params);
+                     int32 download_id);
   virtual ~DownloadFilePicker();
 
  private:
@@ -37,6 +37,7 @@ class DownloadFilePicker : public content::DownloadManager::Observer,
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   content::DownloadManager* download_manager_;
+  int32 download_id_;
 
   FilePath suggested_path_;
 
