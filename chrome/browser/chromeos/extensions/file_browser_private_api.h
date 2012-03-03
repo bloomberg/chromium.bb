@@ -383,4 +383,46 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getStrings");
 };
 
+// Retrieve property information for multiple files, returning a list of the
+// same length as the input list of file URLs.  If a particular file has an
+// error, then return a dictionary with the key "error" set to the error number
+// (base::PlatformFileError) for that entry in the returned list.
+class GetGDataFilePropertiesFunction : public FileBrowserFunction {
+ public:
+  GetGDataFilePropertiesFunction();
+
+ protected:
+  virtual ~GetGDataFilePropertiesFunction();
+
+  // Virtual function that can be overridden to do operations on each virtual
+  // file path before fetching the properties.  Return false to stop iterating
+  // over the files.
+  virtual bool DoOperation(const FilePath& file);
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFileProperties");
+};
+
+// Pin multiple files in the cache, returning a list of file properties with the
+// updated cache state.  The returned array is the same length as the input list
+// of file URLs.  If a particular file has an error, then return a dictionary
+// with the key "error" set to the error number (base::PlatformFileError) for
+// that entry in the returned list.
+class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
+ public:
+  PinGDataFileFunction();
+
+ protected:
+  virtual ~PinGDataFileFunction();
+
+ private:
+  // Actually do the pinning of each file.
+  virtual bool DoOperation(const FilePath& path) OVERRIDE;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.pinGDataFile");
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

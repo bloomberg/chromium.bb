@@ -51,6 +51,48 @@
         }
       },
       {
+        "id": "GDataFileProperties",
+        "type": "object",
+        "description": "GData file properties.",
+        "properties": {
+          "fileUrl": {
+            "type": "string",
+            "optional": true,
+            "description": "the URL given for this file."
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "optional": true,
+            "description": "URL to the GData thumbnail image for this file."
+          },
+          "editUrl": {
+            "type": "string",
+            "optional": true,
+            "description": "GData edit URL for this file."
+          },
+          "isPinned": {
+            "type": "boolean",
+            "optional": true,
+            "description": "True if the file is pinned in GData cache."
+          },
+          "isPresent": {
+            "type": "boolean",
+            "optional": true,
+            "description": "True if the file is present in GData cache."
+          },
+          "isDirty": {
+            "type": "boolean",
+            "optional": true,
+            "description": "True if the file is awaiting upload in GData cache."
+          },
+          "errorCode": {
+            "type": "integer",
+            "optional": true,
+            "description": "The error code (from base::PlatformFileError) if fetching the properties for this file had an error."
+          }
+        }
+      },      
+      {
         "id": "MountPointInfo",
         "type": "object",
         "description": "Mounted point information.",
@@ -179,7 +221,7 @@
                      "error_invalid_archive", "error_libcros_missing",
                      "error_authentication", "error_network",
                      "error_path_unmounted"],
-            "description": "Event type that tells listeners if mount was successfull or an error occurred. It also specifies the error."
+            "description": "Event type that tells listeners if mount was successful or an error occurred. It also specifies the error."
           },
           "sourceUrl": {
             "type": "string",
@@ -426,6 +468,54 @@
           }
         ]
       },
+      {
+        "name": "getGDataFileProperties",
+        "description": "Requests GData file properties for a list of files",
+        "parameters": [
+          {
+            "name": "fileUrls",
+            "type": "array",
+            "description": "Array of file URLs to fetch properties for."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "fileProperties",
+                "type": "array",
+                "items": {"$ref": "GDataFileProperties"},
+                "description": "An array of the requested file properties, one entry for each file in fileUrls."
+              }
+            ]
+          }
+        ]
+      },      
+      {
+        "name": "pinGDataFile",
+        "description": "Pins a GData file in the cache",
+        "parameters": [
+          {
+            "name": "fileUrls",
+            "type": "array",
+            "description": "Array of file URLs to pin."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "fileProperties",
+                "type": "array",
+                "items": {"$ref": "GDataFileProperties"},
+                "description": "An array of the pinned properties after pinning for the requested files, one entry for each file in fileUrls."
+              }
+            ]
+          }
+        ]
+      },      
       {
         "name": "getVolumeMetadata",
         "description": "Requests volume's metadata",

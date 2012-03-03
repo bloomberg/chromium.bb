@@ -387,6 +387,110 @@ base::DictionaryValue* CreateValueFromMountPoint(Profile* profile,
 }
 #endif  // defined(OS_CHROMEOS)
 
+// Given a file url, find the virtual FilePath associated with it.
+FilePath GetVirtualPathFromURL(const GURL& file_url) {
+  FilePath virtual_path;
+  fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
+  GURL file_origin_url;
+  if (!CrackFileSystemURL(file_url, &file_origin_url, &type, &virtual_path) ||
+      type != fileapi::kFileSystemTypeExternal) {
+    NOTREACHED();
+    return FilePath();
+  }
+  return virtual_path;
+}
+
+// Delegate used to find file properties.
+class FilePropertiesDelegate : public gdata::FindFileDelegate {
+ public:
+  FilePropertiesDelegate();
+  virtual ~FilePropertiesDelegate();
+
+  // Builds a dictionary from the GDataFile file property information
+  void CopyProperties(base::DictionaryValue* property_dict);
+
+  base::PlatformFileError error() const { return error_; }
+
+ private:
+  // GDataFileSystem::FindFileDelegate overrides.
+  virtual void OnFileFound(gdata::GDataFile* file) OVERRIDE;
+  virtual void OnDirectoryFound(const FilePath&,
+                                gdata::GDataDirectory* dir) OVERRIDE;
+  virtual FindFileTraversalCommand OnEnterDirectory(
+      const FilePath&,
+      gdata::GDataDirectory*) OVERRIDE;
+  virtual void OnError(base::PlatformFileError error) OVERRIDE;
+
+  GURL thumbnail_url_;
+  GURL edit_url_;
+  int cache_state_;
+  base::PlatformFileError error_;
+};
+
+// FilePropertiesDelegate class implementation.
+
+FilePropertiesDelegate::FilePropertiesDelegate()
+  : cache_state_(0), error_(base::PLATFORM_FILE_OK) {
+}
+
+FilePropertiesDelegate::~FilePropertiesDelegate() { }
+
+void FilePropertiesDelegate::CopyProperties(
+    base::DictionaryValue* property_dict) {
+  DCHECK(property_dict);
+  DCHECK(!property_dict->HasKey("thumbnailUrl"));
+  DCHECK(!property_dict->HasKey("editUrl"));
+  DCHECK(!property_dict->HasKey("isPinned"));
+  DCHECK(!property_dict->HasKey("isPresent"));
+  DCHECK(!property_dict->HasKey("isDirty"));
+  DCHECK(!property_dict->HasKey("errorCode"));
+
+  if (error_ != base::PLATFORM_FILE_OK) {
+    property_dict->SetInteger("errorCode", error_);
+    return;
+  }
+
+  property_dict->SetString("thumbnailUrl", thumbnail_url_.spec());
+  if (!edit_url_.is_empty())
+    property_dict->SetString("editUrl", edit_url_.spec());
+  property_dict->SetBoolean(
+      "isPinned",
+      static_cast<bool>(cache_state_ & gdata::GDataFile::CACHE_STATE_PINNED));
+
+  property_dict->SetBoolean(
+      "isPresent",
+      static_cast<bool>(cache_state_ & gdata::GDataFile::CACHE_STATE_PRESENT));
+
+  property_dict->SetBoolean(
+      "isDirty",
+      static_cast<bool>(cache_state_ & gdata::GDataFile::CACHE_STATE_DIRTY));
+}
+
+void FilePropertiesDelegate::OnFileFound(gdata::GDataFile* file) {
+  DCHECK(!file->file_info().is_directory);
+  thumbnail_url_ = file->thumbnail_url();
+  edit_url_ = file->edit_url();
+  cache_state_ = file->cache_state();
+}
+
+void FilePropertiesDelegate::OnDirectoryFound(const FilePath&,
+                                              gdata::GDataDirectory* dir) {
+  DCHECK(dir->file_info().is_directory);
+  // We don't set anything here because we don't have any properties for
+  // directories yet.
+}
+
+gdata::FindFileDelegate::FindFileTraversalCommand
+FilePropertiesDelegate::OnEnterDirectory(const FilePath&,
+                                         gdata::GDataDirectory*) {
+  // Keep traversing while doing read only lookups.
+  return FIND_FILE_CONTINUES;
+}
+
+void FilePropertiesDelegate::OnError(base::PlatformFileError error) {
+  error_ = error;
+}
+
 }  // namespace
 
 class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
@@ -1818,3 +1922,73 @@ bool FileDialogStringsFunction::RunImpl() {
 
   return true;
 }
+
+GetGDataFilePropertiesFunction::GetGDataFilePropertiesFunction() {
+}
+
+GetGDataFilePropertiesFunction::~GetGDataFilePropertiesFunction() {
+}
+
+bool GetGDataFilePropertiesFunction::DoOperation(const FilePath& /*path*/) {
+  return false;  // Terminate loop early by default.
+}
+
+bool GetGDataFilePropertiesFunction::RunImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (args_->GetSize() != 1)
+    return false;
+
+  ListValue* path_list = NULL;
+  args_->GetList(0, &path_list);
+  DCHECK(path_list);
+  std::vector<GURL> file_urls;
+  std::vector<FilePath> file_paths;
+
+  size_t len = path_list->GetSize();
+  file_paths.reserve(len);
+  file_urls.reserve(len);
+  std::string file_str;
+  GURL file_url;
+  for (size_t i = 0; i < len; ++i) {
+    path_list->GetString(i, &file_str);
+    file_url = GURL(file_str);
+    file_urls.push_back(file_url);
+    file_paths.push_back(GetVirtualPathFromURL(file_url));
+  }
+
+  for (std::vector<FilePath>::iterator iter = file_paths.begin();
+      iter != file_paths.end(); ++iter) {
+    if (!DoOperation(*iter))
+      break;
+  }
+
+  base::ListValue* file_properties = new base::ListValue;
+  gdata::GDataFileSystem* file_system =
+      gdata::GDataFileSystemFactory::GetForProfile(profile_);
+  DCHECK(file_system);
+  for (std::vector<FilePath>::size_type i = 0; i < file_paths.size(); ++i) {
+    scoped_refptr<FilePropertiesDelegate> property_delegate(
+        new FilePropertiesDelegate());
+    file_system->FindFileByPath(file_paths[i], property_delegate);
+    base::DictionaryValue* property_dict = new base::DictionaryValue;
+    property_delegate->CopyProperties(property_dict);
+    property_dict->SetString("fileUrl", file_urls[i].spec());
+    file_properties->Append(property_dict);
+  }
+
+  result_.reset(file_properties);
+
+  return true;
+}
+
+PinGDataFileFunction::PinGDataFileFunction() {
+}
+
+PinGDataFileFunction::~PinGDataFileFunction() {
+}
+
+bool PinGDataFileFunction::DoOperation(const FilePath& /*path*/) {
+  // TODO(gspencer): Actually pin the file here.
+  return true;
+}
+
