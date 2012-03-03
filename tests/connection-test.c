@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <assert.h>
 #include <sys/socket.h>
@@ -136,4 +137,62 @@ TEST(connection_queue)
 
 	wl_connection_destroy(connection);
 	close(s[1]);
+}
+
+struct marshal_data {
+	struct wl_connection *connection;
+	int s[2];
+	uint32_t mask;
+	uint32_t buffer[10];
+};
+
+static void
+marshal(struct marshal_data *data,
+	const struct wl_message *message, int size, ...)
+{
+	struct wl_closure *closure;
+	static const int opcode = 4444;
+	static struct wl_object sender = { NULL, NULL, 1234 };
+	va_list ap;
+
+	va_start(ap, size);
+	closure = wl_connection_vmarshal(data->connection,
+					 &sender, opcode, ap, message);
+	va_end(ap);
+
+	assert(closure);
+	assert(wl_closure_send(closure, data->connection) == 0);
+	wl_closure_destroy(closure);
+	assert(data->mask ==
+	       (WL_CONNECTION_WRITABLE | WL_CONNECTION_READABLE));
+	assert(wl_connection_data(data->connection,
+				  WL_CONNECTION_WRITABLE) == 0);
+	assert(data->mask == WL_CONNECTION_READABLE);
+	assert(read(data->s[1], data->buffer, sizeof data->buffer) == size);
+
+	assert(data->buffer[0] == sender.id);
+	assert(data->buffer[1] == (opcode | (size << 16)));
+}
+
+TEST(connection_marshal)
+{
+	static const struct wl_message int_message = { "test", "i", NULL };
+	static const struct wl_message uint_message = { "test", "u", NULL };
+	static const struct wl_message string_message = { "test", "s", NULL };
+	struct marshal_data data;
+
+	data.connection = setup(data.s, &data.mask);
+
+	marshal(&data, &int_message, 12, 42);
+	assert(data.buffer[2] == 42);
+
+	marshal(&data, &uint_message, 12, 55);
+	assert(data.buffer[2] == 55);
+
+	marshal(&data, &string_message, 20, "frappo");
+	assert(data.buffer[2] == 7);
+	assert(strcmp((char *) &data.buffer[3], "frappo") == 0);
+
+	wl_connection_destroy(data.connection);
+	close(data.s[1]);
 }
