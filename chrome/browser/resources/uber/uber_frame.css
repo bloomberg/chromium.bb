@@ -27,7 +27,6 @@ li {
   cursor: pointer;
   line-height: 17px;
   margin: 5px 0;
-  text-transform: uppercase;
 }
 
 li:hover {

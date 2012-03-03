@@ -47,6 +47,7 @@ const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIFlashURL[] = "chrome://flash/";
 const char kChromeUIHelpFrameURL[] = "chrome://help-frame/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
+const char kChromeUIHistoryFrameURL[] = "chrome://history-frame/";
 const char kChromeUIHungRendererDialogURL[] = "chrome://hung-renderer/";
 const char kChromeUIInputWindowDialogURL[] = "chrome://input-window-dialog/";
 const char kChromeUIIPCURL[] = "chrome://ipc/";
@@ -63,8 +64,6 @@ const char kChromeUIPolicyURL[] = "chrome://policy/";
 const char kChromeUIPrintURL[] = "chrome://print/";
 const char kChromeUISessionsURL[] = "chrome://sessions/";
 const char kChromeUISettingsURL[] = "chrome://settings/";
-// settings-frame is the URL used to directly access the new settings page in
-// the UberPage, AKA options2.
 const char kChromeUISettingsFrameURL[] = "chrome://settings-frame/";
 const char kChromeUISSLClientCertificateSelectorURL[] = "chrome://select-cert/";
 const char kChromeUISyncPromoURL[] = "chrome://signin/";
@@ -149,6 +148,7 @@ const char kChromeUIHelpFrameHost[] = "help-frame";
 const char kChromeUIHelpHost[] = "help";
 const char kChromeUIHistogramsHost[] = "histograms";
 const char kChromeUIHistoryHost[] = "history";
+const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIHungRendererDialogHost[] = "hung-renderer";
 const char kChromeUIInputWindowDialogHost[] = "input-window-dialog";
 const char kChromeUIIPCHost[] = "ipc";

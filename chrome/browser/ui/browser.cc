@@ -2318,8 +2318,16 @@ void Browser::ShowAvatarMenu() {
 
 void Browser::ShowHistoryTab() {
   content::RecordAction(UserMetricsAction("ShowHistory"));
-  ShowSingletonTabOverwritingNTP(
-      GetSingletonTabNavigateParams(GURL(chrome::kChromeUIHistoryURL)));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableUberPage)) {
+    ShowSingletonTabOverwritingNTP(
+        GetSingletonTabNavigateParams(GURL(chrome::kChromeUIHistoryFrameURL)));
+  } else {
+    browser::NavigateParams params(GetSingletonTabNavigateParams(
+        GURL(std::string(chrome::kChromeUIUberURL) +
+             chrome::kChromeUIHistoryHost)));
+    params.path_behavior = browser::NavigateParams::IGNORE_AND_NAVIGATE;
+    ShowSingletonTabOverwritingNTP(params);
+  }
 }
 
 void Browser::ShowDownloadsTab() {

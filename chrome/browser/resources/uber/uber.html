@@ -20,15 +20,18 @@
 
 <div id="navigation"><iframe src="chrome://uber-frame/"></iframe></div>
 
-<div class="iframe-container" i18n-values="id:settingsHost"
-    data-favicon="chrome://theme/IDR_SETTINGS_FAVICON"
-    data-url="chrome://settings-frame/"></div>
-<div class="iframe-container" i18n-values="id:extensionsHost"
-    data-favicon="chrome://theme/IDR_EXTENSIONS_FAVICON"
-    data-url="chrome://extensions-frame/"></div>
-<div class="iframe-container" i18n-values="id:helpHost"
-    data-favicon="chrome://theme/IDR_PRODUCT_LOGO_16"
-    data-url="chrome://help-frame/"></div>
+<div class="iframe-container"
+    i18n-values="id:historyHost; data-url:historyFrameURL;"
+    data-favicon="chrome://theme/IDR_HISTORY_FAVICON"></div>
+<div class="iframe-container"
+    i18n-values="id:extensionsHost; data-url:extensionsFrameURL;"
+    data-favicon="chrome://theme/IDR_EXTENSIONS_FAVICON"></div>
+<div class="iframe-container"
+    i18n-values="id:settingsHost; data-url:settingsFrameURL;"
+    data-favicon="chrome://theme/IDR_SETTINGS_FAVICON"></div>
+<div class="iframe-container"
+    i18n-values="id:helpHost; data-url:helpFrameURL;"
+    data-favicon="chrome://theme/IDR_PRODUCT_LOGO_16"></div>
 
 <script src="chrome://chrome/strings.js"></script>
 <script src="chrome://resources/js/i18n_template.js"></script>

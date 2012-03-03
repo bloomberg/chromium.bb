@@ -192,7 +192,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<GpuInternalsUI>;
   if (url.host() == chrome::kChromeUIHelpFrameHost)
     return &NewWebUI<HelpUI>;
-  if (url.host() == chrome::kChromeUIHistoryHost)
+  if (url.host() == chrome::kChromeUIHistoryFrameHost)
     return &NewWebUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIMediaInternalsHost)
     return &NewWebUI<MediaInternalsUI>;

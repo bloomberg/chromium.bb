@@ -1242,7 +1242,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(GURL(chrome::kChromeUIHistoryURL),
+  // TODO(csilv): Update this for uber page. http://crbug.com/111579.
+  EXPECT_EQ(GURL(chrome::kChromeUIHistoryFrameURL),
             browser()->GetSelectedWebContents()->GetURL());
 }
 

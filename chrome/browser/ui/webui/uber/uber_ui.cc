@@ -35,12 +35,22 @@ ChromeWebUIDataSource* CreateUberHTMLSource() {
   // Hack alert: continue showing "Loading..." until a real title is set.
   source->AddLocalizedString("pageTitle", IDS_TAB_LOADING_TITLE);
 
-  source->AddString("settingsHost",
-                    ASCIIToUTF16(chrome::kChromeUISettingsHost));
+  source->AddString("extensionsFrameURL",
+                    ASCIIToUTF16(chrome::kChromeUIExtensionsFrameURL));
   source->AddString("extensionsHost",
                     ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
+  source->AddString("helpFrameURL",
+                    ASCIIToUTF16(chrome::kChromeUIHelpFrameURL));
   source->AddString("helpHost",
                     ASCIIToUTF16(chrome::kChromeUIHelpHost));
+  source->AddString("historyFrameURL",
+                    ASCIIToUTF16(chrome::kChromeUIHistoryFrameURL));
+  source->AddString("historyHost",
+                    ASCIIToUTF16(chrome::kChromeUIHistoryHost));
+  source->AddString("settingsFrameURL",
+                    ASCIIToUTF16(chrome::kChromeUISettingsFrameURL));
+  source->AddString("settingsHost",
+                    ASCIIToUTF16(chrome::kChromeUISettingsHost));
 
   return source;
 }
@@ -60,9 +70,6 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource() {
   source->AddLocalizedString("shortProductName", IDS_SHORT_PRODUCT_NAME);
 #endif  // defined(OS_CHROMEOS)
 
-  source->AddString("settingsHost",
-                    ASCIIToUTF16(chrome::kChromeUISettingsHost));
-  source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
   source->AddString("extensionsHost",
                     ASCIIToUTF16(chrome::kChromeUIExtensionsHost));
   source->AddLocalizedString("extensionsDisplayName",
@@ -70,6 +77,12 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource() {
   source->AddString("helpHost",
                     ASCIIToUTF16(chrome::kChromeUIHelpHost));
   source->AddLocalizedString("helpDisplayName", IDS_HELP_TITLE);
+  source->AddString("historyHost",
+                    ASCIIToUTF16(chrome::kChromeUIHistoryHost));
+  source->AddLocalizedString("historyDisplayName", IDS_HISTORY_TITLE);
+  source->AddString("settingsHost",
+                    ASCIIToUTF16(chrome::kChromeUISettingsHost));
+  source->AddLocalizedString("settingsDisplayName", IDS_SETTINGS_TITLE);
 
   return source;
 }
@@ -80,10 +93,11 @@ UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
 
-  RegisterSubpage(chrome::kChromeUIUberFrameURL);
-  RegisterSubpage(chrome::kChromeUISettingsFrameURL);
   RegisterSubpage(chrome::kChromeUIExtensionsFrameURL);
   RegisterSubpage(chrome::kChromeUIHelpFrameURL);
+  RegisterSubpage(chrome::kChromeUIHistoryFrameURL);
+  RegisterSubpage(chrome::kChromeUISettingsFrameURL);
+  RegisterSubpage(chrome::kChromeUIUberFrameURL);
 }
 
 UberUI::~UberUI() {

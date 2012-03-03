@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="../uber/uber_utils.js">
+
 ///////////////////////////////////////////////////////////////////////////////
 // Globals:
 var RESULTS_PER_PAGE = 150;
@@ -235,6 +237,7 @@ Page.prototype.getTitleDOM_ = function() {
   var link = document.createElement('a');
   link.href = this.url_;
   link.id = "id-" + this.id_;
+  link.target = "_top";
 
   // Add a tooltip, since it might be ellipsized.
   // TODO(dubroy): Find a way to show the tooltip only when necessary.
@@ -866,6 +869,8 @@ PageState.getHashString = function(term, page) {
  * Window onload handler, sets up the page.
  */
 function load() {
+  uber.onContentFrameLoaded();
+
   var searchField = $('search-field');
   searchField.focus();
 
@@ -890,6 +895,14 @@ function load() {
   $('more-from-site').addEventListener('activate', function(e) {
     activePage.showMoreFromSite_();
     activePage = null;
+  });
+
+  var title = localStrings.getString('title');
+  uber.invokeMethodOnParent('setTitle', {title: title});
+
+  window.addEventListener('message', function(e) {
+    if (e.data.method == 'frameSelected')
+      searchField.focus();
   });
 }
 

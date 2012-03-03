@@ -78,7 +78,7 @@ class HistoryUIHTMLSource : public ChromeWebUIDataSource {
 };
 
 HistoryUIHTMLSource::HistoryUIHTMLSource()
-    : ChromeWebUIDataSource(chrome::kChromeUIHistoryHost) {
+    : ChromeWebUIDataSource(chrome::kChromeUIHistoryFrameHost) {
   AddLocalizedString("loading", IDS_HISTORY_LOADING);
   AddLocalizedString("title", IDS_HISTORY_TITLE);
   AddLocalizedString("newest", IDS_HISTORY_NEWEST);
@@ -428,7 +428,7 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
 
-  // Set up the chrome://history/ source.
+  // Set up the chrome://history-frame/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
