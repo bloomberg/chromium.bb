@@ -483,7 +483,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithoutPolicy) {
   WaitForConnect();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           MessageLoop::QuitClosure(),
-                                          TestTimeouts::action_timeout_ms());
+                                          TestTimeouts::action_timeout());
 
   bool run_loop = LaunchBrowser(command_line, profile);
   EXPECT_FALSE(run_loop);
@@ -525,7 +525,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartBrowserWithPolicy) {
   WaitForConnect();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           MessageLoop::QuitClosure(),
-                                          TestTimeouts::action_timeout_ms());
+                                          TestTimeouts::action_timeout());
 
   bool run_loop = LaunchBrowser(command_line, profile);
 
