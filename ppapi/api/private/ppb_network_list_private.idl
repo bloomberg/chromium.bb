@@ -17,24 +17,19 @@ label Chrome {
 [assert_size(4)]
 enum PP_NetworkListType_Private {
   /**
-   * Type of the network interface is not known.
-   */
-  PP_NETWORKLIST_UNKNOWN = 0,
-
-  /**
    * Wired Ethernet network.
    */
-  PP_NETWORKLIST_ETHERNET = 1,
+  PP_NETWORKLIST_ETHERNET = 0,
 
   /**
    * Wireless Wi-Fi network.
    */
-  PP_NETWORKLIST_WIFI = 2,
+  PP_NETWORKLIST_WIFI = 1,
 
   /**
    * Cellular network (e.g. LTE).
    */
-  PP_NETWORKLIST_CELLULAR = 3
+  PP_NETWORKLIST_CELLULAR = 2
 };
 
 /**
@@ -90,15 +85,15 @@ interface PPB_NetworkList_Private {
    * @return Returns type of the network interface with the specified
    * <code>index</code>.
    */
-  PP_NetworkListType_Private GetType([in] PP_Resource resource,
-                                     [in] uint32_t index);
+  PP_NetworkListType_Private  GetType([in] PP_Resource resource,
+                                    [in] uint32_t index);
 
   /**
    * @return Returns current state of the network interface with the
    * specified <code>index</code>.
    */
-  PP_NetworkListState_Private GetState([in] PP_Resource resource,
-                                       [in] uint32_t index);
+  PP_NetworkListState_Private  GetState([in] PP_Resource resource,
+                                      [in] uint32_t index);
 
   /**
    * Gets list of IP addresses for the network interface with the
@@ -113,8 +108,8 @@ interface PPB_NetworkList_Private {
   int32_t GetIpAddresses(
       [in] PP_Resource resource,
       [in] uint32_t index,
-      [inout, size_is(count)] PP_NetAddress_Private[] addresses,
-      [in] uint32_t count);
+      [out, size_is(count)] PP_NetAddress_Private[] addresses,
+      [in] int32_t count);
 
   /**
    * @return Returns display name for the network interface with the
@@ -125,7 +120,7 @@ interface PPB_NetworkList_Private {
 
   /**
    * @return Returns MTU for the network interface with the specified
-   * <code>index</code> or 0 if MTU is unknown.
+   * <code>index</code>.
    */
   uint32_t GetMTU([in] PP_Resource resource,
                   [in] uint32_t index);

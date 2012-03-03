@@ -244,14 +244,6 @@ PP_Resource ResourceCreationImpl::CreateMouseInputEvent(
                                     instance, data))->GetReference();
 }
 
-PP_Resource ResourceCreationImpl::CreateNetworkMonitor(
-    PP_Instance instance,
-    PPB_NetworkMonitor_Callback callback,
-    void* user_data) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
                                                   PP_Bool vertical) {
   return PPB_Scrollbar_Impl::Create(instance, PP_ToBool(vertical));

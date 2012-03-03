@@ -238,14 +238,6 @@ PP_Resource ResourceCreationProxy::CreateMouseInputEvent(
                                     instance, data))->GetReference();
 }
 
-PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
-      PP_Instance instance,
-      PPB_NetworkMonitor_Callback callback,
-      void* user_data) {
-  NOTIMPLEMENTED();  // Not proxied yet.
-  return 0;
-}
-
 PP_Resource ResourceCreationProxy::CreateGraphics3D(
     PP_Instance instance,
     PP_Resource share_context,
