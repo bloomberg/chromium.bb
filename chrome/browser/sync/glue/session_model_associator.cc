@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,7 +28,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/get_session_name_task.h"
+#include "chrome/browser/sync/util/get_session_name.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_entry.h"
@@ -576,13 +577,10 @@ void SessionModelAssociator::InitializeCurrentSessionName() {
   if (setup_for_test_) {
     OnSessionNameInitialized("TestSessionName");
   } else {
-    scoped_refptr<GetSessionNameTask> task = new GetSessionNameTask(
+    browser_sync::GetSessionName(
+        BrowserThread::GetBlockingPool(),
         base::Bind(&SessionModelAssociator::OnSessionNameInitialized,
                    AsWeakPtr()));
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&GetSessionNameTask::GetSessionNameAsync, task.get()));
   }
 }
 

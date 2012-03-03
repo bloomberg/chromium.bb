@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/util/get_session_name_task.h"
+#include "chrome/browser/sync/util/get_session_name.h"
 
 #import <Foundation/Foundation.h>
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
@@ -20,9 +20,9 @@
 @end
 
 namespace browser_sync {
+namespace internal {
 
-// static
-std::string GetSessionNameTask::GetHardwareModelName() {
+std::string GetHardwareModelName() {
   NSHost* myHost = [NSHost currentHost];
   if ([myHost respondsToSelector:@selector(localizedName)])
     return base::SysNSStringToUTF8([myHost localizedName]);
@@ -47,4 +47,5 @@ std::string GetSessionNameTask::GetHardwareModelName() {
   return "Unknown";
 }
 
+}  // namespace internal
 }  // namespace browser_sync

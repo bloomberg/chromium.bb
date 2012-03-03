@@ -1,5 +1,6 @@
 include_rules = [
   "-chrome",
+  "-content",
   "+chrome/test/base",
 
   "+chrome/browser/sync",

@@ -11,6 +11,8 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "base/time.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/sync/internal_api/includes/report_unrecoverable_error_function.h"
@@ -439,6 +441,8 @@ class SyncManager {
   // |sync_server_and_path| and |sync_server_port| represent the Chrome sync
   // server to use, and |use_ssl| specifies whether to communicate securely;
   // the default is false.
+  // |blocking_task_runner| is a TaskRunner to be used for tasks that
+  // may block on disk I/O.
   // |post_factory| will be owned internally and used to create
   // instances of an HttpPostProvider.
   // |model_safe_worker| ownership is given to the SyncManager.
@@ -452,6 +456,7 @@ class SyncManager {
             const std::string& sync_server_and_path,
             int sync_server_port,
             bool use_ssl,
+            const scoped_refptr<base::TaskRunner>& blocking_task_runner,
             HttpPostProviderFactory* post_factory,
             browser_sync::ModelSafeWorkerRegistrar* registrar,
             browser_sync::ExtensionsActivityMonitor*

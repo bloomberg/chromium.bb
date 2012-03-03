@@ -16,10 +16,10 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
-#include "base/test/thread_test_helper.h"
 #include "base/test/values_test_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -60,7 +60,6 @@
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/browser/sync/util/time.h"
-#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,7 +83,6 @@ using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::sessions::SyncSessionSnapshot;
 using browser_sync::TestUnrecoverableErrorHandler;
 using browser_sync::WeakHandle;
-using content::BrowserThread;
 using syncable::IS_DEL;
 using syncable::IS_UNSYNCED;
 using syncable::kEncryptedString;
@@ -718,9 +716,7 @@ class SyncManagerTest : public testing::Test,
   };
 
   SyncManagerTest()
-      : ui_thread_(BrowserThread::UI, &ui_loop_),
-        file_thread_(BrowserThread::FILE),
-        sync_notifier_mock_(NULL),
+      : sync_notifier_mock_(NULL),
         sync_manager_("Test sync manager"),
         sync_notifier_observer_(NULL),
         update_enabled_types_call_count_(0) {}
@@ -732,8 +728,6 @@ class SyncManagerTest : public testing::Test,
   // Test implementation.
   void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    file_thread_.Start();
 
     SyncCredentials credentials;
     credentials.email = "foo@bar.com";
@@ -764,6 +758,7 @@ class SyncManagerTest : public testing::Test,
     sync_manager_.Init(temp_dir_.path(),
                        WeakHandle<JsEventHandler>(),
                        "bogus", 0, false,
+                       base::MessageLoopProxy::current(),
                        new TestHttpPostProviderFactory(), this,
                        &extensions_activity_monitor_, this, "bogus",
                        credentials, sync_notifier_mock_, "",
@@ -879,7 +874,7 @@ class SyncManagerTest : public testing::Test,
   }
 
   void PumpLoop() {
-    ui_loop_.RunAllPending();
+    message_loop_.RunAllPending();
   }
 
   void SendJsMessage(const std::string& name, const JsArgList& args,
@@ -914,12 +909,8 @@ class SyncManagerTest : public testing::Test,
   }
 
  private:
-  // Needed by |ui_thread_|.
-  MessageLoopForUI ui_loop_;
   // Needed by |sync_manager_|.
-  content::TestBrowserThread ui_thread_;
-  // Needed by |sync_manager_|.
-  content::TestBrowserThread file_thread_;
+  MessageLoop message_loop_;
   // Needed by |sync_manager_|.
   ScopedTempDir temp_dir_;
   // Sync Id's for the roots of the enabled datatypes.
@@ -1292,10 +1283,6 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
 
   sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
                                          base::Unretained(this)));
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  ASSERT_TRUE(helper->Run());
   PumpLoop();
 
   const syncable::ModelTypeSet encrypted_types =
@@ -1322,10 +1309,6 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
   // Should fail.
   sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
                                          base::Unretained(this)));
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  ASSERT_TRUE(helper->Run());
   PumpLoop();
 
   const syncable::ModelTypeSet encrypted_types =
@@ -1342,10 +1325,6 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
   // Should write to nigori.
   sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
                                          base::Unretained(this)));
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  ASSERT_TRUE(helper->Run());
   PumpLoop();
 
   const syncable::ModelTypeSet encrypted_types =
@@ -1955,10 +1934,6 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
 
   sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
                                          base::Unretained(this)));
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  ASSERT_TRUE(helper->Run());
   PumpLoop();
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -2002,7 +1977,6 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
 
   sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
                                          base::Unretained(this)));
-  ASSERT_TRUE(helper->Run());
   PumpLoop();
 
   {
@@ -2200,10 +2174,6 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
   EXPECT_CALL(observer_, OnEncryptionComplete());
   sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
                                          base::Unretained(this)));
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  ASSERT_TRUE(helper->Run());
   PumpLoop();
   EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
 }
@@ -2264,10 +2234,6 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
   sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
                                          base::Unretained(this)));
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  ASSERT_TRUE(helper->Run());
   PumpLoop();
   EXPECT_TRUE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
 
@@ -2360,10 +2326,6 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
   sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
                                          base::Unretained(this)));
-  scoped_refptr<base::ThreadTestHelper> helper(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
-  ASSERT_TRUE(helper->Run());
   PumpLoop();
   EXPECT_TRUE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
 

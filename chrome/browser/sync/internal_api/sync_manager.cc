@@ -50,11 +50,10 @@
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/browser/sync/util/get_session_name_task.h"
+#include "chrome/browser/sync/util/get_session_name.h"
 #include "chrome/browser/sync/util/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
 
 using std::string;
@@ -187,6 +186,7 @@ class SyncManager::SyncInternal
             const std::string& sync_server_and_path,
             int port,
             bool use_ssl,
+            const scoped_refptr<base::TaskRunner>& blocking_task_runner,
             HttpPostProviderFactory* post_factory,
             ModelSafeWorkerRegistrar* model_safe_worker_registrar,
             browser_sync::ExtensionsActivityMonitor*
@@ -533,6 +533,10 @@ class SyncManager::SyncInternal
   // WeakHandle when we construct it.
   WeakHandle<SyncInternal> weak_handle_this_;
 
+  // |blocking_task_runner| is a TaskRunner to be used for tasks that
+  // may block on disk I/O.
+  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
   // We give a handle to share_ to clients of the API for use when constructing
   // any transaction type.
   UserShare share_;
@@ -721,6 +725,7 @@ bool SyncManager::Init(
     const std::string& sync_server_and_path,
     int sync_server_port,
     bool use_ssl,
+    const scoped_refptr<base::TaskRunner>& blocking_task_runner,
     HttpPostProviderFactory* post_factory,
     ModelSafeWorkerRegistrar* registrar,
     browser_sync::ExtensionsActivityMonitor* extensions_activity_monitor,
@@ -742,6 +747,7 @@ bool SyncManager::Init(
                      server_string,
                      sync_server_port,
                      use_ssl,
+                     blocking_task_runner,
                      post_factory,
                      registrar,
                      extensions_activity_monitor,
@@ -858,6 +864,7 @@ bool SyncManager::SyncInternal::Init(
     const std::string& sync_server_and_path,
     int port,
     bool use_ssl,
+    const scoped_refptr<base::TaskRunner>& blocking_task_runner,
     HttpPostProviderFactory* post_factory,
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
     browser_sync::ExtensionsActivityMonitor* extensions_activity_monitor,
@@ -877,6 +884,8 @@ bool SyncManager::SyncInternal::Init(
   DVLOG(1) << "Starting SyncInternal initialization.";
 
   weak_handle_this_ = MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
+
+  blocking_task_runner_ = blocking_task_runner;
 
   registrar_ = model_safe_worker_registrar;
   change_delegate_ = change_delegate;
@@ -980,16 +989,12 @@ bool SyncManager::SyncInternal::Init(
 void SyncManager::SyncInternal::UpdateCryptographerAndNigori(
     const base::Callback<void(bool)>& done_callback) {
   DCHECK(initialized_);
-  scoped_refptr<browser_sync::GetSessionNameTask> task =
-      new browser_sync::GetSessionNameTask(base::Bind(
+  browser_sync::GetSessionName(
+      blocking_task_runner_,
+      base::Bind(
           &SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback,
           weak_ptr_factory_.GetWeakPtr(),
           done_callback));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&browser_sync::GetSessionNameTask::GetSessionNameAsync,
-                 task.get()));
 }
 
 void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(

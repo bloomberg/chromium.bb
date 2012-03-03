@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/location.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -969,6 +970,7 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.service_url.host() + options.service_url.path(),
       options.service_url.EffectiveIntPort(),
       options.service_url.SchemeIsSecure(),
+      BrowserThread::GetBlockingPool(),
       options.make_http_bridge_factory_fn.Run(),
       options.registrar /* as ModelSafeWorkerRegistrar */,
       options.extensions_activity_monitor,
