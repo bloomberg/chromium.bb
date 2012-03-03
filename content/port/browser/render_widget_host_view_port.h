@@ -226,7 +226,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // prevent-default on a dispatched touch event, the touch events are queued in
   // the GestureRecognizer until invocation of ProcessTouchAck releases it to be
   // processed (when |processed| is false) or ignored (when |processed| is true)
-  virtual void ProcessTouchAck(bool processed) = 0;
+  virtual void ProcessTouchAck(WebKit::WebInputEvent::Type type,
+                               bool processed) = 0;
 
   virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;
   virtual void SetScrollOffsetPinning(
