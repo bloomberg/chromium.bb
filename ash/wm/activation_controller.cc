@@ -21,6 +21,23 @@ namespace ash {
 namespace internal {
 namespace {
 
+// These are the list of container ids of containers which may contain windows
+// that need to be activated in the order that they should be activated.
+const int kWindowContainerIds[] = {
+    kShellWindowId_LockSystemModalContainer,
+    kShellWindowId_LockScreenContainer,
+    kShellWindowId_SystemModalContainer,
+    kShellWindowId_AlwaysOnTopContainer,
+    kShellWindowId_DefaultContainer,
+
+    // Panel, launcher and status are intentionally checked after other
+    // containers even though these layers are higher. The user expects their
+    // windows to be focused before these elements.
+    kShellWindowId_PanelContainer,
+    kShellWindowId_LauncherContainer,
+    kShellWindowId_StatusContainer,
+};
+
 aura::Window* GetContainer(int id) {
   return Shell::GetInstance()->GetContainer(id);
 }
@@ -28,14 +45,11 @@ aura::Window* GetContainer(int id) {
 // Returns true if children of |window| can be activated.
 // These are the only containers in which windows can receive focus.
 bool SupportsChildActivation(aura::Window* window) {
-  return window->id() == kShellWindowId_DefaultContainer ||
-         window->id() == kShellWindowId_AlwaysOnTopContainer ||
-         window->id() == kShellWindowId_PanelContainer ||
-         window->id() == kShellWindowId_SystemModalContainer ||
-         window->id() == kShellWindowId_StatusContainer ||
-         window->id() == kShellWindowId_LauncherContainer ||
-         window->id() == kShellWindowId_LockScreenContainer ||
-         window->id() == kShellWindowId_LockSystemModalContainer;
+  for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
+    if (window->id() == kWindowContainerIds[i])
+      return true;
+  }
+  return false;
 }
 
 // Returns true if |window| can be activated or deactivated.
@@ -69,8 +83,7 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
 // ActivationController, public:
 
 ActivationController::ActivationController()
-    : updating_activation_(false),
-      default_container_for_test_(NULL) {
+    : updating_activation_(false) {
   aura::client::SetActivationClient(Shell::GetRootWindow(), this);
   aura::Env::GetInstance()->AddObserver(this);
   Shell::GetRootWindow()->AddRootWindowObserver(this);
@@ -208,20 +221,38 @@ void ActivationController::ActivateNextWindow(aura::Window* window) {
 
 aura::Window* ActivationController::GetTopmostWindowToActivate(
     aura::Window* ignore) const {
-  const aura::Window* container =
-      default_container_for_test_ ? default_container_for_test_ :
-          GetContainer(kShellWindowId_DefaultContainer);
-  // When destructing an active window that is in a container destructed after
-  // the default container during shell shutdown, |container| would be NULL
-  // because default container is destructed at this point.
-  if (container) {
-    for (aura::Window::Windows::const_reverse_iterator i =
-             container->children().rbegin();
-         i != container->children().rend();
-         ++i) {
-      if (*i != ignore && CanActivateWindow(*i))
-        return *i;
+  size_t current_container_index = 0;
+  // If the container of the window losing focus is in the list, start from that
+  // container.
+  for (size_t i = 0; ignore && i < arraysize(kWindowContainerIds); i++) {
+    aura::Window* container = GetContainer(kWindowContainerIds[i]);
+    if (container && container->Contains(ignore)) {
+      current_container_index = i;
+      break;
     }
+  }
+
+  // Look for windows to focus in that container and below.
+  aura::Window* window = NULL;
+  for (; !window && current_container_index < arraysize(kWindowContainerIds);
+       current_container_index++) {
+    aura::Window* container =
+        GetContainer(kWindowContainerIds[current_container_index]);
+    if (container)
+      window = GetTopmostWindowToActivateInContainer(container, ignore);
+  }
+  return window;
+}
+
+aura::Window* ActivationController::GetTopmostWindowToActivateInContainer(
+    aura::Window* container,
+    aura::Window* ignore) const {
+  for (aura::Window::Windows::const_reverse_iterator i =
+           container->children().rbegin();
+       i != container->children().rend();
+       ++i) {
+    if (*i != ignore && CanActivateWindow(*i))
+      return *i;
   }
   return NULL;
 }

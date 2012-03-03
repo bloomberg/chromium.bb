@@ -49,10 +49,6 @@ class ASH_EXPORT ActivationController
   // Overridden from aura::RootWindowObserver:
   virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
-  void set_default_container_for_test(aura::Window* window) {
-    default_container_for_test_ = window;
-  }
-
  private:
   // Shifts activation to the next window, ignoring |window|.
   void ActivateNextWindow(aura::Window* window);
@@ -60,15 +56,15 @@ class ASH_EXPORT ActivationController
   // Returns the next window that should be activated, ignoring |ignore|.
   aura::Window* GetTopmostWindowToActivate(aura::Window* ignore) const;
 
+  // Returns the next window that should be activated in |container| ignoring
+  // the window |ignore|.
+  aura::Window* GetTopmostWindowToActivateInContainer(
+      aura::Window* container,
+      aura::Window* ignore) const;
+
   // True inside ActivateWindow(). Used to prevent recursion of focus
   // change notifications causing activation.
   bool updating_activation_;
-
-  // For tests that are not running with a Shell instance,
-  // ActivationController's attempts to locate the next active window in
-  // GetTopmostWindowToActivate() will crash, so we provide this way for such
-  // tests to specify a default container.
-  aura::Window* default_container_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivationController);
 };

@@ -5,6 +5,7 @@
 #include "ash/wm/activation_controller.h"
 
 #include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
@@ -20,6 +21,15 @@
 #undef CreateWindow
 #endif
 #endif
+
+namespace {
+
+// Containers used for the tests.
+const int c1 = ash::internal::kShellWindowId_DefaultContainer;
+const int c2 = ash::internal::kShellWindowId_AlwaysOnTopContainer;
+const int c3 = ash::internal::kShellWindowId_LockScreenContainer;
+
+}  // namespace
 
 namespace ash {
 namespace test {
@@ -48,6 +58,9 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
   aura::Window* w2() { return w2_.get(); }
   aura::Window* w3() { return w3_.get(); }
   aura::Window* w4() { return w4_.get(); }
+  aura::Window* w5() { return w5_.get(); }
+  aura::Window* w6() { return w6_.get(); }
+  aura::Window* w7() { return w7_.get(); }
 
   void DestroyWindow2() {
     w2_.reset();
@@ -57,15 +70,23 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
   void CreateWindows() {
     // Create four windows, the first and third are not activatable, the second
     // and fourth are.
-    w1_.reset(CreateWindow(1, &ad_1_));
-    w2_.reset(CreateWindow(2, &ad_2_));
-    w3_.reset(CreateWindow(3, &ad_3_));
-    w4_.reset(CreateWindow(4, &ad_4_));
+    w1_.reset(CreateWindow(1, &ad_1_, c1));
+    w2_.reset(CreateWindow(2, &ad_2_, c1));
+    w3_.reset(CreateWindow(3, &ad_3_, c1));
+    w4_.reset(CreateWindow(4, &ad_4_, c1));
+    w5_.reset(CreateWindow(5, &ad_5_, c2));
+    w6_.reset(CreateWindow(6, &ad_6_, c2));
+    w7_.reset(CreateWindow(7, &ad_7_, c3));
   }
 
-  aura::Window* CreateWindow(int id, TestActivationDelegate* delegate) {
+  aura::Window* CreateWindow(int id,
+                             TestActivationDelegate* delegate,
+                             int container_id) {
     aura::Window* window = aura::test::CreateTestWindowWithDelegate(
-        &delegate_, id, gfx::Rect(), NULL);
+        &delegate_,
+        id,
+        gfx::Rect(),
+        Shell::GetInstance()->GetContainer(container_id));
     delegate->SetWindow(window);
     return window;
   }
@@ -75,6 +96,9 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
     w2_.reset();
     w3_.reset();
     w4_.reset();
+    w5_.reset();
+    w6_.reset();
+    w7_.reset();
   }
 
   aura::test::TestWindowDelegate delegate_;
@@ -82,10 +106,16 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
   TestActivationDelegate ad_2_;
   TestActivationDelegate ad_3_;
   TestActivationDelegate ad_4_;
+  TestActivationDelegate ad_5_;
+  TestActivationDelegate ad_6_;
+  TestActivationDelegate ad_7_;
   scoped_ptr<aura::Window> w1_;  // Non-activatable.
   scoped_ptr<aura::Window> w2_;  // Activatable.
   scoped_ptr<aura::Window> w3_;  // Non-activatable.
   scoped_ptr<aura::Window> w4_;  // Activatable.
+  scoped_ptr<aura::Window> w5_;  // Activatable - Always on top.
+  scoped_ptr<aura::Window> w6_;  // Activatable - Always on top.
+  scoped_ptr<aura::Window> w7_;  // Activatable - Lock screen window.
 
   DISALLOW_COPY_AND_ASSIGN(GetTopmostWindowToActivateTest);
 };
@@ -117,6 +147,37 @@ TEST_F(GetTopmostWindowToActivateTest, DeactivateActivatesNext) {
   EXPECT_TRUE(wm::IsActiveWindow(w2()));
 
   wm::DeactivateWindow(w2());
+  EXPECT_TRUE(wm::IsActiveWindow(w4()));
+}
+
+// Test that hiding a window in a higher container will activate another window
+// in that container.
+TEST_F(GetTopmostWindowToActivateTest, HideActivatesSameContainer) {
+  wm::ActivateWindow(w6());
+  EXPECT_TRUE(wm::IsActiveWindow(w6()));
+
+  w6()->Hide();
+  EXPECT_TRUE(wm::IsActiveWindow(w5()));
+}
+
+// Test that hiding the lock window will activate a window from the next highest
+// container.
+TEST_F(GetTopmostWindowToActivateTest, UnlockActivatesNextHighestContainer) {
+  wm::ActivateWindow(w7());
+  EXPECT_TRUE(wm::IsActiveWindow(w7()));
+
+  w7()->Hide();
+  EXPECT_TRUE(wm::IsActiveWindow(w6()));
+}
+
+// Test that hiding a window in a higher container with no other windows will
+// activate a window in a lower container.
+TEST_F(GetTopmostWindowToActivateTest, HideActivatesNextHighestContainer) {
+  w5()->Hide();
+  wm::ActivateWindow(w6());
+  EXPECT_TRUE(wm::IsActiveWindow(w6()));
+
+  w6()->Hide();
   EXPECT_TRUE(wm::IsActiveWindow(w4()));
 }
 
