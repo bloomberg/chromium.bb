@@ -59,6 +59,10 @@ FilePath TestServer::HTTPSOptions::GetCertificateFile() const {
       return FilePath(FILE_PATH_LITERAL("ok_cert.pem"));
     case CERT_EXPIRED:
       return FilePath(FILE_PATH_LITERAL("expired_cert.pem"));
+    case CERT_CHAIN_WRONG_ROOT:
+      // This chain uses its own dedicated test root certificate to avoid
+      // side-effects that may affect testing.
+      return FilePath(FILE_PATH_LITERAL("redundant-server-chain.pem"));
     default:
       NOTREACHED();
   }
