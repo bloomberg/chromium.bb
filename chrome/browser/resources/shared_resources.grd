@@ -30,8 +30,6 @@ without changes to the corresponding grd file. -->
                file="shared/css/chrome_shared2.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_OVERLAY"
                file="shared/css/overlay.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_SELECT"
-               file="shared/css/select.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_SPINNER"
                file="shared/css/spinner.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TABLE"

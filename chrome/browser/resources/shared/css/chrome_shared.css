@@ -135,8 +135,10 @@ input[type='url'],
 input:not([type]) {
   -webkit-border-radius: 2px;
   border: 1px solid #aaa;
-  font-size: inherit;
-  padding: 3px;
+  box-sizing: border-box;
+  font: inherit;
+  height: 2em;
+  padding: 4px;
 }
 
 input[type='text']:disabled {

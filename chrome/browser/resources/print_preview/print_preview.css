@@ -32,7 +32,7 @@ header {
 }
 
 #print-header {
-  -webkit-padding-end: 16px;
+  -webkit-padding-end: 14px;
   padding-bottom: 10px;
   padding-top: 10px;
 }
@@ -125,11 +125,11 @@ button.loading {
   cursor: progress;
 }
 
-button.default {
+#print-preview button.default {
   font-weight: bold;
 }
 
-button.default:not(:focus):not(:disabled) {
+#print-preview button.default:not(:focus):not(:disabled) {
   border-color: #808080;
 }
 
@@ -246,7 +246,7 @@ label {
 
 #copies {
   position: relative;
-  width: 1.5em;
+  width: 2.75em;
 }
 
 #copies.invalid {
@@ -261,7 +261,7 @@ label {
   font-weight: 600;
   min-width: 0;
   position: relative;
-  width: 25px;
+  width: 2em;
 }
 
 #increment:focus,
@@ -360,6 +360,7 @@ html[dir='rtl'] #decrement {
 
 #messages {
   color: #404040;
+  font-size: 1.1em;
   position: relative;
   text-align: center;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
@@ -381,9 +382,7 @@ html[dir='rtl'] #decrement {
 }
 
 .message-with-dots span span {
-  -webkit-animation-duration: 1800ms;
-  -webkit-animation-iteration-count: infinite;
-  -webkit-animation-name: dancing-dots-jump;
+  -webkit-animation: dancing-dots-jump 1800ms infinite;
   padding: 1px;
   position: relative;
 }
@@ -411,7 +410,8 @@ html:not([toolkit=views]) .button-strip {
   -webkit-box-direction: reverse;
 }
 
-.button-strip button {
+#print-preview .button-strip button {
+  -webkit-margin-start: 4px;
   display: block;
 }
 

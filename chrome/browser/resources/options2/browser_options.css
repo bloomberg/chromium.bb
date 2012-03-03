@@ -2,10 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#manage-default-search-engines {
-  -webkit-margin-start: 4px;
-}
-
 #default-browser-state {
   margin-top: 6px;
 }
@@ -248,11 +244,6 @@ html[dir=rtl] #pointer-sensitivity-more {
 .web-content-select-label > span:only-of-type {
   display: inline-block;
   min-width: 100px;
-}
-
-#fontSettingsCustomizeFontsButton,
-#privacyClearDataButton {
-  margin-left: 10px;
 }
 
 #timezone-value {

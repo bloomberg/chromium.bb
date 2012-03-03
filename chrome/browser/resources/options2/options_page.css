@@ -52,10 +52,6 @@ div.disabled {
   margin-top: 0.45em;
 }
 
-button:first-child {
-  -webkit-margin-start: 0;
-}
-
 /* TEXT */
 input[type='password'],
 input[type='text'],

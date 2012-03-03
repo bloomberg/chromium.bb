@@ -86,7 +86,7 @@ input:not([type]) {
   border: 1px solid #bfbfbf;
   border-radius: 2px;
   font: inherit;
-  font-size: inherit;
+  height: 2em;
   margin: 0;
   padding: 3px;
 }
