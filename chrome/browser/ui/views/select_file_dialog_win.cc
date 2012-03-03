@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,16 @@
 
 using content::BrowserThread;
 
+namespace {
+
+// Given |extension|, if it's not empty, then remove the leading dot.
+std::wstring GetExtensionWithoutLeadingDot(const std::wstring& extension) {
+  DCHECK(extension.empty() || extension[0] == L'.');
+  return extension.empty() ? extension : extension.substr(1);
+}
+
+}  // namespace
+
 // This function takes the output of a SaveAs dialog: a filename, a filter and
 // the extension originally suggested to the user (shown in the dialog box) and
 // returns back the filename with the appropriate extension tacked on. If the
@@ -50,7 +60,8 @@ std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
   // Careful: Checking net::GetMimeTypeFromExtension() will only find
   // extensions with a known MIME type, which many "known" extensions on Windows
   // don't have.  So we check directly for the "known extension" registry key.
-  std::wstring file_extension(file_util::GetFileExtensionFromPath(filename));
+  std::wstring file_extension(
+      GetExtensionWithoutLeadingDot(FilePath(filename).Extension()));
   std::wstring key(L"." + file_extension);
   if (!(filter_selected.empty() || filter_selected == L"*.*") &&
       !base::win::RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).Valid() &&
@@ -244,7 +255,8 @@ bool SaveFileAsWithFilter(HWND owner,
   // Having an empty filter makes for a bad user experience. We should always
   // specify a filter when saving.
   DCHECK(!filter.empty());
-  std::wstring file_part = FilePath(suggested_name).BaseName().value();
+  const FilePath suggested_path(suggested_name);
+  std::wstring file_part = suggested_path.BaseName().value();
   // If the suggested_name is a root directory, file_part will be '\', and the
   // call to GetSaveFileName below will fail.
   if (file_part.size() == 1 && file_part[0] == L'\\')
@@ -281,7 +293,7 @@ bool SaveFileAsWithFilter(HWND owner,
   // Set up the initial directory for the dialog.
   std::wstring directory;
   if (!suggested_name.empty())
-     directory = FilePath(suggested_name).DirName().value();
+     directory = suggested_path.DirName().value();
 
   save_as.lpstrInitialDir = directory.c_str();
   save_as.lpstrTitle = NULL;
@@ -332,7 +344,7 @@ bool SaveFileAsWithFilter(HWND owner,
   // 'extension characters' in the title of the web page.
   std::wstring suggested_ext;
   if (!ignore_suggested_ext)
-    suggested_ext = file_util::GetFileExtensionFromPath(suggested_name);
+    suggested_ext = GetExtensionWithoutLeadingDot(suggested_path.Extension());
 
   // If we can't get the extension from the suggested_name, we use the default
   // extension passed in. This is to cover cases like when saving a web page,

@@ -34,13 +34,7 @@ BASE_EXPORT FILE* OpenFile(const std::wstring& filename, const char* mode);
 BASE_EXPORT void AppendToPath(std::wstring* path,
                               const std::wstring& new_ending);
 
-// Use FilePath::Extension instead.
-BASE_EXPORT std::wstring GetFileExtensionFromPath(const std::wstring& path);
-
 // Use version that takes a FilePath.
-BASE_EXPORT bool CopyDirectory(const std::wstring& from_path,
-                               const std::wstring& to_path,
-                               bool recursive);
 BASE_EXPORT int ReadFile(const std::wstring& filename, char* data, int size);
 BASE_EXPORT int WriteFile(const std::wstring& filename,
                           const char* data, int size);
