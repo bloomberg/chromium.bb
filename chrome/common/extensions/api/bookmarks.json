@@ -133,7 +133,10 @@
             "type": "object",
             "name": "bookmark",
             "properties": {
-              "parentId": {"type": "string"},
+              "parentId": {
+                "type": "string",
+                "optional": true,
+                "description": "Defaults to the Other Bookmarks folder."},
               "index": {"type": "integer", "minimum": 0, "optional": true},
               "title": {"type": "string", "optional": true},
               "url": {"type": "string", "optional": true}

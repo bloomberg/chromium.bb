@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,6 +165,24 @@ chrome.test.runTests([
       chrome.test.assertTrue(compareNode(node, results),
                              "created node != source");
       expected[0].children[0].children.push(node);
+    }));
+  },
+
+  function createNoParentId() {
+    var node = {title:"google", url:"http://www.google.com/"};
+    chrome.test.listenOnce(chrome.bookmarks.onCreated, function(id, created) {
+      node.id = created.id;
+      node.index = 0;
+      chrome.test.assertEq(id, node.id);
+      // Make sure the parentId defaults to the Other Bookmarks folder.
+      chrome.test.assertEq(expected[0].children[1].id, created.parentId);
+      chrome.test.assertTrue(compareNode(node, created));
+    });
+    chrome.bookmarks.create(node, pass(function(results) {
+      node.id = results.id;  // since we couldn't know this going in
+      node.index = 0;
+      chrome.test.assertTrue(compareNode(node, results),
+                             "created node != source");
     }));
   },
 
