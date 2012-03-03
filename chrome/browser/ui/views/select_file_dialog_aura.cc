@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/select_file_dialog.h"
 
+#include "base/logging.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "content/public/browser/browser_thread.h"
 

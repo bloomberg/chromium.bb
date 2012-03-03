@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/ash/caps_lock_handler.h"
 
+#include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 
 // TODO(yusukes): Support Ash on Windows.
