@@ -13,26 +13,9 @@ cr.define('options.system.bluetooth', function() {
   function Constants() {}
 
   /**
-   * Enumeration of supported device types.
-   * @enum {string}
-   */
-  // TODO(kevers): Prune list based on the set of devices that will be
-  // supported for V1 of the feature.  The set will likely be restricted to
-  // mouse and keyboard.  Others are temporarily included for testing device
-  // discovery.
-  Constants.DEVICE_TYPE = {
-    COMPUTER: 'computer',
-    HEADSET: 'headset',
-    KEYBOARD: 'input-keyboard',
-    MOUSE: 'input-mouse',
-    PHONE: 'phone',
-  };
-
-  /**
    * Creates a new bluetooth list item.
    * @param {{name: string,
    *          address: string,
-   *          icon: Constants.DEVICE_TYPE,
    *          paired: boolean,
    *          connected: boolean,
    *          pairing: string|undefined,
@@ -61,7 +44,6 @@ cr.define('options.system.bluetooth', function() {
      * Description of the Bluetooth device.
      * @type {{name: string,
      *         address: string,
-     *         icon: Constants.DEVICE_TYPE,
      *         paired: boolean,
      *         connected: boolean,
      *         pairing: string|undefined,
@@ -124,7 +106,6 @@ cr.define('options.system.bluetooth', function() {
      * existing device is updated.
      * @param {{name: string,
      *          address: string,
-     *          icon: Constants.DEVICE_TYPE,
      *          paired: boolean,
      *          connected: boolean,
      *          pairing: string|undefined,
@@ -134,8 +115,6 @@ cr.define('options.system.bluetooth', function() {
      * @return {boolean} True if the devies was successfully added or updated.
      */
     appendDevice: function(device) {
-      if (!this.isSupported_(device))
-        return false;
       var index = this.find(device.address);
       if (index == undefined) {
         this.dataModel.push(device);
@@ -146,6 +125,19 @@ cr.define('options.system.bluetooth', function() {
       }
       this.updateListVisibility_();
       return true;
+    },
+
+    /**
+     * Forces a revailidation of the list content. Content added while the list
+     * is hidden is not properly rendered when the list becomes visible. In
+     * addition, deleting a single item from the list results in a stale cache
+     * requiring an invalidation.
+     */
+    refresh: function() {
+      // TODO(kevers): Investigate if the root source of the problems can be
+      // fixed in cr.ui.list.
+      this.invalidate();
+      this.redraw();
     },
 
     /**
@@ -186,26 +178,8 @@ cr.define('options.system.bluetooth', function() {
             [item.address, item.connected ? 'disconnect' : 'forget']);
       }
       this.dataModel.splice(index, 1);
-      // Invalidate the list since it has a stale cache after a splice
-      // involving a deletion.
-      this.invalidate();
-      this.redraw();
+      this.refresh();
       this.updateListVisibility_();
-    },
-
-    /**
-     * Tests if the bluetooth device is supported based on the type of device.
-     * @param {Object.<string,string>} device Desription of the device.
-     * @return {boolean} true if the device is supported.
-     * @private
-     */
-    isSupported_: function(device) {
-      var target = device.icon;
-      for (var key in Constants.DEVICE_TYPE) {
-        if (Constants.DEVICE_TYPE[key] == target)
-          return true;
-      }
-      return false;
     },
 
     /**
@@ -217,8 +191,11 @@ cr.define('options.system.bluetooth', function() {
       var empty = this.dataModel.length == 0;
       var listPlaceHolderID = this.id + '-empty-placeholder';
       if ($(listPlaceHolderID)) {
-        this.hidden = empty;
-        $(listPlaceHolderID).hidden = !empty;
+        if (this.hidden != empty) {
+          this.hidden = empty;
+          $(listPlaceHolderID).hidden = !empty;
+          this.refresh();
+        }
       }
     },
   };
