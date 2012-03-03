@@ -71,7 +71,7 @@ void AsynchronousPolicyLoader::ScheduleReloadTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&AsynchronousPolicyLoader::ReloadFromTask,
                  weak_ptr_factory_.GetWeakPtr()),
-      delay.InMilliseconds());
+      delay);
 }
 
 void AsynchronousPolicyLoader::ScheduleFallbackReloadTask() {
