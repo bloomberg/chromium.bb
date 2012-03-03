@@ -2091,6 +2091,7 @@
         'common/net/gaia/oauth_request_signer_unittest.cc',
         'common/net/gaia/oauth2_access_token_fetcher_unittest.cc',
         'common/net/gaia/oauth2_mint_token_fetcher_unittest.cc',
+        'common/net/gaia/oauth2_mint_token_flow_unittest.cc',
         'common/net/gaia/oauth2_revocation_fetcher_unittest.cc',
         'common/service_process_util_unittest.cc',
         'common/string_ordinal_unittest.cc',

@@ -47,10 +47,10 @@ class OAuth2MintTokenFetcher : public content::URLFetcherDelegate {
   virtual ~OAuth2MintTokenFetcher();
 
   // Start the flow.
-  void Start(const std::string& oauth_login_access_token,
-             const std::string& client_id,
-             const std::vector<std::string>& scopes,
-             const std::string& origin);
+  virtual void Start(const std::string& oauth_login_access_token,
+                     const std::string& client_id,
+                     const std::vector<std::string>& scopes,
+                     const std::string& origin);
 
   void CancelRequest();
 

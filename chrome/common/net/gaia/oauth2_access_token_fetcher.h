@@ -52,10 +52,10 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
   // the scopes specified. In this case, the access token will successfully be
   // generated only if refresh token has login scope of a list of scopes that is
   // a super-set of the specified scopes.
-  void Start(const std::string& client_id,
-             const std::string& client_secret,
-             const std::string& refresh_token,
-             const std::vector<std::string>& scopes);
+  virtual void Start(const std::string& client_id,
+                     const std::string& client_secret,
+                     const std::string& refresh_token,
+                     const std::vector<std::string>& scopes);
 
   void CancelRequest();
 
