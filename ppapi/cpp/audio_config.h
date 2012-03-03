@@ -19,8 +19,9 @@ namespace pp {
 class InstanceHandle;
 
 /// A 16 bit stereo AudioConfig resource. Refer to the
-/// <a href="/chrome/nativeclient/docs/audio.html">Pepper
-/// Audio API Code Walkthrough</a> for information on using this interface.
+/// <a href="/native-client/{{pepperversion}}/devguide/coding/audio">Audio
+/// </a> chapter in the Developer's Guide for information on using this
+/// interface.
 ///
 /// A single sample frame on a stereo device means one value for the left
 /// channel and one value for the right channel.
@@ -40,7 +41,7 @@ class InstanceHandle;
 /// Data will always be in the native endian format of the platform.
 ///
 /// <strong>Example:</strong>
-/// <code>
+/// @code
 ///
 /// // Create an audio config with a supported frame count.
 /// uint32_t sample_frame_count = AudioConfig::RecommendSampleFrameCount(
@@ -53,7 +54,7 @@ class InstanceHandle;
 ///  Audio audio(instance, config, callback, user_data);
 ///   if (audio.is_null())
 ///     return false;  // Couldn't create audio.
-/// </code>
+/// @endcode
 class AudioConfig : public Resource {
  public:
   /// An empty constructor for an <code>AudioConfig</code> resource.

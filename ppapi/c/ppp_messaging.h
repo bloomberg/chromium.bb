@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppp_messaging.idl modified Wed Oct  5 14:06:02 2011. */
+/* From ppp_messaging.idl modified Wed Jan 25 11:41:09 2012. */
 
 #ifndef PPAPI_C_PPP_MESSAGING_H_
 #define PPAPI_C_PPP_MESSAGING_H_
@@ -55,7 +55,7 @@ struct PPP_Messaging_1_0 {
    *
    * <strong>Example:</strong>
    *
-   * <code>
+   * @code
    *
    * <body>
    *   <object id="plugin"
@@ -65,7 +65,7 @@ struct PPP_Messaging_1_0 {
    *   </script>
    * </body>
    *
-   * </code>
+   * @endcode
    *
    */
   void (*HandleMessage)(PP_Instance instance, struct PP_Var message);

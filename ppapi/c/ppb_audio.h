@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio.idl modified Wed Oct  5 14:06:02 2011. */
+/* From ppb_audio.idl modified Thu Mar  1 14:50:30 2012. */
 
 #ifndef PPAPI_C_PPB_AUDIO_H_
 #define PPAPI_C_PPB_AUDIO_H_
@@ -48,7 +48,7 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
 /**
  * The <code>PPB_Audio</code> interface contains pointers to several functions
  * for handling audio resources. Please refer to the
- * <a href="/chrome/nativeclient/docs/audio.html">Pepper
+ * <a href="/native-client/{{pepperversion}}/devguide/coding/audio">Pepper
  * Audio API</a> for information on using this interface.
  * Please see descriptions for each <code>PPB_Audio</code> and
  * <code>PPB_AudioConfig</code> function for more details. A C example using
@@ -56,7 +56,7 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  *
  * <strong>Example: </strong>
  *
- * <code>
+ * @code
  * void audio_callback(void* sample_buffer,
  *                     uint32_t buffer_size_in_bytes,
  *                     void* user_data) {
@@ -64,8 +64,8 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  *  }
  *
  * ...Assume the application has cached the audio configuration interface in
- * <code>audio_config_interface</code> and the audio interface in
- * <code>audio_interface</code>...
+ * audio_config_interface and the audio interface in
+ * audio_interface...
  *
  * uint32_t count = audio_config_interface->RecommendSampleFrameCount(
  *     PP_AUDIOSAMPLERATE_44100, 4096);
@@ -76,7 +76,7 @@ typedef void (*PPB_Audio_Callback)(void* sample_buffer,
  * audio_interface->StartPlayback(pp_audio);
  *
  * ...audio_callback() will now be periodically invoked on a separate thread...
- * </code>
+ * @endcode
  */
 struct PPB_Audio_1_0 {
   /**

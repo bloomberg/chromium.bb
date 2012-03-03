@@ -39,7 +39,7 @@ interface PPP_Messaging {
    *
    * <strong>Example:</strong>
    *
-   * <code>
+   * @code
    *
    * <body>
    *   <object id="plugin"
@@ -49,7 +49,7 @@ interface PPP_Messaging {
    *   </script>
    * </body>
    *
-   * </code>
+   * @endcode
    *
    */
   void HandleMessage([in] PP_Instance instance, [in] PP_Var message);
