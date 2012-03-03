@@ -85,18 +85,17 @@ HttpPipeliningCompatibilityClient::Request::Request(
     HttpPipeliningCompatibilityClient* client,
     net::URLRequestContext* url_request_context)
     : request_id_(request_id),
-      request_(GURL(base_url + info.filename), this),
+      request_(new net::URLRequest(GURL(base_url + info.filename), this)),
       info_(info),
-      client_(client),
-      finished_(false) {
-  request_.set_context(url_request_context);
-  request_.set_load_flags(net::LOAD_BYPASS_CACHE |
-                          net::LOAD_DISABLE_CACHE |
-                          net::LOAD_DO_NOT_SAVE_COOKIES |
-                          net::LOAD_DO_NOT_SEND_COOKIES |
-                          net::LOAD_DO_NOT_PROMPT_FOR_LOGIN |
-                          net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  request_.Start();
+      client_(client) {
+  request_->set_context(url_request_context);
+  request_->set_load_flags(net::LOAD_BYPASS_CACHE |
+                           net::LOAD_DISABLE_CACHE |
+                           net::LOAD_DO_NOT_SAVE_COOKIES |
+                           net::LOAD_DO_NOT_SEND_COOKIES |
+                           net::LOAD_DO_NOT_PROMPT_FOR_LOGIN |
+                           net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  request_->Start();
 }
 
 HttpPipeliningCompatibilityClient::Request::~Request() {
@@ -120,9 +119,6 @@ void HttpPipeliningCompatibilityClient::Request::OnSSLCertificateError(
 
 void HttpPipeliningCompatibilityClient::Request::OnResponseStarted(
     net::URLRequest* request) {
-  if (finished_) {
-    return;
-  }
   int response_code = request->GetResponseCode();
   if (response_code > 0) {
     client_->ReportResponseCode(request_id_, response_code);
@@ -162,9 +158,9 @@ void HttpPipeliningCompatibilityClient::Request::OnReadCompleted(
 
 void HttpPipeliningCompatibilityClient::Request::DoRead() {
   int bytes_read = 0;
-  if (request_.Read(read_buffer_.get(), info_.expected_response.length(),
-                    &bytes_read)) {
-    OnReadCompleted(&request_, bytes_read);
+  if (request_->Read(read_buffer_.get(), info_.expected_response.length(),
+                     &bytes_read)) {
+    OnReadCompleted(request_.get(), bytes_read);
   }
 }
 
@@ -183,11 +179,7 @@ void HttpPipeliningCompatibilityClient::Request::DoReadFinished() {
 }
 
 void HttpPipeliningCompatibilityClient::Request::Finished(Status result) {
-  if (finished_) {
-    return;
-  }
-  finished_ = true;
-  const net::URLRequestStatus& status = request_.status();
+  const net::URLRequestStatus& status = request_->status();
   if (status.status() == net::URLRequestStatus::FAILED) {
     // Network errors trump all other status codes, because network errors can
     // be detected by the network stack even with real content. If we determine
@@ -195,9 +187,10 @@ void HttpPipeliningCompatibilityClient::Request::Finished(Status result) {
     // don't need to worry about broken proxies.
     client_->ReportNetworkError(request_id_, status.error());
     client_->OnRequestFinished(request_id_, NETWORK_ERROR);
-    return;
+  } else {
+    client_->OnRequestFinished(request_id_, result);
   }
-  client_->OnRequestFinished(request_id_, result);
+  request_.reset();
 }
 
 }  // namespace chrome_browser_net

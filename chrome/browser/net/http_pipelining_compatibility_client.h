@@ -96,10 +96,9 @@ class HttpPipeliningCompatibilityClient {
     void Finished(Status result);
 
     const int request_id_;
-    net::URLRequest request_;
+    scoped_ptr<net::URLRequest> request_;
     const RequestInfo info_;
     HttpPipeliningCompatibilityClient* client_;
-    bool finished_;
     scoped_refptr<net::IOBuffer> read_buffer_;
     std::string response_;
   };
