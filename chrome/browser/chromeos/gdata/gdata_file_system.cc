@@ -401,13 +401,14 @@ void GDataFileSystem::StartDirectoryRefresh(
 void GDataFileSystem::Remove(const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  GURL document_url = GetDocumentUrlFromPath(file_path);
-  if (document_url.is_empty()) {
+  GDataFileBase* file_info = GetGDataFileInfoFromPath(file_path);
+  if (!file_info) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     }
+    return;
   }
 
   BrowserThread::PostTask(
@@ -415,13 +416,13 @@ void GDataFileSystem::Remove(const FilePath& file_path,
       base::Bind(
           &DocumentsService::DeleteDocument,
           documents_service_bound_to_ui_thread_,
-          document_url,
+          file_info->self_url(),
           base::Bind(&GDataFileSystem::OnRemovedDocument,
                      file_system_bound_to_ui_thread_,
                      callback,
                      file_path,
                      // MessageLoopProxy is used to run |callback| on the
-                     // thread where Remove() was called.
+                     // thread where this function was called.
                      base::MessageLoopProxy::current())));
 }
 
@@ -504,6 +505,37 @@ void GDataFileSystem::CreateDirectoryInternal(
                                 reply_proxy))));
 }
 
+void GDataFileSystem::GetFile(const FilePath& file_path,
+                              const GetFileCallback& callback) {
+  GDataFileBase* file_info = GetGDataFileInfoFromPath(file_path);
+  if (!file_info) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback,
+                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                     FilePath()));
+    }
+    return;
+  }
+
+  // TODO(satorux): We should get a file from the cache if it's present, but
+  // the caching layer is not implemented yet. For now, always download from
+  // the cloud.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &DocumentsService::DownloadFile,
+          documents_service_bound_to_ui_thread_,
+          file_info->content_url(),
+          base::Bind(&GDataFileSystem::OnFileDownloaded,
+                     file_system_bound_to_ui_thread_,
+                     callback,
+                     // MessageLoopProxy is used to run |callback| on the
+                     // thread where this function was called.
+                     base::MessageLoopProxy::current())));
+}
+
 void GDataFileSystem::UnsafeFindFileByPath(
     const FilePath& file_path, scoped_refptr<FindFileDelegate> delegate) {
   lock_.AssertAcquired();
@@ -555,16 +587,17 @@ void GDataFileSystem::UnsafeFindFileByPath(
   delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
 }
 
-GURL GDataFileSystem::GetDocumentUrlFromPath(const FilePath& file_path) {
+GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
+    const FilePath& file_path) {
   base::AutoLock lock(lock_);
   // Find directory element within the cached file system snapshot.
   scoped_refptr<ReadOnlyFindFileDelegate> find_delegate(
       new ReadOnlyFindFileDelegate());
   UnsafeFindFileByPath(file_path, find_delegate);
   if (!find_delegate->file())
-    return GURL();
+    return NULL;
 
-  return find_delegate->file()->self_url();
+  return find_delegate->file();
 }
 
 void GDataFileSystem::OnCreateDirectoryCompleted(
@@ -666,6 +699,22 @@ void GDataFileSystem::OnRemovedDocument(
 
   if (!callback.is_null()) {
     message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+  }
+}
+
+void GDataFileSystem::OnFileDownloaded(
+    const GetFileCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+    GDataErrorCode status,
+    const GURL& content_url,
+    const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::PlatformFileError error = GDataToPlatformError(status);
+
+  if (!callback.is_null()) {
+    message_loop_proxy->PostTask(FROM_HERE,
+                                 base::Bind(callback, error, file_path));
   }
 }
 

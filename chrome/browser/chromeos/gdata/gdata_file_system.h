@@ -37,14 +37,19 @@ class GDataFileBase {
   virtual GDataFile* AsGDataFile();
   virtual GDataDirectory* AsGDataDirectory();
   GDataDirectory* parent() { return parent_; }
-  const GURL& content_url() const { return content_url_; }
   const base::PlatformFileInfo& file_info() const { return file_info_; }
   const FilePath::StringType& file_name() const { return file_name_; }
   const FilePath::StringType& original_file_name() const {
     return original_file_name_;
   }
   void set_file_name(const FilePath::StringType& name) { file_name_ = name; }
+
+  // The content URL is used for downloading regular files as is.
+  const GURL& content_url() const { return content_url_; }
+
+  // The self URL is used for removing files and hosted documents.
   const GURL& self_url() const { return self_url_; }
+
   // Returns virtual file path representing this file system entry. This path
   // corresponds to file path expected by public methods of GDataFileSyste
   // class.
@@ -237,8 +242,14 @@ class GDataFileSystem : public ProfileKeyedService {
     const scoped_refptr<FindFileDelegate> delegate;
   };
 
+  // Used for file operations like removing files.
   typedef base::Callback<void(base::PlatformFileError error)>
       FileOperationCallback;
+
+  // Used to get files from the file system.
+  typedef base::Callback<void(base::PlatformFileError error,
+                              const FilePath& file_path)>
+      GetFileCallback;
 
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
@@ -284,7 +295,14 @@ class GDataFileSystem : public ProfileKeyedService {
                        bool is_recursive,
                        const FileOperationCallback& callback);
 
-  // Initiates directory feed fetching operation and continues previously
+  // Gets |file_path| from the file system. The file entry represented by
+  // |file_path| needs to be present in in-memory representation of the file
+  // system in order to be retrieved. If the file is not cached, the file
+  // will be downloaded through gdata api.
+  //
+  // Can be called from any thread. |callback| is run on the calling thread.
+  void GetFile(const FilePath& file_path, const GetFileCallback& callback);
+
   // initiated FindFileByPath() attempt upon its completion. Safe to be called
   // from any thread. Internally, it will route content refresh request to
   // DocumentsService::GetDocuments() which will initiated content
@@ -292,6 +310,10 @@ class GDataFileSystem : public ProfileKeyedService {
   //
   // Can be called from any thread.
   void StartDirectoryRefresh(const FindFileParams& params);
+
+  // Finds file object by |file_path| and returns the file info.
+  // Returns NULL if it does not find the file.
+  GDataFileBase* GetGDataFileInfoFromPath(const FilePath& file_path);
 
  private:
   friend class GDataFileSystemFactory;
@@ -335,10 +357,6 @@ class GDataFileSystem : public ProfileKeyedService {
   void UnsafeFindFileByPath(const FilePath& file_path,
                             scoped_refptr<FindFileDelegate> delegate);
 
-  // Finds file object by |file_path| and returns its gdata self-url.
-  // Returns empty GURL if it does not find the file.
-  GURL GetDocumentUrlFromPath(const FilePath& file_path);
-
   // Converts document feed from gdata service into DirectoryInfo. On failure,
   // returns NULL and fills in |error| with an appropriate value.
   GDataDirectory* ParseGDataFeed(GDataErrorCode status,
@@ -368,6 +386,14 @@ class GDataFileSystem : public ProfileKeyedService {
       const CreateDirectoryParams& params,
       GDataErrorCode status,
       base::Value* created_entry);
+
+  // Callback for handling file downloading requests.
+  void OnFileDownloaded(
+    const GetFileCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+    GDataErrorCode status,
+    const GURL& content_url,
+    const FilePath& temp_file);
 
   // Removes file under |file_path| from in-memory snapshot of the file system.
   // Return PLATFORM_FILE_OK if successful.

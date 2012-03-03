@@ -453,4 +453,21 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
           &first_missing_parent_path));
 }
 
+// TODO(satorux): Write a test for GetFile() once DocumentsService is
+// mockable.
+
+TEST_F(GDataFileSystemTest, GetGDataFileInfoFromPath) {
+  LoadRootFeedDocument("root_feed.json");
+
+  GDataFileBase* file_info = file_system_->GetGDataFileInfoFromPath(
+      FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")));
+  ASSERT_TRUE(file_info != NULL);
+  EXPECT_EQ("https://file_link_self/", file_info->self_url().spec());
+  EXPECT_EQ("https://file_content_url/", file_info->content_url().spec());
+
+  GDataFileBase* non_existent = file_system_->GetGDataFileInfoFromPath(
+      FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")));
+  ASSERT_TRUE(non_existent == NULL);
+}
+
 }   // namespace gdata
