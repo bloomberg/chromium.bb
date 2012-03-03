@@ -136,11 +136,10 @@ void SuggestionsHandler::SetPagesValueFromTopSites(
   pages_value_.reset(new ListValue());
   for (size_t i = 0; i < data.size(); i++) {
     const history::MostVisitedURL& suggested_url = data[data.size() - i - 1];
-    DictionaryValue* page_value = new DictionaryValue();
-    if (suggested_url.url.is_empty()) {
+    if (suggested_url.url.is_empty())
       continue;
-    }
 
+    DictionaryValue* page_value = new DictionaryValue();
     NewTabUI::SetURLTitleAndDirection(page_value,
                                       suggested_url.title,
                                       suggested_url.url);
