@@ -20,9 +20,6 @@
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/history/history.h"
@@ -198,9 +195,6 @@ TestingProfile::TestingProfile(const FilePath& path,
 }
 
 void TestingProfile::Init() {
-  ExtensionSystemFactory::GetInstance()->SetTestingFactory(
-      this, TestExtensionSystem::Build);
-
   profile_dependency_manager_->CreateProfileServices(this, true);
 
 #if defined(ENABLE_NOTIFICATIONS)
@@ -392,6 +386,39 @@ void TestingProfile::BlockUntilTemplateURLServiceLoaded() {
   turl_service_load_observer.Wait();
 }
 
+void TestingProfile::CreateExtensionProcessManager() {
+  extension_process_manager_.reset(ExtensionProcessManager::Create(this));
+}
+
+ExtensionService* TestingProfile::CreateExtensionService(
+    const CommandLine* command_line,
+    const FilePath& install_directory,
+    bool autoupdate_enabled) {
+  // Extension pref store, created for use by |extension_prefs_|.
+
+  extension_pref_value_map_.reset(new ExtensionPrefValueMap);
+
+  bool extensions_disabled =
+      command_line && command_line->HasSwitch(switches::kDisableExtensions);
+
+  // Note that the GetPrefs() creates a TestingPrefService, therefore
+  // the extension controlled pref values set in extension_prefs_
+  // are not reflected in the pref service. One would need to
+  // inject a new ExtensionPrefStore(extension_pref_value_map_.get(), false).
+  extension_prefs_.reset(
+      new ExtensionPrefs(GetPrefs(),
+                         install_directory,
+                         extension_pref_value_map_.get()));
+  extension_prefs_->Init(extensions_disabled);
+  extension_service_.reset(new ExtensionService(this,
+                                                command_line,
+                                                install_directory,
+                                                extension_prefs_.get(),
+                                                autoupdate_enabled,
+                                                true));
+  return extension_service_.get();
+}
+
 FilePath TestingProfile::GetPath() {
   return profile_path_;
 }
@@ -439,24 +466,28 @@ VisitedLinkMaster* TestingProfile::GetVisitedLinkMaster() {
   return NULL;
 }
 
-ExtensionPrefValueMap* TestingProfile::GetExtensionPrefValueMap() {
-  return NULL;
-}
-
 ExtensionService* TestingProfile::GetExtensionService() {
-  return ExtensionSystemFactory::GetForProfile(this)->extension_service();
+  return extension_service_.get();
 }
 
 UserScriptMaster* TestingProfile::GetUserScriptMaster() {
-  return ExtensionSystemFactory::GetForProfile(this)->user_script_master();
+  return NULL;
+}
+
+ExtensionDevToolsManager* TestingProfile::GetExtensionDevToolsManager() {
+  return NULL;
 }
 
 ExtensionProcessManager* TestingProfile::GetExtensionProcessManager() {
-  return ExtensionSystemFactory::GetForProfile(this)->process_manager();
+  return extension_process_manager_.get();
+}
+
+ExtensionMessageService* TestingProfile::GetExtensionMessageService() {
+  return NULL;
 }
 
 ExtensionEventRouter* TestingProfile::GetExtensionEventRouter() {
-  return ExtensionSystemFactory::GetForProfile(this)->event_router();
+  return NULL;
 }
 
 void TestingProfile::SetExtensionSpecialStoragePolicy(
@@ -551,10 +582,8 @@ net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
 
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForRenderProcess(
     int renderer_child_id) {
-  ExtensionService* extension_service =
-      ExtensionSystemFactory::GetForProfile(this)->extension_service();
-  if (extension_service) {
-    const Extension* installed_app = extension_service->
+  if (extension_service_.get()) {
+    const Extension* installed_app = extension_service_->
         GetInstalledAppForRenderer(renderer_child_id);
     if (installed_app != NULL && installed_app->is_storage_isolated())
       return GetRequestContextForIsolatedApp(installed_app->id());
@@ -694,6 +723,10 @@ TokenService* TestingProfile::GetTokenService() {
     token_service_.reset(new TokenService());
   }
   return token_service_.get();
+}
+
+ExtensionInfoMap* TestingProfile::GetExtensionInfoMap() {
+  return NULL;
 }
 
 PromoCounter* TestingProfile::GetInstantPromoCounter() {

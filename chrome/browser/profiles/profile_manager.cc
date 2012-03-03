@@ -18,8 +18,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -611,9 +609,9 @@ void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
-                                            bool go_off_the_record) {
+                                         bool go_off_the_record) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  ExtensionSystemFactory::GetForProfile(profile)->Init(!go_off_the_record);
+  profile->InitExtensions(!go_off_the_record);
   if (!command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitPromoResources();
 }
