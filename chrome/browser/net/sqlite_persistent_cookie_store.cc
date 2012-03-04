@@ -768,10 +768,22 @@ bool SQLitePersistentCookieStore::Backend::EnsureDatabaseVersion() {
 
   // Put future migration cases here.
 
-  // When the version is too old, we just try to continue anyway, there should
-  // not be a released product that makes a database too old for us to handle.
-  LOG_IF(WARNING, cur_version < kCurrentVersionNumber) <<
-      "Cookie database version " << cur_version << " is too old to handle.";
+  if (cur_version < kCurrentVersionNumber) {
+    UMA_HISTOGRAM_COUNTS_100("Cookie.CorruptMetaTable", 1);
+
+    meta_table_.Reset();
+    db_.reset(new sql::Connection);
+    if (!file_util::Delete(path_, false) ||
+        !db_->Open(path_) ||
+        !meta_table_.Init(
+            db_.get(), kCurrentVersionNumber, kCompatibleVersionNumber)) {
+      UMA_HISTOGRAM_COUNTS_100("Cookie.CorruptMetaTableRecoveryFailed", 1);
+      NOTREACHED() << "Unable to reset the cookie DB.";
+      meta_table_.Reset();
+      db_.reset();
+      return false;
+    }
+  }
 
   return true;
 }

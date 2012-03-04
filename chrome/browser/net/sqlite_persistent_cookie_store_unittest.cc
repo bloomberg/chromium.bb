@@ -16,6 +16,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "sql/connection.h"
+#include "sql/meta_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -135,6 +137,49 @@ TEST_F(SQLitePersistentCookieStoreTest, RemoveOnDestruction) {
 
   ASSERT_FALSE(file_util::PathExists(
       temp_dir_.path().Append(chrome::kCookieFilename)));
+}
+
+TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
+  InitializeStore(false);
+  AddCookie("A", "B", "http://foo.bar", "/", base::Time::Now());
+  DestroyStore();
+
+  // Load up the store and verify that it has good data in it.
+  std::vector<net::CookieMonster::CanonicalCookie*> cookies;
+  CreateAndLoad(false, &cookies);
+  ASSERT_EQ(1U, cookies.size());
+  ASSERT_STREQ("http://foo.bar", cookies[0]->Domain().c_str());
+  ASSERT_STREQ("A", cookies[0]->Name().c_str());
+  ASSERT_STREQ("B", cookies[0]->Value().c_str());
+  DestroyStore();
+  STLDeleteContainerPointers(cookies.begin(), cookies.end());
+  cookies.clear();
+
+  // Now corrupt the meta table.
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(temp_dir_.path().Append(chrome::kCookieFilename)));
+    sql::MetaTable meta_table_;
+    meta_table_.Init(&db, 0, 0);
+    meta_table_.SetVersionNumber(0);
+    meta_table_.SetCompatibleVersionNumber(0);
+    db.Close();
+  }
+
+  // Upon loading, the database should be reset to a good, blank state.
+  CreateAndLoad(false, &cookies);
+  ASSERT_EQ(0U, cookies.size());
+
+  // Verify that, after, recovery, the database persists properly.
+  AddCookie("X", "Y", "http://foo.bar", "/", base::Time::Now());
+  DestroyStore();
+  CreateAndLoad(false, &cookies);
+  ASSERT_EQ(1U, cookies.size());
+  ASSERT_STREQ("http://foo.bar", cookies[0]->Domain().c_str());
+  ASSERT_STREQ("X", cookies[0]->Name().c_str());
+  ASSERT_STREQ("Y", cookies[0]->Value().c_str());
+  STLDeleteContainerPointers(cookies.begin(), cookies.end());
+  cookies.clear();
 }
 
 // Test if data is stored as expected in the SQLite database.
