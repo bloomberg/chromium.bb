@@ -437,7 +437,7 @@ class Cgroup(object):
 
   @classmethod
   def _FindCurrentCrosGroup(cls, pid=None):
-    """Find and return a Cgroup representing pid's current cros cgroup.
+    """Find and return the cros namespace a pid is currently in.
 
     If no pid is given, os.getpid() is substituted."""
     if pid is None:
@@ -445,18 +445,33 @@ class Cgroup(object):
     elif not isinstance(pid, (long, int)):
       raise ValueError("pid must be None, or an integer/long.  Got %r" % (pid,))
 
-    text = '1:cpuset:/cros'
-    with open('/proc/%s/cgroup' % pid) as f:
-      for line in f:
-        if not line.startswith(text):
-          continue
-        target = line[len(text):].rstrip('\n')
-        # Do an existance check; this is primarily to ensure that if there are
-        # two hierarchies active, that we only return groups w/in the cros
-        # hierarchy.
-        if os.path.isdir(os.path.join(cls.CGROUP_ROOT, target)):
-          return target if target else None
-    return None
+    cpuset = None
+    try:
+      # See the kernels Documentation/filesystems/proc.txt if you're unfamiliar
+      # w/ procfs, and keep in mind that we have to work across multiple kernel
+      # versions.
+      with open('/proc/%s/cpuset' % (pid,), 'r') as f:
+        cpuset = f.read().rstrip('\n')
+    except EnvironmentError, e:
+      if e.errno != errno.ENOENT:
+        raise
+      with open('/proc/%s/cgroup' % pid) as f:
+        for line in f:
+          # First digit is the hierachy index, 2nd is subsytem, 3rd is space.
+          # 2:cpuset:/
+          # 2:cpuset:/cros/cbuildbot/1234
+
+          line = line.rstrip('\n')
+          if not line:
+            continue
+          line = line.split(':', 2)
+          if line[1] == 'cpuset':
+            cpuset = line[2]
+            break
+
+    if not cpuset or not cpuset.startswith("/cros/"):
+      return None
+    return cpuset[len("/cros/"):].strip("/")
 
   @classmethod
   def CreateProcessGroup(cls, process_name, nesting=True):
