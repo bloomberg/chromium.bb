@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -80,7 +80,7 @@ class HistogramSynchronizer : public
   static void FetchRendererHistogramsAsynchronously(
       MessageLoop* callback_thread,
       const base::Closure& callback,
-      base::TimeDelta wait_time);
+      int wait_time);
 
   // This method is called on the IO thread. Deserializes the histograms and
   // records that we have received histograms from a renderer process.

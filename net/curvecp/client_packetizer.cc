@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -235,8 +235,7 @@ int ClientPacketizer::DoSendingHelloComplete(int rv) {
 int ClientPacketizer::DoWaitingCookie() {
   next_state_ = WAITING_COOKIE_COMPLETE;
 
-  StartHelloTimer(base::TimeDelta::FromMilliseconds(
-      kHelloTimeoutMs[hello_attempts_++]));
+  StartHelloTimer(kHelloTimeoutMs[hello_attempts_++]);
 
   read_buffer_ = new IOBuffer(kMaxPacketLength);
   return socket_->Read(read_buffer_, kMaxPacketLength, io_callback_);
@@ -314,11 +313,11 @@ int ClientPacketizer::ConnectNextAddress() {
   return rv;
 }
 
-void ClientPacketizer::StartHelloTimer(base::TimeDelta delay) {
+void ClientPacketizer::StartHelloTimer(int milliseconds) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ClientPacketizer::OnHelloTimeout, weak_factory_.GetWeakPtr()),
-      delay);
+      milliseconds);
 }
 
 void ClientPacketizer::RevokeHelloTimer() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,7 +201,7 @@ void TrackingSynchronizer::FetchProfilerDataAsynchronously(
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&RequestContext::Unregister, sequence_number),
-      base::TimeDelta::FromMinutes(1));
+      60000);
 }
 
 void TrackingSynchronizer::OnPendingProcesses(int sequence_number,

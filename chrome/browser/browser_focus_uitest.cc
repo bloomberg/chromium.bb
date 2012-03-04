@@ -145,7 +145,7 @@ void CheckFocus(Browser* browser, ViewID id, const base::Time& timeout) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CheckFocus, browser, id, timeout),
-        base::TimeDelta::FromMilliseconds(10));
+        10);
   }
 };
 
@@ -176,7 +176,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CheckFocus, browser(), vid, timeout),
-        base::TimeDelta::FromMilliseconds(100));
+        100);
     ui_test_utils::RunMessageLoop();
     return IsViewFocused(vid);
   }
@@ -225,10 +225,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
 #if defined(OS_POSIX)
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      MessageLoop::QuitClosure(),
-      base::TimeDelta::FromMilliseconds(kActionDelayMs));
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                          MessageLoop::QuitClosure(),
+                                          kActionDelayMs);
   ui_test_utils::RunMessageLoop();
 #endif  // defined(OS_POSIX)
 
@@ -628,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   // Give some time for the interstitial to show.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           MessageLoop::QuitClosure(),
-                                          base::TimeDelta::FromSeconds(1));
+                                          1000);
   ui_test_utils::RunMessageLoop();
 
   browser()->FocusLocationBar();
@@ -753,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   // Give some time for the interstitial to show.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           MessageLoop::QuitClosure(),
-                                          base::TimeDelta::FromSeconds(1));
+                                          1000);
   ui_test_utils::RunMessageLoop();
 
   // The interstitial should have focus now.

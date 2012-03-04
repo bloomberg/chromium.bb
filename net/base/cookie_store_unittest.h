@@ -211,7 +211,7 @@ class CookieStoreTest : public testing::Test {
             CookieStoreTestTraits::creation_time_granularity_in_ms);
 
     while (!matched &&  base::Time::Now() <= polling_end_date) {
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+      base::PlatformThread::Sleep(10);
       cookies = GetCookies(cs, url);
       matched = (TokenizeCookieLine(line) == TokenizeCookieLine(cookies));
     }
@@ -849,12 +849,10 @@ TYPED_TEST_P(CookieStoreTest, CookieOrdering) {
                               "c=1"));
   EXPECT_TRUE(this->SetCookie(cs, GURL("http://b.a.google.com/aa/bb/cc/x.html"),
                               "d=1; domain=b.a.google.com"));
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-      TypeParam::creation_time_granularity_in_ms));
+  base::PlatformThread::Sleep(TypeParam::creation_time_granularity_in_ms);
   EXPECT_TRUE(this->SetCookie(cs, GURL("http://b.a.google.com/aa/bb/cc/x.html"),
                               "a=4; domain=b.a.google.com"));
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-      TypeParam::creation_time_granularity_in_ms));
+  base::PlatformThread::Sleep(TypeParam::creation_time_granularity_in_ms);
   EXPECT_TRUE(this->SetCookie(cs,
                               GURL("http://c.b.a.google.com/aa/bb/cc/x.html"),
                               "e=1; domain=c.b.a.google.com"));
