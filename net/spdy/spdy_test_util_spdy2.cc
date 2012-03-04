@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/spdy_test_util.h"
+#include "net/spdy/spdy_test_util_spdy2.h"
 
 #include <string>
 
@@ -17,6 +17,7 @@
 #include "net/spdy/spdy_http_utils.h"
 
 namespace net {
+namespace test_spdy2 {
 
 // Chop a frame into an array of MockWrites.
 // |data| is the frame to chop.
@@ -1004,4 +1005,6 @@ const SpdyHeaderInfo MakeSpdyHeader(spdy::SpdyControlType type) {
   };
   return kHeader;
 }
+
+}  // namespace test_spdy2
 }  // namespace net

@@ -14,9 +14,11 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_session.h"
-#include "net/spdy/spdy_test_util.h"
-#include "net/spdy/spdy_websocket_test_util.h"
+#include "net/spdy/spdy_test_util_spdy3.h"
+#include "net/spdy/spdy_websocket_test_util_spdy3.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using namespace net::test_spdy3;
 
 namespace {
 
@@ -47,6 +49,8 @@ struct SpdyWebSocketStreamEvent {
 }  // namespace
 
 namespace net {
+
+namespace {
 
 class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
  public:
@@ -157,7 +161,9 @@ class SpdyWebSocketStreamEventRecorder : public SpdyWebSocketStream::Delegate {
   DISALLOW_COPY_AND_ASSIGN(SpdyWebSocketStreamEventRecorder);
 };
 
-class SpdyWebSocketStreamTest : public testing::Test {
+}  // namespace
+
+class SpdyWebSocketStreamSpdy3Test : public testing::Test {
  public:
   OrderedSocketData* data() { return data_.get(); }
 
@@ -178,8 +184,8 @@ class SpdyWebSocketStreamTest : public testing::Test {
   }
 
  protected:
-  SpdyWebSocketStreamTest() {}
-  virtual ~SpdyWebSocketStreamTest() {}
+  SpdyWebSocketStreamSpdy3Test() {}
+  virtual ~SpdyWebSocketStreamSpdy3Test() {}
 
   virtual void SetUp() {
     EnableCompression(false);
@@ -311,14 +317,14 @@ class SpdyWebSocketStreamTest : public testing::Test {
   static const size_t kClosingFrameLength;
 };
 
-const char SpdyWebSocketStreamTest::kMessageFrame[] = "\0hello\xff";
-const char SpdyWebSocketStreamTest::kClosingFrame[] = "\xff\0";
-const size_t SpdyWebSocketStreamTest::kMessageFrameLength =
-    arraysize(SpdyWebSocketStreamTest::kMessageFrame) - 1;
-const size_t SpdyWebSocketStreamTest::kClosingFrameLength =
-    arraysize(SpdyWebSocketStreamTest::kClosingFrame) - 1;
+const char SpdyWebSocketStreamSpdy3Test::kMessageFrame[] = "\0hello\xff";
+const char SpdyWebSocketStreamSpdy3Test::kClosingFrame[] = "\xff\0";
+const size_t SpdyWebSocketStreamSpdy3Test::kMessageFrameLength =
+    arraysize(SpdyWebSocketStreamSpdy3Test::kMessageFrame) - 1;
+const size_t SpdyWebSocketStreamSpdy3Test::kClosingFrameLength =
+    arraysize(SpdyWebSocketStreamSpdy3Test::kClosingFrame) - 1;
 
-TEST_F(SpdyWebSocketStreamTest, Basic) {
+TEST_F(SpdyWebSocketStreamSpdy3Test, Basic) {
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -339,10 +345,10 @@ TEST_F(SpdyWebSocketStreamTest, Basic) {
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoSendHelloFrame,
                  base::Unretained(this)));
   delegate.SetOnReceivedData(
-      base::Bind(&SpdyWebSocketStreamTest::DoSendClosingFrame,
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoSendClosingFrame,
                  base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
@@ -393,7 +399,7 @@ TEST_F(SpdyWebSocketStreamTest, Basic) {
   EXPECT_TRUE(data()->at_write_eof());
 }
 
-TEST_F(SpdyWebSocketStreamTest, DestructionBeforeClose) {
+TEST_F(SpdyWebSocketStreamSpdy3Test, DestructionBeforeClose) {
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -411,10 +417,11 @@ TEST_F(SpdyWebSocketStreamTest, DestructionBeforeClose) {
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoSendHelloFrame,
                  base::Unretained(this)));
   delegate.SetOnReceivedData(
-      base::Bind(&SpdyWebSocketStreamTest::DoSync, base::Unretained(this)));
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoSync,
+                 base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
 
@@ -454,7 +461,7 @@ TEST_F(SpdyWebSocketStreamTest, DestructionBeforeClose) {
   EXPECT_TRUE(data()->at_write_eof());
 }
 
-TEST_F(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
+TEST_F(SpdyWebSocketStreamSpdy3Test, DestructionAfterExplicitClose) {
   Prepare(1);
   MockWrite writes[] = {
     CreateMockWrite(*request_frame_.get(), 1),
@@ -473,10 +480,11 @@ TEST_F(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
 
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnReceivedHeader(
-      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoSendHelloFrame,
                  base::Unretained(this)));
   delegate.SetOnReceivedData(
-      base::Bind(&SpdyWebSocketStreamTest::DoClose, base::Unretained(this)));
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoClose,
+                 base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));
 
@@ -514,7 +522,7 @@ TEST_F(SpdyWebSocketStreamTest, DestructionAfterExplicitClose) {
       host_port_proxy_pair_));
 }
 
-TEST_F(SpdyWebSocketStreamTest, IOPending) {
+TEST_F(SpdyWebSocketStreamSpdy3Test, IOPending) {
   Prepare(3);
   scoped_ptr<spdy::SpdyFrame> settings_frame(
       ConstructSpdySettings(spdy_settings_to_send_));
@@ -553,12 +561,13 @@ TEST_F(SpdyWebSocketStreamTest, IOPending) {
   // Create a WebSocketStream under test.
   SpdyWebSocketStreamEventRecorder delegate(completion_callback_.callback());
   delegate.SetOnCreated(
-      base::Bind(&SpdyWebSocketStreamTest::DoSync, base::Unretained(this)));
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoSync,
+                 base::Unretained(this)));
   delegate.SetOnReceivedHeader(
-      base::Bind(&SpdyWebSocketStreamTest::DoSendHelloFrame,
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoSendHelloFrame,
                  base::Unretained(this)));
   delegate.SetOnReceivedData(
-      base::Bind(&SpdyWebSocketStreamTest::DoSendClosingFrame,
+      base::Bind(&SpdyWebSocketStreamSpdy3Test::DoSendClosingFrame,
                  base::Unretained(this)));
 
   websocket_stream_.reset(new SpdyWebSocketStream(session_, &delegate));

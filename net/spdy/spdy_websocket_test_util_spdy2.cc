@@ -1,12 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/spdy_websocket_test_util.h"
+#include "net/spdy/spdy_websocket_test_util_spdy2.h"
 
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
-#include "net/spdy/spdy_test_util.h"
+#include "net/spdy/spdy_test_util_spdy2.h"
 
 static const int kDefaultAssociatedStreamId = 0;
 static const bool kDefaultCompressed = false;
@@ -16,6 +16,8 @@ static const char** const kDefaultExtraHeaders = NULL;
 static const int kDefaultExtraHeaderCount = 0;
 
 namespace net {
+
+namespace test_spdy2 {
 
 spdy::SpdyFrame* ConstructSpdyWebSocketHandshakeRequestFrame(
     const char* const headers[],
@@ -89,5 +91,7 @@ spdy::SpdyFrame* ConstructSpdyWebSocketDataFrame(
       len,
       fin ? spdy::DATA_FLAG_FIN : spdy::DATA_FLAG_NONE);
 }
+
+}  // namespace test_spdy2
 
 }  // namespace net

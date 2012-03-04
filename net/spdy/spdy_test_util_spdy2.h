@@ -27,6 +27,8 @@
 
 namespace net {
 
+namespace test_spdy2 {
+
 // Default upload data used by both, mock objects and framer when creating
 // data frames.
 const char kDefaultURL[] = "http://www.google.com";
@@ -408,6 +410,8 @@ class SpdySessionPoolPeer {
 
   DISALLOW_COPY_AND_ASSIGN(SpdySessionPoolPeer);
 };
+
+}  // namespace test_spdy2
 
 }  // namespace net
 
