@@ -179,7 +179,7 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     if (meta_entry.Get(IS_DEL)) {
       sync_entry->set_deleted(true);
     } else {
-      if (meta_entry.Get(SPECIFICS).HasExtension(sync_pb::bookmark)) {
+      if (meta_entry.Get(SPECIFICS).has_bookmark()) {
         // Common data in both new and old protocol.
         const Id& prev_id = meta_entry.Get(syncable::PREV_ID);
         string prev_id_string =

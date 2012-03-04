@@ -75,9 +75,9 @@ class MockExtraChangeRecordData
 
 TEST_F(ChangeRecordTest, ChangeRecordToValue) {
   sync_pb::EntitySpecifics old_specifics;
-  old_specifics.MutableExtension(sync_pb::extension)->set_id("old");
+  old_specifics.mutable_extension()->set_id("old");
   sync_pb::EntitySpecifics new_specifics;
-  old_specifics.MutableExtension(sync_pb::extension)->set_id("new");
+  old_specifics.mutable_extension()->set_id("new");
 
   const int64 kTestId = 5;
 

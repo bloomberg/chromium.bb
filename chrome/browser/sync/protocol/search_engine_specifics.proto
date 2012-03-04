@@ -14,8 +14,6 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
-import "sync.proto";
-
 // Properties of custom search engine sync objects.
 message SearchEngineSpecifics {
   // The description of the search engine.
@@ -61,6 +59,3 @@ message SearchEngineSpecifics {
   optional string sync_guid = 18;
 }
 
-extend EntitySpecifics {
-  optional SearchEngineSpecifics search_engine = 88610;
-}

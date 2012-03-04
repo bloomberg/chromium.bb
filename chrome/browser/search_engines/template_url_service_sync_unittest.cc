@@ -10,6 +10,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/protocol/search_engine_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -23,20 +24,17 @@ namespace {
 
 // Extract the GUID from a search engine SyncData.
 std::string GetGUID(const SyncData& sync_data) {
-  return sync_data.GetSpecifics().GetExtension(
-      sync_pb::search_engine).sync_guid();
+  return sync_data.GetSpecifics().search_engine().sync_guid();
 }
 
 // Extract the URL from a search engine SyncData.
 std::string GetURL(const SyncData& sync_data) {
-  return sync_data.GetSpecifics().GetExtension(
-      sync_pb::search_engine).url();
+  return sync_data.GetSpecifics().search_engine().url();
 }
 
 // Extract the keyword from a search engine SyncData.
 std::string GetKeyword(const SyncData& sync_data) {
-  return sync_data.GetSpecifics().GetExtension(
-      sync_pb::search_engine).keyword();
+  return sync_data.GetSpecifics().search_engine().keyword();
 }
 
 // TODO(stevet): Share these with template_url_service_unittest.

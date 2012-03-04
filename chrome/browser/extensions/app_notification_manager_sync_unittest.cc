@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/app_notification.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/sync/protocol/app_notification_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,8 +20,7 @@ namespace {
 
 // Extract notification guid from SyncData.
 std::string GetGuid(const SyncData& sync_data) {
-  return sync_data.GetSpecifics().GetExtension(
-      sync_pb::app_notification).guid();
+  return sync_data.GetSpecifics().app_notification().guid();
 }
 
 // Dummy SyncChangeProcessor used to help review what SyncChanges are pushed

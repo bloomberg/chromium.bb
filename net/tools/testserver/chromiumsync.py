@@ -37,7 +37,7 @@ import typed_url_specifics_pb2
 
 # An enumeration of the various kinds of data that can be synced.
 # Over the wire, this enumeration is not used: a sync object's type is
-# inferred by which EntitySpecifics extension it has.  But in the context
+# inferred by which EntitySpecifics field it has.  But in the context
 # of a program, it is useful to have an enumeration.
 ALL_TYPES = (
     TOP_LEVEL,  # The type of the 'Google Chrome' folder.
@@ -68,24 +68,25 @@ SYNC_ERROR_FREQUENCY = (
 # Well-known server tag of the top level 'Google Chrome' folder.
 TOP_LEVEL_FOLDER_TAG = 'google_chrome'
 
-# Given a sync type from ALL_TYPES, find the extension token corresponding
+# Given a sync type from ALL_TYPES, find the FieldDescriptor corresponding
 # to that datatype.  Note that TOP_LEVEL has no such token.
-SYNC_TYPE_TO_EXTENSION = {
-    APP_NOTIFICATION: app_notification_specifics_pb2.app_notification,
-    APP_SETTINGS: app_setting_specifics_pb2.app_setting,
-    APPS: app_specifics_pb2.app,
-    AUTOFILL: autofill_specifics_pb2.autofill,
-    AUTOFILL_PROFILE: autofill_specifics_pb2.autofill_profile,
-    BOOKMARK: bookmark_specifics_pb2.bookmark,
-    EXTENSION_SETTINGS: extension_setting_specifics_pb2.extension_setting,
-    EXTENSIONS: extension_specifics_pb2.extension,
-    NIGORI: nigori_specifics_pb2.nigori,
-    PASSWORD: password_specifics_pb2.password,
-    PREFERENCE: preference_specifics_pb2.preference,
-    SEARCH_ENGINE: search_engine_specifics_pb2.search_engine,
-    SESSION: session_specifics_pb2.session,
-    THEME: theme_specifics_pb2.theme,
-    TYPED_URL: typed_url_specifics_pb2.typed_url,
+SYNC_TYPE_FIELDS = sync_pb2.EntitySpecifics.DESCRIPTOR.fields_by_name
+SYNC_TYPE_TO_DESCRIPTOR = {
+    APP_NOTIFICATION: SYNC_TYPE_FIELDS['app_notification'],
+    APP_SETTINGS: SYNC_TYPE_FIELDS['app_setting'],
+    APPS: SYNC_TYPE_FIELDS['app'],
+    AUTOFILL: SYNC_TYPE_FIELDS['autofill'],
+    AUTOFILL_PROFILE: SYNC_TYPE_FIELDS['autofill_profile'],
+    BOOKMARK: SYNC_TYPE_FIELDS['bookmark'],
+    EXTENSION_SETTINGS: SYNC_TYPE_FIELDS['extension_setting'],
+    EXTENSIONS: SYNC_TYPE_FIELDS['extension'],
+    NIGORI: SYNC_TYPE_FIELDS['nigori'],
+    PASSWORD: SYNC_TYPE_FIELDS['password'],
+    PREFERENCE: SYNC_TYPE_FIELDS['preference'],
+    SEARCH_ENGINE: SYNC_TYPE_FIELDS['search_engine'],
+    SESSION: SYNC_TYPE_FIELDS['session'],
+    THEME: SYNC_TYPE_FIELDS['theme'],
+    TYPED_URL: SYNC_TYPE_FIELDS['typed_url'],
     }
 
 # The parent ID used to indicate a top-level node.
@@ -99,8 +100,8 @@ class Error(Exception):
   """Error class for this module."""
 
 
-class ProtobufExtensionNotUnique(Error):
-  """An entry should not have more than one protobuf extension present."""
+class ProtobufDataTypeFieldNotUnique(Error):
+  """An entry should not have more than one data type present."""
 
 
 class DataTypeIdNotRecognized(Error):
@@ -143,7 +144,8 @@ def GetEntryType(entry):
     An enum value from ALL_TYPES if the entry's type can be determined, or None
     if the type cannot be determined.
   Raises:
-    ProtobufExtensionNotUnique: More than one type was indicated by the entry.
+    ProtobufDataTypeFieldNotUnique: More than one type was indicated by
+    the entry.
   """
   if entry.server_defined_unique_tag == TOP_LEVEL_FOLDER_TAG:
     return TOP_LEVEL
@@ -154,14 +156,14 @@ def GetEntryType(entry):
   # If there is more than one, either there's a bug, or else the caller
   # should use GetEntryTypes.
   if len(entry_types) > 1:
-    raise ProtobufExtensionNotUnique
+    raise ProtobufDataTypeFieldNotUnique
   return entry_types[0]
 
 
 def GetEntryTypesFromSpecifics(specifics):
-  """Determine the sync types indicated by an EntitySpecifics's extension(s).
+  """Determine the sync types indicated by an EntitySpecifics's field(s).
 
-  If the specifics have more than one recognized extension (as commonly
+  If the specifics have more than one recognized data type field (as commonly
   happens with the requested_types field of GetUpdatesMessage), all types
   will be returned.  Callers must handle the possibility of the returned
   value having more than one item.
@@ -173,20 +175,20 @@ def GetEntryTypesFromSpecifics(specifics):
     A list of the sync types (values from ALL_TYPES) associated with each
     recognized extension of the specifics message.
   """
-  return [data_type for data_type, extension
-          in SYNC_TYPE_TO_EXTENSION.iteritems()
-          if specifics.HasExtension(extension)]
+  return [data_type for data_type, field_descriptor
+          in SYNC_TYPE_TO_DESCRIPTOR.iteritems()
+          if specifics.HasField(field_descriptor.name)]
 
 
 def SyncTypeToProtocolDataTypeId(data_type):
   """Convert from a sync type (python enum) to the protocol's data type id."""
-  return SYNC_TYPE_TO_EXTENSION[data_type].number
+  return SYNC_TYPE_TO_DESCRIPTOR[data_type].number
 
 
 def ProtocolDataTypeIdToSyncType(protocol_data_type_id):
   """Convert from the protocol's data type id to a sync type (python enum)."""
-  for data_type, protocol_extension in SYNC_TYPE_TO_EXTENSION.iteritems():
-    if protocol_extension.number == protocol_data_type_id:
+  for data_type, field_descriptor in SYNC_TYPE_TO_DESCRIPTOR.iteritems():
+    if field_descriptor.number == protocol_data_type_id:
       return data_type
   raise DataTypeIdNotRecognized
 
@@ -201,15 +203,15 @@ def DataTypeStringToSyncTypeLoose(data_type_string):
   if data_type_string.isdigit():
     return ProtocolDataTypeIdToSyncType(int(data_type_string))
   name = data_type_string.lower().rstrip('s')
-  for data_type, protocol_extension in SYNC_TYPE_TO_EXTENSION.iteritems():
-    if protocol_extension.name.lower().rstrip('s') == name:
+  for data_type, field_descriptor in SYNC_TYPE_TO_DESCRIPTOR.iteritems():
+    if field_descriptor.name.lower().rstrip('s') == name:
       return data_type
   raise DataTypeIdNotRecognized
 
 
 def SyncTypeToString(data_type):
   """Formats a sync type enum (from ALL_TYPES) to a human-readable string."""
-  return SYNC_TYPE_TO_EXTENSION[data_type].name
+  return SYNC_TYPE_TO_DESCRIPTOR[data_type].name
 
 
 def CallerInfoToString(caller_info_source):
@@ -241,11 +243,11 @@ def ShortDatatypeListSummary(data_types):
 
 
 def GetDefaultEntitySpecifics(data_type):
-  """Get an EntitySpecifics having a sync type's default extension value."""
+  """Get an EntitySpecifics having a sync type's default field value."""
   specifics = sync_pb2.EntitySpecifics()
-  if data_type in SYNC_TYPE_TO_EXTENSION:
-    extension_handle = SYNC_TYPE_TO_EXTENSION[data_type]
-    specifics.Extensions[extension_handle].SetInParent()
+  if data_type in SYNC_TYPE_TO_DESCRIPTOR:
+    descriptor = SYNC_TYPE_TO_DESCRIPTOR[data_type]
+    getattr(specifics, descriptor.name).SetInParent()
   return specifics
 
 
@@ -480,9 +482,6 @@ class SyncDataModel(object):
       entry.originator_client_item_id = base_entry.originator_client_item_id
 
     self._entries[entry.id_string] = copy.deepcopy(entry)
-    # Store the current time since the Unix epoch in milliseconds.
-    self._entries[entry.id_string].mtime = (int((time.mktime(time.gmtime()) -
-        time.mktime(UNIX_TIME_EPOCH))*1000))
 
   def _ServerTagToId(self, tag):
     """Determine the server ID from a server-unique tag.
@@ -878,6 +877,10 @@ class SyncDataModel(object):
       entry.originator_cache_guid = base_entry.originator_cache_guid
       entry.originator_client_item_id = base_entry.originator_client_item_id
 
+    # Store the current time since the Unix epoch in milliseconds.
+    entry.mtime = (int((time.mktime(time.gmtime()) -
+        time.mktime(UNIX_TIME_EPOCH))*1000))
+
     # Commit the change.  This also updates the version number.
     self._SaveEntry(entry)
     return entry
@@ -916,12 +919,10 @@ class SyncDataModel(object):
 
     nigori_tag = "google_chrome_nigori"
     nigori_original = self._entries.get(self._ServerTagToId(nigori_tag))
-    if (nigori_original.specifics.Extensions[nigori_specifics_pb2.nigori].
-        sync_tabs):
+    if (nigori_original.specifics.nigori.sync_tabs):
       return
     nigori_new = copy.deepcopy(nigori_original)
-    nigori_new.specifics.Extensions[nigori_specifics_pb2.nigori].sync_tabs = (
-        True)
+    nigori_new.specifics.nigori.sync_tabs = True
     self._SaveEntry(nigori_new)
 
   def SetInducedError(self, error, error_frequency,

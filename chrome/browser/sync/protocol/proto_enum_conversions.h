@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 // Keep this file in sync with the .proto files in this directory.
 
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 
 // Utility functions to get the string equivalent for some sync proto
 // enums.

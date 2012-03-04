@@ -234,8 +234,8 @@ class SyncerTest : public testing::Test,
     EXPECT_FALSE(entry->Get(IS_DIR));
     EXPECT_FALSE(entry->Get(IS_DEL));
     sync_pb::EntitySpecifics specifics;
-    specifics.MutableExtension(sync_pb::bookmark)->set_url("http://demo/");
-    specifics.MutableExtension(sync_pb::bookmark)->set_favicon("PNG");
+    specifics.mutable_bookmark()->set_url("http://demo/");
+    specifics.mutable_bookmark()->set_favicon("PNG");
     entry->Put(syncable::SPECIFICS, specifics);
     entry->Put(syncable::IS_UNSYNCED, true);
   }
@@ -246,9 +246,9 @@ class SyncerTest : public testing::Test,
   }
   void VerifyTestBookmarkDataInEntry(Entry* entry) {
     const sync_pb::EntitySpecifics& specifics = entry->Get(syncable::SPECIFICS);
-    EXPECT_TRUE(specifics.HasExtension(sync_pb::bookmark));
-    EXPECT_EQ("PNG", specifics.GetExtension(sync_pb::bookmark).favicon());
-    EXPECT_EQ("http://demo/", specifics.GetExtension(sync_pb::bookmark).url());
+    EXPECT_TRUE(specifics.has_bookmark());
+    EXPECT_EQ("PNG", specifics.bookmark().favicon());
+    EXPECT_EQ("http://demo/", specifics.bookmark().url());
   }
 
   void SyncRepeatedlyToTriggerConflictResolution(SyncSession* session) {
@@ -264,13 +264,13 @@ class SyncerTest : public testing::Test,
   }
   sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
     sync_pb::EntitySpecifics result;
-    AddDefaultExtensionValue(syncable::BOOKMARKS, &result);
+    AddDefaultFieldValue(syncable::BOOKMARKS, &result);
     return result;
   }
 
   sync_pb::EntitySpecifics DefaultPreferencesSpecifics() {
     sync_pb::EntitySpecifics result;
-    AddDefaultExtensionValue(syncable::PREFERENCES, &result);
+    AddDefaultFieldValue(syncable::PREFERENCES, &result);
     return result;
   }
   // Enumeration of alterations to entries for commit ordering tests.
@@ -581,7 +581,7 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
 TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   const syncable::ModelTypeSet throttled_types(syncable::BOOKMARKS);
   sync_pb::EntitySpecifics bookmark_data;
-  AddDefaultExtensionValue(syncable::BOOKMARKS, &bookmark_data);
+  AddDefaultFieldValue(syncable::BOOKMARKS, &bookmark_data);
 
   mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
   SyncShareAsDelegate();
@@ -646,9 +646,9 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
   KeyParams key_params = {"localhost", "dummy", "foobar"};
   KeyParams other_params = {"localhost", "dummy", "foobar2"};
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark;
-  bookmark.MutableExtension(sync_pb::bookmark)->set_url("url");
-  bookmark.MutableExtension(sync_pb::bookmark)->set_title("title");
-  AddDefaultExtensionValue(syncable::BOOKMARKS, &encrypted_bookmark);
+  bookmark.mutable_bookmark()->set_url("url");
+  bookmark.mutable_bookmark()->set_title("title");
+  AddDefaultFieldValue(syncable::BOOKMARKS, &encrypted_bookmark);
   mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
   mock_server_->AddUpdateDirectory(2, 0, "B", 10, 10);
   mock_server_->AddUpdateDirectory(3, 0, "C", 10, 10);
@@ -663,8 +663,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
     browser_sync::Cryptographer other_cryptographer(&encryptor_);
     other_cryptographer.AddKey(other_params);
     sync_pb::EntitySpecifics specifics;
-    sync_pb::NigoriSpecifics* nigori =
-        specifics.MutableExtension(sync_pb::nigori);
+    sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
     other_cryptographer.GetKeys(nigori->mutable_encrypted());
     nigori->set_encrypt_bookmarks(true);
     // Set up with an old passphrase, but have pending keys
@@ -762,19 +761,19 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
   browser_sync::Cryptographer other_cryptographer(&encryptor_);
   other_cryptographer.AddKey(key_params);
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark, modified_bookmark;
-  bookmark.MutableExtension(sync_pb::bookmark)->set_title("title");
+  bookmark.mutable_bookmark()->set_title("title");
   other_cryptographer.Encrypt(bookmark,
                               encrypted_bookmark.mutable_encrypted());
-  AddDefaultExtensionValue(syncable::BOOKMARKS, &encrypted_bookmark);
-  modified_bookmark.MutableExtension(sync_pb::bookmark)->set_title("title2");
+  AddDefaultFieldValue(syncable::BOOKMARKS, &encrypted_bookmark);
+  modified_bookmark.mutable_bookmark()->set_title("title2");
   other_cryptographer.Encrypt(modified_bookmark,
                               modified_bookmark.mutable_encrypted());
   sync_pb::EntitySpecifics pref, encrypted_pref, modified_pref;
-  pref.MutableExtension(sync_pb::preference)->set_name("name");
-  AddDefaultExtensionValue(syncable::PREFERENCES, &encrypted_pref);
+  pref.mutable_preference()->set_name("name");
+  AddDefaultFieldValue(syncable::PREFERENCES, &encrypted_pref);
   other_cryptographer.Encrypt(pref,
                               encrypted_pref.mutable_encrypted());
-  modified_pref.MutableExtension(sync_pb::preference)->set_name("name2");
+  modified_pref.mutable_preference()->set_name("name2");
   other_cryptographer.Encrypt(modified_pref,
                               modified_pref.mutable_encrypted());
   {
@@ -782,8 +781,7 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
     // have pending keys.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     sync_pb::EntitySpecifics specifics;
-    sync_pb::NigoriSpecifics* nigori =
-        specifics.MutableExtension(sync_pb::nigori);
+    sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
     other_cryptographer.GetKeys(nigori->mutable_encrypted());
     nigori->set_encrypt_bookmarks(true);
     nigori->set_encrypt_preferences(true);
@@ -947,19 +945,17 @@ TEST_F(SyncerTest, NigoriConflicts) {
   other_cryptographer.AddKey(other_key_params);
   syncable::ModelTypeSet encrypted_types(syncable::PASSWORDS, syncable::NIGORI);
   sync_pb::EntitySpecifics initial_nigori_specifics;
-  initial_nigori_specifics.MutableExtension(sync_pb::nigori);
+  initial_nigori_specifics.mutable_nigori();
   mock_server_->SetNigori(1, 10, 10, initial_nigori_specifics);
 
   // Data for testing encryption/decryption.
   sync_pb::EntitySpecifics other_encrypted_specifics;
-  other_encrypted_specifics.MutableExtension(sync_pb::bookmark)->
-      set_title("title");
+  other_encrypted_specifics.mutable_bookmark()->set_title("title");
   other_cryptographer.Encrypt(
       other_encrypted_specifics,
       other_encrypted_specifics.mutable_encrypted());
   sync_pb::EntitySpecifics our_encrypted_specifics;
-  our_encrypted_specifics.MutableExtension(sync_pb::bookmark)->
-      set_title("title2");
+  our_encrypted_specifics.mutable_bookmark()->set_title("title2");
 
   // Receive the initial nigori node.
   SyncShareAsDelegate();
@@ -968,8 +964,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
     // Local changes with different passphrase, different types, and sync_tabs.
     WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
     sync_pb::EntitySpecifics specifics;
-    sync_pb::NigoriSpecifics* nigori =
-        specifics.MutableExtension(sync_pb::nigori);
+    sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
     cryptographer(&wtrans)->AddKey(local_key_params);
     cryptographer(&wtrans)->Encrypt(
         our_encrypted_specifics,
@@ -990,8 +985,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
   }
   {
     sync_pb::EntitySpecifics specifics;
-    sync_pb::NigoriSpecifics* nigori =
-        specifics.MutableExtension(sync_pb::nigori);
+    sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
     other_cryptographer.GetKeys(nigori->mutable_encrypted());
     nigori->set_encrypt_bookmarks(true);
     nigori->set_encrypt_preferences(true);
@@ -1019,14 +1013,13 @@ TEST_F(SyncerTest, NigoriConflicts) {
     EXPECT_TRUE(encrypted_types.Equals(
             cryptographer(&wtrans)->GetEncryptedTypes()));
     EXPECT_TRUE(cryptographer(&wtrans)->encrypt_everything());
-    EXPECT_TRUE(specifics.GetExtension(sync_pb::nigori).sync_tabs());
+    EXPECT_TRUE(specifics.nigori().sync_tabs());
     // Supply the pending keys. Afterwards, we should be able to decrypt both
     // our own encrypted data and data encrypted by the other cryptographer,
     // but the key provided by the other cryptographer should be the default.
     EXPECT_TRUE(cryptographer(&wtrans)->DecryptPendingKeys(other_key_params));
     EXPECT_FALSE(cryptographer(&wtrans)->has_pending_keys());
-    sync_pb::NigoriSpecifics* nigori =
-        specifics.MutableExtension(sync_pb::nigori);
+    sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
     cryptographer(&wtrans)->GetKeys(nigori->mutable_encrypted());
     cryptographer(&wtrans)->UpdateNigoriFromEncryptedTypes(nigori);
     // Normally this would be written as part of SetPassphrase, but we do it
@@ -1054,8 +1047,7 @@ TEST_F(SyncerTest, NigoriConflicts) {
         other_encrypted_specifics.encrypted()));
     EXPECT_TRUE(cryptographer(&wtrans)->
         CanDecryptUsingDefaultKey(other_encrypted_specifics.encrypted()));
-    EXPECT_TRUE(nigori_entry.Get(SPECIFICS).GetExtension(sync_pb::nigori)
-        .sync_tabs());
+    EXPECT_TRUE(nigori_entry.Get(SPECIFICS).nigori().sync_tabs());
   }
 }
 
@@ -2299,7 +2291,7 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
     ASSERT_TRUE(child.good());
     EXPECT_TRUE(child.Get(syncable::IS_UNSYNCED));
     EXPECT_FALSE(child.Get(syncable::IS_UNAPPLIED_UPDATE));
-    EXPECT_TRUE(child.Get(SPECIFICS).HasExtension(sync_pb::bookmark));
+    EXPECT_TRUE(child.Get(SPECIFICS).has_bookmark());
     EXPECT_EQ("Pete.htm", child.Get(NON_UNIQUE_NAME));
     VerifyTestBookmarkDataInEntry(&child);
   }
@@ -2727,7 +2719,7 @@ TEST_F(SyncerTest, NewEntryAndAlteredServerEntrySharePath) {
     EXPECT_EQ("Bar.htm", server.Get(NON_UNIQUE_NAME));
     EXPECT_EQ("Bar.htm", local.Get(NON_UNIQUE_NAME));
     EXPECT_EQ("http://google.com",  // Default from AddUpdateBookmark.
-        server.Get(SPECIFICS).GetExtension(sync_pb::bookmark).url());
+        server.Get(SPECIFICS).bookmark().url());
   }
 }
 
@@ -2793,7 +2785,7 @@ TEST_F(SyncerTest, NewEntryAndAlteredServerEntrySharePath_OldBookmarksProto) {
     EXPECT_EQ("Bar.htm", server.Get(NON_UNIQUE_NAME));
     EXPECT_EQ("Bar.htm", local.Get(NON_UNIQUE_NAME));
     EXPECT_EQ("http://google.com",  // Default from AddUpdateBookmark.
-        server.Get(SPECIFICS).GetExtension(sync_pb::bookmark).url());
+        server.Get(SPECIFICS).bookmark().url());
   }
 }
 
@@ -3521,11 +3513,9 @@ TEST_F(SyncerTest, ClientTagUncommittedTagMatchesUpdate) {
   int64 original_metahandle = 0;
 
   sync_pb::EntitySpecifics local_bookmark(DefaultBookmarkSpecifics());
-  local_bookmark.MutableExtension(sync_pb::bookmark)->
-      set_url("http://foo/localsite");
+  local_bookmark.mutable_bookmark()->set_url("http://foo/localsite");
   sync_pb::EntitySpecifics server_bookmark(DefaultBookmarkSpecifics());
-  server_bookmark.MutableExtension(sync_pb::bookmark)->
-      set_url("http://bar/serversite");
+  server_bookmark.mutable_bookmark()->set_url("http://bar/serversite");
 
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());

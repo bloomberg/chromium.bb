@@ -29,7 +29,7 @@ SyncerError StoreTimestampsCommand::ExecuteImpl(
   syncable::ModelTypeSet forward_progress_types;
   for (int i = 0; i < updates.new_progress_marker_size(); ++i) {
     syncable::ModelType model =
-        syncable::GetModelTypeFromExtensionFieldNumber(
+        syncable::GetModelTypeFromSpecificsFieldNumber(
             updates.new_progress_marker(i).data_type_id());
     if (model == syncable::UNSPECIFIED || model == syncable::TOP_LEVEL_FOLDER) {
       NOTREACHED() << "Unintelligible server response.";

@@ -264,8 +264,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
       // and just ensure we've disassociated.
       DCHECK_EQ(syncable::GetModelTypeFromSpecifics(it->specifics),
                 syncable::SESSIONS);
-      const sync_pb::SessionSpecifics& specifics =
-          it->specifics.GetExtension(sync_pb::session);
+      const sync_pb::SessionSpecifics& specifics = it->specifics.session();
       session_model_associator_->DisassociateForeignSession(
           specifics.session_tag());
       continue;

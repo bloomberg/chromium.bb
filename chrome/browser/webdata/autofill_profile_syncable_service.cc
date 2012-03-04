@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -196,7 +197,7 @@ SyncError AutofillProfileSyncableService::ProcessSyncChanges(
         break;
       case SyncChange::ACTION_DELETE: {
         std::string guid = i->sync_data().GetSpecifics().
-             GetExtension(sync_pb::autofill_profile).guid();
+             autofill_profile().guid();
         bundle.profiles_to_delete.push_back(guid);
         profiles_map_.erase(guid);
       } break;
@@ -300,7 +301,7 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
     const AutofillProfile& profile,
     sync_pb::EntitySpecifics* profile_specifics) {
   sync_pb::AutofillProfileSpecifics* specifics =
-      profile_specifics->MutableExtension(sync_pb::autofill_profile);
+      profile_specifics->mutable_autofill_profile();
 
   DCHECK(guid::IsValidGUID(profile.guid()));
 
@@ -363,7 +364,7 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
 
   const sync_pb::EntitySpecifics& specifics = data.GetSpecifics();
   const sync_pb::AutofillProfileSpecifics& autofill_specifics(
-      specifics.GetExtension(sync_pb::autofill_profile));
+      specifics.autofill_profile());
 
   GUIDToProfileMap::iterator it = profile_map->find(
         autofill_specifics.guid());

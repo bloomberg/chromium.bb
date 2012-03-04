@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 
 ExtensionSyncData::ExtensionSyncData()
     : uninstalled_(false),
@@ -92,11 +93,10 @@ SyncData ExtensionSyncData::GetSyncData() const {
 
   switch (type_) {
     case Extension::SYNC_TYPE_EXTENSION:
-      PopulateExtensionSpecifics(specifics.MutableExtension(
-          sync_pb::extension));
+      PopulateExtensionSpecifics(specifics.mutable_extension());
       break;
     case Extension::SYNC_TYPE_APP:
-      PopulateAppSpecifics(specifics.MutableExtension(sync_pb::app));
+      PopulateAppSpecifics(specifics.mutable_app());
       break;
     default:
       LOG(FATAL) << "Attempt to get non-syncable data.";
@@ -156,13 +156,11 @@ void ExtensionSyncData::PopulateFromExtensionSpecifics(
 void ExtensionSyncData::PopulateFromSyncData(const SyncData& sync_data) {
   const sync_pb::EntitySpecifics& entity_specifics = sync_data.GetSpecifics();
 
-  if (entity_specifics.HasExtension(sync_pb::extension)) {
-    PopulateFromExtensionSpecifics(
-        entity_specifics.GetExtension(sync_pb::extension));
+  if (entity_specifics.has_extension()) {
+    PopulateFromExtensionSpecifics(entity_specifics.extension());
     type_ = Extension::SYNC_TYPE_EXTENSION;
-  } else if (entity_specifics.HasExtension(sync_pb::app)) {
-    PopulateFromAppSpecifics(
-        entity_specifics.GetExtension(sync_pb::app));
+  } else if (entity_specifics.has_app()) {
+    PopulateFromAppSpecifics(entity_specifics.app());
     type_ = Extension::SYNC_TYPE_APP;
   } else {
     LOG(FATAL) << "Attempt to sync bad EntitySpecifics.";

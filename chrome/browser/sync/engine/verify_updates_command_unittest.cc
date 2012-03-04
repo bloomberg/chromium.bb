@@ -51,7 +51,7 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
     entry.Put(syncable::NON_UNIQUE_NAME, item_id);
     entry.Put(syncable::PARENT_ID, Id::CreateFromServerId(parent_id));
     sync_pb::EntitySpecifics default_specifics;
-    AddDefaultExtensionValue(type, &default_specifics);
+    AddDefaultFieldValue(type, &default_specifics);
     entry.Put(syncable::SERVER_SPECIFICS, default_specifics);
   }
 
@@ -63,7 +63,7 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
     e->set_parent_id_string(parent);
     e->set_non_unique_name("b1");
     e->set_name("b1");
-    AddDefaultExtensionValue(type, e->mutable_specifics());
+    AddDefaultFieldValue(type, e->mutable_specifics());
   }
 
   VerifyUpdatesCommand command_;

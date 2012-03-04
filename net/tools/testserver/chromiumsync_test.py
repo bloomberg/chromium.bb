@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -25,8 +25,9 @@ class SyncDataModelTest(unittest.TestCase):
     message = sync_pb2.GetUpdatesMessage()
     message.from_timestamp = timestamp
     for data_type in requested_types:
-      message.requested_types.Extensions[
-        chromiumsync.SYNC_TYPE_TO_EXTENSION[data_type]].SetInParent()
+      getattr(message.requested_types,
+              chromiumsync.SYNC_TYPE_TO_DESCRIPTOR[
+                  data_type].name).SetInParent()
     return self.model.GetChanges(
         chromiumsync.UpdateSieve(message, self.model.migration_history))
 
@@ -298,12 +299,12 @@ class SyncDataModelTest(unittest.TestCase):
 
   def testUpdateSieve(self):
     # from_timestamp, legacy mode
-    autofill = autofill_specifics_pb2.autofill
-    theme = theme_specifics_pb2.theme
+    autofill = chromiumsync.SYNC_TYPE_FIELDS['autofill']
+    theme = chromiumsync.SYNC_TYPE_FIELDS['theme']
     msg = sync_pb2.GetUpdatesMessage()
     msg.from_timestamp = 15412
-    msg.requested_types.Extensions[autofill].SetInParent()
-    msg.requested_types.Extensions[theme].SetInParent()
+    msg.requested_types.autofill.SetInParent()
+    msg.requested_types.theme.SetInParent()
 
     sieve = chromiumsync.UpdateSieve(msg)
     self.assertEqual(sieve._state,
@@ -448,8 +449,8 @@ class SyncDataModelTest(unittest.TestCase):
       self.assertTrue(testserver.transient_error)
 
   def testUpdateSieveStoreMigration(self):
-    autofill = autofill_specifics_pb2.autofill
-    theme = theme_specifics_pb2.theme
+    autofill = chromiumsync.SYNC_TYPE_FIELDS['autofill']
+    theme = chromiumsync.SYNC_TYPE_FIELDS['theme']
     migrator = chromiumsync.MigrationHistory()
     msg = sync_pb2.GetUpdatesMessage()
     marker = msg.from_progress_marker.add()

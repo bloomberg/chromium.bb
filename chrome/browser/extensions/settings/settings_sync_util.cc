@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/sync/protocol/app_setting_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_setting_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 
 namespace extensions {
 
@@ -46,14 +47,13 @@ SyncData CreateData(
     const Value& value,
     syncable::ModelType type) {
   sync_pb::EntitySpecifics specifics;
-
   switch (type) {
     case syncable::EXTENSION_SETTINGS:
       PopulateExtensionSettingSpecifics(
           extension_id,
           key,
           value,
-          specifics.MutableExtension(sync_pb::extension_setting));
+          specifics.mutable_extension_setting());
       break;
 
     case syncable::APP_SETTINGS:
@@ -61,7 +61,7 @@ SyncData CreateData(
           extension_id,
           key,
           value,
-          specifics.MutableExtension(sync_pb::app_setting));
+          specifics.mutable_app_setting());
       break;
 
     default:

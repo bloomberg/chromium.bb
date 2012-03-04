@@ -280,9 +280,8 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   // priority on preserving the server's passphrase change to preserving local
   // non-encryption changes. Next time the non-encryption changes are made to
   // the nigori node (e.g. on restart), they will commit without issue.
-  if (specifics.HasExtension(sync_pb::nigori)) {
-    const sync_pb::NigoriSpecifics& nigori =
-        specifics.GetExtension(sync_pb::nigori);
+  if (specifics.has_nigori()) {
+    const sync_pb::NigoriSpecifics& nigori = specifics.nigori();
     cryptographer->Update(nigori);
 
     // Make sure any unsynced changes are properly encrypted as necessary.
@@ -320,11 +319,10 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
              << syncable::ModelTypeToString(entry->GetServerModelType())
              << " update, returning encryption_conflict.";
     return CONFLICT_ENCRYPTION;
-  } else if (specifics.HasExtension(sync_pb::password) &&
+  } else if (specifics.has_password() &&
              entry->Get(UNIQUE_SERVER_TAG).empty()) {
     // Passwords use their own legacy encryption scheme.
-    const sync_pb::PasswordSpecifics& password =
-        specifics.GetExtension(sync_pb::password);
+    const sync_pb::PasswordSpecifics& password = specifics.password();
     if (!cryptographer->CanDecrypt(password.encrypted())) {
       DVLOG(1) << "Received an undecryptable password update, returning "
                << "encryption_conflict.";
@@ -396,7 +394,7 @@ void UpdateBookmarkSpecifics(const std::string& singleton_tag,
   if (singleton_tag == "google_chrome")
     return;
   sync_pb::EntitySpecifics pb;
-  sync_pb::BookmarkSpecifics* bookmark = pb.MutableExtension(sync_pb::bookmark);
+  sync_pb::BookmarkSpecifics* bookmark = pb.mutable_bookmark();
   if (!url.empty())
     bookmark->set_url(url);
   if (!favicon_bytes.empty())

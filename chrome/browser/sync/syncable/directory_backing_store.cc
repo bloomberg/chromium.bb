@@ -569,7 +569,7 @@ ModelType DirectoryBackingStore::ModelIdToModelTypeEnum(
 // static
 string DirectoryBackingStore::ModelTypeEnumToModelId(ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultExtensionValue(model_type, &specifics);
+  syncable::AddDefaultFieldValue(model_type, &specifics);
   return specifics.SerializeAsString();
 }
 
@@ -680,7 +680,7 @@ void EncodeBookmarkURLAndFavicon(sql::Statement* old_value_query,
 
   if (old_is_bookmark_object) {
     sync_pb::BookmarkSpecifics* bookmark_data =
-        mutable_new_value->MutableExtension(sync_pb::bookmark);
+        mutable_new_value->mutable_bookmark();
     if (!old_is_dir) {
       bookmark_data->set_url(old_url);
       bookmark_data->set_favicon(old_favicon);
@@ -884,7 +884,7 @@ bool DirectoryBackingStore::MigrateVersion74To75() {
       // time we check for updates.
       sync_pb::DataTypeProgressMarker progress_marker;
       progress_marker.set_data_type_id(
-          GetExtensionFieldNumberFromModelType(type));
+          GetSpecificsFieldNumberFromModelType(type));
       progress_marker.set_timestamp_token_for_migration(query.ColumnInt64(1));
       std::string progress_blob;
       progress_marker.SerializeToString(&progress_blob);

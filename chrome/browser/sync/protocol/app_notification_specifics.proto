@@ -14,8 +14,6 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
-import "sync.proto";
-
 // Properties of an app notification.
 
 // An App Notification, to be delivered from Chrome Apps to the
@@ -44,6 +42,3 @@ message AppNotification {
   optional string link_text = 7;
 }
 
-extend EntitySpecifics {
-  optional AppNotification app_notification = 45184;
-}

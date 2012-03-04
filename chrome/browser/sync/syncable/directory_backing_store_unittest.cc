@@ -1594,15 +1594,13 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
   ASSERT_EQ("s_ID_2", s.ColumnString(3));
   sync_pb::EntitySpecifics specifics;
   specifics.ParseFromArray(s.ColumnBlob(4), s.ColumnByteLength(4));
-  ASSERT_TRUE(specifics.HasExtension(sync_pb::bookmark));
-  ASSERT_EQ("http://www.google.com/",
-      specifics.GetExtension(sync_pb::bookmark).url());
-  ASSERT_EQ("AASGASGA", specifics.GetExtension(sync_pb::bookmark).favicon());
+  ASSERT_TRUE(specifics.has_bookmark());
+  ASSERT_EQ("http://www.google.com/", specifics.bookmark().url());
+  ASSERT_EQ("AASGASGA", specifics.bookmark().favicon());
   specifics.ParseFromArray(s.ColumnBlob(5), s.ColumnByteLength(5));
-  ASSERT_TRUE(specifics.HasExtension(sync_pb::bookmark));
-  ASSERT_EQ("http://www.google.com/2",
-      specifics.GetExtension(sync_pb::bookmark).url());
-  ASSERT_EQ("ASADGADGADG", specifics.GetExtension(sync_pb::bookmark).favicon());
+  ASSERT_TRUE(specifics.has_bookmark());
+  ASSERT_EQ("http://www.google.com/2", specifics.bookmark().url());
+  ASSERT_EQ("ASADGADGADG", specifics.bookmark().favicon());
   ASSERT_FALSE(s.Step());
 }
 
@@ -2060,44 +2058,42 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE((*it)->ref(IS_DIR));
   EXPECT_TRUE((*it)->ref(SERVER_IS_DIR));
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).GetExtension(sync_pb::bookmark).has_url());
+      (*it)->ref(SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SERVER_SPECIFICS).GetExtension(sync_pb::bookmark).has_url());
+      (*it)->ref(SERVER_SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).GetExtension(sync_pb::bookmark).has_favicon());
-  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).
-      GetExtension(sync_pb::bookmark).has_favicon());
+      (*it)->ref(SPECIFICS).bookmark().has_favicon());
+  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).bookmark().has_favicon());
 
   ASSERT_TRUE(++it != index.end());
   ASSERT_EQ(7, (*it)->ref(META_HANDLE));
   EXPECT_EQ("google_chrome", (*it)->ref(UNIQUE_SERVER_TAG));
-  EXPECT_FALSE((*it)->ref(SPECIFICS).HasExtension(sync_pb::bookmark));
-  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark));
+  EXPECT_FALSE((*it)->ref(SPECIFICS).has_bookmark());
+  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
 
   ASSERT_TRUE(++it != index.end());
   ASSERT_EQ(8, (*it)->ref(META_HANDLE));
   EXPECT_EQ("google_chrome_bookmarks", (*it)->ref(UNIQUE_SERVER_TAG));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).HasExtension(sync_pb::bookmark));
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark));
+  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
 
   ASSERT_TRUE(++it != index.end());
   ASSERT_EQ(9, (*it)->ref(META_HANDLE));
   EXPECT_EQ("bookmark_bar", (*it)->ref(UNIQUE_SERVER_TAG));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).HasExtension(sync_pb::bookmark));
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark));
+  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
 
   ASSERT_TRUE(++it != index.end());
   ASSERT_EQ(10, (*it)->ref(META_HANDLE));
   EXPECT_FALSE((*it)->ref(IS_DEL));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).HasExtension(sync_pb::bookmark));
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark));
-  EXPECT_FALSE((*it)->ref(SPECIFICS).GetExtension(sync_pb::bookmark).has_url());
+  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
+  EXPECT_FALSE((*it)->ref(SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).GetExtension(sync_pb::bookmark).has_favicon());
+      (*it)->ref(SPECIFICS).bookmark().has_favicon());
   EXPECT_FALSE(
-      (*it)->ref(SERVER_SPECIFICS).GetExtension(sync_pb::bookmark).has_url());
-  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).
-      GetExtension(sync_pb::bookmark).has_favicon());
+      (*it)->ref(SERVER_SPECIFICS).bookmark().has_url());
+  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).bookmark().has_favicon());
   EXPECT_EQ("other_bookmarks", (*it)->ref(UNIQUE_SERVER_TAG));
   EXPECT_EQ("Other Bookmarks", (*it)->ref(NON_UNIQUE_NAME));
   EXPECT_EQ("Other Bookmarks", (*it)->ref(SERVER_NON_UNIQUE_NAME));
@@ -2106,16 +2102,16 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   ASSERT_EQ(11, (*it)->ref(META_HANDLE));
   EXPECT_FALSE((*it)->ref(IS_DEL));
   EXPECT_FALSE((*it)->ref(IS_DIR));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).HasExtension(sync_pb::bookmark));
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark));
+  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
   EXPECT_EQ("http://dev.chromium.org/",
-    (*it)->ref(SPECIFICS).GetExtension(sync_pb::bookmark).url());
+      (*it)->ref(SPECIFICS).bookmark().url());
   EXPECT_EQ("AGATWA",
-    (*it)->ref(SPECIFICS).GetExtension(sync_pb::bookmark).favicon());
+      (*it)->ref(SPECIFICS).bookmark().favicon());
   EXPECT_EQ("http://dev.chromium.org/other",
-    (*it)->ref(SERVER_SPECIFICS).GetExtension(sync_pb::bookmark).url());
+      (*it)->ref(SERVER_SPECIFICS).bookmark().url());
   EXPECT_EQ("AFAGVASF",
-    (*it)->ref(SERVER_SPECIFICS).GetExtension(sync_pb::bookmark).favicon());
+      (*it)->ref(SERVER_SPECIFICS).bookmark().favicon());
   EXPECT_EQ("", (*it)->ref(UNIQUE_SERVER_TAG));
   EXPECT_EQ("Home (The Chromium Projects)", (*it)->ref(NON_UNIQUE_NAME));
   EXPECT_EQ("Home (The Chromium Projects)", (*it)->ref(SERVER_NON_UNIQUE_NAME));
@@ -2126,16 +2122,15 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE((*it)->ref(IS_DIR));
   EXPECT_EQ("Extra Bookmarks", (*it)->ref(NON_UNIQUE_NAME));
   EXPECT_EQ("Extra Bookmarks", (*it)->ref(SERVER_NON_UNIQUE_NAME));
-  EXPECT_TRUE((*it)->ref(SPECIFICS).HasExtension(sync_pb::bookmark));
-  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark));
+  EXPECT_TRUE((*it)->ref(SPECIFICS).has_bookmark());
+  EXPECT_TRUE((*it)->ref(SERVER_SPECIFICS).has_bookmark());
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).GetExtension(sync_pb::bookmark).has_url());
+      (*it)->ref(SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SERVER_SPECIFICS).GetExtension(sync_pb::bookmark).has_url());
+      (*it)->ref(SERVER_SPECIFICS).bookmark().has_url());
   EXPECT_FALSE(
-      (*it)->ref(SPECIFICS).GetExtension(sync_pb::bookmark).has_favicon());
-  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).
-      GetExtension(sync_pb::bookmark).has_favicon());
+      (*it)->ref(SPECIFICS).bookmark().has_favicon());
+  EXPECT_FALSE((*it)->ref(SERVER_SPECIFICS).bookmark().has_favicon());
 
   ASSERT_TRUE(++it != index.end());
   ASSERT_EQ(13, (*it)->ref(META_HANDLE));

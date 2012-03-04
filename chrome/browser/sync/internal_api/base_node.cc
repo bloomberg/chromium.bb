@@ -63,10 +63,10 @@ BaseNode::~BaseNode() {}
 
 std::string BaseNode::GenerateSyncableHash(
     syncable::ModelType model_type, const std::string& client_tag) {
-  // blank PB with just the extension in it has termination symbol,
-  // handy for delimiter
+  // Blank PB with just the field in it has termination symbol,
+  // handy for delimiter.
   sync_pb::EntitySpecifics serialized_type;
-  syncable::AddDefaultExtensionValue(model_type, &serialized_type);
+  syncable::AddDefaultFieldValue(model_type, &serialized_type);
   std::string hash_input;
   serialized_type.AppendToString(&hash_input);
   hash_input.append(client_tag);
@@ -81,7 +81,7 @@ bool BaseNode::DecryptIfNecessary() {
       return true;  // Ignore unique folders.
   const sync_pb::EntitySpecifics& specifics =
       GetEntry()->Get(syncable::SPECIFICS);
-  if (specifics.HasExtension(sync_pb::password)) {
+  if (specifics.has_password()) {
     // Passwords have their own legacy encryption structure.
     scoped_ptr<sync_pb::PasswordSpecificsData> data(DecryptPasswordSpecifics(
         specifics, GetTransaction()->GetCryptographer()));
@@ -100,7 +100,7 @@ bool BaseNode::DecryptIfNecessary() {
   // follows the new bookmarks format.
   if (!specifics.has_encrypted()) {
     if (GetModelType() == syncable::BOOKMARKS &&
-        !specifics.GetExtension(sync_pb::bookmark).has_title() &&
+        !specifics.bookmark().has_title() &&
         !GetTitle().empty()) {  // Last check ensures this isn't a new node.
       // We need to fill in the title.
       std::string title = GetTitle();
@@ -109,7 +109,7 @@ bool BaseNode::DecryptIfNecessary() {
       DVLOG(1) << "Reading from legacy bookmark, manually returning title "
                << title;
       unencrypted_data_.CopyFrom(specifics);
-      unencrypted_data_.MutableExtension(sync_pb::bookmark)->set_title(
+      unencrypted_data_.mutable_bookmark()->set_title(
           server_legal_title);
     }
     return true;
@@ -144,7 +144,7 @@ const sync_pb::EntitySpecifics& BaseNode::GetUnencryptedSpecifics(
     // DecryptIfNecessary().
     if (GetModelType() == syncable::BOOKMARKS) {
       const sync_pb::BookmarkSpecifics& bookmark_specifics =
-          specifics.GetExtension(sync_pb::bookmark);
+          specifics.bookmark();
       if (bookmark_specifics.has_title() ||
           GetTitle().empty() ||  // For the empty node case
           !GetEntry()->Get(syncable::UNIQUE_SERVER_TAG).empty()) {
@@ -277,27 +277,27 @@ int64 BaseNode::GetExternalId() const {
 
 const sync_pb::AppSpecifics& BaseNode::GetAppSpecifics() const {
   DCHECK_EQ(syncable::APPS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::app);
+  return GetEntitySpecifics().app();
 }
 
 const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
   DCHECK_EQ(syncable::AUTOFILL, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::autofill);
+  return GetEntitySpecifics().autofill();
 }
 
 const AutofillProfileSpecifics& BaseNode::GetAutofillProfileSpecifics() const {
   DCHECK_EQ(GetModelType(), syncable::AUTOFILL_PROFILE);
-  return GetEntitySpecifics().GetExtension(sync_pb::autofill_profile);
+  return GetEntitySpecifics().autofill_profile();
 }
 
 const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
   DCHECK_EQ(syncable::BOOKMARKS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::bookmark);
+  return GetEntitySpecifics().bookmark();
 }
 
 const sync_pb::NigoriSpecifics& BaseNode::GetNigoriSpecifics() const {
   DCHECK_EQ(syncable::NIGORI, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::nigori);
+  return GetEntitySpecifics().nigori();
 }
 
 const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
@@ -307,22 +307,22 @@ const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
 
 const sync_pb::ThemeSpecifics& BaseNode::GetThemeSpecifics() const {
   DCHECK_EQ(syncable::THEMES, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::theme);
+  return GetEntitySpecifics().theme();
 }
 
 const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
   DCHECK_EQ(syncable::TYPED_URLS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::typed_url);
+  return GetEntitySpecifics().typed_url();
 }
 
 const sync_pb::ExtensionSpecifics& BaseNode::GetExtensionSpecifics() const {
   DCHECK_EQ(syncable::EXTENSIONS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::extension);
+  return GetEntitySpecifics().extension();
 }
 
 const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
   DCHECK_EQ(syncable::SESSIONS, GetModelType());
-  return GetEntitySpecifics().GetExtension(sync_pb::session);
+  return GetEntitySpecifics().session();
 }
 
 const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {

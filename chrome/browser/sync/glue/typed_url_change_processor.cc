@@ -213,9 +213,9 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
            changes.Get().begin(); it != changes.Get().end(); ++it) {
     if (sync_api::ChangeRecord::ACTION_DELETE ==
         it->action) {
-      DCHECK(it->specifics.HasExtension(sync_pb::typed_url)) <<
+      DCHECK(it->specifics.has_typed_url()) <<
           "Typed URL delete change does not have necessary specifics.";
-      GURL url(it->specifics.GetExtension(sync_pb::typed_url).url());
+      GURL url(it->specifics.typed_url().url());
       pending_deleted_urls_.push_back(url);
       continue;
     }

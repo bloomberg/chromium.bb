@@ -34,6 +34,7 @@
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/protocol/search_engine_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -965,8 +966,8 @@ void TemplateURLService::ProcessTemplateURLChange(
 SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
     const TemplateURL& turl) {
   sync_pb::EntitySpecifics specifics;
-  sync_pb::SearchEngineSpecifics* se_specifics = specifics.MutableExtension(
-      sync_pb::search_engine);
+  sync_pb::SearchEngineSpecifics* se_specifics =
+      specifics.mutable_search_engine();
   se_specifics->set_short_name(UTF16ToUTF8(turl.short_name()));
   se_specifics->set_keyword(UTF16ToUTF8(turl.keyword()));
   se_specifics->set_favicon_url(turl.GetFaviconURL().spec());
@@ -1003,8 +1004,7 @@ SyncDataMap TemplateURLService::CreateGUIDToSyncDataMap(
   SyncDataMap data_map;
   SyncDataList::const_iterator iter;
   for (iter = sync_data.begin(); iter != sync_data.end(); ++iter) {
-    data_map[iter->GetSpecifics().GetExtension(
-        sync_pb::search_engine).sync_guid()] = *iter;
+    data_map[iter->GetSpecifics().search_engine().sync_guid()] = *iter;
   }
   return data_map;
 }
@@ -1889,7 +1889,7 @@ void TemplateURLService::UpdateTemplateURLWithSyncData(
     TemplateURL* dst,
     const SyncData& sync_data) {
   sync_pb::SearchEngineSpecifics specifics =
-      sync_data.GetSpecifics().GetExtension(sync_pb::search_engine);
+      sync_data.GetSpecifics().search_engine();
   dst->set_short_name(UTF8ToUTF16(specifics.short_name()));
   dst->set_keyword(UTF8ToUTF16(specifics.keyword()));
   dst->SetFaviconURL(GURL(specifics.favicon_url()));

@@ -227,25 +227,23 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       // preserves their encryption keys).
       sync_pb::EntitySpecifics specifics =
           entry.Get(syncable::SERVER_SPECIFICS);
-      sync_pb::NigoriSpecifics* nigori =
-          specifics.MutableExtension(sync_pb::nigori);
+      sync_pb::NigoriSpecifics* server_nigori = specifics.mutable_nigori();
       // Store the merged set of encrypted types (cryptographer->Update(..) will
       // have merged the local types already).
-      cryptographer->UpdateNigoriFromEncryptedTypes(nigori);
+      cryptographer->UpdateNigoriFromEncryptedTypes(server_nigori);
       // The local set of keys is already merged with the server's set within
       // the cryptographer. If we don't have pending keys we can store the
       // merged set back immediately. Else we preserve the server keys and will
       // update the nigori when the user provides the pending passphrase via
       // SetPassphrase(..).
       if (cryptographer->is_ready()) {
-        cryptographer->GetKeys(nigori->mutable_encrypted());
+        cryptographer->GetKeys(server_nigori->mutable_encrypted());
       }
       // TODO(zea): Find a better way of doing this. As it stands, we have to
       // update this code whenever we add a new non-cryptographer related field
       // to the nigori node.
-      if (entry.Get(syncable::SPECIFICS).GetExtension(sync_pb::nigori)
-              .sync_tabs()) {
-        nigori->set_sync_tabs(true);
+      if (entry.Get(syncable::SPECIFICS).nigori().sync_tabs()) {
+        server_nigori->set_sync_tabs(true);
       }
       // We deliberately leave the server's device information. This client will
       // add it's own device information on restart.

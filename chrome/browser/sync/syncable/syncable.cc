@@ -456,7 +456,7 @@ Directory::PersistedKernelInfo::~PersistedKernelInfo() {}
 void Directory::PersistedKernelInfo::reset_download_progress(
     ModelType model_type) {
   download_progress[model_type].set_data_type_id(
-      GetExtensionFieldNumberFromModelType(model_type));
+      GetSpecificsFieldNumberFromModelType(model_type));
   // An empty-string token indicates no prior knowledge.
   download_progress[model_type].set_token(std::string());
 }

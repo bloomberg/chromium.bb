@@ -14,8 +14,6 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
-import "sync.proto";
-
 // Properties of autofill sync objects.
 
 // An AutofillProfile.
@@ -65,7 +63,3 @@ message AutofillSpecifics {
   // optional AutofillCreditCardSpecifics deprecated_credit_card = 6;
 }
 
-extend EntitySpecifics {
-  optional AutofillSpecifics autofill = 31729;
-  optional AutofillProfileSpecifics autofill_profile = 63951;
-}

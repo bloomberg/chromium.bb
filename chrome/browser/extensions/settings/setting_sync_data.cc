@@ -28,16 +28,16 @@ void SettingSyncData::Init(
   DCHECK(!internal_.get());
   sync_pb::EntitySpecifics specifics = sync_data.GetSpecifics();
   // The data must only be either extension or app specfics.
-  DCHECK_NE(specifics.HasExtension(sync_pb::extension_setting),
-            specifics.HasExtension(sync_pb::app_setting));
-  if (specifics.HasExtension(sync_pb::extension_setting)) {
+  DCHECK_NE(specifics.has_extension_setting(),
+            specifics.has_app_setting());
+  if (specifics.has_extension_setting()) {
     InitFromExtensionSettingSpecifics(
         change_type,
-        specifics.GetExtension(sync_pb::extension_setting));
-  } else if (specifics.HasExtension(sync_pb::app_setting)) {
+        specifics.extension_setting());
+  } else if (specifics.has_app_setting()) {
     InitFromExtensionSettingSpecifics(
         change_type,
-        specifics.GetExtension(sync_pb::app_setting).extension_setting());
+        specifics.app_setting().extension_setting());
   }
 }
 

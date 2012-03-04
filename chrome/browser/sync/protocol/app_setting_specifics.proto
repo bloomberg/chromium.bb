@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,7 +16,6 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
-import "sync.proto";
 import "extension_setting_specifics.proto";
 
 // Properties of app setting sync objects; just an extension setting.
@@ -24,6 +23,3 @@ message AppSettingSpecifics {
   optional ExtensionSettingSpecifics extension_setting = 1;
 }
 
-extend EntitySpecifics {
-  optional AppSettingSpecifics app_setting = 103656;
-}

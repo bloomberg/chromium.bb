@@ -73,7 +73,7 @@ bool WriteNode::UpdateEntryWithEncryption(
         was_encrypted) {
       generated_specifics.CopyFrom(old_specifics);
     } else {
-      syncable::AddDefaultExtensionValue(type, &generated_specifics);
+      syncable::AddDefaultFieldValue(type, &generated_specifics);
     }
     // Does not change anything if underlying encrypted blob was already up
     // to date and encrypted with the default key.
@@ -107,7 +107,7 @@ bool WriteNode::UpdateEntryWithEncryption(
     // else the server will try to do it for us.
     if (type == syncable::BOOKMARKS) {
       sync_pb::BookmarkSpecifics* bookmark_specifics =
-          generated_specifics.MutableExtension(sync_pb::bookmark);
+          generated_specifics.mutable_bookmark();
       if (!entry->Get(syncable::IS_DIR))
         bookmark_specifics->set_url(kEncryptedString);
       bookmark_specifics->set_title(kEncryptedString);
@@ -176,7 +176,7 @@ void WriteNode::SetTitle(const std::wstring& title) {
   // TODO(zea): refactor bookmarks to not need this functionality.
   if (GetModelType() == syncable::BOOKMARKS) {
     sync_pb::EntitySpecifics specifics = GetEntitySpecifics();
-    specifics.MutableExtension(sync_pb::bookmark)->set_title(new_legal_title);
+    specifics.mutable_bookmark()->set_title(new_legal_title);
     SetEntitySpecifics(specifics);  // Does it's own encryption checking.
   }
 
@@ -204,21 +204,21 @@ void WriteNode::SetURL(const GURL& url) {
 void WriteNode::SetAppSpecifics(
     const sync_pb::AppSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::app)->CopyFrom(new_value);
+  entity_specifics.mutable_app()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetAutofillSpecifics(
     const sync_pb::AutofillSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::autofill)->CopyFrom(new_value);
+  entity_specifics.mutable_autofill()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetAutofillProfileSpecifics(
     const sync_pb::AutofillProfileSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::autofill_profile)->
+  entity_specifics.mutable_autofill_profile()->
       CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
@@ -226,14 +226,14 @@ void WriteNode::SetAutofillProfileSpecifics(
 void WriteNode::SetBookmarkSpecifics(
     const sync_pb::BookmarkSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::bookmark)->CopyFrom(new_value);
+  entity_specifics.mutable_bookmark()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetNigoriSpecifics(
     const sync_pb::NigoriSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::nigori)->CopyFrom(new_value);
+  entity_specifics.mutable_nigori()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
@@ -253,11 +253,11 @@ void WriteNode::SetPasswordSpecifics(
           syncable::PASSWORDS) {
     entity_specifics.CopyFrom(old_specifics);
   } else {
-    syncable::AddDefaultExtensionValue(syncable::PASSWORDS,
+    syncable::AddDefaultFieldValue(syncable::PASSWORDS,
                                        &entity_specifics);
   }
   sync_pb::PasswordSpecifics* password_specifics =
-      entity_specifics.MutableExtension(sync_pb::password);
+      entity_specifics.mutable_password();
   // This will only update password_specifics if the underlying unencrypted blob
   // was different from |data| or was not encrypted with the proper passphrase.
   if (!cryptographer->Encrypt(data, password_specifics->mutable_encrypted())) {
@@ -271,14 +271,14 @@ void WriteNode::SetPasswordSpecifics(
 void WriteNode::SetThemeSpecifics(
     const sync_pb::ThemeSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::theme)->CopyFrom(new_value);
+  entity_specifics.mutable_theme()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetSessionSpecifics(
     const sync_pb::SessionSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::session)->CopyFrom(new_value);
+  entity_specifics.mutable_session()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
@@ -328,14 +328,14 @@ void WriteNode::ResetFromSpecifics() {
 void WriteNode::SetTypedUrlSpecifics(
     const sync_pb::TypedUrlSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::typed_url)->CopyFrom(new_value);
+  entity_specifics.mutable_typed_url()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
 void WriteNode::SetExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::extension)->CopyFrom(new_value);
+  entity_specifics.mutable_extension()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
@@ -398,12 +398,12 @@ bool WriteNode::InitByTagLookup(const std::string& tag) {
 
 void WriteNode::PutModelType(syncable::ModelType model_type) {
   // Set an empty specifics of the appropriate datatype.  The presence
-  // of the specific extension will identify the model type.
+  // of the specific field will identify the model type.
   DCHECK(GetModelType() == model_type ||
          GetModelType() == syncable::UNSPECIFIED);  // Immutable once set.
 
   sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultExtensionValue(model_type, &specifics);
+  syncable::AddDefaultFieldValue(model_type, &specifics);
   SetEntitySpecifics(specifics);
 }
 

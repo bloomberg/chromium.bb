@@ -25,115 +25,115 @@
 
 namespace syncable {
 
-void AddDefaultExtensionValue(syncable::ModelType datatype,
+void AddDefaultFieldValue(syncable::ModelType datatype,
                               sync_pb::EntitySpecifics* specifics) {
   switch (datatype) {
     case BOOKMARKS:
-      specifics->MutableExtension(sync_pb::bookmark);
+      specifics->mutable_bookmark();
       break;
     case PASSWORDS:
-      specifics->MutableExtension(sync_pb::password);
+      specifics->mutable_password();
       break;
     case PREFERENCES:
-      specifics->MutableExtension(sync_pb::preference);
+      specifics->mutable_preference();
       break;
     case AUTOFILL:
-      specifics->MutableExtension(sync_pb::autofill);
+      specifics->mutable_autofill();
       break;
     case AUTOFILL_PROFILE:
-      specifics->MutableExtension(sync_pb::autofill_profile);
+      specifics->mutable_autofill_profile();
       break;
     case THEMES:
-      specifics->MutableExtension(sync_pb::theme);
+      specifics->mutable_theme();
       break;
     case TYPED_URLS:
-      specifics->MutableExtension(sync_pb::typed_url);
+      specifics->mutable_typed_url();
       break;
     case EXTENSIONS:
-      specifics->MutableExtension(sync_pb::extension);
+      specifics->mutable_extension();
       break;
     case NIGORI:
-      specifics->MutableExtension(sync_pb::nigori);
+      specifics->mutable_nigori();
       break;
     case SEARCH_ENGINES:
-      specifics->MutableExtension(sync_pb::search_engine);
+      specifics->mutable_search_engine();
       break;
     case SESSIONS:
-      specifics->MutableExtension(sync_pb::session);
+      specifics->mutable_session();
       break;
     case APPS:
-      specifics->MutableExtension(sync_pb::app);
+      specifics->mutable_app();
       break;
     case APP_SETTINGS:
-      specifics->MutableExtension(sync_pb::app_setting);
+      specifics->mutable_app_setting();
       break;
     case EXTENSION_SETTINGS:
-      specifics->MutableExtension(sync_pb::extension_setting);
+      specifics->mutable_extension_setting();
       break;
     case APP_NOTIFICATIONS:
-      specifics->MutableExtension(sync_pb::app_notification);
+      specifics->mutable_app_notification();
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
 }
 
-ModelType GetModelTypeFromExtensionFieldNumber(int field_number) {
+ModelType GetModelTypeFromSpecificsFieldNumber(int field_number) {
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
-    if (GetExtensionFieldNumberFromModelType(model_type) == field_number)
+    if (GetSpecificsFieldNumberFromModelType(model_type) == field_number)
       return model_type;
   }
   NOTREACHED();
   return UNSPECIFIED;
 }
 
-int GetExtensionFieldNumberFromModelType(ModelType model_type) {
+int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
   switch (model_type) {
     case BOOKMARKS:
-      return sync_pb::kBookmarkFieldNumber;
+      return sync_pb::EntitySpecifics::kBookmarkFieldNumber;
       break;
     case PASSWORDS:
-      return sync_pb::kPasswordFieldNumber;
+      return sync_pb::EntitySpecifics::kPasswordFieldNumber;
       break;
     case PREFERENCES:
-      return sync_pb::kPreferenceFieldNumber;
+      return sync_pb::EntitySpecifics::kPreferenceFieldNumber;
       break;
     case AUTOFILL:
-      return sync_pb::kAutofillFieldNumber;
+      return sync_pb::EntitySpecifics::kAutofillFieldNumber;
       break;
     case AUTOFILL_PROFILE:
-      return sync_pb::kAutofillProfileFieldNumber;
+      return sync_pb::EntitySpecifics::kAutofillProfileFieldNumber;
       break;
     case THEMES:
-      return sync_pb::kThemeFieldNumber;
+      return sync_pb::EntitySpecifics::kThemeFieldNumber;
       break;
     case TYPED_URLS:
-      return sync_pb::kTypedUrlFieldNumber;
+      return sync_pb::EntitySpecifics::kTypedUrlFieldNumber;
       break;
     case EXTENSIONS:
-      return sync_pb::kExtensionFieldNumber;
+      return sync_pb::EntitySpecifics::kExtensionFieldNumber;
       break;
     case NIGORI:
-      return sync_pb::kNigoriFieldNumber;
+      return sync_pb::EntitySpecifics::kNigoriFieldNumber;
       break;
     case SEARCH_ENGINES:
-      return sync_pb::kSearchEngineFieldNumber;
+      return sync_pb::EntitySpecifics::kSearchEngineFieldNumber;
       break;
     case SESSIONS:
-      return sync_pb::kSessionFieldNumber;
+      return sync_pb::EntitySpecifics::kSessionFieldNumber;
       break;
     case APPS:
-      return sync_pb::kAppFieldNumber;
+      return sync_pb::EntitySpecifics::kAppFieldNumber;
       break;
     case APP_SETTINGS:
-      return sync_pb::kAppSettingFieldNumber;
+      return sync_pb::EntitySpecifics::kAppSettingFieldNumber;
       break;
     case EXTENSION_SETTINGS:
-      return sync_pb::kExtensionSettingFieldNumber;
+      return sync_pb::EntitySpecifics::kExtensionSettingFieldNumber;
       break;
     case APP_NOTIFICATIONS:
-      return sync_pb::kAppNotificationFieldNumber;
+      return sync_pb::EntitySpecifics::kAppNotificationFieldNumber;
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -176,49 +176,49 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_pb_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  if (specifics.HasExtension(sync_pb::bookmark))
+  if (specifics.has_bookmark())
     return BOOKMARKS;
 
-  if (specifics.HasExtension(sync_pb::password))
+  if (specifics.has_password())
     return PASSWORDS;
 
-  if (specifics.HasExtension(sync_pb::preference))
+  if (specifics.has_preference())
     return PREFERENCES;
 
-  if (specifics.HasExtension(sync_pb::autofill))
+  if (specifics.has_autofill())
     return AUTOFILL;
 
-  if (specifics.HasExtension(sync_pb::autofill_profile))
+  if (specifics.has_autofill_profile())
     return AUTOFILL_PROFILE;
 
-  if (specifics.HasExtension(sync_pb::theme))
+  if (specifics.has_theme())
     return THEMES;
 
-  if (specifics.HasExtension(sync_pb::typed_url))
+  if (specifics.has_typed_url())
     return TYPED_URLS;
 
-  if (specifics.HasExtension(sync_pb::extension))
+  if (specifics.has_extension())
     return EXTENSIONS;
 
-  if (specifics.HasExtension(sync_pb::nigori))
+  if (specifics.has_nigori())
     return NIGORI;
 
-  if (specifics.HasExtension(sync_pb::app))
+  if (specifics.has_app())
     return APPS;
 
-  if (specifics.HasExtension(sync_pb::search_engine))
+  if (specifics.has_search_engine())
     return SEARCH_ENGINES;
 
-  if (specifics.HasExtension(sync_pb::session))
+  if (specifics.has_session())
     return SESSIONS;
 
-  if (specifics.HasExtension(sync_pb::app_setting))
+  if (specifics.has_app_setting())
     return APP_SETTINGS;
 
-  if (specifics.HasExtension(sync_pb::extension_setting))
+  if (specifics.has_extension_setting())
     return EXTENSION_SETTINGS;
 
-  if (specifics.HasExtension(sync_pb::app_notification))
+  if (specifics.has_app_notification())
     return APP_NOTIFICATIONS;
 
   return UNSPECIFIED;

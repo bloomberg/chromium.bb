@@ -135,7 +135,7 @@ base::DictionaryValue* TypedUrlSpecificsToValue(
 // Any present extensions are mapped to sub-dictionary values with the
 // key equal to the extension name.
 base::DictionaryValue* EntitySpecificsToValue(
-    const sync_pb::EntitySpecifics& entity_specifics);
+    const sync_pb::EntitySpecifics& specifics);
 
 }  // namespace browser_sync
 

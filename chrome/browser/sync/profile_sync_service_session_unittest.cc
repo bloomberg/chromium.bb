@@ -682,7 +682,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
   int64 node_id = model_associator_->GetSyncIdFromSessionTag(
       model_associator_->GetCurrentMachineTag());
   sync_pb::EntitySpecifics deleted_specifics;
-  deleted_specifics.MutableExtension(sync_pb::session)->set_session_tag("tag");
+  deleted_specifics.mutable_session()->set_session_tag("tag");
   ASSERT_FALSE(notified_of_update_);
   {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());

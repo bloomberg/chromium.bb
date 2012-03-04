@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -13,8 +13,6 @@ option optimize_for = LITE_RUNTIME;
 option retain_unknown_fields = true;
 
 package sync_pb;
-
-import "sync.proto";
 
 // Properties of extension sync objects.
 //
@@ -39,6 +37,3 @@ message ExtensionSpecifics {
   optional string name = 6;
 }
 
-extend EntitySpecifics {
-  optional ExtensionSpecifics extension = 48119;
-}

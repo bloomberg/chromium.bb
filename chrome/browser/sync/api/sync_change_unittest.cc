@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,8 +35,7 @@ TEST_F(SyncChangeTest, LocalDelete) {
 TEST_F(SyncChangeTest, LocalUpdate) {
   SyncChange::SyncChangeType change_type = SyncChange::ACTION_UPDATE;
   sync_pb::EntitySpecifics specifics;
-  sync_pb::PreferenceSpecifics* pref_specifics =
-      specifics.MutableExtension(sync_pb::preference);
+  sync_pb::PreferenceSpecifics* pref_specifics = specifics.mutable_preference();
   pref_specifics->set_name("test");
   std::string tag = "client_tag";
   std::string title = "client_title";
@@ -54,8 +54,7 @@ TEST_F(SyncChangeTest, LocalUpdate) {
 TEST_F(SyncChangeTest, LocalAdd) {
   SyncChange::SyncChangeType change_type = SyncChange::ACTION_ADD;
   sync_pb::EntitySpecifics specifics;
-  sync_pb::PreferenceSpecifics* pref_specifics =
-      specifics.MutableExtension(sync_pb::preference);
+  sync_pb::PreferenceSpecifics* pref_specifics = specifics.mutable_preference();
   pref_specifics->set_name("test");
   std::string tag = "client_tag";
   std::string title = "client_title";
@@ -77,7 +76,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   // Create an update.
   sync_pb::EntitySpecifics update_specifics;
   sync_pb::PreferenceSpecifics* pref_specifics =
-      update_specifics.MutableExtension(sync_pb::preference);
+      update_specifics.mutable_preference();
   pref_specifics->set_name("update");
   change_list.push_back(SyncChange(
       SyncChange::ACTION_UPDATE,
@@ -85,8 +84,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
 
   // Create an add.
   sync_pb::EntitySpecifics add_specifics;
-  pref_specifics =
-      add_specifics.MutableExtension(sync_pb::preference);
+  pref_specifics = add_specifics.mutable_preference();
   pref_specifics->set_name("add");
   change_list.push_back(SyncChange(
       SyncChange::ACTION_ADD,
@@ -94,8 +92,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
 
   // Create a delete.
   sync_pb::EntitySpecifics delete_specifics;
-  pref_specifics =
-      delete_specifics.MutableExtension(sync_pb::preference);
+  pref_specifics = delete_specifics.mutable_preference();
   pref_specifics->set_name("add");
   change_list.push_back(SyncChange(
       SyncChange::ACTION_DELETE,

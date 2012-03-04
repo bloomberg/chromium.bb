@@ -51,6 +51,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -4202,8 +4203,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
       &processor);
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::ExtensionSpecifics* ext_specifics =
-      specifics.MutableExtension(sync_pb::extension);
+  sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version("1.0");
   SyncData sync_data = SyncData::CreateLocalData(good_crx, "Name", specifics);
@@ -4238,8 +4238,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::AppSpecifics* app_specifics =
-      specifics.MutableExtension(sync_pb::app);
+  sync_pb::AppSpecifics* app_specifics = specifics.mutable_app();
   sync_pb::ExtensionSpecifics* extension_specifics =
       app_specifics->mutable_extension();
   extension_specifics->set_id(good_crx);
@@ -4283,8 +4282,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::ExtensionSpecifics* ext_specifics =
-      specifics.MutableExtension(sync_pb::extension);
+  sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version(
       service_->GetInstalledExtension(good_crx)->version()->GetString());
@@ -4339,8 +4337,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
   EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::ExtensionSpecifics* ext_specifics =
-      specifics.MutableExtension(sync_pb::extension);
+  sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version(
       service_->GetInstalledExtension(good_crx)->version()->GetString());
@@ -4370,8 +4367,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   EXPECT_FALSE(service_->IsIncognitoEnabled(good_crx));
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::ExtensionSpecifics* ext_specifics =
-      specifics.MutableExtension(sync_pb::extension);
+  sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_enabled(true);
 
@@ -4424,8 +4420,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
       &processor);
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::ExtensionSpecifics* ext_specifics =
-      specifics.MutableExtension(sync_pb::extension);
+  sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_enabled(false);
   ext_specifics->set_incognito_enabled(true);

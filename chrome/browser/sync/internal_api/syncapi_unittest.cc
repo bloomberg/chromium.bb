@@ -168,7 +168,7 @@ int64 MakeFolderWithParent(UserShare* share,
 int64 MakeServerNodeForType(UserShare* share,
                             ModelType model_type) {
   sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultExtensionValue(model_type, &specifics);
+  syncable::AddDefaultFieldValue(model_type, &specifics);
   syncable::WriteTransaction trans(
       FROM_HERE, syncable::UNITTEST, share->directory.get());
   // Attempt to lookup by nigori tag.
@@ -506,8 +506,7 @@ TEST_F(SyncApiTest, BaseNodeSetSpecifics) {
   EXPECT_TRUE(node.InitByIdLookup(child_id));
 
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::bookmark)->
-      set_url("http://www.google.com");
+  entity_specifics.mutable_bookmark()->set_url("http://www.google.com");
 
   EXPECT_NE(entity_specifics.SerializeAsString(),
             node.GetEntitySpecifics().SerializeAsString());
@@ -525,8 +524,7 @@ TEST_F(SyncApiTest, BaseNodeSetSpecificsPreservesUnknownFields) {
   EXPECT_TRUE(node.GetEntitySpecifics().unknown_fields().empty());
 
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::bookmark)->
-      set_url("http://www.google.com");
+  entity_specifics.mutable_bookmark()->set_url("http://www.google.com");
   entity_specifics.mutable_unknown_fields()->AddFixed32(5, 100);
   node.SetEntitySpecifics(entity_specifics);
   EXPECT_FALSE(node.GetEntitySpecifics().unknown_fields().empty());
@@ -1791,7 +1789,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     EXPECT_TRUE(node.InitByIdLookup(node_id1));
 
     sync_pb::EntitySpecifics entity_specifics;
-    entity_specifics.MutableExtension(sync_pb::bookmark)->set_url(url);
+    entity_specifics.mutable_bookmark()->set_url(url);
     node.SetEntitySpecifics(entity_specifics);
 
     // Set the old style title.
@@ -1802,7 +1800,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     EXPECT_TRUE(node2.InitByIdLookup(node_id2));
 
     sync_pb::EntitySpecifics entity_specifics2;
-    entity_specifics2.MutableExtension(sync_pb::bookmark)->set_url(url2);
+    entity_specifics2.mutable_bookmark()->set_url(url2);
     node2.SetEntitySpecifics(entity_specifics2);
 
     // Set the old style title.
@@ -1908,8 +1906,8 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
 TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::bookmark)->set_url("url");
-  entity_specifics.MutableExtension(sync_pb::bookmark)->set_title("title");
+  entity_specifics.mutable_bookmark()->set_url("url");
+  entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, client_tag,
                  BaseNode::GenerateSyncableHash(syncable::BOOKMARKS,
                                                 client_tag),
@@ -2012,8 +2010,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
 
   // Manually change to different data. Should set is_unsynced.
   {
-    entity_specifics.MutableExtension(sync_pb::bookmark)->set_url("url2");
-    entity_specifics.MutableExtension(sync_pb::bookmark)->set_title("title2");
+    entity_specifics.mutable_bookmark()->set_url("url2");
+    entity_specifics.mutable_bookmark()->set_title("title2");
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
     EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
@@ -2042,7 +2040,7 @@ TEST_F(SyncManagerTest, UpdatePasswordSetEntitySpecificsNoChange) {
     data.set_password_value("secret");
     cryptographer->Encrypt(
         data,
-        entity_specifics.MutableExtension(sync_pb::password)->
+        entity_specifics.mutable_password()->
             mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), syncable::PASSWORDS, client_tag,
@@ -2076,7 +2074,7 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
     data.set_password_value("secret");
     cryptographer->Encrypt(
         data,
-        entity_specifics.MutableExtension(sync_pb::password)->
+        entity_specifics.mutable_password()->
             mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), syncable::PASSWORDS, client_tag,
@@ -2106,8 +2104,7 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
     data.set_password_value("secret2");
     cryptographer->Encrypt(
         data,
-        entity_specifics.MutableExtension(sync_pb::password)->
-            mutable_encrypted());
+        entity_specifics.mutable_password()->mutable_encrypted());
     node.SetPasswordSpecifics(data);
     const syncable::Entry* node_entry = node.GetEntry();
     EXPECT_TRUE(node_entry->Get(IS_UNSYNCED));
@@ -2127,8 +2124,7 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
     data.set_password_value("secret");
     cryptographer->Encrypt(
         data,
-        entity_specifics.MutableExtension(sync_pb::password)->
-            mutable_encrypted());
+        entity_specifics.mutable_password()->mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), syncable::PASSWORDS, client_tag,
                  BaseNode::GenerateSyncableHash(syncable::PASSWORDS,
@@ -2159,8 +2155,7 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
     data.set_password_value("secret");
     cryptographer->Encrypt(
         data,
-        entity_specifics.MutableExtension(sync_pb::password)->
-            mutable_encrypted());
+        entity_specifics.mutable_password()->mutable_encrypted());
   }
   MakeServerNode(sync_manager_.GetUserShare(), syncable::PASSWORDS, client_tag,
                  BaseNode::GenerateSyncableHash(syncable::PASSWORDS,
@@ -2183,8 +2178,8 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
 TEST_F(SyncManagerTest, SetBookmarkTitle) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::bookmark)->set_url("url");
-  entity_specifics.MutableExtension(sync_pb::bookmark)->set_title("title");
+  entity_specifics.mutable_bookmark()->set_url("url");
+  entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, client_tag,
                  BaseNode::GenerateSyncableHash(syncable::BOOKMARKS,
                                                 client_tag),
@@ -2217,8 +2212,8 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
 TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::bookmark)->set_url("url");
-  entity_specifics.MutableExtension(sync_pb::bookmark)->set_title("title");
+  entity_specifics.mutable_bookmark()->set_url("url");
+  entity_specifics.mutable_bookmark()->set_title("title");
   MakeServerNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, client_tag,
                  BaseNode::GenerateSyncableHash(syncable::BOOKMARKS,
                                                 client_tag),
@@ -2271,8 +2266,8 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
 TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::preference)->set_name("name");
-  entity_specifics.MutableExtension(sync_pb::preference)->set_value("value");
+  entity_specifics.mutable_preference()->set_name("name");
+  entity_specifics.mutable_preference()->set_value("value");
   MakeServerNode(sync_manager_.GetUserShare(),
                  syncable::PREFERENCES,
                  client_tag,
@@ -2307,8 +2302,8 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
 TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   std::string client_tag = "title";
   sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::preference)->set_name("name");
-  entity_specifics.MutableExtension(sync_pb::preference)->set_value("value");
+  entity_specifics.mutable_preference()->set_name("name");
+  entity_specifics.mutable_preference()->set_value("value");
   MakeServerNode(sync_manager_.GetUserShare(),
                  syncable::PREFERENCES,
                  client_tag,
@@ -2372,12 +2367,12 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     browser_sync::Cryptographer* crypto = trans.GetCryptographer();
     sync_pb::EntitySpecifics bm_specifics;
-    bm_specifics.MutableExtension(sync_pb::bookmark)->set_title("title");
-    bm_specifics.MutableExtension(sync_pb::bookmark)->set_url("url");
+    bm_specifics.mutable_bookmark()->set_title("title");
+    bm_specifics.mutable_bookmark()->set_url("url");
     sync_pb::EncryptedData encrypted;
     crypto->Encrypt(bm_specifics, &encrypted);
     entity_specifics.mutable_encrypted()->CopyFrom(encrypted);
-    syncable::AddDefaultExtensionValue(syncable::BOOKMARKS, &entity_specifics);
+    syncable::AddDefaultFieldValue(syncable::BOOKMARKS, &entity_specifics);
   }
   MakeServerNode(sync_manager_.GetUserShare(), syncable::BOOKMARKS, client_tag,
                  BaseNode::GenerateSyncableHash(syncable::BOOKMARKS,

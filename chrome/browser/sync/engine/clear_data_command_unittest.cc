@@ -7,7 +7,6 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/test/engine/proto_extension_validator.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "chrome/browser/sync/test/sessions/test_scoped_session_event_listener.h"
 

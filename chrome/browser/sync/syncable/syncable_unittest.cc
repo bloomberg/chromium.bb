@@ -64,9 +64,8 @@ void PutDataAsBookmarkFavicon(WriteTransaction* wtrans,
                               const char* bytes,
                               size_t bytes_length) {
   sync_pb::EntitySpecifics specifics;
-  specifics.MutableExtension(sync_pb::bookmark)->set_url("http://demo/");
-  specifics.MutableExtension(sync_pb::bookmark)->set_favicon(bytes,
-      bytes_length);
+  specifics.mutable_bookmark()->set_url("http://demo/");
+  specifics.mutable_bookmark()->set_favicon(bytes, bytes_length);
   e->Put(SPECIFICS, specifics);
 }
 
@@ -75,11 +74,10 @@ void ExpectDataFromBookmarkFaviconEquals(BaseTransaction* trans,
                                          const char* bytes,
                                          size_t bytes_length) {
   ASSERT_TRUE(e->good());
-  ASSERT_TRUE(e->Get(SPECIFICS).HasExtension(sync_pb::bookmark));
-  ASSERT_EQ("http://demo/",
-      e->Get(SPECIFICS).GetExtension(sync_pb::bookmark).url());
+  ASSERT_TRUE(e->Get(SPECIFICS).has_bookmark());
+  ASSERT_EQ("http://demo/", e->Get(SPECIFICS).bookmark().url());
   ASSERT_EQ(std::string(bytes, bytes_length),
-      e->Get(SPECIFICS).GetExtension(sync_pb::bookmark).favicon());
+            e->Get(SPECIFICS).bookmark().favicon());
 }
 }  // namespace
 
@@ -531,11 +529,11 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
       e.Put(IS_UNSYNCED, true);
       sync_pb::EntitySpecifics specs;
       if (i % 2 == 0) {
-        AddDefaultExtensionValue(BOOKMARKS, &specs);
+        AddDefaultFieldValue(BOOKMARKS, &specs);
         expected_purges.insert(e.Get(META_HANDLE));
         all_handles.insert(e.Get(META_HANDLE));
       } else {
-        AddDefaultExtensionValue(PREFERENCES, &specs);
+        AddDefaultFieldValue(PREFERENCES, &specs);
         all_handles.insert(e.Get(META_HANDLE));
       }
       e.Put(SPECIFICS, specs);
@@ -626,9 +624,9 @@ TEST_F(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
   sync_pb::EntitySpecifics bookmark_specs;
   sync_pb::EntitySpecifics autofill_specs;
   sync_pb::EntitySpecifics preference_specs;
-  AddDefaultExtensionValue(BOOKMARKS, &bookmark_specs);
-  AddDefaultExtensionValue(PREFERENCES, &preference_specs);
-  AddDefaultExtensionValue(AUTOFILL, &autofill_specs);
+  AddDefaultFieldValue(BOOKMARKS, &bookmark_specs);
+  AddDefaultFieldValue(PREFERENCES, &preference_specs);
+  AddDefaultFieldValue(AUTOFILL, &autofill_specs);
   dir_->set_initial_sync_ended_for_type(BOOKMARKS, true);
   dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
@@ -1200,8 +1198,8 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
     create.Put(IS_UNSYNCED, true);
     update.Put(IS_UNAPPLIED_UPDATE, true);
     sync_pb::EntitySpecifics specifics;
-    specifics.MutableExtension(sync_pb::bookmark)->set_favicon("PNG");
-    specifics.MutableExtension(sync_pb::bookmark)->set_url("http://nowhere");
+    specifics.mutable_bookmark()->set_favicon("PNG");
+    specifics.mutable_bookmark()->set_url("http://nowhere");
     create.Put(SPECIFICS, specifics);
     create_pre_save = create.GetKernelCopy();
     update_pre_save = update.GetKernelCopy();
@@ -1372,7 +1370,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
     e1.Put(IS_DIR, true);
     e1.Put(ID, TestIdFactory::FromNumber(101));
     sync_pb::EntitySpecifics bookmark_specs;
-    AddDefaultExtensionValue(BOOKMARKS, &bookmark_specs);
+    AddDefaultFieldValue(BOOKMARKS, &bookmark_specs);
     e1.Put(SPECIFICS, bookmark_specs);
     e1.Put(SERVER_SPECIFICS, bookmark_specs);
     e1.Put(ID, TestIdFactory::FromNumber(101));
@@ -1411,7 +1409,7 @@ TEST_F(SyncableDirectoryTest, GetModelType) {
         break;
     }
     sync_pb::EntitySpecifics specifics;
-    AddDefaultExtensionValue(datatype, &specifics);
+    AddDefaultFieldValue(datatype, &specifics);
 
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
 

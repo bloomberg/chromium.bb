@@ -37,7 +37,7 @@ using syncable::WriteTransaction;
 namespace {
 sync_pb::EntitySpecifics DefaultBookmarkSpecifics() {
   sync_pb::EntitySpecifics result;
-  AddDefaultExtensionValue(syncable::BOOKMARKS, &result);
+  AddDefaultFieldValue(syncable::BOOKMARKS, &result);
   return result;
 }
 } // namespace
@@ -124,7 +124,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     entry.Put(syncable::PARENT_ID, parent_id);
     CHECK(entry.PutPredecessor(predecessor_id));
     sync_pb::EntitySpecifics default_specifics;
-    syncable::AddDefaultExtensionValue(model_type, &default_specifics);
+    syncable::AddDefaultFieldValue(model_type, &default_specifics);
     entry.Put(syncable::SPECIFICS, default_specifics);
     if (item_id.ServerKnows()) {
       entry.Put(syncable::SERVER_SPECIFICS, default_specifics);
@@ -170,7 +170,7 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
     int64 version = GetNextRevision();
 
     sync_pb::EntitySpecifics default_specifics;
-    syncable::AddDefaultExtensionValue(model_type, &default_specifics);
+    syncable::AddDefaultFieldValue(model_type, &default_specifics);
 
     MutableEntry entry(&trans, syncable::CREATE, parent_id, name);
     if (!entry.good()) {
@@ -538,7 +538,7 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
   data.set_origin("http://example.com");
 
   cryptographer->Encrypt(data,
-      specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
+                         specifics.mutable_password()->mutable_encrypted());
   CreateUnappliedNewItem("item", specifics, false);
 
   ExpectGroupToChange(apply_updates_command_, GROUP_PASSWORD);
@@ -560,14 +560,14 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
   // Undecryptable updates should not be applied.
   sync_pb::EntitySpecifics encrypted_bookmark;
   encrypted_bookmark.mutable_encrypted();
-  AddDefaultExtensionValue(syncable::BOOKMARKS, &encrypted_bookmark);
+  AddDefaultFieldValue(syncable::BOOKMARKS, &encrypted_bookmark);
   string root_server_id = syncable::GetNullId().GetServerId();
   CreateUnappliedNewItemWithParent("folder",
                                    encrypted_bookmark,
                                    root_server_id);
   CreateUnappliedNewItem("item2", encrypted_bookmark, false);
   sync_pb::EntitySpecifics encrypted_password;
-  encrypted_password.MutableExtension(sync_pb::password);
+  encrypted_password.mutable_password();
   CreateUnappliedNewItem("item3", encrypted_password, false);
 
   ExpectGroupsToChange(apply_updates_command_, GROUP_UI, GROUP_PASSWORD);
@@ -623,7 +623,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
       cryptographer->AddKey(params);
 
       cryptographer->Encrypt(data,
-          specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
+          specifics.mutable_password()->mutable_encrypted());
     }
     CreateUnappliedNewItem("item1", specifics, false);
   }
@@ -638,7 +638,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
     data.set_origin("http://example.com/2");
 
     cryptographer.Encrypt(data,
-        specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
+        specifics.mutable_password()->mutable_encrypted());
     CreateUnappliedNewItem("item2", specifics, false);
   }
 
@@ -685,8 +685,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
   other_cryptographer.AddKey(params);
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::NigoriSpecifics* nigori =
-      specifics.MutableExtension(sync_pb::nigori);
+  sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
   nigori->set_encrypt_bookmarks(true);
   encrypted_types.Put(syncable::BOOKMARKS);
@@ -734,8 +733,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
   other_cryptographer.AddKey(params);
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::NigoriSpecifics* nigori =
-      specifics.MutableExtension(sync_pb::nigori);
+  sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
   nigori->set_encrypt_sessions(true);
   nigori->set_encrypt_themes(true);
@@ -814,8 +812,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
   KeyParams params = {"localhost", "dummy", "foobar"};
   cryptographer->AddKey(params);
   sync_pb::EntitySpecifics specifics;
-  sync_pb::NigoriSpecifics* nigori =
-      specifics.MutableExtension(sync_pb::nigori);
+  sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   cryptographer->GetKeys(nigori->mutable_encrypted());
   nigori->set_encrypt_bookmarks(true);
   encrypted_types.Put(syncable::BOOKMARKS);
@@ -954,8 +951,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
   KeyParams params = {"localhost", "dummy", "foobar"};
   other_cryptographer.AddKey(params);
   sync_pb::EntitySpecifics specifics;
-  sync_pb::NigoriSpecifics* nigori =
-      specifics.MutableExtension(sync_pb::nigori);
+  sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
   other_cryptographer.GetKeys(nigori->mutable_encrypted());
   nigori->set_encrypt_bookmarks(true);
   encrypted_types.Put(syncable::BOOKMARKS);

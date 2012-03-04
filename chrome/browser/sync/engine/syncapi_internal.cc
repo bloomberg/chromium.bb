@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 
 using browser_sync::Cryptographer;
 
@@ -14,10 +15,9 @@ namespace sync_api {
 
 sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics, Cryptographer* crypto) {
-  if (!specifics.HasExtension(sync_pb::password))
+  if (!specifics.has_password())
     return NULL;
-  const sync_pb::PasswordSpecifics& password_specifics =
-      specifics.GetExtension(sync_pb::password);
+  const sync_pb::PasswordSpecifics& password_specifics = specifics.password();
   if (!password_specifics.has_encrypted())
     return NULL;
   const sync_pb::EncryptedData& encrypted = password_specifics.encrypted();

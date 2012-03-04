@@ -44,7 +44,7 @@ enum ModelType {
   // The model types declared before here are somewhat special, as they
   // they do not correspond to any browser data model.  The remaining types
   // are bona fide model types; all have a related browser data model and
-  // can be represented in the protocol using an extension to the
+  // can be represented in the protocol using a specific Message type in the
   // EntitySpecifics protocol buffer.
   //
   // A bookmark folder or a bookmark URL object.
@@ -101,16 +101,16 @@ inline ModelType ModelTypeFromInt(int i) {
   return static_cast<ModelType>(i);
 }
 
-void AddDefaultExtensionValue(syncable::ModelType datatype,
-                              sync_pb::EntitySpecifics* specifics);
+void AddDefaultFieldValue(syncable::ModelType datatype,
+                          sync_pb::EntitySpecifics* specifics);
 
 // Extract the model type of a SyncEntity protocol buffer.  ModelType is a
 // local concept: the enum is not in the protocol.  The SyncEntity's ModelType
-// is inferred from the presence of particular datatype extensions in the
+// is inferred from the presence of particular datatype field in the
 // entity specifics.
 ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 
-// Extract the model type from an EntitySpecifics extension.  Note that there
+// Extract the model type from an EntitySpecifics field.  Note that there
 // are some ModelTypes (like TOP_LEVEL_FOLDER) that can't be inferred this way;
 // prefer using GetModelType where possible.
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
@@ -120,12 +120,12 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 bool ShouldMaintainPosition(ModelType model_type);
 
 // Determine a model type from the field number of its associated
-// EntitySpecifics extension.
-ModelType GetModelTypeFromExtensionFieldNumber(int field_number);
+// EntitySpecifics field.
+ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
 
-// Return the field number of the EntitySpecifics extension associated with
+// Return the field number of the EntitySpecifics field associated with
 // a model type.
-int GetExtensionFieldNumberFromModelType(ModelType model_type);
+int GetSpecificsFieldNumberFromModelType(ModelType model_type);
 
 // TODO(sync): The functions below badly need some cleanup.
 

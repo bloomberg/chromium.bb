@@ -14,6 +14,20 @@ option retain_unknown_fields = true;
 
 package sync_pb;
 
+import "app_notification_specifics.proto";
+import "app_setting_specifics.proto";
+import "app_specifics.proto";
+import "autofill_specifics.proto";
+import "bookmark_specifics.proto";
+import "extension_setting_specifics.proto";
+import "extension_specifics.proto";
+import "nigori_specifics.proto";
+import "password_specifics.proto";
+import "preference_specifics.proto";
+import "search_engine_specifics.proto";
+import "session_specifics.proto";
+import "theme_specifics.proto";
+import "typed_url_specifics.proto";
 import "encryption.proto";
 import "sync_enums.proto";
 import "client_commands.proto";
@@ -42,11 +56,10 @@ message EntitySpecifics {
   // EntitySpecifics.  First, pick a non-colliding tag number by
   // picking a revision number of one of your past commits
   // to src.chromium.org.  Then, in a different protocol buffer
-  // definition that includes this, do the following:
+  // definition, define your message type, and add an optional field
+  // to the list below using the unique tag value you selected.
   //
-  //   extend EntitySpecifics {
-  //     MyDatatypeSpecifics my_datatype = 32222;
-  //   }
+  //  optional MyDatatypeSpecifics my_datatype = 32222;
   //
   // where:
   //   - 32222 is the non-colliding tag number you picked earlier.
@@ -57,10 +70,32 @@ message EntitySpecifics {
   //     datatype specifics from the code.
   //
   // Server implementations are obligated to preserve the contents of
-  // EntitySpecifics when it contains unrecognized extensions.  In this
+  // EntitySpecifics when it contains unrecognized fields.  In this
   // way, it is possible to add new datatype fields without having
   // to update the server.
-  extensions 30000 to max;
+  //
+  // Note: The tag selection process is based on legacy versions of the
+  // protocol which used protobuf extensions. We have kept the process
+  // consistent as the old values cannot change.  The 5+ digit nature of the
+  // tags also makes them recognizable (individually and collectively) from
+  // noise in logs and debugging contexts, and creating a divergent subset of
+  // tags would only make things a bit more confusing.
+
+  optional AutofillSpecifics autofill = 31729;
+  optional BookmarkSpecifics bookmark = 32904;
+  optional PreferenceSpecifics preference = 37702;
+  optional TypedUrlSpecifics typed_url = 40781;
+  optional ThemeSpecifics theme = 41210;
+  optional AppNotification app_notification = 45184;
+  optional PasswordSpecifics password = 45873;
+  optional NigoriSpecifics nigori = 47745;
+  optional ExtensionSpecifics extension = 48119;
+  optional AppSpecifics app = 48364;
+  optional SessionSpecifics session = 50119;
+  optional AutofillProfileSpecifics autofill_profile = 63951;
+  optional SearchEngineSpecifics search_engine = 88610;
+  optional ExtensionSettingSpecifics extension_setting = 96159;
+  optional AppSettingSpecifics app_setting = 103656;
 }
 
 message SyncEntity {
@@ -318,7 +353,7 @@ message GetUpdatesCallerInfo {
 message DataTypeProgressMarker {
   // An integer identifying the data type whose progress is tracked by this
   // marker.  The legitimate values of this field correspond to the protobuf
-  // field numbers of all EntitySpecifics extensions supported by the server.
+  // field numbers of all EntitySpecifics fields supported by the server.
   // These values are externally declared in per-datatype .proto files.
   optional int32 data_type_id = 1;
 
@@ -374,14 +409,14 @@ message GetUpdatesMessage {
   // Indicates whether related folders should be fetched.
   optional bool fetch_folders = 3 [default = true];
 
-  // The presence of an individual EntitySpecifics extension indicates that the
-  // client requests sync object types associated with that extension.  This
-  // determination depends only on the presence of the extension field, not its
-  // contents -- thus clients should send empty extension messages.  For
-  // backwards compatibility only bookmark objects will be sent to the client
-  // should requested_types not be present.
+  // The presence of an individual EntitySpecifics field indicates that the
+  // client requests sync object types associated with that field.  This
+  // determination depends only on the presence of the field, not its
+  // contents -- thus clients should send empty messages as the field value.
+  // For backwards compatibility only bookmark objects will be sent to the
+  // client should requested_types not be present.
   //
-  // requested_types may contain multiple EntitySpecifics extensions -- in this
+  // requested_types may contain multiple EntitySpecifics fields -- in this
   // event, the server will return items of all the indicated types.
   //
   // requested_types has been deprecated; clients should use

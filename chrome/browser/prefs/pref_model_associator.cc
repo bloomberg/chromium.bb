@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 
@@ -46,7 +47,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     // The server has a value for the preference, we have to reconcile it with
     // ours.
     const sync_pb::PreferenceSpecifics& preference =
-        sync_pref.GetSpecifics().GetExtension(sync_pb::preference);
+        sync_pref.GetSpecifics().preference();
     DCHECK_EQ(pref->name(), preference.name());
 
     scoped_ptr<Value> value(
@@ -124,8 +125,7 @@ SyncError PrefModelAssociator::MergeDataAndStartSyncing(
        sync_iter != initial_sync_data.end();
        ++sync_iter) {
     DCHECK_EQ(PREFERENCES, sync_iter->GetDataType());
-    std::string sync_pref_name = sync_iter->GetSpecifics().
-        GetExtension(sync_pb::preference).name();
+    std::string sync_pref_name = sync_iter->GetSpecifics().preference().name();
     if (remaining_preferences.count(sync_pref_name) == 0) {
       // We're not syncing this preference locally, ignore the sync data.
       // TODO(zea): Eventually we want to be able to have the syncable service
@@ -198,8 +198,7 @@ bool PrefModelAssociator::CreatePrefSyncData(
   }
 
   sync_pb::EntitySpecifics specifics;
-  sync_pb::PreferenceSpecifics* pref_specifics = specifics.MutableExtension(
-      sync_pb::preference);
+  sync_pb::PreferenceSpecifics* pref_specifics = specifics.mutable_preference();
   pref_specifics->set_name(name);
   pref_specifics->set_value(serialized);
   *sync_data = SyncData::CreateLocalData(name, name, specifics);
@@ -306,7 +305,7 @@ SyncError PrefModelAssociator::ProcessSyncChanges(
 
     std::string name;
     sync_pb::PreferenceSpecifics pref_specifics =
-        iter->sync_data().GetSpecifics().GetExtension(sync_pb::preference);
+        iter->sync_data().GetSpecifics().preference();
     scoped_ptr<Value> value(ReadPreferenceSpecifics(pref_specifics,
                                                     &name));
 

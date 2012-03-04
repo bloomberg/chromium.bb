@@ -451,7 +451,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     sync_pb::EntitySpecifics specifics;
     AutocompleteSyncableService::WriteAutofillEntry(entry, &specifics);
     sync_pb::AutofillSpecifics* autofill_specifics =
-        specifics.MutableExtension(sync_pb::autofill);
+        specifics.mutable_autofill();
     node.SetAutofillSpecifics(*autofill_specifics);
     return true;
   }
@@ -469,7 +469,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     sync_pb::EntitySpecifics specifics;
     AutofillProfileSyncableService::WriteAutofillProfile(profile, &specifics);
     sync_pb::AutofillProfileSpecifics* profile_specifics =
-        specifics.MutableExtension(sync_pb::autofill_profile);
+        specifics.mutable_autofill_profile();
     node.SetAutofillProfileSpecifics(*profile_specifics);
     return true;
   }
@@ -660,8 +660,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
     }
 
     sync_pb::EntitySpecifics entity_specifics;
-    entity_specifics.MutableExtension(sync_pb::autofill)->
-        CopyFrom(new_autofill);
+    entity_specifics.mutable_autofill()->CopyFrom(new_autofill);
 
     {
       // Tell main thread we've started

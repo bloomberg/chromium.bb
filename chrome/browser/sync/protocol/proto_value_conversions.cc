@@ -92,11 +92,11 @@ ListValue* MakeRepeatedValue(const F& fields, V* (*converter_fn)(T)) {
                                StringValue>(proto.field(), \
                                             Value::CreateStringValue))
 
-#define SET_EXTENSION(ns, field, fn)                                    \
-  do {                                                                  \
-    if (specifics.HasExtension(ns::field)) {                            \
-      value->Set(#field, fn(specifics.GetExtension(ns::field)));        \
-    }                                                                   \
+#define SET_FIELD(field, fn)                         \
+  do {                                               \
+    if (specifics.has_##field()) {                   \
+      value->Set(#field, fn(specifics.field()));     \
+    }                                                \
   } while (0)
 
 // If you add another macro, don't forget to add an #undef at the end
@@ -379,21 +379,21 @@ DictionaryValue* TypedUrlSpecificsToValue(
 DictionaryValue* EntitySpecificsToValue(
     const sync_pb::EntitySpecifics& specifics) {
   DictionaryValue* value = new DictionaryValue();
-  SET_EXTENSION(sync_pb, app, AppSpecificsToValue);
-  SET_EXTENSION(sync_pb, app_notification, AppNotificationToValue);
-  SET_EXTENSION(sync_pb, app_setting, AppSettingSpecificsToValue);
-  SET_EXTENSION(sync_pb, autofill, AutofillSpecificsToValue);
-  SET_EXTENSION(sync_pb, autofill_profile, AutofillProfileSpecificsToValue);
-  SET_EXTENSION(sync_pb, bookmark, BookmarkSpecificsToValue);
-  SET_EXTENSION(sync_pb, extension, ExtensionSpecificsToValue);
-  SET_EXTENSION(sync_pb, extension_setting, ExtensionSettingSpecificsToValue);
-  SET_EXTENSION(sync_pb, nigori, NigoriSpecificsToValue);
-  SET_EXTENSION(sync_pb, password, PasswordSpecificsToValue);
-  SET_EXTENSION(sync_pb, preference, PreferenceSpecificsToValue);
-  SET_EXTENSION(sync_pb, search_engine, SearchEngineSpecificsToValue);
-  SET_EXTENSION(sync_pb, session, SessionSpecificsToValue);
-  SET_EXTENSION(sync_pb, theme, ThemeSpecificsToValue);
-  SET_EXTENSION(sync_pb, typed_url, TypedUrlSpecificsToValue);
+  SET_FIELD(app, AppSpecificsToValue);
+  SET_FIELD(app_notification, AppNotificationToValue);
+  SET_FIELD(app_setting, AppSettingSpecificsToValue);
+  SET_FIELD(autofill, AutofillSpecificsToValue);
+  SET_FIELD(autofill_profile, AutofillProfileSpecificsToValue);
+  SET_FIELD(bookmark, BookmarkSpecificsToValue);
+  SET_FIELD(extension, ExtensionSpecificsToValue);
+  SET_FIELD(extension_setting, ExtensionSettingSpecificsToValue);
+  SET_FIELD(nigori, NigoriSpecificsToValue);
+  SET_FIELD(password, PasswordSpecificsToValue);
+  SET_FIELD(preference, PreferenceSpecificsToValue);
+  SET_FIELD(search_engine, SearchEngineSpecificsToValue);
+  SET_FIELD(session, SessionSpecificsToValue);
+  SET_FIELD(theme, ThemeSpecificsToValue);
+  SET_FIELD(typed_url, TypedUrlSpecificsToValue);
   return value;
 }
 
@@ -408,6 +408,6 @@ DictionaryValue* EntitySpecificsToValue(
 #undef SET_STR
 #undef SET_STR_REP
 
-#undef SET_EXTENSION
+#undef SET_FIELD
 
 }  // namespace browser_sync

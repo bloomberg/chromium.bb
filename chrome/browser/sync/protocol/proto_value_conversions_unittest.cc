@@ -162,25 +162,25 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   sync_pb::EntitySpecifics specifics;
   // Touch the extensions to make sure it shows up in the generated
   // value.
-#define SET_EXTENSION(key) (void)specifics.MutableExtension(sync_pb::key)
+#define SET_FIELD(key) (void)specifics.mutable_##key()
 
-  SET_EXTENSION(app);
-  SET_EXTENSION(app_notification);
-  SET_EXTENSION(app_setting);
-  SET_EXTENSION(autofill);
-  SET_EXTENSION(autofill_profile);
-  SET_EXTENSION(bookmark);
-  SET_EXTENSION(extension);
-  SET_EXTENSION(extension_setting);
-  SET_EXTENSION(nigori);
-  SET_EXTENSION(password);
-  SET_EXTENSION(preference);
-  SET_EXTENSION(search_engine);
-  SET_EXTENSION(session);
-  SET_EXTENSION(theme);
-  SET_EXTENSION(typed_url);
+  SET_FIELD(app);
+  SET_FIELD(app_notification);
+  SET_FIELD(app_setting);
+  SET_FIELD(autofill);
+  SET_FIELD(autofill_profile);
+  SET_FIELD(bookmark);
+  SET_FIELD(extension);
+  SET_FIELD(extension_setting);
+  SET_FIELD(nigori);
+  SET_FIELD(password);
+  SET_FIELD(preference);
+  SET_FIELD(search_engine);
+  SET_FIELD(session);
+  SET_FIELD(theme);
+  SET_FIELD(typed_url);
 
-#undef SET_EXTENSION
+#undef SET_FIELD
 
   scoped_ptr<DictionaryValue> value(EntitySpecificsToValue(specifics));
   EXPECT_EQ(syncable::MODEL_TYPE_COUNT - syncable::FIRST_REAL_MODEL_TYPE,

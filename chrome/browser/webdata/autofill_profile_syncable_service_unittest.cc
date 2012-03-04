@@ -57,10 +57,8 @@ MATCHER_P(CheckSyncChanges, n_sync_changes_list, "") {
     DCHECK(passed->IsValid());
     if (passed->change_type() != expected->change_type())
       return false;
-    if (passed->sync_data().GetSpecifics().GetExtension(
-            sync_pb::autofill_profile).guid() !=
-        expected->sync_data().GetSpecifics().GetExtension(
-            sync_pb::autofill_profile).guid()) {
+    if (passed->sync_data().GetSpecifics().autofill_profile().guid() !=
+        expected->sync_data().GetSpecifics().autofill_profile().guid()) {
       return false;
     }
   }
@@ -210,9 +208,9 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
 
   EXPECT_EQ(2U, data.size());
   EXPECT_EQ(guid_present1, data.front().GetSpecifics()
-                               .GetExtension(sync_pb::autofill_profile).guid());
+      .autofill_profile().guid());
   EXPECT_EQ(guid_present2, data.back().GetSpecifics()
-                               .GetExtension(sync_pb::autofill_profile).guid());
+                               .autofill_profile().guid());
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, ProcessSyncChanges) {

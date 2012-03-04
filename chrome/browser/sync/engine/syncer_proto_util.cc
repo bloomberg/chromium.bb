@@ -111,7 +111,7 @@ void SyncerProtoUtil::HandleMigrationDoneResponse(
       << "MIGRATION_DONE but no types specified.";
   syncable::ModelTypeSet to_migrate;
   for (int i = 0; i < response->migrated_data_type_id_size(); i++) {
-    to_migrate.Put(syncable::GetModelTypeFromExtensionFieldNumber(
+    to_migrate.Put(syncable::GetModelTypeFromSpecificsFieldNumber(
         response->migrated_data_type_id(i)));
   }
   // TODO(akalin): This should be a set union.
@@ -301,7 +301,7 @@ browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
     DCHECK_EQ(error.error_type(), sync_pb::SyncEnums::THROTTLED);
     for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
       sync_protocol_error.error_data_types.Put(
-          syncable::GetModelTypeFromExtensionFieldNumber(
+          syncable::GetModelTypeFromSpecificsFieldNumber(
               error.error_data_type_ids(i)));
     }
   }

@@ -175,7 +175,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
            changes.Get().begin(); it != changes.Get().end(); ++it) {
     if (sync_api::ChangeRecord::ACTION_DELETE ==
         it->action) {
-      DCHECK(it->specifics.HasExtension(sync_pb::password))
+      DCHECK(it->specifics.has_password())
           << "Password specifics data not present on delete!";
       DCHECK(it->extra.get());
       sync_api::ExtraPasswordChangeRecordData* extra =

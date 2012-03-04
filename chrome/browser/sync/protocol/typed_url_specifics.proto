@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -13,8 +13,6 @@ option optimize_for = LITE_RUNTIME;
 option retain_unknown_fields = true;
 
 package sync_pb;
-
-import "sync.proto";
 
 // Properties of typed_url sync objects - fields correspond to similarly named
 // fields in history::URLRow.
@@ -40,8 +38,4 @@ message TypedUrlSpecifics {
   // The PageTransition::Type for each of the visits in the |visit| array. Both
   // arrays must be the same length.
   repeated int32 visit_transitions = 8 [packed=true];
-}
-
-extend EntitySpecifics {
-  optional TypedUrlSpecifics typed_url = 40781;
 }

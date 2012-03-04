@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/version.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,8 +38,7 @@ class ExtensionSyncDataTest : public testing::Test {
 
 TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForExtension) {
   sync_pb::EntitySpecifics entity;
-  sync_pb::ExtensionSpecifics* extension_specifics =
-      entity.MutableExtension(sync_pb::extension);
+  sync_pb::ExtensionSpecifics* extension_specifics = entity.mutable_extension();
   extension_specifics->set_id(kValidId);
   extension_specifics->set_update_url(kValidUpdateUrl2);
   extension_specifics->set_enabled(false);
@@ -63,8 +63,7 @@ TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForExtension) {
 
 TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForExtension) {
   sync_pb::EntitySpecifics entity;
-  sync_pb::ExtensionSpecifics* input_extension =
-      entity.MutableExtension(sync_pb::extension);
+  sync_pb::ExtensionSpecifics* input_extension = entity.mutable_extension();
   input_extension->set_id(kValidId);
   input_extension->set_update_url(kValidUpdateUrl2);
   input_extension->set_enabled(true);
@@ -77,7 +76,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForExtension) {
 
   SyncData output_sync_data = extension_sync_data.GetSyncData();
   const sync_pb::ExtensionSpecifics& output_specifics =
-      output_sync_data.GetSpecifics().GetExtension(sync_pb::extension);
+      output_sync_data.GetSpecifics().extension();
   EXPECT_EQ(extension_sync_data.id(), output_specifics.id());
   EXPECT_EQ(extension_sync_data.update_url().spec(),
             output_specifics.update_url());
@@ -91,7 +90,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForExtension) {
 
 TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForApp) {
   sync_pb::EntitySpecifics entity;
-  sync_pb::AppSpecifics* app_specifics = entity.MutableExtension(sync_pb::app);
+  sync_pb::AppSpecifics* app_specifics = entity.mutable_app();
   app_specifics->set_app_launch_ordinal(
       StringOrdinal::CreateInitialOrdinal().ToString());
   app_specifics->set_page_ordinal(
@@ -135,8 +134,7 @@ TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForApp) {
 
 TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
   sync_pb::EntitySpecifics entity;
-  sync_pb::AppSpecifics* input_specifics = entity.MutableExtension(
-      sync_pb::app);
+  sync_pb::AppSpecifics* input_specifics = entity.mutable_app();
   input_specifics->set_app_launch_ordinal(
       StringOrdinal::CreateInitialOrdinal().ToString());
   input_specifics->set_page_ordinal(
@@ -159,9 +157,9 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
   ExtensionSyncData extension_sync_data(sync_data);
 
   SyncData output_sync_data = extension_sync_data.GetSyncData();
-  EXPECT_TRUE(sync_data.GetSpecifics().HasExtension(sync_pb::app));
+  EXPECT_TRUE(sync_data.GetSpecifics().has_app());
   const sync_pb::AppSpecifics& output_specifics =
-      output_sync_data.GetSpecifics().GetExtension(sync_pb::app);
+      output_sync_data.GetSpecifics().app();
   EXPECT_EQ(input_specifics->SerializeAsString(),
             output_specifics.SerializeAsString());
 }
@@ -169,7 +167,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
 // Ensures that invalid StringOrdinals don't break ExtensionSyncData.
 TEST_F(ExtensionSyncDataTest, ExtensionSyncDataInvalidOrdinal) {
   sync_pb::EntitySpecifics entity;
-  sync_pb::AppSpecifics* app_specifics = entity.MutableExtension(sync_pb::app);
+  sync_pb::AppSpecifics* app_specifics = entity.mutable_app();
   // Set the ordinals as invalid.
   app_specifics->set_app_launch_ordinal("");
   app_specifics->set_page_ordinal("");

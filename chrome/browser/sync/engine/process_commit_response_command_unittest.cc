@@ -97,7 +97,7 @@ class ProcessCommitResponseCommandTest : public SyncerCommandTest {
     entry.Put(syncable::PARENT_ID, parent_id);
     entry.PutPredecessor(predecessor_id);
     sync_pb::EntitySpecifics default_specifics;
-    syncable::AddDefaultExtensionValue(model_type, &default_specifics);
+    syncable::AddDefaultFieldValue(model_type, &default_specifics);
     entry.Put(syncable::SPECIFICS, default_specifics);
     if (item_id.ServerKnows()) {
       entry.Put(syncable::SERVER_SPECIFICS, default_specifics);

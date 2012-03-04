@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/protocol/app_notification_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
@@ -56,8 +57,7 @@ void PopulateGuidToSyncDataMap(const SyncDataList& sync_data,
                                SyncDataMap* data_map) {
   for (SyncDataList::const_iterator iter = sync_data.begin();
        iter != sync_data.end(); ++iter) {
-    (*data_map)[iter->GetSpecifics().GetExtension(
-        sync_pb::app_notification).guid()] = *iter;
+    (*data_map)[iter->GetSpecifics().app_notification().guid()] = *iter;
   }
 }
 }  // namespace
@@ -515,7 +515,7 @@ SyncData AppNotificationManager::CreateSyncDataFromNotification(
   DCHECK(!notification.is_local());
   sync_pb::EntitySpecifics specifics;
   sync_pb::AppNotification* notif_specifics =
-      specifics.MutableExtension(sync_pb::app_notification);
+      specifics.mutable_app_notification();
   notif_specifics->set_app_id(notification.extension_id());
   notif_specifics->set_creation_timestamp_ms(
       notification.creation_time().ToInternalValue());
@@ -532,7 +532,7 @@ SyncData AppNotificationManager::CreateSyncDataFromNotification(
 AppNotification* AppNotificationManager::CreateNotificationFromSyncData(
     const SyncData& sync_data) {
   sync_pb::AppNotification specifics =
-      sync_data.GetSpecifics().GetExtension(sync_pb::app_notification);
+      sync_data.GetSpecifics().app_notification();
 
   // Check for mandatory fields.
   if (!specifics.has_app_id() || !specifics.has_guid() ||

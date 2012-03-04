@@ -190,9 +190,9 @@ void MockConnectionManager::AddDefaultBookmarkData(sync_pb::SyncEntity* entity,
     }
   } else {
     entity->set_folder(is_folder);
-    entity->mutable_specifics()->MutableExtension(sync_pb::bookmark);
+    entity->mutable_specifics()->mutable_bookmark();
     if (!is_folder) {
-      entity->mutable_specifics()->MutableExtension(sync_pb::bookmark)->
+      entity->mutable_specifics()->mutable_bookmark()->
           set_url("http://google.com");
     }
   }
@@ -617,7 +617,7 @@ bool MockConnectionManager::IsModelTypePresentInSpecifics(
     const google::protobuf::RepeatedPtrField<
         sync_pb::DataTypeProgressMarker>& filter,
     syncable::ModelType value) {
-  int data_type_id = syncable::GetExtensionFieldNumberFromModelType(value);
+  int data_type_id = syncable::GetSpecificsFieldNumberFromModelType(value);
   for (int i = 0; i < filter.size(); ++i) {
     if (filter.Get(i).data_type_id() == data_type_id) {
       return true;
@@ -631,7 +631,7 @@ sync_pb::DataTypeProgressMarker const*
         const google::protobuf::RepeatedPtrField<
             sync_pb::DataTypeProgressMarker>& filter,
         syncable::ModelType value) {
-  int data_type_id = syncable::GetExtensionFieldNumberFromModelType(value);
+  int data_type_id = syncable::GetSpecificsFieldNumberFromModelType(value);
   for (int i = 0; i < filter.size(); ++i) {
     if (filter.Get(i).data_type_id() == data_type_id) {
       return &(filter.Get(i));

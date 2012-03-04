@@ -15,7 +15,6 @@ option retain_unknown_fields = true;
 package sync_pb;
 
 import "encryption.proto";
-import "sync.proto";
 
 message NigoriKey {
   optional string name = 1;
@@ -93,6 +92,3 @@ message NigoriSpecifics {
   repeated DeviceInformation device_information = 28;
 }
 
-extend EntitySpecifics {
-  optional NigoriSpecifics nigori = 47745;
-}

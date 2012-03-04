@@ -61,7 +61,7 @@ bool ProfileSyncServiceTestHelper::CreateRoot(ModelType model_type,
   node.Put(IS_DEL, false);
   node.Put(syncable::ID, ids->MakeServer(tag_name));
   sync_pb::EntitySpecifics specifics;
-  syncable::AddDefaultExtensionValue(model_type, &specifics);
+  syncable::AddDefaultFieldValue(model_type, &specifics);
   node.Put(SPECIFICS, specifics);
 
   return true;
