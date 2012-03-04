@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell/panel_window.h"
+#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/user/login_status.h"
@@ -151,6 +152,8 @@ class SystemTrayBubble : public views::BubbleDelegateView {
         items_(items),
         detailed_(detailed) {
     set_margin(0);
+    set_parent_window(ash::Shell::GetInstance()->GetContainer(
+        ash::internal::kShellWindowId_SettingBubbleContainer));
   }
 
   virtual ~SystemTrayBubble() {
@@ -264,6 +267,7 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
   CHECK(!popup_);
   SystemTrayBubble* bubble = new SystemTrayBubble(this, items, detailed);
   popup_ = views::BubbleDelegateView::CreateBubble(bubble);
+  bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   popup_->non_client_view()->frame_view()->set_background(NULL);
   popup_->non_client_view()->frame_view()->set_border(
       new SystemTrayBubbleBorder(bubble));

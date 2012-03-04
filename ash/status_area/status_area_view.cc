@@ -41,12 +41,14 @@ void StatusAreaView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(status_mock_, 0, 0);
 }
 
-ASH_EXPORT views::Widget* CreateStatusArea() {
+ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents) {
   StatusAreaView* status_area_view = new StatusAreaView;
+  if (!contents)
+    contents = status_area_view;
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  gfx::Size ps = status_area_view->GetPreferredSize();
+  gfx::Size ps = contents->GetPreferredSize();
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
   params.delegate = status_area_view;
   params.parent = Shell::GetInstance()->GetContainer(
@@ -54,7 +56,7 @@ ASH_EXPORT views::Widget* CreateStatusArea() {
   params.transparent = true;
   widget->Init(params);
   widget->set_focus_on_creation(false);
-  widget->SetContentsView(status_area_view);
+  widget->SetContentsView(contents);
   widget->Show();
   widget->GetNativeView()->SetName("StatusAreaView");
   return widget;

@@ -36,6 +36,7 @@ const int kWindowContainerIds[] = {
     kShellWindowId_PanelContainer,
     kShellWindowId_LauncherContainer,
     kShellWindowId_StatusContainer,
+    kShellWindowId_SettingBubbleContainer,
 };
 
 aura::Window* GetContainer(int id) {

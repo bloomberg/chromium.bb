@@ -165,7 +165,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   }
 
   virtual views::Widget* CreateStatusArea() OVERRIDE {
-    return ash::internal::CreateStatusArea();
+    return NULL;
   }
 
 #if defined(OS_CHROMEOS)

@@ -44,7 +44,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
-  views::Widget* status_widget = internal::CreateStatusArea();
+  views::Widget* status_widget = internal::CreateStatusArea(NULL);
   ASSERT_TRUE(status_widget);
   focus_cycler->AddWidget(status_widget);
 
@@ -85,7 +85,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
-  views::Widget* status_widget = internal::CreateStatusArea();
+  views::Widget* status_widget = internal::CreateStatusArea(NULL);
   ASSERT_TRUE(status_widget);
   focus_cycler->AddWidget(status_widget);
 

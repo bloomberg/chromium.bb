@@ -411,21 +411,17 @@ void Shell::Init() {
 
   if (delegate_.get())
     status_widget_ = delegate_->CreateStatusArea();
-  if (!status_widget_)
-    status_widget_ = internal::CreateStatusArea();
 
   if (command_line->HasSwitch(switches::kAshUberTray)) {
     // TODO(sad): This is rather ugly at the moment. This is because we are
     // supporting both the old and the new status bar at the same time. This
     // will soon get better once the new one is ready and the old one goes out
     // the door.
-    if (delegate_.get())
-      status_widget_ = delegate_->CreateStatusArea();
-    if (!status_widget_)
-      status_widget_ = internal::CreateStatusArea();
-    status_widget_->GetContentsView()->RemoveAllChildViews(false);
     tray_.reset(new SystemTray());
-    status_widget_->GetContentsView()->AddChildView(tray_.get());
+    if (status_widget_) {
+      status_widget_->GetContentsView()->RemoveAllChildViews(false);
+      status_widget_->GetContentsView()->AddChildView(tray_.get());
+    }
 
     if (delegate_.get())
       tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(tray_.get()));
@@ -446,6 +442,8 @@ void Shell::Init() {
     tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());
   }
+  if (!status_widget_)
+    status_widget_ = internal::CreateStatusArea(tray_.get());
 
   aura::Window* default_container =
       GetContainer(internal::kShellWindowId_DefaultContainer);
