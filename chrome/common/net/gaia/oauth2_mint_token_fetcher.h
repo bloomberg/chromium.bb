@@ -69,9 +69,9 @@ class OAuth2MintTokenFetcher : public content::URLFetcherDelegate {
   void StartMintToken();
   void EndMintToken(const content::URLFetcher* source);
 
-  // Helper mehtods for reporting back results.
+  // Helper methods for reporting back results.
   void OnMintTokenSuccess(const std::string& access_token);
-  void OnMintTokenFailure(GoogleServiceAuthError error);
+  void OnMintTokenFailure(const GoogleServiceAuthError& error);
 
   // Other helpers.
   static GURL MakeMintTokenUrl();

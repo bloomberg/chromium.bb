@@ -137,7 +137,8 @@ void OAuth2MintTokenFetcher::OnMintTokenSuccess(
   consumer_->OnMintTokenSuccess(access_token);
 }
 
-void OAuth2MintTokenFetcher::OnMintTokenFailure(GoogleServiceAuthError error) {
+void OAuth2MintTokenFetcher::OnMintTokenFailure(
+    const GoogleServiceAuthError& error) {
   state_ = ERROR_STATE;
   consumer_->OnMintTokenFailure(error);
 }
