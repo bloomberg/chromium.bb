@@ -1366,7 +1366,7 @@ void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(Value* entry) {
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&IOThreadImpl::PostPendingEntries, this),
-        kNetLogEventDelayMilliseconds);
+        base::TimeDelta::FromMilliseconds(kNetLogEventDelayMilliseconds));
   }
   pending_entries_->Append(entry);
 }
