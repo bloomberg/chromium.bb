@@ -1733,6 +1733,7 @@
         'browser/sync/glue/browser_thread_model_worker_unittest.cc',
         'browser/sync/glue/change_processor_mock.cc',
         'browser/sync/glue/change_processor_mock.h',
+        'browser/sync/glue/chrome_encryptor_unittest.cc',
         'browser/sync/glue/chrome_extensions_activity_monitor_unittest.cc',
         'browser/sync/glue/chrome_sync_notification_bridge_unittest.cc',
         'browser/sync/glue/data_type_controller_mock.cc',
