@@ -5617,7 +5617,7 @@
    fun:av_get_packet
    fun:wav_read_packet
    fun:av_read_packet
-   fun:av_read_frame_internal
+   fun:*read_frame_internal
    fun:av_read_frame
    fun:av_read_frame
    fun:_ZN5media15AudioFileReader4ReadERKSt6vectorIPfSaIS2_EEm
