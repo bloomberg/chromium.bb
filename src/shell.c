@@ -73,6 +73,8 @@ struct wl_shell {
 		struct wl_list surfaces;
 		struct weston_process process;
 	} screensaver;
+
+	struct weston_surface *debug_repaint_surface;
 };
 
 enum shell_surface_type {
@@ -1970,6 +1972,41 @@ backlight_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
+debug_repaint_binding(struct wl_input_device *device, uint32_t time,
+		      uint32_t key, uint32_t button, uint32_t state, void *data)
+{
+	struct weston_compositor *compositor = data;
+	struct wl_shell *shell =
+		container_of(compositor->shell, struct wl_shell, shell);
+	struct weston_surface *surface;
+
+	if (shell->debug_repaint_surface) {
+		weston_surface_destroy(shell->debug_repaint_surface);
+		shell->debug_repaint_surface = NULL;
+	} else {
+		surface = weston_surface_create(compositor);
+		weston_surface_set_color(surface, 1.0, 0.0, 0.0, 0.2);
+		weston_surface_configure(surface, 0, 0, 8192, 8192);
+		wl_list_insert(&compositor->fade_layer.surface_list,
+			       &surface->layer_link);
+		weston_surface_assign_output(surface);
+		pixman_region32_init(&surface->input);
+
+		/* Here's the dirty little trick that makes the
+		 * repaint debugging work: we force an
+		 * update_transform first to update dependent state
+		 * and clear the geometry.dirty bit.  Then we clear
+		 * the surface damage so it only gets repainted
+		 * piecewise as we repaint other things.  */
+
+		weston_surface_update_transform(surface);
+		pixman_region32_fini(&surface->damage);
+		pixman_region32_init(&surface->damage);
+		shell->debug_repaint_surface = surface;
+	}
+}
+
+static void
 shell_destroy(struct weston_shell *base)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
@@ -2059,6 +2096,9 @@ shell_init(struct weston_compositor *ec)
 				      backlight_binding, ec);
 	weston_compositor_add_binding(ec, KEY_BRIGHTNESSUP, 0, 0,
 				      backlight_binding, ec);
+
+	weston_compositor_add_binding(ec, KEY_SPACE, 0, MODIFIER_SUPER,
+				    debug_repaint_binding, ec);
 
 	ec->shell = &shell->shell;
 
