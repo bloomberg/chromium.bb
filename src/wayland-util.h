@@ -148,6 +148,11 @@ struct wl_array {
 	void *data;
 };
 
+#define wl_array_for_each(pos, array)					\
+	for (pos = (array)->data;					\
+	     (const char *) pos < ((const char *) (array)->data + (array)->size); \
+	     (pos)++)
+
 void wl_array_init(struct wl_array *array);
 void wl_array_release(struct wl_array *array);
 void *wl_array_add(struct wl_array *array, int size);

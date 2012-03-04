@@ -99,7 +99,7 @@ wl_data_source_send_offer(struct wl_data_source *source,
 			  struct wl_resource *target)
 {
 	struct wl_data_offer *offer;
-	char **p, **end;
+	char **p;
 
 	offer = malloc(sizeof *offer);
 	if (offer == NULL)
@@ -122,8 +122,7 @@ wl_data_source_send_offer(struct wl_data_source *source,
 
 	wl_data_device_send_data_offer(target, &offer->resource);
 
-	end = source->mime_types.data + source->mime_types.size;
-	for (p = source->mime_types.data; p < end; p++)
+	wl_array_for_each(p, &source->mime_types)
 		wl_data_offer_send_offer(&offer->resource, *p);
 
 	return &offer->resource;
@@ -401,10 +400,9 @@ destroy_data_source(struct wl_resource *resource)
 {
 	struct wl_data_source *source =
 		container_of(resource, struct wl_data_source, resource);
-	char **p, **end;
+	char **p;
 
-	end = source->mime_types.data + source->mime_types.size;
-	for (p = source->mime_types.data; p < end; p++)
+	wl_array_for_each(p, &source->mime_types)
 		free(*p);
 
 	wl_array_release(&source->mime_types);
