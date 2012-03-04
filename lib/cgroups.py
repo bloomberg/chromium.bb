@@ -4,10 +4,11 @@
 
 """A class for managing the Linux cgroup subsystem."""
 
+import contextlib
 import errno
 import os
+import signal
 import time
-import contextlib
 
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import sudo
@@ -29,9 +30,9 @@ from chromite.lib import sudo
 # cros/cbuildbot/%(pid)i/
 #
 # - a job pool using process that was invoked by cbuildbot.
-# - for example, cros/cbuildbot/42/cros_sdk-34
+# - for example, cros/cbuildbot/42/cros_sdk:34
 # - this pattern continues arbitrarily deep, and is autocleaned.
-# cros/cbuildbot/%(pid1)i/%(basename_of_pid2)s_%(pid2)i/
+# cros/cbuildbot/%(pid1)i/%(basename_of_pid2)s:%(pid2)i/
 #
 # An example for cros_sdk (pid 552) would be:
 # cros/cros_sdk/552/
@@ -91,6 +92,27 @@ def EnsureInitialized(functor):
 
 
 class Cgroup(object):
+
+  """Class representing a group in cgroups hierarchy.
+
+  Note the instance may not exist on disk; it will be created as necessary.
+  Additionally, because cgroups is kernel maintained (and mutated on the fly
+  by processes using it), chunks of this class are /explicitly/ designed to
+  always go back to disk and recalculate values.
+
+  Attributes:
+    path: Absolute on disk pathway to the cgroup directory.
+    tasks: Pids contained in this immediate cgroup, and the owning pids of
+      any first level groups nested w/in us.
+    all_tasks: All Pids, and owners of nested groups w/in this point in
+      the hierarchy.
+    nested_groups: The immediate cgroups nested w/in this one.  If this
+      cgroup is 'cbuildbot/buildbot', 'cbuildbot' would have a nested_groups
+      of [Cgroup('cbuildbot/buildbot')] for example.
+    all_nested_groups: All cgroups nested w/in this one, regardless of depth.
+    pid_owner: Which pid owns this cgroup, if the cgroup is following cros
+      conventions for group naming.
+  """
 
   NEEDED_SUBSYSTEMS = ('cpuset',)
   PROC_PATH = '/proc/cgroups'
@@ -178,6 +200,7 @@ class Cgroup(object):
     self.namespace = namespace
     self.autoclean = autoclean
     self.parent = parent
+
     if not lazy_init:
       self.Instantiate()
 
@@ -216,7 +239,64 @@ class Cgroup(object):
 
   @property
   def tasks(self):
-    return [x.strip() for x in self.GetValue('tasks', '').splitlines()]
+    s = set(x.strip() for x in self.GetValue('tasks', '').splitlines())
+    s.update(x.pid_owner for x in self.nested_groups)
+    s.discard(None)
+    return s
+
+  @property
+  def all_tasks(self):
+    s = self.tasks
+    for group in self.all_nested_groups:
+      s.update(group.tasks)
+    return s
+
+  @property
+  def nested_groups(self):
+    targets = []
+    path = self.path
+    try:
+      targets = [x for x in os.listdir(path)
+                 if os.path.isdir(os.path.join(path, x))]
+    except EnvironmentError, e:
+      if e.errno != errno.ENOENT:
+        raise
+
+    targets = [self.AddGroup(x, lazy_init=True, _overwrite=False)
+               for x in targets]
+
+    # Suppress initialization checks- if it exists on disk, we know it
+    # is already initialized.
+    for x in targets:
+      x._inited = True
+    return targets
+
+  @property
+  def all_nested_groups(self):
+    # Do a depth first traversal.
+    def walk(groups):
+      for group in groups:
+        for subgroup in walk(group.nested_groups):
+          yield subgroup
+        yield group
+    return list(walk(self.nested_groups))
+
+  @property
+  @MemoizedSingleCall
+  def pid_owner(self):
+    # Ensure it's in cros namespace- if it is outside of the cros namespace,
+    # we shouldn't make assumptions about the naming convention used.
+    if not self.GroupIsAParent(_cros_node):
+      return None
+    # See documentation at the top of the file for the naming scheme.
+    # It's basically "%(program_name)s:%(owning_pid)i" if the group
+    # is nested.
+    return os.path.basename(self.namespace).rsplit(':', 1)[-1]
+
+  def GroupIsAParent(self, node):
+    """Is the given node a parent of us?"""
+    parent_path = node.path + '/'
+    return self.path.startswith(parent_path)
 
   def GetValue(self, key, default=None):
     """Query a cgroup configuration key from disk.
@@ -403,37 +483,74 @@ class Cgroup(object):
       node.KillProcesses()
       node.RemoveThisGroup()
 
-  def KillProcesses(self):
+  def KillProcesses(self, poll_interval=0.05):
     """Kill all processes in this namespace."""
-    # Waiting loop.
-    steps_passed = 0
-    STEP = 1
-    # Wait a little for kids to exit normally, then TERM, then KILL. Second
-    # KILL is in case anything managed to spawn off some children while first
-    # KILL arrived. Give up after 10 seconds after a last kill call.
-    INTERVALS = [(5, 'TERM'), (30, 'KILL'), (60, 'KILL'), (100, 'KILL')]
-    while True:
+
+    def _SignalPids(pids, signum):
+      cros_lib.SudoRunCommand(
+          ['kill', '-%i' % signum] + sorted(pids),
+          print_cmd=False, error_code_ok=True, redirect_stdout=True,
+          combine_stdout_stderr=True)
+
+    # First sigterm what we can, exiting after 2 runs w/out seeing pids.
+    # Let this phase run for a max of 10 seconds; afterwards, switch to
+    # sigkilling.
+    time_end = time.time() + 10
+    saw_pids, pids = True, set()
+    while time.time() < time_end:
+      previous_pids = pids
       pids = self.tasks
+
       if not pids:
+        if not saw_pids:
+          break
+        saw_pids = False
+      else:
+        saw_pids = True
+        new_pids = pids.difference(previous_pids)
+        if new_pids:
+          _SignalPids(new_pids, signal.SIGTERM)
+          # As long as new pids keep popping up, skip sleeping and just keep
+          # stomping them as quickly as possible (whack-a-mole is a good visual
+          # analogy of this).  We do this to ensure that fast moving spawns
+          # are dealt with as quickly as possible.  When considering this code,
+          # it's best to think about forkbomb scenarios- shouldn't occur, but
+          # synthetic fork-bombs can occur, thus this code being aggressive.
+          continue
+
+      time.sleep(poll_interval)
+
+    # Next do a sigkill scan.  Again, exit only after no pids have been seen
+    # for two scans, and all groups are removed.
+    groups_existed = True
+    while True:
+      pids = self.all_tasks
+
+      if pids:
+        _SignalPids(pids, signal.SIGKILL)
+        saw_pids = True
+      elif not (saw_pids or groups_existed):
         break
+      else:
+        saw_pids = False
 
-      if not INTERVALS:
-        # After all signals and waiting, there are still processes
-        # running. Seems like a serious hang.
-        print 'CGroup: Failed to clean up children!'
-        return
+      time.sleep(poll_interval)
 
-      if INTERVALS and steps_passed == INTERVALS[0][0]:
-        cros_lib.SudoRunCommand(['kill', '-%s' % INTERVALS[0][1]] + pids,
-            print_cmd=False, error_code_ok=True, redirect_stdout=True,
-            combine_stdout_stderr=True)
-        INTERVALS.pop(0)
+      # Note this is done after the sleep; try to give the kernel time to
+      # shutdown the processes.  They may still be transitioning to defunct
+      # kernel side by when we hit this scan, but that's fine- the next will
+      # get it.
+      groups_existed = False
+      for group in self.nested_groups:
+        # This needs to be nonstrict; it's possible the kernel is currently
+        # killing the pids we've just sigkill'd, thus the group isn't removable
+        # yet.  Additionally, it's possible a child got forked we didn't see.
+        # Ultimately via our killing/removal attempts, it will be removed,
+        # just not necessarily on the first run.
+        groups_existed = True
+        group.RemoveThisGroup(strict=False)
 
-      # Time slept, not passed, it doesn't account for time spent in the
-      # above code, but precision is not a priority here.
-      steps_passed += STEP
-      # Each step is 0.1s
-      time.sleep(STEP / 10)
+
 
   @classmethod
   def _FindCurrentCrosGroup(cls, pid=None):
