@@ -26,7 +26,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Getter for the singleton. This will return NULL on failure.
   static GpuDataManagerImpl* GetInstance();
 
-  // GpuDataManager implementation:
+  // GpuDataManager implementation.
   virtual content::GpuFeatureType GetGpuFeatureType() OVERRIDE;
   virtual void SetGpuFeatureType(content::GpuFeatureType feature_type) OVERRIDE;
   virtual content::GPUInfo GetGPUInfo() const OVERRIDE;
@@ -34,7 +34,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
   virtual bool IsCompleteGPUInfoAvailable() const OVERRIDE;
   virtual bool ShouldUseSoftwareRendering() OVERRIDE;
-  virtual void RegisterSwiftShaderPath(FilePath path) OVERRIDE;
+  virtual void RegisterSwiftShaderPath(const FilePath& path) OVERRIDE;
   virtual const base::ListValue& GetLogMessages() const OVERRIDE;
   virtual void AddObserver(content::GpuDataManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(
@@ -46,7 +46,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void AddLogMessage(Value* msg);
 
   // Inserting disable-feature switches into renderer process command-line
-  // in correspondance to preliminary gpu feature flags.
+  // in correspondence to preliminary gpu feature flags.
   void AppendRendererCommandLine(CommandLine* command_line);
 
   // Inserting switches into gpu process command-line: kUseGL,

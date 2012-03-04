@@ -129,7 +129,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
 }
 
 scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
-                                       std::string extension_id,
+                                       const std::string& extension_id,
                                        Extension::Location location,
                                        int flags,
                                        std::string* error) {

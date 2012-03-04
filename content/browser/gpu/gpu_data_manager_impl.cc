@@ -276,7 +276,7 @@ void GpuDataManagerImpl::UpdateGpuFeatureType(
   EnableSoftwareRenderingIfNecessary();
 }
 
-void GpuDataManagerImpl::RegisterSwiftShaderPath(FilePath path) {
+void GpuDataManagerImpl::RegisterSwiftShaderPath(const FilePath& path) {
   swiftshader_path_ = path;
   EnableSoftwareRenderingIfNecessary();
 }

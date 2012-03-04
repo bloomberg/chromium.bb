@@ -20,7 +20,7 @@ namespace base {
 class DictionaryValue;
 }
 
-// Utilties for manipulating the on-disk storage of extensions.
+// Utilities for manipulating the on-disk storage of extensions.
 namespace extension_file_util {
 
 // The name of the directory inside the profile that we store installed
@@ -28,7 +28,7 @@ namespace extension_file_util {
 extern const char kInstallDirectoryName[];
 
 // Copies |unpacked_source_dir| into the right location under |extensions_dir|.
-// The destination directiory is returned on success, or empty path is returned
+// The destination directory is returned on success, or empty path is returned
 // on failure.
 FilePath InstallExtension(const FilePath& unpacked_source_dir,
                           const std::string& id,
@@ -48,7 +48,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_root,
 
 // The same as LoadExtension except use the provided |extension_id|.
 scoped_refptr<Extension> LoadExtension(const FilePath& extension_root,
-                                       std::string extension_id,
+                                       const std::string& extension_id,
                                        Extension::Location location,
                                        int flags,
                                        std::string* error);

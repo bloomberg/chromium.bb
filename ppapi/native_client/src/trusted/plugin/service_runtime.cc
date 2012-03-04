@@ -472,9 +472,8 @@ void PluginReverseInterface::QuotaRequest_MainThreadResponse(
   // request automatically deleted
 }
 
-int64_t PluginReverseInterface::RequestQuotaForWrite(nacl::string file_id,
-                                                     int64_t offset,
-                                                     int64_t bytes_to_write) {
+int64_t PluginReverseInterface::RequestQuotaForWrite(
+    nacl::string file_id, int64_t offset, int64_t bytes_to_write) {
   NaClLog(4,
           "PluginReverseInterface::RequestQuotaForWrite:"
           " (file_id='%s', offset=%"NACL_PRId64", bytes_to_write=%"

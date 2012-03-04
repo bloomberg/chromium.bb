@@ -20,7 +20,7 @@ namespace content {
 class GpuDataManagerObserver;
 struct GPUInfo;
 
-// This class lives on the UI thread. Only methods that expliclity state that
+// This class lives on the UI thread. Only methods that explicitly state that
 // they can be called on other threads are thread-safe.
 class GpuDataManager {
  public:
@@ -52,7 +52,7 @@ class GpuDataManager {
   virtual bool ShouldUseSoftwareRendering() = 0;
 
   // Register a path to the SwiftShader software renderer.
-  virtual void RegisterSwiftShaderPath(FilePath path) = 0;
+  virtual void RegisterSwiftShaderPath(const FilePath& path) = 0;
 
   virtual const base::ListValue& GetLogMessages() const = 0;
 
