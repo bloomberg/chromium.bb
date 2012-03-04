@@ -12,7 +12,11 @@
 #include "ash/wm/shadow_types.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
@@ -21,8 +25,121 @@
 
 namespace {
 
-const int kTrayIconHeight = 50;
-const int kPadding = 5;
+const int kArrowHeight = 10;
+const int kArrowWidth = 20;
+const int kArrowPaddingFromRight = 20;
+
+const int kShadowOffset = 3;
+const int kShadowHeight = 3;
+
+const SkColor kDarkColor = SkColorSetRGB(120, 120, 120);
+const SkColor kLightColor = SkColorSetRGB(240, 240, 240);
+const SkColor kBackgroundColor = SK_ColorWHITE;
+const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
+
+class SystemTrayBubbleBackground : public views::Background {
+ public:
+  explicit SystemTrayBubbleBackground(views::View* owner)
+      : owner_(owner) {
+  }
+
+  virtual ~SystemTrayBubbleBackground() {}
+
+ private:
+  // Overridden from views::Background.
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+    views::View* last_view = NULL;
+    for (int i = 0; i < owner_->child_count(); i++) {
+      views::View* v = owner_->child_at(i);
+
+      if (!v->background()) {
+        canvas->FillRect(v->bounds(), kBackgroundColor);
+      } else if (last_view) {
+        canvas->FillRect(gfx::Rect(v->x() + kShadowOffset, v->y(),
+                                   v->width() - kShadowOffset, kShadowHeight),
+                         kShadowColor);
+      }
+
+      if (!v->border()) {
+        canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
+            gfx::Point(v->x() + v->width() + 1, v->y() - 1),
+            !last_view || last_view->border() ? kDarkColor : kLightColor);
+        canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
+            gfx::Point(v->x() - 1, v->y() + v->height() + 1),
+            kDarkColor);
+        canvas->DrawLine(gfx::Point(v->x() + v->width(), v->y() - 1),
+            gfx::Point(v->x() + v->width(), v->y() + v->height() + 1),
+            kDarkColor);
+      } else if (last_view && !last_view->border()) {
+        canvas->DrawLine(gfx::Point(v->x() - 1, v->y() - 1),
+            gfx::Point(v->x() + v->width() + 1, v->y() - 1),
+            kDarkColor);
+      }
+
+      last_view = v;
+    }
+  }
+
+  views::View* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBackground);
+};
+
+class SystemTrayBubbleBorder : public views::Border {
+ public:
+  explicit SystemTrayBubbleBorder(views::View* owner)
+      : owner_(owner) {
+  }
+
+  virtual ~SystemTrayBubbleBorder() {}
+
+ private:
+  // Overridden from views::Border.
+  virtual void Paint(const views::View& view,
+                     gfx::Canvas* canvas) const OVERRIDE {
+    // Draw a line first.
+    int x = 4;
+    int y = owner_->height() + 1;
+    canvas->DrawLine(gfx::Point(x, y),
+                     gfx::Point(owner_->width() + x, y),
+                     kDarkColor);
+
+    // Now, draw a shadow.
+    canvas->FillRect(gfx::Rect(x + kShadowOffset, y,
+                               owner_->width() - kShadowOffset, kShadowHeight),
+                     kShadowColor);
+
+    // Draw the arrow.
+    int left_base_x = owner_->width() - kArrowPaddingFromRight - kArrowWidth;
+    int left_base_y = y;
+    int tip_x = left_base_x + kArrowWidth / 2;
+    int tip_y = left_base_y + kArrowHeight;
+    SkPath path;
+    path.incReserve(4);
+    path.moveTo(SkIntToScalar(left_base_x), SkIntToScalar(left_base_y));
+    path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
+    path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
+                SkIntToScalar(left_base_y));
+
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(kBackgroundColor);
+    canvas->GetSkCanvas()->drawPath(path, paint);
+
+    // Now the draw the outline.
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(kDarkColor);
+    canvas->GetSkCanvas()->drawPath(path, paint);
+  }
+
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
+    insets->Set(0, 0, kArrowHeight, 0);
+  }
+
+  views::View* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
+};
 
 class SystemTrayBubble : public views::BubbleDelegateView {
  public:
@@ -51,7 +168,8 @@ class SystemTrayBubble : public views::BubbleDelegateView {
   // Overridden from views::BubbleDelegateView.
   virtual void Init() OVERRIDE {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
-          0, 0, 1));
+          1, 1, 1));
+    set_background(new SystemTrayBubbleBackground(this));
 
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
@@ -61,12 +179,8 @@ class SystemTrayBubble : public views::BubbleDelegateView {
         ++it) {
       views::View* view = detailed_ ? (*it)->CreateDetailedView(login_status) :
                                       (*it)->CreateDefaultView(login_status);
-      if (!view)
-        continue;
-      if (it != items_.begin())
-        view->set_border(views::Border::CreateSolidSidedBorder(
-              1, 0, 0, 0, SkColorSetARGB(25, 0, 0, 0)));
-      AddChildView(view);
+      if (view)
+        AddChildView(view);
     }
   }
 
@@ -150,6 +264,9 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
   CHECK(!popup_);
   SystemTrayBubble* bubble = new SystemTrayBubble(this, items, detailed);
   popup_ = views::BubbleDelegateView::CreateBubble(bubble);
+  popup_->non_client_view()->frame_view()->set_background(NULL);
+  popup_->non_client_view()->frame_view()->set_border(
+      new SystemTrayBubbleBorder(bubble));
   popup_->AddObserver(this);
   bubble->Show();
 }

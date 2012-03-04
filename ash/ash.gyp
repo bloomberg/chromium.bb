@@ -123,6 +123,8 @@
         'system/tray/system_tray_delegate.h',
         'system/tray/system_tray_item.cc',
         'system/tray/system_tray_item.h',
+        'system/tray/tray_empty.cc',
+        'system/tray/tray_empty.h',
         'system/user/login_status.h',
         'system/user/tray_user.cc',
         'system/user/tray_user.h',

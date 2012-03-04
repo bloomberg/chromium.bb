@@ -22,6 +22,7 @@
 #include "ash/system/power/tray_power_date.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_empty.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
@@ -439,6 +440,7 @@ void Shell::Init() {
     power_status_controller_ = tray_power_date;
 
     tray_->AddTrayItem(new internal::TrayUser());
+    tray_->AddTrayItem(new internal::TrayEmpty());
     tray_->AddTrayItem(tray_power_date);
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
