@@ -31,6 +31,7 @@ from chromite.buildbot import repository
 from chromite.buildbot import tee
 
 from chromite.lib import cgroups
+from chromite.lib import cleanup
 from chromite.lib import cros_build_lib as cros_lib
 from chromite.lib import sudo
 
@@ -944,11 +945,20 @@ def main(argv):
                  'rather than the root of it.  This is not supported.'
                  % options.buildroot)
 
-  with sudo.SudoKeepAlive():
-    with cros_lib.AllowDisabling(options.cgroups,
-                                 cgroups.ContainChildren, 'cbuildbot'):
-      with cros_lib.AllowDisabling(options.timeout > 0,
-                                   cros_lib.Timeout, options.timeout):
-        if not options.buildbot:
-          build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
-        _RunBuildStagesWrapper(options, build_config)
+  with cleanup.EnforcedCleanupSection() as critical_section:
+    with sudo.SudoKeepAlive():
+      with cros_lib.AllowDisabling(options.cgroups,
+                                   cgroups.ContainChildren, 'cbuildbot'):
+        # Mark everything between EnforcedCleanupSection and here as having to
+        # be rolled back via the contextmanager cleanup handlers.  This ensures
+        # that sudo bits cannot outlive cbuildbot, that anything cgroups
+        # would kill gets killed, etc.
+        critical_section.ForkWatchdog()
+
+        with cros_lib.AllowDisabling(options.timeout > 0,
+                                     cros_lib.Timeout, options.timeout):
+          if not options.buildbot:
+            build_config = cbuildbot_config.OverrideConfigForTrybot(
+                build_config)
+
+          _RunBuildStagesWrapper(options, build_config)
