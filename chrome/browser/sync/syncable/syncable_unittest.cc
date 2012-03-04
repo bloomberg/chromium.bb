@@ -1548,7 +1548,8 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
       if (rand_action < 4 && !path_name.empty()) {
         ReadTransaction trans(FROM_HERE, dir_);
         CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
-        base::PlatformThread::Sleep(rand() % 10);
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
+            rand() % 10));
       } else {
         std::string unique_name =
             base::StringPrintf("%d.%d", thread_number_, entry_count++);
@@ -1556,7 +1557,8 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
         WriteTransaction trans(FROM_HERE, UNITTEST, dir_);
         MutableEntry e(&trans, CREATE, trans.root_id(), path_name);
         CHECK(e.good());
-        base::PlatformThread::Sleep(rand() % 20);
+        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
+            rand() % 20));
         e.Put(IS_UNSYNCED, true);
         if (e.Put(ID, TestIdFactory::FromNumber(rand())) &&
             e.Get(ID).ServerKnows() && !e.Get(ID).IsRoot()) {

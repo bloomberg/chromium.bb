@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,7 @@ TEST(SyncAPIServerConnectionManagerTest, AbortPost) {
       FROM_HERE,
       base::Bind(&ServerConnectionManager::TerminateAllIO,
                  base::Unretained(&server)),
-      TestTimeouts::tiny_timeout_ms());
+      TestTimeouts::tiny_timeout());
 
   bool result = server.PostBufferToPath(
       &params, "/testpath", "testauth", &watcher);
@@ -131,7 +131,7 @@ TEST(SyncAPIServerConnectionManagerTest, AbortCheckTime) {
       FROM_HERE,
       base::Bind(&ServerConnectionManager::TerminateAllIO,
                  base::Unretained(&server)),
-      TestTimeouts::tiny_timeout_ms());
+      TestTimeouts::tiny_timeout());
 
   int32 time = 0;
   bool result = server.CheckTime(&time);
