@@ -169,7 +169,7 @@ void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&SettingsChangeGlobalError::OnInactiveTimeout,
                    weak_factory_.GetWeakPtr()),
-        kMenuItemDisplayPeriodMs);
+        base::TimeDelta::FromMilliseconds(kMenuItemDisplayPeriodMs));
 #if !defined(TOOLKIT_GTK)
     // TODO(ivankr): the logic for redisplaying bubble is disabled on Gtk, see
     // http://crbug.com/115719.

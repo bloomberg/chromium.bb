@@ -358,7 +358,8 @@ void SQLiteOriginBoundCertStore::Backend::BatchOperation(
     // We've gotten our first entry for this batch, fire off the timer.
     BrowserThread::PostDelayedTask(
         BrowserThread::DB, FROM_HERE,
-        base::Bind(&Backend::Commit, this), kCommitIntervalMs);
+        base::Bind(&Backend::Commit, this),
+        base::TimeDelta::FromMilliseconds(kCommitIntervalMs));
   } else if (num_pending == kCommitAfterBatchSize) {
     // We've reached a big enough batch, fire off a commit now.
     BrowserThread::PostTask(
