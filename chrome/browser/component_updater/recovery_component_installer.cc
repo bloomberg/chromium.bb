@@ -134,7 +134,10 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus,
 #if !defined(OS_CHROMEOS)
   // We delay execute the registration because we are not required in
   // the critical path during browser startup.
-  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&RecoveryRegisterHelper, cus, prefs), 6000);
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&RecoveryRegisterHelper, cus, prefs),
+      base::TimeDelta::FromSeconds(6));
 #endif
 }

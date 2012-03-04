@@ -703,12 +703,14 @@ void CrxUpdateService::OnURLFetchComplete(const content::URLFetcher* source,
         content::NotificationService::NoDetails());
 
     // Why unretained? See comment at top of file.
-    BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
+    BrowserThread::PostDelayedTask(
+        BrowserThread::FILE,
+        FROM_HERE,
         base::Bind(&CrxUpdateService::Install,
                    base::Unretained(this),
                    context,
                    temp_crx_path),
-        config_->StepDelay());
+        base::TimeDelta::FromMilliseconds(config_->StepDelay()));
   }
 }
 
@@ -726,10 +728,12 @@ void CrxUpdateService::Install(const CRXContext* context,
     NOTREACHED() << crx_path.value();
   }
   // Why unretained? See comment at top of file.
-  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&CrxUpdateService::DoneInstalling, base::Unretained(this),
                  context->id, unpacker.error()),
-      config_->StepDelay());
+      base::TimeDelta::FromMilliseconds(config_->StepDelay()));
   delete context;
 }
 
