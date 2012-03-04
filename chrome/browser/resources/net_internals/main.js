@@ -188,7 +188,8 @@ var MainView = (function() {
 
     stopCapturing: function() {
       g_browser.disable();
-      document.styleSheets[0].insertRule('.hideOnLoadLog { display: none; }');
+      document.styleSheets[0].insertRule(
+          '.hide-when-not-capturing { display: none; }');
     }
   };
 
