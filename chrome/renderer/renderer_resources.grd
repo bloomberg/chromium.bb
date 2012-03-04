@@ -51,7 +51,6 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS" file="resources\extensions\tts_engine_custom_bindings.js" type="BINDATA" />
       <include name="IDR_TYPES_CUSTOM_BINDINGS_JS" file="resources\extensions\types_custom_bindings.js" type="BINDATA" />
       <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="resources\extensions\web_request_custom_bindings.js" type="BINDATA" />
-      <include name="IDR_WINDOWS_CUSTOM_BINDINGS_JS" file="resources\extensions\windows_custom_bindings.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

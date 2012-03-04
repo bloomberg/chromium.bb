@@ -144,12 +144,63 @@ chromeHidden.JSONSchemaValidator.prototype.addTypes = function(typeOrTypeList) {
 }
 
 /**
+ * Returns a list of strings of the types that this schema accepts.
+ */
+chromeHidden.JSONSchemaValidator.prototype.getAllTypesForSchema =
+    function(schema) {
+  var schemaTypes = [];
+  if (schema.type)
+    schemaTypes.push(schema.type);
+  if (schema.choices) {
+    for (var i = 0; i < schema.choices.length; i++) {
+      var choiceTypes = this.getAllTypesForSchema(schema.choices[i]);
+      schemaTypes = schemaTypes.concat(choiceTypes);
+    }
+  }
+  if (schema['$ref']) {
+    var refTypes = this.getAllTypesForSchema(this.types[schema['$ref']]);
+    schemaTypes = schemaTypes.concat(refTypes);
+  }
+  return schemaTypes;
+};
+
+/**
+ * Returns true if |schema| would accept an argument of type |type|.
+ */
+chromeHidden.JSONSchemaValidator.prototype.isValidSchemaType =
+    function(type, schema) {
+  if (schema.optional && (type == "null" || type == "undefined"))
+    return true;
+
+  schemaTypes = this.getAllTypesForSchema(schema);
+  for (var i = 0; i < schemaTypes.length; i++) {
+    if (schemaTypes[i] == "any" || type == schemaTypes[i])
+      return true;
+  }
+  return type == "any";
+};
+
+/**
+ * Returns true if there is a non-null argument that both |schema1| and
+ * |schema2| would accept.
+ */
+chromeHidden.JSONSchemaValidator.prototype.checkSchemaOverlap =
+    function(schema1, schema2) {
+  var schema1Types = this.getAllTypesForSchema(schema1);
+  for (var i = 0; i < schema1Types.length; i++) {
+    if (this.isValidSchemaType(schema1Types[i], schema2))
+      return true;
+  }
+  return false;
+};
+
+/**
  * Validates an instance against a schema. The instance can be any JavaScript
  * value and will be validated recursively. When this method returns, the
  * |errors| property will contain a list of errors, if any.
  */
-chromeHidden.JSONSchemaValidator.prototype.validate = function(
-    instance, schema, opt_path) {
+chromeHidden.JSONSchemaValidator.prototype.validate =
+    function(instance, schema, opt_path) {
   var path = opt_path || "";
 
   if (!schema) {
@@ -216,8 +267,8 @@ chromeHidden.JSONSchemaValidator.prototype.validate = function(
  * Validates an instance against a choices schema. The instance must match at
  * least one of the provided choices.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateChoices = function(
-    instance, schema, path) {
+chromeHidden.JSONSchemaValidator.prototype.validateChoices =
+    function(instance, schema, path) {
   var originalErrors = this.errors;
 
   for (var i = 0; i < schema.choices.length; i++) {
@@ -238,8 +289,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateChoices = function(
  * |errors| property, and returns a boolean indicating whether the instance
  * validates.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateEnum = function(
-    instance, schema, path) {
+chromeHidden.JSONSchemaValidator.prototype.validateEnum =
+    function(instance, schema, path) {
   for (var i = 0; i < schema.enum.length; i++) {
     if (instance === schema.enum[i])
       return true;
@@ -253,8 +304,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateEnum = function(
  * Validates an instance against an object schema and populates the errors
  * property.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
-    instance, schema, path) {
+chromeHidden.JSONSchemaValidator.prototype.validateObject =
+    function(instance, schema, path) {
   if (schema.properties) {
     for (var prop in schema.properties) {
       // It is common in JavaScript to add properties to Object.prototype. This
@@ -316,8 +367,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
  * Validates an instance against an array schema and populates the errors
  * property.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateArray = function(
-    instance, schema, path) {
+chromeHidden.JSONSchemaValidator.prototype.validateArray =
+    function(instance, schema, path) {
   var typeOfItems = chromeHidden.JSONSchemaValidator.getType(schema.items);
 
   if (typeOfItems == 'object') {
@@ -363,8 +414,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateArray = function(
 /**
  * Validates a string and populates the errors property.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateString = function(
-    instance, schema, path) {
+chromeHidden.JSONSchemaValidator.prototype.validateString =
+    function(instance, schema, path) {
   if (schema.minLength && instance.length < schema.minLength)
     this.addError(path, "stringMinLength", [schema.minLength]);
 
@@ -379,8 +430,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateString = function(
  * Validates a number and populates the errors property. The instance is
  * assumed to be a number.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateNumber = function(
-    instance, schema, path) {
+chromeHidden.JSONSchemaValidator.prototype.validateNumber =
+    function(instance, schema, path) {
 
   // Forbid NaN, +Infinity, and -Infinity.  Our APIs don't use them, and
   // JSON serialization encodes them as 'null'.  Re-evaluate supporting
@@ -408,8 +459,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateNumber = function(
  * Validates the primitive type of an instance and populates the errors
  * property. Returns true if the instance validates, false otherwise.
  */
-chromeHidden.JSONSchemaValidator.prototype.validateType = function(
-    instance, schema, path) {
+chromeHidden.JSONSchemaValidator.prototype.validateType =
+    function(instance, schema, path) {
   var actualType = chromeHidden.JSONSchemaValidator.getType(instance);
   if (schema.type != actualType && !(schema.type == "number" &&
       actualType == "integer")) {
@@ -425,12 +476,19 @@ chromeHidden.JSONSchemaValidator.prototype.validateType = function(
  * |replacements| is an array of values to replace '*' characters in the
  * message.
  */
-chromeHidden.JSONSchemaValidator.prototype.addError = function(
-    path, key, replacements) {
+chromeHidden.JSONSchemaValidator.prototype.addError =
+    function(path, key, replacements) {
   this.errors.push({
     path: path,
     message: chromeHidden.JSONSchemaValidator.formatError(key, replacements)
   });
+};
+
+/**
+ * Resets errors to an empty list so you can call 'validate' again.
+ */
+chromeHidden.JSONSchemaValidator.prototype.resetErrors = function() {
+  this.errors = [];
 };
 
 })();

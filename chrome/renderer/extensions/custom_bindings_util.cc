@@ -44,7 +44,6 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher) {
     "extensions/storage_custom_bindings.js",
     "extensions/tts_engine_custom_bindings.js",
     "extensions/types_custom_bindings.js",
-    "extensions/windows_custom_bindings.js",
   };
   static const size_t kJavascriptFilesSize = arraysize(kJavascriptFiles);
 
@@ -60,7 +59,6 @@ std::vector<v8::Extension*> GetAll(ExtensionDispatcher* extension_dispatcher) {
     IDR_STORAGE_CUSTOM_BINDINGS_JS,
     IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS,
     IDR_TYPES_CUSTOM_BINDINGS_JS,
-    IDR_WINDOWS_CUSTOM_BINDINGS_JS,
   };
   static const size_t kResourceIDsSize = arraysize(kResourceIDs);
 

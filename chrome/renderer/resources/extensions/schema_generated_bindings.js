@@ -32,21 +32,20 @@ var chrome = chrome || {};
   }
 
   // Validate arguments.
-  chromeHidden.validationTypes = [];
-  chromeHidden.validate = function(args, schemas) {
-    if (args.length > schemas.length)
+  var schemaValidator = new chromeHidden.JSONSchemaValidator();
+  chromeHidden.validate = function(args, parameterSchemas) {
+    if (args.length > parameterSchemas.length)
       throw new Error("Too many arguments.");
 
-    for (var i = 0; i < schemas.length; i++) {
+    for (var i = 0; i < parameterSchemas.length; i++) {
       if (i in args && args[i] !== null && args[i] !== undefined) {
-        var validator = new chromeHidden.JSONSchemaValidator();
-        validator.addTypes(chromeHidden.validationTypes);
-        validator.validate(args[i], schemas[i]);
-        if (validator.errors.length == 0)
+        schemaValidator.resetErrors();
+        schemaValidator.validate(args[i], parameterSchemas[i]);
+        if (schemaValidator.errors.length == 0)
           continue;
 
         var message = "Invalid value for argument " + (i + 1) + ". ";
-        for (var i = 0, err; err = validator.errors[i]; i++) {
+        for (var i = 0, err; err = schemaValidator.errors[i]; i++) {
           if (err.path) {
             message += "Property '" + err.path + "': ";
           }
@@ -58,10 +57,119 @@ var chrome = chrome || {};
         message += ".";
 
         throw new Error(message);
-      } else if (!schemas[i].optional) {
+      } else if (!parameterSchemas[i].optional) {
         throw new Error("Parameter " + (i + 1) + " is required.");
       }
     }
+  };
+
+  // Generate all possible signatures for a given API function.
+  function getSignatures(parameterSchemas) {
+    if (parameterSchemas.length === 0)
+      return [[]];
+
+    var signatures = [];
+    var remaining = getSignatures(parameterSchemas.slice(1));
+    for (var i = 0; i < remaining.length; i++)
+      signatures.push([parameterSchemas[0]].concat(remaining[i]))
+
+    if (parameterSchemas[0].optional)
+      return signatures.concat(remaining);
+    return signatures;
+  };
+
+  // Return true if arguments match a given signature's schema.
+  function argumentsMatchSignature(args, candidateSignature) {
+    if (args.length != candidateSignature.length)
+      return false;
+
+    for (var i = 0; i < candidateSignature.length; i++) {
+      var argType =  chromeHidden.JSONSchemaValidator.getType(args[i]);
+      if (!schemaValidator.isValidSchemaType(argType, candidateSignature[i]))
+        return false;
+    }
+    return true;
+  };
+
+  // Finds the function signature for the given arguments.
+  function resolveSignature(args, definedSignature) {
+    var candidateSignatures = getSignatures(definedSignature);
+    for (var i = 0; i < candidateSignatures.length; i++) {
+      if (argumentsMatchSignature(args, candidateSignatures[i]))
+        return candidateSignatures[i];
+    }
+    return null;
+  };
+
+  // Returns a string representing the defined signature of the API function.
+  // Example return value for chrome.windows.getCurrent:
+  // "windows.getCurrent(optional object populate, function callback)"
+  function getParameterSignatureString(name, definedSignature) {
+    var getSchemaTypeString = function(schema) {
+      var schemaTypes = schemaValidator.getAllTypesForSchema(schema);
+      var typeName = schemaTypes.join(" or ") + " " + schema.name;
+      if (schema.optional)
+        return "optional " + typeName;
+      return typeName;
+    };
+
+    var typeNames = definedSignature.map(getSchemaTypeString);
+    return name + "(" + typeNames.join(", ") + ")";
+  };
+
+  // Returns a string representing a call to an API function.
+  // Example return value for call: chrome.windows.get(1, callback) is:
+  // "windows.get(int, function)"
+  function getArgumentSignatureString(name, args) {
+    var typeNames = args.map(chromeHidden.JSONSchemaValidator.getType);
+    return name + "(" + typeNames.join(", ") + ")";
+  };
+
+  // Finds the correct signature for the given arguments, then validates the
+  // arguments against that signature. Returns a 'normalized' arguments list
+  // where nulls are inserted where optional parameters were omitted.
+  chromeHidden.updateArgumentsValidate = function(args, funDef) {
+    var definedSignature = funDef.definition.parameters;
+    var resolvedSignature = resolveSignature(args, definedSignature);
+    if (!resolvedSignature)
+      throw new Error("Invocation of form " +
+          getArgumentSignatureString(funDef.name, args) +
+          " doesn't match definition " +
+          getParameterSignatureString(funDef.name, definedSignature));
+    chromeHidden.validate(args, resolvedSignature);
+
+    var normalizedArgs = [];
+    var ai = 0;
+    for (var si = 0; si < definedSignature.length; si++) {
+      if (definedSignature[si] === resolvedSignature[ai])
+        normalizedArgs.push(args[ai++]);
+      else
+        normalizedArgs.push(null);
+    }
+    return normalizedArgs;
+  };
+
+  // Validates that a given schema for an API function is not ambiguous.
+  function isDefinedSignatureAmbiguous(definedSignature) {
+    var signaturesAmbiguous = function(signature1, signature2) {
+      if (signature1.length != signature2.length)
+        return false;
+
+      for (var i = 0; i < signature1.length; i++) {
+        if (!schemaValidator.checkSchemaOverlap(signature1[i], signature2[i]))
+          return false;
+      }
+      return true;
+    };
+
+    var candidateSignatures = getSignatures(definedSignature);
+    for (var i = 0; i < candidateSignatures.length; i++) {
+      for (var j = i + 1; j < candidateSignatures.length; j++) {
+        if (signaturesAmbiguous(candidateSignatures[i], candidateSignatures[j]))
+          return true;
+      }
+    }
+    return false;
   };
 
   // Callback handling.
@@ -435,13 +543,13 @@ var chrome = chrome || {};
         mod = mod[name];
       }
 
-      // Add types to global validationTypes
+      // Add types to global schemaValidator
       if (apiDef.types) {
         apiDef.types.forEach(function(t) {
           if (!isSchemaNodeSupported(t, platform, manifestVersion))
             return;
 
-          chromeHidden.validationTypes.push(t);
+          schemaValidator.addTypes(t);
           if (t.type == 'object' && customTypes[t.id]) {
             customTypes[t.id].prototype.setSchema(t);
           }
@@ -490,13 +598,25 @@ var chrome = chrome || {};
           var apiFunction = {};
           apiFunction.definition = functionDef;
           apiFunction.name = apiFunctionName;
-          apiFunctions.register(apiFunctionName, apiFunction);
+
+          // Validate API for ambiguity only in DEBUG mode.
+          // We do not validate 'extension.sendRequest' because we know it is
+          // ambiguous. We disambiguate calls in 'updateArgumentsPrevalidate'.
+          // TODO(aa): It would be best to run this in a unit test, but in order
+          // to do that we would need to better factor this code so that it
+          // didn't depend on so much v8::Extension machinery.
+          if (chromeHidden.validateAPI &&
+              apiFunction.name != "extension.sendRequest" &&
+              isDefinedSignatureAmbiguous(apiFunction.definition.parameters))
+            throw new Error(apiFunction.name + " is ambiguous");
+          apiFunctions.register(apiFunction.name, apiFunction);
 
           mod[functionDef.name] = (function() {
-            var args = arguments;
+            var args = Array.prototype.slice.call(arguments);
             if (this.updateArgumentsPreValidate)
               args = this.updateArgumentsPreValidate.apply(this, args);
-            chromeHidden.validate(args, this.definition.parameters);
+
+            args = chromeHidden.updateArgumentsValidate(args, this);
             if (this.updateArgumentsPostValidate)
               args = this.updateArgumentsPostValidate.apply(this, args);
 

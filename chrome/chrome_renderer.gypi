@@ -152,7 +152,6 @@
         'renderer/resources/extensions/tts_engine_custom_bindings.js',
         'renderer/resources/extensions/types_custom_bindings.js',
         'renderer/resources/extensions/web_request_custom_bindings.js',
-        'renderer/resources/extensions/windows_custom_bindings.js',
         'renderer/resources/require.js',
         'renderer/chrome_content_renderer_client.cc',
         'renderer/chrome_content_renderer_client.h',

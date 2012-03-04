@@ -21,6 +21,7 @@ const char kChromeHidden[] = "chromeHidden";
 
 #ifndef NDEBUG
 const char kValidateCallbacks[] = "validateCallbacks";
+const char kValidateAPI[] = "validateAPI";
 #endif
 
 std::string GetContextTypeDescription(
@@ -69,8 +70,11 @@ v8::Handle<v8::Value> ChromeV8Context::GetOrCreateChromeHidden(
 #ifndef NDEBUG
     // Tell schema_generated_bindings.js to validate callbacks and events
     // against their schema definitions.
-    v8::Local<v8::Object>::Cast(hidden)
-        ->Set(v8::String::New(kValidateCallbacks), v8::True());
+    v8::Local<v8::Object>::Cast(hidden)->Set(
+        v8::String::New(kValidateCallbacks), v8::True());
+    // Tell schema_generated_bindings.js to validate API for ambiguity.
+    v8::Local<v8::Object>::Cast(hidden)->Set(
+        v8::String::New(kValidateAPI), v8::True());
 #endif
   }
 

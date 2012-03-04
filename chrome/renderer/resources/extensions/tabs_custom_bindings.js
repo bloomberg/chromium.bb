@@ -43,25 +43,6 @@ chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
       }
     });
   });
-
-  // TODO(skerner,mtytel): The next step to omitting optional arguments is the
-  // replacement of this code with code that matches arguments by type.
-  // Once this is working for captureVisibleTab() it can be enabled for
-  // the rest of the API. See crbug/29215 .
-  apiFunctions.setUpdateArgumentsPreValidate('captureVisibleTab', function() {
-    // Old signature:
-    //    captureVisibleTab(int windowId, function callback);
-    // New signature:
-    //    captureVisibleTab(int windowId, object details, function callback);
-    var newArgs;
-    if (arguments.length == 2 && typeof(arguments[1]) == 'function') {
-      // If the old signature is used, add a null details object.
-      newArgs = [arguments[0], null, arguments[1]];
-    } else {
-      newArgs = arguments;
-    }
-    return newArgs;
-  });
 });
 
 })();
