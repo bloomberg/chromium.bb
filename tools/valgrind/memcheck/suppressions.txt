@@ -3000,12 +3000,6 @@
    obj:*
 }
 {
-   bug_73828
-   Memcheck:Leak
-   ...
-   fun:_ZN20GpuProcessHostUIShim14GetForRendererEi
-}
-{
    bug_74383a
    Memcheck:Uninitialized
    fun:gtk_widget_set_size_request
