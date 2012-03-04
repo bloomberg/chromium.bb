@@ -39,7 +39,6 @@ class PrerenderResourceThrottle
   const net::URLRequest* request_;
   int child_id_;
   int route_id_;
-  int request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderResourceThrottle);
 };
