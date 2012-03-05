@@ -42,6 +42,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/process_type.h"
 #include "skia/ext/skia_utils_win.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/win/WebInputEventFactory.h"
@@ -55,7 +56,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/scoped_sk_region.h"
 #include "ui/gfx/screen.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
@@ -330,7 +330,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       pointer_down_context_(false),
       focus_on_editable_field_(false),
       received_focus_change_after_pointer_down_(false),
-      transparent_region_(0),
       touch_events_enabled_(false) {
   render_widget_host_->SetView(this);
   registrar_.Add(this,
@@ -1194,15 +1193,14 @@ void RenderWidgetHostViewWin::OnNCPaint(HRGN update_region) {
 }
 
 void RenderWidgetHostViewWin::SetClickthroughRegion(SkRegion* region) {
-  transparent_region_.Set(region);
+  transparent_region_.reset(region);
 }
 
 LRESULT RenderWidgetHostViewWin::OnNCHitTest(const CPoint& point) {
   RECT rc;
   GetWindowRect(&rc);
-  if (transparent_region_.Get() &&
-      transparent_region_.Get()->contains(point.x - rc.left,
-                                          point.y - rc.top)) {
+  if (transparent_region_.get() &&
+      transparent_region_->contains(point.x - rc.left, point.y - rc.top)) {
     SetMsgHandled(TRUE);
     return HTTRANSPARENT;
   }

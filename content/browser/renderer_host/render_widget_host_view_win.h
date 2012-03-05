@@ -27,12 +27,12 @@
 #include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
-#include "ui/gfx/scoped_sk_region.h"
 #include "ui/gfx/surface/accelerated_surface_win.h"
 #include "webkit/glue/webcursor.h"
 
 class BackingStore;
 class RenderWidgetHost;
+class SkRegion;
 
 namespace gfx {
 class Size;
@@ -555,7 +555,7 @@ class RenderWidgetHostViewWin
   bool received_focus_change_after_pointer_down_;
 
   // Region in which the view will be transparent to clicks.
-  gfx::ScopedSkRegion transparent_region_;
+  scoped_ptr<SkRegion> transparent_region_;
 
   // Are touch events currently enabled?
   bool touch_events_enabled_;
