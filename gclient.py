@@ -578,8 +578,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           if parsed_url:
             env['GCLIENT_URL'] = parsed_url
           if os.path.isdir(cwd):
-            gclient_utils.CheckCallAndFilter(
-                args, cwd=cwd, env=env, print_stdout=True)
+            try:
+              gclient_utils.CheckCallAndFilter(
+                  args, cwd=cwd, env=env, print_stdout=True)
+            except subprocess2.CalledProcessError:
+              if not options.ignore:
+                raise
           else:
             print >> sys.stderr, 'Skipped missing %s' % cwd
 
@@ -1154,6 +1158,8 @@ def CMDrecurse(parser, args):
   parser.disable_interspersed_args()
   parser.add_option('-s', '--scm', action='append', default=[],
                     help='choose scm types to operate upon')
+  parser.add_option('-i', '--ignore', action='store_true',
+                    help='continue processing in case of non zero return code')
   options, args = parser.parse_args(args)
   if not args:
     print >> sys.stderr, 'Need to supply a command!'
