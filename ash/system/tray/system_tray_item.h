@@ -42,8 +42,10 @@ class ASH_EXPORT SystemTrayItem {
 
   // Pops up the detailed view for this item. An item can request to show its
   // detailed view using this function (e.g. from an observer callback when
-  // something, e.g. volume, network availability etc. changes).
-  void PopupDetailedView();
+  // something, e.g. volume, network availability etc. changes). If
+  // |for_seconds| is non-zero, then the popup is closed after the specified
+  // time.
+  void PopupDetailedView(int for_seconds);
 
  private:
 

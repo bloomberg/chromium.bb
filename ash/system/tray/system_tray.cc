@@ -12,6 +12,7 @@
 #include "ash/system/user/login_status.h"
 #include "ash/wm/shadow_types.h"
 #include "base/logging.h"
+#include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -24,7 +25,9 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
-namespace {
+namespace ash {
+
+namespace internal {
 
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
@@ -150,10 +153,12 @@ class SystemTrayBubble : public views::BubbleDelegateView {
       : views::BubbleDelegateView(tray, views::BubbleBorder::BOTTOM_RIGHT),
         tray_(tray),
         items_(items),
-        detailed_(detailed) {
+        detailed_(detailed),
+        autoclose_delay_(0) {
     set_margin(0);
     set_parent_window(ash::Shell::GetInstance()->GetContainer(
         ash::internal::kShellWindowId_SettingBubbleContainer));
+    set_notify_enter_exit_on_child(true);
   }
 
   virtual ~SystemTrayBubble() {
@@ -167,7 +172,21 @@ class SystemTrayBubble : public views::BubbleDelegateView {
     }
   }
 
+  void StartAutoCloseTimer(int seconds) {
+    autoclose_.Stop();
+    autoclose_delay_ = seconds;
+    if (autoclose_delay_) {
+      autoclose_.Start(FROM_HERE,
+          base::TimeDelta::FromSeconds(autoclose_delay_),
+          this, &SystemTrayBubble::AutoClose);
+    }
+  }
+
  private:
+  void AutoClose() {
+    StartFade(false);
+  }
+
   // Overridden from views::BubbleDelegateView.
   virtual void Init() OVERRIDE {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical,
@@ -187,19 +206,34 @@ class SystemTrayBubble : public views::BubbleDelegateView {
     }
   }
 
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
+    autoclose_.Stop();
+  }
+
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
+    if (autoclose_delay_) {
+      autoclose_.Stop();
+      autoclose_.Start(FROM_HERE,
+          base::TimeDelta::FromSeconds(autoclose_delay_),
+          this, &SystemTrayBubble::AutoClose);
+    }
+  }
+
   ash::SystemTray* tray_;
   std::vector<ash::SystemTrayItem*> items_;
   bool detailed_;
 
+  int autoclose_delay_;
+  base::OneShotTimer<SystemTrayBubble> autoclose_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubble);
 };
 
-}  // namespace
-
-namespace ash {
+}  // namespace internal
 
 SystemTray::SystemTray()
     : items_(),
+      bubble_(NULL),
       popup_(NULL) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
       5, 0, 3));
@@ -232,14 +266,16 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
   NOTIMPLEMENTED();
 }
 
-void SystemTray::ShowDetailedView(SystemTrayItem* item) {
+void SystemTray::ShowDetailedView(SystemTrayItem* item, int close_delay) {
   if (popup_)
     popup_->Close();
   popup_ = NULL;
+  bubble_ = NULL;
 
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
   ShowItems(items, true);
+  bubble_->StartAutoCloseTimer(close_delay);
 }
 
 void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
@@ -265,14 +301,15 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
 
 void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
   CHECK(!popup_);
-  SystemTrayBubble* bubble = new SystemTrayBubble(this, items, detailed);
-  popup_ = views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+  CHECK(!bubble_);
+  bubble_ = new internal::SystemTrayBubble(this, items, detailed);
+  popup_ = views::BubbleDelegateView::CreateBubble(bubble_);
+  bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   popup_->non_client_view()->frame_view()->set_background(NULL);
   popup_->non_client_view()->frame_view()->set_border(
-      new SystemTrayBubbleBorder(bubble));
+      new internal::SystemTrayBubbleBorder(bubble_));
   popup_->AddObserver(this);
-  bubble->Show();
+  bubble_->Show();
 }
 
 bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
@@ -286,6 +323,7 @@ bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
 void SystemTray::OnWidgetClosing(views::Widget* widget) {
   CHECK_EQ(popup_, widget);
   popup_ = NULL;
+  bubble_ = NULL;
 }
 
 }  // namespace ash

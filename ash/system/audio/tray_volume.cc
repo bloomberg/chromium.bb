@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -179,7 +180,7 @@ void TrayVolume::OnVolumeChanged(float percent) {
     return;
   }
 
-  PopupDetailedView();
+  PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds);
 }
 
 }  // namespace internal

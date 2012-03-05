@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/tray_constants.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -117,7 +118,7 @@ void TrayBrightness::OnBrightnessChanged(float percent, bool user_initiated) {
   }
   if (!user_initiated)
     return;
-  PopupDetailedView();
+  PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds);
 }
 
 }  // namespace internal

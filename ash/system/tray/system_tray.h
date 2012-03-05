@@ -18,6 +18,10 @@ namespace ash {
 
 class SystemTrayItem;
 
+namespace internal {
+class SystemTrayBubble;
+}
+
 class ASH_EXPORT SystemTray : public views::View,
                               public views::Widget::Observer {
  public:
@@ -30,8 +34,9 @@ class ASH_EXPORT SystemTray : public views::View,
   // Removes an existing tray item.
   void RemoveTrayItem(SystemTrayItem* item);
 
-  // Shows details of a particular item.
-  void ShowDetailedView(SystemTrayItem* item);
+  // Shows details of a particular item. If |close_delay| is non-zero, then the
+  // view is automatically closed after the specified time.
+  void ShowDetailedView(SystemTrayItem* item, int close_delay_in_seconds);
 
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
@@ -49,7 +54,8 @@ class ASH_EXPORT SystemTray : public views::View,
 
   std::vector<SystemTrayItem*> items_;
 
-  // The popup widget.
+  // The popup widget and the delegate.
+  internal::SystemTrayBubble* bubble_;
   views::Widget* popup_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
