@@ -32,7 +32,9 @@ cr.define('options.network', function() {
                              'wifi',
                              'cellular',
                              'vpn',
-                             'airplaneMode'];
+                             'airplaneMode',
+                             'useSharedProxies',
+                             'addConnection'];
 
   /**
    * Mapping of network category titles to the network type.
@@ -53,17 +55,24 @@ cr.define('options.network', function() {
 
   /**
    * Indicates if cellular networks are available.
-   * @type{boolean}
+   * @type {boolean}
    * @private
    */
   var cellularAvailable_ = false;
 
   /**
    * Indicates if cellular networks are enabled.
-   * @type{boolean}
+   * @type {boolean}
    * @private
    */
   var cellularEnabled_ = false;
+
+  /**
+   * Indicates if shared proxies are enabled.
+   * @type {boolean}
+   * @private
+   */
+  var useSharedProxies_ = false;
 
   /**
    * Create an element in the network list for controlling network
@@ -133,7 +142,9 @@ cr.define('options.network', function() {
      * @type {string}
      */
     set subtitle(text) {
-      this.subtitle_.textContent = text;
+      if (text)
+        this.subtitle_.textContent = text;
+      this.subtitle_.hidden = !text;
     },
 
     /**
@@ -166,7 +177,7 @@ cr.define('options.network', function() {
 
     /**
      * Indicates if the network is in the process of being connected.
-     * @type{boolean}
+     * @type {boolean}
      */
     get connecting() {
       return this.connecting_;
@@ -187,6 +198,7 @@ cr.define('options.network', function() {
       this.icon_.className = 'network-icon';
       this.appendChild(this.icon_);
       var textContent = this.ownerDocument.createElement('div');
+      textContent.className = 'network-group-labels';
       this.appendChild(textContent);
       var categoryLabel = this.ownerDocument.createElement('div');
       var title = this.data_.key + 'Title';
@@ -200,25 +212,119 @@ cr.define('options.network', function() {
   };
 
   /**
+   * Creates a control that displays a popup menu when clicked.
+   * @param {Object} data  Description of the control.
+   */
+  function NetworkMenuItem(data) {
+    var el = new NetworkListItem(data);
+    el.__proto__ = NetworkMenuItem.prototype;
+    el.decorate();
+    return el;
+  }
+
+  NetworkMenuItem.prototype = {
+    __proto__: NetworkListItem.prototype,
+
+    /**
+     * Popup menu element.
+     * @type {?Element}
+     * @private
+     */
+    menu_: null,
+
+    /* @inheritDoc */
+    decorate: function() {
+      this.subtitle = null;
+      if (this.data.iconType)
+        this.iconType = this.data.iconType;
+      if (!this.connecting) {
+        this.addEventListener('click', function() {
+          this.showMenu();
+        });
+      }
+    },
+
+    /**
+     * Retrieves the ID for the menu.
+     * @private
+     */
+    getMenuName_: function() {
+      return this.data_.key + '-network-menu';
+    },
+
+    /**
+     * Creates a popup menu for the control.
+     * @return {Element} The newly created menu.
+     */
+    createMenu: function() {
+      if (this.data.menu) {
+        var menu = this.ownerDocument.createElement('div');
+        menu.id = this.getMenuName_();
+        menu.className = 'network-menu';
+        menu.hidden = true;
+        Menu.decorate(menu);
+        for (var i = 0; i < this.data.menu.length; i++) {
+          var entry = this.data.menu[i];
+          var button = this.ownerDocument.createElement('div');
+          button.className = 'network-menu-item';
+          button.textContent = entry.label;
+          button.addEventListener('click', entry.command);
+          MenuItem.decorate(button);
+          menu.appendChild(button);
+        }
+        return menu;
+      }
+      return null;
+    },
+
+    /**
+     * Displays a popup menu.
+     */
+    showMenu: function() {
+      if (!this.menu_) {
+        this.menu_ = this.createMenu();
+        var parent = $('network-menus');
+        var existing = $(this.menu_.id);
+        if (existing)
+          parent.replaceChild(this.menu_, existing);
+        else
+          parent.appendChild(this.menu_);
+      }
+      var top = this.offsetTop + this.clientHeight;
+      var menuId = this.getMenuName_();
+      if (menuId != activeMenu_) {
+        closeMenu_();
+        activeMenu_ = menuId;
+        this.menu_.style.setProperty('top', top + 'px');
+        this.menu_.hidden = false;
+        setTimeout(function() {
+          $('settings').addEventListener('click', closeMenu_);
+        }, 0);
+      }
+    },
+
+  };
+
+
+  /**
    * Creates a control for selecting or configuring a network connection based
    * on the type of connection (e.g. wifi versus vpn).
-   * @param{{key: string,
-   *         networkList: Array.<Object>} data  Description of the network.
+   * @param {{key: string,
+   *          networkList: Array.<Object>} data  Description of the network.
    * @constructor
    */
   function NetworkSelectorItem(data) {
-    var el = new NetworkListItem(data);
+    var el = new NetworkMenuItem(data);
     el.__proto__ = NetworkSelectorItem.prototype;
     el.decorate();
     return el;
   }
 
   NetworkSelectorItem.prototype = {
-    __proto__: NetworkListItem.prototype,
+    __proto__: NetworkMenuItem.prototype,
 
     /* @inheritDoc */
     decorate: function() {
-      this.createMenu_();
       // TODO(kevers): Generalize method of setting default label.
       var defaultMessage = this.data_.key == 'wifi' ?
           'networkOffline' : 'networkNotConnected';
@@ -244,12 +350,10 @@ cr.define('options.network', function() {
         this.iconURL = candidateURL;
       else
         this.iconType = this.data.key;
-      if (!this.connecting) {
-        this.addEventListener('click', function() {
-          this.showMenu();
-        });
+
+      if (!this.connecting)
         this.showSelector();
-      }
+
       // TODO(kevers): Add default icon for VPN when disconnected or in the
       // process of connecting.
     },
@@ -257,9 +361,9 @@ cr.define('options.network', function() {
     /**
      * Creates a menu for selecting, configuring or disconnecting from a
      * network.
-     * @private
+     * @return {Element} The newly created menu.
      */
-    createMenu_: function() {
+    createMenu: function() {
       var menu = this.ownerDocument.createElement('div');
       menu.id = this.getMenuName_();
       menu.className = 'network-menu';
@@ -355,12 +459,7 @@ cr.define('options.network', function() {
           }
         }
       }
-      var parent = $('network-menus');
-      var existing = $(menu.id);
-      if (existing)
-        parent.replaceChild(menu, existing);
-      else
-        parent.appendChild(menu);
+      return menu;
     },
 
     /**
@@ -409,41 +508,14 @@ cr.define('options.network', function() {
                                           data.networkName,
                                           'connect');
       menuItem.style.backgroundImage = url(data.iconURL);
-    },
-
-    /**
-     * Retrieves the ID for the menu.
-     * @private
-     */
-    getMenuName_: function() {
-      return this.data_.key + '-network-menu';
-    },
-
-    /**
-     * Displays a popup menu.
-     */
-    showMenu: function() {
-      var top = this.offsetTop + this.clientHeight;
-      var menuId = this.getMenuName_();
-      if (menuId != activeMenu_) {
-        closeMenu_();
-        activeMenu_ = menuId;
-        var menu = $(menuId);
-        menu.style.setProperty('top', top + 'px');
-        menu.hidden = false;
-        setTimeout(function() {
-          $('settings').addEventListener('click', closeMenu_);
-        }, 0);
-      }
-    },
+    }
   };
-
 
   /**
    * Creates a button-like control for configurating internet connectivity.
-   * @param{{key: string,
-   *         subtitle: string,
-   *         command: function} data  Description of the network control.
+   * @param {{key: string,
+   *          subtitle: string,
+   *          command: function} data  Description of the network control.
    * @constructor
    */
   function NetworkButtonItem(data) {
@@ -460,12 +532,14 @@ cr.define('options.network', function() {
     decorate: function() {
       if (this.data.subtitle)
         this.subtitle = this.data.subtitle;
-        if (this.data.command)
-          this.addEventListener('click', this.data.command);
-        if (this.data.iconURL)
-          this.iconURL = this.data.iconURL;
-        else if (this.data.iconType)
-          this.iconType = this.data.iconType;
+      else
+       this.subtitle = null;
+      if (this.data.command)
+        this.addEventListener('click', this.data.command);
+      if (this.data.iconURL)
+        this.iconURL = this.data.iconURL;
+      else if (this.data.iconType)
+        this.iconType = this.data.iconType;
     },
   };
 
@@ -483,12 +557,49 @@ cr.define('options.network', function() {
       List.prototype.decorate.call(this);
       this.addEventListener('blur', this.onBlur_);
       this.dataModel = new ArrayDataModel([]);
+
+      // Wi-Fi control is always visible.
       this.update({key: 'wifi', networkList: []});
-      this.update({key: 'airplaneMode',
-                   subtitle: localStrings.getString('airplaneModeLabel'),
+
+      if (airplaneModeAvailable_()) {
+        this.update({key: 'airplaneMode',
+                     subtitle: localStrings.getString('airplaneModeLabel'),
+                     command: function() {
+                       chrome.send('toggleAirplaneMode');
+                     }});
+      }
+      // TODO(kevers): Move to details dialog once settable on a per network
+      // basis.
+      this.update({key: 'useSharedProxies',
                    command: function() {
-                     chrome.send('toggleAirplaneMode');
+                     options.Preferences.setBooleanPref(
+                         'settings.use_shared_proxies',
+                         !useSharedProxies_);
                    }});
+
+      // Add connection control.
+      var addConnection = function(type) {
+        var callback = function() {
+          chrome.send('buttonClickCallback',
+                      [String(type), '?', 'connect']);
+        }
+        return callback;
+      }
+      this.update({key: 'addConnection',
+                   iconType: 'add-connection',
+                   menu: [{label: localStrings.getString('addConnectionWifi'),
+                           command: addConnection(Constants.TYPE_WIFI)},
+                          {label: localStrings.getString('addConnectionVPN'),
+                           command: addConnection(Constants.TYPE_VPN)}]
+                  });
+
+      var prefs = options.Preferences.getInstance();
+      prefs.addEventListener('settings.use_shared_proxies', function(event) {
+        useSharedProxies_ = event.value && event.value['value'] !=
+            undefined ? event.value['value'] : event.value;
+        $('network-list').updateToggleControl('useSharedProxies',
+                                              useSharedProxies_);
+      });
     },
 
     /**
@@ -562,17 +673,32 @@ cr.define('options.network', function() {
         return new NetworkSelectorItem(entry);
       if (entry.command)
         return new NetworkButtonItem(entry);
+      if (entry.menu)
+        return new NetworkMenuItem(entry);
     },
 
     /**
      * Deletes an element from the list.
-     * @param{string} key  Unique identifier for the element.
+     * @param {string} key  Unique identifier for the element.
      */
     deleteItem: function(key) {
       var index = this.indexOf(key);
+      if (index != undefined)
+        this.dataModel.splice(index, 1);
+    },
+
+   /**
+     * Updates the state of a toggle button.
+     * @param {string} key Unique identifier for the element.
+     * @param {boolean} active Whether the control is active.
+     */
+    updateToggleControl: function(key, active) {
+      var index = this.indexOf(key);
       if (index != undefined) {
         var entry = this.dataModel.item(index);
-        this.dataModel.splice(index, 1);
+        entry.iconType = active ? 'control-active' :
+            'control-inactive';
+        this.update(entry);
       }
     }
   };
@@ -583,6 +709,7 @@ cr.define('options.network', function() {
    *     corresponding state.
    */
   NetworkList.refreshNetworkData = function(data) {
+    var networkList = $('network-list');
     cellularAvailable_ = data.cellularAvailable;
     cellularEnabled_ = data.cellularEnabled;
 
@@ -595,12 +722,12 @@ cr.define('options.network', function() {
         chrome.send('buttonClickCallback',
                     [type, path, 'options']);
       };
-      $('network-list').update({key: 'ethernet',
-                        subtitle: localStrings.getString('networkConnected'),
-                        iconURL: ethernetConnection.iconURL,
-                        command: ethernetOptions});
+      networkList.update({key: 'ethernet',
+                          subtitle: localStrings.getString('networkConnected'),
+                          iconURL: ethernetConnection.iconURL,
+                          command: ethernetOptions});
     } else {
-      $('network-list').deleteItem('ethernet');
+      networkList.deleteItem('ethernet');
     }
 
     if (data.wifiEnabled) {
@@ -609,10 +736,10 @@ cr.define('options.network', function() {
       var enableWifi = function() {
         chrome.send('enableWifi');
       };
-      $('network-list').update({key: 'wifi',
-                        subtitle: localStrings.getString('networkDisabled'),
-                        iconType: 'wifi',
-                        command: enableWifi});
+      networkList.update({key: 'wifi',
+                          subtitle: localStrings.getString('networkDisabled'),
+                          iconType: 'wifi',
+                          command: enableWifi});
     }
 
     // Only show cellular control if available and not in airplane mode.
@@ -624,23 +751,27 @@ cr.define('options.network', function() {
         var enableCellular = function() {
           chrome.send('enableCellular');
         };
-        $('network-list').update({key: 'cellular',
-                                  subtitle: subtitle,
-                                  iconType: 'cellular',
-                                  command: enableCellular});
+        networkList.update({key: 'cellular',
+                            subtitle: subtitle,
+                            iconType: 'cellular',
+                            command: enableCellular});
       }
     } else {
-      $('network-list').deleteItem('cellular');
+      networkList.deleteItem('cellular');
     }
 
-    // Only show VPN control if there is an internet connection.
-    if (ethernetConnection || isConnected_(data.wirelessList))
+    // Only show VPN control if there is an available network and an internet
+    // connection.
+    if (data.vpnList.length > 0 && (ethernetConnection ||
+        isConnected_(data.wirelessList)))
       loadData_('vpn', data.vpnList, data.rememberedList);
     else
-      $('network-list').deleteItem('vpn');
+      networkList.deleteItem('vpn');
 
-    $('network-list').invalidate();
-    $('network-list').redraw();
+    networkList.updateToggleControl('airplaneMode', data.airplaneMode);
+
+    networkList.invalidate();
+    networkList.redraw();
   };
 
   /**
@@ -685,8 +816,8 @@ cr.define('options.network', function() {
   /**
    * Determines if the user is connected to or in the process of connecting to
    * a wireless network.
-   * @param{Array.<Object>} networkList List of networks.
-   * @return{boolean} True if connected or connecting to a network.
+   * @param {Array.<Object>} networkList List of networks.
+   * @return {boolean} True if connected or connecting to a network.
    * @private
    */
   function isConnected_(networkList) {
@@ -695,8 +826,8 @@ cr.define('options.network', function() {
 
   /**
    * Fetches the active connection.
-   * @param{Array.<Object>} networkList List of networks.
-   * @return{boolean} True if connected or connecting to a network.
+   * @param {Array.<Object>} networkList List of networks.
+   * @return {boolean} True if connected or connecting to a network.
    * @private
    */
   function getConnection_(networkList) {
@@ -708,6 +839,17 @@ cr.define('options.network', function() {
         return entry;
     }
     return null;
+  }
+
+  /**
+   * Queries if airplane mode is available.
+   * @return {boolean} Indicates if airplane mode is available.
+   * @private
+   */
+  function airplaneModeAvailable_() {
+     // TODO(kevers): Use library callback to determine if airplane mode is
+     // available once back-end suport is in place.
+     return false;
   }
 
   // Export
