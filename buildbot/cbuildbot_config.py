@@ -628,9 +628,9 @@ _internal_toolchain.add_config('x86-alex-toolchain',
   boards=['x86-alex'],
 )
 
-_internal_toolchain.add_config('arm-tegra2_seaboard-toolchain',
+_internal_toolchain.add_config('arm-tegra2_kaen-toolchain',
   arm,
-  boards=['tegra2_seaboard'],
+  boards=['tegra2_kaen'],
 )
 
 _release = full.derive(official, internal,
