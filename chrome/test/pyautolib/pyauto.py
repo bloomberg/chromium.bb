@@ -5038,7 +5038,6 @@ class Main(object):
       sys.exit(0)
     pyauto_suite = PyUITestSuite(suite_args)
     loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(test_names)
-    pyauto_suite = PyUITestSuite(suite_args)
     pyauto_suite.addTests(loaded_tests)
     verbosity = 1
     if self._options.verbose:
