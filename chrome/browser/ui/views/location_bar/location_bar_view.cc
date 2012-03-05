@@ -58,7 +58,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/drag_utils.h"
+#include "ui/views/button_drag_utils.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
@@ -1067,7 +1067,7 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
 
   TabContentsWrapper* tab_contents = delegate_->GetTabContentsWrapper();
   DCHECK(tab_contents);
-  drag_utils::SetURLAndDragImage(
+  button_drag_utils::SetURLAndDragImage(
       tab_contents->web_contents()->GetURL(),
       tab_contents->web_contents()->GetTitle(),
       tab_contents->favicon_tab_helper()->GetFavicon(),

@@ -27,8 +27,8 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/dragdrop/drag_utils.h"
 #include "ui/gfx/size.h"
-#include "ui/views/drag_utils.h"
 #include "webkit/glue/webdropdata.h"
 
 using content::BrowserThread;

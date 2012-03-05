@@ -54,8 +54,8 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/native_textfield_win.h"
-#include "ui/views/drag_utils.h"
 #include "ui/views/widget/widget.h"
 
 #pragma comment(lib, "oleacc.lib")  // Needed for accessibility support.
@@ -2548,7 +2548,7 @@ void OmniboxViewWin::StartDragIfNecessary(const CPoint& point) {
     SkBitmap favicon;
     if (is_all_selected)
       model_->GetDataForURLExport(&url, &title, &favicon);
-    drag_utils::SetURLAndDragImage(url, title, favicon, &data);
+    button_drag_utils::SetURLAndDragImage(url, title, favicon, &data);
     supported_modes |= DROPEFFECT_LINK;
     content::RecordAction(UserMetricsAction("Omnibox_DragURL"));
   } else {

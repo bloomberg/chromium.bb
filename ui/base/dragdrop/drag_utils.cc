@@ -2,56 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/drag_utils.h"
+#include "ui/base/dragdrop/drag_utils.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
-#include "grit/ui_resources.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
 
 namespace drag_utils {
 
 // Maximum width of the link drag image in pixels.
-static const int kLinkDragImageMaxWidth = 200;
 static const int kLinkDragImageVPadding = 3;
 
 // File dragging pixel measurements
 static const int kFileDragImageMaxWidth = 200;
 static const SkColor kFileDragImageTextColor = SK_ColorBLACK;
-
-void SetURLAndDragImage(const GURL& url,
-                        const string16& title,
-                        const SkBitmap& icon,
-                        ui::OSExchangeData* data) {
-  DCHECK(url.is_valid() && data);
-
-  data->SetURL(url, title);
-
-  // Create a button to render the drag image for us.
-  views::TextButton button(NULL,
-                           title.empty() ? UTF8ToUTF16(url.spec()) : title);
-  button.set_max_width(kLinkDragImageMaxWidth);
-  if (icon.isNull()) {
-    button.SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                   IDR_DEFAULT_FAVICON));
-  } else {
-    button.SetIcon(icon);
-  }
-  gfx::Size prefsize = button.GetPreferredSize();
-  button.SetBounds(0, 0, prefsize.width(), prefsize.height());
-
-  // Render the image.
-  gfx::CanvasSkia canvas(prefsize, false);
-  button.PaintButton(&canvas, views::TextButton::PB_FOR_DRAG);
-  SetDragImageOnDataObject(canvas, prefsize,
-      gfx::Point(prefsize.width() / 2, prefsize.height() / 2), data);
-}
 
 void CreateDragImageForFile(const FilePath& file_name,
                             const SkBitmap* icon,
