@@ -171,11 +171,10 @@ class VisitDatabase::VisitAnalysis {
           base::TimeDelta::FromSeconds(kPrerenderExpirationSeconds);
       int earliest = 0;
       int weakest = 0;
-      for (int i = 1; i < num_prerenders_; i++) {
+      for (int i = 0; i < num_prerenders_; i++) {
         if (prerenders_[i].url == prerender.url) {
-          if (prerenders_[i].priority < prerender.priority)
-            prerenders_[i].priority = prerender.priority;
-          return false;
+          prerenders_[i] = prerender;
+          return true;
         }
         if (prerenders_[i].started < prerenders_[earliest].started)
           earliest = i;
