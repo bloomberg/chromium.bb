@@ -297,7 +297,7 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     FileInfo file_info;
     InitFileInfo(&file_info, parent_id,
-                 virtual_path.internal_path().BaseName().value());
+                 VirtualPath::BaseName(virtual_path.internal_path()).value());
     if (!AllocateQuotaForPath(context, 1, file_info.name.size()))
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
     PlatformFileError error = CreateFile(
@@ -360,7 +360,7 @@ PlatformFileError ObfuscatedFileUtil::EnsureFileExists(
 
   FileInfo file_info;
   InitFileInfo(&file_info, parent_id,
-               virtual_path.internal_path().BaseName().value());
+               VirtualPath::BaseName(virtual_path.internal_path()).value());
   if (!AllocateQuotaForPath(context, 1, file_info.name.size()))
     return base::PLATFORM_FILE_ERROR_NO_SPACE;
   PlatformFileError error = CreateFile(context,
@@ -396,7 +396,7 @@ PlatformFileError ObfuscatedFileUtil::CreateDirectory(
   }
 
   std::vector<FilePath::StringType> components;
-  virtual_path.internal_path().GetComponents(&components);
+  VirtualPath::GetComponents(virtual_path.internal_path(), &components);
   FileId parent_id = 0;
   size_t index;
   for (index = 0; index < components.size(); ++index) {
@@ -716,7 +716,7 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
         return base::PLATFORM_FILE_ERROR_NOT_FOUND;
       }
       InitFileInfo(&dest_file_info, dest_parent_id,
-          dest_path.internal_path().BaseName().value());
+          VirtualPath::BaseName(dest_path.internal_path()).value());
       if (!AllocateQuotaForPath(context, 1, dest_file_info.name.size()))
         return base::PLATFORM_FILE_ERROR_NO_SPACE;
       return CreateFile(context, src_local_path,
@@ -750,18 +750,22 @@ PlatformFileError ObfuscatedFileUtil::CopyOrMoveFile(
       FilePath src_internal_path = src_path.internal_path();
       if (!AllocateQuotaForPath(
           context, 0,
-          static_cast<int64>(dest_internal_path.BaseName().value().size())
-              -static_cast<int64>(src_file_info.name.size())))
+          static_cast<int64>(
+              VirtualPath::BaseName(dest_internal_path).value().size()) -
+              static_cast<int64>(src_file_info.name.size())))
         return base::PLATFORM_FILE_ERROR_NO_SPACE;
       FileId src_parent_id = src_file_info.parent_id;
       src_file_info.parent_id = dest_parent_id;
-      src_file_info.name = dest_path.internal_path().BaseName().value();
+      src_file_info.name =
+          VirtualPath::BaseName(dest_path.internal_path()).value();
       if (!db->UpdateFileInfo(src_file_id, src_file_info))
         return base::PLATFORM_FILE_ERROR_FAILED;
       UpdatePathQuotaUsage(
           context, src_path.origin(), src_path.type(), 0,
-          static_cast<int64>(dest_internal_path.BaseName().value().size()) -
-              static_cast<int64>(src_internal_path.BaseName().value().size()));
+          static_cast<int64>(
+              VirtualPath::BaseName(dest_internal_path).value().size()) -
+              static_cast<int64>(
+                  VirtualPath::BaseName(src_internal_path).value().size()));
       TouchDirectory(db, src_parent_id);
       TouchDirectory(db, dest_parent_id);
       return base::PLATFORM_FILE_OK;
@@ -802,7 +806,7 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     }
     InitFileInfo(&dest_file_info, dest_parent_id,
-        dest_path.internal_path().BaseName().value());
+        VirtualPath::BaseName(dest_path.internal_path()).value());
     if (!AllocateQuotaForPath(context, 1, dest_file_info.name.size()))
       return base::PLATFORM_FILE_ERROR_NO_SPACE;
     return CreateFile(context, underlying_src_path,
@@ -953,7 +957,7 @@ bool ObfuscatedFileUtil::MigrateFromOldSandbox(
     }
 
     FileInfo file_info;
-    file_info.name = src_full_path.BaseName().value();
+    file_info.name = VirtualPath::BaseName(src_full_path).value();
     if (file_util::FileEnumerator::IsDirectory(info)) {
 #if defined(OS_WIN)
       file_info.modification_time =
@@ -1034,7 +1038,7 @@ bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
 
 // static
 int64 ObfuscatedFileUtil::ComputeFilePathCost(const FilePath& path) {
-  return GetPathQuotaUsage(1, path.BaseName().value().size());
+  return GetPathQuotaUsage(1, VirtualPath::BaseName(path).value().size());
 }
 
 PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(

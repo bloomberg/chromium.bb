@@ -230,10 +230,10 @@ TEST_F(FileSystemQuotaTest, TestMoveSuccessSrcDirRecursive) {
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(VirtualDirectoryExists(dest_dir_path.Append(
-      child_dir_path_.BaseName())));
+      VirtualPath::BaseName(child_dir_path_))));
   EXPECT_TRUE(VirtualFileExists(dest_dir_path.Append(
-      child_dir_path_.BaseName()).Append(
-      grandchild_file1_path_.BaseName())));
+      VirtualPath::BaseName(child_dir_path_)).Append(
+      VirtualPath::BaseName(grandchild_file1_path_))));
 
   EXPECT_EQ(all_file_size, ActualSize());
   EXPECT_EQ(all_file_size, SizeInUsageFile());
@@ -278,16 +278,16 @@ TEST_F(FileSystemQuotaTest, TestCopySuccessSrcDirRecursive) {
 
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(VirtualDirectoryExists(src_dir_path.Append(
-      child_dir_path_.BaseName())));
+      VirtualPath::BaseName(child_dir_path_))));
   EXPECT_TRUE(VirtualFileExists(src_dir_path.Append(
-      child_dir_path_.BaseName()).Append(
-      grandchild_file1_path_.BaseName())));
+      VirtualPath::BaseName(child_dir_path_)).Append(
+      VirtualPath::BaseName(grandchild_file1_path_))));
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(VirtualDirectoryExists(dest_dir1_path.Append(
-      child_dir_path_.BaseName())));
+      VirtualPath::BaseName(child_dir_path_))));
   EXPECT_TRUE(VirtualFileExists(dest_dir1_path.Append(
-      child_dir_path_.BaseName()).Append(
-      grandchild_file1_path_.BaseName())));
+      VirtualPath::BaseName(child_dir_path_)).Append(
+      VirtualPath::BaseName(grandchild_file1_path_))));
 
   EXPECT_EQ(2 * all_file_size, ActualSize());
   EXPECT_EQ(2 * all_file_size, SizeInUsageFile());

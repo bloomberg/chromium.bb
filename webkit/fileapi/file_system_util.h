@@ -6,10 +6,10 @@
 #define WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_
 #pragma once
 
+#include "base/file_path.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/quota/quota_types.h"
 
-class FilePath;
 class GURL;
 
 namespace fileapi {
@@ -26,10 +26,31 @@ extern const char kExternalName[];
 // url and the routine could successfully crack it, returns false otherwise.
 // The file_path this returns will be using '/' as a path separator, no matter
 // what platform you're on.
+// TODO(ericu): Look into making file_path [and all FileSystem API virtual
+// paths] just an std::string, to prevent platform-specific FilePath behavior
+// from getting invoked by accident.  Currently the FilePath returned here needs
+// special treatment, as it may contain paths that are illegal on the current
+// platform.  To avoid problems, use VirtualPath::BaseName and
+// VirtualPath::GetComponents instead of the FilePath methods.
 bool CrackFileSystemURL(const GURL& url,
                         GURL* origin_url,
                         FileSystemType* type,
                         FilePath* file_path);
+
+class VirtualPath {
+ public:
+  // Use this instead of FilePath::BaseName when operating on virtual paths.
+  // FilePath::BaseName will get confused by ':' on Windows when it looks like a
+  // drive letter separator; this will treat it as just another character.
+  static FilePath BaseName(const FilePath& virtual_path);
+
+  // Likewise, use this instead of FilePath::GetComponents when operating on
+  // virtual paths.
+  // Note that this assumes very clean input, with no leading slash, and it will
+  // not evaluate '.' or '..' components.
+  static void GetComponents(const FilePath& path,
+      std::vector<FilePath::StringType>* components);
+};
 
 // Returns the root URI of the filesystem that can be specified by a pair of
 // |origin_url| and |type|.  The returned URI can be used as a root path

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/sys_string_conversions.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "webkit/fileapi/file_system_util.h"
 
 namespace {
 
@@ -152,7 +153,7 @@ bool FileSystemDirectoryDatabase::GetChildWithName(
 bool FileSystemDirectoryDatabase::GetFileWithPath(
     const FilePath& path, FileId* file_id) {
   std::vector<FilePath::StringType> components;
-  path.GetComponents(&components);
+  VirtualPath::GetComponents(path, &components);
   FileId local_id = 0;
   std::vector<FilePath::StringType>::iterator iter;
   for (iter = components.begin(); iter != components.end(); ++iter) {

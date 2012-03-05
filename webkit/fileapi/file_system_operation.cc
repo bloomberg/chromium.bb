@@ -724,7 +724,7 @@ base::PlatformFileError FileSystemOperation::SetUpFileSystemPath(
         GetMountPointProvider(type);
 
     // Check if the cracked file name looks good to create.
-    if (provider->IsRestrictedFileName(cracked_path.BaseName()))
+    if (provider->IsRestrictedFileName(VirtualPath::BaseName(cracked_path)))
       return base::PLATFORM_FILE_ERROR_SECURITY;
   }
 

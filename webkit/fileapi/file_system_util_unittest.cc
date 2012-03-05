@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,8 @@ TEST_F(FileSystemUtilTest, ParsePersistent) {
       "filesystem:http://chromium.org/persistent/directory/file"));
   EXPECT_EQ("http://chromium.org/", origin_url_.spec());
   EXPECT_EQ(kFileSystemTypePersistent, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("file"), file_path_.BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("file"),
+      VirtualPath::BaseName(file_path_).value());
   EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
 }
 
@@ -38,7 +39,8 @@ TEST_F(FileSystemUtilTest, ParseTemporary) {
       "filesystem:http://chromium.org/temporary/directory/file"));
   EXPECT_EQ("http://chromium.org/", origin_url_.spec());
   EXPECT_EQ(kFileSystemTypeTemporary, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("file"), file_path_.BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("file"),
+      VirtualPath::BaseName(file_path_).value());
   EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
 }
 
@@ -47,7 +49,8 @@ TEST_F(FileSystemUtilTest, EnsureFilePathIsRelative) {
       "filesystem:http://chromium.org/temporary/////directory/file"));
   EXPECT_EQ("http://chromium.org/", origin_url_.spec());
   EXPECT_EQ(kFileSystemTypeTemporary, type_);
-  EXPECT_EQ(FILE_PATH_LITERAL("file"), file_path_.BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("file"),
+      VirtualPath::BaseName(file_path_).value());
   EXPECT_EQ(FILE_PATH_LITERAL("directory"), file_path_.DirName().value());
   EXPECT_FALSE(file_path_.IsAbsolute());
 }
@@ -62,7 +65,8 @@ TEST_F(FileSystemUtilTest, RejectBadSchemes) {
 TEST_F(FileSystemUtilTest, UnescapePath) {
   ASSERT_TRUE(CrackFileSystemURL(
       "filesystem:http://chromium.org/persistent/%7Echromium/space%20bar"));
-  EXPECT_EQ(FILE_PATH_LITERAL("space bar"), file_path_.BaseName().value());
+  EXPECT_EQ(FILE_PATH_LITERAL("space bar"),
+      VirtualPath::BaseName(file_path_).value());
   EXPECT_EQ(FILE_PATH_LITERAL("~chromium"), file_path_.DirName().value());
 }
 
@@ -87,6 +91,70 @@ TEST_F(FileSystemUtilTest, GetPersistentFileSystemRootURI) {
   fileapi::FileSystemType type = fileapi::kFileSystemTypePersistent;
   GURL uri = GURL("filesystem:http://chromium.org/persistent/");
   EXPECT_EQ(uri, GetFileSystemRootURI(origin_url, type));
+}
+
+TEST_F(FileSystemUtilTest, VirtualPathBaseName) {
+  struct test_data {
+    const FilePath::StringType path;
+    const FilePath::StringType base_name;
+  } test_cases[] = {
+    { FILE_PATH_LITERAL("foo/bar"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("foo/b:bar"), FILE_PATH_LITERAL("b:bar") },
+    { FILE_PATH_LITERAL(""), FILE_PATH_LITERAL("") },
+    { FILE_PATH_LITERAL("/"), FILE_PATH_LITERAL("/") },
+    { FILE_PATH_LITERAL("foo//////bar"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("foo/bar/"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("foo/bar/////"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("/bar/////"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("bar/////"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("bar/"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("/bar"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("////bar"), FILE_PATH_LITERAL("bar") },
+    { FILE_PATH_LITERAL("bar"), FILE_PATH_LITERAL("bar") }
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    FilePath input = FilePath(test_cases[i].path);
+    FilePath base_name = VirtualPath::BaseName(input);
+    EXPECT_EQ(test_cases[i].base_name, base_name.value());
+  }
+}
+
+TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
+  struct test_data {
+    const FilePath::StringType path;
+    size_t count;
+    const FilePath::StringType components[3];
+  } test_cases[] = {
+    { FILE_PATH_LITERAL("foo/bar"),
+      2,
+      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
+    { FILE_PATH_LITERAL("foo"),
+      1,
+      { FILE_PATH_LITERAL("foo") } },
+    { FILE_PATH_LITERAL("foo////bar"),
+      2,
+      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
+    { FILE_PATH_LITERAL("foo/c:bar"),
+      2,
+      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("c:bar") } },
+    { FILE_PATH_LITERAL("c:foo/bar"),
+      2,
+      { FILE_PATH_LITERAL("c:foo"), FILE_PATH_LITERAL("bar") } },
+    { FILE_PATH_LITERAL("foo/bar"),
+      2,
+      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
+    { FILE_PATH_LITERAL("/foo/bar"),
+      2,
+      { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("bar") } },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    FilePath input = FilePath(test_cases[i].path);
+    std::vector<FilePath::StringType> components;
+    VirtualPath::GetComponents(input, &components);
+    EXPECT_EQ(test_cases[i].count, components.size());
+    for (size_t j = 0; j < components.size(); ++j)
+      EXPECT_EQ(test_cases[i].components[j], components[j]);
+  }
 }
 
 }  // namespace (anonymous)

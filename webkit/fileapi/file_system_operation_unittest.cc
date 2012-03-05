@@ -438,7 +438,7 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
   // Make sure we've overwritten but not moved the source under the |dest_dir|.
   EXPECT_TRUE(VirtualDirectoryExists(dest_dir_path));
   EXPECT_FALSE(VirtualDirectoryExists(
-      dest_dir_path.Append(src_dir_path.BaseName())));
+      dest_dir_path.Append(VirtualPath::BaseName(src_dir_path))));
 }
 
 TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
@@ -468,10 +468,10 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(VirtualDirectoryExists(dest_dir_path.Append(
-      child_dir_path.BaseName())));
+      VirtualPath::BaseName(child_dir_path))));
   EXPECT_TRUE(VirtualFileExists(dest_dir_path.Append(
-      child_dir_path.BaseName()).Append(
-      grandchild_file_path.BaseName())));
+      VirtualPath::BaseName(child_dir_path)).Append(
+      VirtualPath::BaseName(grandchild_file_path))));
 }
 
 TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
@@ -609,7 +609,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
   // Make sure we've overwritten but not copied the source under the |dest_dir|.
   EXPECT_TRUE(VirtualDirectoryExists(dest_dir_path));
   EXPECT_FALSE(VirtualDirectoryExists(
-      dest_dir_path.Append(src_dir_path.BaseName())));
+      dest_dir_path.Append(VirtualPath::BaseName(src_dir_path))));
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
@@ -640,10 +640,10 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_OK, status());
   EXPECT_TRUE(VirtualDirectoryExists(dest_dir_path.Append(
-      child_dir_path.BaseName())));
+      VirtualPath::BaseName(child_dir_path))));
   EXPECT_TRUE(VirtualFileExists(dest_dir_path.Append(
-      child_dir_path.BaseName()).Append(
-      grandchild_file_path.BaseName())));
+      VirtualPath::BaseName(child_dir_path)).Append(
+      VirtualPath::BaseName(grandchild_file_path))));
   EXPECT_EQ(1, quota_manager_proxy()->storage_accessed_count());
 }
 
@@ -855,10 +855,10 @@ TEST_F(FileSystemOperationTest, TestReadDirSuccess) {
 
   for (size_t i = 0; i < entries().size(); ++i) {
     if (entries()[i].is_directory) {
-      EXPECT_EQ(child_dir_path.BaseName().value(),
+      EXPECT_EQ(VirtualPath::BaseName(child_dir_path).value(),
                 entries()[i].name);
     } else {
-      EXPECT_EQ(child_file_path.BaseName().value(),
+      EXPECT_EQ(VirtualPath::BaseName(child_file_path).value(),
                 entries()[i].name);
     }
   }
