@@ -66,7 +66,7 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
-#include "chrome/browser/ui/webui/task_manager_dialog.h"
+#include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"

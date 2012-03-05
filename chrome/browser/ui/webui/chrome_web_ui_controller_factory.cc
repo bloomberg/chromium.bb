@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_activity_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
-#include "chrome/browser/ui/webui/task_manager_ui.h"
+#include "chrome/browser/ui/webui/task_manager/task_manager_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/generic_handler.h"

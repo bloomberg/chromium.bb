@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/task_manager_dialog.h"
+#include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"

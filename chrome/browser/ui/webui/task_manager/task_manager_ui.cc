@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/task_manager_ui.h"
+#include "chrome/browser/ui/webui/task_manager/task_manager_ui.h"
 
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
-#include "chrome/browser/ui/webui/task_manager_handler.h"
+#include "chrome/browser/ui/webui/task_manager/task_manager_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
