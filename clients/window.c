@@ -818,8 +818,19 @@ window_attach_surface(struct window *window)
 		return;
 	}
 
-	wl_surface_set_input_region(window->surface, window->input_region);
-	wl_surface_set_opaque_region(window->surface, window->opaque_region);
+	if (window->input_region) {
+		wl_surface_set_input_region(window->surface,
+					    window->input_region);
+		wl_region_destroy(window->input_region);
+		window->input_region = NULL;
+	}
+
+	if (window->opaque_region) {
+		wl_surface_set_opaque_region(window->surface,
+					     window->opaque_region);
+		wl_region_destroy(window->opaque_region);
+		window->opaque_region = NULL;
+	}
 
 	wl_surface_damage(window->surface, 0, 0,
 			  window->allocation.width,
