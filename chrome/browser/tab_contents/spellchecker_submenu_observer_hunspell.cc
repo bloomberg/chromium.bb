@@ -70,17 +70,11 @@ void SpellCheckerSubMenuObserver::InitMenu(
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD));
 
-  // If we have not integrated the spelling service, we show an "Ask Google for
-  // spelling suggestions" item. On the other hand, if we have integrated the
-  // spelling service, we show "Stop asking Google for spelling suggestions"
-  // item.
-  bool integrate_spelling_service =
-      profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
-  int spelling_message = integrate_spelling_service ?
-      IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE :
-      IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE;
+  // Add a check item "Ask Google for spelling suggestions" item. (This class
+  // does not handle this item because the SpellingMenuObserver class handles it
+  // on behalf of this class.)
   submenu_model_.AddCheckItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-                              l10n_util::GetStringUTF16(spelling_message));
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
 
   proxy_->AddSubMenu(
       IDC_SPELLCHECK_MENU,

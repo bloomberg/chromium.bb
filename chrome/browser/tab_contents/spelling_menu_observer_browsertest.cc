@@ -8,8 +8,10 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 
@@ -23,8 +25,15 @@ class MockRenderViewContextMenu : public RenderViewContextMenuProxy {
   // A menu item used in this test. This test uses a vector of this struct to
   // hold menu items added by this test.
   struct MockMenuItem {
+    MockMenuItem()
+        : command_id(0),
+          enabled(false),
+          checked(false),
+          hidden(true) {
+    }
     int command_id;
     bool enabled;
+    bool checked;
     bool hidden;
     string16 title;
   };
@@ -34,6 +43,7 @@ class MockRenderViewContextMenu : public RenderViewContextMenuProxy {
 
   // RenderViewContextMenuProxy implementation.
   virtual void AddMenuItem(int command_id, const string16& title) OVERRIDE;
+  virtual void AddCheckItem(int command_id, const string16& title) OVERRIDE;
   virtual void AddSeparator() OVERRIDE;
   virtual void AddSubMenu(int command_id,
                           const string16& label,
@@ -85,6 +95,18 @@ void MockRenderViewContextMenu::AddMenuItem(int command_id,
   MockMenuItem item;
   item.command_id = command_id;
   item.enabled = observer_->IsCommandIdEnabled(command_id);
+  item.checked = false;
+  item.hidden = false;
+  item.title = title;
+  items_.push_back(item);
+}
+
+void MockRenderViewContextMenu::AddCheckItem(int command_id,
+                                             const string16& title) {
+  MockMenuItem item;
+  item.command_id = command_id;
+  item.enabled = observer_->IsCommandIdEnabled(command_id);
+  item.checked = observer_->IsCommandIdChecked(command_id);
   item.hidden = false;
   item.title = title;
   items_.push_back(item);
@@ -94,6 +116,7 @@ void MockRenderViewContextMenu::AddSeparator() {
   MockMenuItem item;
   item.command_id = -1;
   item.enabled = false;
+  item.checked = false;
   item.hidden = false;
   items_.push_back(item);
 }
@@ -104,6 +127,7 @@ void MockRenderViewContextMenu::AddSubMenu(int command_id,
   MockMenuItem item;
   item.command_id = -1;
   item.enabled = false;
+  item.checked = false;
   item.hidden = false;
   items_.push_back(item);
 }
@@ -145,6 +169,7 @@ bool MockRenderViewContextMenu::GetMenuItem(size_t i,
     return false;
   item->command_id = items_[i].command_id;
   item->enabled = items_[i].enabled;
+  item->checked = items_[i].checked;
   item->hidden = items_[i].hidden;
   item->title = items_[i].title;
   return true;
@@ -222,9 +247,37 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, InitMenuWithMisspelledWord) {
   menu->GetMenuItem(2, &item);
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE, item.command_id);
   EXPECT_TRUE(item.enabled);
+  EXPECT_FALSE(item.checked);
   EXPECT_FALSE(item.hidden);
   menu->GetMenuItem(3, &item);
   EXPECT_EQ(-1, item.command_id);
   EXPECT_FALSE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+}
+
+// Tests that right-clicking a misspelled word when we enable spelling-service
+// integration to verify an item "Ask Google for suggestions" is checked. (This
+// test does not actually send JSON-RPC requests to the service because it makes
+// this test flaky.)
+IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, EnableSpellingService) {
+  scoped_ptr<MockRenderViewContextMenu> menu(new MockRenderViewContextMenu);
+  scoped_ptr<SpellingMenuObserver> observer(
+      new SpellingMenuObserver(menu.get()));
+  menu->SetObserver(observer.get());
+  menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+
+  content::ContextMenuParams params;
+  params.is_editable = true;
+  params.misspelled_word = ASCIIToUTF16("wiimode");
+  observer->InitMenu(params);
+  EXPECT_EQ(static_cast<size_t>(4), menu->GetMenuSize());
+
+  // To avoid duplicates, this test reads only the "Ask Google for suggestions"
+  // item and verifies it is enabled and checked.
+  MockRenderViewContextMenu::MockMenuItem item;
+  menu->GetMenuItem(2, &item);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE, item.command_id);
+  EXPECT_TRUE(item.enabled);
+  EXPECT_TRUE(item.checked);
   EXPECT_FALSE(item.hidden);
 }

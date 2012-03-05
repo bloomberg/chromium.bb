@@ -679,6 +679,11 @@ void RenderViewContextMenu::AddMenuItem(int command_id,
   menu_model_.AddItem(command_id, title);
 }
 
+void RenderViewContextMenu::AddCheckItem(int command_id,
+                                         const string16& title) {
+  menu_model_.AddCheckItem(command_id, title);
+}
+
 void RenderViewContextMenu::AddSeparator() {
   menu_model_.AddSeparator();
 }

@@ -500,9 +500,6 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="The button text that disallows integrating the spelling service of Google.">
           No thanks
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE" desc="The context-menu item that stops integrating the spelling service.">
-          Stop asking Google for suggestions
-        </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
           Loading suggestion
         </message>
@@ -708,9 +705,6 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_DISABLE" desc="In Title Case: The button text that disallows integrating the spelling service of Google.">
           No Thanks
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE" desc="The context-menu item that stops integrating the spelling service.">
-          Stop asking Google for suggestions
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
           Loading suggestion

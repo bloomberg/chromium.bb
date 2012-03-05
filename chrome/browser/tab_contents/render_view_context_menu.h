@@ -96,6 +96,7 @@ class RenderViewContextMenuProxy {
  public:
   // Add a menu item to a context menu.
   virtual void AddMenuItem(int command_id, const string16& title) = 0;
+  virtual void AddCheckItem(int command_id, const string16& title) = 0;
   virtual void AddSeparator() = 0;
 
   // Add a submenu item to a context menu.
@@ -142,6 +143,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // RenderViewContextMenuDelegate implementation.
   virtual void AddMenuItem(int command_id, const string16& title) OVERRIDE;
+  virtual void AddCheckItem(int command_id, const string16& title) OVERRIDE;
   virtual void AddSeparator() OVERRIDE;
   virtual void AddSubMenu(int command_id,
                           const string16& label,

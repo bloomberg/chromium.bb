@@ -107,9 +107,8 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
       spellcheck_host->GetMetrics()->RecordSuggestionStats(1);
   }
 
-  // If word is misspelled, give option for "Add to dictionary" and "Ask Google
-  // for suggestions". (The SpellCheckerSubMenuObserver class handles the "Ask
-  // Goole for suggestions" item so this class does not have to handle it.)
+  // If word is misspelled, give option for "Add to dictionary" and a check item
+  // "Ask Google for suggestions".
   if (!params.misspelled_word.empty()) {
     if (params.dictionary_suggestions.empty()) {
       proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
@@ -122,11 +121,8 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
 
     integrate_spelling_service_ =
         profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
-    int spelling_message = integrate_spelling_service_ ?
-        IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE :
-        IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE;
-    proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-                        l10n_util::GetStringUTF16(spelling_message));
+    proxy_->AddCheckItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE));
 
     proxy_->AddSeparator();
   }
@@ -147,6 +143,14 @@ bool SpellingMenuObserver::IsCommandIdSupported(int command_id) {
     default:
       return false;
   }
+  return false;
+}
+
+bool SpellingMenuObserver::IsCommandIdChecked(int command_id) {
+  DCHECK(IsCommandIdSupported(command_id));
+
+  if (command_id == IDC_CONTENT_CONTEXT_SPELLING_TOGGLE)
+    return integrate_spelling_service_;
   return false;
 }
 
@@ -219,10 +223,10 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
   }
 
   if (command_id == IDC_CONTENT_CONTEXT_SPELLING_TOGGLE) {
-    // When a user chooses the "Ask Google for spelling suggestions" item, we
-    // show a bubble to confirm it. On the other hand, when a user chooses the
-    // "Stop asking Google for spelling suggestions" item, we directly update
-    // the profile and stop integrating the spelling service immediately.
+    // When a user enables the "Ask Google for spelling suggestions" item, we
+    // show a bubble to confirm it. On the other hand, when a user disables this
+    // item, we directly update/ the profile and stop integrating the spelling
+    // service immediately.
     if (!integrate_spelling_service_) {
       RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->view()->GetViewBounds();
