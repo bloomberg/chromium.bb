@@ -774,6 +774,9 @@ destroy_shell_surface(struct wl_resource *resource)
 	if (shsurf->surface)
 		wl_list_remove(&shsurf->surface_destroy_listener.link);
 
+	if (shsurf->fullscreen.black_surface)
+		weston_surface_destroy(shsurf->fullscreen.black_surface);
+
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
 }
