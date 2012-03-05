@@ -9,37 +9,38 @@ Basic locking functionality.
 import os
 import errno
 import fcntl
+import tempfile
 from chromite.lib import cros_build_lib
 
 
-class FileLock(cros_build_lib.MasterPidContextManager):
+class _Lock(cros_build_lib.MasterPidContextManager):
 
-  def __init__(self, path, description=None, verbose=True):
-    """
+  """Base lockf based locking.  Derivatives need to override _GetFd"""
+
+  def __init__(self, description=None, verbose=True):
+    """Initialize this instance.
+
     Args:
       path: On disk pathway to lock.  Can be a directory or a file.
       description: A description for this lock- what is it protecting?
     """
     cros_build_lib.MasterPidContextManager.__init__(self)
-    self.path = os.path.abspath(path)
-    self._fd = None
     self._verbose = verbose
-    if description is None:
-      description = "lock %s" % (self.path,)
     self.description = description
+    self._fd = None
 
   @property
   def fd(self):
-    fd = self._fd
-    if fd is None:
-      # Keep the child from holding the lock/fd via closing the fd on exec.
-      # note os.O_CLOEXEC is >=py3.4 only.  Yes, we're ahead of the curve here.
-      cloexec = getattr(os, 'O_CLOEXEC', 0)
-      fd = self._fd = os.open(self.path, os.W_OK|os.O_CREAT|cloexec)
-      if cloexec == 0:
-        fcntl.fcntl(fd, fcntl.F_SETFD,
-                    fcntl.fcntl(fd, fcntl.F_GETFD)|fcntl.FD_CLOEXEC)
-    return fd
+    if self._fd is None:
+      self._fd = self._GetFd()
+      # Ensure that all derivatives of this lock can't bleed the fd
+      # across execs.
+      fcntl.fcntl(self._fd, fcntl.F_SETFD,
+                  fcntl.fcntl(self._fd, fcntl.F_GETFD) | fcntl.FD_CLOEXEC)
+    return self._fd
+
+  def _GetFd(self):
+    raise NotImplemented(self, '_GetFd')
 
   def _enforce_lock(self, flags, message):
     # Try nonblocking first, if it fails, display the context/message,
@@ -121,3 +122,48 @@ class FileLock(cros_build_lib.MasterPidContextManager):
       self.unlock()
     finally:
       self.close()
+
+
+class FileLock(_Lock):
+
+  def __init__(self, path, description=None, verbose=True):
+    """
+    Args:
+      path: On disk pathway to lock.  Can be a directory or a file.
+      description: A description for this lock- what is it protecting?
+    """
+    if description is None:
+      description = "lock %s" % (path,)
+    _Lock.__init__(self, description=description, verbose=verbose)
+    self.path = os.path.abspath(path)
+
+  def _GetFd(self):
+    # If we're on py3.4 and this attribute is exposed, use it to close
+    # the threading race between open and fcntl setting; this is
+    # extremely paranoid code, but might as well.
+    cloexec = getattr(os, 'O_CLOEXEC', 0)
+    return os.open(self.path, os.W_OK|os.O_CREAT|cloexec)
+
+
+class ProcessLock(_Lock):
+
+  """Process level locking visible to parent/child only.
+
+  This lock is basically a more robust version of what
+  multiprocessing.Lock does.  That implementation uses semaphores
+  internally which require cleanup/deallocation code to run to release
+  the lock; a SIGKILL hitting the process holding the lock violates those
+  assumptions leading to a stuck lock.
+
+  Thus this implementation is based around locking of a deleted tempfile;
+  lockf locks are guranteed to be released once the process/fd is closed.
+  """
+
+  def _GetFd(self):
+    with tempfile.TemporaryFile() as f:
+      # We don't want to hold onto the object indefinitely; we just want
+      # the fd to a temporary inode, preferably one that isn't vfs accessible.
+      # Since TemporaryFile closes the fd once the object is GC'd, we just
+      # dupe the fd so we retain a copy, while the original TemporaryFile
+      # goes away.
+      return os.dup(f.fileno())
