@@ -247,9 +247,16 @@ Chrome supports. -->
       <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed on dialog">
         Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.
       </message>
-      <message name="IDS_ABOUT_CHROME_TITLE" desc="Dialog title">
-        About Google Chrome
-      </message>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_ABOUT_CHROME_TITLE" desc="Title of the about page.">
+          About Google Chrome
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_ABOUT_CHROME_TITLE" desc="Title of the about page.">
+          About Chrome OS
+        </message>
+      </if>
       <!-- Uninstall messages -->
       <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
         Please close all Google Chrome windows and try again.
