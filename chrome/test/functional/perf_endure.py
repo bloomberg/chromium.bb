@@ -51,7 +51,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
     self._dom_node_count_results = []
     self._event_listener_count_results = []
-    self._process_private_mem_results = []
+    self._browser_process_private_mem_results = []
+    self._tab_process_private_mem_results = []
     self._v8_mem_used_results = []
     self._test_start_time = 0
 
@@ -67,20 +68,39 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
             ['--remote-debugging-port=9222'])
 
   def _GetProcessInfo(self, tab_title_substring):
-    """Gets process info associated with an open tab.
+    """Gets process info associated with an open browser/tab.
 
     Args:
       tab_title_substring: A unique substring contained within the title of
                            the tab to use; needed for locating the tab info.
 
     Returns:
-      A dictionary containing information about the specified tab process:
+      A dictionary containing information about the browser and specified tab
+      process:
       {
-        'private_mem': integer,  # Private memory associated with the tab
-                                 # process, in KB.
+        'browser_private_mem': integer,  # Private memory associated with the
+                                         # browser process, in KB.
+        'tab_private_mem': integer,  # Private memory associated with the tab
+                                     # process, in KB.
       }
     """
+    browser_process_name = (
+        self.GetBrowserInfo()['properties']['BrowserProcessExecutableName'])
     info = self.GetProcessInfo()
+
+    # Get the information associated with the browser process.
+    browser_proc_info = []
+    for browser_info in info['browsers']:
+      if browser_info['process_name'] == browser_process_name:
+        for proc_info in browser_info['processes']:
+          if proc_info['child_process_type'] == 'Browser':
+            browser_proc_info.append(proc_info)
+    self.assertEqual(len(browser_proc_info), 1,
+                     msg='Expected to find 1 Chrome browser process, but found '
+                         '%d instead.\nCurrent process info:\n%s.' % (
+                         len(browser_proc_info), self.pformat(info)))
+
+    # Get the process information associated with the specified tab.
     tab_proc_info = []
     for browser_info in info['browsers']:
       for proc_info in browser_info['processes']:
@@ -92,9 +112,12 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
                          'instead.\nCurrent process info:\n%s.' % (
                          tab_title_substring, len(tab_proc_info),
                          self.pformat(info)))
+
+    browser_proc_info = browser_proc_info[0]
     tab_proc_info = tab_proc_info[0]
     return {
-      'private_mem': tab_proc_info['working_set_mem']['priv']
+      'browser_private_mem': browser_proc_info['working_set_mem']['priv'],
+      'tab_private_mem': tab_proc_info['working_set_mem']['priv'],
     }
 
   def _GetPerformanceStats(self, webapp_name, test_description,
@@ -126,10 +149,14 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
                                                event_listener_count))
 
     proc_info = self._GetProcessInfo(tab_title_substring)
+    logging.info('  Browser process private memory: %d KB' %
+                 proc_info['browser_private_mem'])
+    self._browser_process_private_mem_results.append(
+        (elapsed_time, proc_info['browser_private_mem']))
     logging.info('  Tab process private memory: %d KB' %
-                 proc_info['private_mem'])
-    self._process_private_mem_results.append((elapsed_time,
-                                              proc_info['private_mem']))
+                 proc_info['tab_private_mem'])
+    self._tab_process_private_mem_results.append(
+        (elapsed_time, proc_info['tab_private_mem']))
 
     v8_info = self.GetV8HeapStats()  # First window, first tab.
     v8_mem_used = v8_info['v8_memory_used'] / 1024.0  # Convert to KB.
@@ -146,8 +173,12 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
         graph_name='%s%s-EventListeners' % (webapp_name, test_description),
         units_x='seconds')
     self._OutputPerfGraphValue(
-        'ProcessPrivateMemory', self._process_private_mem_results, 'KB',
-        graph_name='%s%s-ProcMem-Private' % (webapp_name, test_description),
+        'BrowserPrivateMemory', self._browser_process_private_mem_results, 'KB',
+        graph_name='%s%s-BrowserMem-Private' % (webapp_name, test_description),
+        units_x='seconds')
+    self._OutputPerfGraphValue(
+        'TabPrivateMemory', self._tab_process_private_mem_results, 'KB',
+        graph_name='%s%s-TabMem-Private' % (webapp_name, test_description),
         units_x='seconds')
     self._OutputPerfGraphValue(
         'V8MemoryUsed', self._v8_mem_used_results, 'KB',
