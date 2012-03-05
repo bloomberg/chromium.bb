@@ -97,7 +97,7 @@ struct SelLdrLauncher {
 
   bool Start(const char* url);
   // TODO(sehr): remove this obsolete interface.  The parameters are useless.
-  bool Start(int socket_count, Handle* result_sockets, const char* url = "");
+  bool Start(int socket_count, Handle* result_sockets, const char* url);
 
 
   /////////////////////////////////////////////////////////////////////////////
