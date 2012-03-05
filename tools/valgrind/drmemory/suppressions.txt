@@ -1,7 +1,7 @@
 # This file contains suppressions for the Dr.Memory tool, see
 # http://dev.chromium.org/developers/how-tos/using-drmemory
 #
-# This file contains suppressions for the DrMemroy reports happening
+# This file contains suppressions for the DrMemory reports happening
 # in the 'light' mode (a.k.a. drmemory_light) as well as in the 'full' mode.
 # Please use suppressions_full.txt for all the reports that can happen only
 # in the full mode (drmemory_full),
