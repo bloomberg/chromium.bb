@@ -184,6 +184,9 @@ struct weston_compositor {
 
 	struct weston_shell *shell;
 
+	struct wl_event_loop *input_loop;
+	struct wl_event_source *input_loop_source;
+
 	/* There can be more than one, but not right now... */
 	struct wl_input_device *input_device;
 

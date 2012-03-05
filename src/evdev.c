@@ -437,7 +437,6 @@ evdev_input_device_create(struct evdev_input *master,
 			  struct wl_display *display, const char *path)
 {
 	struct evdev_input_device *device;
-	struct wl_event_loop *loop;
 	struct weston_compositor *ec;
 
 	device = malloc(sizeof *device);
@@ -463,8 +462,7 @@ evdev_input_device_create(struct evdev_input *master,
 	if (evdev_configure_device(device) == -1)
 		goto err1;
 
-	loop = wl_display_get_event_loop(display);
-	device->source = wl_event_loop_add_fd(loop, device->fd,
+	device->source = wl_event_loop_add_fd(ec->input_loop, device->fd,
 					      WL_EVENT_READABLE,
 					      evdev_input_device_data, device);
 	if (device->source == NULL)

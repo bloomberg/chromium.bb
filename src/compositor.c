@@ -2268,6 +2268,16 @@ compositor_bind(struct wl_client *client,
 			     &compositor_interface, id, compositor);
 }
 
+static int
+weston_compositor_read_input(int fd, uint32_t mask, void *data)
+{
+	struct weston_compositor *compositor = data;
+
+	wl_event_loop_dispatch(compositor->input_loop, 0);
+
+	return 1;
+}
+
 WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 {
@@ -2336,6 +2346,15 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
 	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
+
+	ec->input_loop = wl_event_loop_create();
+
+	ec->input_loop_source =
+		wl_event_loop_add_fd(loop,
+				     wl_event_loop_get_fd(ec->input_loop),
+				     WL_EVENT_READABLE,
+				     weston_compositor_read_input, ec);
+
 
 	weston_compositor_schedule_repaint(ec);
 
