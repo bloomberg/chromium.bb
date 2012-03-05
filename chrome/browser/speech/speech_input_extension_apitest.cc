@@ -131,20 +131,29 @@ void SpeechInputExtensionApiTest::StartRecording(
   recognizer_is_valid_ = true;
 
   // Notify that recording started.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::DidStartReceivingAudio,
-      GetManager(), caller_id), 0);
+                 GetManager(),
+                 caller_id),
+      base::TimeDelta());
 
   // Notify sound start in the input device.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::DidStartReceivingSpeech,
-      GetManager(), caller_id), 0);
+                 GetManager(),
+                 caller_id),
+      base::TimeDelta());
 
   if (result_delay_ms_ != kDontDispatchCall) {
     // Dispatch the recognition results.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&SpeechInputExtensionApiTest::ProvideResults, this,
-        caller_id), result_delay_ms_);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&SpeechInputExtensionApiTest::ProvideResults,
+                   this,
+                   caller_id),
+        base::TimeDelta::FromMilliseconds(result_delay_ms_));
   }
 }
 
