@@ -132,14 +132,18 @@ class IDLNode(IDLRelease):
     tab = ''.rjust(depth * 2)
 
     if is_comment:
+      out.write('%sComment\n' % tab)
       for line in self.GetName().split('\n'):
-        out.write('%s%s\n' % (tab, line))
+        out.write('%s  "%s"\n' % (tab, line))
     else:
       out.write('%s%s\n' % (tab, self))
     properties = self.property_node.GetPropertyList()
     if properties:
       out.write('%s  Properties\n' % tab)
       for p in properties:
+        if is_comment and p == 'NAME':
+          # Skip printing the name for comments, since we printed above already
+          continue
         out.write('%s    %s : %s\n' % (tab, p, self.GetProperty(p)))
     for child in self.children:
       child.Dump(depth+1, comments=comments, out=out)

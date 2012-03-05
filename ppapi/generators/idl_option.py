@@ -60,7 +60,7 @@ def DumpHelp(option=None):
   InfoOut.Log('Usage:')
   for opt in sorted(OptionMap.keys()):
     DumpOption(OptionMap[opt])
-
+  sys.exit(0)
 
 #
 # Default IDL options
@@ -70,6 +70,7 @@ def DumpHelp(option=None):
 # --test : test this module
 #
 Option('h', 'Help', callfunc=DumpHelp)
+Option('help', 'Help', callfunc=DumpHelp)
 Option('verbose', 'Verbose')
 Option('test', 'Test the IDL scripts')
 

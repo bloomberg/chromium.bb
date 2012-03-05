@@ -223,11 +223,14 @@ class IDLParser(IDLLexer):
 
   # Build a list of top level items.
   def p_top_list(self, p):
-    """top_list : describe_block top_list
+    """top_list : callback_decl top_list
+                | describe_block top_list
+                | dictionary_block top_list
                 | enum_block top_list
                 | inline top_list
                 | interface_block top_list
                 | label_block top_list
+                | namespace top_list
                 | struct_block top_list
                 | typedef_decl top_list
                 | """
@@ -264,6 +267,44 @@ class IDLParser(IDLLexer):
       if self.parse_debug: DumpReduction('comments', p)
     else:
       if self.parse_debug: DumpReduction('no comments', p)
+
+
+#
+# Namespace
+#
+# A namespace provides a named scope to an enclosed top_list.
+#
+  def p_namespace(self, p):
+    """namespace : modifiers NAMESPACE namespace_name '{' top_list '}' ';'"""
+    children = ListFromConcat(p[1], p[5])
+    p[0] = self.BuildNamed('Namespace', p, 3, children)
+
+  # We allow namespace names of the form foo.bar.baz.
+  def p_namespace_name(self, p):
+    """namespace_name : SYMBOL
+                      | SYMBOL '.' namespace_name"""
+    p[0] = "".join(p[1:])
+
+
+#
+# Dictionary
+#
+# A dictionary contains is a named list of optional and required members.
+#
+  def p_dictionary_block(self, p):
+    """dictionary_block : modifiers DICTIONARY SYMBOL '{' struct_list '}' ';'"""
+    p[0] = self.BuildNamed('Dictionary', p, 3, ListFromConcat(p[5]))
+
+#
+# Callback
+#
+# A callback is essentially a single function declaration (outside of an
+# Interface).
+#
+  def p_callback_decl(self, p):
+    """callback_decl : modifiers CALLBACK SYMBOL '=' SYMBOL param_list ';'"""
+    children = ListFromConcat(p[1], p[6])
+    p[0] = self.BuildNamed('Callback', p, 3, children)
 
 
 #
@@ -482,6 +523,19 @@ class IDLParser(IDLLexer):
     elif len(p) == 1: return
     if self.parse_debug: DumpReduction('arrays', p)
 
+
+# An identifier is a legal value for a parameter or attribute name. Lots of
+# existing IDL files use "callback" as a parameter/attribute name, so we allow
+# a SYMBOL or the CALLBACK keyword.
+  def p_identifier(self, p):
+    """identifier : SYMBOL
+                  | CALLBACK"""
+    p[0] = p[1]
+    # Save the line number of the underlying token (otherwise it gets
+    # discarded), since we use it in the productions with an identifier in
+    # them.
+    p.set_lineno(0, p.lineno(1))
+
 #
 # Parameter List
 #
@@ -499,11 +553,18 @@ class IDLParser(IDLLexer):
     if self.parse_debug: DumpReduction('param_list', p)
 
   def p_param_item(self, p):
-    """param_item : modifiers SYMBOL arrays SYMBOL"""
-    typeref = self.BuildAttribute('TYPEREF', p[2])
-    children = ListFromConcat(p[1],typeref, p[3])
-    p[0] = self.BuildNamed('Param', p, 4, children)
+    """param_item : modifiers optional SYMBOL arrays identifier"""
+    typeref = self.BuildAttribute('TYPEREF', p[3])
+    children = ListFromConcat(p[1],p[2], typeref, p[4])
+    p[0] = self.BuildNamed('Param', p, 5, children)
     if self.parse_debug: DumpReduction('param_item', p)
+
+  def p_optional(self, p):
+    """optional : OPTIONAL
+                | """
+    if len(p) == 2:
+      p[0] = self.BuildAttribute('OPTIONAL', True)
+
 
   def p_param_cont(self, p):
     """param_cont : ',' param_item param_cont
@@ -520,7 +581,7 @@ class IDLParser(IDLLexer):
 #
 # Typedef
 #
-# A typedef creates a new referencable type.  The tyepdef can specify an array
+# A typedef creates a new referencable type.  The typedef can specify an array
 # definition as well as a function declaration.
 #
   def p_typedef_data(self, p):
@@ -615,25 +676,30 @@ class IDLParser(IDLLexer):
 # A member attribute or function of a struct or interface.
 #
   def p_member_attribute(self, p):
-    """member_attribute : modifiers SYMBOL SYMBOL """
+    """member_attribute : modifiers SYMBOL arrays questionmark identifier"""
     typeref = self.BuildAttribute('TYPEREF', p[2])
-    children = ListFromConcat(p[1], typeref)
-    p[0] = self.BuildNamed('Member', p, 3, children)
-    if self.parse_debug: DumpReduction('attribute', p)
-
-  def p_member_attribute_array(self, p):
-    """member_attribute : modifiers SYMBOL arrays SYMBOL """
-    typeref = self.BuildAttribute('TYPEREF', p[2])
-    children = ListFromConcat(p[1], typeref, p[3])
-    p[0] = self.BuildNamed('Member', p, 4, children)
+    children = ListFromConcat(p[1], typeref, p[3], p[4])
+    p[0] = self.BuildNamed('Member', p, 5, children)
     if self.parse_debug: DumpReduction('attribute', p)
 
   def p_member_function(self, p):
-    """member_function : modifiers SYMBOL SYMBOL param_list"""
-    typeref = self.BuildAttribute('TYPEREF', p[2])
-    children = ListFromConcat(p[1], typeref, p[4])
-    p[0] = self.BuildNamed('Member', p, 3, children)
+    """member_function : modifiers static SYMBOL SYMBOL param_list"""
+    typeref = self.BuildAttribute('TYPEREF', p[3])
+    children = ListFromConcat(p[1], p[2], typeref, p[5])
+    p[0] = self.BuildNamed('Member', p, 4, children)
     if self.parse_debug: DumpReduction('function', p)
+
+  def p_static(self, p):
+    """static : STATIC
+              | """
+    if len(p) == 2:
+      p[0] = self.BuildAttribute('STATIC', True)
+
+  def p_questionmark(self, p):
+    """questionmark : '?'
+                    | """
+    if len(p) == 2:
+      p[0] = self.BuildAttribute('OPTIONAL', True)
 
 #
 # Interface
@@ -770,14 +836,17 @@ class IDLParser(IDLLexer):
     name = p[index]
 
     # Remove comment markers
+    lines = []
     if name[:2] == '//':
-      # For C++ style, remove the preceding '//'
+      # For C++ style, remove any leading whitespace and the '//' marker from
+      # each line.
       form = 'cc'
-      name = name[2:].rstrip()
+      for line in name.split('\n'):
+        start = line.find('//')
+        lines.append(line[start+2:])
     else:
       # For C style, remove ending '*/''
       form = 'c'
-      lines = []
       for line in name[:-2].split('\n'):
         # Remove characters until start marker for this line '*' if found
         # otherwise it should be blank.
@@ -787,7 +856,7 @@ class IDLParser(IDLLexer):
         else:
           line = ''
         lines.append(line)
-      name = '\n'.join(lines)
+    name = '\n'.join(lines)
 
     childlist = [self.BuildAttribute('NAME', name),
                  self.BuildAttribute('FORM', form)]
