@@ -52,13 +52,17 @@ OPTDBG=-O3
 CC=gcc -m$(BITS)
 CXX=g++ -m$(BITS)
 
-enuminsts-$(BITS):$(XEDLIB) enuminsts-$(BITS).o
+enuminsts-$(BITS):$(XEDLIB) enuminsts-$(BITS).o xed_tester-$(BITS).o
 	$(CXX) $(OPTDBG) -o $@ enuminsts-$(BITS).o \
-		$(XEDLIB) $(NACLLIBS)
+		xed_tester-$(BITS).o $(XEDLIB) $(NACLLIBS)
 
 enuminsts-$(BITS).o: enuminsts.c
 	$(CC) $(OPTDBG) -o enuminsts-$(BITS).o -c $(NACLDEFS) $(XEDINCLUDE) \
 		$(NACLINCLUDE) enuminsts.c
+
+xed_tester-$(BITS).o: xed_tester.c
+	$(CC) $(OPTDBG) -o xed_tester-$(BITS).o -c $(NACLDEFS) $(XEDINCLUDE) \
+		$(NACLINCLUDE) xed_tester.c
 
 $(XEDLIB):$(PINGZ)
 	tar xzf $(PINGZ) $(XEDKIT)

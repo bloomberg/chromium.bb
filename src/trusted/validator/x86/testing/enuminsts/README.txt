@@ -34,11 +34,22 @@ nacl revision 6688. It is intended to be used as a base line to
 compare decoders in later revisions. Currently, there isn't an
 executable enuminst-32-6688.
 
+To generate an enumeration of (potentially) valid xed instructions,
+run the following (where XX in { 32 , 64}):
+
+    ./enuminsts-XX --print=xed --printenum > tmp-XX.txt
+    sort -b -u tmp-XX.txt > XedGood-XX.txt
+
+Note: The code will not print out legal xed instructions if the
+corresponding NaCl decoder/validator can determine it is
+illegal. Warning: this test is incomplete and some instructions may be
+accepted even though they shouldn't validate.
+
 To run manual tests to see what instructions decode (using the x86-64
 decoder) the same way as xed does, run the following commands:
 
-    ./enuminsts-64-6688 --naclprint --opcode_bytes > bytes.base
-    ./enuminsts-64 --naclprint --opcode_bytes > bytes.new
+    ./enuminsts-64-6688 --print=nacl --opcode_bytes > bytes.base
+    ./enuminsts-64 --print-nacl --opcode_bytes > bytes.new
     sort -u bytes.base > bytes-sorted.base
     sort -u bytes.new > bytes-sorted.new
     diff bytes-sorted.base bytes-sorted.new

@@ -13,14 +13,14 @@
  * x86-32 decoder.
  */
 
+#include "native_client/src/trusted/validator/x86/testing/enuminsts/enuminsts.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "xed-interface.h"
-
-#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/trusted/validator/x86/decoder/nc_inst_state.h"
@@ -38,12 +38,8 @@ static int gCheckOperands = 0;
 static int gSawLethalError = 0;
 /* Defines the assumed text address for the test instruction */
 const int kTextAddress = 0x1000;
-/* Defines if only opcode bytes should be printed. */
-static Bool gPrintOpcodeBytesOnly = FALSE;
 /* Defines if we should just print out the translations of nacl instructions. */
 static int gPrintNaClInsts = 0;
-/* Defines if we should just print out the translations of xed instructions. */
-static int gPrintXedInsts = 0;
 /* If non-negative, defines the prefix to test. */
 static int gPrefix = -1;
 /* If non-negative, defines the opcode to test. */
@@ -65,19 +61,56 @@ static const char* target_machine = "x86-"
 #endif
     ;
 
+/* This struct holds state concerning an instruction, both from the
+ * various available decoders. Some of the state information is
+ * redundant, preserved to avoid having to recompute it.
+ */
+typedef struct {
+  /* Holds the data for the enuemrator tester to use when comparing
+   * instructions.
+   */
+  NaClEnumerator _enumerator;
+  NaClInstStruct *_nacl_inst;
+  Bool _nacl_legal;
+  Bool _decoder_error;
+  int _has_nacl_disasm;
+  char _nacl_disasm[kBufferSize];
+  char _nacl_fast_disasm[kBufferSize];
+  char _nacl_opcode[kBufferSize];
+  char* _after_nacl_opcode;  /* stores location after opcode in _nacl_opcode */
+} ComparedInstruction;
+
+/* The state to use to compare instructions. */
+static ComparedInstruction gCinst;
+
 static char *gArgv0 = "argv0";
 static void Usage() {
+  size_t i;
   fprintf(stderr, "usage: %s [options] [hexbytes]\n", gArgv0);
-  fprintf(stderr, "    Compare Xed and NaCl %s instruction decoders\n",
+  fprintf(stderr, "    Compare %s instruction decoders\n",
           target_machine);
   fprintf(stderr, "    With no argument, enumerate all %s instructions\n",
           target_machine);
+  fprintf(stderr, "\n");
+  fprintf(stderr, "Valid decoders are:\n");
+  for (i = 0; i < gCinst._enumerator._num_testers; ++i) {
+    fprintf(stderr, "    %s\n", gCinst._enumerator._tester[i]->_id_name);
+  }
+  /* TODO(karl) remove the following line when tester is defined. */
+  fprintf(stderr, "    nacl\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "Options are:\n");
   fprintf(stderr, "    --checkoperands: enables operand comparison (slow)\n");
   fprintf(stderr, "    --nacllegal: only compare NaCl legal instructions\n");
+  fprintf(stderr, "    --print=XX: prints out set of enumerated "
+          "instructions\n");
+  fprintf(stderr, "                for the specified decoder XX (may be "
+          "repeated)\n");
+  fprintf(stderr,
+          "    --printenum: Print out enumeration of valid instruction \n"
+          "      opcode sequences\n");
   fprintf(stderr, "    --xedimplemented: only compare NaCl instruction that "
           "are also implemented in xed\n");
-  fprintf(stderr,
-          "    --naclprint: prints out set of enumerated nacl instructions\n");
   fprintf(stderr, "    --prefix=XX: only process given prefix\n");
   fprintf(stderr, "    --opcode=XX: only process given opcode for "
           "each prefix\n");
@@ -85,26 +118,23 @@ static void Usage() {
           "NaCl disassembler\n");
   fprintf(stderr, "    --nops: Don't operand compare nops.\n");
   fprintf(stderr, "    --skipcontiguous: Only skip contiguous errors\n");
-  fprintf(stderr, "    --xedprint: prints out set of enumerated xed "
-          "instructions\n");
   exit(1);
 }
 
 static void InternalError(const char *why) {
-  if (!gPrintOpcodeBytesOnly) {
-    fprintf(stderr, "%s: Internal Error: %s\n", gArgv0, why);
-  }
+  fprintf(stderr, "%s: Internal Error: %s\n", gArgv0, why);
   gSawLethalError = 1;
 }
 
 /* The following are a set of simple ASCII string processing routines
- * used to parse/transform Xed and NaCl disassembler output.
+ * used to parse/transform disassembler output.
  */
+
 /* If string s begins with string prefix, return a pointer to the
  * first byte after the prefix. Else return s.
  * PRECONDITION: plen == strlen(prefix)
  */
-static inline char *SkipPrefix(char *s, const char *prefix, int plen) {
+char *SkipPrefix(char *s, const char *prefix, int plen) {
   if (strncmp(s, prefix, plen) == 0) {
     return &s[plen + 1];
   }
@@ -113,7 +143,7 @@ static inline char *SkipPrefix(char *s, const char *prefix, int plen) {
 
 /* Return a pointer to s with leading spaces removed.
  */
-static inline char *strip(char *s) {
+char *strip(char *s) {
   while (*s == ' ') s++;
   return s;
 }
@@ -174,9 +204,9 @@ static void strnzapchar(char *s, const char c, const int slen) {
 }
 
 /* Remove all instances of substring ss in string s, modifying s in place.
- * PRECONDITION: sslen = strlen(ss).
  */
-static inline void CleanString(char *s, const char *ss, int sslen) {
+void CleanString(char *s, const char *ss) {
+  size_t sslen = strlen(ss);
   char *fs = strfind(s, ss, sslen);
 
   while (fs != NULL) {
@@ -191,13 +221,13 @@ static inline void CleanString(char *s, const char *ss, int sslen) {
 static inline void TestCleanString(char *s, const char *ss) {
   char *stmp = strdup(s);
   printf("CleanString(%s, %s) => ", stmp, ss);
-  CleanString(stmp, ss, strlen(ss));
+  CleanString(stmp, ss);
   printf("%s\n", stmp);
 }
 
 /* Copy src to dest, stoping at character c.
  */
-static void strncpyto(char *dest, const char *src, size_t n, char c) {
+void strncpyto(char *dest, const char *src, size_t n, char c) {
   int i;
 
   i = 0;
@@ -213,29 +243,6 @@ static void strncpyto(char *dest, const char *src, size_t n, char c) {
   }
 }
 
-/* This struct holds state concerning an instruction, both from Xed
- * and from the NaCl decoder. Some of the state information is redundant,
- * preserved to avoid having to recompute it.
- */
-typedef struct {
-  uint8_t _itext[XED_MAX_INSTRUCTION_BYTES];
-  size_t _nbytes;
-  xed_state_t _xed_state;
-  xed_decoded_inst_t _xedd;
-  NaClInstStruct *_nacl_inst;
-  Bool _nacl_legal;
-  Bool _decoder_error;
-  int _has_xed_disasm;
-  int _has_nacl_disasm;
-  char _xed_disasm[kBufferSize];
-  char _nacl_disasm[kBufferSize];
-  char _nacl_fast_disasm[kBufferSize];
-  char _xed_opcode[kBufferSize];
-  char _nacl_opcode[kBufferSize];
-  char* _after_xed_opcode;   /* stores location after opcode in _xed_opcode */
-  char* _after_nacl_opcode;  /* stores location after opcode in _nacl_opcode */
-} ComparedInstruction;
-
 /* Initialize a ComparedInstruction cinst with the instruction
  * corresponding to itext. nbytes is the length of the input bytes.
  * Commonly the decoded instruction will be shorter than nbytes.
@@ -243,24 +250,17 @@ typedef struct {
 static void InitComparedInstruction(ComparedInstruction *cinst,
                                     uint8_t *itext, size_t nbytes) {
   /* note: nacl_inst is freed in ncdecode_helper.c */
-  memcpy(cinst->_itext, itext, nbytes);
-  cinst->_nbytes = nbytes;
+  memcpy(cinst->_enumerator._itext, itext, nbytes);
+  cinst->_enumerator._num_bytes = nbytes;
   cinst->_nacl_inst = NULL;
   cinst->_nacl_legal = FALSE;
   cinst->_decoder_error = FALSE;
-  cinst->_has_xed_disasm = 0;
   cinst->_has_nacl_disasm = 0;
-  cinst->_xed_disasm[0] = 0;
   cinst->_nacl_disasm[0] = 0;
-  cinst->_xed_opcode[0] = 0;
   cinst->_nacl_opcode[0] = 0;
-  cinst->_after_xed_opcode = NULL;
   cinst->_after_nacl_opcode = NULL;
-
-  xed_decoded_inst_set_input_chip(&cinst->_xedd, XED_CHIP_CORE2);
-  xed_decoded_inst_zero_set_mode(&cinst->_xedd, &cinst->_xed_state);
-  xed_error_enum_t xed_error = xed_decode
-      (&cinst->_xedd, (const xed_uint8_t*)itext, nbytes);
+  cinst->_enumerator._tester[0]->
+      _parse_inst_fn(&cinst->_enumerator, kTextAddress);
   cinst->_nacl_inst = NaClParseInst(itext, nbytes, kTextAddress);
   if (gNaClLegal) {
     cinst->_nacl_legal =
@@ -284,28 +284,14 @@ static char *GetNaClDisasm(ComparedInstruction *cinst) {
   return cinst->_nacl_disasm;
 }
 
-/* Return Xed disassembled version of this instruction.
- */
-static char *GetXedDisasm(ComparedInstruction *cinst) {
-  if (!cinst->_has_xed_disasm) {
-    if (cinst->_xedd._decoded_length == 0) {
-      strcpy(cinst->_xed_disasm, "[illegal instruction]");
-    }
-    xed_format_intel(&cinst->_xedd, cinst->_xed_disasm,
-                     kBufferSize, kTextAddress);
-    cinst->_has_xed_disasm = 1;
-  }
-  return cinst->_xed_disasm;
-}
-
 /* Prints out the found nacl instruction. */
 static void PrintNaClInst(ComparedInstruction *cinst) {
-  if (gPrintOpcodeBytesOnly) {
+  if (cinst->_enumerator._print_opcode_bytes_only) {
     /* Print out opcode sequence for NACL instruction. */
     uint8_t i;
     uint8_t len = NaClInstLength(cinst->_nacl_inst);
     for (i = 0; i < len; ++i) {
-      printf("%02x", cinst->_itext[i]);
+      printf("%02x", cinst->_enumerator._itext[i]);
     }
     printf("\n");
   } else if (NaClInstDecodesCorrectly(cinst->_nacl_inst)) {
@@ -313,62 +299,19 @@ static void PrintNaClInst(ComparedInstruction *cinst) {
   }
 }
 
-/* Prints out the found xed instruction. */
-static void PrintXedInst(ComparedInstruction *cinst) {
-  if (cinst->_xedd._decoded_length) {
-    int i;
-    if (gPrintOpcodeBytesOnly) {
-      for (i = 0; i < cinst->_nbytes; ++i) {
-        printf("%02x", cinst->_itext[i]);
-      }
-      printf("\n");
-    } else {
-      printf("  XED: ");
-      /* Since xed doesn't print out opcode sequence, and it is
-       * useful to know, add it to the print out.
-       */
-      for (i = 0; i < cinst->_nbytes; ++i) {
-        if (i < cinst->_xedd._decoded_length) {
-          printf("%02x ", cinst->_itext[i]);
-        } else {
-          printf("   ");
-        }
-      }
-      /* Note: spacing added so that it lines up with nacl output. */
-      printf(":\t\t      %s\n", GetXedDisasm(cinst ));
-    }
+static void PrintParsedInstructionVariants(ComparedInstruction* cinst) {
+  size_t i;
+  for (i = 0; i < cinst->_enumerator._num_testers; ++i) {
+    cinst->_enumerator._tester[i]->_print_inst_fn(&cinst->_enumerator);
   }
+  /* TODO(karl) move the nacl tester into above loop. */
+  PrintNaClInst(cinst);
 }
+
 
 static void CinstInternalError(ComparedInstruction* cinst, const char* why) {
-  if (!gPrintOpcodeBytesOnly) {
-    PrintXedInst(cinst);
-    PrintNaClInst(cinst);
-  }
+  PrintParsedInstructionVariants(cinst);
   InternalError(why);
-}
-
-static char *GetXedOpcodeAux(ComparedInstruction *cinst) {
-  int char0 = 0;
-  char *xtmp = GetXedDisasm(cinst);
-  char *prev_xtmp = xtmp;
-
-  /* Loop while prefixes found (don't want to figure out all combinations). */
-  while (1) {
-    xtmp = SkipPrefix(xtmp, "lock", strlen("lock"));
-    xtmp = SkipPrefix(xtmp, "repne", strlen("repne"));
-    xtmp = SkipPrefix(xtmp, "rep", strlen("rep"));
-    xtmp = SkipPrefix(xtmp, "hint-not-taken", strlen("hint-not-taken"));
-    xtmp = SkipPrefix(xtmp, "hint-taken", strlen("hint-taken"));
-    xtmp = SkipPrefix(xtmp, "addr16", strlen("addr16"));
-    xtmp = SkipPrefix(xtmp, "addr32", strlen("addr32"));
-    xtmp = SkipPrefix(xtmp, "data16", strlen("data16"));
-    if (xtmp == prev_xtmp) break;
-    prev_xtmp = xtmp;
-  }
-  strncpyto(cinst->_xed_opcode, xtmp, kBufferSize - char0, ' ');
-  cinst->_after_xed_opcode = xtmp + strlen(cinst->_xed_opcode);
-  return cinst->_xed_opcode;
 }
 
 /* Note that NaClOpcodeName commonly returns mixed case; we make
@@ -382,21 +325,6 @@ static char *GetNaClOpcodeAux(ComparedInstruction *cinst) {
     if (opcode[i] == '\0') break;
   }
   return cinst->_nacl_opcode;
-}
-
-/* Returns text containing mnemonic opcode name. */
-static char *GetXedOpcode(ComparedInstruction *cinst) {
-  if (cinst->_xed_opcode[0] != 0) return cinst->_xed_opcode;
-  return GetXedOpcodeAux(cinst);
-}
-
-/* Returns the text after the mnemonic opcode. */
-static char *GetXedOperands(ComparedInstruction* cinst) {
-  /* Note: This code counts on caching done by GetXedOpcodeAux. */
-  if (NULL == cinst->_after_xed_opcode) {
-    GetXedOpcode(cinst);
-  }
-  return cinst->_after_xed_opcode;
 }
 
 /* Returns text containing mnemonic opcode name. */
@@ -457,8 +385,8 @@ static char *FastNaClDisasm(ComparedInstruction *cinst) {
   int i;
 
   for (i = 0; i < kSampleBytes; i++) {
-    stmp[i * 3] = h2a[cinst->_itext[i]][0];
-    stmp[i * 3 + 1] = h2a[cinst->_itext[i]][1];
+    stmp[i * 3] = h2a[cinst->_enumerator._itext[i]][0];
+    stmp[i * 3 + 1] = h2a[cinst->_enumerator._itext[i]][1];
     stmp[i * 3 + 2] = ' ';
   }
   stmp[kSampleBytes * 3] = '\0';
@@ -485,20 +413,24 @@ static void ResetSkipCounts(const char* last_opcode) {
           kBufferSize);
 }
 
-static void ReportOnSkippedErrors(const char* last_opcode) {
-  if (nSkipped > 0 && !gPrintOpcodeBytesOnly) {
+static void ReportOnSkippedErrors(ComparedInstruction* cinst,
+                                  const char* last_opcode) {
+  if (nSkipped > 0 && !cinst->_enumerator._print_opcode_bytes_only) {
     printf("...skipped %d errors for %s\n", nSkipped, last_bad_opcode);
   }
   ResetSkipCounts(last_opcode);
 }
 
-/* Report a disagreement between the Xed and NaCl decoders. To reduce
+/* Report a disagreement between decoders. To reduce
  * noice from uninteresting related errors, gSkipRepeatReports will
  * avoid printing consecutive errors for the same opcode.
  */
 static void DecoderError(const char *why,
                          ComparedInstruction *cinst,
                          const char *details) {
+  /* If printing out enumeration, don't bother to report error. */
+  if (cinst->_enumerator._print_enumerated_instruction) return;
+
   /* get/fix NaCl opcode */
   cinst->_decoder_error = TRUE;
   if (gSkipRepeatReports) {
@@ -507,14 +439,14 @@ static void DecoderError(const char *why,
       nSkipped += 1;
       return;
     } else {
-      ReportOnSkippedErrors(GetNaClOpcode(cinst));
+      ReportOnSkippedErrors(cinst, GetNaClOpcode(cinst));
     }
   }
 
-  if (!gPrintOpcodeBytesOnly) {
+  if (!cinst->_enumerator._print_opcode_bytes_only) {
+    size_t i;
     printf("**** ERROR: %s: %s\n", why, (details == NULL ? "" : details));
-    PrintXedInst(cinst);
-    PrintNaClInst(cinst);
+    PrintParsedInstructionVariants(cinst);
   }
 }
 
@@ -559,30 +491,6 @@ static unsigned int A2IByte(char nibble1, char nibble2) {
   return A2INibble(nibble2) + A2INibble(nibble1) * 0x10;
 }
 
-static int IsReservedReg(xed_reg_enum_t reg) {
-  if (kDebug) printf("IsReservedReg(%s)\n", xed_reg_enum_t2str(reg));
-  switch (reg) {
-    case XED_REG_RSP:
-    case XED_REG_RBP:
-    case XED_REG_R15:
-      return 1;
-  }
-  return 0;
-}
-
-static int IsWriteAction(xed_operand_action_enum_t rw) {
-  if (kDebug) printf("IsWriteAction(%s)\n", xed_operand_action_enum_t2str(rw));
-  switch (rw) {
-    case XED_OPERAND_ACTION_RW:
-    case XED_OPERAND_ACTION_W:
-    case XED_OPERAND_ACTION_RCW:
-    case XED_OPERAND_ACTION_CW:
-    case XED_OPERAND_ACTION_CRW:
-      return 1;
-  }
-  return 0;
-}
-
 /* The instructions:
  *    48 89 e5  mov  rbp, rsp
  *    4a 89 e5  mov  rbp, rsp
@@ -590,9 +498,9 @@ static int IsWriteAction(xed_operand_action_enum_t rw) {
  * moving a safe address between two protected registers.
  */
 static int IsSpecialSafeRegWrite(ComparedInstruction *cinst) {
-  uint8_t byte0 = cinst->_itext[0];
-  uint8_t byte1 = cinst->_itext[1];
-  uint8_t byte2 = cinst->_itext[2];
+  uint8_t byte0 = cinst->_enumerator._itext[0];
+  uint8_t byte1 = cinst->_enumerator._itext[1];
+  uint8_t byte2 = cinst->_enumerator._itext[2];
 
   return ((byte0 == 0x48 && byte1 == 0x89 && byte2 == 0xe5) ||
           (byte0 == 0x48 && byte1 == 0x89 && byte2 == 0xec) ||
@@ -608,66 +516,81 @@ static int IsSpecialSafeRegWrite(ComparedInstruction *cinst) {
  * register, this is a lethal error.
  */
 static int CheckBadRegWrite(ComparedInstruction *cinst) {
-  unsigned int i;
-  xed_inst_t const *const xi = xed_decoded_inst_inst(&cinst->_xedd);
-  unsigned int noperands = xed_inst_noperands(xi);
+  size_t i;
+  NaClEnumeratorTester* xed_tester = NULL;
+  size_t noperands = cinst->_enumerator._tester[0]->
+      _get_inst_num_operands_fn(&cinst->_enumerator);
 
+  /* First see if there is a xed tester to compare against. */
+  for (i = 0; i < cinst->_enumerator._num_testers; ++i) {
+    if (0 == strcmp("xed", cinst->_enumerator._tester[i]->_id_name)) {
+      xed_tester = cinst->_enumerator._tester[i];
+      break;
+    }
+  }
+  if (NULL == xed_tester) return 0;
+
+  /* If reached, we found the xed tester. */
+  /* TODO(karl) convert this to a loop test once we have nacl tester. */
+
+  noperands = xed_tester->_get_inst_num_operands_fn(&cinst->_enumerator);
   for (i = 0; i < noperands ; i++) {
-    xed_operand_t const* op = xed_inst_operand(xi, i);
-    xed_operand_enum_t op_name = xed_operand_name(op);
-    if (xed_operand_is_register(op_name)) {
-      if (IsReservedReg(xed_decoded_inst_get_reg(&cinst->_xedd, op_name))
-          && IsWriteAction(xed_operand_rw(op))) {
-        /* check if NaCl thinks this is a legal instruction */
-        if (NaClSegmentValidates(cinst->_itext,
-                                 cinst->_xedd._decoded_length,
-                                 kTextAddress)) {
-          /* Report problem if NaCl accepted instruction, but is
-           * not one of the special safe writes.
-           */
-          if (IsSpecialSafeRegWrite(cinst)) return 0;
-          gSawLethalError = 1;
-          DecoderError("ILLEGAL REGISTER WRITE", cinst, FastNaClDisasm(cinst));
-          return 1;
-        }
+    if (xed_tester->_writes_to_reserved_reg_fn(&cinst->_enumerator, i)) {
+      /* check if NaCl thinks this is a legal instruction */
+      if (NaClSegmentValidates(cinst->_enumerator._itext,
+                               NaClInstLength(cinst->_nacl_inst),
+                               kTextAddress)) {
+        /* Report problem if NaCl accepted instruction, but is
+         * not one of the special safe writes.
+         */
+        if (IsSpecialSafeRegWrite(cinst)) return 0;
+        gSawLethalError = 1;
+        DecoderError("ILLEGAL REGISTER WRITE", cinst, FastNaClDisasm(cinst));
+        return 1;
       }
     }
   }
   return 0;
 }
 
-/* Compare operands, reporting an error if Xed and NaCl disagree.
+/* Compare operands, reporting an error if decoders disagree.
  * Returns 0 on success, non-zero for failure.
  */
 static int CompareOperands(ComparedInstruction *cinst) {
-  char *noperands = GetNaClOperands(cinst);
-  char *xoperands = GetXedOperands(cinst);
-  char xclean[kBufferSize];
+  size_t i;
+  size_t num_testers;
+  const char* operand[NACL_MAX_ENUM_TESTERS];
   char nclean[kBufferSize];
   char sbuf[kBufferSize];
 
-  if (noperands == NULL || xoperands == NULL) {
-    CinstInternalError(cinst, "CompareOperands");
-  }
-  /* remove uninteresting decoration */
-  strncpy(xclean, xoperands, kBufferSize);
-  strncpy(nclean, noperands, kBufferSize);
-  /* NOTE: these patterns need to be ordered from most to least specific */
-  CleanString(xclean, "byte ptr ", strlen("byte ptr "));
-  CleanString(xclean, "dword ptr ", strlen("dword ptr "));
-  CleanString(xclean, "qword ptr ", strlen("qword ptr "));
-  CleanString(xclean, "xmmword ptr ", strlen("xmmword ptr "));
-  CleanString(xclean, "word ptr ", strlen("word ptr "));
-  CleanString(xclean, "ptr ", strlen("ptr "));
-  CleanString(xclean, "far ", strlen("far "));
+  /* If no testers, vacuously true. */
+  if (0 == cinst->_enumerator._num_testers) return 0;
 
+  for (i = 0; i < cinst->_enumerator._num_testers; ++i) {
+    operand[i] = cinst->_enumerator._tester[i]->
+        _get_inst_operands_text_fn(&cinst->_enumerator);
+  }
+
+  /* TODO(karl) Convert to loop when nacl tester implemented. */
+  /* remove uninteresting decoration */
+  strncpy(nclean, GetNaClOperands(cinst), kBufferSize);
+  /* NOTE: these patterns need to be ordered from most to least specific */
   strnzapchar(nclean, '%', strlen(nclean));
   strnzapchar(nclean, '\n', strlen(nclean));
+  operand[cinst->_enumerator._num_testers] = strip(nclean);
+  num_testers = cinst->_enumerator._num_testers + 1;
 
-  if (strcmp(strip(xclean), strip(nclean)) != 0) {
-    sprintf(sbuf, "'%s' != '%s'", xclean, nclean);
-    DecoderError("OPERAND MISMATCH", cinst, sbuf);
-    return 1;
+  for (i = 0; i < num_testers; ++i) {
+    if (NULL == operand[i])
+      CinstInternalError(cinst, "CompareOperands");
+  }
+
+  for (i = 1; i < num_testers; ++i) {
+    if (0 != strncmp(operand[i-1], operand[i], kBufferSize)) {
+      snprintf(sbuf, kBufferSize, "'%s' != '%s'", operand[i-1], operand[i]);
+      DecoderError("OPERAND MISMATCH", cinst, sbuf);
+      return 1;
+    }
   }
   return 0;
 }
@@ -699,7 +622,9 @@ static const char* GetXedOpcodeEquivalent(ComparedInstruction *cinst) {
   /* Now handle special cases where we should treat the nacl instruction as a
    * nop, so that they will match xed instructions.
    */
-  if (gNoCompareNops && (0 == strcmp("nop", GetXedOpcode(cinst)))) {
+  if (gNoCompareNops &&
+      (0 == strcmp("nop", cinst->_enumerator._tester[0]->
+                   _get_inst_mnemonic_fn(&cinst->_enumerator)))) {
     static const NaClToXedPairs pairs[] = {
       { "xchg %eax, %eax" , "nop" },
       { "xchg %rax, %rax" , "nop" },
@@ -721,27 +646,43 @@ static const char* GetXedOpcodeEquivalent(ComparedInstruction *cinst) {
   return nacl_name;
 }
 
-/* Compare opcodes, reporting an error if Xed and NaCl disagree.
+/* Compare opcodes, reporting an error if decoders disagree.
  * Returns 0 on success, non-zero for failure.
  */
 static int CompareOpcodes(ComparedInstruction *cinst) {
+  size_t i;
   char sbuf[kBufferSize];
-  if (strncmp(GetXedOpcode(cinst),
-              GetXedOpcodeEquivalent(cinst),
-              kBufferSize) != 0) {
-    snprintf(sbuf, kBufferSize, "%s != %s",
-             GetXedOpcode(cinst), GetNaClOpcode(cinst));
-    DecoderError("OPCODE MISMATCH", cinst, sbuf);
-    return 1;
-  } else {
-    if (kDebug) printf("opcodes match: %s == %s\n",
-                       GetXedOpcode(cinst), GetNaClOpcode(cinst));
-    if (gNoCompareNops &&
-        (strncmp("nop", GetXedOpcode(cinst), kBufferSize) == 0)) {
+  const char* opcode[NACL_MAX_ENUM_TESTERS];
+  size_t num_testers;
+
+  /* If no testers, vacuously true. */
+  if (0 == cinst->_enumerator._num_testers) return 0;
+
+  for (i = 0; i < cinst->_enumerator._num_testers; ++i) {
+    opcode[i] = cinst->_enumerator._tester[i]->
+        _get_inst_mnemonic_fn(&cinst->_enumerator);
+  }
+
+  /* TODO(karl) Convert to loop when nacl tester implemented. */
+  opcode[cinst->_enumerator._num_testers] = GetXedOpcodeEquivalent(cinst);
+  num_testers = cinst->_enumerator._num_testers + 1;
+
+  for (i = 1; i < num_testers; ++i) {
+    if (strncmp(opcode[i-1], opcode[i], kBufferSize) != 0) {
+      snprintf(sbuf, kBufferSize, "%s != %s", opcode[i-1], opcode[i]);
+      DecoderError("OPCODE MISMATCH", cinst, sbuf);
       return 1;
     }
-    return 0;
   }
+
+  if (kDebug) {
+    printf("opcodes match: %s\n", opcode[0]);
+  }
+  if (gNoCompareNops &&
+      (strncmp("nop", opcode[0], kBufferSize) == 0)) {
+    return 1;
+  }
+  return 0;
 }
 
 static Bool CheckNaClValid(ComparedInstruction *cinst) {
@@ -764,13 +705,15 @@ static int NaClIsntXedImplemented(NaClInstStruct *inst) {
   return 1;
 }
 
-/* Compare instruction validity. Reports a failure if NaCl sees an
- * valid instruction when Xed does not. Returns 0 on success, non-zero
+/* Compare instruction validity. Reports a failure if one of
+ * the decoders isn't valid. Returns 0 on success, non-zero
  * for failure.
  */
 static int CheckValidInstruction(ComparedInstruction *cinst) {
+  /* TODO(karl): Convert to loop once nacl tester writtern. */
   if (CheckNaClValid(cinst)) {
-    if (cinst->_xedd._decoded_length == 0) {
+    if (!cinst->_enumerator._tester[0]->
+        _maybe_inst_validates_fn(&cinst->_enumerator)) {
       if (!gXedImplemented || NaClIsntXedImplemented(cinst->_nacl_inst)) {
         DecoderError("ILLEGAL INSTRUCTION", cinst, FastNaClDisasm(cinst));
       }
@@ -788,36 +731,55 @@ static int CheckValidInstruction(ComparedInstruction *cinst) {
  * Returns 0 on success, non-zero for failure.
  */
 static int CompareInstructionLength(ComparedInstruction *cinst) {
+  size_t i;
+  size_t num_testers;
   char sbuf[kBufferSize];
+  size_t length[NACL_MAX_ENUM_TESTERS];
 
-  if (cinst->_xedd._decoded_length != NaClInstLength(cinst->_nacl_inst)) {
-    snprintf(sbuf, kBufferSize, "%d != %d",
-             cinst->_xedd._decoded_length,
-             NaClInstLength(cinst->_nacl_inst));
-    DecoderError("LENGTH MISMATCH", cinst, sbuf);
-    gSawLethalError = 1;
-    return 1;
-  } else {
-    if (kDebug) printf("length match: %d == %d\n",
-                       cinst->_xedd._decoded_length,
-                       NaClInstLength(cinst->_nacl_inst));
-    return 0;
+  /* If no testers, vacuously true. */
+  if (0 == cinst->_enumerator._num_testers) return 0;
+
+  for (i = 0; i < cinst->_enumerator._num_testers; ++i) {
+    length[i] = cinst->_enumerator._tester[i]->
+        _inst_length_fn(&cinst->_enumerator);
   }
+
+  /* TODO(karl) Convert to loop when nacl tester implemented. */
+  length[cinst->_enumerator._num_testers] =
+      (size_t) NaClInstLength(cinst->_nacl_inst);
+  num_testers = cinst->_enumerator._num_testers + 1;
+
+  for (i = 1; i < num_testers; ++i) {
+    if (length[i-1] != length[i]) {
+      snprintf(sbuf, kBufferSize, "%"NACL_PRIuS" != %"NACL_PRIuS,
+               length[i-1], length[i]);
+      DecoderError("LENGTH MISMATCH", cinst, sbuf);
+      gSawLethalError = 1;
+      return 1;
+    }
+  }
+
+  if (kDebug) printf("length match: %"NACL_PRIuS"\n", length[0]);
+  return 0;
 }
 
 /* Print out the instruction for the tool(s) specified on the
  * command line. Returns true when the instruction has been
  * printed.
  */
-static Bool PrintInst(ComparedInstruction *cinst) {
+static Bool CheckPrintInst(ComparedInstruction *cinst) {
   Bool result = FALSE;
-  int i;
+  size_t i;
+  for (i = 0; i < cinst->_enumerator._num_testers; ++i) {
+    if (cinst->_enumerator._tester[i]->
+        _conditionally_print_inst_fn(&cinst->_enumerator)) {
+      result = TRUE;
+    }
+  }
+
+  /* TODO(karl) merge into loop above when nacl tester implemented. */
   if (gPrintNaClInsts) {
     PrintNaClInst(cinst);
-    result = TRUE;
-  }
-  if (gPrintXedInsts) {
-    PrintXedInst(cinst);
     result = TRUE;
   }
   return result;
@@ -830,6 +792,7 @@ static void TryOneInstruction(ComparedInstruction *cinst,
   InitComparedInstruction(cinst, itext, nbytes);
   do {
     if (CheckValidInstruction(cinst)) break;
+    if (CheckPrintInst(cinst)) break;
     if (CompareInstructionLength(cinst)) break;
     if (CompareOpcodes(cinst)) break;
     if (gCheckOperands) {
@@ -838,17 +801,15 @@ static void TryOneInstruction(ComparedInstruction *cinst,
 #if NACL_TARGET_SUBARCH == 64
     if (CheckBadRegWrite(cinst)) break;
 #endif
-    if (PrintInst(cinst)) break;
     /* no error */
     if (gVerbose) {
-      int i;
+      size_t i;
       printf("================");
       for (i = 0; i < nbytes; ++i) {
         printf("%02x", itext[i]);
       }
       printf("\n");
-      PrintXedInst(cinst);
-      PrintNaClInst(cinst);
+      PrintParsedInstructionVariants(cinst);
     }
   } while (0);
   /* saw error; should have already printed stuff. Only
@@ -856,13 +817,24 @@ static void TryOneInstruction(ComparedInstruction *cinst,
    * instruction.
    */
   if (gSkipContiguous && (!cinst->_decoder_error)) {
-    ReportOnSkippedErrors(NULL);
+    ReportOnSkippedErrors(cinst, NULL);
   }
 }
 
 static int ValidInstIsShorterThan(ComparedInstruction *cinst, int len) {
-  return ((cinst->_xedd._decoded_length > 0) &&
-          (cinst->_xedd._decoded_length < len));
+  size_t length[NACL_MAX_ENUM_TESTERS];
+  Bool all_shorter = TRUE;  /* until proven otherwise. */
+  /* If no testers, vacuously true. */
+  if (0 == cinst->_enumerator._num_testers) return 0;
+
+  /* TODO(karl) Convert to loop when nacl tester implemented. */
+  length[0] = cinst->_enumerator._tester[0]->
+      _inst_length_fn(&cinst->_enumerator);
+  length[1] = (size_t) NaClInstLength(cinst->_nacl_inst);
+
+  size_t xed_length = cinst->_enumerator._tester[0]->
+      _inst_length_fn(&cinst->_enumerator);
+  return (xed_length > 0) && (xed_length < len);
 }
 
 /* Enumerate and test all 24-bit opcode+modrm+sib patterns for a
@@ -907,7 +879,7 @@ static void TestAllWithPrefix(ComparedInstruction *cinst,
       }
       if (ValidInstIsShorterThan(cinst, prefix_length + 2)) break;
     }
-    ReportOnSkippedErrors(NULL);
+    ReportOnSkippedErrors(cinst, NULL);
   }
 }
 
@@ -933,24 +905,11 @@ static void TestAllInstructions(ComparedInstruction *cinst) {
   TestAllWithPrefix(cinst, 0x3a0f66, 3);
 }
 
-void XedSetup(ComparedInstruction *cinst) {
-  xed_tables_init();
-  xed_state_zero(&cinst->_xed_state);
-
-  /* dstate.stack_addr_width = XED_ADDRESS_WIDTH_32b; */
-#if (NACL_TARGET_SUBARCH == 32)
-  cinst->_xed_state.mmode = XED_MACHINE_MODE_LONG_COMPAT_32;
-#endif
-#if (NACL_TARGET_SUBARCH == 64)
-  cinst->_xed_state.mmode = XED_MACHINE_MODE_LONG_64;
-#endif
-}
-
 /* Used to test one instruction at a time, for example, in regression
  * testing, or for instruction arguments from the command line.
  */
 static void TestOneInstruction(ComparedInstruction *cinst, char *asciihex) {
-  unsigned char ibytes[XED_MAX_INSTRUCTION_BYTES];
+  unsigned char ibytes[NACL_ENUM_MAX_INSTRUCTION_BYTES];
   unsigned char *ibp;
   unsigned int i, len, nbytes;
 
@@ -961,9 +920,9 @@ static void TestOneInstruction(ComparedInstruction *cinst, char *asciihex) {
             asciihex);
     Usage();
   }
-  if (nbytes > XED_MAX_INSTRUCTION_BYTES) {
+  if (nbytes > NACL_ENUM_MAX_INSTRUCTION_BYTES) {
     fprintf(stderr, "bad instruction %s\nMust be less than %d bytes\n",
-            asciihex, XED_MAX_INSTRUCTION_BYTES);
+            asciihex, NACL_ENUM_MAX_INSTRUCTION_BYTES);
     Usage();
   }
   for (i = 0; i < len; i += 2) {
@@ -1005,10 +964,11 @@ static void RunRegressionTests(ComparedInstruction *cinst) {
 /* Very simple command line arg parsing. Returns index to the first
  * arg that doesn't begin with '--', or argc if there are none.
  */
-static int ParseArgs(int argc, char *argv[]) {
+static int ParseArgs(ComparedInstruction* cinst, int argc, char *argv[]) {
   int i;
   uint32_t prefix;
   uint32_t opcode;
+  char* cstr_value;
 
   for (i = 1; i < argc; i++) {
     if (argv[i][0] == '-') {
@@ -1024,18 +984,34 @@ static int ParseArgs(int argc, char *argv[]) {
                                 &gXedImplemented) ||
                    GrokBoolFlag("--nops", argv[i], &gNoCompareNops)||
                    GrokBoolFlag("--opcode_bytes", argv[i],
-                                &gPrintOpcodeBytesOnly) ||
+                                &cinst->_enumerator._print_opcode_bytes_only) ||
+                   GrokBoolFlag("--printenum", argv[i],
+                                &cinst->_enumerator.
+                                _print_enumerated_instruction) ||
                    GrokBoolFlag("--skipcontiguous", argv[i],
                                 &gSkipContiguous)) {
           break;
-        } else if (strncmp(argv[i], "--naclprint",
-                           strlen("--naclprint")) == 0) {
-          printf("printing nacl instructions:\n");
-          gPrintNaClInsts = 1;
-          break;
-        } else if (strncmp(argv[i], "--xedprint",
-                           strlen("--xedprint")) == 0) {
-          gPrintXedInsts = 1;
+        } else if (GrokCstringFlag("--print", argv[i], &cstr_value)) {
+          size_t i = 0;
+          Bool tester_found = FALSE;
+          for (i = 0; i < cinst->_enumerator._num_testers; ++i) {
+            if (0 == strcmp(cstr_value,
+                            cinst->_enumerator._tester[i]->_id_name)) {
+              cinst->_enumerator._tester[i]->
+                  _set_conditional_printing_fn(&cinst->_enumerator, TRUE);
+              tester_found = TRUE;
+              break;
+            }
+          }
+          /* TODO(karl) merge into above loop when nacl tester implemented. */
+          if (0 == strcmp(cstr_value, "nacl")) {
+            gPrintNaClInsts = 1;
+            tester_found = 1;
+          }
+          if (! tester_found) {
+            printf("can't find tester --print=%s\n", cstr_value);
+            exit(1);
+          }
           break;
         } else if (GrokUint32HexFlag("--prefix", argv[i], &prefix)) {
           gPrefix = (int) prefix;
@@ -1054,28 +1030,50 @@ static int ParseArgs(int argc, char *argv[]) {
   return argc;
 }
 
+static void NaClInitializeComparedInstruction(ComparedInstruction* cinst) {
+  cinst->_enumerator._num_testers = 0;
+  cinst->_enumerator._print_opcode_bytes_only = FALSE;
+  cinst->_enumerator._print_enumerated_instruction = FALSE;
+}
+
+static void NaClRegisterEnumeratorTester(NaClEnumerator* enumerator,
+                                         NaClEnumeratorTester* tester) {
+  if (enumerator->_num_testers >= NACL_MAX_ENUM_TESTERS) {
+    printf("Too many registered enumerator testers\n");
+    exit(1);
+  }
+  enumerator->_tester[enumerator->_num_testers++] = tester;
+}
+
+extern NaClEnumeratorTester* RegisterXedTester();
+
 int main(int argc, char *argv[]) {
   int testargs;
-  ComparedInstruction cinst;
-
-  gArgv0 = argv[0];
-  XedSetup(&cinst);
-
-  testargs = ParseArgs(argc, argv);
-
-  if (gPrintOpcodeBytesOnly) {
-    gSilent = 1;
-  }
 
   NaClLogModuleInit();
   NaClLogSetVerbosity(LOG_FATAL);
+  NaClInitializeComparedInstruction(&gCinst);
+
+  /* For the moment, only register the xed tester, since that is the
+   * only tester we have.
+   */
+  NaClRegisterEnumeratorTester(&gCinst._enumerator, RegisterXedTester());
+
+  gArgv0 = argv[0];
+  testargs = ParseArgs(&gCinst, argc, argv);
+  if (gCinst._enumerator._print_opcode_bytes_only ||
+      gCinst._enumerator._print_enumerated_instruction) {
+    gSilent = 1;
+  }
+
+
   if (testargs == argc) {
-    if (gPrefix < 0) RunRegressionTests(&cinst);
-    TestAllInstructions(&cinst);
+    if (gPrefix < 0) RunRegressionTests(&gCinst);
+    TestAllInstructions(&gCinst);
   } else if (testargs == argc - 1) {
     gSilent = 0;
     gVerbose = 1;
-    TestOneInstruction(&cinst, argv[testargs]);
+    TestOneInstruction(&gCinst, argv[testargs]);
   } else Usage();
   exit(gSawLethalError);
 }
