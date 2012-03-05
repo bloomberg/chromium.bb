@@ -1621,7 +1621,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 		(struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
 	struct weston_surface *es;
-	uint32_t *k, *end;
+	uint32_t *k;
 
 	if (!wl_list_empty(&compositor->surface_list))
 		es = container_of(compositor->surface_list.next,
@@ -1632,8 +1632,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 	if (output) {
 		wl_array_copy(&wd->input_device.keys, keys);
 		wd->modifier_state = 0;
-		end = device->keys.data + device->keys.size;
-		for (k = device->keys.data; k < end; k++) {
+		wl_array_for_each(k, &device->keys) {
 			weston_compositor_idle_inhibit(compositor);
 			update_modifier_state(wd, *k, 1);
 		}
@@ -1642,8 +1641,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 			wl_input_device_set_keyboard_focus(&wd->input_device,
 							   &es->surface, time);
 	} else {
-		end = device->keys.data + device->keys.size;
-		for (k = device->keys.data; k < end; k++)
+		wl_array_for_each(k, &device->keys)
 			weston_compositor_idle_release(compositor);
 
 		wd->modifier_state = 0;
