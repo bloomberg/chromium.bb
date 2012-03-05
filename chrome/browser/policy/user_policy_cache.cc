@@ -42,12 +42,12 @@ void UserPolicyCache::Load() {
   disk_cache_->Load();
 }
 
-void UserPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
+bool UserPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   base::Time now = base::Time::NowFromSystemTime();
   set_last_policy_refresh_time(now);
   base::Time timestamp;
   if (!SetPolicyInternal(policy, &timestamp, false))
-    return;
+    return false;
   UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchOK,
                             kMetricPolicySize);
 
@@ -55,12 +55,13 @@ void UserPolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
                   base::TimeDelta::FromMinutes(1)) {
     LOG(WARNING) << "Server returned policy with timestamp from the future, "
                     "not persisting to disk.";
-    return;
+    return false;
   }
 
   em::CachedCloudPolicyResponse cached_policy;
   cached_policy.mutable_cloud_policy()->CopyFrom(policy);
   disk_cache_->Store(cached_policy);
+  return true;
 }
 
 void UserPolicyCache::SetUnmanaged() {

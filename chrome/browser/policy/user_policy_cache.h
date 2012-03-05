@@ -43,7 +43,7 @@ class UserPolicyCache : public CloudPolicyCacheBase,
 
   // CloudPolicyCacheBase implementation:
   virtual void Load() OVERRIDE;
-  virtual void SetPolicy(
+  virtual bool SetPolicy(
       const enterprise_management::PolicyFetchResponse& policy) OVERRIDE;
   virtual void SetUnmanaged() OVERRIDE;
   virtual void SetFetchingDone() OVERRIDE;

@@ -142,7 +142,7 @@ void DevicePolicyCache::Load() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
+bool DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   DCHECK(IsReady());
 
   // Make sure we have an enterprise device.
@@ -154,7 +154,7 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
                               kMetricPolicySize);
     InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                    CloudPolicySubsystem::POLICY_LOCAL_ERROR);
-    return;
+    return false;
   }
 
   // Check the user this policy is for against the device-locked name.
@@ -165,7 +165,7 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
                               kMetricPolicySize);
     InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                    CloudPolicySubsystem::POLICY_LOCAL_ERROR);
-    return;
+    return false;
   }
 
   if (registration_user != policy_data.username()) {
@@ -175,7 +175,7 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
                               kMetricPolicySize);
     InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,
                    CloudPolicySubsystem::POLICY_LOCAL_ERROR);
-    return;
+    return false;
   }
 
   set_last_policy_refresh_time(base::Time::NowFromSystemTime());
@@ -185,6 +185,7 @@ void DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
       base::Bind(&DevicePolicyCache::PolicyStoreOpCompleted,
                  weak_ptr_factory_.GetWeakPtr());
   new StorePolicyOperation(signed_settings_helper_, policy, callback);
+  return true;
 }
 
 void DevicePolicyCache::SetUnmanaged() {

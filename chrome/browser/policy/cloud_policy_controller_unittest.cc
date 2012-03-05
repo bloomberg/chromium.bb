@@ -345,4 +345,39 @@ TEST_F(CloudPolicyControllerTest, SetFetchingDoneAfterPolicyFetchFails) {
   EXPECT_TRUE(cache_->last_policy_refresh_time().is_null());
 }
 
+TEST_F(CloudPolicyControllerTest, DelayRefreshesIfPolicyIsInvalid) {
+  // Reply with a protobuf whose timestamp is too far in the future. The policy
+  // cache will reject it, and the controller should detect that and go into
+  // STATE_POLICY_ERROR instead of STATE_POLICY_VALID.
+
+  // Build the |response|.
+  em::DeviceManagementResponse response;
+  em::PolicyData data;
+  em::CloudPolicySettings settings;
+  EXPECT_TRUE(settings.SerializeToString(data.mutable_policy_value()));
+  base::Time far_in_the_future =
+      base::Time::NowFromSystemTime() + base::TimeDelta::FromDays(42);
+  base::TimeDelta timestamp = far_in_the_future - base::Time::UnixEpoch();
+  data.set_timestamp(timestamp.InMilliseconds());
+  std::string serialized_data;
+  EXPECT_TRUE(data.SerializeToString(&serialized_data));
+  em::PolicyFetchResponse* fetch_response =
+      response.mutable_policy_response()->add_response();
+  fetch_response->set_policy_data(serialized_data);
+
+  data_store_->SetupForTesting("device_token", "device_id",
+                               "madmax@managedchrome.com",
+                               "auth_token", true);
+
+  EXPECT_CALL(service_,
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+      .WillOnce(DoAll(InvokeWithoutArgs(&loop_, &MessageLoop::QuitNow),
+                      service_.SucceedJob(response)));
+  CreateNewController();
+  loop_.RunAllPending();
+  EXPECT_EQ(CloudPolicySubsystem::NETWORK_ERROR, notifier_.state());
+  EXPECT_EQ(CloudPolicySubsystem::POLICY_NETWORK_ERROR,
+            notifier_.error_details());
+}
+
 }  // namespace policy

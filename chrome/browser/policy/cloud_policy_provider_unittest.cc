@@ -37,7 +37,9 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
 
   // CloudPolicyCacheBase implementation.
   void Load() OVERRIDE {}
-  void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE {}
+  bool SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE {
+    return true;
+  }
   bool DecodePolicyData(const em::PolicyData& policy_data,
                         PolicyMap* policies) OVERRIDE {
     return true;

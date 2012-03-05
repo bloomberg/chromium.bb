@@ -185,8 +185,10 @@ void CloudPolicyController::OnPolicyFetchCompleted(
             policy_response.response(0));
         if (!fetch_response.has_error_code() ||
             fetch_response.error_code() == dm_protocol::POLICY_FETCH_SUCCESS) {
-          cache_->SetPolicy(fetch_response);
-          SetState(STATE_POLICY_VALID);
+          if (cache_->SetPolicy(fetch_response))
+            SetState(STATE_POLICY_VALID);
+          else
+            SetState(STATE_POLICY_ERROR);
         } else {
           UMA_HISTOGRAM_ENUMERATION(kMetricPolicy,
                                     kMetricPolicyFetchBadResponse,
