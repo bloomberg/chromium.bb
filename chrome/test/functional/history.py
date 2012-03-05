@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -326,6 +326,12 @@ class HistoryTest(pyauto.PyUITest):
 
     Also, make sure that existing history tab is activated.
     """
+    command_line = self.GetBrowserInfo()['properties']['command_line_string']
+    if '--disable-uber-page' in command_line.split():
+      history_url = 'chrome://history-frame/'
+    else:
+      history_url = 'chrome://chrome/history/'
+
     # Invoke History.
     self.RunCommand(pyauto.IDC_SHOW_HISTORY)
     self.assertEqual('History', self.GetActiveTabTitle(),
@@ -338,12 +344,12 @@ class HistoryTest(pyauto.PyUITest):
     # Verify there is only one history tab, and that it is activated.
     tab0url = self.GetBrowserInfo()['windows'][0]['tabs'][0]['url']
     self.assertEqual(
-        'chrome://history/', tab0url, msg='Tab 0: expected = %s, actual = %s.'
-            % ('chrome://history/',  tab0url))
+        history_url, tab0url, msg='Tab 0: expected = %s, actual = %s.'
+            % (history_url,  tab0url))
 
     tab1url = self.GetBrowserInfo()['windows'][0]['tabs'][1]['url']
     self.assertNotEqual(
-        'chrome://history/', tab1url,
+        history_url, tab1url,
         msg='Tab 1: History page not expected.')
 
     self.assertEqual('History', self.GetActiveTabTitle(),
