@@ -138,6 +138,11 @@ int32_t NCInstBytesInt32(const NCInstBytesPtr* ptr, int num_bytes) {
     case 2:
       return (int16_t) (NCInstBytesByteInline(ptr, 0) +
                         (NCInstBytesByteInline(ptr, 1) << 8));
+    case 3:
+      /* Note: Handle special case of Iw, Ib in 32 bit validator. */
+      return (int32_t) (NCInstBytesByteInline(ptr, 0) +
+                        (NCInstBytesByteInline(ptr, 1) << 8) +
+                        (NCInstBytesByteInline(ptr, 2) << 16));
     case 4:
       return (int32_t) (NCInstBytesByteInline(ptr, 0) +
                         (NCInstBytesByteInline(ptr, 1) << 8) +
@@ -153,8 +158,16 @@ int64_t NCInstBytesInt64(const NCInstBytesPtr* ptr, int num_bytes) {
   switch (num_bytes) {
     case 1:
     case 2:
+    case 3: /* Handle special case of Iw, Ib in 32 bit validator. */
     case 4:
       return (int64_t) NCInstBytesInt32(ptr, num_bytes);
+    case 6: {
+      /* Handle special case of 48-bit pointers in 32 bit validator. */
+      NCInstBytesPtr ptr_plus_2;
+      NCInstBytesPtrInitInc(&ptr_plus_2, ptr, 2);
+      return ((int64_t) (NCInstBytesInt32(&ptr_plus_2, 2)) << 32) |
+          ((int64_t) (NCInstBytesInt32(ptr, 4)));
+    }
     case 8: {
       NCInstBytesPtr ptr_plus_4;
       NCInstBytesPtrInitInc(&ptr_plus_4, ptr, 4);

@@ -1,0 +1,4 @@
+# Tests that we recognize instructions with 3 bytes of immediate.
+# Note: The instruction isn't decoded correctly, but it doesn't matter
+# since the instruction is NaCl illegal.
+c8 01 02 03
