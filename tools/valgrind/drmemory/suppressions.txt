@@ -283,5 +283,5 @@ system call NtGdiDeleteObjectApp
 WARNING
 name=http://crbug.com/109963 b
 system call NtGdiDeleteObjectApp
-GDI32.dll!DeleteDC
+GDI32.dll!*
 *!skia::BitmapPlatformDevice::BitmapPlatformDeviceData::ReleaseBitmapDC
