@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,8 +195,8 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   // Start with a short timeout.
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          MessageLoop::QuitClosure(), 10);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
   MessageLoop::current()->Run();
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
@@ -205,8 +205,8 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   // Start with a short timeout.
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          MessageLoop::QuitClosure(), 10);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
   MessageLoop::current()->Run();
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
