@@ -1384,6 +1384,9 @@ click_to_activate_binding(struct wl_input_device *device,
 	struct weston_surface *upper;
 
 	focus = (struct weston_surface *) device->pointer_focus;
+	if (!focus)
+		return;
+
 	upper = container_of(focus->link.prev, struct weston_surface, link);
 	if (focus->link.prev != &compositor->surface_list &&
 	    get_shell_surface_type(upper) == SHELL_SURFACE_FULLSCREEN) {
@@ -1392,7 +1395,7 @@ click_to_activate_binding(struct wl_input_device *device,
 		focus = upper;
 	}
 
-	if (state && focus && device->pointer_grab == &device->default_pointer_grab)
+	if (state && device->pointer_grab == &device->default_pointer_grab)
 		activate(compositor->shell, focus, wd, time);
 }
 
