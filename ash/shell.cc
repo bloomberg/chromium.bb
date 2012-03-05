@@ -193,20 +193,20 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
  private:
 
-  // SystemTrayDelegate implementation.
-  virtual const std::string GetUserDisplayName() OVERRIDE {
+  // Overridden from SystemTrayDelegate:
+  virtual const std::string GetUserDisplayName() const OVERRIDE {
     return "chronos";
   }
 
-  virtual const std::string GetUserEmail() OVERRIDE {
+  virtual const std::string GetUserEmail() const OVERRIDE {
     return "chr@nos";
   }
 
-  virtual const SkBitmap& GetUserImage() OVERRIDE {
+  virtual const SkBitmap& GetUserImage() const OVERRIDE {
     return null_image_;
   }
 
-  virtual user::LoginStatus GetUserLoginStatus() OVERRIDE {
+  virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE {
     return user::LOGGED_IN_USER;
   }
 

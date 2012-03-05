@@ -17,10 +17,10 @@ class SystemTrayDelegate {
   virtual ~SystemTrayDelegate() {}
 
   // Gets information about the logged in user.
-  virtual const std::string GetUserDisplayName() = 0;
-  virtual const std::string GetUserEmail() = 0;
-  virtual const SkBitmap& GetUserImage() = 0;
-  virtual user::LoginStatus GetUserLoginStatus() = 0;
+  virtual const std::string GetUserDisplayName() const = 0;
+  virtual const std::string GetUserEmail() const = 0;
+  virtual const SkBitmap& GetUserImage() const = 0;
+  virtual user::LoginStatus GetUserLoginStatus() const = 0;
 
   // Shows settings.
   virtual void ShowSettings() = 0;

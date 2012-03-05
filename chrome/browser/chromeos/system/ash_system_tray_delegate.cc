@@ -49,20 +49,20 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   }
 
-  // Overridden from ash::SystemTrayDelegate.
-  virtual const std::string GetUserDisplayName() OVERRIDE {
+  // Overridden from ash::SystemTrayDelegate:
+  virtual const std::string GetUserDisplayName() const OVERRIDE {
     return UserManager::Get()->logged_in_user().GetDisplayName();
   }
 
-  virtual const std::string GetUserEmail() OVERRIDE {
+  virtual const std::string GetUserEmail() const OVERRIDE {
     return UserManager::Get()->logged_in_user().email();
   }
 
-  virtual const SkBitmap& GetUserImage() OVERRIDE {
+  virtual const SkBitmap& GetUserImage() const OVERRIDE {
     return UserManager::Get()->logged_in_user().image();
   }
 
-  virtual ash::user::LoginStatus GetUserLoginStatus() OVERRIDE {
+  virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
     UserManager* manager = UserManager::Get();
     if (!manager->user_is_logged_in())
       return ash::user::LOGGED_IN_NONE;
