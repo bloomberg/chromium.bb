@@ -47,30 +47,35 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
       const net::HttpRequestHeaders& headers) OVERRIDE;
 
  private:
-  void CloseStream();
-  void ResolveFile(const FilePath& file_path);
+  // For preparing for read: get the size, apply the range and perform seek.
+  void DidStart();
   void CountSize();
+  void GetFileItemInfo(const FilePath& file_path);
+  void DidGetFileItemInfo(base::PlatformFileError rv,
+                          const base::PlatformFileInfo& file_info);
   void Seek(int64 offset);
-  void AdvanceItem();
-  void AdvanceBytesRead(int result);
-  int ComputeBytesToRead() const;
+
+  // For reading the blob.
   bool ReadLoop(int* bytes_read);
   bool ReadItem();
+  void AdvanceItem();
+  void AdvanceBytesRead(int result);
   bool ReadBytes(const BlobData::Item& item);
   bool DispatchReadFile(const BlobData::Item& item);
-  bool ReadFile(const BlobData::Item& item);
-  void HeadersCompleted(int status_code, const std::string& status_txt);
-  int ReadCompleted();
-  void NotifySuccess();
-  void NotifyFailure(int);
 
-  void DidStart();
-  void DidResolve(base::PlatformFileError rv,
-                  const base::PlatformFileInfo& file_info);
   void DidOpen(base::PlatformFileError rv,
                base::PassPlatformFile file,
                bool created);
+  bool ReadFile();
   void DidRead(int result);
+  void CloseStream();
+
+  int ComputeBytesToRead() const;
+  int ReadCompleted();
+
+  void NotifySuccess();
+  void NotifyFailure(int);
+  void HeadersCompleted(int status_code, const std::string& status_txt);
 
   base::WeakPtrFactory<BlobURLRequestJob> weak_factory_;
   scoped_refptr<BlobData> blob_data_;

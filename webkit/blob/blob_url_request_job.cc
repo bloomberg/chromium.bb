@@ -26,26 +26,30 @@
 
 namespace webkit_blob {
 
-static const int kHTTPOk = 200;
-static const int kHTTPPartialContent = 206;
-static const int kHTTPNotAllowed = 403;
-static const int kHTTPNotFound = 404;
-static const int kHTTPMethodNotAllow = 405;
-static const int kHTTPRequestedRangeNotSatisfiable = 416;
-static const int kHTTPInternalError = 500;
+namespace {
 
-static const char kHTTPOKText[] = "OK";
-static const char kHTTPPartialContentText[] = "Partial Content";
-static const char kHTTPNotAllowedText[] = "Not Allowed";
-static const char kHTTPNotFoundText[] = "Not Found";
-static const char kHTTPMethodNotAllowText[] = "Method Not Allowed";
-static const char kHTTPRequestedRangeNotSatisfiableText[] =
+const int kHTTPOk = 200;
+const int kHTTPPartialContent = 206;
+const int kHTTPNotAllowed = 403;
+const int kHTTPNotFound = 404;
+const int kHTTPMethodNotAllow = 405;
+const int kHTTPRequestedRangeNotSatisfiable = 416;
+const int kHTTPInternalError = 500;
+
+const char kHTTPOKText[] = "OK";
+const char kHTTPPartialContentText[] = "Partial Content";
+const char kHTTPNotAllowedText[] = "Not Allowed";
+const char kHTTPNotFoundText[] = "Not Found";
+const char kHTTPMethodNotAllowText[] = "Method Not Allowed";
+const char kHTTPRequestedRangeNotSatisfiableText[] =
     "Requested Range Not Satisfiable";
-static const char kHTTPInternalErrorText[] = "Internal Server Error";
+const char kHTTPInternalErrorText[] = "Internal Server Error";
 
-static const int kFileOpenFlags = base::PLATFORM_FILE_OPEN |
-                                  base::PLATFORM_FILE_READ |
-                                  base::PLATFORM_FILE_ASYNC;
+const int kFileOpenFlags = base::PLATFORM_FILE_OPEN |
+                           base::PLATFORM_FILE_READ |
+                           base::PLATFORM_FILE_ASYNC;
+
+}  // namespace
 
 BlobURLRequestJob::BlobURLRequestJob(
     net::URLRequest* request,
@@ -79,6 +83,82 @@ void BlobURLRequestJob::Start() {
       base::Bind(&BlobURLRequestJob::DidStart, weak_factory_.GetWeakPtr()));
 }
 
+void BlobURLRequestJob::Kill() {
+  CloseStream();
+
+  net::URLRequestJob::Kill();
+  weak_factory_.InvalidateWeakPtrs();
+}
+
+bool BlobURLRequestJob::ReadRawData(net::IOBuffer* dest,
+                                    int dest_size,
+                                    int* bytes_read) {
+  DCHECK_NE(dest_size, 0);
+  DCHECK(bytes_read);
+  DCHECK_GE(remaining_bytes_, 0);
+
+  // Bail out immediately if we encounter an error.
+  if (error_) {
+    *bytes_read = 0;
+    return true;
+  }
+
+  if (remaining_bytes_ < dest_size)
+    dest_size = static_cast<int>(remaining_bytes_);
+
+  // If we should copy zero bytes because |remaining_bytes_| is zero, short
+  // circuit here.
+  if (!dest_size) {
+    *bytes_read = 0;
+    return true;
+  }
+
+  // Keep track of the buffer.
+  DCHECK(!read_buf_);
+  read_buf_ = new net::DrainableIOBuffer(dest, dest_size);
+
+  return ReadLoop(bytes_read);
+}
+
+bool BlobURLRequestJob::GetMimeType(std::string* mime_type) const {
+  if (!response_info_.get())
+    return false;
+
+  return response_info_->headers->GetMimeType(mime_type);
+}
+
+void BlobURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
+  if (response_info_.get())
+    *info = *response_info_;
+}
+
+int BlobURLRequestJob::GetResponseCode() const {
+  if (!response_info_.get())
+    return -1;
+
+  return response_info_->headers->response_code();
+}
+
+void BlobURLRequestJob::SetExtraRequestHeaders(
+    const net::HttpRequestHeaders& headers) {
+  std::string range_header;
+  if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
+    // We only care about "Range" header here.
+    std::vector<net::HttpByteRange> ranges;
+    if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
+      if (ranges.size() == 1) {
+        byte_range_set_ = true;
+        byte_range_ = ranges[0];
+      } else {
+        // We don't support multiple range requests in one single URL request,
+        // because we need to do multipart encoding here.
+        // TODO(jianli): Support multipart byte range requests.
+        NotifyFailure(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
+      }
+    }
+  }
+}
+
 void BlobURLRequestJob::DidStart() {
   // We only support GET request per the spec.
   if (request()->method() != "GET") {
@@ -95,30 +175,52 @@ void BlobURLRequestJob::DidStart() {
   CountSize();
 }
 
-void BlobURLRequestJob::CloseStream() {
-  if (stream_ != NULL) {
-    // stream_.Close() blocks the IO thread, see http://crbug.com/75548.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    stream_->CloseSync();
-    stream_.reset(NULL);
+void BlobURLRequestJob::CountSize() {
+  for (; item_index_ < blob_data_->items().size(); ++item_index_) {
+    const BlobData::Item& item = blob_data_->items().at(item_index_);
+    int64 item_length = static_cast<int64>(item.length);
+
+    // If there is a file item, do the resolving.
+    if (item.type == BlobData::TYPE_FILE) {
+      GetFileItemInfo(item.file_path);
+      return;
+    }
+
+    // Cache the size and add it to the total size.
+    item_length_list_.push_back(item_length);
+    total_size_ += item_length;
   }
+
+  // Reset item_index_ since it will be reused to read the items.
+  item_index_ = 0;
+
+  // Apply the range requirement.
+  if (!byte_range_.ComputeBounds(total_size_)) {
+    NotifyFailure(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
+    return;
+  }
+
+  remaining_bytes_ = byte_range_.last_byte_position() -
+                     byte_range_.first_byte_position() + 1;
+  DCHECK_GE(remaining_bytes_, 0);
+
+  // Do the seek at the beginning of the request.
+  if (byte_range_.first_byte_position())
+    Seek(byte_range_.first_byte_position());
+
+  NotifySuccess();
 }
 
-void BlobURLRequestJob::Kill() {
-  CloseStream();
-
-  net::URLRequestJob::Kill();
-  weak_factory_.InvalidateWeakPtrs();
-}
-
-void BlobURLRequestJob::ResolveFile(const FilePath& file_path) {
+void BlobURLRequestJob::GetFileItemInfo(const FilePath& file_path) {
   base::FileUtilProxy::GetFileInfo(
         file_thread_proxy_, file_path,
-        base::Bind(&BlobURLRequestJob::DidResolve, weak_factory_.GetWeakPtr()));
+        base::Bind(&BlobURLRequestJob::DidGetFileItemInfo,
+                   weak_factory_.GetWeakPtr()));
 }
 
-void BlobURLRequestJob::DidResolve(base::PlatformFileError rv,
-                                   const base::PlatformFileInfo& file_info) {
+void BlobURLRequestJob::DidGetFileItemInfo(
+    base::PlatformFileError rv,
+    const base::PlatformFileInfo& file_info) {
   // If an error occured, bail out.
   if (rv == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
@@ -156,42 +258,6 @@ void BlobURLRequestJob::DidResolve(base::PlatformFileError rv,
   CountSize();
 }
 
-void BlobURLRequestJob::CountSize() {
-  for (; item_index_ < blob_data_->items().size(); ++item_index_) {
-    const BlobData::Item& item = blob_data_->items().at(item_index_);
-    int64 item_length = static_cast<int64>(item.length);
-
-    // If there is a file item, do the resolving.
-    if (item.type == BlobData::TYPE_FILE) {
-      ResolveFile(item.file_path);
-      return;
-    }
-
-    // Cache the size and add it to the total size.
-    item_length_list_.push_back(item_length);
-    total_size_ += item_length;
-  }
-
-  // Reset item_index_ since it will be reused to read the items.
-  item_index_ = 0;
-
-  // Apply the range requirement.
-  if (!byte_range_.ComputeBounds(total_size_)) {
-    NotifyFailure(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
-    return;
-  }
-
-  remaining_bytes_ = byte_range_.last_byte_position() -
-                     byte_range_.first_byte_position() + 1;
-  DCHECK_GE(remaining_bytes_, 0);
-
-  // Do the seek at the beginning of the request.
-  if (byte_range_.first_byte_position())
-    Seek(byte_range_.first_byte_position());
-
-  NotifySuccess();
-}
-
 void BlobURLRequestJob::Seek(int64 offset) {
   // Skip the initial items that are not in the range.
   for (item_index_ = 0;
@@ -203,59 +269,6 @@ void BlobURLRequestJob::Seek(int64 offset) {
 
   // Set the offset that need to jump to for the first item in the range.
   current_item_offset_ = offset;
-}
-
-bool BlobURLRequestJob::ReadRawData(net::IOBuffer* dest,
-                                    int dest_size,
-                                    int* bytes_read) {
-  DCHECK_NE(dest_size, 0);
-  DCHECK(bytes_read);
-  DCHECK_GE(remaining_bytes_, 0);
-
-  // Bail out immediately if we encounter an error.
-  if (error_) {
-    *bytes_read = 0;
-    return true;
-  }
-
-  if (remaining_bytes_ < dest_size)
-    dest_size = static_cast<int>(remaining_bytes_);
-
-  // If we should copy zero bytes because |remaining_bytes_| is zero, short
-  // circuit here.
-  if (!dest_size) {
-    *bytes_read = 0;
-    return true;
-  }
-
-  // Keep track of the buffer.
-  DCHECK(!read_buf_);
-  read_buf_ = new net::DrainableIOBuffer(dest, dest_size);
-
-  return ReadLoop(bytes_read);
-}
-
-bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
-  // Read until we encounter an error or could not get the data immediately.
-  while (remaining_bytes_ > 0 && read_buf_->BytesRemaining() > 0) {
-    if (!ReadItem())
-      return false;
-  }
-
-  *bytes_read = ReadCompleted();
-  return true;
-}
-
-int BlobURLRequestJob::ComputeBytesToRead() const {
-  int64 current_item_remaining_bytes =
-      item_length_list_[item_index_] - current_item_offset_;
-  int bytes_to_read = (read_buf_->BytesRemaining() >
-                       current_item_remaining_bytes)
-      ? static_cast<int>(current_item_remaining_bytes)
-      : read_buf_->BytesRemaining();
-  if (bytes_to_read > remaining_bytes_)
-    bytes_to_read = static_cast<int>(remaining_bytes_);
-  return bytes_to_read;
 }
 
 bool BlobURLRequestJob::ReadItem() {
@@ -292,6 +305,32 @@ bool BlobURLRequestJob::ReadItem() {
   }
 }
 
+void BlobURLRequestJob::AdvanceItem() {
+  // Close the stream if the current item is a file.
+  CloseStream();
+
+  // Advance to the next item.
+  item_index_++;
+  current_item_offset_ = 0;
+}
+
+void BlobURLRequestJob::AdvanceBytesRead(int result) {
+  DCHECK_GT(result, 0);
+
+  // Do we finish reading the current item?
+  current_item_offset_ += result;
+  if (current_item_offset_ == item_length_list_[item_index_])
+    AdvanceItem();
+
+  // Subtract the remaining bytes.
+  remaining_bytes_ -= result;
+  DCHECK_GE(remaining_bytes_, 0);
+
+  // Adjust the read buffer.
+  read_buf_->DidConsume(result);
+  DCHECK_GE(read_buf_->BytesRemaining(), 0);
+}
+
 bool BlobURLRequestJob::ReadBytes(const BlobData::Item& item) {
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read_);
 
@@ -306,11 +345,12 @@ bool BlobURLRequestJob::ReadBytes(const BlobData::Item& item) {
 bool BlobURLRequestJob::DispatchReadFile(const BlobData::Item& item) {
   // If the stream already exists, keep reading from it.
   if (stream_ != NULL)
-    return ReadFile(item);
+    return ReadFile();
 
   base::FileUtilProxy::CreateOrOpen(
       file_thread_proxy_, item.file_path, kFileOpenFlags,
-      base::Bind(&BlobURLRequestJob::DidOpen, weak_factory_.GetWeakPtr()));
+      base::Bind(&BlobURLRequestJob::DidOpen,
+                 weak_factory_.GetWeakPtr()));
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   return false;
 }
@@ -337,10 +377,10 @@ void BlobURLRequestJob::DidOpen(base::PlatformFileError rv,
     }
   }
 
-  ReadFile(item);
+  ReadFile();
 }
 
-bool BlobURLRequestJob::ReadFile(const BlobData::Item& item) {
+bool BlobURLRequestJob::ReadFile() {
   DCHECK(stream_.get());
   DCHECK(stream_->IsOpen());
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read_);
@@ -394,30 +434,13 @@ void BlobURLRequestJob::DidRead(int result) {
     NotifyReadComplete(bytes_read);
 }
 
-void BlobURLRequestJob::AdvanceItem() {
-  // Close the stream if the current item is a file.
-  CloseStream();
-
-  // Advance to the next item.
-  item_index_++;
-  current_item_offset_ = 0;
-}
-
-void BlobURLRequestJob::AdvanceBytesRead(int result) {
-  DCHECK_GT(result, 0);
-
-  // Do we finish reading the current item?
-  current_item_offset_ += result;
-  if (current_item_offset_ == item_length_list_[item_index_])
-    AdvanceItem();
-
-  // Subtract the remaining bytes.
-  remaining_bytes_ -= result;
-  DCHECK_GE(remaining_bytes_, 0);
-
-  // Adjust the read buffer.
-  read_buf_->DidConsume(result);
-  DCHECK_GE(read_buf_->BytesRemaining(), 0);
+void BlobURLRequestJob::CloseStream() {
+  if (stream_ != NULL) {
+    // stream_.Close() blocks the IO thread, see http://crbug.com/75548.
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    stream_->CloseSync();
+    stream_.reset(NULL);
+  }
 }
 
 int BlobURLRequestJob::ReadCompleted() {
@@ -426,40 +449,27 @@ int BlobURLRequestJob::ReadCompleted() {
   return bytes_read;
 }
 
-void BlobURLRequestJob::HeadersCompleted(int status_code,
-                                         const std::string& status_text) {
-  std::string status("HTTP/1.1 ");
-  status.append(base::IntToString(status_code));
-  status.append(" ");
-  status.append(status_text);
-  status.append("\0\0", 2);
-  net::HttpResponseHeaders* headers = new net::HttpResponseHeaders(status);
+int BlobURLRequestJob::ComputeBytesToRead() const {
+  int64 current_item_remaining_bytes =
+      item_length_list_[item_index_] - current_item_offset_;
+  int bytes_to_read = (read_buf_->BytesRemaining() >
+                       current_item_remaining_bytes)
+      ? static_cast<int>(current_item_remaining_bytes)
+      : read_buf_->BytesRemaining();
+  if (bytes_to_read > remaining_bytes_)
+    bytes_to_read = static_cast<int>(remaining_bytes_);
+  return bytes_to_read;
+}
 
-  if (status_code == kHTTPOk || status_code == kHTTPPartialContent) {
-    std::string content_length_header(net::HttpRequestHeaders::kContentLength);
-    content_length_header.append(": ");
-    content_length_header.append(base::Int64ToString(remaining_bytes_));
-    headers->AddHeader(content_length_header);
-    if (!blob_data_->content_type().empty()) {
-      std::string content_type_header(net::HttpRequestHeaders::kContentType);
-      content_type_header.append(": ");
-      content_type_header.append(blob_data_->content_type());
-      headers->AddHeader(content_type_header);
-    }
-    if (!blob_data_->content_disposition().empty()) {
-      std::string content_disposition_header("Content-Disposition: ");
-      content_disposition_header.append(blob_data_->content_disposition());
-      headers->AddHeader(content_disposition_header);
-    }
+bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
+  // Read until we encounter an error or could not get the data immediately.
+  while (remaining_bytes_ > 0 && read_buf_->BytesRemaining() > 0) {
+    if (!ReadItem())
+      return false;
   }
 
-  response_info_.reset(new net::HttpResponseInfo());
-  response_info_->headers = headers;
-
-  set_expected_content_size(remaining_bytes_);
-  headers_set_ = true;
-
-  NotifyHeadersComplete();
+  *bytes_read = ReadCompleted();
+  return true;
 }
 
 void BlobURLRequestJob::NotifySuccess() {
@@ -518,43 +528,40 @@ void BlobURLRequestJob::NotifyFailure(int error_code) {
   HeadersCompleted(status_code, status_txt);
 }
 
-bool BlobURLRequestJob::GetMimeType(std::string* mime_type) const {
-  if (!response_info_.get())
-    return false;
+void BlobURLRequestJob::HeadersCompleted(int status_code,
+                                         const std::string& status_text) {
+  std::string status("HTTP/1.1 ");
+  status.append(base::IntToString(status_code));
+  status.append(" ");
+  status.append(status_text);
+  status.append("\0\0", 2);
+  net::HttpResponseHeaders* headers = new net::HttpResponseHeaders(status);
 
-  return response_info_->headers->GetMimeType(mime_type);
-}
-
-void BlobURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
-  if (response_info_.get())
-    *info = *response_info_;
-}
-
-int BlobURLRequestJob::GetResponseCode() const {
-  if (!response_info_.get())
-    return -1;
-
-  return response_info_->headers->response_code();
-}
-
-void BlobURLRequestJob::SetExtraRequestHeaders(
-    const net::HttpRequestHeaders& headers) {
-  std::string range_header;
-  if (headers.GetHeader(net::HttpRequestHeaders::kRange, &range_header)) {
-    // We only care about "Range" header here.
-    std::vector<net::HttpByteRange> ranges;
-    if (net::HttpUtil::ParseRangeHeader(range_header, &ranges)) {
-      if (ranges.size() == 1) {
-        byte_range_set_ = true;
-        byte_range_ = ranges[0];
-      } else {
-        // We don't support multiple range requests in one single URL request,
-        // because we need to do multipart encoding here.
-        // TODO(jianli): Support multipart byte range requests.
-        NotifyFailure(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
-      }
+  if (status_code == kHTTPOk || status_code == kHTTPPartialContent) {
+    std::string content_length_header(net::HttpRequestHeaders::kContentLength);
+    content_length_header.append(": ");
+    content_length_header.append(base::Int64ToString(remaining_bytes_));
+    headers->AddHeader(content_length_header);
+    if (!blob_data_->content_type().empty()) {
+      std::string content_type_header(net::HttpRequestHeaders::kContentType);
+      content_type_header.append(": ");
+      content_type_header.append(blob_data_->content_type());
+      headers->AddHeader(content_type_header);
+    }
+    if (!blob_data_->content_disposition().empty()) {
+      std::string content_disposition_header("Content-Disposition: ");
+      content_disposition_header.append(blob_data_->content_disposition());
+      headers->AddHeader(content_disposition_header);
     }
   }
+
+  response_info_.reset(new net::HttpResponseInfo());
+  response_info_->headers = headers;
+
+  set_expected_content_size(remaining_bytes_);
+  headers_set_ = true;
+
+  NotifyHeadersComplete();
 }
 
 }  // namespace webkit_blob
