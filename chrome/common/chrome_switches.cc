@@ -135,6 +135,10 @@ const char kCheckForUpdateIntervalSec[]     = "check-for-update-interval";
 const char kCheckCloudPrintConnectorPolicy[]    =
     "check-cloud-print-connector-policy";
 
+// Tells Chrome to delay shutdown (for a specified number of seconds) when a
+// Chrome Frame automation channel is closed.
+const char kChromeFrameShutdownDelay[]      = "chrome-frame-shutdown-delay";
+
 // Tells chrome to load the specified version of chrome.dll on Windows. If this
 // version cannot be loaded, Chrome will exit.
 const char kChromeVersion[]                 = "chrome-version";
