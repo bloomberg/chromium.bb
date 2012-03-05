@@ -88,11 +88,6 @@ class WorkspaceManagerTest : public test::AshTestBase {
   internal::WorkspaceManager* manager_;
 
  private:
-  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode) OVERRIDE {
-    *window_mode = Shell::MODE_MANAGED;
-    return true;
-  }
-
   scoped_ptr<internal::ActivationController> activation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManagerTest);

@@ -23,6 +23,9 @@ class ShelfLayoutManager;
 // compact window mode is not enabled. It is intended to implement the simplest
 // possible window management code. If you have a more complex window mode
 // please implement a new LayoutManager for it.
+//
+// TODO(jamescook): If we're happy with managed window mode, this class and
+// its tests can be deleted.
 class ASH_EXPORT ToplevelLayoutManager : public BaseLayoutManager {
  public:
   ToplevelLayoutManager();

@@ -77,12 +77,11 @@ class WorkspaceController;
 class ASH_EXPORT Shell {
  public:
   // In compact window mode we fill the screen with a single maximized window,
-  // similar to ChromeOS R17 and earlier.  In overlapping mode we have draggable
-  // windows.  In managed mode the workspace arranges windows for the user.
+  // similar to ChromeOS R17 and earlier.  In managed mode we have overlapping
+  // windows arranged by the workspace.
   enum WindowMode {
     MODE_COMPACT,
     MODE_MANAGED,
-    MODE_OVERLAPPING,
   };
 
   enum BackgroundMode {
@@ -221,10 +220,6 @@ class ASH_EXPORT Shell {
     return shadow_controller_.get();
   }
 
-  static void set_compact_window_mode_for_test(bool compact) {
-    compact_window_mode_for_test_ = compact;
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, TransformActivate);
@@ -236,14 +231,13 @@ class ASH_EXPORT Shell {
 
   void Init();
 
-  // Returns the appropriate window mode to use based on the |command_line|
-  // and |compact_window_mode_for_test_|.
+  // Returns the appropriate window mode to use based on the |command_line|.
   WindowMode ComputeWindowMode(CommandLine* command_line) const;
 
   // Initializes or re-initializes the layout managers and event filters needed
   // to support a given window mode and cleans up the unneeded ones.
   void SetupCompactWindowMode();
-  void SetupNonCompactWindowMode();
+  void SetupManagedWindowMode();
 
   // Sets the LayoutManager of the container with the specified id to NULL. This
   // has the effect of deleting the current LayoutManager.
@@ -253,10 +247,6 @@ class ASH_EXPORT Shell {
   void DisableWorkspaceGridLayout();
 
   static Shell* instance_;
-
-  // Window mode is computed at shell initialization time, so allow it to be
-  // overridden without modifying the global command line.
-  static bool compact_window_mode_for_test_;
 
   // If set before the Shell is initialized, the mouse cursor will be hidden
   // when the screen is initially created.

@@ -301,14 +301,6 @@ TEST_F(ShellTest, ComputeWindowMode) {
   EXPECT_EQ(Shell::MODE_COMPACT,
             test_api.ComputeWindowMode(&command_line_force));
 
-  // The user can set overlapping mode.
-  CommandLine command_line_overlapping(CommandLine::NO_PROGRAM);
-  command_line_overlapping.AppendSwitchASCII(
-      switches::kAuraWindowMode,
-      switches::kAuraWindowModeOverlapping);
-  EXPECT_EQ(Shell::MODE_OVERLAPPING,
-            test_api.ComputeWindowMode(&command_line_overlapping));
-
   // The user can set compact mode.
   CommandLine command_line_compact(CommandLine::NO_PROGRAM);
   command_line_compact.AppendSwitchASCII(switches::kAuraWindowMode,
@@ -326,11 +318,11 @@ TEST_F(ShellTest, ComputeWindowMode) {
 
 // Fails on Mac, see http://crbug.com/115662
 #if defined(OS_MACOSX)
-#define MAYBE_OverlappingWindowModeBasics FAILS_OverlappingWindowModeBasics
+#define MAYBE_ManagedWindowModeBasics FAILS_ManagedWindowModeBasics
 #else
-#define MAYBE_OverlappingWindowModeBasics OverlappingWindowModeBasics
+#define MAYBE_ManagedWindowModeBasics ManagedWindowModeBasics
 #endif
-TEST_F(ShellTest, MAYBE_OverlappingWindowModeBasics) {
+TEST_F(ShellTest, MAYBE_ManagedWindowModeBasics) {
   Shell* shell = Shell::GetInstance();
   Shell::TestApi test_api(shell);
 
@@ -389,23 +381,17 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   widget->Close();
 }
 
-// Window mode is computed at Shell initialization time.  Rather than changing
-// the global command line to select compact mode we set a switch before
-// initializing the shell.
+// By implementing GetOverrideWindowMode we make the Shell come up in compact
+// window mode.
 class ShellCompactWindowModeTest : public test::AshTestBase {
  public:
   ShellCompactWindowModeTest() {}
   virtual ~ShellCompactWindowModeTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    // Must set this before base class initializes the shell.
-    Shell::set_compact_window_mode_for_test(true);
-    test::AshTestBase::SetUp();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    test::AshTestBase::TearDown();
-    Shell::set_compact_window_mode_for_test(false);
+ protected:
+  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode) {
+    *window_mode = Shell::MODE_COMPACT;
+    return true;
   }
 
  private:

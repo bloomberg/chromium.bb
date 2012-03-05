@@ -248,8 +248,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 // static
 Shell* Shell::instance_ = NULL;
 // static
-bool Shell::compact_window_mode_for_test_ = false;
-// static
 bool Shell::initially_hide_cursor_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -452,7 +450,7 @@ void Shell::Init() {
   if (window_mode_ == MODE_COMPACT)
     SetupCompactWindowMode();
   else
-    SetupNonCompactWindowMode();
+    SetupManagedWindowMode();
 
   if (!command_line->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
@@ -480,9 +478,6 @@ void Shell::Init() {
 }
 
 Shell::WindowMode Shell::ComputeWindowMode(CommandLine* command_line) const {
-  if (compact_window_mode_for_test_)
-    return MODE_COMPACT;
-
   // Some devices don't perform well with overlapping windows.
   if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
     return MODE_COMPACT;
@@ -495,8 +490,6 @@ Shell::WindowMode Shell::ComputeWindowMode(CommandLine* command_line) const {
       return MODE_COMPACT;
     if (mode == switches::kAuraWindowModeManaged)
       return MODE_MANAGED;
-    if (mode == switches::kAuraWindowModeOverlapping)
-      return MODE_OVERLAPPING;
   }
 
   // Managed is the default.
@@ -633,7 +626,7 @@ void Shell::SetupCompactWindowMode() {
   SetDesktopBackgroundMode(BACKGROUND_SOLID_COLOR);
 }
 
-void Shell::SetupNonCompactWindowMode() {
+void Shell::SetupManagedWindowMode() {
   DCHECK(root_window_layout_);
   DCHECK(status_widget_);
 
@@ -650,20 +643,11 @@ void Shell::SetupNonCompactWindowMode() {
 
   aura::Window* default_container =
       GetContainer(internal::kShellWindowId_DefaultContainer);
-  if (window_mode_ == MODE_MANAGED) {
-    // Workspace manager has its own layout managers.
-    workspace_controller_.reset(
-        new internal::WorkspaceController(default_container));
-    workspace_controller_->workspace_manager()->set_shelf(shelf_layout_manager);
-  } else {
-    // Default layout manager.
-    internal::ToplevelLayoutManager* toplevel_layout_manager =
-        new internal::ToplevelLayoutManager();
-    toplevel_layout_manager->set_shelf(shelf_layout_manager);
-    default_container->SetLayoutManager(toplevel_layout_manager);
-    default_container->SetEventFilter(
-        new ToplevelWindowEventFilter(default_container));
-  }
+  // Workspace manager has its own layout managers.
+  workspace_controller_.reset(
+      new internal::WorkspaceController(default_container));
+  workspace_controller_->workspace_manager()->set_shelf(shelf_layout_manager);
+
   // Ensure launcher is visible.
   launcher_->widget()->Show();
 

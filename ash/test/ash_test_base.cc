@@ -21,7 +21,7 @@ AshTestBase::~AshTestBase() {
 void AshTestBase::SetUp() {
   // Creates Shell and hook with Desktop.
   TestShellDelegate* delegate = new TestShellDelegate;
-  Shell::WindowMode window_mode = Shell::MODE_OVERLAPPING;
+  Shell::WindowMode window_mode = Shell::MODE_MANAGED;
   if (GetOverrideWindowMode(&window_mode))
     delegate->SetOverrideWindowMode(window_mode);
   ash::Shell::CreateInstance(delegate);

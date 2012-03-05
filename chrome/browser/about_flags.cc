@@ -96,9 +96,6 @@ const Experiment::Choice kAuraWindowModeChoices[] = {
   { IDS_FLAGS_AURA_WINDOW_MODE_MANAGED,
       ash::switches::kAuraWindowMode,
       ash::switches::kAuraWindowModeManaged },
-  { IDS_FLAGS_AURA_WINDOW_MODE_OVERLAPPING,
-      ash::switches::kAuraWindowMode,
-      ash::switches::kAuraWindowModeOverlapping },
 };
 #endif
 

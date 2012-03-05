@@ -17,7 +17,7 @@ namespace test {
 
 TestShellDelegate::TestShellDelegate()
     : override_window_mode_(false),
-      window_mode_(Shell::MODE_OVERLAPPING) {
+      window_mode_(Shell::MODE_MANAGED) {
 }
 
 TestShellDelegate::~TestShellDelegate() {

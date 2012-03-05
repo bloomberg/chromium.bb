@@ -5098,7 +5098,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Window mode
       </message>
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_DESCRIPTION" desc="Description for the flag to choose how windows are displayed.">
-        Compact mode shows a single maximized window, useful for low-resolution devices such as laptops. Managed mode automatically arranges windows. Overlapping window mode shows traditional draggable windows.
+        Compact mode shows a single maximized window, useful for low-resolution devices such as laptops. Managed mode automatically arranges windows.
       </message>
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC" desc="Option name for automatic selection of window display mode.">
         Automatic
@@ -5108,9 +5108,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_AURA_WINDOW_MODE_MANAGED" desc="Option name for automatically managed window display mode.">
         Managed
-      </message>
-      <message name="IDS_FLAGS_AURA_WINDOW_MODE_OVERLAPPING" desc="Option name for overlapping window display mode.">
-        Overlapping
       </message>
       <message name="IDS_FLAGS_ENABLE_PLATFORM_APPS_NAME" desc="Title for the flag to enable platform apps.">
         Enable platform apps

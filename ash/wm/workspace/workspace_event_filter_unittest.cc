@@ -36,12 +36,6 @@ class WorkspaceEventFilterTest : public test::AshTestBase {
   }
 
  private:
-  // Overridden from test::AshTestBase:
-  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode) OVERRIDE {
-    *window_mode = Shell::MODE_MANAGED;
-    return true;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(WorkspaceEventFilterTest);
 };
 

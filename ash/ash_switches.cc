@@ -49,9 +49,6 @@ const char kAuraWindowModeCompact[] = "compact";
 // windows.
 const char kAuraWindowModeManaged[] = "managed";
 
-// Traditional window management with multiple draggable windows.
-const char kAuraWindowModeOverlapping[] = "overlapping";
-
 // Use Aura to manage windows of type WINDOW_TYPE_PANEL.
 const char kAuraPanelManager[] = "aura-panels";
 
