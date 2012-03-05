@@ -160,7 +160,7 @@ void LayoutTestController::waitUntilDone(
         FROM_HERE,
         base::Bind(&LayoutTestController::notifyDoneTimedOut,
                    weak_factory_.GetWeakPtr()),
-        shell_->GetLayoutTestTimeout());
+        base::TimeDelta::FromMilliseconds(shell_->GetLayoutTestTimeout()));
   }
 
   wait_until_done_ = true;

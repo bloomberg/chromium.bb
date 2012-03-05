@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,5 +11,5 @@ void WebWidgetHost::ScheduleAnimation() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebWidgetHost::ScheduleComposite, weak_factory_.GetWeakPtr()),
-      10);
+      base::TimeDelta::FromMilliseconds(10));
 }

@@ -105,7 +105,7 @@ void WebThreadImplForMessageLoop::postDelayedTask(
   message_loop_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)),
-      delay_ms);
+      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void WebThreadImplForMessageLoop::enterRunLoop() {
