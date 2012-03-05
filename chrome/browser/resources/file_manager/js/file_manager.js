@@ -2533,7 +2533,7 @@ FileManager.prototype = {
           str);
     };
 
-    galleryFrame.src = 'js/image_editor/gallery.html';
+    galleryFrame.src = 'gallery.html';
     this.openFilePopup_(galleryFrame);
   };
 

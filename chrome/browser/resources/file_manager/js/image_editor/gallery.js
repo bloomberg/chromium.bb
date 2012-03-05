@@ -1184,7 +1184,7 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
     url = this.url_;
     transform = metadata.imageTransform;
   } else {
-    url = '../../' + FileType.getPreviewArt(mediaType);
+    url = FileType.getPreviewArt(mediaType);
   }
 
   function percent(ratio) { return Math.round(ratio * 100) + '%' }

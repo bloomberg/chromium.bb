@@ -4,7 +4,6 @@
 
 importScripts('function_sequence.js');
 importScripts('function_parallel.js');
-importScripts('util.js');
 
 function Id3Parser(parent) {
   MetadataParser.call(this, parent, 'id3', /\.(mp3)$/i);

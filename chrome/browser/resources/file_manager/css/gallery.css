@@ -37,7 +37,7 @@ body {
   opacity: 0;
   width: 20px;
   height: 20px;
-  background-image: url(../../images/gallery/close_x.png);
+  background-image: url(../images/gallery/close_x.png);
   background-repeat: no-repeat;
   background-position: center center;
 }
@@ -71,31 +71,31 @@ body {
 }
 
 .gallery[tools] .image-container[cursor='move'] {
-  cursor: url(../../images/gallery/cursor_move.png) 18 18;
+  cursor: url(../images/gallery/cursor_move.png) 18 18;
 }
 
 .gallery[tools] .image-container[cursor='crop'] {
-  cursor: url(../../images/gallery/cursor_crop.png) 18 18;
+  cursor: url(../images/gallery/cursor_crop.png) 18 18;
 }
 
 .gallery[tools] .image-container[cursor='n-resize'],
 .gallery[tools] .image-container[cursor='s-resize'] {
-  cursor: url(../../images/gallery/cursor_updown.png) 18 18;
+  cursor: url(../images/gallery/cursor_updown.png) 18 18;
 }
 
 .gallery[tools] .image-container[cursor='e-resize'],
 .gallery[tools] .image-container[cursor='w-resize'] {
-  cursor: url(../../images/gallery/cursor_leftright.png) 18 18;
+  cursor: url(../images/gallery/cursor_leftright.png) 18 18;
 }
 
 .gallery[tools] .image-container[cursor='nw-resize'],
 .gallery[tools] .image-container[cursor='se-resize'] {
-  cursor: url(../../images/gallery/cursor_nwse.png) 18 18;
+  cursor: url(../images/gallery/cursor_nwse.png) 18 18;
 }
 
 .gallery[tools] .image-container[cursor='ne-resize'],
 .gallery[tools] .image-container[cursor='sw-resize'] {
-  cursor: url(../../images/gallery/cursor_swne.png) 18 18;
+  cursor: url(../images/gallery/cursor_swne.png) 18 18;
 }
 
 .gallery > .image-container > .image {
@@ -200,11 +200,11 @@ body {
 }
 
 .gallery .arrow.left div{
-  background-image: url(../../images/gallery/arrow_left.png);
+  background-image: url(../images/gallery/arrow_left.png);
 }
 
 .gallery .arrow.right div{
-  background-image: url(../../images/gallery/arrow_right.png);
+  background-image: url(../images/gallery/arrow_right.png);
 }
 
 /* Special behavior on mouse drag.
@@ -424,52 +424,52 @@ body {
 }
 
 .gallery > .toolbar .button.autofix {
-  background-image: url(../../images/gallery/icon_autofix.png);
+  background-image: url(../images/gallery/icon_autofix.png);
 }
 
 .gallery > .toolbar .button.autofix[pressed] {
-  background-image: url(../../images/gallery/icon_autofix_selected.png);
+  background-image: url(../images/gallery/icon_autofix_selected.png);
 }
 
 .gallery > .toolbar .button.crop {
-  background-image: url(../../images/gallery/icon_crop.png);
+  background-image: url(../images/gallery/icon_crop.png);
 }
 
 .gallery > .toolbar .button.crop[pressed] {
-  background-image: url(../../images/gallery/icon_crop_selected.png);
+  background-image: url(../images/gallery/icon_crop_selected.png);
 }
 
 .gallery > .toolbar .button.exposure {
-  background-image: url(../../images/gallery/icon_brightness.png);
+  background-image: url(../images/gallery/icon_brightness.png);
 }
 
 .gallery > .toolbar .button.exposure[pressed] {
-  background-image: url(../../images/gallery/icon_brightness_selected.png);
+  background-image: url(../images/gallery/icon_brightness_selected.png);
 }
 
 .gallery > .toolbar .button.rotate_right {
-  background-image: url(../../images/gallery/icon_rotate.png);
+  background-image: url(../images/gallery/icon_rotate.png);
 }
 
 .gallery > .toolbar .button.rotate_right[pressed] {
-  background-image: url(../../images/gallery/icon_rotate_selected.png);
+  background-image: url(../images/gallery/icon_rotate_selected.png);
 }
 
 .gallery > .toolbar .button.rotate_left {
-  background-image: url(../../images/gallery/icon_rotate_left.png);
+  background-image: url(../images/gallery/icon_rotate_left.png);
 }
 
 .gallery > .toolbar .button.rotate_left[pressed] {
-  background-image: url(../../images/gallery/icon_rotate_left_selected.png);
+  background-image: url(../images/gallery/icon_rotate_left_selected.png);
 }
 
 .gallery > .toolbar .button.undo {
-  background-image: url(../../images/gallery/icon_undo.png);
+  background-image: url(../images/gallery/icon_undo.png);
 }
 
 .gallery > .toolbar .button.redo {
   position: absolute; /* Exclude from center-packing*/
-  background-image: url(../../images/gallery/icon_redo.png);
+  background-image: url(../images/gallery/icon_redo.png);
 }
 
 .gallery > .toolbar .button[disabled] {
@@ -484,21 +484,21 @@ body {
 .gallery > .toolbar > .button.edit {
   position: relative;
   z-index: 10;
-  background-image: url(../../images/gallery/icon_edit.png);
+  background-image: url(../images/gallery/icon_edit.png);
 }
 
 .gallery > .toolbar > .button.edit[pressed] {
-  background-image: url(../../images/gallery/icon_edit_selected.png);
+  background-image: url(../images/gallery/icon_edit_selected.png);
 }
 
 .gallery > .toolbar > .button.share {
   position: relative;
   z-index: 10;
-  background-image: url(../../images/gallery/icon_share.png);
+  background-image: url(../images/gallery/icon_share.png);
 }
 
 .gallery > .toolbar > .button.share[pressed] {
-  background-image: url(../../images/gallery/icon_share_selected.png);
+  background-image: url(../images/gallery/icon_share_selected.png);
 }
 
 .gallery > .toolbar > .button:last-child {
@@ -547,12 +547,12 @@ body {
 }
 
 .gallery .edit-modal .label.brightness {
-  background-image: url(../../images/gallery/icon_brightness.png);
+  background-image: url(../images/gallery/icon_brightness.png);
 }
 
 .gallery .edit-modal .label.contrast {
   margin-left: 15px;
-  background-image: url(../../images/gallery/icon_contrast.png);
+  background-image: url(../images/gallery/icon_contrast.png);
 }
 
 .gallery .edit-modal .range {
@@ -566,7 +566,7 @@ body {
   -webkit-appearance: none;
   width: 16px;
   height: 29px;
-  background-image: url(../../images/gallery/slider_thumb.png);
+  background-image: url(../images/gallery/slider_thumb.png);
 }
 
 /* Crop frame */
@@ -714,7 +714,7 @@ body {
 }
 
 .gallery .share-menu .bubble-point {
-  background-image: url(../../images/gallery/bubble_point.png);
+  background-image: url(../images/gallery/bubble_point.png);
   background-position: center top;
   background-repeat: no-repeat;
   position: absolute;

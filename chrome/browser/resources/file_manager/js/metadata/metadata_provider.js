@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,7 @@ function MetadataProvider(opt_workerPath) {
     var path = document.location.pathname;
     opt_workerPath = document.location.origin +
         path.substring(0, path.lastIndexOf('/') + 1) +
-        'js/metadata_dispatcher.js';
+        'js/metadata/metadata_dispatcher.js';
   }
 
   this.dispatcher_ = new Worker(opt_workerPath);
