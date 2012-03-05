@@ -834,9 +834,15 @@ void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
 }
 
 void BrowserActionsContainer::HidePopup() {
+  // Remove this as an observer and clear |popup_| and |popup_button_| here,
+  // since we might change them before OnWidgetClosing() gets called.
   if (popup_) {
+    popup_->GetWidget()->RemoveObserver(this);
     popup_->GetWidget()->Close();
-    // NULL out popup_button_ in case it's being deleted.
+    popup_ = NULL;
+  }
+  if (popup_button_) {
+    popup_button_->SetButtonNotPushed();
     popup_button_ = NULL;
   }
 }
