@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,8 +44,8 @@ TEST(BytesFormattingTest, FormatBytes) {
     // digits.
     {0, DATA_UNITS_BYTE, "0", "0 B"},
     {512, DATA_UNITS_BYTE, "512", "512 B"},
-    {512, DATA_UNITS_KIBIBYTE, "0.5", "0.5 kB"},
-    {1024*1024, DATA_UNITS_KIBIBYTE, "1,024", "1,024 kB"},
+    {512, DATA_UNITS_KIBIBYTE, "0.5", "0.5 KB"},
+    {1024*1024, DATA_UNITS_KIBIBYTE, "1,024", "1,024 KB"},
     {1024*1024, DATA_UNITS_MEBIBYTE, "1.0", "1.0 MB"},
     {1024*1024*1024, DATA_UNITS_GIBIBYTE, "1.0", "1.0 GB"},
     {10LL*1024*1024*1024, DATA_UNITS_GIBIBYTE, "10.0", "10.0 GB"},
@@ -56,8 +56,8 @@ TEST(BytesFormattingTest, FormatBytes) {
     {~(1LL<<63), DATA_UNITS_GIBIBYTE, "8,589,934,592", "8,589,934,592 GB"},
     {~(1LL<<63), DATA_UNITS_PEBIBYTE, "8,192", "8,192 PB"},
 
-    {99*1024 + 103, DATA_UNITS_KIBIBYTE, "99.1", "99.1 kB"},
-    {1024*1024 + 103, DATA_UNITS_KIBIBYTE, "1,024", "1,024 kB"},
+    {99*1024 + 103, DATA_UNITS_KIBIBYTE, "99.1", "99.1 KB"},
+    {1024*1024 + 103, DATA_UNITS_KIBIBYTE, "1,024", "1,024 KB"},
     {1024*1024 + 205 * 1024, DATA_UNITS_MEBIBYTE, "1.2", "1.2 MB"},
     {1024*1024*1024 + (927 * 1024*1024), DATA_UNITS_GIBIBYTE,
      "1.9", "1.9 GB"},

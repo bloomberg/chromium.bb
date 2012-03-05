@@ -343,7 +343,7 @@ need to be translated for each locale.-->
         <ph name="QUANTITY">$1<ex>42</ex></ph> B
       </message>
       <message name="IDS_APP_KIBIBYTES" desc="Units tag indicating a quantity of kilobytes">
-        <ph name="QUANTITY">$1<ex>42.0</ex></ph> kB
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> KB
       </message>
       <message name="IDS_APP_MEBIBYTES" desc="Units tag indicating a quantity of megabytes">
         <ph name="QUANTITY">$1<ex>42.0</ex></ph> MB
@@ -361,7 +361,7 @@ need to be translated for each locale.-->
         <ph name="QUANTITY">$1<ex>42</ex></ph> B/s
       </message>
       <message name="IDS_APP_KIBIBYTES_PER_SECOND" desc="Units tag indicating a speed of kilobytes/second">
-        <ph name="QUANTITY">$1<ex>42.0</ex></ph> kB/s
+        <ph name="QUANTITY">$1<ex>42.0</ex></ph> KB/s
       </message>
       <message name="IDS_APP_MEBIBYTES_PER_SECOND" desc="Units tag indicating a speed of megabytes/second">
         <ph name="QUANTITY">$1<ex>42.0</ex></ph> MB/s
