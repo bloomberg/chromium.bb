@@ -7,6 +7,8 @@
 #include <objidl.h>
 #include <winspool.h>
 
+#include "base/file_path.h"
+#include "base/file_version_info.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
@@ -46,6 +48,9 @@ class PrintBackendWin : public PrintBackend {
 
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
                                          PrinterCapsAndDefaults* printer_info);
+
+  virtual bool GetPrinterDriverInfo(const std::string& printer_name,
+                                    PrinterDriverInfo* driver_info);
 
   virtual bool IsValidPrinter(const std::string& printer_name);
 };
@@ -171,10 +176,48 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
   return true;
 }
 
-bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
-  std::wstring printer_name_wide = UTF8ToWide(printer_name);
+// Gets the information about driver for a specific printer.
+bool PrintBackendWin::GetPrinterDriverInfo(const std::string& printer_name,
+                                           PrinterDriverInfo* driver_info) {
+  DCHECK(driver_info);
   ScopedPrinterHandle printer_handle;
-  OpenPrinter(const_cast<LPTSTR>(printer_name_wide.c_str()),
+  if (!::OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
+                     printer_handle.Receive(), NULL)) {
+    return false;
+  }
+  DCHECK(printer_handle.IsValid());
+  DWORD bytes_needed = 0;
+  ::GetPrinterDriver(printer_handle, NULL, 6, NULL, 0, &bytes_needed);
+  scoped_array<BYTE> driver_info_buffer(new BYTE[bytes_needed]);
+  if (!bytes_needed || !driver_info_buffer.get())
+    return false;
+  if (!::GetPrinterDriver(printer_handle, NULL, 6, driver_info_buffer.get(),
+                          bytes_needed, &bytes_needed)) {
+    return false;
+  }
+  if (!bytes_needed)
+    return false;
+  const DRIVER_INFO_6* driver_info_6 =
+      reinterpret_cast<DRIVER_INFO_6*>(driver_info_buffer.get());
+
+  if (driver_info_6->pName)
+    driver_info->driver_name = WideToUTF8(driver_info_6->pName);
+
+  if (driver_info_6->pDriverPath) {
+    scoped_ptr<FileVersionInfo> version_info(
+        FileVersionInfo::CreateFileVersionInfo(
+            FilePath(driver_info_6->pDriverPath)));
+    driver_info->driver_version = WideToUTF8(version_info->file_version());
+    driver_info->product_name = WideToUTF8(version_info->product_name());
+    driver_info->product_version = WideToUTF8(version_info->product_version());
+  }
+
+  return true;
+}
+
+bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
+  ScopedPrinterHandle printer_handle;
+  OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
               printer_handle.Receive(), NULL);
   return printer_handle.IsValid();
 }

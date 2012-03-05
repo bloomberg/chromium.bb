@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,9 @@ class PrintBackendChromeOS : public PrintBackend {
   virtual bool GetPrinterCapsAndDefaults(const std::string& printer_name,
                                          PrinterCapsAndDefaults* printer_info);
 
+  virtual bool GetPrinterDriverInfo(const std::string& printer_name,
+                                    PrinterDriverInfo* driver_info);
+
   virtual bool IsValidPrinter(const std::string& printer_name);
 
  private:
@@ -38,6 +41,13 @@ bool PrintBackendChromeOS::EnumeratePrinters(PrinterList* printer_list) {
 bool PrintBackendChromeOS::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
     PrinterCapsAndDefaults* printer_info) {
+  NOTREACHED();
+  return false;
+}
+
+bool PrintBackendChromeOS::GetPrinterDriverInfo(
+    const std::string& printer_name,
+    PrinterDriverInfo* driver_info) {
   NOTREACHED();
   return false;
 }

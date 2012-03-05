@@ -113,6 +113,9 @@ class PrintBackendCUPS : public PrintBackend {
       const std::string& printer_name,
       PrinterCapsAndDefaults* printer_info) OVERRIDE;
 
+  virtual bool GetPrinterDriverInfo(const std::string& printer_name,
+                                    PrinterDriverInfo* driver_info) OVERRIDE;
+
   virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
 
  private:
@@ -223,6 +226,12 @@ bool PrintBackendCUPS::GetPrinterCapsAndDefaults(
   }
 
   return res;
+}
+
+bool PrintBackendCUPS::GetPrinterDriverInfo(const std::string& printer_name,
+                                            PrinterDriverInfo* driver_info) {
+  // TODO(vitalybuka): MAC implementation. http://crbug.com/108194
+  return false;
 }
 
 bool PrintBackendCUPS::IsValidPrinter(const std::string& printer_name) {
