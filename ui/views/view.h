@@ -621,6 +621,14 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // will be given a chance.
   virtual bool OnMouseWheel(const MouseWheelEvent& event);
 
+  // See field for description.
+  void set_notify_enter_exit_on_child(bool notify) {
+    notify_enter_exit_on_child_ = notify;
+  }
+  bool notify_enter_exit_on_child() const {
+    return notify_enter_exit_on_child_;
+  }
+
   // Returns the View's TextInputClient instance or NULL if the View doesn't
   // support text input.
   virtual ui::TextInputClient* GetTextInputClient();
@@ -1350,6 +1358,21 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Whether this view is painting.
   bool painting_enabled_;
+
+  // When this flag is on, a View receives a mouse-enter and mouse-leave event
+  // even if a descendant View is the event-recipient for the real mouse
+  // events. When this flag is turned on, and mouse moves from outside of the
+  // view into a child view, both the child view and this view receives
+  // mouse-enter event. Similarly, if the mouse moves from inside a child view
+  // and out of this view, then both views receive a mouse-leave event.
+  // When this flag is turned off, if the mouse moves from inside this view into
+  // a child view, then this view receives a mouse-leave event. When this flag
+  // is turned on, it does not receive the mouse-leave event in this case.
+  // When the mouse moves from inside the child view out of the child view but
+  // still into this view, this view receives a mouse-enter event if this flag
+  // is turned off, but doesn't if this flag is turned on.
+  // This flag is initialized to false.
+  bool notify_enter_exit_on_child_;
 
   // Whether or not RegisterViewForVisibleBoundsNotification on the RootView
   // has been invoked.

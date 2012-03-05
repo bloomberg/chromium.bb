@@ -115,6 +115,7 @@ View::View()
       visible_(true),
       enabled_(true),
       painting_enabled_(true),
+      notify_enter_exit_on_child_(false),
       registered_for_visible_bounds_notification_(false),
       clip_insets_(0, 0, 0, 0),
       needs_layout_(true),
