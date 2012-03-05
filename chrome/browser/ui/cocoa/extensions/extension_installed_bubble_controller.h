@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,10 @@ class ExtensionLoadedNotificationObserver;
 @class HoverCloseButton;
 @class InfoBubbleView;
 
+namespace extensions {
+class BundleInstaller;
+}
+
 namespace extension_installed_bubble {
 
 // Maximum height or width of extension's icon (corresponds to Windows & GTK).
@@ -35,7 +39,8 @@ typedef enum {
   kBrowserAction,
   kGeneric,
   kOmniboxKeyword,
-  kPageAction
+  kPageAction,
+  kBundle,
 } ExtensionType;
 
 }
@@ -49,6 +54,7 @@ typedef enum {
  @private
   NSWindow* parentWindow_;  // weak
   const Extension* extension_;  // weak
+  const extensions::BundleInstaller* bundle_;  // weak
   Browser* browser_;  // weak
   scoped_nsobject<NSImage> icon_;
 
@@ -72,15 +78,22 @@ typedef enum {
   // Only shown for page actions and omnibox keywords.
   IBOutlet NSTextField* extraInfoMsg_;
   IBOutlet NSTextField* extensionInstalledInfoMsg_;
+  // Only shown for bundle installs.
+  IBOutlet NSTextField* installedHeadingMsg_;
+  IBOutlet NSTextField* installedItemsMsg_;
+  IBOutlet NSTextField* failedHeadingMsg_;
+  IBOutlet NSTextField* failedItemsMsg_;
 }
 
 @property(nonatomic, readonly) const Extension* extension;
+@property(nonatomic, readonly) const extensions::BundleInstaller* bundle;
 @property(nonatomic) BOOL pageActionRemoved;
 
 // Initialize the window, and then create observers to wait for the extension
 // to complete loading, or the browser window to close.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                  extension:(const Extension*)extension
+                    bundle:(const extensions::BundleInstaller*)bundle
                    browser:(Browser*)browser
                       icon:(SkBitmap)icon;
 

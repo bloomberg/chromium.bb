@@ -18,12 +18,13 @@
 class Extension;
 class Profile;
 
-// A controller for dialog to let the user install an extension. Created by
-// CrxInstaller.
+// Displays the extension or bundle install prompt, and notifies the
+// ExtensionInstallUI::Delegate of success or failure.
 @interface ExtensionInstallDialogController : NSWindowController {
-@private
+ @private
   IBOutlet NSImageView* iconView_;
   IBOutlet NSTextField* titleField_;
+  IBOutlet NSTextField* itemsField_;
   IBOutlet NSButton* cancelButton_;
   IBOutlet NSButton* okButton_;
 
@@ -46,6 +47,7 @@ class Profile;
 // For unit test use only
 @property(nonatomic, readonly) NSImageView* iconView;
 @property(nonatomic, readonly) NSTextField* titleField;
+@property(nonatomic, readonly) NSTextField* itemsField;
 @property(nonatomic, readonly) NSTextField* subtitleField;
 @property(nonatomic, readonly) NSTextField* warningsField;
 @property(nonatomic, readonly) NSButton* cancelButton;

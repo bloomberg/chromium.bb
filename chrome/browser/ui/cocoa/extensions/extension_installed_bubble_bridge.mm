@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
@@ -21,6 +22,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
+
+using extensions::BundleInstaller;
 
 // When an extension is installed on Mac with neither browser action nor
 // page action icons, show an infobar instead of a popup bubble.
@@ -64,6 +67,7 @@ void ShowExtensionInstalledBubble(
     [[ExtensionInstalledBubbleController alloc]
         initWithParentWindow:browser->window()->GetNativeHandle()
                    extension:extension
+                      bundle:NULL
                      browser:browser
                         icon:icon];
   } else {
@@ -75,3 +79,15 @@ void ShowExtensionInstalledBubble(
 }
 
 } // namespace browser
+
+void extensions::BundleInstaller::ShowInstalledBubble(
+    const BundleInstaller* bundle, Browser* browser) {
+  // The controller is deallocated when the window is closed, so no need to
+  // worry about it here.
+  [[ExtensionInstalledBubbleController alloc]
+        initWithParentWindow:browser->window()->GetNativeHandle()
+                   extension:NULL
+                      bundle:bundle
+                     browser:browser
+                        icon:SkBitmap()];
+}

@@ -64,6 +64,9 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
 
     Item();
 
+    // Gets the localized name, formatted for display in the prompt or bubble.
+    string16 GetNameForDisplay();
+
     std::string id;
     std::string manifest;
     std::string localized_name;
