@@ -19,11 +19,9 @@ namespace gestures {
 // frame of hardware state, immediately determines the gestures to the best
 // of its abilities.
 
-// Currently it simply does very basic pointer movement.
-
-static const int kMaxFingers = 5;
-static const int kMaxGesturingFingers = 2;
-static const int kMaxTapFingers = 5;
+static const size_t kMaxFingers = 5;
+static const size_t kMaxGesturingFingers = 2;
+static const size_t kMaxTapFingers = 5;
 
 class ImmediateInterpreter;
 
