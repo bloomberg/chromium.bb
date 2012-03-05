@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,7 @@ class FakeSocket : public net::Socket {
           base::Bind(&FakeSocket::AppendInputPacket,
                      base::Unretained(peer_socket_),
                      std::vector<char>(buf->data(), buf->data() + buf_len)),
-          latency_ms_);
+          base::TimeDelta::FromMilliseconds(latency_ms_));
     }
 
     return buf_len;

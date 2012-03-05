@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,8 +203,10 @@ void DatagramConnectionTester::HandleWriteResult(int result) {
   } else if (result > 0) {
     EXPECT_EQ(message_size_, result);
     packets_sent_++;
-    message_loop_->PostDelayedTask(FROM_HERE, base::Bind(
-        &DatagramConnectionTester::DoWrite, base::Unretained(this)), delay_ms_);
+    message_loop_->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&DatagramConnectionTester::DoWrite, base::Unretained(this)),
+        base::TimeDelta::FromMilliseconds(delay_ms_));
   }
 }
 

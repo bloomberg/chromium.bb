@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,8 +147,9 @@ TEST_F(ThreadWrapperTest, PostDelayed) {
       MatchMessage(&handler2_, kTestMessage1, data4)))
       .WillOnce(DeleteMessageData());
 
-  message_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
-                                kMaxTestDelay);
+  message_loop_.PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(kMaxTestDelay));
   message_loop_.Run();
 }
 
@@ -197,8 +198,9 @@ TEST_F(ThreadWrapperTest, ClearDelayed) {
       MatchMessage(&handler2_, kTestMessage1, null_data)))
       .WillOnce(DeleteMessageData());
 
-  message_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
-                                kMaxTestDelay);
+  message_loop_.PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(kMaxTestDelay));
   message_loop_.Run();
 }
 

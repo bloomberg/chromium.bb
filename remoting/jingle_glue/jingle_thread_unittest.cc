@@ -63,7 +63,7 @@ TEST(JingleThreadTest, PostDelayedTask) {
   base::Time start = base::Time::Now();
   thread.message_loop()->PostDelayedTask(
       FROM_HERE, base::Bind(&MockCallback::Run, base::Unretained(&task)),
-      kDelayMs);
+      base::TimeDelta::FromMilliseconds(kDelayMs));
   event.TimedWait(base::TimeDelta::FromMilliseconds(kDelayTimeoutMs));
   base::Time end = base::Time::Now();
   thread.Stop();
@@ -81,7 +81,7 @@ TEST(JingleThreadTest, PostNonNestableDelayedTask) {
   base::Time start = base::Time::Now();
   thread.message_loop()->PostNonNestableDelayedTask(
       FROM_HERE, base::Bind(&MockCallback::Run, base::Unretained(&task)),
-      kDelayMs);
+      base::TimeDelta::FromMilliseconds(kDelayMs));
   event.TimedWait(base::TimeDelta::FromMilliseconds(kDelayTimeoutMs));
   base::Time end = base::Time::Now();
   thread.Stop();

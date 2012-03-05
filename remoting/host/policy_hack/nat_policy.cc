@@ -77,7 +77,7 @@ void NatPolicy::ScheduleReloadTask(const base::TimeDelta& delay) {
   message_loop_proxy_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&NatPolicy::Reload, weak_factory_.GetWeakPtr()),
-      delay.InMilliseconds());
+      delay);
 }
 
 bool NatPolicy::OnPolicyThread() const {

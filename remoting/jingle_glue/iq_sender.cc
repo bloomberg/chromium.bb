@@ -146,7 +146,7 @@ IqRequest::~IqRequest() {
 void IqRequest::SetTimeout(base::TimeDelta timeout) {
   base::MessageLoopProxy::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&IqRequest::OnTimeout, AsWeakPtr()),
-      timeout.InMilliseconds());
+      timeout);
 }
 
 void IqRequest::CallCallback(const buzz::XmlElement* stanza) {

@@ -361,7 +361,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // Start timer that periodically sends perf stats.
   plugin_message_loop_->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats, AsWeakPtr()),
-      kPerfStatsIntervalMs);
+      base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 
   VLOG(1) << "Connection status: Initializing";
   SetConnectionState(STATE_INITIALIZING, ERROR_NONE);
@@ -431,7 +431,7 @@ void ChromotingInstance::SendPerfStats() {
 
   plugin_message_loop_->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingInstance::SendPerfStats, AsWeakPtr()),
-      kPerfStatsIntervalMs);
+      base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   ChromotingStats* stats = client_->GetStats();
