@@ -77,12 +77,6 @@ class UI_EXPORT Canvas {
 
   virtual ~Canvas() {}
 
-  // Creates an empty canvas. Must be initialized before it can be used.
-  static Canvas* CreateCanvas();
-
-  // Creates a canvas with the specified size.
-  static Canvas* CreateCanvas(const gfx::Size& size, bool is_opaque);
-
   // Saves a copy of the drawing state onto a stack, operating on this copy
   // until a balanced call to Restore() is made.
   virtual void Save() = 0;

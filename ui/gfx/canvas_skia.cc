@@ -389,15 +389,4 @@ bool CanvasSkia::IntersectsClipRectInt(int x, int y, int w, int h) {
                      SkIntToScalar(y + h));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Canvas, public:
-
-Canvas* Canvas::CreateCanvas() {
-  return new CanvasSkia;
-}
-
-Canvas* Canvas::CreateCanvas(const gfx::Size& size, bool is_opaque) {
-  return new CanvasSkia(size, is_opaque);
-}
-
 }  // namespace gfx

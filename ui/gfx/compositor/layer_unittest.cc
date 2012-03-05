@@ -176,10 +176,6 @@ class LayerWithRealCompositorTest : public testing::Test {
     return layer;
   }
 
-  gfx::Canvas* CreateCanvasForLayer(const Layer* layer) {
-    return gfx::Canvas::CreateCanvas(layer->bounds().size(), false);
-  }
-
   void DrawTree(Layer* root) {
     GetCompositor()->SetRootLayer(root);
     GetCompositor()->Draw(false);
@@ -383,10 +379,6 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
     Layer* layer = CreateLayer(Layer::LAYER_NOT_DRAWN);
     layer->SetBounds(bounds);
     return layer;
-  }
-
-  gfx::Canvas* CreateCanvasForLayer(const Layer* layer) {
-    return gfx::Canvas::CreateCanvas(layer->bounds().size(), false);
   }
 
   void DrawTree(Layer* root) {
