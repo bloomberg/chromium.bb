@@ -1582,10 +1582,12 @@ map(struct weston_shell *base, struct weston_surface *surface,
 		break;
 	}
 
-	weston_surface_assign_output(surface);
-	weston_compositor_repick(compositor);
-	if (surface_type == SHELL_SURFACE_MAXIMIZED)
-		surface->output = shsurf->output;
+	if (surface_type != SHELL_SURFACE_NONE) {
+		weston_surface_assign_output(surface);
+		weston_compositor_repick(compositor);
+		if (surface_type == SHELL_SURFACE_MAXIMIZED)
+			surface->output = shsurf->output;
+	}
 
 	switch (surface_type) {
 	case SHELL_SURFACE_TOPLEVEL:
