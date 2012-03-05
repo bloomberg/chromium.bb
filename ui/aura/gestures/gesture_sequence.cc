@@ -492,14 +492,14 @@ bool GestureSequence::TouchDown(const TouchEvent& event,
 
 void GestureSequence::AppendLongPressGestureEvent() {
   const GesturePoint* point = GetPointByPointId(0);
-  GestureEvent* gesture = new GestureEvent(
+  GestureEvent gesture(
       ui::ET_GESTURE_LONG_PRESS,
       point->first_touch_position().x(),
       point->first_touch_position().y(),
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
       point->point_id(), 0.f);
-  root_window_->DispatchGestureEvent(gesture);
+  root_window_->DispatchGestureEvent(&gesture);
 }
 
 bool GestureSequence::ScrollEnd(const TouchEvent& event,

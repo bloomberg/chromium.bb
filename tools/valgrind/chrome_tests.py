@@ -225,6 +225,9 @@ class ChromeTests:
   def TestAsh(self):
     return self.SimpleTest("ash", "aura_shell_unittests")
 
+  def TestAura(self):
+    return self.SimpleTest("aura", "aura_unittests")
+
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
 
@@ -454,6 +457,7 @@ class ChromeTests:
   _test_list = {
     "cmdline" : RunCmdLine,
     "ash": TestAsh,              "aura_shell_unittests": TestAsh,
+    "aura": TestAura,            "aura_unittests": TestAura,
     "automated_ui" : TestAutomatedUI,
     "base": TestBase,            "base_unittests": TestBase,
     "browser": TestBrowser,      "browser_tests": TestBrowser,
