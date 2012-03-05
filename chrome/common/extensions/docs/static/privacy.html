@@ -33,7 +33,7 @@
 <p>
   Reading the current value of a Chrome setting is straightforward. You'll first
   need to find the property you're interested in, then you'll call
-  <code>get()</code> on that object in order to retrieve it's current value and
+  <code>get()</code> on that object in order to retrieve its current value and
   your extension's level of control. For example, to determine if Chrome's
   Autofill feature is enabled, you'd write:
 </p>
@@ -48,7 +48,7 @@
 <p>
   Changing the value of a setting is a little bit more complex, simply because
   you first must verify that your extension can control the setting. The user
-  won't see any change to her settings if you extension toggles a setting that
+  won't see any change to her settings if your extension toggles a setting that
   is either locked to a specific value by enterprise policies
   (<code>levelOfControl</code> will be set to "not_controllable"), or if another
   extension is controlling the value (<code>levelOfControl</code> will be set to
@@ -69,7 +69,7 @@
   This means that you ought to use the <code>get()</code> method to determine
   your level of access, and then only call <code>set()</code> if your extension
   can grab control over the setting (in fact if your extension can't control the
-  setting it's probably a good idea to visibly disable the functionality to
+  setting it's probably a good idea to visually disable the functionality to
   reduce user confusion):
 </p>
 
