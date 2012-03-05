@@ -323,7 +323,17 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
 
-TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
+#if defined(OS_LINUX)
+// Crashes on linux_chromeos. http://crbug.com/115979
+#define MAYBE_OnPhishingDetectionDoneNotPhishing \
+    DISABLED_OnPhishingDetectionDoneNotPhishing
+#else
+#define MAYBE_OnPhishingDetectionDoneNotPhishing \
+    OnPhishingDetectionDoneNotPhishing
+#endif
+
+TEST_F(ClientSideDetectionHostTest,
+       MAYBE_OnPhishingDetectionDoneNotPhishing) {
   // Case 1: client thinks the page is phishing.  The server does not agree.
   // No interstitial is shown.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
