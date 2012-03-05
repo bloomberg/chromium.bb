@@ -12,6 +12,7 @@ full and pre-flight-queue builds.
 
 import distutils.version
 import glob
+import multiprocessing
 import optparse
 import os
 import pprint
@@ -174,6 +175,7 @@ class Builder(object):
 
     self.completed_stages_file = os.path.join(options.buildroot,
                                               '.completed_stages')
+    self.archive_stages = {}
     self.archive_urls = {}
     self.release_tag = None
     self.tracking_branch = _GetChromiteTrackingBranch()
@@ -333,16 +335,10 @@ class SimpleBuilder(Builder):
 
     return sync_stage
 
-  def _RunStagesForBoard(self, board):
-    """Run board-specific stages for the specified board.
+  def _RunBackgroundStagesForBoard(self, board):
+    """Run background board-specific stages for the specified board."""
 
-    Returns: True if the stages completed successfully.
-    """
-    archive_stage = self._GetStageInstance(stages.ArchiveStage, board)
-    self._RunStage(stages.BuildTargetStage, board, archive_stage)
-
-    bg = background.BackgroundSteps()
-
+    archive_stage = self.archive_stages[board]
     vm_test_stage = self._GetStageInstance(stages.VMTestStage, board,
                                            archive_stage)
     chrome_test_stage = self._GetStageInstance(stages.ChromeTestStage,
@@ -350,49 +346,30 @@ class SimpleBuilder(Builder):
     unit_test_stage = self._GetStageInstance(stages.UnitTestStage, board)
     prebuilts_stage = self._GetStageInstance(stages.UploadPrebuiltsStage,
                                              board)
-    self.archive_urls[board] = archive_stage.GetDownloadUrl()
-    try:
-      bg.AddStep(archive_stage.Run)
-      bg.start()
 
-      steps = []
-      if self.build_config['vm_tests']:
-        steps.append(vm_test_stage.Run)
-        if self.build_config['chrome_tests']:
-          steps.append(chrome_test_stage.Run)
+    steps = []
+    if self.build_config['vm_tests']:
+      steps.append(vm_test_stage.Run)
+      if self.build_config['chrome_tests']:
+        steps.append(chrome_test_stage.Run)
+    # We can not run hw tests without archiving the payloads.
+    if self.options.archive:
+      for suite in self.build_config['hw_tests']:
+        hw_test_stage = self._GetStageInstance(
+            stages.HWTestStage,
+            board,
+            archive_stage=archive_stage,
+            suite=suite)
+        steps.append(hw_test_stage.Run)
+    steps += [unit_test_stage.Run, prebuilts_stage.Run, archive_stage.Run]
 
-      # We can not run hw tests without archiving the payloads.
-      if self.options.archive:
-        for suite in self.build_config['hw_tests']:
-          hw_test_stage = self._GetStageInstance(
-              stages.HWTestStage,
-              board,
-              archive_stage=archive_stage,
-              suite=suite)
-          steps.append(hw_test_stage.Run)
-
-      steps += [unit_test_stage.Run, prebuilts_stage.Run]
-      # Run the steps in parallel. If any exceptions occur, RunParallelSteps
-      # will combine them into a single BackgroundException and throw it.
-      background.RunParallelSteps(steps)
-
-      return True
-
-    # We skipped out of this build block early, so one of the tests we ran in
-    # the background or in parallel must have failed.
-    except background.BackgroundException:
-      return False
-    finally:
-      # Wait for archive stage to finish. Ignore any errors.
-      while not bg.Empty(): bg.WaitForStep()
-      bg.join()
+    background.RunParallelSteps(steps)
 
   def RunStages(self):
     """Runs through build process."""
     self._RunStage(stages.BuildBoardStage)
 
     # TODO(sosa): Split these out into classes.
-    success = True
     if self.build_config['build_type'] == constants.CHROOT_BUILDER_TYPE:
       self._RunStage(stages.SDKTestStage)
       self._RunStage(stages.UploadPrebuiltsStage,
@@ -401,11 +378,23 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.RefreshPackageStatusStage)
     else:
       self._RunStage(stages.UprevStage)
-      for board in self.build_config['boards']:
-        if not self._RunStagesForBoard(board):
-          success = False
 
-    return success
+      for board in self.build_config['boards']:
+        archive_stage = self._GetStageInstance(stages.ArchiveStage, board)
+        self.archive_stages[board] = archive_stage
+
+      queue = multiprocessing.Queue()
+      task = self._RunBackgroundStagesForBoard
+      with background.BackgroundTaskRunner(queue, task):
+        for board, archive_stage in self.archive_stages.iteritems():
+          # Run BuildTarget in the foreground.
+          self._RunStage(stages.BuildTargetStage, board, archive_stage)
+          self.archive_urls[board] = archive_stage.GetDownloadUrl()
+
+          # Kick off the other stages in the background.
+          queue.put([board])
+
+    return True
 
 
 class DistributedBuilder(SimpleBuilder):

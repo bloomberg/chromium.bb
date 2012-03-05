@@ -4,6 +4,8 @@
 
 """Module for running cbuildbot stages in the background."""
 
+import contextlib
+import functools
 import multiprocessing
 import os
 import Queue
@@ -13,13 +15,13 @@ import traceback
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_results as results_lib
-from chromite.lib import cros_build_lib as cros_lib
 
 _PRINT_INTERVAL = 1
 
 
 class BackgroundException(Exception):
   pass
+
 
 class BackgroundSteps(multiprocessing.Process):
   """Run a list of functions in sequence in the background.
@@ -106,15 +108,21 @@ class BackgroundSteps(multiprocessing.Process):
       self._queue.put((error, results))
 
 
-def RunParallelSteps(steps):
+@contextlib.contextmanager
+def _ParallelSteps(steps):
   """Run a list of functions in parallel.
+
+  This function launches the provided functions in the background, yields,
+  and then waits for the functions to exit.
 
   The output from the functions is saved to a temporary file and printed as if
   they were run in sequence.
 
   If exceptions occur in the steps, we join together the tracebacks and print
-  them after all parallel steps have finished running.
+  them after all parallel tasks have finished running. Further, a
+  BackgroundException is raised with full stack traces of all exceptions.
   """
+
   # First, start all the steps.
   bg_steps = []
   for step in steps:
@@ -123,18 +131,94 @@ def RunParallelSteps(steps):
     bg.start()
     bg_steps.append(bg)
 
-  # Wait for each step to complete.
-  tracebacks = []
-  for bg in bg_steps:
-    while not bg.Empty():
-      error = bg.WaitForStep()
-      if error:
-        tracebacks.append(error)
-    bg.join()
+  try:
+    yield
+  finally:
+    # Wait for each step to complete.
+    tracebacks = []
+    for bg in bg_steps:
+      while not bg.Empty():
+        error = bg.WaitForStep()
+        if error:
+          tracebacks.append(error)
+      bg.join()
 
-  # Propagate any exceptions.
-  if tracebacks:
-    raise BackgroundException('\n' + ''.join(tracebacks))
+    # Propagate any exceptions.
+    if tracebacks:
+      raise BackgroundException('\n' + ''.join(tracebacks))
+
+
+def RunParallelSteps(steps):
+  """Run a list of functions in parallel.
+
+  The output from the functions is saved to a temporary file and printed as if
+  they were run in sequence.
+
+  If exceptions occur in the steps, we join together the tracebacks and print
+  them after all parallel tasks have finished running. Further, a
+  BackgroundException is raised with full stack traces of all exceptions.
+  """
+  with _ParallelSteps(steps):
+    pass
+
+
+class _AllTasksComplete(object):
+  """Sentinel object to indicate that all tasks are complete."""
+
+
+def _TaskRunner(queue, task):
+  """Run task(*input) for each input in the queue.
+
+  Returns when it encounters an _AllTasksComplete object on the queue.
+
+  Args:
+    queue: A queue of tasks to run. Add tasks to this queue, and they will
+      be run.
+    task: Function to run on each queued input.
+  """
+  while True:
+    # Wait for a new item to show up on the queue. This is a blocking wait,
+    # so if there's nothing to do, we just sit here.
+    x = queue.get()
+    if isinstance(x, _AllTasksComplete):
+      # All tasks are complete, so we should exit.
+      queue.put(x)
+      break
+    task(*x)
+
+
+@contextlib.contextmanager
+def BackgroundTaskRunner(queue, task, processes=None):
+  """Run the specified task on each queued input in a pool of processes.
+
+  This context manager starts a set of workers in the background, who each
+  wait for input on the specified queue. These workers run task(*input) for
+  each input on the queue.
+
+  The output from these tasks is saved to a temporary file. When control
+  returns to the context manager, the background output is printed in order,
+  as if the tasks were run in sequence.
+
+  If exceptions occur in the steps, we join together the tracebacks and print
+  them after all parallel tasks have finished running. Further, a
+  BackgroundException is raised with full stack traces of all exceptions.
+
+  Args:
+    queue: A queue of tasks to run. Add tasks to this queue, and they will
+      be run in the background.
+    task: Function to run on each queued input.
+    processes: Number of processes to launch.
+  """
+
+  if not processes:
+    processes = multiprocessing.cpu_count()
+
+  steps = [functools.partial(_TaskRunner, queue, task)] * processes
+  with _ParallelSteps(steps):
+    try:
+      yield
+    finally:
+      queue.put(_AllTasksComplete())
 
 
 def RunTasksInProcessPool(task, inputs, processes=None):
@@ -145,25 +229,19 @@ def RunTasksInProcessPool(task, inputs, processes=None):
   were run in sequence.
 
   If exceptions occur in the steps, we join together the tracebacks and print
-  them after all parallel steps have finished running.
+  them after all parallel tasks have finished running. Further, a
+  BackgroundException is raised with full stack traces of all exceptions.
 
   Args:
+    task: Function to run on each input.
+    inputs: List of inputs.
     processes: Number of processes, at most, to launch.
   """
-
-  def TaskRunner():
-    while True:
-      try:
-        x = queue.get_nowait()
-      except Queue.Empty:
-        return
-      task(*x)
 
   if not processes:
     processes = min(multiprocessing.cpu_count(), len(inputs))
 
   queue = multiprocessing.Queue()
-  for x in inputs:
-    queue.put(x)
-
-  RunParallelSteps([TaskRunner] * processes)
+  with BackgroundTaskRunner(queue, task, processes):
+    for x in inputs:
+      queue.put(x)
