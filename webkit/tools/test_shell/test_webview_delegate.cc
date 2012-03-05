@@ -318,6 +318,15 @@ void TestWebViewDelegate::SetAuthorAndUserStylesEnabled(bool is_enabled) {
 }
 
 // WebViewClient -------------------------------------------------------------
+// TODO(creis): Remove as part of http://crbug.com/69267.
+WebView* TestWebViewDelegate::createView(
+    WebFrame* creator,
+    const WebURLRequest& request,
+    const WebWindowFeatures& window_features,
+    const WebString& frame_name,
+    WebNavigationPolicy policy) {
+  return createView(creator, request, window_features, frame_name);
+}
 WebView* TestWebViewDelegate::createView(
     WebFrame* creator,
     const WebURLRequest& request,

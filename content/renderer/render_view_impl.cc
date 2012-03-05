@@ -1427,6 +1427,17 @@ bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 
 // WebKit::WebViewClient ------------------------------------------------------
 
+// TODO(creis): New contract for createView temporarily redirects to the old
+// contract.  Remove the old one as part of http://crbug.com/69267.
+WebView* RenderViewImpl::createView(
+    WebFrame* creator,
+    const WebURLRequest& request,
+    const WebWindowFeatures& features,
+    const WebString& frame_name,
+    WebNavigationPolicy policy) {
+  return createView(creator, request, features, frame_name);
+}
+
 WebView* RenderViewImpl::createView(
     WebFrame* creator,
     const WebURLRequest& request,

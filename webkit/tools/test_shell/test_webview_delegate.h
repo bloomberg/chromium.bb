@@ -82,6 +82,13 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebFrame* creator,
       const WebKit::WebURLRequest& request,
       const WebKit::WebWindowFeatures& features,
+      const WebKit::WebString& frame_name,
+      WebKit::WebNavigationPolicy policy);
+  // TODO(creis): Remove as part of http://crbug.com/69267.
+  virtual WebKit::WebView* createView(
+      WebKit::WebFrame* creator,
+      const WebKit::WebURLRequest& request,
+      const WebKit::WebWindowFeatures& features,
       const WebKit::WebString& frame_name);
   virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popup_type);
   virtual WebKit::WebWidget* createPopupMenu(
