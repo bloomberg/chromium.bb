@@ -24,12 +24,13 @@
 
 namespace gestures {
 
-template<typename Key, typename Data, int kMaxSize>
+template<typename Key, typename Data, size_t kMaxSize>
 class map {
-  template<typename KeyE, typename DataE, int kLeftMaxSize, int kRightMaxSize>
+  template<typename KeyE, typename DataE, size_t kLeftMaxSize,
+           size_t kRightMaxSize>
   friend bool operator==(const map<KeyE, DataE, kLeftMaxSize>& left,
                          const map<KeyE, DataE, kRightMaxSize>& right);
-  template<typename KeyT, typename DataT, int kThatSize>
+  template<typename KeyT, typename DataT, size_t kThatSize>
   friend class map;
 
   typedef std::pair<Key, Data> SetElt;
@@ -99,7 +100,7 @@ class map {
   }
   void clear() { set_.clear(); }
 
-  template<int kThatSize>
+  template<size_t kThatSize>
   map<Key, Data, kMaxSize>& operator=(const map<Key, Data, kThatSize>& that) {
     set_ = that.set_;
     return *this;
@@ -124,12 +125,12 @@ class map {
   set<SetElt, kMaxSize> set_;
 };
 
-template<typename Key, typename Data, int kLeftMaxSize, int kRightMaxSize>
+template<typename Key, typename Data, size_t kLeftMaxSize, size_t kRightMaxSize>
 inline bool operator==(const map<Key, Data, kLeftMaxSize>& left,
                        const map<Key, Data, kRightMaxSize>& right) {
   return left.set_ == right.set_;
 }
-template<typename Key, typename Data, int kLeftMaxSize, int kRightMaxSize>
+template<typename Key, typename Data, size_t kLeftMaxSize, size_t kRightMaxSize>
 inline bool operator!=(const map<Key, Data, kLeftMaxSize>& left,
                        const map<Key, Data, kRightMaxSize>& right) {
   return !(left == right);
@@ -141,7 +142,7 @@ bool MapContainsKey(const Map& the_map, const Key& the_key) {
 }
 
 // Removes any ids from the map that are not finger ids in hs.
-template<typename Data, int kSetSize>
+template<typename Data, size_t kSetSize>
 void RemoveMissingIdsFromMap(map<short, Data, kSetSize>* the_map,
                              const HardwareState& hs) {
   short old_ids[the_map->size()];

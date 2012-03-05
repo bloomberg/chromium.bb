@@ -25,7 +25,7 @@
 
 namespace gestures {
 
-template<typename Elt, int kMaxSize>
+template<typename Elt, size_t kMaxSize>
 class set {
  public:
   typedef Elt* iterator;
@@ -35,7 +35,7 @@ class set {
   set(const set<Elt, kMaxSize>& that) {
     *this = that;
   }
-  template<int kThatSize>
+  template<size_t kThatSize>
   set(const set<Elt, kThatSize>& that) {
     *this = that;
   }
@@ -102,7 +102,7 @@ class set {
     size_ = 0;
   }
 
-  template<int kThatSize>
+  template<size_t kThatSize>
   set<Elt, kMaxSize>& operator=(const set<Elt, kThatSize>& that) {
     if (that.size() > kMaxSize) {
       // Uh oh, that won't fit into this
@@ -122,7 +122,7 @@ class set {
   unsigned short size_;
 };
 
-template<typename Elt, int kLeftMaxSize, int kRightMaxSize>
+template<typename Elt, size_t kLeftMaxSize, size_t kRightMaxSize>
 inline bool operator==(const set<Elt, kLeftMaxSize>& left,
                        const set<Elt, kRightMaxSize>& right) {
   if (left.size() != right.size())
@@ -133,7 +133,7 @@ inline bool operator==(const set<Elt, kLeftMaxSize>& left,
       return false;
   return true;
 }
-template<typename Elt, int kLeftMaxSize, int kRightMaxSize>
+template<typename Elt, size_t kLeftMaxSize, size_t kRightMaxSize>
 inline bool operator!=(const set<Elt, kLeftMaxSize>& left,
                        const set<Elt, kRightMaxSize>& right) {
   return !(left == right);
@@ -146,7 +146,7 @@ inline bool SetContainsValue(const Set& the_set,
 }
 
 // Removes any ids from the set that are not finger ids in hs.
-template<int kSetSize>
+template<size_t kSetSize>
 void RemoveMissingIdsFromSet(set<short, kSetSize>* the_set,
                              const HardwareState& hs) {
   short old_ids[the_set->size()];
