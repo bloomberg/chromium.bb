@@ -124,8 +124,11 @@ cr.define('cr.ui.dialogs', function() {
 
     var iframes = doc.querySelectorAll('iframe');
     for (var i = 0; i < iframes.length; i++) {
-      elements = elements.concat(this.findFocusableElements_(
-          iframes[i].contentDocument));
+      // Some iframes have an undefined contentDocument for security reasons,
+      // such as chrome://terms (which is used in the chromeos OOBE screens).
+      var contentDoc = iframes[i].contentDocument;
+      if (contentDoc)
+        elements = elements.concat(this.findFocusableElements_(contentDoc));
     }
     return elements;
   };
