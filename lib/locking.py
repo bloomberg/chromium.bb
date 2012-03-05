@@ -33,15 +33,19 @@ class FileLock(cros_build_lib.MasterPidContextManager):
     fd = self._fd
     if fd is None:
       # Keep the child from holding the lock/fd via closing the fd on exec.
-      cloexec = getattr(fcntl, 'FD_CLOEXEC', 0)
-      fd = self._fd = os.open(self.path, os.R_OK|os.O_CREAT|cloexec)
+      # note os.O_CLOEXEC is >=py3.4 only.  Yes, we're ahead of the curve here.
+      cloexec = getattr(os, 'O_CLOEXEC', 0)
+      fd = self._fd = os.open(self.path, os.W_OK|os.O_CREAT|cloexec)
+      if cloexec == 0:
+        fcntl.fcntl(fd, fcntl.F_SETFD,
+                    fcntl.fcntl(fd, fcntl.F_GETFD)|fcntl.FD_CLOEXEC)
     return fd
 
   def _enforce_lock(self, flags, message):
     # Try nonblocking first, if it fails, display the context/message,
     # and then wait on the lock.
     try:
-      fcntl.flock(self.fd, flags|fcntl.LOCK_NB)
+      fcntl.lockf(self.fd, flags|fcntl.LOCK_NB)
       return
     except EnvironmentError, e:
       if e.errno != errno.EAGAIN:
@@ -50,7 +54,7 @@ class FileLock(cros_build_lib.MasterPidContextManager):
       message = '%s: blocking while %s' % (self.description, message)
     if self._verbose:
       cros_build_lib.Info(message)
-    fcntl.flock(self.fd, flags)
+    fcntl.lockf(self.fd, flags)
 
   def read_lock(self, message="taking read lock"):
     """
@@ -88,7 +92,7 @@ class FileLock(cros_build_lib.MasterPidContextManager):
       IOError if the operation fails in some way.
     """
     if self._fd is not None:
-      fcntl.flock(self._fd, fcntl.LOCK_UN)
+      fcntl.lockf(self._fd, fcntl.LOCK_UN)
 
   def __del__(self):
     # TODO(ferringb): Convert this to snakeoil.weakref.WeakRefFinalizer
