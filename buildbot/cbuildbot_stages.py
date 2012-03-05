@@ -799,7 +799,7 @@ class VMTestStage(BoardSpecificBuilderStage):
       self._archive_stage.VMTestStatus(tests_passed)
 
 
-class HWTestStage(BoardSpecificBuilderStage):
+class HWTestStage(BoardSpecificBuilderStage, ForgivingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
   option_name = 'tests'
