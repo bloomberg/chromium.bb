@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,12 @@
 
 #include "ipc/ipc_message_utils.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/gpu_export.h"
 
 namespace IPC {
 
 template <>
-struct ParamTraits<gpu::CommandBuffer::State> {
+struct GPU_EXPORT ParamTraits<gpu::CommandBuffer::State> {
   typedef gpu::CommandBuffer::State param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);

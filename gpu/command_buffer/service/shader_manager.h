@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_translator.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -21,13 +22,13 @@ namespace gles2 {
 //
 // NOTE: To support shared resources an instance of this class will
 // need to be shared by multiple GLES2Decoders.
-class ShaderManager {
+class GPU_EXPORT ShaderManager {
  public:
   // This is used to keep the source code for a shader. This is because in order
   // to emluate GLES2 the shaders will have to be re-written before passed to
   // the underlying OpenGL. But, when the user calls glGetShaderSource they
   // should get the source they passed in, not the re-written source.
-  class ShaderInfo : public base::RefCounted<ShaderInfo> {
+  class GPU_EXPORT ShaderInfo : public base::RefCounted<ShaderInfo> {
    public:
     typedef scoped_refptr<ShaderInfo> Ref;
     typedef ShaderTranslator::VariableInfo VariableInfo;

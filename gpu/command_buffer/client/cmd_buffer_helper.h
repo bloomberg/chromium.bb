@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "../../gpu_export.h"
 #include "../common/logging.h"
 #include "../common/constants.h"
 #include "../common/cmd_buffer_common.h"
@@ -32,7 +33,7 @@ namespace gpu {
 //
 // helper.WaitForToken(token);  // this doesn't return until the first two
 //                              // commands have been executed.
-class CommandBufferHelper {
+class GPU_EXPORT CommandBufferHelper {
  public:
   explicit CommandBufferHelper(CommandBuffer* command_buffer);
   virtual ~CommandBufferHelper();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,16 +12,17 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // This class keeps track of the frambebuffers and their attached renderbuffers
 // so we can correctly clear them.
-class FramebufferManager {
+class GPU_EXPORT FramebufferManager {
  public:
   // Info about Framebuffers currently in the system.
-  class FramebufferInfo : public base::RefCounted<FramebufferInfo> {
+  class GPU_EXPORT FramebufferInfo : public base::RefCounted<FramebufferInfo> {
    public:
     typedef scoped_refptr<FramebufferInfo> Ref;
 

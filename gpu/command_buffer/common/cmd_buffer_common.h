@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 #define GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
 
 #include <stddef.h>
+
+#include "../../gpu_export.h"
 #include "../common/types.h"
 #include "../common/bitfield_helpers.h"
 #include "../common/logging.h"
@@ -38,7 +40,7 @@ struct CommandHeader {
   Uint32 size:21;
   Uint32 command:11;
 
-  static const int32 kMaxSize = (1 << 21) - 1;
+  GPU_EXPORT static const int32 kMaxSize = (1 << 21) - 1;
 
   void Init(uint32 _command, int32 _size) {
     GPU_DCHECK_LE(_size, kMaxSize);

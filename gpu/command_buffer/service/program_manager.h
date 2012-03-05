@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_manager.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -23,12 +24,12 @@ namespace gles2 {
 //
 // NOTE: To support shared resources an instance of this class will
 // need to be shared by multiple GLES2Decoders.
-class ProgramManager {
+class GPU_EXPORT ProgramManager {
  public:
   // This is used to track which attributes a particular program needs
   // so we can verify at glDrawXXX time that every attribute is either disabled
   // or if enabled that it points to a valid source.
-  class ProgramInfo : public base::RefCounted<ProgramInfo> {
+  class GPU_EXPORT ProgramInfo : public base::RefCounted<ProgramInfo> {
    public:
     typedef scoped_refptr<ProgramInfo> Ref;
 
