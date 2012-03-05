@@ -45,7 +45,6 @@ include_rules = [
   "+content/browser/find_pasteboard.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
   "+content/browser/load_notification_details.h",
-  "+content/browser/mock_resource_context.h",
   "+content/browser/net/browser_online_state_observer.h",
   "+content/browser/net/url_request_failed_dns_job.h",
   "+content/browser/net/url_request_mock_http_job.h",
