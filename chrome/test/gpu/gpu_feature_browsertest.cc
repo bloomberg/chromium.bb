@@ -282,20 +282,19 @@ class Canvas2DEnabledTest : public GpuFeatureTest {
 };
 
 IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DAllowed) {
-  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
-  EXPECT_EQ(type, 0);
-
-  const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-
-  GpuResultFlags expectations = EXPECT_GPU_SWAP_BUFFERS;
 #if defined(OS_WIN)
   // Accelerated canvas 2D is not supported on XP.
   GPUTestBotConfig test_bot;
   test_bot.LoadCurrentConfig(NULL);
   if (test_bot.os() == GPUTestConfig::kOsWinXP)
-    expectations = EXPECT_NO_GPU_PROCESS;
+    return;
 #endif
-  RunTest(url, expectations);
+
+  GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
+  EXPECT_EQ(type, 0);
+
+  const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DBlocked) {
