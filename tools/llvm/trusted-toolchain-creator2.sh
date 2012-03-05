@@ -114,7 +114,8 @@ readonly ARMEL_BASE_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.natty.armel.base)
 
 readonly ARMEL_EXTRA_PACKAGES="\
   krb5-multidev \
-  libasound2-dev
+  libasound2 \
+  libasound2-dev \
   libatk1.0-0 \
   libatk1.0-dev \
   libbz2-1.0 \
@@ -186,6 +187,7 @@ readonly ARMEL_EXTRA_PACKAGES="\
   libxrandr-dev \
   libxrender1 \
   libxrender-dev \
+  libxss1 \
   libxss-dev \
   libxtst6 \
   libxtst-dev \

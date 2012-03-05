@@ -1,4 +1,5 @@
 main/k/krb5/krb5-multidev_1.8.3+dfsg-5ubuntu2_armel.deb
+main/a/alsa-lib/libasound2_1.0.24.1-0ubuntu5_armel.deb
 main/a/alsa-lib/libasound2-dev_1.0.24.1-0ubuntu5_armel.deb
 main/a/atk1.0/libatk1.0-0_2.0.0-0ubuntu1_armel.deb
 main/a/atk1.0/libatk1.0-dev_2.0.0-0ubuntu1_armel.deb
@@ -71,6 +72,7 @@ main/libx/libxrandr/libxrandr2_1.3.1-1ubuntu1_armel.deb
 main/libx/libxrandr/libxrandr-dev_1.3.1-1ubuntu1_armel.deb
 main/libx/libxrender/libxrender1_0.9.6-1ubuntu1_armel.deb
 main/libx/libxrender/libxrender-dev_0.9.6-1ubuntu1_armel.deb
+main/libx/libxss/libxss1_1.2.1-1_armel.deb
 main/libx/libxss/libxss-dev_1.2.1-1_armel.deb
 main/libx/libxtst/libxtst6_1.2.0-1_armel.deb
 main/libx/libxtst/libxtst-dev_1.2.0-1_armel.deb
