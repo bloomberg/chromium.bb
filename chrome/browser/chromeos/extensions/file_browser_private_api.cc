@@ -1781,6 +1781,9 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, MOUNT_ARCHIVE);
   SET_STRING(IDS_FILE_BROWSER, FORMAT_DEVICE);
 
+  SET_STRING(IDS_FILE_BROWSER, OPEN_ACTION);
+  SET_STRING(IDS_FILE_BROWSER, INSTALL_CRX);
+
   SET_STRING(IDS_FILE_BROWSER, GALLERY);
   SET_STRING(IDS_FILE_BROWSER, GALLERY_EDIT);
   SET_STRING(IDS_FILE_BROWSER, GALLERY_SHARE);
@@ -1911,6 +1914,10 @@ bool FileDialogStringsFunction::RunImpl() {
 
   SET_STRING(IDS_FILE_BROWSER, ENQUEUE);
 #undef SET_STRING
+
+  dict->SetString("PDF_VIEW_ENABLED",
+      file_manager_util::ShouldBeOpenedWithPdfPlugin(".pdf") ?
+          "true" : "false");
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
 
