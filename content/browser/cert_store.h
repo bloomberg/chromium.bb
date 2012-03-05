@@ -35,23 +35,24 @@ class CONTENT_EXPORT CertStore : public content::NotificationObserver {
   // When all the RenderProcessHosts associated with a cert have exited, the
   // cert is removed from the store.
   // Note: ids starts at 1.
-  int StoreCert(net::X509Certificate* cert, int render_process_host_id);
+  virtual int StoreCert(net::X509Certificate* cert, int render_process_host_id);
 
   // Tries to retrieve the previously stored cert associated with the specified
-  // |cert_id|.  Returns whether the cert could be found, and, if |cert| is
+  // |cert_id|. Returns whether the cert could be found, and, if |cert| is
   // non-NULL, copies it in.
-  bool RetrieveCert(int cert_id, scoped_refptr<net::X509Certificate>* cert);
+  virtual bool RetrieveCert(int cert_id,
+                            scoped_refptr<net::X509Certificate>* cert);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+ protected:
+  CertStore();
+  virtual ~CertStore();
 
  private:
   friend struct DefaultSingletonTraits<CertStore>;
-
-  CertStore();
-  virtual ~CertStore();
 
   void RegisterForNotification();
 
