@@ -267,7 +267,10 @@ cr.define('options.network', function() {
           var entry = this.data.menu[i];
           var button = this.ownerDocument.createElement('div');
           button.className = 'network-menu-item';
-          button.textContent = entry.label;
+          var buttonLabel = this.ownerDocument.createElement('div');
+          buttonLabel.className = 'network-menu-item-label';
+          buttonLabel.textContent = entry.label;
+          button.appendChild(buttonLabel);
           button.addEventListener('click', entry.command);
           MenuItem.decorate(button);
           menu.appendChild(button);
@@ -388,6 +391,9 @@ cr.define('options.network', function() {
                        command: callback,
                        data: list});
       }
+
+      var networkGroup = this.ownerDocument.createElement('div');
+      networkGroup.className = 'network-menu-group';
       var empty = true;
       list = this.data.networkList;
       if (list) {
@@ -398,7 +404,7 @@ cr.define('options.network', function() {
             // If found, the menu item should trigger 'activate' instead
             // of 'connect'.
             if (data.networkType != Constants.TYPE_ETHERNET) {
-              this.createConnectCallback_(menu, data);
+              this.createConnectCallback_(networkGroup, data);
               empty = false;
             }
           } else if (data.connected) {
@@ -442,6 +448,7 @@ cr.define('options.network', function() {
       if (addendum.length > 0) {
         var separator = false;
         if (!empty) {
+          menu.appendChild(networkGroup);
           menu.appendChild(MenuItem.createSeparator());
           separator = true;
         }
@@ -475,7 +482,10 @@ cr.define('options.network', function() {
     createCallback_: function(menu, data, label, command) {
       var button = this.ownerDocument.createElement('div');
       button.className = 'network-menu-item';
-      button.textContent = label;
+      var buttonLabel = this.ownerDocument.createElement('span');
+      buttonLabel.className = 'network-menu-item-label';
+      buttonLabel.textContent = label;
+      button.appendChild(buttonLabel);
       var callback = null;
       if (typeof command == 'string') {
         var type = String(data.networkType);
@@ -508,6 +518,17 @@ cr.define('options.network', function() {
                                           data.networkName,
                                           'connect');
       menuItem.style.backgroundImage = url(data.iconURL);
+      var optionsButton = this.ownerDocument.createElement('div');
+      optionsButton.className = 'network-options-button';
+      var type = String(data.networkType);
+      var path = data.servicePath;
+      optionsButton.addEventListener('click', function(event) {
+        event.stopPropagation();
+        chrome.send('buttonClickCallback',
+                    [type, path, 'options']);
+        closeMenu_();
+      });
+      menuItem.appendChild(optionsButton);
     }
   };
 
@@ -687,7 +708,7 @@ cr.define('options.network', function() {
         this.dataModel.splice(index, 1);
     },
 
-   /**
+    /**
      * Updates the state of a toggle button.
      * @param {string} key Unique identifier for the element.
      * @param {boolean} active Whether the control is active.

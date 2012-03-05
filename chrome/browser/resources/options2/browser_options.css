@@ -123,8 +123,9 @@ html[dir=rtl] #pointer-sensitivity-more {
 
 .network-group {
   -webkit-box-orient: horizontal;
-  display: webkit-box;
+  display: -webkit-box;
   height: 42px;
+  vertical-align: baseline;
 }
 
 .network-group:hover,
@@ -135,23 +136,45 @@ html[dir=rtl] #pointer-sensitivity-more {
   box-shadow: inset 0 0 1px 1px #f0f0f0;
 }
 
+.network-group-labels {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  padding-top: 3px;
+}
+
 .network-icon {
   background-position: left top;
-  display: block;
+  display: -webkit-box;
   height: 23px;
   margin-right: 8px;
   width: 23px;
 }
 
 @-webkit-keyframes connecting-animation {
-  0% { background-position: 0 25%; }
-  12.5% { background-position: 0 50%; }
-  25%  { background-position: 0 75%; }
-  37.5%  { background-position: 0 100%; }
-  50%  { background-position: 0 100%; }
-  62.5%  { background-position: 0 75%; }
-  75%  { background-position: 0 50%; }
-  87.5%  { background-position: 0 25%; }
+  0% {
+    background-position: 0 25%;
+  }
+  12.5% {
+    background-position: 0 50%;
+  }
+  25%  {
+    background-position: 0 75%;
+  }
+  37.5%  {
+    background-position: 0 100%;
+  }
+  50%  {
+    background-position: 0 100%;
+  }
+  62.5%  {
+    background-position: 0 75%;
+  }
+  75%  {
+    background-position: 0 50%;
+  }
+  87.5%  {
+    background-position: 0 25%;
+  }
 }
 
 .network-wifi {
@@ -162,6 +185,44 @@ html[dir=rtl] #pointer-sensitivity-more {
   background-image: url('chrome://theme/IDR_STATUSBAR_NETWORK_BARS');
 }
 
+.network-add-connection,
+.network-control-active,
+.network-control-inactive {
+  background-position: center center !important;
+  background-repeat: no-repeat;
+}
+
+/* TODO(kevers): Update following URLs once resources are available */
+
+.network-add-connection {
+  background-image: url('chrome://theme/IDR_SIDETABS_NEW_TAB');
+}
+
+.network-control-inactive {
+  background-image: none;
+}
+
+.network-control-active {
+  background-image: url('chrome://theme/IDR_PROFILE_SELECTED');
+}
+
+.network-options-button {
+  -webkit-box-flex: 0;
+  -webkit-transform: scale(0.6);
+  background-image: url('chrome://theme/IDR_INFOBAR_QUESTION_MARK');
+  background-position: center center;
+  display: block;
+  vertical-align: middle;
+  width: 19px;
+}
+
+.network-options-button:hover {
+  /* TODO(kevers): Update once proper assets received for the options
+     button. */
+  border: 2px solid #333;
+  border-radius: 10px;
+}
+
 .network-connecting {
   -webkit-animation: connecting-animation 1s step-end infinite;
 }
@@ -169,7 +230,6 @@ html[dir=rtl] #pointer-sensitivity-more {
 .network-title {
   font-weight: 600;
   line-height: 120%;
-  padding-top: 6px;
 }
 
 .network-subtitle {
@@ -179,6 +239,7 @@ html[dir=rtl] #pointer-sensitivity-more {
   max-width: 260px;
   opacity: 0.4;
   overflow: hidden;
+  padding-bottom: 3px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -193,7 +254,6 @@ html[dir=rtl] #pointer-sensitivity-more {
   background: #fff;
   box-shadow: 2px 2px 4px 4px #ccc;
   display: block;
-  max-height: 500px;
   overflow-y: auto;
   position: absolute;
   width: 320px;
@@ -201,20 +261,25 @@ html[dir=rtl] #pointer-sensitivity-more {
 }
 
 .network-menu-item {
-  -webkit-box-sizing: content-box;
   -webkit-padding-start: 32px;
   background: left center no-repeat;
-  color: #555;
-  display: block;
+  display: -webkit-box;
+  height: 32px;
   margin-left: 4px;
   margin-right: 4px;
   overflow-x: hidden;
-  padding-bottom: 8px;
+  vertical-align: middle;
+}
+
+.network-menu-item-label {
+  -webkit-box-flex: 1;
+  color: #555;
+  display: block;
+  overflow-x: hidden;
   padding-top: 8px;
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
-  width: 280px;
 }
 
 .network-menu-header {
@@ -222,6 +287,15 @@ html[dir=rtl] #pointer-sensitivity-more {
   color: #999;
   padding-bottom: 8px;
   padding-top: 8px;
+}
+
+/* Restrict the size of the networks menu, by limiting the number of
+   visible networks. */
+.network-menu-group {
+    max-height: 192px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    text-overflow: ellipsis;
 }
 
 .network-menu-item[dir=rtl] {
