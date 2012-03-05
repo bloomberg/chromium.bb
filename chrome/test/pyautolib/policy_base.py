@@ -287,9 +287,13 @@ class PolicyTestBase(pyauto.PyUITest):
   def tearDown(self):
     """Cleans up the files created by setUp."""
     if self.IsChromeOS():
+      pyauto.PyUITest.Logout(self)
+
+    pyauto.PyUITest.tearDown(self)
+
+    if self.IsChromeOS():
       self.StopHTTPServer(self._http_server)
       pyauto_utils.RemovePath(self._temp_data_dir)
-    pyauto.PyUITest.tearDown(self)
 
   def SetPolicies(self, user_policy=None, device_policy=None):
     """Enforces the policies given in the arguments as dictionaries.

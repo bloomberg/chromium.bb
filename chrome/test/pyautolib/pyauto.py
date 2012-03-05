@@ -168,15 +168,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       else:
         self.AppendBrowserLaunchSwitch(flag)
 
-  def setUp(self):
-    """Override this method to launch browser differently.
-
-    Can be used to prevent launching the browser window by default in case a
-    test wants to do some additional setup before firing browser.
-
-    When using the named interface, it connects to an existing browser
-    instance.
-    """
+  def __SetUp(self):
     named_channel_id = None
     if _OPTIONS:
       named_channel_id = _OPTIONS.channel_id
@@ -211,6 +203,17 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     for remote in self.remotes:
       remote.CreateTarget(self)
       remote.setUp()
+
+  def setUp(self):
+    """Override this method to launch browser differently.
+
+    Can be used to prevent launching the browser window by default in case a
+    test wants to do some additional setup before firing browser.
+
+    When using the named interface, it connects to an existing browser
+    instance.
+    """
+    self.__SetUp()
 
   def tearDown(self):
     for remote in self.remotes:
@@ -3678,8 +3681,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     assert self.WaitForSessionManagerRestart(
         lambda: self.ApplyAccelerator(IDC_EXIT)), \
         'Session manager did not restart after logout.'
-
-    self.setUp()
+    self.__SetUp()
 
   def LockScreen(self):
     """Locks the screen on chromeos.
@@ -3727,7 +3729,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     assert self.WaitForSessionManagerRestart(
         lambda: self._GetResultFromJSONRequest(cmd_dict, windex=None)), \
         'Session manager did not restart after logout.'
-    self.setUp()
+    self.__SetUp()
 
   def GetBatteryInfo(self):
     """Get details about battery state.
