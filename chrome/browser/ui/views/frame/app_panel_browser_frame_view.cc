@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
+#include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -454,13 +455,13 @@ void AppPanelBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
       client_area_top, left->width(), client_area_height);
 
-  // Draw the toolbar color to fill in the edges.
+  // Draw the color to fill in the edges.
   canvas->DrawRect(gfx::Rect(
       client_area_bounds.x() - kClientEdgeThickness,
       client_area_top - kClientEdgeThickness,
       client_area_bounds.width() + kClientEdgeThickness,
       client_area_bottom - client_area_top + kClientEdgeThickness),
-      ResourceBundle::toolbar_color);
+      views::kClientEdgeColor);
 }
 
 void AppPanelBrowserFrameView::LayoutWindowControls() {

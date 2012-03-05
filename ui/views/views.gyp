@@ -65,6 +65,8 @@
         'bubble/bubble_frame_view.h',
         'button_drag_utils.cc',
         'button_drag_utils.h',
+        'color_constants.cc',
+        'color_constants.h',
         'context_menu_controller.h',
         'controls/button/button.cc',
         'controls/button/button.h',

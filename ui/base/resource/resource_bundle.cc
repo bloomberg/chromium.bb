@@ -44,10 +44,6 @@ const int kLargeFontSizeDelta = 8;
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 
 // static
-const SkColor ResourceBundle::toolbar_color =
-     SkColorSetRGB(210, 225, 246);
-
-// static
 std::string ResourceBundle::InitSharedInstanceWithLocale(
     const std::string& pref_locale) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";

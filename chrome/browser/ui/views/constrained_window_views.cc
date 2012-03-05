@@ -32,6 +32,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_delegate.h"
@@ -272,7 +273,8 @@ const int kTitleLeftSpacing = 2;
 const int kTitleCaptionSpacing = 5;
 
 const SkColor kContentsBorderShadow = SkColorSetARGB(51, 0, 0, 0);
-}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowFrameView, public:
@@ -487,7 +489,7 @@ void ConstrainedWindowFrameView::PaintClientEdge(gfx::Canvas* canvas) {
   frame_shadow_bounds.Inset(-kFrameShadowThickness, -kFrameShadowThickness);
 
   canvas->FillRect(frame_shadow_bounds, kContentsBorderShadow);
-  canvas->FillRect(client_edge_bounds, ResourceBundle::toolbar_color);
+  canvas->FillRect(client_edge_bounds, views::kClientEdgeColor);
 }
 
 void ConstrainedWindowFrameView::LayoutWindowControls() {

@@ -27,9 +27,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
-// Don't use uint32 or uint32_t here because Eclipse's indexer gets confused.
-// This can be removed when the static colors are moved to ThemeProvider.
-typedef unsigned int SkColor;
 
 namespace base {
 class Lock;
@@ -190,9 +187,6 @@ class UI_EXPORT ResourceBundle {
 
  public:
 #endif
-
-  // TODO(beng): These browser-specific concepts should move to ThemeProvider.
-  static const SkColor toolbar_color;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceBundle, LoadDataResourceBytes);

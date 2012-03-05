@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
+#include "ui/views/color_constants.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/frame_background.h"
@@ -433,10 +434,10 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
       client_area_top, left->width(), client_area_height);
 
-  // Draw the toolbar color to fill in the edges.
+  // Draw the color to fill in the edges.
   canvas->DrawRect(gfx::Rect(client_area_bounds.x() - 1, client_area_top - 1,
       client_area_bounds.width() + 1, client_area_bottom - client_area_top + 1),
-      ui::ResourceBundle::toolbar_color);
+      kClientEdgeColor);
 }
 
 SkColor CustomFrameView::GetFrameColor() const {
@@ -444,7 +445,7 @@ SkColor CustomFrameView::GetFrameColor() const {
 }
 
 SkBitmap* CustomFrameView::GetFrameBitmap() const {
-  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+  return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
       frame_->IsActive() ? IDR_FRAME : IDR_FRAME_INACTIVE);
 }
 
