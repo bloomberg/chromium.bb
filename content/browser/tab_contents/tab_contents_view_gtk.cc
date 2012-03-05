@@ -82,8 +82,7 @@ TabContentsViewGtk::TabContentsViewGtk(
     content::WebContentsViewGtkDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
       expanded_(gtk_expanded_container_new()),
-      delegate_(delegate),
-      overlaid_view_(NULL) {
+      delegate_(delegate) {
   gtk_widget_set_name(expanded_.get(), "chrome-tab-contents-view");
   g_signal_connect(expanded_.get(), "size-allocate",
                    G_CALLBACK(OnSizeAllocateThunk), this);
@@ -255,19 +254,6 @@ void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
   int x = 0, y = 0, w, h;
   gdk_window_get_geometry(window, &x, &y, &w, &h, NULL);
   out->SetRect(x, y, w, h);
-}
-
-void TabContentsViewGtk::InstallOverlayView(gfx::NativeView view) {
-  DCHECK(!overlaid_view_);
-  overlaid_view_ = view;
-  InsertIntoContentArea(view);
-  gtk_widget_show(view);
-}
-
-void TabContentsViewGtk::RemoveOverlayView() {
-  DCHECK(overlaid_view_);
-  gtk_container_remove(GTK_CONTAINER(expanded_.get()), overlaid_view_);
-  overlaid_view_ = NULL;
 }
 
 void TabContentsViewGtk::SetFocusedWidget(GtkWidget* widget) {

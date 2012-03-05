@@ -48,8 +48,6 @@ class TabContentsViewWin : public content::WebContentsView,
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
-  virtual void RemoveOverlayView() OVERRIDE;
 
   // Implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(

@@ -16,6 +16,10 @@
 #include "chrome/browser/ui/views/sad_tab_view.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #elif defined(TOOLKIT_GTK)
+
+#include <gtk/gtk.h>
+
+#include "content/browser/tab_contents/tab_contents_view_gtk.h"
 #include "chrome/browser/ui/gtk/sad_tab_gtk.h"
 #endif
 
@@ -40,8 +44,7 @@ void SadTabObserver::RenderViewGone(base::TerminationStatus status) {
   if (HasSadTab())
     return;
 
-  gfx::NativeView view = AcquireSadTab(status);
-  web_contents()->GetView()->InstallOverlayView(view);
+  InstallSadTab(status);
 }
 
 void SadTabObserver::Observe(int type,
@@ -50,8 +53,21 @@ void SadTabObserver::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_WEB_CONTENTS_CONNECTED:
       if (HasSadTab()) {
-        web_contents()->GetView()->RemoveOverlayView();
-        ReleaseSadTab();
+#if defined(OS_MACOSX)
+        sad_tab_controller_mac::RemoveSadTab(sad_tab_.get());
+#elif defined(TOOLKIT_VIEWS)
+        static_cast<TabContentsViewViews*>(web_contents()->GetView())->
+            RemoveOverlayView();
+#elif defined(TOOLKIT_GTK)
+        content::TabContentsViewGtk* view =
+            static_cast<content::TabContentsViewGtk*>(
+                web_contents()->GetView());
+        gtk_container_remove(
+            GTK_CONTAINER(view->expanded_container()), sad_tab_->widget());
+#else
+#error Unknown platform
+#endif
+        sad_tab_.reset();
       }
       break;
 
@@ -60,11 +76,10 @@ void SadTabObserver::Observe(int type,
   }
 }
 
-gfx::NativeView SadTabObserver::AcquireSadTab(base::TerminationStatus status) {
+void SadTabObserver::InstallSadTab(base::TerminationStatus status) {
 #if defined(OS_MACOSX)
   sad_tab_.reset(
       sad_tab_controller_mac::CreateSadTabController(web_contents()));
-  return sad_tab_controller_mac::GetViewOfSadTabController(sad_tab_.get());
 #elif defined(TOOLKIT_VIEWS)
   SadTabView::Kind kind =
       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
@@ -81,21 +96,23 @@ gfx::NativeView SadTabObserver::AcquireSadTab(base::TerminationStatus status) {
   sad_tab_.reset(new views::Widget);
   sad_tab_->Init(sad_tab_params);
   sad_tab_->SetContentsView(new SadTabView(web_contents(), kind));
-  return sad_tab_->GetNativeView();
+  TabContentsViewViews* view = static_cast<TabContentsViewViews*>(
+      web_contents()->GetView());
+  view->InstallOverlayView(sad_tab_->GetNativeView());
 #elif defined(TOOLKIT_GTK)
   sad_tab_.reset(new SadTabGtk(
       web_contents(),
       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED
           ? SadTabGtk::KILLED
           : SadTabGtk::CRASHED));
-  return sad_tab_->widget();
+  content::TabContentsViewGtk* view =
+      static_cast<content::TabContentsViewGtk*>(web_contents()->GetView());
+  gtk_container_add(
+      GTK_CONTAINER(view->expanded_container()), sad_tab_->widget());
+  gtk_widget_show(sad_tab_->widget());
 #else
 #error Unknown platform
 #endif
-}
-
-void SadTabObserver::ReleaseSadTab() {
-  sad_tab_.reset();
 }
 
 bool SadTabObserver::HasSadTab() {

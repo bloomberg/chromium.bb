@@ -37,6 +37,11 @@ class TabContentsViewViews : public views::Widget,
   explicit TabContentsViewViews(content::WebContents* web_contents);
   virtual ~TabContentsViewViews();
 
+  // Temporary.
+  // TODO(jam): remove
+  void InstallOverlayView(gfx::NativeView view);
+  void RemoveOverlayView();
+
   // Reset the native parent of this view to NULL.  Unparented windows should
   // not receive any messages.
   virtual void Unparent();
@@ -67,8 +72,6 @@ class TabContentsViewViews : public views::Widget,
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
-  virtual void RemoveOverlayView() OVERRIDE;
 
   // Implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(

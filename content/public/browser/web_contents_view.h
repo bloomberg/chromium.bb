@@ -120,21 +120,6 @@ class CONTENT_EXPORT WebContentsView
   // Get the bounds of the View, relative to the parent.
   // TODO(beng): Return a rect rather than using an out param.
   virtual void GetViewBounds(gfx::Rect* out) const = 0;
-
-  // ---------------------------------------------------------------------------
-  // Functions for embedders.
-  // TODO(avi): Figure out where these go on the API surface.
-
-  // Installs a native view to cover the visible web contents. Removed by
-  // |RemoveOverlayView|. This is not a transfer of ownership, and the view must
-  // remain valid until removed.
-  virtual void InstallOverlayView(gfx::NativeView view) = 0;
-
-  // Removes the native overlay view installed by |InstallOverlayView|.
-  virtual void RemoveOverlayView() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebContentsView);
 };
 
 }  // namespace content

@@ -100,14 +100,6 @@ void WebContentsViewAndroid::GetViewBounds(gfx::Rect* out) const {
   NOTIMPLEMENTED();
 }
 
-void WebContentsViewAndroid::InstallOverlayView(gfx::NativeView view) {
-  NOTIMPLEMENTED();
-}
-
-void WebContentsViewAndroid::RemoveOverlayView() {
-  NOTIMPLEMENTED();
-}
-
 void WebContentsViewAndroid::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {

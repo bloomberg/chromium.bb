@@ -46,7 +46,7 @@ class SadTabController;
 // Functions that may be accessed from non-Objective-C C/C++ code.
 namespace sad_tab_controller_mac {
 SadTabController* CreateSadTabController(content::WebContents* web_contents);
-gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab);
+void RemoveSadTab(SadTabController* sad_tab);
 }
 
 #endif  // CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_SAD_TAB_CONTROLLER_H_

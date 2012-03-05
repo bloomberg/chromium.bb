@@ -195,14 +195,6 @@ void TabContentsViewWin::GetViewBounds(gfx::Rect* out) const {
   *out = gfx::Rect(r);
 }
 
-void TabContentsViewWin::InstallOverlayView(gfx::NativeView view) {
-  NOTREACHED();
-}
-
-void TabContentsViewWin::RemoveOverlayView() {
-  NOTREACHED();
-}
-
 void TabContentsViewWin::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {

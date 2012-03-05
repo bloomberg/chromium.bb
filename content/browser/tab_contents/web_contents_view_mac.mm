@@ -72,8 +72,7 @@ WebContentsViewMac::WebContentsViewMac(
     WebContents* web_contents,
     content::WebContentsViewMacDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
-      delegate_(delegate),
-      overlaid_view_(nil) {
+      delegate_(delegate) {
 }
 
 WebContentsViewMac::~WebContentsViewMac() {
@@ -390,20 +389,6 @@ void WebContentsViewMac::CloseTabAfterEventTracking() {
 void WebContentsViewMac::GetViewBounds(gfx::Rect* out) const {
   // This method is not currently used on mac.
   NOTIMPLEMENTED();
-}
-
-void WebContentsViewMac::InstallOverlayView(gfx::NativeView view) {
-  DCHECK(!overlaid_view_);
-  overlaid_view_ = view;
-  [view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
-  [cocoa_view_.get() addSubview:view];
-  [view setFrame:[cocoa_view_.get() bounds]];
-}
-
-void WebContentsViewMac::RemoveOverlayView() {
-  DCHECK(overlaid_view_);
-  [overlaid_view_ removeFromSuperview];
-  overlaid_view_ = nil;
 }
 
 void WebContentsViewMac::CloseTab() {

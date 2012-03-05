@@ -68,8 +68,6 @@ class TestWebContentsView : public WebContentsView {
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
-  virtual void RemoveOverlayView() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsView);

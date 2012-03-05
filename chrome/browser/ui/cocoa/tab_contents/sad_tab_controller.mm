@@ -7,6 +7,8 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 using content::WebContents;
 
@@ -16,8 +18,8 @@ SadTabController* CreateSadTabController(WebContents* web_contents) {
   return [[SadTabController alloc] initWithWebContents:web_contents];
 }
 
-gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab) {
-  return [sad_tab view];
+void RemoveSadTab(SadTabController* sad_tab) {
+  [[sad_tab view] removeFromSuperview];
 }
 
 }  // namespace sad_tab_controller_mac
@@ -28,6 +30,14 @@ gfx::NativeView GetViewOfSadTabController(SadTabController* sad_tab) {
   if ((self = [super initWithNibName:@"SadTab"
                               bundle:base::mac::FrameworkBundle()])) {
     webContents_ = webContents;
+
+    if (webContents_) {  // NULL in unit_tests.
+      NSView* ns_view = webContents_->GetView()->GetNativeView();
+      [[self view] setAutoresizingMask:
+          (NSViewWidthSizable | NSViewHeightSizable)];
+      [ns_view addSubview:[self view]];
+      [[self view] setFrame:[ns_view bounds]];
+    }
   }
 
   return self;

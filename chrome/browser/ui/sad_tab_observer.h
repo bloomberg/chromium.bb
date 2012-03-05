@@ -35,10 +35,7 @@ class SadTabObserver : public content::WebContentsObserver,
 
  private:
   // Platform specific function to get an instance of the sad tab page.
-  gfx::NativeView AcquireSadTab(base::TerminationStatus status);
-
-  // Platform specific function to release the instance of the sad tab page.
-  void ReleaseSadTab();
+  void InstallSadTab(base::TerminationStatus status);
 
   // Platform specific function to determine if there is a current sad tab page.
   bool HasSadTab();

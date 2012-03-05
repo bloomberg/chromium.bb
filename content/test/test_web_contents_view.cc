@@ -130,10 +130,4 @@ void TestWebContentsView::CloseTabAfterEventTracking() {
 void TestWebContentsView::GetViewBounds(gfx::Rect* out) const {
 }
 
-void TestWebContentsView::InstallOverlayView(gfx::NativeView view) {
-}
-
-void TestWebContentsView::RemoveOverlayView() {
-}
-
 }  // namespace content

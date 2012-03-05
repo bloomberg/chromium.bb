@@ -73,8 +73,6 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
-  virtual void RemoveOverlayView() OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(
@@ -154,10 +152,6 @@ class CONTENT_EXPORT TabContentsViewGtk : public WebContentsView {
   // The size we want the tab contents view to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.
   gfx::Size requested_size_;
-
-  // The overlaid view. Owned by the caller of |InstallOverlayView|; this is a
-  // weak reference.
-  GtkWidget* overlaid_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };

@@ -85,8 +85,6 @@ class WebContentsViewMac : public content::WebContentsView {
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
-  virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
-  virtual void RemoveOverlayView() OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(
@@ -141,10 +139,6 @@ class WebContentsViewMac : public content::WebContentsView {
 
   // Our optional delegate.
   scoped_ptr<content::WebContentsViewMacDelegate> delegate_;
-
-  // The overlaid view. Owned by the caller of |InstallOverlayView|; this is a
-  // weak reference.
-  NSView* overlaid_view_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };
