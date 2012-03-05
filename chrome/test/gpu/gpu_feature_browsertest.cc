@@ -18,7 +18,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
-#include "content/test/gpu/gpu_test_config.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/gl/gl_switches.h"
 
@@ -225,15 +224,6 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
   if (use_gl == gfx::kGLImplementationOSMesaName)
     return;
 
-#if defined(OS_LINUX)
-  // Linux Intel uses mesa driver, where multisampling is not supported.
-  GPUTestBotConfig test_bot;
-  test_bot.LoadCurrentConfig(NULL);
-  const std::vector<uint32>& gpu_vendor = test_bot.gpu_vendor();
-  if (gpu_vendor.size() == 1 && gpu_vendor[0] == 0x8086)
-    return;
-#endif
-
   const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
   RunTest(url, "\"TRUE\"", true);
 }
@@ -286,16 +276,7 @@ IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DAllowed) {
   EXPECT_EQ(type, 0);
 
   const FilePath url(FILE_PATH_LITERAL("feature_canvas2d.html"));
-
-  GpuResultFlags expectations = EXPECT_GPU_SWAP_BUFFERS;
-#if defined(OS_WIN)
-  // Accelerated canvas 2D is not supported on XP.
-  GPUTestBotConfig test_bot;
-  test_bot.LoadCurrentConfig(NULL);
-  if (test_bot.os() == GPUTestConfig::kOSWinXP)
-    expectations = EXPECT_NO_GPU_PROCESS;
-#endif
-  RunTest(url, expectations);
+  RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
 
 IN_PROC_BROWSER_TEST_F(Canvas2DEnabledTest, Canvas2DBlocked) {
