@@ -178,8 +178,10 @@ class CONTENT_EXPORT RenderViewHostManager
   }
 
   // RenderViewHostDelegate::RendererManagement implementation.
-  virtual void ShouldClosePage(bool for_cross_site_transition,
-                               bool proceed) OVERRIDE;
+  virtual void ShouldClosePage(
+      bool for_cross_site_transition,
+      bool proceed,
+      const base::TimeTicks& proceed_time) OVERRIDE;
   virtual void OnCrossSiteResponse(int new_render_process_host_id,
                                    int new_request_id) OVERRIDE;
 

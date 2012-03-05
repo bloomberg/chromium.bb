@@ -335,8 +335,8 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   controller().LoadURL(
       kUrl, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   // Simulate response from RenderView for FirePageBeforeUnload.
-  rvh()->TestOnMessageReceived(
-      ViewHostMsg_ShouldClose_ACK(rvh()->GetRoutingID(), true));
+  rvh()->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+      rvh()->GetRoutingID(), true, base::TimeTicks(), base::TimeTicks()));
   ASSERT_TRUE(pending_rvh());  // New pending RenderViewHost will be created.
   RenderViewHost* last_rvh = pending_rvh();
   int32 new_id = contents()->GetMaxPageIDForSiteInstance(

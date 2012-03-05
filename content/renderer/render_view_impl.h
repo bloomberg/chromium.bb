@@ -864,6 +864,8 @@ class RenderViewImpl : public RenderWidget,
   void OnSetActive(bool active);
   void OnSetAltErrorPageURL(const GURL& gurl);
   void OnSetBackground(const SkBitmap& background);
+  void OnSetNavigationStartTime(
+      const base::TimeTicks& browser_navigation_start);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetEditCommandsForNextKeyEvent(const EditCommands& edit_commands);
   CONTENT_EXPORT void OnSetHistoryLengthAndPrune(int history_length,

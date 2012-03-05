@@ -787,6 +787,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetNavigationStartTime,
+                        OnSetNavigationStartTime)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
     IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
@@ -4301,8 +4303,12 @@ void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
 }
 
 void RenderViewImpl::OnShouldClose() {
+  base::TimeTicks before_unload_start_time = base::TimeTicks::Now();
   bool should_close = webview()->dispatchBeforeUnloadEvent();
-  Send(new ViewHostMsg_ShouldClose_ACK(routing_id_, should_close));
+  base::TimeTicks before_unload_end_time = base::TimeTicks::Now();
+  Send(new ViewHostMsg_ShouldClose_ACK(routing_id_, should_close,
+                                       before_unload_start_time,
+                                       before_unload_end_time));
 }
 
 void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
@@ -4546,6 +4552,25 @@ void RenderViewImpl::OnSetActive(bool active) {
     (*plugin_it)->SetWindowFocus(active);
   }
 #endif
+}
+
+void RenderViewImpl::OnSetNavigationStartTime(
+    const base::TimeTicks& browser_navigation_start) {
+  if (!webview())
+    return;
+
+  // Only the initial navigation can be a cross-renderer navigation. If we've
+  // already navigated away from that page, we can ignore this message.
+  if (page_id_ != -1)
+    return;
+
+  // browser_navigation_start is likely before this process existed, so we can't
+  // use InterProcessTimeTicksConverter. Instead, the best we can do is just
+  // ensure we don't report a bogus value in the future.
+  base::TimeTicks navigation_start = std::min(base::TimeTicks::Now(),
+                                              browser_navigation_start);
+  webview()->mainFrame()->provisionalDataSource()->setNavigationStartTime(
+      (navigation_start - base::TimeTicks()).InSecondsF());
 }
 
 #if defined(OS_MACOSX)

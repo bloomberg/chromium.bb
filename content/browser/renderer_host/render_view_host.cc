@@ -29,6 +29,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
+#include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/speech_input_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
@@ -68,6 +69,8 @@ using content::BrowserThread;
 using content::DomOperationNotificationDetails;
 using content::DOMStorageContext;
 using content::HostZoomMap;
+using content::LocalTimeTicks;
+using content::RemoteTimeTicks;
 using content::RenderViewHostDelegate;
 using content::SessionStorageNamespace;
 using content::SiteInstance;
@@ -349,13 +352,18 @@ void RenderViewHostImpl::CancelSuspendedNavigations() {
   navigations_suspended_ = false;
 }
 
+void RenderViewHostImpl::SetNavigationStartTime(
+    const base::TimeTicks& navigation_start) {
+  Send(new ViewMsg_SetNavigationStartTime(GetRoutingID(), navigation_start));
+}
+
 void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
   if (!IsRenderViewLive()) {
     // This RenderViewHostImpl doesn't have a live renderer, so just
     // skip running the onbeforeunload handler.
     is_waiting_for_beforeunload_ack_ = true;  // Checked by OnMsgShouldCloseACK.
     unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
-    OnMsgShouldCloseACK(true);
+    OnMsgShouldCloseACK(true, base::TimeTicks::Now(), base::TimeTicks::Now());
     return;
   }
 
@@ -377,6 +385,7 @@ void RenderViewHostImpl::FirePageBeforeUnload(bool for_cross_site_transition) {
     is_waiting_for_beforeunload_ack_ = true;
     unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
+    send_should_close_start_time_ = base::TimeTicks::Now();
     Send(new ViewMsg_ShouldClose(GetRoutingID()));
   }
 }
@@ -982,7 +991,8 @@ void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
   if (is_waiting_for_beforeunload_ack_ &&
       unload_ack_is_for_cross_site_transition_ &&
       content::PageTransitionIsMainFrame(validated_params.transition)) {
-    OnMsgShouldCloseACK(true);
+    OnMsgShouldCloseACK(true, send_should_close_start_time_,
+                        base::TimeTicks::Now());
     return;
   }
 
@@ -1275,7 +1285,10 @@ void RenderViewHostImpl::OnUserGesture() {
   delegate_->OnUserGesture();
 }
 
-void RenderViewHostImpl::OnMsgShouldCloseACK(bool proceed) {
+void RenderViewHostImpl::OnMsgShouldCloseACK(
+    bool proceed,
+    const base::TimeTicks& renderer_before_unload_start_time,
+    const base::TimeTicks& renderer_before_unload_end_time) {
   StopHangMonitorTimeout();
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in OnMsgNavigate, in which case we can ignore
@@ -1288,8 +1301,27 @@ void RenderViewHostImpl::OnMsgShouldCloseACK(bool proceed) {
   RenderViewHostDelegate::RendererManagement* management_delegate =
       delegate_->GetRendererManagementDelegate();
   if (management_delegate) {
+    base::TimeTicks before_unload_end_time;
+    if (!send_should_close_start_time_.is_null() &&
+        !renderer_before_unload_start_time.is_null() &&
+        !renderer_before_unload_end_time.is_null()) {
+      // When passing TimeTicks across process boundaries, we need to compensate
+      // for any skew between the processes. Here we are converting the
+      // renderer's notion of before_unload_end_time to TimeTicks in the browser
+      // process. See comments in inter_process_time_ticks_converter.h for more.
+      content::InterProcessTimeTicksConverter converter(
+          LocalTimeTicks::FromTimeTicks(send_should_close_start_time_),
+          LocalTimeTicks::FromTimeTicks(base::TimeTicks::Now()),
+          RemoteTimeTicks::FromTimeTicks(renderer_before_unload_start_time),
+          RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+      LocalTimeTicks browser_before_unload_end_time =
+          converter.ToLocalTimeTicks(
+              RemoteTimeTicks::FromTimeTicks(renderer_before_unload_end_time));
+      before_unload_end_time = browser_before_unload_end_time.ToTimeTicks();
+    }
     management_delegate->ShouldClosePage(
-        unload_ack_is_for_cross_site_transition_, proceed);
+        unload_ack_is_for_cross_site_transition_, proceed,
+        before_unload_end_time);
   }
 
   // If canceled, notify the delegate to cancel its pending navigation entry.

@@ -270,8 +270,10 @@ void RenderViewHostManager::RendererProcessClosing(
   }
 }
 
-void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
-                                            bool proceed) {
+void RenderViewHostManager::ShouldClosePage(
+    bool for_cross_site_transition,
+    bool proceed,
+    const base::TimeTicks& proceed_time) {
   if (for_cross_site_transition) {
     // Ignore if we're not in a cross-site navigation.
     if (!cross_navigation_pending_)
@@ -284,8 +286,12 @@ void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
       // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
       // is ok to do nothing here.
       if (pending_render_view_host_ &&
-          pending_render_view_host_->are_navigations_suspended())
+          pending_render_view_host_->are_navigations_suspended()) {
         pending_render_view_host_->SetNavigationsSuspended(false);
+        if (!proceed_time.is_null()) {
+          pending_render_view_host_->SetNavigationStartTime(proceed_time);
+        }
+      }
     } else {
       // Current page says to cancel.
       CancelPending();
