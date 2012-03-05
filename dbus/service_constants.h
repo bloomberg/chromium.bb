@@ -508,6 +508,7 @@ const char kL2tpIpsecClientCertSlotProperty[] = "L2TPIPsec.ClientCertSlot";
 const char kL2tpIpsecIkeVersion[] = "L2TPIPsec.IKEVersion";
 const char kL2tpIpsecPinProperty[] = "L2TPIPsec.PIN";
 const char kL2tpIpsecPskProperty[] = "L2TPIPsec.PSK";
+const char kL2tpIpsecPskRequiredProperty[] = "L2TPIPsec.PSKRequired";
 const char kL2tpIpsecUserProperty[] = "L2TPIPsec.User";
 const char kL2tpIpsecPasswordProperty[] = "L2TPIPsec.Password";
 const char kL2tpIpsecGroupNameProperty[] = "L2TPIPsec.GroupName";
