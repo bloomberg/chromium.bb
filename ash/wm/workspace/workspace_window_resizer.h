@@ -39,9 +39,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   }
 
   // Overridden from WindowResizer:
-  virtual void Drag(const gfx::Point& location);
-  virtual void CompleteDrag();
-  virtual void RevertDrag();
+  virtual void Drag(const gfx::Point& location) OVERRIDE;
+  virtual void CompleteDrag() OVERRIDE;
+  virtual void RevertDrag() OVERRIDE;
 
  private:
   explicit WorkspaceWindowResizer(const Details& details);
