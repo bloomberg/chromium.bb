@@ -12,7 +12,6 @@
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/audio_messages.h"
-#include "media/audio/audio_util.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
@@ -209,11 +208,7 @@ void AudioInputRendererHost::OnCreateStream(int stream_id,
 
   AudioParameters audio_params(params);
 
-  // Select the hardware packet size if not specified.
-  if (!audio_params.samples_per_packet) {
-    audio_params.samples_per_packet =
-        media::SelectSamplesPerPacket(audio_params.sample_rate);
-  }
+  DCHECK_GT(audio_params.samples_per_packet, 0);
   uint32 packet_size = audio_params.GetPacketSize();
 
   // Create a new AudioEntry structure.

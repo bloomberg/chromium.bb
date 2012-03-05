@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "content/common/child_process.h"
 #include "content/common/media/audio_messages.h"
+#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_util.h"
@@ -71,7 +72,7 @@ bool AudioRendererImpl::OnInitialize(int bits_per_channel,
 
   if (!is_initialized_) {
     sink_->Initialize(
-        media::SelectSamplesPerPacket(sample_rate),
+        audio_hardware::GetHighLatencyOutputBufferSize(sample_rate),
         audio_parameters_.channels,
         audio_parameters_.sample_rate,
         audio_parameters_.format,

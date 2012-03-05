@@ -199,12 +199,8 @@ void AudioRendererHost::OnCreateStream(
   DCHECK(LookupById(stream_id) == NULL);
 
   AudioParameters audio_params(params);
+  DCHECK_GT(audio_params.samples_per_packet, 0);
 
-  // Select the hardware packet size if not specified.
-  if (!audio_params.samples_per_packet) {
-    audio_params.samples_per_packet =
-        media::SelectSamplesPerPacket(audio_params.sample_rate);
-  }
   uint32 packet_size = audio_params.GetPacketSize();
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
