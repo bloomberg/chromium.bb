@@ -602,6 +602,7 @@ const char kUnknownString[] = "UNKNOWN";
 namespace shill {
 // Manager property names.
 const char kHostNameProperty[] = "HostName";
+const char kPortalCheckIntervalProperty[] = "PortalCheckInterval";
 
 // Service property names.
 const char kHTTPProxyPortProperty[] = "HTTPProxyPort";
