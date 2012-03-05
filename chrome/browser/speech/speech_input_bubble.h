@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -152,13 +152,9 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   // Overridden by subclasses to copy |icon_image()| to the screen.
   virtual void UpdateImage() = 0;
 
-  DisplayMode display_mode() {
-    return display_mode_;
-  }
+  DisplayMode display_mode() const { return display_mode_; }
 
-  string16 message_text() {
-    return message_text_;
-  }
+  const string16& message_text() const { return message_text_; }
 
   SkBitmap icon_image();
 
