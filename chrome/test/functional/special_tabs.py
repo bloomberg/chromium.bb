@@ -44,7 +44,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://feedback/#0': { 'title': 'Feedback' },
     'chrome://chrome-urls': { 'title': 'Chrome URLs' },
     'chrome://crashes': { 'title': 'Crashes' },
-    'chrome://credits': { 'title': 'Credits', 'CSP': False },
+    'chrome://credits': { 'title': 'Credits' },
     'chrome://downloads': { 'title': 'Downloads' },
     'chrome://dns': { 'title': 'About DNS' },
     'chrome://settings/extensions': { 'title': 'Settings - Extensions' },
