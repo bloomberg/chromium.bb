@@ -5,6 +5,7 @@
 #include "ash/accelerators/accelerator_dispatcher.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/ime/event.h"
 #include "ash/shell.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
@@ -22,18 +23,25 @@ const int kModifierMask = (ui::EF_SHIFT_DOWN |
 }  // namespace
 
 bool AcceleratorDispatcher::Dispatch(const MSG& msg) {
+  // TODO(oshima): Consolidate win and linux.  http://crbug.com/116282
   if (!associated_window_)
     return false;
   if (!ui::IsNoopEvent(msg) && !associated_window_->CanReceiveEvents())
     return aura::Env::GetInstance()->GetDispatcher()->Dispatch(msg);
 
-  if(msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN) {
+  if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN ||
+     msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP) {
     ash::AcceleratorController* accelerator_controller =
         ash::Shell::GetInstance()->accelerator_controller();
-    ui::Accelerator accelerator(ui::KeyboardCodeFromNative(msg),
-        ui::EventFlagsFromNative(msg) & kModifierMask);
-    if (accelerator_controller && accelerator_controller->Process(accelerator))
-      return true;
+    if (accelerator_controller) {
+      ui::Accelerator accelerator(ui::KeyboardCodeFromNative(msg),
+          ui::EventFlagsFromNative(msg) & kModifierMask);
+      if (accelerator_controller->Process(accelerator))
+        return true;
+      accelerator.set_type(TranslatedKeyEvent(msg, false).type());
+      if (accelerator_controller->Process(accelerator))
+        return true;
+    }
   }
 
   return nested_dispatcher_->Dispatch(msg);

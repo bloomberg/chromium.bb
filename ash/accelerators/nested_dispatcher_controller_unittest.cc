@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -12,6 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/base/accelerators/accelerator.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -50,7 +52,33 @@ class MockDispatcher : public MessageLoop::Dispatcher {
   int num_key_events_dispatched_;
 };
 
-void DispatchKeyEvent() {
+class TestTarget : public ui::AcceleratorTarget {
+ public:
+  TestTarget() : accelerator_pressed_count_(0) {
+  }
+  virtual ~TestTarget() {
+  }
+
+  int accelerator_pressed_count() const {
+    return accelerator_pressed_count_;
+  }
+
+  // Overridden from ui::AcceleratorTarget:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE {
+    accelerator_pressed_count_++;
+    return true;
+  }
+  virtual bool CanHandleAccelerators() const OVERRIDE {
+    return true;
+  }
+
+ private:
+  int accelerator_pressed_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTarget);
+};
+
+void DispatchKeyReleaseA() {
 #if defined(OS_WIN)
   MSG native_event = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
   ash::Shell::GetRootWindow()->PostNativeEvent(native_event);
@@ -75,7 +103,7 @@ typedef AshTestBase NestedDispatcherTest;
 TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
   MockDispatcher inner_dispatcher;
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_DefaultContainer);
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window>associated_window(aura::test::CreateTestWindowWithId(
       0, default_container));
   scoped_ptr<aura::Window>mock_lock_container(
@@ -84,10 +112,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
   aura::test::CreateTestWindowWithId(0, mock_lock_container.get());
   EXPECT_TRUE(aura::test::WindowIsAbove(mock_lock_container.get(),
       associated_window.get()));
-  MessageLoop::current()->PostDelayedTask(
-     FROM_HERE,
-     base::Bind(&DispatchKeyEvent),
-     base::TimeDelta::FromMilliseconds(100));
+  DispatchKeyReleaseA();
   aura::RootWindow* root_window = ash::Shell::GetInstance()->GetRootWindow();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
       &inner_dispatcher,
@@ -101,7 +126,7 @@ TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
   MockDispatcher inner_dispatcher;
 
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_DefaultContainer);
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window>mock_lock_container(
       aura::test::CreateTestWindowWithId(0, default_container));
   mock_lock_container->set_stops_event_propagation(true);
@@ -111,16 +136,33 @@ TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
   EXPECT_TRUE(aura::test::WindowIsAbove(associated_window.get(),
       mock_lock_container.get()));
 
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DispatchKeyEvent),
-      base::TimeDelta::FromMilliseconds(100));
+  DispatchKeyReleaseA();
   aura::RootWindow* root_window = ash::Shell::GetInstance()->GetRootWindow();
   aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
       &inner_dispatcher,
       associated_window.get(),
       true /* nestable_tasks_allowed */);
   EXPECT_EQ(1, inner_dispatcher.num_key_events_dispatched());
+}
+
+// Test that the nested dispatcher handles accelerators.
+TEST_F(NestedDispatcherTest, AcceleratorsHandled) {
+  MockDispatcher inner_dispatcher;
+  aura::RootWindow* root_window = ash::Shell::GetInstance()->GetRootWindow();
+
+  ui::Accelerator accelerator(ui::VKEY_A, false, false, false);
+  accelerator.set_type(ui::ET_TRANSLATED_KEY_RELEASE);
+  TestTarget target;
+  Shell::GetInstance()->accelerator_controller()->Register(accelerator,
+                                                           &target);
+
+  DispatchKeyReleaseA();
+  aura::client::GetDispatcherClient(root_window)->RunWithDispatcher(
+      &inner_dispatcher,
+      root_window,
+      true /* nestable_tasks_allowed */);
+  EXPECT_EQ(0, inner_dispatcher.num_key_events_dispatched());
+  EXPECT_EQ(1, target.accelerator_pressed_count());
 }
 
 } //  namespace test
