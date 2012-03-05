@@ -127,9 +127,7 @@ static void PrintUsage() {
           " -B additional ELF file to load as a blob library\n"
           " -v increases verbosity\n"
           " -X create a bound socket and export the address via an\n"
-          "    IMC message to a corresponding NaCl app descriptor\n"
-          "    (use -1 to create the bound socket / address descriptor\n"
-          "    pair, but that no export via IMC should occur)\n");
+          "    IMC message to a descriptor or Windows handle\n");
   fprintf(stderr,
           " -R an RPC supplies the NaCl module.\n"
           "    No nacl_file argument is expected, and the -f flag cannot be\n"
@@ -175,7 +173,7 @@ int main(int  argc,
   char                          *nacl_file = NULL;
   char                          *blob_library_file = NULL;
   int                           rpc_supplies_nexe = 0;
-  int                           export_addr_to = -2;
+  NaClHandle                    export_addr_to = NACL_INVALID_HANDLE;
 
   struct NaClApp                *nap;
 
@@ -330,7 +328,7 @@ int main(int  argc,
         break;
       /* case 'w':  with 'h' and 'r' above */
       case 'X':
-        export_addr_to = strtol(optarg, (char **) 0, 0);
+        export_addr_to = (NaClHandle) strtol(optarg, (char **) 0, 0);
         break;
       case 'Q':
         fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY -Q - "
@@ -464,7 +462,7 @@ int main(int  argc,
       exit(1);
     }
     /* post: NULL == nacl_file */
-    if (export_addr_to < 0) {
+    if (NACL_INVALID_HANDLE == export_addr_to) {
       fprintf(stderr,
               "sel_ldr: -R requires -X to set up secure command channel\n");
       exit(1);
@@ -645,31 +643,24 @@ int main(int  argc,
   }
 
   /*
-   * If export_addr_to is set to a non-negative integer, we create a
-   * bound socket and socket address pair and bind the former to
+   * If export_addr_to is set to a value other than NACL_INVALID_HANDLE, we
+   * create a bound socket and socket address pair and bind the former to
    * descriptor 3 and the latter to descriptor 4.  The socket address
-   * is written out to the export_addr_to descriptor.
+   * is sent via IMC to the export_addr_to handle.
    *
    * The service runtime also accepts a connection on the bound socket
    * and spawns a secure command channel thread to service it.
-   *
-   * If export_addr_to is -1, we only create the bound socket and
-   * socket address pair, and we do not export to an IMC socket.  This
-   * use case is typically only used in testing, where we only "dump"
-   * the socket address to stdout or similar channel.
    */
-  if (-2 < export_addr_to) {
+  if (NACL_INVALID_HANDLE != export_addr_to) {
     NaClCreateServiceSocket(nap);
-    if (0 <= export_addr_to) {
-      NaClSendServiceAddressTo(nap, export_addr_to);
-      /*
-       * NB: spawns a thread that uses the command channel.  we do
-       * this after NaClAppLoadFile so that NaClApp object is more
-       * fully populated.  Hereafter any changes to nap should be done
-       * while holding locks.
-       */
-      NaClSecureCommandChannel(nap);
-    }
+    NaClSendServiceAddressTo(nap, export_addr_to);
+    /*
+     * NB: spawns a thread that uses the command channel.  we do
+     * this after NaClAppLoadFile so that NaClApp object is more
+     * fully populated.  Hereafter any changes to nap should be done
+     * while holding locks.
+     */
+    NaClSecureCommandChannel(nap);
   }
 
   /*

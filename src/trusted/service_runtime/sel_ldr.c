@@ -810,27 +810,23 @@ void NaClCreateServiceSocket(struct NaClApp *nap) {
 }
 
 void NaClSendServiceAddressTo(struct NaClApp  *nap,
-                              int             desc) {
-  struct NaClDesc             *channel;
+                              NaClHandle      handle) {
+  struct NaClDescImcDesc      *channel;
   struct NaClImcTypedMsgHdr   hdr;
   ssize_t                     rv;
 
   NaClLog(4,
           "NaClSendServiceAddressTo(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) nap,
-          desc);
+          handle);
 
-  channel = NaClGetDesc(nap, desc);
+  channel = (struct NaClDescImcDesc *) malloc(sizeof *channel);
   if (NULL == channel) {
-    NaClLog(LOG_FATAL,
-            "NaClSendServiceAddressTo: descriptor %d not in open file table\n",
-            desc);
-    return;
+    NaClLog(LOG_FATAL, "NaClSendServiceAddressTo: no memory\n");
   }
-  if (NULL == nap->service_address) {
-    NaClLog(LOG_FATAL,
-            "NaClSendServiceAddressTo: service address not set\n");
-    return;
+  if (!NaClDescImcDescCtor(channel, handle)) {
+    NaClLog(LOG_FATAL, ("NaClSendServiceAddressTo: cannot construct"
+                        " IMC descriptor object\n"));
   }
   /*
    * service_address and service_port are set together.
@@ -841,14 +837,14 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   hdr.ndescv = &nap->service_address;
   hdr.ndesc_length = 1;
 
-  rv = NaClImcSendTypedMessage(channel, &hdr, 0);
+  rv = NaClImcSendTypedMessage((struct NaClDesc *) channel, &hdr, 0);
 
-  NaClDescUnref(channel);
+  NaClDescUnref((struct NaClDesc *) channel);
   channel = NULL;
 
   NaClLog(1,
-          "NaClSendServiceAddressTo: descriptor %d, error %"NACL_PRIdS"\n",
-          desc,
+          "NaClSendServiceAddressTo: handle %d, error %"NACL_PRIdS"\n",
+          handle,
           rv);
 }
 

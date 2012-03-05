@@ -556,7 +556,7 @@ uintptr_t NaClAppVmmapFindMapSpace(struct NaClApp *nap,
 void NaClCreateServiceSocket(struct NaClApp *nap);
 
 void NaClSendServiceAddressTo(struct NaClApp  *nap,
-                              int             desc);
+                              NaClHandle      handle);
 
 void NaClSecureCommandChannel(struct NaClApp  *nap);
 
