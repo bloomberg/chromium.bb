@@ -8,6 +8,7 @@ import glob
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+from pyauto_errors import JSONInterfaceError
 
 
 class PDFTest(pyauto.PyUITest):
@@ -15,6 +16,8 @@ class PDFTest(pyauto.PyUITest):
 
   This test runs only on Google Chrome build, not on Chromium.
   """
+
+  unloadable_pdfs = []
 
   def _PerformPDFAction(self, action, tab_index=0, windex=0):
     """Perform an action on a PDF tab.
@@ -30,10 +33,16 @@ class PDFTest(pyauto.PyUITest):
       document.getElementsByName("plugin")[0])
       { window.domAutomationController.send("true"); }
       else {window.domAutomationController.send("false"); }"""
-    self.assertTrue(self.WaitUntil(lambda: self.ExecuteJavascript(js,
-      tab_index=tab_index, windex=windex), expect_retval="true"),
-      msg='Could not find zoom/fit to page/width bar so we will not be able '
-          'to peform the requested action')
+    try:
+      self.assertTrue(self.WaitUntil(lambda: self.ExecuteJavascript(js,
+        tab_index=tab_index, windex=windex), expect_retval="true"),
+        msg='Could not find zoom/fit to page/width bar so we will not be able '
+            'to peform the requested action')
+    except JSONInterfaceError as e:
+      # The PDF did not load, add it to the list and move on, we don't want the
+      # test to abort so we can check all of the PDFs.
+      PDFTest.unloadable_pdfs.append(self.GetActiveTabTitle())
+      return
     assert action in ('fitToHeight', 'fitToWidth', 'ZoomIn', 'ZoomOut')
     js = 'document.getElementsByName("plugin")[0].%s()' % action
     # Add an empty string so that there's something to return back
@@ -61,6 +70,7 @@ class PDFTest(pyauto.PyUITest):
     pdf_files = [x for x in pdf_files if
                  os.path.basename(x) not in exclude_list]
 
+    PDFTest.unloadable_pdfs = []
     for url in pdf_files:
       self.AppendTab(pyauto.GURL(url))
     for tab_index in range(1, len(pdf_files) + 1):
@@ -74,6 +84,8 @@ class PDFTest(pyauto.PyUITest):
     for dmp_file in glob.glob(os.path.join(breakpad_folder, '*.dmp')):
       self.assertTrue(dmp_file in old_dmp_files,
           msg='Crash dump %s found' % dmp_file)
+    self.assertEqual(len(PDFTest.unloadable_pdfs), 0, msg='The following PDFs '
+                     'did not load: %s' % PDFTest.unloadable_pdfs)
 
 
 if __name__ == '__main__':
