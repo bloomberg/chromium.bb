@@ -35,9 +35,22 @@ namespace {
 
 class PrinterChangeHandleTraits {
  public:
+  typedef HANDLE Handle;
+
   static bool CloseHandle(HANDLE handle) {
     return ::FindClosePrinterChangeNotification(handle) != FALSE;
   }
+
+  static bool IsHandleValid(HANDLE handle) {
+    return handle != NULL;
+  }
+
+  static HANDLE NullHandle() {
+    return NULL;
+  }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterChangeHandleTraits);
 };
 
 typedef base::win::GenericScopedHandle<PrinterChangeHandleTraits>

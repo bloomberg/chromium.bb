@@ -20,9 +20,22 @@ namespace printing {
 
 class PrinterHandleTraits {
  public:
+  typedef HANDLE Handle;
+
   static bool CloseHandle(HANDLE handle) {
     return ::ClosePrinter(handle) != FALSE;
   }
+
+  static bool IsHandleValid(HANDLE handle) {
+    return handle != NULL;
+  }
+
+  static HANDLE NullHandle() {
+    return NULL;
+  }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PrinterHandleTraits);
 };
 
 typedef base::win::GenericScopedHandle<PrinterHandleTraits> ScopedPrinterHandle;
