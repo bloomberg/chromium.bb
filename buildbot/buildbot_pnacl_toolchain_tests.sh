@@ -46,7 +46,8 @@ scons-tests-translator() {
 
   echo "@@@BUILD_STEP scons-tests-translator ${platform}@@@"
   build-sbtc-prerequisites ${platform}
-  local extra="--mode=opt-host,nacl -j${PNACL_CONCURRENCY} -k"
+  local use_sbtc="use_sandboxed_translator=1"
+  local extra="--mode=opt-host,nacl -j${PNACL_CONCURRENCY} ${use_sbtc} -k"
   ${SCONS_COMMON} ${extra} platform=${platform} "small_tests" || handle-error
   ${SCONS_COMMON} ${extra} platform=${platform} "medium_tests" || handle-error
   ${SCONS_COMMON} ${extra} platform=${platform} "large_tests" || handle-error
