@@ -57,6 +57,7 @@ struct interface {
 	char *name;
 	char *uppercase_name;
 	int version;
+	int since;
 	struct wl_list request_list;
 	struct wl_list event_list;
 	struct wl_list enumeration_list;
@@ -73,6 +74,7 @@ struct message {
 	int type_index;
 	int all_null;
 	int destructor;
+	int since;
 	struct description *description;
 };
 
@@ -189,7 +191,8 @@ start_element(void *data, const char *element_name, const char **atts)
 	struct enumeration *enumeration;
 	struct entry *entry;
 	struct description *description;
-	const char *name, *type, *interface_name, *value, *summary;
+	const char *name, *type, *interface_name, *value, *summary, *since;
+	char *end;
 	int i, version;
 
 	name = NULL;
@@ -199,6 +202,7 @@ start_element(void *data, const char *element_name, const char **atts)
 	value = NULL;
 	summary = NULL;
 	description = NULL;
+	since = NULL;
 	for (i = 0; atts[i]; i += 2) {
 		if (strcmp(atts[i], "name") == 0)
 			name = atts[i + 1];
@@ -212,6 +216,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			interface_name = atts[i + 1];
 		if (strcmp(atts[i], "summary") == 0)
 			summary = atts[i + 1];
+		if (strcmp(atts[i], "since") == 0)
+			since = atts[i + 1];
 	}
 
 	ctx->character_data_length = 0;
@@ -236,6 +242,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		interface->uppercase_name = uppercase_dup(name);
 		interface->version = version;
 		interface->description = NULL;
+		interface->since = 1;
 		wl_list_init(&interface->request_list);
 		wl_list_init(&interface->event_list);
 		wl_list_init(&interface->enumeration_list);
@@ -265,6 +272,17 @@ start_element(void *data, const char *element_name, const char **atts)
 			message->destructor = 1;
 		else
 			message->destructor = 0;
+
+		if (since != NULL) {
+			version = strtol(since, &end, 0);
+			if (errno == EINVAL || end == since || *end != '\0')
+				fail(ctx, "invalid integer\n");
+			if (version <= ctx->interface->since)
+				fail(ctx, "since version not increasing\n");
+			ctx->interface->since = version;
+		}
+
+		message->since = ctx->interface->since;
 
 		if (strcmp(name, "destroy") == 0 && !message->destructor)
 			fail(ctx, "destroy request should be destructor type");
@@ -703,6 +721,9 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 			printf("\t * ");
 			desc_dump(mdesc->text, 8);
 			printf("\n");
+		}
+		if (m->since > 1) {
+			printf("\t * @since: %d\n", m->since);
 		}
 		printf("\t */\n");
 		printf("\tvoid (*%s)(", m->name);
