@@ -70,7 +70,6 @@
         'accessibility_ui_element.h',
         'drop_delegate.cc',
         'drop_delegate.h',
-        'foreground_helper.h',
         'layout_test_controller.cc',
         'layout_test_controller.h',
         'mock_spellcheck.cc',

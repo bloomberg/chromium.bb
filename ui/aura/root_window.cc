@@ -439,6 +439,10 @@ void RootWindow::SetGestureRecognizerForTesting(GestureRecognizer* gr) {
   gesture_recognizer_.reset(gr);
 }
 
+gfx::AcceleratedWidget RootWindow::GetAcceleratedWidget() {
+  return host_->GetAcceleratedWidget();
+}
+
 #if !defined(NDEBUG)
 void RootWindow::ToggleFullScreen() {
   host_->ToggleFullScreen();

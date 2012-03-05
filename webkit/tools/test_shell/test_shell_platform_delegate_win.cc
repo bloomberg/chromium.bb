@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 #include "base/command_line.h"
 #include "base/event_recorder.h"
 #include "base/win/win_util.h"
+#include "ui/base/win/foreground_helper.h"
 #include "ui/gfx/native_theme_win.h"
-#include "webkit/tools/test_shell/foreground_helper.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_platform_delegate.h"
 
@@ -150,6 +150,6 @@ void TestShellPlatformDelegate::SetWindowPositionForRecording(
   // on build systems where the script invoking us is a background
   // process.  So for this case, make our window the topmost window
   // as well.
-  ForegroundHelper::SetForeground(shell->mainWnd());
+  CHECK(ui::ForegroundHelper::SetForeground(shell->mainWnd()) == S_OK);
   ::SetWindowPos(shell->mainWnd(), HWND_TOP, 0, 0, 600, 800, 0);
 }

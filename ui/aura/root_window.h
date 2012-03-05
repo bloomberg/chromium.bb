@@ -182,6 +182,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Provided only for testing:
   void SetGestureRecognizerForTesting(GestureRecognizer* gr);
 
+  // Returns the accelerated widget from the RootWindowHost.
+  gfx::AcceleratedWidget GetAcceleratedWidget();
+
 #if !defined(NDEBUG)
   // Toggles the host's full screen state.
   void ToggleFullScreen();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,8 @@ void ClickTask(MouseButton button, int state, const base::Closure& followup);
 #if defined(OS_WIN)
 // A utility functions for windows to send key or mouse events and
 // run the task.
-bool SendKeyPressImpl(ui::KeyboardCode key,
+bool SendKeyPressImpl(gfx::NativeWindow window,
+                      ui::KeyboardCode key,
                       bool control,
                       bool shift,
                       bool alt,

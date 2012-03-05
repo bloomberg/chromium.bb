@@ -670,12 +670,20 @@ bool SendKeyPressSync(const Browser* browser,
   if (!GetNativeWindow(browser, &window))
     return false;
 
-  if (!ui_controls::SendKeyPressNotifyWhenDone(
-          window, key, control, shift, alt, command,
-          MessageLoop::QuitClosure())) {
+  bool result;
+  result = ui_controls::SendKeyPressNotifyWhenDone(
+      window, key, control, shift, alt, command, MessageLoop::QuitClosure());
+#if defined(OS_WIN)
+  if (!result && BringBrowserWindowToFront(browser)) {
+    result = ui_controls::SendKeyPressNotifyWhenDone(
+        window, key, control, shift, alt, command, MessageLoop::QuitClosure());
+  }
+#endif
+  if (!result) {
     LOG(ERROR) << "ui_controls::SendKeyPressNotifyWhenDone failed";
     return false;
   }
+
   // Run the message loop. It'll stop running when either the key was received
   // or the test timed out (in which case testing::Test::HasFatalFailure should
   // be set).

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,13 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
+#include "ui/base/keycodes/keyboard_codes.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
 
 namespace {
 
@@ -166,9 +171,26 @@ bool SendKeyEvent(ui::KeyboardCode key, bool up) {
 namespace ui_controls {
 namespace internal {
 
-bool SendKeyPressImpl(ui::KeyboardCode key,
-                      bool control, bool shift, bool alt,
+bool SendKeyPressImpl(gfx::NativeWindow native_window,
+                      ui::KeyboardCode key,
+                      bool control,
+                      bool shift,
+                      bool alt,
                       const base::Closure& task) {
+  // SendInput only works as we expect it if one of our windows is the
+  // foreground window already.
+#if defined(USE_AURA)
+  HWND window = native_window->GetRootWindow()->GetAcceleratedWidget();
+#else
+  HWND window = native_window;
+#endif
+  HWND target_window = (::GetActiveWindow() &&
+                        ::GetWindow(::GetActiveWindow(), GW_OWNER) == window) ?
+                       ::GetActiveWindow() :
+                       window;
+  if (window && ::GetForegroundWindow() != target_window)
+    return false;
+
   scoped_refptr<InputDispatcher> dispatcher(
       !task.is_null() ? new InputDispatcher(task, WM_KEYUP) : NULL);
 
