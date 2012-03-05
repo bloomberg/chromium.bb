@@ -20,6 +20,8 @@ namespace internal {
 
 namespace {
 
+const int kSystemTrayPadding = 10;
+
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -134,7 +136,7 @@ void ShelfLayoutManager::CalculateTargetBounds(bool visible,
   int y = available_bounds.bottom() - (visible ? max_height_ : 0);
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
   target_bounds->status_bounds = gfx::Rect(
-      available_bounds.right() - status_bounds.width(),
+      available_bounds.right() - status_bounds.width() - kSystemTrayPadding,
       y + (max_height_ - status_bounds.height()) / 2,
       status_bounds.width(), status_bounds.height());
   gfx::Rect launcher_bounds(launcher_->GetWindowScreenBounds());

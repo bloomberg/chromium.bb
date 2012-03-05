@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
@@ -27,7 +28,7 @@
 
 namespace ash {
 
-namespace internal {
+namespace {
 
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
@@ -40,6 +41,9 @@ const SkColor kDarkColor = SkColorSetRGB(120, 120, 120);
 const SkColor kLightColor = SkColorSetRGB(240, 240, 240);
 const SkColor kBackgroundColor = SK_ColorWHITE;
 const SkColor kShadowColor = SkColorSetARGB(25, 0, 0, 0);
+
+const SkColor kTrayBackgroundColor = SkColorSetARGB(100, 0, 0, 0);
+const SkColor kTrayBackgroundHover = SkColorSetARGB(150, 0, 0, 0);
 
 class SystemTrayBubbleBackground : public views::Background {
  public:
@@ -145,6 +149,36 @@ class SystemTrayBubbleBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
 };
 
+class SystemTrayBackground : public views::Background {
+ public:
+  SystemTrayBackground() : hovering_(false) {}
+  virtual ~SystemTrayBackground() {}
+
+  void set_hovering(bool hover) { hovering_ = hover; }
+
+ private:
+  // Overridden from views::Background.
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(hovering_ ? kTrayBackgroundHover : kTrayBackgroundColor);
+    SkPath path;
+    gfx::Rect bounds(view->GetContentsBounds());
+    SkScalar radius = SkIntToScalar(4);
+    path.addRoundRect(gfx::RectToSkRect(bounds), radius, radius);
+    canvas->GetSkCanvas()->drawPath(path, paint);
+  }
+
+  bool hovering_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayBackground);
+};
+
+}  // namespace
+
+namespace internal {
+
 class SystemTrayBubble : public views::BubbleDelegateView {
  public:
   SystemTrayBubble(ash::SystemTray* tray,
@@ -237,8 +271,8 @@ SystemTray::SystemTray()
       popup_(NULL) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
       5, 0, 3));
-  set_background(views::Background::CreateSolidBackground(
-      SkColorSetARGB(127, 0, 0, 0)));
+  set_background(new SystemTrayBackground);
+  set_notify_enter_exit_on_child(true);
 }
 
 SystemTray::~SystemTray() {
@@ -307,7 +341,7 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
   bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   popup_->non_client_view()->frame_view()->set_background(NULL);
   popup_->non_client_view()->frame_view()->set_border(
-      new internal::SystemTrayBubbleBorder(bubble_));
+      new SystemTrayBubbleBorder(bubble_));
   popup_->AddObserver(this);
   bubble_->Show();
 }
@@ -318,6 +352,16 @@ bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
   else
     ShowItems(items_, false);
   return true;
+}
+
+void SystemTray::OnMouseEntered(const views::MouseEvent& event) {
+  static_cast<SystemTrayBackground*>(background())->set_hovering(true);
+  SchedulePaint();
+}
+
+void SystemTray::OnMouseExited(const views::MouseEvent& event) {
+  static_cast<SystemTrayBackground*>(background())->set_hovering(false);
+  SchedulePaint();
 }
 
 void SystemTray::OnWidgetClosing(views::Widget* widget) {
