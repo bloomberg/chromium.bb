@@ -30,6 +30,8 @@ vars = {
       "e9c34cc67f5ac580414e4a012629b124d8220f34",
   "nacl_toolchain_pnacl_linux_x86_64_hash":
       "c91d3c9b2a221ee3823ece93e0fa129dc6319300",
+  "nacl_toolchain_pnacl_translator_hash":
+      "e1d54c688e5a9897d33e2dbcadcae68b61adf2e6",
   "nacl_toolchain_win_x86_hash":
       "b02e1d003baba4ac071c41c6dda253cee0907a19",
   "nacl_toolchain_win_x86_newlib_hash":
@@ -476,6 +478,8 @@ hooks = [
              Var("nacl_toolchain_pnacl_linux_i686_hash"),
          "--file-hash", "pnacl_linux_x86_64",
              Var("nacl_toolchain_pnacl_linux_x86_64_hash"),
+         "--file-hash", "pnacl_translator",
+             Var("nacl_toolchain_pnacl_translator_hash"),
          "--file-hash", "pnacl_darwin_i386",
              Var("nacl_toolchain_pnacl_darwin_i386_hash"),
          "--x86-version", Var("nacl_toolchain_revision"),
