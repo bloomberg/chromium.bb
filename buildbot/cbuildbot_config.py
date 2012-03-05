@@ -597,12 +597,6 @@ internal_paladin.add_config('lumpy-paladin',
   paladin_builder_name='lumpy paladin',
 )
 
-internal_paladin.add_config('lumpy64-paladin',
-  boards=['lumpy64'],
-  important=False,
-  paladin_builder_name='lumpy64 paladin',
-)
-
 internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
@@ -680,16 +674,8 @@ _release.add_config('stumpy-release',
   boards=['stumpy'],
 )
 
-_release.add_config('stumpy64-release',
-  boards=['stumpy64'],
-)
-
 _release.add_config('lumpy-release',
   boards=['lumpy'],
-)
-
-_release.add_config('lumpy64-release',
-  boards=['lumpy64'],
 )
 
 _release.add_config('link-release',
