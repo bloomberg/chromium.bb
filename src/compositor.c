@@ -1570,10 +1570,6 @@ notify_key(struct wl_input_device *device,
 		weston_compositor_idle_release(compositor);
 	}
 
-	if (device->keyboard_grab == &device->default_keyboard_grab)
-		weston_compositor_run_binding(compositor, wd,
-					      time, key, 0, state);
-
 	update_modifier_state(wd, key, state);
 	end = device->keys.data + device->keys.size;
 	for (k = device->keys.data; k < end; k++) {
@@ -1585,6 +1581,10 @@ notify_key(struct wl_input_device *device,
 		k = wl_array_add(&device->keys, sizeof *k);
 		*k = key;
 	}
+
+	if (device->keyboard_grab == &device->default_keyboard_grab)
+		weston_compositor_run_binding(compositor, wd,
+					      time, key, 0, state);
 
 	device->keyboard_grab->interface->key(device->keyboard_grab,
 					      time, key, state);

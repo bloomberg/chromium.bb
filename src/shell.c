@@ -134,10 +134,6 @@ struct weston_move_grab {
 	int32_t dx, dy;
 };
 
-struct weston_zoom_grab {
-	struct wl_keyboard_grab grab;
-};
-
 struct rotate_grab {
 	struct wl_pointer_grab grab;
 	struct shell_surface *surface;
@@ -1164,21 +1160,12 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-zoom_grab_key(struct wl_keyboard_grab *grab,
-		uint32_t time, uint32_t key, int32_t state)
+zoom_binding(struct wl_input_device *device, uint32_t time,
+	       uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wl_input_device *device = grab->input_device;
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
 	struct weston_output *output;
-	struct weston_zoom_grab *zoom;
-
-	if (!(wd->modifier_state & MODIFIER_SUPER)) {
-		zoom = container_of(grab, struct weston_zoom_grab, grab);
-		wl_input_device_end_keyboard_grab(device, time);
-		free(zoom);
-		return;
-	}
 
 	wl_list_for_each(output, &compositor->output_list, link) {
 		if (pixman_region32_contains_point(&output->region,
@@ -1201,26 +1188,6 @@ zoom_grab_key(struct wl_keyboard_grab *grab,
 			weston_output_update_zoom(output, device->x, device->y);
 		}
 	}
-}
-
-static const struct wl_keyboard_grab_interface zoom_grab = {
-	zoom_grab_key,
-};
-
-static void
-zoom_binding(struct wl_input_device *device, uint32_t time,
-	       uint32_t key, uint32_t button, uint32_t state, void *data)
-{
-	struct weston_input_device *wd = (struct weston_input_device *) device;
-	struct weston_zoom_grab *zoom;
-
-	zoom = malloc(sizeof *zoom);
-	if (!zoom)
-		return;
-
-	zoom->grab.interface = &zoom_grab;
-
-	wl_input_device_start_keyboard_grab(&wd->input_device, &zoom->grab, time);
 }
 
 static void
@@ -1934,6 +1901,8 @@ switcher_binding(struct wl_input_device *device, uint32_t time,
 
 	switcher->grab.interface = &switcher_grab;
 	wl_input_device_start_keyboard_grab(device, &switcher->grab, time);
+	wl_input_device_set_keyboard_focus(device, NULL,
+					   weston_compositor_get_time());
 	switcher_next(switcher);
 }
 

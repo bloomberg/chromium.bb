@@ -229,6 +229,46 @@ weston_binding_list_destroy_all(struct wl_list *list)
 		weston_binding_destroy(binding);
 }
 
+struct binding_keyboard_grab {
+	uint32_t key;
+	struct wl_keyboard_grab grab;
+};
+
+static void
+binding_key(struct wl_keyboard_grab *grab,
+	    uint32_t time, uint32_t key, int32_t state)
+{
+	struct binding_keyboard_grab *b =
+		container_of(grab, struct binding_keyboard_grab, grab);
+	struct wl_resource *resource;
+
+	resource = grab->input_device->keyboard_focus_resource;
+	if (key == b->key) {
+		if (!state) {
+			wl_input_device_end_keyboard_grab(grab->input_device,
+							  time);
+			free(b);
+		}
+	} else if (resource)
+		wl_input_device_send_key(resource, time, key, state);
+}
+
+static const struct wl_keyboard_grab_interface binding_grab = {
+	binding_key
+};
+
+static void
+install_binding_grab(struct wl_input_device *device,
+		     uint32_t time, uint32_t key)
+{
+	struct binding_keyboard_grab *grab;
+
+	grab = malloc(sizeof *grab);
+	grab->key = key;
+	grab->grab.interface = &binding_grab;
+	wl_input_device_start_keyboard_grab(device, &grab->grab, time);
+}
+
 WL_EXPORT void
 weston_compositor_run_binding(struct weston_compositor *compositor,
 			      struct weston_input_device *device,
@@ -242,7 +282,15 @@ weston_compositor_run_binding(struct weston_compositor *compositor,
 		    b->modifier == device->modifier_state && state) {
 			b->handler(&device->input_device,
 				   time, key, button, state, b->data);
-			break;
+
+			/* If this was a key binding and it didn't
+			 * install a keyboard grab, install one now to
+			 * swallow the key release. */
+			if (b->key &&
+			    device->input_device.keyboard_grab ==
+			    &device->input_device.default_keyboard_grab)
+				install_binding_grab(&device->input_device,
+						     time, key);
 		}
 	}
 }
