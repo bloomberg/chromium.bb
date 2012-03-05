@@ -700,6 +700,19 @@ The extension "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>" has been
         See <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>more benefits<ph name="END_LINK">&lt;/a&gt;</ph> of signing in to Chromium.
       </message>
 
+      <!-- One click sign in infobar -->
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that the user can connect his profile to a Google account instead of logging in only here.">
+          Use this Google Account to sync all your Chromium stuff?
+        </message>
+        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_HEADING" desc="The heading of the reverse auto-login dialog.">
+          Sign in to Chromium?
+        </message>
+        <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE" desc="The message of the reverse auto-login dialog.">
+          Chromium will now sync all your data with Google servers, so you'll be able to have the same bookmarks, history, and other settings when you sign in to Chromium on any device.
+        </message>
+      </if>
+
       <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
         Chromium Autofill settings
       </message>

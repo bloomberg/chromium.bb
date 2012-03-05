@@ -51,6 +51,10 @@ class ThumbnailGenerator;
 class TranslateTabHelper;
 class WebIntentPickerController;
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+class OneClickSigninHelper;
+#endif
+
 namespace browser_sync {
 class SyncedTabDelegate;
 }
@@ -142,6 +146,13 @@ class TabContentsWrapper : public content::WebContentsObserver {
   FindTabHelper* find_tab_helper() { return find_tab_helper_.get(); }
   HistoryTabHelper* history_tab_helper() { return history_tab_helper_.get(); }
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
+
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  OneClickSigninHelper* one_click_signin_helper() {
+    return one_click_signin_helper_.get();
+  }
+#endif
+
   PasswordManager* password_manager() { return password_manager_.get(); }
   PrefsTabHelper* prefs_tab_helper() { return prefs_tab_helper_.get(); }
 
@@ -253,6 +264,9 @@ class TabContentsWrapper : public content::WebContentsObserver {
   scoped_ptr<ExtensionWebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  scoped_ptr<OneClickSigninHelper> one_click_signin_helper_;
+#endif
   scoped_ptr<PDFTabObserver> pdf_tab_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;

@@ -8825,15 +8825,18 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Never offer to sign me in
       </message>
 
-      <!-- Reverse auto-login infobar -->
-      <message name="IDS_REVERSE_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that the user can connect his profile to a Google account instead of logging in only here.">
-        Sign in and sync to get your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> stuff on all your devices.
-      </message>
-      <message name="IDS_REVERSE_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to connect his profile to a Google account.">
-        Sign in and sync
-      </message>
-      <message name="IDS_REVERSE_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
+      <!-- One click sign in infobar -->
+      <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
         No thanks
+      </message>
+      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE" desc="The title of the modal dialog window that opens when the user chooses to use reverse auto-login.">
+        Sign in
+      </message>
+      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON" desc="The text of the OK button of the reverse auto-login dialog.">
+        Start
+      </message>
+      <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_CHECKBOX" desc="The text of checkbox in the reverse auto-login dialog indicating that default sync settings will be used.">
+        Use default settings
       </message>
 
       <!-- Cookies Window -->

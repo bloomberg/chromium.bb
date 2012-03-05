@@ -25,6 +25,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/auto_login_prompter.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/render_messages.h"
@@ -338,4 +339,15 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     net::URLRequest* request,
     content::ResourceResponse* response) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
+
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  ResourceDispatcherHostRequestInfo* info =
+      resource_dispatcher_host_->InfoForRequest(request);
+
+  // See if the response contains the X-Google-Accounts-SignIn header.  If so,
+  // then the user has just finished signing in, and the server is allowing the
+  // browser to suggest connecting the user's profile to the account.
+  OneClickSigninHelper::ShowInfoBarIfPossible(request, info->child_id(),
+                                              info->route_id());
+#endif
 }

@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/sad_tab_observer.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -134,6 +135,12 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
     thumbnail_generation_observer_.reset(new ThumbnailGenerator);
     thumbnail_generation_observer_->StartThumbnailing(web_contents_.get());
   }
+
+  // If this is not an incognito window, setup to handle one-click login.
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
+  if (OneClickSigninHelper::CanOffer(contents))
+      one_click_signin_helper_.reset(new OneClickSigninHelper(contents));
+#endif
 }
 
 TabContentsWrapper::~TabContentsWrapper() {
