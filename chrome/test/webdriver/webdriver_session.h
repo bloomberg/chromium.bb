@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/common/automation_constants.h"
@@ -383,6 +384,8 @@ class Session {
 
   const Logger& logger() const;
 
+  const FilePath& temp_dir() const;
+
   const Capabilities& capabilities() const;
 
  private:
@@ -471,6 +474,8 @@ class Session {
   std::string alert_prompt_text_;
   bool has_alert_prompt_text_;
 
+  // Temporary directory containing session data.
+  ScopedTempDir temp_dir_;
   Capabilities capabilities_;
 
   // Current state of all modifier keys.

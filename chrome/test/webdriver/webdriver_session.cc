@@ -18,7 +18,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -88,8 +87,7 @@ Error* Session::Init(const DictionaryValue* capabilities_dict) {
     delete this;
     return new Error(kUnknownError, "Cannot start session thread");
   }
-  ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDir()) {
+  if (!temp_dir_.CreateUniqueTempDir()) {
     delete this;
     return new Error(
         kUnknownError, "Unable to create temp directory for unpacking");
@@ -98,7 +96,7 @@ Error* Session::Init(const DictionaryValue* capabilities_dict) {
               "Initializing session with capabilities " +
                   JsonStringifyForDisplay(capabilities_dict));
   CapabilitiesParser parser(
-      capabilities_dict, temp_dir.path(), logger_, &capabilities_);
+      capabilities_dict, temp_dir_.path(), logger_, &capabilities_);
   Error* error = parser.Parse();
   if (error) {
     delete this;
@@ -1407,6 +1405,10 @@ const Point& Session::get_mouse_position() const {
 
 const Logger& Session::logger() const {
   return logger_;
+}
+
+const FilePath& Session::temp_dir() const {
+  return temp_dir_.path();
 }
 
 const Capabilities& Session::capabilities() const {

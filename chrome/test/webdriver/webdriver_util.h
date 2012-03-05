@@ -24,6 +24,28 @@ namespace webdriver {
 // Generates a random, 32-character hexidecimal ID.
 std::string GenerateRandomID();
 
+// Decodes the given base64-encoded string, after removing any newlines,
+// which are required in some base64 standards.
+// Returns true on success.
+bool Base64Decode(const std::string& base64, std::string* bytes);
+
+// Unzip the given zip archive, after base64 decoding, into the given directory.
+// Returns true on success.
+bool Base64DecodeAndUnzip(const FilePath& unzip_dir,
+                          const std::string& base64,
+                          std::string* error_msg);
+
+// Unzips the sole file contained in the given zip data |bytes| into
+// |unzip_dir|. The zip data may be a normal zip archive or a single zip file
+// entry. If the unzip successfully produced one file, returns true and sets
+// |file| to the unzipped file.
+// TODO(kkania): Remove the ability to parse single zip file entries when
+// the current versions of all WebDriver clients send actual zip files.
+bool UnzipSoleFile(const FilePath& unzip_dir,
+                   const std::string& bytes,
+                   FilePath* file,
+                   std::string* error_msg);
+
 // Returns the equivalent JSON string for the given value.
 std::string JsonStringify(const base::Value* value);
 

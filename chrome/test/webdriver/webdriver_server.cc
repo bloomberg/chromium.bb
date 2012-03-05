@@ -39,6 +39,7 @@
 #include "chrome/test/webdriver/commands/create_session.h"
 #include "chrome/test/webdriver/commands/execute_async_script_command.h"
 #include "chrome/test/webdriver/commands/execute_command.h"
+#include "chrome/test/webdriver/commands/file_upload_command.h"
 #include "chrome/test/webdriver/commands/find_element_commands.h"
 #include "chrome/test/webdriver/commands/html5_storage_commands.h"
 #include "chrome/test/webdriver/commands/keys_command.h"
@@ -148,6 +149,7 @@ void InitCallbacks(Dispatcher* dispatcher,
                                         "/session/*/timeouts/async_script");
   dispatcher->Add<ImplicitWaitCommand>( "/session/*/timeouts/implicit_wait");
   dispatcher->Add<LogCommand>(          "/session/*/log");
+  dispatcher->Add<FileUploadCommand>(   "/session/*/file");
 
   // Cookie functions.
   dispatcher->Add<CookieCommand>(     "/session/*/cookie");

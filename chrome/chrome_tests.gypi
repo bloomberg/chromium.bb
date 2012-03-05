@@ -1018,6 +1018,8 @@
         'test/webdriver/commands/execute_async_script_command.h',
         'test/webdriver/commands/execute_command.cc',
         'test/webdriver/commands/execute_command.h',
+        'test/webdriver/commands/file_upload_command.cc',
+        'test/webdriver/commands/file_upload_command.h',
         'test/webdriver/commands/find_element_commands.cc',
         'test/webdriver/commands/find_element_commands.h',
         'test/webdriver/commands/html5_storage_commands.cc',

@@ -111,13 +111,6 @@ class CapabilitiesParser {
   Error* ParseProxyAutoconfigUrl(const base::DictionaryValue* options);
   Error* ParseProxyServers(const base::DictionaryValue* options);
   Error* ParseNoWebsiteTestingDefaults(const base::Value* option);
-  // Decodes the given base64-encoded string, optionally unzips it, and
-  // writes the result to |path|.
-  // On error, false will be returned and |error_msg| will be set.
-  bool DecodeAndWriteFile(const FilePath& path,
-                          const std::string& base64,
-                          bool unzip,
-                          std::string* error_msg);
 
   // The capabilities dictionary to parse.
   const base::DictionaryValue* dict_;

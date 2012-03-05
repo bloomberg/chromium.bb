@@ -4,14 +4,12 @@
 
 #include "chrome/test/webdriver/webdriver_capabilities_parser.h"
 
-#include "base/base64.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/zip.h"
 #include "chrome/test/webdriver/webdriver_error.h"
 #include "chrome/test/webdriver/webdriver_util.h"
 
@@ -202,13 +200,13 @@ Error* CapabilitiesParser::ParseExtensions(const Value* option) {
     }
     FilePath extension = root_.AppendASCII(
         base::StringPrintf("extension%" PRIuS ".crx", i));
-    std::string error_msg;
-    if (!DecodeAndWriteFile(extension, extension_base64, false /* unzip */,
-                            &error_msg)) {
-      return new Error(
-          kUnknownError,
-          "Error occurred while parsing extension: " + error_msg);
-    }
+    std::string decoded_extension;
+    if (!Base64Decode(extension_base64, &decoded_extension))
+      return new Error(kUnknownError, "Failed to base64 decode extension");
+    int size = static_cast<int>(decoded_extension.length());
+    if (file_util::WriteFile(
+            extension, decoded_extension.c_str(), size) != size)
+      return new Error(kUnknownError, "Failed to write extension file");
     caps_->extensions.push_back(extension);
   }
   return NULL;
@@ -273,8 +271,7 @@ Error* CapabilitiesParser::ParseProfile(const Value* option) {
     return CreateBadInputError("profile", Value::TYPE_STRING, option);
   std::string error_msg;
   caps_->profile = root_.AppendASCII("profile");
-  if (!DecodeAndWriteFile(caps_->profile, profile_base64, true /* unzip */,
-                          &error_msg))
+  if (!Base64DecodeAndUnzip(caps_->profile, profile_base64, &error_msg))
     return new Error(kUnknownError, "unable to unpack profile: " + error_msg);
   return NULL;
 }
@@ -430,35 +427,6 @@ Error* CapabilitiesParser::ParseNoWebsiteTestingDefaults(const Value* option) {
     return CreateBadInputError("noWebsiteTestingDefaults",
                                Value::TYPE_BOOLEAN, option);
   return NULL;
-}
-
-bool CapabilitiesParser::DecodeAndWriteFile(
-    const FilePath& path,
-    const std::string& base64,
-    bool unzip,
-    std::string* error_msg) {
-  std::string data;
-  if (!base::Base64Decode(base64, &data)) {
-    *error_msg = "Could not decode base64 data";
-    return false;
-  }
-  if (unzip) {
-    FilePath temp_file(root_.AppendASCII(GenerateRandomID()));
-    if (!file_util::WriteFile(temp_file, data.c_str(), data.length())) {
-      *error_msg = "Could not write file";
-      return false;
-    }
-    if (!zip::Unzip(temp_file, path)) {
-      *error_msg = "Could not unzip archive";
-      return false;
-    }
-  } else {
-    if (!file_util::WriteFile(path, data.c_str(), data.length())) {
-      *error_msg = "Could not write file";
-      return false;
-    }
-  }
-  return true;
 }
 
 }  // namespace webdriver
