@@ -4484,6 +4484,7 @@
             '../third_party/libevent/libevent.gyp:libevent',
             '../third_party/mozc/chrome/chromeos/renderer/chromeos_renderer.gyp:mozc_candidates_proto',
             'browser/chromeos/input_method/input_method.gyp:gencode',
+            'power_supply_properties_proto',
           ],
           'sources!': [
             'browser/background/background_mode_manager_gtk.cc',
@@ -5676,6 +5677,24 @@
         'proto_out_dir': 'chrome/browser/history',
       },
       'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for the PowerSupplyProperties protocol
+      # buffer.
+      'target_name': 'power_supply_properties_proto',
+      'type': 'static_library',
+      'conditions': [
+        ['chromeos==1', {
+         'sources': [
+           '../third_party/cros_system_api/dbus/power_supply_properties.proto',
+         ],
+         'variables': {
+          'proto_in_dir': '../third_party/cros_system_api/dbus/',
+          'proto_out_dir': 'chrome/browser/chromeos/dbus',
+         },
+         'includes': ['../build/protoc.gypi'],
+        }],
+      ],
     },
   ],
 }

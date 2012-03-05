@@ -14,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/chromeos/dbus/power_supply_properties.pb.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
@@ -181,12 +182,13 @@ class PowerManagerClientImpl : public PowerManagerClient {
   }
 
   virtual void RequestStatusUpdate(UpdateRequestType update_type) OVERRIDE {
-    dbus::MethodCall method_call(power_manager::kPowerManagerInterface,
-                                 power_manager::kGetAllPropertiesMethod);
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kGetPowerSupplyPropertiesMethod);
     power_manager_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&PowerManagerClientImpl::OnGetAllPropertiesMethod,
+        base::Bind(&PowerManagerClientImpl::OnGetPowerSupplyPropertiesMethod,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -319,29 +321,24 @@ class PowerManagerClientImpl : public PowerManagerClient {
     RequestStatusUpdate(UPDATE_POLL);
   }
 
-  void OnGetAllPropertiesMethod(dbus::Response* response) {
+  void OnGetPowerSupplyPropertiesMethod(dbus::Response* response) {
     if (!response) {
-      LOG(ERROR) << "Error calling " << power_manager::kGetAllPropertiesMethod;
+      LOG(ERROR) << "Error calling "
+                 << power_manager::kGetPowerSupplyPropertiesMethod;
       return;
     }
+
     dbus::MessageReader reader(response);
+    PowerSupplyProperties protobuf;
+    reader.PopArrayOfBytesAsProto(&protobuf);
+
     PowerSupplyStatus status;
-    double unused_battery_voltage = 0.0;
-    double unused_battery_energy = 0.0;
-    double unused_battery_energy_rate = 0.0;
-    if (!reader.PopBool(&status.line_power_on) ||
-        !reader.PopDouble(&unused_battery_energy) ||
-        !reader.PopDouble(&unused_battery_energy_rate) ||
-        !reader.PopDouble(&unused_battery_voltage) ||
-        !reader.PopInt64(&status.battery_seconds_to_empty) ||
-        !reader.PopInt64(&status.battery_seconds_to_full) ||
-        !reader.PopDouble(&status.battery_percentage) ||
-        !reader.PopBool(&status.battery_is_present) ||
-        !reader.PopBool(&status.battery_is_full)) {
-      LOG(ERROR) << "Error reading response from powerd: "
-                 << response->ToString();
-      return;
-    }
+    status.line_power_on = protobuf.line_power_on();
+    status.battery_seconds_to_empty = protobuf.battery_time_to_empty();
+    status.battery_seconds_to_full = protobuf.battery_time_to_full();
+    status.battery_percentage = protobuf.battery_percentage();
+    status.battery_is_present = protobuf.battery_is_present();
+    status.battery_is_full = protobuf.battery_is_charged();
 
     VLOG(1) << "Power status: " << status.ToString();
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
