@@ -36,10 +36,12 @@ const SkColor kFocusedMenuItemBackgroundColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 // Textfield:
 const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
 const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
-const SkColor kTextfieldSelectionColor = SK_ColorWHITE;
 const SkColor kTextfieldSelectionBackgroundFocused =
     SkColorSetARGB(0x54, 0x4D, 0x90, 0xFE);
 const SkColor kTextfieldSelectionBackgroundUnfocused = SK_ColorLTGRAY;
+const SkColor kTextfieldSelectionColor =
+    color_utils::AlphaBlend(SK_ColorBLACK,
+        kTextfieldSelectionBackgroundFocused, 0xdd);
 
 }  // namespace
 

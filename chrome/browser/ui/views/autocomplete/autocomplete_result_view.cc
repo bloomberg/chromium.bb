@@ -147,12 +147,8 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
     const gfx::NativeTheme* theme = gfx::NativeTheme::instance();
     colors[SELECTED][BACKGROUND] = theme->GetSystemColor(
         gfx::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
-    colors[SELECTED][TEXT] = theme->GetSystemColor(
-        gfx::NativeTheme::kColorId_TextfieldSelectionColor);
     colors[NORMAL][BACKGROUND] = theme->GetSystemColor(
         gfx::NativeTheme::kColorId_TextfieldDefaultBackground);
-    colors[NORMAL][TEXT] = theme->GetSystemColor(
-        gfx::NativeTheme::kColorId_TextfieldDefaultColor);
     colors[NORMAL][URL] = SkColorSetARGB(0xff, 0x00, 0x99, 0x33);
     colors[SELECTED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
     colors[HOVERED][URL] = SkColorSetARGB(0xff, 0x00, 0x66, 0x22);
@@ -176,9 +172,14 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
                                 colors[NORMAL][BACKGROUND], 64);
     colors[HOVERED][TEXT] = colors[NORMAL][TEXT];
     for (int i = 0; i < NUM_STATES; ++i) {
+#if defined(USE_AURA)
+      colors[i][TEXT] =
+          color_utils::AlphaBlend(SK_ColorBLACK, colors[i][BACKGROUND], 0xdd);
+      colors[i][DIMMED_TEXT] =
+          color_utils::AlphaBlend(SK_ColorBLACK, colors[i][BACKGROUND], 0xbb);
+#else
       colors[i][DIMMED_TEXT] =
           color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 128);
-#if !defined(USE_AURA)
       colors[i][URL] = color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
                                                      colors[i][BACKGROUND]);
 #endif
