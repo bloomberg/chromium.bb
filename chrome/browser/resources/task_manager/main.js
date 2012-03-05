@@ -542,18 +542,30 @@ TaskManager.prototype = {
     var length = task.length;
     var tasks = task.tasks;
 
-    // We have to store the selected indexes and restore them after
+    // We have to store the selected pids and restore them after
     // splice(), because it might replace some items but the replaced
     // items would lose the selection.
     var oldSelectedIndexes = sm.selectedIndexes;
+
+    // Create map of selected PIDs.
+    var selectedPids = {};
+    for (var i = 0; i < oldSelectedIndexes.length; i++) {
+      var item = dm.item(oldSelectedIndexes[i]);
+      if (item) selectedPids[item['processId'][0]] = true;
+    }
 
     var args = tasks.slice();
     args.unshift(start, dm.length);
     dm.splice.apply(dm, args);
 
-    sm.selectedIndexes = oldSelectedIndexes.filter(function(index) {
-      return index < dm.length;
-    });
+    // Create new array of selected indexes from map of old PIDs.
+    var newSelectedIndexes = [];
+    for (var i = 0; i < dm.length; i++) {
+      if (selectedPids[dm.item(i)['processId'][0]])
+        newSelectedIndexes.push(i);
+    }
+
+    sm.selectedIndexes = newSelectedIndexes;
 
     var pids = [];
     for (var i = 0; i < dm.length; i++) {
