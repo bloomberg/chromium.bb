@@ -408,7 +408,6 @@
             'controls/table/group_table_view.cc',
             'controls/table/group_table_view.h',
             'controls/table/table_view_observer.h',
-            'drag_utils_win.cc',
             'widget/aero_tooltip_manager.cc',
             'widget/aero_tooltip_manager.h',
             'widget/child_window_message_processor.cc',
