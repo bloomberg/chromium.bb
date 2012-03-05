@@ -13,6 +13,8 @@ ExprSize8
 ExprSize16
 # Defines that the size of the data is 4 bytes.
 ExprSize32
+# Defines that the size of the data is 6 bytes.
+ExprSize48
 # Defines that the size of the data is 8 bytes.
 ExprSize64
 # Defines that the constant is an unsigned hex value instead of an integer.

@@ -1625,6 +1625,8 @@ Target: x86-64 bit mode
     Jmp {%rip}, $Jzd
       RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
+  --- ea ---
+  ea                          INVALID NaClIllegal
   --- eb ---
   eb                          386 OpcodeHasImmed OperandSize_b JumpInstruction
     Jmp {%rip}, $Jb

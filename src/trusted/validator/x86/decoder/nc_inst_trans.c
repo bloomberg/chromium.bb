@@ -112,6 +112,7 @@ static INLINE NaClExp* NaClAppendExp(NaClExpKind kind,
   CHECK(ExprRegister == kind || (0 != (flags & (NACL_EFLAG(ExprSize8) |
                                                 NACL_EFLAG(ExprSize16) |
                                                 NACL_EFLAG(ExprSize32) |
+                                                NACL_EFLAG(ExprSize48) |
                                                 NACL_EFLAG(ExprSize64)))));
   node = &vector->node[vector->number_expr_nodes++];
   node->kind = kind;
@@ -322,7 +323,6 @@ static NaClRegKind NaClGetOpKindRegKind(NaClOpKind kind) {
     case Mb_Operand:
     case Ob_Operand:
       return RegSize8;
-    case Aw_Operand:
     case Ew_Operand:
     case Gw_Operand:
     case Iw_Operand:
@@ -331,7 +331,6 @@ static NaClRegKind NaClGetOpKindRegKind(NaClOpKind kind) {
     case Mpw_Operand:
     case Ow_Operand:
       return RegSize16;
-    case Av_Operand:
     case Ev_Operand:
     case Gv_Operand:
     case Iv_Operand:
@@ -341,7 +340,6 @@ static NaClRegKind NaClGetOpKindRegKind(NaClOpKind kind) {
     case Ov_Operand:
     case Mmx_Gd_Operand:
       return RegSize32;
-    case Ao_Operand:
     case Eo_Operand:
     case Go_Operand:
     case Io_Operand:
@@ -752,6 +750,8 @@ static NaClExpFlags NaClGetExprSizeFlagForBytes(uint8_t num_bytes) {
       return NACL_EFLAG(ExprSize16);
     case 4:
       return NACL_EFLAG(ExprSize32);
+    case 6:
+      return NACL_EFLAG(ExprSize48);
     case 8:
       return NACL_EFLAG(ExprSize64);
     default:
@@ -1321,6 +1321,8 @@ static NaClExp* NaClAppendOperand(NaClInstState* state,
   DEBUG(NaClLog(LOG_INFO,
                 "append operand %s\n", NaClOpKindName(operand->kind)));
   switch (operand->kind) {
+    case A_Operand:
+      return NaClAppendImmed(state);
     case E_Operand:
     case Eb_Operand:
     case Ew_Operand:

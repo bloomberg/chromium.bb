@@ -425,13 +425,8 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
   return FALSE;
 }
 
-static void NaClOperandForm_Ad() {
-  NaClDefOp(J_Operand, NACL_OPFLAG(OperandFar) | NACL_OPFLAG(OperandRelative));
-  NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OpcodeHasImmed_v));
-}
-
 static void NaClOperandForm_Ap() {
-  NaClDefOp(J_Operand, NACL_OPFLAG(OperandFar) | NACL_OPFLAG(OperandRelative));
+  NaClDefOp(A_Operand, NACL_OPFLAG(OperandFar) | NACL_OPFLAG(OperandRelative));
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OpcodeHasImmed_p));
 }
 
@@ -1503,9 +1498,7 @@ static void NaClExtractOperandForm(const char* form) {
   static struct NaClSymbolTable* defop_st = NULL;
   NaClStValue* value;
   if (NULL == defop_st) {
-    /* TODO(karl): Complete this out as more forms are needed. */
     defop_st = NaClSymbolTableCreate(MAX_DEFOPS, NULL);
-    NaClSymbolTablePutDefOp("Ad",      NaClOperandForm_Ad,        defop_st);
     NaClSymbolTablePutDefOp("Ap",      NaClOperandForm_Ap,        defop_st);
     NaClSymbolTablePutDefOp("Cd/q",    NaClOperandForm_CdSlq,     defop_st);
     NaClSymbolTablePutDefOp("Dd/q",    NaClOperandForm_DdSlq,     defop_st);

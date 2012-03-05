@@ -395,8 +395,6 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClBegD64("99: Cqo {%rdx}, {%rax}", NACLi_386, st);
   NaClAddIFlags(NACL_IFLAG(OperandSize_o));
   NaClEndDef(Move);
-  NaClDefPrefixInstChoices_32_64(NoPrefix, 0x9a, 2, 1);
-  NaClDef_32("9a: Call {%@ip}, {%@sp}, $Ad", NACLi_386, st, Call);
   NaClDef_32("9a: Call {%@ip}, {%@sp}, $Ap", NACLi_386, st, Call);
   NaClDef_64("9a: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("9b: Fwait", NACLi_X87, st, Other);
@@ -503,6 +501,7 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("e8: Call {%@ip}, {%@sp}, $Jzd", NACLi_386, st, Call);
   NaClDefine("e9: Jmp {%@ip}, $Jzd", NACLi_386, st, Jump);
   NaClDef_32("ea: Jmp {%@ip}, $Ap", NACLi_386, st, Jump);
+  NaClDef_64("ea: Invalid", NACLi_INVALID, st, Other);
   NaClDefine("eb: Jmp {%@ip}, $Jb", NACLi_386, st, Jump);
   NaClDefine("ec: In %al, %dx", NACLi_386, st, Move);
   NaClDefine("ed: In $rAXv, %dx", NACLi_386, st, Move);

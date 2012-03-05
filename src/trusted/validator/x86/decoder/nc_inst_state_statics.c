@@ -614,6 +614,18 @@ static Bool NaClConsumeDispBytes(NaClInstState* state) {
 
 /* Returns the number of immediate bytes to parse. */
 static int NaClGetNumImmedBytes(NaClInstState* state) {
+  /* First see if immediate bytes is specified. */
+  if (0 == NaClHasBit(state->inst->flags,
+                      (NACL_IFLAG(OpcodeHasImmed) |
+                       NACL_IFLAG(OpcodeHasImmed_v) |
+                       NACL_IFLAG(OpcodeHasImmed_b) |
+                       NACL_IFLAG(OpcodeHasImmed_w) |
+                       NACL_IFLAG(OpcodeHasImmed_o) |
+                       NACL_IFLAG(OpcodeHasImmed_Addr) |
+                       NACL_IFLAG(OpcodeHasImmed_z) |
+                       NACL_IFLAG(OpcodeHasImmed_p)))) return 0;
+
+  /* Now handle specific requests. */
   if (state->inst->flags & NACL_IFLAG(OpcodeHasImmed)) {
     return state->operand_size;
   }
@@ -623,6 +635,8 @@ static int NaClGetNumImmedBytes(NaClInstState* state) {
     return 1;
   } else if (state->inst->flags & NACL_IFLAG(OpcodeHasImmed_w)) {
     return 2;
+  } else if (state->inst->flags & NACL_IFLAG(OpcodeHasImmed_p)) {
+    return 6;
   } else if (state->inst->flags & NACL_IFLAG(OpcodeHasImmed_o)) {
     return 8;
   } else if (state->inst->flags & NACL_IFLAG(OpcodeHasImmed_Addr)) {

@@ -8,9 +8,6 @@
 static int NaClGpSubregIndex[NaClOpKindEnumSize] = {
   /*      Unknown_Operand */ NACL_REGISTER_UNDEFINED,
   /*            A_Operand */ NACL_REGISTER_UNDEFINED,
-  /*           Aw_Operand */ NACL_REGISTER_UNDEFINED,
-  /*           Av_Operand */ NACL_REGISTER_UNDEFINED,
-  /*           Ao_Operand */ NACL_REGISTER_UNDEFINED,
   /*            E_Operand */ NACL_REGISTER_UNDEFINED,
   /*           Eb_Operand */ NACL_REGISTER_UNDEFINED,
   /*           Ew_Operand */ NACL_REGISTER_UNDEFINED,
@@ -225,9 +222,6 @@ static int NaClGpSubregIndex[NaClOpKindEnumSize] = {
 static int NaClGpReg64Index[NaClOpKindEnumSize] = {
   /*      Unknown_Operand */ NACL_REGISTER_UNDEFINED,
   /*            A_Operand */ NACL_REGISTER_UNDEFINED,
-  /*           Aw_Operand */ NACL_REGISTER_UNDEFINED,
-  /*           Av_Operand */ NACL_REGISTER_UNDEFINED,
-  /*           Ao_Operand */ NACL_REGISTER_UNDEFINED,
   /*            E_Operand */ NACL_REGISTER_UNDEFINED,
   /*           Eb_Operand */ NACL_REGISTER_UNDEFINED,
   /*           Ew_Operand */ NACL_REGISTER_UNDEFINED,

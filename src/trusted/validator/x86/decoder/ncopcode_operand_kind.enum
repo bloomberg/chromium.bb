@@ -6,23 +6,8 @@ Unknown_Operand   # Unknown operand.
 # Note: The instruction decoder may count on the fact that the A_operand
 # values are contiguous, in the order specifed.
 
-# Models a far pointer.
+# Models a 48-bit far pointer.
 A_Operand
-
-# A far pointer, consisting of a 16-bit selector, and
-# a 16 bit offset (operand size is 16). Intel's notation
-# is ptr16:16.
-Aw_Operand
-
-# A far pointer, consisting of a 16-bit selector, and
-# a 32-bit offset (operand size is 32). Intel's notation
-# is ptr16:32.
-Av_Operand
-
-# A far pointer, consisting of a 16-bit selector, and
-# a 64-bit offset (operand size is 64). Intel's notation
-# is ptr16:64.
-Ao_Operand
 
 # Note: The instruction decoder may count on the fact that the E_operand
 # values are contiguous, in the order specified.

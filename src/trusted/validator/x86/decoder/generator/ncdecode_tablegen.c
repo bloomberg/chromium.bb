@@ -203,9 +203,6 @@ static void NaClFillOperandDescs(NaClModeledInst* inst) {
     }
     switch (kind) {
       case A_Operand:
-      case Aw_Operand:
-      case Av_Operand:
-      case Ao_Operand:
         CharAdvance(&buf, &buf_size,
                     SNPRINTF(buf, buf_size, "$A"));
         break;

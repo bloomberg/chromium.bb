@@ -1501,6 +1501,8 @@ Target: x86-64 bit mode
     [P] DontCareJump %rip (s), $Jzd (u)
       RegRIP                  OpSet
       J_Operand               OpUse OperandNear OperandRelative
+  --- ea ---
+  ea                          INVALID NaClIllegal
   --- eb ---
   eb                          386 OpcodeHasImmed OperandSize_b JumpInstruction PartialInstruction
     [P] DontCareJump %rip (s), $Jb (u)

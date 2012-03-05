@@ -935,16 +935,11 @@ Target: x86-32 bit mode
       RegEDX                  OpSet OpImplicit
       RegEAX                  OpUse OpImplicit
   --- 9a ---
-  9a                          386 OpcodeHasImmed_v OpcodeAllowsData16 OperandSize_w NaClIllegal JumpInstruction
-    Call {%eip}, {%esp}, $Ad
-      RegEIP                  OpUse OpSet OpImplicit
-      RegESP                  OpUse OpSet OpImplicit
-      J_Operand               OpUse OperandFar OperandRelative
   9a                          386 OpcodeHasImmed_p OperandSize_v NaClIllegal JumpInstruction
     Call {%eip}, {%esp}, $Ap
       RegEIP                  OpUse OpSet OpImplicit
       RegESP                  OpUse OpSet OpImplicit
-      J_Operand               OpUse OperandFar OperandRelative
+      A_Operand               OpUse OperandFar OperandRelative
   --- 9b ---
   9b                          X87 
     Fwait
@@ -1752,7 +1747,7 @@ Target: x86-32 bit mode
   ea                          386 OpcodeHasImmed_p OperandSize_v NaClIllegal JumpInstruction
     Jmp {%eip}, $Ap
       RegEIP                  OpSet OpImplicit
-      J_Operand               OpUse OperandFar OperandRelative
+      A_Operand               OpUse OperandFar OperandRelative
   --- eb ---
   eb                          386 OpcodeHasImmed OperandSize_b JumpInstruction
     Jmp {%eip}, $Jb
