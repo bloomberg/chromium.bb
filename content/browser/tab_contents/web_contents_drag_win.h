@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_DRAG_WIN_H_
-#define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_DRAG_WIN_H_
+#ifndef CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_
+#define CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_
 #pragma once
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
@@ -30,15 +32,15 @@ class WebContents;
 // thread to do the drag-and-drop because we do not want to run nested
 // message loop in the UI thread. For all other cases, the drag-and-drop happens
 // in the UI thread.
-class TabContentsDragWin
-    : public ui::DataObjectImpl::Observer,
-      public base::RefCountedThreadSafe<TabContentsDragWin> {
+class CONTENT_EXPORT WebContentsDragWin
+    : NON_EXPORTED_BASE(public ui::DataObjectImpl::Observer),
+      public base::RefCountedThreadSafe<WebContentsDragWin> {
  public:
-  TabContentsDragWin(gfx::NativeWindow source_window,
+  WebContentsDragWin(gfx::NativeWindow source_window,
                      content::WebContents* web_contents,
                      WebDragDest* drag_dest,
                      const base::Callback<void()>& drag_end_callback);
-  virtual ~TabContentsDragWin();
+  virtual ~WebContentsDragWin();
 
   // Called on UI thread.
   void StartDragging(const WebDropData& drop_data,
@@ -106,8 +108,7 @@ class TabContentsDragWin
 
   base::Callback<void()> drag_end_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabContentsDragWin);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDragWin);
 };
 
-
-#endif  // CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_DRAG_WIN_H_
+#endif  // CONTENT_BROWSER_TAB_CONTENTS_WEB_CONTENTS_DRAG_WIN_H_

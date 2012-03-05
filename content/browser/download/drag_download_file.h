@@ -10,7 +10,6 @@
 #include "base/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "content/browser/download/download_file.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "googleurl/src/gurl.h"
@@ -27,7 +26,7 @@ namespace net {
 class FileStream;
 }
 
-class CONTENT_EXPORT DragDownloadFile
+class DragDownloadFile
     : public ui::DownloadFileProvider,
       public content::DownloadManager::Observer,
       public content::DownloadItem::Observer {

@@ -11,7 +11,7 @@
 
 class WebDragBookmarkHandlerWin;
 class WebDragDest;
-class TabContentsDragWin;
+class WebContentsDragWin;
 
 namespace content {
 class RenderWidgetHostView;
@@ -81,7 +81,7 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
   scoped_refptr<WebDragDest> drag_dest_;
 
   // Used to handle the drag-and-drop.
-  scoped_refptr<TabContentsDragWin> drag_handler_;
+  scoped_refptr<WebContentsDragWin> drag_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTabContentsViewWin);
 };

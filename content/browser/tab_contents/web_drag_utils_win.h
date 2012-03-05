@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_WEB_DRAG_UTILS_WIN_H_
 #pragma once
 
-#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 
 #include <windows.h>
@@ -17,8 +16,7 @@ WebKit::WebDragOperation WinDragOpToWebDragOp(DWORD effect);
 WebKit::WebDragOperationsMask WinDragOpMaskToWebDragOpMask(DWORD effects);
 
 DWORD WebDragOpToWinDragOp(WebKit::WebDragOperation op);
-CONTENT_EXPORT DWORD WebDragOpMaskToWinDragOpMask(
-    WebKit::WebDragOperationsMask ops);
+DWORD WebDragOpMaskToWinDragOpMask(WebKit::WebDragOperationsMask ops);
 
 }  // namespace web_drag_utils_win
 

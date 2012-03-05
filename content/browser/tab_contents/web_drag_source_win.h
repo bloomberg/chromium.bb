@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/dragdrop/drag_source.h"
@@ -24,8 +23,8 @@ class WebContents;
 // by an active drag-drop operation as the user mouses over other drop targets
 // on their system. This object tells Windows whether or not the drag should
 // continue, and supplies the appropriate cursors.
-class CONTENT_EXPORT WebDragSource : public ui::DragSource,
-                                     public content::NotificationObserver {
+class WebDragSource : public ui::DragSource,
+                      public content::NotificationObserver {
  public:
   // Create a new DragSource for a given HWND and WebContents.
   WebDragSource(gfx::NativeWindow source_wnd,

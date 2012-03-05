@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
+#include "content/browser/tab_contents/web_contents_drag_win.h"
 
 #include <windows.h>
 
@@ -72,7 +72,7 @@ LRESULT CALLBACK MsgFilterProc(int code, WPARAM wparam, LPARAM lparam) {
 
 class DragDropThread : public base::Thread {
  public:
-  explicit DragDropThread(TabContentsDragWin* drag_handler)
+  explicit DragDropThread(WebContentsDragWin* drag_handler)
        : base::Thread("Chrome_DragDropThread"),
          drag_handler_(drag_handler) {
   }
@@ -93,14 +93,14 @@ class DragDropThread : public base::Thread {
   }
 
  private:
-  // Hold a reference count to TabContentsDragWin to make sure that it is always
+  // Hold a reference count to WebContentsDragWin to make sure that it is always
   // alive in the thread lifetime.
-  scoped_refptr<TabContentsDragWin> drag_handler_;
+  scoped_refptr<WebContentsDragWin> drag_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropThread);
 };
 
-TabContentsDragWin::TabContentsDragWin(
+WebContentsDragWin::WebContentsDragWin(
     gfx::NativeWindow source_window,
     content::WebContents* web_contents,
     WebDragDest* drag_dest,
@@ -114,12 +114,12 @@ TabContentsDragWin::TabContentsDragWin(
       drag_end_callback_(drag_end_callback) {
 }
 
-TabContentsDragWin::~TabContentsDragWin() {
+WebContentsDragWin::~WebContentsDragWin() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!drag_drop_thread_.get());
 }
 
-void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
+void WebContentsDragWin::StartDragging(const WebDropData& drop_data,
                                        WebDragOperationsMask ops,
                                        const SkBitmap& image,
                                        const gfx::Point& image_offset) {
@@ -149,7 +149,7 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
   if (drag_drop_thread_->StartWithOptions(options)) {
     drag_drop_thread_->message_loop()->PostTask(
         FROM_HERE,
-        base::Bind(&TabContentsDragWin::StartBackgroundDragging, this,
+        base::Bind(&WebContentsDragWin::StartBackgroundDragging, this,
                    drop_data, ops, page_url, page_encoding, image,
                    image_offset));
   }
@@ -169,7 +169,7 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
   AttachThreadInput(drag_out_thread_id, GetCurrentThreadId(), TRUE);
 }
 
-void TabContentsDragWin::StartBackgroundDragging(
+void WebContentsDragWin::StartBackgroundDragging(
     const WebDropData& drop_data,
     WebDragOperationsMask ops,
     const GURL& page_url,
@@ -182,10 +182,10 @@ void TabContentsDragWin::StartBackgroundDragging(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&TabContentsDragWin::EndDragging, this, true));
+      base::Bind(&WebContentsDragWin::EndDragging, this, true));
 }
 
-void TabContentsDragWin::PrepareDragForDownload(
+void WebContentsDragWin::PrepareDragForDownload(
     const WebDropData& drop_data,
     ui::OSExchangeData* data,
     const GURL& page_url,
@@ -229,7 +229,7 @@ void TabContentsDragWin::PrepareDragForDownload(
   ui::OSExchangeDataProviderWin::GetIAsyncOperation(*data)->SetAsyncMode(TRUE);
 }
 
-void TabContentsDragWin::PrepareDragForFileContents(
+void WebContentsDragWin::PrepareDragForFileContents(
     const WebDropData& drop_data, ui::OSExchangeData* data) {
   static const int kMaxFilenameLength = 255;  // FAT and NTFS
   FilePath file_name(drop_data.file_description_filename);
@@ -250,7 +250,7 @@ void TabContentsDragWin::PrepareDragForFileContents(
   data->SetFileContents(file_name, drop_data.file_contents);
 }
 
-void TabContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
+void WebContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
                                            ui::OSExchangeData* data) {
   if (drag_dest_->delegate()->AddDragData(drop_data, data))
     return;
@@ -258,7 +258,7 @@ void TabContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
   data->SetURL(drop_data.url, drop_data.url_title);
 }
 
-void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
+void WebContentsDragWin::DoDragging(const WebDropData& drop_data,
                                     WebDragOperationsMask ops,
                                     const GURL& page_url,
                                     const std::string& page_encoding,
@@ -316,7 +316,7 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
   drag_source_->set_effect(effect);
 }
 
-void TabContentsDragWin::EndDragging(bool restore_suspended_state) {
+void WebContentsDragWin::EndDragging(bool restore_suspended_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (drag_ended_)
@@ -335,19 +335,19 @@ void TabContentsDragWin::EndDragging(bool restore_suspended_state) {
   drag_end_callback_.Run();
 }
 
-void TabContentsDragWin::CancelDrag() {
+void WebContentsDragWin::CancelDrag() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drag_source_->CancelDrag();
 }
 
-void TabContentsDragWin::CloseThread() {
+void WebContentsDragWin::CloseThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drag_drop_thread_.reset();
 }
 
-void TabContentsDragWin::OnWaitForData() {
+void WebContentsDragWin::OnWaitForData() {
   DCHECK(drag_drop_thread_id_ == base::PlatformThread::CurrentId());
 
   // When the left button is release and we start to wait for the data, end
@@ -356,10 +356,10 @@ void TabContentsDragWin::OnWaitForData() {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&TabContentsDragWin::EndDragging, this, true));
+      base::Bind(&WebContentsDragWin::EndDragging, this, true));
 }
 
-void TabContentsDragWin::OnDataObjectDisposed() {
+void WebContentsDragWin::OnDataObjectDisposed() {
   DCHECK(drag_drop_thread_id_ == base::PlatformThread::CurrentId());
 
   // The drag-and-drop thread is only closed after OLE is done with
@@ -367,5 +367,5 @@ void TabContentsDragWin::OnDataObjectDisposed() {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&TabContentsDragWin::CloseThread, this));
+      base::Bind(&WebContentsDragWin::CloseThread, this));
 }
