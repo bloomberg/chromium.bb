@@ -128,7 +128,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationReferenceFragment) {
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationSimpleLoad) {
+#if defined(OS_WIN)
+// Marking this test flaky on Windows: http://crbug.com/116842
+#define MAYBE_WebNavigationSimpleLoad FLAKY_WebNavigationSimpleLoad
+#else
+#define MAYBE_WebNavigationSimpleLoad WebNavigationSimpleLoad
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebNavigationSimpleLoad) {
   FrameNavigationState::set_allow_extension_scheme(true);
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
