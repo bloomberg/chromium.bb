@@ -43,7 +43,11 @@ class OnlineAttemptHost : public AuthAttemptStateResolver {
   void Reset();
 
   // AuthAttemptStateResolver overrides.
+  // Executed on IO thread.
   virtual void Resolve() OVERRIDE;
+
+  // Does an actual resolve on UI thread.
+  void ResolveOnUIThread(bool success);
 
  private:
   Delegate* delegate_;
