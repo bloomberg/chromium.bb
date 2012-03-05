@@ -220,9 +220,13 @@ void PeriodicalUpdate(
     }
   }
 
-  message_loop->PostDelayedTask(FROM_HERE, base::Bind(
-      &PeriodicalUpdate, make_scoped_refptr(pipeline),
-      message_loop, audio_only), 10);
+  message_loop->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&PeriodicalUpdate,
+                 make_scoped_refptr(pipeline),
+                 message_loop,
+                 audio_only),
+      base::TimeDelta::FromMilliseconds(10));
 }
 
 int main(int argc, char** argv) {
