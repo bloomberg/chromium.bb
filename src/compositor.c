@@ -965,7 +965,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	output->repaint_needed = 0;
 
 	wl_list_for_each_safe(cb, cnext, &output->frame_callback_list, link) {
-		wl_resource_post_event(&cb->resource, WL_CALLBACK_DONE, msecs);
+		wl_callback_send_done(&cb->resource, msecs);
 		wl_resource_destroy(&cb->resource, 0);
 	}
 
@@ -1765,10 +1765,9 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		}
 
 		if (wd->touch_focus_resource && wd->touch_focus)
-			wl_resource_post_event(wd->touch_focus_resource,
-					       touch_type, time,
-					       wd->touch_focus,
-					       touch_id, sx, sy);
+			wl_input_device_send_touch_down(wd->touch_focus_resource,
+							time, &wd->touch_focus->resource,
+							touch_id, sx, sy);
 		break;
 	case WL_INPUT_DEVICE_TOUCH_MOTION:
 		es = (struct weston_surface *) wd->touch_focus;
@@ -1777,17 +1776,16 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 
 		weston_surface_from_global(es, x, y, &sx, &sy);
 		if (wd->touch_focus_resource)
-			wl_resource_post_event(wd->touch_focus_resource,
-					       touch_type, time,
-					       touch_id, sx, sy);
+			wl_input_device_send_touch_motion(wd->touch_focus_resource,
+							  time, touch_id, sx, sy);
 		break;
 	case WL_INPUT_DEVICE_TOUCH_UP:
 		weston_compositor_idle_release(ec);
 		wd->num_tp--;
 
 		if (wd->touch_focus_resource)
-			wl_resource_post_event(wd->touch_focus_resource,
-					       touch_type, time, touch_id);
+			wl_input_device_send_touch_up(wd->touch_focus_resource,
+						      time, touch_id);
 		if (wd->num_tp == 0)
 			touch_set_focus(wd, NULL, time);
 		break;
@@ -2004,22 +2002,20 @@ bind_output(struct wl_client *client,
 	resource = wl_client_add_object(client,
 					&wl_output_interface, NULL, id, data);
 
-	wl_resource_post_event(resource,
-			       WL_OUTPUT_GEOMETRY,
-			       output->x,
-			       output->y,
-			       output->mm_width,
-			       output->mm_height,
-			       output->subpixel,
-			       output->make, output->model);
+	wl_output_send_geometry(resource,
+				output->x,
+				output->y,
+				output->mm_width,
+				output->mm_height,
+				output->subpixel,
+				output->make, output->model);
 
 	wl_list_for_each (mode, &output->mode_list, link) {
-		wl_resource_post_event(resource,
-				       WL_OUTPUT_MODE,
-				       mode->flags,
-				       mode->width,
-				       mode->height,
-				       mode->refresh);
+		wl_output_send_mode(resource,
+				    mode->flags,
+				    mode->width,
+				    mode->height,
+				    mode->refresh);
 	}
 }
 

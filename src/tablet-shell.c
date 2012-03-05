@@ -120,8 +120,7 @@ tablet_shell_map(struct weston_shell *base, struct weston_surface *surface,
 		if (shell->state == STATE_STARTING) {
 			tablet_shell_set_state(shell, STATE_LOCKED);
 			shell->previous_state = STATE_HOME;
-			wl_resource_post_event(&shell->resource,
-					       TABLET_SHELL_SHOW_LOCKSCREEN);
+			tablet_shell_send_show_lockscreen(&shell->resource);
 		}
 	} else if (shell->current_client &&
 		   shell->current_client->surface != surface &&
@@ -373,12 +372,10 @@ toggle_switcher(struct tablet_shell *shell)
 {
 	switch (shell->state) {
 	case STATE_SWITCHER:
-		wl_resource_post_event(&shell->resource,
-				     TABLET_SHELL_HIDE_SWITCHER);
+		tablet_shell_send_hide_switcher(&shell->resource);
 		break;
 	default:
-		wl_resource_post_event(&shell->resource,
-				       TABLET_SHELL_SHOW_SWITCHER);
+		tablet_shell_send_show_switcher(&shell->resource);
 		tablet_shell_set_state(shell, STATE_SWITCHER);
 		break;
 	}
@@ -393,12 +390,9 @@ tablet_shell_lock(struct weston_shell *base)
 	if (shell->state == STATE_LOCKED)
 		return;
 	if (shell->state == STATE_SWITCHER)
-		wl_resource_post_event(&shell->resource,
-				       TABLET_SHELL_HIDE_SWITCHER);
+		tablet_shell_send_hide_switcher(&shell->resource);
 
-	wl_resource_post_event(&shell->resource,
-			       TABLET_SHELL_SHOW_LOCKSCREEN);
-	
+	tablet_shell_send_show_lockscreen(&shell->resource);
 	tablet_shell_set_state(shell, STATE_LOCKED);
 }
 
@@ -418,8 +412,7 @@ go_home(struct tablet_shell *shell)
 		(struct weston_input_device *) shell->compositor->input_device;
 
 	if (shell->state == STATE_SWITCHER)
-		wl_resource_post_event(&shell->resource,
-				       TABLET_SHELL_HIDE_SWITCHER);
+		tablet_shell_send_hide_switcher(&shell->resource);
 
 	weston_surface_activate(shell->home_surface, device,
 			      weston_compositor_get_time());

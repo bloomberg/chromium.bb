@@ -856,8 +856,8 @@ weston_wm_send_data(struct weston_wm *wm, xcb_atom_t target, const char *mime_ty
 						   weston_wm_read_data_source,
 						   wm);
 
-	wl_resource_post_event(&device->selection_data_source->resource,
-			       WL_DATA_SOURCE_SEND, mime_type, p[1]);
+	wl_data_source_send_send(&device->selection_data_source->resource,
+				 mime_type, p[1]);
 	close(p[1]);
 }
 
@@ -1277,7 +1277,7 @@ weston_wm_create(struct weston_xserver *wxs)
 		return NULL;
 	}
 
-	wl_resource_post_event(wxs->resource, XSERVER_CLIENT, sv[1]);
+	xserver_send_client(wxs->resource, sv[1]);
 	wl_client_flush(wxs->resource->client);
 	close(sv[1]);
 	
@@ -1556,11 +1556,8 @@ bind_xserver(struct wl_client *client,
 		fprintf(stderr, "failed to create wm\n");
 	}
 
-	wl_resource_post_event(wxs->resource,
-			       XSERVER_LISTEN_SOCKET, wxs->abstract_fd);
-
-	wl_resource_post_event(wxs->resource,
-			       XSERVER_LISTEN_SOCKET, wxs->unix_fd);
+	xserver_send_listen_socket(wxs->resource, wxs->abstract_fd);
+	xserver_send_listen_socket(wxs->resource, wxs->unix_fd);
 }
 
 static int

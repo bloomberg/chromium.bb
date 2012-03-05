@@ -292,9 +292,8 @@ resize_grab_motion(struct wl_pointer_grab *grab,
 		height = resize->height;
 	}
 
-	wl_resource_post_event(&resize->shsurf->resource,
-			       WL_SHELL_SURFACE_CONFIGURE, time, resize->edges,
-			       width, height);
+	wl_shell_surface_send_configure(&resize->shsurf->resource,
+					time, resize->edges, width, height);
 }
 
 static void
@@ -513,11 +512,11 @@ shell_surface_set_maximized(struct wl_client *client,
 	wlshell = shell_surface_get_shell(shsurf);
 	panel_height = get_output_panel_height(wlshell, es->output);
 	edges = WL_SHELL_SURFACE_RESIZE_TOP|WL_SHELL_SURFACE_RESIZE_LEFT;
-	wl_resource_post_event(&shsurf->resource,
-			       WL_SHELL_SURFACE_CONFIGURE,
-			       weston_compositor_get_time(), edges,
-			       es->output->current->width,
-			       es->output->current->height - panel_height);
+
+	wl_shell_surface_send_configure(&shsurf->resource,
+					weston_compositor_get_time(), edges,
+					es->output->current->width,
+					es->output->current->height - panel_height);
 
 	shsurf->type = SHELL_SURFACE_MAXIMIZED;
 }
@@ -641,11 +640,10 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	if (es->output)
 		shsurf->surface->force_configure = 1;
 
-	wl_resource_post_event(resource,
-			       WL_SHELL_SURFACE_CONFIGURE,
-			       weston_compositor_get_time(), 0,
-			       shsurf->output->current->width,
-			       shsurf->output->current->height);
+	wl_shell_surface_send_configure(&shsurf->resource,
+					weston_compositor_get_time(), 0,
+					shsurf->output->current->width,
+					shsurf->output->current->height);
 }
 
 static void
@@ -674,8 +672,7 @@ popup_grab_motion(struct wl_pointer_grab *grab,
 
 	resource = grab->input_device->pointer_focus_resource;
 	if (resource)
-		wl_resource_post_event(resource, WL_INPUT_DEVICE_MOTION,
-				       time, sx, sy);
+		wl_input_device_send_motion(resource, time, sx, sy);
 }
 
 static void
@@ -688,13 +685,11 @@ popup_grab_button(struct wl_pointer_grab *grab,
 
 	resource = grab->input_device->pointer_focus_resource;
 	if (resource) {
-		wl_resource_post_event(resource, WL_INPUT_DEVICE_BUTTON,
-				       time, button, state);
+		wl_input_device_send_button(resource, time, button, state);
 	} else if (state == 0 &&
 		   (shsurf->popup.initial_up ||
 		    time - shsurf->popup.time > 500)) {
-		wl_resource_post_event(&shsurf->resource,
-				       WL_SHELL_SURFACE_POPUP_DONE);
+		wl_shell_surface_send_popup_done(&shsurf->resource);
 		wl_input_device_end_pointer_grab(grab->input_device, time);
 		shsurf->popup.grab.input_device = NULL;
 	}
@@ -962,11 +957,11 @@ desktop_shell_set_background(struct wl_client *client,
 	weston_surface_set_position(surface, shsurf->output->x,
 				    shsurf->output->y);
 
-	wl_resource_post_event(resource,
-			       DESKTOP_SHELL_CONFIGURE,
-			       weston_compositor_get_time(), 0, surface_resource,
-			       shsurf->output->current->width,
-			       shsurf->output->current->height);
+	desktop_shell_send_configure(resource,
+				     weston_compositor_get_time(), 0,
+				     surface_resource,
+				     shsurf->output->current->width,
+				     shsurf->output->current->height);
 }
 
 static void
@@ -1000,11 +995,11 @@ desktop_shell_set_panel(struct wl_client *client,
 	weston_surface_set_position(surface, shsurf->output->x,
 				    shsurf->output->y);
 
-	wl_resource_post_event(resource,
-			       DESKTOP_SHELL_CONFIGURE,
-			       weston_compositor_get_time(), 0, surface_resource,
-			       shsurf->output->current->width,
-			       shsurf->output->current->height);
+	desktop_shell_send_configure(resource,
+				     weston_compositor_get_time(), 0,
+				     surface_resource,
+				     shsurf->output->current->width,
+				     shsurf->output->current->height);
 }
 
 static void
@@ -1505,8 +1500,7 @@ unlock(struct weston_shell *base)
 	if (shell->prepare_event_sent)
 		return;
 
-	wl_resource_post_event(shell->child.desktop_shell,
-			       DESKTOP_SHELL_PREPARE_LOCK_SURFACE);
+	desktop_shell_send_prepare_lock_surface(shell->child.desktop_shell);
 	shell->prepare_event_sent = true;
 }
 
