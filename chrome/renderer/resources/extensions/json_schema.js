@@ -42,6 +42,16 @@
 native function GetChromeHidden();
 var chromeHidden = GetChromeHidden();
 
+function isInstanceOfClass(instance, className) {
+  if (!instance)
+    return false;
+
+  if (Object.prototype.toString.call(instance) == "[object " + className + "]")
+    return true;
+
+  return isInstanceOfClass(Object.getPrototypeOf(instance), className);
+}
+
 /**
  * Validates an instance against a schema and accumulates errors. Usage:
  *
@@ -331,10 +341,8 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject =
   // If "instanceof" property is set, check that this object inherits from
   // the specified constructor (function).
   if (schema.isInstanceOf) {
-    if (Object.prototype.toString.call(instance) !=
-        "[object " + schema.isInstanceOf + "]") {
+    if (!isInstanceOfClass(instance, schema.isInstanceOf))
       this.addError(propPath, "notInstance", [schema.isInstanceOf]);
-    }
   }
 
   // Exit early from additional property check if "type":"any" is defined.
