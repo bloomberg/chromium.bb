@@ -14,7 +14,6 @@
 #include "skia/ext/bitmap_platform_device_mac.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
-#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 // 10.6 API that we use if available.
 #if !defined(MAC_OS_X_VERSION_10_6) || \
@@ -76,7 +75,8 @@ SkBitmap NSImageOrNSImageRepToSkBitmap(
   DCHECK(context);
 
   // Save the current graphics context so that we can restore it later.
-  gfx::ScopedNSGraphicsContextSaveGState scoped_g_state;
+  NSGraphicsContext* old_context = [NSGraphicsContext currentContext];
+  [NSGraphicsContext saveGraphicsState];
 
   // Dummy context that we will draw into.
   NSGraphicsContext* context_cocoa =
@@ -109,6 +109,10 @@ SkBitmap NSImageOrNSImageRepToSkBitmap(
       [image_rep drawInRect:drawRect];
     }
   }
+
+  [NSGraphicsContext restoreGraphicsState];
+  if (!old_context && base::mac::IsOSLeopardOrEarlier())
+    [NSGraphicsContext setCurrentContext:nil];
 
   return bitmap;
 }
