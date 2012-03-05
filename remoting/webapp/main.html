@@ -65,9 +65,9 @@ found in the LICENSE file.
       <div id="top-secondary">
         <span id="current-email"></span>
         <span data-ui-mode="home">
-          <a id="clear-oauth" href="#" i18n-content="SIGN_OUT_BUTTON"></a> |
+          <a id="clear-oauth" i18n-content="SIGN_OUT_BUTTON"></a> |
           <!-- TODO(jamiewalch): Add this back in when we support it.
-          <a id="connection-history" href="#"
+          <a id="connection-history"
              i18n-content="CONNECTION_HISTORY_BUTTON"></a> |
           -->
         </span>
@@ -95,7 +95,7 @@ found in the LICENSE file.
             <div>
               <button id="share-button"
                       i18n-content="HOME_SHARE_BUTTON"
-                      class="kd-button kd-button-share"
+                      class="kd-button-share"
                       type="button">
               </button>
             </div>
@@ -106,16 +106,13 @@ found in the LICENSE file.
           <div>
             <button id="access-mode-button"
                     i18n-content="HOME_ACCESS_BUTTON"
-                    class="kd-button"
                     type="button">
             </button>
           </div>
         </div>
       </section> <!-- Remote Assistance -->
 
-      <section id="host-list-div"
-               class="host-list-container collapsed"
-               hidden>
+      <section id="host-list-div" class="host-list-container" hidden>
         <h2 i18n-content="MODE_ME2ME"></h2>
         <div id="host-list"></div>
         <div id="host-list-error" class="error-state"></div>
@@ -140,14 +137,12 @@ found in the LICENSE file.
                 <button type="button"
                         id="stop-daemon"
                         i18n-content="HOME_DAEMON_STOP_BUTTON"
-                        data-daemon-state="enabled"
-                        class="kd-button">
+                        data-daemon-state="enabled">
                 </button>
                 <button type="button"
                         id="start-daemon"
                         i18n-content="HOME_DAEMON_START_BUTTON"
-                        data-daemon-state="disabled"
-                        class="kd-button">
+                        data-daemon-state="disabled">
                 </button>
               </td>
             </tr>
@@ -190,12 +185,11 @@ found in the LICENSE file.
 
       <div id="auth-dialog"
            data-ui-mode="home.auth"
-           class="kd-modaldialog visible">
+           class="kd-modaldialog">
         <h2 i18n-content="MODE_AUTHORIZE"></h2>
         <p i18n-content="DESCRIPTION_AUTHORIZE"></p>
         <div class="centered-button">
           <button id="auth-button"
-                  class="kd-button"
                   type="button"
                   i18n-content="CONTINUE_BUTTON">
           </button>
@@ -203,7 +197,7 @@ found in the LICENSE file.
       </div> <!-- auth-dialog -->
 
       <div id="host-dialog"
-           class="kd-modaldialog visible"
+           class="kd-modaldialog"
            data-ui-mode="home.host">
 
         <div data-ui-mode="home.host.waiting-for-code" class="message"
@@ -228,7 +222,6 @@ found in the LICENSE file.
           <div class="centered-button">
             <button id="stop-sharing-button"
                     type="button"
-                    class="kd-button"
                     i18n-content="STOP_SHARING_BUTTON">
             </button>
           </div>
@@ -246,7 +239,6 @@ found in the LICENSE file.
              data-ui-mode="home.host.share-failed home.host.share-finished">
           <button id="host-finished-button"
                   type="button"
-                  class="kd-button"
                   autofocus="autofocus"
                   i18n-content="OK">
           </button>
@@ -263,7 +255,6 @@ found in the LICENSE file.
           <span class="waiting"
                 i18n-content="FOOTER_WAITING"></span>
           <button id="cancel-share-button"
-                  class="kd-button"
                   i18n-content="CANCEL">
           </button>
         </div>
@@ -273,7 +264,7 @@ found in the LICENSE file.
       </div> <!-- host dialog -->
 
       <div id="client-dialog"
-           class="kd-modaldialog visible"
+           class="kd-modaldialog"
            data-ui-mode="home.client">
 
         <div data-ui-mode="home.client.unconnected">
@@ -286,12 +277,10 @@ found in the LICENSE file.
                      autofocus="autofocus"
                      autocomplete="off"/>
               <button id="connect-button"
-                      class="kd-button"
                       type="submit"
                       i18n-content="CONNECT_BUTTON">
               </button>
               <button id="cancel-access-code-button"
-                      class="kd-button"
                       type="button"
                       i18n-content="CANCEL">
               </button>
@@ -302,7 +291,6 @@ found in the LICENSE file.
         <div data-ui-mode="home.client.connecting" class="waiting-container">
           <span class="waiting" i18n-content="FOOTER_WAITING"></span>
           <button id="cancel-connect-button"
-                  class="kd-button"
                   i18n-content="CANCEL">
           </button>
         </div> <!-- client.connecting -->
@@ -316,7 +304,6 @@ found in the LICENSE file.
                      autofocus="autofocus"
                      autocomplete="off"/>
               <button id="connect-button"
-                      class="kd-button"
                       type="submit"
                       i18n-content="CONNECT_BUTTON">
               </button>
@@ -337,7 +324,6 @@ found in the LICENSE file.
              class="centered-button">
           <button id="client-finished-it2me-button"
                   type="button"
-                  class="kd-button"
                   i18n-content="OK"
                   autofocus="autofocus">
           </button>
@@ -347,13 +333,11 @@ found in the LICENSE file.
              class="centered-button">
           <button id="client-finished-me2me-button"
                   type="button"
-                  class="kd-button"
                   i18n-content="OK"
                   autofocus="autofocus">
           </button>
           <button id="client-reconnect-button"
                   type="button"
-                  class="kd-button"
                   i18n-content="RECONNECT">
           </button>
         </div> <!-- connect-failed.me2me session-finished.me2me -->
@@ -361,7 +345,7 @@ found in the LICENSE file.
       </div> <!-- client-dialog -->
 
       <div id="connection-history-dialog"
-           class="kd-modaldialog visible"
+           class="kd-modaldialog"
            data-ui-mode="home.history"
            hidden>
         <div class="internal-frame-of-reference">
@@ -397,7 +381,6 @@ found in the LICENSE file.
           </div>
           <button id="close-connection-history"
                   i18n-content="CLOSE"
-                  class="kd-button"
                   type="button"></button>
         </div>
       </div> <!-- connection-history-dialog -->

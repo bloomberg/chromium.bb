@@ -3,172 +3,122 @@
  * found in the LICENSE file.
  */
 
-html,body,div,span,applet,object,iframe,
-h1,h2,h3,h4,h5,h6,p,blockquote,pre,
-a,abbr,acronym,address,big,cite,code,
-del,dfn,em,font,img,ins,kbd,q,s,samp,
-small,strike,strong,sub,sup,tt,var,
-dl,dt,dd,ol,ul,li,
-fieldset,form,label,legend,
-table,caption,tbody,tfoot,thead,tr,th,td {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    outline: 0;
-    font-weight: inherit;
-    font-style: inherit;
-    font-size: 100%;
-    font-family: inherit;
-    vertical-align: baseline;
-}
-body {
-    line-height: 1.3;
-    color: black;
-    background: white;
-}
-table {
-    border-collapse: separate;
-    border-spacing: 0;
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p,
+blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em,
+font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, dl,
+dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody,
+tfoot, thead, tr, th, td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
 }
 
-/*------------------------------------------------------------------
-@global Type
-------------------------------------------------------------------*/
-body,body input,body button,body td {
-    font-family: "Arial", "Helvetica", sans-serif;
-    color: #222;
-    font-size: 13px;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
+body {
+  font-family: "Arial", "Helvetica", sans-serif;
+  color: #222;
+  font-size: 13px;
+  margin: 0;
+  padding: 20px;
+  direction: __MSG_@@bidi_dir__;
 }
-h1,h2,h3,h4,h5 {
-    font-size: 16px;
-    line-height:24px;
-    font-weight: normal;
-    color: #222;
-}
-p {
-    margin: 0 0 1em;
-    font-size: 13px;
-    line-height: 18px;
-}
+
 a {
-    text-decoration: none;
-    color: #15c;
-    cursor: pointer;
+  text-decoration: none;
+  color: #15c;
+  cursor: pointer;
 }
+
 a:visited {
-    color: #61c;
+  color: #61c;
 }
+
 a:active {
-    color: #d14836;
+  color: #d14836;
 }
+
 strong, b {
-    color: #000;
-    font-weight:bold;
-}
-em {
-    font-style: italic;
+  color: #000;
 }
 
 
 /*------------------------------------------------------------------
 Component: Buttons
 ------------------------------------------------------------------*/
-.kd-button {
-    display: inline-block;
-    min-width: 72px;*min-width:70px;/*hello,IE7!*/
-    border:1px solid #DCDCDC;
-    border: 1px solid rgba(0,0,0,0.1);
-    text-align: center;
-    color: #444;
-    font-size: 11px;
-    font-weight: bold;
-    height: 27px;
-    padding: 0 8px;
-    line-height: 27px;
-    -webkit-border-radius:2px;
-    -webkit-transition: all 0.218s;
-    background-color: #f5f5f5;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#f5f5f5),to(#f1f1f1));
-    -webkit-user-select:none;
-    cursor:default;
-}
-.kd-button:hover, .kd-button.hover {
-    border: 1px solid #C6C6C6;
-    color: #222;
-    -webkit-transition: all 0.0s;
-    transition: all 0.0s;
-    background-color: #f8f8f8;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#f8f8f8),to(#f1f1f1));
-    -webkit-box-shadow: 0px 1px 1px rgba(0,0,0,0.1);
+button {
+  min-width: 72px;
+  border:1px solid #DCDCDC;
+  color: #444;
+  font-size: 11px;
+  font-weight: bold;
+  height: 27px;
+  padding: 0 8px;
+  line-height: 27px;
+  -webkit-border-radius:2px;
+  -webkit-transition: all 0.218s;
+  background-image: -webkit-gradient(linear, left top, left bottom,
+                                     from(#f5f5f5), to(#f1f1f1));
+  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Disabled buttons */
-.kd-button.disabled, .kd-button.disabled:hover, .kd-button.disabled:active {
-    background: none;
-    color: #b8b8b8;
-    border: 1px solid #f3f3f3;
-    border: 1px solid rgba(0,0,0,0.05);
-    cursor: default;
-    pointer-events: none;
-}
-.kd-button-share.disabled, .kd-button-share.disabled:hover, .kd-button-share.disabled:active {
-    border: 1px solid #505050;
-    background-color: #666;
-    color: #FFF;
-    opacity: 0.5;
-    filter: alpha(opacity=50);
+button:hover:not([disabled]) {
+  border: 1px solid #C6C6C6;
+  color: #222;
+  -webkit-transition: all 0.0s;
+  transition: all 0.0s;
+  background-color: #f8f8f8;
+  background-image: -webkit-gradient(linear, left top, left bottom,
+                                     from(#f8f8f8), to(#f1f1f1));
+  -webkit-box-shadow: 0px 1px 1px rgba(0,0,0,0.1);
 }
 
 /* Colored Buttons */
-.kd-button-share:focus, .kd-button-share.focus {
-    -webkit-box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5);
-}
-.kd-button-share:focus, .kd-button-share.focus {
-    border-color:#404040;
-}
-
-.kd-button-share:focus:hover, .kd-button-share.focus:hover {
-    -webkit-box-shadow:inset 0 0 0 1px #fff, 0px 1px 1px rgba(0,0,0,0.1);
-}
-
 .kd-button-share {
-    border: 1px solid #505050;
-    color: #FFF;
-    background-color: #666;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#777),to(#555));
-}
-.kd-button-share:hover {
-    border: 1px solid #404040;
-    color: #FFF;
-    background-color: #555;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#666),to(#444));
-}
-.kd-button-share:active, .kd-button-share:focus:active, .kd-button-share.focus:active {
-    -webkit-box-shadow: inset 0px 1px 2px rgba(0,0,0,0.3);
+  border: 1px solid #29691d;
+  color: #FFF;
+  text-shadow: 0px 1px rgba(0,0,0,0.1);
+  background-image: -webkit-gradient(linear, left top, left bottom,
+                                     from(#3d9400), to(#398a00));
 }
 
-.kd-button-share {
-    text-shadow: 0px 1px rgba(0,0,0,0.1);
+.kd-button-share:hover:not([disabled]) {
+  border: 1px solid #404040;
+  color: #FFF;
+  text-shadow: 0px 1px rgba(0,0,0,0.3);
+  border-color: #2D6200;
+  background-image: -webkit-gradient(linear, left top, left bottom,
+                                     from(#3d9400), to(#368200));
 }
-.kd-button-share:hover {
-    text-shadow: 0px 1px rgba(0,0,0,0.3);
+
+.kd-button-share:focus {
+  border-color:#404040;
+  -webkit-box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5);
+}
+
+.kd-button-share:focus:hover {
+  -webkit-box-shadow:inset 0 0 0 1px #fff, 0px 1px 1px rgba(0,0,0,0.1);
+}
+
+.kd-button-share:active, .kd-button-share:focus:active {
+  -webkit-box-shadow: inset 0px 1px 2px rgba(0,0,0,0.3);
 }
 
 /*------------------------------------------------------------------
-Component: Text Field, Autocomplete
+Component: Text Field
 ------------------------------------------------------------------*/
 input[type=text] {
     height: 29px;
-    background-color: #FFF;
     line-height: 27px;
     padding-left: 8px;
     color: #333;
     border: 1px solid #d9d9d9;
     border-top: 1px solid #c0c0c0;
-    display: inline-block;
     vertical-align: top;
-    -webkit-box-sizing: border-box;
     -webkit-border-radius: 1px;
 }
 input[type=text]:hover {
@@ -185,89 +135,36 @@ input[type=text]:focus {
 /*------------------------------------------------------------------
 Component: Modal Dialog
 ------------------------------------------------------------------*/
-.kd-modaldialog.visible {
-    opacity: 1.0;
-    -webkit-transform: scale(1.0);
+.kd-modaldialog:not([hidden]) {
+  opacity: 1.0;
+  -webkit-transform: scale(1.0);
 }
+
 .kd-modaldialog {
-    -webkit-box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    background: white;
-    outline:1px solid rgba(0,0,0,0.2);/* border:1px solid #CCC;/*THIS IS FOR NON-WEBKIT BROWSERS ONLY - OTHER BROWSERS DO NOT INTERPRET THE OUTLINE STYLE CORRECTLY*/
-    padding:30px 42px;
-    width: 500px;
-    height: auto;
-    overflow: hidden;
-    z-index: 100;
-    opacity: 0.0;
-    -webkit-transform: scale(1.05);
-    -webkit-transition: all 0.218s;
+  -webkit-box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  background: white;
+  outline:1px solid rgba(0,0,0,0.2);
+  padding:30px 42px;
+  width: 500px;
+  height: auto;
+  overflow: hidden;
+  z-index: 100;
+  opacity: 0.0;
+  -webkit-transform: scale(1.05);
+  -webkit-transition: all 0.218s;
 }
 
-.kd-button-share.disabled, .kd-button-share.disabled:hover, .kd-button-share.disabled:active {
-    border-color:#29691d;
-    background-color: #3d9400;
-}
-.kd-button-share:focus, .kd-button-share.focus{
-    border-color:#29691d;
-}
-.kd-button-share {
-    border-color: #29691d;
-    background-color: #3d9400;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#3d9400),to(#398a00));
-}
-.kd-button-share:hover {
-    border-color: #2D6200;
-    background-color: #368200;
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#3d9400),to(#368200));
-}
-
-a {
-  color: rgb(0, 102, 204);
-  text-decoration: none;
-}
-
-body {
-  margin: 0;
-  padding: 20px;
-  direction: __MSG_@@bidi_dir__;
-}
-
-button, input {
-  font-family: inherit;
-  font-size: inherit;
-}
-
-button {
-  background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
-  border: 1px solid #aaa;
-  -webkit-border-radius: 2px;
-  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
-  -webkit-user-select: none;
-}
-
-button:hover {
-  background: #ebebeb -webkit-linear-gradient(#fefefe, #f8f8f8 40%, #e9e9e9);
-  border-color: #999;
-  color: #222;
-  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-button:active, .toggle-button-active, .toggle-button-active:hover {
+button:active {
   background: #ebebeb -webkit-linear-gradient(#f4f4f4, #efefef 40%, #dcdcdc);
   color: #333;
   -webkit-box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* TODO(jamiewalch): Remove the !important tags when the CSS is rationalized */
-button[disabled], .button[disabled]:hover, .button[disabled]:active {
-  background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5) !important;
-  border-color: #aaa !important;
-  color: #888 !important;
-  -webkit-box-shadow: none !important;
-}
-
-form {
-  display: inline;
+button[disabled], button[disabled]:hover, button[disabled]:active {
+  background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
+  border-color: #aaa;
+  color: #888;
+  -webkit-box-shadow: none;
 }
 
 h1.icon-label {
@@ -276,7 +173,15 @@ h1.icon-label {
   font-size: 28px;
   font-weight: 300;
   color: #aaa;
-  font-family: "Open sans", "Ariel", sans-serif
+  font-family: "Open sans", "Ariel", sans-serif;
+  line-height: 24px;
+}
+
+h2 {
+  font-size: 16px;
+  line-height:24px;
+  font-weight: normal;
+  color: #222;
 }
 
 section > h2 {
@@ -309,8 +214,6 @@ section {
 }
 
 
-/* Classes */
-
 .access-code-digit-group {
   /*
     Used for each of the four-digit components of the access code as
@@ -332,11 +235,6 @@ section {
     conforming correctly to the standard, remove this comment.
   */
   text-align: center;
-}
-
-.collapsed {
-  opacity: 0;
-  height: 0 !important;
 }
 
 .clickable {
@@ -366,17 +264,11 @@ section {
   padding-__MSG_@@bidi_start_edge__: 30px;
   padding-top: 5px;
   color: #900;
-  display: inline-block;
 }
 
 .expiring {
     color: #900 !important;
 }
-
-[hidden] {
-  display: none !important;
-}
-
 
 .icon-label {
   display: inline-block;
@@ -455,7 +347,7 @@ td {
   opacity: 0.5;
 }
 
-.kd-button {
+button {
   white-space:nowrap;
 }
 
@@ -484,7 +376,7 @@ td {
   margin-top: 30px;
 }
 
-/* Ids */
+
 #access-code-countdown-container {
   height: 50px;
   text-align: center;

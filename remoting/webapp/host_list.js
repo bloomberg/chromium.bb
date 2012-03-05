@@ -201,11 +201,6 @@ remoting.HostList.prototype.display = function() {
 remoting.HostList.prototype.showOrHide_ = function(show) {
   var parent = /** @type {Element} */ (this.table_.parentNode);
   parent.hidden = !show;
-  if (show) {
-    removeClass(parent, remoting.HostList.COLLAPSED_);
-  } else {
-    addClass(parent, remoting.HostList.COLLAPSED_);
-  }
 };
 
 /**
@@ -261,12 +256,6 @@ remoting.HostList.prototype.renameHost_ = function(hostTableEntry) {
   }
   remoting.oauth2.callWithToken(renameHost);
 };
-
-/**
- * Class name for the host list when it is collapsed.
- * @private
- */
-remoting.HostList.COLLAPSED_ = 'collapsed';
 
 /**
  * Key name under which Me2Me hosts are cached.

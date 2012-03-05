@@ -25,6 +25,8 @@
   width: 100%;
   line-height: 2.1;
   border-bottom: 1px solid #ebebeb;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 #connection-history-table td:last-child {
