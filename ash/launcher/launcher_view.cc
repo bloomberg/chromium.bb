@@ -48,7 +48,7 @@ static const int kPreferredHeight = 48;
 static const int kMinimumDragDistance = 8;
 
 // Size given to the buttons on the launcher.
-static const int kButtonWidth = 60;
+static const int kButtonWidth = 48;
 static const int kButtonHeight = 48;
 
 namespace {
@@ -319,7 +319,7 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
 
     case TYPE_APP_LIST: {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      views::ImageButton* button = new AppLauncherButton(this, this);
+      views::ImageButton* button = new views::ImageButton(this);
       button->SetImage(
           views::CustomButton::BS_NORMAL,
           rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST).ToSkBitmap());
@@ -335,12 +335,11 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
 
     case TYPE_BROWSER_SHORTCUT: {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      views::ImageButton* button = new AppLauncherButton(this, this);
+      AppLauncherButton* button = new AppLauncherButton(this, this);
       int image_id = delegate_ ?
           delegate_->GetBrowserShortcutResourceId() :
           IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
-      button->SetImage(views::CustomButton::BS_NORMAL,
-                       rb.GetImageNamed(image_id).ToSkBitmap());
+      button->SetAppImage(*rb.GetImageNamed(image_id).ToSkBitmap());
       view = button;
       cycler_.reset(new LauncherWindowCycler(delegate_));
       break;
