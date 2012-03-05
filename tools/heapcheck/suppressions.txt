@@ -1785,13 +1785,6 @@
    fun:ModuleSystem::Require
 }
 {
-   bug_115606
-   Heapcheck:Leak
-   ...
-   fun:media::WebMListParser::ParseListElement
-   fun:media::WebMListParser::Parse
-}
-{
    bug_115611_a
    Heapcheck:Leak
    fun:base::Bind

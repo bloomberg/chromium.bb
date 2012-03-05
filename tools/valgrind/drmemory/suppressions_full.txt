@@ -1121,14 +1121,6 @@ name=http://crbug.com/115328
 *!GenericInfoViewTest_GenericInfoView_Test::TestBody
 
 LEAK
-name=http://crbug.com/115606
-*!operator new
-*!media::WebMContentEncodingsClient::OnListStart
-*!media::WebMListParser::OnListStart
-*!media::WebMListParser::ParseListElement
-*!media::WebMListParser::Parse
-
-LEAK
 name=http://crbug.com/115987
 ...
 *!base::SequencedWorkerPool::*

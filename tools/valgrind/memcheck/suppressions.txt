@@ -5847,13 +5847,6 @@
    fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
 {
-   bug_115606
-   Memcheck:Leak
-   ...
-   fun:_ZN5media14WebMListParser16ParseListElementE*
-   fun:_ZN5media14WebMListParser5ParseEPKhi
-}
-{
    bug_113638
    Memcheck:Unaddressable
    fun:_ZN4aura6Window5layerEv
