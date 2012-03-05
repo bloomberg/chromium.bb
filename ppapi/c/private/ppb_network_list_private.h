@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_network_list_private.idl,
- *   modified Fri Feb 24 10:14:10 2012.
+ *   modified Thu Mar  1 16:24:33 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NETWORK_LIST_PRIVATE_H_
@@ -35,17 +35,21 @@
  */
 typedef enum {
   /**
+   * Type of the network interface is not known.
+   */
+  PP_NETWORKLIST_UNKNOWN = 0,
+  /**
    * Wired Ethernet network.
    */
-  PP_NETWORKLIST_ETHERNET = 0,
+  PP_NETWORKLIST_ETHERNET = 1,
   /**
    * Wireless Wi-Fi network.
    */
-  PP_NETWORKLIST_WIFI = 1,
+  PP_NETWORKLIST_WIFI = 2,
   /**
    * Cellular network (e.g. LTE).
    */
-  PP_NETWORKLIST_CELLULAR = 2
+  PP_NETWORKLIST_CELLULAR = 3
 } PP_NetworkListType_Private;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_NetworkListType_Private, 4);
 
@@ -122,8 +126,8 @@ struct PPB_NetworkList_Private_0_2 {
    */
   int32_t (*GetIpAddresses)(PP_Resource resource,
                             uint32_t index,
-                            struct PP_NetAddress_Private* addresses[],
-                            int32_t count);
+                            struct PP_NetAddress_Private addresses[],
+                            uint32_t count);
   /**
    * @return Returns display name for the network interface with the
    * specified <code>index</code>.
@@ -131,7 +135,7 @@ struct PPB_NetworkList_Private_0_2 {
   struct PP_Var (*GetDisplayName)(PP_Resource resource, uint32_t index);
   /**
    * @return Returns MTU for the network interface with the specified
-   * <code>index</code>.
+   * <code>index</code> or 0 if MTU is unknown.
    */
   uint32_t (*GetMTU)(PP_Resource resource, uint32_t index);
 };
