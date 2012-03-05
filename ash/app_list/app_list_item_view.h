@@ -8,6 +8,8 @@
 
 #include "ash/app_list/app_list_item_model_observer.h"
 #include "ash/ash_export.h"
+#include "base/memory/scoped_ptr.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
 
 class SkBitmap;
@@ -15,6 +17,7 @@ class SkBitmap;
 namespace views {
 class ImageView;
 class Label;
+class MenuRunner;
 }
 
 namespace ash {
@@ -22,6 +25,7 @@ namespace ash {
 class AppListItemModel;
 
 class ASH_EXPORT AppListItemView : public views::CustomButton,
+                                   public views::ContextMenuController,
                                    public AppListItemModelObserver {
  public:
   AppListItemView(AppListItemModel* model,
@@ -50,10 +54,17 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
+  // views::ContextMenuController overrides:
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& p,
+                                      bool is_mouse_gesture) OVERRIDE;
+
   AppListItemModel* model_;
 
   views::ImageView* icon_;
   views::Label* title_;
+
+  scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/ash/app_list/chrome_app_list_item.h"
-#include "chrome/common/string_ordinal.h"
+#include "ui/base/models/simple_menu_model.h"
 
 class Extension;
 class ExtensionResource;
@@ -18,7 +18,8 @@ class SkBitmap;
 
 // ExtensionAppItem represents an extension app in app list.
 class ExtensionAppItem : public ChromeAppListItem,
-                         public ImageLoadingTracker::Observer {
+                         public ImageLoadingTracker::Observer,
+                         public ui::SimpleMenuModel::Delegate {
  public:
   ExtensionAppItem(Profile* profile, const Extension* extension);
   virtual ~ExtensionAppItem();
@@ -27,14 +28,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   // no longer exists.
   const Extension* GetExtension() const;
 
-  int page_index() const {
-    return page_index_;
-  }
-
-  const StringOrdinal& launch_ordinal() const {
-    return launch_ordinal_;
-  }
-
  private:
   // Loads extension icon.
   void LoadImage(const Extension* extension);
@@ -42,21 +35,31 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Loads default extension icon.
   void LoadDefaultImage();
 
-  // Overridden from ImageLoadingTracker::Observer
+  void ShowExtensionOptions();
+  void StartExtensionUninstall();
+
+  // Overridden from ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(const gfx::Image& image,
                              const std::string& extension_id,
                              int tracker_index) OVERRIDE;
 
+  // Overridden from ui::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* acclelrator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+
   // Overridden from ChromeAppListItem:
   virtual void Activate(int event_flags) OVERRIDE;
+  virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
   Profile* profile_;
   const std::string extension_id_;
 
-  const int page_index_;
-  const StringOrdinal launch_ordinal_;
-
   scoped_ptr<ImageLoadingTracker> tracker_;
+  scoped_ptr<ui::SimpleMenuModel> context_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

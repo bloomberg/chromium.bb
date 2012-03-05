@@ -13,6 +13,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 namespace ash {
 
@@ -70,6 +73,8 @@ AppListItemView::AppListItemView(AppListItemModel* model,
   ItemIconChanged();
   ItemTitleChanged();
   model_->AddObserver(this);
+
+  set_context_menu_controller(this);
 }
 
 AppListItemView::~AppListItemView() {
@@ -120,6 +125,24 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
   } else if (state() == BS_HOT) {
     canvas->FillRect(rect, kHoverColor);
   }
+}
+
+void AppListItemView::ShowContextMenuForView(views::View* source,
+                                             const gfx::Point& p,
+                                             bool is_mouse_gesture) {
+  ui::MenuModel* menu_model = model_->GetContextMenuModel();
+  if (!menu_model)
+    return;
+
+  views::MenuModelAdapter menu_adapter(menu_model);
+  context_menu_runner_.reset(
+      new views::MenuRunner(new views::MenuItemView(&menu_adapter)));
+  menu_adapter.BuildMenu(context_menu_runner_->GetMenu());
+  if (context_menu_runner_->RunMenuAt(
+          GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
 }
 
 }  // namespace ash
