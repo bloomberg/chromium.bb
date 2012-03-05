@@ -323,35 +323,63 @@ class ManageExceptionsPage(object):
     content_url = 'chrome://settings/contentExceptions#%s' % content_type
     assert content_url == driver.current_url
     self._list_elem = driver.find_element_by_xpath(
-        './/*[@id="content-settings-exceptions-area"]' \
-        '//*[@contenttype="%s"]//list[@role="listbox"]' \
+        './/*[@id="content-settings-exceptions-area"]'
+        '//*[@contenttype="%s"]//list[@role="listbox"]'
         '[@class="settings-list"]' % content_type)
     self._driver = driver
     self._content_type = content_type
+    try:
+      self._incognito_list_elem = driver.find_element_by_xpath(
+          './/*[@id="content-settings-exceptions-area"]'
+          '//*[@contenttype="%s"]//div[not(@hidden)]'
+          '//list[@mode="otr"][@role="listbox"]'
+          '[@class="settings-list"]' % content_type)
+    except selenium.common.exceptions.NoSuchElementException:
+      self._incognito_list_elem = None
 
-  def _GetExceptionList(self):
-    return DynamicList(self._driver, self._list_elem)
+  def _AssertIncognitoAvailable(self):
+    if not self._incognito_list_elem:
+      raise AssertionError(
+          'Incognito settings in "%s" content page not available'
+          % self._content_type)
 
-  def _GetPatternList(self):
+  def _GetExceptionList(self, incognito):
+    if not incognito:
+      list_elem = self._list_elem
+    else:
+      list_elem = self._incognito_list_elem
+    return DynamicList(self._driver, list_elem)
+
+  def _GetPatternList(self, incognito):
+    if not incognito:
+      list_elem = self._list_elem
+    else:
+      list_elem = self._incognito_list_elem
     pattern_list = [p.text for p in
-        self._list_elem.find_elements_by_xpath(
+        list_elem.find_elements_by_xpath(
             './/*[contains(@class, "exception-pattern")]'
             '//*[@class="static-text"]')]
     return pattern_list
 
-  def AddNewException(self, pattern, behavior):
+  def AddNewException(self, pattern, behavior, incognito=False):
     """Add a new pattern and behavior to the Exceptions page.
 
     Args:
       pattern: Hostname pattern string.
       behavior: Setting for the hostname pattern (Allow, Block, Session Only).
+      incognito: Incognito list box. Display to false.
 
     Raises:
       AssertionError when an exception cannot be added on the content page.
     """
+    if incognito:
+      self._AssertIncognitoAvailable()
+      list_elem = self._incognito_list_elem
+    else:
+      list_elem = self._list_elem
     # Select behavior first.
     try:
-      self._list_elem.find_element_by_xpath(
+      list_elem.find_element_by_xpath(
           './/*[@class="exception-setting"]'
           '[not(@displaymode)]//option[@value="%s"]'
              % behavior).click()
@@ -360,51 +388,71 @@ class ManageExceptionsPage(object):
           'Adding new exception not allowed in "%s" content page'
           % self._content_type)
     # Set pattern now.
-    self._GetExceptionList().Add(pattern)
+    self._GetExceptionList(incognito).Add(pattern)
 
-  def DeleteException(self, pattern):
+  def DeleteException(self, pattern, incognito=False):
     """Delete the exception for the selected hostname pattern.
 
     Args:
       pattern: Hostname pattern string.
+      incognito: Incognito list box. Default to false.
     """
-    self._GetExceptionList().Remove(pattern)
+    if incognito:
+      self._AssertIncognitoAvailable()
+    self._GetExceptionList(incognito).Remove(pattern)
 
-  def GetExceptions(self):
+  def GetExceptions(self, incognito=False):
     """Returns a dictionary of {pattern: behavior}.
 
     Example: {'file:///*': 'block'}
+
+    Args:
+      incognito: Incognito list box. Default to false.
     """
-    pattern_list = self._GetPatternList()
-    behavior_list = self._list_elem.find_elements_by_xpath(
-        './/*[@role="listitem"][@class="deletable-item"]' \
+    if incognito:
+      self._AssertIncognitoAvailable()
+      list_elem = self._incognito_list_elem
+    else:
+      list_elem = self._list_elem
+    pattern_list = self._GetPatternList(incognito)
+    behavior_list = list_elem.find_elements_by_xpath(
+        './/*[@role="listitem"][@class="deletable-item"]'
         '//*[@class="exception-setting"][@displaymode="static"]')
-    assert len(pattern_list) == len(behavior_list), \
-        'Number of patterns does not match the behaviors.'
+    assert (len(pattern_list) == len(behavior_list),
+            'Number of patterns does not match the behaviors.')
     return dict(zip(pattern_list, [b.text.lower() for b in behavior_list]))
 
-  def GetBehaviorForPattern(self, pattern):
+  def GetBehaviorForPattern(self, pattern, incognito=False):
     """Returns the behavior for a given pattern on the Exceptions page.
 
     Args:
       pattern: Hostname pattern string.
-    """
-    assert self.GetExceptions().has_key(pattern), \
-            'No displayed host name matches pattern "%s"' % pattern
-    return self.GetExceptions()[pattern]
+      incognito: Incognito list box. Default to false.
+     """
+    if incognito:
+      self._AssertIncognitoAvailable()
+    assert (self.GetExceptions(incognito).has_key(pattern),
+            'No displayed host name matches pattern "%s"' % pattern)
+    return self.GetExceptions(incognito)[pattern]
 
-  def SetBehaviorForPattern(self, pattern, behavior):
+  def SetBehaviorForPattern(self, pattern, behavior, incognito=False):
     """Set the behavior for the selected pattern on the Exceptions page.
 
     Args:
       pattern: Hostname pattern string.
       behavior: Setting for the hostname pattern (Allow, Block, Session Only).
+      incognito: Incognito list box. Default to false.
 
     Raises:
       AssertionError when the behavior cannot be changed on the content page.
     """
-    pattern_list = self._GetPatternList()
-    listitem_list = self._list_elem.find_elements_by_xpath(
+    if incognito:
+      self._AssertIncognitoAvailable()
+      list_elem = self._incognito_list_elem
+    else:
+      list_elem = self._list_elem
+    pattern_list = self._GetPatternList(incognito)
+    listitem_list = list_elem.find_elements_by_xpath(
         './/*[@role="listitem"][@class="deletable-item"]')
     pattern_listitem_dict = dict(zip(pattern_list, listitem_list))
     # Set focus to appropriate listitem.

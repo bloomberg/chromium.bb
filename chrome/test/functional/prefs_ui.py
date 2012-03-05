@@ -42,22 +42,26 @@ class PrefsUITest(pyauto.PyUITest):
              behavior_key))
     return behaviors_dict[behavior_key]
 
-  def _VerifyContentExceptionUI(self, content_type, hostname_pattern, behavior):
+  def _VerifyContentExceptionUI(self, content_type, hostname_pattern, behavior,
+                                incognito=False):
     """Find hostname pattern and behavior within UI on content exceptions page.
 
     Args:
       content_type: The string content settings type to manage.
       hostname_pattern: The URL or pattern associated with the behavior.
       behavior: The exception to allow or block the hostname.
+      incognito: Incognito list displayed on exceptions settings page.
+                 Default to False.
     """
     page = settings.ManageExceptionsPage.FromNavigation(
         self._driver, content_type)
-    self.assertTrue(page.GetExceptions().has_key(hostname_pattern),
+    self.assertTrue(page.GetExceptions(incognito).has_key(hostname_pattern),
                      msg=('No displayed host name matches pattern "%s"'
                           % hostname_pattern))
-    self.assertEqual(behavior, page.GetExceptions()[hostname_pattern],
+    self.assertEqual(behavior, page.GetExceptions(incognito)[hostname_pattern],
                      msg=('Displayed behavior "%s" does not match behavior "%s"'
-                          % (page.GetExceptions()[hostname_pattern], behavior)))
+                          % (page.GetExceptions(incognito)[hostname_pattern],
+                             behavior)))
 
   def testLocationSettingOptionsUI(self):
     """Verify the location options setting UI.
@@ -164,6 +168,32 @@ class PrefsUITest(pyauto.PyUITest):
     page = settings.ManageExceptionsPage.FromNavigation(
         self._driver, ContentTypes.GEOLOCATION)
     self.assertEqual(0, len(page.GetExceptions()))
+
+  def testCorrectCookiesSessionInUI(self):
+    """Verify exceptions for cookies in UI list entry."""
+    # Block cookies for for a session for google.com.
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs,
+                  {'http://google.com:80': {'cookies': 2}})
+    self._VerifyContentExceptionUI(
+        ContentTypes.COOKIES, 'http://google.com:80', Behaviors.BLOCK)
+
+  def testInitialLineEntryInIncognitoUI(self):
+    """Verify initial line entry is displayed in Incognito UI."""
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)  # Display incognito list.
+    page = settings.ManageExceptionsPage.FromNavigation(
+        self._driver, ContentTypes.PLUGINS)
+    self.assertEqual(1, len(page.GetExceptions(incognito=True)))
+
+  def testIncognitoExceptionsEntryCorrectlyDisplayed(self):
+    """Verify exceptions entry is correctly displayed in the incognito UI."""
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)  # Display incognito list.
+    page = settings.ManageExceptionsPage.FromNavigation(
+        self._driver, ContentTypes.PLUGINS)
+    pattern, behavior = ('http://maps.google.com:80', Behaviors.BLOCK)
+    page.AddNewException(pattern, behavior, incognito=True)
+    self._VerifyContentExceptionUI(
+        ContentTypes.PLUGINS, 'http://maps.google.com:80',
+        Behaviors.BLOCK, incognito=True)
 
 
 if __name__ == '__main__':

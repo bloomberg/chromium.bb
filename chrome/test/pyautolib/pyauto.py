@@ -1294,7 +1294,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         self._SendJSONRequest(-1, json.dumps(cmd_dict),
                               self.action_max_timeout_ms()))
 
-  def SetPrefs(self, path, value):
+  def SetPrefs(self, path, value, windex=0):
     """Set preference for the given path.
 
     Preferences are stored by Chromium as a hierarchical dictionary.
@@ -1315,10 +1315,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
              The user has to ensure that the right value is specified for the
              right key. It's useful to dump the preferences first to determine
              what type is expected for a particular preference path.
+      windex: window index to work on. Defaults to 0 (first window).
     """
     cmd_dict = {
       'command': 'SetPrefs',
-      'windex': 0,
+      'windex': windex,
       'path': path,
       'value': value,
     }
@@ -5037,6 +5038,7 @@ class Main(object):
       sys.exit(0)
     pyauto_suite = PyUITestSuite(suite_args)
     loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(test_names)
+    pyauto_suite = PyUITestSuite(suite_args)
     pyauto_suite.addTests(loaded_tests)
     verbosity = 1
     if self._options.verbose:
