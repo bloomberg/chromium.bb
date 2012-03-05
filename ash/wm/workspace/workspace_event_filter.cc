@@ -93,8 +93,8 @@ WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
       (window_component != HTCAPTION || GetTrackedByWorkspace(window))) {
     return NULL;
   }
-  return
-      new WorkspaceWindowResizer(window, point, window_component, grid_size());
+  return WorkspaceWindowResizer::Create(
+      window, point, window_component, grid_size());
 }
 
 void WorkspaceEventFilter::UpdateHoveredWindow(

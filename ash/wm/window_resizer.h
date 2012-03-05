@@ -16,12 +16,9 @@ class Window;
 
 namespace ash {
 
-namespace internal {
-class RootWindowEventFilter;
-}
-
-// WindowResizer is used by ToplevelWindowEventFilter to handle dragging,
-// moving or resizing a window.
+// WindowResizer is used by ToplevelWindowEventFilter to handle dragging, moving
+// or resizing a window. All coordinates passed to this are in the parent
+// windows coordinates.
 class ASH_EXPORT WindowResizer {
  public:
   // Constants to identify the type of resize.
@@ -34,10 +31,7 @@ class ASH_EXPORT WindowResizer {
   static const int kBoundsChangeDirection_Horizontal;
   static const int kBoundsChangeDirection_Vertical;
 
-  WindowResizer(aura::Window* window,
-                const gfx::Point& location,
-                int window_component,
-                int grid_size);
+  WindowResizer();
   virtual ~WindowResizer();
 
   // Returns a bitmask of the kBoundsChange_ values.
@@ -49,84 +43,80 @@ class ASH_EXPORT WindowResizer {
 
   // Invoked to drag/move/resize the window. |location| is in the coordinates
   // of the window supplied to the constructor.
-  void Drag(const gfx::Point& location);
+  virtual void Drag(const gfx::Point& location) = 0;
 
   // Invoked to complete the drag.
-  virtual void CompleteDrag();
+  virtual void CompleteDrag() = 0;
 
   // Reverts the drag.
-  virtual void RevertDrag();
-
-  // Returns true if the drag will result in changing the window in anyway.
-  bool is_resizable() const { return is_resizable_; }
-
-  // See description above members for details.
-  const gfx::Rect& initial_bounds() const { return initial_bounds_; }
-  const gfx::Point& initial_location_in_parent() const {
-    return initial_location_in_parent_;
-  }
-  int window_component() const { return window_component_; }
-  aura::Window* window() const { return window_; }
-  int grid_size() const { return grid_size_; }
-  bool did_move_or_resize() const { return did_move_or_resize_; }
-  int bounds_change() const { return bounds_change_; }
+  virtual void RevertDrag() = 0;
 
  protected:
-  // Returns the bounds to give to the window once the mouse has moved to
-  // |location|.
-  virtual gfx::Rect GetBoundsForDrag(const gfx::Point& location);
+  struct Details {
+    Details();
+    Details(aura::Window* window,
+            const gfx::Point& location,
+            int window_component,
+            int grid_size);
+    ~Details();
 
-  // Returns the final bounds. This differs from current bounds if a grid_size
-  // was specified.
-  virtual gfx::Rect GetFinalBounds();
+    // The window we're resizing.
+    aura::Window* window;
+
+    // Initial bounds of the window.
+    gfx::Rect initial_bounds;
+
+    // Location passed to the constructor, in |window->parent()|'s coordinates.
+    gfx::Point initial_location_in_parent;
+
+    // The component the user pressed on.
+    int window_component;
+
+    // Bitmask of the |kBoundsChange_| constants.
+    int bounds_change;
+
+    // Bitmask of the |kBoundsChangeDirection_| constants.
+    int position_change_direction;
+
+    // Bitmask of the |kBoundsChangeDirection_| constants.
+    int size_change_direction;
+
+    // Will the drag actually modify the window?
+    bool is_resizable;
+
+    // Size of the grid.
+    int grid_size;
+  };
+
+  static gfx::Rect CalculateBoundsForDrag(
+      const Details& details,
+      const gfx::Point& location);
+
+  static gfx::Rect AdjustBoundsToGrid(const Details& details);
+
+  static bool IsBottomEdge(int component);
 
  private:
   // Returns the new origin of the window. The arguments are the difference
   // between the current location and the initial location.
-  gfx::Point GetOriginForDrag(int delta_x, int delta_y) const;
+  static gfx::Point GetOriginForDrag(const Details& details,
+                                     int delta_x,
+                                     int delta_y);
 
   // Returns the size of the window for the drag.
-  gfx::Size GetSizeForDrag(int* delta_x, int* delta_y) const;
+  static gfx::Size GetSizeForDrag(const Details& details,
+                                  int* delta_x,
+                                  int* delta_y);
 
   // Returns the width of the window.
-  int GetWidthForDrag(int min_width, int* delta_x) const;
+  static int GetWidthForDrag(const Details& details,
+                             int min_width,
+                             int* delta_x);
 
   // Returns the height of the drag.
-  int GetHeightForDrag(int min_height, int* delta_y) const;
-
-  // The window we're resizing.
-  aura::Window* window_;
-
-  // Initial bounds of the window.
-  const gfx::Rect initial_bounds_;
-
-  // Location passed to the constructor, in |window->parent()|'s coordinates.
-  const gfx::Point initial_location_in_parent_;
-
-  // The component the user pressed on.
-  const int window_component_;
-
-  // Bitmask of the |kBoundsChange_| constants.
-  const int bounds_change_;
-
-  // Bitmask of the |kBoundsChangeDirection_| constants.
-  const int position_change_direction_;
-
-  // Bitmask of the |kBoundsChangeDirection_| constants.
-  const int size_change_direction_;
-
-  // Will the drag actually modify the window?
-  const bool is_resizable_;
-
-  // Size of the grid.
-  const int grid_size_;
-
-  // Set to true once Drag() is invoked and the bounds of the window change.
-  bool did_move_or_resize_;
-
-  internal::RootWindowEventFilter* root_filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowResizer);
+  static int GetHeightForDrag(const Details& details,
+                              int min_height,
+                              int* delta_y);
 };
 
 }  // namespace aura

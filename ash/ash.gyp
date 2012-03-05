@@ -141,6 +141,8 @@
         'wm/compact_layout_manager.h',
         'wm/compact_status_area_layout_manager.cc',
         'wm/compact_status_area_layout_manager.h',
+        'wm/default_window_resizer.cc',
+        'wm/default_window_resizer.h',
         'wm/dialog_frame_view.cc',
         'wm/dialog_frame_view.h',
         'wm/image_grid.cc',

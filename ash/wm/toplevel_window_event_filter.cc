@@ -5,6 +5,7 @@
 #include "ash/wm/toplevel_window_event_filter.h"
 
 #include "ash/shell.h"
+#include "ash/wm/default_window_resizer.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
@@ -21,6 +22,17 @@
 #include "ui/gfx/screen.h"
 
 namespace ash {
+
+namespace {
+
+gfx::Point ConvertPointToParent(aura::Window* window,
+                                const gfx::Point& point) {
+  gfx::Point result(point);
+  aura::Window::ConvertPointToWindow(window, window->parent(), &result);
+  return result;
+}
+
+}
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : in_move_loop_(false),
@@ -51,10 +63,10 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       int component =
           target->delegate()->GetNonClientComponent(event->location());
       if (WindowResizer::GetBoundsChangeForWindowComponent(component)) {
+        gfx::Point parent_location(
+            ConvertPointToParent(target, event->location()));
         window_resizer_.reset(
-            CreateWindowResizer(target, event->location(), component));
-        if (window_resizer_.get() && !window_resizer_->is_resizable())
-          window_resizer_.reset();
+            CreateWindowResizer(target, parent_location, component));
       } else {
         window_resizer_.reset();
       }
@@ -95,7 +107,8 @@ ui::TouchStatus ToplevelWindowEventFilter::PreHandleTouchEvent(
 }
 
 ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
-    aura::Window* target, aura::GestureEvent* event) {
+    aura::Window* target,
+    aura::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       int component =
@@ -105,10 +118,10 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
         return ui::GESTURE_STATUS_UNKNOWN;
       }
       in_gesture_resize_ = true;
+      gfx::Point parent_location(
+          ConvertPointToParent(target, event->location()));
       window_resizer_.reset(
-          CreateWindowResizer(target, event->location(), component));
-      if (window_resizer_.get() && !window_resizer_->is_resizable())
-        window_resizer_.reset();
+          CreateWindowResizer(target, parent_location, component));
       break;
     }
     case ui::ET_GESTURE_SCROLL_UPDATE: {
@@ -134,11 +147,11 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
 void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
-  gfx::Point source_mouse_location(gfx::Screen::GetCursorScreenPoint());
+  gfx::Point parent_mouse_location(gfx::Screen::GetCursorScreenPoint());
   aura::Window::ConvertPointToWindow(
-      Shell::GetRootWindow(), source, &source_mouse_location);
+      Shell::GetRootWindow(), source->parent(), &parent_mouse_location);
   window_resizer_.reset(
-      CreateWindowResizer(source, source_mouse_location, HTCAPTION));
+      CreateWindowResizer(source, parent_mouse_location, HTCAPTION));
 #if !defined(OS_MACOSX)
   MessageLoopForUI::current()->RunWithDispatcher(
       aura::Env::GetInstance()->GetDispatcher());
@@ -159,13 +172,15 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
   Shell::GetRootWindow()->PostNativeEvent(ui::CreateNoopEvent());
 }
 
+// static
 WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
     aura::Window* window,
     const gfx::Point& point,
     int window_component) {
   if (!wm::IsWindowNormal(window))
     return NULL;  // Don't allow resizing/dragging maximized/fullscreen windows.
-  return new WindowResizer(window, point, window_component, grid_size_);
+  return DefaultWindowResizer::Create(
+      window, point, window_component, grid_size_);
 }
 
 void ToplevelWindowEventFilter::CompleteDrag(DragCompletionStatus status) {
@@ -188,7 +203,7 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
 
   if (!window_resizer_.get())
     return false;
-  window_resizer_->Drag(event->location());
+  window_resizer_->Drag(ConvertPointToParent(target, event->location()));
   return true;
 }
 

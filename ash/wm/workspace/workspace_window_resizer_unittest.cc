@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/string_number_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -54,25 +55,39 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     window_.reset(new aura::Window(&delegate_));
     window_->Init(ui::Layer::LAYER_NOT_DRAWN);
     window_->SetParent(Shell::GetInstance()->GetRootWindow());
+
+    window2_.reset(new aura::Window(&delegate2_));
+    window2_->Init(ui::Layer::LAYER_NOT_DRAWN);
+    window2_->SetParent(Shell::GetInstance()->GetRootWindow());
+
+    window3_.reset(new aura::Window(&delegate3_));
+    window3_->Init(ui::Layer::LAYER_NOT_DRAWN);
+    window3_->SetParent(Shell::GetInstance()->GetRootWindow());
   }
 
   virtual void TearDown() OVERRIDE {
     window_.reset();
+    window2_.reset();
+    window3_.reset();
     AshTestBase::TearDown();
   }
 
  protected:
-  gfx::Point CalculateDragPoint(const WindowResizer& resizer,
+  gfx::Point CalculateDragPoint(const WorkspaceWindowResizer& resizer,
+                                int delta_x,
                                 int delta_y) const {
     gfx::Point location = resizer.initial_location_in_parent();
+    location.set_x(location.x() + delta_x);
     location.set_y(location.y() + delta_y);
-    aura::Window::ConvertPointToWindow(window_->parent(), window_.get(),
-                                       &location);
     return location;
   }
 
   TestWindowDelegate delegate_;
+  TestWindowDelegate delegate2_;
+  TestWindowDelegate delegate3_;
   scoped_ptr<aura::Window> window_;
+  scoped_ptr<aura::Window> window2_;
+  scoped_ptr<aura::Window> window3_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizerTest);
@@ -86,29 +101,32 @@ TEST_F(WorkspaceWindowResizerTest, ShrinkOnDrag) {
   // Drag down past the bottom of the screen, height should stop when it hits
   // the bottom.
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTBOTTOM, 0);
-    EXPECT_TRUE(resizer.is_resizable());
-    resizer.Drag(CalculateDragPoint(resizer, 600));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTBOTTOM, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 600));
     EXPECT_EQ(kRootHeight - initial_y, window_->bounds().height());
 
     // Drag up 10 and make sure height is the same.
-    resizer.Drag(CalculateDragPoint(resizer, 590));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 590));
     EXPECT_EQ(kRootHeight - initial_y, window_->bounds().height());
   }
 
   {
     // Move the window down 10 pixels, the height should change.
     int initial_height = window_->bounds().height();
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    resizer.Drag(CalculateDragPoint(resizer, 10));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 10));
     EXPECT_EQ(initial_height - 10, window_->bounds().height());
 
     // Move up 10, height should grow.
-    resizer.Drag(CalculateDragPoint(resizer, 0));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0));
     EXPECT_EQ(initial_height, window_->bounds().height());
 
     // Move up another 10, height shouldn't change.
-    resizer.Drag(CalculateDragPoint(resizer, -10));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -10));
     EXPECT_EQ(initial_height, window_->bounds().height());
   }
 }
@@ -120,9 +138,10 @@ TEST_F(WorkspaceWindowResizerTest, ShrinkOnDrag2) {
   // Drag down past the bottom of the screen, height should stop when it hits
   // the bottom.
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    EXPECT_TRUE(resizer.is_resizable());
-    resizer.Drag(CalculateDragPoint(resizer, 200));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 200));
     EXPECT_EQ(500, window_->bounds().y());
     EXPECT_EQ(100, window_->bounds().height());
     // End and start a new drag session.
@@ -130,8 +149,10 @@ TEST_F(WorkspaceWindowResizerTest, ShrinkOnDrag2) {
 
   {
     // Drag up 400.
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    resizer.Drag(CalculateDragPoint(resizer, -400));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -400));
     EXPECT_EQ(100, window_->bounds().y());
     EXPECT_EQ(300, window_->bounds().height());
   }
@@ -145,18 +166,21 @@ TEST_F(WorkspaceWindowResizerTest, ShrinkMoveThanMoveUp) {
   // Drag down past the bottom of the screen, height should stop when it hits
   // the bottom.
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    EXPECT_TRUE(resizer.is_resizable());
-    resizer.Drag(CalculateDragPoint(resizer, 200));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 200));
     EXPECT_EQ(500, window_->bounds().y());
     EXPECT_EQ(100, window_->bounds().height());
     // End and start a new drag session.
   }
 
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    resizer.Drag(CalculateDragPoint(resizer, -400));
-    resizer.Drag(CalculateDragPoint(resizer, -450));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -400));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -450));
     EXPECT_EQ(50, window_->bounds().y());
     EXPECT_EQ(300, window_->bounds().height());
   }
@@ -166,11 +190,12 @@ TEST_F(WorkspaceWindowResizerTest, ShrinkMoveThanMoveUp) {
 TEST_F(WorkspaceWindowResizerTest, ShrinkWithGrid) {
   window_->SetBounds(gfx::Rect(0, 300, 400, 296));
 
-  WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 5);
-  EXPECT_TRUE(resizer.is_resizable());
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTCAPTION, 5));
+  ASSERT_TRUE(resizer.get());
   // Drag down 8 pixels.
-  resizer.Drag(CalculateDragPoint(resizer, 8));
-  resizer.CompleteDrag();
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 8));
+  resizer->CompleteDrag();
   EXPECT_EQ(310, window_->bounds().y());
   EXPECT_EQ(kRootHeight - 310, window_->bounds().height());
 }
@@ -185,16 +210,20 @@ TEST_F(WorkspaceWindowResizerTest, ShrinkThanGrow) {
   // Most past the bottom of the screen, height should stop when it hits the
   // bottom.
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    resizer.Drag(CalculateDragPoint(resizer, 150));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 150));
     EXPECT_EQ(550, window_->bounds().y());
     EXPECT_EQ(50, window_->bounds().height());
   }
 
   // Resize the window 500 pixels up.
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTTOP, 0);
-    resizer.Drag(CalculateDragPoint(resizer, -500));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTTOP, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -500));
     EXPECT_EQ(50, window_->bounds().y());
     EXPECT_EQ(550, window_->bounds().height());
   }
@@ -208,31 +237,37 @@ TEST_F(WorkspaceWindowResizerTest, DontRememberAfterMove) {
   // Most past the bottom of the screen, height should stop when it hits the
   // bottom.
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    resizer.Drag(CalculateDragPoint(resizer, 150));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 150));
     EXPECT_EQ(450, window_->bounds().y());
     EXPECT_EQ(150, window_->bounds().height());
-    resizer.Drag(CalculateDragPoint(resizer, -150));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -150));
     EXPECT_EQ(150, window_->bounds().y());
     EXPECT_EQ(300, window_->bounds().height());
   }
 
   // Resize it slightly.
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTBOTTOM, 0);
-    resizer.Drag(CalculateDragPoint(resizer, -100));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTBOTTOM, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -100));
     EXPECT_EQ(150, window_->bounds().y());
     EXPECT_EQ(200, window_->bounds().height());
   }
 
   {
     // Move it down then back up.
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    resizer.Drag(CalculateDragPoint(resizer, 400));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 400));
     EXPECT_EQ(550, window_->bounds().y());
     EXPECT_EQ(50, window_->bounds().height());
 
-    resizer.Drag(CalculateDragPoint(resizer, 0));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0));
     EXPECT_EQ(150, window_->bounds().y());
     EXPECT_EQ(200, window_->bounds().height());
   }
@@ -246,24 +281,26 @@ TEST_F(WorkspaceWindowResizerTest, HonorMin) {
   // Most past the bottom of the screen, height should stop when it hits the
   // bottom.
   {
-    WorkspaceWindowResizer resizer(window_.get(), gfx::Point(), HTCAPTION, 0);
-    resizer.Drag(CalculateDragPoint(resizer, 350));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, 0));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 350));
     EXPECT_EQ(500, window_->bounds().y());
     EXPECT_EQ(100, window_->bounds().height());
 
-    resizer.Drag(CalculateDragPoint(resizer, 300));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 300));
     EXPECT_EQ(500, window_->bounds().y());
     EXPECT_EQ(100, window_->bounds().height());
 
-    resizer.Drag(CalculateDragPoint(resizer, 250));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 250));
     EXPECT_EQ(500, window_->bounds().y());
     EXPECT_EQ(100, window_->bounds().height());
 
-    resizer.Drag(CalculateDragPoint(resizer, 100));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 100));
     EXPECT_EQ(400, window_->bounds().y());
     EXPECT_EQ(200, window_->bounds().height());
 
-    resizer.Drag(CalculateDragPoint(resizer, -100));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -100));
     EXPECT_EQ(200, window_->bounds().y());
     EXPECT_EQ(300, window_->bounds().height());
   }
