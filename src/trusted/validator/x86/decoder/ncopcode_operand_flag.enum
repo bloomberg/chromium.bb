@@ -6,11 +6,6 @@
 OpUse
 # Operand is set
 OpSet
-# Operand is destination operand. Used with prefix LOCK to check correctness.
-# Todo(karl): Currently only added to instructions with OpcodeLockable flag,
-# or using new API functions in ncdecode_forms.h. Need to propagate to all
-# instructions for consistency.
-OpDest
 # Operand is an address (as in LEA).
 OpAddress
 # Operand is implicit (rather than explicit)

@@ -81,7 +81,7 @@ static const char* NaClInstCatName(NaClInstCat cat) {
   return "Unspecified";
 }
 
-/* Returns the OpSet, OpUse, and OpDest operand flags for the destination
+/* Returns the OpSet and OpUse operand flags for the destination
  * argument of the instruction, given the category of instruction. Argument
  * num_ops is the number of operands the instruction has.
  */
@@ -184,14 +184,14 @@ static NaClOpFlags NaClGetArg2PlusFlags(NaClInstCat icat,
       if (op_index == 2) {
         /* The second argument is always both a set and a use. */
         if (visible_index == 2) {
-          return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpDest);
+          return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
         } else {
           return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
         }
       } else if (op_index == 3) {
         /* If it has a 3rd argument, it is like a cmpxchg. */
         if (visible_index == 1) {
-          return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpDest);
+          return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
         } else {
           return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
         }
@@ -224,7 +224,7 @@ static NaClOpFlags NaClGetArg2PlusFlags(NaClInstCat icat,
   }
 }
 
-/* Returns the OpSet, OpUse, and OpDest operand flags for the operand
+/* Returns the OpSet and OpUse operand flags for the operand
  * with the given operand_index (1-based) argument for the instruction,
  *
  * Argument icat is the instruction category of the instruction being
@@ -250,12 +250,6 @@ static NaClOpFlags NaClGetIcatFlags(NaClInstCat icat,
   } else {
     flags = NaClGetArg2PlusFlags(icat, visible_count, operand_index);
   }
-  /* Always flag the first visible argument as a (lockable) destination,
-   * unless a Lea instruction.
-   */
-  if ((visible_count == 1) && (flags & NACL_OPFLAG(OpSet)) && (icat != Lea)) {
-    flags |= NACL_OPFLAG(OpDest);
-  }
   return flags;
 }
 
@@ -272,7 +266,7 @@ static void NaClAddMiscellaneousFlags() {
   DEBUG(NaClLog(LOG_INFO, "<- Adding Miscellaneous Flags\n"));
 }
 
-/* Adds OpSet/OpUse/OpDest flags to operands to the current instruction,
+/* Adds OpSet/OpUse flags to operands to the current instruction,
  * based on the given instruction categorization.
  */
 static void NaClSetInstCat(NaClInstCat icat) {

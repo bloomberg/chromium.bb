@@ -34,17 +34,6 @@ struct NaClSymbolTable;
  *
  *     OP Dest
  *
- * Note: Most instruction defines an OpDest flag. This flag is associated with
- * the first (visible) operand of the instruction, corresponding to the
- * Dest argument. A few instructions (such as compare and exchange operations)
- * define both the source and the destinations with the flag OpDest. Compare
- * and exchange operation does this because the operation is commutative
- * (meaning that operands can be listed in any order). Exchange operations
- * change the value of both arguments, and therefore have multiple destinations.
- *
- * The current use of operand flag OpDest is used to define what operands can
- * be locked, when the lock prefix is used.
- *
  * Reading the text associated with each instruction, one should be able to
  * categorize (most) instructions, into one of the following:
  */

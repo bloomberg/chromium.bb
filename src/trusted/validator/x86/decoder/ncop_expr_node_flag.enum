@@ -7,9 +7,6 @@ ExprSet
 ExprUsed
 # Defines that an address is computed by the subexpression.
 ExprAddress
-# Defines that the subexpression corresponds to the destination
-# of the corresponding instruction.
-ExprDest
 # Defines that the size of the data is 1 byte.
 ExprSize8
 # Defines that the size of the data is 2 bytes.

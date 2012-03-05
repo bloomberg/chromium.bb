@@ -1,66 +1,66 @@
 0000000000000000: 00 c0                                        add %al, %al
   00                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
     Add $Eb, $Gb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
 0000000000000000: 01 c0                                        add %eax, %eax
   01                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Add $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 0000000000000000: 41 01 c3                                     add %r11d, %eax
   01                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Add $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r11d, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %r11d, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 0000000000000000: 44 01 d8                                     add %eax, %r11d
   01                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Add $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %r11d, ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 01 c3                                     add %rbx, %rax
   01                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Add $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rbx, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rbx, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
 0000000000000000: 67 03 18                                     add %ebx, [%eax]
   03                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Add $Gv, $Ev
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse OpSet OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize32 },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
@@ -71,11 +71,11 @@ NaClExpVector[8] = {
 0000000000000000: 02 04 00                                     add %al, [%rax+%rax*1]
   02                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
     Add $Gb, $Eb
-      G_Operand               OpUse OpSet OpDest
+      G_Operand               OpUse OpSet
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
@@ -86,11 +86,11 @@ NaClExpVector[8] = {
 0000000000000000: 67 02 04 00                                  add %al, [%eax+%eax*1]
   02                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
     Add $Gb, $Eb
-      G_Operand               OpUse OpSet OpDest
+      G_Operand               OpUse OpSet
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize32 },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
@@ -101,11 +101,11 @@ NaClExpVector[8] = {
 0000000000000000: 48 83 ec 08                                  sub %rsp, 0x8
   83 / 5                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Sub $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
@@ -202,11 +202,11 @@ NaClExpVector[4] = {
 0000000000000000: 49 89 d1                                     mov %r9, %rdx
   89                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $Ev, $Gv
-      E_Operand               OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpSet OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r9, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %r9, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rdx, ExprUsed | ExprSize64 },
 };
@@ -214,21 +214,21 @@ NaClExpVector[4] = {
   5e - r6                     386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o OperandSizeDefaultIs64
     Pop {%rsp}, $r8v
       RegRSP                  OpUse OpSet OpImplicit
-      G_OpcodeBase            OpSet OpDest
+      G_OpcodeBase            OpSet
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rsi, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSet | ExprSize64 },
 };
 0000000000000000: 49 c7 c0 c0 08 40 00                         mov %r8, 0x4008c0
   c7 / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_z OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $Ev, $Iz
-      E_Operand               OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpSet OperandZeroExtends_v
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r8, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %r8, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x4008c0, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
@@ -240,11 +240,11 @@ NaClExpVector[0] = {
 0000000000000000: 48 8b 05 61 0d 20 00                         mov %rax, [%rip+0x200d61]
   8b                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rax, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
@@ -312,33 +312,33 @@ NaClExpVector[0] = {
 0000000000000000: b8 00 00 00 00                               mov %eax, 0x0
   b8 - r0                     386 OpcodeHasImmed OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $r8v, $Iv
-      G_OpcodeBase            OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpSet OperandZeroExtends_v
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: bf 20 10 60 00                               mov %edi, 0x601020
   bf - r7                     386 OpcodeHasImmed OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $r8v, $Iv
-      G_OpcodeBase            OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpSet OperandZeroExtends_v
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %edi, ExprSet | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %edi, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x601020, ExprUsed | ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: 48 8b 04 c5 a0 13 60 00                      mov %rax, [%rax*8+0x6013a0]
   8b                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rax, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
@@ -349,11 +349,11 @@ NaClExpVector[8] = {
 0000000000000000: 89 7d fc                                     mov [%rbp-0x4], %edi
   89                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $Ev, $Gv
-      E_Operand               OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpSet OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -394,11 +394,11 @@ NaClExpVector[8] = {
 0000000000000000: 8b 45 fc                                     mov %eax, [%rbp-0x4]
   8b                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $Gv, $Ev
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
@@ -409,11 +409,11 @@ NaClExpVector[8] = {
 0000000000000000: 41 d3 e4                                     [P] dontcare %r12d (su), %cl (u)
   d3 / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, %cl
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       RegCL                   OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r12d, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %r12d, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
 };
@@ -425,11 +425,11 @@ NaClExpVector[0] = {
 0000000000000000: 48 c1 fd 03                                  [P] dontcare %rbp (su), 0x3 (u)
   c1 / 7                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Ib
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x3, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
@@ -451,11 +451,11 @@ NaClExpVector[8] = {
 0000000000000000: a0 88 77 66 55 44 33 22 11                   mov %al, [0x1122334455667788]
   a0                          386 OpcodeHasImmed_Addr OperandSize_b
     Mov %al, $Ob
-      RegAL                   OpSet OpDest
+      RegAL                   OpSet
       O_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
@@ -466,11 +466,11 @@ NaClExpVector[8] = {
 0000000000000000: 66 a1 88 77 66 55 44 33 22 11                mov %ax, [0x1122334455667788]
   a1                          386 OpcodeHasImmed_Addr OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $rAXv, $Ov
-      RegREAX                 OpSet OpDest OperandZeroExtends_v
+      RegREAX                 OpSet OperandZeroExtends_v
       O_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ax, ExprSet | ExprDest | ExprSize16 },
+  { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
@@ -481,11 +481,11 @@ NaClExpVector[8] = {
 0000000000000000: a2 88 77 66 55 44 33 22 11                   mov [0x1122334455667788], %al
   a2                          386 OpcodeHasImmed_Addr OperandSize_b
     Mov $Ob, %al
-      O_Operand               OpSet OpDest
+      O_Operand               OpSet
       RegAL                   OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -496,11 +496,11 @@ NaClExpVector[8] = {
 0000000000000000: 66 a3 88 77 66 55 44 33 22 11                mov [0x1122334455667788], %ax
   a3                          386 OpcodeHasImmed_Addr OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $Ov, $rAXv
-      O_Operand               OpSet OpDest OperandZeroExtends_v
+      O_Operand               OpSet OperandZeroExtends_v
       RegREAX                 OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -511,22 +511,22 @@ NaClExpVector[8] = {
 0000000000000000: 48 b8 88 77 66 55 44 33 22 11                mov %rax, 0x1122334455667788
   b8 - r0                     386 OpcodeHasImmed OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $r8v, $Iv
-      G_OpcodeBase            OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpSet OperandZeroExtends_v
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rax, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x1122334455667788, ExprUsed | ExprSize64 | ExprUnsignedHex },
 };
 0000000000000000: 44 8a 04 00                                  mov %r8b, [%rax+%rax*1]
   8a                          386 OpcodeUsesModRm OperandSize_b
     Mov $Gb, $Eb
-      G_Operand               OpSet OpDest
+      G_Operand               OpSet
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r8b, ExprSet | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %r8b, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
@@ -537,11 +537,11 @@ NaClExpVector[8] = {
 0000000000000000: 8a 44 05 00                                  mov %al, [%rbp+%rax*1]
   8a                          386 OpcodeUsesModRm OperandSize_b
     Mov $Gb, $Eb
-      G_Operand               OpSet OpDest
+      G_Operand               OpSet
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
@@ -552,11 +552,11 @@ NaClExpVector[8] = {
 0000000000000000: 42 8a 04 20                                  mov %al, [%rax+%r12*1]
   8a                          386 OpcodeUsesModRm OperandSize_b
     Mov $Gb, $Eb
-      G_Operand               OpSet OpDest
+      G_Operand               OpSet
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
@@ -567,11 +567,11 @@ NaClExpVector[8] = {
 0000000000000000: 41 8a 44 05 00                               mov %al, [%r13+%rax*1]
   8a                          386 OpcodeUsesModRm OperandSize_b
     Mov $Gb, $Eb
-      G_Operand               OpSet OpDest
+      G_Operand               OpSet
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %r13, ExprUsed | ExprSize64 },
@@ -739,22 +739,22 @@ NaClExpVector[0] = {
 0000000000000000: 48 63 c6                                     [P] dontcare %rax (sz), %esi (u)
   63                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o LongMode PartialInstruction
     DontCare $Gv, $Ed
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OperandZeroExtends_v
       Ev_Operand              OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rax, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %esi, ExprUsed | ExprSize32 },
 };
 0000000000000000: 63 c6                                        [P] dontcare %eax (sz), %esi (u)
   63                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o LongMode PartialInstruction
     DontCare $Gv, $Ed
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OperandZeroExtends_v
       Ev_Operand              OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %esi, ExprUsed | ExprSize32 },
 };
@@ -857,43 +857,43 @@ NaClExpVector[4] = {
 0000000000000000: 86 c2                                        [P] dontcare %dl (su), %al (su)
   86                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb, $Gb
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
+      G_Operand               OpUse OpSet
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %dl, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %dl, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: 86 40 20                                     [P] dontcare [%rax+0x20] (su), %al (su)
   86                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb, $Gb
-      E_Operand               OpUse OpSet OpDest
-      G_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
+      G_Operand               OpUse OpSet
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0x20, ExprSize8 | ExprSignedHex },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: 87 40 20                                     [P] dontcare [%rax+0x20] (suz), %eax (suz)
   87                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
+      G_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0x20, ExprSize8 | ExprSignedHex },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: a6                                           [P] dontcare %es:%rdi (u), %ds:%rsi (u)
   a6                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b PartialInstruction
@@ -1189,22 +1189,22 @@ NaClExpVector[0] = {
 0000000000000000: 80 e4 df                                     and %ah, 0xdf
   80 / 4                      386 OpcodeInModRm OpcodeUsesModRm OpcodeHasImmed OpcodeLockable OperandSize_b
     And $Eb, $Ib
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0xdf, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 22 24 25 df 00 00 00                         and %ah, [0xdf]
   22                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
     And $Gb, $Eb
-      G_Operand               OpUse OpSet OpDest
+      G_Operand               OpUse OpSet
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
@@ -1215,11 +1215,11 @@ NaClExpVector[8] = {
 0000000000000000: 40 22 24 25 df 00 00 00                      and %spl, [0xdf]
   22                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
     And $Gb, $Eb
-      G_Operand               OpUse OpSet OpDest
+      G_Operand               OpUse OpSet
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %spl, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %spl, ExprSet | ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
@@ -1245,11 +1245,11 @@ NaClExpVector[8] = {
 0000000000000000: 64 48 33 14 25 28 00 00 00                   [P] dontcare %rdx (suz), %fs:[0x28] (u)
   33                          386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Gv, $Ev
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse OpSet OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %fs, ExprUsed | ExprSize16 },
@@ -1262,23 +1262,23 @@ NaClExpVector[10] = {
 0000000000000000: 48 b8 cd cc cc cc cc cc cc cc                mov %rax, 0xcccccccccccccccd
   b8 - r0                     386 OpcodeHasImmed OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $r8v, $Iv
-      G_OpcodeBase            OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpSet OperandZeroExtends_v
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rax, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0xcccccccccccccccd, ExprUsed | ExprSize64 | ExprUnsignedHex },
 };
 0000000000000000: 66 6b c0 16                                  [P] dontcare %ax (sz), %ax (u), 0x16 (u)
   6b                          386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Gv, $Ev, $Ib
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OperandZeroExtends_v
       E_Operand               OpUse
       I_Operand               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ax, ExprSet | ExprDest | ExprSize16 },
+  { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
@@ -1287,12 +1287,12 @@ NaClExpVector[6] = {
 0000000000000000: 66 6b d8 16                                  [P] dontcare %bx (sz), %ax (u), 0x16 (u)
   6b                          386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Gv, $Ev, $Ib
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OperandZeroExtends_v
       E_Operand               OpUse
       I_Operand               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %bx, ExprSet | ExprDest | ExprSize16 },
+  { ExprRegister[0] , %bx, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
@@ -1329,11 +1329,11 @@ NaClExpVector[6] = {
 0000000000000000: 0f af 91 70 01 00 00                         [P] dontcare %edx (suz), [%rcx+0x170] (u)
   0f af                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Gv, $Ev
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse OpSet OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %edx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %edx, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rcx, ExprUsed | ExprSize64 },
@@ -1344,11 +1344,11 @@ NaClExpVector[8] = {
 0000000000000000: 0f af c1                                     [P] dontcare %eax (suz), %ecx (u)
   0f af                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Gv, $Ev
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpUse OpSet OperandZeroExtends_v
       E_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %ecx, ExprUsed | ExprSize32 },
 };
@@ -1420,58 +1420,58 @@ NaClExpVector[0] = {
 0000000000000000: f6 d8                                        [P] dontcare %al (su)
   f6 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: f7 d9                                        [P] dontcare %ecx (suz)
   f7 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 49 f7 de                                     [P] dontcare %r14 (suz)
   f7 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r14, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %r14, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 48 f7 da                                     [P] dontcare %rdx (suz)
   f7 / 3                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: f6 d1                                        [P] dontcare %cl (su)
   f6 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %cl, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %cl, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: f7 d1                                        [P] dontcare %ecx (suz)
   f7 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 f7 d2                                     [P] dontcare %rdx (suz)
   f7 / 2                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: f6 e2                                        [P] dontcare %ax (s), %al (u), %dl (u)
   f6 / 4                      386 OpcodeInModRm OpcodeUsesModRm OperandSize_b PartialInstruction
@@ -1594,10 +1594,10 @@ NaClExpVector[6] = {
 0000000000000000: f2 0f 11 54 24 10                            [P] dontcare [%rsp+0x10] (s)
   f2 0f 11                    SSE2 OpcodeUsesModRm OpcodeAllowsRepne PartialInstruction
     DontCare $Wsd
-      Xmm_E_Operand           OpSet OpDest
+      Xmm_E_Operand           OpSet
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1618,10 +1618,10 @@ NaClExpVector[6] = {
 0000000000000000: f3 0f 11 44 24 0c                            [P] dontcare [%rsp+0xc] (s)
   f3 0f 11                    SSE OpcodeUsesModRm OpcodeAllowsRep PartialInstruction
     DontCare $Wss
-      Xmm_E_Operand           OpSet OpDest
+      Xmm_E_Operand           OpSet
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1642,10 +1642,10 @@ NaClExpVector[6] = {
 0000000000000000: f3 0f 11 44 24 0c                            [P] dontcare [%rsp+0xc] (s)
   f3 0f 11                    SSE OpcodeUsesModRm OpcodeAllowsRep PartialInstruction
     DontCare $Wss
-      Xmm_E_Operand           OpSet OpDest
+      Xmm_E_Operand           OpSet
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1662,26 +1662,26 @@ NaClExpVector[2] = {
 0000000000000000: 0f c8                                        [P] dontcare %eax (su)
   0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $r8v
-      G_OpcodeBase            OpUse OpSet OpDest
+      G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 48 0f c8                                     [P] dontcare %rax (su)
   0f c8 - r0                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $r8v
-      G_OpcodeBase            OpUse OpSet OpDest
+      G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 49 0f cd                                     [P] dontcare %r13 (su)
   0f cd - r5                  386 OpcodePlusR OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $r8v
-      G_OpcodeBase            OpUse OpSet OpDest
+      G_OpcodeBase            OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r13, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %r13, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 0f 6e 11                                     [P] dontcare [%rcx] (u)
   0f 6e                       MMX OpcodeUsesModRm SizeIgnoresData16 OperandSize_v PartialInstruction
@@ -1722,10 +1722,10 @@ NaClExpVector[6] = {
 0000000000000000: 0f 7e 0e                                     [P] dontcare [%rsi] (sz)
   0f 7e                       MMX OpcodeUsesModRm SizeIgnoresData16 OperandSize_v PartialInstruction
     DontCare $Ed/q/d
-      E_Operand               OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpSet OperandZeroExtends_v
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1734,10 +1734,10 @@ NaClExpVector[6] = {
 0000000000000000: 49 0f 7e 0e                                  [P] dontcare [%r14] (s)
   0f 7e                       MMX OpcodeUsesModRm SizeIgnoresData16 OperandSize_o PartialInstruction
     DontCare $Ed/q/q
-      E_Operand               OpSet OpDest
+      E_Operand               OpSet
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %r14, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1823,10 +1823,10 @@ NaClExpVector[2] = {
 0000000000000000: 0f 7f 0e                                     [P] dontcare [%rsi] (s)
   0f 7f                       MMX OpcodeUsesModRm PartialInstruction
     DontCare $Qq
-      Mmx_E_Operand           OpSet OpDest
+      Mmx_E_Operand           OpSet
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1847,11 +1847,11 @@ NaClExpVector[6] = {
 0000000000000000: 0f 71 d1 08                                  [P] dontcare %mmx1 (su), 0x8 (u)
   0f 71 / 2                   MMX OpcodeInModRm ModRmModIs0x3 OpcodeUsesModRm OpcodeHasImmed_b PartialInstruction
     DontCare $PRq, $Ib
-      Mmx_E_Operand           OpUse OpSet OpDest
+      Mmx_E_Operand           OpUse OpSet
       I_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %mmx1, ExprSet | ExprUsed | ExprDest },
+  { ExprRegister[0] , %mmx1, ExprSet | ExprUsed },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
@@ -1890,10 +1890,10 @@ NaClExpVector[6] = {
 0000000000000000: f3 0f 7f 0e                                  [P] dontcare [%rsi] (s)
   f3 0f 7f                    SSE2 OpcodeUsesModRm OpcodeAllowsRep PartialInstruction
     DontCare $Wdq
-      Xmm_E_Operand           OpSet OpDest
+      Xmm_E_Operand           OpSet
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1902,10 +1902,10 @@ NaClExpVector[6] = {
 0000000000000000: 0f e7 0e                                     [P] dontcare [%rsi] (s)
   0f e7                       MMX ModRmModIsnt0x3 OpcodeUsesModRm PartialInstruction
     DontCare $Mq
-      Mo_Operand              OpSet OpDest
+      Mo_Operand              OpSet
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1914,10 +1914,10 @@ NaClExpVector[6] = {
 0000000000000000: 66 0f 29 0c 24                               [P] dontcare [%rsp] (s)
   66 0f 29                    SSE2 OpcodeUsesModRm OpcodeAllowsData16 SizeIgnoresData16 PartialInstruction
     DontCare $Wpd
-      Xmm_E_Operand           OpSet OpDest
+      Xmm_E_Operand           OpSet
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1934,18 +1934,18 @@ NaClExpVector[2] = {
 0000000000000000: 48 ff c0                                     [P] dontcare %rax (suz)
   ff / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: ff 05 a4 76 39 00                            [P] dontcare [%rip+0x3976a4] (suz)
   ff / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -1954,58 +1954,58 @@ NaClExpVector[6] = {
 0000000000000000: ff c0                                        [P] dontcare %eax (suz)
   ff / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 41 ff c5                                     [P] dontcare %r13d (suz)
   ff / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r13d, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %r13d, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: fe c0                                        [P] dontcare %al (su)
   fe / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: fe c4                                        [P] dontcare %ah (su)
   fe / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: 41 fe c0                                     [P] dontcare %r8b (su)
   fe / 0                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r8b, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %r8b, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: ff ca                                        [P] dontcare %edx (suz)
   ff / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %edx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %edx, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: ff 0d 8f 76 39 00                            [P] dontcare [%rip+0x39768f] (suz)
   ff / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -2014,54 +2014,54 @@ NaClExpVector[6] = {
 0000000000000000: 48 ff c8                                     [P] dontcare %rax (suz)
   ff / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: 49 ff cc                                     [P] dontcare %r12 (suz)
   ff / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r12, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %r12, ExprSet | ExprUsed | ExprSize64 },
 };
 0000000000000000: fe c8                                        [P] dontcare %al (su)
   fe / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: fe cc                                        [P] dontcare %ah (su)
   fe / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %ah, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: 41 fe c8                                     [P] dontcare %r8b (su)
   fe / 1                      386 OpcodeInModRm OpcodeUsesModRm OpcodeLockable OperandSize_b PartialInstruction
     DontCare $Eb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
 NaClExpVector[2] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %r8b, ExprSet | ExprUsed | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %r8b, ExprSet | ExprUsed | ExprSize8 },
 };
 0000000000000000: f0 0f b1 35 21 c6 31 00                      [P] dontcare %eax (su), [%rip+0x31c621] (su), %esi (su)
   0f b1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $rAXv, $Ev, $Gv
       RegREAX                 OpUse OpSet
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse OpSet
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -2073,13 +2073,13 @@ NaClExpVector[10] = {
   0f b1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $rAXv, $Ev, $Gv
       RegREAX                 OpUse OpSet
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse OpSet
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -2091,13 +2091,13 @@ NaClExpVector[10] = {
   0f b1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $rAXv, $Ev, $Gv
       RegREAX                 OpUse OpSet
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse OpSet
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %r8, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -2108,47 +2108,47 @@ NaClExpVector[10] = {
 0000000000000000: f0 0f c1 02                                  [P] dontcare [%rdx] (suz), %eax (suz)
   0f c1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
+      G_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rdx, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: f0 0f c1 43 18                               [P] dontcare [%rbx+0x18] (suz), %eax (suz)
   0f c1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
+      G_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rbx, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0x18, ExprSize8 | ExprSignedHex },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: f0 41 0f c1 00                               [P] dontcare [%r8] (suz), %eax (suz)
   0f c1                       386 OpcodeUsesModRm OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv
-      E_Operand               OpUse OpSet OpDest OperandZeroExtends_v
-      G_Operand               OpUse OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpUse OpSet OperandZeroExtends_v
+      G_Operand               OpUse OpSet OperandZeroExtends_v
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %r8, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
 0000000000000000: 0f 05                                        [P] dontcare(illegal)
   0f 05                       SYSCALL NaClIllegal PartialInstruction
@@ -2211,11 +2211,11 @@ NaClExpVector[6] = {
 0000000000000000: 48 0f c3 07                                  [P] dontcare [%rdi] (s), %rax (u)
   0f c3                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm SizeIgnoresData16 OperandSize_v OperandSize_o PartialInstruction
     DontCare $Md/q, $Gd/q
-      M_Operand               OpSet OpDest
+      M_Operand               OpSet
       G_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rdi, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -2326,11 +2326,11 @@ NaClExpVector[4] = {
 0000000000000000: 67 40 a0 00 01 02 03                         mov %al, [0x3020100]
   a0                          386 OpcodeHasImmed_Addr OperandSize_b
     Mov %al, $Ob
-      RegAL                   OpSet OpDest
+      RegAL                   OpSet
       O_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize32 },
   { ExprRegister[0] , %unknown, 0 },
@@ -2372,13 +2372,13 @@ NaClExpVector[0] = {
 0000000000000000: 66 66 90                                     [P] dontcare %ax (suz), %ax (suz)
   90 - r0                     386 OpcodePlusR OpcodeLockable OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $r8v, $rAXv
-      G_OpcodeBase            OpUse OpSet OpDest OperandZeroExtends_v
-      RegREAX                 OpUse OpSet OpDest OperandZeroExtends_v
+      G_OpcodeBase            OpUse OpSet OperandZeroExtends_v
+      RegREAX                 OpUse OpSet OperandZeroExtends_v
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ax, ExprSet | ExprUsed | ExprDest | ExprSize16 },
+  { ExprRegister[0] , %ax, ExprSet | ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ax, ExprSet | ExprUsed | ExprDest | ExprSize16 },
+  { ExprRegister[0] , %ax, ExprSet | ExprUsed | ExprSize16 },
 };
 0000000000000000: 8d 76 00                                     lea %esi, [%rsi]
   8d                          386 ModRmModIsnt0x3 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
@@ -2443,11 +2443,11 @@ NaClExpVector[8] = {
 0000000000000000: 89 f6                                        mov %esi, %esi
   89                          386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o
     Mov $Ev, $Gv
-      E_Operand               OpSet OpDest OperandZeroExtends_v
+      E_Operand               OpSet OperandZeroExtends_v
       G_Operand               OpUse
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %esi, ExprSet | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %esi, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %esi, ExprUsed | ExprSize32 },
 };
@@ -2613,11 +2613,11 @@ NaClExpVector[8] = {
 0000000000000000: 66 0f 3a 15 00 00                            [P] dontcare [%rax] (s), 0x0 (u)
   66 0f 3a 15                 SSE41 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 SizeIgnoresData16 PartialInstruction
     DontCare $Rd/Mw, $Ib
-      Ev_Operand              OpSet OpDest
+      Ev_Operand              OpSet
       I_Operand               OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -2731,12 +2731,12 @@ NaClExpVector[6] = {
 0000000000000000: 0f a4 c6 01                                  [P] dontcare %esi (s), %eax (u), 0x1 (u)
   0f a4                       386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv, $Ib
-      E_Operand               OpSet OpDest
+      E_Operand               OpSet
       G_Operand               OpUse
       I_Operand               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %esi, ExprSet | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %esi, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
@@ -2745,12 +2745,12 @@ NaClExpVector[6] = {
 0000000000000000: 0f a5 c6                                     [P] dontcare %esi (s), %eax (u), %cl (u)
   0f a5                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv, %cl
-      E_Operand               OpSet OpDest
+      E_Operand               OpSet
       G_Operand               OpUse
       RegCL                   OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %esi, ExprSet | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %esi, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
@@ -2759,12 +2759,12 @@ NaClExpVector[6] = {
 0000000000000000: 48 0f a5 c6                                  [P] dontcare %rsi (s), %rax (u), %cl (u)
   0f a5                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv, %cl
-      E_Operand               OpSet OpDest
+      E_Operand               OpSet
       G_Operand               OpUse
       RegCL                   OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rsi, ExprSet | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rsi, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
@@ -2847,11 +2847,11 @@ NaClExpVector[4] = {
 0000000000000000: 66 43 0f be 04 27                            [P] dontcare %ax (sz), [%r15+%r12*1] (u)
   0f be                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Gv, $Eb
-      G_Operand               OpSet OpDest OperandZeroExtends_v
+      G_Operand               OpSet OperandZeroExtends_v
       Eb_Operand              OpUse
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ax, ExprSet | ExprDest | ExprSize16 },
+  { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprMemOffset[4] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %r15, ExprUsed | ExprSize64 },
@@ -2883,12 +2883,12 @@ NaClExpVector[0] = {
 0000000000000000: 48 0f ac c1 10                               [P] dontcare %rcx (su), %rax (u), 0x10 (u)
   0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv, $Ib
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse
       I_Operand               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %rcx, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprRegister[0] , %rcx, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
@@ -2897,12 +2897,12 @@ NaClExpVector[6] = {
 0000000000000000: 0f ac c1 10                                  [P] dontcare %ecx (su), %eax (u), 0x10 (u)
   0f ac                       386 OpcodeUsesModRm OpcodeHasImmed_b OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv, $Ib
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse
       I_Operand               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprDest | ExprSize32 },
+  { ExprRegister[0] , %ecx, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
@@ -2911,12 +2911,12 @@ NaClExpVector[6] = {
 0000000000000000: 0f ad 45 bc                                  [P] dontcare [%rbp-0x44] (su), %eax (u), %cl (u)
   0f ad                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv, %cl
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse
       RegCL                   OpUse
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -2929,12 +2929,12 @@ NaClExpVector[10] = {
 0000000000000000: 48 0f ad 45 bc                               [P] dontcare [%rbp-0x44] (su), %rax (u), %cl (u)
   0f ad                       386 OpcodeUsesModRm OpcodeAllowsData16 OperandSize_w OperandSize_v OperandSize_o PartialInstruction
     DontCare $Ev, $Gv, %cl
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse
       RegCL                   OpUse
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -2957,11 +2957,11 @@ NaClExpVector[0] = {
 0000000000000000: 26 64 65 00 01                               add %gs:[%rcx], %al
   00                          386 OpcodeUsesModRm OpcodeLockable OperandSize_b
     Add $Eb, $Gb
-      E_Operand               OpUse OpSet OpDest
+      E_Operand               OpUse OpSet
       G_Operand               OpUse
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %gs, ExprUsed | ExprSize16 },
   { ExprMemOffset[4] , 0, ExprSize64 },
   { ExprRegister[0] , %rcx, ExprUsed | ExprSize64 },
@@ -2994,11 +2994,11 @@ NaClExpVector[0] = {
 0000000000000000: 64 40 a0 00 01 02 03 04 05 06 07             mov %al, %fs:[0x706050403020100]
   a0                          386 OpcodeHasImmed_Addr OperandSize_b
     Mov %al, $Ob
-      RegAL                   OpSet OpDest
+      RegAL                   OpSet
       O_Operand               OpUse
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
-  { ExprRegister[0] , %al, ExprSet | ExprDest | ExprSize8 },
+  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %fs, ExprUsed | ExprSize16 },
@@ -3149,14 +3149,14 @@ NaClExpVector[4] = {
     DontCare %edx, %eax, $Mq
       RegEDX                  OpUse OpSet
       RegEAX                  OpUse OpSet
-      Mo_Operand              OpUse OpSet OpDest
+      Mo_Operand              OpUse OpSet
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %edx, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -3167,14 +3167,14 @@ NaClExpVector[10] = {
     DontCare %rdx, %eax, $Mdq
       RegRDX                  OpUse OpSet
       RegEAX                  OpUse OpSet
-      Mdq_Operand             OpUse OpSet OpDest
+      Mdq_Operand             OpUse OpSet
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -3185,14 +3185,14 @@ NaClExpVector[10] = {
     DontCare %rdx, %eax, $Mdq
       RegRDX                  OpUse OpSet
       RegEAX                  OpUse OpSet
-      Mdq_Operand             OpUse OpSet OpDest
+      Mdq_Operand             OpUse OpSet
 NaClExpVector[10] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %rdx, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 2, ExprSize8 | ExprUnsignedInt },
-  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprDest | ExprSize64 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed | ExprSize64 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },

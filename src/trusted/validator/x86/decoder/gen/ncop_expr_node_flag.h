@@ -15,20 +15,19 @@ typedef enum NaClExpFlag {
   ExprSet = 0,
   ExprUsed = 1,
   ExprAddress = 2,
-  ExprDest = 3,
-  ExprSize8 = 4,
-  ExprSize16 = 5,
-  ExprSize32 = 6,
-  ExprSize64 = 7,
-  ExprUnsignedHex = 8,
-  ExprSignedHex = 9,
-  ExprUnsignedInt = 10,
-  ExprSignedInt = 11,
-  ExprImplicit = 12,
-  ExprJumpTarget = 13,
-  ExprDSrCase = 14,
-  ExprESrCase = 15,
-  NaClExpFlagEnumSize = 16, /* special size marker */
+  ExprSize8 = 3,
+  ExprSize16 = 4,
+  ExprSize32 = 5,
+  ExprSize64 = 6,
+  ExprUnsignedHex = 7,
+  ExprSignedHex = 8,
+  ExprUnsignedInt = 9,
+  ExprSignedInt = 10,
+  ExprImplicit = 11,
+  ExprJumpTarget = 12,
+  ExprDSrCase = 13,
+  ExprESrCase = 14,
+  NaClExpFlagEnumSize = 15, /* special size marker */
 } NaClExpFlag;
 
 /* Returns the name of an NaClExpFlag constant. */

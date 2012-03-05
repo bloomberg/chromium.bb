@@ -712,7 +712,7 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
       for (i = 0; i < vector->number_expr_nodes; ++i) {
         NaClExp* node = &vector->node[i];
         DEBUG(NaClLog(LOG_INFO, "  checking node %d\n", i));
-        if ((NACL_EMPTY_EFLAGS != (node->flags & NACL_EFLAG(ExprDest))) &&
+        if ((NACL_EMPTY_EFLAGS != (node->flags & NACL_EFLAG(ExprSet))) &&
             (node->kind == ExprMemOffset)) {
           has_lockable_dest = TRUE;
           break;
