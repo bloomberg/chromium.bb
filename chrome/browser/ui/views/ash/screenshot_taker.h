@@ -9,6 +9,7 @@
 #include "ash/screenshot_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/gfx/compositor/layer.h"
 
 namespace aura {
 class Window;
@@ -17,6 +18,7 @@ class Window;
 class ScreenshotTaker : public ash::ScreenshotDelegate {
  public:
   ScreenshotTaker();
+  virtual ~ScreenshotTaker();
 
   // Overridden from ash::ScreenshotDelegate:
   virtual void HandleTakeScreenshot(aura::Window* window) OVERRIDE;
@@ -24,6 +26,15 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
       aura::Window* window, const gfx::Rect& rect) OVERRIDE;
 
  private:
+  // Flashes the screen to provide visual feedback that a screenshot has
+  // been taken.
+  void DisplayVisualFeedback(const gfx::Rect& rect);
+
+  // Closes the visual feedback layer.
+  void CloseVisualFeedbackLayer();
+
+  scoped_ptr<ui::Layer> visual_feedback_layer_;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTaker);
 };
 

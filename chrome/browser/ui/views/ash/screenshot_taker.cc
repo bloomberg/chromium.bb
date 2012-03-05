@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -64,9 +66,19 @@ void SaveScreenshot(bool is_logged_in,
   }
 }
 
+// How opaque should the layer that we flash onscreen to provide visual
+// feedback after the screenshot is taken be?
+const float kVisualFeedbackLayerOpacity = 0.25f;
+
+// How long should the visual feedback layer be displayed?
+const int64 kVisualFeedbackLayerDisplayTimeMs = 100;
+
 }  // namespace
 
 ScreenshotTaker::ScreenshotTaker() {
+}
+
+ScreenshotTaker::~ScreenshotTaker() {
 }
 
 void ScreenshotTaker::HandleTakePartialScreenshot(
@@ -81,6 +93,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
 #endif
 
   if (browser::GrabWindowSnapshot(window, &png_data->data(), rect)) {
+    DisplayVisualFeedback(rect);
     content::BrowserThread::PostTask(
         content::BrowserThread::FILE, FROM_HERE,
         base::Bind(&SaveScreenshot, is_logged_in, png_data));
@@ -91,4 +104,26 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
 
 void ScreenshotTaker::HandleTakeScreenshot(aura::Window* window) {
   HandleTakePartialScreenshot(window, window->bounds());
+}
+
+void ScreenshotTaker::CloseVisualFeedbackLayer() {
+  visual_feedback_layer_.reset();
+}
+
+void ScreenshotTaker::DisplayVisualFeedback(const gfx::Rect& rect) {
+  visual_feedback_layer_.reset(new ui::Layer(ui::Layer::LAYER_SOLID_COLOR));
+  visual_feedback_layer_->SetColor(SK_ColorWHITE);
+  visual_feedback_layer_->SetOpacity(kVisualFeedbackLayerOpacity);
+  visual_feedback_layer_->SetBounds(rect);
+
+  ui::Layer* parent = ash::Shell::GetInstance()->GetContainer(
+      ash::internal::kShellWindowId_OverlayContainer)->layer();
+  parent->Add(visual_feedback_layer_.get());
+  visual_feedback_layer_->SetVisible(true);
+
+  MessageLoopForUI::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ScreenshotTaker::CloseVisualFeedbackLayer,
+                 base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(kVisualFeedbackLayerDisplayTimeMs));
 }
