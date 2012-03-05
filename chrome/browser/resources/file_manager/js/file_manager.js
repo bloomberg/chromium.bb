@@ -2164,7 +2164,6 @@ FileManager.prototype = {
   FileManager.prototype.onTasksFound_ = function(selection, tasksList) {
     this.taskItems_.clear();
 
-    var tasksCount = 0;
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
 
@@ -2186,30 +2185,15 @@ FileManager.prototype = {
         } else if (task_parts[1] == 'gallery') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('OPEN_ACTION');
+          task.title = str('GALLERY');
           task.allTasks = tasksList;
-        } else if (task_parts[1] == 'view-pdf') {
-          // Do not render this task if disabled.
-          if (str('PDF_VIEW_ENABLED') == 'false') continue;
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('OPEN_ACTION');
-        } else if (task_parts[1] == 'view-txt') {
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('OPEN_ACTION');
-        } else if (task_parts[1] == 'install-crx') {
-          // TODO(dgozman): change to the right icon.
-          task.iconUrl =
-              chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('INSTALL_CRX');
+          this.galleryTask_ = task;
         }
       }
       this.renderTaskItem_(task);
-      tasksCount++;
     }
 
-    this.taskItems_.visible = tasksCount > 0;
+    this.taskItems_.visible = tasksList.length > 0;
 
     selection.tasksList = tasksList;
     if (selection.dispatchDefault) {
@@ -2461,8 +2445,6 @@ FileManager.prototype = {
         }
       }
       this.openGallery_(urls, noGallery);
-    } else if (id == 'view-pdf' || id == 'view-txt' || id == 'install-crx') {
-      chrome.fileBrowserPrivate.viewFiles(urls, 'default', function() {});
     }
   };
 

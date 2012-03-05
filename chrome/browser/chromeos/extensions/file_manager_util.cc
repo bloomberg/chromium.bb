@@ -122,6 +122,29 @@ bool IsCRXFile(const char* file_extension) {
   return base::strcasecmp(file_extension, kCRXExtension) == 0;
 }
 
+// If pdf plugin is enabled, we should open pdf files in a tab.
+bool ShouldBeOpenedWithPdfPlugin(const char* file_extension) {
+  if (base::strcasecmp(file_extension, kPdfExtension) != 0)
+    return false;
+
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return false;
+
+  FilePath pdf_path;
+  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+
+  webkit::WebPluginInfo plugin;
+  if (!PluginService::GetInstance()->GetPluginInfoByPath(pdf_path, &plugin))
+    return false;
+
+  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
+  if (!plugin_prefs)
+    return false;
+
+  return plugin_prefs->IsPluginEnabled(plugin);
+}
+
 // Returns index |ext| has in the |array|. If there is no |ext| in |array|, last
 // element's index is return (last element should have irrelevant value).
 int UMAExtensionIndex(const char *file_extension,
@@ -443,29 +466,6 @@ void InstallCRX(Profile* profile, const FilePath& full_path) {
   installer->set_is_gallery_install(false);
   installer->set_allow_silent_install(false);
   installer->InstallCrx(full_path);
-}
-
-// If pdf plugin is enabled, we should open pdf files in a tab.
-bool ShouldBeOpenedWithPdfPlugin(const char* file_extension) {
-  if (base::strcasecmp(file_extension, kPdfExtension) != 0)
-    return false;
-
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return false;
-
-  FilePath pdf_path;
-  PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-
-  webkit::WebPluginInfo plugin;
-  if (!PluginService::GetInstance()->GetPluginInfoByPath(pdf_path, &plugin))
-    return false;
-
-  PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(browser->profile());
-  if (!plugin_prefs)
-    return false;
-
-  return plugin_prefs->IsPluginEnabled(plugin);
 }
 
 }  // namespace file_manager_util
