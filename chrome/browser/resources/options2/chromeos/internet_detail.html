@@ -241,6 +241,18 @@
                 <span class="controlled-setting-indicator" data="autoConnect"
                     for="autoConnectNetworkCellular"></span>
               </div>
+              <div id="internet-owner-only-warning" hidden>
+                <span i18n-content="ownerOnly"></span>
+                <span i18n-content="ownerUserId"></span>
+              </div>
+              <div id="data-roaming" class="checkbox">
+                <label>
+                  <input id="enable-data-roaming"
+                      pref="cros.signed.data_roaming_enabled"
+                      metric="Options_Internet_DataRoaming" type="checkbox">
+                  <span i18n-content="enableDataRoaming"></span>
+                </label>
+              </div>
             </td>
           </tr>
         </table>
