@@ -19,7 +19,9 @@ class JSChecker(object):
     """
 
     import sys
+    import warnings
     old_path = sys.path
+    old_filters = warnings.filters
 
     try:
       closure_linter_path = self.input_api.os_path.join(
@@ -34,11 +36,14 @@ class JSChecker(object):
       sys.path.insert(0, closure_linter_path)
       sys.path.insert(0, gflags_path)
 
+      warnings.filterwarnings('ignore', category=DeprecationWarning)
+
       from closure_linter import checker, errors
       from closure_linter.common import errorhandler
 
     finally:
       sys.path = old_path
+      warnings.filters = old_filters
 
     class ErrorHandlerImpl(errorhandler.ErrorHandler):
       """Filters out errors that don't apply to Chromium JavaScript code."""
