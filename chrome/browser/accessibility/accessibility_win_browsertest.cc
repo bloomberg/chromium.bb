@@ -195,7 +195,9 @@ void RecursiveFindNodeInAccessibilityTree(
 // of the selected tab.
 IAccessible*
 AccessibilityWinBrowserTest::GetRendererAccessible() {
-  browser()->GetSelectedWebContents()->GetRenderViewHost()->
+  // TODO(joi): Remove this dependency.
+  static_cast<RenderViewHostImpl*>(
+      browser()->GetSelectedWebContents()->GetRenderViewHost())->
       set_send_accessibility_updated_notifications(true);
 
   HWND hwnd_render_widget_host_view =

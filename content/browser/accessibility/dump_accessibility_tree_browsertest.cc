@@ -52,7 +52,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   content::RenderWidgetHostView* host_view =
       browser()->GetSelectedWebContents()->GetRenderWidgetHostView();
   RenderWidgetHost* host = host_view->GetRenderWidgetHost();
-  RenderViewHost* view_host = static_cast<RenderViewHost*>(host);
+  // TODO(joi): Remove this dependency
+  RenderViewHostImpl* view_host =
+      static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(host));
   view_host->set_save_accessibility_tree_for_testing(true);
   view_host->EnableRendererAccessibility();
 

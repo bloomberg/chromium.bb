@@ -69,7 +69,7 @@ class TaskManager {
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
     virtual Type GetType() const = 0;
-    virtual int GetRoutingId() const { return 0; }
+    virtual int GetRoutingID() const { return 0; }
 
     virtual bool ReportsCacheStats() const { return false; }
     virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const {

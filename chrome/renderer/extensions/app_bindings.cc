@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -237,8 +237,8 @@ v8::Handle<v8::Value> AppBindingsHandler::GetAppNotifyChannel(
   CHECK(render_view);
 
   Send(new ExtensionHostMsg_GetAppNotifyChannel(
-      render_view->GetRoutingId(), context_->web_frame()->document().url(),
-      client_id, GetRoutingId(), callback_id));
+      render_view->GetRoutingID(), context_->web_frame()->document().url(),
+      client_id, GetRoutingID(), callback_id));
   return v8::Undefined();
 }
 

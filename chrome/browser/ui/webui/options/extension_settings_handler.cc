@@ -603,7 +603,7 @@ void ExtensionSettingsHandler::Observe(
       // Fall through.
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
       source_profile = Profile::FromBrowserContext(
-          content::Source<RenderViewHost>(source)->site_instance()->
+          content::Source<RenderViewHost>(source)->GetSiteInstance()->
           GetBrowserContext());
       if (!profile->IsSameProfile(source_profile))
         return;
@@ -767,16 +767,16 @@ void ExtensionSettingsHandler::GetActivePagesForExtensionProcess(
   for (std::set<RenderViewHost*>::const_iterator iter = views.begin();
        iter != views.end(); ++iter) {
     RenderViewHost* host = *iter;
-    int host_type = host->delegate()->GetRenderViewType();
+    int host_type = host->GetDelegate()->GetRenderViewType();
     if (host == deleting_rvh_ ||
         chrome::VIEW_TYPE_EXTENSION_POPUP == host_type ||
         chrome::VIEW_TYPE_EXTENSION_DIALOG == host_type)
       continue;
 
-    GURL url = host->delegate()->GetURL();
-    content::RenderProcessHost* process = host->process();
+    GURL url = host->GetDelegate()->GetURL();
+    content::RenderProcessHost* process = host->GetProcess();
     result->push_back(
-        ExtensionPage(url, process->GetID(), host->routing_id(),
+        ExtensionPage(url, process->GetID(), host->GetRoutingID(),
                       process->GetBrowserContext()->IsOffTheRecord()));
   }
 }

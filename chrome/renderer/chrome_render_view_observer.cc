@@ -746,7 +746,7 @@ void ChromeRenderViewObserver::DidHandleTouchEvent(const WebTouchEvent& event) {
     return;
   if (accessibility.node() == node)
     render_view()->Send(new ChromeViewHostMsg_FocusedEditableNodeTouched(
-    render_view()->GetRoutingId()));
+    render_view()->GetRoutingID()));
 }
 
 void ChromeRenderViewObserver::CapturePageInfo(int load_id,

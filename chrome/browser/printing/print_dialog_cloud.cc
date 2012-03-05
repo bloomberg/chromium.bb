@@ -349,8 +349,8 @@ void CloudPrintFlowHandler::Observe(
         url.path() == dialog_url.path() &&
         url.scheme() == dialog_url.scheme()) {
       RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-      if (rvh && rvh->delegate()) {
-        WebPreferences webkit_prefs = rvh->delegate()->GetWebkitPrefs();
+      if (rvh && rvh->GetDelegate()) {
+        WebPreferences webkit_prefs = rvh->GetDelegate()->GetWebkitPrefs();
         webkit_prefs.allow_scripts_to_close_windows = true;
         rvh->UpdateWebkitPreferences(webkit_prefs);
       } else {

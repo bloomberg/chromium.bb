@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,7 +78,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           base::Bind(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
-              host->process()->GetID(), host->routing_id(),
+              host->GetProcess()->GetID(), host->GetRoutingID(),
               tab->restore_tab_helper()->session_id().id(),
               tab->restore_tab_helper()->window_id().id()));
       break;
@@ -92,7 +92,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           base::Bind(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
-              host->process()->GetID(), host->routing_id(),
+              host->GetProcess()->GetID(), host->GetRoutingID(),
               tab->restore_tab_helper()->session_id().id(),
               tab->restore_tab_helper()->window_id().id()));
       break;
@@ -111,7 +111,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           base::Bind(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
-              host->process()->GetID(), host->routing_id(),
+              host->GetProcess()->GetID(), host->GetRoutingID(),
               tab->restore_tab_helper()->session_id().id(),
               tab->restore_tab_helper()->window_id().id()));
       break;
@@ -123,7 +123,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           base::Bind(
               &ExtensionTabIdMap::ClearTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
-              host->process()->GetID(), host->routing_id()));
+              host->GetProcess()->GetID(), host->GetRoutingID()));
       break;
     }
     default:

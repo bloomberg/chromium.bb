@@ -1692,7 +1692,7 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   // Also notify RenderViewHostDelegate of the user gesture; this is
   // normally done in Browser::Navigate, but a reload bypasses Navigate.
   WebContents* tab = GetOrCloneTabForDisposition(disposition);
-  tab->GetRenderViewHost()->delegate()->OnUserGesture();
+  tab->GetRenderViewHost()->GetDelegate()->OnUserGesture();
   if (!tab->FocusLocationBarByDefault())
     tab->Focus();
   if (ignore_cache)

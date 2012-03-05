@@ -184,7 +184,7 @@ WebContents* ExtensionHost::GetAssociatedWebContents() const {
 }
 
 content::RenderProcessHost* ExtensionHost::render_process_host() const {
-  return render_view_host()->process();
+  return render_view_host()->GetProcess();
 }
 
 RenderViewHost* ExtensionHost::render_view_host() const {
@@ -495,7 +495,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   const Browser* browser = GetBrowser();
   if (browser) {
     render_view_host->Send(new ExtensionMsg_UpdateBrowserWindowId(
-        render_view_host->routing_id(),
+        render_view_host->GetRoutingID(),
         ExtensionTabUtil::GetWindowId(browser)));
   }
 }

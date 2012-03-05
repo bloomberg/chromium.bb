@@ -170,7 +170,7 @@ void ExtensionInfoBarGtk::OnSizeAllocate(GtkWidget* widget,
                                          GtkAllocation* allocation) {
   gfx::Size new_size(allocation->width, allocation->height);
 
-  delegate_->extension_host()->view()->render_view_host()->view()
+  delegate_->extension_host()->view()->render_view_host()->GetView()
       ->SetSize(new_size);
 }
 

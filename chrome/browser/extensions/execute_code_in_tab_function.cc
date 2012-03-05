@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -226,7 +226,8 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   params.in_main_world = false;
   contents->web_contents()->GetRenderViewHost()->Send(
       new ExtensionMsg_ExecuteCode(
-          contents->web_contents()->GetRenderViewHost()->routing_id(), params));
+          contents->web_contents()->GetRenderViewHost()->GetRoutingID(),
+          params));
 
   Observe(contents->web_contents());
   AddRef();  // balanced in OnExecuteCodeFinished()

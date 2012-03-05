@@ -240,10 +240,10 @@ class ExtensionImpl : public ChromeV8Extension {
         webframe ? webframe->isProcessingUserGesture() : false;
     if (for_io_thread) {
       renderview->Send(new ExtensionHostMsg_RequestForIOThread(
-          renderview->GetRoutingId(), params));
+          renderview->GetRoutingID(), params));
     } else {
       renderview->Send(new ExtensionHostMsg_Request(
-          renderview->GetRoutingId(), params));
+          renderview->GetRoutingID(), params));
     }
 
     return v8::Undefined();

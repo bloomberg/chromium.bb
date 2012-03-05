@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,7 +149,7 @@ void OpenUsingReader(TabContentsWrapper* tab,
                      InfoBarDelegate* new_delegate) {
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
       tab->web_contents()->GetRenderProcessHost()->GetID(),
-      tab->web_contents()->GetRenderViewHost()->routing_id(),
+      tab->web_contents()->GetRenderViewHost()->GetRoutingID(),
       tab->web_contents()->GetURL(),
       ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
   tab->web_contents()->GetRenderViewHost()->ReloadFrame();
@@ -421,5 +421,5 @@ void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
   PluginService::GetInstance()->GetPluginGroups(
       base::Bind(&GotPluginGroupsCallback,
           tab->web_contents()->GetRenderProcessHost()->GetID(),
-          tab->web_contents()->GetRenderViewHost()->routing_id()));
+          tab->web_contents()->GetRenderViewHost()->GetRoutingID()));
 }

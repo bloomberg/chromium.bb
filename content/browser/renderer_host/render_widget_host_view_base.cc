@@ -90,8 +90,4 @@ void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
   browser_accessibility_manager_.reset(manager);
 }
 
-RenderWidgetHostImpl* RenderWidgetHostViewBase::GetRenderWidgetHostImpl() {
-  return static_cast<RenderWidgetHostImpl*>(GetRenderWidgetHost());
-}
-
 }  // namespace content

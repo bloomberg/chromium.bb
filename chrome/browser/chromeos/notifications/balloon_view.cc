@@ -275,7 +275,7 @@ void BalloonViewImpl::Layout() {
   html_contents_->view()->SetBounds(0, 0, size.width(), size.height());
   if (html_contents_->web_contents()) {
     RenderWidgetHostView* view =
-        html_contents_->web_contents()->GetRenderViewHost()->view();
+        html_contents_->web_contents()->GetRenderViewHost()->GetView();
     if (view)
       view->SetSize(size);
   }
@@ -366,7 +366,7 @@ void BalloonViewImpl::DenyPermission() {
 
 gfx::NativeView BalloonViewImpl::GetParentNativeView() {
   RenderWidgetHostView* view =
-      html_contents_->web_contents()->GetRenderViewHost()->view();
+      html_contents_->web_contents()->GetRenderViewHost()->GetView();
   DCHECK(view);
   return view->GetNativeView();
 }

@@ -140,7 +140,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   TabContentsWrapper* CreateTabContentsWithSharedRPH(
       WebContents* web_contents) {
     TabContentsWrapper* retval = Browser::TabContentsFactory(profile(),
-        web_contents->GetRenderViewHost()->site_instance(), MSG_ROUTING_NONE,
+        web_contents->GetRenderViewHost()->GetSiteInstance(), MSG_ROUTING_NONE,
         NULL, NULL);
     EXPECT_EQ(retval->web_contents()->GetRenderProcessHost(),
               web_contents->GetRenderProcessHost());

@@ -123,7 +123,7 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   } else {
     test_rvh->SendNavigateWithTransition(
         controller->GetWebContents()->
-            GetMaxPageIDForSiteInstance(test_rvh->site_instance()) + 1,
+            GetMaxPageIDForSiteInstance(test_rvh->GetSiteInstance()) + 1,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   }

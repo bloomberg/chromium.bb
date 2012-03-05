@@ -102,7 +102,7 @@ class ExtensionImpl : public ChromeV8Extension {
       }
       std::string message = *v8::String::Utf8Value(args[1]->ToString());
       renderview->Send(new ExtensionHostMsg_PostMessage(
-          renderview->GetRoutingId(), port_id, message));
+          renderview->GetRoutingID(), port_id, message));
     }
     return v8::Undefined();
   }

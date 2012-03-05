@@ -363,7 +363,7 @@ content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
 void ChromeContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
 
-  SiteInstance* site_instance = render_view_host->site_instance();
+  SiteInstance* site_instance = render_view_host->GetSiteInstance();
   Profile* profile = Profile::FromBrowserContext(
       site_instance->GetBrowserContext());
 
@@ -371,10 +371,10 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
                                    profile->GetNetworkPredictor());
   new ExtensionMessageHandler(render_view_host);
 
-  if (render_view_host->delegate()->GetRenderViewType() ==
+  if (render_view_host->GetDelegate()->GetRenderViewType() ==
       content::VIEW_TYPE_INTERSTITIAL_PAGE) {
     render_view_host->Send(new ChromeViewMsg_SetAsInterstitial(
-        render_view_host->routing_id()));
+        render_view_host->GetRoutingID()));
   }
 }
 
@@ -1150,7 +1150,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     return;
   }
 
-  content::RenderProcessHost* process = rvh->process();
+  content::RenderProcessHost* process = rvh->GetProcess();
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
@@ -1198,7 +1198,7 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
     return;
   }
 
-  content::RenderProcessHost* process = rvh->process();
+  content::RenderProcessHost* process = rvh->GetProcess();
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
@@ -1223,7 +1223,7 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
     return;
   }
 
-  content::RenderProcessHost* process = rvh->process();
+  content::RenderProcessHost* process = rvh->GetProcess();
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
@@ -1304,7 +1304,7 @@ bool ChromeContentBrowserClient::IsFastShutdownPossible() {
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* rvh, const GURL& url, WebPreferences* web_prefs) {
   Profile* profile = Profile::FromBrowserContext(
-      rvh->process()->GetBrowserContext());
+      rvh->GetProcess()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
 
   web_prefs->standard_font_family =
@@ -1424,14 +1424,15 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   ExtensionService* service = profile->GetExtensionService();
   if (service) {
     const Extension* extension = service->extensions()->GetByID(
-        rvh->site_instance()->GetSite().host());
+        rvh->GetSiteInstance()->GetSite().host());
     extension_webkit_preferences::SetPreferences(
-        extension, rvh->delegate()->GetRenderViewType(), web_prefs);
+        extension, rvh->GetDelegate()->GetRenderViewType(), web_prefs);
   }
 
-  if (rvh->delegate()->GetRenderViewType() == chrome::VIEW_TYPE_NOTIFICATION) {
+  if (rvh->GetDelegate()->GetRenderViewType() ==
+      chrome::VIEW_TYPE_NOTIFICATION) {
     web_prefs->allow_scripts_to_close_windows = true;
-  } else if (rvh->delegate()->GetRenderViewType() ==
+  } else if (rvh->GetDelegate()->GetRenderViewType() ==
              chrome::VIEW_TYPE_BACKGROUND_CONTENTS) {
     // Disable all kinds of acceleration for background pages.
     // See http://crbug.com/96005 and http://crbug.com/96006
@@ -1457,7 +1458,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 void ChromeContentBrowserClient::UpdateInspectorSetting(
     RenderViewHost* rvh, const std::string& key, const std::string& value) {
   content::BrowserContext* browser_context =
-      rvh->process()->GetBrowserContext();
+      rvh->GetProcess()->GetBrowserContext();
   DictionaryPrefUpdate update(
       Profile::FromBrowserContext(browser_context)->GetPrefs(),
       prefs::kWebKitInspectorSettings);
@@ -1468,7 +1469,7 @@ void ChromeContentBrowserClient::UpdateInspectorSetting(
 
 void ChromeContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
   content::BrowserContext* browser_context =
-      rvh->process()->GetBrowserContext();
+      rvh->GetProcess()->GetBrowserContext();
   Profile::FromBrowserContext(browser_context)->GetPrefs()->
       ClearPref(prefs::kWebKitInspectorSettings);
 }
@@ -1493,7 +1494,7 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 
 void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
   Profile* profile = Profile::FromBrowserContext(
-      rvh->site_instance()->GetProcess()->GetBrowserContext());
+      rvh->GetSiteInstance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
       base::Time());
@@ -1503,7 +1504,7 @@ void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
 
 void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
   Profile* profile = Profile::FromBrowserContext(
-      rvh->site_instance()->GetProcess()->GetBrowserContext());
+      rvh->GetSiteInstance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
       base::Time());

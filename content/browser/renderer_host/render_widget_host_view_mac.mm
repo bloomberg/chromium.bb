@@ -231,7 +231,8 @@ void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
 // RenderWidgetHostViewMac, public:
 
 RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
-    : about_to_validate_and_paint_(false),
+    : render_widget_host_(RenderWidgetHostImpl::From(widget)),
+      about_to_validate_and_paint_(false),
       call_set_needs_display_in_rect_pending_(false),
       last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
@@ -242,8 +243,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       accelerated_compositing_active_(false),
       needs_gpu_visibility_update_after_repaint_(false),
       compositing_surface_(gfx::kNullPluginWindow) {
-  render_widget_host_ = static_cast<RenderWidgetHostImpl*>(widget);
-
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_|
   // goes away.  Since we autorelease it, our caller must put
   // |GetNativeView()| into the view hierarchy right after calling us.
@@ -771,7 +770,7 @@ void RenderWidgetHostViewMac::PluginImeCompositionCompleted(
     const string16& text, int plugin_id) {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_PluginImeCompositionCompleted(
-        render_widget_host_->routing_id(), text, plugin_id));
+        render_widget_host_->GetRoutingID(), text, plugin_id));
   }
 }
 
@@ -969,8 +968,8 @@ void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
 
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool activated =
-      GetRenderWidgetHostImpl()->is_accelerated_compositing_active();
+  bool activated = RenderWidgetHostImpl::From(
+      GetRenderWidgetHost())->is_accelerated_compositing_active();
   bool changed = accelerated_compositing_active_ != activated;
   accelerated_compositing_active_ = activated;
   if (!changed)
@@ -1106,14 +1105,14 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
 void RenderWidgetHostViewMac::SetWindowVisibility(bool visible) {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_SetWindowVisibility(
-        render_widget_host_->routing_id(), visible));
+        render_widget_host_->GetRoutingID(), visible));
   }
 }
 
 void RenderWidgetHostViewMac::WindowFrameChanged() {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_WindowFrameChanged(
-        render_widget_host_->routing_id(), GetRootWindowBounds(),
+        render_widget_host_->GetRoutingID(), GetRootWindowBounds(),
         GetViewBounds()));
   }
 }
@@ -1122,7 +1121,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   content::RenderWidgetHostViewBase::SetBackground(background);
   if (render_widget_host_)
     render_widget_host_->Send(new ViewMsg_SetBackground(
-        render_widget_host_->routing_id(), background));
+        render_widget_host_->GetRoutingID(), background));
 }
 
 void RenderWidgetHostViewMac::OnAccessibilityNotifications(
@@ -1546,7 +1545,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   } else {
     if (!editCommands_.empty()) {
       widgetHost->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
-          widgetHost->routing_id(), editCommands_));
+          widgetHost->GetRoutingID(), editCommands_));
     }
     widgetHost->ForwardKeyboardEvent(event);
   }
@@ -1612,7 +1611,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
     if (!editCommands_.empty()) {
       widgetHost->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
-        widgetHost->routing_id(), editCommands_));
+          widgetHost->GetRoutingID(), editCommands_));
     }
     widgetHost->ForwardKeyboardEvent(event);
 
@@ -2040,7 +2039,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 - (void)doDefaultAction:(int32)accessibilityObjectId {
   RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
   rwh->Send(new AccessibilityMsg_DoDefaultAction(
-      rwh->routing_id(), accessibilityObjectId));
+      rwh->GetRoutingID(), accessibilityObjectId));
 }
 
 // Convert a web accessibility's location in web coordinates into a cocoa
@@ -2061,7 +2060,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (focus) {
     RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
     rwh->Send(new AccessibilityMsg_SetFocus(
-        rwh->routing_id(), accessibilityObjectId));
+        rwh->GetRoutingID(), accessibilityObjectId));
   }
 }
 
@@ -2512,7 +2511,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
       editCommands_.push_back(EditCommand(command, ""));
   } else {
     RenderWidgetHostImpl* rwh = renderWidgetHostView_->render_widget_host_;
-    rwh->Send(new ViewMsg_ExecuteEditCommand(rwh->routing_id(), command, ""));
+    rwh->Send(new ViewMsg_ExecuteEditCommand(rwh->GetRoutingID(), command, ""));
   }
 }
 
@@ -2585,50 +2584,50 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (void)undo:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-        Undo();
+    static_cast<RenderViewHostImpl*>(
+        renderWidgetHostView_->render_widget_host_)->Undo();
   }
 }
 
 - (void)redo:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-        Redo();
+    static_cast<RenderViewHostImpl*>(
+        renderWidgetHostView_->render_widget_host_)->Redo();
   }
 }
 
 - (void)cut:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-        Cut();
+    static_cast<RenderViewHostImpl*>(
+        renderWidgetHostView_->render_widget_host_)->Cut();
   }
 }
 
 - (void)copy:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-        Copy();
+    static_cast<RenderViewHostImpl*>(
+        renderWidgetHostView_->render_widget_host_)->Copy();
   }
 }
 
 - (void)copyToFindPboard:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-        CopyToFindPboard();
+    static_cast<RenderViewHostImpl*>(
+        renderWidgetHostView_->render_widget_host_)->CopyToFindPboard();
   }
 }
 
 - (void)paste:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-        Paste();
+    static_cast<RenderViewHostImpl*>(
+        renderWidgetHostView_->render_widget_host_)->Paste();
   }
 }
 
 - (void)pasteAndMatchStyle:(id)sender {
   if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
-    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
-        PasteAndMatchStyle();
+    static_cast<RenderViewHostImpl*>(
+        renderWidgetHostView_->render_widget_host_)->PasteAndMatchStyle();
   }
 }
 
@@ -2734,14 +2733,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   [super viewWillStartLiveResize];
   RenderWidgetHostImpl* widget = renderWidgetHostView_->render_widget_host_;
   if (widget)
-    widget->Send(new ViewMsg_SetInLiveResize(widget->routing_id(), true));
+    widget->Send(new ViewMsg_SetInLiveResize(widget->GetRoutingID(), true));
 }
 
 - (void)viewDidEndLiveResize {
   [super viewDidEndLiveResize];
   RenderWidgetHostImpl* widget = renderWidgetHostView_->render_widget_host_;
   if (widget)
-    widget->Send(new ViewMsg_SetInLiveResize(widget->routing_id(), false));
+    widget->Send(new ViewMsg_SetInLiveResize(widget->GetRoutingID(), false));
 }
 
 @end

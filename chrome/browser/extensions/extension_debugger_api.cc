@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,8 +149,8 @@ class AttachedClientHosts {
         continue;
       RenderViewHost* rvh =
           DevToolsAgentHostRegistry::GetRenderViewHost(agent_host);
-      if (rvh && rvh->delegate() &&
-          rvh->delegate()->GetAsWebContents() == contents)
+      if (rvh && rvh->GetDelegate() &&
+          rvh->GetDelegate()->GetAsWebContents() == contents)
         return static_cast<ExtensionDevToolsClientHost*>(*it);
     }
     return NULL;

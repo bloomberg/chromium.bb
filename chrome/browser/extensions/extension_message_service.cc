@@ -201,7 +201,7 @@ void ExtensionMessageService::OpenChannelToTab(
                                    NULL, NULL, &contents, NULL)) {
     receiver.sender = contents->web_contents()->GetRenderViewHost();
     receiver.routing_id =
-        contents->web_contents()->GetRenderViewHost()->routing_id();
+        contents->web_contents()->GetRenderViewHost()->GetRoutingID();
   }
 
   if (contents && contents->web_contents()->GetController().NeedsReload()) {
@@ -304,7 +304,7 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
 
   MessagePort receiver(
       target_web_contents->GetRenderViewHost(),
-      target_web_contents->GetRenderViewHost()->routing_id());
+      target_web_contents->GetRenderViewHost()->GetRoutingID());
   if (!OpenChannelImpl(source, "null", receiver, port2_id,
                        extension_id, extension_id, channel_name))
     return -1;

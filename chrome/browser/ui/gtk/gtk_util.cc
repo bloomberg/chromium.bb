@@ -1299,7 +1299,7 @@ void ApplyMessageDialogQuirks(GtkWidget* dialog) {
 // against the focused widget.
 // TODO(suzhe): This approach does not work for plugins.
 void DoCutCopyPaste(BrowserWindow* window,
-                    void (RenderViewHost::*method)(),
+                    void (RenderWidgetHost::*method)(),
                     const char* signal) {
   GtkWidget* widget = GetBrowserWindowFocusedWidget(window);
   if (widget == NULL)
@@ -1316,15 +1316,15 @@ void DoCutCopyPaste(BrowserWindow* window,
 }
 
 void DoCut(BrowserWindow* window) {
-  DoCutCopyPaste(window, &RenderViewHost::Cut, "cut-clipboard");
+  DoCutCopyPaste(window, &RenderWidgetHost::Cut, "cut-clipboard");
 }
 
 void DoCopy(BrowserWindow* window) {
-  DoCutCopyPaste(window, &RenderViewHost::Copy, "copy-clipboard");
+  DoCutCopyPaste(window, &RenderWidgetHost::Copy, "copy-clipboard");
 }
 
 void DoPaste(BrowserWindow* window) {
-  DoCutCopyPaste(window, &RenderViewHost::Paste, "paste-clipboard");
+  DoCutCopyPaste(window, &RenderWidgetHost::Paste, "paste-clipboard");
 }
 
 }  // namespace gtk_util

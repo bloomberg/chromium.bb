@@ -204,7 +204,7 @@ v8::Handle<v8::Value> ExtensionCustomBindings::OpenChannelToExtension(
   std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
   int port_id = -1;
   renderview->Send(new ExtensionHostMsg_OpenChannelToExtension(
-      renderview->GetRoutingId(),
+      renderview->GetRoutingID(),
       source_id,
       target_id,
       channel_name,

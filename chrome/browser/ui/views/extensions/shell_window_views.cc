@@ -208,7 +208,7 @@ void ShellWindowViews::OnViewWasResized() {
     rgn->op(width - kResizeBorderWidth, 0, width, height, SkRegion::kUnion_Op);
     rgn->op(0, height - kResizeBorderWidth, width, height, SkRegion::kUnion_Op);
   }
-  host_->render_view_host()->view()->SetClickthroughRegion(rgn);
+  host_->render_view_host()->GetView()->SetClickthroughRegion(rgn);
 #endif
 }
 

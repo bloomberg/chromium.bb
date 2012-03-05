@@ -39,6 +39,7 @@
 class BackingStore;
 struct EditCommand;
 class RenderViewHost;
+class RenderWidgetHostImpl;
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
 class WebCursor;
@@ -79,10 +80,104 @@ struct WebScreenInfo;
 // TODO(joi): Once I finish defining this interface (once
 // RenderViewHost interface is also in place), group together
 // implementation functions in subclasses.
-class CONTENT_EXPORT RenderWidgetHost {
+//
+// TODO(joi): Move to file render_widget_host_impl.h
+class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
  public:
-  explicit RenderWidgetHost(content::RenderProcessHost* process);
   virtual ~RenderWidgetHost() {}
+
+  // Edit operations.
+  virtual void Undo() = 0;
+  virtual void Redo() = 0;
+  virtual void Cut() = 0;
+  virtual void Copy() = 0;
+  virtual void CopyToFindPboard() = 0;
+  virtual void Paste() = 0;
+  virtual void PasteAndMatchStyle() = 0;
+  virtual void Delete() = 0;
+  virtual void SelectAll() = 0;
+
+  // Update the text direction of the focused input element and notify it to a
+  // renderer process.
+  // These functions have two usage scenarios: changing the text direction
+  // from a menu (as Safari does), and; changing the text direction when a user
+  // presses a set of keys (as IE and Firefox do).
+  // 1. Change the text direction from a menu.
+  // In this scenario, we receive a menu event only once and we should update
+  // the text direction immediately when a user chooses a menu item. So, we
+  // should call both functions at once as listed in the following snippet.
+  //   void RenderViewHost::SetTextDirection(WebTextDirection direction) {
+  //     UpdateTextDirection(direction);
+  //     NotifyTextDirection();
+  //   }
+  // 2. Change the text direction when pressing a set of keys.
+  // Because of auto-repeat, we may receive the same key-press event many
+  // times while we presses the keys and it is nonsense to send the same IPC
+  // message every time when we receive a key-press event.
+  // To suppress the number of IPC messages, we just update the text direction
+  // when receiving a key-press event and send an IPC message when we release
+  // the keys as listed in the following snippet.
+  //   if (key_event.type == WebKeyboardEvent::KEY_DOWN) {
+  //     if (key_event.windows_key_code == 'A' &&
+  //         key_event.modifiers == WebKeyboardEvent::CTRL_KEY) {
+  //       UpdateTextDirection(dir);
+  //     } else {
+  //       CancelUpdateTextDirection();
+  //     }
+  //   } else if (key_event.type == WebKeyboardEvent::KEY_UP) {
+  //     NotifyTextDirection();
+  //   }
+  // Once we cancel updating the text direction, we have to ignore all
+  // succeeding UpdateTextDirection() requests until calling
+  // NotifyTextDirection(). (We may receive keydown events even after we
+  // canceled updating the text direction because of auto-repeat.)
+  // Note: we cannot undo this change for compatibility with Firefox and IE.
+  virtual void UpdateTextDirection(WebKit::WebTextDirection direction) = 0;
+  virtual void NotifyTextDirection() = 0;
+
+  virtual void Blur() = 0;
+
+  // Copies the contents of the backing store into the given (uninitialized)
+  // PlatformCanvas. Returns true on success, false otherwise.
+  virtual bool CopyFromBackingStore(skia::PlatformCanvas* output) = 0;
+
+#if defined(TOOLKIT_GTK)
+  // Paint the backing store into the target's |dest_rect|.
+  virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
+                                               GdkWindow* target) = 0;
+#elif defined(OS_MACOSX)
+  virtual gfx::Size GetBackingStoreSize() = 0;
+  virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
+                                               CGContextRef target) = 0;
+#endif
+
+  // Enable renderer accessibility. This should only be called when a
+  // screenreader is detected.
+  virtual void EnableRendererAccessibility() = 0;
+
+  // Forwards the given message to the renderer. These are called by
+  // the view when it has received a message.
+  virtual void ForwardMouseEvent(
+      const WebKit::WebMouseEvent& mouse_event) = 0;
+  virtual void ForwardWheelEvent(
+      const WebKit::WebMouseWheelEvent& wheel_event) = 0;
+  virtual void ForwardKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event) = 0;
+
+  virtual const gfx::Point& GetLastScrollOffset() const = 0;
+
+  virtual content::RenderProcessHost* GetProcess() const = 0;
+
+  virtual int GetRoutingID() const = 0;
+
+  // Gets the View of this RenderWidgetHost. Can be NULL, e.g. if the
+  // RenderWidget is being destroyed or the render process crashed. You should
+  // never cache this pointer since it can become NULL if the renderer crashes,
+  // instead you should always ask for it using the accessor.
+  virtual content::RenderWidgetHostView* GetView() const = 0;
+
+  // Returns true if this is a RenderViewHost, false if not.
+  virtual bool IsRenderView() const = 0;
 
   // Used as the details object for a
   // RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK notification.
@@ -108,36 +203,39 @@ class CONTENT_EXPORT RenderWidgetHost {
                            const gfx::Size& page_size,
                            const gfx::Size& desired_size) = 0;
 
-  // Copies the contents of the backing store into the given (uninitialized)
-  // PlatformCanvas. Returns true on success, false otherwise.
-  virtual bool CopyFromBackingStore(skia::PlatformCanvas* output) = 0;
+  // Makes an IPC call to tell webkit to replace the currently selected word
+  // or a word around the cursor.
+  virtual void Replace(const string16& word) = 0;
 
-#if defined(TOOLKIT_GTK)
-  // Paint the backing store into the target's |dest_rect|.
-  virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
-                                               GdkWindow* target) = 0;
-#elif defined(OS_MACOSX)
-  virtual gfx::Size GetBackingStoreSize() = 0;
-  virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
-                                               CGContextRef target) = 0;
-#endif
+  // Called to notify the RenderWidget that the resize rect has changed without
+  // the size of the RenderWidget itself changing.
+  virtual void ResizeRectChanged(const gfx::Rect& new_rect) = 0;
 
-  // Returns true if this is a RenderViewHost, false if not.
-  virtual bool IsRenderView() const = 0;
+  // Restart the active hang monitor timeout. Clears all existing timeouts and
+  // starts with a new one.  This can be because the renderer has become
+  // active, the tab is being hidden, or the user has chosen to wait some more
+  // to give the tab a chance to become active and we don't want to display a
+  // warning too soon.
+  virtual void RestartHangMonitorTimeout() = 0;
+
+  virtual void SetIgnoreInputEvents(bool ignore_input_events) = 0;
+
+  // Stops loading the page.
+  virtual void Stop() = 0;
 
   // Called to notify the RenderWidget that it has been resized.
   virtual void WasResized() = 0;
 
-  // TODO(joi): Get rid of these inline accessors and the associated
-  // data from the interface, make them into pure virtual GetFoo
-  // methods instead.
-  content::RenderProcessHost* process() const { return process_; }
+  // Access to the implementation's
+  // IPC::Channel::Listener::OnMessageReceived.  Intended only for
+  // test code.
 
-  // Gets the View of this RenderWidgetHost. Can be NULL, e.g. if the
-  // RenderWidget is being destroyed or the render process crashed. You should
-  // never cache this pointer since it can become NULL if the renderer crashes,
-  // instead you should always ask for it using the accessor.
-  content::RenderWidgetHostView* view() const;
+  // TODO(joi): Remove this and convert the single test using it to
+  // get the TabContentsWrapper from
+  // browser()->GetSelectedWebContents() and then call its
+  // translate_tab_helper() to get at the object that dispatches its
+  // method.
+  virtual bool OnMessageReceivedForTesting(const IPC::Message& msg) = 0;
 
   // Gets a RenderVidgetHost pointer from an IPC::Channel::Listener pointer.
   static RenderWidgetHost* FromIPCChannelListener(
@@ -152,17 +250,14 @@ class CONTENT_EXPORT RenderWidgetHost {
   static size_t BackingStoreMemorySize();
 
  protected:
-  // Created during construction but initialized during Init*(). Therefore, it
-  // is guaranteed never to be NULL, but its channel may be NULL if the
-  // renderer crashed, so you must always check that.
-  content::RenderProcessHost* process_;
+  friend class RenderWidgetHostImpl;
 
-  // The View associated with the RenderViewHost. The lifetime of this object
-  // is associated with the lifetime of the Render process. If the Renderer
-  // crashes, its View is destroyed and this pointer becomes NULL, even though
-  // render_view_host_ lives on to load another URL (creating a new View while
-  // doing so).
-  content::RenderWidgetHostViewPort* view_;
+  // Retrieves the implementation class.  Intended only for code
+  // within content/.  This method is necessary because
+  // RenderWidgetHost is the root of a diamond inheritance pattern, so
+  // subclasses inherit it virtually, which removes our ability to
+  // static_cast to the subclass.
+  virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() = 0;
 };
 
 // This class manages the browser side of a browser<->renderer HWND connection.
@@ -240,21 +335,68 @@ class CONTENT_EXPORT RenderWidgetHost {
 // the RenderWidgetHost's IPC message map.
 //
 // TODO(joi): Move to content namespace.
-class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
-                                            public IPC::Channel::Listener,
-                                            public IPC::Channel::Sender {
+class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
+                                            public IPC::Channel::Listener {
  public:
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
   // routing id is taken from the RenderProcessHost.
   RenderWidgetHostImpl(content::RenderProcessHost* process, int routing_id);
   virtual ~RenderWidgetHostImpl();
 
-  static RenderWidgetHostImpl* FromRWHV(content::RenderWidgetHostView* rwhv);
+  // Use RenderWidgetHostImpl::From(rwh) to downcast a
+  // RenderWidgetHost to a RenderWidgetHostImpl.  Internally, this
+  // uses RenderWidgetHost::AsRenderWidgetHostImpl().
+  static RenderWidgetHostImpl* From(RenderWidgetHost* rwh);
+
+  // RenderWidgetHost implementation.
+  virtual void Undo() OVERRIDE;
+  virtual void Redo() OVERRIDE;
+  virtual void Cut() OVERRIDE;
+  virtual void Copy() OVERRIDE;
+  virtual void CopyToFindPboard() OVERRIDE;
+  virtual void Paste() OVERRIDE;
+  virtual void PasteAndMatchStyle() OVERRIDE;
+  virtual void Delete() OVERRIDE;
+  virtual void SelectAll() OVERRIDE;
+  virtual void UpdateTextDirection(WebKit::WebTextDirection direction) OVERRIDE;
+  virtual void NotifyTextDirection() OVERRIDE;
+  virtual void Blur() OVERRIDE;
+  virtual bool CopyFromBackingStore(skia::PlatformCanvas* output) OVERRIDE;
+#if defined(TOOLKIT_GTK)
+  virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
+                                               GdkWindow* target) OVERRIDE;
+#elif defined(OS_MACOSX)
+  virtual gfx::Size GetBackingStoreSize() OVERRIDE;
+  virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
+                                               CGContextRef target) OVERRIDE;
+#endif
+  virtual void EnableRendererAccessibility() OVERRIDE;
+  virtual void ForwardMouseEvent(
+      const WebKit::WebMouseEvent& mouse_event) OVERRIDE;
+  virtual void ForwardWheelEvent(
+      const WebKit::WebMouseWheelEvent& wheel_event) OVERRIDE;
+  virtual void ForwardKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event) OVERRIDE;
+  virtual const gfx::Point& GetLastScrollOffset() const OVERRIDE;
+  virtual content::RenderProcessHost* GetProcess() const OVERRIDE;
+  virtual int GetRoutingID() const OVERRIDE;
+  virtual content::RenderWidgetHostView* GetView() const OVERRIDE;
+  virtual bool IsRenderView() const OVERRIDE;
+  virtual void PaintAtSize(TransportDIB::Handle dib_handle,
+                           int tag,
+                           const gfx::Size& page_size,
+                           const gfx::Size& desired_size) OVERRIDE;
+  virtual void Replace(const string16& word) OVERRIDE;
+  virtual void ResizeRectChanged(const gfx::Rect& new_rect) OVERRIDE;
+  virtual void RestartHangMonitorTimeout() OVERRIDE;
+  virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
+  virtual void Stop() OVERRIDE;
+  virtual void WasResized() OVERRIDE;
+  virtual bool OnMessageReceivedForTesting(const IPC::Message& msg) OVERRIDE;
 
   // Sets the View of this RenderWidgetHost.
   void SetView(content::RenderWidgetHostView* view);
 
-  int routing_id() const { return routing_id_; }
   int surface_id() const { return surface_id_; }
   bool renderer_accessible() { return renderer_accessible_; }
 
@@ -274,9 +416,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Tells the renderer to die and then calls Destroy().
   virtual void Shutdown();
 
-  // Manual RTTI FTW. We are not hosting a web page.
-  virtual bool IsRenderView() const OVERRIDE;
-
   // IPC::Channel::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -288,19 +427,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void WasHidden();
   void WasRestored();
 
-  virtual void WasResized() OVERRIDE;
-
-  // Called to notify the RenderWidget that the resize rect has changed without
-  // the size of the RenderWidget itself changing.
-  void ResizeRectChanged(const gfx::Rect& new_rect);
-
   // Called to notify the RenderWidget that its associated native window got
   // focused.
   virtual void GotFocus();
 
   // Tells the renderer it got/lost focus.
   void Focus();
-  void Blur();
   virtual void LostCapture();
 
   // Sets whether the renderer should show controls in an active state.  On all
@@ -322,20 +454,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // Indicates if the page has finished loading.
   void SetIsLoading(bool is_loading);
-
-  virtual bool CopyFromBackingStore(skia::PlatformCanvas* output) OVERRIDE;
-#if defined(TOOLKIT_GTK)
-  virtual bool CopyFromBackingStoreToGtkWindow(const gfx::Rect& dest_rect,
-                                               GdkWindow* target) OVERRIDE;
-#elif defined(OS_MACOSX)
-  virtual gfx::Size GetBackingStoreSize() OVERRIDE;
-  virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
-                                               CGContextRef target) OVERRIDE;
-#endif
-  virtual void PaintAtSize(TransportDIB::Handle dib_handle,
-                           int tag,
-                           const gfx::Size& page_size,
-                           const gfx::Size& desired_size) OVERRIDE;
 
   // Get access to the widget's backing store.  If a resize is in progress,
   // then the current size of the backing store may be less than the size of
@@ -364,65 +482,19 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // left on the existing timeouts.
   void StartHangMonitorTimeout(base::TimeDelta delay);
 
-  // Restart the active hang monitor timeout. Clears all existing timeouts and
-  // starts with a new one.  This can be because the renderer has become
-  // active, the tab is being hidden, or the user has chosen to wait some more
-  // to give the tab a chance to become active and we don't want to display a
-  // warning too soon.
-  void RestartHangMonitorTimeout();
-
   // Stops all existing hang monitor timeouts and assumes the renderer is
   // responsive.
   void StopHangMonitorTimeout();
 
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
-  virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);
-  // Called when a mouse click activates the renderer.
-  virtual void OnMouseActivate();
-  void ForwardWheelEvent(const WebKit::WebMouseWheelEvent& wheel_event);
   void ForwardGestureEvent(const WebKit::WebGestureEvent& gesture_event);
-  virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
   virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
 
-  // Update the text direction of the focused input element and notify it to a
-  // renderer process.
-  // These functions have two usage scenarios: changing the text direction
-  // from a menu (as Safari does), and; changing the text direction when a user
-  // presses a set of keys (as IE and Firefox do).
-  // 1. Change the text direction from a menu.
-  // In this scenario, we receive a menu event only once and we should update
-  // the text direction immediately when a user chooses a menu item. So, we
-  // should call both functions at once as listed in the following snippet.
-  //   void RenderViewHost::SetTextDirection(WebTextDirection direction) {
-  //     UpdateTextDirection(direction);
-  //     NotifyTextDirection();
-  //   }
-  // 2. Change the text direction when pressing a set of keys.
-  // Because of auto-repeat, we may receive the same key-press event many
-  // times while we presses the keys and it is nonsense to send the same IPC
-  // message every time when we receive a key-press event.
-  // To suppress the number of IPC messages, we just update the text direction
-  // when receiving a key-press event and send an IPC message when we release
-  // the keys as listed in the following snippet.
-  //   if (key_event.type == WebKeyboardEvent::KEY_DOWN) {
-  //     if (key_event.windows_key_code == 'A' &&
-  //         key_event.modifiers == WebKeyboardEvent::CTRL_KEY) {
-  //       UpdateTextDirection(dir);
-  //     } else {
-  //       CancelUpdateTextDirection();
-  //     }
-  //   } else if (key_event.type == WebKeyboardEvent::KEY_UP) {
-  //     NotifyTextDirection();
-  //   }
-  // Once we cancel updating the text direction, we have to ignore all
-  // succeeding UpdateTextDirection() requests until calling
-  // NotifyTextDirection(). (We may receive keydown events even after we
-  // canceled updating the text direction because of auto-repeat.)
-  // Note: we cannot undo this change for compatibility with Firefox and IE.
-  void UpdateTextDirection(WebKit::WebTextDirection direction);
   void CancelUpdateTextDirection();
-  void NotifyTextDirection();
+
+  // Called when a mouse click activates the renderer.
+  virtual void OnMouseActivate();
 
   // Notifies the renderer whether or not the input method attached to this
   // process is activated.
@@ -474,17 +546,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // And to also expose it to the RenderWidgetHostView.
   virtual gfx::Rect GetRootWindowResizerRect() const;
 
-  // Makes an IPC call to tell webkit to replace the currently selected word
-  // or a word around the cursor.
-  void Replace(const string16& word);
-
-  // Enable renderer accessibility. This should only be called when a
-  // screenreader is detected.
-  void EnableRendererAccessibility();
-
-  void set_ignore_input_events(bool ignore_input_events) {
-    ignore_input_events_ = ignore_input_events;
-  }
   bool ignore_input_events() const {
     return ignore_input_events_;
   }
@@ -492,16 +553,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Activate deferred plugin handles.
   void ActivateDeferredPluginHandles();
 
-  const gfx::Point& last_scroll_offset() const { return last_scroll_offset_; }
-
   bool has_touch_handler() const { return has_touch_handler_; }
 
   // Notification that the user has made some kind of input that could
   // perform an action. See OnUserGesture for more details.
   void StartUserGesture();
-
-  // Stops loading the page.
-  void Stop();
 
   // Set the RenderView background.
   void SetBackground(const SkBitmap& background);
@@ -547,17 +603,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Requests the renderer to select the region between two points.
   void SelectRange(const gfx::Point& start, const gfx::Point& end);
 
-  // Edit operations.
-  void Undo();
-  void Redo();
-  void Cut();
-  void Copy();
-  void CopyToFindPboard();
-  void Paste();
-  void PasteAndMatchStyle();
-  void Delete();
-  void SelectAll();
-
   // Called when the reponse to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
@@ -568,6 +613,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   static void AcknowledgePostSubBuffer(int32 route_id, int gpu_host_id);
 
  protected:
+  virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
+
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
                          int event_size, bool is_keyboard_shortcut);
@@ -637,6 +684,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void SetShouldAutoResize(bool enable);
 
  protected:
+  // The View associated with the RenderViewHost. The lifetime of this object
+  // is associated with the lifetime of the Render process. If the Renderer
+  // crashes, its View is destroyed and this pointer becomes NULL, even though
+  // render_view_host_ lives on to load another URL (creating a new View while
+  // doing so).
+  content::RenderWidgetHostViewPort* view_;
+
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
@@ -752,15 +806,20 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // renderer.
   void ProcessTouchAck(WebKit::WebInputEvent::Type type, bool processed);
 
+  // Created during construction but initialized during Init*(). Therefore, it
+  // is guaranteed never to be NULL, but its channel may be NULL if the
+  // renderer crashed, so you must always check that.
+  content::RenderProcessHost* process_;
+
+  // The ID of the corresponding object in the Renderer Instance.
+  int routing_id_;
+
   // True if renderer accessibility is enabled. This should only be set when a
   // screenreader is detected as it can potentially slow down Chrome.
   bool renderer_accessible_;
 
   // Stores random bits of data for others to associate with this object.
   base::PropertyBag property_bag_;
-
-  // The ID of the corresponding object in the Renderer Instance.
-  int routing_id_;
 
   // The ID of the surface corresponding to this render widget.
   int surface_id_;

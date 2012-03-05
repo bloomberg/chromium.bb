@@ -307,7 +307,8 @@ inline void SetTouchType(TOUCHINPUT* point, int type) {
 // RenderWidgetHostViewWin, public:
 
 RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
-    : compositor_host_window_(NULL),
+    : render_widget_host_(RenderWidgetHostImpl::From(widget)),
+      compositor_host_window_(NULL),
       hide_compositor_window_at_next_paint_(false),
       track_mouse_leave_(false),
       ime_notification_(false),
@@ -331,7 +332,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       received_focus_change_after_pointer_down_(false),
       transparent_region_(0),
       touch_events_enabled_(false) {
-  render_widget_host_ = static_cast<RenderWidgetHostImpl*>(widget);
   render_widget_host_->SetView(this);
   registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -1036,7 +1036,7 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   if (!render_widget_host_)
     return;
 
-  DCHECK(render_widget_host_->process()->HasConnection());
+  DCHECK(render_widget_host_->GetProcess()->HasConnection());
 
   // If the GPU process is rendering directly into the View, compositing is
   // already triggered by damage to compositor_host_window_, so all we need to
@@ -1313,7 +1313,7 @@ void RenderWidgetHostViewWin::OnThemeChanged() {
   if (!render_widget_host_)
     return;
   render_widget_host_->Send(new ViewMsg_ThemeChanged(
-      render_widget_host_->routing_id()));
+      render_widget_host_->GetRoutingID()));
 }
 
 LRESULT RenderWidgetHostViewWin::OnNotify(int w_param, NMHDR* header) {
@@ -1930,7 +1930,7 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
     POINT zoom_center = {0};
     if (DecodeZoomGesture(m_hWnd, gi, &zoom, &zoom_center)) {
       handled = TRUE;
-      Send(new ViewMsg_ZoomFactor(render_widget_host_->routing_id(),
+      Send(new ViewMsg_ZoomFactor(render_widget_host_->GetRoutingID(),
                                   zoom, zoom_center.x, zoom_center.y));
     }
   } else if (gi.dwID == GID_PAN) {
@@ -2042,7 +2042,7 @@ void RenderWidgetHostViewWin::Observe(
         content::Source<content::RenderProcessHost>(source).ptr();
     DCHECK(render_process_host);
     if (!render_widget_host_ ||
-        render_process_host != render_widget_host_->process())
+        render_process_host != render_widget_host_->GetProcess())
       return;
 
     // If it was our RenderProcessHost that posted the notification,

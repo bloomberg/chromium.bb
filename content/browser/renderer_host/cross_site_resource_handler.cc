@@ -25,10 +25,10 @@ namespace {
 void OnCrossSiteResponseHelper(int render_process_id,
                                int render_view_id,
                                int request_id) {
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
-                                               render_view_id);
-  if (rvh && rvh->delegate()->GetRendererManagementDelegate()) {
-    rvh->delegate()->GetRendererManagementDelegate()->OnCrossSiteResponse(
+  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(render_process_id,
+                                                       render_view_id);
+  if (rvh && rvh->GetDelegate()->GetRendererManagementDelegate()) {
+    rvh->GetDelegate()->GetRendererManagementDelegate()->OnCrossSiteResponse(
         render_process_id, request_id);
   }
 }

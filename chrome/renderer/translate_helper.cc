@@ -333,7 +333,7 @@ void TranslateHelper::CheckTranslateStatus() {
 
     // Notify the browser we are done.
     render_view()->Send(new ChromeViewHostMsg_PageTranslated(
-        render_view()->GetRoutingId(), render_view()->GetPageId(),
+        render_view()->GetRoutingID(), render_view()->GetPageId(),
         actual_source_lang, target_lang_, TranslateErrors::NONE));
     return;
   }
@@ -430,7 +430,7 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
   translation_pending_ = false;
   // Notify the browser there was an error.
   render_view()->Send(new ChromeViewHostMsg_PageTranslated(
-      render_view()->GetRoutingId(), page_id_, source_lang_,
+      render_view()->GetRoutingID(), page_id_, source_lang_,
       target_lang_, error));
 }
 

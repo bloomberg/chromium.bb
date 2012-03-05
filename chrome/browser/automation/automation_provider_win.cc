@@ -361,7 +361,7 @@ void AutomationProvider::OnMessageFromExternalHost(int handle,
     return;
 
   view_host->Send(new ChromeViewMsg_HandleMessageFromExternalHost(
-      view_host->routing_id(), message, origin, target));
+      view_host->GetRoutingID(), message, origin, target));
 }
 
 void AutomationProvider::NavigateInExternalTab(

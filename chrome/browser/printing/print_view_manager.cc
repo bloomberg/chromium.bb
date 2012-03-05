@@ -134,7 +134,7 @@ void PrintViewManager::PreviewPrintingRequestCancelled() {
   if (!web_contents())
     return;
   RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-  rvh->Send(new PrintMsg_PreviewPrintingRequestCancelled(rvh->routing_id()));
+  rvh->Send(new PrintMsg_PreviewPrintingRequestCancelled(rvh->GetRoutingID()));
 }
 
 void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
@@ -487,7 +487,7 @@ void PrintViewManager::PrintingDone(bool success) {
   if (!print_job_.get() || !web_contents())
     return;
   RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-  rvh->Send(new PrintMsg_PrintingDone(rvh->routing_id(), success));
+  rvh->Send(new PrintMsg_PrintingDone(rvh->GetRoutingID(), success));
 }
 
 void PrintViewManager::TerminatePrintJob(bool cancel) {

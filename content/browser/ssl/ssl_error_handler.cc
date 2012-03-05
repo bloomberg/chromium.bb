@@ -65,10 +65,10 @@ void SSLErrorHandler::Dispatch() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   WebContents* web_contents = NULL;
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(render_process_id_, render_view_id_);
+  RenderViewHostImpl* render_view_host =
+      RenderViewHostImpl::FromID(render_process_id_, render_view_id_);
   if (render_view_host)
-    web_contents = render_view_host->delegate()->GetAsWebContents();
+    web_contents = render_view_host->GetDelegate()->GetAsWebContents();
 
   if (!web_contents) {
     // We arrived on the UI thread, but the tab we're looking for is no longer

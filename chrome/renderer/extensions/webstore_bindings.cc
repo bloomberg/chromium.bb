@@ -151,9 +151,9 @@ v8::Handle<v8::Value> WebstoreBindingsHandler::Install(
   }
 
   Send(new ExtensionHostMsg_InlineWebstoreInstall(
-      render_view->GetRoutingId(),
+      render_view->GetRoutingID(),
       install_id,
-      GetRoutingId(),
+      GetRoutingID(),
       webstore_item_id,
       frame->document().url()));
 

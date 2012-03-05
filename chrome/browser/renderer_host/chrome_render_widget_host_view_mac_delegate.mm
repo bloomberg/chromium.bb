@@ -111,15 +111,17 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 - (id)initWithRenderWidgetHost:(RenderWidgetHost*)renderWidgetHost {
   self = [super init];
   if (self) {
-    renderWidgetHost_ = (RenderWidgetHostImpl*)renderWidgetHost;
-    NSView* nativeView = renderWidgetHost_->view()->GetNativeView();
+    renderWidgetHost_ = RenderWidgetHostImpl::From(renderWidgetHost);
+    NSView* nativeView = renderWidgetHost_->GetView()->GetNativeView();
     view_id_util::SetID(nativeView, VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
     if (renderWidgetHost_->IsRenderView()) {
       spellingObserver_.reset(
           new ChromeRenderWidgetHostViewMacDelegateInternal::
               SpellCheckRenderViewObserver(
-                  static_cast<RenderViewHost*>(renderWidgetHost_), self));
+                  static_cast<RenderViewHost*>(
+                      static_cast<RenderViewHostImpl*>(renderWidgetHost_)),
+                  self));
     }
   }
   return self;
@@ -168,7 +170,8 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   if (!renderWidgetHost_ || !renderWidgetHost_->IsRenderView())
     return NO;
   if (DevToolsWindow::IsDevToolsWindow(
-      static_cast<RenderViewHost*>(renderWidgetHost_))) {
+          static_cast<RenderViewHost*>(
+              static_cast<RenderViewHostImpl*>(renderWidgetHost_)))) {
     return NO;
   }
 
@@ -253,7 +256,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
                                              BOOL *stop) {
           if (phase == NSEventPhaseBegan) {
             [historyOverlay showPanelForView:
-                renderWidgetHost_->view()->GetNativeView()];
+                renderWidgetHost_->GetView()->GetNativeView()];
             return;
           }
 
@@ -333,7 +336,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 // This is also called from the Edit -> Spelling -> Check Spelling menu item.
 - (void)checkSpelling:(id)sender {
   renderWidgetHost_->Send(new SpellCheckMsg_AdvanceToNextMisspelling(
-      renderWidgetHost_->routing_id()));
+      renderWidgetHost_->GetRoutingID()));
 }
 
 // This message is sent by the spelling panel whenever a word is ignored.
@@ -349,13 +352,13 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 
 - (void)showGuessPanel:(id)sender {
   renderWidgetHost_->Send(new SpellCheckMsg_ToggleSpellPanel(
-      renderWidgetHost_->routing_id(),
+      renderWidgetHost_->GetRoutingID(),
       spellcheck_mac::SpellingPanelVisible()));
 }
 
 - (void)toggleContinuousSpellChecking:(id)sender {
   renderWidgetHost_->Send(
-      new SpellCheckMsg_ToggleSpellCheck(renderWidgetHost_->routing_id()));
+      new SpellCheckMsg_ToggleSpellCheck(renderWidgetHost_->GetRoutingID()));
 }
 
 - (void)spellCheckEnabled:(BOOL)enabled checked:(BOOL)checked {

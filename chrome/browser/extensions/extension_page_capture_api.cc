@@ -166,7 +166,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
     return;
   }
 
-  int child_id = render_view_host()->process()->GetID();
+  int child_id = render_view_host()->GetProcess()->GetID();
   ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
       child_id, mhtml_path_);
 

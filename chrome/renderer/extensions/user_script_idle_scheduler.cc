@@ -107,7 +107,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
   // be out of sync. We just ignore this situation.
   if (!extension) {
     render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-        render_view->GetRoutingId(), params.request_id, true, ""));
+        render_view->GetRoutingID(), params.request_id, true, ""));
     return;
   }
 
@@ -136,7 +136,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
           continue;
         } else {
           render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-              render_view->GetRoutingId(), params.request_id, false,
+              render_view->GetRoutingID(), params.request_id, false,
               ExtensionErrorUtils::FormatErrorMessage(
                   extension_manifest_errors::kCannotAccessPage,
                   frame->document().url().spec())));
@@ -164,7 +164,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
   }
 
   render_view->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-      render_view->GetRoutingId(), params.request_id, true, ""));
+      render_view->GetRoutingID(), params.request_id, true, ""));
 }
 
 bool UserScriptIdleScheduler::GetAllChildFrames(

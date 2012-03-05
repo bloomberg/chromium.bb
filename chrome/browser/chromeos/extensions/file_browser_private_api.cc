@@ -606,7 +606,7 @@ void RequestLocalFileSystemFunction::RequestOnFileThread(
 }
 
 bool RequestLocalFileSystemFunction::RunImpl() {
-  if (!dispatcher() || !render_view_host() || !render_view_host()->process())
+  if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
     return false;
 
   BrowserThread::PostTask(
@@ -615,7 +615,7 @@ bool RequestLocalFileSystemFunction::RunImpl() {
           &RequestLocalFileSystemFunction::RequestOnFileThread,
           this,
           source_url_,
-          render_view_host()->process()->GetID()));
+          render_view_host()->GetProcess()->GetID()));
   // Will finish asynchronously.
   return true;
 }
@@ -668,7 +668,7 @@ void FileWatchBrowserFunctionBase::RespondOnUIThread(bool success) {
 }
 
 bool FileWatchBrowserFunctionBase::RunImpl() {
-  if (!render_view_host() || !render_view_host()->process())
+  if (!render_view_host() || !render_view_host()->GetProcess())
     return false;
 
   // First param is url of a file to watch.

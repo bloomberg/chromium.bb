@@ -51,7 +51,7 @@ RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab) {
 }
 
 const std::string GetTabUrl(RenderWidgetHost* rwh) {
-  RenderWidgetHostView* rwhv = rwh->view();
+  RenderWidgetHostView* rwhv = rwh->GetView();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end();
        ++it) {

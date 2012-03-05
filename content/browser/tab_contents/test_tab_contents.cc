@@ -80,7 +80,8 @@ void TestTabContents::TestDidNavigateWithReferrer(
 bool TestTabContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
   // This will go to a TestRenderViewHost.
-  render_view_host->CreateRenderView(string16(), -1);
+  static_cast<RenderViewHostImpl*>(
+      render_view_host)->CreateRenderView(string16(), -1);
   return true;
 }
 
@@ -120,14 +121,14 @@ void TestTabContents::CommitPendingNavigation() {
   int page_id = entry->GetPageID();
   if (page_id == -1) {
     // It's a new navigation, assign a never-seen page id to it.
-    page_id = GetMaxPageIDForSiteInstance(rvh->site_instance()) + 1;
+    page_id = GetMaxPageIDForSiteInstance(rvh->GetSiteInstance()) + 1;
   }
   rvh->SendNavigate(page_id, entry->GetURL());
 
   // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
   // without making any network requests.
   if (old_rvh != rvh)
-    old_rvh->OnSwapOutACK();
+    static_cast<RenderViewHostImpl*>(old_rvh)->OnSwapOutACK();
 }
 
 void TestTabContents::ProceedWithCrossSiteNavigation() {

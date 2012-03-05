@@ -44,7 +44,7 @@ void ShellRenderViewHostObserver::OnTextDump(const std::string& dump) {
 
 void ShellRenderViewHostObserver::OnNotifyDone() {
   render_view_host()->Send(
-      new ShellViewMsg_CaptureTextDump(render_view_host()->routing_id(),
+      new ShellViewMsg_CaptureTextDump(render_view_host()->GetRoutingID(),
                                        dump_child_frames_));
 }
 

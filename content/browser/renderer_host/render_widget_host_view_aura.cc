@@ -119,7 +119,8 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
 // RenderWidgetHostViewAura, public:
 
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+    : host_(RenderWidgetHostImpl::From(host)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),
       popup_child_host_view_(NULL),
@@ -130,7 +131,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       current_surface_(0),
       paint_canvas_(NULL),
       synthetic_move_sent_(false) {
-  host_ = static_cast<RenderWidgetHostImpl*>(host);
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   window_->AddObserver(window_observer_.get());

@@ -281,7 +281,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
     resource.render_process_host_id = contents()->GetRenderProcessHost()->
         GetID();
-    resource.render_view_id = contents()->GetRenderViewHost()->routing_id();
+    resource.render_view_id = contents()->GetRenderViewHost()->GetRoutingID();
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
@@ -427,7 +427,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
             resource.threat_type);
   EXPECT_EQ(contents()->GetRenderProcessHost()->GetID(),
             resource.render_process_host_id);
-  EXPECT_EQ(contents()->GetRenderViewHost()->routing_id(),
+  EXPECT_EQ(contents()->GetRenderViewHost()->GetRoutingID(),
             resource.render_view_id);
 
   // Make sure the client object will be deleted.
@@ -519,7 +519,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
             resource.threat_type);
   EXPECT_EQ(contents()->GetRenderProcessHost()->GetID(),
             resource.render_process_host_id);
-  EXPECT_EQ(contents()->GetRenderViewHost()->routing_id(),
+  EXPECT_EQ(contents()->GetRenderViewHost()->GetRoutingID(),
             resource.render_view_id);
 
   // Make sure the client object will be deleted.
@@ -613,7 +613,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   Tuple1<GURL> actual_url;
   SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
   EXPECT_EQ(url, actual_url.a);
-  EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
+  EXPECT_EQ(rvh()->GetRoutingID(), msg->routing_id());
   process()->sink().ClearMessages();
 
   // Now try an in-page navigation.  This should not trigger an IPC.
@@ -642,7 +642,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   ASSERT_TRUE(msg);
   SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
   EXPECT_EQ(url, actual_url.a);
-  EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
+  EXPECT_EQ(rvh()->GetRoutingID(), msg->routing_id());
   process()->sink().ClearMessages();
 
   // Navigate to a new host, which should cause another IPC.
@@ -656,7 +656,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   ASSERT_TRUE(msg);
   SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
   EXPECT_EQ(url, actual_url.a);
-  EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
+  EXPECT_EQ(rvh()->GetRoutingID(), msg->routing_id());
   process()->sink().ClearMessages();
 
   // If the mime type is not one that we support, no IPC should be triggered.
@@ -713,7 +713,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   ASSERT_TRUE(msg);
   SafeBrowsingMsg_StartPhishingDetection::Read(msg, &actual_url);
   EXPECT_EQ(url, actual_url.a);
-  EXPECT_EQ(rvh()->routing_id(), msg->routing_id());
+  EXPECT_EQ(rvh()->GetRoutingID(), msg->routing_id());
   process()->sink().ClearMessages();
 
   // If the url isn't in the cache and we are over the reporting limit, we

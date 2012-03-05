@@ -671,7 +671,7 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   // we will search the incognito version only, regardless of the value of
   // |include_incognito|.
   Profile* profile = Profile::FromBrowserContext(
-      render_view_host->process()->GetBrowserContext());
+      render_view_host->GetProcess()->GetBrowserContext());
   browser = BrowserList::FindAnyBrowser(profile, include_incognito);
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
@@ -700,10 +700,10 @@ void ExtensionFunctionDispatcher::Dispatch(
 
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params, extension,
-                              render_view_host->process()->GetID(),
+                              render_view_host->GetProcess()->GetID(),
                               *(service->process_map()),
                               profile(), render_view_host,
-                              render_view_host->routing_id()));
+                              render_view_host->GetRoutingID()));
   if (!function) {
     LogFailure(extension, params.name, kAccessDenied);
     return;

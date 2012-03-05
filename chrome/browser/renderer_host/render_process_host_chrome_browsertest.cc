@@ -32,9 +32,10 @@ RenderViewHost* FindFirstDevToolsHost() {
       DCHECK(widget);
       if (!widget || !widget->IsRenderView())
         continue;
-      RenderViewHost* host = const_cast<RenderViewHost*>(
-          static_cast<const RenderViewHost*>(widget));
-      content::RenderViewHostDelegate* host_delegate = host->delegate();
+      RenderViewHost* host = static_cast<RenderViewHostImpl*>(
+          RenderWidgetHostImpl::From(const_cast<RenderWidgetHost*>(widget)));
+
+      content::RenderViewHostDelegate* host_delegate = host->GetDelegate();
       GURL url = host_delegate->GetURL();
       if (url.SchemeIs(chrome::kChromeDevToolsScheme))
         return host;

@@ -209,7 +209,7 @@ CGLayerRef BackingStoreMac::CreateCGLayer() {
   // The CGLayer should be optimized for drawing into the containing window,
   // so extract a CGContext corresponding to the window to be passed to
   // CGLayerCreateWithContext.
-  NSWindow* window = [render_widget_host()->view()->GetNativeView() window];
+  NSWindow* window = [render_widget_host()->GetView()->GetNativeView() window];
   if ([window windowNumber] <= 0) {
     // This catches a nil |window|, as well as windows that exist but that
     // aren't yet connected to WindowServer.

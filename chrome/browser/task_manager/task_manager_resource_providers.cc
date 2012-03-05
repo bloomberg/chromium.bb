@@ -128,7 +128,7 @@ void TaskManagerRendererResource::Refresh() {
   }
   if (!pending_fps_update_) {
     render_view_host_->Send(
-        new ChromeViewMsg_GetFPS(render_view_host_->routing_id()));
+        new ChromeViewMsg_GetFPS(render_view_host_->GetRoutingID()));
     pending_fps_update_ = true;
   }
   if (!pending_v8_memory_allocated_update_) {
@@ -180,8 +180,8 @@ TaskManager::Resource::Type TaskManagerRendererResource::GetType() const {
   return RENDERER;
 }
 
-int TaskManagerRendererResource::GetRoutingId() const {
-  return render_view_host_->routing_id();
+int TaskManagerRendererResource::GetRoutingID() const {
+  return render_view_host_->GetRoutingID();
 }
 
 bool TaskManagerRendererResource::ReportsCacheStats() const {
@@ -611,7 +611,7 @@ TaskManagerBackgroundContentsResourceProvider::GetResource(
   for (Resources::iterator i = resources_.begin(); i != resources_.end(); i++) {
     WebContents* tab = i->first->web_contents();
     if (tab->GetRenderProcessHost()->GetID() == render_process_host_id
-        && tab->GetRenderViewHost()->routing_id() == routing_id) {
+        && tab->GetRenderViewHost()->GetRoutingID() == routing_id) {
       return i->second;
     }
   }

@@ -49,9 +49,9 @@ static void WindowOpenHelper(Browser* browser,
   observer.Wait();
   EXPECT_EQ(url, newtab->GetController().GetLastCommittedEntry()->GetURL());
   if (newtab_process_should_equal_opener)
-    EXPECT_EQ(opener_host->process(), newtab->GetRenderProcessHost());
+    EXPECT_EQ(opener_host->GetProcess(), newtab->GetRenderProcessHost());
   else
-    EXPECT_NE(opener_host->process(), newtab->GetRenderProcessHost());
+    EXPECT_NE(opener_host->GetProcess(), newtab->GetRenderProcessHost());
 }
 
 // Simulates a page navigating itself to an URL, and waits for the navigation.
@@ -144,7 +144,7 @@ class AppApiTest : public ExtensionApiTest {
     ASSERT_EQ(3, browser()->tab_count());
     RenderViewHost* host1 = browser()->GetWebContentsAt(1)->GetRenderViewHost();
     RenderViewHost* host2 = browser()->GetWebContentsAt(2)->GetRenderViewHost();
-    EXPECT_NE(host1->process(), host2->process());
+    EXPECT_NE(host1->GetProcess(), host2->GetProcess());
 
     // Opening tabs with window.open should keep the page in the opener's
     // process.
@@ -214,9 +214,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   ASSERT_EQ(4, browser()->tab_count());
   RenderViewHost* host = browser()->GetWebContentsAt(1)->GetRenderViewHost();
 
-  EXPECT_EQ(host->process(),
+  EXPECT_EQ(host->GetProcess(),
             browser()->GetWebContentsAt(2)->GetRenderProcessHost());
-  EXPECT_NE(host->process(),
+  EXPECT_NE(host->GetProcess(),
             browser()->GetWebContentsAt(3)->GetRenderProcessHost());
 
   // Now let's do the same using window.open. The same should happen.
@@ -246,16 +246,16 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   // TODO(creis): This should swap out of the app's process (i.e., EXPECT_NE),
   // but we temporarily avoid swapping away from an app in case the window
   // tries to send a postMessage to the app.  See crbug.com/59285.
-  EXPECT_EQ(host->process(),
+  EXPECT_EQ(host->GetProcess(),
             browser()->GetWebContentsAt(2)->GetRenderProcessHost());
-  EXPECT_EQ(host->process(),
+  EXPECT_EQ(host->GetProcess(),
             browser()->GetWebContentsAt(3)->GetRenderProcessHost());
 
   // If one of the popup tabs navigates back to the app, window.opener should
   // be valid.
   NavigateTabHelper(browser()->GetWebContentsAt(6), app_url);
   LOG(INFO) << "NavigateTabHelper 3.";
-  EXPECT_EQ(host->process(),
+  EXPECT_EQ(host->GetProcess(),
             browser()->GetWebContentsAt(6)->GetRenderProcessHost());
   bool windowOpenerValid = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -327,7 +327,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
   // process-per-site-instance model, each should be in its own process.
   ASSERT_EQ(3, browser()->tab_count());
   RenderViewHost* host = browser()->GetWebContentsAt(1)->GetRenderViewHost();
-  EXPECT_NE(host->process(),
+  EXPECT_NE(host->GetProcess(),
             browser()->GetWebContentsAt(2)->GetRenderProcessHost());
 
   // Now let's do the same using window.open. The same should happen.
@@ -343,10 +343,10 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
   const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
   RenderViewHost* host2 = browser()->GetWebContentsAt(2)->GetRenderViewHost();
   NavigateTabHelper(browser()->GetWebContentsAt(2), non_app_url);
-  EXPECT_EQ(host2->process(),
+  EXPECT_EQ(host2->GetProcess(),
             browser()->GetWebContentsAt(2)->GetRenderProcessHost());
   NavigateTabHelper(browser()->GetWebContentsAt(2), app_url);
-  EXPECT_EQ(host2->process(),
+  EXPECT_EQ(host2->GetProcess(),
             browser()->GetWebContentsAt(2)->GetRenderProcessHost());
 }
 

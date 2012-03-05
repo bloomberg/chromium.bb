@@ -707,12 +707,12 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id) {
     return true;
   }
 
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(process_id_, render_id);
+  RenderViewHostImpl* render_view_host =
+      RenderViewHostImpl::FromID(process_id_, render_id);
   if (!render_view_host)
     return false;
 
-  content::SiteInstance* site_instance = render_view_host->site_instance();
+  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
   if (!site_instance)
     return false;
 

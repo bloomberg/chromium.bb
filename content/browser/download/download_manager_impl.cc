@@ -842,7 +842,7 @@ void DownloadManagerImpl::DownloadUrl(
           save_info,
           resource_dispatcher_host,
           RenderParams(web_contents->GetRenderProcessHost()->GetID(),
-                       web_contents->GetRenderViewHost()->routing_id()),
+                       web_contents->GetRenderViewHost()->GetRoutingID()),
           web_contents->GetBrowserContext()->GetResourceContext()));
 }
 

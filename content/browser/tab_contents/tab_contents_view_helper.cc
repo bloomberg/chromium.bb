@@ -36,7 +36,7 @@ void TabContentsViewHelper::Observe(
   RenderWidgetHost* host = content::Source<RenderWidgetHost>(source).ptr();
   for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
        i != pending_widget_views_.end(); ++i) {
-    if (host->view() == i->second) {
+    if (host->GetView() == i->second) {
       pending_widget_views_.erase(i);
       break;
     }
@@ -119,11 +119,11 @@ TabContents* TabContentsViewHelper::GetCreatedWindow(int route_id) {
   pending_contents_.erase(route_id);
 
   if (!new_contents->GetRenderProcessHost()->HasConnection() ||
-      !new_contents->GetRenderViewHost()->view())
+      !new_contents->GetRenderViewHost()->GetView())
     return NULL;
 
   // TODO(brettw): It seems bogus to reach into here and initialize the host.
-  new_contents->GetRenderViewHost()->Init();
+  static_cast<RenderViewHostImpl*>(new_contents->GetRenderViewHost())->Init();
   return new_contents;
 }
 
@@ -138,7 +138,7 @@ RenderWidgetHostView* TabContentsViewHelper::GetCreatedWidget(int route_id) {
   pending_widget_views_.erase(route_id);
 
   RenderWidgetHost* widget_host = widget_host_view->GetRenderWidgetHost();
-  if (!widget_host->process()->HasConnection()) {
+  if (!widget_host->GetProcess()->HasConnection()) {
     // The view has gone away or the renderer crashed. Nothing to do.
     return NULL;
   }
@@ -178,6 +178,6 @@ RenderWidgetHostView* TabContentsViewHelper::ShowCreatedWidget(
     widget_host_view->InitAsPopup(web_contents->GetRenderWidgetHostView(),
                                   initial_pos);
   }
-  RenderWidgetHostImpl::FromRWHV(widget_host_view)->Init();
+  RenderWidgetHostImpl::From(widget_host_view->GetRenderWidgetHost())->Init();
   return widget_host_view;
 }

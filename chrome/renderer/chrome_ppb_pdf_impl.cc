@@ -336,7 +336,7 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
   WebView* view = instance->container()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
-      render_view->GetRoutingId()));
+      render_view->GetRoutingID()));
 }
 
 void SaveAs(PP_Instance instance_id) {

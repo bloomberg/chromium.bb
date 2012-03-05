@@ -64,11 +64,11 @@ void ExtensionView::SetVisible(bool is_visible) {
     // Also tell RenderWidgetHostView the new visibility. Despite its name, it
     // is not part of the View hierarchy and does not know about the change
     // unless we tell it.
-    if (render_view_host()->view()) {
+    if (render_view_host()->GetView()) {
       if (is_visible)
-        render_view_host()->view()->Show();
+        render_view_host()->GetView()->Show();
       else
-        render_view_host()->view()->Hide();
+        render_view_host()->GetView()->Hide();
     }
   }
 }
@@ -102,8 +102,8 @@ void ExtensionView::CleanUp() {
 }
 
 void ExtensionView::SetBackground(const SkBitmap& background) {
-  if (render_view_host()->IsRenderViewLive() && render_view_host()->view()) {
-    render_view_host()->view()->SetBackground(background);
+  if (render_view_host()->IsRenderViewLive() && render_view_host()->GetView()) {
+    render_view_host()->GetView()->SetBackground(background);
   } else {
     pending_background_ = background;
   }
@@ -149,8 +149,8 @@ bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 void ExtensionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // Propagate the new size to RenderWidgetHostView.
   // We can't send size zero because RenderWidget DCHECKs that.
-  if (render_view_host()->view() && !bounds().IsEmpty()) {
-    render_view_host()->view()->SetSize(size());
+  if (render_view_host()->GetView() && !bounds().IsEmpty()) {
+    render_view_host()->GetView()->SetSize(size());
 
     if (container_)
       container_->OnViewWasResized();
@@ -158,8 +158,8 @@ void ExtensionView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void ExtensionView::RenderViewCreated() {
-  if (!pending_background_.empty() && render_view_host()->view()) {
-    render_view_host()->view()->SetBackground(pending_background_);
+  if (!pending_background_.empty() && render_view_host()->GetView()) {
+    render_view_host()->GetView()->SetBackground(pending_background_);
     pending_background_.reset();
   }
 

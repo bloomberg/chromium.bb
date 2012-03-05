@@ -614,7 +614,7 @@ void PrefsTabHelper::Observe(int type,
 
 void PrefsTabHelper::UpdateWebPreferences() {
   content::RenderViewHostDelegate* rvhd =
-      web_contents()->GetRenderViewHost()->delegate();
+      web_contents()->GetRenderViewHost()->GetDelegate();
   WebPreferences prefs = rvhd->GetWebkitPrefs();
   prefs.javascript_enabled =
       per_tab_prefs_->GetBoolean(prefs::kWebKitJavascriptEnabled);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   // TaskManager::Resource methods:
   virtual base::ProcessHandle GetProcess() const OVERRIDE;
   virtual Type GetType() const OVERRIDE;
-  virtual int GetRoutingId() const OVERRIDE;
+  virtual int GetRoutingID() const OVERRIDE;
 
   virtual bool ReportsCacheStats() const OVERRIDE;
   virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const

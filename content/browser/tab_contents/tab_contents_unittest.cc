@@ -183,7 +183,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
 
   bool is_showing() const {
     return static_cast<content::TestRenderWidgetHostView*>(
-        GetRenderViewHostForTesting()->view())->is_showing();
+        GetRenderViewHostForTesting()->GetView())->is_showing();
   }
 
   void ClearStates() {
@@ -306,7 +306,7 @@ TEST_F(TabContentsTest, NTPViewSource) {
   cont.LoadURL(
       kGURL, content::Referrer(), content::PAGE_TRANSITION_TYPED,
       std::string());
-  rvh()->delegate()->RenderViewCreated(rvh());
+  rvh()->GetDelegate()->RenderViewCreated(rvh());
   // Did we get the expected message?
   EXPECT_TRUE(process()->sink().GetFirstMessageMatching(
       ViewMsg_EnableViewSourceMode::ID));
@@ -353,7 +353,7 @@ TEST_F(TabContentsTest, SimpleNavigation) {
   controller().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(instance1, orig_rvh->site_instance());
+  EXPECT_EQ(instance1, orig_rvh->GetSiteInstance());
   // Controller's pending entry will have a NULL site instance until we assign
   // it in DidNavigate.
   EXPECT_TRUE(
@@ -364,7 +364,7 @@ TEST_F(TabContentsTest, SimpleNavigation) {
   contents()->TestDidNavigate(orig_rvh, 1, url, content::PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
-  EXPECT_EQ(instance1, orig_rvh->site_instance());
+  EXPECT_EQ(instance1, orig_rvh->GetSiteInstance());
   // Controller's entry should now have the SiteInstance, or else we won't be
   // able to find it later.
   EXPECT_EQ(
@@ -718,7 +718,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(url1, entry1->GetURL());
   EXPECT_EQ(instance1,
             NavigationEntryImpl::FromNavigationEntry(entry1)->site_instance());
-  EXPECT_TRUE(ntp_rvh->enabled_bindings() & content::BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(ntp_rvh->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
 
   // Navigate to new site.
   const GURL url2("http://www.google.com");
@@ -744,7 +744,7 @@ TEST_F(TabContentsTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(url2, entry2->GetURL());
   EXPECT_EQ(instance2,
             NavigationEntryImpl::FromNavigationEntry(entry2)->site_instance());
-  EXPECT_FALSE(google_rvh->enabled_bindings() &
+  EXPECT_FALSE(google_rvh->GetEnabledBindings() &
       content::BINDINGS_POLICY_WEB_UI);
 
   // Navigate to third page on same site.

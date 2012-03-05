@@ -339,7 +339,8 @@ void TranslateManager::Observe(int type,
               &TranslateManager::InitiateTranslationPosted,
               weak_method_factory_.GetWeakPtr(),
               controller->GetWebContents()->GetRenderProcessHost()->GetID(),
-              controller->GetWebContents()->GetRenderViewHost()->routing_id(),
+              controller->GetWebContents()->
+                  GetRenderViewHost()->GetRoutingID(),
               helper->language_state().original_language()));
       break;
     }
@@ -618,8 +619,8 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
   // script.  Once it is downloaded we'll do the translate.
   RenderViewHost* rvh = web_contents->GetRenderViewHost();
   PendingRequest request;
-  request.render_process_id = rvh->process()->GetID();
-  request.render_view_id = rvh->routing_id();
+  request.render_process_id = rvh->GetProcess()->GetID();
+  request.render_view_id = rvh->GetRoutingID();
   request.page_id = entry->GetPageID();
   request.source_lang = source_lang;
   request.target_lang = target_lang;
@@ -634,7 +635,7 @@ void TranslateManager::RevertTranslation(WebContents* web_contents) {
     return;
   }
   web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_RevertTranslation(
-      web_contents->GetRenderViewHost()->routing_id(), entry->GetPageID()));
+      web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID()));
 
   TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
       web_contents)->translate_tab_helper();
@@ -688,7 +689,7 @@ void TranslateManager::DoTranslatePage(WebContents* tab,
   wrapper->translate_tab_helper()->language_state().set_translation_pending(
       true);
   tab->GetRenderViewHost()->Send(new ChromeViewMsg_TranslatePage(
-      tab->GetRenderViewHost()->routing_id(), entry->GetPageID(),
+      tab->GetRenderViewHost()->GetRoutingID(), entry->GetPageID(),
       translate_script, source_lang, target_lang));
 }
 

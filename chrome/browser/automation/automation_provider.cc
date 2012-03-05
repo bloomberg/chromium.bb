@@ -766,7 +766,7 @@ void AutomationProvider::JavaScriptStressTestControl(int tab_handle,
   }
 
   view->Send(new ChromeViewMsg_JavaScriptStressTestControl(
-      view->routing_id(), cmd, param));
+      view->GetRoutingID(), cmd, param));
 }
 
 void AutomationProvider::BeginTracing(const std::string& categories,

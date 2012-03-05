@@ -585,7 +585,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
       }
     }
 
-    host->Send(new AutofillMsg_FormDataFilled(host->routing_id(), query_id,
+    host->Send(new AutofillMsg_FormDataFilled(host->GetRoutingID(), query_id,
                                               result));
     return;
   }
@@ -635,7 +635,7 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
     autofilled_form_signatures_.pop_back();
 
   host->Send(new AutofillMsg_FormDataFilled(
-      host->routing_id(), query_id, result));
+      host->GetRoutingID(), query_id, result));
 }
 
 void AutofillManager::OnShowAutofillDialog() {
@@ -724,8 +724,9 @@ void AutofillManager::SendAutofillTypePredictions(
 
   std::vector<FormDataPredictions> type_predictions;
   FormStructure::GetFieldTypePredictions(forms, &type_predictions);
-  host->Send(new AutofillMsg_FieldTypePredictionsAvailable(host->routing_id(),
-                                                           type_predictions));
+  host->Send(
+      new AutofillMsg_FieldTypePredictionsAvailable(host->GetRoutingID(),
+                                                    type_predictions));
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {

@@ -140,7 +140,7 @@ void ExtensionPopupGtk::OnExtensionPreferredSizeChanged(
   int width = std::max(kMinWidth, std::min(kMaxWidth, new_size.width()));
   int height = std::max(kMinHeight, std::min(kMaxHeight, new_size.height()));
 
-  view->render_view_host()->view()->SetSize(gfx::Size(width, height));
+  view->render_view_host()->GetView()->SetSize(gfx::Size(width, height));
   gtk_widget_set_size_request(view->native_view(), width, height);
 }
 

@@ -48,8 +48,8 @@ void ExtensionViewMac::DidStopLoading() {
 }
 
 void ExtensionViewMac::SetBackground(const SkBitmap& background) {
-  if (!pending_background_.empty() && render_view_host()->view()) {
-    render_view_host()->view()->SetBackground(background);
+  if (!pending_background_.empty() && render_view_host()->GetView()) {
+    render_view_host()->GetView()->SetBackground(background);
   } else {
     pending_background_ = background;
   }
@@ -70,15 +70,15 @@ void ExtensionViewMac::RenderViewCreated() {
       CGSizeMake(ExtensionViewMac::kMaxWidth, ExtensionViewMac::kMaxHeight));
   extension_host_->DisableScrollbarsForSmallWindows(largest_popup_size);
 
-  if (!pending_background_.empty() && render_view_host()->view()) {
-    render_view_host()->view()->SetBackground(pending_background_);
+  if (!pending_background_.empty() && render_view_host()->GetView()) {
+    render_view_host()->GetView()->SetBackground(pending_background_);
     pending_background_.reset();
   }
 }
 
 void ExtensionViewMac::WindowFrameChanged() {
-  if (render_view_host()->view())
-    render_view_host()->view()->WindowFrameChanged();
+  if (render_view_host()->GetView())
+    render_view_host()->GetView()->WindowFrameChanged();
 }
 
 void ExtensionViewMac::CreateWidgetHostView() {

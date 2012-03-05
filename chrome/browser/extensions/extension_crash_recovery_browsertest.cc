@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     ASSERT_TRUE(extension_host);
 
     content::RenderProcessHost* extension_rph =
-        extension_host->render_view_host()->process();
+        extension_host->render_view_host()->GetProcess();
     base::KillProcess(extension_rph->GetHandle(), content::RESULT_CODE_KILLED,
                       false);
     ASSERT_TRUE(WaitForExtensionCrash(extension_id));
@@ -95,7 +95,8 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     extensions::ProcessMap* process_map =
         browser()->profile()->GetExtensionService()->process_map();
     ASSERT_TRUE(process_map->Contains(
-        extension_id, extension_host->render_view_host()->process()->GetID()));
+        extension_id,
+        extension_host->render_view_host()->GetProcess()->GetID()));
   }
 
   void LoadTestExtension() {

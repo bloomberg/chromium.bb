@@ -26,7 +26,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
     // TestRenderViewHost's destruction assumes that its view is a
     // TestRenderWidgetHostView, so store its view and reset it back to the
     // stored view in |TearDown()|.
-    old_rwhv_ = rvh()->view();
+    old_rwhv_ = rvh()->GetView();
 
     // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa_|.
     rwhv_mac_ = static_cast<RenderWidgetHostViewMac*>(

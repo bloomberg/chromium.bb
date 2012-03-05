@@ -3406,7 +3406,7 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   return RenderWidget::Send(message);
 }
 
-int RenderViewImpl::GetRoutingId() const  {
+int RenderViewImpl::GetRoutingID() const  {
   return routing_id_;
 }
 

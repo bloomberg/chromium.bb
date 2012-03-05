@@ -389,7 +389,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
         agent_host,
         window_->devtools_client_host());
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
-    WebContents* client_contents = client_rvh->delegate()->GetAsWebContents();
+    WebContents* client_contents =
+        client_rvh->GetDelegate()->GetAsWebContents();
     if (client_contents->IsLoading()) {
       ui_test_utils::WindowedNotificationObserver observer(
           content::NOTIFICATION_LOAD_STOP,

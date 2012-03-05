@@ -522,7 +522,7 @@ void SyncSetupHandler::SetFlow(SyncSetupFlow* flow) {
 }
 
 void SyncSetupHandler::Focus() {
-  web_ui()->GetWebContents()->GetRenderViewHost()->delegate()->Activate();
+  web_ui()->GetWebContents()->GetRenderViewHost()->GetDelegate()->Activate();
 }
 
 void SyncSetupHandler::OnDidClosePage(const ListValue* args) {

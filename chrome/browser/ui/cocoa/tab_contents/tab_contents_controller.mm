@@ -78,7 +78,7 @@ using content::WebContents;
   // formally resigns first responder status.  Handle this by explicitly sending
   // a Blur() message to the renderer, but only if the RWHV currently has focus.
   RenderViewHost* rvh = [self webContents]->GetRenderViewHost();
-  if (rvh && rvh->view() && rvh->view()->HasFocus())
+  if (rvh && rvh->GetView() && rvh->GetView()->HasFocus())
     rvh->Blur();
 }
 

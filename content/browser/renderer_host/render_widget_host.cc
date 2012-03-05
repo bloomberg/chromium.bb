@@ -80,15 +80,6 @@ bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
 
 }  // namespace
 
-RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process)
-    : process_(process),
-      view_(NULL) {
-}
-
-content::RenderWidgetHostView* RenderWidgetHost::view() const {
-  return view_;
-}
-
 // static
 RenderWidgetHost* RenderWidgetHost::FromIPCChannelListener(
     IPC::Channel::Listener* listener) {
@@ -118,11 +109,12 @@ size_t RenderWidgetHost::BackingStoreMemorySize() {
 
 RenderWidgetHostImpl::RenderWidgetHostImpl(content::RenderProcessHost* process,
                                            int routing_id)
-    : RenderWidgetHost(process),
+    : view_(NULL),
       renderer_initialized_(false),
       hung_renderer_delay_ms_(kHungRendererDelayMs),
-      renderer_accessible_(false),
+      process_(process),
       routing_id_(routing_id),
+      renderer_accessible_(false),
       surface_id_(0),
       is_loading_(false),
       is_hidden_(false),
@@ -193,9 +185,8 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
 }
 
 // static
-RenderWidgetHostImpl* RenderWidgetHostImpl::FromRWHV(
-    content::RenderWidgetHostView* rwhv) {
-  return static_cast<RenderWidgetHostImpl*>(rwhv->GetRenderWidgetHost());
+RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
+  return rwh->AsRenderWidgetHostImpl();
 }
 
 void RenderWidgetHostImpl::SetView(content::RenderWidgetHostView* view) {
@@ -205,6 +196,27 @@ void RenderWidgetHostImpl::SetView(content::RenderWidgetHostView* view) {
     GpuSurfaceTracker::Get()->SetSurfaceHandle(
         surface_id_, gfx::GLSurfaceHandle());
   }
+}
+
+content::RenderProcessHost* RenderWidgetHostImpl::GetProcess() const {
+  return process_;
+}
+
+int RenderWidgetHostImpl::GetRoutingID() const {
+  return routing_id_;
+}
+
+content::RenderWidgetHostView* RenderWidgetHostImpl::GetView() const {
+  return view_;
+}
+
+RenderWidgetHostImpl* RenderWidgetHostImpl::AsRenderWidgetHostImpl() {
+  return this;
+}
+
+bool RenderWidgetHostImpl::OnMessageReceivedForTesting(
+    const IPC::Message& msg) {
+  return OnMessageReceived(msg);
 }
 
 gfx::NativeViewId RenderWidgetHostImpl::GetNativeViewId() const {
@@ -312,7 +324,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (!msg_is_ok) {
     // The message de-serialization failed. Kill the renderer process.
     content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));
-    process()->ReceivedBadMessage();
+    GetProcess()->ReceivedBadMessage();
   }
   return handled;
 }
@@ -337,7 +349,7 @@ void RenderWidgetHostImpl::WasHidden() {
   bool is_visible = false;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHostImpl>(this),
+      content::Source<RenderWidgetHost>(this),
       content::Details<bool>(&is_visible));
 }
 
@@ -367,7 +379,7 @@ void RenderWidgetHostImpl::WasRestored() {
   bool is_visible = true;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHostImpl>(this),
+      content::Source<RenderWidgetHost>(this),
       content::Details<bool>(&is_visible));
 
   // It's possible for our size to be out of sync with the renderer. The
@@ -576,7 +588,7 @@ BackingStore* RenderWidgetHostImpl::AllocBackingStore(const gfx::Size& size) {
 }
 
 void RenderWidgetHostImpl::DonePaintingToBackingStore() {
-  Send(new ViewMsg_UpdateRect_ACK(routing_id()));
+  Send(new ViewMsg_UpdateRect_ACK(GetRoutingID()));
 }
 
 void RenderWidgetHostImpl::ScheduleComposite() {
@@ -874,14 +886,14 @@ void RenderWidgetHostImpl::CancelUpdateTextDirection() {
 void RenderWidgetHostImpl::NotifyTextDirection() {
   if (text_direction_updated_) {
     if (!text_direction_canceled_)
-      Send(new ViewMsg_SetTextDirection(routing_id(), text_direction_));
+      Send(new ViewMsg_SetTextDirection(GetRoutingID(), text_direction_));
     text_direction_updated_ = false;
     text_direction_canceled_ = false;
   }
 }
 
 void RenderWidgetHostImpl::SetInputMethodActive(bool activate) {
-  Send(new ViewMsg_SetInputMethodActive(routing_id(), activate));
+  Send(new ViewMsg_SetInputMethodActive(GetRoutingID(), activate));
 }
 
 void RenderWidgetHostImpl::ImeSetComposition(
@@ -890,7 +902,7 @@ void RenderWidgetHostImpl::ImeSetComposition(
     int selection_start,
     int selection_end) {
   Send(new ViewMsg_ImeSetComposition(
-            routing_id(), text, underlines, selection_start, selection_end));
+            GetRoutingID(), text, underlines, selection_start, selection_end));
 }
 
 void RenderWidgetHostImpl::ImeConfirmComposition(const string16& text) {
@@ -900,7 +912,7 @@ void RenderWidgetHostImpl::ImeConfirmComposition(const string16& text) {
 void RenderWidgetHostImpl::ImeConfirmComposition(
     const string16& text, const ui::Range& replacement_range) {
   Send(new ViewMsg_ImeConfirmComposition(
-        routing_id(), text, replacement_range));
+        GetRoutingID(), text, replacement_range));
 }
 
 void RenderWidgetHostImpl::ImeConfirmComposition() {
@@ -908,7 +920,7 @@ void RenderWidgetHostImpl::ImeConfirmComposition() {
 }
 
 void RenderWidgetHostImpl::ImeCancelComposition() {
-  Send(new ViewMsg_ImeSetComposition(routing_id(), string16(),
+  Send(new ViewMsg_ImeSetComposition(GetRoutingID(), string16(),
             std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
 }
 
@@ -947,7 +959,7 @@ void RenderWidgetHostImpl::SetShouldAutoResize(bool enable) {
 void RenderWidgetHostImpl::Destroy() {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      content::Source<RenderWidgetHostImpl>(this),
+      content::Source<RenderWidgetHost>(this),
       content::NotificationService::NoDetails());
 
   // Tell the view to die.
@@ -975,7 +987,7 @@ void RenderWidgetHostImpl::CheckRendererIsUnresponsive() {
   // OK, looks like we have a hung renderer!
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_HANG,
-      content::Source<RenderWidgetHostImpl>(this),
+      content::Source<RenderWidgetHost>(this),
       content::NotificationService::NoDetails());
   is_unresponsive_ = true;
   NotifyRendererUnresponsive();
@@ -1031,7 +1043,7 @@ void RenderWidgetHostImpl::OnMsgSetTooltipText(
       base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
     }
   }
-  if (view())
+  if (GetView())
     view_->SetTooltipText(wrapped_tooltip_text);
 }
 
@@ -1048,7 +1060,7 @@ void RenderWidgetHostImpl::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
   gfx::Size size_details = size;
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
-      content::Source<RenderWidgetHostImpl>(this),
+      content::Source<RenderWidgetHost>(this),
       content::Details<PaintAtSizeAckDetails>(&details));
 }
 
@@ -1097,7 +1109,7 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
         DLOG(WARNING) << "Transport DIB too small for given rectangle";
         content::RecordAction(
             UserMetricsAction("BadMessageTerminate_RWH1"));
-        process()->ReceivedBadMessage();
+        GetProcess()->ReceivedBadMessage();
       } else {
         UNSHIPPED_TRACE_EVENT_INSTANT2("test_latency", "UpdateRect",
             "x+y", params.bitmap_rect.x() + params.bitmap_rect.y(),
@@ -1183,7 +1195,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-      content::Source<RenderWidgetHostImpl>(this),
+      content::Source<RenderWidgetHost>(this),
       content::NotificationService::NoDetails());
 
   // If we got a resize ack, then perhaps we have another resize to send?
@@ -1212,7 +1224,7 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
 }
 
 void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
-                                          bool processed) {
+                                              bool processed) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnMsgInputEventAck");
 
   // Log the time delta for processing an input event.
@@ -1226,7 +1238,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
   int type = static_cast<int>(event_type);
   if (type < WebInputEvent::Undefined) {
     content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
-    process()->ReceivedBadMessage();
+    process_->ReceivedBadMessage();
   } else if (type == WebInputEvent::MouseMove) {
     mouse_move_pending_ = false;
 
@@ -1242,10 +1254,17 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
   } else if (WebInputEvent::isTouchEventType(type)) {
     ProcessTouchAck(event_type, processed);
   }
-  // This is used only for testing.
+
+  // This is used only for testing, and the other end does not use the
+  // source object.  On linux, specifying
+  // content::Source<RenderWidgetHost> results in a very strange
+  // runtime error in the epilogue of the enclosing
+  // (OnMsgInputEventAck) method, but not on other platforms; using
+  // 'void' instead is just as safe (since content::NotificationSource
+  // is not actually typesafe) and avoids this error.
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
-      content::Source<RenderWidgetHostImpl>(this),
+      content::Source<void>(this),
       content::Details<int>(&type));
 }
 
@@ -1273,13 +1292,13 @@ void RenderWidgetHostImpl::ProcessTouchAck(
 void RenderWidgetHostImpl::OnMsgFocus() {
   // Only RenderViewHost can deal with that message.
   content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
-  process()->ReceivedBadMessage();
+  GetProcess()->ReceivedBadMessage();
 }
 
 void RenderWidgetHostImpl::OnMsgBlur() {
   // Only RenderViewHost can deal with that message.
   content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
-  process()->ReceivedBadMessage();
+  GetProcess()->ReceivedBadMessage();
 }
 
 void RenderWidgetHostImpl::OnMsgDidChangeNumTouchEvents(int count) {
@@ -1422,8 +1441,12 @@ void RenderWidgetHostImpl::EnableRendererAccessibility() {
 
   if (process_->HasConnection()) {
     // Renderer accessibility wasn't enabled on process launch. Enable it now.
-    Send(new AccessibilityMsg_Enable(routing_id()));
+    Send(new AccessibilityMsg_Enable(GetRoutingID()));
   }
+}
+
+void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
+  ignore_input_events_ = ignore_input_events;
 }
 
 void RenderWidgetHostImpl::ProcessKeyboardEventAck(int type, bool processed) {
@@ -1476,109 +1499,113 @@ void RenderWidgetHostImpl::ActivateDeferredPluginHandles() {
 #endif
 }
 
+const gfx::Point& RenderWidgetHostImpl::GetLastScrollOffset() const {
+  return last_scroll_offset_;
+}
+
 void RenderWidgetHostImpl::StartUserGesture() {
   OnUserGesture();
 }
 
 void RenderWidgetHostImpl::Stop() {
-  Send(new ViewMsg_Stop(routing_id()));
+  Send(new ViewMsg_Stop(GetRoutingID()));
 }
 
 void RenderWidgetHostImpl::SetBackground(const SkBitmap& background) {
-  Send(new ViewMsg_SetBackground(routing_id(), background));
+  Send(new ViewMsg_SetBackground(GetRoutingID(), background));
 }
 
 void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
     const std::vector<EditCommand>& commands) {
-  Send(new ViewMsg_SetEditCommandsForNextKeyEvent(routing_id(), commands));
+  Send(new ViewMsg_SetEditCommandsForNextKeyEvent(GetRoutingID(), commands));
 }
 
 void RenderWidgetHostImpl::AccessibilityDoDefaultAction(int object_id) {
-  Send(new AccessibilityMsg_DoDefaultAction(routing_id(), object_id));
+  Send(new AccessibilityMsg_DoDefaultAction(GetRoutingID(), object_id));
 }
 
 void RenderWidgetHostImpl::AccessibilitySetFocus(int object_id) {
-  Send(new AccessibilityMsg_SetFocus(routing_id(), object_id));
+  Send(new AccessibilityMsg_SetFocus(GetRoutingID(), object_id));
 }
 
 void RenderWidgetHostImpl::AccessibilityScrollToMakeVisible(
     int acc_obj_id, gfx::Rect subfocus) {
   Send(new AccessibilityMsg_ScrollToMakeVisible(
-      routing_id(), acc_obj_id, subfocus));
+      GetRoutingID(), acc_obj_id, subfocus));
 }
 
 void RenderWidgetHostImpl::AccessibilityScrollToPoint(
     int acc_obj_id, gfx::Point point) {
   Send(new AccessibilityMsg_ScrollToPoint(
-      routing_id(), acc_obj_id, point));
+      GetRoutingID(), acc_obj_id, point));
 }
 
 void RenderWidgetHostImpl::AccessibilitySetTextSelection(
     int object_id, int start_offset, int end_offset) {
   Send(new AccessibilityMsg_SetTextSelection(
-      routing_id(), object_id, start_offset, end_offset));
+      GetRoutingID(), object_id, start_offset, end_offset));
 }
 
 void RenderWidgetHostImpl::ExecuteEditCommand(const std::string& command,
                                               const std::string& value) {
-  Send(new ViewMsg_ExecuteEditCommand(routing_id(), command, value));
+  Send(new ViewMsg_ExecuteEditCommand(GetRoutingID(), command, value));
 }
 
 void RenderWidgetHostImpl::ScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
-  Send(new ViewMsg_ScrollFocusedEditableNodeIntoRect(routing_id(), rect));
+  Send(new ViewMsg_ScrollFocusedEditableNodeIntoRect(GetRoutingID(), rect));
 }
 
 void RenderWidgetHostImpl::SelectRange(const gfx::Point& start,
                                        const gfx::Point& end) {
-  Send(new ViewMsg_SelectRange(routing_id(), start, end));
+  Send(new ViewMsg_SelectRange(GetRoutingID(), start, end));
 }
 
 void RenderWidgetHostImpl::Undo() {
-  Send(new ViewMsg_Undo(routing_id()));
+  Send(new ViewMsg_Undo(GetRoutingID()));
   content::RecordAction(UserMetricsAction("Undo"));
 }
 
 void RenderWidgetHostImpl::Redo() {
-  Send(new ViewMsg_Redo(routing_id()));
+  Send(new ViewMsg_Redo(GetRoutingID()));
   content::RecordAction(UserMetricsAction("Redo"));
 }
 
 void RenderWidgetHostImpl::Cut() {
-  Send(new ViewMsg_Cut(routing_id()));
+  Send(new ViewMsg_Cut(GetRoutingID()));
   content::RecordAction(UserMetricsAction("Cut"));
 }
 
 void RenderWidgetHostImpl::Copy() {
-  Send(new ViewMsg_Copy(routing_id()));
+  Send(new ViewMsg_Copy(GetRoutingID()));
   content::RecordAction(UserMetricsAction("Copy"));
 }
 
 void RenderWidgetHostImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
   // Windows/Linux don't have the concept of a find pasteboard.
-  Send(new ViewMsg_CopyToFindPboard(routing_id()));
+  Send(new ViewMsg_CopyToFindPboard(GetRoutingID()));
   content::RecordAction(UserMetricsAction("CopyToFindPboard"));
 #endif
 }
 
 void RenderWidgetHostImpl::Paste() {
-  Send(new ViewMsg_Paste(routing_id()));
+  Send(new ViewMsg_Paste(GetRoutingID()));
   content::RecordAction(UserMetricsAction("Paste"));
 }
 
 void RenderWidgetHostImpl::PasteAndMatchStyle() {
-  Send(new ViewMsg_PasteAndMatchStyle(routing_id()));
+  Send(new ViewMsg_PasteAndMatchStyle(GetRoutingID()));
   content::RecordAction(UserMetricsAction("PasteAndMatchStyle"));
 }
 
 void RenderWidgetHostImpl::Delete() {
-  Send(new ViewMsg_Delete(routing_id()));
+  Send(new ViewMsg_Delete(GetRoutingID()));
   content::RecordAction(UserMetricsAction("DeleteSelection"));
 }
 
 void RenderWidgetHostImpl::SelectAll() {
-  Send(new ViewMsg_SelectAll(routing_id()));
+  Send(new ViewMsg_SelectAll(GetRoutingID()));
   content::RecordAction(UserMetricsAction("SelectAll"));
 }
 bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {

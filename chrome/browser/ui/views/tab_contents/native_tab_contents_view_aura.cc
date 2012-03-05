@@ -60,7 +60,7 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
         if (rvh) {
           gfx::Point screen_loc = ui::EventLocationFromNative(event);
           gfx::Point client_loc = screen_loc;
-          aura::Window* window = rvh->view()->GetNativeView();
+          aura::Window* window = rvh->GetView()->GetNativeView();
           aura::Window::ConvertPointToWindow(window->GetRootWindow(),
               window, &client_loc);
           rvh->DragSourceMovedTo(client_loc.x(), client_loc.y(),
@@ -329,7 +329,7 @@ void NativeTabContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
   gfx::Point screen_loc = root_window->last_mouse_location();
   gfx::Point client_loc = screen_loc;
   RenderViewHost* rvh = GetWebContents()->GetRenderViewHost();
-  aura::Window* window = rvh->view()->GetNativeView();
+  aura::Window* window = rvh->GetView()->GetNativeView();
   aura::Window::ConvertPointToWindow(root_window, window, &client_loc);
   rvh->DragSourceEndedAt(client_loc.x(), client_loc.y(), screen_loc.x(),
       screen_loc.y(), ops);

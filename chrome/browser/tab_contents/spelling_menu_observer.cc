@@ -229,8 +229,8 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     // service immediately.
     if (!integrate_spelling_service_) {
       RenderViewHost* rvh = proxy_->GetRenderViewHost();
-      gfx::Rect rect = rvh->view()->GetViewBounds();
-      ConfirmBubbleModel::Show(rvh->view()->GetNativeView(),
+      gfx::Rect rect = rvh->GetView()->GetViewBounds();
+      ConfirmBubbleModel::Show(rvh->GetView()->GetNativeView(),
                                gfx::Point(rect.CenterPoint().x(), rect.y()),
                                new SpellingBubbleModel(proxy_->GetProfile()));
     } else {

@@ -63,7 +63,7 @@ bool DevToolsAgentHostRegistry::IsDebuggerAttached(WebContents* web_contents) {
   RenderViewHostDelegate* delegate = static_cast<TabContents*>(web_contents);
   for (Instances::iterator it = g_instances.Get().begin();
        it != g_instances.Get().end(); ++it) {
-    if (it->first->delegate() != delegate)
+    if (it->first->GetDelegate() != delegate)
       continue;
     if (devtools_manager->GetDevToolsClientHostFor(it->second))
       return true;
@@ -71,7 +71,8 @@ bool DevToolsAgentHostRegistry::IsDebuggerAttached(WebContents* web_contents) {
   return false;
 }
 
-RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
+RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
+    RenderViewHost* rvh)
     : content::RenderViewHostObserver(rvh),
       render_view_host_(rvh) {
   g_instances.Get()[rvh] = this;
@@ -81,13 +82,13 @@ RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
       content::Source<content::BrowserContext>(
-          render_view_host_->site_instance()->GetProcess()->
+          render_view_host_->GetSiteInstance()->GetProcess()->
               GetBrowserContext()),
       content::Details<RenderViewHost>(render_view_host_));
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
-  msg->set_routing_id(render_view_host_->routing_id());
+  msg->set_routing_id(render_view_host_->GetRoutingID());
   render_view_host_->Send(msg);
 }
 
@@ -95,20 +96,21 @@ void RenderViewDevToolsAgentHost::NotifyClientClosing() {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
       content::Source<content::BrowserContext>(
-          render_view_host_->site_instance()->GetProcess()->
+          render_view_host_->GetSiteInstance()->GetProcess()->
               GetBrowserContext()),
       content::Details<RenderViewHost>(render_view_host_));
 }
 
 int RenderViewDevToolsAgentHost::GetRenderProcessId() {
-  return render_view_host_->process()->GetID();
+  return render_view_host_->GetProcess()->GetID();
 }
 
 RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
   g_instances.Get().erase(render_view_host_);
 }
 
-void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(RenderViewHost* rvh) {
+void RenderViewDevToolsAgentHost::RenderViewHostDestroyed(
+    RenderViewHost* rvh) {
   NotifyCloseListener();
   delete this;
 }

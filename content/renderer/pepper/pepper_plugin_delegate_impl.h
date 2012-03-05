@@ -387,7 +387,7 @@ class PepperPluginDelegateImpl
                                   const PP_NetAddress_Private& local_addr,
                                   const PP_NetAddress_Private& remote_addr);
 
-  CONTENT_EXPORT int GetRoutingId() const;
+  CONTENT_EXPORT int GetRoutingID() const;
 
   typedef base::Callback<void (int /* request_id */,
                                bool /* succeeded */,

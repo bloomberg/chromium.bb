@@ -36,7 +36,7 @@ void LoginUIService::FocusLoginUI() {
     NOTREACHED() << "FocusLoginUI() called with no active login UI";
     return;
   }
-  ui_->GetWebContents()->GetRenderViewHost()->delegate()->Activate();
+  ui_->GetWebContents()->GetRenderViewHost()->GetDelegate()->Activate();
 }
 
 void LoginUIService::ShowLoginUI() {

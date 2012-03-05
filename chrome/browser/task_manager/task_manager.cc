@@ -825,7 +825,7 @@ void TaskManagerModel::NotifyFPS(base::ProcessId renderer_id,
   for (ResourceList::iterator it = resources_.begin();
        it != resources_.end(); ++it) {
     if (base::GetProcId((*it)->GetProcess()) == renderer_id &&
-        (*it)->GetRoutingId() == routing_id) {
+        (*it)->GetRoutingID() == routing_id) {
       (*it)->NotifyFPS(fps);
     }
   }
@@ -1048,7 +1048,7 @@ void TaskManager::ActivateProcess(int index) {
   TabContentsWrapper* chosen_tab_contents =
       model_->GetResourceTabContents(index);
   if (chosen_tab_contents) {
-    chosen_tab_contents->web_contents()->GetRenderViewHost()->delegate()->
+    chosen_tab_contents->web_contents()->GetRenderViewHost()->GetDelegate()->
         Activate();
   }
 }

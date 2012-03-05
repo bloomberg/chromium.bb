@@ -43,7 +43,7 @@ v8::Handle<v8::Value> NotifyDone(const v8::Arguments& args) {
   if (!view)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_NotifyDone(view->GetRoutingId()));
+  view->Send(new ShellViewHostMsg_NotifyDone(view->GetRoutingID()));
   return v8::Undefined();
 }
 
@@ -52,7 +52,7 @@ v8::Handle<v8::Value> SetDumpAsText(const v8::Arguments& args) {
   if (!view)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_DumpAsText(view->GetRoutingId()));
+  view->Send(new ShellViewHostMsg_DumpAsText(view->GetRoutingID()));
   return v8::Undefined();
 }
 
@@ -61,7 +61,7 @@ v8::Handle<v8::Value> SetDumpChildFramesAsText(const v8::Arguments& args) {
   if (!view)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_DumpChildFramesAsText(view->GetRoutingId()));
+  view->Send(new ShellViewHostMsg_DumpChildFramesAsText(view->GetRoutingID()));
   return v8::Undefined();
 }
 
@@ -70,7 +70,7 @@ v8::Handle<v8::Value> SetWaitUntilDone(const v8::Arguments& args) {
   if (!view)
     return v8::Undefined();
 
-  view->Send(new ShellViewHostMsg_WaitUntilDone(view->GetRoutingId()));
+  view->Send(new ShellViewHostMsg_WaitUntilDone(view->GetRoutingID()));
   return v8::Undefined();
 }
 

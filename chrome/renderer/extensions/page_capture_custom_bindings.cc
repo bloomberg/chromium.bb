@@ -43,7 +43,7 @@ v8::Handle<v8::Value> PageCaptureCustomBindings::SendResponseAck(
   content::RenderView* render_view = GetCurrentRenderView();
   if (render_view) {
     render_view->Send(new ExtensionHostMsg_ResponseAck(
-        render_view->GetRoutingId(), args[0]->Int32Value()));
+        render_view->GetRoutingID(), args[0]->Int32Value()));
   }
   return v8::Undefined();
 }

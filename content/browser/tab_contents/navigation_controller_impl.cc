@@ -782,7 +782,9 @@ content::NavigationType NavigationControllerImpl::ClassifyNavigation(
       temp.append(",");
     }
     GURL url(temp);
-    tab_contents_->GetRenderViewHost()->Send(new ViewMsg_TempCrashWithData(url));
+    static_cast<RenderViewHostImpl*>(
+        tab_contents_->GetRenderViewHost())->Send(
+            new ViewMsg_TempCrashWithData(url));
     return content::NAVIGATION_TYPE_NAV_IGNORE;
   }
   NavigationEntryImpl* existing_entry = entries_[existing_entry_index].get();

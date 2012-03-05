@@ -145,8 +145,8 @@ BackingStore* CreateBackingStore(RenderWidgetHost* host,
   } else {
     cache = small_cache;
   }
-  BackingStore* backing_store = static_cast<RenderWidgetHostImpl*>(
-      host)->AllocBackingStore(backing_store_size);
+  BackingStore* backing_store =
+      RenderWidgetHostImpl::From(host)->AllocBackingStore(backing_store_size);
   if (backing_store)
     cache->Put(host, backing_store);
   return backing_store;
@@ -216,7 +216,7 @@ void BackingStoreManager::PrepareBackingStore(
     }
   }
 
-  backing_store->PaintToBackingStore(host->process(), bitmap,
+  backing_store->PaintToBackingStore(host->GetProcess(), bitmap,
                                      bitmap_rect, copy_rects,
                                      completion_callback,
                                      scheduled_completion_callback);

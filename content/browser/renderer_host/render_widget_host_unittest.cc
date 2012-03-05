@@ -237,7 +237,8 @@ class MockPaintingObserver : public content::NotificationObserver {
           content::Details<RenderWidgetHostImpl::PaintAtSizeAckDetails>(
               details).ptr();
       WidgetDidReceivePaintAtSizeAck(
-          content::Source<RenderWidgetHostImpl>(source).ptr(),
+          RenderWidgetHostImpl::From(
+              content::Source<RenderWidgetHost>(source).ptr()),
           size_ack_details->tag,
           size_ack_details->size);
     }
@@ -585,7 +586,7 @@ TEST_F(RenderWidgetHostTest, PaintAtSize) {
   registrar.Add(
       &observer,
       content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
-      content::Source<RenderWidgetHostImpl>(host_.get()));
+      content::Source<RenderWidgetHost>(host_.get()));
 
   host_->OnMsgPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));
   EXPECT_EQ(host_.get(), observer.host());

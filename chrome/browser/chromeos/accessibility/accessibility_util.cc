@@ -73,7 +73,7 @@ class ContentScriptLoader {
       params.all_frames = true;
       params.in_main_world = false;
       render_view_host_->Send(new ExtensionMsg_ExecuteCode(
-          render_view_host_->routing_id(), params));
+          render_view_host_->GetRoutingID(), params));
     }
     Run();
   }
@@ -128,7 +128,7 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
       params.all_frames = true;
       params.in_main_world = false;
       render_view_host->Send(new ExtensionMsg_ExecuteCode(
-          render_view_host->routing_id(), params));
+          render_view_host->GetRoutingID(), params));
 
       // Inject ChromeVox' content scripts.
       ContentScriptLoader* loader = new ContentScriptLoader(

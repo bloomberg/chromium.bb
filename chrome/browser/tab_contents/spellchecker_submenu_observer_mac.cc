@@ -120,12 +120,12 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
   RenderViewHost* rvh = proxy_->GetRenderViewHost();
   switch (command_id) {
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
-      rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->routing_id()));
+      rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->GetRoutingID()));
       break;
 
     case IDC_SPELLPANEL_TOGGLE:
       rvh->Send(new SpellCheckMsg_ToggleSpellPanel(
-          rvh->routing_id(), spellcheck_mac::SpellingPanelVisible()));
+          rvh->GetRoutingID(), spellcheck_mac::SpellingPanelVisible()));
       break;
   }
 }

@@ -30,7 +30,7 @@ class MouseLockDispatcherTest
  public:
   virtual void SetUp() {
     content::RenderViewTest::SetUp();
-    route_id_ = view()->GetRoutingId();
+    route_id_ = view()->GetRoutingID();
     target_ = new MockLockTarget();
     alternate_target_ = new MockLockTarget();
   }

@@ -166,7 +166,7 @@ void InstantLoader::FrameLoadObserver::Observe(
       int text_length = static_cast<int>(text_.size());
       RenderViewHost* host = web_contents_->GetRenderViewHost();
       host->Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(
-          host->routing_id(), text_, verbatim_, text_length, text_length));
+          host->GetRoutingID(), text_, verbatim_, text_length, text_length));
       break;
     }
     default:
@@ -689,7 +689,11 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
       RenderViewHost* host =
           preview_contents_->web_contents()->GetRenderViewHost();
       host->Send(new ChromeViewMsg_SearchBoxChange(
-          host->routing_id(), user_text_, verbatim, text_length, text_length));
+          host->GetRoutingID(),
+          user_text_,
+          verbatim,
+          text_length,
+          text_length));
 
       string16 complete_suggested_text_lower = base::i18n::ToLower(
           complete_suggested_text_);
@@ -760,10 +764,10 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
     RenderViewHost* host =
         preview_contents_->web_contents()->GetRenderViewHost();
     if (type == INSTANT_COMMIT_FOCUS_LOST) {
-      host->Send(new ChromeViewMsg_SearchBoxCancel(host->routing_id()));
+      host->Send(new ChromeViewMsg_SearchBoxCancel(host->GetRoutingID()));
     } else {
       host->Send(new ChromeViewMsg_SearchBoxSubmit(
-          host->routing_id(), user_text_,
+          host->GetRoutingID(), user_text_,
           type == INSTANT_COMMIT_PRESSED_ENTER));
     }
   }
@@ -998,7 +1002,7 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
     RenderViewHost* host =
         preview_contents_->web_contents()->GetRenderViewHost();
     host->Send(new ChromeViewMsg_SearchBoxResize(
-        host->routing_id(), GetOmniboxBoundsInTermsOfPreview()));
+        host->GetRoutingID(), GetOmniboxBoundsInTermsOfPreview()));
   }
 }
 
@@ -1120,10 +1124,10 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
   // send a SearchBoxChange message.
   if (user_text.empty()) {
     host->Send(new ChromeViewMsg_SearchBoxResize(
-        host->routing_id(), GetOmniboxBoundsInTermsOfPreview()));
+        host->GetRoutingID(), GetOmniboxBoundsInTermsOfPreview()));
   } else {
     host->Send(new ChromeViewMsg_SearchBoxChange(
-        host->routing_id(), user_text, verbatim, 0, 0));
+        host->GetRoutingID(), user_text, verbatim, 0, 0));
   }
 
   frame_load_observer_.reset(new FrameLoadObserver(

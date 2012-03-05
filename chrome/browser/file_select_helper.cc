@@ -333,7 +333,7 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     default_file_name = profile_->last_selected_directory();
 
   gfx::NativeWindow owning_window =
-      platform_util::GetTopLevel(render_view_host_->view()->GetNativeView());
+      platform_util::GetTopLevel(render_view_host_->GetView()->GetNativeView());
 
   select_file_dialog_->SelectFile(
       dialog_type_,

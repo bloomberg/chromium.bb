@@ -261,7 +261,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
         operation:(NSDragOperation)operation {
   contents_->SystemDragEnded();
 
-  RenderViewHost* rvh = contents_->GetRenderViewHost();
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      contents_->GetRenderViewHost());
   if (rvh) {
     // Convert |screenPoint| to view coordinates and flip it.
     NSPoint localPoint = NSMakePoint(0, 0);
@@ -289,7 +290,8 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 }
 
 - (void)moveDragTo:(NSPoint)screenPoint {
-  RenderViewHost* rvh = contents_->GetRenderViewHost();
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      contents_->GetRenderViewHost());
   if (rvh) {
     // Convert |screenPoint| to view coordinates and flip it.
     NSPoint localPoint = NSMakePoint(0, 0);

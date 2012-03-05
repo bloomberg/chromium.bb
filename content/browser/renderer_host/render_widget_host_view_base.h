@@ -57,8 +57,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
-  RenderWidgetHostImpl* GetRenderWidgetHostImpl();
-
  protected:
   // Interface class only, do not construct.
   RenderWidgetHostViewBase();

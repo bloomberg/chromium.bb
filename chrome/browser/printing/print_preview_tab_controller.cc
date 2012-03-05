@@ -50,7 +50,7 @@ void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
   // Always enable the internal PDF plugin for the print preview page.
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
         preview_tab->web_contents()->GetRenderProcessHost()->GetID(),
-        preview_tab->web_contents()->GetRenderViewHost()->routing_id(),
+        preview_tab->web_contents()->GetRenderViewHost()->GetRoutingID(),
         GURL(),
         ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
 }
@@ -228,7 +228,7 @@ TabContentsWrapper* PrintPreviewTabController::GetOrCreatePreviewTab(
     return CreatePrintPreviewTab(initiator_tab);
 
   // Show the initiator tab holding the existing preview tab.
-  initiator_tab->web_contents()->GetRenderViewHost()->delegate()->Activate();
+  initiator_tab->web_contents()->GetRenderViewHost()->GetDelegate()->Activate();
   return preview_tab;
 }
 

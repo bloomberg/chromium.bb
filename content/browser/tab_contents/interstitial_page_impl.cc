@@ -169,7 +169,7 @@ InterstitialPageImpl::InterstitialPageImpl(WebContents* tab,
       action_taken_(NO_ACTION),
       render_view_host_(NULL),
       original_child_id_(tab->GetRenderProcessHost()->GetID()),
-      original_rvh_id_(tab->GetRenderViewHost()->routing_id()),
+      original_rvh_id_(tab->GetRenderViewHost()->GetRoutingID()),
       should_revert_tab_title_(false),
       tab_was_loading_(false),
       resource_dispatcher_host_notified_(false),
@@ -240,7 +240,7 @@ void InterstitialPageImpl::Show() {
   }
 
   DCHECK(!render_view_host_);
-  render_view_host_ = CreateRenderViewHost();
+  render_view_host_ = static_cast<RenderViewHostImpl*>(CreateRenderViewHost());
   CreateWebContentsView();
 
   std::string data_url = "data:text/html;charset=utf-8," +
@@ -260,7 +260,7 @@ void InterstitialPageImpl::Show() {
 }
 
 void InterstitialPageImpl::Hide() {
-  RenderWidgetHostView* old_view = tab_->GetRenderViewHost()->view();
+  RenderWidgetHostView* old_view = tab_->GetRenderViewHost()->GetView();
   if (tab_->GetInterstitialPage() == this &&
       old_view && !old_view->IsShowing()) {
     // Show the original RVH since we're going away.  Note it might not exist if
@@ -273,10 +273,11 @@ void InterstitialPageImpl::Hide() {
 
   // If the focus was on the interstitial, let's keep it to the page.
   // (Note that in unit-tests the RVH may not have a view).
-  if (render_view_host_->view() && render_view_host_->view()->HasFocus() &&
-      tab_->GetRenderViewHost()->view()) {
+  if (render_view_host_->GetView() &&
+      render_view_host_->GetView()->HasFocus() &&
+      tab_->GetRenderViewHost()->GetView()) {
     RenderWidgetHostViewPort::FromRWHV(
-        tab_->GetRenderViewHost()->view())->Focus();
+        tab_->GetRenderViewHost()->GetView())->Focus();
   }
 
   render_view_host_->Shutdown();
@@ -324,9 +325,11 @@ void InterstitialPageImpl::Observe(
         // The RenderViewHost is being destroyed (as part of the tab being
         // closed); make sure we clear the blocked requests.
         RenderViewHost* rvh = static_cast<RenderViewHost*>(
-            content::Source<RenderWidgetHost>(source).ptr());
-        DCHECK(rvh->process()->GetID() == original_child_id_ &&
-               rvh->routing_id() == original_rvh_id_);
+            static_cast<RenderViewHostImpl*>(
+                RenderWidgetHostImpl::From(
+                    content::Source<RenderWidgetHost>(source).ptr())));
+        DCHECK(rvh->GetProcess()->GetID() == original_child_id_ &&
+               rvh->GetRoutingID() == original_rvh_id_);
         TakeActionOnResourceDispatcher(CANCEL);
       }
       break;
@@ -389,7 +392,7 @@ void InterstitialPageImpl::DidNavigate(
   }
 
   // The RenderViewHost has loaded its contents, we can show it now.
-  render_view_host_->view()->Show();
+  render_view_host_->GetView()->Show();
   tab_->set_interstitial_page(this);
 
   // This notification hides the bookmark bar. Note that this has to happen
@@ -401,7 +404,7 @@ void InterstitialPageImpl::DidNavigate(
       content::Source<WebContents>(tab_),
       content::NotificationService::NoDetails());
 
-  RenderWidgetHostView* rwh_view = tab_->GetRenderViewHost()->view();
+  RenderWidgetHostView* rwh_view = tab_->GetRenderViewHost()->GetView();
 
   // The RenderViewHost may already have crashed before we even get here.
   if (rwh_view) {
@@ -480,7 +483,7 @@ WebContents* InterstitialPageImpl::tab() const {
 }
 
 RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
-  RenderViewHost* render_view_host = new RenderViewHost(
+  RenderViewHostImpl* render_view_host = new RenderViewHostImpl(
       SiteInstance::Create(tab()->GetBrowserContext()),
       this, MSG_ROUTING_NONE, kInvalidSessionStorageNamespaceId);
   return render_view_host;
@@ -496,7 +499,7 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   render_view_host_->AllowBindings(content::BINDINGS_POLICY_DOM_AUTOMATION);
 
   int32 max_page_id =
-      tab()->GetMaxPageIDForSiteInstance(render_view_host_->site_instance());
+      tab()->GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
   render_view_host_->CreateRenderView(string16(), max_page_id);
   view->SetSize(web_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
@@ -587,8 +590,8 @@ void InterstitialPageImpl::SetSize(const gfx::Size& size) {
 #if !defined(OS_MACOSX)
   // When a tab is closed, we might be resized after our view was NULLed
   // (typically if there was an info-bar).
-  if (render_view_host_->view())
-    render_view_host_->view()->SetSize(size);
+  if (render_view_host_->GetView())
+    render_view_host_->GetView()->SetSize(size);
 #else
   // TODO(port): Does Mac need to SetSize?
   NOTIMPLEMENTED();
@@ -597,7 +600,7 @@ void InterstitialPageImpl::SetSize(const gfx::Size& size) {
 
 void InterstitialPageImpl::Focus() {
   // Focus the native window.
-  RenderWidgetHostViewPort::FromRWHV(render_view_host_->view())->Focus();
+  RenderWidgetHostViewPort::FromRWHV(render_view_host_->GetView())->Focus();
 }
 
 void InterstitialPageImpl::FocusThroughTabTraversal(bool reverse) {
@@ -644,8 +647,8 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
   // NOTIFY_RENDER_WIDGET_HOST_DESTROYED.
   // Also we need to test there is a ResourceDispatcherHost, as when unit-tests
   // we don't have one.
-  RenderViewHost* rvh = RenderViewHost::FromID(original_child_id_,
-                                               original_rvh_id_);
+  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(original_child_id_,
+                                                       original_rvh_id_);
   if (!rvh || !ResourceDispatcherHost::Get())
     return;
 

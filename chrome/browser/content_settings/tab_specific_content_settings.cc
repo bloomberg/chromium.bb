@@ -86,7 +86,7 @@ TabSpecificContentSettings* TabSpecificContentSettings::Get(
   // latter will miss provisional RenderViewHosts.
   for (TabSpecificList::iterator i = g_tab_specific.Get().begin();
        i != g_tab_specific.Get().end(); ++i) {
-    if (view->delegate()->GetAsWebContents() == (*i)->web_contents())
+    if (view->GetDelegate()->GetAsWebContents() == (*i)->web_contents())
       return (*i);
   }
 

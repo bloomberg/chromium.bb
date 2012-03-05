@@ -2968,7 +2968,7 @@ void TestingAutomationProvider::GetBrowserInfo(
           ex_host->render_process_host()->GetID());
       view->SetInteger(
           "render_view_id",
-          ex_host->render_view_host()->routing_id());
+          ex_host->render_view_host()->GetRoutingID());
       item->Set("view", view);
       std::string type;
       switch (ex_host->extension_host_type()) {
@@ -6132,7 +6132,7 @@ void TestingAutomationProvider::GetV8HeapStats(
   // This observer will delete itself.
   new V8HeapStatsObserver(
       this, reply_message,
-      base::GetProcId(render_view->process()->GetHandle()));
+      base::GetProcId(render_view->GetProcess()->GetHandle()));
   render_view->Send(new ChromeViewMsg_GetV8HeapStats);
 }
 
@@ -6162,12 +6162,12 @@ void TestingAutomationProvider::GetFPS(
   }
 
   RenderViewHost* render_view = web_contents->GetRenderViewHost();
-  int routing_id = render_view->routing_id();
+  int routing_id = render_view->GetRoutingID();
 
   // This observer will delete itself.
   new FPSObserver(
       this, reply_message,
-      base::GetProcId(render_view->process()->GetHandle()),
+      base::GetProcId(render_view->GetProcess()->GetHandle()),
       routing_id);
   render_view->Send(new ChromeViewMsg_GetFPS(routing_id));
 }
@@ -6926,7 +6926,7 @@ void TestingAutomationProvider::LoadBlockedPlugins(int tab_handle,
     if (!contents)
       return;
     RenderViewHost* host = contents->GetRenderViewHost();
-    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->routing_id()));
+    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID()));
     *success = true;
   }
 }

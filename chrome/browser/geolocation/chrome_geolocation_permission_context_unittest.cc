@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,9 +102,10 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   int process_id_for_tab(int tab) {
     return extra_tabs_[tab]->web_contents()->GetRenderProcessHost()->GetID();
   }
-  int render_id() { return contents()->GetRenderViewHost()->routing_id(); }
+  int render_id() { return contents()->GetRenderViewHost()->GetRoutingID(); }
   int render_id_for_tab(int tab) {
-    return extra_tabs_[tab]->web_contents()->GetRenderViewHost()->routing_id();
+    return extra_tabs_[tab]->web_contents()->
+        GetRenderViewHost()->GetRoutingID();
   }
   int bridge_id() const { return 42; }  // Not relevant at this level.
   InfoBarTabHelper* infobar_tab_helper() {

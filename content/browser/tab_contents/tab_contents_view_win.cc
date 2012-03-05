@@ -75,14 +75,14 @@ void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
 
 RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
     RenderWidgetHost* render_widget_host)  {
-  if (render_widget_host->view()) {
+  if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
     // this actually is happening (and somebody isn't accidentally creating the
     // view twice), we check for the RVH Factory, which will be set when we're
     // making special ones (which go along with the special views).
     DCHECK(RenderViewHostFactory::has_factory());
-    return render_widget_host->view();
+    return render_widget_host->GetView();
   }
 
   view_ = static_cast<RenderWidgetHostViewWin*>(

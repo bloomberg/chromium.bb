@@ -52,7 +52,7 @@
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
 
-#if defined(OS_WIN)
+#if defined(COMPILER_MSVC)
 // RenderViewImpl is a diamond-shaped hierarchy, with WebWidgetClient at the
 // root. VS warns when we inherit the WebWidgetClient method implementations
 // from RenderWidget.  It's safe to ignore that warning.
@@ -588,7 +588,7 @@ class RenderViewImpl : public RenderWidget,
   // content::RenderView implementation ----------------------------------------
 
   virtual bool Send(IPC::Message* message) OVERRIDE;
-  virtual int GetRoutingId() const OVERRIDE;
+  virtual int GetRoutingID() const OVERRIDE;
   virtual int GetPageId() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual gfx::NativeViewId GetHostWindow() OVERRIDE;

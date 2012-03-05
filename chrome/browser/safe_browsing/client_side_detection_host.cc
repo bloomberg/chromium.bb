@@ -218,7 +218,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
             << params_.url;
     RenderViewHost* rvh = web_contents_->GetRenderViewHost();
     rvh->Send(new SafeBrowsingMsg_StartPhishingDetection(
-        rvh->routing_id(), params_.url));
+        rvh->GetRoutingID(), params_.url));
   }
 
   // No need to protect |canceled_| with a lock because it is only read and
@@ -329,7 +329,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   if (web_contents() &&
       web_contents()->GetRenderProcessHost()->GetID() ==
           resource.render_process_host_id &&
-      web_contents()->GetRenderViewHost()->routing_id() ==
+      web_contents()->GetRenderViewHost()->GetRoutingID() ==
           resource.render_view_id &&
       (resource.threat_type == SafeBrowsingService::URL_PHISHING ||
        resource.threat_type == SafeBrowsingService::URL_MALWARE) &&
@@ -408,7 +408,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.render_process_host_id =
           web_contents()->GetRenderProcessHost()->GetID();
       resource.render_view_id =
-          web_contents()->GetRenderViewHost()->routing_id();
+          web_contents()->GetRenderViewHost()->GetRoutingID();
       if (!sb_service_->IsWhitelisted(resource)) {
         // We need to stop any pending navigations, otherwise the interstital
         // might not get created properly.

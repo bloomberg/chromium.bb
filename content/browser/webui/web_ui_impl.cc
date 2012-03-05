@@ -260,6 +260,7 @@ void WebUIImpl::AddMessageHandler(WebUIMessageHandler* handler) {
 }
 
 void WebUIImpl::ExecuteJavascript(const string16& javascript) {
-  web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+  static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost())->ExecuteJavascriptInWebFrame(
       ASCIIToUTF16(frame_xpath_), javascript);
 }

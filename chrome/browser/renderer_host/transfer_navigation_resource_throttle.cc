@@ -31,7 +31,7 @@ void RequestTransferURLOnUIThread(int render_process_id,
   if (!rvh)
     return;
 
-  RenderViewHostDelegate* delegate = rvh->delegate();
+  RenderViewHostDelegate* delegate = rvh->GetDelegate();
   if (!delegate)
     return;
 

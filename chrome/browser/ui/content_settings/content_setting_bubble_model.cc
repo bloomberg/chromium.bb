@@ -384,7 +384,7 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
     content::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
     DCHECK(tab_contents());
     RenderViewHost* host = tab_contents()->web_contents()->GetRenderViewHost();
-    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->routing_id()));
+    host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID()));
     set_custom_link_enabled(false);
     tab_contents()->content_settings()->set_load_plugins_link_enabled(false);
   }

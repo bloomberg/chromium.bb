@@ -1671,7 +1671,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           tab_contents_wrapper->print_view_manager()->PrintPreviewNow();
         }
       } else {
-        rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->routing_id()));
+        rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->GetRoutingID()));
       }
       break;
 

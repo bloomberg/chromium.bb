@@ -85,10 +85,10 @@ class URLRequestContextSelector
 
 // Notifies RenderViewHost that one or more worker objects crashed.
 void WorkerCrashCallback(int render_process_unique_id, int render_view_id) {
-  RenderViewHost* host =
-      RenderViewHost::FromID(render_process_unique_id, render_view_id);
+  RenderViewHostImpl* host =
+      RenderViewHostImpl::FromID(render_process_unique_id, render_view_id);
   if (host)
-    host->delegate()->WorkerCrashed();
+    host->GetDelegate()->WorkerCrashed();
 }
 
 WorkerProcessHost::WorkerProcessHost(content::ResourceContext* resource_context)

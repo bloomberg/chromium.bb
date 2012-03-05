@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,7 +142,7 @@ NavigationEntry* FaviconTabHelper::GetActiveEntry() {
 void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
   RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(new IconMsg_DownloadFavicon(
-                 host->routing_id(), id, url, image_size));
+                 host->GetRoutingID(), id, url, image_size));
 }
 
 void FaviconTabHelper::NotifyFaviconUpdated() {

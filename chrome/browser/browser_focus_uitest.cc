@@ -212,7 +212,7 @@ class TestInterstitialPage : public content::InterstitialPageDelegate {
   }
 
   bool HasFocus() {
-    return render_view_host()->view()->HasFocus();
+    return render_view_host()->GetView()->HasFocus();
   }
 
  private:
@@ -742,8 +742,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 
   // Page should have focus.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
-  EXPECT_TRUE(browser()->GetSelectedWebContents()->GetRenderViewHost()->view()->
-      HasFocus());
+  EXPECT_TRUE(browser()->GetSelectedWebContents()->GetRenderViewHost()->
+              GetView()->HasFocus());
 
   // Let's show an interstitial.
   TestInterstitialPage* interstitial_page =

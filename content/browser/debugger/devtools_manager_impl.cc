@@ -130,11 +130,13 @@ void DevToolsManagerImpl::UnregisterDevToolsClientHostFor(
   client_host->InspectedTabClosing();
 }
 
-void DevToolsManagerImpl::OnNavigatingToPendingEntry(RenderViewHost* rvh,
-                                                     RenderViewHost* dest_rvh,
-                                                     const GURL& gurl) {
-  if (rvh == dest_rvh && rvh->render_view_termination_status() ==
-          base::TERMINATION_STATUS_STILL_RUNNING)
+void DevToolsManagerImpl::OnNavigatingToPendingEntry(
+    RenderViewHost* rvh,
+    RenderViewHost* dest_rvh,
+    const GURL& gurl) {
+  if (rvh == dest_rvh && static_cast<RenderViewHostImpl*>(
+          rvh)->render_view_termination_status() ==
+              base::TERMINATION_STATUS_STILL_RUNNING)
     return;
   int cookie = DetachClientHost(rvh);
   if (cookie != -1) {
@@ -149,8 +151,9 @@ void DevToolsManagerImpl::OnNavigatingToPendingEntry(RenderViewHost* rvh,
   }
 }
 
-void DevToolsManagerImpl::OnCancelPendingNavigation(RenderViewHost* pending,
-                                                    RenderViewHost* current) {
+void DevToolsManagerImpl::OnCancelPendingNavigation(
+    RenderViewHost* pending,
+    RenderViewHost* current) {
   int cookie = DetachClientHost(pending);
   if (cookie != -1) {
     // Navigating to URL in the inspected window.

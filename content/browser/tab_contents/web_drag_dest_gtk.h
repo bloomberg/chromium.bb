@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/webdropdata.h"
+
+class RenderViewHostImpl;
 
 namespace content {
 
@@ -40,6 +42,8 @@ class CONTENT_EXPORT WebDragDestGtk {
   void set_delegate(WebDragDestDelegate* delegate) { delegate_ = delegate; }
 
  private:
+  RenderViewHostImpl* GetRenderViewHost() const;
+
   // Called when a system drag crosses over the render view. As there is no drag
   // enter event, we treat it as an enter event (and not a regular motion event)
   // when |context_| is NULL.

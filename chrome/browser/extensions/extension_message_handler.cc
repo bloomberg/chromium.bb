@@ -31,13 +31,13 @@ bool ExtensionMessageHandler::OnMessageReceived(
 
 void ExtensionMessageHandler::RenderViewHostInitialized() {
   Send(new ExtensionMsg_NotifyRenderViewType(
-      routing_id(), render_view_host()->delegate()->GetRenderViewType()));
+      routing_id(), render_view_host()->GetDelegate()->GetRenderViewType()));
 }
 
 void ExtensionMessageHandler::OnPostMessage(int port_id,
                                             const std::string& message) {
   Profile* profile = Profile::FromBrowserContext(
-      render_view_host()->process()->GetBrowserContext());
+      render_view_host()->GetProcess()->GetBrowserContext());
   if (profile->GetExtensionMessageService()) {
     profile->GetExtensionMessageService()->PostMessageFromRenderer(
         port_id, message);

@@ -129,7 +129,7 @@ void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,
   DCHECK_EQ(g_background_thread.Get().message_loop(), MessageLoop::current());
   if (!channel_) {
     channel_ = JavaBridgeChannelHost::GetJavaBridgeChannelHost(
-        render_view_host()->process()->GetID(),
+        render_view_host()->GetProcess()->GetID(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 

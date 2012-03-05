@@ -49,7 +49,7 @@ void BalloonViewHost::Init(gfx::NativeView parent_native_view) {
   BalloonHost::Init();
 
   content::RenderWidgetHostView* render_widget_host_view =
-      web_contents_->GetRenderViewHost()->view();
+      web_contents_->GetRenderViewHost()->GetView();
 
   native_host_->Attach(render_widget_host_view->GetNativeView());
 }

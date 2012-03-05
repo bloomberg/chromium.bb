@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 class GURL;
 class RenderViewHost;
+class RenderViewHostImpl;
 
 namespace content {
 
@@ -44,17 +45,17 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
   // IPC::Message::Sender implementation.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
-  RenderViewHost* render_view_host() const { return render_view_host_; }
+  RenderViewHost* render_view_host() const;
   int routing_id() { return routing_id_; }
 
  private:
-  friend class ::RenderViewHost;
+  friend class ::RenderViewHostImpl;
 
   // Invoked from RenderViewHost. Invokes RenderViewHostDestroyed and NULL out
   // |render_view_host_|.
   void RenderViewHostDestruction();
 
-  RenderViewHost* render_view_host_;
+  RenderViewHostImpl* render_view_host_;
 
   // The routing ID of the associated RenderViewHost.
   int routing_id_;

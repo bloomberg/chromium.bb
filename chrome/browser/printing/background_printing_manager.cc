@@ -80,7 +80,7 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
       tab_controller->GetInitiatorTab(preview_tab);
   if (!initiator_tab)
     return;
-  initiator_tab->web_contents()->GetRenderViewHost()->delegate()->Activate();
+  initiator_tab->web_contents()->GetRenderViewHost()->GetDelegate()->Activate();
 }
 
 void BackgroundPrintingManager::Observe(

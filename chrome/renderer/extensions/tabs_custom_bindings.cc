@@ -40,7 +40,7 @@ v8::Handle<v8::Value> TabsCustomBindings::OpenChannelToTab(
     std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
     int port_id = -1;
     renderview->Send(new ExtensionHostMsg_OpenChannelToTab(
-      renderview->GetRoutingId(), tab_id, extension_id, channel_name,
+      renderview->GetRoutingID(), tab_id, extension_id, channel_name,
         &port_id));
     return v8::Integer::New(port_id);
   }

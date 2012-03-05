@@ -137,8 +137,9 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
       renderWidgetHostViewMac];
   DCHECK(rwhv);
 
+  RenderWidgetHostImpl* rwh =
+      RenderWidgetHostImpl::From(rwhv->GetRenderWidgetHost());
   // The second parameter is the core command value which isn't used here.
-  RenderWidgetHostImpl* rwh = RenderWidgetHostImpl::FromRWHV(rwhv);
   rwh->ExecuteEditCommand(command, "");
 }
 

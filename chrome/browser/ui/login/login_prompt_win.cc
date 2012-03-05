@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ class LoginHandlerWin : public LoginHandler,
 
     WebContents* tab = GetWebContentsForLogin();
     if (tab)
-      tab->GetRenderViewHost()->set_ignore_input_events(false);
+      tab->GetRenderViewHost()->SetIgnoreInputEvents(false);
 
     // Reference is no longer valid.
     SetDialog(NULL);

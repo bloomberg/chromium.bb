@@ -80,9 +80,9 @@ void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
   // RenderViewHost may be NULL during shutdown.
   RenderViewHost* host = contents->GetRenderViewHost();
   if (host) {
-    host->set_ignore_input_events(blocked);
-    host->Send(
-        new ChromeViewMsg_SetVisuallyDeemphasized(host->routing_id(), blocked));
+    host->SetIgnoreInputEvents(blocked);
+    host->Send(new ChromeViewMsg_SetVisuallyDeemphasized(
+        host->GetRoutingID(), blocked));
   }
   if (delegate_)
     delegate_->SetTabContentBlocked(wrapper_, blocked);

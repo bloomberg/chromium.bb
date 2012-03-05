@@ -22,7 +22,7 @@ class RenderWidgetHostViewAuraTest : public RenderViewHostTestHarness {
 
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
-    old_rwhv_ = rvh()->view();
+    old_rwhv_ = rvh()->GetView();
     rwhv_aura_ = static_cast<RenderWidgetHostViewAura*>(
         RenderWidgetHostView::CreateViewForWidget(rvh()));
   }

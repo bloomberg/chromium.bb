@@ -205,24 +205,26 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         if (!widget || !widget->IsRenderView())
           continue;
 
-        const RenderViewHost* host = static_cast<const RenderViewHost*>(widget);
-        content::RenderViewHostDelegate* host_delegate = host->delegate();
+        const RenderViewHost* host = static_cast<const RenderViewHostImpl*>(
+            RenderWidgetHostImpl::From(const_cast<RenderWidgetHost*>(widget)));
+        content::RenderViewHostDelegate* host_delegate = host->GetDelegate();
         DCHECK(host_delegate);
         GURL url = host_delegate->GetURL();
         content::ViewType type = host_delegate->GetRenderViewType();
-        if (host->enabled_bindings() & content::BINDINGS_POLICY_WEB_UI) {
+        if (host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) {
           // TODO(erikkay) the type for devtools doesn't actually appear to
           // be set.
           if (type == content::VIEW_TYPE_DEV_TOOLS_UI)
             process.renderer_type = ProcessMemoryInformation::RENDERER_DEVTOOLS;
           else
             process.renderer_type = ProcessMemoryInformation::RENDERER_CHROME;
-        } else if (extension_process_map->Contains(host->process()->GetID())) {
+        } else if (extension_process_map->Contains(
+            host->GetProcess()->GetID())) {
           // For our purposes, don't count processes containing only hosted apps
           // as extension processes. See also: crbug.com/102533.
           std::set<std::string> extension_ids =
               extension_process_map->GetExtensionsInProcess(
-                  host->process()->GetID());
+                  host->GetProcess()->GetID());
           for (std::set<std::string>::iterator iter = extension_ids.begin();
                iter != extension_ids.end(); ++iter) {
             const Extension* extension =
@@ -236,7 +238,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         }
         WebContents* contents = host_delegate->GetAsWebContents();
         if (!contents) {
-          if (extension_process_map->Contains(host->process()->GetID())) {
+          if (extension_process_map->Contains(host->GetProcess()->GetID())) {
             const Extension* extension =
                 extension_service->extensions()->GetByID(url.host());
             if (extension) {

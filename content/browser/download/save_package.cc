@@ -664,7 +664,7 @@ void SavePackage::CheckFinish() {
                  final_names,
                  dir,
                  web_contents()->GetRenderProcessHost()->GetID(),
-                 web_contents()->GetRenderViewHost()->routing_id(),
+                 web_contents()->GetRenderViewHost()->GetRoutingID(),
                  id()));
 }
 

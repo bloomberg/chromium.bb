@@ -385,8 +385,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
           GetRenderViewHost();
   DCHECK(old_render_view_host);
   DCHECK(new_render_view_host);
-  if (old_render_view_host->session_storage_namespace() !=
-      new_render_view_host->session_storage_namespace()) {
+  if (old_render_view_host->GetSessionStorageNamespace() !=
+      new_render_view_host->GetSessionStorageNamespace()) {
     DestroyAndMarkMatchCompleteAsUsed(
         prerender_contents.release(),
         FINAL_STATUS_SESSION_STORAGE_NAMESPACE_MISMATCH);
@@ -423,7 +423,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   prerender_contents->set_final_status(FINAL_STATUS_USED);
 
   new_render_view_host->Send(
-      new ChromeViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),
+      new ChromeViewMsg_SetIsPrerendering(new_render_view_host->GetRoutingID(),
                                           false));
 
   TabContentsWrapper* new_tab_contents =
@@ -869,7 +869,7 @@ bool PrerenderManager::AddPrerender(
                                child_route_id_pair.second);
     // Don't prerender page if parent RenderViewHost no longer exists, or it has
     // no view.  The latter should only happen when the RenderView has closed.
-    if (!source_render_view_host || !source_render_view_host->view()) {
+    if (!source_render_view_host || !source_render_view_host->GetView()) {
       RecordFinalStatus(origin, experiment,
                         FINAL_STATUS_SOURCE_RENDER_VIEW_CLOSED);
       return false;
@@ -878,7 +878,7 @@ bool PrerenderManager::AddPrerender(
 
   if (!session_storage_namespace && source_render_view_host) {
     session_storage_namespace =
-        source_render_view_host->session_storage_namespace();
+        source_render_view_host->GetSessionStorageNamespace();
   }
 
   PrerenderContents* prerender_contents = CreatePrerenderContents(

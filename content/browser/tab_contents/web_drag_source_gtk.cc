@@ -165,8 +165,8 @@ void WebDragSourceGtk::DidProcessEvent(GdkEvent* event) {
   GdkEventMotion* event_motion = reinterpret_cast<GdkEventMotion*>(event);
   gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
-  if (web_contents_->GetRenderViewHost()) {
-    web_contents_->GetRenderViewHost()->DragSourceMovedTo(
+  if (GetRenderViewHost()) {
+    GetRenderViewHost()->DragSourceMovedTo(
         client.x(), client.y(),
         static_cast<int>(event_motion->x_root),
         static_cast<int>(event_motion->y_root));
@@ -300,8 +300,8 @@ gboolean WebDragSourceGtk::OnDragFailed(GtkWidget* sender,
   gfx::Point root = ui::ScreenPoint(GetContentNativeView());
   gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
-  if (web_contents_->GetRenderViewHost()) {
-    web_contents_->GetRenderViewHost()->DragSourceEndedAt(
+  if (GetRenderViewHost()) {
+    GetRenderViewHost()->DragSourceEndedAt(
         client.x(), client.y(), root.x(), root.y(),
         WebDragOperationNone);
   }
@@ -372,8 +372,8 @@ void WebDragSourceGtk::OnDragEnd(GtkWidget* sender,
     gfx::Point root = ui::ScreenPoint(GetContentNativeView());
     gfx::Point client = ui::ClientPoint(GetContentNativeView());
 
-    if (web_contents_->GetRenderViewHost()) {
-      web_contents_->GetRenderViewHost()->DragSourceEndedAt(
+    if (GetRenderViewHost()) {
+      GetRenderViewHost()->DragSourceEndedAt(
           client.x(), client.y(), root.x(), root.y(),
           content::GdkDragActionToWebDragOp(drag_context->action));
     }
@@ -383,6 +383,10 @@ void WebDragSourceGtk::OnDragEnd(GtkWidget* sender,
 
   drop_data_.reset();
   drag_context_ = NULL;
+}
+
+RenderViewHostImpl* WebDragSourceGtk::GetRenderViewHost() const {
+  return static_cast<RenderViewHostImpl*>(web_contents_->GetRenderViewHost());
 }
 
 gfx::NativeView WebDragSourceGtk::GetContentNativeView() const {

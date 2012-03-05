@@ -26,7 +26,7 @@ content::WebContents* GetWebContentsByID(int render_process_id,
   if (!render_view_host)
     return NULL;
 
-  return render_view_host->delegate()->GetAsWebContents();
+  return render_view_host->GetDelegate()->GetAsWebContents();
 }
 
 SiteInstance* GetSiteInstanceForNewTab(WebContents* source_contents,

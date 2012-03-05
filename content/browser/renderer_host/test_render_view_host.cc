@@ -62,8 +62,10 @@ TestRenderViewHost* TestRenderViewHost::GetPendingForController(
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
                                        int routing_id)
-    : RenderViewHost(instance, delegate, routing_id,
-                     kInvalidSessionStorageNamespaceId),
+    : RenderViewHostImpl(instance,
+                         delegate,
+                         routing_id,
+                         kInvalidSessionStorageNamespaceId),
       render_view_created_(false),
       delete_counter_(NULL),
       simulate_fetch_via_proxy_(false),
@@ -79,7 +81,7 @@ TestRenderViewHost::~TestRenderViewHost() {
     ++*delete_counter_;
 
   // Since this isn't a traditional view, we have to delete it.
-  delete view();
+  delete GetView();
 }
 
 bool TestRenderViewHost::CreateRenderView(const string16& frame_name,
@@ -91,6 +93,11 @@ bool TestRenderViewHost::CreateRenderView(const string16& frame_name,
 
 bool TestRenderViewHost::IsRenderViewLive() const {
   return render_view_created_;
+}
+
+// static
+bool TestRenderViewHost::IsRenderViewHostSwappedOut(RenderViewHost* rwh) {
+  return static_cast<RenderViewHostImpl*>(rwh)->is_swapped_out();
 }
 
 bool TestRenderViewHost::TestOnMessageReceived(const IPC::Message& msg) {
@@ -149,8 +156,8 @@ void TestRenderViewHost::set_contents_mime_type(const std::string& mime_type) {
 namespace content {
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
-    : is_showing_(false) {
-  rwh_ = static_cast<RenderWidgetHostImpl*>(rwh);
+    : rwh_(RenderWidgetHostImpl::From(rwh)),
+      is_showing_(false) {
 }
 
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
@@ -364,8 +371,8 @@ content::BrowserContext* RenderViewHostTestHarness::browser_context() {
 
 MockRenderProcessHost* RenderViewHostTestHarness::process() {
   if (pending_rvh())
-    return static_cast<MockRenderProcessHost*>(pending_rvh()->process());
-  return static_cast<MockRenderProcessHost*>(rvh()->process());
+    return static_cast<MockRenderProcessHost*>(pending_rvh()->GetProcess());
+  return static_cast<MockRenderProcessHost*>(rvh()->GetProcess());
 }
 
 void RenderViewHostTestHarness::DeleteContents() {

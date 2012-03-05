@@ -35,8 +35,8 @@ NSUInteger TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
   base::TimeTicks start = base::TimeTicks::Now();
 
   BeforeRequest();
-  RenderWidgetHostImpl* rwhi = static_cast<RenderWidgetHostImpl*>(rwh);
-  rwhi->Send(new TextInputClientMsg_CharacterIndexForPoint(rwhi->routing_id(),
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
+  rwhi->Send(new TextInputClientMsg_CharacterIndexForPoint(rwhi->GetRoutingID(),
                                                           point));
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
@@ -53,9 +53,9 @@ NSRect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
   base::TimeTicks start = base::TimeTicks::Now();
 
   BeforeRequest();
-  RenderWidgetHostImpl* rwhi = static_cast<RenderWidgetHostImpl*>(rwh);
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
   rwhi->Send(
-      new TextInputClientMsg_FirstRectForCharacterRange(rwhi->routing_id(),
+      new TextInputClientMsg_FirstRectForCharacterRange(rwhi->GetRoutingID(),
                                                         ui::Range(range)));
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();
@@ -73,8 +73,8 @@ NSAttributedString* TextInputClientMac::GetAttributedSubstringFromRange(
   base::TimeTicks start = base::TimeTicks::Now();
 
   BeforeRequest();
-  RenderWidgetHostImpl* rwhi = static_cast<RenderWidgetHostImpl*>(rwh);
-  rwhi->Send(new TextInputClientMsg_StringForRange(rwhi->routing_id(),
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
+  rwhi->Send(new TextInputClientMsg_StringForRange(rwhi->GetRoutingID(),
                                                    ui::Range(range)));
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
   AfterRequest();

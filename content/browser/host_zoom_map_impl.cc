@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,9 +163,9 @@ void HostZoomMapImpl::Observe(
     case content::NOTIFICATION_RENDER_VIEW_HOST_WILL_CLOSE_RENDER_VIEW: {
       base::AutoLock auto_lock(lock_);
       int render_view_id =
-          content::Source<RenderViewHost>(source)->routing_id();
+          content::Source<RenderViewHost>(source)->GetRoutingID();
       int render_process_id =
-          content::Source<RenderViewHost>(source)->process()->GetID();
+          content::Source<RenderViewHost>(source)->GetProcess()->GetID();
 
       for (size_t i = 0; i < temporary_zoom_levels_.size(); ++i) {
         if (temporary_zoom_levels_[i].render_process_id == render_process_id &&

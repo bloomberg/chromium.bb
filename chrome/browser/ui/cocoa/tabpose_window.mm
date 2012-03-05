@@ -254,12 +254,12 @@ void ThumbnailLoader::LoadThumbnail() {
       DevToolsWindow::GetDevToolsContents(contents_->web_contents());
   if (devToolsContents && devToolsContents->web_contents() &&
       devToolsContents->web_contents()->GetRenderViewHost() &&
-      devToolsContents->web_contents()->GetRenderViewHost()->view()) {
+      devToolsContents->web_contents()->GetRenderViewHost()->GetView()) {
     // The devtool's size might not be up-to-date, but since its height doesn't
     // change on window resize, and since most users don't use devtools, this is
     // good enough.
     bottomOffset +=
-        devToolsContents->web_contents()->GetRenderViewHost()->view()->
+        devToolsContents->web_contents()->GetRenderViewHost()->GetView()->
             GetViewBounds().height();
     bottomOffset += 1;  // :-( Divider line between web contents and devtools.
   }
@@ -269,7 +269,7 @@ void ThumbnailLoader::LoadThumbnail() {
 - (void)drawInContext:(CGContextRef)context {
   RenderWidgetHost* rwh = contents_->web_contents()->GetRenderViewHost();
   // NULL if renderer crashed.
-  content::RenderWidgetHostView* rwhv = rwh ? rwh->view() : NULL;
+  content::RenderWidgetHostView* rwhv = rwh ? rwh->GetView() : NULL;
   if (!rwhv) {
     // TODO(thakis): Maybe draw a sad tab layer?
     [super drawInContext:context];

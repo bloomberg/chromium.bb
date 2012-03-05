@@ -252,9 +252,9 @@ void PrerenderContents::StartPrerendering(
 
   gfx::Rect tab_bounds = prerender_manager_->config().default_tab_bounds;
   if (source_render_view_host) {
-    DCHECK(source_render_view_host->view() != NULL);
+    DCHECK(source_render_view_host->GetView() != NULL);
     WebContents* source_wc =
-        source_render_view_host->delegate()->GetAsWebContents();
+        source_render_view_host->GetDelegate()->GetAsWebContents();
     if (source_wc) {
       // Set the size of the new TC to that of the old TC.
       source_wc->GetView()->GetContainerBounds(&tab_bounds);
@@ -283,8 +283,8 @@ void PrerenderContents::StartPrerendering(
   render_view_host_observer_.reset(
       new PrerenderRenderViewHostObserver(this, render_view_host_mutable()));
 
-  child_id_ = render_view_host()->process()->GetID();
-  route_id_ = render_view_host()->routing_id();
+  child_id_ = render_view_host()->GetProcess()->GetID();
+  route_id_ = render_view_host()->GetRoutingID();
 
   // Register this with the ResourceDispatcherHost as a prerender
   // RenderViewHost. This must be done before the Navigate message to catch all
@@ -417,7 +417,7 @@ void PrerenderContents::Observe(int type,
         // the TabContents is created.
         new_render_view_host->Send(
             new ChromeViewMsg_SetIsPrerendering(
-                new_render_view_host->routing_id(),
+                new_render_view_host->GetRoutingID(),
                 true));
 
         // Make sure the size of the RenderViewHost has been passed to the new
@@ -585,9 +585,9 @@ void PrerenderContents::Destroy(FinalStatus final_status) {
 base::ProcessMetrics* PrerenderContents::MaybeGetProcessMetrics() {
   if (process_metrics_.get() == NULL) {
     // If a PrenderContents hasn't started prerending, don't be fully formed.
-    if (!render_view_host() || !render_view_host()->process())
+    if (!render_view_host() || !render_view_host()->GetProcess())
       return NULL;
-    base::ProcessHandle handle = render_view_host()->process()->GetHandle();
+    base::ProcessHandle handle = render_view_host()->GetProcess()->GetHandle();
     if (handle == base::kNullProcessHandle)
       return NULL;
 #if !defined(OS_MACOSX)

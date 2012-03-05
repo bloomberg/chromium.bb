@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,20 +56,21 @@ DownloadRequestHandle::DownloadRequestHandle(ResourceDispatcherHost* rdh,
 }
 
 TabContents* DownloadRequestHandle::GetTabContents() const {
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(child_id_, render_view_id_);
+  RenderViewHostImpl* render_view_host =
+      RenderViewHostImpl::FromID(child_id_, render_view_id_);
   if (!render_view_host)
     return NULL;
 
   return static_cast<TabContents*>(
-      render_view_host->delegate()->GetAsWebContents());
+      render_view_host->GetDelegate()->GetAsWebContents());
 }
 
 DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
-  RenderViewHost* rvh = RenderViewHost::FromID(child_id_, render_view_id_);
+  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(
+      child_id_, render_view_id_);
   if (rvh == NULL)
     return NULL;
-  content::RenderProcessHost* rph = rvh->process();
+  content::RenderProcessHost* rph = rvh->GetProcess();
   if (rph == NULL)
     return NULL;
   content::BrowserContext* context = rph->GetBrowserContext();

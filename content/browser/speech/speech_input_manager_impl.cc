@@ -143,9 +143,9 @@ void SpeechInputManagerImpl::CheckRenderViewTypeAndStartRecognition(
     const SpeechInputParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  RenderViewHost* render_view_host = RenderViewHost::FromID(
+  RenderViewHostImpl* render_view_host = RenderViewHostImpl::FromID(
       params.render_process_id, params.render_view_id);
-  if (!render_view_host || !render_view_host->delegate())
+  if (!render_view_host || !render_view_host->GetDelegate())
     return;
 
   // For host delegates other than TabContents we can't reliably show a popup,
@@ -154,7 +154,7 @@ void SpeechInputManagerImpl::CheckRenderViewTypeAndStartRecognition(
   // An example of this is trying to show the speech input bubble within an
   // extension popup: http://crbug.com/92083. In these situations the speech
   // input extension API should be used instead.
-  if (render_view_host->delegate()->GetRenderViewType() ==
+  if (render_view_host->GetDelegate()->GetRenderViewType() ==
       content::VIEW_TYPE_TAB_CONTENTS) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

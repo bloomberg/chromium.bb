@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,7 +150,7 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&DetectAndStartProxyConfigUtil,
                  web_contents->GetRenderProcessHost()->GetID(),
-                 web_contents->GetRenderViewHost()->routing_id()));
+                 web_contents->GetRenderViewHost()->GetRoutingID()));
 }
 
 }  // namespace options2

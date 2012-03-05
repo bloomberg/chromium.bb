@@ -430,7 +430,7 @@ AutomationId GetIdForExtensionView(const ExtensionHost* ext_host) {
   // Since these extension views do not permit navigation, using the
   // renderer process and view ID should suffice.
   std::string id = base::StringPrintf("%d|%d",
-      ext_host->render_view_host()->routing_id(),
+      ext_host->render_view_host()->GetRoutingID(),
       ext_host->render_process_host()->GetID());
   return AutomationId(type, id);
 }

@@ -350,7 +350,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
 
   VLOG(1) << "Print preview request start";
   RenderViewHost* rvh = initiator_tab->web_contents()->GetRenderViewHost();
-  rvh->Send(new PrintMsg_PrintPreview(rvh->routing_id(), *settings));
+  rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings));
 }
 
 void PrintPreviewHandler::HandlePrint(const ListValue* args) {
@@ -364,7 +364,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (initiator_tab) {
     RenderViewHost* rvh = initiator_tab->web_contents()->GetRenderViewHost();
-    rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->routing_id()));
+    rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->GetRoutingID()));
   }
 
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
@@ -420,7 +420,8 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     // so ignore the page range and print all pages.
     settings->Remove(printing::kSettingPageRange, NULL);
     RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-    rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
+    rvh->Send(
+        new PrintMsg_PrintForPrintPreview(rvh->GetRoutingID(), *settings));
 
     // For all other cases above, the tab will stay open until the printing has
     // finished. Then the tab closes and PrintPreviewDone() gets called. Here,
@@ -670,7 +671,8 @@ void PrintPreviewHandler::SendInitialSettings(
 void PrintPreviewHandler::ActivateInitiatorTabAndClosePreviewTab() {
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
   if (initiator_tab)
-    initiator_tab->web_contents()->GetRenderViewHost()->delegate()->Activate();
+    initiator_tab->web_contents()->GetRenderViewHost()->
+        GetDelegate()->Activate();
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());
   print_preview_ui->OnClosePrintPreviewTab();

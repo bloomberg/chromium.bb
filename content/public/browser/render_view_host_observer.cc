@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 namespace content {
 
 RenderViewHostObserver::RenderViewHostObserver(RenderViewHost* render_view_host)
-    : render_view_host_(render_view_host),
-      routing_id_(render_view_host->routing_id()) {
+    : render_view_host_(static_cast<RenderViewHostImpl*>(render_view_host)),
+      routing_id_(render_view_host_->GetRoutingID()) {
   render_view_host_->AddObserver(this);
 }
 
@@ -40,6 +40,10 @@ bool RenderViewHostObserver::Send(IPC::Message* message) {
   }
 
   return render_view_host_->Send(message);
+}
+
+RenderViewHost* RenderViewHostObserver::render_view_host() const {
+  return render_view_host_;
 }
 
 void RenderViewHostObserver::RenderViewHostDestruction() {

@@ -159,13 +159,13 @@ void AutofillExternalDelegate::DidAcceptAutofillSuggestions(
     // User selected 'Clear form'.
     RenderViewHost* host =
         tab_contents_wrapper_->web_contents()->GetRenderViewHost();
-    host->Send(new AutofillMsg_ClearForm(host->routing_id()));
+    host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
   } else if (!unique_id) {
     // User selected an Autocomplete entry, so we fill directly.
     RenderViewHost* host =
         tab_contents_wrapper_->web_contents()->GetRenderViewHost();
     host->Send(new AutofillMsg_SetNodeText(
-        host->routing_id(),
+        host->GetRoutingID(),
         value));
   } else {
     FillAutofillFormData(unique_id, false);
@@ -177,7 +177,7 @@ void AutofillExternalDelegate::DidAcceptAutofillSuggestions(
 void AutofillExternalDelegate::ClearPreviewedForm() {
   RenderViewHost* host =
       tab_contents_wrapper_->web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_ClearPreviewedForm(host->routing_id()));
+  host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
 }
 
 void AutofillExternalDelegate::HideAutofillPopup() {
@@ -194,10 +194,10 @@ void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
 
   if (is_preview) {
     host->Send(new AutofillMsg_SetAutofillActionPreview(
-        host->routing_id()));
+        host->GetRoutingID()));
   } else {
     host->Send(new AutofillMsg_SetAutofillActionFill(
-        host->routing_id()));
+        host->GetRoutingID()));
   }
 
   // Fill the values for the whole form.

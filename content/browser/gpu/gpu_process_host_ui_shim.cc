@@ -90,7 +90,7 @@ RenderWidgetHostViewPort* GetRenderWidgetHostViewFromSurfaceID(
 
   RenderWidgetHostImpl* host = static_cast<RenderWidgetHostImpl*>(
       process->GetListenerByID(render_widget_id));
-  return host ? RenderWidgetHostViewPort::FromRWHV(host->view()) : NULL;
+  return host ? RenderWidgetHostViewPort::FromRWHV(host->GetView()) : NULL;
 }
 
 }  // namespace

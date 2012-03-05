@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
   virtual ~RenderView() {}
 
   // Get the routing ID of the view.
-  virtual int GetRoutingId() const = 0;
+  virtual int GetRoutingID() const = 0;
 
   // Page IDs allow the browser to identify pages in each renderer process for
   // keeping back/forward history in sync.

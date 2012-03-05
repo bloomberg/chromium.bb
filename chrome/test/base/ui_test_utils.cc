@@ -89,7 +89,7 @@ class DOMOperationObserver : public content::NotificationObserver,
  public:
   explicit DOMOperationObserver(RenderViewHost* render_view_host)
       : content::WebContentsObserver(
-            render_view_host->delegate()->GetAsWebContents()),
+            render_view_host->GetDelegate()->GetAsWebContents()),
         did_respond_(false) {
     registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                    content::Source<RenderViewHost>(render_view_host));

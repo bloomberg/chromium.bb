@@ -153,9 +153,11 @@ void Shell::DidFinishLoad(int64 frame_id,
     return;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
     return;
-  RenderViewHost* render_view_host = tab_contents_->GetRenderViewHost();
+  RenderViewHostImpl* render_view_host =
+      static_cast<RenderViewHostImpl*>(tab_contents_->GetRenderViewHost());
   render_view_host->Send(
-      new ShellViewMsg_CaptureTextDump(render_view_host->routing_id(), false));
+      new ShellViewMsg_CaptureTextDump(render_view_host->GetRoutingID(),
+                                       false));
 }
 
 }  // namespace content

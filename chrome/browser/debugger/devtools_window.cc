@@ -222,7 +222,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
           ThemeServiceFactory::GetForProfile(profile_)));
   // There is no inspected_rvh in case of shared workers.
   if (inspected_rvh) {
-    WebContents* tab = inspected_rvh->delegate()->GetAsWebContents();
+    WebContents* tab = inspected_rvh->GetDelegate()->GetAsWebContents();
     if (tab)
       inspected_tab_ = TabContentsWrapper::GetCurrentWrapperForContents(tab);
   }
@@ -639,7 +639,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   bool do_open = force_open;
   if (!window) {
     Profile* profile = Profile::FromBrowserContext(
-        inspected_rvh->process()->GetBrowserContext());
+        inspected_rvh->GetProcess()->GetBrowserContext());
     bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
     window = Create(profile, inspected_rvh, docked, false);
     manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_);

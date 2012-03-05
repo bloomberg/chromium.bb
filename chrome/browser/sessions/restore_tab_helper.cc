@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,11 +37,11 @@ void RestoreTabHelper::SetWindowID(const SessionID& id) {
   // Notify it that the window ID changed.
   web_contents()->GetRenderViewHost()->Send(
           new ExtensionMsg_UpdateBrowserWindowId(
-          web_contents()->GetRenderViewHost()->routing_id(), id.id()));
+          web_contents()->GetRenderViewHost()->GetRoutingID(), id.id()));
 }
 
 void RestoreTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host->Send(
-      new ExtensionMsg_UpdateBrowserWindowId(render_view_host->routing_id(),
+      new ExtensionMsg_UpdateBrowserWindowId(render_view_host->GetRoutingID(),
                                              window_id_.id()));
 }

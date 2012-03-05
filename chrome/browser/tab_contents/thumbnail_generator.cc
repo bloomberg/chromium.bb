@@ -232,7 +232,7 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   // which is responsible for closing it.
   TransportDIB::Handle renderer_dib_handle;
   DuplicateHandle(GetCurrentProcess(), thumbnail_dib->handle(),
-                  renderer->process()->GetHandle(), &renderer_dib_handle,
+                  renderer->GetProcess()->GetHandle(), &renderer_dib_handle,
                   STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
                   FALSE, 0);
   if (!renderer_dib_handle) {
@@ -467,7 +467,7 @@ void ThumbnailGenerator::UpdateThumbnail(
   // Compute the thumbnail score.
   ThumbnailScore score;
   score.at_top =
-      (web_contents->GetRenderViewHost()->last_scroll_offset().y() == 0);
+      (web_contents->GetRenderViewHost()->GetLastScrollOffset().y() == 0);
   score.boring_score = ThumbnailGenerator::CalculateBoringScore(&thumbnail);
   score.good_clipping =
       (clip_result == ThumbnailGenerator::kTallerThanWide ||

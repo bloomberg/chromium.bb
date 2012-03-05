@@ -529,7 +529,7 @@ void Navigate(NavigateParams* params) {
 
     if (user_initiated) {
       params->target_contents->web_contents()->GetRenderViewHost()->
-          delegate()->OnUserGesture();
+          GetDelegate()->OnUserGesture();
     }
 
     InitializeExtraHeaders(params, params->target_contents->profile(),

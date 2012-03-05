@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ void MHTMLGenerationManager::GenerateMHTML(
   Job job;
   job.file_path = file;
   job.process_id = web_contents->GetRenderProcessHost()->GetID();
-  job.routing_id = web_contents->GetRenderViewHost()->routing_id();
+  job.routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
   job.callback = callback;
   id_to_job_[job_id] = job;
 
@@ -103,14 +103,15 @@ void MHTMLGenerationManager::FileCreated(int job_id,
   job.browser_file = browser_file;
   job.renderer_file = renderer_file;
 
-  RenderViewHost* rvh = RenderViewHost::FromID(job.process_id, job.routing_id);
+  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(
+      job.process_id, job.routing_id);
   if (!rvh) {
     // The tab went away.
     JobFinished(job_id, -1);
     return;
   }
 
-  rvh->Send(new ViewMsg_SavePageAsMHTML(rvh->routing_id(), job_id,
+  rvh->Send(new ViewMsg_SavePageAsMHTML(rvh->GetRoutingID(), job_id,
                                         renderer_file));
 }
 

@@ -33,6 +33,7 @@
 class InterstitialPageImpl;
 class LoadNotificationDetails;
 class RenderViewHost;
+class RenderViewHostImpl;
 class SavePackage;
 class SessionStorageNamespaceImpl;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
@@ -505,6 +506,8 @@ class CONTENT_EXPORT TabContents
 
   // Save a URL to the local filesystem.
   void SaveURL(const GURL& url, const GURL& referrer, bool is_main_frame);
+
+  RenderViewHostImpl* GetRenderViewHostImpl();
 
   // Stores random bits of data for others to associate with this object.
   // WARNING: this needs to be deleted after NavigationController.

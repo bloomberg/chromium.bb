@@ -68,7 +68,7 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
 }
 
 void WebDragDestGtk::DragLeave() {
-  web_contents_->GetRenderViewHost()->DragTargetDragLeave();
+  GetRenderViewHost()->DragTargetDragLeave();
 
   if (delegate())
     delegate()->OnDragLeave();
@@ -115,11 +115,10 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                         time);
     }
   } else if (data_requests_ == 0) {
-    web_contents_->GetRenderViewHost()->
-        DragTargetDragOver(
-            ui::ClientPoint(widget_),
-            ui::ScreenPoint(widget_),
-            content::GdkDragActionToWebDragOp(context->actions));
+    GetRenderViewHost()->DragTargetDragOver(
+        ui::ClientPoint(widget_),
+        ui::ScreenPoint(widget_),
+        content::GdkDragActionToWebDragOp(context->actions));
 
     if (delegate())
       delegate()->OnDragOver();
@@ -221,11 +220,11 @@ void WebDragDestGtk::OnDragDataReceived(
   if (data_requests_ == 0) {
     // Tell the renderer about the drag.
     // |x| and |y| are seemingly arbitrary at this point.
-    web_contents_->GetRenderViewHost()->
-        DragTargetDragEnter(*drop_data_.get(),
-            ui::ClientPoint(widget_),
-            ui::ScreenPoint(widget_),
-            content::GdkDragActionToWebDragOp(context->actions));
+    GetRenderViewHost()->DragTargetDragEnter(
+        *drop_data_.get(),
+        ui::ClientPoint(widget_),
+        ui::ScreenPoint(widget_),
+        content::GdkDragActionToWebDragOp(context->actions));
 
     if (delegate())
       delegate()->OnDragEnter();
@@ -255,7 +254,7 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
   // Cancel that drag leave!
   method_factory_.InvalidateWeakPtrs();
 
-  web_contents_->GetRenderViewHost()->
+  GetRenderViewHost()->
       DragTargetDrop(ui::ClientPoint(widget_), ui::ScreenPoint(widget_));
 
   if (delegate())
@@ -267,6 +266,10 @@ gboolean WebDragDestGtk::OnDragDrop(GtkWidget* sender, GdkDragContext* context,
   gtk_drag_finish(context, is_drop_target_, FALSE, time);
 
   return TRUE;
+}
+
+RenderViewHostImpl* WebDragDestGtk::GetRenderViewHost() const {
+  return static_cast<RenderViewHostImpl*>(web_contents_->GetRenderViewHost());
 }
 
 }  // namespace content

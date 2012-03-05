@@ -132,7 +132,7 @@ RenderViewHostDelegate* LoginHandler::GetRenderViewHostDelegate() const {
   if (!rvh)
     return NULL;
 
-  return rvh->delegate();
+  return rvh->GetDelegate();
 }
 
 void LoginHandler::SetAuth(const string16& username,

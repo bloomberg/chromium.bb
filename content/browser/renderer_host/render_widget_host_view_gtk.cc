@@ -228,8 +228,10 @@ class RenderWidgetHostViewGtkWidget {
                             GdkEventFocus* focus,
                             RenderWidgetHostViewGtk* host_view) {
     host_view->ShowCurrentCursor();
-    RenderWidgetHostImpl::FromRWHV(host_view)->GotFocus();
-    RenderWidgetHostImpl::FromRWHV(host_view)->SetActive(true);
+    RenderWidgetHostImpl* host =
+        RenderWidgetHostImpl::From(host_view->GetRenderWidgetHost());
+    host->GotFocus();
+    host->SetActive(true);
 
     // The only way to enable a GtkIMContext object is to call its focus in
     // handler.
@@ -247,8 +249,10 @@ class RenderWidgetHostViewGtkWidget {
     // If we are showing a context menu, maintain the illusion that webkit has
     // focus.
     if (!host_view->IsShowingContextMenu()) {
-      RenderWidgetHostImpl::FromRWHV(host_view)->SetActive(false);
-      RenderWidgetHostImpl::FromRWHV(host_view)->Blur();
+      RenderWidgetHostImpl* host =
+          RenderWidgetHostImpl::From(host_view->GetRenderWidgetHost());
+      host->SetActive(false);
+      host->Blur();
     }
 
     // Prevents us from stealing input context focus in OnGrabNotify() handler.
@@ -311,8 +315,8 @@ class RenderWidgetHostViewGtkWidget {
       scroll_event.y_root = event->y_root;
       WebMouseWheelEvent web_event =
           WebInputEventFactory::mouseWheelEvent(&scroll_event);
-      RenderWidgetHostImpl::FromRWHV(
-          host_view)->ForwardWheelEvent(web_event);
+      RenderWidgetHostImpl::From(
+          host_view->GetRenderWidgetHost())->ForwardWheelEvent(web_event);
     }
 #endif
 
@@ -367,7 +371,7 @@ class RenderWidgetHostViewGtkWidget {
 
     host_view->is_popup_first_mouse_release_ = false;
     RenderWidgetHostImpl* widget_host =
-        RenderWidgetHostImpl::FromRWHV(host_view);
+        RenderWidgetHostImpl::From(host_view->GetRenderWidgetHost());
     if (widget_host)
       widget_host->ForwardMouseEvent(WebInputEventFactory::mouseEvent(event));
 
@@ -411,13 +415,13 @@ class RenderWidgetHostViewGtkWidget {
         GdkScreen* screen = gtk_widget_get_screen(widget);
         gdk_display_warp_pointer(display, screen, center.x(), center.y());
         if (host_view->mouse_has_been_warped_to_new_center_)
-          RenderWidgetHostImpl::FromRWHV(
-              host_view)->ForwardMouseEvent(mouse_event);
+          RenderWidgetHostImpl::From(
+              host_view->GetRenderWidgetHost())->ForwardMouseEvent(mouse_event);
       }
     } else {  // Mouse is not locked.
       host_view->ModifyEventMovementAndCoords(&mouse_event);
-      RenderWidgetHostImpl::FromRWHV(
-          host_view)->ForwardMouseEvent(mouse_event);
+      RenderWidgetHostImpl::From(
+          host_view->GetRenderWidgetHost())->ForwardMouseEvent(mouse_event);
     }
     return FALSE;
   }
@@ -446,8 +450,8 @@ class RenderWidgetHostViewGtkWidget {
       // from the exit to re-entry point.
       mouse_event.movementX = 0;
       mouse_event.movementY = 0;
-      RenderWidgetHostImpl::FromRWHV(
-          host_view)->ForwardMouseEvent(mouse_event);
+      RenderWidgetHostImpl::From(
+          host_view->GetRenderWidgetHost())->ForwardMouseEvent(mouse_event);
     }
 
     return FALSE;
@@ -561,7 +565,8 @@ class RenderWidgetHostViewGtkWidget {
         web_event.deltaX = -GetScrollPixelsPerTick();
       web_event.deltaX += GetPendingScrollDelta(false, event->state);
     }
-    RenderWidgetHostImpl::FromRWHV(host_view)->ForwardWheelEvent(web_event);
+    RenderWidgetHostImpl::From(
+        host_view->GetRenderWidgetHost())->ForwardWheelEvent(web_event);
     return FALSE;
   }
 
@@ -569,7 +574,8 @@ class RenderWidgetHostViewGtkWidget {
 };
 
 RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
-    : about_to_validate_and_paint_(false),
+    : host_(RenderWidgetHostImpl::From(widget_host)),
+      about_to_validate_and_paint_(false),
       is_hidden_(false),
       is_loading_(false),
       parent_(NULL),
@@ -582,7 +588,6 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       dragged_at_vertical_edge_(0),
       compositing_surface_(gfx::kNullPluginWindow),
       last_mouse_down_(NULL) {
-  host_ = static_cast<RenderWidgetHostImpl*>(widget_host);
   host_->SetView(this);
 }
 
@@ -1035,7 +1040,7 @@ void RenderWidgetHostViewGtk::AcceleratedSurfaceSuspend() {
 
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   content::RenderWidgetHostViewBase::SetBackground(background);
-  host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
+  host_->Send(new ViewMsg_SetBackground(host_->GetRoutingID(), background));
 }
 
 void RenderWidgetHostViewGtk::ModifyEventForEdgeDragging(
@@ -1097,7 +1102,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
   // If the GPU process is rendering directly into the View,
   // call the compositor directly.
   RenderWidgetHostImpl* render_widget_host =
-      static_cast<RenderWidgetHostImpl*>(GetRenderWidgetHost());
+      RenderWidgetHostImpl::From(GetRenderWidgetHost());
   if (render_widget_host->is_accelerated_compositing_active()) {
     host_->ScheduleComposite();
     return;
@@ -1316,7 +1321,7 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
   if (!event.skip_in_browser &&
       key_bindings_handler_->Match(event, &edit_commands)) {
     host_->Send(new ViewMsg_SetEditCommandsForNextKeyEvent(
-        host_->routing_id(), edit_commands));
+        host_->GetRoutingID(), edit_commands));
     NativeWebKeyboardEvent copy_event(event);
     copy_event.match_edit_command = true;
     host_->ForwardKeyboardEvent(copy_event);

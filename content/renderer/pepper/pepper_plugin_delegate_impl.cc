@@ -1712,7 +1712,7 @@ void PepperPluginDelegateImpl::OnTCPServerSocketAcceptACK(
   }
 }
 
-int PepperPluginDelegateImpl::GetRoutingId() const {
+int PepperPluginDelegateImpl::GetRoutingID() const {
   return render_view_->routing_id();
 }
 

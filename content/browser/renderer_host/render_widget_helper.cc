@@ -232,8 +232,8 @@ void RenderWidgetHelper::CreateNewWindow(
 void RenderWidgetHelper::OnCreateWindowOnUI(
     const ViewHostMsg_CreateWindow_Params& params,
     int route_id) {
-  RenderViewHost* host =
-      RenderViewHost::FromID(render_process_id_, params.opener_id);
+  RenderViewHostImpl* host =
+      RenderViewHostImpl::FromID(render_process_id_, params.opener_id);
   if (host)
     host->CreateNewWindow(route_id, params);
 
@@ -276,14 +276,16 @@ void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
 
 void RenderWidgetHelper::OnCreateWidgetOnUI(
     int opener_id, int route_id, WebKit::WebPopupType popup_type) {
-  RenderViewHost* host = RenderViewHost::FromID(render_process_id_, opener_id);
+  RenderViewHostImpl* host = RenderViewHostImpl::FromID(
+      render_process_id_, opener_id);
   if (host)
     host->CreateNewWidget(route_id, popup_type);
 }
 
 void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int opener_id,
                                                       int route_id) {
-  RenderViewHost* host = RenderViewHost::FromID(render_process_id_, opener_id);
+  RenderViewHostImpl* host = RenderViewHostImpl::FromID(
+      render_process_id_, opener_id);
   if (host)
     host->CreateNewFullscreenWidget(route_id);
 }

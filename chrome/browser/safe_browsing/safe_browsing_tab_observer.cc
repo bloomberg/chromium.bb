@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,8 +91,8 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
   }
 
   RenderViewHost* rvh = wrapper_->web_contents()->GetRenderViewHost();
-  rvh->Send(new ChromeViewMsg_SetClientSidePhishingDetection(rvh->routing_id(),
-                                                             safe_browsing));
+  rvh->Send(new ChromeViewMsg_SetClientSidePhishingDetection(
+      rvh->GetRoutingID(), safe_browsing));
 #endif
 }
 

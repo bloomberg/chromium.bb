@@ -584,8 +584,8 @@ void ExternalTabContainer::RegisterRenderViewHostForAutomation(
     RenderViewHost* render_view_host, bool pending_view) {
   if (render_view_host) {
     AutomationResourceMessageFilter::RegisterRenderView(
-        render_view_host->process()->GetID(),
-        render_view_host->routing_id(),
+        render_view_host->GetProcess()->GetID(),
+        render_view_host->GetRoutingID(),
         tab_handle(),
         automation_resource_message_filter_,
         pending_view);
@@ -608,8 +608,8 @@ void ExternalTabContainer::UnregisterRenderViewHost(
   // ExternalTabContainer::RegisterRenderViewHost.
   if (render_view_host) {
     AutomationResourceMessageFilter::UnRegisterRenderView(
-      render_view_host->process()->GetID(),
-      render_view_host->routing_id());
+      render_view_host->GetProcess()->GetID(),
+      render_view_host->GetRoutingID());
   }
 }
 
@@ -1132,7 +1132,7 @@ void ExternalTabContainer::OnReinitialize() {
     RenderViewHost* rvh = tab_contents_->web_contents()->GetRenderViewHost();
     if (rvh) {
       AutomationResourceMessageFilter::ResumePendingRenderView(
-          rvh->process()->GetID(), rvh->routing_id(),
+          rvh->GetProcess()->GetID(), rvh->GetRoutingID(),
           tab_handle_, automation_resource_message_filter_);
     }
   }

@@ -1253,7 +1253,7 @@ bool UpdateTabFunction::RunImpl() {
 
       RenderViewHost* render_view_host = web_contents_->GetRenderViewHost();
       render_view_host->Send(
-          new ExtensionMsg_ExecuteCode(render_view_host->routing_id(),
+          new ExtensionMsg_ExecuteCode(render_view_host->GetRoutingID(),
                                        params));
 
       Observe(web_contents_);
@@ -1580,7 +1580,7 @@ bool RemoveTabsFunction::RunImpl() {
     // circumstances, whereas |Browser::CloseTabContents()| does not.
     RenderViewHost* render_view_host =
         contents->web_contents()->GetRenderViewHost();
-    render_view_host->delegate()->Close(render_view_host);
+    render_view_host->GetDelegate()->Close(render_view_host);
   }
   return true;
 }

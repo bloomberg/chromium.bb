@@ -17,7 +17,7 @@
 #include "webkit/glue/webmenurunner_mac.h"
 
 PopupMenuHelper::PopupMenuHelper(RenderViewHost* render_view_host)
-    : render_view_host_(render_view_host) {
+    : render_view_host_(static_cast<RenderViewHostImpl*>(render_view_host)) {
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       content::Source<RenderWidgetHost>(render_view_host));
@@ -35,7 +35,7 @@ void PopupMenuHelper::ShowPopupMenu(
   // would in turn delete me, causing a crash once the -runMenuInView
   // call returns. That's what was happening in <http://crbug.com/33250>).
   RenderWidgetHostViewMac* rwhvm =
-      static_cast<RenderWidgetHostViewMac*>(render_view_host_->view());
+      static_cast<RenderWidgetHostViewMac*>(render_view_host_->GetView());
   scoped_nsobject<RenderWidgetHostViewCocoa> cocoa_view
       ([rwhvm->cocoa_view() retain]);
 

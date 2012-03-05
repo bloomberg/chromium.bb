@@ -148,7 +148,7 @@ void PluginInstaller::StartInstalling(TabContentsWrapper* wrapper) {
                  plugin_url_, ResourceDispatcherHost::Get(),
                  wrapper->profile()->GetResourceContext(),
                  web_contents->GetRenderProcessHost()->GetID(),
-                 web_contents->GetRenderViewHost()->routing_id(),
+                 web_contents->GetRenderViewHost()->GetRoutingID(),
                  base::Bind(&PluginInstaller::DownloadStarted,
                             base::Unretained(this),
                             make_scoped_refptr(

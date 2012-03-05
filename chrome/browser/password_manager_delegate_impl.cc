@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,7 +116,7 @@ void PasswordManagerDelegateImpl::FillPasswordForm(
     const webkit::forms::PasswordFormFillData& form_data) {
   tab_contents_->web_contents()->GetRenderViewHost()->Send(
       new AutofillMsg_FillPasswordForm(
-          tab_contents_->web_contents()->GetRenderViewHost()->routing_id(),
+          tab_contents_->web_contents()->GetRenderViewHost()->GetRoutingID(),
           form_data));
 }
 

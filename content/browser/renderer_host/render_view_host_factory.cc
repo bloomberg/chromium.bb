@@ -23,8 +23,8 @@ RenderViewHost* RenderViewHostFactory::Create(
     return factory_->CreateRenderViewHost(instance, delegate, routing_id,
                                           session_storage_namespace);
   }
-  return new RenderViewHost(instance, delegate, routing_id,
-                            session_storage_namespace);
+  return new RenderViewHostImpl(instance, delegate, routing_id,
+                                session_storage_namespace);
 }
 
 // static

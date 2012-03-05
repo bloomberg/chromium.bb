@@ -189,12 +189,18 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 
 }  // namespace content
 
+#if defined(COMPILER_MSVC)
+// See comment for same warning on RenderViewHostImpl.
+#pragma warning(push)
+#pragma warning(disable: 4250)
+#endif
+
 // TestRenderViewHost ----------------------------------------------------------
 
 // TODO(brettw) this should use a TestTabContents which should be generalized
 // from the TabContents test. We will probably also need that class' version of
 // CreateRenderViewForRenderManager when more complicate tests start using this.
-class TestRenderViewHost : public RenderViewHost {
+class TestRenderViewHost : public RenderViewHostImpl {
  public:
   // If the given TabContnets has a pending RVH, returns it, otherwise NULL.
   static TestRenderViewHost* GetPendingForController(
@@ -273,6 +279,10 @@ class TestRenderViewHost : public RenderViewHost {
                                 int32 max_page_id) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
 
+  // This removes the need to expose
+  // RenderViewHostImpl::is_swapped_out() outside of content.
+  static bool IsRenderViewHostSwappedOut(RenderViewHost* rwh);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
 
@@ -291,6 +301,10 @@ class TestRenderViewHost : public RenderViewHost {
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };
+
+#if defined(COMPILER_MSVC)
+#pragma warning(pop)
+#endif
 
 // TestRenderViewHostFactory ---------------------------------------------------
 

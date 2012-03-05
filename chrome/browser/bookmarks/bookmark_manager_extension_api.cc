@@ -383,7 +383,7 @@ bool StartDragBookmarkManagerFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       GetNodesFromArguments(model, args_.get(), 0, &nodes));
 
-  if (render_view_host_->delegate()->GetRenderViewType() ==
+  if (render_view_host_->GetDelegate()->GetRenderViewType() ==
       content::VIEW_TYPE_TAB_CONTENTS) {
     WebContents* web_contents =
         dispatcher()->delegate()->GetAssociatedWebContents();
@@ -425,7 +425,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
   else
     drop_index = drop_parent->child_count();
 
-  if (render_view_host_->delegate()->GetRenderViewType() ==
+  if (render_view_host_->GetDelegate()->GetRenderViewType() ==
       content::VIEW_TYPE_TAB_CONTENTS) {
     WebContents* web_contents =
         dispatcher()->delegate()->GetAssociatedWebContents();

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ void WebUITestHandler::PreloadJavaScript(const string16& js_text,
                                          RenderViewHost* preload_host) {
   DCHECK(preload_host);
   preload_host->Send(new ChromeViewMsg_WebUIJavaScript(
-      preload_host->routing_id(), string16(), js_text, 0,
+      preload_host->GetRoutingID(), string16(), js_text, 0,
       false));
 }
 

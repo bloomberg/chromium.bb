@@ -251,7 +251,7 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
                        content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
   browser->window()->Show();
-  browser->GetSelectedWebContents()->GetRenderViewHost()->delegate()->
+  browser->GetSelectedWebContents()->GetRenderViewHost()->GetDelegate()->
       Activate();
 }
 
@@ -279,7 +279,7 @@ std::set<RenderViewHost*>
   // Gather up all the views for that site.
   for (RenderViewHostSet::iterator view = all_extension_views_.begin();
        view != all_extension_views_.end(); ++view) {
-    if ((*view)->site_instance() == site_instance)
+    if ((*view)->GetSiteInstance() == site_instance)
       result.insert(*view);
   }
 
@@ -366,8 +366,8 @@ bool ExtensionProcessManager::HasVisibleViews(const std::string& extension_id) {
   for (std::set<RenderViewHost*>::const_iterator it = views.begin();
        it != views.end(); ++it) {
     const RenderViewHost* host = *it;
-    if (host->site_instance()->GetSite().host() == extension_id &&
-        host->delegate()->GetRenderViewType() !=
+    if (host->GetSiteInstance()->GetSite().host() == extension_id &&
+        host->GetDelegate()->GetRenderViewType() !=
         chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       return true;
     }

@@ -62,8 +62,9 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
     return;
   }
 
-  render_view_host->Send(new IntentsMsg_SetWebIntentData(
-      render_view_host->routing_id(), *(source_intent_.get())));
+  static_cast<RenderViewHostImpl*>(render_view_host)->Send(
+      new IntentsMsg_SetWebIntentData(
+          render_view_host->GetRoutingID(), *(source_intent_.get())));
 }
 
 bool IntentInjector::OnMessageReceived(const IPC::Message& message) {

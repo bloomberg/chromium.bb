@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ DevToolsClientHost* DevToolsClientHost::CreateDevToolsFrontendHost(
 void DevToolsClientHost::SetupDevToolsFrontendClient(
     RenderViewHost* frontend_rvh) {
   frontend_rvh->Send(new DevToolsMsg_SetupDevToolsClient(
-      frontend_rvh->routing_id()));
+      frontend_rvh->GetRoutingID()));
 }
 
 DevToolsFrontendHost::DevToolsFrontendHost(
@@ -41,9 +41,10 @@ DevToolsFrontendHost::~DevToolsFrontendHost() {
 
 void DevToolsFrontendHost::DispatchOnInspectorFrontend(
     const std::string& message) {
-  RenderViewHost* target_host = tab_contents_->GetRenderViewHost();
+  RenderViewHostImpl* target_host =
+      static_cast<RenderViewHostImpl*>(tab_contents_->GetRenderViewHost());
   target_host->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-      target_host->routing_id(),
+      target_host->GetRoutingID(),
       message));
 }
 

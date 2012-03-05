@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ void SearchBox::SetSuggestions(const std::vector<std::string>& suggestions,
                                InstantCompleteBehavior behavior) {
   // Explicitly allow empty vector to be sent to the browser.
   render_view()->Send(new ChromeViewHostMsg_SetSuggestions(
-      render_view()->GetRoutingId(), render_view()->GetPageId(), suggestions,
+      render_view()->GetRoutingID(), render_view()->GetPageId(), suggestions,
       behavior));
 }
 
@@ -112,7 +112,7 @@ void SearchBox::OnDetermineIfPageSupportsInstant(const string16& value,
   bool result = extensions_v8::SearchBoxExtension::PageSupportsInstant(
       render_view()->GetWebView()->mainFrame());
   render_view()->Send(new ChromeViewHostMsg_InstantSupportDetermined(
-      render_view()->GetRoutingId(), render_view()->GetPageId(), result));
+      render_view()->GetRoutingID(), render_view()->GetPageId(), result));
 }
 
 void SearchBox::Reset() {

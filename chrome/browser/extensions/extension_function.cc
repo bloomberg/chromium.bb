@@ -187,9 +187,9 @@ void UIThreadExtensionFunction::SendResponse(bool success) {
     if (!render_view_host_ || !dispatcher())
       return;
 
-    SendResponseImpl(render_view_host_->process()->GetHandle(),
+    SendResponseImpl(render_view_host_->GetProcess()->GetHandle(),
                      render_view_host_,
-                     render_view_host_->routing_id(),
+                     render_view_host_->GetRoutingID(),
                      success);
   }
 }

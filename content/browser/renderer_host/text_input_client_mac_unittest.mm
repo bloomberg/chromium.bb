@@ -51,7 +51,7 @@ class TextInputClientMacTest : public testing::Test {
   }
 
   IPC::TestSink& ipc_sink() {
-    return static_cast<MockRenderProcessHost*>(widget()->process())->sink();
+    return static_cast<MockRenderProcessHost*>(widget()->GetProcess())->sink();
   }
 
  private:
@@ -130,10 +130,10 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
                       base::Unretained(service()), kPreviousValue));
 
   scoped_refptr<TextInputClientMessageFilter> filter(
-      new TextInputClientMessageFilter(widget()->process()->GetID()));
+      new TextInputClientMessageFilter(widget()->GetProcess()->GetID()));
   scoped_ptr<IPC::Message> message(
       new TextInputClientReplyMsg_GotCharacterIndexForPoint(
-          widget()->routing_id(), kNotFoundValue));
+          widget()->GetRoutingID(), kNotFoundValue));
   bool message_ok = true;
   // Set |WTF::notFound| to the index |kTaskDelayMs| after the previous
   // setting.

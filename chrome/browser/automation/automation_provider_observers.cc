@@ -2522,7 +2522,7 @@ void GetAllNotificationsObserver::SendMessage() {
     note->SetInteger(
         "pid",
         base::GetProcId(view->GetHost()->web_contents()->GetRenderViewHost()->
-            process()-> GetHandle()));
+            GetProcess()-> GetHandle()));
     list->Append(note);
   }
   std::vector<const Notification*> queued_notes;

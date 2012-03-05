@@ -26,7 +26,7 @@ ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
     RenderViewHost* render_view_host, chrome_browser_net::Predictor* predictor)
     : content::RenderViewHostObserver(render_view_host),
       predictor_(predictor) {
-  SiteInstance* site_instance = render_view_host->site_instance();
+  SiteInstance* site_instance = render_view_host->GetSiteInstance();
   profile_ = Profile::FromBrowserContext(
       site_instance->GetBrowserContext());
 
@@ -83,7 +83,7 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
     // TODO(aa): Totally lame to store this state in a global map in extension
     // service. Can we get it from EPM instead?
     profile_->GetExtensionService()->SetInstalledAppForRenderer(
-        render_view_host()->process()->GetID(), extension);
+        render_view_host()->GetProcess()->GetID(), extension);
   }
 }
 
@@ -92,7 +92,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   if (!extension)
     return;
 
-  content::RenderProcessHost* process = render_view_host()->process();
+  content::RenderProcessHost* process = render_view_host()->GetProcess();
 
   if (extension->is_app()) {
     Send(new ExtensionMsg_ActivateApplication(extension->id()));
@@ -132,7 +132,7 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
   // Note that due to ChromeContentBrowserClient::GetEffectiveURL(), hosted apps
   // (excluding bookmark apps) will have a chrome-extension:// URL for their
   // site, so we can ignore that wrinkle here.
-  SiteInstance* site_instance = render_view_host()->site_instance();
+  SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   const GURL& site = site_instance->GetSite();
 
   if (!site.SchemeIs(chrome::kExtensionScheme))

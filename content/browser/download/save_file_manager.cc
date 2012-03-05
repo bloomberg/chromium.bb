@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -176,13 +176,13 @@ void SaveFileManager::RemoveSaveFile(int save_id, const GURL& save_url,
 // Static
 SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
     int render_process_id, int render_view_id) {
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(render_process_id, render_view_id);
+  RenderViewHostImpl* render_view_host =
+      RenderViewHostImpl::FromID(render_process_id, render_view_id);
   if (!render_view_host)
     return NULL;
 
   TabContents* tab = static_cast<TabContents*>(
-      render_view_host->delegate()->GetAsWebContents());
+      render_view_host->GetDelegate()->GetAsWebContents());
   if (!tab)
     return NULL;
 

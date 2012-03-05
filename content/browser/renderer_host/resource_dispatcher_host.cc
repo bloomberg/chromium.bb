@@ -295,8 +295,8 @@ net::RequestPriority DetermineRequestPriority(ResourceType::Type type) {
 }
 
 void OnSwapOutACKHelper(int render_process_id, int render_view_id) {
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
-                                               render_view_id);
+  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(render_process_id,
+                                                       render_view_id);
   if (rvh)
     rvh->OnSwapOutACK();
 }
@@ -2014,10 +2014,10 @@ void ResourceDispatcherHost::NotifyOnUI(int type,
                                         int render_process_id,
                                         int render_view_id,
                                         T* detail) {
-  RenderViewHost* rvh =
-      RenderViewHost::FromID(render_process_id, render_view_id);
+  RenderViewHostImpl* rvh =
+      RenderViewHostImpl::FromID(render_process_id, render_view_id);
   if (rvh) {
-    content::RenderViewHostDelegate* rvhd = rvh->delegate();
+    content::RenderViewHostDelegate* rvhd = rvh->GetDelegate();
     content::NotificationService::current()->Notify(
         type, content::Source<WebContents>(rvhd->GetAsWebContents()),
         content::Details<T>(detail));
@@ -2064,8 +2064,8 @@ typedef std::map<std::pair<int, int>, LoadInfo> LoadInfoMap;
 void LoadInfoUpdateCallback(const LoadInfoMap& info_map) {
   LoadInfoMap::const_iterator i;
   for (i = info_map.begin(); i != info_map.end(); ++i) {
-    RenderViewHost* view =
-        RenderViewHost::FromID(i->first.first, i->first.second);
+    RenderViewHostImpl* view =
+        RenderViewHostImpl::FromID(i->first.first, i->first.second);
     if (view)  // The view could be gone at this point.
       view->LoadStateChanged(i->second.url, i->second.load_state,
                              i->second.upload_position,

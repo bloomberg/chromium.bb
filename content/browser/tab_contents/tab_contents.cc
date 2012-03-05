@@ -297,8 +297,8 @@ TabContents::~TabContents() {
   // NULL if this contents was part of a window that closed.
   if (GetNativeView()) {
     RenderViewHost* host = GetRenderViewHost();
-    if (host && host->view())
-      RenderWidgetHostViewPort::FromRWHV(host->view())->WillWmDestroy();
+    if (host && host->GetView())
+      RenderWidgetHostViewPort::FromRWHV(host->GetView())->WillWmDestroy();
   }
 #endif
 
@@ -445,7 +445,7 @@ WebPreferences TabContents::GetWebkitPrefs(RenderViewHost* rvh,
   }
 
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-          rvh->process()->GetID())) {
+          rvh->GetProcess()->GetID())) {
     prefs.loads_images_automatically = true;
     prefs.javascript_enabled = true;
   }
@@ -598,7 +598,7 @@ void TabContents::SetDelegate(content::WebContentsDelegate* delegate) {
 
 content::RenderProcessHost* TabContents::GetRenderProcessHost() const {
   if (render_manager_.current_host())
-    return render_manager_.current_host()->process();
+    return render_manager_.current_host()->GetProcess();
   else
     return NULL;
 }
@@ -704,14 +704,14 @@ void TabContents::CopyMaxPageIDsFrom(TabContents* tab_contents) {
 }
 
 SiteInstance* TabContents::GetSiteInstance() const {
-  return render_manager_.current_host()->site_instance();
+  return render_manager_.current_host()->GetSiteInstance();
 }
 
 SiteInstance* TabContents::GetPendingSiteInstance() const {
   RenderViewHost* dest_rvh = render_manager_.pending_render_view_host() ?
       render_manager_.pending_render_view_host() :
       render_manager_.current_host();
-  return dest_rvh->site_instance();
+  return dest_rvh->GetSiteInstance();
 }
 
 bool TabContents::IsLoading() const {
@@ -795,7 +795,8 @@ void TabContents::DidBecomeSelected() {
 
   // The resize rect might have changed while this was inactive -- send the new
   // one to make sure it's up to date.
-  RenderViewHost* rvh = GetRenderViewHost();
+  RenderViewHostImpl* rvh =
+      static_cast<RenderViewHostImpl*>(GetRenderViewHost());
   if (rvh) {
     rvh->ResizeRectChanged(GetRootWindowResizerRect());
   }
@@ -847,7 +848,8 @@ bool TabContents::NeedToFireBeforeUnload() {
   // TODO(creis): Should we fire even for interstitial pages?
   return WillNotifyDisconnection() &&
       !ShowingInterstitialPage() &&
-      !GetRenderViewHost()->SuddenTerminationAllowed();
+      !static_cast<RenderViewHostImpl*>(
+          GetRenderViewHost())->SuddenTerminationAllowed();
 }
 
 void TabContents::Stop() {
@@ -1011,13 +1013,14 @@ bool TabContents::NavigateToEntry(
   if (entry.GetURL().spec().size() > content::kMaxURLChars)
     return false;
 
-  RenderViewHost* dest_render_view_host = render_manager_.Navigate(entry);
+  RenderViewHostImpl* dest_render_view_host =
+      static_cast<RenderViewHostImpl*>(render_manager_.Navigate(entry));
   if (!dest_render_view_host)
     return false;  // Unable to create the desired render view host.
 
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
-  int enabled_bindings = dest_render_view_host->enabled_bindings();
+  int enabled_bindings = dest_render_view_host->GetEnabledBindings();
   WebUIControllerFactory* factory =
       content::GetContentClient()->browser()->GetWebUIControllerFactory();
   bool is_allowed_in_web_ui_renderer =
@@ -1075,16 +1078,16 @@ void TabContents::SetHistoryLengthAndPrune(
     NOTREACHED();
     return;
   }
-  RenderViewHost* rvh = GetRenderViewHost();
+  RenderViewHostImpl* rvh = GetRenderViewHostImpl();
   if (!rvh) {
     NOTREACHED();
     return;
   }
-  if (site_instance && rvh->site_instance() != site_instance) {
+  if (site_instance && rvh->GetSiteInstance() != site_instance) {
     NOTREACHED();
     return;
   }
-  rvh->Send(new ViewMsg_SetHistoryLengthAndPrune(rvh->routing_id(),
+  rvh->Send(new ViewMsg_SetHistoryLengthAndPrune(rvh->GetRoutingID(),
                                                  history_length,
                                                  minimum_page_id));
 }
@@ -1094,7 +1097,7 @@ void TabContents::FocusThroughTabTraversal(bool reverse) {
     render_manager_.interstitial_page()->FocusThroughTabTraversal(reverse);
     return;
   }
-  GetRenderViewHost()->SetInitialFocus(reverse);
+  GetRenderViewHostImpl()->SetInitialFocus(reverse);
 }
 
 bool TabContents::ShowingInterstitialPage() const {
@@ -1170,14 +1173,14 @@ bool TabContents::WillNotifyDisconnection() const {
 
 void TabContents::SetOverrideEncoding(const std::string& encoding) {
   SetEncoding(encoding);
-  GetRenderViewHost()->Send(new ViewMsg_SetPageEncoding(
-      GetRenderViewHost()->routing_id(), encoding));
+  GetRenderViewHostImpl()->Send(new ViewMsg_SetPageEncoding(
+      GetRenderViewHost()->GetRoutingID(), encoding));
 }
 
 void TabContents::ResetOverrideEncoding() {
   encoding_.clear();
-  GetRenderViewHost()->Send(new ViewMsg_ResetPageEncodingToDefault(
-      GetRenderViewHost()->routing_id()));
+  GetRenderViewHostImpl()->Send(new ViewMsg_ResetPageEncodingToDefault(
+      GetRenderViewHost()->GetRoutingID()));
 }
 
 content::RendererPreferences* TabContents::GetMutableRendererPrefs() {
@@ -1211,7 +1214,7 @@ bool TabContents::ShouldAcceptDragAndDrop() const {
 
 void TabContents::SystemDragEnded() {
   if (GetRenderViewHost())
-    GetRenderViewHost()->DragSourceSystemDragEnded();
+    GetRenderViewHostImpl()->DragSourceSystemDragEnded();
   if (delegate_)
     delegate_->DragEnded();
 }
@@ -1233,7 +1236,7 @@ double TabContents::GetZoomLevel() const {
   double zoom_level;
   if (temporary_zoom_settings_) {
     zoom_level = zoom_map->GetTemporaryZoomLevel(
-        GetRenderProcessHost()->GetID(), GetRenderViewHost()->routing_id());
+        GetRenderProcessHost()->GetID(), GetRenderViewHost()->GetRoutingID());
   } else {
     GURL url;
     NavigationEntry* active_entry = GetController().GetActiveEntry();
@@ -1342,7 +1345,7 @@ content::WebUI* TabContents::GetWebUIForCurrentState() {
 
 bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
   return GetRenderViewHost() ?
-      GetRenderViewHost()->GotResponseToLockMouseRequest(allowed) : false;
+      GetRenderViewHostImpl()->GotResponseToLockMouseRequest(allowed) : false;
 }
 
 bool TabContents::FocusLocationBarByDefault() {
@@ -1382,8 +1385,10 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     const GURL& url) {
   bool is_error_page = (url.spec() == chrome::kUnreachableWebDataURL);
   GURL validated_url(url);
-  GetRenderViewHost()->FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
-      GetRenderProcessHost()->GetID(), &validated_url);
+  GetRenderViewHostImpl()->FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      GetRenderProcessHost()->GetID(),
+      &validated_url);
 
   RenderViewHost* rvh =
       render_manager_.pending_render_view_host() ?
@@ -1431,8 +1436,10 @@ void TabContents::OnDidFailProvisionalLoadWithError(
             params.showing_repost_interstitial
           << ", frame_id: " << params.frame_id;
   GURL validated_url(params.url);
-  GetRenderViewHost()->FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
-      GetRenderProcessHost()->GetID(), &validated_url);
+  GetRenderViewHostImpl()->FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      GetRenderProcessHost()->GetID(),
+      &validated_url);
 
   if (net::ERR_ABORTED == params.error_code) {
     // EVIL HACK ALERT! Ignore failed loads when we're showing interstitials.
@@ -1650,8 +1657,8 @@ void TabContents::OnFindReply(int request_id,
   // browser using IPC. In an effort to not spam the browser we have the
   // browser send an ACK for each FindReply message and have the renderer
   // queue up the latest status message while waiting for this ACK.
-  GetRenderViewHost()->Send(
-      new ViewMsg_FindReplyACK(GetRenderViewHost()->routing_id()));
+  GetRenderViewHostImpl()->Send(
+      new ViewMsg_FindReplyACK(GetRenderViewHost()->GetRoutingID()));
 }
 
 void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
@@ -1762,8 +1769,10 @@ void TabContents::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {
   // the renderer updating next_page_id_).  Because of this, we only call this
   // from CreateRenderView and allow that to notify the RenderView for us.
   int max_restored_page_id = controller_.GetMaxRestoredPageID();
-  if (max_restored_page_id > GetMaxPageIDForSiteInstance(rvh->site_instance()))
-    UpdateMaxPageIDForSiteInstance(rvh->site_instance(), max_restored_page_id);
+  if (max_restored_page_id >
+      GetMaxPageIDForSiteInstance(rvh->GetSiteInstance()))
+    UpdateMaxPageIDForSiteInstance(rvh->GetSiteInstance(),
+                                   max_restored_page_id);
 }
 
 bool TabContents::UpdateTitleForEntry(NavigationEntryImpl* entry,
@@ -1883,8 +1892,8 @@ void TabContents::RenderViewCreated(RenderViewHost* render_view_host) {
 
   if (entry->IsViewSourceMode()) {
     // Put the renderer in view source mode.
-    render_view_host->Send(
-        new ViewMsg_EnableViewSourceMode(render_view_host->routing_id()));
+    static_cast<RenderViewHostImpl*>(render_view_host)->Send(
+        new ViewMsg_EnableViewSourceMode(render_view_host->GetRoutingID()));
   }
 
   GetView()->RenderViewCreated(render_view_host);
@@ -2020,7 +2029,7 @@ void TabContents::UpdateState(RenderViewHost* rvh,
   // NavigationEntry and update it when it is notified via the delegate.
 
   int entry_index = controller_.GetEntryIndexWithPageID(
-      rvh->site_instance(), page_id);
+      rvh->GetSiteInstance(), page_id);
   if (entry_index < 0)
     return;
   NavigationEntry* entry = controller_.GetEntryAtIndex(entry_index);
@@ -2042,7 +2051,7 @@ void TabContents::UpdateTitle(RenderViewHost* rvh,
   // Try to find the navigation entry, which might not be the current one.
   // For example, it might be from a pending RVH for the pending entry.
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
-      rvh->site_instance(), page_id);
+      rvh->GetSiteInstance(), page_id);
 
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
@@ -2231,7 +2240,7 @@ void TabContents::RunJavaScriptMessage(
   // showing an interstitial as it's shown over the previous page and we don't
   // want the hidden page's dialogs to interfere with the interstitial.
   bool suppress_this_message =
-      rvh->is_swapped_out() ||
+      static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out() ||
       ShowingInterstitialPage() ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs() ||
@@ -2266,17 +2275,18 @@ void TabContents::RunBeforeUnloadConfirm(RenderViewHost* rvh,
                                          const string16& message,
                                          bool is_reload,
                                          IPC::Message* reply_msg) {
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(rvh);
   if (delegate_)
     delegate_->WillRunBeforeUnloadConfirm();
 
   bool suppress_this_message =
-      rvh->is_swapped_out() ||
+      rvhi->is_swapped_out() ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs() ||
       !delegate_->GetJavaScriptDialogCreator();
   if (suppress_this_message) {
     // The reply must be sent to the RVH that sent the request.
-    rvh->JavaScriptDialogClosed(reply_msg, true, string16());
+    rvhi->JavaScriptDialogClosed(reply_msg, true, string16());
     return;
   }
 
@@ -2312,6 +2322,8 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
   if (rvh != GetRenderViewHost())
     return;
 
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(rvh);
+
   // Ignore renderer unresponsive event if debugger is attached to the tab
   // since the event may be a result of the renderer sitting on a breakpoint.
   // See http://crbug.com/65458
@@ -2324,7 +2336,7 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
   if (is_during_unload) {
     // Hang occurred while firing the beforeunload/unload handler.
     // Pretend the handler fired so tab closing continues as if it had.
-    rvh->set_sudden_termination_allowed(true);
+    rvhi->set_sudden_termination_allowed(true);
 
     if (!render_manager_.ShouldCloseTabOnUnresponsiveRenderer())
       return;
@@ -2337,7 +2349,7 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
     return;
   }
 
-  if (!GetRenderViewHost() || !GetRenderViewHost()->IsRenderViewLive())
+  if (!GetRenderViewHostImpl() || !GetRenderViewHostImpl()->IsRenderViewLive())
     return;
 
   if (delegate_)
@@ -2430,9 +2442,10 @@ bool TabContents::CreateRenderViewForRenderManager(
   // Make sure we use the correct starting page_id in the new RenderView.
   UpdateMaxPageIDIfNecessary(render_view_host);
   int32 max_page_id =
-      GetMaxPageIDForSiteInstance(render_view_host->site_instance());
+      GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
-  if (!render_view_host->CreateRenderView(string16(), max_page_id))
+  if (!static_cast<RenderViewHostImpl*>(
+          render_view_host)->CreateRenderView(string16(), max_page_id))
     return false;
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
@@ -2459,7 +2472,8 @@ void TabContents::OnDialogClosed(RenderViewHost* rvh,
     tab_close_start_time_ = base::TimeTicks();
   }
   is_showing_before_unload_dialog_ = false;
-  rvh->JavaScriptDialogClosed(reply_msg, success, user_input);
+  static_cast<RenderViewHostImpl*>(
+      rvh)->JavaScriptDialogClosed(reply_msg, success, user_input);
 }
 
 void TabContents::SetEncoding(const std::string& encoding) {
@@ -2495,4 +2509,8 @@ void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   // Can be NULL during tests.
   if (rwh_view)
     rwh_view->SetSize(GetView()->GetContainerSize());
+}
+
+RenderViewHostImpl* TabContents::GetRenderViewHostImpl() {
+  return static_cast<RenderViewHostImpl*>(GetRenderViewHost());
 }

@@ -279,7 +279,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   webkit::WebPluginInfo plugin_info;
   std::string actual_mime_type;
   render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
-      render_view->GetRoutingId(), GURL(params.url),
+      render_view->GetRoutingID(), GURL(params.url),
       frame->top()->document().url(), params.mimeType.utf8(),
       &status, &plugin_info, &actual_mime_type));
   *plugin = CreatePlugin(render_view, frame, params,
@@ -437,7 +437,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED);
         placeholder->set_allow_loading(true);
         render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
-            render_view->GetRoutingId(), placeholder->CreateRoutingId(),
+            render_view->GetRoutingID(), placeholder->CreateRoutingId(),
             group->identifier()));
 #else
         NOTREACHED();
@@ -456,7 +456,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED);
         placeholder->set_allow_loading(true);
         render_view->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
-            render_view->GetRoutingId(), group->GetGroupName()));
+            render_view->GetRoutingID(), group->GetGroupName()));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay: {

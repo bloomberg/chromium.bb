@@ -16,6 +16,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 
+class RenderViewHostImpl;
 class TabContents;
 
 namespace content {
@@ -159,7 +160,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   ActionState action_taken_;
 
   // The RenderViewHost displaying the interstitial contents.
-  RenderViewHost* render_view_host_;
+  RenderViewHostImpl* render_view_host_;
 
   // The IDs for the Render[View|Process]Host hidden by this interstitial.
   int original_child_id_;

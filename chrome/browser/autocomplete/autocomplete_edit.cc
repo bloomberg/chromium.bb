@@ -1120,7 +1120,7 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
   if (prerender_manager) {
     RenderViewHost* current_host = tab->web_contents()->GetRenderViewHost();
     prerender_manager->AddPrerenderFromOmnibox(
-        match.destination_url, current_host->session_storage_namespace());
+        match.destination_url, current_host->GetSessionStorageNamespace());
   }
 }
 
