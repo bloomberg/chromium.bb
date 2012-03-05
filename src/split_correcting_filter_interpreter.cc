@@ -47,7 +47,9 @@ void SplitCorrectingFilterInterpreter::SetHardwareProperties(
 
 void SplitCorrectingFilterInterpreter::RemoveMissingUnmergedContacts(
     const HardwareState& hwstate) {
-  for (UnmergedContact* it = unmerged_; it->Valid();) {
+  for (UnmergedContact* it = unmerged_;
+       it < &unmerged_[arraysize(unmerged_)] &&
+       it->Valid();) {
     if (!hwstate.GetFingerState(it->input_id)) {
       // Erase this element
       std::copy(it + 1, &unmerged_[arraysize(unmerged_)], it);
