@@ -402,7 +402,7 @@ index 0e0b838..81066ca 100644
 +        struct oggvorbis_private *priv = os.private;
 +        if (priv && priv->packet && os.buf) {
 +            int pkt_type = os.buf[os.pstart];
-+            if (pkt_type & 1 && pkt_type <= 5)
++            if ((pkt_type == 1 || pkt_type == 3) && priv->len[pkt_type >> 1] > 0)
 +               av_freep (&priv->packet[pkt_type >> 1]);
 +        }
 +        av_free (os.buf);
