@@ -2614,6 +2614,7 @@
         'browser/ui/android/certificate_viewer.cc',
         'browser/ui/android/extensions/extension_view_android.cc',
         'browser/ui/android/extensions/extension_view_android.h',
+        'browser/ui/android/infobar_stubs.cc',
         'browser/ui/android/select_file_dialog_android.cc',
         'browser/ui/android/ssl_client_certificate_selector.cc',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',
