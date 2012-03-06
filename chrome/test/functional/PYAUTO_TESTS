@@ -312,6 +312,8 @@
       # crosbug.com/19556
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
+      # crosbug.com/27405
+      '-browser.BrowserTest.testKillAndReloadSharedProcess',
       # crosbug.com/26669
       '-chromeos_file_browser',
       # Downloads panel stays even after declining a download.
