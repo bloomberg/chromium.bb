@@ -497,11 +497,6 @@ PluginModule::~PluginModule() {
 }
 
 bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {
-#if defined(OS_CHROMEOS)
-  // TODO(oshima): Remove this once crosbug.com/26646 is resolved.
-  LOG(ERROR) << "#### PluginModule::InitAsInternalPlugin name=" << name_;
-#endif  // defined (OS_CHROMEOS)
-
   if (InitializeModule(entry_points)) {
     entry_points_ = entry_points;
     return true;
@@ -510,17 +505,7 @@ bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {
 }
 
 bool PluginModule::InitAsLibrary(const FilePath& path) {
-#if defined(OS_CHROMEOS)
-  // TODO(oshima): Remove this once crosbug.com/26646 is resolved.
-  LOG(ERROR) << "#### PluginModule::InitAsLibrary name=" << name_;
-#endif  // defined (OS_CHROMEOS)
-
   base::NativeLibrary library = base::LoadNativeLibrary(path, NULL);
-#if defined(OS_CHROMEOS)
-  // TODO(oshima): Remove this once crosbug.com/26646 is resolved.
-  LOG(ERROR) << "#### PluginModule::InitAsLibrary loaded";
-#endif  // defined (OS_CHROMEOS)
-
   if (!library)
     return false;
 
@@ -538,11 +523,6 @@ bool PluginModule::InitAsLibrary(const FilePath& path) {
 
 void PluginModule::InitAsProxied(
     PluginDelegate::OutOfProcessProxy* out_of_process_proxy) {
-#if defined(OS_CHROMEOS)
-  // TODO(oshima): Remove this once crosbug.com/26646 is resolved.
-  LOG(ERROR) << "#### PluginModule::InitAsProxied name=" << name_;
-#endif  // defined (OS_CHROMEOS)
-
   DCHECK(!out_of_process_proxy_.get());
   out_of_process_proxy_.reset(out_of_process_proxy);
 }
@@ -643,11 +623,6 @@ bool PluginModule::InitializeModule(const EntryPoints& entry_points) {
   DCHECK(!out_of_process_proxy_.get()) << "Don't call for proxied modules.";
   DCHECK(entry_points.initialize_module != NULL);
   int retval = entry_points.initialize_module(pp_module(), &GetInterface);
-#if defined(OS_CHROMEOS)
-  // TODO(oshima): Remove this once crosbug.com/26646 is resolved.
-  LOG(ERROR) << "#### PluginModule::InitModule result=" << retval;
-#endif  // defined (OS_CHROMEOS)
-
   if (retval != 0) {
     LOG(WARNING) << "PPP_InitializeModule returned failure " << retval;
     return false;

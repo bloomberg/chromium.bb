@@ -32,20 +32,16 @@ cr.define('cr.ui', function() {
    * be invoked to do final setup.
    */
   Oobe.initialize = function() {
-    try {
-      console.log("## Oobe.initialize");
-      login.AccountPickerScreen.register();
-      login.GaiaSigninScreen.register();
-      oobe.OAuthEnrollmentScreen.register();
-      oobe.UserImageScreen.register();
-      login.ErrorMessageScreen.register();
-      cr.ui.Bubble.decorate($('bubble'));
-      login.HeaderBar.decorate($('login-header-bar'));
-      console.log("## calling screenStateInitialize");
-      chrome.send('screenStateInitialize', []);
-    } catch (err) {
-      console.log("## error in initialize " + err.message);
-    }
+    login.AccountPickerScreen.register();
+    login.GaiaSigninScreen.register();
+    oobe.OAuthEnrollmentScreen.register();
+    oobe.UserImageScreen.register();
+    login.ErrorMessageScreen.register();
+
+    cr.ui.Bubble.decorate($('bubble'));
+    login.HeaderBar.decorate($('login-header-bar'));
+
+    chrome.send('screenStateInitialize', []);
   };
 
   /**
@@ -173,5 +169,4 @@ var Oobe = cr.ui.Oobe;
 
 disableTextSelectAndDrag();
 
-console.log("## registering DOMContentLoaded");
 document.addEventListener('DOMContentLoaded', cr.ui.Oobe.initialize);
