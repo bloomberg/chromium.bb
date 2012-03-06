@@ -25,7 +25,7 @@ deps = {
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@a2965825b1953c7b8ad292f726eb5c3f2659d5d3',
     'third_party':
-        Var('git_url') + '/native_client/src/third_party.git@dee9b8ce860cd997aba3072fd15a7d5d6d8ed633',
+        Var('git_url') + '/native_client/src/third_party.git@ae0b8b1279a15208d7f2142caada87ecd1d69647',
     'third_party/asan':
         Var('git_url') + '/chromium/deps/asan.git@9cccca74406a41251063869d73d8fdea1654b7b5',
     'third_party/gles2_book':
