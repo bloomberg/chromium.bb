@@ -278,7 +278,8 @@ chrome.fileBrowserPrivate = {
     // extension_file_browser_private_api.cc!
     callback({
       // These two are from locale_settings*.grd
-      WEB_FONT_FAMILY: 'Chrome Droid Sans,Droid Sans Fallback,sans-serif',
+      WEB_FONT_FAMILY: 'Open Sans,Chrome Droid Sans,'+
+                       'Droid Sans Fallback,sans-serif',
       WEB_FONT_SIZE: '84%',
 
       FILE_IS_DIRECTORY: 'Folder',

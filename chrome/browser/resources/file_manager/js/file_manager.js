@@ -1498,7 +1498,7 @@ FileManager.prototype = {
     var input = this.document_.createElement('input');
     input.setAttribute('type', 'checkbox');
     input.setAttribute('tabindex', -1);
-    input.className = 'file-checkbox';
+    input.className = 'file-checkbox common';
     input.addEventListener('mousedown',
                            this.onCheckboxMouseDownUp_.bind(this));
     input.addEventListener('mouseup',
@@ -1521,6 +1521,7 @@ FileManager.prototype = {
     input.setAttribute('type', 'checkbox');
     input.setAttribute('tabindex', -1);
     input.id = 'select-all-checkbox';
+    input.className = 'common';
     this.updateSelectAllCheckboxState_(input);
 
     input.addEventListener('click', function(event) {
@@ -1673,6 +1674,7 @@ FileManager.prototype = {
   FileManager.prototype.renderRoot_ = function(entry) {
     var li = this.document_.createElement('li');
     li.className = 'root-item';
+    li.addEventListener('click', this.onRootClick_.bind(this, entry));
 
     var rootType = DirectoryModel.getRootType(entry.fullPath);
 
@@ -1700,10 +1702,8 @@ FileManager.prototype = {
       spacer.className = 'spacer';
       li.appendChild(spacer);
 
-      var eject = this.document_.createElement('img');
+      var eject = this.document_.createElement('div');
       eject.className = 'root-eject';
-      // TODO(serya): Move to CSS.
-      eject.setAttribute('src', chrome.extension.getURL('images/eject.png'));
       eject.addEventListener('click', this.onEjectClick_.bind(this, entry));
       li.appendChild(eject);
     }
@@ -1711,6 +1711,18 @@ FileManager.prototype = {
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
     cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
     return li;
+  };
+
+  /**
+   * Handler for root item being clicked.
+   * @param {Entry} entry to navigate to.
+   * @param {Event} event The event.
+   */
+  FileManager.prototype.onRootClick_ = function(entry, event) {
+    var path = this.directoryModel_.currentEntry.fullPath;
+    if (path.indexOf(entry.fullPath) == 0 && path != entry.fullPath) {
+      this.directoryModel_.changeDirectory(entry.fullPath);
+    }
   };
 
   /**
@@ -2584,7 +2596,6 @@ FileManager.prototype = {
 
       path = path + '/';
       div.path = path;
-      div.addEventListener('click', this.onBreadcrumbClick_.bind(this));
 
       if (i == 0) {
         div.classList.add('root-label');
@@ -2601,6 +2612,8 @@ FileManager.prototype = {
       if (i == pathNames.length - 1) {
         div.classList.add('breadcrumb-last');
       } else {
+        div.addEventListener('click', this.onBreadcrumbClick_.bind(this));
+
         var spacer = doc.createElement('div');
         spacer.className = 'separator';
         bc.appendChild(spacer);
