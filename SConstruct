@@ -2533,7 +2533,7 @@ def SetupClang(env):
       print "ERROR: ASan is only available for Linux and Mac"
       sys.exit(-1)
     env['ASAN'] = '${SOURCE_ROOT}/third_party/asan'
-    env['ASAN_BLACKLIST'] = '-mllvm -asan-blacklist=${ASAN}/asan_blacklist.txt'
+    env['ASAN_BLACKLIST'] = '-mllvm -asan-blacklist=${ASAN}/ignores.txt'
     env['CLANG_DIR'] = os.path.join('${ASAN}', asan_dir, 'bin')
     env['CLANG_OPTS'] = '-faddress-sanitizer ${ASAN_BLACKLIST}'
   else:
