@@ -234,12 +234,12 @@ void TestingAutomationProvider::GetLoginInfo(DictionaryValue* args,
       chromeos::ScreenLocker::default_screen_locker();
 
   return_value->SetString("login_ui_type", "webui");
-  return_value->SetBoolean("is_owner", user_manager->current_user_is_owner());
-  return_value->SetBoolean("is_logged_in", user_manager->user_is_logged_in());
+  return_value->SetBoolean("is_owner", user_manager->IsCurrentUserOwner());
+  return_value->SetBoolean("is_logged_in", user_manager->IsUserLoggedIn());
   return_value->SetBoolean("is_screen_locked", screen_locker);
-  if (user_manager->user_is_logged_in()) {
+  if (user_manager->IsUserLoggedIn()) {
     return_value->SetBoolean("is_guest", user_manager->IsLoggedInAsGuest());
-    return_value->SetString("email", user_manager->logged_in_user().email());
+    return_value->SetString("email", user_manager->GetLoggedInUser().email());
   }
 
   reply.SendSuccess(return_value.get());
@@ -1025,7 +1025,7 @@ void TestingAutomationProvider::EnableSpokenFeedback(
     return;
   }
 
-  if (user_manager->user_is_logged_in()) {
+  if (user_manager->IsUserLoggedIn()) {
     chromeos::accessibility::EnableSpokenFeedback(enabled, NULL);
   } else {
     chromeos::ExistingUserController* controller =

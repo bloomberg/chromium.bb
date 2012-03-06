@@ -114,7 +114,7 @@ void DeviceSettingsProvider::Reload() {
 
 void DeviceSettingsProvider::DoSet(const std::string& path,
                                    const base::Value& in_value) {
-  if (!UserManager::Get()->current_user_is_owner() &&
+  if (!UserManager::Get()->IsCurrentUserOwner() &&
       ownership_status_ != OwnershipService::OWNERSHIP_NONE) {
     LOG(WARNING) << "Changing settings from non-owner, setting=" << path;
 

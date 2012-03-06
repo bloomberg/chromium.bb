@@ -66,7 +66,7 @@ std::string StringSubRange(const std::string& text, size_t start,
 bool CanChangeReleaseChannel() {
   // On non managed machines we have local owner who is the only one to change
   // anything.
-  if (chromeos::UserManager::Get()->current_user_is_owner())
+  if (chromeos::UserManager::Get()->IsCurrentUserOwner())
     return true;
   // On a managed machine we delegate this setting to the users of the same
   // domain only if the policy value is "domain".
@@ -77,7 +77,7 @@ bool CanChangeReleaseChannel() {
       return false;
     // Get the currently logged in user and strip the domain part only.
     std::string domain = "";
-    std::string user = chromeos::UserManager::Get()->logged_in_user().email();
+    std::string user = chromeos::UserManager::Get()->GetLoggedInUser().email();
     size_t at_pos = user.find('@');
     if (at_pos != std::string::npos && at_pos + 1 < user.length())
       domain = user.substr(user.find('@') + 1);
@@ -320,7 +320,7 @@ void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
   const std::string channel = UTF16ToUTF8(ExtractStringValue(args));
   DBusThreadManager::Get()->GetUpdateEngineClient()->SetReleaseTrack(channel);
   // For local owner set the field in the policy blob too.
-  if (UserManager::Get()->current_user_is_owner())
+  if (UserManager::Get()->IsCurrentUserOwner())
     CrosSettings::Get()->SetString(kReleaseChannel, channel);
 }
 

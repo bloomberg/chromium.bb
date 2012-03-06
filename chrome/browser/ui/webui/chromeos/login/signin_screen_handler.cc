@@ -774,8 +774,8 @@ void SigninScreenHandler::SendUserList(bool animated) {
     std::string owner;
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
     bool is_owner = (email == owner);
-    bool signed_in = UserManager::Get()->user_is_logged_in() &&
-        email == UserManager::Get()->logged_in_user().email();
+    bool signed_in = UserManager::Get()->IsUserLoggedIn() &&
+        email == UserManager::Get()->GetLoggedInUser().email();
 
     if (non_owner_count < max_non_owner_users || is_owner) {
       DictionaryValue* user_dict = new DictionaryValue();

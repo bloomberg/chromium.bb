@@ -68,7 +68,7 @@ ChromeWebUIDataSource* CreateFlagsUIHTMLSource() {
 
   int idr = IDR_FLAGS_HTML;
 #if defined (OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->current_user_is_owner() &&
+  if (!chromeos::UserManager::Get()->IsCurrentUserOwner() &&
       chromeos::system::runtime_environment::IsRunningOnChromeOS())
     idr = IDR_FLAGS_HTML_WARNING;
 #endif

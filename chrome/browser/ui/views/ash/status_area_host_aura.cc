@@ -264,7 +264,7 @@ void StatusAreaHostAura::Observe(int type,
 
 bool StatusAreaHostAura::IsLoginOrLockScreenDisplayed() const {
 #if defined(OS_CHROMEOS)
-  if (!chromeos::UserManager::Get()->user_is_logged_in() &&
+  if (!chromeos::UserManager::Get()->IsUserLoggedIn() &&
       chromeos::system::runtime_environment::IsRunningOnChromeOS())
     return true;
 

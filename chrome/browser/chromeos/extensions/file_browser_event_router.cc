@@ -97,7 +97,7 @@ void ExtensionFileBrowserEventRouter::ObserveFileSystemEvents() {
     NOTREACHED();
     return;
   }
-  if (chromeos::UserManager::Get()->user_is_logged_in()) {
+  if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
     DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
     disk_mount_manager->RemoveObserver(this);
     disk_mount_manager->AddObserver(this);

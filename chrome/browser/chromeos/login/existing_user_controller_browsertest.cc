@@ -152,7 +152,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_user_manager_, IsKnownUser(kNewUsername))
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, user_is_logged_in())
+    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())

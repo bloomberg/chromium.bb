@@ -89,8 +89,8 @@ class UserManager {
   virtual const User* FindUser(const std::string& email) const = 0;
 
   // Returns the logged-in user.
-  virtual const User& logged_in_user() const = 0;
-  virtual User& logged_in_user() = 0;
+  virtual const User& GetLoggedInUser() const = 0;
+  virtual User& GetLoggedInUser() = 0;
 
   // Returns true if given display name is unique.
   virtual bool IsDisplayNameUnique(const std::string& display_name) const = 0;
@@ -140,13 +140,14 @@ class UserManager {
   // download times).
   virtual void DownloadProfileImage(const std::string& reason) = 0;
 
-  // Accessor for current_user_is_owner_
-  virtual bool current_user_is_owner() const = 0;
-  virtual void set_current_user_is_owner(bool current_user_is_owner) = 0;
+  // Returns true if current user is an owner.
+  virtual bool IsCurrentUserOwner() const = 0;
 
-  // Accessor for current_user_is_new_.
-  virtual bool current_user_is_new() const = 0;
-  virtual bool user_is_logged_in() const = 0;
+  // Returns true if current user is not existing one (hasn't signed in before).
+  virtual bool IsCurrentUserNew() const = 0;
+
+  // Returns true if user is signed in.
+  virtual bool IsUserLoggedIn() const = 0;
 
   // Returns true if we're logged in as a demo user.
   virtual bool IsLoggedInAsDemoUser() const = 0;
@@ -161,7 +162,7 @@ class UserManager {
 
   // Returns the result of the last successful profile image download, if any.
   // Otherwise, returns an empty bitmap.
-  virtual const SkBitmap& downloaded_profile_image() const = 0;
+  virtual const SkBitmap& DownloadedProfileImage() const = 0;
 };
 
 }  // namespace chromeos

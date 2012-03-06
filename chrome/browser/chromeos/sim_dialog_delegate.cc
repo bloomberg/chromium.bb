@@ -50,7 +50,7 @@ void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                    SimDialogMode mode) {
   Profile* profile;
   Browser* browser = NULL;
-  if (UserManager::Get()->user_is_logged_in()) {
+  if (UserManager::Get()->IsUserLoggedIn()) {
     browser = BrowserList::GetLastActive();
     DCHECK(browser);
     profile = browser->profile();

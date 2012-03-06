@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ void OwnershipStatusChecker::Core::CheckOnFileThread() {
       OwnershipService::GetSharedInstance()->IsAlreadyOwned() ?
           OwnershipService::OWNERSHIP_TAKEN : OwnershipService::OWNERSHIP_NONE;
   bool current_user_is_owner =
-      OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
+      OwnershipService::GetSharedInstance()->IsCurrentUserOwner();
   origin_loop_->PostTask(
       FROM_HERE,
       base::Bind(&OwnershipStatusChecker::Core::ReportResult, this, status,

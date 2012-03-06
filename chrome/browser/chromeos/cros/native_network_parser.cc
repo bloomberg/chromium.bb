@@ -1056,7 +1056,7 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
         break;
       // Only store the passphrase if we are the owner.
       // TODO(stevenjb): Remove this when chromium-os:12948 is resolved.
-      if (chromeos::UserManager::Get()->current_user_is_owner())
+      if (chromeos::UserManager::Get()->IsCurrentUserOwner())
         wifi_network->set_passphrase(passphrase);
       return true;
     }

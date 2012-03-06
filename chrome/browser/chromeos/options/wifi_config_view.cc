@@ -463,7 +463,7 @@ void WifiConfigView::RefreshShareCheckbox() {
     // user certificates are enabled.
     share_network_checkbox_->SetEnabled(false);
     share_network_checkbox_->SetChecked(false);
-  } else if (!UserManager::Get()->user_is_logged_in()) {
+  } else if (!UserManager::Get()->IsUserLoggedIn()) {
     // If not logged in, networks must be shared.
     share_network_checkbox_->SetEnabled(false);
     share_network_checkbox_->SetChecked(true);
@@ -477,7 +477,7 @@ void WifiConfigView::UpdateErrorLabel() {
   std::string error_msg;
   if (UserCertRequired() && cert_library_->CertificatesLoaded()) {
     if (!HaveUserCerts()) {
-      if (!UserManager::Get()->user_is_logged_in()) {
+      if (!UserManager::Get()->IsUserLoggedIn()) {
         error_msg = l10n_util::GetStringUTF8(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN_FOR_USER_CERT);
       } else {

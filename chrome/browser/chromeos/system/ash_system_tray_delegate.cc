@@ -51,22 +51,22 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from ash::SystemTrayDelegate:
   virtual const std::string GetUserDisplayName() const OVERRIDE {
-    return UserManager::Get()->logged_in_user().GetDisplayName();
+    return UserManager::Get()->GetLoggedInUser().GetDisplayName();
   }
 
   virtual const std::string GetUserEmail() const OVERRIDE {
-    return UserManager::Get()->logged_in_user().email();
+    return UserManager::Get()->GetLoggedInUser().email();
   }
 
   virtual const SkBitmap& GetUserImage() const OVERRIDE {
-    return UserManager::Get()->logged_in_user().image();
+    return UserManager::Get()->GetLoggedInUser().image();
   }
 
   virtual ash::user::LoginStatus GetUserLoginStatus() const OVERRIDE {
     UserManager* manager = UserManager::Get();
-    if (!manager->user_is_logged_in())
+    if (!manager->IsUserLoggedIn())
       return ash::user::LOGGED_IN_NONE;
-    if (manager->current_user_is_owner())
+    if (manager->IsCurrentUserOwner())
       return ash::user::LOGGED_IN_OWNER;
     if (manager->IsLoggedInAsGuest())
       return ash::user::LOGGED_IN_GUEST;

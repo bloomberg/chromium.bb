@@ -35,7 +35,7 @@ KioskModeScreensaver::~KioskModeScreensaver() {
 
 void KioskModeScreensaver::Setup() {
   // We should NOT be created if already logged in.
-  CHECK(!chromeos::UserManager::Get()->user_is_logged_in());
+  CHECK(!chromeos::UserManager::Get()->IsUserLoggedIn());
 
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                  content::NotificationService::AllSources());

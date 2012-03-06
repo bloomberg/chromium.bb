@@ -435,7 +435,7 @@ void PhotoCaptureObserver::OnCapturingStopped(
     return;
   }
 
-  const chromeos::User& user = user_manager->logged_in_user();
+  const chromeos::User& user = user_manager->GetLoggedInUser();
   if (user.email().empty()) {
     if (automation_) {
       AutomationJSONReply(

@@ -59,8 +59,8 @@ base::Value* CreateSettingsValue(base::Value *value,
 // Returns true if |username| is the logged-in owner.
 bool IsLoggedInOwner(const std::string& username) {
   UserManager* user_manager = UserManager::Get();
-  return user_manager->current_user_is_owner() &&
-      user_manager->logged_in_user().email() == username;
+  return user_manager->IsCurrentUserOwner() &&
+      user_manager->GetLoggedInUser().email() == username;
 }
 
 // Creates a user info dictionary to be stored in the |ListValue| that is
@@ -162,7 +162,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     return pref_value->DeepCopy();
   }
   // All other prefs are decorated the same way.
-  bool enabled = (UserManager::Get()->current_user_is_owner() ||
+  bool enabled = (UserManager::Get()->IsCurrentUserOwner() ||
                   !IsSettingOwnerOnly(pref_name));
   return CreateSettingsValue(
       pref_value->DeepCopy(),  // The copy will be owned by the dictionary.

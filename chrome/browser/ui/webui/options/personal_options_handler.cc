@@ -205,9 +205,9 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
   localized_strings->SetString("changePicture",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE));
-  if (chromeos::UserManager::Get()->user_is_logged_in()) {
+  if (chromeos::UserManager::Get()->IsUserLoggedIn()) {
     localized_strings->SetString("username",
-        chromeos::UserManager::Get()->logged_in_user().email());
+        chromeos::UserManager::Get()->GetLoggedInUser().email());
   }
 #endif
 }
@@ -394,7 +394,7 @@ void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
 
 #if defined(OS_CHROMEOS)
 void PersonalOptionsHandler::UpdateAccountPicture() {
-  std::string email = chromeos::UserManager::Get()->logged_in_user().email();
+  std::string email = chromeos::UserManager::Get()->GetLoggedInUser().email();
   if (!email.empty()) {
     web_ui()->CallJavascriptFunction("PersonalOptions.updateAccountPicture");
     base::StringValue email_value(email);

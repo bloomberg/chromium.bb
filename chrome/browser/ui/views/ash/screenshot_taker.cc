@@ -89,7 +89,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
 
   bool is_logged_in = true;
 #if defined(OS_CHROMEOS)
-  is_logged_in = chromeos::UserManager::Get()->user_is_logged_in();
+  is_logged_in = chromeos::UserManager::Get()->IsUserLoggedIn();
 #endif
 
   if (browser::GrabWindowSnapshot(window, &png_data->data(), rect)) {

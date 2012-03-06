@@ -189,7 +189,7 @@ void ChangePictureOptionsHandler::HandlePageShown(const base::ListValue* args) {
 }
 
 void ChangePictureOptionsHandler::SendSelectedImage() {
-  const User& user = UserManager::Get()->logged_in_user();
+  const User& user = UserManager::Get()->GetLoggedInUser();
   DCHECK(!user.email().empty());
 
   previous_image_index_ = user.image_index();
@@ -231,8 +231,8 @@ void ChangePictureOptionsHandler::UpdateProfileImage() {
   // If we have a downloaded profile image and haven't sent it in
   // |SendSelectedImage|, send it now (without selecting).
   if (previous_image_index_ != User::kProfileImageIndex &&
-      !user_manager->downloaded_profile_image().empty())
-    SendProfileImage(user_manager->downloaded_profile_image(), false);
+      !user_manager->DownloadedProfileImage().empty())
+    SendProfileImage(user_manager->DownloadedProfileImage(), false);
 
   user_manager->DownloadProfileImage(kProfileDownloadReason);
 }
@@ -248,7 +248,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
   DCHECK(!image_url.empty());
 
   UserManager* user_manager = UserManager::Get();
-  const User& user = user_manager->logged_in_user();
+  const User& user = user_manager->GetLoggedInUser();
   int image_index = User::kInvalidImageIndex;
 
   if (StartsWithASCII(image_url, chrome::kChromeUIUserImageURL, false)) {
@@ -294,7 +294,7 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
                                                int index,
                                                void* params) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->SaveUserImageFromFile(user_manager->logged_in_user().email(),
+  user_manager->SaveUserImageFromFile(user_manager->GetLoggedInUser().email(),
                                       path);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromFile,
@@ -303,7 +303,7 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
 
 void ChangePictureOptionsHandler::OnPhotoAccepted(const SkBitmap& photo) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->SaveUserImage(user_manager->logged_in_user().email(), photo);
+  user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(), photo);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);

@@ -347,7 +347,7 @@ void ScreenLocker::Show() {
   // refuse to lock the screen (crosbug.com/23764).
   // TODO(flackr): We can allow lock screen for guest accounts when
   // unlock_on_input is supported by the WebUI screen locker.
-  if (UserManager::Get()->logged_in_user().email().empty()) {
+  if (UserManager::Get()->GetLoggedInUser().email().empty()) {
     DVLOG(1) << "Show: Refusing to lock screen for guest account.";
     return;
   }
@@ -363,7 +363,7 @@ void ScreenLocker::Show() {
   if (!screen_locker_) {
     DVLOG(1) << "Show: Locking screen";
     ScreenLocker* locker =
-        new ScreenLocker(UserManager::Get()->logged_in_user());
+        new ScreenLocker(UserManager::Get()->GetLoggedInUser());
     locker->Init();
   } else {
     // PowerManager re-sends lock screen signal if it doesn't

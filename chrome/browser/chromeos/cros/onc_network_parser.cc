@@ -661,10 +661,10 @@ std::string OncNetworkParser::GetUserExpandedValue(
     return string_value;
   }
 
-  if (!UserManager::Get()->user_is_logged_in())
+  if (!UserManager::Get()->IsUserLoggedIn())
     return string_value;
 
-  const User& logged_in_user(UserManager::Get()->logged_in_user());
+  const User& logged_in_user(UserManager::Get()->GetLoggedInUser());
   ReplaceSubstringsAfterOffset(&string_value, 0,
                                onc::substitutes::kLoginIDField,
                                logged_in_user.GetAccountName());

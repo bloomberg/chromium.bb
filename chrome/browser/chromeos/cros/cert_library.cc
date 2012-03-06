@@ -133,7 +133,7 @@ class CertLibraryImpl
 
     certificates_requested_ = true;
 
-    if (!UserManager::Get()->user_is_logged_in()) {
+    if (!UserManager::Get()->IsUserLoggedIn()) {
       // If we are not logged in, we cannot load any certificates.
       // Set 'loaded' to true for the UI, since we are not waiting on loading.
       LOG(WARNING) << "Requesting certificates before login.";

@@ -285,7 +285,7 @@ void NativeTabContentsViewGtk::PositionConstrainedWindows(
 #if defined(OS_CHROMEOS)
     // TODO(ivankr): this is a hack to display proxy authentication dialog
     // centered during the sign-in phase. See http://crosbug/20819.
-    if (!chromeos::UserManager::Get()->user_is_logged_in())
+    if (!chromeos::UserManager::Get()->IsUserLoggedIn())
       child_y = std::max(view_size.height() / 2 - (requisition.height / 2), 0);
 #endif
     PositionChild(widget, child_x, child_y, 0, 0);

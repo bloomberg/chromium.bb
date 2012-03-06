@@ -230,7 +230,7 @@ bool AutomationProvider::InitializeChannel(const std::string& channel_id) {
     // Wait for webui login to be ready.
     // Observer will delete itself.
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager) &&
-        !chromeos::UserManager::Get()->user_is_logged_in()) {
+        !chromeos::UserManager::Get()->IsUserLoggedIn()) {
       login_webui_ready_ = false;
       new LoginWebuiReadyObserver(this);
     }

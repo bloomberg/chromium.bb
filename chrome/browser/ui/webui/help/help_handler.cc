@@ -64,7 +64,7 @@ string16 BuildBrowserVersionString() {
 bool CanChangeReleaseChannel() {
   // On non managed machines we have local owner who is the only one to change
   // anything.
-  if (chromeos::UserManager::Get()->current_user_is_owner())
+  if (chromeos::UserManager::Get()->IsCurrentUserOwner())
     return true;
   // On a managed machine we delegate this setting to the users of the same
   // domain only if the policy value is "domain".
@@ -75,7 +75,7 @@ bool CanChangeReleaseChannel() {
       return false;
     // Get the currently logged in user and strip the domain part only.
     std::string domain = "";
-    std::string user = chromeos::UserManager::Get()->logged_in_user().email();
+    std::string user = chromeos::UserManager::Get()->GetLoggedInUser().email();
     size_t at_pos = user.find('@');
     if (at_pos != std::string::npos && at_pos + 1 < user.length())
       domain = user.substr(user.find('@') + 1);

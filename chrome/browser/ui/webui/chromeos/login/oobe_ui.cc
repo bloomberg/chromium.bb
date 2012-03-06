@@ -83,7 +83,7 @@ OobeUIHTMLSource::OobeUIHTMLSource(DictionaryValue* localized_strings)
 void OobeUIHTMLSource::StartDataRequest(const std::string& path,
                                         bool is_incognito,
                                         int request_id) {
-  if (UserManager::Get()->user_is_logged_in() &&
+  if (UserManager::Get()->IsUserLoggedIn() &&
       !ScreenLocker::default_screen_locker()) {
     scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes());
     SendResponse(request_id, empty_bytes);

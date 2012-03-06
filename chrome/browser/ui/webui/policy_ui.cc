@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,7 +171,8 @@ DictionaryValue* PolicyUIHandler::GetStatusData() {
     results->SetString("userLastFetchTime", GetLastFetchTime(user_subsystem));
 
 #if defined(OS_CHROMEOS)
-    const chromeos::User& user = chromeos::UserManager::Get()->logged_in_user();
+    const chromeos::User& user =
+        chromeos::UserManager::Get()->GetLoggedInUser();
     results->SetString("user", ASCIIToUTF16(user.email()));
 #else
     results->SetString("user", string16());

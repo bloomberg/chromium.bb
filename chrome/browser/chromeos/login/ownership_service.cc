@@ -143,7 +143,7 @@ void OwnershipService::Observe(int type,
   }
 }
 
-bool OwnershipService::CurrentUserIsOwner() {
+bool OwnershipService::IsCurrentUserOwner() {
   if (force_ownership_)
     return true;
   // If this user has the private key associated with the owner's

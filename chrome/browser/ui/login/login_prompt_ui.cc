@@ -95,7 +95,7 @@ class LoginHandlerHtmlDelegate : public HtmlDialogUIDelegate,
   // HtmlDialogUIDelegate methods:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE {
 #if defined(OS_CHROMEOS)
-    return chromeos::UserManager::Get()->user_is_logged_in() ?
+    return chromeos::UserManager::Get()->IsUserLoggedIn() ?
            ui::MODAL_TYPE_WINDOW :
            ui::MODAL_TYPE_SYSTEM;
 #else

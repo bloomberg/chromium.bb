@@ -114,7 +114,7 @@ std::string GetUserEmail() {
   if (!manager)
     return std::string();
   else
-    return manager->logged_in_user().display_email();
+    return manager->GetLoggedInUser().display_email();
 }
 #endif
 

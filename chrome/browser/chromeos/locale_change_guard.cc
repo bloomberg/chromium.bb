@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,7 +98,7 @@ void LocaleChangeGuard::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_OWNERSHIP_CHECKED: {
-      if (UserManager::Get()->current_user_is_owner()) {
+      if (UserManager::Get()->IsCurrentUserOwner()) {
         PrefService* local_state = g_browser_process->local_state();
         if (local_state) {
           PrefService* prefs = profile_->GetPrefs();

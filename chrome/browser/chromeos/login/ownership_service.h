@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,7 +76,7 @@ class OwnershipService : public content::NotificationObserver {
                                   OwnerManager::Delegate* d);
 
   // This method must be run on the FILE thread.
-  virtual bool CurrentUserIsOwner();
+  virtual bool IsCurrentUserOwner();
 
   // This method should be run on FILE thread.
   // Note: not static, for better mocking.

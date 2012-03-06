@@ -45,7 +45,7 @@ void VersionUpdaterCros::RelaunchBrowser() const {
 void VersionUpdaterCros::SetReleaseChannel(const std::string& channel) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->SetReleaseTrack(channel);
   // For local owner set the field in the policy blob too.
-  if (UserManager::Get()->current_user_is_owner())
+  if (UserManager::Get()->IsCurrentUserOwner())
     CrosSettings::Get()->SetString(chromeos::kReleaseChannel, channel);
 }
 

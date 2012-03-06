@@ -821,7 +821,7 @@ void LoginUtilsImpl::OnProfileCreated(
     case Profile::CREATE_STATUS_INITIALIZED:
       break;
     case Profile::CREATE_STATUS_CREATED: {
-      if (UserManager::Get()->current_user_is_new())
+      if (UserManager::Get()->IsCurrentUserNew())
         SetFirstLoginPrefs(user_profile->GetPrefs());
       // Make sure that the google service username is properly set (we do this
       // on every sign in, not just the first login, to deal with existing
@@ -830,7 +830,7 @@ void LoginUtilsImpl::OnProfileCreated(
       google_services_username.Init(prefs::kGoogleServicesUsername,
                                     user_profile->GetPrefs(), NULL);
       google_services_username.SetValue(
-          UserManager::Get()->logged_in_user().display_email());
+          UserManager::Get()->GetLoggedInUser().display_email());
       // Make sure we flip every profile to not share proxies if the user hasn't
       // specified so explicitly.
       const PrefService::Preference* use_shared_proxies_pref =
@@ -951,7 +951,7 @@ void LoginUtilsImpl::StartSignedInServices(
   // Make sure SigninManager is connected to our current user (this should
   // happen automatically because we set kGoogleServicesUsername in
   // OnProfileCreated()).
-  DCHECK_EQ(UserManager::Get()->logged_in_user().display_email(),
+  DCHECK_EQ(UserManager::Get()->GetLoggedInUser().display_email(),
             signin->GetAuthenticatedUsername());
   static bool initialized = false;
   if (!initialized) {
@@ -1271,7 +1271,7 @@ bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
                                            std::string* token,
                                            std::string* secret) {
   // Skip reading oauth token if user does not have a valid status.
-  if (UserManager::Get()->logged_in_user().oauth_token_status() !=
+  if (UserManager::Get()->GetLoggedInUser().oauth_token_status() !=
       User::OAUTH_TOKEN_STATUS_VALID) {
     return false;
   }
@@ -1307,7 +1307,7 @@ void LoginUtilsImpl::StoreOAuth1AccessToken(Profile* user_profile,
   // ...then record the presence of valid OAuth token for this account in local
   // state as well.
   UserManager::Get()->SaveUserOAuthStatus(
-      UserManager::Get()->logged_in_user().email(),
+      UserManager::Get()->GetLoggedInUser().email(),
       User::OAUTH_TOKEN_STATUS_VALID);
 }
 
@@ -1326,7 +1326,7 @@ void LoginUtilsImpl::FetchCredentials(Profile* user_profile,
                                       const std::string& secret) {
   oauth_login_verifier_.reset(new OAuthLoginVerifier(
       this, user_profile, token, secret,
-      UserManager::Get()->logged_in_user().email()));
+      UserManager::Get()->GetLoggedInUser().email()));
   oauth_login_verifier_->StartOAuthVerification();
 }
 
@@ -1383,7 +1383,7 @@ void LoginUtilsImpl::OnOAuthVerificationSucceeded(
 void LoginUtilsImpl::OnOnlineStateChanged(bool online) {
   // If we come online for the first time after successful offline login,
   // we need to kick of OAuth token verification process again.
-  if (online && UserManager::Get()->user_is_logged_in() &&
+  if (online && UserManager::Get()->IsUserLoggedIn() &&
       oauth_login_verifier_.get() &&
       !oauth_login_verifier_->is_done()) {
     oauth_login_verifier_->ContinueVerification();

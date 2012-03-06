@@ -288,9 +288,9 @@ UserManagerImpl::UserManagerImpl()
       guest_user_(kGuestUser, true),
       stub_user_(kStubUser, false),
       logged_in_user_(NULL),
-      current_user_is_owner_(false),
-      current_user_is_new_(false),
-      user_is_logged_in_(false),
+      is_current_user_owner_(false),
+      is_current_user_new_(false),
+      is_user_logged_in_(false),
       observed_sync_service_(NULL),
       last_image_set_async_(false),
       downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
@@ -312,9 +312,9 @@ const UserList& UserManagerImpl::GetUsers() const {
 }
 
 void UserManagerImpl::UserLoggedIn(const std::string& email) {
-  DCHECK(!user_is_logged_in_);
+  DCHECK(!is_user_logged_in_);
 
-  user_is_logged_in_ = true;
+  is_user_logged_in_ = true;
 
   if (email == kGuestUser) {
     GuestUserLoggedIn();
@@ -346,7 +346,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
   }
 
   if (logged_in_user == users_.end()) {
-    current_user_is_new_ = true;
+    is_current_user_new_ = true;
     logged_in_user_ = CreateUser(email);
   } else {
     logged_in_user_ = *logged_in_user;
@@ -357,7 +357,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
 
   NotifyOnLogin();
 
-  if (current_user_is_new_) {
+  if (is_current_user_new_) {
     SetInitialUserImage(email);
   } else {
     // Download profile image if it's user image and see if it has changed.
@@ -488,11 +488,11 @@ const User* UserManagerImpl::FindUser(const std::string& email) const {
   return NULL;
 }
 
-const User& UserManagerImpl::logged_in_user() const {
+const User& UserManagerImpl::GetLoggedInUser() const {
   return *logged_in_user_;
 }
 
-User& UserManagerImpl::logged_in_user() {
+User& UserManagerImpl::GetLoggedInUser() {
   return *logged_in_user_;
 }
 
@@ -604,7 +604,7 @@ void UserManagerImpl::DownloadProfileImage(const std::string& reason) {
     return;
   }
 
-  if (logged_in_user().email().empty()) {
+  if (GetLoggedInUser().email().empty()) {
     // This is a guest login so there's no profile image to download.
     return;
   }
@@ -625,7 +625,7 @@ void UserManagerImpl::Observe(int type,
                                          base::Unretained(this)));
       break;
     case chrome::NOTIFICATION_PROFILE_ADDED:
-      if (user_is_logged_in() && !IsLoggedInAsGuest()) {
+      if (IsUserLoggedIn() && !IsLoggedInAsGuest()) {
         Profile* profile = content::Source<Profile>(source).ptr();
         if (!profile->IsOffTheRecord() &&
             profile == ProfileManager::GetDefaultProfile()) {
@@ -643,34 +643,34 @@ void UserManagerImpl::Observe(int type,
 }
 
 void UserManagerImpl::OnStateChanged() {
-  DCHECK(user_is_logged_in() && !IsLoggedInAsGuest());
+  DCHECK(IsUserLoggedIn() && !IsLoggedInAsGuest());
   if (observed_sync_service_->GetAuthError().state() != AuthError::NONE) {
       // Invalidate OAuth token to force Gaia sign-in flow. This is needed
       // because sign-out/sign-in solution is suggested to the user.
       // TODO(altimofeev): this code isn't needed after crosbug.com/25978 is
       // implemented.
       DVLOG(1) << "Invalidate OAuth token because of a sync error.";
-      SaveUserOAuthStatus(logged_in_user().email(),
+      SaveUserOAuthStatus(GetLoggedInUser().email(),
                           User::OAUTH_TOKEN_STATUS_INVALID);
   }
 }
 
-bool UserManagerImpl::current_user_is_owner() const {
-  base::AutoLock lk(current_user_is_owner_lock_);
-  return current_user_is_owner_;
+bool UserManagerImpl::IsCurrentUserOwner() const {
+  base::AutoLock lk(is_current_user_owner_lock_);
+  return is_current_user_owner_;
 }
 
-void UserManagerImpl::set_current_user_is_owner(bool current_user_is_owner) {
-  base::AutoLock lk(current_user_is_owner_lock_);
-  current_user_is_owner_ = current_user_is_owner;
+void UserManagerImpl::SetCurrentUserIsOwner(bool is_current_user_owner) {
+  base::AutoLock lk(is_current_user_owner_lock_);
+  is_current_user_owner_ = is_current_user_owner;
 }
 
-bool UserManagerImpl::current_user_is_new() const {
-  return current_user_is_new_;
+bool UserManagerImpl::IsCurrentUserNew() const {
+  return is_current_user_new_;
 }
 
-bool UserManagerImpl::user_is_logged_in() const {
-  return user_is_logged_in_;
+bool UserManagerImpl::IsUserLoggedIn() const {
+  return is_user_logged_in_;
 }
 
 bool UserManagerImpl::IsLoggedInAsDemoUser() const {
@@ -689,7 +689,7 @@ void UserManagerImpl::RemoveObserver(Observer* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
-const SkBitmap& UserManagerImpl::downloaded_profile_image() const {
+const SkBitmap& UserManagerImpl::DownloadedProfileImage() const {
   return downloaded_profile_image_;
 }
 
@@ -846,7 +846,7 @@ void UserManagerImpl::SetUserImage(const std::string& username,
     // For existing users, a valid image index should have been set upon loading
     // them from Local State.
     DCHECK(user->image_index() != User::kInvalidImageIndex ||
-           current_user_is_new_);
+           is_current_user_new_);
     bool image_changed = user->image_index() != User::kInvalidImageIndex;
     if (!image.empty())
       user->SetImage(image, image_index);
@@ -964,23 +964,23 @@ void UserManagerImpl::DeleteUserImage(const FilePath& image_path) {
 void UserManagerImpl::UpdateOwnership(bool is_owner) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  set_current_user_is_owner(is_owner);
+  SetCurrentUserIsOwner(is_owner);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_OWNERSHIP_CHECKED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
   if (is_owner) {
     // Also update cached value.
-    CrosSettings::Get()->SetString(kDeviceOwner, logged_in_user().email());
+    CrosSettings::Get()->SetString(kDeviceOwner, GetLoggedInUser().email());
   }
 }
 
 void UserManagerImpl::CheckOwnership() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  bool is_owner = OwnershipService::GetSharedInstance()->CurrentUserIsOwner();
+  bool is_owner = OwnershipService::GetSharedInstance()->IsCurrentUserOwner();
   VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
 
-  set_current_user_is_owner(is_owner);
+  SetCurrentUserIsOwner(is_owner);
 
   // UserManagerImpl should be accessed only on UI thread.
   BrowserThread::PostTask(
@@ -1037,14 +1037,14 @@ void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
     downloaded_profile_image_data_url_ = new_image_data_url;
     downloaded_profile_image_ = downloader->GetProfilePicture();
 
-    if (logged_in_user().image_index() == User::kProfileImageIndex) {
+    if (GetLoggedInUser().image_index() == User::kProfileImageIndex) {
       VLOG(1) << "Updating profile image for logged-in user";
       UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
                                 kDownloadSuccessChanged,
                                 kDownloadResultsCount);
 
       // This will persist |downloaded_profile_image_| to file.
-      SaveUserImageFromProfileImage(logged_in_user().email());
+      SaveUserImageFromProfileImage(GetLoggedInUser().email());
     }
   }
 

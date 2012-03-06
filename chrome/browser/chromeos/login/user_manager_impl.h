@@ -49,8 +49,8 @@ class UserManagerImpl : public UserManager,
   virtual void RemoveUserFromList(const std::string& email) OVERRIDE;
   virtual bool IsKnownUser(const std::string& email) const OVERRIDE;
   virtual const User* FindUser(const std::string& email) const OVERRIDE;
-  virtual const User& logged_in_user() const OVERRIDE;
-  virtual User& logged_in_user() OVERRIDE;
+  virtual const User& GetLoggedInUser() const OVERRIDE;
+  virtual User& GetLoggedInUser() OVERRIDE;
   virtual bool IsDisplayNameUnique(
       const std::string& display_name) const OVERRIDE;
   virtual void SaveUserOAuthStatus(
@@ -69,16 +69,15 @@ class UserManagerImpl : public UserManager,
   virtual void SaveUserImageFromProfileImage(
       const std::string& username) OVERRIDE;
   virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
-  virtual bool current_user_is_owner() const OVERRIDE;
-  virtual void set_current_user_is_owner(bool current_user_is_owner) OVERRIDE;
-  virtual bool current_user_is_new() const OVERRIDE;
-  virtual bool user_is_logged_in() const OVERRIDE;
+  virtual bool IsCurrentUserOwner() const OVERRIDE;
+  virtual bool IsCurrentUserNew() const OVERRIDE;
+  virtual bool IsUserLoggedIn() const OVERRIDE;
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
   virtual void AddObserver(Observer* obs) OVERRIDE;
   virtual void RemoveObserver(Observer* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
-  virtual const SkBitmap& downloaded_profile_image() const OVERRIDE;
+  virtual const SkBitmap& DownloadedProfileImage() const OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -110,6 +109,8 @@ class UserManagerImpl : public UserManager,
 
   // Reads user's oauth token status from local state preferences.
   User::OAuthTokenStatus LoadUserOAuthStatus(const std::string& username) const;
+
+  void SetCurrentUserIsOwner(bool is_current_user_owner);
 
   // Sets one of the default images for the specified user and saves this
   // setting in local state.
@@ -195,15 +196,15 @@ class UserManagerImpl : public UserManager,
 
   // Cached flag of whether currently logged-in user is owner or not.
   // May be accessed on different threads, requires locking.
-  bool current_user_is_owner_;
-  mutable base::Lock current_user_is_owner_lock_;
+  bool is_current_user_owner_;
+  mutable base::Lock is_current_user_owner_lock_;
 
   // Cached flag of whether the currently logged-in user existed before this
   // login.
-  bool current_user_is_new_;
+  bool is_current_user_new_;
 
   // Cached flag of whether any user is logged in at the moment.
-  bool user_is_logged_in_;
+  bool is_user_logged_in_;
 
   content::NotificationRegistrar registrar_;
 

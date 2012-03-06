@@ -65,7 +65,7 @@ void UserImageScreen::Show() {
     return;
 
   actor_->Show();
-  actor_->SelectImage(UserManager::Get()->logged_in_user().image_index());
+  actor_->SelectImage(UserManager::Get()->GetLoggedInUser().image_index());
 
   // Start fetching the profile image.
   UserManager::Get()->DownloadProfileImage(kProfileDownloadReason);
@@ -109,7 +109,7 @@ void UserImageScreen::StopCamera() {
 
 void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->SaveUserImage(user_manager->logged_in_user().email(), image);
+  user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(), image);
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
@@ -121,7 +121,7 @@ void UserImageScreen::OnPhotoTaken(const SkBitmap& image) {
 void UserImageScreen::OnProfileImageSelected() {
   UserManager* user_manager = UserManager::Get();
   user_manager->SaveUserImageFromProfileImage(
-      user_manager->logged_in_user().email());
+      user_manager->GetLoggedInUser().email());
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 
@@ -133,7 +133,7 @@ void UserImageScreen::OnProfileImageSelected() {
 void UserImageScreen::OnDefaultImageSelected(int index) {
   UserManager* user_manager = UserManager::Get();
   user_manager->SaveUserDefaultImageIndex(
-      user_manager->logged_in_user().email(), index);
+      user_manager->GetLoggedInUser().email(), index);
 
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 

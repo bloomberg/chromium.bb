@@ -39,8 +39,8 @@ PowerButtonObserver::PowerButtonObserver() {
 
   // Tell the controller about the initial state.
   const UserManager* user_manager = UserManager::Get();
-  bool logged_in = user_manager->user_is_logged_in();
-  bool is_guest = logged_in && user_manager->logged_in_user().is_guest();
+  bool logged_in = user_manager->IsUserLoggedIn();
+  bool is_guest = logged_in && user_manager->GetLoggedInUser().is_guest();
   controller->OnLoginStateChange(logged_in, is_guest);
 
   const ScreenLocker* locker = ScreenLocker::default_screen_locker();
@@ -57,7 +57,7 @@ void PowerButtonObserver::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-      const User* user = &UserManager::Get()->logged_in_user();
+      const User* user = &UserManager::Get()->GetLoggedInUser();
       ash::Shell::GetInstance()->power_button_controller()->
           OnLoginStateChange(true /* logged_in */, user->is_guest());
       break;

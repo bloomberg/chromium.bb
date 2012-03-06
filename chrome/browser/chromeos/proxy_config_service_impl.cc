@@ -693,8 +693,10 @@ void ProxyConfigServiceImpl::SetProxyConfigForNetwork(
 bool ProxyConfigServiceImpl::GetUseSharedProxies() {
   const PrefService::Preference* use_shared_proxies_pref =
       prefs()->FindPreference(prefs::kUseSharedProxies);
-  if (!use_shared_proxies_pref)
-    return !UserManager::Get()->user_is_logged_in();
+  if (!use_shared_proxies_pref) {
+    // Make sure that proxies are always enabled at sign in screen.
+    return !UserManager::Get()->IsUserLoggedIn();
+  }
   return use_shared_proxies_.GetValue();
 }
 
