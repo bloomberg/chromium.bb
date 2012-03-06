@@ -147,17 +147,17 @@ struct marshal_data {
 };
 
 static void
-marshal(struct marshal_data *data,
-	const struct wl_message *message, int size, ...)
+marshal(struct marshal_data *data, const char *format, int size, ...)
 {
 	struct wl_closure *closure;
 	static const int opcode = 4444;
 	static struct wl_object sender = { NULL, NULL, 1234 };
+	struct wl_message message = { "test", format, NULL };
 	va_list ap;
 
 	va_start(ap, size);
 	closure = wl_connection_vmarshal(data->connection,
-					 &sender, opcode, ap, message);
+					 &sender, opcode, ap, &message);
 	va_end(ap);
 
 	assert(closure);
@@ -176,20 +176,17 @@ marshal(struct marshal_data *data,
 
 TEST(connection_marshal)
 {
-	static const struct wl_message int_message = { "test", "i", NULL };
-	static const struct wl_message uint_message = { "test", "u", NULL };
-	static const struct wl_message string_message = { "test", "s", NULL };
 	struct marshal_data data;
 
 	data.connection = setup(data.s, &data.mask);
 
-	marshal(&data, &int_message, 12, 42);
+	marshal(&data, "i", 12, 42);
 	assert(data.buffer[2] == 42);
 
-	marshal(&data, &uint_message, 12, 55);
+	marshal(&data, "u", 12, 55);
 	assert(data.buffer[2] == 55);
 
-	marshal(&data, &string_message, 20, "frappo");
+	marshal(&data, "s", 20, "frappo");
 	assert(data.buffer[2] == 7);
 	assert(strcmp((char *) &data.buffer[3], "frappo") == 0);
 
