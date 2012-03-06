@@ -267,10 +267,8 @@ bool RootView::OnMousePressed(const MouseEvent& event) {
 }
 
 bool RootView::OnMouseDragged(const MouseEvent& event) {
-  MouseEvent e(event, this);
-  UpdateCursor(e);
-
   if (mouse_pressed_handler_) {
+    MouseEvent e(event, this);
     SetMouseLocationAndFlags(e);
 
     MouseEvent mouse_event(e, this, mouse_pressed_handler_);
