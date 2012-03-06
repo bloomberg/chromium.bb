@@ -86,7 +86,7 @@ bool InitializingRulesRegistry::IsUniqueId(
 }
 
 std::string InitializingRulesRegistry::GenerateUniqueId(
-    std::string extension_id) {
+    const std::string& extension_id) {
   while (!IsUniqueId(extension_id, ToId(last_generated_rule_identifier_id_)))
     ++last_generated_rule_identifier_id_;
   return ToId(last_generated_rule_identifier_id_);

@@ -51,7 +51,7 @@ class InitializingRulesRegistry : public RulesRegistry {
                   const std::string& rule_id) const;
 
   // Creates an ID that is unique within the scope of|extension_id|.
-  std::string GenerateUniqueId(std::string extension_id);
+  std::string GenerateUniqueId(const std::string& extension_id);
 
   // Verifies that all |rules| have unique IDs or initializes them with
   // unique IDs if they don't have one. In case of duplicate IDs, this function
