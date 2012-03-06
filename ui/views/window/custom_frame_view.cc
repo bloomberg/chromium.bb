@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -100,31 +101,31 @@ CustomFrameView::CustomFrameView(Widget* frame)
   restore_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE));
   restore_button_->SetImage(CustomButton::BS_NORMAL,
-                            rb.GetBitmapNamed(IDR_RESTORE));
+                            rb.GetImageNamed(IDR_RESTORE).ToSkBitmap());
   restore_button_->SetImage(CustomButton::BS_HOT,
-                            rb.GetBitmapNamed(IDR_RESTORE_H));
+                            rb.GetImageNamed(IDR_RESTORE_H).ToSkBitmap());
   restore_button_->SetImage(CustomButton::BS_PUSHED,
-                            rb.GetBitmapNamed(IDR_RESTORE_P));
+                            rb.GetImageNamed(IDR_RESTORE_P).ToSkBitmap());
   AddChildView(restore_button_);
 
   maximize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
   maximize_button_->SetImage(CustomButton::BS_NORMAL,
-                             rb.GetBitmapNamed(IDR_MAXIMIZE));
+                             rb.GetImageNamed(IDR_MAXIMIZE).ToSkBitmap());
   maximize_button_->SetImage(CustomButton::BS_HOT,
-                             rb.GetBitmapNamed(IDR_MAXIMIZE_H));
+                             rb.GetImageNamed(IDR_MAXIMIZE_H).ToSkBitmap());
   maximize_button_->SetImage(CustomButton::BS_PUSHED,
-                             rb.GetBitmapNamed(IDR_MAXIMIZE_P));
+                             rb.GetImageNamed(IDR_MAXIMIZE_P).ToSkBitmap());
   AddChildView(maximize_button_);
 
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
   minimize_button_->SetImage(CustomButton::BS_NORMAL,
-                             rb.GetBitmapNamed(IDR_MINIMIZE));
+                             rb.GetImageNamed(IDR_MINIMIZE).ToSkBitmap());
   minimize_button_->SetImage(CustomButton::BS_HOT,
-                             rb.GetBitmapNamed(IDR_MINIMIZE_H));
+                             rb.GetImageNamed(IDR_MINIMIZE_H).ToSkBitmap());
   minimize_button_->SetImage(CustomButton::BS_PUSHED,
-                             rb.GetBitmapNamed(IDR_MINIMIZE_P));
+                             rb.GetImageNamed(IDR_MINIMIZE_P).ToSkBitmap());
   AddChildView(minimize_button_);
 
   should_show_minmax_buttons_ = frame_->widget_delegate()->CanMaximize();
@@ -328,7 +329,7 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   frame_background_->set_frame_color(GetFrameColor());
-  SkBitmap* frame_image = GetFrameBitmap();
+  const SkBitmap* frame_image = GetFrameBitmap();
   frame_background_->set_theme_bitmap(frame_image);
   frame_background_->set_top_area_height(frame_image->height());
 
@@ -337,22 +338,22 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
   // avoid performance penalties associated with transparent layers.
   frame_background_->SetCornerImages(
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT),
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT),
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT),
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT));
+      rb.GetImageNamed(IDR_AURA_WINDOW_TOP_LEFT).ToSkBitmap(),
+      rb.GetImageNamed(IDR_AURA_WINDOW_TOP_RIGHT).ToSkBitmap(),
+      rb.GetImageNamed(IDR_AURA_WINDOW_BOTTOM_LEFT).ToSkBitmap(),
+      rb.GetImageNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT).ToSkBitmap());
 #else
   frame_background_->SetCornerImages(
-      rb.GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER),
-      rb.GetBitmapNamed(IDR_WINDOW_TOP_RIGHT_CORNER),
-      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER),
-      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER));
+      rb.GetImageNamed(IDR_WINDOW_TOP_LEFT_CORNER).ToSkBitmap(),
+      rb.GetImageNamed(IDR_WINDOW_TOP_RIGHT_CORNER).ToSkBitmap(),
+      rb.GetImageNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER).ToSkBitmap(),
+      rb.GetImageNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER).ToSkBitmap());
 #endif
   frame_background_->SetSideImages(
-      rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE),
-      rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER),
-      rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE),
-      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER));
+      rb.GetImageNamed(IDR_WINDOW_LEFT_SIDE).ToSkBitmap(),
+      rb.GetImageNamed(IDR_WINDOW_TOP_CENTER).ToSkBitmap(),
+      rb.GetImageNamed(IDR_WINDOW_RIGHT_SIDE).ToSkBitmap(),
+      rb.GetImageNamed(IDR_WINDOW_BOTTOM_CENTER).ToSkBitmap());
 
   frame_background_->PaintRestored(canvas, this);
 }
@@ -360,7 +361,7 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  SkBitmap* frame_image = GetFrameBitmap();
+  const SkBitmap* frame_image = GetFrameBitmap();
   frame_background_->set_theme_bitmap(frame_image);
   frame_background_->set_top_area_height(frame_image->height());
 
@@ -369,7 +370,8 @@ void CustomFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // TODO(jamescook): Migrate this into FrameBackground.
   // The bottom of the titlebar actually comes from the top of the Client Edge
   // graphic, with the actual client edge clipped off the bottom.
-  SkBitmap* titlebar_bottom = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
+  const SkBitmap* titlebar_bottom = rb.GetImageNamed(
+      IDR_APP_TOP_CENTER).ToSkBitmap();
   int edge_height = titlebar_bottom->height() -
                     (ShouldShowClientEdge() ? kClientEdgeThickness : 0);
   canvas->TileImageInt(*titlebar_bottom, 0,
@@ -396,16 +398,17 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   int client_area_top = client_area_bounds.y();
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap* top_left = rb.GetBitmapNamed(IDR_APP_TOP_LEFT);
-  SkBitmap* top = rb.GetBitmapNamed(IDR_APP_TOP_CENTER);
-  SkBitmap* top_right = rb.GetBitmapNamed(IDR_APP_TOP_RIGHT);
-  SkBitmap* right = rb.GetBitmapNamed(IDR_CONTENT_RIGHT_SIDE);
-  SkBitmap* bottom_right =
-      rb.GetBitmapNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER);
-  SkBitmap* bottom = rb.GetBitmapNamed(IDR_CONTENT_BOTTOM_CENTER);
-  SkBitmap* bottom_left =
-      rb.GetBitmapNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
-  SkBitmap* left = rb.GetBitmapNamed(IDR_CONTENT_LEFT_SIDE);
+  const SkBitmap* top_left = rb.GetImageNamed(IDR_APP_TOP_LEFT).ToSkBitmap();
+  const SkBitmap* top = rb.GetImageNamed(IDR_APP_TOP_CENTER).ToSkBitmap();
+  const SkBitmap* top_right = rb.GetImageNamed(IDR_APP_TOP_RIGHT).ToSkBitmap();
+  const SkBitmap* right = rb.GetImageNamed(IDR_CONTENT_RIGHT_SIDE).ToSkBitmap();
+  const SkBitmap* bottom_right = rb.GetImageNamed(
+      IDR_CONTENT_BOTTOM_RIGHT_CORNER).ToSkBitmap();
+  const SkBitmap* bottom = rb.GetImageNamed(
+      IDR_CONTENT_BOTTOM_CENTER).ToSkBitmap();
+  const SkBitmap* bottom_left = rb.GetImageNamed(
+      IDR_CONTENT_BOTTOM_LEFT_CORNER).ToSkBitmap();
+  const SkBitmap* left = rb.GetImageNamed(IDR_CONTENT_LEFT_SIDE).ToSkBitmap();
 
   // Top.
   int top_edge_y = client_area_top - top->height();
@@ -444,9 +447,9 @@ SkColor CustomFrameView::GetFrameColor() const {
   return frame_->IsActive() ? kDefaultColorFrame : kDefaultColorFrameInactive;
 }
 
-SkBitmap* CustomFrameView::GetFrameBitmap() const {
-  return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      frame_->IsActive() ? IDR_FRAME : IDR_FRAME_INACTIVE);
+const SkBitmap* CustomFrameView::GetFrameBitmap() const {
+  return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      frame_->IsActive() ? IDR_FRAME : IDR_FRAME_INACTIVE).ToSkBitmap();
 }
 
 void CustomFrameView::LayoutWindowControls() {
@@ -505,14 +508,14 @@ void CustomFrameView::LayoutWindowControls() {
     pushed_part = IDR_CLOSE_SA_P;
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   close_button_->SetImage(CustomButton::BS_NORMAL,
-                          rb.GetBitmapNamed(normal_part));
+                          rb.GetImageNamed(normal_part).ToSkBitmap());
   close_button_->SetImage(CustomButton::BS_HOT,
-                          rb.GetBitmapNamed(hot_part));
+                          rb.GetImageNamed(hot_part).ToSkBitmap());
   close_button_->SetImage(CustomButton::BS_PUSHED,
-                          rb.GetBitmapNamed(pushed_part));
+                          rb.GetImageNamed(pushed_part).ToSkBitmap());
 }
 
 void CustomFrameView::LayoutTitleBar() {

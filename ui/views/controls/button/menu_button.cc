@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/view_menu_delegate.h"
@@ -54,8 +55,8 @@ MenuButton::MenuButton(ButtonListener* listener,
       menu_offset_(kDefaultMenuOffsetX, kDefaultMenuOffsetY),
       menu_delegate_(menu_delegate),
       show_menu_marker_(show_menu_marker),
-      menu_marker_(ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_MENU_DROPARROW)),
+      menu_marker_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_MENU_DROPARROW).ToSkBitmap()),
       destroyed_flag_(NULL) {
   set_alignment(TextButton::ALIGN_LEFT);
 }

@@ -44,15 +44,15 @@ class VIEWS_EXPORT TextButtonBorder : public Border {
 
  protected:
   struct BorderImageSet {
-    SkBitmap* top_left;
-    SkBitmap* top;
-    SkBitmap* top_right;
-    SkBitmap* left;
-    SkBitmap* center;
-    SkBitmap* right;
-    SkBitmap* bottom_left;
-    SkBitmap* bottom;
-    SkBitmap* bottom_right;
+    const SkBitmap* top_left;
+    const SkBitmap* top;
+    const SkBitmap* top_right;
+    const SkBitmap* left;
+    const SkBitmap* center;
+    const SkBitmap* right;
+    const SkBitmap* bottom_left;
+    const SkBitmap* bottom;
+    const SkBitmap* bottom_right;
   };
 
   void Paint(const View& view,

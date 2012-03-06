@@ -10,6 +10,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -179,9 +180,9 @@ Painter* Painter::CreateImagePainter(const SkBitmap& image,
 }
 
 HorizontalPainter::HorizontalPainter(const int image_resource_names[]) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (int i = 0; i < 3; ++i)
-    images_[i] = rb.GetBitmapNamed(image_resource_names[i]);
+    images_[i] = rb.GetImageNamed(image_resource_names[i]).ToSkBitmap();
   height_ = images_[LEFT]->height();
   DCHECK(images_[LEFT]->height() == images_[RIGHT]->height() &&
          images_[LEFT]->height() == images_[CENTER]->height());

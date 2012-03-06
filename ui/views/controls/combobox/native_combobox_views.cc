@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -58,8 +59,8 @@ const char NativeComboboxViews::kViewClassName[] =
 NativeComboboxViews::NativeComboboxViews(Combobox* parent)
     : combobox_(parent),
       text_border_(new FocusableBorder()),
-      disclosure_arrow_(ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_DISCLOSURE_ARROW)),
+      disclosure_arrow_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+          IDR_DISCLOSURE_ARROW).ToSkBitmap()),
       dropdown_open_(false),
       selected_item_(-1),
       content_width_(0),

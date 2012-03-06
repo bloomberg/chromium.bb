@@ -35,20 +35,20 @@ FrameBackground::FrameBackground()
 FrameBackground::~FrameBackground() {
 }
 
-void FrameBackground::SetSideImages(SkBitmap* left,
-                                    SkBitmap* top,
-                                    SkBitmap* right,
-                                    SkBitmap* bottom) {
+void FrameBackground::SetSideImages(const SkBitmap* left,
+                                    const SkBitmap* top,
+                                    const SkBitmap* right,
+                                    const SkBitmap* bottom) {
   left_edge_ = left;
   top_edge_ = top;
   right_edge_ = right;
   bottom_edge_ = bottom;
 }
 
-void FrameBackground::SetCornerImages(SkBitmap* top_left,
-                                      SkBitmap* top_right,
-                                      SkBitmap* bottom_left,
-                                      SkBitmap* bottom_right) {
+void FrameBackground::SetCornerImages(const SkBitmap* top_left,
+                                      const SkBitmap* top_right,
+                                      const SkBitmap* bottom_left,
+                                      const SkBitmap* bottom_right) {
   top_left_corner_ = top_left;
   top_right_corner_ = top_right;
   bottom_left_corner_ = bottom_left;

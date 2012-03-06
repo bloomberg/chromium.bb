@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ class VIEWS_EXPORT FrameBackground {
 
   // Sets the theme bitmap for the top of the window.  May be NULL.
   // Memory is owned by the caller.
-  void set_theme_bitmap(SkBitmap* bitmap) { theme_bitmap_ = bitmap; }
+  void set_theme_bitmap(const SkBitmap* bitmap) { theme_bitmap_ = bitmap; }
 
   // Sets an image that overlays the top window bitmap.  Usually used to add
   // edge highlighting to provide the illusion of depth.  May be NULL.
@@ -53,17 +53,17 @@ class VIEWS_EXPORT FrameBackground {
 
   // Sets images used when drawing the sides of the frame.
   // Caller owns the memory.
-  void SetSideImages(SkBitmap* left,
-                     SkBitmap* top,
-                     SkBitmap* right,
-                     SkBitmap* bottom);
+  void SetSideImages(const SkBitmap* left,
+                     const SkBitmap* top,
+                     const SkBitmap* right,
+                     const SkBitmap* bottom);
 
   // Sets images used when drawing the corners of the frame.
   // Caller owns the memory.
-  void SetCornerImages(SkBitmap* top_left,
-                       SkBitmap* top_right,
-                       SkBitmap* bottom_left,
-                       SkBitmap* bottom_right);
+  void SetCornerImages(const SkBitmap* top_left,
+                       const SkBitmap* top_right,
+                       const SkBitmap* bottom_left,
+                       const SkBitmap* bottom_right);
 
   // Sets attributes to paint top-left and top-right corners for maximized
   // windows.  Use 0 and NULL if you don't want special corners.
@@ -87,21 +87,21 @@ class VIEWS_EXPORT FrameBackground {
   void PaintFrameColor(gfx::Canvas* canvas, View* view) const;
 
   SkColor frame_color_;
-  SkBitmap* theme_bitmap_;
+  const SkBitmap* theme_bitmap_;
   SkBitmap* theme_overlay_bitmap_;
   int top_area_height_;
 
   // Images for the sides of the frame.
-  SkBitmap* left_edge_;
-  SkBitmap* top_edge_;
-  SkBitmap* right_edge_;
-  SkBitmap* bottom_edge_;
+  const SkBitmap* left_edge_;
+  const SkBitmap* top_edge_;
+  const SkBitmap* right_edge_;
+  const SkBitmap* bottom_edge_;
 
   // Images for the corners of the frame.
-  SkBitmap* top_left_corner_;
-  SkBitmap* top_right_corner_;
-  SkBitmap* bottom_left_corner_;
-  SkBitmap* bottom_right_corner_;
+  const SkBitmap* top_left_corner_;
+  const SkBitmap* top_right_corner_;
+  const SkBitmap* bottom_left_corner_;
+  const SkBitmap* bottom_right_corner_;
 
   // Attributes for maximized window painting.
   // TODO(jamescook): Remove all these.

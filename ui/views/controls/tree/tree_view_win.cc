@@ -22,6 +22,7 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 #include "ui/views/controls/tree/tree_view_controller.h"
 #include "ui/views/focus/focus_manager.h"
@@ -662,14 +663,13 @@ HIMAGELIST TreeView::CreateImageList() {
   std::vector<SkBitmap> model_images;
   model_->GetIcons(&model_images);
 
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   bool rtl = base::i18n::IsRTL();
   // Creates the default image list used for trees.
-  SkBitmap* closed_icon =
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          (rtl ? IDR_FOLDER_CLOSED_RTL : IDR_FOLDER_CLOSED));
-  SkBitmap* opened_icon =
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          (rtl ? IDR_FOLDER_OPEN_RTL : IDR_FOLDER_OPEN));
+  const SkBitmap* closed_icon = rb.GetImageNamed(
+      (rtl ? IDR_FOLDER_CLOSED_RTL : IDR_FOLDER_CLOSED)).ToSkBitmap();
+  const SkBitmap* opened_icon = rb.GetImageNamed(
+      (rtl ? IDR_FOLDER_OPEN_RTL : IDR_FOLDER_OPEN)).ToSkBitmap();
   int width = closed_icon->width();
   int height = closed_icon->height();
   DCHECK(opened_icon->width() == width && opened_icon->height() == height);

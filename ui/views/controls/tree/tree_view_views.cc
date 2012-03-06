@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
@@ -58,10 +59,12 @@ TreeView::TreeView()
       row_height_(font_.GetHeight() + kTextVerticalPadding * 2) {
   set_focusable(true);
   set_background(Background::CreateSolidBackground(SK_ColorWHITE));
-  closed_icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      (base::i18n::IsRTL() ? IDR_FOLDER_CLOSED_RTL : IDR_FOLDER_CLOSED));
-  open_icon_ = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      (base::i18n::IsRTL() ? IDR_FOLDER_OPEN_RTL : IDR_FOLDER_OPEN));
+  closed_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      (base::i18n::IsRTL() ? IDR_FOLDER_CLOSED_RTL
+                           : IDR_FOLDER_CLOSED)).ToSkBitmap();
+  open_icon_ = *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      (base::i18n::IsRTL() ? IDR_FOLDER_OPEN_RTL
+                           : IDR_FOLDER_OPEN)).ToSkBitmap();
   text_offset_ = closed_icon_.width() + kImagePadding + kImagePadding +
       kArrowRegionSize;
 }

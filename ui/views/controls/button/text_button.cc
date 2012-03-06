@@ -11,6 +11,7 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
@@ -89,28 +90,28 @@ TextButtonBorder::TextButtonBorder()
   set_normal_set(normal_set);
 
   BorderImageSet hot_set = {
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_LEFT_H),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_H),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_RIGHT_H),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_LEFT_H),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_CENTER_H),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_RIGHT_H),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_H),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_H),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_H),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_LEFT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_RIGHT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_LEFT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_CENTER_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_RIGHT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_H).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_H).ToSkBitmap(),
   };
   set_hot_set(hot_set);
 
   BorderImageSet pushed_set = {
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_LEFT_P),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_P),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_TOP_RIGHT_P),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_LEFT_P),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_CENTER_P),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_RIGHT_P),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_P),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_P),
-    rb.GetBitmapNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_P),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_LEFT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_TOP_RIGHT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_LEFT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_CENTER_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_RIGHT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_LEFT_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_P).ToSkBitmap(),
+    rb.GetImageNamed(IDR_TEXTBUTTON_BOTTOM_RIGHT_P).ToSkBitmap(),
   };
   set_pushed_set(pushed_set);
 }

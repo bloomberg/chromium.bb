@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class ButtonExample : public ExampleBase, public ButtonListener {
   // Values used to modify the look and feel of the button.
   TextButton::TextAlignment alignment_;
   bool use_native_theme_border_;
-  SkBitmap* icon_;
+  const SkBitmap* icon_;
 
   // The number of times the button is pressed.
   int count_;

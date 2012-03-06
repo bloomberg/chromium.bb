@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,9 @@ class VIEWS_EXPORT Throbber : public View {
   virtual void Stop();
 
   // Set custom throbber frames. Otherwise IDR_THROBBER is loaded.
-  void SetFrames(SkBitmap* frames);
+  void SetFrames(const SkBitmap* frames);
 
-  // overridden from View
+  // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -49,7 +49,7 @@ class VIEWS_EXPORT Throbber : public View {
   bool paint_while_stopped_;
   int frame_count_;  // How many frames we have.
   base::Time start_time_;  // Time when Start was called.
-  SkBitmap* frames_;  // Frames bitmaps.
+  const SkBitmap* frames_;  // Frames bitmaps.
   base::TimeDelta frame_time_;  // How long one frame is displayed.
   base::RepeatingTimer<Throbber> timer_;  // Used to schedule Run calls.
 
@@ -112,13 +112,11 @@ class VIEWS_EXPORT CheckmarkThrobber : public Throbber {
  private:
   static const int kFrameTimeMs = 30;
 
-  static void InitClass();
-
   // Whether or not we should display a checkmark.
   bool checked_;
 
   // The checkmark image.
-  static SkBitmap* checkmark_;
+  const SkBitmap* checkmark_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckmarkThrobber);
 };

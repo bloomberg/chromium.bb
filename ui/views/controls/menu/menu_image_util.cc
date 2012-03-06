@@ -9,6 +9,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
@@ -84,8 +85,8 @@ SkBitmap* CreateRadioButtonImage(bool selected) {
 SkBitmap* GetRtlSubmenuArrowImage() {
   static SkBitmap* kRtlArrow = NULL;
   if (!kRtlArrow) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SkBitmap* r = rb.GetBitmapNamed(IDR_MENU_ARROW);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const SkBitmap* r = rb.GetImageNamed(IDR_MENU_ARROW).ToSkBitmap();
     gfx::CanvasSkia canvas(gfx::Size(r->width(), r->height()), false);
     canvas.Scale(-1, 1);
     canvas.DrawBitmapInt(*r, - r->width(), 0);
@@ -106,9 +107,9 @@ const SkBitmap* GetRadioButtonImage(bool selected) {
 }
 
 const SkBitmap* GetSubmenuArrowImage() {
-  return base::i18n::IsRTL() ?
-      GetRtlSubmenuArrowImage() :
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_MENU_ARROW);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return base::i18n::IsRTL() ? GetRtlSubmenuArrowImage()
+                             : rb.GetImageNamed(IDR_MENU_ARROW).ToSkBitmap();
 }
 
-}  // namespace views;
+}  // namespace views

@@ -10,6 +10,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_image_util.h"
@@ -43,8 +44,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 
   // Render the check.
   if (type_ == CHECKBOX && GetDelegate()->IsItemChecked(GetCommand())) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    SkBitmap* check = rb.GetBitmapNamed(IDR_MENU_CHECK);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    const SkBitmap* check = rb.GetImageNamed(IDR_MENU_CHECK).ToSkBitmap();
     // Don't use config.check_width here as it's padded to force more padding.
     gfx::Rect check_bounds(icon_x, icon_y, check->width(), icon_height);
     AdjustBoundsForRTLUI(&check_bounds);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -20,8 +21,8 @@ ButtonExample::ButtonExample()
       use_native_theme_border_(false),
       icon_(NULL),
       count_(0) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  icon_ = rb.GetBitmapNamed(IDR_CLOSE_SA_H);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  icon_ = rb.GetImageNamed(IDR_CLOSE_SA_H).ToSkBitmap();
 }
 
 ButtonExample::~ButtonExample() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ class CustomFrameView : public NonClientFrameView,
 
   // Compute aspects of the frame needed to paint the frame background.
   SkColor GetFrameColor() const;
-  SkBitmap* GetFrameBitmap() const;
+  const SkBitmap* GetFrameBitmap() const;
 
   // Layout various sub-components of this view.
   void LayoutWindowControls();

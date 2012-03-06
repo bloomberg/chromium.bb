@@ -11,6 +11,7 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/text_button.h"
 
 namespace button_drag_utils {
@@ -31,8 +32,8 @@ void SetURLAndDragImage(const GURL& url,
                            title.empty() ? UTF8ToUTF16(url.spec()) : title);
   button.set_max_width(kLinkDragImageMaxWidth);
   if (icon.isNull()) {
-    button.SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                   IDR_DEFAULT_FAVICON));
+    button.SetIcon(*ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                   IDR_DEFAULT_FAVICON).ToSkBitmap());
   } else {
     button.SetIcon(icon);
   }

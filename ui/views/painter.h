@@ -82,7 +82,7 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
   // The height.
   int height_;
   // NOTE: the images are owned by ResourceBundle. Don't free them.
-  SkBitmap* images_[3];
+  const SkBitmap* images_[3];
 
   DISALLOW_COPY_AND_ASSIGN(HorizontalPainter);
 };
