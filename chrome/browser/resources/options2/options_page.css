@@ -26,10 +26,6 @@ body {
   z-index: 1;
 }
 
-html.hide-menu #mainview {
-  -webkit-padding-start: 0;
-}
-
 #mainview-content {
   min-height: 100%;
   position: relative;

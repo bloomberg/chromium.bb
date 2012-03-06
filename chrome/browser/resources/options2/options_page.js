@@ -21,8 +21,6 @@ cr.define('options', function() {
     this.tab = null;
   }
 
-  const SUBPAGE_SHEET_COUNT = 1;
-
   const HORIZONTAL_OFFSET = 155;
 
   /**
@@ -75,7 +73,7 @@ cr.define('options', function() {
   };
 
   /**
-   * Shows a registered page. This handles both top-level pages and sub-pages.
+   * Shows a registered page. This handles both top-level and overlay pages.
    * @param {string} pageName Page name.
    * @param {boolean} updateHistory True if we should update the history after
    *     showing the page.
@@ -109,7 +107,7 @@ cr.define('options', function() {
     var targetPageWasVisible = targetPage.visible;
 
     // Determine if the root page is 'sticky', meaning that it
-    // shouldn't change when showing a sub-page.  This can happen for special
+    // shouldn't change when showing an overlay. This can happen for special
     // pages like Search.
     var isRootPageLocked =
         rootPage && rootPage.sticky && targetPage.parentPage;
@@ -130,9 +128,7 @@ cr.define('options', function() {
       var page = this.registeredPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
-      page.visible = name == pageName ||
-          (!document.documentElement.classList.contains('hide-menu') &&
-           page.isAncestorOfPage(targetPage));
+      page.visible = name == pageName || page.isAncestorOfPage(targetPage);
     }
 
     // Update the history and current location.
@@ -155,45 +151,6 @@ cr.define('options', function() {
   };
 
   /**
-   * Updates the parts of the UI necessary for correctly hiding or displaying
-   * subpages.
-   * @private
-   */
-  OptionsPage.updateDisplayForShowOrHideSubpage_ = function() {
-    OptionsPage.updateSubpageBackdrop_();
-    OptionsPage.updateAriaHiddenForPages_();
-    OptionsPage.updateScrollPosition_();
-  };
-
-  /**
-   * Sets the aria-hidden attribute for pages which have been 'overlapped' by a
-   * sub-page, and removes aria-hidden from the topmost page or subpage.
-   * @private
-   */
-  OptionsPage.updateAriaHiddenForPages_ = function() {
-    var visiblePages = OptionsPage.getVisiblePages_();
-
-    // |visiblePages| is empty when switching top-level pages.
-    if (!visiblePages.length)
-      return;
-
-    var topmostPage = visiblePages.pop();
-
-    for (var i = 0; i < visiblePages.length; ++i) {
-      var page = visiblePages[i];
-      var nestingLevel = page.nestingLevel;
-      var container = nestingLevel > 0 ?
-        $('subpage-sheet-container-' + nestingLevel) : $('page-container');
-      container.setAttribute('aria-hidden', true);
-    }
-
-    var topmostPageContainer = topmostPage.nestingLevel > 0 ?
-        $('subpage-sheet-container-' + topmostPage.nestingLevel) :
-        $('page-container');
-    topmostPageContainer.removeAttribute('aria-hidden');
-  };
-
-  /**
    * Sets the title of the page. This is accomplished by calling into the
    * parent page API.
    * @param {String} title The title string.
@@ -204,37 +161,12 @@ cr.define('options', function() {
   };
 
   /**
-   * Updates the visibility and stacking order of the subpage backdrop
-   * according to which subpage is topmost and visible.
-   * @private
-   */
-  OptionsPage.updateSubpageBackdrop_ = function() {
-    var topmostPage = OptionsPage.getTopmostVisibleNonOverlayPage_();
-    var nestingLevel = topmostPage ? topmostPage.nestingLevel : 0;
-
-    var subpageBackdrop = $('subpage-backdrop');
-    if (nestingLevel > 0) {
-      var container = $('subpage-sheet-container-' + nestingLevel);
-      subpageBackdrop.style.zIndex =
-          parseInt(window.getComputedStyle(container).zIndex) - 1;
-      subpageBackdrop.hidden = false;
-    } else {
-      subpageBackdrop.hidden = true;
-    }
-  };
-
-  /**
-   * Scrolls the page to the correct position (the top when opening a subpage,
-   * or the old scroll position a previously hidden subpage becomes visible).
+   * Scrolls the page to the correct position (the top when opening an overlay,
+   * or the old scroll position a previously hidden overlay becomes visible).
    * @private
    */
   OptionsPage.updateScrollPosition_ = function() {
-    var topmostPage = OptionsPage.getTopmostVisibleNonOverlayPage_();
-    var nestingLevel = topmostPage ? topmostPage.nestingLevel : 0;
-
-    var container = (nestingLevel > 0) ?
-       $('subpage-sheet-container-' + nestingLevel) : $('page-container');
-
+    var container = $('page-container');
     var scrollTop = container.oldScrollTop || 0;
     container.oldScrollTop = undefined;
     window.scroll(document.body.scrollLeft, scrollTop);
@@ -386,37 +318,6 @@ cr.define('options', function() {
   };
 
   /**
-   * Closes the topmost open subpage, if any.
-   * @private
-   */
-  OptionsPage.closeTopSubPage_ = function() {
-    var topPage = this.getTopmostVisiblePage();
-    if (topPage && !topPage.isOverlay && topPage.parentPage) {
-      if (topPage.willHidePage)
-        topPage.willHidePage();
-      topPage.visible = false;
-    }
-
-    this.updateHistoryState_();
-  };
-
-  /**
-   * Closes all subpages below the given level.
-   * @param {number} level The nesting level to close below.
-   */
-  OptionsPage.closeSubPagesToLevel = function(level) {
-    var topPage = this.getTopmostVisiblePage();
-    while (topPage && topPage.nestingLevel > level) {
-      if (topPage.willHidePage)
-        topPage.willHidePage();
-      topPage.visible = false;
-      topPage = topPage.parentPage;
-    }
-
-    this.updateHistoryState_();
-  };
-
-  /**
    * Updates managed banner visibility state based on the topmost page.
    */
   OptionsPage.updateManagedBannerVisibility = function() {
@@ -479,30 +380,6 @@ cr.define('options', function() {
         return node;
     }
     return null;
-  };
-
-  /**
-   * Registers a new Sub-page.
-   * @param {OptionsPage} subPage Sub-page to register.
-   * @param {OptionsPage} parentPage Associated parent page for this page.
-   * @param {Array} associatedControls Array of control elements that lead to
-   *     this sub-page. The first item is typically a button in a root-level
-   *     page. There may be additional buttons for nested sub-pages.
-   */
-  OptionsPage.registerSubPage = function(subPage,
-                                         parentPage,
-                                         associatedControls) {
-    this.registeredPages[subPage.name.toLowerCase()] = subPage;
-    subPage.parentPage = parentPage;
-    if (associatedControls) {
-      subPage.associatedControls = associatedControls;
-      if (associatedControls.length) {
-        subPage.associatedSection =
-            this.findSectionForNode_(associatedControls[0]);
-      }
-    }
-    subPage.tab = undefined;
-    subPage.initializePage();
   };
 
   /**
@@ -584,15 +461,12 @@ cr.define('options', function() {
   };
 
   /**
-   * Freezes/unfreezes the scroll position of given level's page container.
+   * Freezes/unfreezes the scroll position of the root page container.
    * @param {boolean} freeze Whether the page should be frozen.
-   * @param {number} level The level to freeze/unfreeze.
    * @private
    */
-  OptionsPage.setPageFrozenAtLevel_ = function(freeze, level) {
-    var container = level == 0 ? $('page-container') :
-                                 $('subpage-sheet-container-' + level);
-
+  OptionsPage.setRootPageFrozen_ = function(freeze) {
+    var container = $('page-container');
     if (container.classList.contains('frozen') == freeze)
       return;
 
@@ -615,17 +489,13 @@ cr.define('options', function() {
   };
 
   /**
-   * Freezes/unfreezes the scroll position of visible pages based on the current
+   * Freezes/unfreezes the scroll position of the root page based on the current
    * page stack.
    */
-  OptionsPage.updatePageFreezeStates = function() {
+  OptionsPage.updateRootPageFreezeState = function() {
     var topPage = OptionsPage.getTopmostVisiblePage();
-    if (!topPage)
-      return;
-    var nestingLevel = topPage.isOverlay ? 100 : topPage.nestingLevel;
-    for (var i = 0; i <= SUBPAGE_SHEET_COUNT; i++) {
-      this.setPageFrozenAtLevel_(i < nestingLevel, i);
-    }
+    if (topPage)
+      this.setRootPageFrozen_(topPage.isOverlay);
   };
 
   /**
@@ -640,39 +510,8 @@ cr.define('options', function() {
     this.fixedHeaders_ = document.querySelectorAll('header');
 
     document.addEventListener('scroll', this.handleScroll_.bind(this));
-    window.addEventListener('resize', this.handleResize_.bind(this));
 
-    if (!document.documentElement.classList.contains('hide-menu')) {
-      // Close subpages if the user clicks on the html body. Listen in the
-      // capturing phase so that we can stop the click from doing anything.
-      document.body.addEventListener('click',
-                                     this.bodyMouseEventHandler_.bind(this),
-                                     true);
-      // We also need to cancel mousedowns on non-subpage content.
-      document.body.addEventListener('mousedown',
-                                     this.bodyMouseEventHandler_.bind(this),
-                                     true);
-
-      var self = this;
-      // Hook up the close buttons.
-      subpageCloseButtons = document.querySelectorAll('.close-subpage');
-      for (var i = 0; i < subpageCloseButtons.length; i++) {
-        subpageCloseButtons[i].onclick = function() {
-          self.closeTopSubPage_();
-        };
-      }
-
-      // Install handler for key presses.
-      document.addEventListener('keydown',
-                                this.keyDownEventHandler_.bind(this),
-                                true);
-
-      document.addEventListener('focus', this.manageFocusChange_.bind(this),
-                                true);
-    }
-
-    // Trigger the resize and scroll handlers manually to set the initial state.
-    this.handleResize_(null);
+    // Trigger the scroll handler manually to set the initial state.
     this.handleScroll_();
 
     // Shake the dialog if the user clicks outside the dialog bounds.
@@ -697,32 +536,6 @@ cr.define('options', function() {
     var clientRect = e.getBoundingClientRect();
     return x >= clientRect.left && x <= clientRect.right &&
         y >= clientRect.top && y <= clientRect.bottom;
-  };
-
-  /**
-   * Called when focus changes; ensures that focus doesn't move outside
-   * the topmost subpage/overlay.
-   * @param {Event} e The focus change event.
-   * @private
-   */
-  OptionsPage.manageFocusChange_ = function(e) {
-    var focusableItemsRoot;
-    var topPage = this.getTopmostVisiblePage();
-    if (!topPage)
-      return;
-
-    if (topPage.isOverlay) {
-      // This case is handled in overlay.js.
-      return;
-    } else {
-      // If a subpage is visible, use its parent as the tab loop constraint.
-      // (The parent is used because it contains the close button.)
-      if (topPage.nestingLevel > 0)
-        focusableItemsRoot = topPage.pageDiv.parentNode;
-    }
-
-    if (focusableItemsRoot && !focusableItemsRoot.contains(e.target))
-      topPage.focusFirstElement();
   };
 
   /**
@@ -768,91 +581,6 @@ cr.define('options', function() {
       e.style.right = HORIZONTAL_OFFSET + 'px';
     else
       e.style.left = HORIZONTAL_OFFSET - document.body.scrollLeft + 'px';
-  };
-
-  /**
-   * Called when the page is resized; adjusts the size of elements that depend
-   * on the veiwport.
-   * @param {Event} e The resize event.
-   * @private
-   */
-  OptionsPage.handleResize_ = function(e) {
-    // Set an explicit height equal to the viewport on all the subpage
-    // containers shorter than the viewport. This is used instead of
-    // min-height: 100% so that there is an explicit height for the subpages'
-    // min-height: 100%.
-    var viewportHeight = document.documentElement.clientHeight;
-    var subpageContainers =
-        document.querySelectorAll('.subpage-sheet-container');
-    for (var i = 0; i < subpageContainers.length; i++) {
-      if (subpageContainers[i].scrollHeight > viewportHeight)
-        subpageContainers[i].style.removeProperty('height');
-      else
-        subpageContainers[i].style.height = viewportHeight + 'px';
-    }
-  };
-
-  /**
-   * A function to handle mouse events (mousedown or click) on the html body by
-   * closing subpages and/or stopping event propagation.
-   * @return {Event} a mousedown or click event.
-   * @private
-   */
-  OptionsPage.bodyMouseEventHandler_ = function(event) {
-    // Do nothing if a subpage isn't showing.
-    var topPage = this.getTopmostVisiblePage();
-    if (!topPage || topPage.isOverlay || !topPage.parentPage)
-      return;
-
-    // Don't close subpages if a user is clicking in a select element.
-    // This is necessary because WebKit sends click events with strange
-    // coordinates when a user selects a new entry in a select element.
-    // See: http://crbug.com/87199
-    if (event.srcElement.nodeName == 'SELECT')
-      return;
-
-    // Do nothing if the client coordinates are not within the source element.
-    // This occurs if the user toggles a checkbox by pressing spacebar.
-    // This is a workaround to prevent keyboard events from closing the window.
-    // See: crosbug.com/15678
-    if (event.clientX == -document.body.scrollLeft &&
-        event.clientY == -document.body.scrollTop) {
-      return;
-    }
-
-    // Figure out which page the click happened in.
-    for (var level = topPage.nestingLevel; level >= 0; level--) {
-      var clickIsWithinLevel = level == 0 ? true :
-          OptionsPage.elementContainsPoint_(
-              $('subpage-sheet-' + level), event.clientX, event.clientY);
-
-      if (!clickIsWithinLevel)
-        continue;
-
-      // Event was within the topmost page; do nothing.
-      if (topPage.nestingLevel == level)
-        return;
-
-      // Block propgation of both clicks and mousedowns, but only close subpages
-      // on click.
-      if (event.type == 'click')
-        this.closeSubPagesToLevel(level);
-      event.stopPropagation();
-      event.preventDefault();
-      return;
-    }
-  };
-
-  /**
-   * A function to handle key press events.
-   * @return {Event} a keydown event.
-   * @private
-   */
-  OptionsPage.keyDownEventHandler_ = function(event) {
-    if (event.keyCode == 27 &&  // Esc
-        !this.isOverlayVisible_()) {
-      this.closeTopSubPage_();
-    }
   };
 
   OptionsPage.setClearPluginLSODataEnabled = function(enabled) {
@@ -973,13 +701,10 @@ cr.define('options', function() {
       this.pageDiv.hidden = !visible;
       this.setContainerVisibility_(visible);
 
-      OptionsPage.updatePageFreezeStates();
+      OptionsPage.updateRootPageFreezeState();
       OptionsPage.updateManagedBannerVisibility();
 
-      // A subpage was shown or hidden.
-      if (!this.isOverlay && this.nestingLevel > 0)
-        OptionsPage.updateDisplayForShowOrHideSubpage_();
-      else if (this.isOverlay && !visible)
+      if (this.isOverlay && !visible)
         OptionsPage.updateScrollPosition_();
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
@@ -991,18 +716,10 @@ cr.define('options', function() {
      * @private
      */
     setContainerVisibility_: function(visible) {
-      var container = null;
-      if (this.isOverlay) {
-        container = this.pageDiv.parentNode;
-      } else {
-        var nestingLevel = this.nestingLevel;
-        if (nestingLevel > 0)
-          container = $('subpage-sheet-container-' + nestingLevel);
-      }
-      var isSubpage = !this.isOverlay;
-
-      if (!container)
+      if (!this.isOverlay)
         return;
+
+      var container = this.pageDiv.parentNode;
 
       if (visible)
         uber.invokeMethodOnParent('beginInterceptingEvents');
@@ -1022,16 +739,9 @@ cr.define('options', function() {
         if (document.documentElement.classList.contains('loading')) {
           container.classList.remove('transparent');
         } else {
-          if (isSubpage) {
-            var computedStyle = window.getComputedStyle(container);
-            container.style.WebkitPaddingStart =
-                parseInt(computedStyle.WebkitPaddingStart, 10) + 100 + 'px';
-          }
           // Separate animating changes from the removal of display:none.
           window.setTimeout(function() {
             container.classList.remove('transparent');
-            if (isSubpage)
-              container.style.WebkitPaddingStart = '';
           });
         }
       } else {
@@ -1057,17 +767,6 @@ cr.define('options', function() {
         if (this.nestingLevel == 1)
           uber.invokeMethodOnParent('stopInterceptingEvents');
       }
-    },
-
-    /**
-     * Focuses the first control on the page.
-     */
-    focusFirstElement: function() {
-      // Sets focus on the first interactive element in the page.
-      var focusElement =
-          this.pageDiv.querySelector('button, input, list, select');
-      if (focusElement)
-        focusElement.focus();
     },
 
     /**

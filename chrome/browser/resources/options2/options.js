@@ -51,14 +51,6 @@ function load() {
   cr.ui.decorate('span.controlled-setting-indicator',
       options.ControlledSettingIndicator);
 
-  var menuOffPattern = /(^\?|&)menu=off($|&)/;
-  var menuDisabled = menuOffPattern.test(window.location.search);
-  // document.documentElement.setAttribute('hide-menu', menuDisabled);
-  // We can't use an attribute on the html element because of webkit bug
-  // 12519. Instead, we add a class.
-  if (menuDisabled)
-    document.documentElement.classList.add('hide-menu');
-
   localStrings = new LocalStrings();
 
   // Top level pages.
