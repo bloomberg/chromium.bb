@@ -215,3 +215,80 @@ TEST(connection_marshal)
 	wl_connection_destroy(data.connection);
 	close(data.s[1]);
 }
+
+static void
+validate_demarshal_u(void *data, struct wl_object *object, uint32_t u)
+{
+	uint32_t *msg = data;
+
+	assert(object->id = msg[0]);
+	assert(msg[2] == u);
+}
+
+static void
+validate_demarshal_i(void *data, struct wl_object *object, int32_t i)
+{
+	uint32_t *msg = data;
+
+	assert(object->id = msg[0]);
+	assert((int32_t) msg[2] == i);
+}
+
+static void
+validate_demarshal_s(void *data, struct wl_object *object, const char *s)
+{
+	uint32_t *msg = data;
+
+	assert(object->id = msg[0]);
+	fprintf(stderr, "s = %s\n", s);
+	assert(strcmp(s, "superdude") == 0);
+}
+
+static void
+demarshal(struct marshal_data *data, const char *format,
+	  uint32_t *msg, void (*func)(void))
+{
+	struct wl_message message = { "test", format, NULL };
+	struct wl_closure *closure;
+	struct wl_map objects;
+	struct wl_object object;
+	int size = msg[1];
+
+	assert(write(data->s[1], msg, size) == size);
+	assert(wl_connection_data(data->connection,
+				  WL_CONNECTION_READABLE) == size);
+
+	wl_map_init(&objects);
+	object.id = msg[0];
+	closure = wl_connection_demarshal(data->connection,
+					  size, &objects, &message);
+	wl_closure_invoke(closure, &object, func, msg);
+}
+
+TEST(connection_demarshal)
+{
+	struct marshal_data data;
+	uint32_t msg[10];
+	static const char text[] = "superdude";
+
+	data.connection = setup(data.s, &data.mask);
+
+	msg[0] = 400200;	/* object id */
+	msg[1] = 12;		/* size = 12, opcode = 0 */
+	msg[2] = 8000;
+	demarshal(&data, "u", msg, (void *) validate_demarshal_u);
+
+	msg[0] = 400200;
+	msg[1] = 12;
+	msg[2] = -557799;
+	demarshal(&data, "i", msg, (void *) validate_demarshal_i);
+
+	msg[0] = 400200;
+	msg[1] = 24;
+	msg[2] = 10;
+	memcpy(&msg[3], text, msg[2]);
+	demarshal(&data, "s", msg, (void *) validate_demarshal_s);
+
+	wl_connection_destroy(data.connection);
+	close(data.s[1]);
+}
