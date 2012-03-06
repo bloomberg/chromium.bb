@@ -236,7 +236,9 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     handle.parent_context_id = context->GetContextID();
     handle.parent_texture_id[0] = data->shared_context->createTexture();
     handle.parent_texture_id[1] = data->shared_context->createTexture();
-    data->shared_context->flush();
+    // Finish is overkill, but flush semantics don't apply cross-channel.
+    // TODO(piman): Use a cross-channel synchronization mechanism instead.
+    data->shared_context->finish();
 
     // This handle will not be correct after a GPU process crash / context lost.
     // TODO(piman): Fix this.
@@ -256,7 +258,9 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
           surface.parent_context_id == context_id) {
         data->shared_context->deleteTexture(surface.parent_texture_id[0]);
         data->shared_context->deleteTexture(surface.parent_texture_id[1]);
-        data->shared_context->flush();
+        // Finish is overkill, but flush semantics don't apply cross-channel.
+        // TODO(piman): Use a cross-channel synchronization mechanism instead.
+        data->shared_context->finish();
         break;
       }
     }
