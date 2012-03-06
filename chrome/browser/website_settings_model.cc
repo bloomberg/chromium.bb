@@ -55,11 +55,9 @@ void WebsiteSettingsModel::Init(Profile* profile,
 
   // Identity section.
   string16 subject_name(UTF8ToUTF16(url.host()));
-  bool empty_subject_name = false;
   if (subject_name.empty()) {
     subject_name.assign(
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
-    empty_subject_name = true;
   }
 
   if (ssl.cert_id &&
