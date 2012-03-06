@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,6 +191,7 @@ void GpuScheduler::SetCommandProcessedCallback(
 void GpuScheduler::DeferToFence(base::Closure task) {
   unschedule_fences_.push(make_linked_ptr(
        new UnscheduleFence(gfx::GLFence::Create(), task)));
+  SetScheduled(false);
 }
 
 bool GpuScheduler::PollUnscheduleFences() {
@@ -202,6 +203,7 @@ bool GpuScheduler::PollUnscheduleFences() {
       if (unschedule_fences_.front()->fence->HasCompleted()) {
         unschedule_fences_.front()->task.Run();
         unschedule_fences_.pop();
+        SetScheduled(true);
       } else {
         return false;
       }
@@ -212,6 +214,7 @@ bool GpuScheduler::PollUnscheduleFences() {
     while (!unschedule_fences_.empty()) {
       unschedule_fences_.front()->task.Run();
       unschedule_fences_.pop();
+      SetScheduled(true);
     }
   }
 

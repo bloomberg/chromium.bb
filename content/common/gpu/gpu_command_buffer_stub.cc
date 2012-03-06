@@ -142,6 +142,11 @@ bool GpuCommandBufferStub::HasMoreWork() {
   return scheduler_.get() && scheduler_->HasMoreWork();
 }
 
+void GpuCommandBufferStub::PollWork() {
+  if (scheduler_.get())
+    scheduler_->PollUnscheduleFences();
+}
+
 bool GpuCommandBufferStub::HasUnprocessedCommands() {
   if (command_buffer_.get()) {
     gpu::CommandBuffer::State state = command_buffer_->GetLastState();

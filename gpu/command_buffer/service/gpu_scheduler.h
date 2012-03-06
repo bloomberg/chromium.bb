@@ -67,15 +67,15 @@ class GPU_EXPORT GpuScheduler
 
   void DeferToFence(base::Closure task);
 
+  // Polls the fences, invoking callbacks that were waiting to be triggered
+  // by them and returns whether all fences were complete.
+  bool PollUnscheduleFences();
+
   CommandParser* parser() const {
     return parser_.get();
   }
 
  private:
-  // Polls the fences, invoking callbacks that were waiting to be triggered
-  // by them and returns whether all fences were complete.
-  bool PollUnscheduleFences();
-
   // Artificially reschedule if the scheduler is still unscheduled after a
   // timeout.
   void RescheduleTimeOut();

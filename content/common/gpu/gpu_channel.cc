@@ -26,7 +26,11 @@
 #endif
 
 namespace {
-const int64 kHandleMoreWorkPeriodMs = 1;
+// The first time polling a fence, delay some extra time to allow other
+// stubs to process some work, or else the timing of the fences could
+// allow a pattern of alternating fast and slow frames to occur.
+const int64 kHandleMoreWorkPeriodMs = 2;
+const int64 kHandleMoreWorkPeriodBusyMs = 1;
 }
 
 GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
@@ -246,28 +250,43 @@ void GpuChannel::HandleMessage() {
         Send(reply);
       }
     } else {
-      // If the channel becomes unscheduled as a result of handling the message
-      // or has more work to do, synthesize an IPC message to flush the command
-      // buffer that became unscheduled.
+      // If the command buffer becomes unscheduled as a result of handling the
+      // message but still has more commands to process, synthesize an IPC
+      // message to flush that command buffer.
       if (stub) {
-        if (stub->HasUnprocessedCommands() || stub->HasMoreWork()) {
+        if (stub->HasUnprocessedCommands()) {
           deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
               stub->route_id()));
         }
-        if (stub->HasMoreWork() && !handle_messages_scheduled_) {
-          MessageLoop::current()->PostDelayedTask(
-              FROM_HERE,
-              base::Bind(&GpuChannel::HandleMessage,
-                         weak_factory_.GetWeakPtr()),
-              base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
-          handle_messages_scheduled_ = true;
-        }
+
+        ScheduleDelayedWork(stub, kHandleMoreWorkPeriodMs);
       }
     }
   }
 
   if (!deferred_messages_.empty()) {
     OnScheduled();
+  }
+}
+
+void GpuChannel::PollWork(int route_id) {
+  GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
+  if (stub) {
+    stub->PollWork();
+
+    ScheduleDelayedWork(stub, kHandleMoreWorkPeriodBusyMs);
+  }
+}
+
+void GpuChannel::ScheduleDelayedWork(GpuCommandBufferStub *stub,
+                                     int64 delay) {
+  if (stub->HasMoreWork()) {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&GpuChannel::PollWork,
+                   weak_factory_.GetWeakPtr(),
+                   stub->route_id()),
+        base::TimeDelta::FromMilliseconds(delay));
   }
 }
 

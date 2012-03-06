@@ -129,6 +129,9 @@ class GpuCommandBufferStub
   // Whether this command buffer needs to be polled again in the future.
   bool HasMoreWork();
 
+  // Poll the command buffer to execute work.
+  void PollWork();
+
   // Whether there are commands in the buffer that haven't been processed.
   bool HasUnprocessedCommands();
 
