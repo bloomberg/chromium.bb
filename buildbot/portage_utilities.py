@@ -299,6 +299,30 @@ class EBuild(object):
       cros_build_lib.Die('Cannot determine HEAD commit for %s' % srcdir)
     return output.rstrip()
 
+  def GetVersion(self, srcroot, default):
+    """Get the base version number for this ebuild.
+
+    The version is provided by the ebuild through a specific script in
+    the $FILESDIR (chromeos-version.sh).
+    """
+    vers_script = os.path.join(os.path.dirname(self._ebuild_path_no_version),
+                               'files', 'chromeos-version.sh')
+
+    if not os.path.exists(vers_script):
+      return default
+
+    _project, srcdir = self.GetSourcePath(srcroot)
+
+    # The chromeos-version script will output a usable raw version number,
+    # or nothing in case of error or no available version
+    output = self._RunCommand(' '.join([vers_script, srcdir])).strip()
+
+    if not output:
+      cros_build_lib.Die('Package %s has a chromeos-version.sh script but '
+                         'it returned no valid version' % self._pkgname)
+
+    return output
+
   def RevWorkOnEBuild(self, srcroot, redirect_file=None):
     """Revs a workon ebuild given the git commit hash.
 
@@ -321,10 +345,10 @@ class EBuild(object):
       revved package name, including the version number. Otherwise, return None.
     """
     if self.is_stable:
-      stable_version_no_rev = self._version_no_rev
+      stable_version_no_rev = self.GetVersion(srcroot, self._version_no_rev)
     else:
-      # If given unstable ebuild, use 0.0.1 rather than 9999.
-      stable_version_no_rev = '0.0.1'
+      # If given unstable ebuild, use preferred version rather than 9999.
+      stable_version_no_rev = self.GetVersion(srcroot, '0.0.1')
 
     new_version = '%s-r%d' % (
         stable_version_no_rev, self.current_revision + 1)
