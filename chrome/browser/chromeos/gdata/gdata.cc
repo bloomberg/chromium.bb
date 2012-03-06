@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
@@ -167,9 +168,11 @@ GURL AddFeedUrlParams(const GURL& url) {
 //================================ AuthOperation ===============================
 
 // OAuth2 authorization token retrieval operation.
-class AuthOperation : public OAuth2AccessTokenConsumer {
+class AuthOperation : public GDataOperationRegistry::Operation,
+                      public OAuth2AccessTokenConsumer {
  public:
-  AuthOperation(Profile* profile,
+  AuthOperation(GDataOperationRegistry* registry,
+                Profile* profile,
                 const std::string& refresh_token);
   virtual ~AuthOperation() {}
   void Start(AuthStatusCallback callback);
@@ -177,6 +180,9 @@ class AuthOperation : public OAuth2AccessTokenConsumer {
   // Overriden from OAuth2AccessTokenConsumer:
   virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+
+  // Overriden from GDataOpertionRegistry::Operation
+  virtual void DoCancel() OVERRIDE;
 
  private:
   Profile* profile_;
@@ -187,9 +193,11 @@ class AuthOperation : public OAuth2AccessTokenConsumer {
   DISALLOW_COPY_AND_ASSIGN(AuthOperation);
 };
 
-AuthOperation::AuthOperation(Profile* profile,
+AuthOperation::AuthOperation(GDataOperationRegistry* registry,
+                             Profile* profile,
                              const std::string& refresh_token)
-    : profile_(profile), token_(refresh_token) {
+    : GDataOperationRegistry::Operation(registry),
+      profile_(profile), token_(refresh_token) {
 }
 
 void AuthOperation::Start(AuthStatusCallback callback) {
@@ -201,6 +209,7 @@ void AuthOperation::Start(AuthStatusCallback callback) {
   scopes.push_back(kUserContentScope);
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
       this, profile_->GetRequestContext()));
+  NotifyStart();
   oauth2_access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
@@ -208,28 +217,36 @@ void AuthOperation::Start(AuthStatusCallback callback) {
       scopes);
 }
 
+void AuthOperation::DoCancel() {
+  oauth2_access_token_fetcher_->CancelRequest();
+}
+
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
 // used to start fetching user data.
 void AuthOperation::OnGetTokenSuccess(const std::string& access_token) {
   callback_.Run(HTTP_SUCCESS, access_token);
-  delete this;
+  NotifyFinish(OPERATION_SUCCESS);
 }
 
 // Callback for OAuth2AccessTokenFetcher on failure.
 void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   LOG(WARNING) << "AuthOperation: token request using refresh token failed";
   callback_.Run(HTTP_UNAUTHORIZED, std::string());
-  delete this;
+  NotifyFinish(OPERATION_FAILURE);
 }
 
 //============================== UrlFetchOperation =============================
 
 // Base class for operation that are fetching URLs.
 template <typename T>
-class UrlFetchOperation : public URLFetcherDelegate {
+class UrlFetchOperation : public GDataOperationRegistry::Operation,
+                          public URLFetcherDelegate {
  public:
-  UrlFetchOperation(Profile* profile, const std::string& auth_token)
-      : profile_(profile), auth_token_(auth_token), save_temp_file_(false) {
+  UrlFetchOperation(GDataOperationRegistry* registry,
+                    Profile* profile,
+                    const std::string& auth_token)
+      : GDataOperationRegistry::Operation(registry),
+        profile_(profile), auth_token_(auth_token), save_temp_file_(false) {
   }
 
   void Start(T callback) {
@@ -267,6 +284,9 @@ class UrlFetchOperation : public URLFetcherDelegate {
       url_fetcher_->SetUploadData(upload_content_type, upload_content);
     }
 
+    // Register to operation registry.
+    NotifyStart();
+
     url_fetcher_->Start();
   }
 
@@ -284,6 +304,29 @@ class UrlFetchOperation : public URLFetcherDelegate {
                               std::string* upload_content) {
     return false;
   }
+  virtual void ProcessURLFetchResults(const URLFetcher* source) = 0;
+
+  // Implement GDataOperationRegistry::Operation
+  virtual void DoCancel() OVERRIDE {
+    url_fetcher_.reset(NULL);
+  }
+
+  // Implement URLFetcherDelegate.
+  // TODO(kinaba): http://crosbug.com/27370
+  // Current URLFetcherDelegate notifies only the progress of "download"
+  // transfers, and no notification for upload progress in POST/PUT.
+  // For some GData operations, however, progress of uploading transfer makes
+  // more sense. We need to add a way to track upload status.
+  virtual void OnURLFetchDownloadProgress(const URLFetcher* source,
+                                          int64 current, int64 total) OVERRIDE {
+    NotifyProgress(current, total);
+  }
+
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
+    // Overriden by each specialization
+    ProcessURLFetchResults(source);
+    NotifyFinish(OPERATION_SUCCESS);
+  }
 
   T callback_;
   Profile* profile_;
@@ -298,11 +341,11 @@ class UrlFetchOperation : public URLFetcherDelegate {
 // It is meant to be used for operations that return no JSON blobs.
 class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
  public:
-  EntryActionOperation(Profile* profile,
+  EntryActionOperation(GDataOperationRegistry* registry,
+                       Profile* profile,
                        const std::string& auth_token,
                        const GURL& document_url)
-      : UrlFetchOperation<EntryActionCallback>(profile,
-                                               auth_token),
+      : UrlFetchOperation<EntryActionCallback>(registry, profile, auth_token),
         document_url_(document_url) {
   }
 
@@ -313,16 +356,13 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
     return AddStandardUrlParams(document_url_);
   }
 
-  // URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
+  virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE {
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
     DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
     if (!callback_.is_null())
       callback_.Run(code, document_url_);
-
-    delete this;
   }
 
   GURL document_url_;
@@ -336,15 +376,16 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
 // Operation for fetching and parsing JSON data content.
 class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
  public:
-  GetDataOperation(Profile* profile, const std::string& auth_token)
-      : UrlFetchOperation<GetDataCallback>(profile, auth_token) {
+  GetDataOperation(GDataOperationRegistry* registry,
+                   Profile* profile,
+                   const std::string& auth_token)
+      : UrlFetchOperation<GetDataCallback>(registry, profile, auth_token) {
   }
 
  protected:
   virtual ~GetDataOperation() {}
 
-  // URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
+  virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE {
     std::string data;
     source->GetResponseAsString(&data);
     scoped_ptr<base::Value> root_value;
@@ -367,8 +408,6 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
 
     if (!callback_.is_null())
       callback_.Run(code, root_value.release());
-
-    delete this;
   }
 
   // Parse GData JSON response.
@@ -398,7 +437,9 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
 // Document list fetching operation.
 class GetDocumentsOperation : public GetDataOperation  {
  public:
-  GetDocumentsOperation(Profile* profile, const std::string& auth_token);
+  GetDocumentsOperation(GDataOperationRegistry* registry,
+                        Profile* profile,
+                        const std::string& auth_token);
   virtual ~GetDocumentsOperation() {}
   // Sets |url| for document fetching operation. This URL should be set in use
   // case when additional 'pages' of document lists are being fetched.
@@ -413,9 +454,10 @@ class GetDocumentsOperation : public GetDataOperation  {
   DISALLOW_COPY_AND_ASSIGN(GetDocumentsOperation);
 };
 
-GetDocumentsOperation::GetDocumentsOperation(Profile* profile,
+GetDocumentsOperation::GetDocumentsOperation(GDataOperationRegistry* registry,
+                                             Profile* profile,
                                              const std::string& auth_token)
-    : GetDataOperation(profile, auth_token) {
+    : GetDataOperation(registry, profile, auth_token) {
 }
 
 void GetDocumentsOperation::SetUrl(const GURL& url) {
@@ -434,10 +476,13 @@ GURL GetDocumentsOperation::GetURL() const {
 // This class performs download of a given entry (document/file).
 class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
  public:
-  DownloadFileOperation(Profile* profile,
+  DownloadFileOperation(GDataOperationRegistry* registry,
+                        Profile* profile,
                         const std::string& auth_token,
                         const GURL& document_url)
-      : UrlFetchOperation<DownloadActionCallback>(profile, auth_token),
+      : UrlFetchOperation<DownloadActionCallback>(registry,
+                                                  profile,
+                                                  auth_token),
         document_url_(document_url) {
     // Make sure we download the content into a temp file.
     save_temp_file_ = true;
@@ -448,8 +493,7 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
 
   virtual GURL GetURL() const OVERRIDE { return document_url_; }
 
-  // URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
+  virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE {
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
     DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
@@ -464,8 +508,6 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
 
     if (!callback_.is_null())
       callback_.Run(code, document_url_, temp_file);
-
-    delete this;
   }
 
   GURL document_url_;
@@ -479,7 +521,8 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
 // Document list fetching operation.
 class DeleteDocumentOperation : public EntryActionOperation  {
  public:
-  DeleteDocumentOperation(Profile* profile,
+  DeleteDocumentOperation(GDataOperationRegistry* registry,
+                          Profile* profile,
                           const std::string& auth_token,
                           const GURL& document_url);
   virtual ~DeleteDocumentOperation() {}
@@ -490,10 +533,12 @@ class DeleteDocumentOperation : public EntryActionOperation  {
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 };
 
-DeleteDocumentOperation::DeleteDocumentOperation(Profile* profile,
-                                                 const std::string& auth_token,
-                                                 const GURL& document_url)
-    : EntryActionOperation(profile, auth_token, document_url) {
+DeleteDocumentOperation::DeleteDocumentOperation(
+    GDataOperationRegistry* registry,
+    Profile* profile,
+    const std::string& auth_token,
+    const GURL& document_url)
+    : EntryActionOperation(registry, profile, auth_token, document_url) {
 }
 
 URLFetcher::RequestType
@@ -516,7 +561,8 @@ class CreateDirectoryOperation
  public:
   // Empty |parent_content_url| will create the directory in the the root
   // folder.
-  CreateDirectoryOperation(Profile* profile,
+  CreateDirectoryOperation(GDataOperationRegistry* registry,
+                           Profile* profile,
                            const std::string& auth_token,
                            const GURL& parent_content_url,
                            const FilePath::StringType& directory_name);
@@ -542,11 +588,12 @@ class CreateDirectoryOperation
 };
 
 CreateDirectoryOperation::CreateDirectoryOperation(
+    GDataOperationRegistry* registry,
     Profile* profile,
     const std::string& auth_token,
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name)
-    : GetDataOperation(profile, auth_token),
+    : GetDataOperation(registry, profile, auth_token),
       parent_content_url_(parent_content_url),
       directory_name_(directory_name) {
 }
@@ -593,7 +640,8 @@ bool CreateDirectoryOperation::GetContentData(std::string* upload_content_type,
 class InitiateUploadOperation
     : public UrlFetchOperation<InitiateUploadCallback> {
  public:
-  InitiateUploadOperation(Profile* profile,
+  InitiateUploadOperation(GDataOperationRegistry* registry,
+                          Profile* profile,
                           const std::string& auth_token,
                           const UploadFileInfo& upload_file_info,
                           const GURL& initiate_upload_url);
@@ -603,9 +651,7 @@ class InitiateUploadOperation
 
   // Overrides from UrlFetcherOperation.
   virtual GURL GetURL() const OVERRIDE;
-
-  // URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE;
 
  private:
   // Overrides from UrlFetcherOperation.
@@ -623,11 +669,12 @@ class InitiateUploadOperation
 };
 
 InitiateUploadOperation::InitiateUploadOperation(
+    GDataOperationRegistry* registry,
     Profile* profile,
     const std::string& auth_token,
     const UploadFileInfo& upload_file_info,
     const GURL& initiate_upload_url)
-    : UrlFetchOperation<InitiateUploadCallback>(profile, auth_token),
+    : UrlFetchOperation<InitiateUploadCallback>(registry, profile, auth_token),
       upload_file_info_(upload_file_info),
       initiate_upload_url_(chrome_browser_net::AppendQueryParameter(
           initiate_upload_url,
@@ -639,8 +686,7 @@ GURL InitiateUploadOperation::GetURL() const {
   return initiate_upload_url_;
 }
 
-void InitiateUploadOperation::OnURLFetchComplete(
-    const URLFetcher* source) {
+void InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
   VLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
@@ -661,8 +707,6 @@ void InitiateUploadOperation::OnURLFetchComplete(
                   upload_file_info_,
                   GURL(upload_location));
   }
-
-  delete this;
 }
 
 URLFetcher::RequestType
@@ -698,7 +742,8 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
 class ResumeUploadOperation
     : public UrlFetchOperation<ResumeUploadCallback> {
  public:
-  ResumeUploadOperation(Profile* profile,
+  ResumeUploadOperation(GDataOperationRegistry* registry,
+                        Profile* profile,
                         const std::string& auth_token,
                         const UploadFileInfo& upload_file_info);
 
@@ -707,8 +752,7 @@ class ResumeUploadOperation
 
   virtual GURL GetURL() const OVERRIDE;
 
-  // URLFetcherDelegate overrides.
-  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE;
 
  private:
   // Overrides from UrlFetcherOperation.
@@ -725,10 +769,11 @@ class ResumeUploadOperation
 };
 
 ResumeUploadOperation::ResumeUploadOperation(
+    GDataOperationRegistry* registry,
     Profile* profile,
     const std::string& auth_token,
     const UploadFileInfo& upload_file_info)
-    : UrlFetchOperation<ResumeUploadCallback>(profile, auth_token),
+    : UrlFetchOperation<ResumeUploadCallback>(registry, profile, auth_token),
       upload_file_info_(upload_file_info) {
 }
 
@@ -736,8 +781,7 @@ GURL ResumeUploadOperation::GetURL() const {
   return upload_file_info_.upload_location;
 }
 
-void ResumeUploadOperation::OnURLFetchComplete(
-    const URLFetcher* source) {
+void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
@@ -777,8 +821,6 @@ void ResumeUploadOperation::OnURLFetchComplete(
     callback_.Run(code, upload_file_info_,
                   start_range_received, end_range_received);
   }
-
-  delete this;
 }
 
 URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
@@ -825,10 +867,11 @@ GDataAuthService::GDataAuthService()
 GDataAuthService::~GDataAuthService() {
 }
 
-void GDataAuthService::StartAuthentication(AuthStatusCallback callback) {
+void GDataAuthService::StartAuthentication(GDataOperationRegistry* registry,
+                                           AuthStatusCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  (new AuthOperation(profile_, GetOAuth2RefreshToken()))->Start(
+  (new AuthOperation(registry, profile_, GetOAuth2RefreshToken()))->Start(
       base::Bind(&gdata::GDataAuthService::OnAuthCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
@@ -882,6 +925,7 @@ DocumentsService::DocumentsService()
       get_documents_started_(false),
       gdata_auth_service_(new GDataAuthService()),
       uploader_(new GDataUploader(this)),
+      operation_registry_(new GDataOperationRegistry),
       weak_ptr_factory_(this) {
   // The weak pointers is used to post tasks to UI thread.
   weak_ptr_bound_to_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
@@ -904,6 +948,10 @@ void DocumentsService::Initialize(Profile* profile) {
   gdata_auth_service_->Initialize(profile);
 }
 
+void DocumentsService::CancelAll() {
+  operation_registry_->CancelAll();
+}
+
 void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -911,7 +959,8 @@ void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
     callback.Run(gdata::HTTP_SUCCESS, gdata_auth_service_->oauth2_auth_token());
   } else if (gdata_auth_service_->IsPartiallyAuthenticated()) {
     // We have refresh token, let's gets authenticated.
-    gdata_auth_service_->StartAuthentication(callback);
+    gdata_auth_service_->StartAuthentication(operation_registry_.get(),
+                                             callback);
   } else {
     callback.Run(gdata::HTTP_UNAUTHORIZED, std::string());
   }
@@ -939,6 +988,7 @@ void DocumentsService::GetDocumentsOnUIThread(
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
+        operation_registry_.get(),
         base::Bind(&DocumentsService::GetDocumentsOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    url,
@@ -948,8 +998,10 @@ void DocumentsService::GetDocumentsOnUIThread(
   }
 
   get_documents_started_ = true;
-  // operation is self-destructing, we don't need to clean it here.
+  // operation's lifetime is managed by operation_registry_, we don't need to
+  // clean it here.
   GetDocumentsOperation* operation = new GetDocumentsOperation(
+      operation_registry_.get(),
       profile_,
       gdata_auth_service_->oauth2_auth_token());
   if (!url.is_empty())
@@ -1039,6 +1091,7 @@ void DocumentsService::DownloadFileOnUIThread(
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
+        operation_registry_.get(),
         base::Bind(&DocumentsService::DownloadDocumentOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
@@ -1047,6 +1100,7 @@ void DocumentsService::DownloadFileOnUIThread(
     return;
   }
   (new DownloadFileOperation(
+      operation_registry_.get(),
       profile_,
       gdata_auth_service_->oauth2_auth_token(),
       document_url))->Start(
@@ -1120,6 +1174,7 @@ void DocumentsService::DeleteDocumentOnUIThread(
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
+        operation_registry_.get(),
         base::Bind(&DocumentsService::DeleteDocumentOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
@@ -1128,6 +1183,7 @@ void DocumentsService::DeleteDocumentOnUIThread(
     return;
   }
   (new DeleteDocumentOperation(
+      operation_registry_.get(),
       profile_,
       gdata_auth_service_->oauth2_auth_token(),
       document_url))->Start(
@@ -1204,6 +1260,7 @@ void DocumentsService::CreateDirectoryOnUIThread(
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
+        operation_registry_.get(),
         base::Bind(&DocumentsService::CreateDirectoryOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    parent_content_url,
@@ -1213,6 +1270,7 @@ void DocumentsService::CreateDirectoryOnUIThread(
     return;
   }
   (new CreateDirectoryOperation(
+      operation_registry_.get(),
       profile_,
       gdata_auth_service_->oauth2_auth_token(),
       parent_content_url,
@@ -1342,6 +1400,7 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
+        operation_registry_.get(),
         base::Bind(&DocumentsService::InitiateUploadOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
@@ -1349,6 +1408,7 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
     return;
   }
   (new InitiateUploadOperation(
+      operation_registry_.get(),
       profile_,
       gdata_auth_service_->oauth2_auth_token(),
       upload_file_info,
@@ -1402,6 +1462,7 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
+        operation_registry_.get(),
         base::Bind(&DocumentsService::ResumeUploadOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
@@ -1410,6 +1471,7 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
   }
 
   (new ResumeUploadOperation(
+      operation_registry_.get(),
       profile_,
       gdata_auth_service_->oauth2_auth_token(),
       upload_file_info))->Start(

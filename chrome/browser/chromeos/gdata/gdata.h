@@ -30,6 +30,7 @@ class FileStream;
 namespace gdata {
 
 class GDataUploader;
+class GDataOperationRegistry;
 
 // Document export format.
 enum DocumentExportFormat {
@@ -105,7 +106,8 @@ class GDataAuthService : public content::NotificationObserver {
   void Initialize(Profile* profile);
 
   // Starts fetching OAuth2 auth token from the refresh token.
-  void StartAuthentication(AuthStatusCallback callback);
+  void StartAuthentication(GDataOperationRegistry* registry,
+                           AuthStatusCallback callback);
 
   // True if OAuth2 auth token is retrieved and believed to be fresh.
   bool IsFullyAuthenticated() const { return !auth_token_.empty(); }
@@ -155,7 +157,9 @@ class DocumentsService : public GDataAuthService::Observer {
   // Initializes the documents service tied with |profile|.
   void Initialize(Profile* profile);
 
-  // Authenticates the user by fetching the auth token as
+  // Cancels all in-flight operations.
+  void CancelAll();
+
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
   //
@@ -391,6 +395,7 @@ class DocumentsService : public GDataAuthService::Observer {
 
   scoped_ptr<GDataAuthService> gdata_auth_service_;
   scoped_ptr<GDataUploader> uploader_;
+  scoped_ptr<GDataOperationRegistry> operation_registry_;
   base::WeakPtrFactory<DocumentsService> weak_ptr_factory_;
   base::WeakPtr<DocumentsService> weak_ptr_bound_to_ui_thread_;
 

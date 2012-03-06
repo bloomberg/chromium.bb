@@ -357,11 +357,11 @@ GDataFileSystem::~GDataFileSystem() {
 }
 
 void GDataFileSystem::Shutdown() {
-  // TODO(satorux): We should probably cancel or wait for the in-flight
-  // operation here.
-
-  // Should be called on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Cancel all the in-flight operations.
+  // This asynchronously cancels the URL fetch operations.
+  documents_service_->CancelAll();
 }
 
 void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
