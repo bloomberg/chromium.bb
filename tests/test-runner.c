@@ -31,21 +31,23 @@
 
 extern const struct test __start_test_section, __stop_test_section;
 
-static int
-run_one_test(const char *name)
+static const struct test *
+find_test(const char *name)
 {
 	const struct test *t;
 
-	for (t = &__start_test_section; t < &__stop_test_section; t++) {
-		if (strcmp(t->name, name) == 0) {
-			t->run();
-			return EXIT_SUCCESS;
-		}
-	}
+	for (t = &__start_test_section; t < &__stop_test_section; t++)
+		if (strcmp(t->name, name) == 0)
+			return t;
 
-	fprintf(stderr, "uknown test: \"%s\"\n", name);
+	return NULL;
+}
 
-	return EXIT_FAILURE;
+static void
+run_test(const struct test *t)
+{
+	t->run();
+	exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char *argv[])
@@ -55,17 +57,22 @@ int main(int argc, char *argv[])
 	int total, pass;
 	siginfo_t info;
 
-	if (argc == 2)
-		return run_one_test(argv[1]);
+	if (argc == 2) {
+		t = find_test(argv[1]);
+		if (t == NULL) {
+			fprintf(stderr, "uknown test: \"%s\"\n", argv[1]);
+			exit(EXIT_FAILURE);
+		}
+
+		run_test(t);
+	}
 
 	pass = 0;
 	for (t = &__start_test_section; t < &__stop_test_section; t++) {
 		pid = fork();
 		assert(pid >= 0);
-		if (pid == 0) { 
-			t->run();
-			exit(EXIT_SUCCESS);
-		}
+		if (pid == 0)
+			run_test(t);
 		if (waitid(P_ALL, 0, &info, WEXITED)) {
 			fprintf(stderr, "waitid failed: %m\n");
 			abort();
