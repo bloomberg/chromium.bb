@@ -33,6 +33,7 @@ class PlatformContext3DImpl
 
   virtual bool Init(const int32* attrib_list) OVERRIDE;
   virtual unsigned GetBackingTextureId() OVERRIDE;
+  virtual bool IsOpaque() OVERRIDE;
   virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
   virtual int GetCommandBufferRouteId() OVERRIDE;
   virtual void SetContextLostCallback(const base::Closure& callback) OVERRIDE;
@@ -47,6 +48,7 @@ class PlatformContext3DImpl
   base::WeakPtr<ContentGLContext> parent_context_;
   scoped_refptr<GpuChannelHost> channel_;
   unsigned int parent_texture_id_;
+  bool has_alpha_;
   CommandBufferProxy* command_buffer_;
   base::Closure context_lost_callback_;
   base::WeakPtrFactory<PlatformContext3DImpl> weak_ptr_factory_;

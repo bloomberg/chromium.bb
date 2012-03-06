@@ -1623,7 +1623,7 @@ PPB_Graphics3D_Impl* PluginInstance::GetBoundGraphics3D() const {
   return NULL;
 }
 
-void PluginInstance::setBackingTextureId(unsigned int id) {
+void PluginInstance::setBackingTextureId(unsigned int id, bool is_opaque) {
   // If we have a fullscreen_container_ (under PPB_FlashFullscreen)
   // or desired_fullscreen_state is true (under PPB_Fullscreen),
   // then the plugin is fullscreen or transitioning to fullscreen
@@ -1636,8 +1636,10 @@ void PluginInstance::setBackingTextureId(unsigned int id) {
   if (fullscreen_container_ || desired_fullscreen_state_)
     return;
 
-  if (container_)
+  if (container_) {
     container_->setBackingTextureId(id);
+    container_->setOpaque(is_opaque);
+  }
 }
 
 void PluginInstance::AddPluginObject(PluginObject* plugin_object) {
@@ -1713,7 +1715,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
 
   // Special-case clearing the current device.
   if (!device) {
-    setBackingTextureId(0);
+    setBackingTextureId(0, false);
     InvalidateRect(gfx::Rect());
     return PP_TRUE;
   }
@@ -1738,7 +1740,7 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
       return PP_FALSE;  // Can't bind to more than one instance.
 
     bound_graphics_ = graphics_2d;
-    setBackingTextureId(0);
+    setBackingTextureId(0, graphics_2d->is_always_opaque());
     // BindToInstance will have invalidated the plugin if necessary.
   } else if (graphics_3d) {
     // Make sure graphics can only be bound to the instance it is
@@ -1749,7 +1751,8 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
       return PP_FALSE;
 
     bound_graphics_ = graphics_3d;
-    setBackingTextureId(graphics_3d->GetBackingTextureId());
+    setBackingTextureId(graphics_3d->GetBackingTextureId(),
+                        graphics_3d->IsOpaque());
   } else {
     // The device is not a valid resource type.
     return PP_FALSE;

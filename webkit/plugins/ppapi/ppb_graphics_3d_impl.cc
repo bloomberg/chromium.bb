@@ -140,6 +140,10 @@ unsigned int PPB_Graphics3D_Impl::GetBackingTextureId() {
   return platform_context_->GetBackingTextureId();
 }
 
+bool PPB_Graphics3D_Impl::IsOpaque() {
+  return platform_context_->IsOpaque();
+}
+
 void PPB_Graphics3D_Impl::ViewWillInitiatePaint() {
 }
 

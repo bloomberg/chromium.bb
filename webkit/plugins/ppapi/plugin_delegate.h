@@ -171,6 +171,9 @@ class PluginDelegate {
     // compositors namespace. Otherwise return 0. Returns 0 by default.
     virtual unsigned GetBackingTextureId() = 0;
 
+    // Returns true if the backing texture is always opaque.
+    virtual bool IsOpaque() = 0;
+
     // This call will return the address of the command buffer for this context
     // that is constructed in Initialize() and is valid until this context is
     // destroyed.

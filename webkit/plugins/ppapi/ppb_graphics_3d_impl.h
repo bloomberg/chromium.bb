@@ -46,6 +46,9 @@ class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
   // Returns the id of texture that can be used by the compositor.
   unsigned int GetBackingTextureId();
 
+  // Returns true if the backing texture is always opaque.
+  bool IsOpaque();
+
   // Notifications about the view's progress painting.  See PluginInstance.
   // These messages are used to send Flush callbacks to the plugin.
   void ViewWillInitiatePaint();

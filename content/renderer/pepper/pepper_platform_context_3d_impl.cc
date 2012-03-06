@@ -21,6 +21,7 @@ PlatformContext3DImpl::PlatformContext3DImpl(
     PepperParentContextProvider* parent_context_provider)
       : parent_context_provider_(parent_context_provider),
         parent_texture_id_(0),
+        has_alpha_(false),
         command_buffer_(NULL),
         weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
@@ -98,6 +99,9 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
         case ContentGLContext::HEIGHT:
           surface_size.set_height(attr[1]);
           break;
+        case ContentGLContext::ALPHA_SIZE:
+          has_alpha_ = attr[1] > 0;
+        // fall-through
         default:
           attribs.push_back(attr[0]);
           attribs.push_back(attr[1]);
@@ -150,6 +154,11 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list) {
 unsigned PlatformContext3DImpl::GetBackingTextureId() {
   DCHECK(command_buffer_);
   return parent_texture_id_;
+}
+
+bool PlatformContext3DImpl::IsOpaque() {
+  DCHECK(command_buffer_);
+  return !has_alpha_;
 }
 
 gpu::CommandBuffer* PlatformContext3DImpl::GetCommandBuffer() {

@@ -438,7 +438,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Sets the id of the texture that the plugin draws to. The id is in the
   // compositor space so it can use it to composite with rest of the page.
   // A value of zero indicates the plugin is not backed by a texture.
-  void setBackingTextureId(unsigned int id);
+  // is_opaque is true if the plugin contents are always opaque.
+  void setBackingTextureId(unsigned int id, bool is_opaque);
 
   // Internal helper function for PrintPage().
   bool PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
