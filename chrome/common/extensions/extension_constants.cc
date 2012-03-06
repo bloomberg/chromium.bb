@@ -175,7 +175,7 @@ const char kExperimentalFlagRequired[] =
     "default. You can enable 'Experimental Extension APIs' "
     "by visiting chrome://flags.";
 const char kFeatureNotAllowed[] =
-    "Feature '*' is not accessible. *";
+    "Feature '*' is not allowed in this type of manifest.";
 const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidBackground[] =

@@ -82,7 +82,7 @@ class Manifest {
  private:
   // Returns true if the extension can specify the given |path|.
   bool CanAccessPath(const std::string& path) const;
-  bool CanAccessKey(const std::string& key) const;
+  bool CanAccessKey(const std::string& key, bool* was_known) const;
 
   // A persistent, globally unique ID. An extension's ID is used in things
   // like directory structures and URLs, and is expected to not change across

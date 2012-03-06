@@ -72,14 +72,8 @@ TEST_F(ManifestTest, Extension) {
   // Validate should also stop working.
   error.clear();
   EXPECT_FALSE(manifest->ValidateManifest(&error));
-  {
-    Feature feature;
-    feature.set_max_manifest_version(1);
-    EXPECT_EQ(ExtensionErrorUtils::FormatErrorMessageUTF16(
-        errors::kFeatureNotAllowed,
-        "background_page",
-        feature.GetErrorMessage(Feature::INVALID_MAX_MANIFEST_VERSION)), error);
-  }
+  EXPECT_EQ(ExtensionErrorUtils::FormatErrorMessageUTF16(
+      errors::kFeatureNotAllowed, "background_page"), error);
 
   // Test DeepCopy and Equals.
   scoped_ptr<Manifest> manifest2(manifest->DeepCopy());
