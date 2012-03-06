@@ -2806,6 +2806,92 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex,
                                           timeout=timeout)
 
+  def AddDomRaisedEventObserver(self, event_name=''):
+    """Adds a DomRaisedEventObserver associated with the AutomationEventQueue.
+
+    Args:
+      event_name: The raised event name to watch for. By default all raised
+                  events are observed.
+
+    Returns:
+      The id of the created observer, which can be used with GetNextEvent(id)
+      and RemoveEventObserver(id).
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    # TODO(craigdh): Add documentation for raising an event once it has been
+    #                implemented.
+    cmd_dict = {
+      'command': 'AddDomRaisedEventObserver',
+      'event_name': event_name,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['observer_id']
+
+  def GetNextEvent(self, observer_id=-1, blocking=True, timeout=-1):
+    """Waits for an observed event to occur.
+
+    The returned event is removed from the Event Queue. If there is already a
+    matching event in the queue it is returned immediately, otherwise the call
+    blocks until a matching event occurs. If blocking is disabled and no
+    matching event is in the queue this function will immediately return None.
+
+    Args:
+      observer_id: The id of the observer to wait for, matches any event by
+                   default.
+      blocking: If True waits until there is a matching event in the queue,
+                if False and there is no event waiting in the queue returns None
+                immediately.
+      timeout: Time to wait for a matching event, defaults to the default
+               automation timeout.
+
+    Returns:
+      Event response dictionary, or None if blocking is disabled and there is no
+      matching event in the queue.
+      SAMPLE:
+      { 'observer_id': 1,
+        'name': 'login completed',
+        'type': 'raised_event'}
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'GetNextEvent',
+      'observer_id' : observer_id,
+      'blocking' : blocking,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None,
+                                          timeout=timeout)
+
+  def RemoveEventObserver(self, observer_id):
+    """Removes an Event Observer from the AutomationEventQueue.
+
+    Expects a valid observer_id.
+
+    Args:
+      observer_id: The id of the observer to remove.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'RemoveEventObserver',
+      'observer_id' : observer_id,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
+  def ClearEventQueue(self):
+    """Removes all events currently in the AutomationEventQueue.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'ClearEventQueue',
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=None)
+
   def ExecuteJavascript(self, js, tab_index=0, windex=0, frame_xpath=''):
     """Executes a script in the specified frame of a tab.
 

@@ -33,6 +33,7 @@
   # This is the suite that gets run on 'Chromium' builds.
   'CONTINUOUS': {
     'all': [
+      'apptest',
       'autofill',
       'about_plugins_ui.AboutPluginsTest.testAboutPluginDetailInfo',
       'bookmark_bar',

@@ -2316,6 +2316,14 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
   handler_map["ExecuteJavascript"] =
       &TestingAutomationProvider::ExecuteJavascriptJSON;
+  handler_map["AddDomRaisedEventObserver"] =
+      &TestingAutomationProvider::AddDomRaisedEventObserver;
+  handler_map["RemoveEventObserver"] =
+      &TestingAutomationProvider::RemoveEventObserver;
+  handler_map["GetNextEvent"] =
+      &TestingAutomationProvider::GetNextEvent;
+  handler_map["ClearEventQueue"] =
+      &TestingAutomationProvider::ClearEventQueue;
   handler_map["ExecuteJavascriptInRenderView"] =
       &TestingAutomationProvider::ExecuteJavascriptInRenderView;
   handler_map["GoForward"] =
@@ -6443,6 +6451,78 @@ void TestingAutomationProvider::ExecuteJavascriptInRenderView(
   new DomOperationMessageSender(this, reply_message, true);
   ExecuteJavascriptInRenderViewFrame(frame_xpath, javascript, reply_message,
                                      rvh);
+}
+
+void TestingAutomationProvider::AddDomRaisedEventObserver(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
+  AutomationJSONReply reply(this, reply_message);
+  std::string event_name;
+  if (!args->GetString("event_name", &event_name)) {
+    reply.SendError("'event_name' missing or invalid");
+    return;
+  }
+
+  if (!automation_event_queue_.get())
+    automation_event_queue_.reset(new AutomationEventQueue);
+
+  int observer_id = automation_event_queue_->AddObserver(
+      new DomRaisedEventObserver(automation_event_queue_.get(), event_name));
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->SetInteger("observer_id", observer_id);
+  reply.SendSuccess(return_value.get());
+}
+
+void TestingAutomationProvider::RemoveEventObserver(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  int observer_id;
+  if (!args->GetInteger("observer_id", &observer_id) ||
+      !automation_event_queue_.get()) {
+    reply.SendError("'observer_id' missing or invalid");
+    return;
+  }
+  if (automation_event_queue_->RemoveObserver(observer_id)) {
+    reply.SendSuccess(NULL);
+    return;
+  }
+  reply.SendError("Invalid observer id.");
+}
+
+void TestingAutomationProvider::ClearEventQueue(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  automation_event_queue_.reset();
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::GetNextEvent(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  scoped_ptr<AutomationJSONReply> reply(
+      new AutomationJSONReply(this, reply_message));
+  int observer_id;
+  bool blocking;
+  if (!args->GetInteger("observer_id", &observer_id)) {
+    reply->SendError("'observer_id' missing or invalid");
+    return;
+  }
+  if (!args->GetBoolean("blocking", &blocking)) {
+    reply->SendError("'blocking' missing or invalid");
+    return;
+  }
+  if (!automation_event_queue_.get()) {
+    reply->SendError(
+        "No observers are attached to the queue. Did you forget to add one?");
+    return;
+  }
+
+  // The reply will be freed once a matching event is added to the queue.
+  automation_event_queue_->GetNextEvent(reply.release(), observer_id, blocking);
 }
 
 void TestingAutomationProvider::GoForward(

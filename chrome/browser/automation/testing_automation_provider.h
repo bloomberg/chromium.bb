@@ -13,6 +13,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/automation/automation_event_observer.h"
+#include "chrome/browser/automation/automation_event_queue.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/history/history.h"
@@ -944,6 +946,43 @@ class TestingAutomationProvider : public AutomationProvider,
   void ExecuteJavascriptJSON(
       base::DictionaryValue* args, IPC::Message* reply_message);
 
+  // Creates a DomRaisedEventObserver associated with the AutomationEventQueue.
+  // Example:
+  //   input: { "event_name": "login complete",
+  //            "windex": 1,
+  //            "tab_index": 1,
+  //            "frame_xpath": "//frames[1]",
+  //          }
+  //   output: { "observer_id": 1 }
+  void AddDomRaisedEventObserver(
+      base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Removes an event observer associated with the AutomationEventQueue.
+  // Example:
+  //   input: { "observer_id": 1 }
+  //   output: none
+  void RemoveEventObserver(
+      base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Retrieves an event from the AutomationEventQueue.
+  // Blocks if 'blocking' is true, otherwise returns immediately.
+  // Example:
+  //   input: { "observer_id": 1,
+  //            "blocking": true,
+  //          }
+  //   output: { "type": "raised",
+  //             "name": "login complete"
+  //             "id": 1,
+  //           }
+  void GetNextEvent(base::DictionaryValue* args, IPC::Message* reply_message);
+
+  // Removes all events and observers attached to the AutomationEventQueue.
+  // Example:
+  //   input: none
+  //   output: none
+  void ClearEventQueue(
+      base::DictionaryValue* args, IPC::Message* reply_message);
+
   // Executes javascript in the specified frame of a render view.
   // Uses the JSON interface. Waits for a result from the
   // |DOMAutomationController|. The javascript must send a string.
@@ -1562,6 +1601,10 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // The stored data for the ImportSettings operation.
   ImportSettingsData import_settings_data_;
+
+  // The automation event observer queue. It is lazily created when an observer
+  // is added to avoid overhead when not needed.
+  scoped_ptr<AutomationEventQueue> automation_event_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingAutomationProvider);
 };
