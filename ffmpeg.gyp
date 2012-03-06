@@ -33,6 +33,7 @@
       # If someone really wants -O1 , they can change these in their checkout.
       # If you want -O0, see the Gotchas in README.Chromium for why that
       # won't work.
+      'release_optimize': '2',
       'debug_optimize': '2',
       'mac_debug_optimization': '2',
     },
@@ -139,8 +140,14 @@
               ],
             }],
             ['target_arch == "ia32"', {
+              # Turn off valgrind build option that breaks ffmpeg builds.
               'cflags!': [
-                # Turn off valgrind build option that breaks ffmpeg builds.
+                '-fno-omit-frame-pointer',
+              ],
+              'debug_extra_cflags!': [
+                '-fno-omit-frame-pointer',
+              ],
+              'release_extra_cflags!': [
                 '-fno-omit-frame-pointer',
               ],
             }],  # target_arch == "ia32"
