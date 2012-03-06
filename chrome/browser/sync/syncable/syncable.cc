@@ -2002,11 +2002,23 @@ bool Directory::UnlinkEntryFromOrder(EntryKernel* entry,
       return true;  // Done if we were already self-looped (hence unlinked).
     }
     EntryKernel* previous_entry = GetEntryById(old_previous, lock);
-    if (!SyncAssert(previous_entry != NULL,
-                    FROM_HERE,
-                    "Could not find previous entry",
-                    trans))
-      return false;
+    ModelType type = GetModelTypeFromSpecifics(entry->ref(SPECIFICS));
+    // TODO(tim): Multiple asserts here for bug 101039 investigation.
+    if (type == AUTOFILL) {
+      if (!SyncAssert(previous_entry != NULL,
+                      FROM_HERE,
+                      "Could not find previous autofill entry",
+                      trans)) {
+        return false;
+      }
+    } else {
+      if (!SyncAssert(previous_entry != NULL,
+                      FROM_HERE,
+                      "Could not find previous entry",
+                      trans)) {
+        return false;
+      }
+    }
     if (trans)
       trans->SaveOriginal(previous_entry);
     previous_entry->put(NEXT_ID, old_next);
@@ -2018,8 +2030,9 @@ bool Directory::UnlinkEntryFromOrder(EntryKernel* entry,
     if (!SyncAssert(next_entry != NULL,
                     FROM_HERE,
                     "Could not find next entry",
-                    trans))
+                    trans)) {
       return false;
+    }
     if (trans)
       trans->SaveOriginal(next_entry);
     next_entry->put(PREV_ID, old_previous);
