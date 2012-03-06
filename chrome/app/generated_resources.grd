@@ -6452,7 +6452,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Print from anywhere
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_ANYWHERE_EXPLAIN" desc="Explanation about printing from anywhere.">
-        Access your printers from any computer or mobile device. <ph name="BEGIN_LINK">&lt;a href="#" onclick="cloudprint.learnMore()"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+        Access your printers from any computer or smart phone. <ph name="BEGIN_LINK">&lt;a href="#" onclick="cloudprint.learnMore()"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_CLOUD_PRINT_SETUP_PRINTER_HEADER" desc="Intro line about printer management.">
         Manage your printer
