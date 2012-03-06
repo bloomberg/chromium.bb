@@ -54,7 +54,7 @@ remoting.init = function() {
   window.addEventListener('blur', pluginLostFocus_, false);
 
   // Parse URL parameters.
-  var urlParams = getUrlParameters();
+  var urlParams = getUrlParameters_();
   if ('mode' in urlParams) {
     if (urlParams['mode'] == 'me2me') {
       var hostId = urlParams['hostId'];
@@ -193,4 +193,17 @@ function getAppStartupMode_() {
 function isHostModeSupported_() {
   // Currently, sharing on Chromebooks is not supported.
   return !navigator.userAgent.match(/\bCrOS\b/);
+}
+
+/**
+ * @return {Object.<string, string>} The URL parameters.
+ */
+function getUrlParameters_() {
+  var result = {};
+  var parts = window.location.search.substring(1).split('&');
+  for (var i = 0; i < parts.length; i++) {
+    var pair = parts[i].split('=');
+    result[pair[0]] = decodeURIComponent(pair[1]);
+  }
+  return result;
 }

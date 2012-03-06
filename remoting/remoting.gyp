@@ -140,7 +140,6 @@
       'webapp/toolbar.css',
       'webapp/toolbar.js',
       'webapp/ui_mode.js',
-      'webapp/util.js',
       'webapp/wcs.js',
       'webapp/wcs_loader.js',
       'webapp/xhr.js',

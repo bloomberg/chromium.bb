@@ -63,18 +63,18 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
   /** @type {remoting.HostTableEntry} */
   var that = this;
 
-  this.tableRow = document.createElement('div');
-  addClass(this.tableRow, 'section-row');
+  this.tableRow = /** @type {HTMLElement} */ document.createElement('div');
+  this.tableRow.classList.add('section-row');
 
   // Create the host icon cell.
-  var hostIcon = document.createElement('img');
+  var hostIcon = /** @type {HTMLElement} */ document.createElement('img');
   hostIcon.src = 'icon_host.png';
-  addClass(hostIcon, 'host-list-main-icon');
+  hostIcon.classList.add('host-list-main-icon');
   this.tableRow.appendChild(hostIcon);
 
   // Create the host name cell.
-  this.hostNameCell_ = document.createElement('div');
-  addClass(this.hostNameCell_, 'box-spacer');
+  this.hostNameCell_ = /** @type {HTMLElement} */ document.createElement('div');
+  this.hostNameCell_.classList.add('box-spacer');
   this.setHostName_();
   this.tableRow.appendChild(this.hostNameCell_);
 
@@ -85,33 +85,33 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
     var startMe2Me = function() { window.location.replace(hostUrl); };
     this.hostNameCell_.addEventListener('click', startMe2Me, false);
     hostIcon.addEventListener('click', startMe2Me, false);
-    addClass(this.tableRow, 'clickable');
-    addClass(this.tableRow, 'host-online');
+    this.tableRow.classList.add('clickable');
+    this.tableRow.classList.add('host-online');
     this.tableRow.title = chrome.i18n.getMessage(
         /*i18n-content*/'TOOLTIP_CONNECT', host.hostName);
   } else {
-    addClass(this.tableRow, 'host-offline');
+    this.tableRow.classList.add('host-offline');
   }
 
   // Create the host rename cell.
-  var editButton = document.createElement('img');
+  var editButton = /** @type {HTMLElement} */ document.createElement('img');
   var beginRename = function() { that.beginRename_(); };
   editButton.addEventListener('click', beginRename, true);
-  addClass(editButton, 'clickable');
-  addClass(editButton, 'host-list-edit');
+  editButton.classList.add('clickable');
+  editButton.classList.add('host-list-edit');
   editButton.src = 'icon_pencil.png';
-  addClass(editButton, 'host-list-rename-icon');
+  editButton.classList.add('host-list-rename-icon');
   editButton.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_RENAME');
   this.tableRow.appendChild(editButton);
 
   // Create the host delete cell.
-  var deleteButton = document.createElement('div');
+  var deleteButton = /** @type {HTMLElement} */ document.createElement('div');
   deleteButton.addEventListener('click', function() { onDelete(that); }, false);
-  addClass(deleteButton, 'clickable');
-  addClass(deleteButton, 'host-list-edit');
-  var crossImage = document.createElement('img');
+  deleteButton.classList.add('clickable');
+  deleteButton.classList.add('host-list-edit');
+  var crossImage = /** @type {HTMLElement} */ document.createElement('img');
   crossImage.src = 'icon_cross.png';
-  addClass(crossImage, 'host-list-remove-icon');
+  crossImage.classList.add('host-list-remove-icon');
   deleteButton.appendChild(crossImage);
   deleteButton.title = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_DELETE');
   this.tableRow.appendChild(deleteButton);
@@ -173,14 +173,14 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
 };
 
 remoting.HostTableEntry.prototype.setHostName_ = function() {
-  var hostNameNode = document.createElement('span');
+  var hostNameNode = /** @type {HTMLElement} */ document.createElement('span');
   if (this.host.status == 'ONLINE') {
     hostNameNode.innerText = this.host.hostName;
   } else {
     hostNameNode.innerText = chrome.i18n.getMessage(/*i18n-content*/'OFFLINE',
                                                     this.host.hostName);
   }
-  addClass(hostNameNode, 'host-list-label');
+  hostNameNode.classList.add('host-list-label');
   this.hostNameCell_.appendChild(hostNameNode);
 };
 
