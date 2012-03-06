@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
 #include "webkit/database/database_connections.h"
 
 class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
  public:
-  explicit WebDatabaseObserverImpl(IPC::Message::Sender* sender);
+  explicit WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender);
   virtual ~WebDatabaseObserverImpl();
 
   virtual void databaseOpened(const WebKit::WebDatabase& database) OVERRIDE;
@@ -43,7 +43,7 @@ class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
  private:
   void HandleSqliteError(const WebKit::WebDatabase& database, int error);
 
-  IPC::Message::Sender* sender_;
+  scoped_refptr<IPC::SyncMessageFilter> sender_;
   scoped_refptr<webkit_database::DatabaseConnectionsWrapper> open_connections_;
 };
 

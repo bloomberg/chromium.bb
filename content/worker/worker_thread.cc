@@ -35,7 +35,8 @@ WorkerThread::WorkerThread() {
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(this));
 
-  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(this));
+  web_database_observer_impl_.reset(
+      new WebDatabaseObserverImpl(sync_message_filter()));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
   db_message_filter_ = new DBMessageFilter();
   channel()->AddFilter(db_message_filter_.get());

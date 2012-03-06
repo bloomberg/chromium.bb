@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,9 +61,10 @@ int DetermineHistogramResult(int websql_error, int sqlite_error) {
 }  // namespace
 
 WebDatabaseObserverImpl::WebDatabaseObserverImpl(
-    IPC::Message::Sender* sender)
+    IPC::SyncMessageFilter* sender)
     : sender_(sender),
       open_connections_(new webkit_database::DatabaseConnectionsWrapper) {
+  DCHECK(sender);
 }
 
 WebDatabaseObserverImpl::~WebDatabaseObserverImpl() {

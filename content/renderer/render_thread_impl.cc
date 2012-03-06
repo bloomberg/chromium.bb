@@ -487,7 +487,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
         "dom_automation.js", extension.data(), 0, NULL, extension.size()));
   }
 
-  web_database_observer_impl_.reset(new WebDatabaseObserverImpl(Get()));
+  web_database_observer_impl_.reset(
+      new WebDatabaseObserverImpl(sync_message_filter()));
   WebKit::WebDatabase::setObserver(web_database_observer_impl_.get());
 
   WebRuntimeFeatures::enableSockets(
