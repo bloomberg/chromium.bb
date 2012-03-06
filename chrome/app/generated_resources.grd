@@ -10025,6 +10025,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GALLERY_FILE_EXISTS" desc="In the Gallery, the message informing that file already exists when attempting to rename.">
         File already exists
       </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_SAVED" desc="In the Gallery, the message informing that editing saved successfully.">
+        Saved
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_KEEP_ORIGINAL" desc="In the Gallery, text on the button to keep original file along with the edited copy.">
+        Keep original
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_UNSAVED_CHANGES" desc="In the Gallery, message informing about unsaved changes, when user tries to close the tab.">
+        Changes are not saved yet.
+      </message>
 
       <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
         A file named "$1" already exists. Do you want to replace it?

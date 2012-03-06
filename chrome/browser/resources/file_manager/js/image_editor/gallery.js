@@ -101,10 +101,13 @@ Gallery.prototype.initDom_ = function(shareActions) {
   window.galleryUnload = this.onUnload_.bind(this);
   window.addEventListener('unload', window.galleryUnload);
 
-  // We need to listen to the top window 'unload' because the Gallery iframe
-  // does not get notified if the tab is closed.
+  // We need to listen to the top window 'unload' and 'beforeunload' because
+  // the Gallery iframe does not get notified if the tab is closed.
   window.top.galleryTopUnload = this.onTopUnload_.bind(this);
   window.top.addEventListener('unload', window.top.galleryTopUnload);
+
+  this.onBeforeUnloadBound_ = this.onBeforeUnload_.bind(this);
+  window.top.addEventListener('beforeunload', this.onBeforeUnloadBound_);
 
   this.closeButton_ = doc.createElement('div');
   this.closeButton_.className = 'close tool dimmable';
@@ -130,6 +133,7 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.toolbar_.appendChild(filenameSpacer);
 
   this.filenameText_ = doc.createElement('div');
+  this.filenameText_.className = 'name';
   this.filenameText_.addEventListener('click',
       this.onFilenameClick_.bind(this));
   filenameSpacer.appendChild(this.filenameText_);
@@ -141,6 +145,22 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
   filenameSpacer.appendChild(this.filenameEdit_);
+
+  var options = doc.createElement('div');
+  options.className = 'options';
+  filenameSpacer.appendChild(options);
+
+  this.savedLabel_ = doc.createElement('div');
+  this.savedLabel_.className = 'saved';
+  this.savedLabel_.textContent = this.displayStringFunction_('saved');
+  options.appendChild(this.savedLabel_);
+
+  this.keepOriginal_ = doc.createElement('div');
+  this.keepOriginal_.className = 'keep-original';
+  this.keepOriginal_.textContent = this.displayStringFunction_('keep_original');
+  this.keepOriginal_.addEventListener('click',
+      this.onKeepOriginalClick_.bind(this));
+  options.appendChild(this.keepOriginal_);
 
   this.buttonSpacer_ = doc.createElement('div');
   this.buttonSpacer_.className = 'button-spacer';
@@ -245,6 +265,14 @@ Gallery.blobToURL_ = function(blob) {
       '#' + (blob.name || (blob.type.replace('/', '.')));
 };
 
+Gallery.prototype.onBeforeUnload_ = function(event) {
+  if (this.imageChanges_ > 0) {
+    setTimeout(this.saveChanges_.bind(this), 1000);
+    return this.displayStringFunction_('unsaved_changes');
+  }
+  return null;
+};
+
 Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
   this.parentDirEntry_ = parentDirEntry;
 
@@ -305,11 +333,21 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
 
 Gallery.prototype.onImageContentChanged_ = function() {
   this.imageChanges_++;
+  if (this.imageChanges_ == 0) return;
   if (this.imageChanges_ == 1) {  // First edit
-    this.ribbon_.getSelectedItem().setCopyName();
+    this.keepOriginal_.setAttribute('visible', 'true');
+    this.savedLabel_.style.display = 'inline-block';
     ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
   }
-  this.updateFilename_();
+  var label = this.savedLabel_;
+  setTimeout(function(){ label.setAttribute('highlighted', 'true'); }, 0);
+  setTimeout(function(){ label.removeAttribute('highlighted'); }, 300);
+};
+
+Gallery.prototype.onKeepOriginalClick_ = function() {
+  this.keepOriginal_.removeAttribute('visible');
+  this.ribbon_.getSelectedItem().setCopyName(this.parentDirEntry_,
+    this.updateFilename_.bind(this));
 };
 
 Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
@@ -324,6 +362,9 @@ Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
 Gallery.prototype.saveChanges_ = function(opt_callback) {
   this.imageChanges_ = 0;
   if (this.isShowingVideo_()) {
+    // This call ensures that editor leaves the mode and closes respective UI
+    // elements. Currently, the only mode for videos is sharing.
+    this.editor_.leaveModeGently();
     if (opt_callback) opt_callback();
     return;
   }
@@ -342,8 +383,7 @@ Gallery.prototype.updateFilename_ = function(opt_url) {
 
   var item = this.ribbon_.getSelectedItem();
   if (item) {
-    fullName = item.getCopyName() ||
-               ImageUtil.getFullNameFromUrl(item.getUrl());
+    fullName = item.getNameAfterSaving();
   } else if (opt_url) {
     fullName = ImageUtil.getFullNameFromUrl(opt_url);
   } else {
@@ -364,27 +404,30 @@ Gallery.prototype.onFilenameClick_ = function() {
 };
 
 Gallery.prototype.onFilenameEditBlur_ = function() {
+  if (this.filenameEdit_.value && this.filenameEdit_.value[0] == '.') {
+    this.editor_.getPrompt().show('file_hidden_name', 5000);
+    this.filenameEdit_.focus();
+    return;
+  }
+
+  if (this.filenameEdit_.value) {
+    this.renameItem_(this.ribbon_.getSelectedItem(),
+        this.filenameEdit_.value);
+  }
+
   ImageUtil.setAttribute(this.container_, 'renaming', false);
-  this.updateFilename_();
   this.initiateFading_();
 };
 
 Gallery.prototype.onFilenameEditKeydown_ = function() {
   switch (event.keyCode) {
     case 27:  // Escape
+      this.updateFilename_();
       this.filenameEdit_.blur();
       break;
 
     case 13:  // Enter
-      if (this.filenameEdit_.value && this.filenameEdit_.value[0] == '.') {
-        this.editor_.getPrompt().show('file_hidden_name', 5000);
-        break;
-      }
-      if (this.filenameEdit_.value) {
-        this.renameItem_(this.ribbon_.getSelectedItem(),
-            this.filenameEdit_.value);
-        this.filenameEdit_.blur();
-      }
+      this.filenameEdit_.blur();
       break;
   }
   event.stopPropagation();
@@ -393,20 +436,16 @@ Gallery.prototype.onFilenameEditKeydown_ = function() {
 Gallery.prototype.renameItem_ = function(item, name) {
   var dir = this.parentDirEntry_;
   var self = this;
-  var newName;
-
-  if (this.imageChanges_ > 0) {
-    // We are editing the file.
-    newName = ImageUtil.replaceFileNameInFullName(
-        item.getCopyName(), name);
-  } else {
-    newName = ImageUtil.replaceFileNameInFullName(
-        ImageUtil.getFullNameFromUrl(item.getUrl()), name);
+  var originalName = item.getNameAfterSaving();
+  if (ImageUtil.getExtensionFromFullName(name) ==
+      ImageUtil.getExtensionFromFullName(originalName)) {
+    name = ImageUtil.getFileNameFromFullName(name);
   }
+  var newName = ImageUtil.replaceFileNameInFullName(originalName, name);
+  if (originalName == newName) return;
 
   function onError() {
-    console.log('Rename error: "' +
-        ImageUtil.getFullNameFromUrl(item.getUrl()) + '" to "' + name + '"');
+    console.log('Rename error: "' + originalName + '" to "' + newName + '"');
   }
 
   function onSuccess(entry) {
@@ -416,8 +455,9 @@ Gallery.prototype.renameItem_ = function(item, name) {
 
   function doRename() {
     if (self.imageChanges_ > 0) {
-      // User this name in the next save operation.
-      item.setCopyName(newName);
+      // Use this name in the next save operation.
+      item.setNameForSaving(newName);
+      self.keepOriginal_.removeAttribute('visible');
       self.updateFilename_();
     } else {
       // Rename file in place.
@@ -431,6 +471,8 @@ Gallery.prototype.renameItem_ = function(item, name) {
 
   function onVictimFound(victim) {
     self.editor_.getPrompt().show('file_exists', 3000);
+    self.filenameEdit_.value = name;
+    self.onFilenameClick_();
   }
 
   dir.getFile(newName, {create: false, exclusive: false},
@@ -476,6 +518,8 @@ Gallery.prototype.prefetchImage = function(id, content, metadata) {
 Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
   // The first change is load, we should not count it.
   this.imageChanges_ = -1;
+  this.savedLabel_.style.display = 'none';
+  this.keepOriginal_.removeAttribute('visible');
 
   var item = this.ribbon_.getSelectedItem();
   this.updateFilename_(content);
@@ -538,6 +582,7 @@ Gallery.prototype.saveVideoPosition_ = function() {
 
 Gallery.prototype.onUnload_ = function() {
   this.saveVideoPosition_();
+  window.top.removeEventListener('beforeunload', this.onBeforeUnloadBound_);
   window.top.removeEventListener('unload', window.top.galleryTopUnload);
   window.top.galleryTopUnload = null;
 };
@@ -566,6 +611,8 @@ Gallery.prototype.onEdit_ = function() {
       var item = this.ribbon_.getSelectedItem();
       this.editor_.requestImage(item.updateThumbnail.bind(item));
     }
+    this.savedLabel_.style.display = 'none';
+    this.keepOriginal_.removeAttribute('visible');
     this.initiateFading_();
   }
 
@@ -977,7 +1024,7 @@ Ribbon.Item = function(index, url, document, selectClosure) {
   this.wrapper_.appendChild(this.img_);
 
   this.original_ = true;
-  this.copyName_ = null;
+  this.nameForSaving_ = null;
 };
 
 Ribbon.Item.prototype.getIndex = function () { return this.index_ };
@@ -989,7 +1036,9 @@ Ribbon.Item.prototype.isOriginal = function () { return this.original_ };
 Ribbon.Item.prototype.getUrl = function () { return this.url_ };
 Ribbon.Item.prototype.setUrl = function (url) { this.url_ = url };
 
-Ribbon.Item.prototype.getCopyName = function () { return this.copyName_ };
+Ribbon.Item.prototype.getNameAfterSaving = function () {
+  return this.nameForSaving_ || ImageUtil.getFullNameFromUrl(this.url_);
+};
 
 Ribbon.Item.prototype.isSelected = function() {
   return this.box_.hasAttribute('selected');
@@ -1010,7 +1059,6 @@ Ribbon.Item.prototype.updateThumbnail = function(canvas) {
 
 Ribbon.Item.prototype.save = function(
     dirEntry, metadataProvider, canvas, opt_callback) {
-
   ImageUtil.metrics.startInterval(ImageUtil.getMetricName('SaveTime'));
 
   var metadataEncoder =
@@ -1027,10 +1075,9 @@ Ribbon.Item.prototype.save = function(
     return;
   }
 
-  var newFile = this.isOriginal();
-  var name = this.copyName_;
+  var name = this.getNameAfterSaving();
   this.original_ = false;
-  this.copyName_ = '';
+  this.nameForSaving_ = null;
 
   function onSuccess(url) {
     console.log('Saved from gallery', name);
@@ -1046,40 +1093,43 @@ Ribbon.Item.prototype.save = function(
     if (opt_callback) opt_callback();
   }
 
-  dirEntry.getFile(
-      name, {create: newFile, exclusive: newFile}, function(fileEntry) {
-        fileEntry.createWriter(function(fileWriter) {
-          function writeContent() {
-            fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
-            fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder));
-          }
-          fileWriter.onerror = onError;
-          if (newFile) {
-            writeContent();
-          } else {
-            fileWriter.onwriteend = writeContent;
-            fileWriter.truncate(0);
-          }
-        },
-    onError);
-  }, onError);
+  function doSave(newFile, fileEntry) {
+    fileEntry.createWriter(function(fileWriter) {
+      function writeContent() {
+        fileWriter.onwriteend = onSuccess.bind(null, fileEntry.toURL());
+        fileWriter.write(ImageEncoder.getBlob(canvas, metadataEncoder));
+      }
+      fileWriter.onerror = onError;
+      if (newFile) {
+        writeContent();
+      } else {
+        fileWriter.onwriteend = writeContent;
+        fileWriter.truncate(0);
+      }
+    }, onError);
+  }
+
+  function getFile(newFile) {
+    dirEntry.getFile(name, {create: newFile, exclusive: newFile},
+        doSave.bind(null, newFile), onError);
+  }
+
+  dirEntry.getFile(name, {create: false, exclusive: false},
+      getFile.bind(null, false /* existing file */),
+      getFile.bind(null, true /* create new file */));
 };
 
 // TODO: Localize?
-Ribbon.Item.COPY_SIGNATURE = 'Edited - ';
+Ribbon.Item.COPY_SIGNATURE = 'Edited';
 
 Ribbon.Item.REGEXP_COPY_N =
-    new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + '(.+) \\((\\d+)\\)$');
+    new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + ' \\((\\d+)\\)( - .+)$');
 
 Ribbon.Item.REGEXP_COPY_0 =
-    new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + '(.+)$');
+    new RegExp('^' + Ribbon.Item.COPY_SIGNATURE + '( - .+)$');
 
-Ribbon.Item.prototype.createCopyName_ = function () {
-  // When saving a modified image we never overwrite the original file (the one
-  // that existed prior to opening the Gallery. Instead we save to a file named
-  // <original-name>_Edited_<date-stamp>.<original extension>.
-
-  var name = this.url_.substr(this.url_.lastIndexOf('/') + 1);
+Ribbon.Item.prototype.createCopyName_ = function(dirEntry, callback) {
+  var name = ImageUtil.getFullNameFromUrl(this.url_);
 
   // If the item represents a file created during the current Gallery session
   // we reuse it for subsequent saves instead of creating multiple copies.
@@ -1093,20 +1143,6 @@ Ribbon.Item.prototype.createCopyName_ = function () {
     name = name.substr(0, index);
   }
 
-  // If the file name contains the copy signature add/advance the sequential
-  // number.
-  // TODO(kaznacheev): Check if the name is already taken.
-  var match = Ribbon.Item.REGEXP_COPY_N.exec(name);
-  if (match && match[1] && match[2]) {
-    var copyNumber = parseInt(match[2], 10) + 1;
-    name = match[1] + ' (' + copyNumber + ')';
-  } else {
-    match = Ribbon.Item.REGEXP_COPY_0.exec(name);
-    if (match && match[1]) {
-      name = match[1] + ' (1)';
-    }
-  }
-
   var mimeType = this.metadata_.mimeType.toLowerCase();
   if (mimeType != 'image/jpeg') {
     // Chrome can natively encode only two formats: JPEG and PNG.
@@ -1114,15 +1150,43 @@ Ribbon.Item.prototype.createCopyName_ = function () {
     ext = '.png';
   }
 
-  return Ribbon.Item.COPY_SIGNATURE + name + ext;
+  function tryNext(tries) {
+    // All the names are used. Let's overwrite the last one.
+    if (tries == 0) {
+      setTimeout(callback, 0, name + ext);
+      return;
+    }
+
+    // If the file name contains the copy signature add/advance the sequential
+    // number.
+    var matchN = Ribbon.Item.REGEXP_COPY_N.exec(name);
+    var match0 = Ribbon.Item.REGEXP_COPY_0.exec(name);
+    if (matchN && matchN[1] && matchN[2]) {
+      var copyNumber = parseInt(matchN[1], 10) + 1;
+      name = Ribbon.Item.COPY_SIGNATURE + ' (' + copyNumber + ')' + matchN[2];
+    } else if (match0 && match0[1]) {
+        name = Ribbon.Item.COPY_SIGNATURE + ' (1)' + match0[1];
+    } else {
+      name = Ribbon.Item.COPY_SIGNATURE + ' - ' + name;
+    }
+
+    dirEntry.getFile(name + ext, {create: false, exclusive: false},
+        tryNext.bind(null, tries - 1),
+        callback.bind(null, name + ext));
+  }
+
+  tryNext(10);
 };
 
-Ribbon.Item.prototype.setCopyName = function(opt_name) {
-  if (opt_name) {
-    this.copyName_ = opt_name;
-  } else {
-    this.copyName_ = this.createCopyName_();
-  }
+Ribbon.Item.prototype.setCopyName = function(dirEntry, opt_callback) {
+  this.createCopyName_(dirEntry, function(name) {
+    this.nameForSaving_ = name;
+    if (opt_callback) opt_callback();
+  }.bind(this));
+};
+
+Ribbon.Item.prototype.setNameForSaving = function(newName) {
+  this.nameForSaving_ = newName;
 };
 
 // The url and metadata stored in the item are not valid while the modified

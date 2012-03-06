@@ -489,6 +489,14 @@ ImageUtil.replaceFileNameInFullName = function(fullName, name) {
     return name;
 };
 
+ImageUtil.getExtensionFromFullName = function(name) {
+  var index = name.lastIndexOf('.');
+  if (index != -1)
+    return name.substring(index);
+  else
+    return '';
+};
+
 ImageUtil.metrics = null;
 
 ImageUtil.getMetricName = function(name) { return 'PhotoEditor.' + name }

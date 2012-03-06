@@ -237,37 +237,40 @@ body {
   width: 270px;
 }
 
-.gallery[renaming] .filename-spacer > div,
+.gallery[renaming] .filename-spacer > .name,
 .gallery .filename-spacer > input {
   opacity: 0;
   z-index: 0;
 }
 
-.gallery .filename-spacer > div,
+.gallery .filename-spacer > .name,
 .gallery[renaming] .filename-spacer > input {
   opacity: 1;
   z-index: 1;
 }
 
-.gallery .filename-spacer > input,
-.gallery .filename-spacer > div {
+.gallery .filename-spacer > * {
   font-family: Open Sans,Droid Sans Fallback,sans-serif;
   position: absolute;
-  left: 10px;
-  top: 15px;
   background-color: transparent;
-  color: white;
-  width: 260px;
   height: 21px;
+  width: 260px;
+  color: white;
+}
+
+.gallery .filename-spacer > input,
+.gallery .filename-spacer > .name {
   border: none;
   outline: none;
   font-size: 120%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  left: 10px;
+  top: 5px;
 }
 
-.gallery .filename-spacer > div:hover {
+.gallery .filename-spacer > .name:hover {
   background-color: rgba(48, 48, 48, 1.0);
   cursor: pointer;
 }
@@ -278,6 +281,34 @@ body {
   color: black;
   border-right: 1px solid white;
   border-bottom: 1px solid white;
+}
+
+.gallery .filename-spacer > .options {
+  left: 10px;
+  top: 26px;
+}
+
+.gallery .filename-spacer .saved,
+.gallery .filename-spacer .keep-original {
+  display: none;
+  color: gray;
+  font-size: 90%;
+  -webkit-transition: all linear 120ms;
+  pointer-events: none;
+  cursor: inherit;
+  margin-right: 10px;
+}
+
+.gallery .filename-spacer .saved[highlighted] {
+  color: white;
+  -webkit-transform: scaleX(1.1) scaleY(1.1) rotate(0deg);
+}
+
+.gallery .filename-spacer .keep-original[visible] {
+  display: inline-block;
+  cursor: pointer;
+  color: white;
+  pointer-events: auto;
 }
 
 .gallery .button-spacer {
