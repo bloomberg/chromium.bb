@@ -1697,6 +1697,12 @@ bool BrowserInit::ProcessCmdLineImpl(
     int* return_code,
     BrowserInit* browser_init) {
   DCHECK(last_used_profile);
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26446.
+  LOG(ERROR) << "ProcessCmdLineImpl: process_startup" << process_startup
+             << ", channel id=" << command_line.GetSwitchValueASCII(
+                 switches::kAutomationClientChannelID);
+#endif
 
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
@@ -1887,7 +1893,10 @@ bool BrowserInit::CreateAutomationProvider(const std::string& channel_id,
                                            size_t expected_tabs) {
   scoped_refptr<AutomationProviderClass> automation =
       new AutomationProviderClass(profile);
-
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26446.
+  LOG(ERROR) << "CreateAutomationProvider: channel=" << channel_id;
+#endif
   if (!automation->InitializeChannel(channel_id))
     return false;
   automation->SetExpectedTabCount(expected_tabs);
