@@ -18,28 +18,66 @@ body.uber-frame #extension-settings.page,
 body.uber-frame #mainview-content .page,
 body.uber-frame .subpage-sheet-container .page,
 body.uber-frame > .page {
+  -webkit-margin-end: 24px;
+  min-width: 576px;
   padding-top: 55px;
 }
 
 body.uber-frame header {
   background: white;
   left: 155px;
-  min-width: 700px;
+  min-width: 600px;
   /* <section>s in options currently amount to 638px total, broken up into
    * 600px max-width + 18px -webkit-padding-start + 20px -webkit-margin-end
    * so we mirror this value here so the headers match width and horizontal
    * alignment when scrolling sideways. */
   max-width: 738px;
   position: fixed;
-  right: 155px;
+  right: 0;
   top: 0;
   z-index: 2;
 }
 
+html[dir='rtl'] body.uber-frame header {
+  left: 0;
+  right: 155px;
+}
+
+body.uber-frame header > .search-field-container,
+body.uber-frame header > .header-extras,
+body.uber-frame header > button {
+  position: absolute;
+  right: 20px;
+  top: 21px;
+}
+
+body.uber-frame html[dir='rtl'] header > .search-field-container,
+body.uber-frame html[dir='rtl'] header > .header-extras,
+body.uber-frame html[dir='rtl'] header > button {
+  left: 20px;
+  right: auto;
+}
+
+body.uber-frame header input,
+body.uber-frame header button {
+  margin: 0;
+}
+
 body.uber-frame header > h1 {
-  border-bottom: 1px solid #eee;
   margin: 0;
   padding: 21px 0 13px;
+}
+
+/* Create a border under the h1 (but before anything that gets appended
+ * to the end of the header, such as the managed prefs banner). */
+body.uber-frame header > h1::after {
+  -webkit-margin-end: 20px;
+  content: ' ';
+  display: block;
+  height: 1px;
+  background-color: #eee;
+  position: relative;
+  top: 13px;
 }
 
 body.uber-frame footer {

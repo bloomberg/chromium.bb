@@ -67,6 +67,9 @@ cr.define('options', function() {
       if (!extension.enabled)
         node.classList.add('disabled-extension');
 
+      if (!extension.mayDisable)
+        node.classList.add('may-not-disable');
+
       var item = node.querySelector('.extension-list-item');
       item.style.backgroundImage = 'url(' + extension.icon + ')';
 
@@ -173,16 +176,13 @@ cr.define('options', function() {
       }
 
       // 'Remove' button.
-
-      if (extension.mayDisable) {
-        var trashTemplate = $('template-collection').querySelector('.trash');
-        var trash = trashTemplate.cloneNode(true);
-        trash.title = templateData.extensionUninstall;
-        trash.addEventListener('click', function(e) {
-          chrome.send('extensionSettingsUninstall', [extension.id]);
-        });
-        node.querySelector('.enable-controls').appendChild(trash);
-      }
+      var trashTemplate = $('template-collection').querySelector('.trash');
+      var trash = trashTemplate.cloneNode(true);
+      trash.title = templateData.extensionUninstall;
+      trash.addEventListener('click', function(e) {
+        chrome.send('extensionSettingsUninstall', [extension.id]);
+      });
+      node.querySelector('.enable-controls').appendChild(trash);
 
       // Developer mode ////////////////////////////////////////////////////////
 

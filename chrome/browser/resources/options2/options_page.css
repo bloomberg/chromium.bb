@@ -32,7 +32,6 @@ body {
 }
 
 #page-container {
-  -webkit-padding-end: 24px;
   box-sizing: border-box;
   max-width: 888px;
   min-width: 600px;
@@ -170,10 +169,9 @@ html[touch-optimized] body {
 }
 
 .main-page-banner .managed-prefs-gradient {
-  -webkit-margin-end: 100px;
+  -webkit-margin-end: 20px;
   -webkit-margin-start: 0;
   margin-bottom: 9px;
-  margin-top: 0;
 }
 
 .managed-prefs-text {
@@ -191,7 +189,7 @@ html[touch-optimized] body {
 }
 
 #page-container .page.showing-banner {
-  margin-top: 36px;
+  margin-top: 45px;
 }
 
 .overlay .page h1 {

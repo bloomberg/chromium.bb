@@ -114,24 +114,6 @@ html[touch-optimized] input[type='search']::-webkit-search-cancel-button {
   -webkit-transform: scale(1.5);
 }
 
-header > .search-field-container,
-header > button {
-  position: absolute;
-  right: 100px;
-  top: 21px;
-}
-
-html[dir='rtl'] header > .search-field-container,
-html[dir='rtl'] header > button {
-  left: 100px;
-  right: auto;
-}
-
-header input,
-header button {
-  margin: 0;
-}
-
 /* Elements that need to be LTR even in an RTL context, but should align
  * right. (Namely, URLs, search engine names, etc.)
  */
