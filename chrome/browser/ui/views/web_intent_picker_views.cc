@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
-#include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
+#include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -104,11 +104,6 @@ gfx::Size MinimumSizeView::GetPreferredSize() {
 
 // A view that displays 5 stars: empty, full or half full, given a rating in
 // the range [0,5].
-//
-// The fractional part of the rating is converted to stars as:
-//   [0, 0.33) -> round down
-//   [0.33, 0.66] -> half star
-//   (0.66, 1) -> round up
 class StarsView : public views::View {
  public:
   explicit StarsView(double rating);
@@ -123,33 +118,16 @@ class StarsView : public views::View {
 
 StarsView::StarsView(double rating)
     : rating_(rating) {
-  const int kMaxStars = 5;
-  const double kHalfStarMin = 0.33;
-  const double kHalfStarMax = 0.66;
-  const int kSpacing = 1;  // Spacing between stars.
-
-  int full_stars = static_cast<int>(rating_);
-  double fraction = rating_ - full_stars;
-  bool half_star = fraction >= kHalfStarMin && fraction <= kHalfStarMax;
-
-  if (fraction > kHalfStarMax)
-    full_stars++;
-
-  full_stars = std::min(full_stars, kMaxStars);
+  const int kSpacing = 1;  // Spacing between stars in pixels.
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, kSpacing));
 
-  for (int i = 0; i < kMaxStars; ++i) {
+  for (int i = 0; i < 5; ++i) {
     views::ImageView* image = new views::ImageView();
-    if (i < full_stars)
-      image->SetImage(rb.GetBitmapNamed(IDR_CWS_STAR_FULL));
-    else if (i == full_stars && half_star)
-      image->SetImage(rb.GetBitmapNamed(IDR_CWS_STAR_HALF));
-    else
-      image->SetImage(rb.GetBitmapNamed(IDR_CWS_STAR_EMPTY));
-
+    image->SetImage(rb.GetBitmapNamed(
+        WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i)));
     AddChildView(image);
   }
 
@@ -408,6 +386,8 @@ void SuggestedExtensionsView::Update() {
 
     grid_layout->AddPaddingRow(0, kContentAreaSpacing);
   }
+
+  // TODO(binji): Don't display more suggestions if there aren't any.
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 

@@ -99,8 +99,8 @@ class WebIntentPickerModel {
 
   // Add a new suggested extension with |id|, |title| and |average_rating| to
   // the picker.
-  void AddSuggestedExtension(const string16& id,
-                             const string16& title,
+  void AddSuggestedExtension(const string16& title,
+                             const string16& id,
                              double average_rating);
 
   // Remove a suggested extension from the picker at |index|.

@@ -40,6 +40,10 @@ class WebIntentPicker {
   static gfx::Size GetDefaultInlineDispositionSize(
       content::WebContents* web_contents);
 
+  // Get the star image IDs to use for the nth star (out of 5), given a
+  // |rating| in the range [0, 5].
+  static int GetNthStarImageIdFromCWSRating(double rating, int index);
+
  protected:
   virtual ~WebIntentPicker() {}
 };

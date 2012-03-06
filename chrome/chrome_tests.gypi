@@ -1985,6 +1985,7 @@
         'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
         'browser/ui/gtk/theme_service_gtk_unittest.cc',
         'browser/ui/intents/web_intent_picker_model_unittest.cc',
+        'browser/ui/intents/web_intent_picker_unittest.cc',
         'browser/ui/intents/web_intents_model_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
         'browser/ui/omnibox/omnibox_view_unittest.cc',
