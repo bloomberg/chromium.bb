@@ -26,6 +26,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_REQUIRE_JS" file="resources\require.js" type="BINDATA" />
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_SCHEMA_GENERATED_BINDINGS_JS" file="resources\extensions\schema_generated_bindings.js" type="BINDATA" />
+      <include name="IDR_SETUP_BINDINGS_JS" file="resources\extensions\setup_bindings.js" type="BINDATA" />
       <include name="IDR_WEBSTORE_BINDINGS_JS" file="resources\extensions\webstore.js" type="BINDATA" />
 
       <!-- Custom bindings for extension APIs. -->

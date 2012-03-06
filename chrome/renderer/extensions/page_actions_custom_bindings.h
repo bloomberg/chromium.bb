@@ -15,13 +15,7 @@ namespace extensions {
 // Implements custom bindings for the pageActions API.
 class PageActionsCustomBindings : public ChromeV8Extension {
  public:
-  PageActionsCustomBindings(
-      int dependency_count,
-      const char** dependencies,
-      ExtensionDispatcher* extension_dispatcher);
-
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
-      v8::Handle<v8::String> name) OVERRIDE;
+  explicit PageActionsCustomBindings(ExtensionDispatcher* extension_dispatcher);
 
  private:
   static v8::Handle<v8::Value> GetCurrentPageActions(const v8::Arguments& args);

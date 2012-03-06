@@ -13,18 +13,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-namespace extensions {
+namespace {
 
-FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
-    int dependency_count,
-    const char** dependencies)
-    : ChromeV8Extension("extensions/file_browser_handler_custom_bindings.js",
-                        IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS,
-                        dependency_count,
-                        dependencies,
-                        NULL) {}
-
-static v8::Handle<v8::Value> GetExternalFileEntry(const v8::Arguments& args) {
+v8::Handle<v8::Value> GetExternalFileEntry(const v8::Arguments& args) {
   // TODO(zelidrag): Make this magic work on other platforms when file browser
   // matures enough on ChromeOS.
 #if defined(OS_CHROMEOS)
@@ -54,13 +45,14 @@ static v8::Handle<v8::Value> GetExternalFileEntry(const v8::Arguments& args) {
 #endif
 }
 
-v8::Handle<v8::FunctionTemplate>
-FileBrowserHandlerCustomBindings::GetNativeFunction(
-    v8::Handle<v8::String> name) {
-  if (name->Equals(v8::String::New("GetExternalFileEntry")))
-    return v8::FunctionTemplate::New(GetExternalFileEntry);
-  else
-    return ChromeV8Extension::GetNativeFunction(name);
+}  // namespace
+
+namespace extensions {
+
+FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings()
+    : ChromeV8Extension(NULL) {
+  RouteStaticFunction("GetExternalFileEntry", &GetExternalFileEntry);
 }
+
 
 }  // namespace extensions
