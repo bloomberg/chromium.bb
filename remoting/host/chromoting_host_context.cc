@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,20 +23,10 @@ ChromotingHostContext::ChromotingHostContext(
 ChromotingHostContext::~ChromotingHostContext() {
 }
 
-void ChromotingHostContext::Start() {
+bool ChromotingHostContext::Start() {
   // Start all the threads.
-  main_thread_.Start();
-  encode_thread_.Start();
-  jingle_thread_.Start();
-  desktop_thread_.Start();
-}
-
-void ChromotingHostContext::Stop() {
-  // Stop all the threads.
-  jingle_thread_.Stop();
-  encode_thread_.Stop();
-  main_thread_.Stop();
-  desktop_thread_.Stop();
+  return main_thread_.Start() && encode_thread_.Start() &&
+      jingle_thread_.Start() && desktop_thread_.Start();
 }
 
 JingleThread* ChromotingHostContext::jingle_thread() {

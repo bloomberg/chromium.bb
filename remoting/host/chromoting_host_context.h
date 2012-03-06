@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,12 +22,12 @@ class ChromotingHostContext {
   explicit ChromotingHostContext(base::MessageLoopProxy* ui_message_loop);
   virtual ~ChromotingHostContext();
 
-  // TODO(ajwong): Move the Start/Stop methods out of this class. Then
+  // TODO(ajwong): Move the Start method out of this class. Then
   // create a static factory for construction, and destruction.  We
-  // should be able to remove the need for virtual functions below with that
-  // design, while preserving the relative simplicity of this API.
-  virtual void Start();
-  virtual void Stop();
+  // should be able to remove the need for virtual functions below
+  // with that design, while preserving the relative simplicity of
+  // this API.
+  virtual bool Start();
 
   virtual JingleThread* jingle_thread();
 

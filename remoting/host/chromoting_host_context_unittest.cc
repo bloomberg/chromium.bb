@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,6 @@ TEST(ChromotingHostContextTest, StartAndStop) {
   EXPECT_TRUE(context.jingle_thread());
   EXPECT_TRUE(context.main_message_loop());
   EXPECT_TRUE(context.encode_message_loop());
-  context.Stop();
-
-  // Expect all the threads are stopped.
-  EXPECT_FALSE(context.main_thread_.IsRunning());
-  EXPECT_FALSE(context.encode_thread_.IsRunning());
 }
 
 }  // namespace remoting

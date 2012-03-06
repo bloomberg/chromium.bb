@@ -81,7 +81,7 @@ class MockChromotingHostContext : public ChromotingHostContext {
   MockChromotingHostContext();
   virtual ~MockChromotingHostContext();
 
-  MOCK_METHOD0(Start, void());
+  MOCK_METHOD0(Start, bool());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(jingle_thread, JingleThread*());
   MOCK_METHOD0(ui_message_loop, base::MessageLoopProxy*());
