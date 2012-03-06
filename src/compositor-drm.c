@@ -60,6 +60,7 @@ struct drm_compositor {
 	struct tty *tty;
 
 	struct wl_list sprite_list;
+	int sprites_are_broken;
 
 	uint32_t prev_state;
 };
@@ -434,6 +435,9 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	pixman_box32_t *box;
 	uint32_t format;
 
+	if (c->sprites_are_broken)
+		return -1;
+
 	if (surface_is_primary(ec, es))
 		return -1;
 
@@ -484,6 +488,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 			    &fb_id, 0);
 	if (ret) {
 		fprintf(stderr, "addfb2 failed: %d\n", ret);
+		c->sprites_are_broken = 1;
 		return -1;
 	}
 
