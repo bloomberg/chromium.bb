@@ -880,6 +880,30 @@ name=http://code.google.com/p/drmemory/issues/detail?id=809
 system call NtGdiPolyPolyDraw parameter #1
 *!gfx::Path::CreateNativeRegion
 
+# Very wide suppression for all uninits in rpcrt4.dll.  We get bad stack traces
+# coming out of this module (sometimes only one frame), which makes it hard to
+# write precise suppressions.  Until we have bit-level tracking (DRMi#113) we
+# should keep this.
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=113 rpcrt4.dll wildcard
+RPCRT4.dll!*
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=810
+instruction=test   %edx %edx
+USER32.dll!GetClassLongW
+ntdll.dll!KiUserCallbackDispatcher
+*!ui::CenterAndSizeWindow
+
+UNINITIALIZED READ
+name=http://code.google.com/p/drmemory/issues/detail?id=815
+KERNEL*.dll!...
+dxgi.dll!*
+USER32.dll!GetMonitorInfoA
+ntdll.dll!KiUserCallbackDispatcher
+dxgi.dll!*
+WinSATAPI.DLL!*
+
 ###############################################################
 # Benign issues in Chromium
 
@@ -929,8 +953,7 @@ name=http://crbug.com/79933 (3)
 LEAK
 name=http://crbug.com/86301
 *!operator new
-*!base::internal::PostTaskAndReplyImpl::PostTaskAndReply
-*!base::TaskRunner::PostTaskAndReply
+...
 *!*_DeadReplyLoopDoesNotDelete_Test::TestBody
 
 # Leak in a binary copy of Firefox 3's NSS dll.  Not much we can do about it.
@@ -1124,3 +1147,8 @@ LEAK
 name=http://crbug.com/115987
 ...
 *!base::SequencedWorkerPool::*
+
+UNINITIALIZED READ
+name=http://crbug.com/116277
+*!MOZ_Z_deflate
+*!zipCloseFileInZipRaw64
