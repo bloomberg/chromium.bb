@@ -138,6 +138,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       int render_view_id,
       int notification_id) OVERRIDE;
   virtual bool CanCreateWindow(
+      const GURL& opener_url,
       const GURL& origin,
       WindowContainerType container_type,
       content::ResourceContext* context,

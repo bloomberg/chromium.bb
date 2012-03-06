@@ -263,6 +263,7 @@ void ShellContentBrowserClient::CancelDesktopNotification(
 }
 
 bool ShellContentBrowserClient::CanCreateWindow(
+    const GURL& opener_url,
     const GURL& origin,
     WindowContainerType container_type,
     content::ResourceContext* context,

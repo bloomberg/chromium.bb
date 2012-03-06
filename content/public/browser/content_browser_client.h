@@ -306,6 +306,7 @@ class ContentBrowserClient {
   // type.
   // This is called on the IO thread.
   virtual bool CanCreateWindow(
+      const GURL& opener_url,
       const GURL& source_origin,
       WindowContainerType container_type,
       content::ResourceContext* context,

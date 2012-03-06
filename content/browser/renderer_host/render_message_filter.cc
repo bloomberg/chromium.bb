@@ -400,8 +400,9 @@ void RenderMessageFilter::OnMsgCreateWindow(
     int* surface_id,
     int64* cloned_session_storage_namespace_id) {
   if (!content::GetContentClient()->browser()->CanCreateWindow(
-          GURL(params.opener_security_origin), params.window_container_type,
-          resource_context_, render_process_id_)) {
+          GURL(params.opener_url), GURL(params.opener_security_origin),
+          params.window_container_type, resource_context_,
+          render_process_id_)) {
     *route_id = MSG_ROUTING_NONE;
     *surface_id = 0;
     return;

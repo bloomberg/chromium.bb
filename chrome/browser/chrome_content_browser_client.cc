@@ -1235,6 +1235,7 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
 }
 
 bool ChromeContentBrowserClient::CanCreateWindow(
+    const GURL& opener_url,
     const GURL& source_origin,
     WindowContainerType container_type,
     content::ResourceContext* context,
@@ -1252,9 +1253,10 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     // Note: this use of GetExtensionOrAppByURL is safe but imperfect.  It may
     // return a recently installed Extension even if this CanCreateWindow call
     // was made by an old copy of the page in a normal web process.  That's ok,
-    // because the permission check below will still fail.
+    // because the permission check below will still fail.  We must use the
+    // full URL to find hosted apps, though, and not just the origin.
     const Extension* extension = map->extensions().GetExtensionOrAppByURL(
-        ExtensionURLInfo(source_origin));
+        ExtensionURLInfo(opener_url));
     if (extension && !extension->allow_background_js_access())
       return false;
 
