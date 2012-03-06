@@ -1489,6 +1489,7 @@ map(struct weston_shell *base, struct weston_surface *surface,
 	struct weston_compositor *compositor = shell->compositor;
 	struct shell_surface *shsurf;
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
+	struct weston_surface *parent;
 	int panel_height = 0;
 
 	shsurf = get_shell_surface(surface);
@@ -1560,6 +1561,11 @@ map(struct weston_shell *base, struct weston_surface *surface,
 			if (!shell->lock_surface)
 				compositor->state = WESTON_COMPOSITOR_IDLE;
 		}
+		break;
+	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_TRANSIENT:
+		parent = shsurf->parent->surface;
+		wl_list_insert(parent->layer_link.prev, &surface->layer_link);
 		break;
 	case SHELL_SURFACE_FULLSCREEN:
 	case SHELL_SURFACE_NONE:
