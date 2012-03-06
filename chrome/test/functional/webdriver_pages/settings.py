@@ -468,5 +468,5 @@ class ManageExceptionsPage(object):
           '"%s" in "%s" content page' % (behavior, self._content_type))
     # Send enter key.
     pattern_elem = listitem_elem.find_element_by_tag_name('input')
-    _FocusField(self._driver, self._list_elem, pattern_elem)
+    _FocusField(self._driver, list_elem, pattern_elem)
     pattern_elem.send_keys('\n')
