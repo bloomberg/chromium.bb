@@ -19,13 +19,6 @@ class ProcessCountTest(pyauto.PyUITest):
     'chromeos': 4,  # Processes: browser, tab, sandbox helper, zygote.
   }
 
-  CHROME_PROCESS_NAME = {
-    'win': 'chrome.exe',
-    'mac': 'Chromium',
-    'linux': 'chrome',
-    'chromeos': 'chrome',
-  }
-
   def Debug(self):
     """Test method for experimentation.
 
@@ -37,19 +30,14 @@ class ProcessCountTest(pyauto.PyUITest):
 
   def setUp(self):
     self.proc_count_fresh_profile = 0
-    self.chrome_proc_name = ''
     if self.IsChromeOS():
       self.proc_count_fresh_profile = self.FRESH_PROFILE_PROC_COUNT['chromeos']
-      self.chrome_proc_name = self.CHROME_PROCESS_NAME['chromeos']
     elif self.IsWin():
       self.proc_count_fresh_profile = self.FRESH_PROFILE_PROC_COUNT['win']
-      self.chrome_proc_name = self.CHROME_PROCESS_NAME['win']
     elif self.IsMac():
       self.proc_count_fresh_profile = self.FRESH_PROFILE_PROC_COUNT['mac']
-      self.chrome_proc_name = self.CHROME_PROCESS_NAME['mac']
     elif self.IsLinux():
       self.proc_count_fresh_profile = self.FRESH_PROFILE_PROC_COUNT['linux']
-      self.chrome_proc_name = self.CHROME_PROCESS_NAME['linux']
 
     pyauto.PyUITest.setUp(self)
 
@@ -62,9 +50,11 @@ class ProcessCountTest(pyauto.PyUITest):
       num_expected: An integer representing the expected number of Chrome-
                     related processes that should currently exist.
     """
+    browser_process_name = (
+        self.GetBrowserInfo()['properties']['BrowserProcessExecutableName'])
     proc_info = self.GetProcessInfo()
     browser_info = [x for x in proc_info['browsers']
-                    if x['process_name'] == self.chrome_proc_name]
+                    if x['process_name'] == browser_process_name]
     assert len(browser_info) == 1
     # Utility & GPU processes may show up any time.  Ignore them.
     processes = [x for x in browser_info[0]['processes']
