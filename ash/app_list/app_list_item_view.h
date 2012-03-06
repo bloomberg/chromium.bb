@@ -36,6 +36,10 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
     return model_;
   }
 
+  void set_icon_size(const gfx::Size& size) {
+    icon_size_ = size;
+  }
+
   // Icon padding
   static const int kPadding = 5;
 
@@ -65,6 +69,8 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
   views::Label* title_;
 
   scoped_ptr<views::MenuRunner> context_menu_runner_;
+
+  gfx::Size icon_size_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };

@@ -32,7 +32,7 @@ gfx::Size CalculateTileSize(const gfx::Size& content_size, int num_of_tiles) {
     tile_width = icon_size + std::min(kMinLabelWidth, icon_size * 2) +
         2 * AppListItemView::kPadding;
 
-    rows = content_size.height() / tile_height;
+    rows = std::max(content_size.height() / tile_height, 1);
     cols = std::min(content_size.width() / tile_width,
                     (num_of_tiles - 1) / rows + 1);
     if (rows * cols >= num_of_tiles)
@@ -83,16 +83,37 @@ void AppListModelView::Update() {
   SchedulePaint();
 }
 
+int AppListModelView::SetTileIconSizeAndGetMaxWidth(int icon_dimension) {
+  gfx::Size icon_size(icon_dimension, icon_dimension);
+  int max_tile_width = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    views::View* view = child_at(i);
+    static_cast<AppListItemView*>(view)->set_icon_size(icon_size);
+    gfx::Size preferred_size = view->GetPreferredSize();
+    if (preferred_size.width() > max_tile_width)
+      max_tile_width = preferred_size.width();
+  }
+
+  return max_tile_width;
+}
+
 void AppListModelView::Layout() {
   gfx::Rect rect(GetContentsBounds());
   if (rect.IsEmpty())
     return;
 
+  // Gets |tile_size| based on content rect and number of tiles.
   gfx::Size tile_size = CalculateTileSize(rect.size(), child_count());
 
+  // Sets tile's icons size and caps tile width to the max tile width.
+  int max_tile_width = SetTileIconSizeAndGetMaxWidth(
+      tile_size.height() - 2 * AppListItemView::kPadding);
+  if (max_tile_width && tile_size.width() > max_tile_width)
+    tile_size.set_width(max_tile_width);
+
+  // Layouts tiles.
   int col_bottom = rect.bottom();
   gfx::Rect current_tile(rect.origin(), tile_size);
-
   for (int i = 0; i < child_count(); ++i) {
     views::View* view = child_at(i);
     view->SetBoundsRect(current_tile);

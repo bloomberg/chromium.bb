@@ -31,6 +31,8 @@ class AppListModelView : public views::View,
   // Updates from model.
   void Update();
 
+  int SetTileIconSizeAndGetMaxWidth(int icon_dimension);
+
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
 

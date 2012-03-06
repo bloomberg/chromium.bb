@@ -94,21 +94,21 @@ std::string AppListItemView::GetClassName() const {
 }
 
 gfx::Size AppListItemView::GetPreferredSize() {
-  gfx::Size icon_size = icon_->GetPreferredSize();
   gfx::Size title_size = title_->GetPreferredSize();
 
-  return gfx::Size(icon_size.width() + kIconTitleSpacing + title_size.width(),
-                   std::max(icon_size.height(), title_size.height()));
+  gfx::Size preferred_size(
+      icon_size_.width() + kIconTitleSpacing + title_size.width(),
+      std::max(icon_size_.height(), title_size.height()));
+  preferred_size.Enlarge(2 * kPadding, 2 * kPadding);
+  return preferred_size;
 }
 
 void AppListItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
 
-  int preferred_icon_size = rect.height() - 2 * kPadding;
-  gfx::Size icon_size(preferred_icon_size, preferred_icon_size);
-  icon_->SetImageSize(icon_size);
+  icon_->SetImageSize(icon_size_);
   icon_->SetBounds(rect.x() + kPadding, rect.y(),
-                   icon_size.width(), rect.height());
+                   icon_size_.width(), rect.height());
 
   title_->SetBounds(
       icon_->bounds().right() + kIconTitleSpacing,
