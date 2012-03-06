@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
-#include "third_party/libjingle/source/talk/base/byteorder.h"
+#include "third_party/libjingle/overrides/talk/base/byteorder.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 
