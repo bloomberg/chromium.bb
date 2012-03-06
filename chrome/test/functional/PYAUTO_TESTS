@@ -521,6 +521,9 @@
       '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
       # crbug.com/100893
       '-enterprise.EnterpriseTestReverse.testEnableSPDY',
+      # crbug.com/117006
+      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
+      '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       # crbug.com/115646
       '-translate.TranslateTest.testSeveralLanguages',
     ],
