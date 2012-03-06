@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/gtk/gtk_screen_utils.h"

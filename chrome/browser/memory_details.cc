@@ -16,13 +16,13 @@
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
@@ -205,8 +205,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         if (!widget || !widget->IsRenderView())
           continue;
 
-        const RenderViewHost* host = static_cast<const RenderViewHostImpl*>(
-            RenderWidgetHostImpl::From(const_cast<RenderWidgetHost*>(widget)));
+        const RenderViewHost* host =
+            RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
         content::RenderViewHostDelegate* host_delegate = host->GetDelegate();
         DCHECK(host_delegate);
         GURL url = host_delegate->GetURL();

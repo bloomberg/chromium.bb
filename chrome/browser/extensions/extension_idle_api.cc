@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/extension_idle_api.h"
 
 #include <algorithm>
-#include <string>
 #include <map>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/render_view_host.h"
 
 namespace keys = extension_idle_api_constants;
 

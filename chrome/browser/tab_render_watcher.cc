@@ -4,11 +4,10 @@
 
 #include "chrome/browser/tab_render_watcher.h"
 
-#include "content/browser/renderer_host/render_widget_host.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;

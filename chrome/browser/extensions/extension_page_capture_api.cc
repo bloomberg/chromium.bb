@@ -10,13 +10,15 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+
+#include <limits>
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;

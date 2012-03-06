@@ -10,8 +10,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 
 namespace {
@@ -28,12 +28,12 @@ RenderViewHost* FindFirstDevToolsHost() {
         render_process_host->ListenersIterator());
     for (; !iter.IsAtEnd(); iter.Advance()) {
       const RenderWidgetHost* widget =
-          RenderWidgetHostImpl::FromIPCChannelListener(iter.GetCurrentValue());
+          RenderWidgetHost::FromIPCChannelListener(iter.GetCurrentValue());
       DCHECK(widget);
       if (!widget || !widget->IsRenderView())
         continue;
-      RenderViewHost* host = static_cast<RenderViewHostImpl*>(
-          RenderWidgetHostImpl::From(const_cast<RenderWidgetHost*>(widget)));
+      RenderViewHost* host =
+          RenderViewHost::From(const_cast<RenderWidgetHost*>(widget));
 
       content::RenderViewHostDelegate* host_delegate = host->GetDelegate();
       GURL url = host_delegate->GetURL();

@@ -16,9 +16,9 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_observer.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
@@ -111,7 +111,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 - (id)initWithRenderWidgetHost:(RenderWidgetHost*)renderWidgetHost {
   self = [super init];
   if (self) {
-    renderWidgetHost_ = RenderWidgetHostImpl::From(renderWidgetHost);
+    renderWidgetHost_ = renderWidgetHost;
     NSView* nativeView = renderWidgetHost_->GetView()->GetNativeView();
     view_id_util::SetID(nativeView, VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 
@@ -119,9 +119,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
       spellingObserver_.reset(
           new ChromeRenderWidgetHostViewMacDelegateInternal::
               SpellCheckRenderViewObserver(
-                  static_cast<RenderViewHost*>(
-                      static_cast<RenderViewHostImpl*>(renderWidgetHost_)),
-                  self));
+                  RenderViewHost::From(renderWidgetHost_), self));
     }
   }
   return self;
@@ -170,8 +168,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   if (!renderWidgetHost_ || !renderWidgetHost_->IsRenderView())
     return NO;
   if (DevToolsWindow::IsDevToolsWindow(
-          static_cast<RenderViewHost*>(
-              static_cast<RenderViewHostImpl*>(renderWidgetHost_)))) {
+          RenderViewHost::From(renderWidgetHost_))) {
     return NO;
   }
 

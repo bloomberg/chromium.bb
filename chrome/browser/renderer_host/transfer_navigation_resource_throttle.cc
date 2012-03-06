@@ -5,12 +5,12 @@
 #include "chrome/browser/renderer_host/transfer_navigation_resource_throttle.h"
 
 #include "base/bind.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/extensions/extension_process_policy.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/common/referrer.h"
 

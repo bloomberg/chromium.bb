@@ -118,6 +118,11 @@ RenderViewHost* RenderViewHost::FromID(int render_process_id,
   return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(widget));
 }
 
+// static
+RenderViewHost* RenderViewHost::From(RenderWidgetHost* rwh) {
+  return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(rwh));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHostImpl, public:
 

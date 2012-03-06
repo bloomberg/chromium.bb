@@ -14,9 +14,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
@@ -195,10 +196,8 @@ void RecursiveFindNodeInAccessibilityTree(
 // of the selected tab.
 IAccessible*
 AccessibilityWinBrowserTest::GetRendererAccessible() {
-  // TODO(joi): Remove this dependency.
-  static_cast<RenderViewHostImpl*>(
-      browser()->GetSelectedWebContents()->GetRenderViewHost())->
-      set_send_accessibility_updated_notifications(true);
+  TestRenderViewHost::EnableAccessibilityUpdatedNotifications(
+      browser()->GetSelectedWebContents()->GetRenderViewHost());
 
   HWND hwnd_render_widget_host_view =
       browser()->GetSelectedWebContents()->GetRenderWidgetHostView()->

@@ -7,16 +7,16 @@
 #import "base/logging.h"
 #include "base/mac/crash_logging.h"
 #import "base/mac/scoped_nsexception_enabler.h"
-#import "base/metrics/histogram.h"
 #import "base/memory/scoped_nsobject.h"
+#import "base/metrics/histogram.h"
 #import "base/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #import "chrome/common/mac/objc_method_swizzle.h"
 #import "chrome/common/mac/objc_zombie.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 // The implementation of NSExceptions break various assumptions in the

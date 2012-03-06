@@ -283,6 +283,11 @@ class TestRenderViewHost : public RenderViewHostImpl {
   // RenderViewHostImpl::is_swapped_out() outside of content.
   static bool IsRenderViewHostSwappedOut(RenderViewHost* rwh);
 
+  // This removes the need to expose
+  // RenderViewHostImpl::set_send_accessibility_updated_notifications()
+  // outside of content.
+  static void EnableAccessibilityUpdatedNotifications(RenderViewHost* rwh);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
 

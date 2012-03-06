@@ -26,17 +26,17 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
-#include "webkit/glue/webkit_glue.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "webkit/glue/webkit_glue.h"
 
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;

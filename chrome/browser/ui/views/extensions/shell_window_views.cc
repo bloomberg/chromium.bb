@@ -16,7 +16,7 @@
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/base/win/shell.h"
 #endif

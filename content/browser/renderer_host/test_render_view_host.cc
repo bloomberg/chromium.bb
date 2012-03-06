@@ -100,6 +100,13 @@ bool TestRenderViewHost::IsRenderViewHostSwappedOut(RenderViewHost* rwh) {
   return static_cast<RenderViewHostImpl*>(rwh)->is_swapped_out();
 }
 
+// static
+void TestRenderViewHost::EnableAccessibilityUpdatedNotifications(
+    RenderViewHost* rvh) {
+  static_cast<RenderViewHostImpl*>(
+      rvh)->set_send_accessibility_updated_notifications(true);
+}
+
 bool TestRenderViewHost::TestOnMessageReceived(const IPC::Message& msg) {
   return OnMessageReceived(msg);
 }
