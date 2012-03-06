@@ -87,7 +87,9 @@ public:
   scoped_ptr<DragImageView> drag_image_;
   const ui::OSExchangeData* drag_data_;
   int drag_operation_;
-  aura::Window* dragged_window_;
+
+  // Window that is currently under the drag cursor.
+  aura::Window* drag_window_;
   gfx::Point drag_start_location_;
 
   bool drag_drop_in_progress_;

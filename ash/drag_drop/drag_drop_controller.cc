@@ -38,7 +38,7 @@ DragDropController::DragDropController()
     : drag_image_(NULL),
       drag_data_(NULL),
       drag_operation_(0),
-      dragged_window_(NULL),
+      drag_window_(NULL),
       drag_drop_in_progress_(false),
       should_block_during_drag_drop_(true) {
   Shell::GetInstance()->AddRootWindowEventFilter(this);
@@ -75,7 +75,7 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
         drag_image_->GetPreferredSize()));
   drag_image_->SetWidgetVisible(true);
 
-  dragged_window_ = NULL;
+  drag_window_ = NULL;
   drag_start_location_ = root_location;
 
 #if !defined(OS_MACOSX)
@@ -92,15 +92,15 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
 void DragDropController::DragUpdate(aura::Window* target,
                                     const aura::LocatedEvent& event) {
   aura::client::DragDropDelegate* delegate = NULL;
-  if (target != dragged_window_) {
-    if (dragged_window_) {
-      if ((delegate = aura::client::GetDragDropDelegate(dragged_window_)))
+  if (target != drag_window_) {
+    if (drag_window_) {
+      if ((delegate = aura::client::GetDragDropDelegate(drag_window_)))
         delegate->OnDragExited();
-      dragged_window_->RemoveObserver(this);
+      drag_window_->RemoveObserver(this);
     }
-    dragged_window_ = target;
-    dragged_window_->AddObserver(this);
-    if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
+    drag_window_ = target;
+    drag_window_->AddObserver(this);
+    if ((delegate = aura::client::GetDragDropDelegate(drag_window_))) {
       aura::DropTargetEvent e(*drag_data_,
                               event.location(),
                               event.root_location(),
@@ -108,7 +108,7 @@ void DragDropController::DragUpdate(aura::Window* target,
       delegate->OnDragEntered(e);
     }
   } else {
-    if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
+    if ((delegate = aura::client::GetDragDropDelegate(drag_window_))) {
       aura::DropTargetEvent e(*drag_data_,
                               event.location(),
                               event.root_location(),
@@ -131,8 +131,12 @@ void DragDropController::Drop(aura::Window* target,
                               const aura::LocatedEvent& event) {
   Shell::GetRootWindow()->SetCursor(aura::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
-  DCHECK(target == dragged_window_);
-  if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
+
+  // |drag_window_| can be NULL if we have just started the drag and have not
+  // received any DragUpdates, or, if the |drag_window_| gets destroyed during
+  // a drag/drop. Otherwise, target should be equal to the |drag_window_|.
+  DCHECK(target == drag_window_ || !drag_window_);
+  if ((delegate = aura::client::GetDragDropDelegate(target))) {
     aura::DropTargetEvent e(
         *drag_data_, event.location(), event.root_location(), drag_operation_);
     drag_operation_ = delegate->OnPerformDrop(e);
@@ -152,7 +156,7 @@ void DragDropController::Drop(aura::Window* target,
 void DragDropController::DragCancel() {
   Shell::GetRootWindow()->SetCursor(aura::kCursorPointer);
   aura::client::DragDropDelegate* delegate = NULL;
-  if ((delegate = aura::client::GetDragDropDelegate(dragged_window_))) {
+  if ((delegate = aura::client::GetDragDropDelegate(drag_window_))) {
     delegate->OnDragExited();
   }
   Cleanup();
@@ -224,9 +228,9 @@ ui::GestureStatus DragDropController::PreHandleGestureEvent(
 }
 
 void DragDropController::OnWindowDestroyed(aura::Window* window) {
-  if (dragged_window_ == window) {
-    dragged_window_->RemoveObserver(this);
-    dragged_window_ = NULL;
+  if (drag_window_ == window) {
+    drag_window_->RemoveObserver(this);
+    drag_window_ = NULL;
   }
 }
 
@@ -254,9 +258,9 @@ void DragDropController::StartCanceledAnimation() {
 }
 
 void DragDropController::Cleanup() {
-  if (dragged_window_)
-    dragged_window_->RemoveObserver(this);
-  dragged_window_ = NULL;
+  if (drag_window_)
+    drag_window_->RemoveObserver(this);
+  drag_window_ = NULL;
   drag_data_ = NULL;
   drag_drop_in_progress_ = false;
 }
