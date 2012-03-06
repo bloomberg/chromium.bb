@@ -627,7 +627,7 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&ProfileSizeTask, profile->GetPath(), extension_count),
-      112000);
+      base::TimeDelta::FromSeconds(112));
 }
 
 Profile* ProfileManager::CreateProfileHelper(const FilePath& path) {
