@@ -973,25 +973,46 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		animation->frame(animation, output, msecs);
 }
 
-static void
-idle_repaint(void *data)
+static int
+weston_compositor_read_input(int fd, uint32_t mask, void *data)
 {
-	struct weston_output *output = data;
+	struct weston_compositor *compositor = data;
 
-	/* An idle repaint may have been cancelled by vt switching away. */
-	if (output->repaint_needed)
-		weston_output_repaint(output, weston_compositor_get_time());
-	else
-		output->repaint_scheduled = 0;
+	wl_event_loop_dispatch(compositor->input_loop, 0);
+
+	return 1;
 }
 
 WL_EXPORT void
 weston_output_finish_frame(struct weston_output *output, int msecs)
 {
-	if (output->repaint_needed)
+	struct weston_compositor *compositor = output->compositor;
+	struct wl_event_loop *loop =
+		wl_display_get_event_loop(compositor->wl_display);
+	int fd;
+
+	wl_event_loop_dispatch(compositor->input_loop, 0);
+	if (output->repaint_needed) {
 		weston_output_repaint(output, msecs);
-	else
-		output->repaint_scheduled = 0;
+		return;
+	}
+
+	output->repaint_scheduled = 0;
+	if (compositor->input_loop_source)
+		return;
+
+	fd = wl_event_loop_get_fd(compositor->input_loop);
+	compositor->input_loop_source =
+		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
+				     weston_compositor_read_input, compositor);
+}
+
+static void
+idle_repaint(void *data)
+{
+	struct weston_output *output = data;
+
+	weston_output_finish_frame(output, weston_compositor_get_time());
 }
 
 WL_EXPORT void
@@ -1018,6 +1039,11 @@ weston_compositor_schedule_repaint(struct weston_compositor *compositor)
 
 		wl_event_loop_add_idle(loop, idle_repaint, output);
 		output->repaint_scheduled = 1;
+	}
+
+	if (compositor->input_loop_source) {
+		wl_event_source_remove(compositor->input_loop_source);
+		compositor->input_loop_source = NULL;
 	}
 }
 
@@ -2268,16 +2294,6 @@ compositor_bind(struct wl_client *client,
 			     &compositor_interface, id, compositor);
 }
 
-static int
-weston_compositor_read_input(int fd, uint32_t mask, void *data)
-{
-	struct weston_compositor *compositor = data;
-
-	wl_event_loop_dispatch(compositor->input_loop, 0);
-
-	return 1;
-}
-
 WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 {
@@ -2348,13 +2364,6 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
 
 	ec->input_loop = wl_event_loop_create();
-
-	ec->input_loop_source =
-		wl_event_loop_add_fd(loop,
-				     wl_event_loop_get_fd(ec->input_loop),
-				     WL_EVENT_READABLE,
-				     weston_compositor_read_input, ec);
-
 
 	weston_compositor_schedule_repaint(ec);
 
