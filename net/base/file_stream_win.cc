@@ -242,14 +242,17 @@ FileStreamWin::FileStreamWin(
 }
 
 FileStreamWin::~FileStreamWin() {
+  if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
+    // Block until the in-flight open/close operation is complete.
+    // TODO(satorux): Ideally we should not block. crbug.com/115067
+    WaitForIOCompletion();
+
+    // Block until the last read/write operation is complete.
+    async_context_.reset();
+  }
+
   if (auto_closed_) {
     if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
-      // Block until the in-flight open/close operation is complete.
-      // TODO(satorux): Ideally we should not block. crbug.com/115067
-      WaitForIOCompletion();
-      // Block until the last read/write operation is complete.
-      async_context_.reset();
-
       // Close the file in the background.
       if (IsOpen()) {
         const bool posted = base::WorkerPool::PostTask(

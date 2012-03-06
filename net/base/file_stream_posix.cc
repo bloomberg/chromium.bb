@@ -231,12 +231,14 @@ FileStreamPosix::FileStreamPosix(
 }
 
 FileStreamPosix::~FileStreamPosix() {
+  if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
+    // Block until the last open/close/read/write operation is complete.
+    // TODO(satorux): Ideally we should not block. crbug.com/115067
+    WaitForIOCompletion();
+  }
+
   if (auto_closed_) {
     if (open_flags_ & base::PLATFORM_FILE_ASYNC) {
-      // Block until the last open/close/read/write operation is complete.
-      // TODO(satorux): Ideally we should not block. crbug.com/115067
-      WaitForIOCompletion();
-
       // Close the file in the background.
       if (IsOpen()) {
         const bool posted = base::WorkerPool::PostTask(
