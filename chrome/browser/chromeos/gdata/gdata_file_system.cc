@@ -325,14 +325,12 @@ GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
     const FilePath& target_directory_path,
     bool is_exclusive,
     bool is_recursive,
-    const FileOperationCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> proxy)
+    const FileOperationCallback& callback)
     : created_directory_path(created_directory_path),
       target_directory_path(target_directory_path),
       is_exclusive(is_exclusive),
       is_recursive(is_recursive),
-      callback(callback),
-      proxy(proxy) {
+      callback(callback) {
 }
 
 GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
@@ -351,10 +349,6 @@ GDataFileSystem::GDataFileSystem(Profile* profile)
 
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // These weak pointers are used to post tasks to UI thread.
-  file_system_bound_to_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
-  documents_service_bound_to_ui_thread_ = documents_service_->AsWeakPtr();
 }
 
 GDataFileSystem::~GDataFileSystem() {
@@ -387,15 +381,11 @@ void GDataFileSystem::StartDirectoryRefresh(
     const FindFileParams& params) {
   // Kick off document feed fetching here if we don't have complete data
   // to finish this call.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::GetDocuments,
-          documents_service_bound_to_ui_thread_,
-          params.feed_url,
-          base::Bind(&GDataFileSystem::OnGetDocuments,
-                     file_system_bound_to_ui_thread_,
-                     params)));
+  documents_service_->GetDocuments(
+      params.feed_url,
+      base::Bind(&GDataFileSystem::OnGetDocuments,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 params));
 }
 
 void GDataFileSystem::Remove(const FilePath& file_path,
@@ -411,19 +401,12 @@ void GDataFileSystem::Remove(const FilePath& file_path,
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::DeleteDocument,
-          documents_service_bound_to_ui_thread_,
-          file_info->self_url(),
-          base::Bind(&GDataFileSystem::OnRemovedDocument,
-                     file_system_bound_to_ui_thread_,
-                     callback,
-                     file_path,
-                     // MessageLoopProxy is used to run |callback| on the
-                     // thread where this function was called.
-                     base::MessageLoopProxy::current())));
+  documents_service_->DeleteDocument(
+      file_info->self_url(),
+      base::Bind(&GDataFileSystem::OnRemovedDocument,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 file_path));
 }
 
 void GDataFileSystem::CreateDirectory(
@@ -431,16 +414,6 @@ void GDataFileSystem::CreateDirectory(
     bool is_exclusive,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  CreateDirectoryInternal(directory_path, is_exclusive, is_recursive, callback,
-                          base::MessageLoopProxy::current());
-}
-
-void GDataFileSystem::CreateDirectoryInternal(
-    const FilePath& directory_path,
-    bool is_exclusive,
-    bool is_recursive,
-    const FileOperationCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> reply_proxy) {
   FilePath last_parent_dir_path;
   FilePath first_missing_path;
   GURL last_parent_dir_url;
@@ -451,7 +424,7 @@ void GDataFileSystem::CreateDirectoryInternal(
   switch (result) {
     case FOUND_INVALID: {
       if (!callback.is_null()) {
-        reply_proxy->PostTask(FROM_HERE,
+        MessageLoop::current()->PostTask(FROM_HERE,
             base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
       }
 
@@ -459,7 +432,7 @@ void GDataFileSystem::CreateDirectoryInternal(
     }
     case DIRECTORY_ALREADY_PRESENT: {
       if (!callback.is_null()) {
-        reply_proxy->PostTask(FROM_HERE,
+        MessageLoop::current()->PostTask(FROM_HERE,
             base::Bind(callback,
                        is_exclusive ? base::PLATFORM_FILE_ERROR_EXISTS :
                                       base::PLATFORM_FILE_OK));
@@ -482,27 +455,23 @@ void GDataFileSystem::CreateDirectoryInternal(
   // directory if this is not a recursive operation.
   if (directory_path !=  first_missing_path && !is_recursive) {
     if (!callback.is_null()) {
-      reply_proxy->PostTask(FROM_HERE,
+      MessageLoop::current()->PostTask(FROM_HERE,
            base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     }
     return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DocumentsService::CreateDirectory,
-                 documents_service_bound_to_ui_thread_,
-                 last_parent_dir_url,
-                 first_missing_path.BaseName().value(),
-                 base::Bind(&GDataFileSystem::OnCreateDirectoryCompleted,
-                            file_system_bound_to_ui_thread_,
-                            CreateDirectoryParams(
-                                first_missing_path,
-                                directory_path,
-                                is_exclusive,
-                                is_recursive,
-                                callback,
-                                reply_proxy))));
+  documents_service_->CreateDirectory(
+      last_parent_dir_url,
+      first_missing_path.BaseName().value(),
+      base::Bind(&GDataFileSystem::OnCreateDirectoryCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 CreateDirectoryParams(
+                     first_missing_path,
+                     directory_path,
+                     is_exclusive,
+                     is_recursive,
+                     callback)));
 }
 
 void GDataFileSystem::GetFile(const FilePath& file_path,
@@ -522,18 +491,11 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
   // TODO(satorux): We should get a file from the cache if it's present, but
   // the caching layer is not implemented yet. For now, always download from
   // the cloud.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::DownloadFile,
-          documents_service_bound_to_ui_thread_,
-          file_info->content_url(),
-          base::Bind(&GDataFileSystem::OnFileDownloaded,
-                     file_system_bound_to_ui_thread_,
-                     callback,
-                     // MessageLoopProxy is used to run |callback| on the
-                     // thread where this function was called.
-                     base::MessageLoopProxy::current())));
+  documents_service_->DownloadFile(
+      file_info->content_url(),
+      base::Bind(&GDataFileSystem::OnFileDownloaded,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void GDataFileSystem::UnsafeFindFileByPath(
@@ -607,7 +569,7 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
     if (!params.callback.is_null())
-      params.proxy->PostTask(FROM_HERE, base::Bind(params.callback, error));
+      params.callback.Run(error);
 
     return;
   }
@@ -616,7 +578,7 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
 
   if (error != base::PLATFORM_FILE_OK) {
     if (!params.callback.is_null())
-      params.proxy->PostTask(FROM_HERE, base::Bind(params.callback, error));
+      params.callback.Run(error);
 
     return;
   }
@@ -624,18 +586,16 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   // Not done yet with recursive directory creation?
   if (params.target_directory_path != params.created_directory_path &&
       params.is_recursive) {
-    CreateDirectoryInternal(params.target_directory_path,
-                            params.is_exclusive,
-                            params.is_recursive,
-                            params.callback,
-                            params.proxy);
+    CreateDirectory(params.target_directory_path,
+                    params.is_exclusive,
+                    params.is_recursive,
+                    params.callback);
     return;
   }
 
   if (!params.callback.is_null()) {
     // Finally done with the create request.
-    params.proxy->PostTask(FROM_HERE, base::Bind(params.callback,
-                                                 base::PLATFORM_FILE_OK));
+    params.callback.Run(base::PLATFORM_FILE_OK);
   }
 }
 
@@ -643,8 +603,6 @@ void GDataFileSystem::OnGetDocuments(
     const FindFileParams& params,
     GDataErrorCode status,
     base::Value* data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (error == base::PLATFORM_FILE_OK &&
@@ -687,34 +645,27 @@ void GDataFileSystem::OnGetDocuments(
 void GDataFileSystem::OnRemovedDocument(
     const FileOperationCallback& callback,
     const FilePath& file_path,
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     GDataErrorCode status,
     const GURL& document_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (error == base::PLATFORM_FILE_OK)
     error = RemoveFileFromFileSystem(file_path);
 
   if (!callback.is_null()) {
-    message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+    callback.Run(error);
   }
 }
 
 void GDataFileSystem::OnFileDownloaded(
     const GetFileCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     GDataErrorCode status,
     const GURL& content_url,
     const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (!callback.is_null()) {
-    message_loop_proxy->PostTask(FROM_HERE,
-                                 base::Bind(callback, error, file_path));
+    callback.Run(error, file_path);
   }
 }
 

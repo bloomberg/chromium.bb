@@ -146,7 +146,6 @@ class GDataAuthService : public content::NotificationObserver {
 };
 
 // This calls provides documents feed service calls.
-// All public functions must be called on UI thread.
 class DocumentsService : public GDataAuthService::Observer {
  public:
   // DocumentsService is usually owned and created by GDataFileSystem.
@@ -156,26 +155,31 @@ class DocumentsService : public GDataAuthService::Observer {
   // Initializes the documents service tied with |profile|.
   void Initialize(Profile* profile);
 
-  // Returns a weak pointer of this documents service.
-  base::WeakPtr<DocumentsService> AsWeakPtr();
-
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
+  //
+  // Must be called on UI thread.
   void Authenticate(const AuthStatusCallback& callback);
 
   // Gets the document feed from |feed_url|. If this URL is empty, the call
   // will fetch the default ('root') document feed. Upon completion,
-  // invokes |callback| with results.
+  // invokes |callback| with results on the calling thread.
+  //
+  // Can be called on any thread.
   void GetDocuments(const GURL& feed_url, const GetDataCallback& callback);
 
   // Delete a document identified by its 'self' |url| and |etag|.
-  // Upon completion, invokes |callback| with results.
+  // Upon completion, invokes |callback| with results on the calling thread.
+  //
+  // Can be called on any thread.
   void DeleteDocument(const GURL& document_url,
                       const EntryActionCallback& callback);
 
   // Downloads a document identified by its |content_url| in a given |format|.
-  // Upon completion, invokes |callback| with results.
+  // Upon completion, invokes |callback| with results on the calling thread.
+  //
+  // Can be called on any thread.
   void DownloadDocument(const GURL& content_url,
                         DocumentExportFormat format,
                         const DownloadActionCallback& callback);
@@ -183,21 +187,29 @@ class DocumentsService : public GDataAuthService::Observer {
   // Creates new collection with |directory_name| under parent directory
   // identified with |parent_content_url|. If |parent_content_url| is empty,
   // the new collection will be created in the root. Upon completion,
-  // invokes |callback| and passes newly created entry.
+  // invokes |callback| and passes newly created entry on the calling thread.
+  //
+  // Can be called on any thread.
   void CreateDirectory(const GURL& parent_content_url,
                        const FilePath::StringType& directory_name,
                        const CreateEntryCallback& callback);
 
   // Downloads a file identified by its |content_url|. Upon completion, invokes
-  // |callback| with results.
+  // |callback| with results on the calling thread.
+  //
+  // Can be called on any thread.
   void DownloadFile(const GURL& content_url,
                     const DownloadActionCallback& callback);
 
   // Initiate uploading of a document/file.
+  //
+  // Must be called on UI thread.
   void InitiateUpload(const UploadFileInfo& upload_file_info,
                       const InitiateUploadCallback& callback);
 
   // Resume uploading of a document/file.
+  //
+  // Must be called on UI thread.
   void ResumeUpload(const UploadFileInfo& upload_file_info,
                     const ResumeUploadCallback& callback);
 
@@ -230,6 +242,33 @@ class DocumentsService : public GDataAuthService::Observer {
     GURL url;
   };
 
+  // Helper function for GetDocuments(). We should initiate this operation on
+  // the UI thread as the underlying GDataAuthService requires to be used on
+  // the UI thread. |relay_proxy| is used to post a task to the origin thread.
+  void GetDocumentsOnUIThread(
+      const GURL& feed_url,
+      const GetDataCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+
+  // Helper function for DeleteDocument().
+  void DeleteDocumentOnUIThread(
+    const GURL& document_url,
+    const EntryActionCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy);
+
+  // Helper function for DownloadFile().
+  void DownloadFileOnUIThread(
+    const GURL& document_url,
+    const DownloadActionCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy);
+
+  // Helper function for CreateDirectory.
+  void CreateDirectoryOnUIThread(
+    const GURL& parent_content_url,
+    const FilePath::StringType& directory_name,
+    const CreateEntryCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy);
+
   // GDataAuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
@@ -238,41 +277,53 @@ class DocumentsService : public GDataAuthService::Observer {
   // duplication.
 
   // Callback when re-authenticating user during document list fetching.
-  void GetDocumentsOnAuthRefresh(const GURL& feed_url,
-                                 const GetDataCallback& callback,
-                                 GDataErrorCode error,
-                                 const std::string& auth_token);
+  void GetDocumentsOnAuthRefresh(
+      const GURL& feed_url,
+      const GetDataCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      const std::string& auth_token);
 
   // Pass-through callback for re-authentication during document list fetching.
   // If the call is successful, parsed document feed will be returned as |root|.
-  void OnGetDocumentsCompleted(const GURL& feed_url,
-                               const GetDataCallback& callback,
-                               GDataErrorCode error,
-                               base::Value* root);
+  void OnGetDocumentsCompleted(
+      const GURL& feed_url,
+      const GetDataCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      base::Value* root);
 
   // Callback when re-authenticating user during document delete call.
-  void DownloadDocumentOnAuthRefresh(const DownloadActionCallback& callback,
-                                     const GURL& content_url,
-                                     GDataErrorCode error,
-                                     const std::string& token);
+  void DownloadDocumentOnAuthRefresh(
+      const DownloadActionCallback& callback,
+      const GURL& content_url,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      const std::string& token);
 
   // Pass-through callback for re-authentication during document
   // download request.
-  void OnDownloadDocumentCompleted(const DownloadActionCallback& callback,
-                                   GDataErrorCode error,
-                                   const GURL& content_url,
-                                   const FilePath& temp_file_path);
+  void OnDownloadDocumentCompleted(
+      const DownloadActionCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      const GURL& content_url,
+      const FilePath& temp_file_path);
 
   // Callback when re-authenticating user during document delete call.
-  void DeleteDocumentOnAuthRefresh(const EntryActionCallback& callback,
-                                   const GURL& document_url,
-                                   GDataErrorCode error,
-                                   const std::string& token);
+  void DeleteDocumentOnAuthRefresh(
+      const EntryActionCallback& callback,
+      const GURL& document_url,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      const std::string& token);
 
   // Pass-through callback for re-authentication during document delete request.
-  void OnDeleteDocumentCompleted(const EntryActionCallback& callback,
-                                 GDataErrorCode error,
-                                 const GURL& document_url);
+  void OnDeleteDocumentCompleted(
+      const EntryActionCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      const GURL& document_url);
 
   // Callback when re-authenticating user during initiate upload call.
   void InitiateUploadOnAuthRefresh(const InitiateUploadCallback& callback,
@@ -301,18 +352,24 @@ class DocumentsService : public GDataAuthService::Observer {
 
   // Pass-through callback for re-authentication during directory create
   // request.
-  void CreateDirectoryOnAuthRefresh(const GURL& parent_content_url,
-                                    const FilePath::StringType& directory_name,
-                                    const CreateEntryCallback& callback,
-                                    GDataErrorCode error,
-                                    const std::string& token);
+  void CreateDirectoryOnAuthRefresh(
+      const GURL& parent_content_url,
+      const FilePath::StringType& directory_name,
+      const CreateEntryCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+
+      GDataErrorCode error,
+      const std::string& token);
 
   // Pass-through callback for CreateDirectory() completion request.
-  void OnCreateDirectoryCompleted(const GURL& parent_content_url,
-                                  const FilePath::StringType& directory_name,
-                                  const CreateEntryCallback& callback,
-                                  GDataErrorCode error,
-                                  base::Value* document_entry);
+  void OnCreateDirectoryCompleted(
+      const GURL& parent_content_url,
+      const FilePath::StringType& directory_name,
+      const CreateEntryCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+
+      GDataErrorCode error,
+      base::Value* document_entry);
 
   // TODO(zelidrag): Remove this one once we figure out where the metadata will
   // really live.
@@ -335,6 +392,7 @@ class DocumentsService : public GDataAuthService::Observer {
   scoped_ptr<GDataAuthService> gdata_auth_service_;
   scoped_ptr<GDataUploader> uploader_;
   base::WeakPtrFactory<DocumentsService> weak_ptr_factory_;
+  base::WeakPtr<DocumentsService> weak_ptr_bound_to_ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentsService);
 };

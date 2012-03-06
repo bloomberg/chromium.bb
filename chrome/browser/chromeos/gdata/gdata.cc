@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -882,6 +883,8 @@ DocumentsService::DocumentsService()
       gdata_auth_service_(new GDataAuthService()),
       uploader_(new GDataUploader(this)),
       weak_ptr_factory_(this) {
+  // The weak pointers is used to post tasks to UI thread.
+  weak_ptr_bound_to_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
 }
 
 DocumentsService::~DocumentsService() {
@@ -901,10 +904,6 @@ void DocumentsService::Initialize(Profile* profile) {
   gdata_auth_service_->Initialize(profile);
 }
 
-base::WeakPtr<DocumentsService> DocumentsService::AsWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
 void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -920,6 +919,21 @@ void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
 
 void DocumentsService::GetDocuments(const GURL& url,
                                     const GetDataCallback& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &DocumentsService::GetDocumentsOnUIThread,
+          weak_ptr_bound_to_ui_thread_,
+          url,
+          callback,
+          // MessageLoopProxy is used to run |callback| on the origin thread.
+          base::MessageLoopProxy::current()));
+}
+
+void DocumentsService::GetDocumentsOnUIThread(
+    const GURL& url,
+    const GetDataCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
@@ -928,7 +942,8 @@ void DocumentsService::GetDocuments(const GURL& url,
         base::Bind(&DocumentsService::GetDocumentsOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    url,
-                   callback));
+                   callback,
+                   relay_proxy));
     return;
   }
 
@@ -943,26 +958,33 @@ void DocumentsService::GetDocuments(const GURL& url,
   operation->Start(base::Bind(&DocumentsService::OnGetDocumentsCompleted,
                               weak_ptr_factory_.GetWeakPtr(),
                               url,
-                              callback));
+                              callback,
+                              relay_proxy));
 }
 
-void DocumentsService::GetDocumentsOnAuthRefresh(const GURL& url,
+void DocumentsService::GetDocumentsOnAuthRefresh(
+    const GURL& url,
     const GetDataCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
-      callback.Run(error, NULL);
-    return;
+      relay_proxy->PostTask(
+          FROM_HERE,
+          base::Bind(callback, error, static_cast<base::Value*>(NULL)));
+   return;
   }
   DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  GetDocuments(url, callback);
+  GetDocumentsOnUIThread(url, callback, relay_proxy);
 }
 
-void DocumentsService::OnGetDocumentsCompleted(const GURL& url,
+void DocumentsService::OnGetDocumentsCompleted(
+    const GURL& url,
     const GetDataCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     base::Value* value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -973,22 +995,22 @@ void DocumentsService::OnGetDocumentsCompleted(const GURL& url,
     gdata_auth_service_->ClearOAuth2Token();
     // User authentication might have expired - rerun the request to force
     // auth token refresh.
-    GetDocuments(url, callback);
+    GetDocumentsOnUIThread(url, callback, relay_proxy);
     return;
   default:
     break;
   }
   scoped_ptr<base::Value> root_value(value);
   if (!callback.is_null())
-    callback.Run(error, root_value.release());
+    relay_proxy->PostTask(
+        FROM_HERE,
+        base::Bind(callback, error, root_value.release()));
 }
 
 void DocumentsService::DownloadDocument(
     const GURL& document_url,
     DocumentExportFormat format,
     const DownloadActionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   DownloadFile(
       chrome_browser_net::AppendQueryParameter(document_url,
                                                "exportFormat",
@@ -998,14 +1020,30 @@ void DocumentsService::DownloadDocument(
 
 void DocumentsService::DownloadFile(const GURL& document_url,
                                     const DownloadActionCallback& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &DocumentsService::DownloadFileOnUIThread,
+          weak_ptr_bound_to_ui_thread_,
+          document_url,
+          callback,
+          base::MessageLoopProxy::current()));
+}
+
+void DocumentsService::DownloadFileOnUIThread(
+    const GURL& document_url,
+    const DownloadActionCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
     // Fetch OAuth2 authetication token from the refresh token first.
     gdata_auth_service_->StartAuthentication(
         base::Bind(&DocumentsService::DownloadDocumentOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
-                   document_url));
+                   document_url,
+                   relay_proxy));
     return;
   }
   (new DownloadFileOperation(
@@ -1013,28 +1051,33 @@ void DocumentsService::DownloadFile(const GURL& document_url,
       gdata_auth_service_->oauth2_auth_token(),
       document_url))->Start(
           base::Bind(&DocumentsService::OnDownloadDocumentCompleted,
-          weak_ptr_factory_.GetWeakPtr(),
-          callback));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     relay_proxy));
 }
 
 void DocumentsService::DownloadDocumentOnAuthRefresh(
     const DownloadActionCallback& callback,
     const GURL& document_url,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
-      callback.Run(error, document_url, FilePath());
+      relay_proxy->PostTask(
+          FROM_HERE,
+          base::Bind(callback, error, document_url, FilePath()));
     return;
   }
   DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  DownloadFile(document_url, callback);
+  DownloadFileOnUIThread(document_url, callback, relay_proxy);
 }
 
 void DocumentsService::OnDownloadDocumentCompleted(
     const DownloadActionCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     const GURL& document_url,
     const FilePath& file_path) {
@@ -1045,17 +1088,33 @@ void DocumentsService::OnDownloadDocumentCompleted(
       gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
-      DownloadFile(document_url, callback);
+      DownloadFileOnUIThread(document_url, callback, relay_proxy);
       return;
     default:
       break;
   }
   if (!callback.is_null())
-    callback.Run(error, document_url, file_path);
+    relay_proxy->PostTask(
+        FROM_HERE,
+        base::Bind(callback, error, document_url, file_path));
 }
 
 void DocumentsService::DeleteDocument(const GURL& document_url,
                                       const EntryActionCallback& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &DocumentsService::DeleteDocumentOnUIThread,
+          weak_ptr_bound_to_ui_thread_,
+          document_url,
+          callback,
+          base::MessageLoopProxy::current()));
+}
+
+void DocumentsService::DeleteDocumentOnUIThread(
+    const GURL& document_url,
+    const EntryActionCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
@@ -1064,7 +1123,8 @@ void DocumentsService::DeleteDocument(const GURL& document_url,
         base::Bind(&DocumentsService::DeleteDocumentOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
-                   document_url));
+                   document_url,
+                   relay_proxy));
     return;
   }
   (new DeleteDocumentOperation(
@@ -1072,28 +1132,33 @@ void DocumentsService::DeleteDocument(const GURL& document_url,
       gdata_auth_service_->oauth2_auth_token(),
       document_url))->Start(
           base::Bind(&DocumentsService::OnDeleteDocumentCompleted,
-          weak_ptr_factory_.GetWeakPtr(),
-          callback));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     relay_proxy));
 }
 
 void DocumentsService::DeleteDocumentOnAuthRefresh(
     const EntryActionCallback& callback,
     const GURL& document_url,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
-      callback.Run(error, document_url);
+      relay_proxy->PostTask(
+          FROM_HERE,
+          base::Bind(callback, error, document_url));
     return;
   }
   DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  DeleteDocument(document_url, callback);
+  DeleteDocumentOnUIThread(document_url, callback, relay_proxy);
 }
 
 void DocumentsService::OnDeleteDocumentCompleted(
     const EntryActionCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     const GURL& document_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1103,19 +1168,37 @@ void DocumentsService::OnDeleteDocumentCompleted(
       gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
-      DeleteDocument(document_url, callback);
+      DeleteDocumentOnUIThread(document_url, callback, relay_proxy);
       return;
     default:
       break;
   }
   if (!callback.is_null())
-    callback.Run(error, document_url);
+    relay_proxy->PostTask(
+        FROM_HERE,
+        base::Bind(callback, error, document_url));
 }
 
 void DocumentsService::CreateDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
     const CreateEntryCallback& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &DocumentsService::CreateDirectoryOnUIThread,
+          weak_ptr_bound_to_ui_thread_,
+          parent_content_url,
+          directory_name,
+          callback,
+          base::MessageLoopProxy::current()));
+}
+
+void DocumentsService::CreateDirectoryOnUIThread(
+    const GURL& parent_content_url,
+    const FilePath::StringType& directory_name,
+    const CreateEntryCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
@@ -1125,7 +1208,8 @@ void DocumentsService::CreateDirectory(
                    weak_ptr_factory_.GetWeakPtr(),
                    parent_content_url,
                    directory_name,
-                   callback));
+                   callback,
+                   relay_proxy));
     return;
   }
   (new CreateDirectoryOperation(
@@ -1137,30 +1221,36 @@ void DocumentsService::CreateDirectory(
                      weak_ptr_factory_.GetWeakPtr(),
                      parent_content_url,
                      directory_name,
-                     callback));
+                     callback,
+                     relay_proxy));
 }
 
 void DocumentsService::CreateDirectoryOnAuthRefresh(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
     const CreateEntryCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
     if (!callback.is_null())
-      callback.Run(error, NULL);
+      relay_proxy->PostTask(
+          FROM_HERE,
+          base::Bind(callback, error, static_cast<base::Value*>(NULL)));
     return;
   }
   DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  CreateDirectory(parent_content_url, directory_name, callback);
+  CreateDirectoryOnUIThread(parent_content_url, directory_name, callback,
+                            relay_proxy);
 }
 
 void DocumentsService::OnCreateDirectoryCompleted(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
     const CreateEntryCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     base::Value* value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1170,7 +1260,8 @@ void DocumentsService::OnCreateDirectoryCompleted(
       gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
-      CreateDirectory(parent_content_url, directory_name, callback);
+      CreateDirectoryOnUIThread(parent_content_url, directory_name, callback,
+                                relay_proxy);
       return;
     default:
       break;
@@ -1182,7 +1273,9 @@ void DocumentsService::OnCreateDirectoryCompleted(
     dict_value->Get("entry", &entry_value);
 
   if (!callback.is_null())
-    callback.Run(error, entry_value);
+    relay_proxy->PostTask(
+        FROM_HERE,
+        base::Bind(callback, error, entry_value));
 }
 
 void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,

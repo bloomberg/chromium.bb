@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
@@ -338,8 +337,7 @@ class GDataFileSystem : public ProfileKeyedService {
                           const FilePath& target_directory_path,
                           bool is_exclusive,
                           bool is_recursive,
-                          const FileOperationCallback& callback,
-                          scoped_refptr<base::MessageLoopProxy> proxy);
+                          const FileOperationCallback& callback);
     ~CreateDirectoryParams();
 
     const FilePath created_directory_path;
@@ -347,7 +345,6 @@ class GDataFileSystem : public ProfileKeyedService {
     const bool is_exclusive;
     const bool is_recursive;
     FileOperationCallback callback;
-    scoped_refptr<base::MessageLoopProxy> proxy;
   };
 
   explicit GDataFileSystem(Profile* profile);
@@ -372,12 +369,10 @@ class GDataFileSystem : public ProfileKeyedService {
                       GDataErrorCode status,
                       base::Value* data);
 
-  // Callback for handling document remove attempt. |message_loop_proxy| is
-  // used to post a task to the thread where Remove() was called.
+  // Callback for handling document remove attempt.
   void OnRemovedDocument(
       const FileOperationCallback& callback,
       const FilePath& file_path,
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
       GDataErrorCode status,
       const GURL& document_url);
 
@@ -390,7 +385,6 @@ class GDataFileSystem : public ProfileKeyedService {
   // Callback for handling file downloading requests.
   void OnFileDownloaded(
     const GetFileCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     GDataErrorCode status,
     const GURL& content_url,
     const FilePath& temp_file);
@@ -414,15 +408,6 @@ class GDataFileSystem : public ProfileKeyedService {
   base::PlatformFileError AddNewDirectory(const FilePath& directory_path,
                                           base::Value* entry_value);
 
-  // Internal version of CreateDirectory() that let us pass explicit message
-  // loop proxy.
-  void CreateDirectoryInternal(
-      const FilePath& directory_path,
-      bool is_exclusive,
-      bool is_recursive,
-      const FileOperationCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> reply_proxy);
-
   // Given non-existing |directory_path|, finds the first missing parent
   // directory of |directory_path|.
   FindMissingDirectoryResult FindFirstMissingParentDirectory(
@@ -440,8 +425,6 @@ class GDataFileSystem : public ProfileKeyedService {
   scoped_ptr<DocumentsService> documents_service_;
 
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
-  base::WeakPtr<GDataFileSystem> file_system_bound_to_ui_thread_;
-  base::WeakPtr<DocumentsService> documents_service_bound_to_ui_thread_;
 };
 
 // Singleton that owns all GDataFileSystems and associates them with
