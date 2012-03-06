@@ -43,6 +43,8 @@ base::MessagePumpDispatcher::DispatchStatus AcceleratorDispatcher::Dispatch(
     if (accelerator_controller) {
       ui::Accelerator accelerator(ui::KeyboardCodeFromNative(xev),
           ui::EventFlagsFromNative(xev) & kModifierMask);
+      if (xev->type == KeyRelease)
+        accelerator.set_type(ui::ET_KEY_RELEASED);
       if (accelerator_controller->Process(accelerator))
         return EVENT_PROCESSED;
 

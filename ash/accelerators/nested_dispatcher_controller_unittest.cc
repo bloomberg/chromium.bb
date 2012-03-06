@@ -79,11 +79,21 @@ class TestTarget : public ui::AcceleratorTarget {
 };
 
 void DispatchKeyReleaseA() {
+  // Sending both keydown and keyup is necessary here because the accelerator
+  // manager only checks a keyup event following a keydown event. See
+  // ShouldHandle() in ui/base/accelerators/accelerator_manager.cc for details.
 #if defined(OS_WIN)
-  MSG native_event = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
-  ash::Shell::GetRootWindow()->PostNativeEvent(native_event);
+  MSG native_event_down = { NULL, WM_KEYDOWN, ui::VKEY_A, 0 };
+  ash::Shell::GetRootWindow()->PostNativeEvent(native_event_down);
+  MSG native_event_up = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
+  ash::Shell::GetRootWindow()->PostNativeEvent(native_event_up);
 #elif defined(USE_X11)
   XEvent native_event;
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                              ui::VKEY_A,
+                              0,
+                              &native_event);
+  ash::Shell::GetRootWindow()->PostNativeEvent(&native_event);
   ui::InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
                               ui::VKEY_A,
                               0,
@@ -151,7 +161,8 @@ TEST_F(NestedDispatcherTest, AcceleratorsHandled) {
   aura::RootWindow* root_window = ash::Shell::GetInstance()->GetRootWindow();
 
   ui::Accelerator accelerator(ui::VKEY_A, false, false, false);
-  accelerator.set_type(ui::ET_TRANSLATED_KEY_RELEASE);
+  accelerator.set_type(ui::ET_KEY_RELEASED);
+  // TODO(yusukes): Add a test for a ui::ET_TRANSLATED_KEY_RELEASE accelerator.
   TestTarget target;
   Shell::GetInstance()->accelerator_controller()->Register(accelerator,
                                                            &target);

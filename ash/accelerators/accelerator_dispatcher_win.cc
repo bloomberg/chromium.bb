@@ -30,12 +30,14 @@ bool AcceleratorDispatcher::Dispatch(const MSG& msg) {
     return aura::Env::GetInstance()->GetDispatcher()->Dispatch(msg);
 
   if (msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN ||
-     msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP) {
+      msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP) {
     ash::AcceleratorController* accelerator_controller =
         ash::Shell::GetInstance()->accelerator_controller();
     if (accelerator_controller) {
       ui::Accelerator accelerator(ui::KeyboardCodeFromNative(msg),
           ui::EventFlagsFromNative(msg) & kModifierMask);
+      if (msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP)
+        accelerator.set_type(ui::ET_KEY_RELEASED);
       if (accelerator_controller->Process(accelerator))
         return true;
       accelerator.set_type(TranslatedKeyEvent(msg, false).type());
