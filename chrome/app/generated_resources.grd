@@ -9052,9 +9052,20 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Access your open tabs on all of your devices.
       </message>
       <if expr="pp_ifdef('android')">
+        <message name="IDS_NEW_TAB_OTR_MESSAGE_MOBILE"
+                 desc="Mobile: Used when a person opens an OTR tab">
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          Pages you view in this tab won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your mobile device after you close <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> incognito tabs. Any files you download or bookmarks you create will be preserved, however.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Going incognito doesn't affect the behavior of other people, servers, or software.<ph name="END_BOLD">&lt;/strong&gt;</ph>
+          Be wary of surveillance by secret agents or people standing behind you.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about incognito browsing.
+        </message>
         <message name="IDS_NEW_TAB_OTR_MESSAGE"
                  desc="Mobile: Used when a person opens an OTR tab">
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito<ph name="END_BOLD">"&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your mobile devices after you close &lt;strong&gt;all&lt;/strong&gt; open incognito tabs. Any bookmarks you create will be preserved, however.
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito<ph name="END_BOLD">"&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in your browser history or search history, and they won't leave other traces, like cookies, on your mobile device after you close <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> open incognito tabs. Any bookmarks you create will be preserved, however.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Going incognito doesn't affect the behavior of other people, servers, or software. Be wary of:<ph name="END_BOLD">&lt;/strong&gt;</ph>
           <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
