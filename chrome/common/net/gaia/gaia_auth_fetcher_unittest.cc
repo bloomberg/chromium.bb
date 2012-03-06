@@ -5,8 +5,6 @@
 // A complete set of unit tests for GaiaAuthFetcher.
 // Originally ported from GoogleAuthenticator tests.
 
-#include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
-
 #include <string>
 
 #include "base/message_loop.h"
@@ -15,6 +13,7 @@
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -482,7 +481,7 @@ TEST_F(GaiaAuthFetcherTest, FullLogin) {
 
   TestingProfile profile;
 
-  MockFactory<MockFetcher> factory;
+  MockURLFetcherFactory<MockFetcher> factory;
 
   GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
@@ -501,7 +500,7 @@ TEST_F(GaiaAuthFetcherTest, FullLoginFailure) {
 
   TestingProfile profile;
 
-  MockFactory<MockFetcher> factory;
+  MockURLFetcherFactory<MockFetcher> factory;
   factory.set_success(false);
 
   GaiaAuthFetcher auth(&consumer, std::string(),

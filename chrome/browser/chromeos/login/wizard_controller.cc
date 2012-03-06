@@ -428,6 +428,7 @@ void WizardController::OnUserImageSelected() {
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&chromeos::LoginUtils::DoBrowserLaunch,
+                 base::Unretained(chromeos::LoginUtils::Get()),
                  ProfileManager::GetDefaultProfile(), host_));
   host_ = NULL;
   // TODO(avayvod): Sync image with Google Sync.

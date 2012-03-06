@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -16,9 +17,16 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
+#include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
+#include "chrome/browser/chromeos/login/mock_login_utils.h"
+#include "chrome/browser/chromeos/login/mock_url_fetchers.h"
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,11 +35,14 @@
 namespace chromeos {
 
 using ::testing::AnyNumber;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::ReturnNull;
+using ::testing::WithArg;
 using ::testing::_;
 
 const char kUsername[] = "test_user@gmail.com";
+const char kNewUsername[] = "test_new_user@gmail.com";
 const char kPassword[] = "test_password";
 
 class MockLoginDisplay : public LoginDisplay {
@@ -78,31 +89,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(ResumeSignInScreen, void(void));
 
  private:
- DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);
-};
-
-class MockLoginPerformerDelegate : public LoginPerformer::Delegate {
- public:
-  explicit MockLoginPerformerDelegate(ExistingUserController* controller)
-      : controller_(controller) {
-  }
-
-  virtual void OnLoginSuccess(const std::string& username,
-                              const std::string& password,
-                              bool pending_requests,
-                              bool using_oauth) OVERRIDE {
-    ignore_result(controller_->login_performer_.release());
-    controller_->ActivateWizard(WizardController::kUserImageScreenName);
-  }
-
-  MOCK_METHOD1(OnLoginFailure, void(const LoginFailure&));
-  MOCK_METHOD1(WhiteListCheckFailed, void(const std::string&));
-  MOCK_METHOD2(OnOnlineChecked, void(const std::string&, bool));
-
- private:
-  ExistingUserController* controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockLoginPerformerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);
 };
 
 class ExistingUserControllerTest : public CrosInProcessBrowserTest {
@@ -111,14 +98,21 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
       : mock_cryptohome_library_(NULL),
         mock_network_library_(NULL),
         mock_login_display_(NULL),
-        mock_login_display_host_(NULL) {
+        mock_login_display_host_(NULL),
+        mock_user_manager_(NULL),
+        testing_profile_(NULL) {
   }
 
   ExistingUserController* existing_user_controller() {
     return ExistingUserController::current_controller();
   }
 
-  virtual void SetUpInProcessBrowserTestFixture() {
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    CrosInProcessBrowserTest::CleanUpOnMainThread();
+    testing_profile_.reset(NULL);
+  }
+
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     MockDBusThreadManager* mock_dbus_thread_manager =
         new MockDBusThreadManager;
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
@@ -139,10 +133,31 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
-    LoginUtils::Set(new MockLoginUtils(kUsername, kPassword));
+
+    mock_login_utils_ = new MockLoginUtils();
+    LoginUtils::Set(mock_login_utils_);
+    EXPECT_CALL(*mock_login_utils_, PrewarmAuthentication())
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_login_utils_, StopBackgroundFetchers())
+        .Times(AnyNumber());
 
     mock_login_display_.reset(new MockLoginDisplay());
     mock_login_display_host_.reset(new MockLoginDisplayHost());
+
+    mock_user_manager_ = new MockUserManager();
+    UserManager::Set(mock_user_manager_);
+    EXPECT_CALL(*mock_user_manager_, IsKnownUser(kUsername))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_user_manager_, IsKnownUser(kNewUsername))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_, user_is_logged_in())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
 
     EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
         .Times(1)
@@ -154,16 +169,18 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
         .Times(1);
   }
 
-  virtual void SetUpOnMainThread() {
+  virtual void SetUpOnMainThread() OVERRIDE {
+    testing_profile_.reset(new TestingProfile());
     ExistingUserController* controller =
         new ExistingUserController(mock_login_display_host_.get());
     controller->Init(UserList());
-    MockLoginPerformerDelegate* mock_delegate =
-        new MockLoginPerformerDelegate(controller);
-    existing_user_controller()->set_login_performer_delegate(mock_delegate);
+    profile_prepared_cb_ =
+        base::Bind(&ExistingUserController::OnProfilePrepared,
+                   base::Unretained(existing_user_controller()),
+                   testing_profile_.get());
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() {
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
   }
@@ -175,38 +192,101 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   scoped_ptr<MockLoginDisplay> mock_login_display_;
   scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
+  // Owned by UserManagerImplWrapper.
+  MockUserManager* mock_user_manager_;
+
+  // Owned by LoginUtilsWrapper.
+  MockLoginUtils* mock_login_utils_;
+
+  scoped_ptr<TestingProfile> testing_profile_;
+
+  // Mock URLFetcher.
+  MockURLFetcherFactory<SuccessFetcher> factory_;
+
+  base::Callback<void(void)> profile_prepared_cb_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerTest);
 };
 
-// Test is flaky: crbug.com/25926
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DISABLED_NewUserLogin) {
+scoped_refptr<Authenticator> CreateAuthenticator(
+    LoginStatusConsumer* consumer) {
+  return new MockAuthenticator(consumer, kUsername, kPassword);
+}
+
+scoped_refptr<Authenticator> CreateAuthenticatorNewUser(
+    LoginStatusConsumer* consumer) {
+  return new MockAuthenticator(consumer, kNewUsername, kPassword);
+}
+
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_host_, SetStatusAreaEnabled(false))
       .Times(1);
   EXPECT_CALL(*mock_login_display_, SetUIEnabled(false))
       .Times(1);
+  EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
+      .Times(1)
+      .WillOnce(WithArg<0>(Invoke(CreateAuthenticator)));
+  EXPECT_CALL(*mock_login_utils_,
+              PrepareProfile(kUsername, _, kPassword, false, _, _, _))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
+                                  &base::Callback<void(void)>::Run));
+  EXPECT_CALL(*mock_login_utils_,
+              DoBrowserLaunch(testing_profile_.get(),
+                              mock_login_display_host_.get()))
+      .Times(1);
+  EXPECT_CALL(*mock_login_display_.get(), OnLoginSuccess(kUsername))
+      .Times(1);
+  EXPECT_CALL(*mock_login_display_.get(), OnFadeOut())
+      .Times(1);
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kUserImageScreenName, NULL))
-      .Times(1);
+      .Times(0);
   existing_user_controller()->Login(kUsername, kPassword);
+  ui_test_utils::RunAllPendingInMessageLoop();
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
       .Times(1);
+  EXPECT_CALL(*mock_login_display_.get(), OnFadeOut())
+      .Times(1);
+  EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
+      .Times(1);
   existing_user_controller()->DoAutoEnrollment();
   existing_user_controller()->CompleteLogin(kUsername, kPassword);
+  ui_test_utils::RunAllPendingInMessageLoop();
 }
 
-IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, DontAutoEnrollAfterSignIn) {
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
+                       NewUserDontAutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizard(WizardController::kEnterpriseEnrollmentScreenName, _))
       .Times(0);
+  // That will be sign in of a new user and (legacy) registration screen is
+  // activated. In a real WizardController instance that is immediately switched
+  // to image screen but this tests uses MockLoginDisplayHost instead.
   EXPECT_CALL(*mock_login_display_host_,
-              StartWizard(WizardController::kUserImageScreenName, _))
+              StartWizard(WizardController::kRegistrationScreenName, _))
       .Times(1);
-  existing_user_controller()->CompleteLogin(kUsername, kPassword);
+  EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
+      .Times(1)
+      .WillOnce(WithArg<0>(Invoke(CreateAuthenticatorNewUser)));
+  EXPECT_CALL(*mock_login_utils_,
+              PrepareProfile(kNewUsername, _, kPassword, false, _, _, _))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
+                                  &base::Callback<void(void)>::Run));
+  EXPECT_CALL(*mock_login_display_.get(), OnLoginSuccess(kNewUsername))
+      .Times(1);
+  EXPECT_CALL(*mock_login_display_.get(), OnFadeOut())
+      .Times(1);
+  EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
+      .Times(1);
+  existing_user_controller()->CompleteLogin(kNewUsername, kPassword);
+  ui_test_utils::RunAllPendingInMessageLoop();
 }
 
 }  // namespace chromeos

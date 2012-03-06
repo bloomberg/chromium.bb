@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_EQ(controller()->GetNetworkScreen(), controller()->current_screen());
   EXPECT_CALL(*mock_update_screen_, StartUpdate()).Times(0);
 
-  LoginUtils::Set(new MockLoginUtils(kUsername, kPassword));
+  LoginUtils::Set(new TestLoginUtils(kUsername, kPassword));
   MockConsumer mock_consumer;
 
   // Must have a pending signin to resume after auto-enrollment:

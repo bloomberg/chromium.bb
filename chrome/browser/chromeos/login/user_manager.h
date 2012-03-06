@@ -8,148 +8,21 @@
 
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/hash_tables.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
-#include "base/synchronization/lock.h"
-#include "base/time.h"
+#include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_image_loader.h"
-#include "chrome/browser/profiles/profile_downloader_delegate.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
+class SkBitmap;
 class FilePath;
 class PrefService;
-class ProfileDownloader;
-class ProfileSyncService;
-
-namespace base {
-template<typename> struct DefaultLazyInstanceTraits;
-}
 
 namespace chromeos {
 
 class RemoveUserDelegate;
 
-// This class provides a mechanism for discovering users who have logged
-// into this chromium os device before and updating that list.
-class UserManager : public ProfileDownloaderDelegate,
-                    public ProfileSyncServiceObserver,
-                    public content::NotificationObserver {
+// Base class for UserManagerImpl - provides a mechanism for discovering users
+// who have logged into this Chrome OS device before and updating that list.
+class UserManager {
  public:
-  // Returns a shared instance of a UserManager. Not thread-safe, should only be
-  // called from the main UI thread.
-  static UserManager* Get();
-
-  // Registers user manager preferences.
-  static void RegisterPrefs(PrefService* local_state);
-
-  // Returns a list of the users who have logged into this device previously.
-  // It is sorted in order of recency, with most recent at the beginning.
-  const UserList& GetUsers() const;
-
-  // Indicates that a user with the given email has just logged in.
-  // The persistent list will be updated accordingly.
-  void UserLoggedIn(const std::string& email);
-
-  // Indicates that user just logged on as the demo user.
-  void DemoUserLoggedIn();
-
-  // Indicates that user just started incognito session.
-  void GuestUserLoggedIn();
-
-  // Removes the user from the device. Note, it will verify that the given user
-  // isn't the owner, so calling this method for the owner will take no effect.
-  // Note, |delegate| can be NULL.
-  void RemoveUser(const std::string& email,
-                  RemoveUserDelegate* delegate);
-
-  // Removes the user from the persistent list only. Also removes the user's
-  // picture.
-  void RemoveUserFromList(const std::string& email);
-
-  // Returns true if given user has logged into the device before.
-  virtual bool IsKnownUser(const std::string& email) const;
-
-  // Returns a user with given email or |NULL| if no such user exists.
-  const User* FindUser(const std::string& email) const;
-
-  // Returns the logged-in user.
-  const User& logged_in_user() const { return *logged_in_user_; }
-  User& logged_in_user() { return *logged_in_user_; }
-
-  // Returns true if given display name is unique.
-  bool IsDisplayNameUnique(const std::string& display_name) const;
-
-  // Saves user's oauth token status in local state preferences.
-  void SaveUserOAuthStatus(const std::string& username,
-                           User::OAuthTokenStatus oauth_token_status);
-
-  // Save user's displayed (non-canonical) email in local state preferences.
-  // Ignored If there is no such user.
-  void SaveUserDisplayEmail(const std::string& username,
-                            const std::string& display_email);
-
-  // Returns the display email for user |username| if it is known (was
-  // previously set by a |SaveUserDisplayEmail| call).
-  // Otherwise, returns |username| itself.
-  std::string GetUserDisplayEmail(const std::string& username) const;
-
-  // Sets user image to the default image with index |image_index|, sends
-  // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
-  void SaveUserDefaultImageIndex(const std::string& username, int image_index);
-
-  // Saves image to file, sends LOGIN_USER_IMAGE_CHANGED notification and
-  // updates Local State.
-  void SaveUserImage(const std::string& username, const SkBitmap& image);
-
-  // Tries to load user image from disk; if successful, sets it for the user,
-  // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
-  void SaveUserImageFromFile(const std::string& username, const FilePath& path);
-
-  // Sets profile image as user image for |username|, sends
-  // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user
-  // is not logged-in or the last |DownloadProfileImage| call has failed, a
-  // default grey avatar will be used until the user logs in and profile image
-  // is downloaded successfuly.
-  void SaveUserImageFromProfileImage(const std::string& username);
-
-  // Starts downloading the profile image for the logged-in user.
-  // If user's image index is |kProfileImageIndex|, newly downloaded image
-  // is immediately set as user's current picture.
-  // |reason| is an arbitraty string (used to report UMA histograms with
-  // download times).
-  void DownloadProfileImage(const std::string& reason);
-
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
-  // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
-
-  // Accessor for current_user_is_owner_
-  virtual bool current_user_is_owner() const;
-  virtual void set_current_user_is_owner(bool current_user_is_owner);
-
-  // Accessor for current_user_is_new_.
-  bool current_user_is_new() const {
-    return current_user_is_new_;
-  }
-
-  bool user_is_logged_in() const { return user_is_logged_in_; }
-
-  // Returns true if we're logged in as a demo user.
-  bool IsLoggedInAsDemoUser() const;
-
-  // Returns true if we're logged in as a Guest.
-  bool IsLoggedInAsGuest() const;
-
   // Interface that observers of UserManager must implement in order
   // to receive notification when local state preferences is changed
   class Observer {
@@ -161,164 +34,134 @@ class UserManager : public ProfileDownloaderDelegate,
     virtual ~Observer() {}
   };
 
-  void AddObserver(Observer* obs);
-  void RemoveObserver(Observer* obs);
+  // A vector pref of the users who have logged into the device.
+  static const char kLoggedInUsers[];
 
-  void NotifyLocalStateChanged();
+  // A dictionary that maps usernames to file paths to their images.
+  static const char kUserImages[];
+
+  // A dictionary that maps usernames to the displayed (non-canonical) emails.
+  static const char kUserDisplayEmail[];
+
+  // A dictionary that maps usernames to OAuth token presence flag.
+  static const char kUserOAuthTokenStatus[];
+
+  // Returns a shared instance of a UserManager. Not thread-safe, should only be
+  // called from the main UI thread.
+  static UserManager* Get();
+
+  // Set UserManager singleton object for test purpose only!
+  static void Set(UserManager* mock);
+
+  // Registers user manager preferences.
+  static void RegisterPrefs(PrefService* local_state);
+
+  virtual ~UserManager();
+
+  // Returns a list of the users who have logged into this device previously.
+  // It is sorted in order of recency, with most recent at the beginning.
+  virtual const UserList& GetUsers() const = 0;
+
+  // Indicates that a user with the given email has just logged in.
+  // The persistent list will be updated accordingly.
+  virtual void UserLoggedIn(const std::string& email) = 0;
+
+  // Indicates that user just logged on as the demo user.
+  virtual void DemoUserLoggedIn() = 0;
+
+  // Indicates that user just started incognito session.
+  virtual void GuestUserLoggedIn() = 0;
+
+  // Removes the user from the device. Note, it will verify that the given user
+  // isn't the owner, so calling this method for the owner will take no effect.
+  // Note, |delegate| can be NULL.
+  virtual void RemoveUser(const std::string& email,
+                          RemoveUserDelegate* delegate) = 0;
+
+  // Removes the user from the persistent list only. Also removes the user's
+  // picture.
+  virtual void RemoveUserFromList(const std::string& email) = 0;
+
+  // Returns true if given user has logged into the device before.
+  virtual bool IsKnownUser(const std::string& email) const = 0;
+
+  // Returns a user with given email or |NULL| if no such user exists.
+  virtual const User* FindUser(const std::string& email) const = 0;
+
+  // Returns the logged-in user.
+  virtual const User& logged_in_user() const = 0;
+  virtual User& logged_in_user() = 0;
+
+  // Returns true if given display name is unique.
+  virtual bool IsDisplayNameUnique(const std::string& display_name) const = 0;
+
+  // Saves user's oauth token status in local state preferences.
+  virtual void SaveUserOAuthStatus(
+      const std::string& username,
+      User::OAuthTokenStatus oauth_token_status) = 0;
+
+  // Save user's displayed (non-canonical) email in local state preferences.
+  // Ignored If there is no such user.
+  virtual void SaveUserDisplayEmail(const std::string& username,
+                                    const std::string& display_email) = 0;
+
+  // Returns the display email for user |username| if it is known (was
+  // previously set by a |SaveUserDisplayEmail| call).
+  // Otherwise, returns |username| itself.
+  virtual std::string GetUserDisplayEmail(
+      const std::string& username) const = 0;
+
+  // Sets user image to the default image with index |image_index|, sends
+  // LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
+  virtual void SaveUserDefaultImageIndex(const std::string& username,
+                                         int image_index) = 0;
+
+  // Saves image to file, sends LOGIN_USER_IMAGE_CHANGED notification and
+  // updates Local State.
+  virtual void SaveUserImage(const std::string& username,
+                             const SkBitmap& image) = 0;
+
+  // Tries to load user image from disk; if successful, sets it for the user,
+  // sends LOGIN_USER_IMAGE_CHANGED notification and updates Local State.
+  virtual void SaveUserImageFromFile(const std::string& username,
+                                     const FilePath& path) = 0;
+
+  // Sets profile image as user image for |username|, sends
+  // LOGIN_USER_IMAGE_CHANGED notification and updates Local State. If the user
+  // is not logged-in or the last |DownloadProfileImage| call has failed, a
+  // default grey avatar will be used until the user logs in and profile image
+  // is downloaded successfuly.
+  virtual void SaveUserImageFromProfileImage(const std::string& username) = 0;
+
+  // Starts downloading the profile image for the logged-in user.
+  // If user's image index is |kProfileImageIndex|, newly downloaded image
+  // is immediately set as user's current picture.
+  // |reason| is an arbitraty string (used to report UMA histograms with
+  // download times).
+  virtual void DownloadProfileImage(const std::string& reason) = 0;
+
+  // Accessor for current_user_is_owner_
+  virtual bool current_user_is_owner() const = 0;
+  virtual void set_current_user_is_owner(bool current_user_is_owner) = 0;
+
+  // Accessor for current_user_is_new_.
+  virtual bool current_user_is_new() const = 0;
+  virtual bool user_is_logged_in() const = 0;
+
+  // Returns true if we're logged in as a demo user.
+  virtual bool IsLoggedInAsDemoUser() const = 0;
+
+  // Returns true if we're logged in as a Guest.
+  virtual bool IsLoggedInAsGuest() const = 0;
+
+  virtual void AddObserver(Observer* obs) = 0;
+  virtual void RemoveObserver(Observer* obs) = 0;
+
+  virtual void NotifyLocalStateChanged() = 0;
 
   // Returns the result of the last successful profile image download, if any.
   // Otherwise, returns an empty bitmap.
-  const SkBitmap& downloaded_profile_image() const {
-    return downloaded_profile_image_;
-  }
-
- protected:
-  UserManager();
-  virtual ~UserManager();
-
-  // Returns image filepath for the given user.
-  FilePath GetImagePathForUser(const std::string& username);
-
- private:
-  // Loads |users_| from Local State if the list has not been loaded yet.
-  // Subsequent calls have no effect. Must be called on the UI thread.
-  void EnsureUsersLoaded();
-
-  // Makes stub user the current logged-in user (for test paths).
-  void StubUserLoggedIn();
-
-  // Notifies on new user session.
-  void NotifyOnLogin();
-
-  // Reads user's oauth token status from local state preferences.
-  User::OAuthTokenStatus LoadUserOAuthStatus(const std::string& username) const;
-
-  // Sets one of the default images for the specified user and saves this
-  // setting in local state.
-  // Does not send LOGIN_USER_IMAGE_CHANGED notification.
-  void SetInitialUserImage(const std::string& username);
-
-  // Sets image for user |username| and sends LOGIN_USER_IMAGE_CHANGED
-  // notification unless this is a new user and image is set for the first time.
-  // If |image| is empty, sets a stub image for the user.
-  void SetUserImage(const std::string& username,
-                    int image_index,
-                    const SkBitmap& image);
-
-  // Saves image to file, updates local state preferences to given image index
-  // and sends LOGIN_USER_IMAGE_CHANGED notification.
-  void SaveUserImageInternal(const std::string& username,
-                             int image_index,
-                             const SkBitmap& image);
-
-  // Saves image to file with specified path and sends LOGIN_USER_IMAGE_CHANGED
-  // notification. Runs on FILE thread. Posts task for saving image info to
-  // Local State on UI thread.
-  void SaveImageToFile(const std::string& username,
-                       const SkBitmap& image,
-                       const FilePath& image_path,
-                       int image_index);
-
-  // Stores path to the image and its index in local state. Runs on UI thread.
-  // If |is_async| is true, it has been posted from the FILE thread after
-  // saving the image.
-  void SaveImageToLocalState(const std::string& username,
-                             const std::string& image_path,
-                             int image_index,
-                             bool is_async);
-
-  // Initializes |downloaded_profile_picture_| with the picture of the logged-in
-  // user.
-  void InitDownloadedProfileImage();
-
-  // Deletes user's image file. Runs on FILE thread.
-  void DeleteUserImage(const FilePath& image_path);
-
-  // Updates current user ownership on UI thread.
-  void UpdateOwnership(bool is_owner);
-
-  // Checks current user's ownership on file thread.
-  void CheckOwnership();
-
-  // ProfileDownloaderDelegate implementation.
-  virtual int GetDesiredImageSideLength() const OVERRIDE;
-  virtual Profile* GetBrowserProfile() OVERRIDE;
-  virtual std::string GetCachedPictureURL() const OVERRIDE;
-  virtual void OnDownloadComplete(ProfileDownloader* downloader,
-                                  bool success) OVERRIDE;
-
-  // Creates a new User instance.
-  User* CreateUser(const std::string& email) const;
-
-  // Loads user image from its file.
-  scoped_refptr<UserImageLoader> image_loader_;
-
-  // List of all known users. User instances are owned by |this| and deleted
-  // when a user is removed with |RemoveUser|.
-  mutable UserList users_;
-
-  // Map of users' display names used to determine which users have unique
-  // display names.
-  mutable base::hash_map<std::string, size_t> display_name_count_;
-
-  // User instance used to represent the demo user.
-  User demo_user_;
-
-  // User instance used to represent the off-the-record (guest) user.
-  User guest_user_;
-
-  // A stub User instance for test paths (running without a logged-in user).
-  User stub_user_;
-
-  // The logged-in user. NULL until a user has logged in, then points to one
-  // of the User instances in |users_| or to the |guest_user_| instance.
-  // In test paths without login points to the |stub_user_| instance.
-  User* logged_in_user_;
-
-  // Cached flag of whether currently logged-in user is owner or not.
-  // May be accessed on different threads, requires locking.
-  bool current_user_is_owner_;
-  mutable base::Lock current_user_is_owner_lock_;
-
-  // Cached flag of whether the currently logged-in user existed before this
-  // login.
-  bool current_user_is_new_;
-
-  // Cached flag of whether any user is logged in at the moment.
-  bool user_is_logged_in_;
-
-  content::NotificationRegistrar registrar_;
-
-  // Profile sync service which is observed to take actions after sync
-  // errors appear. NOTE: there is no guarantee that it is the current sync
-  // service, so do NOT use it outside |OnStateChanged| method.
-  ProfileSyncService* observed_sync_service_;
-
-  friend struct base::DefaultLazyInstanceTraits<UserManager>;
-
-  ObserverList<Observer> observer_list_;
-
-  // Download user profile image on login to update it if it's changed.
-  scoped_ptr<ProfileDownloader> profile_image_downloader_;
-
-  // Arbitrary string passed to the last |DownloadProfileImage| call.
-  std::string profile_image_download_reason_;
-
-  // Time when the profile image download has started.
-  base::Time profile_image_load_start_time_;
-
-  // True if the last user image required async save operation (which may not
-  // have been completed yet). This flag is used to avoid races when user image
-  // is first set with |SaveUserImage| and then with |SaveUserImagePath|.
-  bool last_image_set_async_;
-
-  // Result of the last successful profile image download, if any.
-  SkBitmap downloaded_profile_image_;
-
-  // Data URL for |downloaded_profile_image_|.
-  std::string downloaded_profile_image_data_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserManager);
+  virtual const SkBitmap& downloaded_profile_image() const = 0;
 };
 
 }  // namespace chromeos

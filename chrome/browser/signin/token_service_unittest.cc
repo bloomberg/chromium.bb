@@ -14,7 +14,7 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
+#include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/test/test_url_fetcher_factory.h"
 
@@ -279,7 +279,7 @@ TEST_F(TokenServiceTest, FullIntegration) {
   std::string result = "SID=sid\nLSID=lsid\nAuth=auth\n";
 
   {
-    MockFactory<MockFetcher> factory;
+    MockURLFetcherFactory<MockFetcher> factory;
     factory.set_results(result);
     EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kSyncService));
     EXPECT_FALSE(service_->HasTokenForService(GaiaConstants::kTalkService));

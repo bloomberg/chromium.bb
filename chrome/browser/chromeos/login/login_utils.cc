@@ -554,6 +554,8 @@ class LoginUtilsImpl : public LoginUtils,
   }
 
   // LoginUtils implementation:
+  virtual void DoBrowserLaunch(Profile* profile,
+                               LoginDisplayHost* login_host) OVERRIDE;
   virtual void PrepareProfile(
       const std::string& username,
       const std::string& display_email,
@@ -696,6 +698,45 @@ class LoginUtilsWrapper {
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsWrapper);
 };
+
+void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
+                                     LoginDisplayHost* login_host) {
+  if (browser_shutdown::IsTryingToQuit())
+    return;
+
+  StatusAreaViewChromeos::SetScreenMode(StatusAreaViewChromeos::BROWSER_MODE);
+  if (login_host) {
+    // Enable status area now as the login window may be destructed anytime
+    // after LaunchBrowser.
+    login_host->SetStatusAreaVisible(true);
+    login_host->SetStatusAreaEnabled(true);
+  }
+
+  BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
+
+  VLOG(1) << "Launching browser...";
+  BrowserInit browser_init;
+  int return_code;
+  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
+      BrowserInit::IS_FIRST_RUN: BrowserInit::IS_NOT_FIRST_RUN;
+  browser_init.LaunchBrowser(*CommandLine::ForCurrentProcess(),
+                             profile,
+                             FilePath(),
+                             BrowserInit::IS_PROCESS_STARTUP,
+                             first_run,
+                             &return_code);
+
+  // Mark login host for deletion after browser starts.  This
+  // guarantees that the message loop will be referenced by the
+  // browser before it is dereferenced by the login host.
+  if (login_host) {
+    login_host->OnSessionStart();
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_SESSION_STARTED,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
+  }
+}
 
 void LoginUtilsImpl::PrepareProfile(
     const std::string& username,
@@ -1357,46 +1398,6 @@ LoginUtils* LoginUtils::Get() {
 // static
 void LoginUtils::Set(LoginUtils* mock) {
   LoginUtilsWrapper::GetInstance()->reset(mock);
-}
-
-// static
-void LoginUtils::DoBrowserLaunch(Profile* profile,
-                                 LoginDisplayHost* login_host) {
-  if (browser_shutdown::IsTryingToQuit())
-    return;
-
-  StatusAreaViewChromeos::SetScreenMode(StatusAreaViewChromeos::BROWSER_MODE);
-  if (login_host) {
-    // Enable status area now as the login window may be destructed anytime
-    // after LaunchBrowser.
-    login_host->SetStatusAreaVisible(true);
-    login_host->SetStatusAreaEnabled(true);
-  }
-
-  BootTimesLoader::Get()->AddLoginTimeMarker("BrowserLaunched", false);
-
-  VLOG(1) << "Launching browser...";
-  BrowserInit browser_init;
-  int return_code;
-  BrowserInit::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      BrowserInit::IS_FIRST_RUN: BrowserInit::IS_NOT_FIRST_RUN;
-  browser_init.LaunchBrowser(*CommandLine::ForCurrentProcess(),
-                             profile,
-                             FilePath(),
-                             BrowserInit::IS_PROCESS_STARTUP,
-                             first_run,
-                             &return_code);
-
-  // Mark login host for deletion after browser starts.  This
-  // guarantees that the message loop will be referenced by the
-  // browser before it is dereferenced by the login host.
-  if (login_host) {
-    login_host->OnSessionStart();
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
-  }
 }
 
 // static

@@ -247,7 +247,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // from showing the screen until a successful login is performed.
   base::Time time_init_;
 
-  FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
+  FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };

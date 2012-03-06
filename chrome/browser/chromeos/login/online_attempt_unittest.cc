@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/online_attempt.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "chrome/common/net/gaia/gaia_auth_fetcher_unittest.h"
+#include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -130,7 +130,7 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
   // This is how we inject fake URLFetcher objects, with a factory.
   // This factory creates fake URLFetchers that Start() a fake fetch attempt
   // and then come back on the IO thread saying they've been canceled.
-  MockFactory<GotCanceledFetcher> factory;
+  MockURLFetcherFactory<GotCanceledFetcher> factory;
 
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
@@ -155,7 +155,7 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
   // This is how we inject fake URLFetcher objects, with a factory.
   // This factory creates fake URLFetchers that Start() a fake fetch attempt
   // and then come back on the IO thread saying they've been canceled.
-  MockFactory<ExpectCanceledFetcher> factory;
+  MockURLFetcherFactory<ExpectCanceledFetcher> factory;
 
   attempt_->Initiate(&profile);
   BrowserThread::PostTask(
@@ -182,7 +182,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
       .RetiresOnSaturation();
 
   // This is how we inject fake URLFetcher objects, with a factory.
-  MockFactory<HostedFetcher> factory;
+  MockURLFetcherFactory<HostedFetcher> factory;
 
   TestAttemptState local_state("", "", "", "", "", true);
   attempt_ = new OnlineAttempt(false, &local_state, resolver_.get());
@@ -206,7 +206,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
       .RetiresOnSaturation();
 
   // This is how we inject fake URLFetcher objects, with a factory.
-  MockFactory<SuccessFetcher> factory;
+  MockURLFetcherFactory<SuccessFetcher> factory;
 
   TestAttemptState local_state("", "", "", "", "", true);
   attempt_ = new OnlineAttempt(false, &local_state, resolver_.get());

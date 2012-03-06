@@ -44,7 +44,7 @@ class LoginDisplay : public RemoveUserDelegate {
                                const std::string& password) = 0;
 
     // Sign in using |username| and |password| specified.
-    // Used for both known users only.
+    // Used for known users only.
     virtual void Login(const std::string& username,
                        const std::string& password) = 0;
 

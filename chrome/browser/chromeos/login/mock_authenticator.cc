@@ -19,6 +19,7 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
   if (expected_username_ == username && expected_password_ == password) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&MockAuthenticator::OnLoginSuccess, this, false));
+    return;
   }
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
@@ -68,17 +69,17 @@ void MockAuthenticator::OnLoginFailure(const LoginFailure& failure) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MockLoginUtils
+// TestLoginUtils
 
-MockLoginUtils::MockLoginUtils(const std::string& expected_username,
+TestLoginUtils::TestLoginUtils(const std::string& expected_username,
                                const std::string& expected_password)
     : expected_username_(expected_username),
       expected_password_(expected_password) {
 }
 
-MockLoginUtils::~MockLoginUtils() {}
+TestLoginUtils::~TestLoginUtils() {}
 
-void MockLoginUtils::PrepareProfile(
+void TestLoginUtils::PrepareProfile(
     const std::string& username,
     const std::string& display_email,
     const std::string& password,
@@ -92,31 +93,31 @@ void MockLoginUtils::PrepareProfile(
   delegate->OnProfilePrepared(NULL);
 }
 
-void MockLoginUtils::DelegateDeleted(Delegate* delegate) {
+void TestLoginUtils::DelegateDeleted(Delegate* delegate) {
 }
 
-scoped_refptr<Authenticator> MockLoginUtils::CreateAuthenticator(
+scoped_refptr<Authenticator> TestLoginUtils::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   return new MockAuthenticator(
       consumer, expected_username_, expected_password_);
 }
 
-std::string MockLoginUtils::GetOffTheRecordCommandLine(
+std::string TestLoginUtils::GetOffTheRecordCommandLine(
     const GURL& start_url,
     const CommandLine& base_command_line,
     CommandLine* command_line) {
   return std::string();
 }
 
-void MockLoginUtils::TransferDefaultCookies(Profile* default_profile,
+void TestLoginUtils::TransferDefaultCookies(Profile* default_profile,
                                             Profile* new_profile) {
 }
 
-void MockLoginUtils::TransferDefaultAuthCache(Profile* default_profile,
+void TestLoginUtils::TransferDefaultAuthCache(Profile* default_profile,
                                               Profile* new_profile) {
 }
 
-void MockLoginUtils::StopBackgroundFetchers() {
+void TestLoginUtils::StopBackgroundFetchers() {
 }
 
 }  // namespace chromeos

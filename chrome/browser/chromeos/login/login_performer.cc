@@ -223,7 +223,10 @@ void LoginPerformer::OnPasswordChangeDetected() {
 
 void LoginPerformer::OnChecked(const std::string& username, bool success) {
   if (!delegate_) {
-    NOTREACHED();
+    // Delegate is reset in case of successful offline login.
+    // See ExistingUserConstoller::OnLoginSuccess().
+    // Case when user has changed password and enters old password
+    // does not block user from sign in yet.
     return;
   }
   delegate_->OnOnlineChecked(username, success);

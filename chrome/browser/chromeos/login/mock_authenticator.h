@@ -72,12 +72,14 @@ class MockAuthenticator : public Authenticator {
   DISALLOW_COPY_AND_ASSIGN(MockAuthenticator);
 };
 
-class MockLoginUtils : public LoginUtils {
+class TestLoginUtils : public LoginUtils {
  public:
-  MockLoginUtils(const std::string& expected_username,
+  TestLoginUtils(const std::string& expected_username,
                  const std::string& expected_password);
-  virtual ~MockLoginUtils();
+  virtual ~TestLoginUtils();
 
+  virtual void DoBrowserLaunch(Profile* profile,
+                                 LoginDisplayHost* login_host) OVERRIDE {}
   virtual void PrepareProfile(const std::string& username,
                               const std::string& display_email,
                               const std::string& password,
@@ -123,7 +125,7 @@ class MockLoginUtils : public LoginUtils {
   std::string expected_password_;
   std::string auth_token_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockLoginUtils);
+  DISALLOW_COPY_AND_ASSIGN(TestLoginUtils);
 };
 
 }  // namespace chromeos

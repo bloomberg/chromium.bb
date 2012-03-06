@@ -5,8 +5,8 @@
 // A collection of classes that are useful when testing things that use a
 // GaiaAuthFetcher.
 
-#ifndef CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_UNITTEST_H_
-#define CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_UNITTEST_H_
+#ifndef CHROME_COMMON_NET_GAIA_MOCK_URL_FETCHER_FACTORY_H_
+#define CHROME_COMMON_NET_GAIA_MOCK_URL_FETCHER_FACTORY_H_
 #pragma once
 
 #include <string>
@@ -41,14 +41,14 @@ class MockFetcher : public TestURLFetcher {
 };
 
 template<typename T>
-class MockFactory : public content::URLFetcherFactory,
-                    public ScopedURLFetcherFactory {
+class MockURLFetcherFactory : public content::URLFetcherFactory,
+                              public ScopedURLFetcherFactory {
  public:
-  MockFactory()
+  MockURLFetcherFactory()
       : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         success_(true) {
   }
-  ~MockFactory() {}
+  ~MockURLFetcherFactory() {}
   content::URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
@@ -65,7 +65,7 @@ class MockFactory : public content::URLFetcherFactory,
  private:
   bool success_;
   std::string results_;
-  DISALLOW_COPY_AND_ASSIGN(MockFactory);
+  DISALLOW_COPY_AND_ASSIGN(MockURLFetcherFactory);
 };
 
-#endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTH_FETCHER_UNITTEST_H_
+#endif  // CHROME_COMMON_NET_GAIA_MOCK_URL_FETCHER_FACTORY_H_

@@ -702,6 +702,8 @@
         'browser/chromeos/login/user_image_screen_actor.h',
         'browser/chromeos/login/user_manager.cc',
         'browser/chromeos/login/user_manager.h',
+        'browser/chromeos/login/user_manager_impl.cc',
+        'browser/chromeos/login/user_manager_impl.h',
         'browser/chromeos/login/username_view.cc',
         'browser/chromeos/login/username_view.h',
         'browser/chromeos/login/version_info_updater.cc',

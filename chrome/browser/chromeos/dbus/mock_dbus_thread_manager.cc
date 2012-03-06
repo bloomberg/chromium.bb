@@ -74,6 +74,18 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
   EXPECT_CALL(*mock_session_manager_client_.get(), RemoveObserver(_))
       .Times(AnyNumber());
+  EXPECT_CALL(*mock_update_engine_client_.get(), AddObserver(_))
+      .Times(AnyNumber());
+  EXPECT_CALL(*mock_update_engine_client_.get(), RemoveObserver(_))
+      .Times(AnyNumber());
+
+  // Called from PowerMenuButton ctor.
+  EXPECT_CALL(*mock_power_manager_client_.get(), RequestStatusUpdate(_))
+      .Times(AnyNumber());
+
+  // Called from DiskMountManager::Initialize(), ChromeBrowserMainPartsChromeos.
+  EXPECT_CALL(*mock_cros_disks_client_.get(), SetUpConnections(_, _))
+      .Times(AnyNumber());
 }
 
 MockDBusThreadManager::~MockDBusThreadManager() {}

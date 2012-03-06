@@ -586,7 +586,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kOobeSkipPostLogin)) {
       ready_for_browser_launch_ = true;
-      LoginUtils::DoBrowserLaunch(profile, host_);
+      LoginUtils::Get()->DoBrowserLaunch(profile, host_);
       host_ = NULL;
     } else {
 #endif
@@ -597,7 +597,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
     }
 #endif
   } else {
-    LoginUtils::DoBrowserLaunch(profile, host_);
+    LoginUtils::Get()->DoBrowserLaunch(profile, host_);
     // Inform |login_status_consumer_| about successful login after
     // browser launch.  Set most params to empty since they're not needed.
     if (login_status_consumer_)
