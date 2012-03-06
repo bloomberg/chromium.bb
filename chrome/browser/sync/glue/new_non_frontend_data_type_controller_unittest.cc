@@ -224,6 +224,8 @@ class SyncNewNonFrontendDataTypeControllerTest : public testing::Test {
   void SetStartFailExpectations(DataTypeController::StartResult result) {
     EXPECT_CALL(syncable_service_, StopSyncing(_));
     EXPECT_CALL(*dtc_mock_, StopModels()).Times(AtLeast(1));
+    if (DataTypeController::IsUnrecoverableResult(result))
+      EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
     EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result,_));
   }
@@ -381,6 +383,7 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, AbortDuringAssociation) {
           Return(true)));
   EXPECT_CALL(*change_processor_, GetSyncData(_)).
       WillOnce(Return(SyncError(FROM_HERE, "Disconnected.", AUTOFILL_PROFILE)));
+  EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
   EXPECT_CALL(*change_processor_, Disconnect()).
       WillOnce(DoAll(SignalEvent(&pause_db_thread), Return(true)));
   EXPECT_CALL(service_, DeactivateDataType(_));
@@ -420,6 +423,7 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartAfterSyncShutdown) {
   EXPECT_CALL(*change_processor_, Connect(_,_,_,_)).
       WillOnce(Return(base::WeakPtr<SyncableService>()));
   new_non_frontend_dtc_->UnblockBackendTasks();
+  EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
   WaitForDTC();
 }
 

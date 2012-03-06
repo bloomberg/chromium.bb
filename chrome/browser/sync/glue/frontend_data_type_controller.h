@@ -88,11 +88,6 @@ class FrontendDataTypeController : public DataTypeController {
   virtual void StartFailed(StartResult result, const SyncError& error);
   virtual void FinishStart(StartResult result);
 
-  // DataType specific histogram methods.
-  // Record unrecoverable errors.
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message);
   // Record association time.
   virtual void RecordAssociationTime(base::TimeDelta time);
   // Record causes of start failure.

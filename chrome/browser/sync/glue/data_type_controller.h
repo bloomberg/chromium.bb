@@ -65,6 +65,10 @@ class DataTypeController
                    scoped_refptr<DataTypeController> > TypeMap;
   typedef std::map<syncable::ModelType, DataTypeController::State> StateMap;
 
+  // Returns true if the start result should trigger an unrecoverable error.
+  // Public so unit tests can use this function as well.
+  static bool IsUnrecoverableResult(StartResult result);
+
   // Begins asynchronous start up of this data type.  Start up will
   // wait for all other dependent services to be available, then
   // proceed with model association and then change processor
@@ -93,12 +97,14 @@ class DataTypeController
   // Current state of the data type controller.
   virtual State state() const = 0;
 
-  virtual void OnSingleDatatypeUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) = 0;
-
-
  protected:
+  // Handles the reporting of unrecoverable error. It records stuff in
+  // UMA and reports to breakpad.
+  // Virtual for testing purpose.
+  virtual void RecordUnrecoverableError(
+      const tracked_objects::Location& from_here,
+      const std::string& message);
+
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<DataTypeController>;

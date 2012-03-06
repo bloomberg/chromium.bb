@@ -116,12 +116,6 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void DisableImpl(const tracked_objects::Location& from_here,
                            const std::string& message);
 
-  // DataType specific histogram methods.
-  // Important: calling them on other threads can lead to memory corruption!
-  // Record unrecoverable errors. Called on Datatype's thread.
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message);
   // Record association time. Called on Datatype's thread.
   virtual void RecordAssociationTime(base::TimeDelta time);
   // Record causes of start failure. Called on UI thread.
