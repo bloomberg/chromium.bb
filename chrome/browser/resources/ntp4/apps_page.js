@@ -790,8 +790,12 @@ cr.define('ntp', function() {
 
     /** @inheritDoc */
     shouldAcceptDrag: function(e) {
-      return !!ntp.getCurrentlyDraggingTile() ||
-          (e.dataTransfer && e.dataTransfer.types.contains('text/uri-list'));
+      if (ntp.getCurrentlyDraggingTile())
+        return true;
+      if (!e.dataTransfer || !e.dataTransfer.types)
+        return false;
+      return Array.prototype.indexOf.call(e.dataTransfer.types,
+                                          'text/uri-list') != -1;
     },
 
     /** @inheritDoc */

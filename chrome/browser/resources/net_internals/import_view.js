@@ -80,7 +80,13 @@ var ImportView = (function() {
      * security reasons, which is why we allow the |files| array to be empty.
      */
     onDrag: function(event) {
-      return !event.dataTransfer.types.contains('Files') ||
+      // NOTE: Use Array.prototype.indexOf here is necessary while WebKit
+      // decides which type of data structure dataTransfer.types will be
+      // (currently between DOMStringList and Array). These have different APIs
+      // so assuming one type or the other was breaking things. See
+      // http://crbug.com/115433. TODO(dbeam): Remove when standardized more.
+      var indexOf = Array.prototype.indexOf;
+      return indexOf.call(event.dataTransfer.types, 'Files') == -1 ||
              event.dataTransfer.files.length > 1;
     },
 
@@ -89,7 +95,8 @@ var ImportView = (function() {
      * file, tries to load it as a log file.
      */
     onDrop: function(event) {
-      if (!event.dataTransfer.types.contains('Files') ||
+      var indexOf = Array.prototype.indexOf;
+      if (indexOf.call(event.dataTransfer.types, 'Files') == -1 ||
           event.dataTransfer.files.length != 1) {
         return;
       }
