@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,50 @@
 
 #include <windows.h>
 #include <dbt.h>
+#include <string>
 
+#include "base/file_path.h"
+#include "base/sys_string_conversions.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
 
 static const wchar_t* const WindowClassName = L"Chrome_SystemMessageWindow";
 
-SystemMessageWindowWin::SystemMessageWindowWin() {
+namespace {
+
+LRESULT GetVolumeName(LPCWSTR drive,
+                      LPWSTR volume_name,
+                      unsigned int volume_name_len) {
+  return GetVolumeInformation(drive, volume_name, volume_name_len, NULL, NULL,
+      NULL, NULL, 0);
+}
+
+// Returns 0 if the devicetype is not volume.
+DWORD GetVolumeBitMaskFromBroadcastHeader(DWORD data) {
+  PDEV_BROADCAST_HDR dev_broadcast_hdr =
+      reinterpret_cast<PDEV_BROADCAST_HDR>(data);
+  if (dev_broadcast_hdr->dbch_devicetype == DBT_DEVTYP_VOLUME) {
+    PDEV_BROADCAST_VOLUME dev_broadcast_volume =
+        reinterpret_cast<PDEV_BROADCAST_VOLUME>(dev_broadcast_hdr);
+    return dev_broadcast_volume->dbcv_unitmask;
+  }
+  return 0;
+}
+
+}  // namespace
+
+
+SystemMessageWindowWin::SystemMessageWindowWin()
+    : volume_name_func_(&GetVolumeName) {
+  Init();
+}
+
+SystemMessageWindowWin::SystemMessageWindowWin(VolumeNameFunc volume_name_func)
+    : volume_name_func_(volume_name_func) {
+  Init();
+}
+
+void SystemMessageWindowWin::Init() {
   HINSTANCE hinst = GetModuleHandle(NULL);
 
   WNDCLASSEX wc = {0};
@@ -38,8 +75,35 @@ SystemMessageWindowWin::~SystemMessageWindowWin() {
 
 LRESULT SystemMessageWindowWin::OnDeviceChange(UINT event_type, DWORD data) {
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor && event_type == DBT_DEVNODES_CHANGED)
-    monitor->ProcessDevicesChanged();
+  switch (event_type) {
+    case DBT_DEVNODES_CHANGED:
+      monitor->ProcessDevicesChanged();
+      break;
+    case DBT_DEVICEARRIVAL: {
+      DWORD unitmask = GetVolumeBitMaskFromBroadcastHeader(data);
+      for (int i = 0; unitmask; ++i, unitmask >>= 1) {
+        if (unitmask & 0x01) {
+          FilePath::StringType drive(L"_:\\");
+          drive[0] = L'A' + i;
+          WCHAR volume_name[MAX_PATH + 1];
+          if ((*volume_name_func_)(drive.c_str(), volume_name, MAX_PATH + 1)) {
+            monitor->ProcessMediaDeviceAttached(
+                i, base::SysWideToUTF8(volume_name), FilePath(drive));
+          }
+        }
+      }
+      break;
+    }
+    case DBT_DEVICEREMOVECOMPLETE: {
+      DWORD unitmask = GetVolumeBitMaskFromBroadcastHeader(data);
+      for (int i = 0; unitmask; ++i, unitmask >>= 1) {
+        if (unitmask & 0x01) {
+          monitor->ProcessMediaDeviceDetached(i);
+        }
+      }
+      break;
+    }
+  }
   return TRUE;
 }
 

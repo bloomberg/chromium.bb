@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,21 +6,29 @@
 #define CONTENT_BROWSER_SYSTEM_MESSAGE_WINDOW_WIN_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <windows.h>
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
+typedef LRESULT (*VolumeNameFunc)(LPCWSTR drive,
+                                  LPWSTR volume_name,
+                                  unsigned int volume_name_len);
+
 class CONTENT_EXPORT SystemMessageWindowWin {
  public:
   SystemMessageWindowWin();
+  // Only for use in unit tests.
+  explicit SystemMessageWindowWin::SystemMessageWindowWin(
+      VolumeNameFunc volumeNameFunc);
+
   virtual ~SystemMessageWindowWin();
 
   virtual LRESULT OnDeviceChange(UINT event_type, DWORD data);
 
  private:
+  void Init();
+
   LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
                            WPARAM wparam, LPARAM lparam);
 
@@ -36,6 +44,7 @@ class CONTENT_EXPORT SystemMessageWindowWin {
   }
 
   HWND window_;
+  VolumeNameFunc volume_name_func_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMessageWindowWin);
 };
