@@ -78,15 +78,20 @@ def reportFailure(text, actualBRL, expectedBRL, cursorPos, actualBRLCursorPos, e
 total_failed = 0
 harness_dir = "harness"
 if 'HARNESS_DIR' in os.environ:
+    # we assume that if HARNESS_DIR is set that we are invoked from
+    # the Makefile, i.e. all the paths to the Python test files and
+    # the test tables are set correctly.
     harness_dir = os.environ['HARNESS_DIR']
-    # we assume that the PYTHONPATH was set by the invoking makefile,
-    # so we don't need to muck with it here
 else:
+    # we are not invoked via the Makefile, i.e. we have to set up the
+    # paths (PYTHONPATH and LOUIS_TABLEPATH) manually.
     harness_dir = "harness"
     # make sure the harness modules are found in the harness
     # directory, i.e. insert the harness directory into the module
     # search path
     sys.path.insert(1, harness_dir)
+    # make sure local test braille tables are found
+    os.environ['LOUIS_TABLEPATH'] = 'tables'
 
 # Process all *_harness.py files in the harness directory.
 for harness in iglob(harness_dir + '/*_harness.py'):
