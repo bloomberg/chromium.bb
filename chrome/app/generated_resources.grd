@@ -12212,6 +12212,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK" desc="Title for Virtual Private Network (VPN) group on the settings page">
         Private network
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION" desc="Title for control to add a new network connection." >
+        Add connection
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_ADD_CONNECTION_WIFI" desc="Menu item for adding a new Wi-Fi connection" >
+        Add Wi-Fi...
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK" desc="Title for section in settings/internet for list of remembered (favirote) networks">
         Remembered networks
       </message>

@@ -22,6 +22,7 @@ var LanguageOptions = options.LanguageOptions;
 var OptionsPage = options.OptionsPage;
 var PasswordManager = options.PasswordManager;
 var Preferences = options.Preferences;
+var PreferredNetworks = options.PreferredNetworks;
 var ManageProfileOverlay = options.ManageProfileOverlay;
 var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
@@ -125,16 +126,17 @@ function load() {
                                 BrowserOptions.getInstance(),
                                 [$('account-picture')]);
     OptionsPage.registerOverlay(DetailsInternetPage.getInstance(),
-                                InternetOptions.getInstance());
+                                BrowserOptions.getInstance());
     OptionsPage.registerOverlay(InternetOptions.getInstance(),
-                                BrowserOptions.getInstance(),
-                                [$('internet-options-button')]);
+                                BrowserOptions.getInstance());
     OptionsPage.registerOverlay(KeyboardOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('keyboard-settings-button')]);
     OptionsPage.registerOverlay(PointerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('pointer-settings-button')]);
+    OptionsPage.registerOverlay(PreferredNetworks.getInstance(),
+                                BrowserOptions.getInstance());
     OptionsPage.registerOverlay(ProxyOptions.getInstance(),
                                 DetailsInternetPage.getInstance());
     OptionsPage.registerOverlay(

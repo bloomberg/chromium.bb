@@ -97,6 +97,13 @@ class InternetOptionsHandler
   void ShareNetworkCallback(const base::ListValue* args);
   void ShowMorePlanInfoCallback(const ListValue* args);
 
+  /**
+   * Toggle airplane mode.  Disables all wireless networks when activated.
+   * Celluar and Bluetooth connections remain disabled while active, but
+   * Wi-Fi can be reactivated. |args| is unused.
+   */
+  void ToggleAirplaneModeCallback(const ListValue* args);
+
   // Populates the ui with the details of the given device path. This forces
   // an overlay to be displayed in the UI.
   void PopulateDictionaryDetails(const chromeos::Network* network);

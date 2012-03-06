@@ -20,6 +20,8 @@
   <include src="chromeos/internet_network_element.js"></include>
   <include src="chromeos/internet_options.js"></include>
   <include src="chromeos/internet_detail.js"></include>
+  <include src="chromeos/network_list.js"></include>
+  <include src="chromeos/preferred_networks.js"></include>
   <include src="chromeos/bluetooth_device_list.js"></include>
   <include src="chromeos/bluetooth_add_device_overlay.js"></include>
   <include src="chromeos/bluetooth_pair_device_overlay.js"></include>

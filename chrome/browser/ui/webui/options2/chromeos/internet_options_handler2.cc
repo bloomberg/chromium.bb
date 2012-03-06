@@ -238,7 +238,6 @@ DictionaryValue* NetworkInfoDictionary::BuildDictionary() {
   network_info->SetBoolean(kNetworkInfoKeyRemembered, remembered_);
   network_info->SetString(kNetworkInfoKeyServicePath, service_path_);
   network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, policy_managed_);
-
   return network_info.release();
 }
 
@@ -293,7 +292,11 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "disconnectNetwork", IDS_OPTIONS_SETTINGS_DISCONNECT },
     { "preferredNetworks", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_LABEL },
     { "preferredNetworksPage", IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_TITLE },
-    { "useSharedProxies", IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES },
+    { "useSharedProxiesTitle", IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES },
+    { "addConnectionTitle",
+      IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION },
+    { "addConnectionWifi", IDS_OPTIONS_SETTINGS_ADD_CONNECTION_WIFI },
+    { "addConnectionVPN", IDS_STATUSBAR_NETWORK_ADD_VPN },
 
     // Network options dialog labels.
     // TODO(kevers): Remove once dialog is deprecated.
@@ -484,6 +487,9 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("changePin",
       base::Bind(&InternetOptionsHandler::ChangePinCallback,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("toggleAirplaneMode",
+      base::Bind(&InternetOptionsHandler::ToggleAirplaneModeCallback,
+                 base::Unretained(this)));
 }
 
 void InternetOptionsHandler::EnableWifiCallback(const ListValue* args) {
@@ -589,7 +595,7 @@ void InternetOptionsHandler::RefreshNetworkData() {
   DictionaryValue dictionary;
   FillNetworkInfo(&dictionary);
   web_ui()->CallJavascriptFunction(
-      "options.InternetOptions.refreshNetworkData", dictionary);
+      "options.network.NetworkList.refreshNetworkData", dictionary);
 }
 
 void InternetOptionsHandler::OnNetworkManagerChanged(
@@ -897,7 +903,6 @@ void InternetOptionsHandler::PopulateWifiDetails(
   dictionary->SetString("ssid", wifi->name());
   bool remembered = (wifi->profile_type() != chromeos::PROFILE_NONE);
   dictionary->SetBoolean("remembered", remembered);
-  dictionary->SetBoolean("encrypted", wifi->encrypted());
   bool shared = wifi->profile_type() == chromeos::PROFILE_SHARED;
   dictionary->SetBoolean("shared", shared);
 }
@@ -1069,6 +1074,12 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
   }
 }
 
+void InternetOptionsHandler::ToggleAirplaneModeCallback(const ListValue* args) {
+  // TODO(kevers): The use of 'offline_mode' is not quite correct.  Update once
+  // we have proper back-end support.
+  cros_->EnableOfflineMode(!cros_->offline_mode());
+}
+
 void InternetOptionsHandler::HandleWifiButtonClick(
     const std::string& service_path,
     const std::string& command) {
@@ -1183,20 +1194,6 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
     list->Append(network_dict.BuildDictionary());
   }
 
-  // Add "Other WiFi network..." if wifi is enabled.
-  if (cros_->wifi_enabled()) {
-    NetworkInfoDictionary network_dict;
-    network_dict.set_service_path(kOtherNetworksFakePath);
-    network_dict.set_icon(
-        chromeos::NetworkMenuIcon::GetConnectedBitmap(
-            chromeos::NetworkMenuIcon::ARCS));
-    network_dict.set_name(
-        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS));
-    network_dict.set_connectable(true);
-    network_dict.set_connection_type(chromeos::TYPE_WIFI);
-    list->Append(network_dict.BuildDictionary());
-  }
-
   const chromeos::CellularNetworkVector cellular_networks =
       cros_->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
@@ -1283,6 +1280,9 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
   dictionary->SetBoolean("cellularAvailable", cros_->cellular_available());
   dictionary->SetBoolean("cellularBusy", cros_->cellular_busy());
   dictionary->SetBoolean("cellularEnabled", cros_->cellular_enabled());
+  // TODO(kevers): The use of 'offline_mode' is not quite correct.  Update once
+  // we have proper back-end support.
+  dictionary->SetBoolean("airplaneMode", cros_->offline_mode());
 }
 
 void InternetOptionsHandler::SetValueDictionary(

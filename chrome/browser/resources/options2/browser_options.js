@@ -72,11 +72,7 @@ cr.define('options', function() {
 
       // Internet connection section (ChromeOS only).
       if (cr.isChromeOS) {
-        $('internet-options-button').onclick = function(event) {
-          OptionsPage.navigateToPage('internet');
-          chrome.send('coreOptionsUserMetricsAction',
-              ['Options_InternetOptions']);
-        };
+        options.network.NetworkList.decorate($('network-list'));
       }
 
       // On Startup section.
