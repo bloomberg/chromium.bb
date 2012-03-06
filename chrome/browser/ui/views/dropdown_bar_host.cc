@@ -23,7 +23,7 @@
 #elif defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "ui/base/gtk/scoped_handle_gtk.h"
+#include "ui/base/gtk/scoped_region.h"
 #endif
 
 namespace {
