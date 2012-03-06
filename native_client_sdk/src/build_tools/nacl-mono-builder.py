@@ -10,6 +10,9 @@ import tarfile
 
 import buildbot_common
 
+SDK_BUILD_DIR = buildbot_common.SCRIPT_DIR
+MONO_BUILD_DIR = os.path.join(SDK_BUILD_DIR, 'mono_build')
+MONO_DIR = os.path.join(MONO_BUILD_DIR, 'nacl-mono')
 
 def main(args):
   parser = optparse.OptionParser()
@@ -29,9 +32,8 @@ def main(args):
   buildbot_revision = os.environ.get('BUILDBOT_REVISION', '')
 
   buildbot_common.BuildStep('Clean Old SDK')
-  buildbot_common.MakeDir('mono_build')
-  os.chdir('mono_build')
-  buildbot_common.RemoveDir('pepper_*')
+  buildbot_common.MakeDir(MONO_BUILD_DIR)
+  buildbot_common.RemoveDir(os.path.join(MONO_BUILD_DIR, 'pepper_*'))
 
   buildbot_common.BuildStep('Setup New SDK')
   sdk_dir = None
@@ -41,13 +43,14 @@ def main(args):
     sdk_revision = buildbot_revision.split(':')[0]
     url = 'gs://nativeclient-mirror/nacl/nacl_sdk/'\
           'trunk.%s/naclsdk_linux.bz2' % sdk_revision
-    buildbot_common.Run([buildbot_common.GetGsutil(), 'cp', url, '.'])
+    buildbot_common.Run([buildbot_common.GetGsutil(), 'cp', url, '.'],
+                        cwd=MONO_BUILD_DIR)
     tar_file = None
     try:
-      tar_file = tarfile.open('naclsdk_linux.bz2')
+      tar_file = tarfile.open(os.path.join(MONO_BUILD_DIR, 'naclsdk_linux.bz2'))
       pepper_dir = os.path.commonprefix(tar_file.getnames())
-      tar_file.extractall()
-      sdk_dir = os.path.join(os.getcwd(), pepper_dir)
+      tar_file.extractall(path=MONO_BUILD_DIR)
+      sdk_dir = os.path.join(MONO_BUILD_DIR, pepper_dir)
     finally:
       if tar_file:
         tar_file.close()
@@ -61,18 +64,16 @@ def main(args):
   # TODO(elijahtaylor): Get git URL from master/trigger to make this
   # more flexible for building from upstream and release branches.
   git_url = 'git://github.com/elijahtaylor/mono.git'
-  git_dir = 'nacl-mono'
   git_rev = None
   if buildbot_revision:
     git_rev = buildbot_revision.split(':')[1]
-  if not os.path.exists(git_dir):
-    buildbot_common.Run(['git', 'clone', git_url, git_dir])
-    os.chdir(git_dir) 
+  if not os.path.exists(MONO_DIR):
+    buildbot_common.MakeDir(MONO_DIR)
+    buildbot_common.Run(['git', 'clone', git_url, MONO_DIR])
   else:
-    os.chdir(git_dir) 
-    buildbot_common.Run(['git', 'fetch'])
+    buildbot_common.Run(['git', 'fetch'], cwd=MONO_DIR)
   if git_rev:
-    buildbot_common.Run(['git', 'checkout', git_rev])
+    buildbot_common.Run(['git', 'checkout', git_rev], cwd=MONO_DIR)
 
   arch_to_bitsize = {'x86-32': '32',
                      'x86-64': '64'}
@@ -84,30 +85,32 @@ def main(args):
   buildbot_common.BuildStep('Configure Mono')
   os.environ['NACL_SDK_ROOT'] = sdk_dir
   os.environ['TARGET_BITSIZE'] = arch_to_bitsize[options.arch]
-  buildbot_common.Run(['./autogen.sh']) 
-  buildbot_common.Run(['make', 'distclean'])
+  buildbot_common.Run(['./autogen.sh'], cwd=MONO_DIR) 
+  buildbot_common.Run(['make', 'distclean'], cwd=MONO_DIR)
 
-  buildbot_common.BuildStep('Build/Install Mono')
-  # TODO(elijahtaylor): This script only exists in my fork.
-  # This script should live in the SDK's build_tools/
-  os.chdir('nacl')
+  buildbot_common.BuildStep('Build and Install Mono')
   buildbot_common.RemoveDir(arch_to_install_folder[options.arch])
-  nacl_interp_script = os.path.join(os.getcwd(), 'nacl_interp_loader_sdk.sh')
+  nacl_interp_script = os.path.join(SDK_BUILD_DIR, 'nacl_interp_loader_mono.sh')
   os.environ['NACL_INTERP_LOADER'] = nacl_interp_script
-  buildbot_common.Run(['./nacl-runtime-mono.sh'])
+  buildbot_common.Run(['./nacl-mono-runtime.sh',
+                      MONO_DIR, # Mono directory with 'configure'
+                      arch_to_output_folder[options.arch], # Build dir
+                      arch_to_install_folder[options.arch]],
+                      cwd=SDK_BUILD_DIR)
 
   buildbot_common.BuildStep('Test Mono')
-  os.chdir(arch_to_output_folder[options.arch])
-  buildbot_common.Run(['make', 'check', '-j8'])
-  os.chdir('..')
+  buildbot_common.Run(['make', 'check', '-j8'],
+      cwd=os.path.join(SDK_BUILD_DIR, arch_to_output_folder[options.arch]))
 
   buildbot_common.BuildStep('Archive Build')
   tar_file = None
-  tar_path = arch_to_install_folder[options.arch] + '.bz2'
+  tar_path = os.path.join(SDK_BUILD_DIR,
+                          arch_to_install_folder[options.arch] + '.bz2')
   buildbot_common.RemoveFile(tar_path)
   try:
     tar_file = tarfile.open(tar_path, mode='w:bz2')
-    tar_file.add(arch_to_install_folder[options.arch])
+    tar_file.add(os.path.join(SDK_BUILD_DIR,
+                 arch_to_install_folder[options.arch]))
   finally:
     if tar_file:
       tar_file.close()
