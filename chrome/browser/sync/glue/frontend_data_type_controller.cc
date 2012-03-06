@@ -8,7 +8,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -122,9 +121,6 @@ bool FrontendDataTypeController::Associate() {
 void FrontendDataTypeController::StartFailed(StartResult result,
                                              const SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (IsUnrecoverableResult(result))
-    RecordUnrecoverableError(FROM_HERE, "StartFailed");
   CleanUpState();
   set_model_associator(NULL);
   change_processor_.reset();
@@ -217,6 +213,14 @@ void FrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
   RecordUnrecoverableError(from_here, message);
   sync_service_->OnDisableDatatype(type(), from_here, message);
+}
+
+void FrontendDataTypeController::RecordUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures", type(),
+                            syncable::MODEL_TYPE_COUNT);
 }
 
 void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {

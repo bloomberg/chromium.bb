@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -129,9 +128,6 @@ void NonFrontendDataTypeController::StartAssociation() {
 void NonFrontendDataTypeController::StartFailed(StartResult result,
                                                 const SyncError& error) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (IsUnrecoverableResult(result))
-    RecordUnrecoverableError(FROM_HERE, "StartFailed");
   StopAssociation();
   StartDone(result,
             result == ASSOCIATION_FAILED ? DISABLED : NOT_RUNNING,
@@ -318,6 +314,14 @@ void NonFrontendDataTypeController::DisableImpl(
     const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_sync_service_->OnDisableDatatype(type(), from_here, message);
+}
+
+void NonFrontendDataTypeController::RecordUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures", type(),
+                            syncable::MODEL_TYPE_COUNT);
 }
 
 void NonFrontendDataTypeController::RecordAssociationTime(

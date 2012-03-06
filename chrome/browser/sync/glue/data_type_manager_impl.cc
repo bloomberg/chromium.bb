@@ -16,7 +16,6 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -301,7 +300,6 @@ void DataTypeManagerImpl::DownloadReady(
   }
 
   if (!failed_configuration_types.Empty()) {
-    ChromeReportUnrecoverableError();
     std::string error_msg =
         "Configuration failed for types " +
         syncable::ModelTypeSetToString(failed_configuration_types);

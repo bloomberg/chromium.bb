@@ -2407,7 +2407,6 @@
         'browser/sync/glue/chrome_report_unrecoverable_error.h',
         'browser/sync/glue/chrome_sync_notification_bridge.h',
         'browser/sync/glue/chrome_sync_notification_bridge.cc',
-        'browser/sync/glue/data_type_controller.cc',
         'browser/sync/glue/data_type_controller.h',
         'browser/sync/glue/data_type_error_handler.h',
         'browser/sync/glue/data_type_manager.cc',

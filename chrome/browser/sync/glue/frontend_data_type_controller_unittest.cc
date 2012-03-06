@@ -126,8 +126,6 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
   }
 
   void SetStartFailExpectations(DataTypeController::StartResult result) {
-    if (DataTypeController::IsUnrecoverableResult(result))
-      EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, _));
     EXPECT_CALL(*dtc_mock_, CleanUpState());
     EXPECT_CALL(*dtc_mock_, RecordStartFailure(result));
     EXPECT_CALL(start_callback_, Run(result,_));

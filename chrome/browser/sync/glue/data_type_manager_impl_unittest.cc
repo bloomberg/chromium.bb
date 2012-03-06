@@ -169,11 +169,6 @@ class FakeDataTypeController : public DataTypeController {
     ADD_FAILURE() << message;
  }
 
-  virtual void RecordUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) {
-    ADD_FAILURE() << message;
- }
 
  private:
   State state_;
