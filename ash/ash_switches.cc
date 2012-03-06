@@ -16,6 +16,7 @@ const char kAshUberTray[] = "ash-uber-tray";
 
 // Force the "compact" window mode regardless of the value of kAuraWindowMode.
 // This can be used to override a value set in chrome://flags.
+// Also implies fully-opaque windows for performance.
 // TODO(derat): Remove this once the normal mode is usable on all platforms.
 const char kAuraForceCompactWindowMode[] = "aura-force-compact-window-mode";
 
@@ -30,9 +31,6 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 
 // Avoid drawing drop shadows under windows.
 const char kAuraNoShadows[] = "aura-no-shadows";
-
-// Use Aura-style translucent window frame.
-const char kAuraTranslucentFrames[] = "aura-translucent-frames";
 
 // If present animations are disabled.
 const char kAuraWindowAnimationsDisabled[] = "aura-window-animations-disabled";
