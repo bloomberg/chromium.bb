@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/stringprintf.h"
 
 namespace {
 
@@ -151,40 +152,67 @@ Feature::Location Feature::ConvertLocation(Extension::Location location) {
     return UNSPECIFIED_LOCATION;
 }
 
-bool Feature::IsAvailable(const std::string& extension_id,
-                          Extension::Type type,
-                          Location location,
-                          Context context,
-                          Platform platform,
-                          int manifest_version) {
+std::string Feature::GetErrorMessage(Feature::Availability result) {
+  switch (result) {
+    case IS_AVAILABLE:
+      return "";
+    case NOT_FOUND_IN_WHITELIST:
+      return "Not allowed for specified extension ID.";
+    case INVALID_TYPE:
+      return "Not allowed for specified package type (theme, app, etc.).";
+    case INVALID_CONTEXT:
+      return "Not allowed for specified context type content script, extension "
+          "page, web page, etc.).";
+    case INVALID_LOCATION:
+      return "Not allowed for specified install location.";
+    case INVALID_PLATFORM:
+      return "Not allowed for specified platform.";
+    case INVALID_MIN_MANIFEST_VERSION:
+      return base::StringPrintf("Requires manifest version of at least %d.",
+                                min_manifest_version_);
+    case INVALID_MAX_MANIFEST_VERSION:
+      return base::StringPrintf("Requires manifest version of %d or lower.",
+                                max_manifest_version_);
+    default:
+      CHECK(false);
+      return "";
+  }
+}
+
+Feature::Availability Feature::IsAvailable(const std::string& extension_id,
+                                           Extension::Type type,
+                                           Location location,
+                                           Context context,
+                                           Platform platform,
+                                           int manifest_version) {
   if (!whitelist_.empty() &&
       whitelist_.find(extension_id) == whitelist_.end()) {
-    return false;
+    return NOT_FOUND_IN_WHITELIST;
   }
 
   if (!extension_types_.empty() &&
       extension_types_.find(type) == extension_types_.end()) {
-    return false;
+    return INVALID_TYPE;
   }
 
   if (!contexts_.empty() &&
       contexts_.find(context) == contexts_.end()) {
-    return false;
+    return INVALID_CONTEXT;
   }
 
   if (location_ != UNSPECIFIED_LOCATION && location_ != location)
-    return false;
+    return INVALID_LOCATION;
 
   if (platform_ != UNSPECIFIED_PLATFORM && platform_ != platform)
-    return false;
+    return INVALID_PLATFORM;
 
   if (min_manifest_version_ != 0 && manifest_version < min_manifest_version_)
-    return false;
+    return INVALID_MIN_MANIFEST_VERSION;
 
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
-    return false;
+    return INVALID_MAX_MANIFEST_VERSION;
 
-  return true;
+  return IS_AVAILABLE;
 }
 
 }  // namespace
