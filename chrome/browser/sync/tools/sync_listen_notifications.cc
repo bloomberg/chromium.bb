@@ -21,11 +21,7 @@
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
-
-using content::BrowserThread;
 
 // This is a simple utility that initializes a sync notifier and
 // listens to any received notifications.
@@ -100,11 +96,10 @@ int main(int argc, char* argv[]) {
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   MessageLoop ui_loop;
-  content::TestBrowserThread ui_thread(BrowserThread::UI, &ui_loop);
-  content::TestBrowserThread io_thread(BrowserThread::IO);
+  base::Thread io_thread("IO thread");
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
-  io_thread.StartIOThread();
+  io_thread.StartWithOptions(options);
 
   // Parse command line.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -124,12 +119,10 @@ int main(int argc, char* argv[]) {
   }
 
   const char kClientInfo[] = "sync_listen_notifications";
-  scoped_refptr<TestURLRequestContextGetter> request_context_getter(
-      new TestURLRequestContextGetter(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
   NullInvalidationVersionTracker null_invalidation_version_tracker;
   sync_notifier::SyncNotifierFactory sync_notifier_factory(
-      kClientInfo, request_context_getter,
+      kClientInfo,
+      new TestURLRequestContextGetter(io_thread.message_loop_proxy()),
       null_invalidation_version_tracker.AsWeakPtr(), command_line);
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());

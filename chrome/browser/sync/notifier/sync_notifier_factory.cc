@@ -14,14 +14,11 @@
 #include "chrome/browser/sync/notifier/p2p_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/browser_thread.h"
 #include "jingle/notifier/base/const_communicator.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"
 #include "jingle/notifier/listener/talk_mediator_impl.h"
 #include "net/base/host_port_pair.h"
-
-using content::BrowserThread;
 
 namespace sync_notifier {
 namespace {
@@ -132,11 +129,9 @@ SyncNotifierFactory::SyncNotifierFactory(
           InvalidationVersionMap()),
       invalidation_version_tracker_(invalidation_version_tracker),
       command_line_(command_line) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 SyncNotifierFactory::~SyncNotifierFactory() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {

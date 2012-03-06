@@ -23,7 +23,7 @@ namespace sync_notifier {
 class SyncNotifier;
 
 // Class to instantiate various implementations of the SyncNotifier
-// interface.  Must be created/destroyed on the UI thread.
+// interface.
 class SyncNotifierFactory {
  public:
   // |client_info| is a string identifying the client, e.g. a user

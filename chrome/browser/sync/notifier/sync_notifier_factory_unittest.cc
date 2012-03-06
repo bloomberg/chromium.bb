@@ -17,7 +17,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,23 +27,17 @@ namespace {
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
-using content::BrowserThread;
 
 class SyncNotifierFactoryTest : public testing::Test {
  protected:
   SyncNotifierFactoryTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_),
-        command_line_(CommandLine::NO_PROGRAM) {}
+      : command_line_(CommandLine::NO_PROGRAM) {}
   virtual ~SyncNotifierFactoryTest() {}
 
   virtual void SetUp() OVERRIDE {
-    request_context_getter_ =
-        new TestURLRequestContextGetter(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
     factory_.reset(new SyncNotifierFactory(
         "fake_client_info",
-        request_context_getter_,
+        new TestURLRequestContextGetter(message_loop_.message_loop_proxy()),
         base::WeakPtr<sync_notifier::InvalidationVersionTracker>(),
         command_line_));
     message_loop_.RunAllPending();
@@ -52,15 +45,11 @@ class SyncNotifierFactoryTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     Mock::VerifyAndClearExpectations(&mock_observer_);
-    request_context_getter_ = NULL;
     message_loop_.RunAllPending();
     command_line_ = CommandLine(CommandLine::NO_PROGRAM);
   }
 
   MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;
   scoped_ptr<SyncNotifierFactory> factory_;
   CommandLine command_line_;

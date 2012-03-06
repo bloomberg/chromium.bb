@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/util/weak_handle.h"
-#include "content/test/test_browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,21 +24,18 @@ namespace {
 
 using ::testing::InSequence;
 using ::testing::StrictMock;
-using content::BrowserThread;
 
 class NonBlockingInvalidationNotifierTest : public testing::Test {
  public:
-  NonBlockingInvalidationNotifierTest()
-      : io_thread_(BrowserThread::IO) {}
+  NonBlockingInvalidationNotifierTest() : io_thread_("Test IO thread") {}
 
  protected:
   virtual void SetUp() {
     base::Thread::Options options;
     options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_.StartIOThread();
+    io_thread_.StartWithOptions(options);
     request_context_getter_ =
-        new TestURLRequestContextGetter(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+        new TestURLRequestContextGetter(io_thread_.message_loop_proxy());
     notifier::NotifierOptions notifier_options;
     notifier_options.request_context_getter = request_context_getter_;
     invalidation_notifier_.reset(
@@ -61,7 +57,7 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
   }
 
   MessageLoop ui_loop_;
-  content::TestBrowserThread io_thread_;
+  base::Thread io_thread_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<NonBlockingInvalidationNotifier> invalidation_notifier_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;

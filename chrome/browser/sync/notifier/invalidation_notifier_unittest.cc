@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/browser/sync/util/weak_handle.h"
-#include "content/test/test_browser_thread.h"
 #include "jingle/notifier/base/fake_base_task.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/cert_verifier.h"
@@ -26,19 +25,14 @@ namespace {
 
 using ::testing::InSequence;
 using ::testing::StrictMock;
-using content::BrowserThread;
 
 class InvalidationNotifierTest : public testing::Test {
- public:
-  InvalidationNotifierTest() : io_thread_(BrowserThread::IO, &message_loop_) {}
-
  protected:
   virtual void SetUp() {
     notifier::NotifierOptions notifier_options;
     // Note: URLRequestContextGetters are ref-counted.
     notifier_options.request_context_getter =
-        new TestURLRequestContextGetter(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+        new TestURLRequestContextGetter(message_loop_.message_loop_proxy());
     invalidation_notifier_.reset(
         new InvalidationNotifier(
             notifier_options,
@@ -59,8 +53,6 @@ class InvalidationNotifierTest : public testing::Test {
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
   StrictMock<MockSyncNotifierObserver> mock_observer_;
   notifier::FakeBaseTask fake_base_task_;
-  // Since this test calls HostResolver code, we need an IO thread.
-  content::TestBrowserThread io_thread_;
 };
 
 TEST_F(InvalidationNotifierTest, Basic) {
