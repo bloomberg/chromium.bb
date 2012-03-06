@@ -11,14 +11,9 @@ DECLARE_WINDOW_PROPERTY_TYPE(aura::client::DragDropClient*)
 
 namespace aura {
 namespace client {
-namespace {
 
-// A property key to store the drag and drop client for the root window.
-const WindowProperty<DragDropClient*> kRootWindowDragDropClientProp = {NULL};
-const WindowProperty<DragDropClient*>* const
-    kRootWindowDragDropClientKey = &kRootWindowDragDropClientProp;
-
-}  // namespace
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+    DragDropClient*, kRootWindowDragDropClientKey, NULL);
 
 void SetDragDropClient(RootWindow* root_window, DragDropClient* client) {
   root_window->SetProperty(kRootWindowDragDropClientKey, client);

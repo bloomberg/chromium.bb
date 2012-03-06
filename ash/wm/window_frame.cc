@@ -6,16 +6,8 @@
 
 #include "ui/aura/window_property.h"
 
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, ash::WindowFrame*)
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, ash::WindowFrame*);
 
 namespace ash {
-namespace {
-
-const aura::WindowProperty<WindowFrame*> kWindowFrameProp = {NULL};
-
-}  // namespace
-
-const aura::WindowProperty<WindowFrame*>* const
-    kWindowFrameKey = &kWindowFrameProp;
-
+DEFINE_WINDOW_PROPERTY_KEY(WindowFrame*, kWindowFrameKey, NULL);
 }  // namespace ash

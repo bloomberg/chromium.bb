@@ -13,15 +13,12 @@ DECLARE_WINDOW_PROPERTY_TYPE(bool)
 
 namespace ash {
 namespace internal {
-namespace {
-
 // Property set on all windows whose child windows' visibility changes are
 // animated.
-const aura::WindowProperty<bool>
-    kChildWindowVisibilityChangesAnimatedProp = {false};
-const aura::WindowProperty<bool>* const
-    kChildWindowVisibilityChangesAnimatedKey =
-        &kChildWindowVisibilityChangesAnimatedProp;
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+    bool, kChildWindowVisibilityChangesAnimatedKey, false);
+
+namespace {
 
 bool GetChildWindowVisibilityChangesAnimated(aura::Window* window) {
   if (!window)

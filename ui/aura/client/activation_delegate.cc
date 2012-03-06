@@ -11,14 +11,9 @@ DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ActivationDelegate*)
 
 namespace aura {
 namespace client {
-namespace {
 
-// A property key to store the activation delegate for a window.
-const WindowProperty<ActivationDelegate*> kActivationDelegateProp = {NULL};
-const WindowProperty<ActivationDelegate*>* const
-    kActivationDelegateKey = &kActivationDelegateProp;
-
-}  // namespace
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+    ActivationDelegate*, kActivationDelegateKey, NULL);
 
 void SetActivationDelegate(Window* window, ActivationDelegate* delegate) {
   window->SetProperty(kActivationDelegateKey, delegate);

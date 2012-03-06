@@ -12,18 +12,10 @@ DECLARE_WINDOW_PROPERTY_TYPE(string16*)
 
 namespace aura {
 namespace client {
-namespace {
 
-// A property key to store tooltip text for a window.
-const WindowProperty<TooltipClient*> kRootWindowTooltipClientProp = {NULL};
-const WindowProperty<TooltipClient*>* const
-    kRootWindowTooltipClientKey = &kRootWindowTooltipClientProp;
-
-// A property key to store the tooltip client for the root window.
-const WindowProperty<string16*> kTooltipTextProp = {NULL};
-const WindowProperty<string16*>* const kTooltipTextKey = &kTooltipTextProp;
-
-}  // namespace
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+    TooltipClient*, kRootWindowTooltipClientKey, NULL);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(string16*, kTooltipTextKey, NULL);
 
 void SetTooltipClient(RootWindow* root_window, TooltipClient* client) {
   root_window->SetProperty(kRootWindowTooltipClientKey, client);

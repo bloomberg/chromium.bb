@@ -5,6 +5,7 @@
 #include "ui/aura/client/aura_constants.h"
 
 #include "ui/aura/window_property.h"
+#include "ui/gfx/rect.h"
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, bool)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::ModalType)
@@ -14,31 +15,18 @@ DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::WindowShowState)
 
 namespace aura {
 namespace client {
-namespace {
 
 // Alphabetical sort.
 
-const WindowProperty<bool> kAlwaysOnTopProp = {false};
-const WindowProperty<bool> kAnimationsDisabledProp = {false};
-const WindowProperty<ui::ModalType> kModalProp = {ui::MODAL_TYPE_NONE};
-const WindowProperty<gfx::Rect*> kRestoreBoundsProp = {NULL};
-const WindowProperty<ui::InputMethod*> kRootWindowInputMethodProp = {NULL};
-const WindowProperty<ui::WindowShowState>
-    kShowStateProp = {ui::SHOW_STATE_DEFAULT};
-
-}  // namespace
-
-// Alphabetical sort.
-
-const WindowProperty<bool>* const kAlwaysOnTopKey = &kAlwaysOnTopProp;
-const WindowProperty<bool>* const
-    kAnimationsDisabledKey = &kAnimationsDisabledProp;
-const WindowProperty<ui::ModalType>* const kModalKey = &kModalProp;
-const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey = &kRestoreBoundsProp;
-const WindowProperty<ui::InputMethod*>* const
-    kRootWindowInputMethodKey = &kRootWindowInputMethodProp;
-const WindowProperty<ui::WindowShowState>* const
-    kShowStateKey = &kShowStateProp;
+DEFINE_WINDOW_PROPERTY_KEY(bool, kAlwaysOnTopKey, false);
+DEFINE_WINDOW_PROPERTY_KEY(bool, kAnimationsDisabledKey, false);
+DEFINE_WINDOW_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);
+// gfx::Rect object for RestoreBoundsKey property is owned by the window
+// and will be freed automatically.
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, NULL);
+DEFINE_WINDOW_PROPERTY_KEY(ui::InputMethod*, kRootWindowInputMethodKey, NULL);
+DEFINE_WINDOW_PROPERTY_KEY(
+    ui::WindowShowState, kShowStateKey, ui::SHOW_STATE_DEFAULT);
 
 }  // namespace client
 }  // namespace aura

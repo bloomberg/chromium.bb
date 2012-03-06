@@ -11,14 +11,9 @@ DECLARE_WINDOW_PROPERTY_TYPE(aura::client::DragDropDelegate*)
 
 namespace aura {
 namespace client {
-namespace {
 
-// A property key to store the drag and drop delegate for a window.
-const WindowProperty<DragDropDelegate*> kDragDropDelegateProp = {NULL};
-const WindowProperty<DragDropDelegate*>* const
-    kDragDropDelegateKey = &kDragDropDelegateProp;
-
-}  // namespace
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+    DragDropDelegate*, kDragDropDelegateKey, NULL);
 
 void SetDragDropDelegate(Window* window, DragDropDelegate* delegate) {
   window->SetProperty(kDragDropDelegateKey, delegate);

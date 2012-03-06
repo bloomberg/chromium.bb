@@ -316,13 +316,17 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void SetNativeWindowProperty(const char* key, void* value);
   void* GetNativeWindowProperty(const char* key) const;
 
+  // Type of a function to delete a property that this window owns.
+  typedef void (*PropertyDeallocator)(intptr_t value);
+
  private:
   friend class LayoutManager;
-
   // Called by the public {Set,Get,Clear}Property functions.
-  void SetPropertyInternal(const void* key,
-                           intptr_t value,
-                           intptr_t default_value);
+  intptr_t SetPropertyInternal(const void* key,
+                               const char* name,
+                               PropertyDeallocator deallocator,
+                               intptr_t value,
+                               intptr_t default_value);
   intptr_t GetPropertyInternal(const void* key, intptr_t default_value) const;
 
   // Changes the bounds of the window without condition.
@@ -422,7 +426,16 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   ObserverList<WindowObserver> observers_;
 
-  std::map<const void*, intptr_t> prop_map_;
+  // Value struct to keep the name and deallocator for this property.
+  // Key cannot be used for this purpose because it can be char* or
+  // WindowProperty<>.
+  struct Value {
+    const char* name;
+    intptr_t value;
+    PropertyDeallocator deallocator;
+  };
+
+  std::map<const void*, Value> prop_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
 };

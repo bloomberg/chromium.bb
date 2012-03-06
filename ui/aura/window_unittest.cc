@@ -923,33 +923,36 @@ TEST_F(WindowTest, FocusedWindowTest) {
   EXPECT_TRUE(parent->HasFocus());
 }
 
+namespace {
+DEFINE_WINDOW_PROPERTY_KEY(int, kIntKey, -2);
+DEFINE_WINDOW_PROPERTY_KEY(const char*, kStringKey, "squeamish");
+}
+
 TEST_F(WindowTest, Property) {
   scoped_ptr<Window> w(CreateTestWindowWithId(0, NULL));
 
-  const WindowProperty<int> int_prop = {-2};
-  const WindowProperty<const char*> str_prop = {"squeamish"};
   static const char native_prop_key[] = "fnord";
 
   // Non-existent properties should return the default values.
-  EXPECT_EQ(-2, w->GetProperty(&int_prop));
-  EXPECT_EQ(std::string("squeamish"), w->GetProperty(&str_prop));
+  EXPECT_EQ(-2, w->GetProperty(kIntKey));
+  EXPECT_EQ(std::string("squeamish"), w->GetProperty(kStringKey));
   EXPECT_EQ(NULL, w->GetNativeWindowProperty(native_prop_key));
 
   // A set property value should be returned again (even if it's the default
   // value).
-  w->SetProperty(&int_prop, INT_MAX);
-  EXPECT_EQ(INT_MAX, w->GetProperty(&int_prop));
-  w->SetProperty(&int_prop, -2);
-  EXPECT_EQ(-2, w->GetProperty(&int_prop));
-  w->SetProperty(&int_prop, INT_MIN);
-  EXPECT_EQ(INT_MIN, w->GetProperty(&int_prop));
+  w->SetProperty(kIntKey, INT_MAX);
+  EXPECT_EQ(INT_MAX, w->GetProperty(kIntKey));
+  w->SetProperty(kIntKey, -2);
+  EXPECT_EQ(-2, w->GetProperty(kIntKey));
+  w->SetProperty(kIntKey, INT_MIN);
+  EXPECT_EQ(INT_MIN, w->GetProperty(kIntKey));
 
-  w->SetProperty(&str_prop, static_cast<const char*>(NULL));
-  EXPECT_EQ(NULL, w->GetProperty(&str_prop));
-  w->SetProperty(&str_prop, "squeamish");
-  EXPECT_EQ(std::string("squeamish"), w->GetProperty(&str_prop));
-  w->SetProperty(&str_prop, "ossifrage");
-  EXPECT_EQ(std::string("ossifrage"), w->GetProperty(&str_prop));
+  w->SetProperty(kStringKey, static_cast<const char*>(NULL));
+  EXPECT_EQ(NULL, w->GetProperty(kStringKey));
+  w->SetProperty(kStringKey, "squeamish");
+  EXPECT_EQ(std::string("squeamish"), w->GetProperty(kStringKey));
+  w->SetProperty(kStringKey, "ossifrage");
+  EXPECT_EQ(std::string("ossifrage"), w->GetProperty(kStringKey));
 
   w->SetNativeWindowProperty(native_prop_key, &*w);
   EXPECT_EQ(&*w, w->GetNativeWindowProperty(native_prop_key));
@@ -957,10 +960,56 @@ TEST_F(WindowTest, Property) {
   EXPECT_EQ(NULL, w->GetNativeWindowProperty(native_prop_key));
 
   // ClearProperty should restore the default value.
-  w->ClearProperty(&int_prop);
-  EXPECT_EQ(-2, w->GetProperty(&int_prop));
-  w->ClearProperty(&str_prop);
-  EXPECT_EQ(std::string("squeamish"), w->GetProperty(&str_prop));
+  w->ClearProperty(kIntKey);
+  EXPECT_EQ(-2, w->GetProperty(kIntKey));
+  w->ClearProperty(kStringKey);
+  EXPECT_EQ(std::string("squeamish"), w->GetProperty(kStringKey));
+}
+
+namespace {
+
+class TestProperty {
+ public:
+  TestProperty() {}
+  virtual ~TestProperty() {
+    last_deleted_ = this;
+  }
+  static TestProperty* last_deleted() { return last_deleted_; }
+
+ private:
+  static TestProperty* last_deleted_;
+  DISALLOW_COPY_AND_ASSIGN(TestProperty);
+};
+
+TestProperty* TestProperty::last_deleted_ = NULL;
+
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
+
+}  // namespace
+
+TEST_F(WindowTest, OwnedProperty) {
+  scoped_ptr<Window> w(CreateTestWindowWithId(0, NULL));
+  EXPECT_EQ(NULL, w->GetProperty(kOwnedKey));
+  TestProperty* p1 = new TestProperty();
+  w->SetProperty(kOwnedKey, p1);
+  EXPECT_EQ(p1, w->GetProperty(kOwnedKey));
+  EXPECT_EQ(NULL, TestProperty::last_deleted());
+
+  TestProperty* p2 = new TestProperty();
+  w->SetProperty(kOwnedKey, p2);
+  EXPECT_EQ(p2, w->GetProperty(kOwnedKey));
+  EXPECT_EQ(p1, TestProperty::last_deleted());
+
+  w->ClearProperty(kOwnedKey);
+  EXPECT_EQ(NULL, w->GetProperty(kOwnedKey));
+  EXPECT_EQ(p2, TestProperty::last_deleted());
+
+  TestProperty* p3 = new TestProperty();
+  w->SetProperty(kOwnedKey, p3);
+  EXPECT_EQ(p3, w->GetProperty(kOwnedKey));
+  EXPECT_EQ(p2, TestProperty::last_deleted());
+  w.reset();
+  EXPECT_EQ(p3, TestProperty::last_deleted());
 }
 
 TEST_F(WindowTest, SetBoundsInternalShouldCheckTargetBounds) {

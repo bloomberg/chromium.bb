@@ -14,18 +14,33 @@
 //
 // To define a new WindowProperty:
 //
-//   #include "ui/aura/window_property.h"
+//  #include "foo/foo_export.h"
+//  #include "ui/aura/window_property.h"
 //
-//   namespace {
-//   const WindowProperty<MyType> kMyProp = {my_default_value};
-//   }
+//  DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(FOO_EXPORT, MyType);
+//  namespace foo {
+//    // Use this to define an exported property that is premitive,
+//    // or a pointer you don't want automatically deleted.
+//    DEFINE_WINDOW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
 //
-//   FOO_EXPORT const WindowProperty<MyType>* const kMyKey = &kMyProp;
+//    // Use this to define an exported property whose value is a heap
+//    // allocated object, and has to be owned and freed by the window.
+//    DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, NULL);
 //
-//   // outside all namespaces:
-//   DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(FOO_EXPORT, MyType)
+//    // Use this to define a non exported property that is primitive,
+//    // or a pointer you don't want to automatically deleted, and is used
+//    // only in a specific file. This will define the property in anonymous
+//    // namespace which cannot be accessed from another file.
+//    DEFINE_LOCAL_WINDOW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
 //
-// If the property is not exported, use DECLARE_WINDOW_PROPERTY_TYPE(MyType),
+//  }  // foo namespace
+//
+// To define a new type used for WindowProperty.
+//
+//  // outside all namespaces:
+//  DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(FOO_EXPORT, MyType)
+//
+// If a property type is not exported, use DECLARE_WINDOW_PROPERTY_TYPE(MyType)
 // which is a shorthand for DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, MyType).
 
 namespace aura {
@@ -59,14 +74,22 @@ class WindowPropertyCaster<bool> {
 template<typename T>
 struct WindowProperty {
   T default_value;
+  const char* name;
+  Window::PropertyDeallocator deallocator;
 };
 
 template<typename T>
 void Window::SetProperty(const WindowProperty<T>* property, T value) {
-  SetPropertyInternal(
+  intptr_t old = SetPropertyInternal(
       property,
+      property->name,
+      value == property->default_value ? NULL : property->deallocator,
       WindowPropertyCaster<T>::ToIntptrT(value),
       WindowPropertyCaster<T>::ToIntptrT(property->default_value));
+  if (property->deallocator &&
+      old != WindowPropertyCaster<T>::ToIntptrT(property->default_value)) {
+    (*property->deallocator)(old);
+  }
 }
 
 template<typename T>
@@ -77,9 +100,7 @@ T Window::GetProperty(const WindowProperty<T>* property) const {
 
 template<typename T>
 void Window::ClearProperty(const WindowProperty<T>* property) {
-  intptr_t default_value =
-      WindowPropertyCaster<T>::ToIntptrT(property->default_value);
-  SetPropertyInternal(property, default_value, default_value);
+  SetProperty(property, property->default_value);
 }
 
 }  // namespace aura
@@ -94,5 +115,28 @@ void Window::ClearProperty(const WindowProperty<T>* property) {
         const aura::WindowProperty<T >*);
 #define DECLARE_WINDOW_PROPERTY_TYPE(T)  \
     DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, T)
+
+#define DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
+  namespace {                                                                 \
+    const aura::WindowProperty<TYPE> NAME ## _Value = {DEFAULT, #NAME, NULL}; \
+  }                                                                           \
+  const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;
+
+#define DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
+  namespace {                                                                 \
+    const aura::WindowProperty<TYPE> NAME ## _Value = {DEFAULT, #NAME, NULL}; \
+    const aura::WindowProperty<TYPE>* const NAME = & NAME ## _Value;          \
+  }
+
+#define DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT) \
+  namespace {                                             \
+    enum { type_must_be_complete = sizeof(TYPE) };        \
+    void Deallocator(intptr_t p) {                        \
+      delete WindowPropertyCaster<TYPE*>::FromIntptrT(p); \
+    }                                                     \
+    const aura::WindowProperty<TYPE*> NAME ## _Value =    \
+        {DEFAULT,#NAME,&Deallocator};                     \
+  }                                                       \
+  const aura::WindowProperty<TYPE*>* const NAME = & NAME ## _Value;
 
 #endif  // UI_AURA_WINDOW_PROPERTY_H_

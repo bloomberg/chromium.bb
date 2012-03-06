@@ -11,15 +11,10 @@ DECLARE_WINDOW_PROPERTY_TYPE(aura::client::VisibilityClient*)
 
 namespace aura {
 namespace client {
-namespace {
 
 // A property key to store a client that handles window visibility changes.
-const WindowProperty<VisibilityClient*>
-    kRootWindowVisibilityClientProp = {NULL};
-const WindowProperty<VisibilityClient*>* const
-    kRootWindowVisibilityClientKey = &kRootWindowVisibilityClientProp;
-
-}  // namespace
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(
+    VisibilityClient*, kRootWindowVisibilityClientKey, NULL);
 
 void SetVisibilityClient(RootWindow* root_window, VisibilityClient* client) {
   root_window->SetProperty(kRootWindowVisibilityClientKey, client);

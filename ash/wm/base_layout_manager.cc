@@ -90,12 +90,10 @@ void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
 void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
   switch (window->GetProperty(aura::client::kShowStateKey)) {
     case ui::SHOW_STATE_NORMAL: {
-      // Bounds rect object is owned by the window property dictionary,
-      // so ensure we release it when we're done restoring.
-      scoped_ptr<const gfx::Rect> restore(GetRestoreBounds(window));
-      window->ClearProperty(aura::client::kRestoreBoundsKey);
-      if (restore.get())
+      const gfx::Rect* restore = GetRestoreBounds(window);
+      if (restore)
         window->SetBounds(*restore);
+      window->ClearProperty(aura::client::kRestoreBoundsKey);
       break;
     }
 

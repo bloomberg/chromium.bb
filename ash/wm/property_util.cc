@@ -22,7 +22,6 @@ const aura::WindowProperty<bool> kWindowTrackedByWorkspaceSplitProp = {true};
 }  // namespace
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
-  scoped_ptr<const gfx::Rect> old_bounds(GetRestoreBounds(window));
   window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
 }
 
@@ -36,7 +35,6 @@ const gfx::Rect* GetRestoreBounds(aura::Window* window) {
 }
 
 void ClearRestoreBounds(aura::Window* window) {
-  scoped_ptr<const gfx::Rect> old_bounds(GetRestoreBounds(window));
   window->ClearProperty(aura::client::kRestoreBoundsKey);
 }
 

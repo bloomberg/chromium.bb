@@ -12,20 +12,10 @@ DECLARE_WINDOW_PROPERTY_TYPE(aura::client::ActivationClient*)
 
 namespace aura {
 namespace client {
-namespace {
 
-const WindowProperty<Window*> kRootWindowActiveWindowProp = {NULL};
-
-// A property key to store a client that handles window activation.
-const WindowProperty<ActivationClient*>
-    kRootWindowActivationClientProp = {NULL};
-const WindowProperty<ActivationClient*>* const
-    kRootWindowActivationClientKey = &kRootWindowActivationClientProp;
-
-}  // namespace
-
-const WindowProperty<Window*>* const
-    kRootWindowActiveWindowKey = &kRootWindowActiveWindowProp;
+DEFINE_WINDOW_PROPERTY_KEY(Window*, kRootWindowActiveWindowKey, NULL);
+DEFINE_WINDOW_PROPERTY_KEY(
+    ActivationClient*, kRootWindowActivationClientKey, NULL);
 
 void SetActivationClient(RootWindow* root_window, ActivationClient* client) {
   root_window->SetProperty(kRootWindowActivationClientKey, client);

@@ -7,18 +7,12 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(aura::client::DispatcherClient*)
+DECLARE_WINDOW_PROPERTY_TYPE(aura::client::DispatcherClient*);
 
 namespace aura {
 namespace client {
-namespace {
 
-// A property key to store the nested dispatcher controller.
-const WindowProperty<DispatcherClient*> kDispatcherClientProp = {NULL};
-const WindowProperty<DispatcherClient*>* const
-    kDispatcherClientKey = &kDispatcherClientProp;
-
-}  // namespace
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(DispatcherClient*, kDispatcherClientKey, NULL);
 
 void SetDispatcherClient(RootWindow* root_window, DispatcherClient* client) {
   root_window->SetProperty(kDispatcherClientKey, client);

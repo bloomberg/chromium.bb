@@ -7,22 +7,10 @@
 #include "ash/wm/shadow_types.h"
 #include "ui/aura/window_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::ShadowType)
+DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::ShadowType);
 
 namespace ash {
 namespace internal {
-
-namespace {
-
-// Alphabetical sort.
-
-const aura::WindowProperty<ShadowType> kShadowTypeProp = {SHADOW_TYPE_NONE};
-
-}  // namespace
-
-// Alphabetical sort.
-
-const aura::WindowProperty<ShadowType>* const kShadowTypeKey = &kShadowTypeProp;
-
+DEFINE_WINDOW_PROPERTY_KEY(ShadowType, kShadowTypeKey, SHADOW_TYPE_NONE);
 }  // namespace internal
 }  // namespace ash

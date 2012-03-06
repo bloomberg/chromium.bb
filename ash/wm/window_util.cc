@@ -14,17 +14,10 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(bool)
+DECLARE_WINDOW_PROPERTY_TYPE(bool);
 
 namespace ash {
-
-namespace {
-
-const aura::WindowProperty<bool> kOpenWindowSplitProp = {false};
-const aura::WindowProperty<bool>* const
-    kOpenWindowSplitKey = &kOpenWindowSplitProp;
-
-}  // namespace
+DEFINE_WINDOW_PROPERTY_KEY(bool, kOpenWindowSplitKey, false);
 
 namespace wm {
 

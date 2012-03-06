@@ -27,25 +27,13 @@ using base::TimeDelta;
 
 namespace ash {
 namespace internal {
-namespace {
-
-const aura::WindowProperty<WindowVisibilityAnimationType>
-    kWindowVisibilityAnimationTypeProp =
-        {WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT};
-const aura::WindowProperty<int> kWindowVisibilityAnimationDurationProp = {0};
-const aura::WindowProperty<WindowVisibilityAnimationTransition>
-    kWindowVisibilityAnimationTransitionProp = {ANIMATE_BOTH};
-
-}  // namespace
-
-const aura::WindowProperty<WindowVisibilityAnimationType>* const
-    kWindowVisibilityAnimationTypeKey = &kWindowVisibilityAnimationTypeProp;
-const aura::WindowProperty<int>* const kWindowVisibilityAnimationDurationKey =
-    &kWindowVisibilityAnimationDurationProp;
-const aura::WindowProperty<WindowVisibilityAnimationTransition>* const
-    kWindowVisibilityAnimationTransitionKey =
-        &kWindowVisibilityAnimationTransitionProp;
-
+DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationType,
+                           kWindowVisibilityAnimationTypeKey,
+                           WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+DEFINE_WINDOW_PROPERTY_KEY(int, kWindowVisibilityAnimationDurationKey, 0);
+DEFINE_WINDOW_PROPERTY_KEY(WindowVisibilityAnimationTransition,
+                           kWindowVisibilityAnimationTransitionKey,
+                           ANIMATE_BOTH);
 }  // namespace internal
 
 void SetWindowVisibilityAnimationType(aura::Window* window,

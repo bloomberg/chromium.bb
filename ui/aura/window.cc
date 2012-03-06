@@ -109,6 +109,15 @@ Window::~Window() {
 
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroyed(this));
 
+  // Clear properties.
+  for (std::map<const void*, Value>::const_iterator iter = prop_map_.begin();
+       iter != prop_map_.end();
+       ++iter) {
+    if (iter->second.deallocator)
+      (*iter->second.deallocator)(iter->second.value);
+  }
+  prop_map_.clear();
+
   // If we have layer it will either be destroyed by layer_owner_'s dtor, or by
   // whoever acquired it. We don't have a layer if Init() wasn't invoked, which
   // can happen in tests.
@@ -505,31 +514,40 @@ void Window::SuppressPaint() {
 // {Set,Get,Clear}Property are implemented in window_property.h.
 
 void Window::SetNativeWindowProperty(const char* key, void* value) {
-  SetPropertyInternal(key, reinterpret_cast<intptr_t>(value), 0);
+  SetPropertyInternal(
+      key, key, NULL, reinterpret_cast<intptr_t>(value), 0);
 }
 
 void* Window::GetNativeWindowProperty(const char* key) const {
   return reinterpret_cast<void*>(GetPropertyInternal(key, 0));
 }
 
-void Window::SetPropertyInternal(const void* key,
-                                 intptr_t value,
-                                 intptr_t default_value) {
+intptr_t Window::SetPropertyInternal(const void* key,
+                                     const char* name,
+                                     PropertyDeallocator deallocator,
+                                     intptr_t value,
+                                     intptr_t default_value) {
   intptr_t old = GetPropertyInternal(key, default_value);
-  if (value == default_value)
+  if (value == default_value) {
     prop_map_.erase(key);
-  else
-    prop_map_[key] = value;
+  } else {
+    Value prop_value;
+    prop_value.name = name;
+    prop_value.value = value;
+    prop_value.deallocator = deallocator;
+    prop_map_[key] = prop_value;
+  }
   FOR_EACH_OBSERVER(WindowObserver, observers_,
                     OnWindowPropertyChanged(this, key, old));
+  return old;
 }
 
 intptr_t Window::GetPropertyInternal(const void* key,
                                      intptr_t default_value) const {
-  std::map<const void*, intptr_t>::const_iterator iter = prop_map_.find(key);
+  std::map<const void*, Value>::const_iterator iter = prop_map_.find(key);
   if (iter == prop_map_.end())
     return default_value;
-  return iter->second;
+  return iter->second.value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

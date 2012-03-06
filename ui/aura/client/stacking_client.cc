@@ -6,9 +6,6 @@
 
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window_property.h"
-
-DECLARE_WINDOW_PROPERTY_TYPE(aura::client::StackingClient*)
 
 namespace aura {
 namespace client {
