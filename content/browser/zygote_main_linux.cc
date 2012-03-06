@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,7 +124,7 @@ class Zygote {
       bool r = UnixDomainSocket::SendMsg(kBrowserDescriptor, kZygoteMagic,
                                          sizeof(kZygoteMagic), empty);
 #if defined(OS_CHROMEOS)
-      LOG_IF(WARNING, r) << "Sending zygote magic failed";
+      LOG_IF(WARNING, !r) << "Sending zygote magic failed";
       // Exit normally on chromeos because session manager may send SIGTERM
       // right after the process starts and it may fail to send zygote magic
       // number to browser process.
