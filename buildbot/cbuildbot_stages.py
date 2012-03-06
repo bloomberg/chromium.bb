@@ -856,17 +856,17 @@ class SDKTestStage(bs.BuilderStage):
       cros_lib.RunCommand(cmd, cwd=self._build_root)
 
 
+class NothingToArchiveException(Exception):
+  """Thrown if ArchiveStage found nothing to archive."""
+  def __init__(self, message='No images found to archive.'):
+    super(NothingToArchiveException, self).__init__(message)
+
+
 class ArchiveStage(BoardSpecificBuilderStage):
   """Archives build and test artifacts for developer consumption."""
 
   option_name = 'archive'
   _VERSION_NOT_SET = '_not_set_version_'
-
-  class NothingToArchiveException(Exception):
-    """Thrown if this stage found nothing to archive."""
-    def __init__(self):
-      super(ArchiveStage.NothingToArchiveException, self).__init__(
-          'No images found to archive.')
 
   # This stage is intended to run in the background, in parallel with tests.
   def __init__(self, bot_id, options, build_config, board):
@@ -1072,18 +1072,16 @@ class ArchiveStage(BoardSpecificBuilderStage):
     upload_url = self.GetGSUploadLocation()
     archive_path = self._SetupArchivePath()
     image_dir = self.GetImageDirSymlink()
-    debug_tarball_queue = multiprocessing.Queue()
     upload_queue = multiprocessing.Queue()
-    NUM_UPLOAD_QUEUE_THREADS = 10
-    upload_for_hw_test_queue = multiprocessing.Queue()
-    NUM_HW_TEST_UPLOAD_QUEUE_THREADS = 6
+    hw_test_upload_queue = multiprocessing.Queue()
+    bg_task_runner = background.BackgroundTaskRunner
 
     extra_env = {}
     if config['useflags']:
       extra_env['USE'] = ' '.join(config['useflags'])
 
     if not archive_path:
-      raise ArchiveStage.NothingToArchiveException()
+      raise NothingToArchiveException()
 
     # The following functions are run in parallel (except where indicated
     # otherwise)
@@ -1097,16 +1095,13 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #       (builds recovery image first, then launches functions below)
     #       \- BuildAndArchiveFactoryImages
     #       \- ArchiveRegularImages
-    # \- UploadDebugSymbols
-    # \- UploadArtifacts
-    # \- UploadArtifactsForHWTesting
 
     def ArchiveAutotestTarball():
       """Archives the autotest tarball produced in BuildTarget."""
       autotest_tarball = self._GetAutotestTarball()
       if autotest_tarball:
-        upload_for_hw_test_queue.put(commands.ArchiveFile(autotest_tarball,
-                                                          archive_path))
+        hw_test_upload_queue.put([commands.ArchiveFile(autotest_tarball,
+                                                       archive_path)])
 
     def ArchivePayloads():
       """Archives update payloads when they are ready."""
@@ -1119,8 +1114,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
             update_payloads_dir, board)
         for payload in os.listdir(update_payloads_dir):
           full_path = os.path.join(update_payloads_dir, payload)
-          upload_for_hw_test_queue.put(commands.ArchiveFile(full_path,
-                                                            archive_path))
+          hw_test_upload_queue.put([commands.ArchiveFile(full_path,
+                                                         archive_path)])
 
     def ArchiveTestResults():
       """Archives test results when they are ready."""
@@ -1131,8 +1126,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
                                                            board, test_results,
                                                            archive_path)
           for filename in filenames:
-            upload_queue.put(filename)
-        upload_queue.put(commands.ArchiveFile(test_results, archive_path))
+            upload_queue.put([filename])
+        upload_queue.put([commands.ArchiveFile(test_results, archive_path)])
 
     def ArchiveDebugSymbols():
       """Generate and upload debug symbols."""
@@ -1145,18 +1140,13 @@ class ArchiveStage(BoardSpecificBuilderStage):
           self._BreakpadSymbolsGenerated(success)
         filename = commands.GenerateDebugTarball(
             buildroot, board, archive_path, config['archive_build_debug'])
-        upload_queue.put(filename)
-        debug_tarball_queue.put(filename)
+        upload_queue.put([filename])
+        if not debug and config['upload_symbols']:
+          commands.UploadSymbols(buildroot,
+                                 board=board,
+                                 official=config['chromeos_official'])
       else:
         self._BreakpadSymbolsGenerated(False)
-
-    def UploadDebugSymbols():
-      if not debug and config['upload_symbols']:
-        filename = debug_tarball_queue.get()
-        if filename is None: return
-        commands.UploadSymbols(buildroot,
-                               board=board,
-                               official=config['chromeos_official'])
 
     def BuildAndArchiveFactoryImages():
       """Build and archive the factory zip file.
@@ -1183,25 +1173,25 @@ class ArchiveStage(BoardSpecificBuilderStage):
       if factory_install_symlink and factory_test_symlink:
         image_root = os.path.dirname(factory_install_symlink)
         filename = commands.BuildFactoryZip(buildroot, archive_path, image_root)
-        upload_queue.put(filename)
+        upload_queue.put([filename])
 
     def ArchiveRegularImages():
       """Build and archive image.zip and the hwqual image."""
 
       # Zip up everything in the image directory.
-      upload_queue.put(commands.BuildImageZip(archive_path, image_dir))
+      upload_queue.put([commands.BuildImageZip(archive_path, image_dir)])
 
       if config['chromeos_official']:
         # Build hwqual image and upload to Google Storage.
         version = os.path.basename(os.path.realpath(image_dir))
         hwqual_name = 'chromeos-hwqual-%s-%s' % (board, version)
         filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path)
-        upload_queue.put(filename)
+        upload_queue.put([filename])
 
       # Archive au-generator.zip.
       filename = 'au-generator.zip'
       shutil.copy(os.path.join(image_dir, filename), archive_path)
-      upload_queue.put(filename)
+      upload_queue.put([filename])
 
     def BuildAndArchiveAllImages():
       # If we're an official build, generate the recovery image. To conserve
@@ -1214,58 +1204,32 @@ class ArchiveStage(BoardSpecificBuilderStage):
       background.RunParallelSteps([BuildAndArchiveFactoryImages,
                                    ArchiveRegularImages])
 
-    def UploadArtifacts(queue):
-      # Upload any generated artifacts to Google Storage.
-      while True:
-        filename = queue.get()
-        if filename is None:
-          # Shut down self and other upload processes.
-          queue.put(None)
-          break
-        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+    def UploadArtifact(filename):
+      """Upload generated artifact to Google Storage."""
+      commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
 
-    def ArchiveArtifactsForHWTesting():
+    def ArchiveArtifactsForHWTesting(num_upload_processes=6):
       """Archives artifacts required for HWTest stage."""
+      queue = hw_test_upload_queue
+      success = False
       try:
-        steps = [ArchiveAutotestTarball, ArchivePayloads]
-        background.RunParallelSteps(steps)
+        with bg_task_runner(queue, UploadArtifact, num_upload_processes):
+          steps = [ArchiveAutotestTarball, ArchivePayloads]
+          background.RunParallelSteps(steps)
+        success = True
       finally:
-        # Shut down upload queue.
-        upload_for_hw_test_queue.put(None)
+        self._hw_test_uploads_status_queue.put(success)
 
-    def UploadArtifactsForHWTesting():
-      """Upload artifacts to Google Storage required for HWTest stage."""
-      try:
-        background.RunParallelSteps(
-            [lambda: UploadArtifacts(upload_for_hw_test_queue)] *
-            NUM_HW_TEST_UPLOAD_QUEUE_THREADS)
-        self._hw_test_uploads_status_queue.put(True)
-      except background.BackgroundException:
-        # Let HWTestStage know immediately if uploads failed
-        # instead of waiting for other threads to complete.
-        self._hw_test_uploads_status_queue.put(False)
-        raise
-
-    def BuildAndArchiveArtifacts():
-      try:
+    def BuildAndArchiveArtifacts(num_upload_processes=10):
+      with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
         # Run archiving steps in parallel.
         steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages]
         if self._options.tests:
           steps += [ArchiveArtifactsForHWTesting, ArchiveTestResults]
 
         background.RunParallelSteps(steps)
-      finally:
-        # Shut down upload queues.
-        upload_queue.put(None)
-        debug_tarball_queue.put(None)
 
-    # Build and archive artifacts.
-    steps = [BuildAndArchiveArtifacts, UploadDebugSymbols]
-    steps += [lambda: UploadArtifacts(upload_queue)] * NUM_UPLOAD_QUEUE_THREADS
-    if self._options.tests:
-      steps += [UploadArtifactsForHWTesting]
-
-    background.RunParallelSteps(steps)
+    BuildAndArchiveArtifacts()
 
     # Now that all data has been generated, we can upload the final result to
     # the image server.
