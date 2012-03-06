@@ -290,7 +290,7 @@ void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI) ||
       (out_num_lock_enabled && !num_lock_mask_)) {
-    LOG(ERROR) << "Cannot get locked modifiers.";
+    VLOG(1) << "Cannot get locked modifiers. Num Lock mask unknown.";
     if (out_caps_lock_enabled) {
       *out_caps_lock_enabled = false;
     }
