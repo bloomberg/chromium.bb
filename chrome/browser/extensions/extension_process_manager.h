@@ -97,14 +97,14 @@ class ExtensionProcessManager : public content::NotificationObserver {
   int IncrementLazyKeepaliveCount(const Extension* extension);
   int DecrementLazyKeepaliveCount(const Extension* extension);
 
-  // These are called when the extension transitions between idle and active.
-  // They control the process of closing the background page when idle.
-  void OnLazyBackgroundPageIdle(const std::string& extension_id);
-  void OnLazyBackgroundPageActive(const std::string& extension_id);
-
-  // Handle a response to the ShouldClose message, used for lazy background
+  // Handles a response to the ShouldClose message, used for lazy background
   // pages.
   void OnShouldCloseAck(const std::string& extension_id, int sequence_id);
+
+  // Tracks network requests for a given RenderViewHost, used to know
+  // when network activity is idle for lazy background pages.
+  void OnNetworkRequestStarted(RenderViewHost* render_view_host);
+  void OnNetworkRequestDone(RenderViewHost* render_view_host);
 
   typedef std::set<ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
@@ -144,14 +144,23 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
  private:
   // Contains all extension-related RenderViewHost instances for all extensions.
-  typedef std::set<RenderViewHost*> RenderViewHostSet;
-  RenderViewHostSet all_extension_views_;
+  // We also keep a cache of the host's view type, because that information
+  // is not accessible at registration/deregistration time.
+  typedef std::map<RenderViewHost*, content::ViewType> ExtensionRenderViews;
+  ExtensionRenderViews all_extension_views_;
 
   // Close the given |host| iff it's a background page.
   void CloseBackgroundHost(ExtensionHost* host);
 
-  // Excludes background page.
-  bool HasVisibleViews(const std::string& extension_id);
+  // These are called when the extension transitions between idle and active.
+  // They control the process of closing the background page when idle.
+  void OnLazyBackgroundPageIdle(const std::string& extension_id);
+  void OnLazyBackgroundPageActive(const std::string& extension_id);
+
+  // Updates a potentially-registered RenderViewHost once it has been
+  // associated with a WebContents. This allows us to gather information that
+  // was not available when the host was first registered.
+  void UpdateRegisteredRenderView(RenderViewHost* render_view_host);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

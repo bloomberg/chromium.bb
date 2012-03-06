@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/mock_host_resolver.h"
 
 namespace {
 // Helper class to wait for a lazy background page to load and close again.
@@ -143,6 +145,67 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnInstalled) {
   // Lazy Background Page has been shut down.
   ExtensionProcessManager* pm =
       browser()->profile()->GetExtensionProcessManager();
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+}
+
+// Tests that the lazy background page stays alive until all visible views are
+// closed.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
+  LazyBackgroundObserver page_complete;
+  ResultCatcher catcher;
+  FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
+      AppendASCII("wait_for_view");
+  const Extension* extension = LoadExtension(extdir);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // The extension should've opened a new tab to an extension page.
+  EXPECT_EQ(extension->GetResourceURL("extension_page.html").spec(),
+            browser()->GetSelectedWebContents()->GetURL().spec());
+
+  // Lazy Background Page still exists, because the extension created a new tab
+  // to an extension page.
+  ExtensionProcessManager* pm =
+      browser()->profile()->GetExtensionProcessManager();
+  EXPECT_TRUE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+
+  // Close the new tab.
+  browser()->CloseTabContents(browser()->GetSelectedWebContents());
+  page_complete.Wait();
+
+  // Lazy Background Page has been shut down.
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
+}
+
+// Tests that the lazy background page stays alive until all network requests
+// are complete.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(StartTestServer());
+
+  LazyBackgroundObserver page_complete;
+  ResultCatcher catcher;
+  FilePath extdir = test_data_dir_.AppendASCII("lazy_background_page").
+      AppendASCII("wait_for_request");
+  const Extension* extension = LoadExtension(extdir);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // Lazy Background Page still exists, because the extension started a request.
+  ExtensionProcessManager* pm =
+      browser()->profile()->GetExtensionProcessManager();
+  ExtensionHost* host =
+      pm->GetBackgroundHostForExtension(last_loaded_extension_id_);
+  ASSERT_TRUE(host);
+
+  // Abort the request.
+  bool result = false;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), std::wstring(), L"abortRequest()", &result));
+  EXPECT_TRUE(result);
+  page_complete.Wait();
+
+  // Lazy Background Page has been shut down.
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 }
 

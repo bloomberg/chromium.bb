@@ -5,14 +5,19 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
+#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -42,6 +47,47 @@ void ForwardProxyErrors(net::URLRequest* request,
         ExtensionProxyEventRouter::GetInstance()->OnProxyError(
             event_router, profile, request->status().error());
     }
+  }
+}
+
+enum RequestStatus { REQUEST_STARTED, REQUEST_DONE };
+
+// Notifies the ExtensionProcessManager that a request has started or stopped
+// for a particular RenderView.
+void NotifyEPMRequestStatus(RequestStatus status,
+                            void* profile_id,
+                            int process_id,
+                            int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Profile* profile = reinterpret_cast<Profile*>(profile_id);
+  if (!g_browser_process->profile_manager()->IsValidProfile(profile))
+    return;
+
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(process_id, render_view_id);
+  // Will be NULL if the request was not issued on behalf of a renderer (e.g. a
+  // system-level request).
+  if (render_view_host) {
+    if (status == REQUEST_STARTED) {
+      profile->GetExtensionProcessManager()->OnNetworkRequestStarted(
+          render_view_host);
+    } else if (status == REQUEST_DONE) {
+      profile->GetExtensionProcessManager()->OnNetworkRequestDone(
+          render_view_host);
+    } else {
+      NOTREACHED();
+    }
+  }
+}
+
+void ForwardRequestStatus(
+    RequestStatus status, net::URLRequest* request, void* profile_id) {
+  int process_id, render_view_id;
+  if (ResourceDispatcherHost::RenderViewForRequest(
+          request, &process_id, &render_view_id)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&NotifyEPMRequestStatus,
+                   status, profile_id, process_id, render_view_id));
   }
 }
 
@@ -91,6 +137,8 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     return net::ERR_NETWORK_ACCESS_DENIED;
   }
 #endif
+
+  ForwardRequestStatus(REQUEST_STARTED, request, profile_);
 
   if (!enable_referrers_->GetValue())
     request->set_referrer(std::string());
@@ -160,6 +208,8 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
     NOTREACHED();
   }
   ForwardProxyErrors(request, event_router_.get(), profile_);
+
+  ForwardRequestStatus(REQUEST_DONE, request, profile_);
 }
 
 void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {

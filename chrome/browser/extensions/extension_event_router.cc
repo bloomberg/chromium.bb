@@ -382,7 +382,11 @@ void ExtensionEventRouter::LoadLazyBackgroundPagesForEvent(
 
     if (extension && !CanDispatchEventNow(extension)) {
       AppendEvent(extension->id(), event);
-      pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+      if (!pm->GetBackgroundHostForExtension(extension->id())) {
+        // Balanced in DispatchPendingEvents, after the page has loaded.
+        pm->IncrementLazyKeepaliveCount(extension);
+        pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+      }
     }
   }
 }
@@ -429,14 +433,6 @@ void ExtensionEventRouter::DispatchPendingEvents(
     return;
   }
 
-  // Temporarily increment the keepalive count while dispatching the events.
-  // This also ensures that if no events were dispatched, the extension returns
-  // to "idle" and is shut down.
-  const Extension* extension =
-      profile_->GetExtensionService()->extensions()->GetByID(extension_id);
-  ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
-  pm->IncrementLazyKeepaliveCount(extension);
-
   PendingEventsList* events_list = map_it->second.get();
   for (PendingEventsList::const_iterator it = events_list->begin();
        it != events_list->end(); ++it)
@@ -445,6 +441,10 @@ void ExtensionEventRouter::DispatchPendingEvents(
   events_list->clear();
   pending_events_.erase(extension_id);
 
+  // Balance the keepalive addref in LoadLazyBackgroundPagesForEvent.
+  const Extension* extension =
+      profile_->GetExtensionService()->extensions()->GetByID(extension_id);
+  ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
   pm->DecrementLazyKeepaliveCount(extension);
 }
 

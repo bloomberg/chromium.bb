@@ -54,6 +54,12 @@ int& GetLazyKeepaliveCount(Profile* profile, const Extension* extension) {
   return *count;
 }
 
+std::string GetExtensionID(RenderViewHost* render_view_host) {
+  // This works for both apps and extensions because the site has been
+  // normalized to the extension URL for apps.
+  return render_view_host->GetSiteInstance()->GetSite().host();
+}
+
 // Incognito profiles use this process manager. It is mostly a shim that decides
 // whether to fall back on the original profile's ExtensionProcessManager based
 // on whether a given extension uses "split" or "spanning" incognito behavior.
@@ -124,6 +130,8 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(profile));
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+                 content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 }
@@ -277,10 +285,10 @@ std::set<RenderViewHost*>
     return result;
 
   // Gather up all the views for that site.
-  for (RenderViewHostSet::iterator view = all_extension_views_.begin();
+  for (ExtensionRenderViews::iterator view = all_extension_views_.begin();
        view != all_extension_views_.end(); ++view) {
-    if ((*view)->GetSiteInstance() == site_instance)
-      result.insert(*view);
+    if (view->first->GetSiteInstance() == site_instance)
+      result.insert(view->first);
   }
 
   return result;
@@ -289,16 +297,53 @@ std::set<RenderViewHost*>
 void ExtensionProcessManager::RegisterRenderViewHost(
     RenderViewHost* render_view_host,
     const Extension* extension) {
-  all_extension_views_.insert(render_view_host);
+  all_extension_views_[render_view_host] = content::VIEW_TYPE_INVALID;
 }
 
 void ExtensionProcessManager::UnregisterRenderViewHost(
     RenderViewHost* render_view_host) {
-  all_extension_views_.erase(render_view_host);
+  ExtensionRenderViews::iterator view =
+      all_extension_views_.find(render_view_host);
+  if (view == all_extension_views_.end())
+    return;
+
+  content::ViewType view_type = view->second;
+  all_extension_views_.erase(view);
+
+  // Keepalive count, balanced in UpdateRegisteredRenderView.
+  if (view_type != content::VIEW_TYPE_INVALID &&
+      view_type != chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    const Extension* extension =
+        GetProfile()->GetExtensionService()->extensions()->GetByID(
+            GetExtensionID(render_view_host));
+    if (extension)
+      DecrementLazyKeepaliveCount(extension);
+  }
 }
 
-SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(
-    const GURL& url) {
+void ExtensionProcessManager::UpdateRegisteredRenderView(
+    RenderViewHost* render_view_host) {
+  ExtensionRenderViews::iterator view =
+      all_extension_views_.find(render_view_host);
+  if (view == all_extension_views_.end())
+    return;
+
+  view->second = render_view_host->GetDelegate()->GetRenderViewType();
+
+  // Keep the lazy background page alive as long as any non-background-page
+  // extension views are visible. Keepalive count balanced in
+  // UnregisterRenderViewHost.
+  if (view->second != content::VIEW_TYPE_INVALID &&
+      view->second != chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    const Extension* extension =
+        GetProfile()->GetExtensionService()->extensions()->GetByID(
+            GetExtensionID(render_view_host));
+    if (extension)
+      IncrementLazyKeepaliveCount(extension);
+  }
+}
+
+SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {
   return site_instance_->GetRelatedSiteInstance(url);
 }
 
@@ -318,7 +363,6 @@ int ExtensionProcessManager::IncrementLazyKeepaliveCount(
   if (extension->background_page_persists())
     return 0;
 
-  // TODO(mpcomplete): Handle visible views changing.
   int& count = ::GetLazyKeepaliveCount(GetProfile(), extension);
   if (++count == 1)
     OnLazyBackgroundPageActive(extension->id());
@@ -342,7 +386,7 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
 void ExtensionProcessManager::OnLazyBackgroundPageIdle(
     const std::string& extension_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
-  if (host && !HasVisibleViews(extension_id))
+  if (host)
     host->SendShouldClose();
 }
 
@@ -360,19 +404,20 @@ void ExtensionProcessManager::OnShouldCloseAck(
     host->OnShouldCloseAck(sequence_id);
 }
 
-bool ExtensionProcessManager::HasVisibleViews(const std::string& extension_id) {
-  const std::set<RenderViewHost*>& views =
-      GetRenderViewHostsForExtension(extension_id);
-  for (std::set<RenderViewHost*>::const_iterator it = views.begin();
-       it != views.end(); ++it) {
-    const RenderViewHost* host = *it;
-    if (host->GetSiteInstance()->GetSite().host() == extension_id &&
-        host->GetDelegate()->GetRenderViewType() !=
-        chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      return true;
-    }
-  }
-  return false;
+void ExtensionProcessManager::OnNetworkRequestStarted(
+    RenderViewHost* render_view_host) {
+  ExtensionHost* host = GetBackgroundHostForExtension(
+      GetExtensionID(render_view_host));
+  if (host)
+    IncrementLazyKeepaliveCount(host->extension());
+}
+
+void ExtensionProcessManager::OnNetworkRequestDone(
+    RenderViewHost* render_view_host) {
+  ExtensionHost* host = GetBackgroundHostForExtension(
+      GetExtensionID(render_view_host));
+  if (host)
+    DecrementLazyKeepaliveCount(host->extension());
 }
 
 void ExtensionProcessManager::Observe(
@@ -425,6 +470,13 @@ void ExtensionProcessManager::Observe(
           chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         CloseBackgroundHost(host);
       }
+      break;
+    }
+
+    case content::NOTIFICATION_WEB_CONTENTS_CONNECTED: {
+      content::WebContents* contents =
+          content::Source<content::WebContents>(source).ptr();
+      UpdateRegisteredRenderView(contents->GetRenderViewHost());
       break;
     }
 

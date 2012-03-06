@@ -34,7 +34,8 @@ ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
 }
 
 ChromeRenderViewHostObserver::~ChromeRenderViewHostObserver() {
-  RemoveRenderViewHostForExtensions(render_view_host());
+  if (render_view_host())
+    RemoveRenderViewHostForExtensions(render_view_host());
 }
 
 void ChromeRenderViewHostObserver::RenderViewHostInitialized() {
