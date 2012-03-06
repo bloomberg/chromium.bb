@@ -76,6 +76,10 @@ html[dir=rtl] #account-picture-wrapper {
   font-weight: bold;
 }
 
+#profiles-buttons {
+  white-space: nowrap;
+}
+
 .sync-error {
   background: rgb(255, 219, 219);
   border: 1px solid rgb(206, 76, 76);
