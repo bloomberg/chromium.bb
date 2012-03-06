@@ -27,6 +27,7 @@ cr.define('uber', function() {
    */
   function onLoad(e) {
     navFrame = $('navigation');
+    navFrame.dataset.width = navFrame.offsetWidth;
 
     // Select a page based on the page-URL.
     var params = resolvePageInfo();
@@ -155,17 +156,18 @@ cr.define('uber', function() {
   }
 
   /**
-   * Enables animated transitions when horizontally scrolling.
+   * Enables or disables animated transitions when changing content while
+   * horizontally scrolled.
+   * @param {boolean} enabled True if enabled, else false to disable.
    */
-  function enableScrollEasing() {
-    navFrame.classList.add('animating');
-  }
+  function setContentChanging(enabled) {
+    navFrame.classList[enabled ? 'add' : 'remove']('changing-content');
 
-  /**
-   * Disables animated transitions when horizontally scrolling.
-   */
-  function disableScrollEasing() {
-    navFrame.classList.remove('animating');
+    if (isRTL()) {
+      uber.invokeMethodOnWindow(navFrame.firstChild.contentWindow,
+                                'setContentChanging',
+                                enabled);
+    }
   }
 
   /**
@@ -221,7 +223,7 @@ cr.define('uber', function() {
       document.title = container.dataset.title;
     $('favicon').href = container.dataset.favicon;
 
-    enableScrollEasing();
+    setContentChanging(true);
     adjustToScroll(0);
 
     var selectedFrame = getSelectedIframe().querySelector('iframe');
@@ -258,9 +260,17 @@ cr.define('uber', function() {
     // switches frames. If we receive a non-zero value it has to have come from
     // a real user scroll, so we disable easing when this happens.
     if (scrollOffset != 0)
-      disableScrollEasing();
-    navFrame.style.webkitTransform =
-        'translateX(' + (scrollOffset * -1) + 'px)';
+      setContentChanging(false);
+
+    if (isRTL()) {
+      uber.invokeMethodOnWindow(navFrame.firstChild.contentWindow,
+                                'adjustToScroll',
+                                scrollOffset);
+      var navWidth = Math.max(0, +navFrame.dataset.width + scrollOffset);
+      navFrame.style.width = navWidth + 'px';
+    } else {
+      navFrame.style.webkitTransform = 'translateX(' + -scrollOffset + 'px)';
+    }
   }
 
   /**

@@ -546,6 +546,8 @@ cr.define('options', function() {
   OptionsPage.handleScroll_ = function() {
     this.updateAllFrozenElementPositions_();
     this.updateAllHeaderElementPositions_();
+
+    uber.invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
   };
 
   /**
@@ -567,8 +569,6 @@ cr.define('options', function() {
     var marginStart = document.body.scrollLeft * adjust + 'px';
     for (var i = 0; i < this.fixedHeaders_.length; ++i)
       this.fixedHeaders_[i].style.webkitMarginStart = marginStart;
-
-    uber.invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
   };
 
   /**

@@ -7,6 +7,7 @@
 // in an iframe. Iframes can be layered on top of each other, but not mixed in
 // with page content, so all overlapping content on uber must be framed.
 
+<include src="../shared/js/util.js"></include>
 <include src="uber_utils.js"></include>
 
 cr.define('uber_frame', function() {
@@ -46,6 +47,10 @@ cr.define('uber_frame', function() {
   function handleWindowMessage(e) {
     if (e.data.method === 'changeSelection')
       changeSelection(e.data.params);
+    else if (e.data.method === 'adjustToScroll')
+      adjustToScroll(e.data.params);
+    else if (e.data.method === 'setContentChanging')
+      setContentChanging(e.data.params);
     else
       console.error('Received unexpected message', e.data);
   }
@@ -71,6 +76,28 @@ cr.define('uber_frame', function() {
       if (lastSelectedNavItem)
         lastSelectedNavItem.classList.remove('selected');
     }
+  }
+
+  /**
+   * Adjusts this frame's content to scrolls from the outer frame. This is done
+   * to obscure text in RTL as a user scrolls over the content of this frame (as
+   * currently RTL scrollbars still draw on the right).
+   * @param {number} scroll document.body.scrollLeft of the content frame.
+   */
+  function adjustToScroll(scrollLeft) {
+    assert(isRTL());
+    document.body.style.webkitTransform = 'translateX(' + -scrollLeft + 'px)';
+  }
+
+  /**
+   * Enable/disable an animation to ease the nav bar back into view when
+   * changing content while horizontally scrolled.
+   * @param {boolean} enabled Whether easing should be enabled.
+   */
+  function setContentChanging(enabled) {
+    assert(isRTL());
+    document.documentElement.classList[enabled ? 'add' : 'remove'](
+        'changing-content');
   }
 
   /**

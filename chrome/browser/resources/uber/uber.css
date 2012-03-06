@@ -21,8 +21,8 @@
   z-index: 1;
 }
 
-#navigation.animating {
-  -webkit-transition: -webkit-transform 100ms;
+#navigation.changing-content {
+  -webkit-transition: -webkit-transform 100ms, width 100ms;
 }
 
 .iframe-container {

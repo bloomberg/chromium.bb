@@ -7,6 +7,10 @@ body {
   padding-top: 20px;
 }
 
+html.changing-content body {
+  -webkit-transition: -webkit-transform 100ms;
+}
+
 h1 {
   -webkit-margin-after: 1em;
   /* This value must match the top padding of the uber page header. */
