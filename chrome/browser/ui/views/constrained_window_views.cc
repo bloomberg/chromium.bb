@@ -611,8 +611,9 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 #if defined(USE_AURA)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAuraGoogleDialogFrames)) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames) ||
+      command_line->HasSwitch(ash::switches::kAuraTranslucentFrames)) {
     return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
   }
 #endif

@@ -195,18 +195,6 @@ void NonClientFrameView::SetInactiveRenderingDisabled(bool disable) {
   ShouldPaintAsActiveChanged();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NonClientFrameView, View overrides:
-
-bool NonClientFrameView::HitTest(const gfx::Point& l) const {
-  // For the default case, we assume the non-client frame view never overlaps
-  // the client view.
-  return !GetWidget()->client_view()->bounds().Contains(l);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NonClientFrameView, protected:
-
 int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
                                                int top_resize_border_height,
                                                int resize_border_thickness,
@@ -255,6 +243,18 @@ int NonClientFrameView::GetHTComponentForFrame(const gfx::Point& point,
   // window borders.
   return can_resize ? component : HTBORDER;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NonClientFrameView, View overrides:
+
+bool NonClientFrameView::HitTest(const gfx::Point& l) const {
+  // For the default case, we assume the non-client frame view never overlaps
+  // the client view.
+  return !GetWidget()->client_view()->bounds().Contains(l);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NonClientFrameView, protected:
 
 bool NonClientFrameView::ShouldPaintAsActive() const {
   return GetWidget()->IsActive() || paint_as_active_;

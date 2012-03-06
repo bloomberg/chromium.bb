@@ -29,6 +29,7 @@
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/compact_layout_manager.h"
 #include "ash/wm/compact_status_area_layout_manager.h"
+#include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/panel_window_event_filter.h"
 #include "ash/wm/panel_layout_manager.h"
@@ -582,6 +583,12 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAuraGoogleDialogFrames)) {
     return new internal::DialogFrameView;
+  }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAuraTranslucentFrames)) {
+    internal::CustomFrameViewAsh* frame_view = new internal::CustomFrameViewAsh;
+    frame_view->Init(widget);
+    return frame_view;
   }
   return NULL;
 }

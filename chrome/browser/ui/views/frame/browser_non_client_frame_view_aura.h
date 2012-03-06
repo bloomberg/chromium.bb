@@ -11,8 +11,10 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "ui/views/controls/button/button.h"  // ButtonListener
 
+namespace ash {
+class FramePainter;
+}
 namespace views {
-class FrameBackground;
 class ImageButton;
 }
 
@@ -55,16 +57,9 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
 
  private:
-  // Sets the images for a button base on IDs from the frame's theme provider.
-  void SetButtonImages(views::ImageButton* button,
-                       int normal_bitmap_id,
-                       int hot_bitmap_id,
-                       int pushed_bitmap_id);
-
   // Distance between top of window and client area.
   int NonClientTopBorderHeight(bool restored) const;
 
-  void PaintHeader(gfx::Canvas* canvas);
   void PaintTitleBar(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
 
@@ -84,13 +79,8 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   // For popups, the window icon.
   TabIconView* window_icon_;
 
-  // Window frame header/caption parts.
-  SkBitmap* button_separator_;
-  SkBitmap* top_left_corner_;
-  SkBitmap* top_edge_;
-  SkBitmap* top_right_corner_;
-  SkBitmap* header_left_edge_;
-  SkBitmap* header_right_edge_;
+  // Painter for the frame header.
+  scoped_ptr<ash::FramePainter> frame_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAura);
 };

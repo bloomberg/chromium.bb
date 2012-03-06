@@ -39,6 +39,17 @@ class VIEWS_EXPORT NonClientFrameView : public View {
   // false gives normal behavior.
   void SetInactiveRenderingDisabled(bool disable);
 
+  // Helper for non-client view implementations to determine which area of the
+  // window border the specified |point| falls within. The other parameters are
+  // the size of the sizing edges, and whether or not the window can be
+  // resized.
+  int GetHTComponentForFrame(const gfx::Point& point,
+                             int top_resize_border_height,
+                             int resize_border_thickness,
+                             int top_resize_corner_height,
+                             int resize_corner_width,
+                             bool can_resize);
+
   // Returns the bounds (in this View's parent's coordinates) that the client
   // view should be laid out within.
   virtual gfx::Rect GetBoundsForClientView() const = 0;
@@ -65,17 +76,6 @@ class VIEWS_EXPORT NonClientFrameView : public View {
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   NonClientFrameView() : paint_as_active_(false) {}
-
-  // Helper for non-client view implementations to determine which area of the
-  // window border the specified |point| falls within. The other parameters are
-  // the size of the sizing edges, and whether or not the window can be
-  // resized.
-  int GetHTComponentForFrame(const gfx::Point& point,
-                             int top_resize_border_height,
-                             int resize_border_thickness,
-                             int top_resize_corner_height,
-                             int resize_corner_width,
-                             bool can_resize);
 
   // Used to determine if the frame should be painted as active. Keyed off the
   // window's actual active state and the override, see
