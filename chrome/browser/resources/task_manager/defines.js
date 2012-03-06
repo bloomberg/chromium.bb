@@ -43,3 +43,5 @@ var HEIGHT_OF_TASK = 20;
 
 var COMMAND_CONTEXTMENU_COLUMN_PREFIX = 'columnContextMenu';
 var COMMAND_CONTEXTMENU_TABLE_PREFIX = 'tableContextMenu';
+
+var ENABLED_COLUMNS_KEY = 'enabledColumns';

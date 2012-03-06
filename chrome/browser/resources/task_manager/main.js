@@ -91,11 +91,6 @@ TaskManager.prototype = {
     this.dialogDom_ = dialogDom;
     this.document_ = dialogDom.ownerDocument;
 
-    this.is_column_shown_ = [];
-    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
-      this.is_column_shown_[i] = DEFAULT_COLUMNS[i][3];
-    }
-
     this.localized_column_ = [];
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
       var column_label_id = DEFAULT_COLUMNS[i][1];
@@ -145,9 +140,6 @@ TaskManager.prototype = {
 
     this.initTable_();
 
-    // enableTaskManager() must be called after enabling columns using
-    // setUpdateColumn() because it is necessary to tell the handler which
-    // columns to display before updating.
     commands.enableTaskManager();
 
     // Populate the static localized strings.
@@ -219,11 +211,11 @@ TaskManager.prototype = {
   initColumnModel_: function () {
     var table_columns = new Array();
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
-      if (!this.is_column_shown_[i])
-        continue;
-
       var column = DEFAULT_COLUMNS[i];
       var columnId = column[0];
+      if (!isColumnEnabled(columnId))
+        continue;
+
       table_columns.push(new cr.ui.table.TableColumn(columnId,
                                                      this.localized_column_[i],
                                                      column[2]));
@@ -258,7 +250,7 @@ TaskManager.prototype = {
       item.command = command;
       command.menuitem = item;
       item.textContent = this.localized_column_[i];
-      if (this.is_column_shown_[i])
+      if (isColumnEnabled(column[0]))
         item.setAttributeNode(this.document_.createAttribute("checked"));
       this.columnSelectContextMenu_.appendChild(item);
     }
@@ -653,40 +645,29 @@ TaskManager.prototype = {
       activate_menuitem.disabled = false;
   },
 
-  onColumnContextMenu_: function(id, command) {
+  onColumnContextMenu_: function(columnId, command) {
     var menuitem = command.menuitem;
-    var checked_item_count = 0;
-    var is_uncheck = 0;
+    var checkedItemCount = 0;
+    var checked = isColumnEnabled(columnId);
 
     // Leaves a item visible when user tries making invisible but it is the
     // last one.
-    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
-      var column = DEFAULT_COLUMNS[i];
-      if (column[0] == id && this.is_column_shown_[i]) {
-        is_uncheck = 1;
-      }
-      if (this.is_column_shown_[i])
-        checked_item_count++;
+    var enabledColumns = getEnabledColumns();
+    for (var id in enabledColumns) {
+      if (enabledColumns[id])
+        checkedItemCount++;
     }
-    if (checked_item_count == 1 && is_uncheck) {
+    if (checkedItemCount == 1 && checked)
       return;
-    }
 
     // Toggles the visibility of the column.
-    for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
-      var column = DEFAULT_COLUMNS[i];
-      if (column[0] == id) {
-        this.is_column_shown_[i] = !this.is_column_shown_[i];
-        var checked = this.is_column_shown_[i];
-        menuitem.checked = checked;
-        this.initColumnModel_()
-        this.table_.columnModel = this.columnModel_;
-        this.table_.redraw();
+    var newChecked = !checked;
+    menuitem.checked = newChecked;
+    setColumnEnabled(columnId, newChecked);
 
-        commands.setUpdateColumn(column[0], checked);
-        return;
-      }
-    }
+    this.initColumnModel_()
+    this.table_.columnModel = this.columnModel_;
+    this.table_.redraw();
   },
 };
 
