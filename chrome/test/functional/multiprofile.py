@@ -19,14 +19,6 @@ class MultiprofileTest(pyauto.PyUITest):
       raw_input('Hit <enter> to dump info.. ')
       self.pprint(self.GetMultiProfileInfo())
 
-  def ExtraChromeFlags(self):
-    """Enable multi-profiles on linux too."""
-    # TODO: Remove when --multi-profiles is enabled by default on linux.
-    flags = pyauto.PyUITest.ExtraChromeFlags(self)
-    if self.IsLinux():
-      flags.append('--multi-profiles')
-    return flags
-
   def _CheckNumProfiles(self, expected_number):
     """Returns True if |expected_number| is equal to the number of profiles."""
     # TODO: Remove when crbug.com/108761 is fixed.
