@@ -25,6 +25,13 @@ cr.define('options.network', function() {
   Constants.TYPE_CELLULAR = 5;
   Constants.TYPE_VPN = 6;
 
+  // Cellular activation states:
+  Constants.ACTIVATION_STATE_UNKNOWN = 0;
+  Constants.ACTIVATION_STATE_ACTIVATED = 1;
+  Constants.ACTIVATION_STATE_ACTIVATING = 2;
+  Constants.ACTIVATION_STATE_NOT_ACTIVATED = 3;
+  Constants.ACTIVATION_STATE_PARTIALLY_ACTIVATED = 4;
+
   /**
    * Order in which controls are to appear in the network list sorted by key.
    */
@@ -400,11 +407,19 @@ cr.define('options.network', function() {
         for (var i = 0; i < list.length; i++) {
           var data = list[i];
           if (!data.connected && !data.connecting) {
-            // TODO(kevers): Check for a non-activated Cellular network.
-            // If found, the menu item should trigger 'activate' instead
-            // of 'connect'.
             if (data.networkType != Constants.TYPE_ETHERNET) {
-              this.createConnectCallback_(networkGroup, data);
+              if (data.networkType == Constants.TYPE_CELLULAR) {
+                // Test if cellular network has an activated data plan.
+                var activate = data.needs_new_plan ||
+                   (data.activation_state !=
+                   Constants.ACTIVATION_STATE_ACTIVATED &&
+                   data.activation_state !=
+                   Constants.ACTIVATION_STATE_ACTIVATING);
+                var cmd = activate ? 'activate' : 'connect';
+                this.createConnectCallback_(networkGroup, data, cmd);
+              } else {
+                this.createConnectCallback_(networkGroup, data);
+              }
               empty = false;
             }
           } else if (data.connected) {
@@ -510,13 +525,15 @@ cr.define('options.network', function() {
      * Adds a menu item for connecting to a network.
      * @param {!Element} menu Parent menu.
      * @param {Object} data Description of the network.
+     * @param {string=} opt_connect Optional connection method.
      * @private
      */
-    createConnectCallback_: function(menu, data) {
+    createConnectCallback_: function(menu, data, opt_connect) {
+      var cmd = opt_connect ? opt_connect : 'connect';
       var menuItem = this.createCallback_(menu,
                                           data,
                                           data.networkName,
-                                          'connect');
+                                          cmd);
       menuItem.style.backgroundImage = url(data.iconURL);
       var optionsButton = this.ownerDocument.createElement('div');
       optionsButton.className = 'network-options-button';
