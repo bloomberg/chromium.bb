@@ -477,3 +477,11 @@ button {
 * {
   box-sizing: border-box;
 }
+
+/*
+ * Setting hidden on elements that match some rule overriding 'display' doesn't
+ * do what you would expect unless this is made explicit (and !important).
+ */
+[hidden] {
+  display: none !important;
+}
