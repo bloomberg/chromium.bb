@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -315,12 +315,14 @@ static struct NaClSecureRngIfVtbl const kWeakRngVtbl;
 
 int WeakRngCtor(struct WeakRng *self) {
   self->base.vtbl = &kWeakRngVtbl;
+  self->x = 263;
   return 1;
 }
 
 int WeakRngTestingCtor(struct WeakRng *self,
                        uint8_t        *seed_material,
                        size_t         seed_bytes) {
+  self->x = 0;
   while (seed_bytes > 0) {
     self->x = (self->x * 263) ^ seed_material[--seed_bytes];
   }
