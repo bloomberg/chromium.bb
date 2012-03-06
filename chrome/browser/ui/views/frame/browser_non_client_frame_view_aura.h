@@ -65,8 +65,8 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
 
   // Returns the correct bitmap for the frame header based on activation state
   // and incognito mode.
-  SkBitmap* GetThemeFrameBitmap() const;
-  SkBitmap* GetThemeFrameOverlayBitmap() const;
+  const SkBitmap* GetThemeFrameBitmap() const;
+  const SkBitmap* GetThemeFrameOverlayBitmap() const;
 
   // Returns the theme image bitmap for |bitmap_id| if the user has a custom
   // theme image, or the bitmap for |fallback_bitmap_id| if not.

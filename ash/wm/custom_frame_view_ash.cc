@@ -10,6 +10,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/image_button.h"
@@ -117,9 +118,9 @@ void CustomFrameViewAsh::Layout() {
 
 void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap* theme_bitmap = ShouldPaintAsActive() ?
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_BASE_ACTIVE) :
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_BASE_INACTIVE);
+  const SkBitmap* theme_bitmap = ShouldPaintAsActive() ?
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_ACTIVE).ToSkBitmap() :
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_INACTIVE).ToSkBitmap();
   frame_painter_->PaintHeader(this, canvas, theme_bitmap, NULL);
   frame_painter_->PaintTitleBar(this, canvas, *title_font_);
 }

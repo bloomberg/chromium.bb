@@ -289,7 +289,7 @@ void BrowserNonClientFrameViewAura::PaintToolbarBackground(
       ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
-SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameBitmap() const {
+const SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameBitmap() const {
   bool is_incognito = browser_view()->IsOffTheRecord();
   int resource_id;
   if (browser_view()->IsBrowserTypeNormal()) {
@@ -325,7 +325,8 @@ SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameBitmap() const {
   return rb.GetBitmapNamed(resource_id);
 }
 
-SkBitmap* BrowserNonClientFrameViewAura::GetThemeFrameOverlayBitmap() const {
+const SkBitmap*
+BrowserNonClientFrameViewAura::GetThemeFrameOverlayBitmap() const {
   ui::ThemeProvider* tp = GetThemeProvider();
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view()->IsBrowserTypeNormal() &&

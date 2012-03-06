@@ -16,6 +16,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -112,19 +113,19 @@ void FramePainter::Init(views::Widget* frame,
   close_button_ = close_button;
 
   // Window frame image parts.
-  ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   button_separator_ =
-      bundle.GetBitmapNamed(IDR_AURA_WINDOW_BUTTON_SEPARATOR);
+      rb.GetImageNamed(IDR_AURA_WINDOW_BUTTON_SEPARATOR).ToSkBitmap();
   top_left_corner_ =
-      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT);
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT).ToSkBitmap();
   top_edge_ =
-      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP);
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP).ToSkBitmap();
   top_right_corner_ =
-      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT);
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT).ToSkBitmap();
   header_left_edge_ =
-      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_LEFT);
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_LEFT).ToSkBitmap();
   header_right_edge_ =
-      bundle.GetBitmapNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT);
+      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToSkBitmap();
 
   // Ensure we get resize cursors for a few pixels outside our bounds.
   frame_->GetNativeWindow()->set_hit_test_bounds_inset(
@@ -190,8 +191,8 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
 
 void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
-                               SkBitmap* theme_frame,
-                               SkBitmap* theme_frame_overlay) {
+                               const SkBitmap* theme_frame,
+                               const SkBitmap* theme_frame_overlay) {
 
   // Draw the header background, clipping the corners to be rounded.
   const int kCornerRadius = 2;
