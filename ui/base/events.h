@@ -171,7 +171,7 @@ UI_EXPORT bool GetGestureTimes(const base::NativeEvent& native_event,
                                double* end_time);
 
 // Returns true if event is noop.
-UI_EXPORT bool IsNoopEvent(base::NativeEvent event);
+UI_EXPORT bool IsNoopEvent(const base::NativeEvent& event);
 
 // Creates and returns no-op event.
 UI_EXPORT base::NativeEvent CreateNoopEvent();

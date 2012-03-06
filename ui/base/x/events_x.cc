@@ -734,7 +734,7 @@ void UpdateDeviceList() {
   TouchFactory::GetInstance()->UpdateDeviceList(display);
 }
 
-bool IsNoopEvent(base::NativeEvent event) {
+bool IsNoopEvent(const base::NativeEvent& event) {
 #if defined(TOOLKIT_USES_GTK)
   NOTREACHED();
   return false;
