@@ -71,6 +71,10 @@ class InfoBarGtk : public InfoBar,
   // Creates a link button with the appropriate current gtk-theme state.
   GtkWidget* CreateLinkButton(const std::string& text);
 
+  // Builds a button with an arrow in it to emulate the menu-button style from
+  // the windows version.
+  static GtkWidget* CreateMenuButton(const std::string& text);
+
   // Adds |display_text| to the infobar. If |link_text| is not empty, it is
   // rendered as a hyperlink and inserted into |display_text| at |link_offset|,
   // or right aligned in the infobar if |link_offset| is |npos|. If a link is

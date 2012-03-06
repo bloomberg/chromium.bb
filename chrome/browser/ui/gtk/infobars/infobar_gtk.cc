@@ -128,6 +128,26 @@ GtkWidget* InfoBarGtk::CreateLinkButton(const std::string& text) {
   return theme_service_->BuildChromeLinkButton(text);
 }
 
+// static
+GtkWidget* InfoBarGtk::CreateMenuButton(const std::string& text) {
+  GtkWidget* button = gtk_button_new();
+  GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(button));
+  if (former_child)
+    gtk_container_remove(GTK_CONTAINER(button), former_child);
+
+  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
+
+  GtkWidget* label = gtk_label_new(text.c_str());
+  gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+
+  GtkWidget* arrow = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+  gtk_box_pack_start(GTK_BOX(hbox), arrow, FALSE, FALSE, 0);
+
+  gtk_container_add(GTK_CONTAINER(button), hbox);
+
+  return button;
+}
+
 SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
   double r, g, b;
   (this->*getter)(delegate()->GetInfoBarType(), &r, &g, &b);

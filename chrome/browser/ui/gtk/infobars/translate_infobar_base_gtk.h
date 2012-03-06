@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,10 +55,6 @@ class TranslateInfoBarBase : public InfoBarGtk {
   TranslateInfoBarDelegate* GetDelegate();
 
  private:
-  // Builds a button with an arrow in it to emulate the menu-button style from
-  // the windows version.
-  static GtkWidget* BuildOptionsMenuButton();
-
   CHROMEGTK_CALLBACK_0(TranslateInfoBarBase, void, OnOptionsClicked);
 
   // A percentage to average the normal page action background with the error
