@@ -48,6 +48,8 @@ class BrightnessView : public views::View,
     AddChildView(slider_);
   }
 
+  virtual ~BrightnessView() {}
+
   void SetBrightnessLevel(float percent) {
     slider_->SetValue(percent);
   }

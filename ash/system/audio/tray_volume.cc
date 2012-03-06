@@ -111,6 +111,8 @@ class VolumeView : public views::View,
     AddChildView(slider_);
   }
 
+  virtual ~VolumeView() {}
+
   void SetVolumeLevel(float percent) {
     slider_->SetValue(percent);
   }

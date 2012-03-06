@@ -31,6 +31,8 @@ class TrayButton : public views::TextButton {
     set_alignment(ALIGN_CENTER);
   }
 
+  virtual ~TrayButton() {}
+
  private:
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
@@ -123,6 +125,8 @@ class UserView : public views::View,
 
     AddChildView(button_container);
   }
+
+  virtual ~UserView() {}
 
  private:
   // Overridden from views::ButtonListener.

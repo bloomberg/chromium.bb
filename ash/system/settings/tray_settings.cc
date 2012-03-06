@@ -38,6 +38,8 @@ class SettingsView : public views::View {
     AddChildView(label_);
   }
 
+  virtual ~SettingsView() {}
+
   // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
