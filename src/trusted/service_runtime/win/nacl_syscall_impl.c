@@ -130,8 +130,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
   alloc_rounded_length = NaClRoundAllocPage(length);
   if (alloc_rounded_length != length) {
     length = alloc_rounded_length;
-    NaClLog(LOG_WARNING,
-            "munmap: rounded length to 0x%x\n", length);
+    NaClLog(1, "munmap: rounded length to 0x%x\n", length);
   }
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) start, length);
   if (kNaClBadAddress == sysaddr) {
