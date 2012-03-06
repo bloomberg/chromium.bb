@@ -1161,7 +1161,7 @@ frame_resize_handler(struct widget *widget,
 	int decoration_width, decoration_height;
 	int opaque_margin;
 
-	if (widget->window->type == TYPE_TOPLEVEL) {
+	if (widget->window->type != TYPE_FULLSCREEN) {
 		decoration_width = 20 + frame->margin * 2;
 		decoration_height = 60 + frame->margin * 2;
 
