@@ -669,8 +669,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                           "ServiceRuntime: failed to create sel_ldr launcher");
     return false;
   }
-  nacl::Handle sockets[3];
-  if (!tmp_subprocess->Start(NACL_ARRAY_SIZE(sockets), sockets, url.c_str())) {
+  if (!tmp_subprocess->Start(url.c_str())) {
     PLUGIN_PRINTF(("ServiceRuntime::Start (start failed)\n"));
     error_info->SetReport(ERROR_SEL_LDR_LAUNCH,
                           "ServiceRuntime: failed to start");
