@@ -1804,3 +1804,14 @@
    fun:FilePath::AppendASCII
    fun:TraceSubscriberStdioTest_CanWriteDataToFile_Test::TestBody
 }
+{
+   bug_116923
+   Heapcheck:Leak
+   fun:AppLauncherButton
+   fun:ash::internal::LauncherView::CreateViewForItem
+   fun:ash::internal::LauncherView::Init
+   fun:Launcher
+   fun:ash::Shell::Init
+   fun:ash::Shell::CreateInstance
+   fun:chromeos::DesktopNotificationsTest::SetUp
+}

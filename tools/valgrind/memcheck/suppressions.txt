@@ -5886,6 +5886,32 @@
    fun:_ZN4test3api21additional_properties26ReturnAdditionalProperties6Result6CreateERKNS3_12ResultObjectE
    fun:_ZN86JsonSchemaCompilerAdditionalPropertiesTest_ReturnAdditionalPropertiesResultCreate_Test8TestBodyEv
 }
+{
+   bug_116923_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3ash8internal17AppLauncherButtonC1EPN5views14ButtonListenerEPNS0_18LauncherButtonHostE
+   fun:_ZN3ash8internal12LauncherView17CreateViewForItemERKNS_12LauncherItemE
+   ...
+   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
+   fun:_ZN22ChromeBrowserMainParts21PreMainMessageLoopRunEv
+   fun:_ZN30ChromeBrowserMainPartsChromeos21PreMainMessageLoopRunEv
+   fun:_ZN7content15BrowserMainLoop13CreateThreadsEv
+   fun:_ZN12_GLOBAL__N_121BrowserMainRunnerImpl10InitializeERKN7content18MainFunctionParamsE
+   fun:_Z11BrowserMainRKN7content18MainFunctionParamsE
+}
+{
+   bug_116923_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3ash8internal17AppLauncherButtonC1EPN5views14ButtonListenerEPNS0_18LauncherButtonHostE
+   fun:_ZN3ash8internal12LauncherView17CreateViewForItemERKNS_12LauncherItemE
+   fun:_ZN3ash8internal12LauncherView4InitEv
+   fun:_ZN3ash8LauncherC1EPN4aura6WindowE
+   fun:_ZN3ash5Shell4InitEv
+   fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
+   fun:_ZN8chromeos24DesktopNotificationsTest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
