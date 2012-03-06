@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -299,9 +298,7 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
                          cmdline->HasSwitch(switches::kAppsNewInstallBubble));
 #endif
 
-  if (extension->is_app() &&
-      !use_bubble_for_apps &&
-      NewTabUI::ShouldShowAppsPage()) {
+  if (extension->is_app() && !use_bubble_for_apps) {
     ExtensionInstallUI::OpenAppInstalledNTP(browser, extension->id());
     return;
   }
