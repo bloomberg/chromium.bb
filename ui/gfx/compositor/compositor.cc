@@ -264,7 +264,7 @@ void Compositor::updateAnimations(double frameBeginTime) {
 
 void Compositor::layout() {
   if (root_layer_)
-    root_layer_->SendDamagedRect();
+    root_layer_->SendDamagedRects();
 }
 
 void Compositor::applyScrollAndScale(const WebKit::WebSize& scrollDelta,

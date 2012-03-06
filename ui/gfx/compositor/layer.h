@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebContentLayerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayer.h"
 #include "ui/gfx/rect.h"
@@ -185,8 +186,9 @@ class COMPOSITOR_EXPORT Layer :
   // SchedulePaint() for that.
   void ScheduleDraw();
 
-  // Sends damaged rect to |compostior_| to repaint the content.
-  void SendDamagedRect();
+  // Sends damaged rectangles recorded in |damaged_region_| to
+  // |compostior_| to repaint the content.
+  void SendDamagedRects();
 
   // Suppresses painting the content by disgarding damaged region and ignoring
   // new paint requests.
@@ -277,7 +279,7 @@ class COMPOSITOR_EXPORT Layer :
 
   // Union of damaged rects to be used when compositor is ready to
   // paint the content.
-  gfx::Rect damaged_rect_;
+  SkRegion damaged_region_;
 
   float opacity_;
 

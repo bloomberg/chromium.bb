@@ -277,10 +277,11 @@ void Layer::SetColor(SkColor color) {
 bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
   if (type_ == LAYER_SOLID_COLOR || !delegate_)
     return false;
-  if (damaged_rect_.IsEmpty())
-    damaged_rect_ = invalid_rect;
-  else
-    damaged_rect_ = damaged_rect_.Union(invalid_rect);
+  damaged_region_.op(invalid_rect.x(),
+                     invalid_rect.y(),
+                     invalid_rect.right(),
+                     invalid_rect.bottom(),
+                     SkRegion::kUnion_Op);
   ScheduleDraw();
   return true;
 }
@@ -291,21 +292,26 @@ void Layer::ScheduleDraw() {
     compositor->ScheduleDraw();
 }
 
-void Layer::SendDamagedRect() {
-  if (delegate_ && !damaged_rect_.IsEmpty()) {
-    WebKit::WebFloatRect web_rect(
-        damaged_rect_.x(),
-        damaged_rect_.y(),
-        damaged_rect_.width(),
-        damaged_rect_.height());
-    if (!web_layer_is_accelerated_)
-      web_layer_.to<WebKit::WebContentLayer>().invalidateRect(web_rect);
-    else
-      web_layer_.to<WebKit::WebExternalTextureLayer>().invalidateRect(web_rect);
-    damaged_rect_.SetRect(0, 0, 0, 0);
+void Layer::SendDamagedRects() {
+  if (delegate_ && !damaged_region_.isEmpty()) {
+    for (SkRegion::Iterator iter(damaged_region_);
+         !iter.done(); iter.next()) {
+      const SkIRect& damaged = iter.rect();
+      WebKit::WebFloatRect web_rect(
+          damaged.x(),
+          damaged.y(),
+          damaged.width(),
+          damaged.height());
+      if (!web_layer_is_accelerated_)
+        web_layer_.to<WebKit::WebContentLayer>().invalidateRect(web_rect);
+      else
+        web_layer_.to<WebKit::WebExternalTextureLayer>().invalidateRect(
+            web_rect);
+    }
+    damaged_region_.setEmpty();
   }
   for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->SendDamagedRect();
+    children_[i]->SendDamagedRects();
 }
 
 void Layer::SuppressPaint() {
