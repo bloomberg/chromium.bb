@@ -286,10 +286,10 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-e4f2dfee8e5b}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-8f47af0cdc7d}
 
 readonly NEWLIB_REV=346ea38d142f
-readonly BINUTILS_REV=5d2062481770
+readonly BINUTILS_REV=d4c1303aa8e2
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-147864}

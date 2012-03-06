@@ -433,6 +433,8 @@ def GetBitcodeMetadata(filename):
     k, v = line.split(':')
     k = k.strip()
     v = v.strip()
+    if k.startswith('NeededRecord_'):
+      metadata[k] = ''
     assert(k in metadata)
     if isinstance(metadata[k], list):
       metadata[k].append(v)
