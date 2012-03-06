@@ -51,10 +51,13 @@ LauncherUpdater::~LauncherUpdater() {
 
 void LauncherUpdater::Init() {
   tab_model_->AddObserver(this);
-  if (type_ == TYPE_APP) {
+  if (type_ == TYPE_APP || type_ == TYPE_PANEL) {
     // App type never changes, create the launcher item immediately.
+    ChromeLauncherDelegate::AppType app_type =
+        type_ == TYPE_PANEL ? ChromeLauncherDelegate::APP_TYPE_PANEL
+        : ChromeLauncherDelegate::APP_TYPE_WINDOW;
     item_id_ = launcher_delegate_->CreateAppLauncherItem(
-        this, app_id_, ChromeLauncherDelegate::APP_TYPE_WINDOW);
+        this, app_id_, app_type);
   } else {
     // Determine if we have any tabs that should get launcher items.
     std::vector<TabContentsWrapper*> app_tabs;
@@ -81,7 +84,7 @@ LauncherUpdater* LauncherUpdater::Create(Browser* browser) {
   if (browser->type() == Browser::TYPE_TABBED) {
     type = TYPE_TABBED;
   } else if (browser->is_app()) {
-    type = TYPE_APP;
+    type = browser->is_type_panel() ? TYPE_PANEL : TYPE_APP;
     app_id = web_app::GetExtensionIdFromApplicationName(browser->app_name());
   } else {
     return NULL;
@@ -142,7 +145,7 @@ void LauncherUpdater::TabChangedAt(
 void LauncherUpdater::TabInsertedAt(TabContentsWrapper* contents,
                                     int index,
                                     bool foreground) {
-  if (type_ == TYPE_APP)
+  if (type_ != TYPE_TABBED)
     return;
 
   UpdateAppTabState(contents, UPDATE_TAB_INSERTED);
@@ -163,7 +166,7 @@ void LauncherUpdater::TabReplacedAt(TabStripModel* tab_strip_model,
 }
 
 void LauncherUpdater::TabDetachedAt(TabContentsWrapper* contents, int index) {
-  if (type_ == TYPE_APP)
+  if (type_ != TYPE_TABBED)
     return;
 
   UpdateAppTabState(contents, UPDATE_TAB_REMOVED);
@@ -193,8 +196,17 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   if (item_index == -1)
     return;
 
-  ash::LauncherItem item;
-  if (launcher_model()->items()[item_index].type == ash::TYPE_APP) {
+  ash::LauncherItem item = launcher_model()->items()[item_index];
+  if (type_ == TYPE_PANEL) {
+    // Update the icon for app panels.
+    // TODO(stevenjb): Get a large favicon for the launcher.
+    if (!tab->favicon_tab_helper()->GetFavicon().empty())
+      item.image = tab->favicon_tab_helper()->GetFavicon();
+    else if (tab->extension_tab_helper()->GetExtensionAppIcon())
+      item.image = *tab->extension_tab_helper()->GetExtensionAppIcon();
+    else
+      item.image = Extension::GetDefaultIcon(true);
+  } else if (launcher_model()->items()[item_index].type == ash::TYPE_APP) {
     // Use the app icon if we can.
     if (tab->extension_tab_helper()->GetExtensionAppIcon())
       item.image = *tab->extension_tab_helper()->GetExtensionAppIcon();

@@ -39,6 +39,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // Indicates what should happen when the app is launched.
   enum AppType {
     APP_TYPE_WINDOW,
+    APP_TYPE_PANEL,
     APP_TYPE_TAB
   };
 

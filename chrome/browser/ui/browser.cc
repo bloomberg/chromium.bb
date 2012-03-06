@@ -4603,10 +4603,18 @@ void Browser::ShowFirstRunBubble() {
 BrowserWindow* Browser::CreateBrowserWindow() {
   // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
   // Android build.
-#if (!defined(OS_CHROMEOS) || defined(USE_AURA)) && !defined(OS_ANDROID)
-  if (is_type_panel())
-    return PanelManager::GetInstance()->CreatePanel(this);
+#if !defined(OS_ANDROID)
+  bool create_panel = false;
+#if defined(USE_AURA)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAuraPanelManager))
+    create_panel = is_type_panel();
+#elif !defined(OS_CHROMEOS)
+  create_panel = is_type_panel();
 #endif
+  if (create_panel)
+    return PanelManager::GetInstance()->CreatePanel(this);
+#endif  // OS_ANDROID
 
   return BrowserWindow::CreateBrowserWindow(this);
 }

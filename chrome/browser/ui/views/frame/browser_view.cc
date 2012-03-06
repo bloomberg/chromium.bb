@@ -591,10 +591,7 @@ void BrowserView::Show() {
     return;
   }
 
-#if defined(USE_AURA)
-  if (!icon_updater_.get())
-    icon_updater_.reset(LauncherUpdater::Create(browser_.get()));
-#endif  // defined(USE_AURA)
+  CreateLauncherIcon();
 
   // Showing the window doesn't make the browser window active right away.
   // This can cause SetFocusToLocationBar() to skip setting focus to the
@@ -622,8 +619,10 @@ void BrowserView::Show() {
 }
 
 void BrowserView::ShowInactive() {
-  if (!frame_->IsVisible())
-    frame_->ShowInactive();
+  if (frame_->IsVisible())
+    return;
+  CreateLauncherIcon();
+  frame_->ShowInactive();
 }
 
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
@@ -2534,6 +2533,13 @@ void BrowserView::SetToolbar(ToolbarView* toolbar) {
     AddChildView(toolbar_);
     toolbar_->Init();
   }
+}
+
+void BrowserView::CreateLauncherIcon() {
+#if defined(USE_AURA)
+  if (!icon_updater_.get())
+    icon_updater_.reset(LauncherUpdater::Create(browser_.get()));
+#endif  // defined(USE_AURA)
 }
 
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)

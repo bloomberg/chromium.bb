@@ -66,6 +66,9 @@ class ExtensionTabHelper
   // specified id.
   void SetExtensionAppById(const std::string& extension_app_id);
 
+  // Set just the app icon, used by panels created by an extension.
+  void SetExtensionAppIconById(const std::string& extension_app_id);
+
   const Extension* extension_app() const { return extension_app_; }
   bool is_app() const { return extension_app_ != NULL; }
   const WebApplicationInfo& web_app_info() const {
@@ -120,6 +123,8 @@ class ExtensionTabHelper
   // Resets app_icon_ and if |extension| is non-null creates a new
   // ImageLoadingTracker to load the extension's image.
   void UpdateExtensionAppIcon(const Extension* extension);
+
+  const Extension* GetExtension(const std::string& extension_app_id);
 
   // ImageLoadingTracker::Observer.
   virtual void OnImageLoaded(const gfx::Image& image,

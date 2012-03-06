@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
@@ -615,8 +616,12 @@ bool CreateWindowFunction::RunImpl() {
         (window_type == Browser::TYPE_PANEL ? panel_bounds : popup_bounds),
         window_profile);
   }
-  for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i)
-    new_window->AddSelectedTabWithURL(*i, content::PAGE_TRANSITION_LINK);
+  for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
+    TabContentsWrapper* tab = new_window->AddSelectedTabWithURL(
+        *i, content::PAGE_TRANSITION_LINK);
+    if (window_type == Browser::TYPE_PANEL)
+      tab->extension_tab_helper()->SetExtensionAppIconById(extension_id);
+  }
   if (contents) {
     TabStripModel* target_tab_strip = new_window->tabstrip_model();
     target_tab_strip->InsertTabContentsAt(urls.size(), contents,

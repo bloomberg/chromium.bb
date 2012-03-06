@@ -67,19 +67,16 @@ void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
 
 void ExtensionTabHelper::SetExtensionAppById(
     const std::string& extension_app_id) {
-  if (extension_app_id.empty())
-    return;
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  ExtensionService* extension_service = profile->GetExtensionService();
-  if (!extension_service || !extension_service->is_ready())
-    return;
-
-  const Extension* extension =
-      extension_service->GetExtensionById(extension_app_id, false);
+  const Extension* extension = GetExtension(extension_app_id);
   if (extension)
     SetExtensionApp(extension);
+}
+
+void ExtensionTabHelper::SetExtensionAppIconById(
+    const std::string& extension_app_id) {
+  const Extension* extension = GetExtension(extension_app_id);
+  if (extension)
+    UpdateExtensionAppIcon(extension);
 }
 
 SkBitmap* ExtensionTabHelper::GetExtensionAppIcon() {
@@ -233,6 +230,22 @@ void ExtensionTabHelper::OnRequest(
     const ExtensionHostMsg_Request_Params& request) {
   extension_function_dispatcher_.Dispatch(request,
                                           web_contents()->GetRenderViewHost());
+}
+
+const Extension* ExtensionTabHelper::GetExtension(
+    const std::string& extension_app_id) {
+  if (extension_app_id.empty())
+    return NULL;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  ExtensionService* extension_service = profile->GetExtensionService();
+  if (!extension_service || !extension_service->is_ready())
+    return NULL;
+
+  const Extension* extension =
+      extension_service->GetExtensionById(extension_app_id, false);
+  return extension;
 }
 
 void ExtensionTabHelper::UpdateExtensionAppIcon(const Extension* extension) {

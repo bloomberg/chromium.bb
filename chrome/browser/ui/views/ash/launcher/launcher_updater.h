@@ -34,6 +34,7 @@ class LauncherUpdater : public TabStripModelObserver {
  public:
   enum Type {
     TYPE_APP,
+    TYPE_PANEL,
     TYPE_TABBED
   };
 
@@ -54,6 +55,8 @@ class LauncherUpdater : public TabStripModelObserver {
   aura::Window* window() { return window_; }
 
   TabStripModel* tab_model() { return tab_model_; }
+
+  Type type() const { return type_; }
 
   TabContentsWrapper* GetTab(ash::LauncherID id);
 

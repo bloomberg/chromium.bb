@@ -39,6 +39,7 @@ namespace {
 
 // See description in PersistPinnedState().
 const char kAppIDPath[] = "id";
+const char kAppTypePanel[] = "panel";
 const char kAppTypePath[] = "type";
 const char kAppTypeTab[] = "tab";
 const char kAppTypeWindow[] = "window";
@@ -99,8 +100,13 @@ void ChromeLauncherDelegate::Init() {
       if (app->GetString(kAppIDPath, &app_id) &&
           app->GetString(kAppTypePath, &type_string) &&
           app_icon_loader_->IsValidID(app_id)) {
-        AppType app_type = (type_string == kAppTypeWindow) ?
-            APP_TYPE_WINDOW : APP_TYPE_TAB;
+        AppType app_type;
+        if (type_string == kAppTypeWindow)
+          app_type = APP_TYPE_WINDOW;
+        else if (type_string == kAppTypePanel)
+          app_type = APP_TYPE_PANEL;
+        else
+          app_type = APP_TYPE_TAB;
         CreateAppLauncherItem(NULL, app_id, app_type);
       }
     }
@@ -175,6 +181,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
       min_app_index : std::min(item_count, min_tab_index + 1);
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item(ash::TYPE_APP);
+  item.image = Extension::GetDefaultIcon(true);
   model_->Add(insert_index, item);
   DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
   id_to_item_map_[id].item_type = TYPE_APP;
@@ -183,7 +190,8 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
   id_to_item_map_[id].updater = updater;
   id_to_item_map_[id].pinned = updater == NULL;
 
-  app_icon_loader_->FetchImage(app_id);
+  if (app_type != APP_TYPE_PANEL)
+    app_icon_loader_->FetchImage(app_id);
   return id;
 }
 
@@ -292,7 +300,8 @@ void ChromeLauncherDelegate::Open(ash::LauncherID id) {
     }
   } else {
     DCHECK_EQ(TYPE_APP, id_to_item_map_[id].item_type);
-    if (id_to_item_map_[id].app_type == APP_TYPE_TAB) {
+    AppType app_type = id_to_item_map_[id].app_type;
+    if (app_type == APP_TYPE_TAB) {
       const Extension* extension =
           profile_->GetExtensionService()->GetInstalledExtension(
               id_to_item_map_[id].app_id);
@@ -304,9 +313,10 @@ void ChromeLauncherDelegate::Open(ash::LauncherID id) {
     } else {
       std::string app_name = web_app::GenerateApplicationNameFromExtensionId(
           id_to_item_map_[id].app_id);
+      Browser::Type browser_type = (app_type == APP_TYPE_PANEL) ?
+          Browser::TYPE_PANEL : Browser::TYPE_POPUP;
       Browser* browser = Browser::CreateForApp(
-          Browser::TYPE_POPUP, app_name, gfx::Rect(),
-          GetProfileForNewWindows());
+          browser_type, app_name, gfx::Rect(), GetProfileForNewWindows());
       browser->window()->Show();
     }
   }
@@ -354,13 +364,18 @@ void ChromeLauncherDelegate::SetAppImage(const std::string& id,
                                          const SkBitmap* image) {
   for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ++i) {
-    if (i->second.app_id == id) {
-      int index = model_->ItemIndexByID(i->first);
-      ash::LauncherItem item = model_->items()[index];
+    if (i->second.app_id != id)
+      continue;
+    // Panel items may share the same app_id as the app that created them,
+    // but they set their icon image in LauncherUpdater::UpdateLauncher(),
+    // so do not set panel images here.
+    if (i->second.app_type == APP_TYPE_PANEL)
+      continue;
+    int index = model_->ItemIndexByID(i->first);
+    ash::LauncherItem item = model_->items()[index];
       item.image = image ? *image : Extension::GetDefaultIcon(true);
-      model_->Set(index, item);
-      // It's possible we're waiting on more than one item, so don't break.
-    }
+    model_->Set(index, item);
+    // It's possible we're waiting on more than one item, so don't break.
   }
 }
 
@@ -443,9 +458,13 @@ void ChromeLauncherDelegate::PersistPinnedState() {
           id_to_item_map_[id].pinned) {
         base::DictionaryValue* app_value = new base::DictionaryValue;
         app_value->SetString(kAppIDPath, id_to_item_map_[id].app_id);
-        const char* app_type_string =
-            id_to_item_map_[id].app_type == APP_TYPE_WINDOW ?
-            kAppTypeWindow : kAppTypeTab;
+        const char* app_type_string;
+        if (id_to_item_map_[id].app_type == APP_TYPE_WINDOW)
+          app_type_string = kAppTypeWindow;
+        else if (id_to_item_map_[id].app_type == APP_TYPE_PANEL)
+          app_type_string = kAppTypePanel;
+        else
+          app_type_string = kAppTypeTab;
         app_value->SetString(kAppTypePath, app_type_string);
         updater.Get()->Append(app_value);
       }

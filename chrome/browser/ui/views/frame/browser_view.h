@@ -552,6 +552,9 @@ class BrowserView : public BrowserWindow,
   // Set the value of |toolbar_| and hook it into the views hierarchy
   void SetToolbar(ToolbarView* toolbar);
 
+  // Create an icon for this window in the launcher (currently only for Ash).
+  void CreateLauncherIcon();
+
   // Last focused view that issued a tab traversal.
   int last_focused_view_storage_id_;
 
