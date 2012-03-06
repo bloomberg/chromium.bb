@@ -60,18 +60,18 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   bool ReadItem();
   void AdvanceItem();
   void AdvanceBytesRead(int result);
-  bool ReadBytes(const BlobData::Item& item);
-  bool DispatchReadFile(const BlobData::Item& item);
+  bool ReadBytesItem(const BlobData::Item& item);
+  bool ReadFileItem(const BlobData::Item& item);
 
-  void DidOpen(base::PlatformFileError rv,
-               base::PassPlatformFile file,
-               bool created);
-  bool ReadFile();
-  void DidRead(int result);
-  void CloseStream();
+  void DidOpenFile(base::PlatformFileError rv,
+                   base::PassPlatformFile file,
+                   bool created);
+  bool ReadFileStream();
+  void DidReadFileStream(int result);
+  void CloseFileStream();
 
   int ComputeBytesToRead() const;
-  int ReadCompleted();
+  int BytesReadCompleted();
 
   void NotifySuccess();
   void NotifyFailure(int);
