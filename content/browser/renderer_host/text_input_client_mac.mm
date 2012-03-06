@@ -7,7 +7,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
 
 // The amount of time in milliseconds that the browser process will wait for a

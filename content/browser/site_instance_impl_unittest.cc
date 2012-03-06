@@ -10,7 +10,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"

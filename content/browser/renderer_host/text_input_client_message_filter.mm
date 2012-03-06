@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/text_input_client_messages.h"
 #include "content/public/browser/browser_thread.h"

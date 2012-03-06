@@ -9,7 +9,7 @@
 #include "base/memory/mru_cache.h"
 #include "base/sys_info.h"
 #include "content/browser/renderer_host/backing_store.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/common/content_switches.h"
 
 namespace {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_IMPL_H_
 #pragma once
 
 #include <string>
@@ -15,7 +15,7 @@
 #include "base/observer_list.h"
 #include "base/process_util.h"
 #include "content/browser/in_process_webkit/session_storage_namespace_impl.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
@@ -109,7 +109,6 @@ class ExecuteNotificationObserver : public content::NotificationObserver {
 // it can be shared by others.
 //
 // TODO(joi): Move to content namespace.
-// TODO(joi): Move to file render_view_host_impl.h/cc
 class CONTENT_EXPORT RenderViewHostImpl
     : public RenderViewHost,
       public RenderWidgetHostImpl {
@@ -608,4 +607,4 @@ class CONTENT_EXPORT RenderViewHostImpl
 #pragma warning(pop)
 #endif
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_IMPL_H_

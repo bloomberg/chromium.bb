@@ -37,7 +37,7 @@
 #include "content/browser/renderer_host/cross_site_resource_handler.h"
 #include "content/browser/renderer_host/doomed_resource_handler.h"
 #include "content/browser/renderer_host/redirect_to_file_resource_handler.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/renderer_host/resource_request_details.h"

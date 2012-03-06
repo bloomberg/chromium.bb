@@ -10,9 +10,8 @@
 
 #import "base/mac/scoped_sending_event.h"
 #import "base/message_pump_mac.h"
-#include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/tab_contents/popup_menu_helper_mac.h"
 #include "content/browser/tab_contents/tab_contents.h"

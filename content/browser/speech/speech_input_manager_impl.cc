@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/browser_thread.h"

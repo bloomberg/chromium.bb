@@ -6,7 +6,7 @@
 
 #import <objc/runtime.h>
 
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac.h"
 
 namespace {

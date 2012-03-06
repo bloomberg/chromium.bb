@@ -8,7 +8,7 @@
 
 #include "base/message_loop.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_messages.h"
 #include "content/test/test_browser_context.h"
 #include "testing/gmock/include/gmock/gmock.h"

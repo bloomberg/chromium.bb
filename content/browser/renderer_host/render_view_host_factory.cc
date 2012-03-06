@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 
 #include "base/logging.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 
 using content::SessionStorageNamespace;
 using content::SiteInstance;

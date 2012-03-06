@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/java/java_bridge_channel_host.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/child_process.h"
 #include "content/common/java_bridge_messages.h"
 #include "content/common/npobject_stub.h"

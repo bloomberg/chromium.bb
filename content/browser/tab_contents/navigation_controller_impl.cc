@@ -14,7 +14,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/session_storage_namespace_impl.h"
-#include "content/browser/renderer_host/render_view_host.h"  // Temporary
+#include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/debug_urls.h"
 #include "content/browser/tab_contents/interstitial_page_impl.h"

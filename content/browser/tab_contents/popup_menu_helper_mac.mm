@@ -9,7 +9,7 @@
 #import "base/mac/scoped_sending_event.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"

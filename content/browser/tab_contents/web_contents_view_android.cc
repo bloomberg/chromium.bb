@@ -5,8 +5,7 @@
 #include "content/browser/tab_contents/web_contents_view_android.h"
 
 #include "base/logging.h"
-#include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 
 WebContentsViewAndroid::WebContentsViewAndroid(
     content::WebContents* web_contents)

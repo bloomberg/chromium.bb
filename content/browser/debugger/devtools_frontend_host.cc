@@ -5,7 +5,7 @@
 #include "content/browser/debugger/devtools_frontend_host.h"
 
 #include "content/browser/debugger/devtools_manager_impl.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/devtools_client_host.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_
 #pragma once
 
 #include <deque>
@@ -52,8 +52,6 @@ struct WebScreenInfo;
 // embedders of content, and adds things only visible to content.
 //
 // TODO(joi): Move to content namespace.
-//
-// TODO(joi): Move to file render_widget_host_impl.h
 class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                             public IPC::Channel::Listener {
  public:
@@ -681,4 +679,4 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_

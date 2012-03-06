@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 
 #include <set>
 #include <string>
@@ -25,7 +25,6 @@
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"

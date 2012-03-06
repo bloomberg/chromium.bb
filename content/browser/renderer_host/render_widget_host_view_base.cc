@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 #if defined(TOOLKIT_USES_GTK)

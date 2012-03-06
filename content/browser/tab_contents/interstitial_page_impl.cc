@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"

@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "content/browser/tab_contents/web_drag_dest_mac.h"
 
 #include "base/sys_string_conversions.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/web_drag_dest_delegate.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"

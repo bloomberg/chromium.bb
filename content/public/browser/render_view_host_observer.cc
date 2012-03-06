@@ -4,7 +4,7 @@
 
 #include "content/public/browser/render_view_host_observer.h"
 
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 
 namespace content {
 

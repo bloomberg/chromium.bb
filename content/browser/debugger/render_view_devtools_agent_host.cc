@@ -9,7 +9,7 @@
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/devtools_messages.h"

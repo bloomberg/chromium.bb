@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/image_transport_client.h"
-#include "content/browser/renderer_host/render_widget_host.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
