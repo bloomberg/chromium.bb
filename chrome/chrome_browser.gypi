@@ -4773,7 +4773,7 @@
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller.cc',
             'browser/jankometer.cc',
-            'browser/ui/sad_tab_observer.cc',
+            'browser/ui/sad_tab_helper.cc',
             'browser/ui/sync/one_click_signin_dialog.h',
             'browser/ui/sync/one_click_signin_helper.cc',
             'browser/ui/sync/one_click_signin_helper.h',
