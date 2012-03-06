@@ -18,7 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
-#include "media/base/message_loop_factory_impl.h"
+#include "media/base/message_loop_factory.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -651,7 +651,7 @@ WebPlugin* TestWebViewDelegate::createPlugin(WebFrame* frame,
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
     WebFrame* frame, WebMediaPlayerClient* client) {
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
-      new media::MessageLoopFactoryImpl());
+      new media::MessageLoopFactory());
 
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());

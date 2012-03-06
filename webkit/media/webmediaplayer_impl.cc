@@ -127,7 +127,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   MessageLoop* pipeline_message_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");
-  CHECK(pipeline_message_loop) << "Failed to create a new thread";
   pipeline_ = new media::Pipeline(pipeline_message_loop, media_log_);
 
   // Let V8 know we started new thread if we did not did it yet.

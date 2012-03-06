@@ -20,7 +20,7 @@
 #include "media/base/media.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/base/message_loop_factory_impl.h"
+#include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -269,7 +269,7 @@ int main(int argc, char** argv) {
 
   // Initialize the pipeline thread and the pipeline.
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
-      new media::MessageLoopFactoryImpl());
+      new media::MessageLoopFactory());
   scoped_ptr<base::Thread> thread;
   scoped_refptr<media::Pipeline> pipeline;
   MessageLoop message_loop;

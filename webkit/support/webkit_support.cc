@@ -30,7 +30,7 @@
 #include "grit/webkit_chromium_resources.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
-#include "media/base/message_loop_factory_impl.h"
+#include "media/base/message_loop_factory.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -325,7 +325,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(
   return NULL;
 #else
   scoped_ptr<media::MessageLoopFactory> message_loop_factory(
-      new media::MessageLoopFactoryImpl());
+      new media::MessageLoopFactory());
 
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());

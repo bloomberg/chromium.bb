@@ -10,7 +10,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
-#include "media/base/message_loop_factory_impl.h"
+#include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
@@ -62,7 +62,7 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
     Close();
   }
 
-  message_loop_factory_.reset(new media::MessageLoopFactoryImpl());
+  message_loop_factory_.reset(new media::MessageLoopFactory());
 
   MessageLoop* pipeline_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");

@@ -86,7 +86,7 @@
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
-#include "media/base/message_loop_factory_impl.h"
+#include "media/base/message_loop_factory.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -2118,7 +2118,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
       RenderViewObserver, observers_, WillCreateMediaPlayer(frame, client));
 
   media::MessageLoopFactory* message_loop_factory =
-      new media::MessageLoopFactoryImpl();
+      new media::MessageLoopFactory();
   media::FilterCollection* collection = new media::FilterCollection();
   RenderMediaLog* render_media_log = new RenderMediaLog();
 
