@@ -102,6 +102,10 @@ namespace sync_api {
 
 namespace {
 
+const char kTestChromeVersion[] = "test chrome version";
+
+void DoNothing() {}
+
 void ExpectInt64Value(int64 expected_value,
                       const DictionaryValue& value, const std::string& key) {
   std::string int64_str;
@@ -698,9 +702,6 @@ class SyncNotifierMock : public sync_notifier::SyncNotifier {
 class SyncManagerTest : public testing::Test,
                         public ModelSafeWorkerRegistrar,
                         public SyncManager::ChangeDelegate {
- public:
-  void EmptyClosure() {}
-
  protected:
   enum NigoriStatus {
     DONT_WRITE_NIGORI,
@@ -759,7 +760,9 @@ class SyncManagerTest : public testing::Test,
                        base::MessageLoopProxy::current(),
                        new TestHttpPostProviderFactory(), this,
                        &extensions_activity_monitor_, this, "bogus",
-                       credentials, sync_notifier_mock_, "",
+                       credentials,
+                       false /* enable_sync_tabs_for_other_clients */,
+                       sync_notifier_mock_, "",
                        true /* setup_for_test_mode */,
                        &encryptor_,
                        &handler_,
@@ -1279,8 +1282,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   EXPECT_CALL(observer_, OnEncryptionComplete());
 
-  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
-                                         base::Unretained(this)));
+  sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
 
   const syncable::ModelTypeSet encrypted_types =
@@ -1305,8 +1307,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionNotReady) {
   // Don't set up encryption (no nigori node created).
 
   // Should fail.
-  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
-                                         base::Unretained(this)));
+  sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
 
   const syncable::ModelTypeSet encrypted_types =
@@ -1321,8 +1322,7 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
   EXPECT_CALL(observer_, OnEncryptionComplete());
 
   // Should write to nigori.
-  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
-                                         base::Unretained(this)));
+  sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
 
   const syncable::ModelTypeSet encrypted_types =
@@ -1930,8 +1930,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   EXPECT_CALL(observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
 
-  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
-                                         base::Unretained(this)));
+  sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
@@ -1973,8 +1972,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   testing::Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_CALL(observer_, OnEncryptionComplete());
 
-  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
-                                         base::Unretained(this)));
+  sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
 
   {
@@ -2167,8 +2165,7 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
   // Force a re-encrypt everything. Should not set is_unsynced.
   testing::Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_CALL(observer_, OnEncryptionComplete());
-  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
-                                         base::Unretained(this)));
+  sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
   EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
 }
@@ -2227,8 +2224,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
                   HasModelTypes(syncable::ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
-  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
-                                         base::Unretained(this)));
+  sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
   EXPECT_TRUE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
 
@@ -2319,8 +2315,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
                   HasModelTypes(syncable::ModelTypeSet::All()), true));
   EXPECT_CALL(observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
-  sync_manager_.RefreshNigori(base::Bind(&SyncManagerTest::EmptyClosure,
-                                         base::Unretained(this)));
+  sync_manager_.RefreshNigori(kTestChromeVersion, base::Bind(&DoNothing));
   PumpLoop();
   EXPECT_TRUE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
 

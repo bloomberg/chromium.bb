@@ -464,6 +464,7 @@ class SyncManager {
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
             const SyncCredentials& credentials,
+            bool enable_sync_tabs_for_other_clients,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode,
@@ -473,8 +474,9 @@ class SyncManager {
             browser_sync::ReportUnrecoverableErrorFunction
                 report_unrecoverable_error_function);
 
-  // Checks if the sync server is reachable.
-  void CheckServerReachable();
+  // Throw an unrecoverable error from a transaction (mostly used for
+  // testing).
+  void ThrowUnrecoverableError();
 
   // Check if the database has been populated with a full "initial" download of
   // sync items for each data type currently present in the routing info.
@@ -584,7 +586,8 @@ class SyncManager {
   //
   // Note: opens a transaction, so must only be called after syncapi
   // has been initialized.
-  void RefreshNigori(const base::Closure& done_callback);
+  void RefreshNigori(const std::string& chrome_version,
+                     const base::Closure& done_callback);
 
   // Enable encryption of all sync data. Once enabled, it can never be
   // disabled without clearing the server data.
@@ -633,10 +636,6 @@ class SyncManager {
   base::TimeDelta GetNudgeDelayTimeDelta(const syncable::ModelType& model_type);
 
   base::ThreadChecker thread_checker_;
-
-  // Internal callback of RefreshNigori.
-  void DoneRefreshNigori(const base::Closure& done_callback,
-                         bool is_ready);
 
   // An opaque pointer to the nested private class.
   SyncInternal* data_;

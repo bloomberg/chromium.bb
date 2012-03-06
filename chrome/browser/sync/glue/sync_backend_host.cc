@@ -18,6 +18,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer.h"
+#include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/util/nigori.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -977,6 +979,8 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.registrar /* as SyncManager::ChangeDelegate */,
       MakeUserAgentForSyncApi(),
       options.credentials,
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSyncTabsForOtherClients),
       new BridgedSyncNotifier(
           options.chrome_sync_notification_bridge,
           options.sync_notifier_factory->CreateSyncNotifier()),
@@ -986,6 +990,17 @@ void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
       options.unrecoverable_error_handler,
       options.report_unrecoverable_error_function);
   LOG_IF(ERROR, !success) << "Syncapi initialization failed!";
+
+  // Now check the command line to see if we need to simulate an
+  // unrecoverable error for testing purpose. Note the error is thrown
+  // only if the initialization succeeded. Also it makes sense to use this
+  // flag only when restarting the browser with an account already setup. If
+  // you use this before setting up the setup would not succeed as an error
+  // would be encountered.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncThrowUnrecoverableError)) {
+    sync_manager_->ThrowUnrecoverableError();
+  }
 }
 
 void SyncBackendHost::Core::DoUpdateCredentials(
@@ -1029,7 +1044,9 @@ void SyncBackendHost::Core::DoEnableEncryptEverything() {
 void SyncBackendHost::Core::DoRefreshNigori(
     const base::Closure& done_callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->RefreshNigori(done_callback);
+  chrome::VersionInfo version_info;
+  sync_manager_->RefreshNigori(version_info.CreateVersionString(),
+                               done_callback);
 }
 
 void SyncBackendHost::Core::DoStopSyncManagerForShutdown(

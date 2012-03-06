@@ -52,8 +52,6 @@
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/get_session_name.h"
 #include "chrome/browser/sync/util/time.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "net/base/network_change_notifier.h"
 
 using std::string;
@@ -137,6 +135,7 @@ class SyncManager::SyncInternal
   explicit SyncInternal(const std::string& name)
       : name_(name),
         weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+        enable_sync_tabs_for_other_clients_(false),
         registrar_(NULL),
         change_delegate_(NULL),
         initialized_(false),
@@ -194,6 +193,7 @@ class SyncManager::SyncInternal
             ChangeDelegate* change_delegate,
             const std::string& user_agent,
             const SyncCredentials& credentials,
+            bool enable_sync_tabs_for_other_clients,
             sync_notifier::SyncNotifier* sync_notifier,
             const std::string& restored_key_for_bootstrapping,
             bool setup_for_test_mode,
@@ -233,7 +233,8 @@ class SyncManager::SyncInternal
   // Calls the callback argument with true if cryptographer is ready, false
   // otherwise.
   void UpdateCryptographerAndNigori(
-      const base::Callback<void(bool)>& done_callback);
+      const std::string& chrome_version,
+      const base::Closure& done_callback);
 
   // Updates the nigori node with any new encrypted types and then
   // encrypts the nodes for those new data types as well as other
@@ -418,7 +419,8 @@ class SyncManager::SyncInternal
 
   // Internal callback of UpdateCryptographerAndNigoriCallback.
   void UpdateCryptographerAndNigoriCallback(
-      const base::Callback<void(bool)>& done_callback,
+      const std::string& chrome_version,
+      const base::Closure& done_callback,
       const std::string& session_name);
 
   // Determine if the parents or predecessors differ between the old and new
@@ -554,6 +556,8 @@ class SyncManager::SyncInternal
   // The scheduler that runs the Syncer. Needs to be explicitly
   // Start()ed.
   scoped_ptr<SyncScheduler> scheduler_;
+
+  bool enable_sync_tabs_for_other_clients_;
 
   // The SyncNotifier which notifies us when updates need to be downloaded.
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier_;
@@ -732,6 +736,7 @@ bool SyncManager::Init(
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
+    bool enable_sync_tabs_for_other_clients,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode,
@@ -754,6 +759,7 @@ bool SyncManager::Init(
                      change_delegate,
                      user_agent,
                      credentials,
+                     enable_sync_tabs_for_other_clients,
                      sync_notifier,
                      restored_key_for_bootstrapping,
                      setup_for_test_mode,
@@ -776,6 +782,13 @@ void SyncManager::MaybeSetSyncTabsInNigoriNode(
     ModelTypeSet enabled_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
   data_->MaybeSetSyncTabsInNigoriNode(enabled_types);
+}
+
+void SyncManager::ThrowUnrecoverableError() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ReadTransaction trans(FROM_HERE, GetUserShare());
+  trans.GetWrappedTrans()->OnUnrecoverableError(
+      FROM_HERE, "Simulating unrecoverable error for testing purposes.");
 }
 
 bool SyncManager::InitialSyncEndedForAllEnabledTypes() {
@@ -871,6 +884,7 @@ bool SyncManager::SyncInternal::Init(
     ChangeDelegate* change_delegate,
     const std::string& user_agent,
     const SyncCredentials& credentials,
+    bool enable_sync_tabs_for_other_clients,
     sync_notifier::SyncNotifier* sync_notifier,
     const std::string& restored_key_for_bootstrapping,
     bool setup_for_test_mode,
@@ -890,6 +904,8 @@ bool SyncManager::SyncInternal::Init(
   registrar_ = model_safe_worker_registrar;
   change_delegate_ = change_delegate;
   setup_for_test_mode_ = setup_for_test_mode;
+
+  enable_sync_tabs_for_other_clients_ = enable_sync_tabs_for_other_clients;
 
   sync_notifier_.reset(sync_notifier);
 
@@ -970,38 +986,28 @@ bool SyncManager::SyncInternal::Init(
 
   sync_notifier_->AddObserver(this);
 
-  // Now check the command line to see if we need to simulate an
-  // unrecoverable error for testing purpose. Note the error is thrown
-  // only if the initialization succeeded. Also it makes sense to use this
-  // flag only when restarting the browser with an account already setup. If
-  // you use this before setting up the setup would not succeed as an error
-  // would be encountered.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncThrowUnrecoverableError)) {
-    ReadTransaction trans(FROM_HERE, GetUserShare());
-    trans.GetWrappedTrans()->OnUnrecoverableError(FROM_HERE,
-        "Simulating unrecoverable error for testing purpose.");
-  }
-
   return signed_in;
 }
 
 void SyncManager::SyncInternal::UpdateCryptographerAndNigori(
-    const base::Callback<void(bool)>& done_callback) {
+    const std::string& chrome_version,
+    const base::Closure& done_callback) {
   DCHECK(initialized_);
   browser_sync::GetSessionName(
       blocking_task_runner_,
       base::Bind(
           &SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback,
           weak_ptr_factory_.GetWeakPtr(),
+          chrome_version,
           done_callback));
 }
 
 void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
-    const base::Callback<void(bool)>& done_callback,
+    const std::string& chrome_version,
+    const base::Closure& done_callback,
     const std::string& session_name) {
   if (!directory()->initial_sync_ended_for_type(syncable::NIGORI)) {
-    done_callback.Run(false);  // Should only happen during first time sync.
+    done_callback.Run();  // Should only happen during first time sync.
     return;
   }
 
@@ -1033,19 +1039,17 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
       }
 
       // Add or update device information.
-      chrome::VersionInfo version_info;
       bool contains_this_device = false;
       for (int i = 0; i < nigori.device_information_size(); ++i) {
         const sync_pb::DeviceInformation& device_information =
             nigori.device_information(i);
         if (device_information.cache_guid() == directory()->cache_guid()) {
           // Update the version number in case it changed due to an update.
-          if (device_information.chrome_version() !=
-              version_info.CreateVersionString()) {
+          if (device_information.chrome_version() != chrome_version) {
             sync_pb::DeviceInformation* mutable_device_information =
                 nigori.mutable_device_information(i);
             mutable_device_information->set_chrome_version(
-                version_info.CreateVersionString());
+                chrome_version);
           }
           contains_this_device = true;
         }
@@ -1065,9 +1069,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
         device_information->set_platform("Windows");
 #endif
         device_information->set_name(session_name);
-        chrome::VersionInfo version_info;
-        device_information->set_chrome_version(
-            version_info.CreateVersionString());
+        device_information->set_chrome_version(chrome_version);
       }
 
       // Ensure the nigori node reflects the most recent set of sensitive
@@ -1086,7 +1088,9 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
     }
   }
 
-  done_callback.Run(success);
+  if (success)
+    RefreshEncryption();
+  done_callback.Run();
 }
 
 void SyncManager::SyncInternal::StartSyncingNormally() {
@@ -1170,10 +1174,8 @@ void SyncManager::SyncInternal::UpdateEnabledTypes() {
   registrar_->GetModelSafeRoutingInfo(&routes);
   const ModelTypeSet enabled_types = GetRoutingInfoTypes(routes);
   sync_notifier_->UpdateEnabledTypes(enabled_types);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSyncTabsForOtherClients)) {
+  if (enable_sync_tabs_for_other_clients_)
     MaybeSetSyncTabsInNigoriNode(enabled_types);
-  }
 }
 
 void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
@@ -2375,19 +2377,12 @@ UserShare* SyncManager::GetUserShare() const {
   return data_->GetUserShare();
 }
 
-void SyncManager::RefreshNigori(const base::Closure& done_callback) {
+void SyncManager::RefreshNigori(const std::string& chrome_version,
+                                const base::Closure& done_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_->UpdateCryptographerAndNigori(base::Bind(
-      &SyncManager::DoneRefreshNigori,
-      base::Unretained(this),
-      done_callback));
-}
-
-void SyncManager::DoneRefreshNigori(const base::Closure& done_callback,
-                                    bool is_ready) {
-  if (is_ready)
-    data_->RefreshEncryption();
-  done_callback.Run();
+  data_->UpdateCryptographerAndNigori(
+      chrome_version,
+      done_callback);
 }
 
 TimeDelta SyncManager::GetNudgeDelayTimeDelta(
