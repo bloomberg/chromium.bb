@@ -71,7 +71,10 @@ FileSystemOperation::ScopedQuotaNotifier::~ScopedQuotaNotifier() {
   }
 }
 
-FileSystemOperation::TaskParamsForDidGetQuota::TaskParamsForDidGetQuota() {}
+FileSystemOperation::TaskParamsForDidGetQuota::TaskParamsForDidGetQuota()
+    : type(kFileSystemTypeUnknown) {
+}
+
 FileSystemOperation::TaskParamsForDidGetQuota::~TaskParamsForDidGetQuota() {}
 
 FileSystemOperation::~FileSystemOperation() {
