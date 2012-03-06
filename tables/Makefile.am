@@ -129,6 +129,7 @@ table_files = \
 	kok.ctb \
 	kru.ctb \
 	lang2table \
+	letterDefTest.ctb \
 	lt.ctb \
 	Lv-Lv-g1.utb \
 	malayalam.cti \

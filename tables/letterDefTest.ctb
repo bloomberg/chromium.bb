@@ -1,0 +1,24 @@
+include braille-patterns.cti
+
+## Note: at any given time, only 3 opCodes should be defined in this table.
+## This table is to illustrate the internal treatment of various letter definitions.
+
+## this works.
+uplow mm 134
+uplow ss 234
+
+## the following does not work.
+#letter m 134
+#letter s 234
+
+## neither does this:
+#lowercase m 134
+#lowercase s 234
+
+## doesnt work either:
+#uppercase m 134
+#uppercase s 234
+
+## small test to show that always opcode works.
+## tests/harness/letterDefinition_harness.py expects 'ms' to be 'sm' in braille.
+always ms 234-134
