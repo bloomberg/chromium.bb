@@ -370,6 +370,13 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   // The security origin of the frame initiating the open.
   IPC_STRUCT_MEMBER(std::string, opener_security_origin)
 
+  // Whether the opener will be suppressed in the new window, in which case
+  // scripting the new window is not allowed.
+  IPC_STRUCT_MEMBER(bool, opener_suppressed)
+
+  // Whether the window should be opened in the foreground, background, etc.
+  IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
+
   // The URL that will be loaded in the new window (empty if none has been
   // sepcified).
   IPC_STRUCT_MEMBER(GURL, target_url)

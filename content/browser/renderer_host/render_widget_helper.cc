@@ -215,13 +215,23 @@ void RenderWidgetHelper::CreateNewWindow(
     base::ProcessHandle render_process,
     int* route_id,
     int* surface_id) {
-  *route_id = GetNextRoutingID();
-  *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      render_process_id_, *route_id);
-  // Block resource requests until the view is created, since the HWND might be
-  // needed if a response ends up creating a plugin.
-  resource_dispatcher_host_->BlockRequestsForRoute(
-      render_process_id_, *route_id);
+  if (params.opener_suppressed) {
+    // If the opener is supppressed, we should open the window in a new
+    // BrowsingInstance, and thus a new process.  That means the current
+    // renderer process will not be able to route messages to it.  Because of
+    // this, we will immediately show and navigate the window in
+    // OnCreateWindowOnUI, using the params provided here.
+    *route_id = MSG_ROUTING_NONE;
+    *surface_id = 0;
+  } else {
+    *route_id = GetNextRoutingID();
+    *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
+        render_process_id_, *route_id);
+    // Block resource requests until the view is created, since the HWND might
+    // be needed if a response ends up creating a plugin.
+    resource_dispatcher_host_->BlockRequestsForRoute(
+        render_process_id_, *route_id);
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -237,9 +247,13 @@ void RenderWidgetHelper::OnCreateWindowOnUI(
   if (host)
     host->CreateNewWindow(route_id, params);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&RenderWidgetHelper::OnCreateWindowOnIO, this, route_id));
+  // We only need to resume blocked requests if we used a valid route_id.
+  // See CreateNewWindow.
+  if (route_id != MSG_ROUTING_NONE) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&RenderWidgetHelper::OnCreateWindowOnIO, this, route_id));
+  }
 }
 
 void RenderWidgetHelper::OnCreateWindowOnIO(int route_id) {

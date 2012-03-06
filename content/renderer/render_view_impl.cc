@@ -1427,22 +1427,12 @@ bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 
 // WebKit::WebViewClient ------------------------------------------------------
 
-// TODO(creis): New contract for createView temporarily redirects to the old
-// contract.  Remove the old one as part of http://crbug.com/69267.
 WebView* RenderViewImpl::createView(
     WebFrame* creator,
     const WebURLRequest& request,
     const WebWindowFeatures& features,
     const WebString& frame_name,
     WebNavigationPolicy policy) {
-  return createView(creator, request, features, frame_name);
-}
-
-WebView* RenderViewImpl::createView(
-    WebFrame* creator,
-    const WebURLRequest& request,
-    const WebWindowFeatures& features,
-    const WebString& frame_name) {
   // Check to make sure we aren't overloading on popups.
   if (shared_popup_counter_->data > kMaximumNumberOfUnacknowledgedPopups)
     return NULL;
@@ -1457,13 +1447,14 @@ WebView* RenderViewImpl::createView(
   params.opener_url = creator->document().url();
   params.opener_security_origin =
       creator->document().securityOrigin().toString().utf8();
+  params.opener_suppressed = creator->willSuppressOpenerInNewFrame();
+  params.disposition = NavigationPolicyToDisposition(policy);
   if (!request.isNull())
     params.target_url = request.url();
 
   int32 routing_id = MSG_ROUTING_NONE;
   int32 surface_id = 0;
   int64 cloned_session_storage_namespace_id;
-  bool opener_suppressed = creator->willSuppressOpenerInNewFrame();
 
   RenderThread::Get()->Send(
       new ViewHostMsg_CreateWindow(params,
@@ -1488,7 +1479,7 @@ WebView* RenderViewImpl::createView(
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
-  view->opener_suppressed_ = opener_suppressed;
+  view->opener_suppressed_ = params.opener_suppressed;
 
   // Record the security origin of the creator.
   GURL creator_url(creator->document().securityOrigin().toString().utf8());
@@ -2356,33 +2347,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       // Must be a JavaScript navigation, which appears as "other".
       type == WebKit::WebNavigationTypeOther;
 
-  // Recognize if this navigation is from a link with rel=noreferrer and
-  // target=_blank attributes, in which case the opener will be suppressed. If
-  // so, it is safe to load cross-site pages in a separate process, so we
-  // should let the browser handle it.
-  bool is_noreferrer_and_blank_target =
-      // Frame should be top level and not yet navigated.
-      frame->parent() == NULL &&
-      frame->document().url().isEmpty() &&
-      historyBackListCount() < 1 &&
-      historyForwardListCount() < 1 &&
-      // Links with rel=noreferrer will have no Referer field, and their
-      // resulting frame will have its window.opener suppressed.
-      // TODO(creis): should add a request.httpReferrer() method to help avoid
-      // typos on the unusual spelling of Referer.
-      request.httpHeaderField(WebString::fromUTF8("Referer")).isNull() &&
-      opener_suppressed_ &&
-      frame->opener() == NULL &&
-      // Links with target=_blank will have no name.
-      frame->name().isNull() &&
-      // Another frame (with a non-empty creator) should have initiated the
-      // request, targeted at this frame.
-      !creator_url_.is_empty() &&
-      is_content_initiated &&
-      default_policy == WebKit::WebNavigationPolicyCurrentTab &&
-      type == WebKit::WebNavigationTypeOther;
-
-  if (is_fork || is_noreferrer_and_blank_target) {
+  if (is_fork) {
     // Open the URL via the browser, not via WebKit.
     OpenURL(frame, url, Referrer(), default_policy);
     return WebKit::WebNavigationPolicyIgnore;

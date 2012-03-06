@@ -98,6 +98,64 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_NE(orig_site_instance, noref_blank_site_instance);
 }
 
+// As of crbug.com/69267, we create a new BrowsingInstance (and SiteInstance)
+// for rel=noreferrer links in new windows, even to same site pages and named
+// targets.
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+                       SwapProcessWithSameSiteRelNoreferrer) {
+  // Start two servers with different sites.
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server(
+      net::TestServer::TYPE_HTTPS,
+      net::TestServer::kLocalhost,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  // Load a page with links that open in a new window.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/click-noreferrer-links.html",
+      https_server.host_port_pair(),
+      &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               test_server()->GetURL(replacement_path));
+
+  // Get the original SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> orig_site_instance(
+      browser()->GetSelectedWebContents()->GetSiteInstance());
+  EXPECT_TRUE(orig_site_instance != NULL);
+
+  // Test clicking a same-site rel=noreferrer + target=foo link.
+  bool success = false;
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      L"window.domAutomationController.send(clickSameSiteNoRefTargetedLink());",
+      &success));
+  EXPECT_TRUE(success);
+
+  // Wait for the tab to open.
+  if (browser()->tab_count() < 2)
+    ui_test_utils::WaitForNewTab(browser());
+
+  // Opens in new tab.
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->active_index());
+  EXPECT_EQ("/files/title2.html",
+            browser()->GetSelectedWebContents()->GetURL().path());
+
+  // Wait for the cross-site transition in the new tab to finish.
+  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  TabContents* tab_contents = static_cast<TabContents*>(
+      browser()->GetSelectedWebContents());
+  EXPECT_FALSE(tab_contents->GetRenderManagerForTesting()->
+      pending_render_view_host());
+
+  // Should have a new SiteInstance (in a new BrowsingInstance).
+  scoped_refptr<SiteInstance> noref_blank_site_instance(
+      browser()->GetSelectedWebContents()->GetSiteInstance());
+  EXPECT_NE(orig_site_instance, noref_blank_site_instance);
+}
+
 // Test for crbug.com/24447.  Following a cross-site link with just
 // target=_blank should not create a new SiteInstance.
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
