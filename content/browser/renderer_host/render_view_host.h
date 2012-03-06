@@ -492,9 +492,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderViewHost.
   void CancelSuspendedNavigations();
 
-  // Informs the renderer of when the current navigation was allowed to proceed.
-  void SetNavigationStartTime(const base::TimeTicks& navigation_start);
-
   // Whether this RenderViewHost has been swapped out to be displayed by a
   // different process.
   bool is_swapped_out() const { return is_swapped_out_; }
@@ -711,10 +708,7 @@ class CONTENT_EXPORT RenderViewHostImpl
                              const string16& source_id);
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
-  void OnMsgShouldCloseACK(
-      bool proceed,
-      const base::TimeTicks& renderer_before_unload_start_time,
-      const base::TimeTicks& renderer_before_unload_end_time);
+  void OnMsgShouldCloseACK(bool proceed);
   void OnMsgClosePageACK();
   void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>& params);
@@ -836,9 +830,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // A list of observers that filter messages.  Weak references.
   ObserverList<content::RenderViewHostObserver> observers_;
-
-  // When the last ShouldClose message was sent.
-  base::TimeTicks send_should_close_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
 };

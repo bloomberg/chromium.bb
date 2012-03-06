@@ -1083,9 +1083,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_DisableScrollbarsForSmallWindows,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
                     bool /* active */)
 
-IPC_MESSAGE_ROUTED1(ViewMsg_SetNavigationStartTime,
-                    base::TimeTicks /* browser_navigation_start */)
-
 #if defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,
@@ -1288,10 +1285,8 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
 // return value of the the frame's shouldClose method (which includes the
 // onbeforeunload handler): true if the user decided to proceed with leaving
 // the page.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_ShouldClose_ACK,
-                    bool /* proceed */,
-                    base::TimeTicks /* before_unload_start_time */,
-                    base::TimeTicks /* before_unload_end_time */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ShouldClose_ACK,
+                    bool /* proceed */)
 
 // Indicates that the current renderer has swapped out, after a SwapOut
 // message. The parameters are just echoed from the SwapOut request.
