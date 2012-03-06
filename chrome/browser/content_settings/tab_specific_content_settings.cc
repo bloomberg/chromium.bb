@@ -407,14 +407,6 @@ void TabSpecificContentSettings::ClearGeolocationContentSettings() {
   geolocation_settings_state_.ClearStateMap();
 }
 
-CookiesTreeModel* TabSpecificContentSettings::GetAllowedCookiesTreeModel() {
-  return allowed_local_shared_objects_.GetCookiesTreeModel();
-}
-
-CookiesTreeModel* TabSpecificContentSettings::GetBlockedCookiesTreeModel() {
-  return blocked_local_shared_objects_.GetCookiesTreeModel();
-}
-
 bool TabSpecificContentSettings::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
@@ -511,17 +503,4 @@ void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
   indexed_dbs_->Reset();
   local_storages_->Reset();
   session_storages_->Reset();
-}
-
-CookiesTreeModel*
-TabSpecificContentSettings::LocalSharedObjectsContainer::GetCookiesTreeModel() {
-  return new CookiesTreeModel(cookies_->Clone(),
-                              databases_->Clone(),
-                              local_storages_->Clone(),
-                              session_storages_->Clone(),
-                              appcaches_->Clone(),
-                              indexed_dbs_->Clone(),
-                              file_systems_->Clone(),
-                              NULL,
-                              true);
 }

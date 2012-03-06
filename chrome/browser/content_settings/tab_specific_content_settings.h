@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,50 @@ class CookieOptions;
 class TabSpecificContentSettings : public content::WebContentsObserver,
                                    public content::NotificationObserver {
  public:
+  class LocalSharedObjectsContainer {
+   public:
+    explicit LocalSharedObjectsContainer(Profile* profile);
+    ~LocalSharedObjectsContainer();
+
+    // Empties the container.
+    void Reset();
+
+    CannedBrowsingDataAppCacheHelper* appcaches() const {
+      return appcaches_;
+    }
+    CannedBrowsingDataCookieHelper* cookies() const {
+      return cookies_;
+    }
+    CannedBrowsingDataDatabaseHelper* databases() const {
+      return databases_;
+    }
+    CannedBrowsingDataFileSystemHelper* file_systems() const {
+      return file_systems_;
+    }
+    CannedBrowsingDataIndexedDBHelper* indexed_dbs() const {
+      return indexed_dbs_;
+    }
+    CannedBrowsingDataLocalStorageHelper* local_storages() const {
+      return local_storages_;
+    }
+    CannedBrowsingDataLocalStorageHelper* session_storages() const {
+      return session_storages_;
+    }
+
+    bool empty() const;
+
+   private:
+    scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
+    scoped_refptr<CannedBrowsingDataCookieHelper> cookies_;
+    scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
+    scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
+    scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
+    scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
+    scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
+
+    DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);
+  };
+
   explicit TabSpecificContentSettings(content::WebContents* tab);
 
   virtual ~TabSpecificContentSettings();
@@ -145,11 +189,17 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
     return geolocation_settings_state_;
   }
 
-  // Returns a CookiesTreeModel object for the recoreded allowed cookies.
-  CookiesTreeModel* GetAllowedCookiesTreeModel();
+  // Returns a pointer to the |LocalSharedObjectsContainer| that contains all
+  // allowed local shared objects like cookies, local storage, ... .
+  const LocalSharedObjectsContainer& allowed_local_shared_objects() const {
+    return allowed_local_shared_objects_;
+  }
 
-  // Returns a CookiesTreeModel object for the recoreded blocked cookies.
-  CookiesTreeModel* GetBlockedCookiesTreeModel();
+  // Returns a pointer to the |LocalSharedObjectsContainer| that contains all
+  // blocked local shared objects like cookies, local storage, ... .
+  const LocalSharedObjectsContainer& blocked_local_shared_objects() const {
+    return blocked_local_shared_objects_;
+  }
 
   bool load_plugins_link_enabled() { return load_plugins_link_enabled_; }
   void set_load_plugins_link_enabled(bool enabled) {
@@ -199,52 +249,6 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
                                   bool allowed);
 
  private:
-  class LocalSharedObjectsContainer {
-   public:
-    explicit LocalSharedObjectsContainer(Profile* profile);
-    ~LocalSharedObjectsContainer();
-
-    // Empties the container.
-    void Reset();
-
-    CannedBrowsingDataAppCacheHelper* appcaches() const {
-      return appcaches_;
-    }
-    CannedBrowsingDataCookieHelper* cookies() const {
-      return cookies_;
-    }
-    CannedBrowsingDataDatabaseHelper* databases() const {
-      return databases_;
-    }
-    CannedBrowsingDataFileSystemHelper* file_systems() const {
-      return file_systems_;
-    }
-    CannedBrowsingDataIndexedDBHelper* indexed_dbs() const {
-      return indexed_dbs_;
-    }
-    CannedBrowsingDataLocalStorageHelper* local_storages() const {
-      return local_storages_;
-    }
-    CannedBrowsingDataLocalStorageHelper* session_storages() const {
-      return session_storages_;
-    }
-
-    CookiesTreeModel* GetCookiesTreeModel();
-
-    bool empty() const;
-
-   private:
-    scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
-    scoped_refptr<CannedBrowsingDataCookieHelper> cookies_;
-    scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
-    scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
-    scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
-    scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
-    scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
-
-    DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);
-  };
-
   void AddBlockedResource(ContentSettingsType content_type,
                           const std::string& resource_identifier);
 

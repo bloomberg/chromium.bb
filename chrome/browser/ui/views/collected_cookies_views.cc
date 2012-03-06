@@ -4,6 +4,12 @@
 
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 
+#include "chrome/browser/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data_cookie_helper.h"
+#include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data_indexed_db_helper.h"
+#include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
@@ -319,8 +325,19 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   // Create the controls that go into the pane.
   allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL));
+
+  const TabSpecificContentSettings::LocalSharedObjectsContainer& allowed_lsos =
+      content_settings->allowed_local_shared_objects();
   allowed_cookies_tree_model_.reset(
-      content_settings->GetAllowedCookiesTreeModel());
+      new CookiesTreeModel(allowed_lsos.cookies()->Clone(),
+                           allowed_lsos.databases()->Clone(),
+                           allowed_lsos.local_storages()->Clone(),
+                           allowed_lsos.session_storages()->Clone(),
+                           allowed_lsos.appcaches()->Clone(),
+                           allowed_lsos.indexed_dbs()->Clone(),
+                           allowed_lsos.file_systems()->Clone(),
+                           NULL,
+                           true));
   allowed_cookies_tree_ = new views::TreeView();
   allowed_cookies_tree_->SetModel(allowed_cookies_tree_model_.get());
   allowed_cookies_tree_->SetRootShown(false);
@@ -375,8 +392,18 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
               IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL));
   blocked_label_->SetMultiLine(true);
   blocked_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  const TabSpecificContentSettings::LocalSharedObjectsContainer& blocked_lsos =
+      content_settings->blocked_local_shared_objects();
   blocked_cookies_tree_model_.reset(
-      content_settings->GetBlockedCookiesTreeModel());
+      new CookiesTreeModel(blocked_lsos.cookies()->Clone(),
+                           blocked_lsos.databases()->Clone(),
+                           blocked_lsos.local_storages()->Clone(),
+                           blocked_lsos.session_storages()->Clone(),
+                           blocked_lsos.appcaches()->Clone(),
+                           blocked_lsos.indexed_dbs()->Clone(),
+                           blocked_lsos.file_systems()->Clone(),
+                           NULL,
+                           true));
   blocked_cookies_tree_ = new views::TreeView();
   blocked_cookies_tree_->SetModel(blocked_cookies_tree_model_.get());
   blocked_cookies_tree_->SetRootShown(false);

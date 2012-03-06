@@ -5,7 +5,12 @@
 #include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 
 #include <string>
-
+#include "chrome/browser/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data_cookie_helper.h"
+#include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data_indexed_db_helper.h"
+#include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
@@ -200,8 +205,18 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
 
   TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
+  const TabSpecificContentSettings::LocalSharedObjectsContainer& allowed_lsos =
+      content_settings->allowed_local_shared_objects();
   allowed_cookies_tree_model_.reset(
-      content_settings->GetAllowedCookiesTreeModel());
+      new CookiesTreeModel(allowed_lsos.cookies()->Clone(),
+                           allowed_lsos.databases()->Clone(),
+                           allowed_lsos.local_storages()->Clone(),
+                           allowed_lsos.session_storages()->Clone(),
+                           allowed_lsos.appcaches()->Clone(),
+                           allowed_lsos.indexed_dbs()->Clone(),
+                           allowed_lsos.file_systems()->Clone(),
+                           NULL,
+                           true));
   allowed_cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, allowed_cookies_tree_model_.get()));
   allowed_tree_ = gtk_tree_view_new_with_model(
@@ -277,8 +292,18 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
 
   TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
+  const TabSpecificContentSettings::LocalSharedObjectsContainer& blocked_lsos =
+      content_settings->blocked_local_shared_objects();
   blocked_cookies_tree_model_.reset(
-      content_settings->GetBlockedCookiesTreeModel());
+      new CookiesTreeModel(blocked_lsos.cookies()->Clone(),
+                           blocked_lsos.databases()->Clone(),
+                           blocked_lsos.local_storages()->Clone(),
+                           blocked_lsos.session_storages()->Clone(),
+                           blocked_lsos.appcaches()->Clone(),
+                           blocked_lsos.indexed_dbs()->Clone(),
+                           blocked_lsos.file_systems()->Clone(),
+                           NULL,
+                           true));
   blocked_cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, blocked_cookies_tree_model_.get()));
   blocked_tree_ = gtk_tree_view_new_with_model(

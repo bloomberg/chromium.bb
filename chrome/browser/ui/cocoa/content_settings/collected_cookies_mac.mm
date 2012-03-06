@@ -9,6 +9,12 @@
 #include "base/mac/bundle_locations.h"
 #import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data_cookie_helper.h"
+#include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data_indexed_db_helper.h"
+#include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -370,8 +376,31 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 // the |cocoaAllowedTreeModel_| and |cocoaBlockedTreeModel_|.
 - (void)loadTreeModelFromTabContentsWrapper {
   TabSpecificContentSettings* content_settings = wrapper_->content_settings();
-  allowedTreeModel_.reset(content_settings->GetAllowedCookiesTreeModel());
-  blockedTreeModel_.reset(content_settings->GetBlockedCookiesTreeModel());
+
+  const TabSpecificContentSettings::LocalSharedObjectsContainer& allowed_lsos =
+      content_settings->allowed_local_shared_objects();
+  allowedTreeModel_.reset(
+      new CookiesTreeModel(allowed_lsos.cookies()->Clone(),
+                           allowed_lsos.databases()->Clone(),
+                           allowed_lsos.local_storages()->Clone(),
+                           allowed_lsos.session_storages()->Clone(),
+                           allowed_lsos.appcaches()->Clone(),
+                           allowed_lsos.indexed_dbs()->Clone(),
+                           allowed_lsos.file_systems()->Clone(),
+                           NULL,
+                           true));
+  const TabSpecificContentSettings::LocalSharedObjectsContainer& blocked_lsos =
+      content_settings->blocked_local_shared_objects();
+  blockedTreeModel_.reset(
+      new CookiesTreeModel(blocked_lsos.cookies()->Clone(),
+                           blocked_lsos.databases()->Clone(),
+                           blocked_lsos.local_storages()->Clone(),
+                           blocked_lsos.session_storages()->Clone(),
+                           blocked_lsos.appcaches()->Clone(),
+                           blocked_lsos.indexed_dbs()->Clone(),
+                           blocked_lsos.file_systems()->Clone(),
+                           NULL,
+                           true));
 
   // Convert the model's icons from Skia to Cocoa.
   std::vector<SkBitmap> skiaIcons;
