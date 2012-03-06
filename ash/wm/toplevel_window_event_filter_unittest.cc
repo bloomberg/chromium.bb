@@ -122,15 +122,15 @@ TEST_F(ToplevelWindowEventFilterTest, Caption) {
   gfx::Size size = w1->bounds().size();
   DragFromCenterBy(w1.get(), 100, 100);
   // Position should have been offset by 100,100.
-  EXPECT_EQ(gfx::Point(100, 100), w1->bounds().origin());
+  EXPECT_EQ("100,100", w1->bounds().origin().ToString());
   // Size should not have.
-  EXPECT_EQ(size, w1->bounds().size());
+  EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
 
   TouchDragFromCenterBy(w1.get(), 100, 100);
   // Position should have been offset by 100,100.
-  EXPECT_EQ(gfx::Point(200, 200), w1->bounds().origin());
+  EXPECT_EQ("200,200", w1->bounds().origin().ToString());
   // Size should not have.
-  EXPECT_EQ(size, w1->bounds().size());
+  EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
 }
 
 TEST_F(ToplevelWindowEventFilterTest, BottomRight) {

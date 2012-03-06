@@ -19,30 +19,6 @@ namespace internal {
 
 namespace {
 
-// Returns the default cursor for a window component.
-gfx::NativeCursor CursorForWindowComponent(int window_component) {
-  switch (window_component) {
-    case HTBOTTOM:
-      return aura::kCursorSouthResize;
-    case HTBOTTOMLEFT:
-      return aura::kCursorSouthWestResize;
-    case HTBOTTOMRIGHT:
-      return aura::kCursorSouthEastResize;
-    case HTLEFT:
-      return aura::kCursorWestResize;
-    case HTRIGHT:
-      return aura::kCursorEastResize;
-    case HTTOP:
-      return aura::kCursorNorthResize;
-    case HTTOPLEFT:
-      return aura::kCursorNorthWestResize;
-    case HTTOPRIGHT:
-      return aura::kCursorNorthEastResize;
-    default:
-      return aura::kCursorNull;
-  }
-}
-
 aura::Window* FindFocusableWindowFor(aura::Window* window) {
   while (window && !window->CanFocus())
     window = window->parent();
@@ -65,6 +41,31 @@ RootWindowEventFilter::~RootWindowEventFilter() {
   // Additional filters are not owned by RootWindowEventFilter and they
   // should all be removed when running here. |filters_| has
   // check_empty == true and will DCHECK failure if it is not empty.
+}
+
+// static
+gfx::NativeCursor RootWindowEventFilter::CursorForWindowComponent(
+    int window_component) {
+  switch (window_component) {
+    case HTBOTTOM:
+      return aura::kCursorSouthResize;
+    case HTBOTTOMLEFT:
+      return aura::kCursorSouthWestResize;
+    case HTBOTTOMRIGHT:
+      return aura::kCursorSouthEastResize;
+    case HTLEFT:
+      return aura::kCursorWestResize;
+    case HTRIGHT:
+      return aura::kCursorEastResize;
+    case HTTOP:
+      return aura::kCursorNorthResize;
+    case HTTOPLEFT:
+      return aura::kCursorNorthWestResize;
+    case HTTOPRIGHT:
+      return aura::kCursorNorthEastResize;
+    default:
+      return aura::kCursorNull;
+  }
 }
 
 void RootWindowEventFilter::LockCursor() {

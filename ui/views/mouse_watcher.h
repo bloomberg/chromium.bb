@@ -40,10 +40,10 @@ class VIEWS_EXPORT MouseWatcherHost {
   };
 
   virtual ~MouseWatcherHost();
+
   // Return false when the mouse has moved outside the monitored region.
-  virtual bool Contains(
-      const gfx::Point& screen_point,
-      MouseEventType type) = 0;
+  virtual bool Contains(const gfx::Point& screen_point,
+                        MouseEventType type) = 0;
 };
 
 // MouseWatcher is used to watch mouse movement and notify its listener when the

@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/wm/toplevel_window_event_filter.h"
+#include "ash/wm/workspace/multi_window_resize_controller.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -50,6 +51,8 @@ class WorkspaceEventFilter : public ToplevelWindowEventFilter,
 
   // Top-level window under the mouse cursor.
   aura::Window* hovered_window_;
+
+  MultiWindowResizeController multi_window_resize_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceEventFilter);
 };

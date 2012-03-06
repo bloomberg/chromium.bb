@@ -61,6 +61,14 @@ WorkspaceEventFilter::~WorkspaceEventFilter() {
 bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                aura::MouseEvent* event) {
   switch (event->type()) {
+    case ui::ET_MOUSE_MOVED: {
+      int component =
+          target->delegate()->GetNonClientComponent(event->location());
+      multi_window_resize_controller_.set_grid_size(grid_size());
+      multi_window_resize_controller_.Show(target, component,
+                                           event->location());
+      break;
+    }
     case ui::ET_MOUSE_ENTERED:
       UpdateHoveredWindow(wm::GetActivatableWindow(target));
       break;
@@ -69,6 +77,7 @@ bool WorkspaceEventFilter::PreHandleMouseEvent(aura::Window* target,
       UpdateHoveredWindow(NULL);
       break;
     case ui::ET_MOUSE_PRESSED:
+      multi_window_resize_controller_.Hide();
       HandleVerticalResizeDoubleClick(target, event);
       break;
     default:
@@ -94,7 +103,8 @@ WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
     return NULL;
   }
   return WorkspaceWindowResizer::Create(
-      window, point, window_component, grid_size());
+      window, point, window_component, grid_size(),
+      std::vector<aura::Window*>());
 }
 
 void WorkspaceEventFilter::UpdateHoveredWindow(

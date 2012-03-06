@@ -23,9 +23,8 @@ class VIEWS_EXPORT MouseWatcherViewHost : public MouseWatcherHost {
   virtual ~MouseWatcherViewHost();
 
   // MouseWatcherHost.
-  virtual bool Contains(
-      const gfx::Point& screen_point,
-      MouseEventType type) OVERRIDE;
+  virtual bool Contains(const gfx::Point& screen_point,
+                        MouseEventType type) OVERRIDE;
 
  private:
   bool IsCursorInViewZone(const gfx::Point& screen_point);

@@ -27,6 +27,10 @@ const aura::WindowProperty<int> kHeightBeforeObscuredProp = {0};
 const aura::WindowProperty<int>* const kHeightBeforeObscuredKey =
     &kHeightBeforeObscuredProp;
 
+const aura::WindowProperty<int> kWidthBeforeObscuredProp = {0};
+const aura::WindowProperty<int>* const kWidthBeforeObscuredKey =
+    &kWidthBeforeObscuredProp;
+
 void SetHeightBeforeObscured(aura::Window* window, int height) {
   window->SetProperty(kHeightBeforeObscuredKey, height);
 }
@@ -39,7 +43,22 @@ void ClearHeightBeforeObscured(aura::Window* window) {
   window->SetProperty(kHeightBeforeObscuredKey, 0);
 }
 
+void SetWidthBeforeObscured(aura::Window* window, int width) {
+  window->SetProperty(kWidthBeforeObscuredKey, width);
+}
+
+int GetWidthBeforeObscured(aura::Window* window) {
+  return window->GetProperty(kWidthBeforeObscuredKey);
+}
+
+void ClearWidthBeforeObscured(aura::Window* window) {
+  window->SetProperty(kWidthBeforeObscuredKey, 0);
+}
+
 }  // namespace
+
+// static
+const int WorkspaceWindowResizer::kMinOnscreenSize = 20;
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   if (root_filter_)
@@ -51,10 +70,11 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
     aura::Window* window,
     const gfx::Point& location,
     int window_component,
-    int grid_size) {
+    int grid_size,
+    const std::vector<aura::Window*>& attached_windows) {
   Details details(window, location, window_component, grid_size);
   return details.is_resizable ?
-      new WorkspaceWindowResizer(details) : NULL;
+      new WorkspaceWindowResizer(details, attached_windows) : NULL;
 }
 
 void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
@@ -65,9 +85,17 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
     did_move_or_resize_ = true;
     details_.window->SetBounds(bounds);
   }
+  if (!attached_windows_.empty()) {
+    if (details_.window_component == HTRIGHT)
+      LayoutAttachedWindowsHorizontally(bounds);
+    else
+      LayoutAttachedWindowsVertically(bounds);
+  }
 }
 
 void WorkspaceWindowResizer::CompleteDrag() {
+  // This code only matters when dragging the caption and there's a grid, so
+  // it doesn't need to worry about attached windows.
   if (details_.grid_size <= 1 || !did_move_or_resize_ ||
       details_.window_component != HTCAPTION)
     return;
@@ -112,30 +140,185 @@ void WorkspaceWindowResizer::RevertDrag() {
     return;
 
   details_.window->SetBounds(details_.initial_bounds);
+  if (details_.window_component == HTRIGHT) {
+    int last_x = details_.initial_bounds.right();
+    for (size_t i = 0; i < attached_windows_.size(); ++i) {
+      gfx::Rect bounds(attached_windows_[i]->bounds());
+      bounds.set_x(last_x);
+      bounds.set_width(initial_size_[i]);
+      attached_windows_[i]->SetBounds(bounds);
+      last_x = attached_windows_[i]->bounds().right();
+    }
+  } else {
+    int last_y = details_.initial_bounds.bottom();
+    for (size_t i = 0; i < attached_windows_.size(); ++i) {
+      gfx::Rect bounds(attached_windows_[i]->bounds());
+      bounds.set_y(last_y);
+      bounds.set_height(initial_size_[i]);
+      attached_windows_[i]->SetBounds(bounds);
+      last_y = attached_windows_[i]->bounds().bottom();
+    }
+  }
 }
 
 WorkspaceWindowResizer::WorkspaceWindowResizer(
-    const Details& details)
+    const Details& details,
+    const std::vector<aura::Window*>& attached_windows)
     : details_(details),
       constrain_size_(wm::IsWindowNormal(details.window)),
+      attached_windows_(attached_windows),
       did_move_or_resize_(false),
-      root_filter_(NULL) {
+      root_filter_(NULL),
+      total_min_(0),
+      total_initial_size_(0) {
   DCHECK(details_.is_resizable);
   root_filter_ = Shell::GetInstance()->root_filter();
   if (root_filter_)
     root_filter_->LockCursor();
+
+  // We should never be in a situation where we have an attached window and not
+  // constrain the size. The only case we don't constrain size is for dragging
+  // tabs, which should never have an attached window.
+  DCHECK(attached_windows_.empty() || constrain_size_);
+  // Only support attaching to the right/bottom.
+  DCHECK(attached_windows_.empty() ||
+         (details.window_component == HTRIGHT ||
+          details.window_component == HTBOTTOM));
+
+  // TODO: figure out how to deal with window going off the edge.
+
+  // Calculate sizes so that we can maintain the ratios if we need to resize.
+  int total_available = 0;
+  for (size_t i = 0; i < attached_windows_.size(); ++i) {
+    gfx::Size min(attached_windows_[i]->delegate()->GetMinimumSize());
+    int initial_size = PrimaryAxisSize(attached_windows_[i]->bounds().size());
+    int cached_size = PrimaryAxisCoordinate(
+        GetWidthBeforeObscured(attached_windows_[i]),
+        GetHeightBeforeObscured(attached_windows_[i]));
+    if (initial_size > cached_size) {
+      if (details.window_component == HTRIGHT)
+        ClearWidthBeforeObscured(attached_windows_[i]);
+      else
+        ClearHeightBeforeObscured(attached_windows_[i]);
+    } else if (cached_size) {
+      initial_size = cached_size;
+    }
+    initial_size_.push_back(initial_size);
+    // If current size is smaller than the min, use the current size as the min.
+    // This way we don't snap on resize.
+    int min_size = std::min(initial_size,
+                            std::max(PrimaryAxisSize(min), kMinOnscreenSize));
+    // Make sure the min size falls on the grid.
+    if (details_.grid_size > 1 && min_size % details_.grid_size != 0)
+      min_size = (min_size / details_.grid_size + 1) * details_.grid_size;
+    min_size_.push_back(min_size);
+    total_min_ += min_size;
+    total_initial_size_ += initial_size;
+    total_available += std::max(min_size, initial_size) - min_size;
+  }
+
+  for (size_t i = 0; i < attached_windows_.size(); ++i) {
+    if (total_initial_size_ != total_min_) {
+      compress_fraction_.push_back(
+          static_cast<float>(initial_size_[i] - min_size_[i]) /
+          static_cast<float>(total_available));
+    } else {
+      compress_fraction_.push_back(0.0f);
+    }
+  }
 
   if (is_resizable() && constrain_size_ &&
       (!TouchesBottomOfScreen() ||
        details_.bounds_change != kBoundsChange_Repositions)) {
     ClearCachedHeights();
   }
+
+  if (is_resizable() && constrain_size_ &&
+      (!TouchesRightSideOfScreen() ||
+       details_.bounds_change != kBoundsChange_Repositions)) {
+    ClearCachedWidths();
+  }
+}
+
+void WorkspaceWindowResizer::LayoutAttachedWindowsHorizontally(
+    const gfx::Rect& bounds) {
+  gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window()));
+  int last_x = bounds.right();
+  if (bounds.right() <= work_area.right() - total_initial_size_) {
+    ClearCachedWidths();
+    // All the windows fit at their initial size; tile them horizontally.
+    for (size_t i = 0; i < attached_windows_.size(); ++i) {
+      gfx::Rect attached_bounds(attached_windows_[i]->bounds());
+      attached_bounds.set_x(last_x);
+      attached_bounds.set_width(initial_size_[i]);
+      attached_windows_[i]->SetBounds(attached_bounds);
+      last_x = attached_bounds.right();
+    }
+  } else {
+    DCHECK_NE(total_initial_size_, total_min_);
+    int delta = total_initial_size_ - (work_area.right() - bounds.right());
+    for (size_t i = 0; i < attached_windows_.size(); ++i) {
+      gfx::Rect attached_bounds(attached_windows_[i]->bounds());
+      int size = initial_size_[i] -
+          static_cast<int>(compress_fraction_[i] * delta);
+      size = AlignToGrid(size, details_.grid_size);
+      if (!GetWidthBeforeObscured(attached_windows_[i]))
+        SetWidthBeforeObscured(attached_windows_[i], attached_bounds.width());
+      attached_bounds.set_x(last_x);
+      if (i == attached_windows_.size())
+        size = work_area.right() - last_x;
+      attached_bounds.set_width(size);
+      attached_windows_[i]->SetBounds(attached_bounds);
+      last_x = attached_bounds.right();
+    }
+  }
+}
+
+void WorkspaceWindowResizer::LayoutAttachedWindowsVertically(
+    const gfx::Rect& bounds) {
+  gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window()));
+  int last_y = bounds.bottom();
+  if (bounds.bottom() <= work_area.bottom() - total_initial_size_) {
+    ClearCachedHeights();
+    // All the windows fit at their initial size; tile them vertically.
+    for (size_t i = 0; i < attached_windows_.size(); ++i) {
+      gfx::Rect attached_bounds(attached_windows_[i]->bounds());
+      attached_bounds.set_y(last_y);
+      attached_bounds.set_height(initial_size_[i]);
+      attached_windows_[i]->SetBounds(attached_bounds);
+      last_y = attached_bounds.bottom();
+    }
+  } else {
+    DCHECK_NE(total_initial_size_, total_min_);
+    int delta = total_initial_size_ - (work_area.bottom() - bounds.bottom());
+    for (size_t i = 0; i < attached_windows_.size(); ++i) {
+      gfx::Rect attached_bounds(attached_windows_[i]->bounds());
+      int size = initial_size_[i] -
+          static_cast<int>(compress_fraction_[i] * delta);
+      size = AlignToGrid(size, details_.grid_size);
+      if (i == attached_windows_.size())
+        size = work_area.bottom() - last_y;
+      if (!GetHeightBeforeObscured(attached_windows_[i]))
+        SetHeightBeforeObscured(attached_windows_[i], attached_bounds.height());
+      attached_bounds.set_height(size);
+      attached_bounds.set_y(last_y);
+      attached_windows_[i]->SetBounds(attached_bounds);
+      last_y = attached_bounds.bottom();
+    }
+  }
 }
 
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds) const {
   gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window()));
+  if (!attached_windows_.empty() && details_.window_component == HTBOTTOM)
+    work_area.set_height(work_area.height() - total_min_);
   AdjustBoundsForWindow(work_area, window(), bounds);
+
+  if (!attached_windows_.empty() && details_.window_component == HTRIGHT) {
+    bounds->set_width(std::min(bounds->width(),
+                               work_area.right() - total_min_ - bounds->x()));
+  }
 }
 
 void WorkspaceWindowResizer::AdjustBoundsForWindow(
@@ -168,12 +351,48 @@ void WorkspaceWindowResizer::AdjustBoundsForWindow(
 
 void WorkspaceWindowResizer::ClearCachedHeights() {
   ClearHeightBeforeObscured(details_.window);
+  for (size_t i = 0; i < attached_windows_.size(); ++i)
+    ClearHeightBeforeObscured(attached_windows_[i]);
+}
+
+void WorkspaceWindowResizer::ClearCachedWidths() {
+  ClearWidthBeforeObscured(details_.window);
+  for (size_t i = 0; i < attached_windows_.size(); ++i)
+    ClearWidthBeforeObscured(attached_windows_[i]);
 }
 
 bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {
   gfx::Rect work_area(
       gfx::Screen::GetMonitorWorkAreaNearestWindow(details_.window));
-  return details_.window->bounds().bottom() == work_area.bottom();
+  return (attached_windows_.empty() &&
+          details_.window->bounds().bottom() == work_area.bottom()) ||
+      (!attached_windows_.empty() &&
+       attached_windows_.back()->bounds().bottom() == work_area.bottom());
+}
+
+bool WorkspaceWindowResizer::TouchesRightSideOfScreen() const {
+  gfx::Rect work_area(
+      gfx::Screen::GetMonitorWorkAreaNearestWindow(details_.window));
+  return (attached_windows_.empty() &&
+          details_.window->bounds().right() == work_area.right()) ||
+      (!attached_windows_.empty() &&
+       attached_windows_.back()->bounds().right() == work_area.right());
+}
+
+int WorkspaceWindowResizer::PrimaryAxisSize(const gfx::Size& size) const {
+  return PrimaryAxisCoordinate(size.width(), size.height());
+}
+
+int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
+  switch (details_.window_component) {
+    case HTRIGHT:
+      return x;
+    case HTBOTTOM:
+      return y;
+    default:
+      NOTREACHED();
+  }
+  return 0;
 }
 
 }  // namespace internal

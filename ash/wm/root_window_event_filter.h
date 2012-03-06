@@ -28,6 +28,9 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
   RootWindowEventFilter();
   virtual ~RootWindowEventFilter();
 
+  // Returns the cursor for the specified component.
+  static gfx::NativeCursor CursorForWindowComponent(int window_component);
+
   // Freezes updates to the cursor until UnlockCursor() is invoked.
   void LockCursor();
 
@@ -38,7 +41,8 @@ class ASH_EXPORT RootWindowEventFilter : public aura::EventFilter {
     update_cursor_visibility_ = update;
   }
 
-  // Adds/removes additional event filters.
+  // Adds/removes additional event filters. This does not take ownership of
+  // the EventFilter.
   void AddFilter(aura::EventFilter* filter);
   void RemoveFilter(aura::EventFilter* filter);
   size_t GetFilterCount() const;
