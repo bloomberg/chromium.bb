@@ -59,6 +59,10 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ash/shell.h"
+#endif
+
 using content::BrowserThread;
 using content::UserMetricsAction;
 using content::WebContents;
@@ -293,8 +297,9 @@ bool NewTabUI::ShouldShowAppInstallHint() {
 // static
 bool NewTabUI::ShouldShowAppsPage() {
 #if defined(USE_AURA)
-  // Ash shows apps in app list thus should not show apps page in NTP4.
-  return false;
+  // Ash shows apps in app list thus should not show apps page in NTP4 unless
+  // it is running in compact mode (crbug.com/116852).
+  return ash::Shell::GetInstance()->IsWindowModeCompact();
 #else
   return true;
 #endif
