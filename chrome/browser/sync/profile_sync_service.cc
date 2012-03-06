@@ -86,8 +86,8 @@ const char* ProfileSyncService::kDevServerUrl =
 static const int kSyncClearDataTimeoutInSeconds = 60;  // 1 minute.
 
 static const char* kRelevantTokenServices[] = {
-    GaiaConstants::kSyncService,
-    GaiaConstants::kGaiaOAuth2LoginRefreshToken};
+    GaiaConstants::kSyncService
+};
 static const int kRelevantTokenServicesCount =
     arraysize(kRelevantTokenServices);
 
@@ -151,11 +151,6 @@ ProfileSyncService::~ProfileSyncService() {
 }
 
 bool ProfileSyncService::AreCredentialsAvailable() {
-  return AreCredentialsAvailable(false);
-}
-
-bool ProfileSyncService::AreCredentialsAvailable(
-    bool check_oauth_login_token) {
   if (IsManaged()) {
     return false;
   }
@@ -176,9 +171,7 @@ bool ProfileSyncService::AreCredentialsAvailable(
     return false;
 
   // TODO(chron): Verify CrOS unit test behavior.
-  if (!token_service->HasTokenForService(GaiaConstants::kSyncService))
-    return false;
-  return !check_oauth_login_token || token_service->HasOAuthLoginToken();
+  return token_service->HasTokenForService(GaiaConstants::kSyncService);
 }
 
 void ProfileSyncService::Initialize() {
@@ -1513,36 +1506,17 @@ void ProfileSyncService::Observe(int type,
           *(content::Details<const TokenService::TokenAvailableDetails>(
               details).ptr());
       if (IsTokenServiceRelevant(token_details.service()) &&
-          AreCredentialsAvailable(true)) {
-        if (backend_initialized_) {
+          AreCredentialsAvailable()) {
+        if (backend_initialized_)
           backend_->UpdateCredentials(GetCredentials());
-          const GoogleServiceAuthError& last_error = GetAuthError();
-          if (GoogleServiceAuthError::NONE == last_error.state()) {
-            // SyncBackendHost::UpdateCredentials call does not call back
-            // OnAuthError in cases when the underlying syncer state does not
-            // change. Due to that if the login dialog is showing up when the
-            // credentials have not expired as such (this happens when login
-            // dialog is shown by app notifications setup code) the login dialog
-            // will show the spinner forever. Hence, we call OnAuthError
-            // explicitly here to avoid the infinite spinner in that case.
-            // Note that SyncBackendHost::UpdateCredentials may actually end up
-            // failing, but in that case an error will be shown to the user in
-            // bookmarks bar and preferences.
-            OnAuthError();
-          }
-        }
-        if (!sync_prefs_.IsStartSuppressed())
+        else if (!sync_prefs_.IsStartSuppressed())
           StartUp();
       }
       break;
     }
     case chrome::NOTIFICATION_TOKEN_LOADING_FINISHED: {
       // This notification gets fired when TokenService loads the tokens
-      // from storage. Here we only check if the chromiumsync token is
-      // available (versus both chromiumsync and oauth login tokens) to
-      // start up sync successfully for already logged in users who may
-      // only have chromiumsync token if they logged in before the code
-      // to generate oauth login token released.
+      // from storage.
       if (AreCredentialsAvailable()) {
         // Initialize the backend if sync token was loaded.
         if (backend_initialized_) {

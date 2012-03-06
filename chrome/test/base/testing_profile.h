@@ -266,6 +266,11 @@ class TestingProfile : public Profile {
   // history service processes all pending requests.
   void BlockUntilHistoryProcessesPendingRequests();
 
+  // Sets the TokenService returned by GetTokenService(). This allows clients
+  // to provide their own mock TokenService implementations. If
+  // SetTokenService() is never called, then GetTokenService() will just
+  // create and return a real TokenService().
+  void SetTokenService(TokenService* service);
   virtual TokenService* GetTokenService() OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;

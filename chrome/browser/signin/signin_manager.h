@@ -91,10 +91,6 @@ class SigninManager : public GaiaAuthConsumer,
   // associated with the user, and canceling all auth in progress.
   virtual void SignOut();
 
-  // Returns the auth error associated with the last login attempt, or None if
-  // there have been no login failures.
-  virtual const GoogleServiceAuthError& GetLoginAuthError() const;
-
   // Returns true if there's a signin in progress.
   bool AuthInProgress() const;
 
@@ -161,10 +157,6 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Register for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
-
-  // The last error we received when logging in (used to retrieve details like
-  // captchas, etc).
-  GoogleServiceAuthError last_login_auth_error_;
 
   std::string authenticated_username_;
 

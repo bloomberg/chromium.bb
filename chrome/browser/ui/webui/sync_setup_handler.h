@@ -41,7 +41,7 @@ class SyncSetupHandler : public OptionsPageUIHandler,
 
   // SigninTracker::Observer implementation
   virtual void GaiaCredentialsValid() OVERRIDE;
-  virtual void SigninFailed() OVERRIDE;
+  virtual void SigninFailed(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void SigninSuccess() OVERRIDE;
 
   static void GetStaticLocalizedValues(
@@ -162,6 +162,9 @@ class SyncSetupHandler : public OptionsPageUIHandler,
 
   // Cache of the last name the client attempted to authenticate.
   std::string last_attempted_user_email_;
+
+  // The error from the last signin attempt.
+  GoogleServiceAuthError last_signin_error_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };

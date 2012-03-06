@@ -27,6 +27,7 @@
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -164,6 +165,14 @@ class ProfileSyncServiceSessionTest
   TestIdFactory* ids() { return sync_service_->id_factory(); }
 
  protected:
+  virtual TestingProfile* CreateProfile() OVERRIDE {
+    TestingProfile* profile = new TestingProfile();
+    // Don't want the profile to create a real ProfileSyncService.
+    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile,
+                                                                NULL);
+    return profile;
+  }
+
   virtual void SetUp() {
     // BrowserWithTestWindowTest implementation.
     BrowserWithTestWindowTest::SetUp();

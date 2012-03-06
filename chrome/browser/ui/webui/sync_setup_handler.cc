@@ -177,7 +177,8 @@ bool AreUserNamesEqual(const string16& user1, const string16& user2) {
 
 SyncSetupHandler::SyncSetupHandler(ProfileManager* profile_manager)
     : flow_(NULL),
-      profile_manager_(profile_manager) {
+      profile_manager_(profile_manager),
+      last_signin_error_(GoogleServiceAuthError::NONE) {
 }
 
 SyncSetupHandler::~SyncSetupHandler() {
@@ -353,7 +354,8 @@ void SyncSetupHandler::GetStaticLocalizedValues(
 
 void SyncSetupHandler::StartConfigureSync() {
   DCHECK(!flow_);
-  // We only get here if we're signed in, so no longer need our SigninTracker.
+  // Should only be called if user is signed in, so no longer need our
+  // SigninTracker.
   signin_tracker_.reset();
   ProfileSyncService* service = GetSyncService();
   service->get_wizard().Step(
@@ -368,7 +370,7 @@ void SyncSetupHandler::StartConfigureSync() {
 }
 
 bool SyncSetupHandler::IsActiveLogin() const {
-  // LoginUIService can be NULL if we are brought up in incognito mode
+  // LoginUIService can be NULL if page is brought up in incognito mode
   // (i.e. if the user is running in guest mode in cros and brings up settings).
   LoginUIService* service = GetLoginUIService();
   return service && (service->current_login_ui() == web_ui());
@@ -425,25 +427,19 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   // user: The email the user most recently entered.
   // editable_user: Whether the username field should be editable.
   // captchaUrl: The captcha image to display to the user (empty if none).
-  SigninManager* signin = GetSignin();
   std::string user, captcha;
   int error;
   bool editable_user;
   if (!last_attempted_user_email_.empty()) {
     // This is a repeat of a login attempt.
     user = last_attempted_user_email_;
-    GoogleServiceAuthError gaia_error = signin->GetLoginAuthError();
-    // It's possible for GAIA signin to succeed, but sync signin to fail, so
-    // if that happens, use the sync GAIA error.
-    if (gaia_error.state() == GoogleServiceAuthError::NONE)
-      gaia_error = GetSyncService()->GetAuthError();
-    error = gaia_error.state();
-    captcha = gaia_error.captcha().image_url.spec();
+    error = last_signin_error_.state();
+    captcha = last_signin_error_.captcha().image_url.spec();
     editable_user = true;
   } else {
     // Fresh login attempt - lock in the authenticated username if there is
     // one (don't let the user change it).
-    user = signin->GetAuthenticatedUsername();
+    user = GetSignin()->GetAuthenticatedUsername();
     error = 0;
     editable_user = user.empty();
   }
@@ -477,7 +473,7 @@ void SyncSetupHandler::DisplayGaiaSuccessAndSettingUp() {
 }
 
 void SyncSetupHandler::ShowFatalError() {
-  // For now, just send the user back to the login page. Ultimately we may want
+  // For now, just send the user back to the login page. Ultimately may want
   // to give different feedback (especially for chromeos).
   DisplayGaiaLogin(true);
 }
@@ -566,6 +562,10 @@ void SyncSetupHandler::TryLogin(const std::string& username,
     signin_tracker_.reset(new SigninTracker(GetProfile(), this));
 
   last_attempted_user_email_ = username;
+
+  // User is trying to log in again so reset the cached error.
+  last_signin_error_ = GoogleServiceAuthError::None();
+
   // If we're just being called to provide an ASP, then pass it to the
   // SigninManager and wait for the next step.
   SigninManager* signin = GetSignin();
@@ -577,7 +577,7 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   // Kick off a sign-in through the signin manager.
   signin->StartSignIn(username,
                       password,
-                      signin->GetLoginAuthError().captcha().token,
+                      last_signin_error_.captcha().token,
                       captcha);
 }
 
@@ -587,7 +587,8 @@ void SyncSetupHandler::GaiaCredentialsValid() {
   DisplayGaiaSuccessAndSettingUp();
 }
 
-void SyncSetupHandler::SigninFailed() {
+void SyncSetupHandler::SigninFailed(const GoogleServiceAuthError& error) {
+  last_signin_error_ = error;
   // Got a failed signin - this is either just a typical auth error, or a
   // sync error (treat sync errors as "fatal errors" - i.e. non-auth errors).
   DisplayGaiaLogin(GetSyncService()->unrecoverable_error_detected());
@@ -705,6 +706,15 @@ void SyncSetupHandler::CloseSyncSetup() {
 
     // Let the LoginUIService know that we're no longer active.
     GetLoginUIService()->LoginUIClosed(web_ui());
+
+    // Make sure user isn't left half-logged-in (signed in, but without sync
+    // started up). If the user hasn't finished setting up sync, then sign out
+    // and shut down sync.
+    ProfileSyncService* sync_service = GetSyncService();
+    if (sync_service && !sync_service->HasSyncSetupCompleted()) {
+      sync_service->DisableForUser();
+      GetSignin()->SignOut();
+    }
   }
 
   if (flow_) {

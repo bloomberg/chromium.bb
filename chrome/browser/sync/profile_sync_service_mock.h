@@ -16,6 +16,7 @@
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class ProfileSyncServiceMock : public ProfileSyncService {
@@ -27,7 +28,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   // A utility used by sync tests to create a TestingProfile with a Google
   // Services username stored in a (Testing)PrefService.
-  static Profile* MakeSignedInTestingProfile();
+  static TestingProfile* MakeSignedInTestingProfile();
 
   // Helper routine to be used in conjunction with
   // ProfileKeyedServiceFactory::SetTestingFactory().

@@ -97,7 +97,7 @@ class TestingSyncSetupHandler : public SyncSetupHandler {
 
 class SigninManagerMock : public FakeSigninManager {
  public:
-  SigninManagerMock() : auth_error_(AuthError::None()) {}
+  SigninManagerMock() {}
 
   virtual void StartSignIn(const std::string& username,
                            const std::string& password,
@@ -109,21 +109,12 @@ class SigninManagerMock : public FakeSigninManager {
     captcha_ = captcha;
   }
 
-  virtual const AuthError& GetLoginAuthError() const OVERRIDE {
-    return auth_error_;
-  }
-
-  void SetAuthError(const AuthError& error) {
-    auth_error_ = error;
-  }
-
   void ResetTestStats() {
     username_.clear();
     password_.clear();
     captcha_.clear();
   }
 
-  AuthError auth_error_;
   std::string username_;
   std::string password_;
   std::string captcha_;
@@ -260,9 +251,9 @@ TEST_F(SyncSetupHandlerTest, HandleGaiaAuthFailure) {
   handler_->OpenSyncSetup();
   // Fake a failed signin attempt.
   handler_->TryLogin(kTestUser, kTestPassword, "", "");
-  mock_signin_->SetAuthError(
-      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  handler_->SigninFailed();
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  handler_->SigninFailed(error);
   ASSERT_EQ(2U, web_ui_.call_data().size());
   // Validate the second JS call (the first call was already tested by
   // the DisplayBasicLogin test).
@@ -290,8 +281,7 @@ TEST_F(SyncSetupHandlerTest, HandleCaptcha) {
   handler_->TryLogin(kTestUser, kTestPassword, "", "");
   GoogleServiceAuthError error = GoogleServiceAuthError::FromCaptchaChallenge(
       "token", GURL(kTestCaptchaImageUrl), GURL(kTestCaptchaUnlockUrl));
-  mock_signin_->SetAuthError(error);
-  handler_->SigninFailed();
+  handler_->SigninFailed(error);
   ASSERT_EQ(2U, web_ui_.call_data().size());
   // Validate the second JS call (the first call was already tested by
   // the DisplayBasicLogin test).
@@ -340,11 +330,10 @@ TEST_F(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
             web_ui_.call_data()[1].function_name);
   // Now fake a sync error.
   GoogleServiceAuthError none(GoogleServiceAuthError::NONE);
-  EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(none));
   EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
       .WillRepeatedly(Return(true));
   mock_signin_->SignOut();
-  handler_->SigninFailed();
+  handler_->SigninFailed(none);
   ASSERT_EQ(3U, web_ui_.call_data().size());
   // Validate the second JS call (the first call was already tested by
   // the DisplayBasicLogin test).
@@ -377,12 +366,10 @@ TEST_F(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
   // Now fake a sync gaia error.
   GoogleServiceAuthError unavailable(
       GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-  EXPECT_CALL(*mock_pss_, GetAuthError())
-      .WillRepeatedly(ReturnRef(unavailable));
   EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
       .WillRepeatedly(Return(false));
   mock_signin_->SignOut();
-  handler_->SigninFailed();
+  handler_->SigninFailed(unavailable);
   ASSERT_EQ(3U, web_ui_.call_data().size());
   // Validate the second JS call (the first call was already tested by
   // the DisplayBasicLogin test).

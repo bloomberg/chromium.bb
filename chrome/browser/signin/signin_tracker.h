@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
@@ -56,7 +57,7 @@ class SigninTracker : public ProfileSyncServiceObserver,
 
     // The signin attempt failed. If this is called after GaiaCredentialsValid()
     // then it means there was an error launching one of the dependent services.
-    virtual void SigninFailed() = 0;
+    virtual void SigninFailed(const GoogleServiceAuthError& error) = 0;
 
     // The signin attempt succeeded.
     virtual void SigninSuccess() = 0;
@@ -77,8 +78,11 @@ class SigninTracker : public ProfileSyncServiceObserver,
   virtual void OnStateChanged() OVERRIDE;
 
   // Returns true if the various authenticated services are properly signed in
-  // (no auth errors, etc).
+  // (all tokens loaded, no auth/startup errors, etc).
   static bool AreServicesSignedIn(Profile* profile);
+
+  // Returns true if the tokens are loaded for all signed-in services.
+  static bool AreServiceTokensLoaded(Profile* profile);
 
  private:
   // The various states the login process can be in.

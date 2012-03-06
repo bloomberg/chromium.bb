@@ -35,12 +35,15 @@ TokenService::TokenService()
     : profile_(NULL),
       token_loading_query_(0),
       tokens_loaded_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Allow constructor to be called outside the UI thread, so it can be mocked
+  // out for unit tests.
 }
 
 TokenService::~TokenService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ResetCredentialsInMemory();
+  if (!source_.empty()) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    ResetCredentialsInMemory();
+  }
 }
 
 void TokenService::Initialize(const char* const source,

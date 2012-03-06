@@ -29,7 +29,7 @@ ProfileSyncServiceMock::~ProfileSyncServiceMock() {
 }
 
 // static
-Profile* ProfileSyncServiceMock::MakeSignedInTestingProfile() {
+TestingProfile* ProfileSyncServiceMock::MakeSignedInTestingProfile() {
   TestingProfile* profile = new TestingProfile();
   TestingPrefStore* user_prefs = new TestingPrefStore();
   PrefService* prefs = PrefServiceMockBuilder()

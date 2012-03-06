@@ -30,8 +30,7 @@ const char kGoogleAccountsUrl[] = "https://accounts.google.com";
 
 SigninManager::SigninManager()
     : profile_(NULL),
-      had_two_factor_error_(false),
-      last_login_auth_error_(GoogleServiceAuthError::None()) {
+      had_two_factor_error_(false) {
 }
 
 SigninManager::~SigninManager() {}
@@ -192,11 +191,10 @@ void SigninManager::ClearTransientSigninData() {
 }
 
 void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
-  last_login_auth_error_ = error;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceAuthError>(&last_login_auth_error_));
+      content::Details<const GoogleServiceAuthError>(&error));
 
   ClearTransientSigninData();
 }
@@ -216,10 +214,6 @@ void SigninManager::SignOut() {
   profile_->GetPrefs()->ClearPref(prefs::kIsGooglePlusUser);
   profile_->GetTokenService()->ResetCredentialsInMemory();
   profile_->GetTokenService()->EraseTokensFromDB();
-}
-
-const GoogleServiceAuthError& SigninManager::GetLoginAuthError() const {
-  return last_login_auth_error_;
 }
 
 bool SigninManager::AuthInProgress() const {
@@ -247,17 +241,19 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
   // transient signin data in such error cases.
   bool invalid_gaia = error.state() ==
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS;
-  last_login_auth_error_ = (invalid_gaia && had_two_factor_error_) ?
+
+  GoogleServiceAuthError current_error =
+      (invalid_gaia && had_two_factor_error_) ?
       GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR) : error;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
       content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceAuthError>(&last_login_auth_error_));
+      content::Details<const GoogleServiceAuthError>(&current_error));
 
   // We don't sign-out if the password was valid and we're just dealing with
   // a second factor error, and we don't sign out if we're dealing with
   // an invalid access code (again, because the password was valid).
-  if (last_login_auth_error_.state() == GoogleServiceAuthError::TWO_FACTOR) {
+  if (current_error.state() == GoogleServiceAuthError::TWO_FACTOR) {
     had_two_factor_error_ = true;
     return;
   }
@@ -286,7 +282,6 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
     return;
   } else {
     DCHECK(email_iter->first == kGetInfoEmailKey);
-    last_login_auth_error_ = GoogleServiceAuthError::None();
     SetAuthenticatedUsername(email_iter->second);
     possibly_invalid_username_.clear();
     profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
