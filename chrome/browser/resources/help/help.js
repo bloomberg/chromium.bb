@@ -103,7 +103,9 @@ cr.define('help', function() {
         this.setUpdateImage_('failed');
         $('update-status').innerHTML = message;
       } else if (status == 'disabled') {
-        $('update-status-container').hidden = true;
+        var container = $('update-status-container');
+        if (container)
+          container.hidden = true;
         return;
       }
 
