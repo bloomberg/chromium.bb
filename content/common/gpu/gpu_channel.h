@@ -77,9 +77,6 @@ class GpuChannel : public IPC::Channel::Listener,
   virtual void AppendAllCommandBufferStubs(
       std::vector<GpuCommandBufferStubBase*>& stubs);
 
-  // Whether this channel is able to handle IPC messages.
-  bool IsScheduled();
-
   // This is called when a command buffer transitions from the unscheduled
   // state to the scheduled state, which potentially means the channel
   // transitions from the unscheduled to the scheduled state. When this occurs

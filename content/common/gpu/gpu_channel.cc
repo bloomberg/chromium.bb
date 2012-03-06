@@ -102,8 +102,7 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
     deferred_messages_.push_back(new IPC::Message(message));
   }
 
-  if (IsScheduled())
-    OnScheduled();
+  OnScheduled();
 
   return true;
 }
@@ -139,18 +138,6 @@ void GpuChannel::AppendAllCommandBufferStubs(
       !it.IsAtEnd(); it.Advance()) {
     stubs.push_back(it.GetCurrentValue());
   }
-}
-
-bool GpuChannel::IsScheduled() {
-  for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
-       !it.IsAtEnd();
-       it.Advance()) {
-    GpuCommandBufferStub* stub = it.GetCurrentValue();
-    if (!stub->IsScheduled())
-      return false;
-  }
-
-  return true;
 }
 
 void GpuChannel::OnScheduled() {
@@ -238,11 +225,15 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
 
 void GpuChannel::HandleMessage() {
   handle_messages_scheduled_ = false;
-  if (!IsScheduled())
-      return;
 
   if (!deferred_messages_.empty()) {
-    scoped_ptr<IPC::Message> message(deferred_messages_.front());
+    IPC::Message* m = deferred_messages_.front();
+    GpuCommandBufferStub* stub = stubs_.Lookup(m->routing_id());
+
+    if (stub && !stub->IsScheduled())
+      return;
+
+    scoped_ptr<IPC::Message> message(m);
     deferred_messages_.pop_front();
     processed_get_state_fast_ =
         (message->type() == GpuCommandBufferMsg_GetStateFast::ID);
@@ -258,7 +249,6 @@ void GpuChannel::HandleMessage() {
       // If the channel becomes unscheduled as a result of handling the message
       // or has more work to do, synthesize an IPC message to flush the command
       // buffer that became unscheduled.
-      GpuCommandBufferStub* stub = stubs_.Lookup(message->routing_id());
       if (stub) {
         if (stub->HasUnprocessedCommands() || stub->HasMoreWork()) {
           deferred_messages_.push_front(new GpuCommandBufferMsg_Rescheduled(
@@ -276,7 +266,7 @@ void GpuChannel::HandleMessage() {
     }
   }
 
-  if (IsScheduled() && !deferred_messages_.empty()) {
+  if (!deferred_messages_.empty()) {
     OnScheduled();
   }
 }
