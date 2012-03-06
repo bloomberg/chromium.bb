@@ -8,6 +8,7 @@
 
 from __future__ import print_function
 import collections
+import contextlib
 import datetime
 import multiprocessing
 import logging
@@ -17,6 +18,7 @@ import re
 import sys
 
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import cbuildbot_background as bg
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
 from chromite.lib import cros_build_lib
@@ -24,16 +26,6 @@ from chromite.lib import cros_build_lib
 
 def ConvertGoogleStorageURLToHttpURL(url):
   return url.replace('gs://', 'http://sandbox.google.com/storage/')
-
-
-def Worker(queue, fn):
-  """Worker thread for passing queue entries to a function."""
-  while True:
-    result = queue.get()
-    if result is None:
-      queue.put(None)
-      return
-    fn(*result)
 
 
 class CrashTriager(object):
@@ -55,39 +47,10 @@ class CrashTriager(object):
 
   def Run(self):
     """Run the crash triager, printing the most common stack traces."""
-    # Launch processes to start processing and printing crash lists.
-    self.ScheduleCrashListProcessing()
-    crash_list_workers = []
-    crash_triage_workers = []
-    for _ in range(self.jobs):
-      crash_list_workers.append(self._CreateCrashListWorker())
-      crash_triage_workers.append(self._CreateCrashDownloadWorker())
-    for w in crash_list_workers + crash_triage_workers:
-      w.start()
-    printer = multiprocessing.Process(target=self._StackTracePrinter)
-    printer.start()
-
-    # After workers have finished listing the crashes, report that there
-    # are no crashes left to triage.
-    for w in crash_list_workers:
-      w.join()
-    self.crash_triage_queue.put(None)
-
-    # After workers have finished triaging the crashes, report that there
-    # are no stack traces left to print.
-    for w in crash_triage_workers:
-      w.join()
-    self.stack_trace_queue.put(None)
-
-    # Wait for the stack traces to be printed.
-    printer.join()
-
-  def ScheduleCrashListProcessing(self):
-    """Schedule various bots for crash list processing."""
-    for bot_id, build_config in cbuildbot_config.config.iteritems():
-      if build_config['vm_tests']:
-        self.config_queue.put((bot_id, build_config))
-    self.config_queue.put(None)
+    with self._PrintStackTracesInBackground():
+      with self._DownloadCrashesInBackground():
+        with self._ProcessCrashListInBackground():
+          pass
 
   def _GetGSPath(self, bot_id, build_config):
     """Get the Google Storage path where crashes are stored for a given bot.
@@ -142,10 +105,15 @@ class CrashTriager(object):
         if self.start_date <= crash_date_obj:
           self.crash_triage_queue.put((program, crash_date, line))
 
-  def _CreateCrashListWorker(self):
+  @contextlib.contextmanager
+  def _ProcessCrashListInBackground(self):
     """Create a worker process for processing crash lists."""
-    worker_args = (self.config_queue, self._ProcessCrashListForBot)
-    return multiprocessing.Process(target=Worker, args=worker_args)
+    with bg.BackgroundTaskRunner(self.config_queue,
+                                 self._ProcessCrashListForBot, self.jobs):
+      for bot_id, build_config in cbuildbot_config.config.iteritems():
+        if build_config['vm_tests']:
+          queue.put((bot_id, build_config))
+      yield
 
   def _GetStackTrace(self, crash_report_url):
     """Retrieve a stack trace using gsutil cat.
@@ -172,10 +140,12 @@ class CrashTriager(object):
     if out.returncode == 0:
       self.stack_trace_queue.put((program, crash_date, url, out.output))
 
-  def _CreateCrashDownloadWorker(self):
+  @contextlib.contextmanager
+  def _DownloadCrashesInBackground(self):
     """Create a worker process for downloading stack traces."""
-    worker_args = (self.crash_triage_queue, self._DownloadStackTrace)
-    return multiprocessing.Process(target=Worker, args=worker_args)
+    queue = self.crash_triage_queue
+    with bg.BackgroundTaskRunner(queue, self._DownloadStackTrace, self.jobs):
+      yield
 
   def _ProcessStackTrace(self, program, date, url, output):
     """Process a stack trace that has been downloaded.
@@ -232,9 +202,12 @@ class CrashTriager(object):
                   crash_url)
         print(*output, sep=', ')
 
-  def _StackTracePrinter(self):
-    Worker(self.stack_trace_queue, self._ProcessStackTrace)
-    self._PrintStackTraces()
+  @contextlib.contextmanager
+  def _PrintStackTracesInBackground(self):
+    queue = self.stack_trace_queue
+    with bg.BackgroundTaskRunner(queue, self._ProcessStackTrace, processes=1,
+                                 onexit=self._PrintStackTraces):
+      yield
 
 
 def _GetChromeBranch():

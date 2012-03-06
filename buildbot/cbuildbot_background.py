@@ -166,16 +166,20 @@ class _AllTasksComplete(object):
   """Sentinel object to indicate that all tasks are complete."""
 
 
-def _TaskRunner(queue, task):
+def _TaskRunner(queue, task, onexit=None):
   """Run task(*input) for each input in the queue.
 
   Returns when it encounters an _AllTasksComplete object on the queue.
+  If exceptions occur, save them off and re-raise them as a
+  BackgroundException once we've finished processing the items in the queue.
 
   Args:
     queue: A queue of tasks to run. Add tasks to this queue, and they will
       be run.
     task: Function to run on each queued input.
+    onexit: Function to run after all inputs are processed.
   """
+  tracebacks = []
   while True:
     # Wait for a new item to show up on the queue. This is a blocking wait,
     # so if there's nothing to do, we just sit here.
@@ -184,11 +188,25 @@ def _TaskRunner(queue, task):
       # All tasks are complete, so we should exit.
       queue.put(x)
       break
-    task(*x)
+
+    # If no tasks failed yet, process the remaining tasks.
+    if not tracebacks:
+      try:
+        task(*x)
+      except Exception:
+        tracebacks.append(traceback.format_exc())
+
+  # Run exit handlers.
+  if onexit:
+    onexit()
+
+  # Propagate any exceptions.
+  if tracebacks:
+    raise BackgroundException('\n' + ''.join(tracebacks))
 
 
 @contextlib.contextmanager
-def BackgroundTaskRunner(queue, task, processes=None):
+def BackgroundTaskRunner(queue, task, processes=None, onexit=None):
   """Run the specified task on each queued input in a pool of processes.
 
   This context manager starts a set of workers in the background, who each
@@ -208,12 +226,14 @@ def BackgroundTaskRunner(queue, task, processes=None):
       be run in the background.
     task: Function to run on each queued input.
     processes: Number of processes to launch.
+    onexit: Function to run in each background process after all inputs are
+      processed.
   """
 
   if not processes:
     processes = multiprocessing.cpu_count()
 
-  steps = [functools.partial(_TaskRunner, queue, task)] * processes
+  steps = [functools.partial(_TaskRunner, queue, task, onexit)] * processes
   with _ParallelSteps(steps):
     try:
       yield
