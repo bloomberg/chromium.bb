@@ -315,12 +315,7 @@ Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
   buffer.ptr = shared_memory->memory();
   buffer.size = size;
   buffer.shared_memory = shared_memory;
-  // todo(apatrick,nfullagar): re-enable when cache sync issues are solved.
-  // see: http://code.google.com/p/chromium/issues/detail?id=116285
-#define DISABLE_TRANSFER_BUFFER_CACHE
-#ifndef DISABLE_TRANSFER_BUFFER_CACHE
   transfer_buffers_[id] = buffer;
-#endif
 
   return buffer;
 }
