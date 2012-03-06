@@ -519,7 +519,8 @@ extern const char kNtpHideWebStorePromo[];
 extern const char kDevToolsDisabled[];
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsDockSide[];
-extern const char kDevToolsSplitLocation[];
+extern const char kDevToolsHSplitLocation[];
+extern const char kDevToolsVSplitLocation[];
 
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];

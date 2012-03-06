@@ -1425,7 +1425,8 @@ void BrowserWindowGtk::ShowDevToolsContainer() {
       dock_to_right ? contents_rect.width : contents_rect.height;
 
   int split_offset = browser_->profile()->GetPrefs()->
-      GetInteger(prefs::kDevToolsSplitLocation);
+      GetInteger(dock_to_right ? prefs::kDevToolsVSplitLocation :
+                                 prefs::kDevToolsHSplitLocation);
   int min_size =
       dock_to_right ? kMinDevToolsWidth : kMinDevToolsHeight;
 
@@ -1468,7 +1469,9 @@ void BrowserWindowGtk::HideDevToolsContainer() {
   }
 
   browser_->profile()->GetPrefs()->
-      SetInteger(prefs::kDevToolsSplitLocation, split_offset);
+      SetInteger(dock_to_right ? prefs::kDevToolsVSplitLocation :
+                                 prefs::kDevToolsHSplitLocation,
+                 split_offset);
 }
 
 void BrowserWindowGtk::DestroyBrowser() {

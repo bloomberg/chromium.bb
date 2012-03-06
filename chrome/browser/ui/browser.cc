@@ -2661,7 +2661,10 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation,
+  prefs->RegisterIntegerPref(prefs::kDevToolsHSplitLocation,
+                             -1,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kDevToolsVSplitLocation,
                              -1,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDictionaryPref(prefs::kBrowserWindowPlacement,

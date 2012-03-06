@@ -1438,8 +1438,11 @@ const char kDevToolsOpenDocked[] = "devtools.open_docked";
 // A string specifying the dock location (either 'bottom' or 'right').
 const char kDevToolsDockSide[] = "devtools.dock_side";
 
-// Integer location of the split bar in the browser view.
-const char kDevToolsSplitLocation[] = "devtools.split_location";
+// Integer location of the horizontal split bar in the browser view.
+const char kDevToolsHSplitLocation[] = "devtools.split_location";
+
+// Integer location of the vertical split bar in the browser view.
+const char kDevToolsVSplitLocation[] = "devtools.v_split_location";
 
 // 64-bit integer serialization of the base::Time when the last sync occurred.
 const char kSyncLastSyncedTime[] = "sync.last_synced_time";

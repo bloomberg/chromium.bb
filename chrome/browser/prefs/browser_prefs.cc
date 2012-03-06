@@ -239,12 +239,12 @@ void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {
 
   if ((current_version & WINDOWS_PREFS) == 0) {
     // Migrate the devtools split location preference.
-    local_state->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
-    if (local_state->HasPrefPath(prefs::kDevToolsSplitLocation)) {
-      user_prefs->SetInteger(prefs::kDevToolsSplitLocation,
-          local_state->GetInteger(prefs::kDevToolsSplitLocation));
+    local_state->RegisterIntegerPref(prefs::kDevToolsHSplitLocation, -1);
+    if (local_state->HasPrefPath(prefs::kDevToolsHSplitLocation)) {
+      user_prefs->SetInteger(prefs::kDevToolsHSplitLocation,
+          local_state->GetInteger(prefs::kDevToolsHSplitLocation));
     }
-    local_state->ClearPref(prefs::kDevToolsSplitLocation);
+    local_state->ClearPref(prefs::kDevToolsHSplitLocation);
 
     // Migrate the browser window placement preference.
     local_state->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);

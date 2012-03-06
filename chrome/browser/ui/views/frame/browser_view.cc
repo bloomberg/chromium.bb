@@ -2074,7 +2074,8 @@ void BrowserView::ShowDevToolsContainer() {
 
   // Restore split offset.
   int split_offset = browser_->profile()->GetPrefs()->
-      GetInteger(prefs::kDevToolsSplitLocation);
+      GetInteger(dock_to_right ? prefs::kDevToolsVSplitLocation :
+                                 prefs::kDevToolsHSplitLocation);
 
   if (split_offset == -1)
     split_offset = contents_size * 1 / 3;
@@ -2100,7 +2101,9 @@ void BrowserView::HideDevToolsContainer() {
   int contents_size = dock_to_right ? contents_split_->width() :
       contents_split_->height();
 
-  browser_->profile()->GetPrefs()->SetInteger(prefs::kDevToolsSplitLocation,
+  browser_->profile()->GetPrefs()->SetInteger(
+      dock_to_right ? prefs::kDevToolsVSplitLocation :
+                      prefs::kDevToolsHSplitLocation,
       contents_size - contents_split_->divider_offset());
 
   // Restore focus to the last focused view when hiding devtools window.

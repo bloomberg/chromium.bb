@@ -119,7 +119,8 @@ const int kMinContentsSize = 50;
   if ([subviews count] == 1) {
     // Load the default split offset.
     splitOffset = profile->GetPrefs()->
-        GetInteger(prefs::kDevToolsSplitLocation);
+        GetInteger(dockToRight_ ? prefs::kDevToolsVSplitLocation :
+                                  prefs::kDevToolsHSplitLocation);
 
     if (splitOffset < 0)
       splitOffset = contentSize * 1 / 3;
@@ -158,7 +159,9 @@ const int kMinContentsSize = 50;
   int splitOffset = dockToRight_ ? NSWidth([oldDevToolsContentsView frame])
                                  : NSHeight([oldDevToolsContentsView frame]);
   profile->GetPrefs()->SetInteger(
-      prefs::kDevToolsSplitLocation, splitOffset);
+      dockToRight_ ? prefs::kDevToolsVSplitLocation :
+                     prefs::kDevToolsHSplitLocation,
+      splitOffset);
 
   [oldDevToolsContentsView removeFromSuperview];
   [splitView_ adjustSubviews];
