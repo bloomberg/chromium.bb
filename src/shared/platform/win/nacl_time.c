@@ -330,13 +330,13 @@ int NaClGetTimeOfDayInternQpc(struct nacl_abi_timeval *tv,
   int64_t drift_ms;
 
   NaClLog(5, "Entered NaClGetTimeOfDayInternQpc\n");
+
+  NaClMutexLock(&ntsp->mu);
+
   GetSystemTimeAsFileTime(&ft_now);
   QueryPerformanceCounter(&qpc);
   sys_now_mks = NaClFileTimeToMs(&ft_now) * kMicrosecondsPerMillisecond;
   NaClLog(5, " sys_now_mks = %"NACL_PRId64" (us)\n", sys_now_mks);
-
-  NaClMutexLock(&ntsp->mu);
-
   qpc_diff = qpc.QuadPart - ntsp->qpc_start;
   NaClLog(5, " qpc_diff = %"NACL_PRId64" (counts)\n", qpc_diff);
   /*
