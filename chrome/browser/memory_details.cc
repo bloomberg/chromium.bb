@@ -31,7 +31,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #include "content/public/browser/zygote_host_linux.h"
 #endif
 
@@ -154,7 +154,7 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
 void MemoryDetails::CollectChildInfoOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   const pid_t zygote_pid = content::ZygoteHost::GetInstance()->GetPid();
   const pid_t sandbox_helper_pid =
       content::ZygoteHost::GetInstance()->GetSandboxHelperPid();
@@ -305,7 +305,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       }
     }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     if (process.pid == zygote_pid) {
       process.type = content::PROCESS_TYPE_ZYGOTE;
     } else if (process.pid == sandbox_helper_pid) {
