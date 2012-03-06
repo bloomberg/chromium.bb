@@ -177,6 +177,9 @@ marshal(struct marshal_data *data, const char *format, int size, ...)
 TEST(connection_marshal)
 {
 	struct marshal_data data;
+	struct wl_object object;
+	struct wl_array array;
+	static const char text[] = "curry";
 
 	data.connection = setup(data.s, &data.mask);
 
@@ -189,6 +192,25 @@ TEST(connection_marshal)
 	marshal(&data, "s", 20, "frappo");
 	assert(data.buffer[2] == 7);
 	assert(strcmp((char *) &data.buffer[3], "frappo") == 0);
+
+	object.id = 557799;
+	marshal(&data, "o", 12, &object);
+	assert(data.buffer[2] == object.id);
+
+	marshal(&data, "o", 12, NULL);
+	assert(data.buffer[2] == 0);
+
+	marshal(&data, "n", 12, &object);
+	assert(data.buffer[2] == object.id);
+
+	marshal(&data, "n", 12, NULL);
+	assert(data.buffer[2] == 0);
+
+	array.data = (void *) text;
+	array.size = sizeof text;
+	marshal(&data, "a", 20, &array);
+	assert(data.buffer[2] == array.size);
+	assert(memcmp(&data.buffer[3], text, array.size) == 0);
 
 	wl_connection_destroy(data.connection);
 	close(data.s[1]);
