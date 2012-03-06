@@ -135,7 +135,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
-  ASSERT_EQ(1, menu->menu_model().GetItemCount());
+  // 3 including separator
+  ASSERT_EQ(3, menu->menu_model().GetItemCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
@@ -154,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
-  ASSERT_EQ(3, menu->menu_model().GetItemCount());
+  ASSERT_EQ(4, menu->menu_model().GetItemCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {

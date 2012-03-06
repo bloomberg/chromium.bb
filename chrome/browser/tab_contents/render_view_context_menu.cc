@@ -650,8 +650,10 @@ void RenderViewContextMenu::AppendPlatformAppItems(
   AppendExtensionItems(platform_app->id(), &index);
 
   // Add dev tools for unpacked extensions.
-  if (platform_app->location() == Extension::LOAD)
+  if (platform_app->location() == Extension::LOAD) {
+    menu_model_.AddItemWithStringId(IDC_RELOAD, IDS_CONTENT_CONTEXT_RELOAD);
     AppendDeveloperItems();
+  }
 }
 
 void RenderViewContextMenu::AppendPopupExtensionItems() {
