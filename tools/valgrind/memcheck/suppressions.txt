@@ -5737,13 +5737,6 @@
    fun:_ZN7WebCore13WorkerRunLoop15runCleanupTasksEPNS_13WorkerContextE
 }
 {
-   bug_112857
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN18SpellCheckProvider19RequestTextCheckingERKN6WebKit9WebStringEiPNS0_25WebTextCheckingCompletionE
-   fun:_ZN12_GLOBAL__N_141SpellCheckProviderTest_UsingHunspell_Test8TestBodyEv
-}
-{
    bug_113076
    Memcheck:Uninitialized
    fun:_ZL19ConvertYUVToRGB32_ChhhPh

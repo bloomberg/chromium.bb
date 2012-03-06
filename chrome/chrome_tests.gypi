@@ -2336,7 +2336,6 @@
             'browser/ui/gtk/reload_button_gtk_unittest.cc',
             'browser/password_manager/password_store_default_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',
-            '../third_party/hunspell/google/hunspell_tests.cc',
             'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
           ],
           # TODO(mark): We really want this for all non-static library targets,
