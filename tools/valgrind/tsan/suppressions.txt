@@ -395,18 +395,6 @@
    fun:base::SequencedWorkerPool::*
 }
 
-{
-   bug_115987c
-   ThreadSanitizer:Race
-   fun:logging::GetMinLogLevel
-   fun:base::ConditionVariable::*
-   fun:base::SequencedWorkerPool::Inner::ThreadLoop
-   fun:base::SequencedWorkerPool::Worker::Run
-   fun:base::SimpleThread::ThreadMain
-   fun:base::::ThreadFunc
-}
-
-
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 ############################
 # Real races in Chromium

@@ -10,7 +10,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(TraceSubscriberStdioTest, CanWriteDataToFile) {
+class TraceSubscriberStdioTest : public ::testing::Test {
+ private:
+  // Needed by the blocking pool (but no need to pump it).
+  MessageLoop message_loop_;
+};
+
+TEST_F(TraceSubscriberStdioTest, CanWriteDataToFile) {
   ScopedTempDir trace_dir;
   ASSERT_TRUE(trace_dir.CreateUniqueTempDir());
   FilePath trace_file(trace_dir.path().AppendASCII("trace.txt"));
