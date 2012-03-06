@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
@@ -40,8 +41,7 @@ TabContentsViewViews::TabContentsViewViews(WebContents* web_contents)
     : web_contents_(web_contents),
       native_tab_contents_view_(NULL),
       close_tab_after_drag_ends_(false),
-      focus_manager_(NULL),
-      overlaid_view_(NULL) {
+      focus_manager_(NULL) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetInstance()->CreateStorageID();
 }
@@ -140,8 +140,9 @@ void TabContentsViewViews::Focus() {
     return;
   }
 
-  if (overlaid_view_) {
-    overlaid_view_->GetContentsView()->RequestFocus();
+  views::Widget* sad_tab = GetSadTab();
+  if (sad_tab) {
+    sad_tab->GetContentsView()->RequestFocus();
     return;
   }
 
@@ -252,20 +253,6 @@ void TabContentsViewViews::GetViewBounds(gfx::Rect* out) const {
   *out = GetWindowScreenBounds();
 }
 
-void TabContentsViewViews::InstallOverlayView(gfx::NativeView view) {
-  DCHECK(!overlaid_view_);
-  views::Widget::ReparentNativeView(view, GetNativeView());
-  overlaid_view_ = views::Widget::GetWidgetForNativeView(view);
-  if (overlaid_view_)
-    overlaid_view_->SetBounds(gfx::Rect(GetClientAreaScreenBounds().size()));
-}
-
-void TabContentsViewViews::RemoveOverlayView() {
-  DCHECK(overlaid_view_);
-  overlaid_view_->Close();
-  overlaid_view_ = NULL;
-}
-
 void TabContentsViewViews::UpdateDragCursor(WebDragOperation operation) {
   native_tab_contents_view_->SetDragCursor(operation);
 }
@@ -290,6 +277,12 @@ void TabContentsViewViews::TakeFocus(bool reverse) {
 void TabContentsViewViews::CloseTab() {
   RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   rvh->GetDelegate()->Close(rvh);
+}
+
+views::Widget* TabContentsViewViews::GetSadTab() const {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
+  return wrapper ? wrapper->sad_tab_helper()->sad_tab() : NULL;
 }
 
 void TabContentsViewViews::CreateNewWindow(
@@ -377,10 +370,6 @@ WebContents* TabContentsViewViews::GetWebContents() {
   return web_contents_;
 }
 
-bool TabContentsViewViews::IsShowingSadTab() const {
-  return web_contents_->IsCrashed() && overlaid_view_;
-}
-
 void TabContentsViewViews::OnNativeTabContentsViewShown() {
   web_contents_->ShowContents();
 }
@@ -465,7 +454,8 @@ void TabContentsViewViews::OnNativeWidgetVisibilityChanged(bool visible) {
 
 void TabContentsViewViews::OnNativeWidgetSizeChanged(
     const gfx::Size& new_size) {
-  if (overlaid_view_)
-    overlaid_view_->SetBounds(gfx::Rect(new_size));
+  views::Widget* sad_tab = GetSadTab();
+  if (sad_tab)
+    sad_tab->SetBounds(gfx::Rect(new_size));
   views::Widget::OnNativeWidgetSizeChanged(new_size);
 }

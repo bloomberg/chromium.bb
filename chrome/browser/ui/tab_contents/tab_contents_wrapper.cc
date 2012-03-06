@@ -38,7 +38,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/pdf/pdf_tab_observer.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
-#include "chrome/browser/ui/sad_tab_observer.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -97,6 +97,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
   restore_tab_helper_.reset(new RestoreTabHelper(contents));
+  sad_tab_helper_.reset(new SadTabHelper(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   snapshot_tab_helper_.reset(new SnapshotTabHelper(contents));
   ssl_helper_.reset(new TabContentsSSLHelper(this));
@@ -121,7 +122,6 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
   pdf_tab_observer_.reset(new PDFTabObserver(this));
   plugin_observer_.reset(new PluginObserver(this));
-  sad_tab_observer_.reset(new SadTabObserver(contents));
   safe_browsing_tab_observer_.reset(
       new safe_browsing::SafeBrowsingTabObserver(this));
 

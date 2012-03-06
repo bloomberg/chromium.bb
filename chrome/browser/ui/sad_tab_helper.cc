@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/sad_tab_observer.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
 
 #include "chrome/browser/browser_shutdown.h"
 #include "content/public/browser/notification_source.h"
@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/cocoa/tab_contents/sad_tab_controller.h"
 #elif defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/sad_tab_view.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#include "ui/views/widget/widget.h"
 #elif defined(TOOLKIT_GTK)
 
 #include <gtk/gtk.h>
@@ -25,16 +25,16 @@
 
 using content::WebContents;
 
-SadTabObserver::SadTabObserver(WebContents* web_contents)
+SadTabHelper::SadTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::Source<WebContents>(web_contents));
 }
 
-SadTabObserver::~SadTabObserver() {
+SadTabHelper::~SadTabHelper() {
 }
 
-void SadTabObserver::RenderViewGone(base::TerminationStatus status) {
+void SadTabHelper::RenderViewGone(base::TerminationStatus status) {
   // Only show the sad tab if we're not in browser shutdown, so that TabContents
   // objects that are not in a browser (e.g., HTML dialogs) and thus are
   // visible do not flash a sad tab page.
@@ -47,17 +47,16 @@ void SadTabObserver::RenderViewGone(base::TerminationStatus status) {
   InstallSadTab(status);
 }
 
-void SadTabObserver::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
+void SadTabHelper::Observe(int type,
+                           const content::NotificationSource& source,
+                           const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_WEB_CONTENTS_CONNECTED:
       if (HasSadTab()) {
 #if defined(OS_MACOSX)
         sad_tab_controller_mac::RemoveSadTab(sad_tab_.get());
 #elif defined(TOOLKIT_VIEWS)
-        static_cast<TabContentsViewViews*>(web_contents()->GetView())->
-            RemoveOverlayView();
+        sad_tab_->Close();
 #elif defined(TOOLKIT_GTK)
         content::TabContentsViewGtk* view =
             static_cast<content::TabContentsViewGtk*>(
@@ -76,7 +75,7 @@ void SadTabObserver::Observe(int type,
   }
 }
 
-void SadTabObserver::InstallSadTab(base::TerminationStatus status) {
+void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
 #if defined(OS_MACOSX)
   sad_tab_.reset(
       sad_tab_controller_mac::CreateSadTabController(web_contents()));
@@ -89,16 +88,19 @@ void SadTabObserver::InstallSadTab(base::TerminationStatus status) {
   // It is not possible to create a native_widget_win that has no parent in
   // and later re-parent it.
   // TODO(avi): This is a cheat. Can this be made cleaner?
-  sad_tab_params.parent_widget =
-      static_cast<TabContentsViewViews*>(web_contents()->GetView());
+  sad_tab_params.parent_widget = views::Widget::GetWidgetForNativeView(
+      web_contents()->GetView()->GetNativeView());
   sad_tab_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   sad_tab_.reset(new views::Widget);
   sad_tab_->Init(sad_tab_params);
   sad_tab_->SetContentsView(new SadTabView(web_contents(), kind));
-  TabContentsViewViews* view = static_cast<TabContentsViewViews*>(
-      web_contents()->GetView());
-  view->InstallOverlayView(sad_tab_->GetNativeView());
+
+  views::Widget::ReparentNativeView(
+      sad_tab_->GetNativeView(), web_contents()->GetView()->GetNativeView());
+  gfx::Rect bounds;
+  web_contents()->GetView()->GetContainerBounds(&bounds);
+  sad_tab_->SetBounds(gfx::Rect(bounds.size()));
 #elif defined(TOOLKIT_GTK)
   sad_tab_.reset(new SadTabGtk(
       web_contents(),
@@ -115,6 +117,6 @@ void SadTabObserver::InstallSadTab(base::TerminationStatus status) {
 #endif
 }
 
-bool SadTabObserver::HasSadTab() {
+bool SadTabHelper::HasSadTab() {
   return sad_tab_.get() != NULL;
 }

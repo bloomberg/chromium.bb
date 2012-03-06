@@ -27,10 +27,6 @@ class NativeTabContentsViewDelegate {
   virtual content::WebContents* GetWebContents() = 0;
 
   // TODO(beng):
-  // This can die with OnNativeTabContentsViewMouseDown/Move().
-  virtual bool IsShowingSadTab() const = 0;
-
-  // TODO(beng):
   // These three can be replaced by Widget::OnSizeChanged and some new
   // notifications for show/hide.
   virtual void OnNativeTabContentsViewShown() = 0;

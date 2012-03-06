@@ -42,7 +42,7 @@ class PrefService;
 class PrefsTabHelper;
 class Profile;
 class RestoreTabHelper;
-class SadTabObserver;
+class SadTabHelper;
 class SearchEngineTabHelper;
 class SnapshotTabHelper;
 class TabContentsSSLHelper;
@@ -172,6 +172,8 @@ class TabContentsWrapper : public content::WebContentsObserver {
     return restore_tab_helper_.get();
   }
 
+  SadTabHelper* sad_tab_helper() { return sad_tab_helper_.get(); }
+
   SearchEngineTabHelper* search_engine_tab_helper() {
     return search_engine_tab_helper_.get();
   }
@@ -240,7 +242,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
   scoped_ptr<printing::PrintViewManager> print_view_manager_;
 
   scoped_ptr<RestoreTabHelper> restore_tab_helper_;
-
+  scoped_ptr<SadTabHelper> sad_tab_helper_;
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<SnapshotTabHelper> snapshot_tab_helper_;
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
@@ -270,7 +272,6 @@ class TabContentsWrapper : public content::WebContentsObserver {
   scoped_ptr<PDFTabObserver> pdf_tab_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
-  scoped_ptr<SadTabObserver> sad_tab_observer_;
   scoped_ptr<safe_browsing::SafeBrowsingTabObserver>
       safe_browsing_tab_observer_;
   scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;

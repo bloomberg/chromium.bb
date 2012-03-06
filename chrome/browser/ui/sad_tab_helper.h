@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_SAD_TAB_OBSERVER_H_
-#define CHROME_BROWSER_UI_SAD_TAB_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_SAD_TAB_HELPER_H_
+#define CHROME_BROWSER_UI_SAD_TAB_HELPER_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -27,18 +27,22 @@ class SadTabGtk;
 #endif
 
 // Per-tab class to manage sad tab views.
-class SadTabObserver : public content::WebContentsObserver,
-                       public content::NotificationObserver {
+class SadTabHelper : public content::WebContentsObserver,
+                     public content::NotificationObserver {
  public:
-  explicit SadTabObserver(content::WebContents* web_contents);
-  virtual ~SadTabObserver();
+  explicit SadTabHelper(content::WebContents* web_contents);
+  virtual ~SadTabHelper();
+
+  // Platform specific function to determine if there is a current sad tab page.
+  bool HasSadTab();
+
+#if defined(TOOLKIT_VIEWS)
+  views::Widget* sad_tab() { return sad_tab_.get(); }
+#endif
 
  private:
   // Platform specific function to get an instance of the sad tab page.
   void InstallSadTab(base::TerminationStatus status);
-
-  // Platform specific function to determine if there is a current sad tab page.
-  bool HasSadTab();
 
   // Overridden from content::WebContentsObserver:
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
@@ -66,7 +70,7 @@ class SadTabObserver : public content::WebContentsObserver,
   scoped_ptr<SadTabGtk> sad_tab_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(SadTabObserver);
+  DISALLOW_COPY_AND_ASSIGN(SadTabHelper);
 };
 
-#endif  // CHROME_BROWSER_UI_SAD_TAB_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_SAD_TAB_HELPER_H_

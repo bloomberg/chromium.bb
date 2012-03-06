@@ -37,11 +37,6 @@ class TabContentsViewViews : public views::Widget,
   explicit TabContentsViewViews(content::WebContents* web_contents);
   virtual ~TabContentsViewViews();
 
-  // Temporary.
-  // TODO(jam): remove
-  void InstallOverlayView(gfx::NativeView view);
-  void RemoveOverlayView();
-
   // Reset the native parent of this view to NULL.  Unparented windows should
   // not receive any messages.
   virtual void Unparent();
@@ -106,7 +101,6 @@ class TabContentsViewViews : public views::Widget,
  private:
   // Overridden from internal::NativeTabContentsViewDelegate:
   virtual content::WebContents* GetWebContents() OVERRIDE;
-  virtual bool IsShowingSadTab() const OVERRIDE;
   virtual void OnNativeTabContentsViewShown() OVERRIDE;
   virtual void OnNativeTabContentsViewHidden() OVERRIDE;
   virtual void OnNativeTabContentsViewSized(const gfx::Size& size) OVERRIDE;
@@ -126,19 +120,7 @@ class TabContentsViewViews : public views::Widget,
   // A helper method for closing the tab.
   void CloseTab();
 
-  // Windows events ------------------------------------------------------------
-
-  // Handles notifying the TabContents and other operations when the window was
-  // shown or hidden.
-  void WasHidden();
-  void WasShown();
-
-  // Handles resizing of the contents. This will notify the RenderWidgetHostView
-  // of the change, reposition popups, and the find in page bar.
-  void WasSized(const gfx::Size& size);
-
-  // TODO(brettw) comment these. They're confusing.
-  void WheelZoom(int distance);
+  views::Widget* GetSadTab() const;
 
   // ---------------------------------------------------------------------------
 
@@ -166,10 +148,6 @@ class TabContentsViewViews : public views::Widget,
   // The FocusManager associated with this tab.  Stored as it is not directly
   // accessible when un-parented.
   mutable const views::FocusManager* focus_manager_;
-
-  // The overlaid view. Owned by the caller of |InstallOverlayView|; this is a
-  // weak reference.
-  views::Widget* overlaid_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewViews);
 };

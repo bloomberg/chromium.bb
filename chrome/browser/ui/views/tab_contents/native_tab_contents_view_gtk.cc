@@ -7,6 +7,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/tab_contents/web_drag_dest_gtk.h"
 #include "content/browser/tab_contents/web_drag_source_gtk.h"
@@ -206,7 +208,9 @@ views::NativeWidget* NativeTabContentsViewGtk::AsNativeWidget() {
 // not NULL, else our delegate.
 gboolean NativeTabContentsViewGtk::OnMotionNotify(GtkWidget* widget,
                                                   GdkEventMotion* event) {
-  if (delegate_->IsShowingSadTab())
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(GetWebContents());
+  if (wrapper && wrapper->sad_tab_helper()->HasSadTab())
     return views::NativeWidgetGtk::OnMotionNotify(widget, event);
 
   delegate_->OnNativeTabContentsViewMouseMove(true);
@@ -215,7 +219,9 @@ gboolean NativeTabContentsViewGtk::OnMotionNotify(GtkWidget* widget,
 
 gboolean NativeTabContentsViewGtk::OnLeaveNotify(GtkWidget* widget,
                                                  GdkEventCrossing* event) {
-  if (delegate_->IsShowingSadTab())
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(GetWebContents());
+  if (wrapper && wrapper->sad_tab_helper()->HasSadTab())
     return views::NativeWidgetGtk::OnLeaveNotify(widget, event);
 
   delegate_->OnNativeTabContentsViewMouseMove(false);
@@ -224,7 +230,9 @@ gboolean NativeTabContentsViewGtk::OnLeaveNotify(GtkWidget* widget,
 
 gboolean NativeTabContentsViewGtk::OnButtonPress(GtkWidget* widget,
                                                  GdkEventButton* event) {
-  if (delegate_->IsShowingSadTab())
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(GetWebContents());
+  if (wrapper && wrapper->sad_tab_helper()->HasSadTab())
     return views::NativeWidgetGtk::OnButtonPress(widget, event);
   last_mouse_down_ = *event;
   return views::NativeWidgetGtk::OnButtonPress(widget, event);

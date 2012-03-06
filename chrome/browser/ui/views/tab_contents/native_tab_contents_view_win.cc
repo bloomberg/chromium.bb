@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_win.h"
 
 #include "base/bind.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_win.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/tab_contents/web_contents_drag_win.h"
 #include "content/browser/tab_contents/web_drag_dest_win.h"
@@ -183,7 +185,9 @@ void NativeTabContentsViewWin::OnHScroll(int scroll_type,
 LRESULT NativeTabContentsViewWin::OnMouseRange(UINT msg,
                                                WPARAM w_param,
                                                LPARAM l_param) {
-  if (delegate_->IsShowingSadTab())
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(GetWebContents());
+  if (wrapper && wrapper->sad_tab_helper()->HasSadTab())
     return NativeWidgetWin::OnMouseRange(msg, w_param, l_param);
 
   switch (msg) {

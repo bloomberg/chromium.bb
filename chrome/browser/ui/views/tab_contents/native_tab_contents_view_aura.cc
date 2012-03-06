@@ -6,6 +6,8 @@
 
 #include "base/event_types.h"
 #include "base/message_loop.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -270,7 +272,9 @@ void NativeTabContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 bool NativeTabContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
-  if (!delegate_->IsShowingSadTab()) {
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(GetWebContents());
+  if (!wrapper || !wrapper->sad_tab_helper()->HasSadTab()) {
     switch (event->type()) {
       case ui::ET_MOUSE_EXITED:
         delegate_->OnNativeTabContentsViewMouseMove(false);
