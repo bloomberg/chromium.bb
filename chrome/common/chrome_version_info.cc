@@ -13,6 +13,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chrome {
 
@@ -117,7 +118,10 @@ std::string VersionInfo::OSType() const {
 #elif defined(OS_MACOSX)
   return "Mac OS X";
 #elif defined(OS_CHROMEOS)
-  return UTF16ToASCII(l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+  if (ui::ResourceBundle::HasSharedInstance())
+    return UTF16ToASCII(l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+  else
+    return "Chromium OS";
 #elif defined(OS_LINUX)
   return "Linux";
 #elif defined(OS_FREEBSD)
