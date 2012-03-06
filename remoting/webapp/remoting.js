@@ -89,7 +89,8 @@ remoting.logExtensionInfoAsync_ = function() {
     var manifest =
         /** @type {{name: string, version: string, default_locale: string}} */
         JSON.parse(xhr.responseText);
-    console.log(manifest.name + ' version: ' + manifest.version);
+    var name = chrome.i18n.getMessage('PRODUCT_NAME');
+    console.log(name + ' version: ' + manifest.version);
   }
   xhr.send(null);
 };
