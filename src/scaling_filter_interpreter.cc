@@ -58,7 +58,8 @@ void ScalingFilterInterpreter::FilterLowPressure(HardwareState* hwstate) {
       if (i != finger_cnt - 1)
         hwstate->fingers[i] = hwstate->fingers[finger_cnt - 1];
       finger_cnt--;
-      touch_cnt--;
+      if (touch_cnt > 0)
+        touch_cnt--;
     }
   }
   hwstate->finger_cnt = finger_cnt;
