@@ -153,7 +153,7 @@ void PPB_Flash_Clipboard_Proxy::OnMsgReadData(
 void PPB_Flash_Clipboard_Proxy::OnMsgWriteData(
     PP_Instance instance,
     int clipboard_type,
-    std::vector<int> formats,
+    const std::vector<int>& formats,
     SerializedVarVectorReceiveInput data_items) {
   EnterFlashClipboardNoLock enter(instance, true);
   if (enter.succeeded()) {
