@@ -446,17 +446,15 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 
 	surface = window_get_surface(dialog->window);
 	cr = cairo_create(surface);
+
 	widget_get_allocation(dialog->widget, &allocation);
 	cairo_rectangle(cr, allocation.x, allocation.y,
 			allocation.width, allocation.height);
-	cairo_clip(cr);
-	cairo_push_group(cr);
-	cairo_translate(cr, allocation.x, allocation.y);
-
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
-	cairo_paint(cr);
+	cairo_fill(cr);
 
+	cairo_translate(cr, allocation.x, allocation.y);
 	if (dialog->button_focused)
 		f = 1.0;
 	else
@@ -470,16 +468,14 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 	cairo_pattern_add_color_stop_rgb(pat, 0.85, 0.2 * f, f, 0.2 * f);
 	cairo_pattern_add_color_stop_rgb(pat, 1.0, 0, 0.86 * f, 0);
 	cairo_set_source(cr, pat);
+	cairo_pattern_destroy(pat);
 	cairo_arc(cr, cx, cy, r, 0.0, 2.0 * M_PI);
 	cairo_fill(cr);
 
 	widget_set_allocation(dialog->button,
-			    allocation.x + cx - r,
-			    allocation.y + cy - r, 2 * r, 2 * r);
-	cairo_pattern_destroy(pat);
+			      allocation.x + cx - r,
+			      allocation.y + cy - r, 2 * r, 2 * r);
 
-	cairo_pop_group_to_source(cr);
-	cairo_paint(cr);
 	cairo_destroy(cr);
 
 	cairo_surface_destroy(surface);
