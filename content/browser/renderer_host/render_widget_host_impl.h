@@ -110,6 +110,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void Stop() OVERRIDE;
   virtual void WasResized() OVERRIDE;
   virtual bool OnMessageReceivedForTesting(const IPC::Message& msg) OVERRIDE;
+  virtual void AddKeyboardListener(KeyboardListener* listener) OVERRIDE;
+  virtual void RemoveKeyboardListener(KeyboardListener* listener) OVERRIDE;
 
   // Sets the View of this RenderWidgetHost.
   void SetView(content::RenderWidgetHostView* view);
@@ -207,6 +209,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // when it has received a message.
   void ForwardGestureEvent(const WebKit::WebGestureEvent& gesture_event);
   virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
+
+#if defined(TOOLKIT_USES_GTK)
+  // Give key press listeners a chance to handle this key press. This allow
+  // widgets that don't have focus to still handle key presses.
+  bool KeyPressListenersHandleEvent(GdkEventKey* event);
+#endif  // defined(TOOLKIT_USES_GTK)
 
   void CancelUpdateTextDirection();
 
@@ -596,6 +604,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // The time when an input event was sent to the RenderWidget.
   base::TimeTicks input_event_start_time_;
+
+  // Keyboard event listeners.
+  std::list<KeyboardListener*> keyboard_listeners_;
 
   // If true, then we should repaint when restoring even if we have a
   // backingstore.  This flag is set to true if we receive a paint message

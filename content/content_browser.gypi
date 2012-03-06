@@ -72,6 +72,7 @@
     'public/browser/interstitial_page.h',
     'public/browser/invalidate_type.h',
     'public/browser/javascript_dialogs.h',
+    'public/browser/keyboard_listener.h',
     'public/browser/native_web_keyboard_event.h',
     'public/browser/navigation_controller.h',
     'public/browser/navigation_details.cc',

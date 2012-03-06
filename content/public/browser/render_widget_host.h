@@ -7,6 +7,7 @@
 #pragma once
 
 #include "content/common/content_export.h"
+#include "content/public/browser/keyboard_listener.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -275,6 +276,13 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
   // translate_tab_helper() to get at the object that dispatches its
   // method.
   virtual bool OnMessageReceivedForTesting(const IPC::Message& msg) = 0;
+
+  // Add a keyboard listener that can handle key presses without requiring
+  // focus.
+  virtual void AddKeyboardListener(KeyboardListener* listener) = 0;
+
+  // Remove a keyboard listener.
+  virtual void RemoveKeyboardListener(KeyboardListener* listener) = 0;
 
  protected:
   friend class RenderWidgetHostImpl;

@@ -834,6 +834,30 @@ void RenderWidgetHostImpl::ForwardTouchEvent(
   ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent), false);
 }
 
+#if defined(TOOLKIT_USES_GTK)
+bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(GdkEventKey* event) {
+  if (event->type != GDK_KEY_PRESS)
+    return false;
+
+  for (std::list<KeyboardListener*>::iterator it = keyboard_listeners_.begin();
+       it != keyboard_listeners_.end(); ++it) {
+    if ((*it)->HandleKeyPressEvent(event))
+      return true;
+  }
+
+  return false;
+}
+#endif  // defined(TOOLKIT_USES_GTK)
+
+void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
+  keyboard_listeners_.push_back(listener);
+}
+
+void RenderWidgetHostImpl::RemoveKeyboardListener(
+    KeyboardListener* listener) {
+  keyboard_listeners_.remove(listener);
+}
+
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
                                           int exit_code) {
   // Clearing this flag causes us to re-create the renderer when recovering

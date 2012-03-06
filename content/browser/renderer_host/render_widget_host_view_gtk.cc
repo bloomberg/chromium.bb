@@ -211,7 +211,9 @@ class RenderWidgetHostViewGtkWidget {
         (host_view->IsPopup() && host_view->NeedsInputGrab()) ||
         host_view->is_fullscreen_;
     if (should_close_on_escape && GDK_Escape == event->keyval) {
-      static_cast<RenderWidgetHostImpl*>(host_view->host_)->Shutdown();
+      host_view->host_->Shutdown();
+    } if (host_view->host_->KeyPressListenersHandleEvent(event)) {
+      return TRUE;
     } else {
       // Send key event to input method.
       host_view->im_context_->ProcessKeyEvent(event);
