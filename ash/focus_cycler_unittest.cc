@@ -122,5 +122,110 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
+class FocusCyclerLauncherTest : public AshTestBase {
+ public:
+  FocusCyclerLauncherTest() : AshTestBase() {}
+  virtual ~FocusCyclerLauncherTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    AshTestBase::SetUp();
+
+    // Hide the launcher
+    Launcher* launcher = Shell::GetInstance()->launcher();
+    ASSERT_TRUE(launcher);
+    views::Widget* launcher_widget = launcher->widget();
+    ASSERT_TRUE(launcher_widget);
+    launcher_widget->Hide();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Show the launcher
+    Launcher* launcher = Shell::GetInstance()->launcher();
+    ASSERT_TRUE(launcher);
+    views::Widget* launcher_widget = launcher->widget();
+    ASSERT_TRUE(launcher_widget);
+    launcher_widget->Show();
+
+    AshTestBase::TearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FocusCyclerLauncherTest);
+};
+
+TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
+  scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
+
+  // Add the Status area
+  views::Widget* status_widget = internal::CreateStatusArea(NULL);
+  ASSERT_TRUE(status_widget);
+  focus_cycler->AddWidget(status_widget);
+
+  // Add a mock button to the status area.
+  status_widget->GetContentsView()->AddChildView(
+      new views::MenuButton(NULL, string16(), NULL, false));
+
+  // Add the launcher
+  Launcher* launcher = Shell::GetInstance()->launcher();
+  ASSERT_TRUE(launcher);
+  views::Widget* launcher_widget = launcher->widget();
+  ASSERT_TRUE(launcher_widget);
+  focus_cycler->AddWidget(launcher_widget);
+  launcher->SetFocusCycler(focus_cycler.get());
+
+  // Create a single test window.
+  Window* default_container =
+      ash::Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
+  wm::ActivateWindow(window0.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+
+  // Cycle focus to the status area
+  focus_cycler->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(status_widget->IsActive());
+
+  // Cycle focus to the browser
+  focus_cycler->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+}
+
+TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
+  scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
+
+  // Add the Status area
+  views::Widget* status_widget = internal::CreateStatusArea(NULL);
+  ASSERT_TRUE(status_widget);
+  focus_cycler->AddWidget(status_widget);
+
+  // Add a mock button to the status area.
+  status_widget->GetContentsView()->AddChildView(
+      new views::MenuButton(NULL, string16(), NULL, false));
+
+  // Add the launcher
+  Launcher* launcher = Shell::GetInstance()->launcher();
+  ASSERT_TRUE(launcher);
+  views::Widget* launcher_widget = launcher->widget();
+  ASSERT_TRUE(launcher_widget);
+  focus_cycler->AddWidget(launcher_widget);
+  launcher->SetFocusCycler(focus_cycler.get());
+
+  // Create a single test window.
+  Window* default_container =
+      ash::Shell::GetInstance()->GetContainer(
+          internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
+  wm::ActivateWindow(window0.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+
+  // Cycle focus to the status area
+  focus_cycler->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(status_widget->IsActive());
+
+  // Cycle focus to the browser
+  focus_cycler->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+}
+
 }  // namespace test
 }  // namespace ash
