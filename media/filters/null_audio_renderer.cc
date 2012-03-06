@@ -22,6 +22,7 @@ NullAudioRenderer::NullAudioRenderer()
     : AudioRendererBase(),
       bytes_per_millisecond_(0),
       buffer_size_(0),
+      bytes_per_frame_(0),
       thread_("AudioThread") {
 }
 
@@ -37,10 +38,16 @@ bool NullAudioRenderer::OnInitialize(int bits_per_channel,
                                      ChannelLayout channel_layout,
                                      int sample_rate) {
   // Calculate our bytes per millisecond value and allocate our buffer.
-  bytes_per_millisecond_ =
-      (ChannelLayoutToChannelCount(channel_layout) * sample_rate *
-       bits_per_channel / 8) / base::Time::kMillisecondsPerSecond;
-  buffer_size_ = bytes_per_millisecond_ * kBufferSizeInMilliseconds;
+  int channels = ChannelLayoutToChannelCount(channel_layout);
+  int bytes_per_channel = bits_per_channel / 8;
+  bytes_per_frame_ = channels * bytes_per_channel;
+
+  bytes_per_millisecond_ = (bytes_per_frame_ * sample_rate) /
+      base::Time::kMillisecondsPerSecond;
+
+  buffer_size_ =
+      bytes_per_millisecond_ * kBufferSizeInMilliseconds;
+
   buffer_.reset(new uint8[buffer_size_]);
   DCHECK(buffer_.get());
 
@@ -61,7 +68,10 @@ void NullAudioRenderer::FillBufferTask() {
 
   // Only consume buffers when actually playing.
   if (GetPlaybackRate() > 0.0f)  {
-    size_t bytes = FillBuffer(buffer_.get(), buffer_size_, base::TimeDelta());
+    size_t requested_frames = buffer_size_ / bytes_per_frame_;
+    size_t frames = FillBuffer(
+        buffer_.get(), requested_frames, base::TimeDelta());
+    size_t bytes = frames * bytes_per_frame_;
 
     // Calculate our sleep duration, taking playback rate into consideration.
     delay = base::TimeDelta::FromMilliseconds(

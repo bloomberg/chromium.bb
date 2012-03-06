@@ -30,6 +30,8 @@ namespace media {
 
 class Buffer;
 
+// TODO(vrk): Remove all the uint32s from AudioRendererAlgorithmBase and
+// replace them with ints.
 class MEDIA_EXPORT AudioRendererAlgorithmBase {
  public:
   AudioRendererAlgorithmBase();
@@ -51,22 +53,15 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
                   float initial_playback_rate,
                   const base::Closure& request_read_cb);
 
-  // Tries to fill |length| bytes of |dest| with possibly scaled data from our
-  // |audio_buffer_|. Data is scaled based on the playback rate, using a
-  // variation of the Overlap-Add method to combine sample windows.
+  // Tries to fill |requested_frames| frames into |dest| with possibly scaled
+  // data from our |audio_buffer_|. Data is scaled based on the playback rate,
+  // using a variation of the Overlap-Add method to combine sample windows.
   //
   // Data from |audio_buffer_| is consumed in proportion to the playback rate.
-  // FillBuffer() will fit |playback_rate_| * |length| bytes of raw data from
-  // |audio_buffer| into |length| bytes of output data in |dest| by chopping up
-  // the buffered data into windows and crossfading from one window to the next.
-  // For speeds greater than 1.0f, FillBuffer() "squish" the windows, dropping
-  // some data in between windows to meet the sped-up playback. For speeds less
-  // than 1.0f, FillBuffer() will "stretch" the window by copying and
-  // overlapping data at the window boundaries, crossfading in between.
   //
-  // Returns the number of bytes copied into |dest|.
+  // Returns the number of frames copied into |dest|.
   // May request more reads via |request_read_cb_| before returning.
-  uint32 FillBuffer(uint8* dest, uint32 length);
+  uint32 FillBuffer(uint8* dest, uint32 requested_frames);
 
   // Clears |audio_buffer_|.
   void FlushBuffers();
@@ -82,8 +77,8 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   float playback_rate() const { return playback_rate_; }
   void SetPlaybackRate(float new_rate);
 
-  // Returns whether |audio_buffer_| is empty.
-  bool IsQueueEmpty();
+  // Returns whether the algorithm needs more data to continue filling buffers.
+  bool NeedsMoreData();
 
   // Returns true if |audio_buffer_| is at or exceeds capacity.
   bool IsQueueFull();
@@ -99,21 +94,65 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   // than |audio_buffer_| was intending to hold.
   uint32 bytes_buffered() { return audio_buffer_.forward_bytes(); }
 
-  uint32 window_size() { return window_size_; }
+  uint32 bytes_per_frame() { return bytes_per_frame_; }
+
+  uint32 bytes_per_channel() { return bytes_per_channel_; }
+
+  bool is_muted() { return muted_; }
 
  private:
-  // Advances |audio_buffer_|'s internal pointer by |bytes|.
-  void AdvanceBufferPosition(uint32 bytes);
+  // Returns true if |audio_buffer_| is empty.
+  bool IsQueueEmpty();
 
-  // Tries to copy |bytes| bytes from |audio_buffer_| to |dest|.
-  // Returns the number of bytes successfully copied.
-  uint32 CopyFromAudioBuffer(uint8* dest, uint32 bytes);
+  // Fills |dest| with one frame of audio data at normal speed. Returns true if
+  // a frame was rendered, false otherwise.
+  bool OutputNormalPlayback(uint8* dest);
 
-  // Aligns |value| to a channel and sample boundary.
-  void AlignToSampleBoundary(uint32* value);
+  // Fills |dest| with one frame of audio data at faster than normal speed.
+  // Returns true if a frame was rendered, false otherwise.
+  //
+  // When the audio playback is > 1.0, we use a variant of Overlap-Add to squish
+  // audio output while preserving pitch. Essentially, we play a bit of audio
+  // data at normal speed, then we "fast forward" by dropping the next bit of
+  // audio data, and then we stich the pieces together by crossfading from one
+  // audio chunk to the next.
+  bool OutputFasterPlayback(uint8* dest);
 
-  // Attempts to write |length| bytes of muted audio into |dest|.
-  uint32 MuteBuffer(uint8* dest, uint32 length);
+  // Fills |dest| with one frame of audio data at slower than normal speed.
+  // Returns true if a frame was rendered, false otherwise.
+  //
+  // When the audio playback is < 1.0, we use a variant of Overlap-Add to
+  // stretch audio output while preserving pitch. This works by outputting a
+  // segment of audio data at normal speed. The next audio segment then starts
+  // by repeating some of the audio data from the previous audio segment.
+  // Segments are stiched together by crossfading from one audio chunk to the
+  // next.
+  bool OutputSlowerPlayback(uint8* dest);
+
+  // Resets the window state to the start of a new window.
+  void ResetWindow();
+
+  // Copies a raw frame from |audio_buffer_| into |dest| without progressing
+  // |audio_buffer_|'s internal "current" cursor. Optionally peeks at a forward
+  // byte |offset|.
+  void CopyWithoutAdvance(uint8* dest);
+  void CopyWithoutAdvance(uint8* dest, uint32 offset);
+
+  // Copies a raw frame from |audio_buffer_| into |dest| and progresses the
+  // |audio_buffer_| forward.
+  void CopyWithAdvance(uint8* dest);
+
+  // Moves the |audio_buffer_| forward by one frame.
+  void DropFrame();
+
+  // Does a linear crossfade from |intro| into |outtro| for one frame.
+  // Assumes pointers are valid and are at least size of |bytes_per_frame_|.
+  void OutputCrossfadedFrame(uint8* outtro, const uint8* intro);
+  template <class Type>
+  void CrossfadeFrame(uint8* outtro, const uint8* intro);
+
+  // Rounds |*value| down to the nearest frame boundary.
+  void AlignToFrameBoundary(uint32* value);
 
   // Number of channels in audio stream.
   int channels_;
@@ -134,7 +173,26 @@ class MEDIA_EXPORT AudioRendererAlgorithmBase {
   SeekableBuffer audio_buffer_;
 
   // Length for crossfade in bytes.
-  uint32 crossfade_size_;
+  uint32 bytes_in_crossfade_;
+
+  // Length of frame in bytes.
+  uint32 bytes_per_frame_;
+
+  // The current location in the audio window, between 0 and |window_size_|.
+  // When |index_into_window_| reaches |window_size_|, the window resets.
+  // Indexed by byte.
+  uint32 index_into_window_;
+
+  // The frame number in the crossfade.
+  uint32 crossfade_frame_number_;
+
+  // True if the audio should be muted.
+  bool muted_;
+
+  bool needs_more_data_;
+
+  // Temporary buffer to hold crossfade data.
+  scoped_array<uint8> crossfade_buffer_;
 
   // Window size, in bytes (calculated from audio properties).
   uint32 window_size_;

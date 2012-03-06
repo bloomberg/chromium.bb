@@ -73,9 +73,10 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
 
   // Fills the given buffer with audio data by delegating to its |algorithm_|.
   // FillBuffer() also takes care of updating the clock. Returns the number of
-  // bytes copied into |dest|, which may be less than or equal to |len|.
+  // frames copied into |dest|, which may be less than or equal to
+  // |requested_frames|.
   //
-  // If this method is returns less bytes than |len| (including zero), it could
+  // If this method returns fewer frames than |requested_frames|, it could
   // be a sign that the pipeline is stalled or unable to stream the data fast
   // enough.  In such scenarios, the callee should zero out unused portions
   // of their buffer to playback silence.
@@ -95,7 +96,7 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   //
   // Safe to call on any thread.
   uint32 FillBuffer(uint8* dest,
-                    uint32 len,
+                    uint32 requested_frames,
                     const base::TimeDelta& playback_delay);
 
   // Called by OnRenderEndOfStream() or some callback scheduled by derived class
@@ -144,7 +145,7 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   bool pending_read_;
 
   // Keeps track of whether we received and rendered the end of stream buffer.
-  bool recieved_end_of_stream_;
+  bool received_end_of_stream_;
   bool rendered_end_of_stream_;
 
   // Audio time at end of last call to FillBuffer().
@@ -160,6 +161,8 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
   AudioTimeCB audio_time_cb_;
 
   base::TimeDelta seek_timestamp_;
+
+  uint32 bytes_per_frame_;
 
   AudioDecoder::ReadCB read_cb_;
 

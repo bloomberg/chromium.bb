@@ -49,6 +49,11 @@ size_t GetOutputBufferSize() {
 }
 
 size_t GetHighLatencyOutputBufferSize(int sample_rate) {
+  // TODO(vrk/crogers): The buffer sizes that this function computes is probably
+  // overly conservative. However, reducing the buffer size to 2048-8192 bytes
+  // caused crbug.com/108396. This computation should be revisited while making
+  // sure crbug.com/108396 doesn't happen again.
+
   // The minimum number of samples in a hardware packet.
   // This value is selected so that we can handle down to 5khz sample rate.
   static const size_t kMinSamplesPerHardwarePacket = 1024;

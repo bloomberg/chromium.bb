@@ -52,6 +52,8 @@ class MEDIA_EXPORT NullAudioRenderer : public AudioRendererBase {
   scoped_array<uint8> buffer_;
   size_t buffer_size_;
 
+  size_t bytes_per_frame_;
+
   // Separate thread used to throw away data.
   base::Thread thread_;
 

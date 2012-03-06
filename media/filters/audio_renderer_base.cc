@@ -17,8 +17,9 @@ namespace media {
 AudioRendererBase::AudioRendererBase()
     : state_(kUninitialized),
       pending_read_(false),
-      recieved_end_of_stream_(false),
+      received_end_of_stream_(false),
       rendered_end_of_stream_(false),
+      bytes_per_frame_(0),
       read_cb_(base::Bind(&AudioRendererBase::DecodedAudioReady,
                           base::Unretained(this))) {
 }
@@ -81,7 +82,7 @@ void AudioRendererBase::Seek(base::TimeDelta time, const FilterStatusCB& cb) {
 
   // Throw away everything and schedule our reads.
   last_fill_buffer_time_ = base::TimeDelta();
-  recieved_end_of_stream_ = false;
+  received_end_of_stream_ = false;
   rendered_end_of_stream_ = false;
 
   // |algorithm_| will request more reads.
@@ -113,6 +114,8 @@ void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
   int channels = ChannelLayoutToChannelCount(channel_layout);
   int bits_per_channel = decoder_->bits_per_channel();
   int sample_rate = decoder_->samples_per_second();
+  // TODO(vrk): Add method to AudioDecoder to compute bytes per frame.
+  bytes_per_frame_ = channels * bits_per_channel / 8;
 
   bool config_ok = algorithm_->ValidateConfig(channels, sample_rate,
                                               bits_per_channel);
@@ -133,11 +136,9 @@ void AudioRendererBase::Initialize(const scoped_refptr<AudioDecoder>& decoder,
 
 bool AudioRendererBase::HasEnded() {
   base::AutoLock auto_lock(lock_);
-  if (rendered_end_of_stream_) {
-    DCHECK(algorithm_->IsQueueEmpty())
-        << "Audio queue should be empty if we have rendered end of stream";
-  }
-  return recieved_end_of_stream_ && rendered_end_of_stream_;
+  DCHECK(!rendered_end_of_stream_ || algorithm_->NeedsMoreData());
+
+  return received_end_of_stream_ && rendered_end_of_stream_;
 }
 
 void AudioRendererBase::ResumeAfterUnderflow(bool buffer_more_audio) {
@@ -159,7 +160,7 @@ void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
   pending_read_ = false;
 
   if (buffer && buffer->IsEndOfStream()) {
-    recieved_end_of_stream_ = true;
+    received_end_of_stream_ = true;
 
     // Transition to kPlaying if we are currently handling an underflow since
     // no more data will be arriving.
@@ -202,12 +203,12 @@ void AudioRendererBase::DecodedAudioReady(scoped_refptr<Buffer> buffer) {
 }
 
 uint32 AudioRendererBase::FillBuffer(uint8* dest,
-                                     uint32 dest_len,
+                                     uint32 requested_frames,
                                      const base::TimeDelta& playback_delay) {
   // The timestamp of the last buffer written during the last call to
   // FillBuffer().
   base::TimeDelta last_fill_buffer_time;
-  size_t dest_written = 0;
+  size_t frames_written = 0;
   base::Closure underflow_cb;
   {
     base::AutoLock auto_lock(lock_);
@@ -224,9 +225,10 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
       //
       // This should get handled by the subclass http://crbug.com/106600
       const uint32 kZeroLength = 8192;
-      dest_written = std::min(kZeroLength, dest_len);
-      memset(dest, 0, dest_written);
-      return dest_written;
+      size_t zeros_to_write =
+          std::min(kZeroLength, requested_frames * bytes_per_frame_);
+      memset(dest, 0, zeros_to_write);
+      return zeros_to_write / bytes_per_frame_;
     }
 
     // Save a local copy of last fill buffer time and reset the member.
@@ -234,9 +236,9 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
     last_fill_buffer_time_ = base::TimeDelta();
 
     // Use three conditions to determine the end of playback:
-    // 1. Algorithm has no audio data. (algorithm_->IsQueueEmpty() == true)
-    // 2. We've recieved an end of stream buffer.
-    //    (recieved_end_of_stream_ == true)
+    // 1. Algorithm needs more audio data.
+    // 2. We've received an end of stream buffer.
+    //    (received_end_of_stream_ == true)
     // 3. Browser process has no audio data being played.
     //    There is no way to check that condition that would work for all
     //    derived classes, so call virtual method that would either render
@@ -246,8 +248,8 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
     // 1. Algorithm has no audio data.
     // 2. Currently in the kPlaying state.
     // 3. Have not received an end of stream buffer.
-    if (algorithm_->IsQueueEmpty()) {
-      if (recieved_end_of_stream_) {
+    if (algorithm_->NeedsMoreData()) {
+      if (received_end_of_stream_) {
         OnRenderEndOfStream();
       } else if (state_ == kPlaying) {
         state_ = kUnderflow;
@@ -255,7 +257,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
       }
     } else {
       // Otherwise fill the buffer.
-      dest_written = algorithm_->FillBuffer(dest, dest_len);
+      frames_written = algorithm_->FillBuffer(dest, requested_frames);
     }
 
     // Get the current time.
@@ -273,11 +275,11 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
   if (!underflow_cb.is_null())
     underflow_cb.Run();
 
-  return dest_written;
+  return frames_written;
 }
 
 void AudioRendererBase::SignalEndOfStream() {
-  DCHECK(recieved_end_of_stream_);
+  DCHECK(received_end_of_stream_);
   if (!rendered_end_of_stream_) {
     rendered_end_of_stream_ = true;
     host()->NotifyEnded();

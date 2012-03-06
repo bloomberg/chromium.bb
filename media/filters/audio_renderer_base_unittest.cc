@@ -184,12 +184,16 @@ class AudioRendererBaseTest : public ::testing::Test {
   // the consumed data is muted audio.
   bool ConsumeBufferedData(uint32 size, bool* muted) {
     scoped_array<uint8> buffer(new uint8[size]);
-    uint32 bytes_read = renderer_->FillBuffer(buffer.get(), size,
-                                              base::TimeDelta());
-    if (bytes_read > 0 && muted) {
+    uint32 bytes_per_frame = (decoder_->bits_per_channel() / 8) *
+        ChannelLayoutToChannelCount(decoder_->channel_layout());
+    uint32 requested_frames = size / bytes_per_frame;
+    uint32 frames_read = renderer_->FillBuffer(
+        buffer.get(), requested_frames, base::TimeDelta());
+
+    if (frames_read > 0 && muted) {
       *muted = (buffer[0] == kMutedAudio);
     }
-    return (bytes_read == size);
+    return (frames_read == requested_frames);
   }
 
   uint32 bytes_buffered() {

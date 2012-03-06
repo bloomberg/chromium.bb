@@ -199,11 +199,10 @@ size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
   const size_t buf_size = number_of_frames * bytes_per_frame;
   scoped_array<uint8> buf(new uint8[buf_size]);
 
-  uint32 filled = FillBuffer(buf.get(), buf_size, request_delay);
-  DCHECK_LE(filled, buf_size);
-  UpdateEarliestEndTime(filled, request_delay, base::Time::Now());
-
-  uint32 filled_frames = filled / bytes_per_frame;
+  uint32 frames_filled = FillBuffer(buf.get(), number_of_frames, request_delay);
+  uint32 bytes_filled = frames_filled * bytes_per_frame;
+  DCHECK_LE(bytes_filled, buf_size);
+  UpdateEarliestEndTime(bytes_filled, request_delay, base::Time::Now());
 
   // Deinterleave each audio channel.
   int channels = audio_data.size();
@@ -213,17 +212,17 @@ size_t AudioRendererImpl::Render(const std::vector<float*>& audio_data,
                                     channels,
                                     channel_index,
                                     bytes_per_frame / channels,
-                                    filled_frames);
+                                    frames_filled);
 
     // If FillBuffer() didn't give us enough data then zero out the remainder.
-    if (filled_frames < number_of_frames) {
-      int frames_to_zero = number_of_frames - filled_frames;
-      memset(audio_data[channel_index] + filled_frames,
+    if (frames_filled < number_of_frames) {
+      int frames_to_zero = number_of_frames - frames_filled;
+      memset(audio_data[channel_index] + frames_filled,
              0,
              sizeof(float) * frames_to_zero);
     }
   }
-  return filled_frames;
+  return frames_filled;
 }
 
 void AudioRendererImpl::OnRenderError() {
