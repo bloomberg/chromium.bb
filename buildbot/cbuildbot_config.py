@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -672,6 +672,7 @@ _release.add_config('x86-zgb_he-release',
 
 _release.add_config('stumpy-release',
   boards=['stumpy'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('lumpy-release',
