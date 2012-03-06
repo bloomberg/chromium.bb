@@ -24,7 +24,7 @@
 #include "ui/base/gtk/g_object_destructor_filo.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/gtk/gtk_windowing.h"
-#include "ui/base/gtk/scoped_region.h"
+#include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/base/x/x11_util.h"
