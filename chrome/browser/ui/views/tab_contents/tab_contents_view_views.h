@@ -37,10 +37,6 @@ class TabContentsViewViews : public views::Widget,
   explicit TabContentsViewViews(content::WebContents* web_contents);
   virtual ~TabContentsViewViews();
 
-  // Reset the native parent of this view to NULL.  Unparented windows should
-  // not receive any messages.
-  virtual void Unparent();
-
   NativeTabContentsView* native_tab_contents_view() const {
     return native_tab_contents_view_;
   }
@@ -112,8 +108,6 @@ class TabContentsViewViews : public views::Widget,
       AsNativeWidgetDelegate() OVERRIDE;
 
   // Overridden from views::Widget:
-  virtual views::FocusManager* GetFocusManager() OVERRIDE;
-  virtual const views::FocusManager* GetFocusManager() const OVERRIDE;
   virtual void OnNativeWidgetVisibilityChanged(bool visible) OVERRIDE;
   virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) OVERRIDE;
 
@@ -144,10 +138,6 @@ class TabContentsViewViews : public views::Widget,
 
   // Used to close the tab after the stack has unwound.
   base::OneShotTimer<TabContentsViewViews> close_tab_timer_;
-
-  // The FocusManager associated with this tab.  Stored as it is not directly
-  // accessible when un-parented.
-  mutable const views::FocusManager* focus_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewViews);
 };

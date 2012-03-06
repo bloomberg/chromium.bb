@@ -39,8 +39,6 @@ void NativeTabContentsContainerGtk::DetachContents(WebContents* contents) {
 
   // Now detach the TabContents.
   Detach();
-
-  static_cast<TabContentsViewViews*>(contents->GetView())->Unparent();
 }
 
 void NativeTabContentsContainerGtk::SetFastResize(bool fast_resize) {

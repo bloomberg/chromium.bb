@@ -107,13 +107,6 @@ void NativeTabContentsViewWin::InitNativeTabContentsView() {
   drag_dest_->set_delegate(bookmark_handler_.get());
 }
 
-void NativeTabContentsViewWin::Unparent() {
-  // Note that we do not DCHECK on focus_manager_ as it may be NULL when used
-  // with an external tab container.
-  views::Widget::ReparentNativeView(GetNativeView(),
-                                    HiddenTabHostWindow::Instance());
-}
-
 RenderWidgetHostView* NativeTabContentsViewWin::CreateRenderWidgetHostView(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostView* view =

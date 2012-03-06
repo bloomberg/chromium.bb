@@ -40,8 +40,7 @@ using content::WebContents;
 TabContentsViewViews::TabContentsViewViews(WebContents* web_contents)
     : web_contents_(web_contents),
       native_tab_contents_view_(NULL),
-      close_tab_after_drag_ends_(false),
-      focus_manager_(NULL) {
+      close_tab_after_drag_ends_(false) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetInstance()->CreateStorageID();
 }
@@ -54,14 +53,6 @@ TabContentsViewViews::~TabContentsViewViews() {
   views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
-}
-
-void TabContentsViewViews::Unparent() {
-  // Remember who our FocusManager is, we won't be able to access it once
-  // un-parented.
-  focus_manager_ = Widget::GetFocusManager();
-  CHECK(native_tab_contents_view_);
-  native_tab_contents_view_->Unparent();
 }
 
 void TabContentsViewViews::CreateView(const gfx::Size& initial_size) {
@@ -192,14 +183,9 @@ void TabContentsViewViews::StoreFocus() {
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
 
-  views::FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager) {
-    // |focus_manager| can be NULL if the tab has been detached but still
-    // exists.
-    views::View* focused_view = focus_manager->GetFocusedView();
-    if (focused_view)
-      view_storage->StoreView(last_focused_view_storage_id_, focused_view);
-  }
+  views::View* focused_view = GetFocusManager()->GetFocusedView();
+  if (focused_view)
+    view_storage->StoreView(last_focused_view_storage_id_, focused_view);
 }
 
 void TabContentsViewViews::RestoreFocus() {
@@ -210,12 +196,8 @@ void TabContentsViewViews::RestoreFocus() {
   if (!last_focused_view) {
     SetInitialFocus();
   } else {
-    views::FocusManager* focus_manager = GetFocusManager();
-    // If you hit this DCHECK, please report it to Jay (jcampan).
-    DCHECK(focus_manager != NULL) << "No focus manager when restoring focus.";
-
-    if (last_focused_view->IsFocusable() && focus_manager &&
-        focus_manager->ContainsView(last_focused_view)) {
+    if (last_focused_view->IsFocusable() &&
+        GetFocusManager()->ContainsView(last_focused_view)) {
       last_focused_view->RequestFocus();
     } else {
       // The focused view may not belong to the same window hierarchy (e.g.
@@ -265,12 +247,7 @@ void TabContentsViewViews::GotFocus() {
 void TabContentsViewViews::TakeFocus(bool reverse) {
   if (web_contents_->GetDelegate() &&
       !web_contents_->GetDelegate()->TakeFocus(reverse)) {
-    views::FocusManager* focus_manager = GetFocusManager();
-
-    // We may not have a focus manager if the tab has been switched before this
-    // message arrived.
-    if (focus_manager)
-      focus_manager->AdvanceFocus(reverse);
+    GetFocusManager()->AdvanceFocus(reverse);
   }
 }
 
@@ -421,27 +398,6 @@ views::internal::NativeWidgetDelegate*
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsViewViews, views::Widget overrides:
-
-views::FocusManager* TabContentsViewViews::GetFocusManager() {
-  return const_cast<views::FocusManager*>(
-      static_cast<const TabContentsViewViews*>(this)->GetFocusManager());
-}
-
-const views::FocusManager* TabContentsViewViews::GetFocusManager() const {
-  const views::FocusManager* focus_manager = Widget::GetFocusManager();
-  if (focus_manager) {
-    // If |focus_manager| is non NULL, it means we have been reparented, in
-    // which case |focus_manager_| may not be valid anymore.
-    focus_manager_ = NULL;
-    return focus_manager;
-  }
-  // TODO(jcampan): we should DCHECK on focus_manager_, as it should not be
-  // NULL.  We are not doing it as it breaks some unit-tests.  We should
-  // probably have an empty TabContentView implementation for the unit-tests,
-  // that would prevent that code being executed in the unit-test case.
-  // DCHECK(focus_manager_);
-  return focus_manager_;
-}
 
 void TabContentsViewViews::OnNativeWidgetVisibilityChanged(bool visible) {
   views::Widget::OnNativeWidgetVisibilityChanged(visible);

@@ -36,8 +36,6 @@ class NativeTabContentsView {
 
   virtual void InitNativeTabContentsView() = 0;
 
-  virtual void Unparent() = 0;
-
   virtual content::RenderWidgetHostView* CreateRenderWidgetHostView(
       RenderWidgetHost* render_widget_host) = 0;
 
