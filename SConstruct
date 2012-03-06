@@ -270,10 +270,12 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'running_on_valgrind', default=False,
     desc='Compile and test using valgrind')
 
-  # This argument allows -lcrypt to be disabled, which
-  # makes it easier to build x86-32 NaCl on x86-64 Ubuntu Linux,
-  # where there is no -dev package for the 32-bit libcrypto
-  BitFromArgument(env, 'use_libcrypto', default=True,
+  # Linking in -lcrypto makes sel_ldr binaries that depend on a
+  # particular shared library version being available, which makes
+  # the SDK binaries less portable among Linux variants.  With this
+  # switch off, standalone sel_ldr relies on /dev/urandom as the
+  # Chromium incarnation will.
+  BitFromArgument(env, 'use_libcrypto', default=False,
     desc='Use libcrypto')
 
   BitFromArgument(env, 'enable_tmpfs_redirect_var', default=False,
