@@ -178,12 +178,13 @@ void RegisterPepperFlashWithChrome(const FilePath& path,
   content::PepperPluginInfo plugin_info;
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
-  if (fresh_install) {
-    PluginPrefs::EnablePluginGlobally(IsPepperFlashEnabledByDefault(),
-                                      plugin_info.path);
-  }
+  bool enable_by_default = IsPepperFlashEnabledByDefault();
+  if (fresh_install)
+    PluginPrefs::EnablePluginGlobally(enable_by_default, plugin_info.path);
+
+  bool add_to_front = enable_by_default;
   PluginService::GetInstance()->RegisterInternalPlugin(
-      plugin_info.ToWebPluginInfo(), false);
+      plugin_info.ToWebPluginInfo(), add_to_front);
   PluginService::GetInstance()->RefreshPlugins();
 }
 
