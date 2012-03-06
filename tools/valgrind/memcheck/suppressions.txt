@@ -5912,6 +5912,14 @@
    fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
    fun:_ZN8chromeos24DesktopNotificationsTest5SetUpEv
 }
+{
+   bug_116996
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK8chromeos15UserManagerImpl10CreateUserERKSs
+   fun:_ZN8chromeos15UserManagerImpl12UserLoggedInERKSs
+   fun:_ZN8chromeos59OncNetworkParserUserExpansionTest_GetUserExpandedValue_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
