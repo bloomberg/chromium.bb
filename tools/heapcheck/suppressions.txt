@@ -1844,3 +1844,11 @@
    fun:chromeos::UserManagerImpl::UserLoggedIn
    fun:chromeos::OncNetworkParserUserExpansionTest_GetUserExpandedValue_Test::TestBody
 }
+{
+   bug_116996_c
+   Heapcheck:Leak
+   fun:std::string::_Rep::_S_create
+   fun:std::string::copy
+   fun:std::basic_string::basic_string
+   fun:chromeos::OncNetworkParserUserExpansionTest_GetUserExpandedValue_Test::TestBody
+}
