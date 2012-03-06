@@ -1,0 +1,57 @@
+[
+  {
+    "namespace": "experimental.managedMode",
+    "dependencies": ["types"],
+    "functions": [
+      {
+        "name": "enter",
+        "type": "function",
+        "description": "Shows a confirmation dialog, then puts the browser into managed mode. The callback parameter will be true if managed mode was entered successfully, false if the user cancelled the confirmation. If managed mode is already on, trying to enter it again will have no effect.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "result", 
+                "type": "object",
+                "description": "The result of the attempt to enter managed mode.",
+                "properties": {
+                  "success": {
+                    "description": "True if managed mode was entered successfully, false if the user cancelled the confirmation.",
+                    "type": "boolean"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "get",
+        "type": "function",
+        "description": "Gets the value of the setting describing whether managed mode is in effect.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "description": "Details of the currently effective value.",
+                "properties": {
+                  "value": {
+                    "description": "The value of the setting.",
+                    "type": "boolean"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -716,6 +716,7 @@ void ProfileManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kProfileLastUsed, "");
   prefs->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
   prefs->RegisterListPref(prefs::kProfilesLastActive);
+  prefs->RegisterBooleanPref(prefs::kInManagedMode, false);
 }
 
 size_t ProfileManager::GetNumberOfProfiles() {
@@ -919,7 +920,7 @@ ProfileManagerWithoutInit::ProfileManagerWithoutInit(
 void ProfileManager::RegisterTestingProfile(Profile* profile,
                                             bool add_to_cache) {
   RegisterProfile(profile, true);
-  if (add_to_cache){
+  if (add_to_cache) {
     InitProfileUserPrefs(profile);
     AddProfileToCache(profile);
   }

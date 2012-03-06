@@ -51,6 +51,7 @@ class ExtensionPermissionMessage {
     kContentSettings,
     kAllPageContent,
     kPrivacy,
+    kManagedMode,
     kEnumBoundary
   };
 
@@ -117,6 +118,7 @@ class ExtensionAPIPermission {
     kInput,
     kInputMethodPrivate,
     kKeybinding,
+    kManagedMode,
     kManagement,
     kMediaPlayerPrivate,
     kMetricsPrivate,

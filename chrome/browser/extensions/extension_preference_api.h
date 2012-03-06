@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,21 +66,37 @@ class PrefTransformerInterface {
       const base::Value* browser_pref) = 0;
 };
 
-class GetPreferenceFunction : public SyncExtensionFunction {
+// A base class to provide functionality common to the other *PreferenceFunction
+// classes.
+class PreferenceFunction : public SyncExtensionFunction {
+ public:
+  virtual ~PreferenceFunction();
+
+ protected:
+  // Given an |extension_pref_key|, provides its |browser_pref_key| from the
+  // static map in extension_preference.cc. Returns true if the corresponding
+  // browser pref exists and the extension has the API permission needed to
+  // modify that pref. Sets |error_| if the extension doesn't have the needed
+  // permission.
+  bool ValidateBrowserPref(const std::string& extension_pref_key,
+                           std::string* browser_pref_key);
+};
+
+class GetPreferenceFunction : public PreferenceFunction {
  public:
   virtual ~GetPreferenceFunction();
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("types.ChromeSetting.get")
 };
 
-class SetPreferenceFunction : public SyncExtensionFunction {
+class SetPreferenceFunction : public PreferenceFunction {
  public:
   virtual ~SetPreferenceFunction();
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("types.ChromeSetting.set")
 };
 
-class ClearPreferenceFunction : public SyncExtensionFunction {
+class ClearPreferenceFunction : public PreferenceFunction {
  public:
   virtual ~ClearPreferenceFunction();
   virtual bool RunImpl() OVERRIDE;

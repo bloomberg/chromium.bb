@@ -241,6 +241,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kInput, "input", 0, ExtensionPermissionMessage::kNone,
       kFlagImpliesFullURLAccess, kTypeDefault);
   info->RegisterPermission(
+      kManagedMode, "managedMode", IDS_EXTENSION_PROMPT_WARNING_MANAGED_MODE,
+      ExtensionPermissionMessage::kManagedMode, kFlagNone, kTypeDefault);
+  info->RegisterPermission(
       kManagement, "management", IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       ExtensionPermissionMessage::kManagement, kFlagNone, kTypeDefault);
   info->RegisterPermission(

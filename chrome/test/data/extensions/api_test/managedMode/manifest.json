@@ -1,0 +1,10 @@
+{
+  "name" : "Managed Mode API Test Extension",
+  "version" : "0.1",
+  "manifest_version": 2,
+  "description" : "Managed Mode API Test Extension",
+  "permissions": [ "managedMode", "experimental" ],
+  "background": {
+    "scripts": ["test.js"]
+  }
+}

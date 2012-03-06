@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,9 +8,20 @@
 
 namespace extension_preference_api_constants {
 
-// Keys.
+// Keys for incoming arguments.
 extern const char kIncognitoKey[];
 extern const char kScopeKey[];
+
+// Keys for returned parameters.
+extern const char kIncognitoSpecific[];
+extern const char kLevelOfControl[];
+extern const char kValue[];
+
+// Values for levelOfControl.
+extern const char kNotControllable[];
+extern const char kControlledByOtherExtensions[];
+extern const char kControllableByThisExtension[];
+extern const char kControlledByThisExtension[];
 
 // Errors.
 extern const char kIncognitoErrorMessage[];

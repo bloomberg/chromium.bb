@@ -41,6 +41,7 @@ var MODULE_SCHEMAS = [
   '../api/experimental.input.ui.json',
   '../api/experimental.input.virtualKeyboard.json',
   '../api/experimental.keybinding.json',
+  '../api/experimental.managedMode.json',
   '../api/experimental.processes.json',
   '../api/experimental.rlz.json',
   '../api/experimental.serial.json',
@@ -242,7 +243,7 @@ function fetchContent(url, onSuccess, onError) {
           window.clearTimeout(abortTimerId);
           onSuccess(xhr.responseText);
         } else {
-          handleError('Failure to fetch content');
+          handleError('Failure to fetch content: ' + xhr.status);
         }
       }
     }

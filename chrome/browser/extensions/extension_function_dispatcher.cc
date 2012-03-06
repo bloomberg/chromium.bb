@@ -36,6 +36,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_idle_api.h"
+#include "chrome/browser/extensions/extension_managed_mode_api.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
 #include "chrome/browser/extensions/extension_module.h"
@@ -347,6 +348,10 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<PageDownInputUiFunction>();
 #endif
 #endif
+
+  // Managed mode.
+  RegisterFunction<GetManagedModeFunction>();
+  RegisterFunction<EnterManagedModeFunction>();
 
   // Management.
   RegisterFunction<GetAllExtensionsFunction>();

@@ -2681,6 +2681,7 @@
         'browser/extensions/extension_javascript_url_apitest.cc',
         'browser/extensions/extension_keybinding_apitest.cc',
         'browser/extensions/extension_local_filesystem_apitest.cc',
+        'browser/extensions/extension_managed_mode_apitest.cc',
         'browser/extensions/extension_management_api_browsertest.cc',
         'browser/extensions/extension_management_apitest.cc',
         'browser/extensions/extension_management_browsertest.cc',
