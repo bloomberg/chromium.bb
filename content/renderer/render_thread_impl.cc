@@ -654,10 +654,14 @@ void RenderThreadImpl::IdleHandlerInForegroundTab() {
     // Idle notification hint roughly specifies the expected duration of the
     // idle pause. We set it proportional to the idle timer delay.
     int idle_hint = static_cast<int>(new_delay_ms / 10);
-    if (cpu_usage < kIdleCPUUsageThresholdInPercents &&
-        v8::V8::IdleNotification(idle_hint)) {
-      // V8 finished collecting garbage.
-      new_delay_ms = kLongIdleHandlerDelayMs;
+    if (cpu_usage < kIdleCPUUsageThresholdInPercents) {
+#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
+      MallocExtension::instance()->ReleaseFreeMemory();
+#endif
+      if (v8::V8::IdleNotification(idle_hint)) {
+        // V8 finished collecting garbage.
+        new_delay_ms = kLongIdleHandlerDelayMs;
+      }
     }
   }
   ScheduleIdleHandler(new_delay_ms);
