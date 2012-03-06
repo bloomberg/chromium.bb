@@ -3,8 +3,6 @@ Core wayland protocol
  - scanner: wl_* prefix removal: split it out into a namespace part so
    we can call variables "surface" instead of "wl_surface"?
 
- - Framebased input event delivery.
-
  - Protocol for arbitrating access to scanout buffers (physically
    contiguous memory).  When a client goes fullscreen (or ideally as
    the compositor starts the animation that will make it fullscreen)
