@@ -152,8 +152,6 @@ table_files = \
 	nl-be-g1.utb \
 	nl-BE-translation.ctb \
 	Nl-Nl-g1.utb \
-	no-gen.ctb \
-	no-gen.dis \
 	no-no.ctb \
 	no-no.dis \
 	no-no-g0.utb \
