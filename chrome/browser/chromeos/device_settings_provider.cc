@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/policy/app_pack_updater.h"
-#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -45,10 +44,14 @@ const char* kKnownSettings[] = {
   kAccountsPrefUsers,
   kAppPack,
   kDeviceOwner,
+  kIdleLogoutTimeout,
+  kIdleLogoutWarningDuration,
   kReleaseChannel,
   kReportDeviceActivityTimes,
   kReportDeviceBootMode,
   kReportDeviceVersionInfo,
+  kScreenSaverExtensionId,
+  kScreenSaverTimeout,
   kSettingProxyEverywhere,
   kSignedDataRoamingEnabled,
   kStatsReportingPref,
@@ -277,9 +280,14 @@ void DeviceSettingsProvider::SetInPolicy() {
     // The remaining settings don't support Set(), since they are not
     // intended to be customizable by the user:
     //   kAppPack
+    //   kIdleLogoutTimeout,
+    //   kIdleLogoutWarningDuration,
     //   kReportDeviceVersionInfo
     //   kReportDeviceActivityTimes
     //   kReportDeviceBootMode
+    //   kScreenSaverExtensionId,
+    //   kScreenSaverTimeout,
+
     NOTREACHED();
   }
   data.set_policy_value(pol.SerializeAsString());
@@ -322,112 +330,95 @@ void DeviceSettingsProvider::FinishSetInPolicy(
   SetInPolicy();
 }
 
-void DeviceSettingsProvider::UpdateValuesCache() {
-  const em::PolicyData data = policy();
-  PrefValueMap new_values_cache;
-
-  if (data.has_username() && !data.has_request_token())
-    new_values_cache.SetString(kDeviceOwner, data.username());
-
-  em::ChromeDeviceSettingsProto pol;
-  pol.ParseFromString(data.policy_value());
-
+void DeviceSettingsProvider::DecodeLoginPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) const {
   // For all our boolean settings the following is applicable:
   // true is default permissive value and false is safe prohibitive value.
   // Exceptions:
   //   kSignedDataRoamingEnabled has a default value of false.
   //   kAccountsPrefEphemeralUsersEnabled has a default value of false.
-  if (pol.has_allow_new_users() &&
-      pol.allow_new_users().has_allow_new_users() &&
-      pol.allow_new_users().allow_new_users()) {
+  if (policy.has_allow_new_users() &&
+      policy.allow_new_users().has_allow_new_users() &&
+      policy.allow_new_users().allow_new_users()) {
     // New users allowed, user_whitelist() ignored.
-    new_values_cache.SetBoolean(kAccountsPrefAllowNewUser, true);
-  } else if (!pol.has_user_whitelist()) {
+    new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
+  } else if (!policy.has_user_whitelist()) {
     // If we have the allow_new_users bool, and it is true, we honor that above.
     // In all other cases (don't have it, have it and it is set to false, etc),
     // We will honor the user_whitelist() if it is there and populated.
     // Otherwise we default to allowing new users.
-    new_values_cache.SetBoolean(kAccountsPrefAllowNewUser, true);
+    new_values_cache->SetBoolean(kAccountsPrefAllowNewUser, true);
   } else {
-    new_values_cache.SetBoolean(
+    new_values_cache->SetBoolean(
         kAccountsPrefAllowNewUser,
-        pol.user_whitelist().user_whitelist_size() == 0);
+        policy.user_whitelist().user_whitelist_size() == 0);
   }
 
-  new_values_cache.SetBoolean(
+  new_values_cache->SetBoolean(
       kAccountsPrefAllowGuest,
-      !pol.has_guest_mode_enabled() ||
-      !pol.guest_mode_enabled().has_guest_mode_enabled() ||
-      pol.guest_mode_enabled().guest_mode_enabled());
+      !policy.has_guest_mode_enabled() ||
+      !policy.guest_mode_enabled().has_guest_mode_enabled() ||
+      policy.guest_mode_enabled().guest_mode_enabled());
 
-  new_values_cache.SetBoolean(
+  new_values_cache->SetBoolean(
       kAccountsPrefShowUserNamesOnSignIn,
-      !pol.has_show_user_names() ||
-      !pol.show_user_names().has_show_user_names() ||
-      pol.show_user_names().show_user_names());
+      !policy.has_show_user_names() ||
+      !policy.show_user_names().has_show_user_names() ||
+      policy.show_user_names().show_user_names());
 
-  new_values_cache.SetBoolean(
-      kSignedDataRoamingEnabled,
-      pol.has_data_roaming_enabled() &&
-      pol.data_roaming_enabled().has_data_roaming_enabled() &&
-      pol.data_roaming_enabled().data_roaming_enabled());
-
-  new_values_cache.SetBoolean(
+  new_values_cache->SetBoolean(
       kAccountsPrefEphemeralUsersEnabled,
-      pol.has_ephemeral_users_enabled() &&
-      pol.ephemeral_users_enabled().has_ephemeral_users_enabled() &&
-      pol.ephemeral_users_enabled().ephemeral_users_enabled());
-
-  // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
-  std::string serialized;
-  if (pol.has_device_proxy_settings() &&
-      pol.device_proxy_settings().SerializeToString(&serialized)) {
-    new_values_cache.SetString(kSettingProxyEverywhere, serialized);
-  }
-
-  if (!pol.has_release_channel() ||
-      !pol.release_channel().has_release_channel()) {
-    // Default to an invalid channel (will be ignored).
-    new_values_cache.SetString(kReleaseChannel, "");
-  } else {
-    new_values_cache.SetString(kReleaseChannel,
-                               pol.release_channel().release_channel());
-  }
-
-  if (pol.has_metrics_enabled()) {
-    new_values_cache.SetBoolean(kStatsReportingPref,
-                                pol.metrics_enabled().metrics_enabled());
-  } else {
-    new_values_cache.SetBoolean(kStatsReportingPref, HasOldMetricsFile());
-  }
+      policy.has_ephemeral_users_enabled() &&
+      policy.ephemeral_users_enabled().has_ephemeral_users_enabled() &&
+      policy.ephemeral_users_enabled().ephemeral_users_enabled());
 
   base::ListValue* list = new base::ListValue();
-  const em::UserWhitelistProto& whitelist_proto = pol.user_whitelist();
+  const em::UserWhitelistProto& whitelist_proto = policy.user_whitelist();
   const RepeatedPtrField<std::string>& whitelist =
       whitelist_proto.user_whitelist();
   for (RepeatedPtrField<std::string>::const_iterator it = whitelist.begin();
        it != whitelist.end(); ++it) {
     list->Append(base::Value::CreateStringValue(*it));
   }
-  new_values_cache.SetValue(kAccountsPrefUsers, list);
+  new_values_cache->SetValue(kAccountsPrefUsers, list);
+}
 
-  if (pol.has_device_reporting()) {
-    if (pol.device_reporting().has_report_version_info()) {
-      new_values_cache.SetBoolean(kReportDeviceVersionInfo,
-          pol.device_reporting().report_version_info());
+void DeviceSettingsProvider::DecodeKioskPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) const {
+  if (policy.has_forced_logout_timeouts()) {
+    if (policy.forced_logout_timeouts().has_idle_logout_timeout()) {
+      new_values_cache->SetInteger(
+          kIdleLogoutTimeout,
+          policy.forced_logout_timeouts().idle_logout_timeout());
     }
-    // TODO(dubroy): Re-add device activity time policy here when the UI
-    // to notify the user has been implemented (http://crosbug.com/26252).
-    if (pol.device_reporting().has_report_boot_mode()) {
-      new_values_cache.SetBoolean(kReportDeviceBootMode,
-          pol.device_reporting().report_boot_mode());
+
+    if (policy.forced_logout_timeouts().has_idle_logout_warning_duration()) {
+      new_values_cache->SetInteger(
+          kIdleLogoutWarningDuration,
+          policy.forced_logout_timeouts().idle_logout_warning_duration());
     }
   }
 
-  if (pol.has_app_pack()) {
+  if (policy.has_login_screen_saver()) {
+    if (policy.login_screen_saver().has_screen_saver_timeout()) {
+      new_values_cache->SetInteger(
+          kScreenSaverTimeout,
+          policy.login_screen_saver().screen_saver_timeout());
+    }
+
+    if (policy.login_screen_saver().has_screen_saver_extension_id()) {
+      new_values_cache->SetString(
+          kScreenSaverExtensionId,
+          policy.login_screen_saver().screen_saver_extension_id());
+    }
+  }
+
+  if (policy.has_app_pack()) {
     typedef RepeatedPtrField<em::AppPackEntryProto> proto_type;
     base::ListValue* list = new base::ListValue;
-    const proto_type& app_pack = pol.app_pack().app_pack();
+    const proto_type& app_pack = policy.app_pack().app_pack();
     for (proto_type::const_iterator it = app_pack.begin();
          it != app_pack.end(); ++it) {
       base::DictionaryValue* entry = new base::DictionaryValue;
@@ -443,8 +434,81 @@ void DeviceSettingsProvider::UpdateValuesCache() {
       }
       list->Append(entry);
     }
-    new_values_cache.SetValue(kAppPack, list);
+    new_values_cache->SetValue(kAppPack, list);
   }
+}
+
+void DeviceSettingsProvider::DecodeNetworkPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) const {
+  new_values_cache->SetBoolean(
+      kSignedDataRoamingEnabled,
+      policy.has_data_roaming_enabled() &&
+      policy.data_roaming_enabled().has_data_roaming_enabled() &&
+      policy.data_roaming_enabled().data_roaming_enabled());
+
+  // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
+  std::string serialized;
+  if (policy.has_device_proxy_settings() &&
+      policy.device_proxy_settings().SerializeToString(&serialized)) {
+    new_values_cache->SetString(kSettingProxyEverywhere, serialized);
+  }
+}
+
+void DeviceSettingsProvider::DecodeReportingPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) const {
+  if (policy.has_device_reporting()) {
+    if (policy.device_reporting().has_report_version_info()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceVersionInfo,
+          policy.device_reporting().report_version_info());
+    }
+    // TODO(dubroy): Re-add device activity time policy here when the UI
+    // to notify the user has been implemented (http://crosbug.com/26252).
+    if (policy.device_reporting().has_report_boot_mode()) {
+      new_values_cache->SetBoolean(
+          kReportDeviceBootMode,
+          policy.device_reporting().report_boot_mode());
+    }
+  }
+}
+
+void DeviceSettingsProvider::DecodeGenericPolicies(
+    const em::ChromeDeviceSettingsProto& policy,
+    PrefValueMap* new_values_cache) const {
+  if (policy.has_metrics_enabled()) {
+    new_values_cache->SetBoolean(kStatsReportingPref,
+                                 policy.metrics_enabled().metrics_enabled());
+  } else {
+    new_values_cache->SetBoolean(kStatsReportingPref, HasOldMetricsFile());
+  }
+
+  if (!policy.has_release_channel() ||
+      !policy.release_channel().has_release_channel()) {
+    // Default to an invalid channel (will be ignored).
+    new_values_cache->SetString(kReleaseChannel, "");
+  } else {
+    new_values_cache->SetString(kReleaseChannel,
+                                policy.release_channel().release_channel());
+  }
+}
+
+void DeviceSettingsProvider::UpdateValuesCache() {
+  const em::PolicyData data = policy();
+  PrefValueMap new_values_cache;
+
+  if (data.has_username() && !data.has_request_token())
+    new_values_cache.SetString(kDeviceOwner, data.username());
+
+  em::ChromeDeviceSettingsProto pol;
+  pol.ParseFromString(data.policy_value());
+
+  DecodeLoginPolicies(pol, &new_values_cache);
+  DecodeKioskPolicies(pol, &new_values_cache);
+  DecodeNetworkPolicies(pol, &new_values_cache);
+  DecodeReportingPolicies(pol, &new_values_cache);
+  DecodeGenericPolicies(pol, &new_values_cache);
 
   // Collect all notifications but send them only after we have swapped the
   // cache so that if somebody actually reads the cache will be already valid.

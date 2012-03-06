@@ -34,6 +34,12 @@ extern const char kReportDeviceBootMode[];
 
 extern const char kAppPack[];
 
+extern const char kScreenSaverExtensionId[];
+extern const char kScreenSaverTimeout[];
+
+extern const char kIdleLogoutTimeout[];
+extern const char kIdleLogoutWarningDuration[];
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_NAMES_H_

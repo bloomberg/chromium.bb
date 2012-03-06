@@ -52,4 +52,15 @@ const char kReportDeviceBootMode[] = "cros.device_status.report_boot_mode";
 // "key-checksum": checksum of the extension's CRX public key, encoded in hex.
 const char kAppPack[] = "cros.app_pack";
 
+// Values from the ScreenSaver proto. Defines the extension ID of the screen
+// saver extension and the timeout before the screen saver should be started.
+const char kScreenSaverExtensionId[] = "cros.screen_saver.extension_id";
+const char kScreenSaverTimeout[] = "cros.screen_saver.timeout";
+
+// Values from the ForcedLogoutTimeouts proto. Defines the timeouts before a
+// user is logged out after some period of inactivity as well as the duration of
+// a warning message informing the user about the pending logout.
+const char kIdleLogoutTimeout[] = "cros.idle_logout.timeout";
+const char kIdleLogoutWarningDuration[] = "cros.idle_logout.warning_duration";
+
 }  // namespace chromeos

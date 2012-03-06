@@ -109,6 +109,31 @@ message AppPackProto {
   repeated AppPackEntryProto app_pack = 1;
 }
 
+message ForcedLogoutTimeoutsProto {
+  // All timeouts are specified in milliseconds.
+
+  // Specifies the timeout before an idle user session is terminated.
+  // If this field is omitted or set to 0, no logout on idle will be performed.
+  optional int64 idle_logout_timeout = 1;
+
+  // Specifies the duration of a warning countdown before the user is logged out
+  // because of idleness as specified by the |idle_logout_timeout| value.
+  // This field is only used if |idle_logout_timeout| != 0 is specified.
+  optional int64 idle_logout_warning_duration = 2;
+}
+
+message ScreenSaverProto {
+  // Specifies the extension ID which is to be used as a screen saver on the
+  // login screen if no user activity is present. Only respected if the device
+  // is in KIOSK mode.
+  optional string screen_saver_extension_id = 1;
+
+  // Specifies the timeout before the screen saver is activated. If this field
+  // is omitted or set to 0, no screen-saver will be started.
+  // Measured in milliseconds.
+  optional int64 screen_saver_timeout = 2;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -124,4 +149,6 @@ message ChromeDeviceSettingsProto {
   optional DeviceReportingProto device_reporting = 12;
   optional EphemeralUsersEnabledProto ephemeral_users_enabled = 13;
   optional AppPackProto app_pack = 14;
+  optional ForcedLogoutTimeoutsProto forced_logout_timeouts = 15;
+  optional ScreenSaverProto login_screen_saver = 16;
 }

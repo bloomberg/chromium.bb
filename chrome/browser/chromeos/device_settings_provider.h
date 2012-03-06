@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/signed_settings_migration_helper.h"
+#include "chrome/browser/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "content/public/browser/notification_registrar.h"
@@ -65,6 +66,23 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   void FinishSetInPolicy(
       SignedSettings::ReturnCode code,
       const enterprise_management::PolicyFetchResponse& policy);
+
+  // Decode the various groups of policies.
+  void DecodeLoginPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PrefValueMap* new_values_cache) const;
+  void DecodeKioskPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PrefValueMap* new_values_cache) const;
+  void DecodeNetworkPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PrefValueMap* new_values_cache) const;
+  void DecodeReportingPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PrefValueMap* new_values_cache) const;
+  void DecodeGenericPolicies(
+      const enterprise_management::ChromeDeviceSettingsProto& policy,
+      PrefValueMap* new_values_cache) const;
 
   // Parses the policy cache and fills the cache of base::Value objects.
   void UpdateValuesCache();
