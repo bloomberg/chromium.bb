@@ -108,6 +108,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_L2TPIPSEC_PASSWORD,
   PROPERTY_INDEX_L2TPIPSEC_PIN,
   PROPERTY_INDEX_L2TPIPSEC_PSK,
+  PROPERTY_INDEX_L2TPIPSEC_PSK_REQUIRED,
   PROPERTY_INDEX_L2TPIPSEC_USER,
   PROPERTY_INDEX_MANUFACTURER,
   PROPERTY_INDEX_MDN,
@@ -989,10 +990,12 @@ class VirtualNetwork : public Network {
   ProviderType provider_type() const { return provider_type_; }
   const std::string& ca_cert_nss() const { return ca_cert_nss_; }
   const std::string& psk_passphrase() const { return psk_passphrase_; }
+  bool psk_passphrase_required() const { return psk_passphrase_required_; }
   const std::string& client_cert_id() const { return client_cert_id_; }
   const std::string& username() const { return username_; }
   ClientCertType client_cert_type() const { return client_cert_type_; }
   const std::string& user_passphrase() const { return user_passphrase_; }
+  bool user_passphrase_required() const { return user_passphrase_required_; }
   const std::string& group_name() const { return group_name_; }
 
   // Sets the well-known PKCS#11 slot and PIN for accessing certificates.
@@ -1007,6 +1010,10 @@ class VirtualNetwork : public Network {
   // Public getters.
   bool NeedMoreInfoToConnect() const;
   std::string GetProviderTypeString() const;
+  // Returns true if a PSK passphrase is required to connect.
+  bool IsPSKPassphraseRequired() const;
+  // Returns true if a user passphrase is required to connect.
+  bool IsUserPassphraseRequired() const;
 
   // Public setters.
   void SetCACertNSS(const std::string& ca_cert_nss);
@@ -1055,12 +1062,18 @@ class VirtualNetwork : public Network {
   void set_psk_passphrase(const std::string& psk_passphrase) {
     psk_passphrase_ = psk_passphrase;
   }
+  void set_psk_passphrase_required(bool psk_passphrase_required) {
+    psk_passphrase_required_ = psk_passphrase_required;
+  }
   void set_client_cert_id(const std::string& client_cert_id) {
     client_cert_id_ = client_cert_id;
   }
   void set_username(const std::string& username) { username_ = username; }
   void set_user_passphrase(const std::string& user_passphrase) {
     user_passphrase_ = user_passphrase;
+  }
+  void set_user_passphrase_required(bool user_passphrase_required) {
+    user_passphrase_required_ = user_passphrase_required;
   }
   void set_group_name(const std::string& group_name) {
     group_name_ = group_name;
@@ -1088,10 +1101,12 @@ class VirtualNetwork : public Network {
   // NSS nickname for server CA certificate.
   std::string ca_cert_nss_;
   std::string psk_passphrase_;
+  bool psk_passphrase_required_;
   // PKCS#11 ID for client certificate.
   std::string client_cert_id_;
   std::string username_;
   std::string user_passphrase_;
+  bool user_passphrase_required_;
   std::string group_name_;
   ClientCertType client_cert_type_;
 

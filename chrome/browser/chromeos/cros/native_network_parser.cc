@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,8 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kL2tpIpsecIkeVersion, PROPERTY_INDEX_IPSEC_IKEVERSION },
   { flimflam::kL2tpIpsecPinProperty, PROPERTY_INDEX_L2TPIPSEC_PIN },
   { flimflam::kL2tpIpsecPskProperty, PROPERTY_INDEX_L2TPIPSEC_PSK },
+  { flimflam::kL2tpIpsecPskRequiredProperty,
+    PROPERTY_INDEX_L2TPIPSEC_PSK_REQUIRED },
   { flimflam::kL2tpIpsecPasswordProperty, PROPERTY_INDEX_L2TPIPSEC_PASSWORD },
   { flimflam::kL2tpIpsecUserProperty, PROPERTY_INDEX_L2TPIPSEC_USER },
   { flimflam::kL2tpIpsecGroupNameProperty,
@@ -133,8 +135,6 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kTypeProperty, PROPERTY_INDEX_TYPE },
   { flimflam::kUIDataProperty, PROPERTY_INDEX_UI_DATA },
   { flimflam::kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
-  { flimflam::kOpenVPNUserProperty, PROPERTY_INDEX_OPEN_VPN_USER },
-  { flimflam::kOpenVPNPasswordProperty, PROPERTY_INDEX_OPEN_VPN_PASSWORD },
   { flimflam::kOpenVPNClientCertIdProperty,
     PROPERTY_INDEX_OPEN_VPN_CLIENT_CERT_ID },
   { flimflam::kOpenVPNAuthProperty, PROPERTY_INDEX_OPEN_VPN_AUTH },
@@ -1264,6 +1264,13 @@ bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
       network->set_psk_passphrase(psk_passphrase);
       return true;
     }
+    case PROPERTY_INDEX_L2TPIPSEC_PSK_REQUIRED: {
+      bool psk_passphrase_required;
+      if (!value.GetAsBoolean(&psk_passphrase_required))
+        break;
+      network->set_psk_passphrase_required(psk_passphrase_required);
+      return true;
+    }
     case PROPERTY_INDEX_L2TPIPSEC_CLIENT_CERT_ID:
     case PROPERTY_INDEX_OPEN_VPN_CLIENT_CERT_ID: {
       std::string client_cert_id;
@@ -1286,6 +1293,13 @@ bool NativeVirtualNetworkParser::ParseProviderValue(PropertyIndex index,
       if (!value.GetAsString(&user_passphrase))
         break;
       network->set_user_passphrase(user_passphrase);
+      return true;
+    }
+    case PROPERTY_INDEX_PASSPHRASE_REQUIRED: {
+      bool user_passphrase_required;
+      if (!value.GetAsBoolean(&user_passphrase_required))
+        break;
+      network->set_user_passphrase_required(user_passphrase_required);
       return true;
     }
     case PROPERTY_INDEX_L2TPIPSEC_GROUP_NAME: {

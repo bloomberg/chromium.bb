@@ -746,6 +746,9 @@ EthernetNetwork::EthernetNetwork(const std::string& service_path)
 VirtualNetwork::VirtualNetwork(const std::string& service_path)
     : Network(service_path, TYPE_VPN),
       provider_type_(PROVIDER_TYPE_L2TP_IPSEC_PSK),
+      // Assume PSK and user passphrase are not available initially
+      psk_passphrase_required_(true),
+      user_passphrase_required_(true),
       client_cert_type_(CLIENT_CERT_TYPE_NONE) {
   init_client_cert_pattern();
 }
@@ -790,13 +793,14 @@ void VirtualNetwork::CopyCredentialsFromRemembered(Network* remembered) {
 }
 
 bool VirtualNetwork::NeedMoreInfoToConnect() const {
-  if (server_hostname_.empty() || username_.empty() || user_passphrase_.empty())
+  if (server_hostname_.empty() || username_.empty() ||
+      IsUserPassphraseRequired())
     return true;
   if (error() != ERROR_NO_ERROR)
     return true;
   switch (provider_type_) {
     case PROVIDER_TYPE_L2TP_IPSEC_PSK:
-      if (psk_passphrase_.empty())
+      if (IsPSKPassphraseRequired())
         return true;
       break;
     case PROVIDER_TYPE_L2TP_IPSEC_USER_CERT:
@@ -838,6 +842,14 @@ std::string VirtualNetwork::GetProviderTypeString() const {
           IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
       break;
   }
+}
+
+bool VirtualNetwork::IsPSKPassphraseRequired() const {
+  return psk_passphrase_required_ && psk_passphrase_.empty();
+}
+
+bool VirtualNetwork::IsUserPassphraseRequired() const {
+  return user_passphrase_required_ && user_passphrase_.empty();
 }
 
 void VirtualNetwork::SetCACertNSS(const std::string& ca_cert_nss) {
