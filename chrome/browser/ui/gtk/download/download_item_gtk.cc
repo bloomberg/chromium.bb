@@ -193,7 +193,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   new_item_animation_->SetSlideDuration(kNewItemAnimationDurationMs);
   gtk_widget_show_all(hbox_.get());
 
-  if (IsDangerous()) {
+  if (download_model_->IsDangerous()) {
     // Hide the download item components for now.
     gtk_widget_set_no_show_all(body_.get(), TRUE);
     gtk_widget_set_no_show_all(menu_button_, TRUE);
@@ -233,11 +233,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
     // Create the ok button.
     GtkWidget* dangerous_accept = gtk_button_new_with_label(
-        l10n_util::GetStringUTF8(
-            ChromeDownloadManagerDelegate::IsExtensionDownload(
-                download_model->download()) ?
-                    IDS_CONTINUE_EXTENSION_DOWNLOAD :
-                    IDS_CONFIRM_DOWNLOAD).c_str());
+        UTF16ToUTF8(download_model_->GetWarningConfirmButtonText()).c_str());
     g_signal_connect(dangerous_accept, "clicked",
                      G_CALLBACK(OnDangerousAcceptThunk), this);
     gtk_util::CenterWidgetInHBox(dangerous_hbox_.get(), dangerous_accept, false,
@@ -263,7 +259,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   theme_service_->InitThemesFor(this);
 
   // Set the initial width of the widget to be animated.
-  if (IsDangerous()) {
+  if (download_model_->IsDangerous()) {
     gtk_widget_set_size_request(dangerous_hbox_.get(),
                                 dangerous_hbox_start_width_, -1);
   } else {
@@ -301,8 +297,7 @@ DownloadItemGtk::~DownloadItemGtk() {
 void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
   DCHECK_EQ(download, get_download());
 
-  if (dangerous_prompt_ != NULL &&
-      download->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
+  if (dangerous_prompt_ != NULL && !download_model_->IsDangerous()) {
     // We have been approved.
     gtk_widget_set_no_show_all(body_.get(), FALSE);
     gtk_widget_set_no_show_all(menu_button_, FALSE);
@@ -375,7 +370,7 @@ void DownloadItemGtk::AnimationProgressed(const ui::Animation* animation) {
     gtk_widget_queue_draw(progress_area_.get());
   } else {
     DCHECK(animation == new_item_animation_.get());
-    if (IsDangerous()) {
+    if (download_model_->IsDangerous()) {
       int progress = static_cast<int>((dangerous_hbox_full_width_ -
                                        dangerous_hbox_start_width_) *
                                       animation->GetCurrentValue());
@@ -423,10 +418,6 @@ void DownloadItemGtk::Observe(int type,
 
 DownloadItem* DownloadItemGtk::get_download() {
   return download_model_->download();
-}
-
-bool DownloadItemGtk::IsDangerous() {
-  return get_download()->GetSafetyState() == DownloadItem::DANGEROUS;
 }
 
 // Download progress animation functions.
@@ -566,31 +557,8 @@ void DownloadItemGtk::UpdateDangerWarning() {
 
     // We create |dangerous_warning| as a wide string so we can more easily
     // calculate its length in characters.
-    string16 dangerous_warning;
-
-    // The dangerous download label text is different for different cases.
-    if (get_download()->GetDangerType() ==
-            content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL) {
-      // TODO(noelutz): handle malicious content warning.
-      // Safebrowsing shows the download URL leads to malicious file.
-      dangerous_warning =
-          l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
-    } else {
-      // It's a dangerous file type (e.g.: an executable).
-      DCHECK(get_download()->GetDangerType() ==
-             content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
-      if (ChromeDownloadManagerDelegate::IsExtensionDownload(get_download())) {
-        dangerous_warning =
-            l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
-      } else {
-        string16 elided_filename = ui::ElideFilename(
-            get_download()->GetTargetName(), gfx::Font(), kTextWidth);
-        dangerous_warning =
-            l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                                       elided_filename);
-      }
-    }
-
+    string16 dangerous_warning =
+        download_model_->GetWarningText(gfx::Font(), kTextWidth);
     if (theme_service_->UsingNativeTheme()) {
       gtk_util::SetLabelColor(dangerous_label_, NULL);
     } else {
@@ -637,17 +605,15 @@ void DownloadItemGtk::UpdateDangerWarning() {
 
 void DownloadItemGtk::UpdateDangerIcon() {
   if (theme_service_->UsingNativeTheme()) {
-    const char* stock = get_download()->GetDangerType() ==
-        content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ?
-            GTK_STOCK_DIALOG_ERROR : GTK_STOCK_DIALOG_WARNING;
+    const char* stock = download_model_->IsMalicious() ?
+        GTK_STOCK_DIALOG_ERROR : GTK_STOCK_DIALOG_WARNING;
     gtk_image_set_from_stock(
         GTK_IMAGE(dangerous_image_), stock, GTK_ICON_SIZE_SMALL_TOOLBAR);
   } else {
     // Set the warning icon.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    int pixbuf_id = get_download()->GetDangerType() ==
-        content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ?
-            IDR_SAFEBROWSING_WARNING : IDR_WARNING;
+    int pixbuf_id = download_model_->IsMalicious() ?
+        IDR_SAFEBROWSING_WARNING : IDR_WARNING;
     GdkPixbuf* download_pixbuf = rb.GetNativeImageNamed(pixbuf_id);
     gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_), download_pixbuf);
   }
@@ -729,7 +695,7 @@ gboolean DownloadItemGtk::OnHboxExpose(GtkWidget* widget, GdkEventExpose* e) {
     int width = allocation.width - border_width * 2;
     int height = allocation.height - border_width * 2;
 
-    if (IsDangerous()) {
+    if (download_model_->IsDangerous()) {
       // Draw a simple frame around the area when we're displaying the warning.
       gtk_paint_shadow(gtk_widget_get_style(widget),
                        gtk_widget_get_window(widget),

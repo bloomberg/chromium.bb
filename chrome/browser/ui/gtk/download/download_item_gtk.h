@@ -73,9 +73,6 @@ class DownloadItemGtk : public content::DownloadItem::Observer,
  private:
   friend class DownloadShelfContextMenuGtk;
 
-  // Returns true IFF the download is dangerous and unconfirmed.
-  bool IsDangerous();
-
   // Functions for controlling the progress animation.
   // Repaint the download progress.
   void UpdateDownloadProgress();

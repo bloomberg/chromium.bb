@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,8 +30,7 @@ DownloadItemMac::~DownloadItemMac() {
 void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
   DCHECK_EQ(download, download_model_->download());
 
-  if ([item_controller_ isDangerousMode] &&
-      download->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
+  if ([item_controller_ isDangerousMode] && !download_model_->IsDangerous()) {
     // We have been approved.
     [item_controller_ clearDangerousMode];
   }

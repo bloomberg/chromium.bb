@@ -7,14 +7,17 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/common/time_format.h"
+#include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/base/text/text_elider.h"
 
 using base::TimeDelta;
 using content::DownloadItem;
@@ -108,4 +111,74 @@ string16 DownloadItemModel::GetStatusText() {
   }
 
   return status_text;
+}
+
+string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
+                                           int base_width) {
+  // Should only be called if IsDangerous().
+  DCHECK(IsDangerous());
+  switch (download_->GetDangerType()) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+      return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
+
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      if (ChromeDownloadManagerDelegate::IsExtensionDownload(download_)) {
+        return l10n_util::GetStringUTF16(
+            IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+      } else {
+        return l10n_util::GetStringFUTF16(
+            IDS_PROMPT_DANGEROUS_DOWNLOAD,
+            ui::ElideFilename(download_->GetFileNameToReportUser(),
+                              font, base_width));
+      }
+
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      return l10n_util::GetStringFUTF16(
+          IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+          ui::ElideFilename(download_->GetFileNameToReportUser(),
+                            font, base_width));
+
+    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_MAX:
+      NOTREACHED();
+  }
+  return string16();
+}
+
+string16 DownloadItemModel::GetWarningConfirmButtonText() {
+  // Should only be called if IsDangerous()
+  DCHECK(IsDangerous());
+  if (download_->GetDangerType() ==
+          content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE &&
+      ChromeDownloadManagerDelegate::IsExtensionDownload(download_)) {
+    return l10n_util::GetStringUTF16(IDS_CONTINUE_EXTENSION_DOWNLOAD);
+  } else {
+    return l10n_util::GetStringUTF16(IDS_CONFIRM_DOWNLOAD);
+  }
+}
+
+bool DownloadItemModel::IsMalicious() {
+  if (!IsDangerous())
+    return false;
+  switch (download_->GetDangerType()) {
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      return true;
+
+    case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+    case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+    case content::DOWNLOAD_DANGER_TYPE_MAX:
+      // We shouldn't get any of these due to the IsDangerous() test above.
+      NOTREACHED();
+      // Fallthrough.
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool DownloadItemModel::IsDangerous() {
+  return download_->GetSafetyState() == DownloadItem::DANGEROUS;
 }

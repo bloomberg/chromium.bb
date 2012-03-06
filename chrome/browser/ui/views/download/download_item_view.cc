@@ -49,10 +49,6 @@ static const int kVerticalPadding = 3;        // Pixels
 static const int kVerticalTextSpacer = 2;     // Pixels
 static const int kVerticalTextPadding = 2;    // Pixels
 
-// The maximum number of characters we show in a file name when displaying the
-// dangerous download message.
-static const int kFileNameMaxLength = 20;
-
 // We add some padding before the left image so that the progress animation icon
 // hides the corners of the left image.
 static const int kLeftPadding = 0;  // Pixels.
@@ -205,7 +201,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
 
   UpdateDropDownButtonPosition();
 
-  if (download->GetSafetyState() == DownloadItem::DANGEROUS)
+  if (model_->IsDangerous())
     ShowWarningDialog();
 
   UpdateAccessibleName();
@@ -255,12 +251,10 @@ void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
 void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   DCHECK(download == download_);
 
-  if (IsShowingWarningDialog() &&
-      download->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
+  if (IsShowingWarningDialog() && !model_->IsDangerous()) {
     // We have been approved.
     ClearWarningDialog();
-  } else if (!IsShowingWarningDialog() &&
-             download->GetSafetyState() == DownloadItem::DANGEROUS) {
+  } else if (!IsShowingWarningDialog() && model_->IsDangerous()) {
     ShowWarningDialog();
     // Force the shelf to layout again as our size has changed.
     parent_->Layout();
@@ -573,7 +567,7 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
 void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  if (download_->GetSafetyState() == DownloadItem::DANGEROUS) {
+  if (model_->IsDangerous()) {
     state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
   } else {
     state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
@@ -1004,24 +998,14 @@ void DownloadItemView::ClearWarningDialog() {
 
 void DownloadItemView::ShowWarningDialog() {
   DCHECK(mode_ != DANGEROUS_MODE && mode_ != MALICIOUS_MODE);
-  if (download_->GetDangerType() ==
-          content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
-      download_->GetDangerType() ==
-          content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT) {
-    mode_ = MALICIOUS_MODE;
-  } else {
-    DCHECK(download_->GetDangerType() ==
-           content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
-    mode_ = DANGEROUS_MODE;
-  }
+  mode_ = ((model_->IsMalicious()) ? MALICIOUS_MODE : DANGEROUS_MODE);
+
   body_state_ = NORMAL;
   drop_down_state_ = NORMAL;
   tooltip_text_.clear();
   if (mode_ == DANGEROUS_MODE) {
-    save_button_ = new views::NativeTextButton(this,
-        l10n_util::GetStringUTF16(
-            ChromeDownloadManagerDelegate::IsExtensionDownload(download_) ?
-            IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_CONFIRM_DOWNLOAD));
+    save_button_ = new views::NativeTextButton(
+        this, model_->GetWarningConfirmButtonText());
     save_button_->set_ignore_minimum_size(true);
     AddChildView(save_button_);
   }
@@ -1030,74 +1014,16 @@ void DownloadItemView::ShowWarningDialog() {
   discard_button_->set_ignore_minimum_size(true);
   AddChildView(discard_button_);
 
-  // Ensure the file name is not too long.
-
-  // Extract the file extension (if any).
-  FilePath filename(download_->GetTargetName());
-#if defined(OS_POSIX)
-  string16 extension = WideToUTF16(base::SysNativeMBToWide(
-      filename.Extension()));
-#else
-  string16 extension = filename.Extension();
-#endif
-
-  // Remove leading '.'
-  if (extension.length() > 0)
-    extension = extension.substr(1);
-#if defined(OS_POSIX)
-  string16 rootname = WideToUTF16(base::SysNativeMBToWide(
-      filename.RemoveExtension().value()));
-#else
-  string16 rootname = filename.RemoveExtension().value();
-#endif
-
-  // Elide giant extensions (this shouldn't currently be hit, but might
-  // in future, should we ever notice unsafe giant extensions).
-  if (extension.length() > kFileNameMaxLength / 2)
-    ui::ElideString(extension, kFileNameMaxLength / 2, &extension);
-
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  // The dangerous download label text and icon are different
-  // under different cases.
+  // The dangerous download label text and icon are different under
+  // different cases.
   if (mode_ == MALICIOUS_MODE) {
     warning_icon_ = rb.GetBitmapNamed(IDR_SAFEBROWSING_WARNING);
   } else {
-    DCHECK(download_->GetDangerType() ==
-           content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
     // The download file has dangerous file type (e.g.: an executable).
     warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
   }
-  string16 dangerous_label;
-  if (download_->GetDangerType() ==
-          content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL) {
-    // Safebrowsing shows the download URL or content leads to malicious file.
-    dangerous_label = l10n_util::GetStringUTF16(
-        IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
-  } else if (download_->GetDangerType() ==
-                 content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE &&
-             ChromeDownloadManagerDelegate::IsExtensionDownload(download_)) {
-    dangerous_label =
-        l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
-  } else {
-    // The download file has dangerous file type (e.g.: an executable) or the
-    // file content is known to be malicious.
-    DCHECK(download_->GetDangerType() ==
-               content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
-           download_->GetDangerType() ==
-               content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
-    ui::ElideString(rootname,
-                    kFileNameMaxLength - extension.length(),
-                    &rootname);
-    string16 filename = rootname + ASCIIToUTF16(".") + extension;
-    filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
-    dangerous_label = l10n_util::GetStringFUTF16(
-        download_->GetDangerType() ==
-            content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ?
-                IDS_PROMPT_DANGEROUS_DOWNLOAD :
-                IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
-        filename);
-  }
-
+  string16 dangerous_label = model_->GetWarningText(font_, kTextWidth);
   dangerous_download_label_ = new views::Label(dangerous_label);
   dangerous_download_label_->SetMultiLine(true);
   dangerous_download_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

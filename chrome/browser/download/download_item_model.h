@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,11 @@ namespace content {
 class DownloadItem;
 }
 
-// This class provides an interface for functions which have different behaviors
-// depending on the type of download.
+namespace gfx {
+class Font;
+}
+
+// This class is an abstraction for common UI tasks associated with a download.
 class BaseDownloadItemModel {
  public:
   explicit BaseDownloadItemModel(content::DownloadItem* download)
@@ -32,25 +35,42 @@ class BaseDownloadItemModel {
   // Get the status text to display.
   virtual string16 GetStatusText() = 0;
 
+  // Get the warning text to display for a dangerous download. The |base_width|
+  // is the maximum width of an embedded filename (if there is one). The metrics
+  // for the filename will be based on |font|. Should only be called if
+  // IsDangerous() is true.
+  virtual string16 GetWarningText(const gfx::Font& font, int base_width) = 0;
+
+  // Get the caption text for a button for confirming a dangerous download
+  // warning.
+  virtual string16 GetWarningConfirmButtonText() = 0;
+
+  // Is this considered a malicious download? Implies IsDangerous().
+  virtual bool IsMalicious() = 0;
+
+  // Is this considered a dangerous download?
+  virtual bool IsDangerous() = 0;
+
   content::DownloadItem* download() { return download_; }
 
  protected:
   content::DownloadItem* download_;
 };
 
-// This class is a model class for DownloadItemView. It provides functionality
-// for canceling the downloading, and also the text for displaying downloading
-// status.
+// Concrete implementation of BaseDownloadItemModel.
 class DownloadItemModel : public BaseDownloadItemModel {
  public:
   explicit DownloadItemModel(content::DownloadItem* download);
   virtual ~DownloadItemModel() { }
 
-  // Cancel the downloading.
+  // BaseDownloadItemModel
   virtual void CancelTask() OVERRIDE;
-
-  // Get downloading status text.
   virtual string16 GetStatusText() OVERRIDE;
+  virtual string16 GetWarningText(const gfx::Font& font,
+                                  int base_width) OVERRIDE;
+  virtual string16 GetWarningConfirmButtonText() OVERRIDE;
+  virtual bool IsMalicious() OVERRIDE;
+  virtual bool IsDangerous() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadItemModel);

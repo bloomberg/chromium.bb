@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,10 @@ class DownloadShelfContextMenuMac;
 
 namespace content {
 class DownloadItem;
+}
+
+namespace gfx {
+class Font;
 }
 
 // A controller class that manages one download item.
@@ -55,6 +59,9 @@ class DownloadItem;
 
   // The time at which this view was created.
   base::Time creationTime_;
+
+  // Default font to use for text metrics.
+  scoped_ptr<gfx::Font> font_;
 
   // The state of this item.
   enum DownoadItemState {
