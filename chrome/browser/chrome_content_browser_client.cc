@@ -370,12 +370,6 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
   new ChromeRenderViewHostObserver(render_view_host,
                                    profile->GetNetworkPredictor());
   new ExtensionMessageHandler(render_view_host);
-
-  if (render_view_host->GetDelegate()->GetRenderViewType() ==
-      content::VIEW_TYPE_INTERSTITIAL_PAGE) {
-    render_view_host->Send(new ChromeViewMsg_SetAsInterstitial(
-        render_view_host->GetRoutingID()));
-  }
 }
 
 void ChromeContentBrowserClient::RenderProcessHostCreated(
