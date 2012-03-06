@@ -13,10 +13,6 @@
   z-index: 1;
 }
 
-.toolbar-container button {
-  padding: 3px 9px;
-}
-
 .toolbar-visible {
   top: -8px;
 }
