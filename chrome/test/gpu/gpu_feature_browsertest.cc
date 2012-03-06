@@ -34,7 +34,7 @@ typedef uint32 GpuResultFlags;
 
 class GpuFeatureTest : public InProcessBrowserTest {
  public:
-  GpuFeatureTest() {}
+  GpuFeatureTest() : gpu_enabled_(false) {}
 
   virtual void SetUpInProcessBrowserTestFixture() {
     FilePath test_dir;
@@ -55,6 +55,8 @@ class GpuFeatureTest : public InProcessBrowserTest {
           command_line, gfx::kGLImplementationOSMesaName)) <<
           "kUseGL must not be set by test framework code!";
 #endif
+    } else {
+      gpu_enabled_ = true;
     }
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
     command_line->AppendSwitchASCII(switches::kWindowSize, "400,300");
@@ -71,6 +73,12 @@ class GpuFeatureTest : public InProcessBrowserTest {
   void RunTest(const FilePath& url,
                const char* expected_reply,
                bool new_tab) {
+#if defined(OS_LINUX) && !defined(NDEBUG)
+    // Bypass tests on GPU Linux Debug bots.
+    if (gpu_enabled_)
+      return;
+#endif
+
     FilePath test_path;
     test_path = gpu_test_dir_.Append(url);
     ASSERT_TRUE(file_util::PathExists(test_path))
@@ -94,6 +102,12 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   void RunTest(const FilePath& url, GpuResultFlags expectations) {
+#if defined(OS_LINUX) && !defined(NDEBUG)
+    // Bypass tests on GPU Linux Debug bots.
+    if (gpu_enabled_)
+      return;
+#endif
+
     using trace_analyzer::Query;
     using trace_analyzer::TraceAnalyzer;
 
@@ -126,6 +140,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
  protected:
   FilePath gpu_test_dir_;
+  bool gpu_enabled_;
 };
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingAllowed) {
