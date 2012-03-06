@@ -21,9 +21,9 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* profile_sync_service)
-    : NonFrontendDataTypeController(profile_sync_factory,
-                                    profile,
-                                    profile_sync_service),
+    : NewNonFrontendDataTypeController(profile_sync_factory,
+                                       profile,
+                                       profile_sync_service),
       type_(type),
       profile_(profile),
       profile_sync_service_(profile_sync_service) {
@@ -54,16 +54,6 @@ bool ExtensionSettingDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_->InitExtensions(true);
   return true;
-}
-
-void ExtensionSettingDataTypeController::CreateSyncComponents() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK_EQ(state(), ASSOCIATING);
-  ProfileSyncComponentsFactory::SyncComponents sync_components =
-      profile_sync_factory()->CreateExtensionOrAppSettingSyncComponents(
-          type_, profile_sync_service_, this);
-  set_model_associator(sync_components.model_associator);
-  set_change_processor(sync_components.change_processor);
 }
 
 }  // namespace browser_sync

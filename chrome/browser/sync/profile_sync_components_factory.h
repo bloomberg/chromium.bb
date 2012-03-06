@@ -80,93 +80,26 @@ class ProfileSyncComponentsFactory {
 
   // Returns a weak pointer to the syncable service specified by |type|.
   // Weak pointer may be unset if service is already destroyed.
+  // Note: Should only be called on the same thread on which a datatype resides.
   virtual base::WeakPtr<SyncableService> GetSyncableServiceForType(
       syncable::ModelType type) = 0;
 
-  // Returns a weak pointer to the SyncableService associated with the datatype.
-  // The SyncableService is not owned by Sync, but by the backend service
-  // itself.
-  virtual base::WeakPtr<SyncableService> GetAutofillProfileSyncableService(
-      WebDataService* web_data_service) const = 0;
-
-  // Returns a weak pointer to the SyncableService associated with the datatype.
-  // The SyncableService is not owned by Sync, but by the backend service
-  // itself.
-  virtual base::WeakPtr<SyncableService> GetAutocompleteSyncableService(
-      WebDataService* web_data_service) const = 0;
-
-  // Instantiates both a model associator and change processor for the
-  // bookmark data type.  The pointers in the return struct are owned
-  // by the caller.
+  // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the
-  // extension or app setting data type.  The pointers in the return struct are
-  // owned by the caller.
-  virtual SyncComponents CreateExtensionOrAppSettingSyncComponents(
-      // Either EXTENSION_SETTINGS or APP_SETTINGS.
-      syncable::ModelType type,
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the
-  // extension or app data types.  The pointers in the return struct are
-  // owned by the caller.
-  virtual SyncComponents CreateExtensionOrAppSyncComponents(
-      syncable::ModelType type,  // Either EXTENSIONS or APPS.
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the
-  // password data type.  The pointers in the return struct are
-  // owned by the caller.
   virtual SyncComponents CreatePasswordSyncComponents(
       ProfileSyncService* profile_sync_service,
       PasswordStore* password_store,
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the
-  // preference data type.  The pointers in the return struct are
-  // owned by the caller.
-  virtual SyncComponents CreatePreferenceSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the
-  // theme data type.  The pointers in the return struct are
-  // owned by the caller.
   virtual SyncComponents CreateThemeSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the
-  // typed_url data type.  The pointers in the return struct are owned
-  // by the caller.
   virtual SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the
-  // session data type.  The pointers in the return struct are
-  // owned by the caller.
   virtual SyncComponents CreateSessionSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the search
-  // engine data type.  The pointers in the return struct are owned by the
-  // caller.
-  virtual SyncComponents CreateSearchEngineSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) = 0;
-
-  // Instantiates both a model associator and change processor for the app
-  // notification data type.  The pointers in the return struct are owned by the
-  // caller.
-  virtual SyncComponents CreateAppNotificationSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) = 0;
 };

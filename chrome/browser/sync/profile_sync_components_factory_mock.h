@@ -40,34 +40,17 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
       browser_sync::SharedChangeProcessor*());
   MOCK_METHOD1(GetSyncableServiceForType,
                base::WeakPtr<SyncableService>(syncable::ModelType));
-  MOCK_CONST_METHOD1(GetAutofillProfileSyncableService,
-                     base::WeakPtr<SyncableService>(
-                         WebDataService* web_data_service));
-  MOCK_CONST_METHOD1(GetAutocompleteSyncableService,
-                     base::WeakPtr<SyncableService>(
-                         WebDataService* web_data_service));
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
-                     browser_sync::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD3(CreateExtensionOrAppSyncComponents,
-      SyncComponents(syncable::ModelType type,
-                     ProfileSyncService* profile_sync_service,
-                     browser_sync::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD3(CreateExtensionOrAppSettingSyncComponents,
-      SyncComponents(syncable::ModelType model_type,
-                     ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
   MOCK_METHOD3(CreatePasswordSyncComponents,
                SyncComponents(
                    ProfileSyncService* profile_sync_service,
                    PasswordStore* password_store,
                    browser_sync::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD2(CreatePreferenceSyncComponents,
-      SyncComponents(ProfileSyncService* profile_sync_service,
-                     browser_sync::DataTypeErrorHandler* error_handler));
   MOCK_METHOD2(CreateSessionSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler));
+                     browser_sync::DataTypeErrorHandler* error_handler));
   MOCK_METHOD2(CreateThemeSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::DataTypeErrorHandler* error_handler));
@@ -75,14 +58,6 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                SyncComponents(
                    ProfileSyncService* profile_sync_service,
                    history::HistoryBackend* history_backend,
-                   browser_sync::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD2(CreateSearchEngineSyncComponents,
-               SyncComponents(
-                   ProfileSyncService* profile_sync_service,
-                   browser_sync::DataTypeErrorHandler* error_handler));
-  MOCK_METHOD2(CreateAppNotificationSyncComponents,
-               SyncComponents(
-                   ProfileSyncService* profile_sync_service,
                    browser_sync::DataTypeErrorHandler* error_handler));
 
  private:

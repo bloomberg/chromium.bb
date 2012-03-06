@@ -23,17 +23,13 @@ AppNotificationDataTypeController::AppNotificationDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : FrontendDataTypeController(profile_sync_factory,
-                                 profile,
-                                 sync_service) {
+    : UIDataTypeController(syncable::APP_NOTIFICATIONS,
+                           profile_sync_factory,
+                           profile,
+                           sync_service) {
 }
 
 AppNotificationDataTypeController::~AppNotificationDataTypeController() {
-  CleanUpState();
-}
-
-syncable::ModelType AppNotificationDataTypeController::type() const {
-  return syncable::APP_NOTIFICATIONS;
 }
 
 void AppNotificationDataTypeController::Observe(
@@ -62,16 +58,8 @@ bool AppNotificationDataTypeController::StartModels() {
 }
 
 // Cleanup for our extra registrar usage.
-void AppNotificationDataTypeController::CleanUpState() {
+void AppNotificationDataTypeController::StopModels() {
   registrar_.RemoveAll();
-}
-
-void AppNotificationDataTypeController::CreateSyncComponents() {
-  ProfileSyncComponentsFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateAppNotificationSyncComponents(
-          sync_service_, this);
-  set_model_associator(sync_components.model_associator);
-  set_change_processor(sync_components.change_processor);
 }
 
 AppNotificationManager*

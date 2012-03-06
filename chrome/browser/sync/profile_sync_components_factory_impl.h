@@ -38,54 +38,22 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   virtual base::WeakPtr<SyncableService> GetSyncableServiceForType(
       syncable::ModelType type) OVERRIDE;
 
-  virtual base::WeakPtr<SyncableService> GetAutofillProfileSyncableService(
-      WebDataService* web_data_service) const OVERRIDE;
-
-  virtual base::WeakPtr<SyncableService> GetAutocompleteSyncableService(
-      WebDataService* web_data_service) const OVERRIDE;
-
+  // Legacy datatypes that need to be converted to the SyncableService API.
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
-  virtual SyncComponents CreateExtensionOrAppSettingSyncComponents(
-      // Either EXTENSION_SETTING or APP_SETTING.
-      syncable::ModelType type,
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
-  virtual SyncComponents CreateExtensionOrAppSyncComponents(
-      syncable::ModelType type,  // Either EXTENSIONS or APPS.
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
   virtual SyncComponents CreatePasswordSyncComponents(
       ProfileSyncService* profile_sync_service,
       PasswordStore* password_store,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
-  virtual SyncComponents CreatePreferenceSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
   virtual SyncComponents CreateThemeSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
   virtual SyncComponents CreateTypedUrlSyncComponents(
       ProfileSyncService* profile_sync_service,
       history::HistoryBackend* history_backend,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
   virtual SyncComponents CreateSessionSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
-  virtual SyncComponents CreateSearchEngineSyncComponents(
-      ProfileSyncService* profile_sync_service,
-      browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
-
-  virtual SyncComponents CreateAppNotificationSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler) OVERRIDE;
 

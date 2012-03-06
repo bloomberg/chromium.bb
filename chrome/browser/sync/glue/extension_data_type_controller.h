@@ -10,13 +10,13 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+#include "chrome/browser/sync/glue/ui_data_type_controller.h"
 
 namespace browser_sync {
 
 // TODO(zea): Rename this and ExtensionSettingsDTC to ExtensionOrApp*, since
 // both actually handle the APP datatypes as well.
-class ExtensionDataTypeController : public FrontendDataTypeController {
+class ExtensionDataTypeController : public UIDataTypeController {
  public:
   ExtensionDataTypeController(
       syncable::ModelType type,  // Either EXTENSIONS or APPS.
@@ -25,21 +25,9 @@ class ExtensionDataTypeController : public FrontendDataTypeController {
       ProfileSyncService* sync_service);
   virtual ~ExtensionDataTypeController();
 
-  // DataTypeController implementation.
-  virtual syncable::ModelType type() const OVERRIDE;
-
- protected:
-  virtual GenericChangeProcessor* change_processor() const OVERRIDE;
-
  private:
   // DataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
-  virtual void CreateSyncComponents() OVERRIDE;
-
-  scoped_ptr<GenericChangeProcessor> generic_change_processor_;
-
-  // Either EXTENSIONS or APPS.
-  syncable::ModelType type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDataTypeController);
 };

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+#include "chrome/browser/sync/glue/ui_data_type_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -18,7 +18,7 @@ class AppNotificationManager;
 namespace browser_sync {
 
 class AppNotificationDataTypeController
-    : public FrontendDataTypeController,
+    : public UIDataTypeController,
       public content::NotificationObserver {
  public:
   AppNotificationDataTypeController(
@@ -26,9 +26,6 @@ class AppNotificationDataTypeController
       Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~AppNotificationDataTypeController();
-
-  // FrontendDataTypeController implementation.
-  virtual syncable::ModelType type() const OVERRIDE;
 
   // NotificationObserver interface.
   virtual void Observe(int type,
@@ -41,8 +38,7 @@ class AppNotificationDataTypeController
  private:
   // FrontendDataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
-  virtual void CleanUpState() OVERRIDE;
-  virtual void CreateSyncComponents() OVERRIDE;
+  virtual void StopModels() OVERRIDE;
 
   content::NotificationRegistrar registrar_;
 

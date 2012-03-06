@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
+#include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
 
 class Profile;
 class ProfileSyncComponentsFactory;
@@ -23,7 +23,7 @@ class SettingsFrontend;
 namespace browser_sync {
 
 class ExtensionSettingDataTypeController
-    : public NonFrontendDataTypeController {
+    : public NewNonFrontendDataTypeController {
  public:
   ExtensionSettingDataTypeController(
       // Either EXTENSION_SETTINGS or APP_SETTINGS.
@@ -43,7 +43,6 @@ class ExtensionSettingDataTypeController
       const tracked_objects::Location& from_here,
       const base::Closure& task) OVERRIDE;
   virtual bool StartModels() OVERRIDE;
-  virtual void CreateSyncComponents() OVERRIDE;
 
   // Either EXTENSION_SETTINGS or APP_SETTINGS.
   syncable::ModelType type_;

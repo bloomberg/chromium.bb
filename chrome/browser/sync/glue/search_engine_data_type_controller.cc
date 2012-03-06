@@ -22,16 +22,13 @@ SearchEngineDataTypeController::SearchEngineDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
-    : FrontendDataTypeController(profile_sync_factory,
-                                 profile,
-                                 sync_service) {
+    : UIDataTypeController(syncable::SEARCH_ENGINES,
+                           profile_sync_factory,
+                           profile,
+                           sync_service) {
 }
 
 SearchEngineDataTypeController::~SearchEngineDataTypeController() {
-}
-
-syncable::ModelType SearchEngineDataTypeController::type() const {
-  return syncable::SEARCH_ENGINES;
 }
 
 void SearchEngineDataTypeController::Observe(
@@ -62,22 +59,8 @@ bool SearchEngineDataTypeController::StartModels() {
 }
 
 // Cleanup for our extra registrar usage.
-void SearchEngineDataTypeController::CleanUpState() {
+void SearchEngineDataTypeController::StopModels() {
   registrar_.RemoveAll();
-}
-
-void SearchEngineDataTypeController::CreateSyncComponents() {
-  ProfileSyncComponentsFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateSearchEngineSyncComponents(sync_service_,
-                                                              this);
-  set_model_associator(sync_components.model_associator);
-  generic_change_processor_.reset(static_cast<GenericChangeProcessor*>(
-      sync_components.change_processor));
-}
-
-GenericChangeProcessor* SearchEngineDataTypeController::change_processor()
-    const {
-  return generic_change_processor_.get();
 }
 
 }  // namespace browser_sync

@@ -32,7 +32,6 @@
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
 #include "chrome/browser/sync/glue/shared_change_processor.h"
-#include "chrome/browser/sync/glue/syncable_service_adapter.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
@@ -64,7 +63,6 @@ using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::DataTypeController;
 using browser_sync::GenericChangeProcessor;
 using browser_sync::SharedChangeProcessor;
-using browser_sync::SyncableServiceAdapter;
 using browser_sync::GROUP_DB;
 using browser_sync::SyncBackendHostForProfileSyncTest;
 using browser_sync::UnrecoverableErrorHandler;

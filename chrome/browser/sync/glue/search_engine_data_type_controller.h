@@ -10,13 +10,13 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
-#include "chrome/browser/sync/glue/frontend_data_type_controller.h"
+#include "chrome/browser/sync/glue/ui_data_type_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 namespace browser_sync {
 
-class SearchEngineDataTypeController : public FrontendDataTypeController,
+class SearchEngineDataTypeController : public UIDataTypeController,
                                        public content::NotificationObserver {
  public:
   SearchEngineDataTypeController(
@@ -25,24 +25,15 @@ class SearchEngineDataTypeController : public FrontendDataTypeController,
       ProfileSyncService* sync_service);
   virtual ~SearchEngineDataTypeController();
 
-  // FrontendDataTypeController implementation.
-  virtual syncable::ModelType type() const OVERRIDE;
-
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- protected:
-  virtual GenericChangeProcessor* change_processor() const OVERRIDE;
-
  private:
   // FrontendDataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
-  virtual void CleanUpState() OVERRIDE;
-  virtual void CreateSyncComponents() OVERRIDE;
-
-  scoped_ptr<GenericChangeProcessor> generic_change_processor_;
+  virtual void StopModels() OVERRIDE;
 
   content::NotificationRegistrar registrar_;
 

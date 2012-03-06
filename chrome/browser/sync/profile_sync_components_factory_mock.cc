@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,16 +18,6 @@ ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock(
     : model_associator_(model_associator),
       change_processor_(change_processor) {
   ON_CALL(*this, CreateBookmarkSyncComponents(_, _)).
-      WillByDefault(
-          InvokeWithoutArgs(
-              this,
-              &ProfileSyncComponentsFactoryMock::MakeSyncComponents));
-  ON_CALL(*this, CreateSearchEngineSyncComponents(_, _)).
-      WillByDefault(
-          InvokeWithoutArgs(
-              this,
-              &ProfileSyncComponentsFactoryMock::MakeSyncComponents));
-  ON_CALL(*this, CreateAppNotificationSyncComponents(_, _)).
       WillByDefault(
           InvokeWithoutArgs(
               this,

@@ -25,8 +25,6 @@ namespace browser_sync {
 class AssociatorInterface;
 class ChangeProcessor;
 
-// TODO(zea): have naming and style match NonFrontendDataTypeController.
-// TODO(zea): Rename frontend to UI (http://crbug.com/78833).
 // Implementation for datatypes that reside on the frontend thread
 // (UI thread). This is the same thread we perform initialization on, so we
 // don't have to worry about thread safety. The main start/stop funtionality is
@@ -34,6 +32,9 @@ class ChangeProcessor;
 // Derived classes must implement (at least):
 //    syncable::ModelType type() const
 //    void CreateSyncComponents();
+// NOTE: This class is deprecated! New sync datatypes should be using the
+// SyncableService API and the UIDataTypeController instead.
+// TODO(zea): Delete this once all types are on the new API.
 class FrontendDataTypeController : public DataTypeController {
  public:
   FrontendDataTypeController(
