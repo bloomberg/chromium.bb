@@ -38,6 +38,7 @@ readonly SOURCE_DIR="${DEST_DIR}/source"
 readonly BUILD_DIR="${DEST_DIR}/build"
 readonly INSTALL_DIR="${DEST_DIR}/install"
 readonly LABEL="elfutils-0.153"
+readonly THIRD_PARTY_ELFUTILS="${ROOT_DIR}/../../../third_party/elfutils"
 
 CFLAGS="${CFLAGS:-}"
 # Extra headers for the pnacl/darwin build
@@ -56,10 +57,10 @@ Clean() {
 
 UntarAndPatch() {
   mkdir -p "${DEST_DIR}"
-  tar -jxvof "${ROOT_DIR}"/${LABEL}.tar.bz2 -C "${DEST_DIR}"
+  tar -jxvof "${THIRD_PARTY_ELFUTILS}"/${LABEL}.tar.bz2 -C "${DEST_DIR}"
   mv "${DEST_DIR}"/${LABEL} "${SOURCE_DIR}"
   pushd "${SOURCE_DIR}"
-  patch -p1 < "${ROOT_DIR}"/elfutils-portability.patch
+  patch -p1 < "${THIRD_PARTY_ELFUTILS}"/elfutils-portability.patch
   patch -p1 < "${ROOT_DIR}"/elfutils-pnacl.patch
   popd
 }
