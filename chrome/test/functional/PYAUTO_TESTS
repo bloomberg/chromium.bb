@@ -150,9 +150,6 @@
       # crbug.com/91887
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
-      # crbug.com/117006
-      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
-      '-passwords.PasswordTest.testInfoBarDisappearByNavigatingPage',
       # crbug.com/104227
       '-sync.SyncIntegrationTest',
       # crbug.com/88679
