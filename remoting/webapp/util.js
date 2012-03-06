@@ -8,35 +8,29 @@
  */
 
 /**
- * @param {string} classes A space-separated list of classes.
- * @param {string} cls The class to check for.
- * @return {boolean} True if |cls| is found within |classes|.
- */
-function hasClass(classes, cls) {
-  return classes.match(new RegExp('(\\s|^)' + cls + '(\\s|$)')) != null;
-}
-
-/**
+ * TODO(garykac): Remove this once host_list.js and host_table_entry.js have
+ * been updated to use classList directly.
+ *
  * @param {Element} element The element to which to add the class.
  * @param {string} cls The new class.
  * @return {void} Nothing.
  */
 function addClass(element, cls) {
-  if (!hasClass(element.className, cls)) {
-    var padded = element.className == '' ? '' : element.className + ' ';
-    element.className = padded + cls;
-  }
+  var helem = /** @type {HTMLElement} */ element;
+  helem.classList.add(cls);
 }
 
 /**
+ * TODO(garykac): Remove this once host_list.js and host_table_entry.js have
+ * been updated to use classList directly.
+ *
  * @param {Element} element The element from which to remove the class.
  * @param {string} cls The new class.
  * @return {void} Nothing.
  */
 function removeClass(element, cls) {
-  element.className =
-      element.className.replace(new RegExp('\\b' + cls + '\\b', 'g'), '')
-                       .replace('  ', ' ');
+  var helem = /** @type {HTMLElement} */ element;
+  helem.classList.remove(cls);
 }
 
 /**

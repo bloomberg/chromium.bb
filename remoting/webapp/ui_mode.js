@@ -41,6 +41,17 @@ remoting.AppMode = {
 };
 
 /**
+ * @param {Element} element The element to check.
+ * @param {string} attr The attribute on the element to check.
+ * @param {string} mode The mode to check for.
+ * @return {boolean} True if |mode| is found within the element's |attr|.
+ */
+remoting.hasModeAttribute = function(element, attr, mode) {
+  return element.getAttribute(attr).match(
+      new RegExp('(\\s|^)' + mode + '(\\s|$)')) != null;
+}
+
+/**
  * Update the DOM by showing or hiding elements based on whether or not they
  * have an attribute matching the specified name.
  * @param {string} mode The value against which to match the attribute.
@@ -56,7 +67,7 @@ remoting.updateModalUi = function(mode, attr) {
     var element = /** @type {Element} */ elements[i];
     var hidden = true;
     for (var m = 0; m < modes.length; ++m) {
-      if (hasClass(element.getAttribute(attr), modes[m])) {
+      if (remoting.hasModeAttribute(element, attr, modes[m])) {
         hidden = false;
         break;
       }

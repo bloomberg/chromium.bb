@@ -13,20 +13,20 @@
 var remoting = remoting || {};
 
 /**
- * @param {Element} toolbar The HTML element representing the tool-bar.
+ * @param {HTMLElement} toolbar The HTML element representing the tool-bar.
  * @constructor
  */
 remoting.Toolbar = function(toolbar) {
   /**
-   * @type {Element}
+   * @type {HTMLElement}
    * @private
    */
   this.toolbar_ = toolbar;
   /**
-   * @type {Element}
+   * @type {HTMLElement}
    * @private
    */
-  this.stub_ = toolbar.querySelector('.toolbar-stub');
+  this.stub_ = /** @type {HTMLElement} */toolbar.querySelector('.toolbar-stub');
   /**
    * @type {number?} The id of the preview timer, if any.
    * @private
@@ -64,7 +64,7 @@ remoting.Toolbar = function(toolbar) {
  * @return {void} Nothing.
  */
 remoting.Toolbar.prototype.preview = function() {
-  addClass(this.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
+  this.toolbar_.classList.add(remoting.Toolbar.VISIBLE_CLASS_);
   if (this.timerId_) {
     window.clearTimeout(this.timerId_);
     this.timerId_ = null;
@@ -72,7 +72,7 @@ remoting.Toolbar.prototype.preview = function() {
   /** @type {remoting.Toolbar} */
   var that = this;
   var endPreview = function() {
-    removeClass(that.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
+    that.toolbar_.classList.remove(remoting.Toolbar.VISIBLE_CLASS_);
   };
   this.timerId_ = window.setTimeout(endPreview, 3000);
 };
@@ -92,12 +92,7 @@ remoting.Toolbar.prototype.center = function() {
  * Toggle the tool-bar visibility.
  */
 remoting.Toolbar.prototype.toggle = function() {
-  if (hasClass(this.toolbar_.className,
-               remoting.Toolbar.VISIBLE_CLASS_)) {
-    removeClass(this.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
-  } else {
-    addClass(this.toolbar_, remoting.Toolbar.VISIBLE_CLASS_);
-  }
+  this.toolbar_.classList.toggle(remoting.Toolbar.VISIBLE_CLASS_);
 };
 
 /**
@@ -127,11 +122,11 @@ remoting.Toolbar.prototype.hitTest_ = function(x, y) {
  */
 remoting.Toolbar.onMouseMove = function(event) {
   if (remoting.toolbar) {
+    var toolbarStub = remoting.toolbar.stub_;
     if (remoting.toolbar.hitTest_(event.x, event.y)) {
-      addClass(remoting.toolbar.stub_, remoting.Toolbar.STUB_EXTENDED_CLASS_);
+      toolbarStub.classList.add(remoting.Toolbar.STUB_EXTENDED_CLASS_);
     } else {
-      removeClass(remoting.toolbar.stub_,
-                  remoting.Toolbar.STUB_EXTENDED_CLASS_);
+      toolbarStub.classList.remove(remoting.Toolbar.STUB_EXTENDED_CLASS_);
     }
   } else {
     document.removeEventListener('mousemove',

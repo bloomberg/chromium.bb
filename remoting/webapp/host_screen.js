@@ -236,10 +236,11 @@ function updateTimeoutStyles_() {
       remoting.cancelShare();
       return false;
     }
+    var accessCode = document.getElementById('access-code-display');
     if (accessCodeExpiresIn_ <= ACCESS_CODE_RED_THRESHOLD_) {
-      addClass(document.getElementById('access-code-display'), 'expiring');
+      accessCode.classList.add('expiring');
     } else {
-      removeClass(document.getElementById('access-code-display'), 'expiring');
+      accessCode.classList.remove('expiring');
     }
   }
   document.getElementById('access-code-countdown').hidden =
@@ -267,9 +268,10 @@ function updateAccessCodeTimeoutElement_() {
  * @return {void} Nothing.
  */
 function onNatTraversalPolicyChanged_(enabled) {
+  var natBox = document.getElementById('nat-box');
   if (enabled) {
-    addClass(document.getElementById('nat-box'), 'traversal-enabled');
+    natBox.classList.add('traversal-enabled');
   } else {
-    removeClass(document.getElementById('nat-box'), 'traversal-enabled');
+    natBox.classList.remove('traversal-enabled');
   }
 }

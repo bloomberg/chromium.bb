@@ -110,9 +110,9 @@ remoting.setScaleToFit = function(scaleToFit) {
   remoting.clientSession.setScaleToFit(scaleToFit);
   var button = document.getElementById('toggle-scaling');
   if (remoting.clientSession.getScaleToFit()) {
-    addClass(button, 'toggle-button-active');
+    button.classList.add('toggle-button-active');
   } else {
-    removeClass(button, 'toggle-button-active');
+    button.classList.remove('toggle-button-active');
   }
 };
 

@@ -109,10 +109,10 @@ remoting.ConnectionHistory.Entry.prototype.durationString_ = function() {
  *     summary and detail information, respectively, for the connection.
  */
 remoting.ConnectionHistory.Entry.prototype.createTableRows = function() {
-  var summary = document.createElement('tr');
-  addClass(summary, 'connection-history-summary');
-  var zippy = document.createElement('td');
-  addClass(zippy, 'zippy');
+  var summary = /** @type {HTMLElement} */ document.createElement('tr');
+  summary.classList.add('connection-history-summary');
+  var zippy = /** @type {HTMLElement} */ document.createElement('td');
+  zippy.classList.add('zippy');
   summary.appendChild(zippy);
   // TODO(jamiewalch): Find a way of combining date and time such both align
   // vertically without being considered separate columns, which puts too much
@@ -134,8 +134,8 @@ remoting.ConnectionHistory.Entry.prototype.createTableRows = function() {
   duration.innerText = this.durationString_();
   summary.appendChild(duration);
   // TODO(jamiewalch): Fill out the detail row correctly.
-  var detail = document.createElement('tr');
-  addClass(detail, 'connection-history-detail');
+  var detail = /** @type {HTMLElement} */ document.createElement('tr');
+  detail.classList.add('connection-history-detail');
   for (var i = 0; i < summary.childElementCount; ++i) {
     var td = document.createElement('td');
     if (i != 0) {
@@ -147,13 +147,9 @@ remoting.ConnectionHistory.Entry.prototype.createTableRows = function() {
     }
     detail.appendChild(td);
   }
-  /** @param {Element} node The summary row. */
+  /** @param {HTMLElement} node The summary row. */
   var toggleDetail = function(node) {
-    if (hasClass(node.className, 'expanded')) {
-      removeClass(node, 'expanded');
-    } else {
-      addClass(node, 'expanded');
-    }
+    node.classList.toggle('expanded');
   };
   summary.addEventListener('click',
                            function() { toggleDetail(summary); },
@@ -189,10 +185,10 @@ remoting.ConnectionHistory.prototype.setFilter_ = function(element) {
   for (var i in remoting.ConnectionHistory.Filter) {
     var link = document.getElementById(remoting.ConnectionHistory.Filter[i]);
     if (element == link) {
-      addClass(link, 'no-link');
+      link.classList.add('no-link');
       this.filter_ = /** @type {remoting.ConnectionHistory.Filter} */ (i);
     } else {
-      removeClass(link, 'no-link');
+      link.classList.remove('no-link');
     }
   }
 };
