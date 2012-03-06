@@ -109,8 +109,10 @@ class AudioUtilInterface {
  public:
   virtual ~AudioUtilInterface() {}
   virtual double GetAudioHardwareSampleRate() = 0;
-  virtual double GetAudioInputHardwareSampleRate() = 0;
-  virtual uint32 GetAudioInputHardwareChannelCount() = 0;
+  virtual double GetAudioInputHardwareSampleRate(
+      const std::string& device_id) = 0;
+  virtual uint32 GetAudioInputHardwareChannelCount(
+      const std::string& device_id) = 0;
 };
 
 // Implemented and defined in the cc file.

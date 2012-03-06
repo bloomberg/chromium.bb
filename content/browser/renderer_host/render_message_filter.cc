@@ -42,6 +42,7 @@
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_util.h"
 #include "media/base/media_log_event.h"
 #include "net/base/cookie_monster.h"
@@ -666,7 +667,9 @@ void RenderMessageFilter::OnGetHardwareBufferSize(uint32* buffer_size) {
 }
 
 void RenderMessageFilter::OnGetHardwareInputSampleRate(double* sample_rate) {
-  *sample_rate = media::GetAudioInputHardwareSampleRate();
+  // TODO(henrika): add support for all available input devices.
+  *sample_rate = media::GetAudioInputHardwareSampleRate(
+      AudioManagerBase::kDefaultDeviceId);
 }
 
 void RenderMessageFilter::OnGetHardwareSampleRate(double* sample_rate) {
@@ -674,7 +677,9 @@ void RenderMessageFilter::OnGetHardwareSampleRate(double* sample_rate) {
 }
 
 void RenderMessageFilter::OnGetHardwareInputChannelCount(uint32* channels) {
-  *channels = static_cast<uint32>(media::GetAudioInputHardwareChannelCount());
+  // TODO(henrika): add support for all available input devices.
+  *channels = static_cast<uint32>(media::GetAudioInputHardwareChannelCount(
+      AudioManagerBase::kDefaultDeviceId));
 }
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,

@@ -35,11 +35,13 @@ class AudioUtil : public AudioUtilInterface {
   virtual double GetAudioHardwareSampleRate() OVERRIDE {
     return media::GetAudioHardwareSampleRate();
   }
-  virtual double GetAudioInputHardwareSampleRate() OVERRIDE {
-    return media::GetAudioInputHardwareSampleRate();
+  virtual double GetAudioInputHardwareSampleRate(
+      const std::string& device_id) OVERRIDE {
+    return media::GetAudioInputHardwareSampleRate(device_id);
   }
-  virtual uint32 GetAudioInputHardwareChannelCount() OVERRIDE {
-    return media::GetAudioInputHardwareChannelCount();
+  virtual uint32 GetAudioInputHardwareChannelCount(
+      const std::string& device_id) OVERRIDE {
+    return media::GetAudioInputHardwareChannelCount(device_id);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioUtil);
@@ -57,10 +59,12 @@ class AudioUtilNoHardware : public AudioUtilInterface {
   virtual double GetAudioHardwareSampleRate() OVERRIDE {
     return output_rate_;
   }
-  virtual double GetAudioInputHardwareSampleRate() OVERRIDE {
+  virtual double GetAudioInputHardwareSampleRate(
+      const std::string& device_id) OVERRIDE {
     return input_rate_;
   }
-  virtual uint32 GetAudioInputHardwareChannelCount() OVERRIDE {
+  virtual uint32 GetAudioInputHardwareChannelCount(
+      const std::string& device_id) OVERRIDE {
     return input_channels_;
   }
 
