@@ -13,15 +13,18 @@
 
 namespace extensions {
 
-PageCaptureCustomBindings::PageCaptureCustomBindings()
-    : ChromeV8Extension(NULL) {
-  RouteStaticFunction("CreateBlob", &CreateBlob);
-  RouteStaticFunction("SendResponseAck", &SendResponseAck);
-}
+PageCaptureCustomBindings::PageCaptureCustomBindings(
+    int dependency_count,
+    const char** dependencies)
+    : ChromeV8Extension(
+          "extensions/page_capture_custom_bindings.js",
+          IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS,
+          dependency_count,
+          dependencies,
+          NULL) {}
 
-// static
-v8::Handle<v8::Value> PageCaptureCustomBindings::CreateBlob(
-    const v8::Arguments& args) {
+// Creates a Blob with the content of the specified file.
+static v8::Handle<v8::Value> CreateBlob(const v8::Arguments& args) {
   CHECK(args.Length() == 2);
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsInt32());
@@ -43,6 +46,17 @@ v8::Handle<v8::Value> PageCaptureCustomBindings::SendResponseAck(
         render_view->GetRoutingID(), args[0]->Int32Value()));
   }
   return v8::Undefined();
+}
+
+v8::Handle<v8::FunctionTemplate> PageCaptureCustomBindings::GetNativeFunction(
+    v8::Handle<v8::String> name) {
+  if (name->Equals(v8::String::New("CreateBlob"))) {
+    return v8::FunctionTemplate::New(CreateBlob, v8::External::New(this));
+  } else if (name->Equals(v8::String::New("SendResponseAck"))) {
+    return v8::FunctionTemplate::New(SendResponseAck, v8::External::New(this));
+  }
+
+  return ChromeV8Extension::GetNativeFunction(name);
 }
 
 }  // namespace extensions

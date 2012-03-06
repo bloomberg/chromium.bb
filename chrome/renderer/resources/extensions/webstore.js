@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-  var webstoreNatives = requireNative('webstore');
-  var Install = webstoreNatives.Install;
+var chrome = chrome || {};
+(function() {
+  native function GetChromeHidden();
+  native function Install(preferredStoreUrl, onSuccess, onFailure);
 
-  var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+  var chromeHidden = GetChromeHidden();
   var pendingInstalls = {};
   chrome.webstore = new function() {
     this.install = function(
@@ -39,3 +41,4 @@
       delete pendingInstall[installId];
     }
   }
+})();

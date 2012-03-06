@@ -13,7 +13,16 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-namespace {
+namespace extensions {
+
+FileBrowserPrivateCustomBindings::FileBrowserPrivateCustomBindings(
+    int dependency_count,
+    const char** dependencies)
+    : ChromeV8Extension("extensions/file_browser_private_custom_bindings.js",
+                        IDR_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_JS,
+                        dependency_count,
+                        dependencies,
+                        NULL) {}
 
 static v8::Handle<v8::Value> GetLocalFileSystem(
     const v8::Arguments& args) {
@@ -31,13 +40,13 @@ static v8::Handle<v8::Value> GetLocalFileSystem(
       WebKit::WebString::fromUTF8(path.c_str()));
 }
 
-}  // namespace
+v8::Handle<v8::FunctionTemplate>
+FileBrowserPrivateCustomBindings::GetNativeFunction(
+    v8::Handle<v8::String> name) {
+  if (name->Equals(v8::String::New("GetLocalFileSystem")))
+    return v8::FunctionTemplate::New(GetLocalFileSystem);
 
-namespace extensions {
-
-FileBrowserPrivateCustomBindings::FileBrowserPrivateCustomBindings()
-    : ChromeV8Extension(NULL) {
-  RouteStaticFunction("GetLocalFileSystem", &GetLocalFileSystem);
+  return ChromeV8Extension::GetNativeFunction(name);
 }
 
 }  // namespace extensions

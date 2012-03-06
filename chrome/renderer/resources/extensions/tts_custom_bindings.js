@@ -4,10 +4,12 @@
 
 // Custom bindings for the tts API.
 
-var ttsNatives = requireNative('tts');
-var GetNextTTSEventId = ttsNatives.GetNextTTSEventId;
+(function() {
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+native function GetChromeHidden();
+native function GetNextTTSEventId();
+
+var chromeHidden = GetChromeHidden();
 
 chromeHidden.registerCustomHook('tts', function(api) {
   var apiFunctions = api.apiFunctions;
@@ -40,3 +42,5 @@ chromeHidden.registerCustomHook('tts', function(api) {
     return id;
   });
 });
+
+})();

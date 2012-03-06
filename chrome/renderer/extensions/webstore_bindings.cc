@@ -13,6 +13,7 @@
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "v8/include/v8.h"
@@ -47,17 +48,69 @@ const char kInvalidWebstoreItemUrlError[] =
 // (successful or not) via OnInlineWebstoreInstallResponse.
 int g_next_install_id = 0;
 
+class WebstoreBindingsHandler : public ChromeV8ExtensionHandler {
+ public:
+  WebstoreBindingsHandler(
+      ExtensionDispatcher* dispatcher, ChromeV8Context* context);
+
+  // ChromeV8ExtensionHandler
+  virtual v8::Handle<v8::Value> HandleNativeFunction(
+      const std::string& name,
+      const v8::Arguments& arguments) OVERRIDE;
+
+  // IPC::Channel::Listener
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+ private:
+  v8::Handle<v8::Value> Install(const v8::Arguments& args);
+
+  void OnInlineWebstoreInstallResponse(
+      int install_id, bool success, const std::string& error);
+
+  // Extracts a Web Store item ID from a <link rel="chrome-webstore-item"
+  // href="https://chrome.google.com/webstore/detail/id"> node found in the
+  // frame. On success, true will be returned and the |webstore_item_id|
+  // parameter will be populated with the ID. On failure, false will be returned
+  // and |error| will be populated with the error.
+  static bool GetWebstoreItemIdFromFrame(
+      WebFrame* frame, const std::string& preferred_store_link_url,
+      std::string* webstore_item_id, std::string* error);
+
+  ExtensionDispatcher* dispatcher_;
+  DISALLOW_COPY_AND_ASSIGN(WebstoreBindingsHandler);
+};
+
 } // anonymous namespace
 
-WebstoreBindings::WebstoreBindings(ExtensionDispatcher* dispatcher,
-    ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher),
-      ChromeV8ExtensionHandler(context) {
-  RouteFunction("Install",
-                base::Bind(&WebstoreBindings::Install, base::Unretained(this)));
+WebstoreBindings::WebstoreBindings(ExtensionDispatcher* dispatcher)
+    : ChromeV8Extension("extensions/webstore.js", IDR_WEBSTORE_BINDINGS_JS,
+                        dispatcher) {
 }
 
-v8::Handle<v8::Value> WebstoreBindings::Install(
+ChromeV8ExtensionHandler* WebstoreBindings::CreateHandler(
+    ChromeV8Context* context) {
+  return new WebstoreBindingsHandler(extension_dispatcher(), context);
+}
+
+WebstoreBindingsHandler::WebstoreBindingsHandler(
+    ExtensionDispatcher* dispatcher,
+    ChromeV8Context* context)
+    : ChromeV8ExtensionHandler(context),
+      dispatcher_(dispatcher) {
+}
+
+v8::Handle<v8::Value> WebstoreBindingsHandler::HandleNativeFunction(
+    const std::string& name, const v8::Arguments& args) {
+  if (name == "Install") {
+    return Install(args);
+  } else {
+    CHECK(false) << "Unknown native function: " << name;
+  }
+
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> WebstoreBindingsHandler::Install(
     const v8::Arguments& args) {
   WebFrame* frame = WebFrame::frameForCurrentContext();
   if (!frame || !frame->view())
@@ -108,7 +161,7 @@ v8::Handle<v8::Value> WebstoreBindings::Install(
 }
 
 // static
-bool WebstoreBindings::GetWebstoreItemIdFromFrame(
+bool WebstoreBindingsHandler::GetWebstoreItemIdFromFrame(
       WebFrame* frame, const std::string& preferred_store_link_url,
       std::string* webstore_item_id, std::string* error) {
   if (frame != frame->top()) {
@@ -194,8 +247,8 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
   return false;
 }
 
-bool WebstoreBindings::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(WebstoreBindings, message)
+bool WebstoreBindingsHandler::OnMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(WebstoreBindingsHandler, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_InlineWebstoreInstallResponse,
                         OnInlineWebstoreInstallResponse)
     IPC_MESSAGE_UNHANDLED(CHECK(false) << "Unhandled IPC message")
@@ -203,7 +256,7 @@ bool WebstoreBindings::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-void WebstoreBindings::OnInlineWebstoreInstallResponse(
+void WebstoreBindingsHandler::OnInlineWebstoreInstallResponse(
     int install_id,
     bool success,
     const std::string& error) {

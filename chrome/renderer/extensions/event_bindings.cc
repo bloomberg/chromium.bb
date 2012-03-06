@@ -39,25 +39,24 @@ using content::RenderThread;
 
 namespace {
 
-// A map of event names to the number of contexts listening to that event.
-// We notify the browser about event listeners when we transition between 0
-// and 1.
-typedef std::map<std::string, int> EventListenerCounts;
-
-// A map of extension IDs to listener counts for that extension.
-base::LazyInstance<std::map<std::string, EventListenerCounts> >
-    g_listener_counts = LAZY_INSTANCE_INITIALIZER;
-
-// TODO(koz): Merge this into EventBindings.
 class ExtensionImpl : public ChromeV8Extension {
  public:
-
   explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
-      : ChromeV8Extension(dispatcher) {
-    RouteStaticFunction("AttachEvent", &AttachEvent);
-    RouteStaticFunction("DetachEvent", &DetachEvent);
+      : ChromeV8Extension("extensions/event.js",
+                          IDR_EVENT_BINDINGS_JS,
+                          dispatcher) {
   }
   ~ExtensionImpl() {}
+
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+      v8::Handle<v8::String> name) {
+    if (name->Equals(v8::String::New("AttachEvent"))) {
+      return v8::FunctionTemplate::New(AttachEvent, v8::External::New(this));
+    } else if (name->Equals(v8::String::New("DetachEvent"))) {
+      return v8::FunctionTemplate::New(DetachEvent, v8::External::New(this));
+    }
+    return ChromeV8Extension::GetNativeFunction(name);
+  }
 
   // Attach an event name to an object.
   static v8::Handle<v8::Value> AttachEvent(const v8::Arguments& args) {
@@ -77,7 +76,7 @@ class ExtensionImpl : public ChromeV8Extension {
         return v8::Undefined();
 
       EventListenerCounts& listener_counts =
-          g_listener_counts.Get()[context->extension_id()];
+          self->listener_counts_[context->extension_id()];
       if (++listener_counts[event_name] == 1) {
         content::RenderThread::Get()->Send(
             new ExtensionHostMsg_AddListener(context->extension_id(),
@@ -111,7 +110,7 @@ class ExtensionImpl : public ChromeV8Extension {
         return v8::Undefined();
 
       EventListenerCounts& listener_counts =
-          g_listener_counts.Get()[context->extension_id()];
+          self->listener_counts_[context->extension_id()];
       std::string event_name(*v8::String::AsciiValue(args[0]));
       bool is_manual = args[1]->BooleanValue();
 
@@ -136,6 +135,10 @@ class ExtensionImpl : public ChromeV8Extension {
   }
 
  private:
+  // A map of event names to the number of contexts listening to that event.
+  // We notify the browser about event listeners when we transition between 0
+  // and 1.
+  typedef std::map<std::string, int> EventListenerCounts;
 
   bool IsLazyBackgroundPage(const std::string& extension_id) {
     content::RenderView* render_view = GetCurrentRenderView();
@@ -148,10 +151,14 @@ class ExtensionImpl : public ChromeV8Extension {
     return (extension && !extension->background_page_persists() &&
             helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   }
+
+  // A map of extension IDs to listener counts for that extension.
+  std::map<std::string, EventListenerCounts> listener_counts_;
 };
 
 }  // namespace
 
-ChromeV8Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
-  return new ExtensionImpl(dispatcher);
+v8::Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
+  static v8::Extension* extension = new ExtensionImpl(dispatcher);
+  return extension;
 }

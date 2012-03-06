@@ -15,8 +15,14 @@
 //
 // |bootstrap| contains the following fields:
 //   - GetSource(module): returns the source code for |module|
+//   - Run(source): runs the string os JS |source|
 //   - GetNative(nativeName): returns the named native object
 (function(bootstrap) {
+
+function wrap(source) {
+  return "(function(require, requireNative, exports) {" + source +
+      "\n})";
+}
 
 function ModuleLoader() {
   this.cache_ = {};
@@ -27,8 +33,9 @@ ModuleLoader.prototype.run = function(id) {
   if (!source) {
     return null;
   }
+  var wrappedSource = wrap(source);
+  var f = bootstrap.Run(wrappedSource);
   var exports = {};
-  var f = new Function("require", "requireNative", "exports", source);
   f(require, requireNative, exports);
   return exports;
 };
@@ -46,11 +53,7 @@ ModuleLoader.prototype.load = function(id) {
 var moduleLoader = new ModuleLoader();
 
 function requireNative(nativeName) {
-  var result = bootstrap.GetNative(nativeName);
-  if (!result) {
-    throw "No such native object: '" + nativeName + "'";
-  }
-  return result;
+  return bootstrap.GetNative(nativeName);
 }
 
 function require(moduleId) {

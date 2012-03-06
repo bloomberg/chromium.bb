@@ -53,41 +53,93 @@ const char* kMissingClientIdError = "Missing clientId parameter";
 const char* kInvalidClientIdError = "Invalid clientId";
 const char* kInvalidCallbackIdError = "Invalid callbackId";
 
+
+class AppBindingsHandler : public ChromeV8ExtensionHandler {
+ public:
+  AppBindingsHandler(ExtensionDispatcher* dispatcher, ChromeV8Context* context);
+
+  // ChromeV8ExtensionHandler
+  virtual v8::Handle<v8::Value> HandleNativeFunction(
+      const std::string& name,
+      const v8::Arguments& arguments) OVERRIDE;
+
+  // IPC::Channel::Listener
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+ private:
+  v8::Handle<v8::Value> GetIsInstalled(const v8::Arguments& args);
+  v8::Handle<v8::Value> Install(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetDetails(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetDetailsForFrame(const v8::Arguments& args);
+  v8::Handle<v8::Value> GetAppNotifyChannel(const v8::Arguments& args);
+
+  v8::Handle<v8::Value> GetDetailsForFrameImpl(WebKit::WebFrame* frame);
+
+  void OnGetAppNotifyChannelResponse(const std::string& channel_id,
+                                     const std::string& error,
+                                     int callback_id);
+
+  ExtensionDispatcher* dispatcher_;
+  DISALLOW_COPY_AND_ASSIGN(AppBindingsHandler);
+};
+
 }  // namespace
 
 
-AppBindings::AppBindings(ExtensionDispatcher* dispatcher,
-                         ChromeV8Context* context)
-    : ChromeV8Extension(dispatcher),
-      ChromeV8ExtensionHandler(context) {
-  RouteFunction("GetIsInstalled",
-      base::Bind(&AppBindings::GetIsInstalled, base::Unretained(this)));
-  RouteFunction("Install",
-      base::Bind(&AppBindings::Install, base::Unretained(this)));
-  RouteFunction("GetDetails",
-      base::Bind(&AppBindings::GetDetails, base::Unretained(this)));
-  RouteFunction("GetDetailsForFrame",
-      base::Bind(&AppBindings::GetDetailsForFrame, base::Unretained(this)));
-  RouteFunction("GetAppNotifyChannel",
-      base::Bind(&AppBindings::GetAppNotifyChannel, base::Unretained(this)));
+AppBindings::AppBindings(ExtensionDispatcher* dispatcher)
+    : ChromeV8Extension("extensions/app.js", IDR_APP_BINDINGS_JS,
+                        dispatcher) {
+}
+
+ChromeV8ExtensionHandler* AppBindings::CreateHandler(
+    ChromeV8Context* context) {
+  return new AppBindingsHandler(extension_dispatcher(), context);
 }
 
 
-v8::Handle<v8::Value> AppBindings::GetIsInstalled(
+
+AppBindingsHandler::AppBindingsHandler(ExtensionDispatcher* dispatcher,
+                                       ChromeV8Context* context)
+    : ChromeV8ExtensionHandler(context),
+      dispatcher_(dispatcher) {
+}
+
+v8::Handle<v8::Value> AppBindingsHandler::HandleNativeFunction(
+    const std::string& name, const v8::Arguments& args) {
+  // TODO(aa): Create a helper map of callback that can be used in either
+  // extensions or handlers.
+  if (name == "GetIsInstalled") {
+    return GetIsInstalled(args);
+  } else if (name == "Install") {
+    return Install(args);
+  } else if (name == "GetDetails") {
+    return GetDetails(args);
+  } else if (name == "GetDetailsForFrame") {
+    return GetDetailsForFrame(args);
+  } else if (name == "GetAppNotifyChannel") {
+    return GetAppNotifyChannel(args);
+  } else {
+    CHECK(false) << "Unknown native function: " << name;
+  }
+
+  return v8::Undefined();
+}
+
+v8::Handle<v8::Value> AppBindingsHandler::GetIsInstalled(
     const v8::Arguments& args) {
   // TODO(aa): Hm, maybe ExtensionBindingsContext should have GetExtension()
   // afterall?
   const ::Extension* extension =
-      extension_dispatcher_->extensions()->GetByID(context_->extension_id());
+      dispatcher_->extensions()->GetByID(context_->extension_id());
 
   // TODO(aa): Why only hosted app?
   // TODO(aa): GARRR - why is there IsExtensionActive and IsApplicationActive!?
   bool result = extension && extension->is_hosted_app() &&
-      extension_dispatcher_->IsApplicationActive(extension->id());
+      dispatcher_->IsApplicationActive(extension->id());
   return v8::Boolean::New(result);
 }
 
-v8::Handle<v8::Value> AppBindings::Install(const v8::Arguments& args) {
+v8::Handle<v8::Value> AppBindingsHandler::Install(const v8::Arguments& args) {
   content::RenderView* render_view = context_->GetRenderView();
   CHECK(render_view);
 
@@ -101,13 +153,13 @@ v8::Handle<v8::Value> AppBindings::Install(const v8::Arguments& args) {
   return v8::Undefined();
 }
 
-v8::Handle<v8::Value> AppBindings::GetDetails(
+v8::Handle<v8::Value> AppBindingsHandler::GetDetails(
     const v8::Arguments& args) {
   CHECK(context_->web_frame());
   return GetDetailsForFrameImpl(context_->web_frame());
 }
 
-v8::Handle<v8::Value> AppBindings::GetDetailsForFrame(
+v8::Handle<v8::Value> AppBindingsHandler::GetDetailsForFrame(
     const v8::Arguments& args) {
   CHECK(context_->web_frame());
   if (!CheckAccessToAppDetails(context_->web_frame()))
@@ -134,12 +186,12 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrame(
   return GetDetailsForFrameImpl(target_frame);
 }
 
-v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
+v8::Handle<v8::Value> AppBindingsHandler::GetDetailsForFrameImpl(
     WebFrame* frame) {
   const ::Extension* extension =
-      extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
-          ExtensionURLInfo(frame->document().securityOrigin(),
-                           frame->document().url()));
+      dispatcher_->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
+          frame->document().securityOrigin(),
+          frame->document().url()));
   if (!extension)
     return v8::Null();
 
@@ -151,7 +203,7 @@ v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
                               frame->mainWorldScriptContext());
 }
 
-v8::Handle<v8::Value> AppBindings::GetAppNotifyChannel(
+v8::Handle<v8::Value> AppBindingsHandler::GetAppNotifyChannel(
     const v8::Arguments& args) {
   // Read the required 'clientId' value out of the object at args[0].
   std::string client_id;
@@ -190,8 +242,8 @@ v8::Handle<v8::Value> AppBindings::GetAppNotifyChannel(
   return v8::Undefined();
 }
 
-bool AppBindings::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(AppBindings, message)
+bool AppBindingsHandler::OnMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(AppBindingsHandler, message)
     IPC_MESSAGE_HANDLER(ExtensionMsg_GetAppNotifyChannelResponse,
                         OnGetAppNotifyChannelResponse)
     IPC_MESSAGE_UNHANDLED(CHECK(false) << "Unhandled IPC message")
@@ -199,7 +251,7 @@ bool AppBindings::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-void AppBindings::OnGetAppNotifyChannelResponse(
+void AppBindingsHandler::OnGetAppNotifyChannelResponse(
     const std::string& channel_id, const std::string& error, int callback_id) {
   v8::HandleScope handle_scope;
   v8::Context::Scope context_scope(context_->v8_context());

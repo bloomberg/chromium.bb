@@ -4,11 +4,12 @@
 
 // Custom bindings for the fileBrowserHandler API.
 
-var fileBrowserNatives = requireNative('file_browser_handler');
-var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
+(function() {
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+native function GetChromeHidden();
+native function GetExternalFileEntry();
 
+var chromeHidden = GetChromeHidden();
 chromeHidden.Event.registerArgumentMassager('fileBrowserHandler.onExecute',
     function(args) {
   if (args.length < 2)
@@ -22,3 +23,5 @@ chromeHidden.Event.registerArgumentMassager('fileBrowserHandler.onExecute',
   for (var i = 0; i < fileList.length; i++)
     fileList[i] = GetExternalFileEntry(fileList[i]);
 });
+
+})();

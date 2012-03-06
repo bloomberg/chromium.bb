@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,34 +14,21 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
 class ChromeV8Context;
 
 // Implements the chrome.app JavaScript object.
 //
 // TODO(aa): Add unit testing for this class.
-class AppBindings : public ChromeV8Extension, public ChromeV8ExtensionHandler {
+class AppBindings : public ChromeV8Extension {
  public:
-  explicit AppBindings(ExtensionDispatcher* dispatcher,
-                       ChromeV8Context* context);
+  explicit AppBindings(ExtensionDispatcher* dispatcher);
+
+ protected:
+  virtual ChromeV8ExtensionHandler* CreateHandler(
+      ChromeV8Context* context) OVERRIDE;
 
  private:
-  // IPC::Channel::Listener
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  v8::Handle<v8::Value> GetIsInstalled(const v8::Arguments& args);
-  v8::Handle<v8::Value> Install(const v8::Arguments& args);
-  v8::Handle<v8::Value> GetDetails(const v8::Arguments& args);
-  v8::Handle<v8::Value> GetDetailsForFrame(const v8::Arguments& args);
-  v8::Handle<v8::Value> GetAppNotifyChannel(const v8::Arguments& args);
-
-  v8::Handle<v8::Value> GetDetailsForFrameImpl(WebKit::WebFrame* frame);
-
-  void OnGetAppNotifyChannelResponse(const std::string& channel_id,
-                                     const std::string& error,
-                                     int callback_id);
-
   DISALLOW_COPY_AND_ASSIGN(AppBindings);
 };
 

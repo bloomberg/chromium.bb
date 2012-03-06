@@ -1,15 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-  var natives = requireNative('app');
-  var GetIsInstalled = natives.GetIsInstalled;
-  var Install = natives.Install;
-  var GetDetails = natives.GetDetails;
-  var GetDetailsForFrame = natives.GetDetailsForFrame;
-  var GetAppNotifyChannel = natives.GetAppNotifyChannel;
+var chrome = chrome || {};
+(function() {
+  native function GetChromeHidden();
+  native function GetIsInstalled();
+  native function Install();
+  native function GetDetails();
+  native function GetDetailsForFrame();
+  native function GetAppNotifyChannel();
 
-  var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+  var chromeHidden = GetChromeHidden();
   var callbacks = {};
   var nextCallbackId = 1;
 
@@ -39,3 +41,4 @@
       delete callbacks[callbackId];
     }
   };
+})();

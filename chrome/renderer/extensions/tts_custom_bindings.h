@@ -13,10 +13,10 @@ namespace extensions {
 // Implements custom bindings for the tts API.
 class TTSCustomBindings : public ChromeV8Extension {
  public:
-  TTSCustomBindings();
+  TTSCustomBindings(int dependency_count, const char** dependencies);
 
- private:
-  static v8::Handle<v8::Value> GetNextTTSEventId(const v8::Arguments& args);
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+      v8::Handle<v8::String> name) OVERRIDE;
 };
 
 }  // extensions

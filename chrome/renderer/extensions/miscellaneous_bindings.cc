@@ -62,18 +62,31 @@ static void ClearPortData(int port_id) {
 }
 
 const char kPortClosedError[] = "Attempting to use a disconnected port object";
+const char* kExtensionDeps[] = { "extensions/event.js" };
 
 class ExtensionImpl : public ChromeV8Extension {
  public:
   explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
-      : ChromeV8Extension(dispatcher) {
-    RouteStaticFunction("CloseChannel", &CloseChannel);
-    RouteStaticFunction("PortAddRef", &PortAddRef);
-    RouteStaticFunction("PortRelease", &PortRelease);
-    RouteStaticFunction("PostMessage", &PostMessage);
+      : ChromeV8Extension("extensions/miscellaneous_bindings.js",
+                          IDR_MISCELLANEOUS_BINDINGS_JS,
+                          arraysize(kExtensionDeps), kExtensionDeps,
+                          dispatcher) {
   }
-
   ~ExtensionImpl() {}
+
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+      v8::Handle<v8::String> name) {
+    if (name->Equals(v8::String::New("PostMessage"))) {
+      return v8::FunctionTemplate::New(PostMessage);
+    } else if (name->Equals(v8::String::New("CloseChannel"))) {
+      return v8::FunctionTemplate::New(CloseChannel);
+    } else if (name->Equals(v8::String::New("PortAddRef"))) {
+      return v8::FunctionTemplate::New(PortAddRef);
+    } else if (name->Equals(v8::String::New("PortRelease"))) {
+      return v8::FunctionTemplate::New(PortRelease);
+    }
+    return ChromeV8Extension::GetNativeFunction(name);
+  }
 
   // Sends a message along the given channel.
   static v8::Handle<v8::Value> PostMessage(const v8::Arguments& args) {
@@ -142,8 +155,9 @@ class ExtensionImpl : public ChromeV8Extension {
 
 namespace extensions {
 
-ChromeV8Extension* MiscellaneousBindings::Get(ExtensionDispatcher* dispatcher) {
-  return new ExtensionImpl(dispatcher);
+v8::Extension* MiscellaneousBindings::Get(ExtensionDispatcher* dispatcher) {
+  static v8::Extension* extension = new ExtensionImpl(dispatcher);
+  return extension;
 }
 
 void MiscellaneousBindings::DeliverMessage(

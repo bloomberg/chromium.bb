@@ -111,11 +111,15 @@ class ExtensionViewAccumulator : public content::RenderViewVisitor {
 }  // namespace
 
 ExtensionCustomBindings::ExtensionCustomBindings(
+    int dependency_count,
+    const char** dependencies,
     ExtensionDispatcher* extension_dispatcher)
-    : ChromeV8Extension(extension_dispatcher) {
-  RouteStaticFunction("GetExtensionViews", &GetExtensionViews);
-  RouteStaticFunction("OpenChannelToExtension", &OpenChannelToExtension);
-}
+    : ChromeV8Extension(
+          "extensions/extension_custom_bindings.js",
+          IDR_EXTENSION_CUSTOM_BINDINGS_JS,
+          dependency_count,
+          dependencies,
+          extension_dispatcher) {}
 
 // static
 v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
@@ -166,6 +170,18 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
                                        view_type);
   content::RenderView::ForEach(&accumulator);
   return accumulator.views();
+}
+
+v8::Handle<v8::FunctionTemplate> ExtensionCustomBindings::GetNativeFunction(
+    v8::Handle<v8::String> name) {
+  if (name->Equals(v8::String::New("GetExtensionViews"))) {
+    return v8::FunctionTemplate::New(GetExtensionViews,
+                                     v8::External::New(this));
+  } else if (name->Equals(v8::String::New("OpenChannelToExtension"))) {
+    return v8::FunctionTemplate::New(OpenChannelToExtension);
+  }
+
+  return ChromeV8Extension::GetNativeFunction(name);
 }
 
 // static

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 
 class ExtensionDispatcher;
 class ChromeV8ContextSet;
-class ChromeV8Extension;
 
 namespace v8 {
 class Extension;
@@ -22,7 +21,7 @@ namespace extensions {
 // declarations in chrome/common/extensions/api/.
 class SchemaGeneratedBindings {
  public:
-  static ChromeV8Extension* Get(ExtensionDispatcher* extension_dispatcher);
+  static v8::Extension* Get(ExtensionDispatcher* extension_dispatcher);
 
   // Handles a response to an API request.  Sets |extension_id|.
   static void HandleResponse(const ChromeV8ContextSet& contexts,

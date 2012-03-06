@@ -13,7 +13,10 @@ namespace extensions {
 // Implements custom bindings for the i18n API.
 class I18NCustomBindings : public ChromeV8Extension {
  public:
-  I18NCustomBindings();
+  I18NCustomBindings(int dependency_count, const char** dependencies);
+
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+      v8::Handle<v8::String> name) OVERRIDE;
 
  private:
   static v8::Handle<v8::Value> GetL10nMessage(const v8::Arguments& args);
