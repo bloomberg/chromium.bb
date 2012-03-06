@@ -173,7 +173,7 @@ void PPB_VideoCapture_Impl::OnInitialized(media::VideoCapture* capture,
 
 int32_t PPB_VideoCapture_Impl::InternalEnumerateDevices(
     PP_Resource* devices,
-    PP_CompletionCallback callback) {
+    const PP_CompletionCallback& callback) {
   PluginInstance* instance = ResourceHelper::GetPluginInstance(this);
   if (!instance)
     return PP_ERROR_FAILED;
@@ -191,7 +191,7 @@ int32_t PPB_VideoCapture_Impl::InternalOpen(
     const std::string& device_id,
     const PP_VideoCaptureDeviceInfo_Dev& requested_info,
     uint32_t buffer_count,
-    PP_CompletionCallback callback) {
+    const PP_CompletionCallback& callback) {
   // It is able to complete synchronously if the default device is used.
   bool sync_completion = device_id.empty();
 

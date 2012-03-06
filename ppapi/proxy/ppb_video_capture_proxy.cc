@@ -164,12 +164,12 @@ class VideoCapture : public PPB_VideoCapture_Shared {
   // PPB_VideoCapture_Shared implementation.
   virtual int32_t InternalEnumerateDevices(
       PP_Resource* devices,
-      PP_CompletionCallback callback) OVERRIDE;
+      const PP_CompletionCallback& callback) OVERRIDE;
   virtual int32_t InternalOpen(
       const std::string& device_id,
       const PP_VideoCaptureDeviceInfo_Dev& requested_info,
       uint32_t buffer_count,
-      PP_CompletionCallback callback) OVERRIDE;
+      const PP_CompletionCallback& callback) OVERRIDE;
   virtual int32_t InternalStartCapture() OVERRIDE;
   virtual int32_t InternalReuseBuffer(uint32_t buffer) OVERRIDE;
   virtual int32_t InternalStopCapture() OVERRIDE;
@@ -213,8 +213,8 @@ bool VideoCapture::OnStatus(PP_VideoCaptureStatus_Dev status) {
   return false;
 }
 
-int32_t VideoCapture::InternalEnumerateDevices(PP_Resource* devices,
-                                               PP_CompletionCallback callback) {
+int32_t VideoCapture::InternalEnumerateDevices(
+    PP_Resource* devices, const PP_CompletionCallback& callback) {
   devices_ = devices;
   enumerate_devices_callback_ = new TrackedCallback(this, callback);
   GetDispatcher()->Send(new PpapiHostMsg_PPBVideoCapture_EnumerateDevices(
@@ -226,7 +226,7 @@ int32_t VideoCapture::InternalOpen(
     const std::string& device_id,
     const PP_VideoCaptureDeviceInfo_Dev& requested_info,
     uint32_t buffer_count,
-    PP_CompletionCallback callback) {
+    const PP_CompletionCallback& callback) {
   // Disallow blocking call. The base class doesn't check this.
   if (!callback.func)
     return PP_ERROR_BLOCKS_MAIN_THREAD;

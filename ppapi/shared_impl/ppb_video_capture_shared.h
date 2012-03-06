@@ -23,16 +23,17 @@ class PPAPI_SHARED_EXPORT PPB_VideoCapture_Shared
   explicit PPB_VideoCapture_Shared(const HostResource& host_resource);
   virtual ~PPB_VideoCapture_Shared();
 
-  // Resource overrides.
+  // Resource implementation.
   virtual thunk::PPB_VideoCapture_API* AsPPB_VideoCapture_API() OVERRIDE;
 
   // PPB_VideoCapture_API implementation.
-  virtual int32_t EnumerateDevices(PP_Resource* devices,
-                                   PP_CompletionCallback callback) OVERRIDE;
+  virtual int32_t EnumerateDevices(
+      PP_Resource* devices,
+      const PP_CompletionCallback& callback) OVERRIDE;
   virtual int32_t Open(const std::string& device_id,
                        const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                        uint32_t buffer_count,
-                       PP_CompletionCallback callback) OVERRIDE;
+                       const PP_CompletionCallback& callback) OVERRIDE;
   virtual int32_t StartCapture() OVERRIDE;
   virtual int32_t ReuseBuffer(uint32_t buffer) OVERRIDE;
   virtual int32_t StopCapture() OVERRIDE;
@@ -55,13 +56,14 @@ class PPAPI_SHARED_EXPORT PPB_VideoCapture_Shared
 
   // Subclasses should implement these methods to do impl- and proxy-specific
   // work.
-  virtual int32_t InternalEnumerateDevices(PP_Resource* devices,
-                                           PP_CompletionCallback callback) = 0;
+  virtual int32_t InternalEnumerateDevices(
+      PP_Resource* devices,
+      const PP_CompletionCallback& callback) = 0;
   virtual int32_t InternalOpen(
       const std::string& device_id,
       const PP_VideoCaptureDeviceInfo_Dev& requested_info,
       uint32_t buffer_count,
-      PP_CompletionCallback callback) = 0;
+      const PP_CompletionCallback& callback) = 0;
   virtual int32_t InternalStartCapture() = 0;
   virtual int32_t InternalReuseBuffer(uint32_t buffer) = 0;
   virtual int32_t InternalStopCapture() = 0;

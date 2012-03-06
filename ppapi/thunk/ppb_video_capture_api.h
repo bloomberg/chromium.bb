@@ -21,11 +21,11 @@ class PPB_VideoCapture_API {
   virtual ~PPB_VideoCapture_API() {}
 
   virtual int32_t EnumerateDevices(PP_Resource* devices,
-                                   PP_CompletionCallback callback) = 0;
+                                   const PP_CompletionCallback& callback) = 0;
   virtual int32_t Open(const std::string& device_id,
                        const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                        uint32_t buffer_count,
-                       PP_CompletionCallback callback) = 0;
+                       const PP_CompletionCallback& callback) = 0;
   virtual int32_t StartCapture() = 0;
   virtual int32_t ReuseBuffer(uint32_t buffer) = 0;
   virtual int32_t StopCapture() = 0;
