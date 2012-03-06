@@ -117,6 +117,9 @@ class ASH_EXPORT Shell {
   // Should never be called before |CreateInstance()|.
   static Shell* GetInstance();
 
+  // Returns true if the ash shell has been instantiated.
+  static bool HasInstance();
+
   static void DeleteInstance();
 
   // Get the singleton RootWindow used by the Shell.

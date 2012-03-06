@@ -352,6 +352,11 @@ Shell* Shell::GetInstance() {
 }
 
 // static
+bool Shell::HasInstance() {
+  return !!instance_;
+}
+
+// static
 void Shell::DeleteInstance() {
   delete instance_;
   instance_ = NULL;
