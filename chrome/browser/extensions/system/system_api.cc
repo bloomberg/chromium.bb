@@ -50,10 +50,17 @@ const char kOnWokeUp[] = "systemPrivate.onWokeUp";
 
 // Dispatches an extension event with |args|
 void DispatchEvent(const std::string& event_name, const ListValue& args) {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (!profile)
+    return;
+  ExtensionEventRouter* extension_event_router =
+      profile->GetExtensionEventRouter();
+  if (!extension_event_router)
+    return;
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
-  ProfileManager::GetDefaultProfile()->GetExtensionEventRouter()->
-      DispatchEventToRenderers(event_name, json_args, NULL, GURL());
+  extension_event_router->DispatchEventToRenderers(
+      event_name, json_args, NULL, GURL());
 }
 
 }  // namespace
