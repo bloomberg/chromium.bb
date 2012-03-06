@@ -387,7 +387,9 @@ void PpbGraphics3DRpcServer::PPB_Graphics3DTrusted_GetTransferBuffer(
       GetTransferBuffer(resource_id, id, &native_handle, &native_size);
   desc_wrapper.reset(factory.ImportShmHandle(
       (NaClHandle)native_handle, native_size));
-  *shm_desc = desc_wrapper->desc();
+  // todo(nfullagar): Dup the handle instead of leak caused by bumping the ref.
+  // bug: https://chromiumcodereview.appspot.com/9610008
+  *shm_desc = NaClDescRef(desc_wrapper->desc());
   *shm_size = native_size;
   rpc->result = NACL_SRPC_RESULT_OK;
 
