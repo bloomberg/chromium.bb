@@ -407,9 +407,11 @@ void BrowserWindowGtk::Init() {
   // properly. For other windows, we set the geometry first to prevent resize
   // flicker.
   if (browser_->is_type_popup() || browser_->is_type_panel()) {
+    gtk_window_set_role(window_, "pop-up");
     InitWidgets();
     SetGeometryHints();
   } else {
+    gtk_window_set_role(window_, "browser");
     SetGeometryHints();
     InitWidgets();
   }
