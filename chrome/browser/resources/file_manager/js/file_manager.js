@@ -543,7 +543,8 @@ FileManager.prototype = {
 
     this.refocus();
 
-    this.createMetadataProvider_();
+    this.localMetadataProvider_ = this.createLocalMetadataProvider_();
+    this.gdataMetadataProvider_ = new GDataMetadataProvider();
 
     this.table_.list.endBatchUpdates();
     this.grid_.endBatchUpdates();
@@ -2124,7 +2125,7 @@ FileManager.prototype = {
   };
 
 
-  FileManager.prototype.createMetadataProvider_ = function() {
+  FileManager.prototype.createLocalMetadataProvider_ = function() {
     // Subclass MetadataProvider to notify tests when the initialization
     // is complete.
 
@@ -2152,7 +2153,15 @@ FileManager.prototype = {
       }
     };
 
-    this.metadataProvider_ = new TestAwareMetadataProvider();
+    return new TestAwareMetadataProvider();
+  };
+
+  FileManager.prototype.getMetadataProvider = function() {
+    if (this.directoryModel_ &&
+        this.directoryModel_.rootPath == '/' + DirectoryModel.GDATA_DIRECTORY)
+      return this.gdataMetadataProvider_;
+    else
+      return this.localMetadataProvider_;
   };
 
   /**
@@ -2229,6 +2238,10 @@ FileManager.prototype = {
    * @param {Object} selection Selected files object.
    */
   FileManager.prototype.maybeRenderFormattingTask_ = function(selection) {
+    var dm = this.directoryModel_;
+    if (!dm || dm.rootPath != '/' + DirectoryModel.REMOVABLE_DIRECTORY)
+      return;
+
     // Format task is not supported for multiple selection.
     if (selection.entries.length != 1)
       return;
@@ -2528,7 +2541,7 @@ FileManager.prototype = {
             self.updateLocation_(true /*replace*/, dirPath + '/' + name);
           },
           function () { history.back(1) },
-          self.metadataProvider_,
+          self.getMetadataProvider(),
           shareActions,
           str);
     };
@@ -2724,15 +2737,7 @@ FileManager.prototype = {
       callback(iconType, FileType.getPreviewArt(iconType));
     }
 
-    if (DirectoryModel.getRootType(entry.fullPath) ==
-        DirectoryModel.RootType.GDATA) {
-      // TODO(serya): retrieve thumbnail URL with getGDataFileProperties
-      // (see http://crosbug/27030)
-      returnStockIcon();
-      return;
-    }
-
-    this.metadataProvider_.fetch(entry.toURL(), function (metadata) {
+    this.getMetadataProvider().fetch(entry.toURL(), function (metadata) {
       if (metadata.thumbnailURL) {
         callback(iconType, metadata.thumbnailURL, metadata.thumbnailTransform);
       } else if (iconType == 'image') {
@@ -2753,7 +2758,7 @@ FileManager.prototype = {
     if (!entry)
       return;
 
-    this.metadataProvider_.fetch(entry.toURL(), function(metadata) {
+    this.getMetadataProvider().fetch(entry.toURL(), function(metadata) {
       callback(metadata.description);
     });
   };
@@ -3226,8 +3231,10 @@ FileManager.prototype = {
 
   FileManager.prototype.updateVolumeMetadata_ = function() {
     var dm = this.directoryModel_;
-    // Nothing to be done for Downloads directory.
-    if (!dm || dm.rootPath == '/' + DirectoryModel.DOWNLOADS_DIRECTORY)
+    // Only request metadata for removable devices and archives.
+    if (!dm ||
+        (dm.rootPath != '/' + DirectoryModel.REMOVABLE_DIRECTORY &&
+         dm.rootPath != '/' + DirectoryModel.ARCHIVE_DIRECTORY))
       return;
 
     dm.readonly = true;

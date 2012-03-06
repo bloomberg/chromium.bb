@@ -1978,6 +1978,7 @@ bool GetGDataFilePropertiesFunction::RunImpl() {
 
   result_.reset(file_properties);
 
+  SendResponse(true);
   return true;
 }
 

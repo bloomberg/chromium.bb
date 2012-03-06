@@ -177,8 +177,13 @@ ImageView.prototype.load = function(
 
   if (FileType.getMediaType(source) == 'video') {
     var video = this.document_.createElement('video');
-    video.src = source;
-    video.load();
+    if (metadata.thumbnailURL) {
+      video.setAttribute('poster', metadata.thumbnailURL);
+    }
+    if (!metadata.thumbnailOnly) {
+      video.src = source;
+      video.load();
+    }
     displayMainImage(ImageView.LOAD_TYPE_TOTAL, video);
     return;
   }
@@ -216,6 +221,17 @@ ImageView.prototype.load = function(
       slide = 0;
     }
     self.lastLoadTime_ = time;
+
+    if (metadata.thumbnailOnly) {
+      // We do not know the main image size, but chances are that it is large
+      // enough. Show the thumbnail at the maximum possible scale.
+      var bounds = self.viewport_.getScreenBounds();
+      var scale = Math.min (bounds.width / canvas.width,
+                            bounds.height / canvas.height);
+      self.replace(canvas, slide, canvas.width * scale, canvas.height * scale);
+      if (opt_callback) opt_callback(ImageView.LOAD_TYPE_TOTAL);
+      return;
+    }
 
     self.replace(canvas, slide, metadata.width, metadata.height);
     if (!slide) mainImageLoadDelay = 0;
@@ -339,7 +355,11 @@ ImageView.prototype.replaceContent_ = function(
     this.updateThumbnail_(this.screenImage_);
 
     for (var i = 0; i != this.contentCallbacks_.length; i++) {
-      this.contentCallbacks_[i]();
+      try {
+        this.contentCallbacks_[i]();
+      } catch(e) {
+        console.error(e);
+      }
     }
   }
 };
