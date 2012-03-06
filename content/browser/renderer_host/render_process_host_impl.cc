@@ -746,12 +746,10 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 }
 
 base::ProcessHandle RenderProcessHostImpl::GetHandle() {
-  // child_process_launcher_ is null either because we're in single process
-  // mode, we have done fast termination, or the process has crashed.
-  if (run_renderer_in_process() || !child_process_launcher_.get())
+  if (run_renderer_in_process())
     return base::Process::Current().handle();
 
-  if (child_process_launcher_->IsStarting())
+  if (!child_process_launcher_.get() || child_process_launcher_->IsStarting())
     return base::kNullProcessHandle;
 
   return child_process_launcher_->GetHandle();

@@ -536,12 +536,18 @@ void TaskManagerTabContentsResourceProvider::Observe(int type,
 
 SkBitmap* TaskManagerBackgroundContentsResource::default_icon_ = NULL;
 
+// TODO(atwilson): http://crbug.com/116893
+// HACK: if the process handle is invalid, we use the current process's handle.
+// This preserves old behavior but is incorrect, and should be fixed.
 TaskManagerBackgroundContentsResource::TaskManagerBackgroundContentsResource(
     BackgroundContents* background_contents,
     const string16& application_name)
     : TaskManagerRendererResource(
           background_contents->web_contents()->GetRenderProcessHost()->
-              GetHandle(),
+              GetHandle() ?
+              background_contents->web_contents()->GetRenderProcessHost()->
+                  GetHandle() :
+              base::Process::Current().handle(),
           background_contents->web_contents()->GetRenderViewHost()),
       background_contents_(background_contents),
       application_name_(application_name) {
@@ -702,9 +708,9 @@ void TaskManagerBackgroundContentsResourceProvider::Add(
   if (!updating_)
     return;
 
-  // Don't add contents whose process is dead.
-  if (!contents->web_contents()->GetRenderProcessHost()->GetHandle())
-    return;
+  // TODO(atwilson): http://crbug.com/116893
+  // We should check that the process handle is valid here, but it won't
+  // be in the case of NOTIFICATION_BACKGROUND_CONTENTS_OPENED.
 
   // Should never add the same BackgroundContents twice.
   DCHECK(resources_.find(contents) == resources_.end());
