@@ -1,6 +1,6 @@
 #!/bin/bash -p
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -38,7 +38,7 @@ versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 # framework bundle requires that each version within be signed individually.
 # http://developer.apple.com/mac/library/technotes/tn2007/tn2206.html#TNTAG13
 # In Chrome's case, the framework bundle is unversioned, so it too can be
-# signed directly. See copy_framework_unversioned.
+# signed directly. See copy_framework_unversioned.sh.
 
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"

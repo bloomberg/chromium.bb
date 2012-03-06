@@ -20,6 +20,8 @@
 #include "content/common/view_messages.h"
 #elif defined(OS_LINUX)
 #include "content/browser/tab_contents/tab_contents_view_gtk.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/tab_contents/web_contents_view_mac.h"
 #endif
 
 namespace content {
@@ -47,6 +49,8 @@ WebContentsView* ShellContentBrowserClient::CreateWebContentsView(
   return new TabContentsViewWin(web_contents);
 #elif defined(OS_LINUX)
   return new TabContentsViewGtk(web_contents, NULL);
+#elif defined(OS_MACOSX)
+  return web_contents_view_mac::CreateWebContentsView(web_contents, NULL);
 #else
   return NULL;
 #endif

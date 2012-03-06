@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'content_shell_product_name': 'Content Shell',
+  },
   'targets': [
     {
       'target_name': 'content_shell_lib',
@@ -114,7 +117,7 @@
               },
             },
           },
-        }],
+        }],  # OS=="win"
       ],
     },
     {
@@ -194,6 +197,7 @@
     {
       'target_name': 'content_shell',
       'type': 'executable',
+      'mac_bundle': 1,
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'variables': {
         'chromium_code': 1,
@@ -209,6 +213,19 @@
         'app/startup_helper_win.cc',
         'shell/shell_main.cc',
       ],
+      'mac_bundle_resources': [
+        'shell/mac/app.icns',
+        'shell/mac/app-Info.plist',
+      ],
+      # TODO(mark): Come up with a fancier way to do this.  It should only
+      # be necessary to list app-Info.plist once, not the three times it is
+      # listed here.
+      'mac_bundle_resources!': [
+        'shell/mac/app-Info.plist',
+      ],
+      'xcode_settings': {
+        'INFOPLIST_FILE': 'shell/mac/app-Info.plist',
+      },
       'msvs_settings': {
         'VCLinkerTool': {
           'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
@@ -230,18 +247,89 @@
               },
             },
           },
-        }],
+        }],  # OS=="win"
         ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
           ],
-        }],
+        }],  # OS=="win" or (toolkit_uses_gtk == 1 and selinux == 0)
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
-        }],
+        }],  # toolkit_uses_gtk
+        ['OS=="mac"', {
+          'product_name': '<(content_shell_product_name)',
+          'dependencies!': [
+            'content_shell_lib',
+          ],
+          'dependencies': [
+            'content_shell_framework',
+          ],
+          'postbuilds': [
+            {
+              'postbuild_name': 'Copy <(content_shell_product_name) Framework.framework',
+              'action': [
+                '../build/mac/copy_framework_unversioned.sh',
+                '${BUILT_PRODUCTS_DIR}/<(content_shell_product_name) Framework.framework',
+                '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Frameworks',
+              ],
+            },
+            {
+              'postbuild_name': 'Fix Framework Link',
+              'action': [
+                'install_name_tool',
+                '-change',
+                '/Library/Frameworks/<(content_shell_product_name) Framework.framework/Versions/A/<(content_shell_product_name) Framework',
+                '@executable_path/../Frameworks/<(content_shell_product_name) Framework.framework/<(content_shell_product_name) Framework',
+                '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
+              ],
+            },
+            {
+              # Modify the Info.plist as needed.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['../build/mac/tweak_info_plist.py',
+                         '-s1',
+                         'unused branding',
+                         'unused bundle-id'],
+            },
+            {
+              # Make sure there isn't any Objective-C in the shell's
+              # executable.
+              'postbuild_name': 'Verify No Objective-C',
+              'action': [
+                '../build/mac/verify_no_objc.sh',
+              ],
+            },
+          ],
+        }],  # OS=="mac"
       ],
     },
+  ],
+  'conditions': [
+    ['OS=="mac"', {
+      'targets': [
+        {
+          'target_name': 'content_shell_framework',
+          'type': 'shared_library',
+          'product_name': '<(content_shell_product_name) Framework',
+          'mac_bundle': 1,
+          'mac_bundle_resources': [
+            'shell/mac/English.lproj/MainMenu.xib',
+            '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak'
+          ],
+          'dependencies': [
+            'content_shell_lib',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'shell/shell_content_main.cc',
+            'shell/shell_content_main.h',
+          ],
+        },
+      ],
+    }],  # OS=="mac"
   ],
 }

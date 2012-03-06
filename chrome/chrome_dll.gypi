@@ -194,7 +194,7 @@
                 # LD_DYLIB_INSTALL_NAME affect -install_name.
                 'DYLIB_INSTALL_NAME_BASE':
                     '@executable_path/../Versions/<(version_full)',
-                # See tools/build/mac/copy_framework_unversioned for
+                # See /build/mac/copy_framework_unversioned.sh for
                 # information on LD_DYLIB_INSTALL_NAME.
                 'LD_DYLIB_INSTALL_NAME':
                     '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
@@ -514,7 +514,7 @@
                     {
                       'postbuild_name': 'Copy KeystoneRegistration.framework',
                       'action': [
-                        'tools/build/mac/copy_framework_unversioned',
+                        '../build/mac/copy_framework_unversioned.sh',
                         '../third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework',
                         '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Frameworks',
                       ],

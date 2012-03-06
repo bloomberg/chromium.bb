@@ -11,6 +11,10 @@
 #include "content/public/app/startup_helper_win.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "content/shell/shell_content_main.h"
+#endif
+
 #if defined(OS_WIN)
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
@@ -19,19 +23,18 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   ShellMainDelegate delegate;
   return content::ContentMain(instance, &sandbox_info, &delegate);
 }
-#endif
 
-#if defined(OS_POSIX)
-
-#if defined(OS_MACOSX)
-__attribute__((visibility("default")))
-int main(int argc, const char* argv[]) {
 #else
-int main(int argc, const char** argv) {
-#endif  // OS_MACOSX
 
+int main(int argc, const char** argv) {
+#if defined(OS_MACOSX)
+  // Do the delegate work in shell_content_main to avoid having to export the
+  // delegate types.
+  return ::ContentMain(argc, argv);
+#else
   ShellMainDelegate delegate;
   return content::ContentMain(argc, argv, &delegate);
+#endif  // OS_MACOSX
 }
 
 #endif  // OS_POSIX

@@ -301,7 +301,7 @@
             {
               'postbuild_name': 'Copy <(mac_product_name) Framework.framework',
               'action': [
-                'tools/build/mac/copy_framework_unversioned',
+                '../build/mac/copy_framework_unversioned.sh',
                 '${BUILT_PRODUCTS_DIR}/<(mac_product_name) Framework.framework',
                 '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Versions/<(version_full)',
               ],
@@ -372,7 +372,7 @@
               # executable.
               'postbuild_name': 'Verify No Objective-C',
               'action': [
-                'tools/build/mac/verify_no_objc.sh',
+                '../build/mac/verify_no_objc.sh',
               ],
             },
           ],  # postbuilds

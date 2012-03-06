@@ -74,7 +74,7 @@
             'app/resources/locale_settings_linux.grd',
       },],
       ['OS=="mac"', {
-        'tweak_info_plist_path': 'tools/build/mac/tweak_info_plist',
+        'tweak_info_plist_path': '../build/mac/tweak_info_plist.py',
         'nacl_defines': [
           'NACL_WINDOWS=0',
           'NACL_LINUX=0',
@@ -793,7 +793,7 @@
               # executable.
               'postbuild_name': 'Verify No Objective-C',
               'action': [
-                'tools/build/mac/verify_no_objc.sh',
+                '../build/mac/verify_no_objc.sh',
               ],
             },
           ],
