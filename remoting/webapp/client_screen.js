@@ -457,6 +457,9 @@ remoting.connectMe2Me = function(hostId, retryIfOffline) {
     // Skip PIN prompt if it is not supported.
     remoting.connectMe2MeWithPin();
   } else {
+    var host = remoting.hostList.getHostForId(remoting.hostId);
+    var message = document.getElementById('pin-message');
+    l10n.localizeElement(message, host.hostName);
     remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
   }
 };

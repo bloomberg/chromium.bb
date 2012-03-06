@@ -275,6 +275,16 @@
     "message": "PIN",
     "description": "Label for the PIN entry box."
   },
+  "PIN_MESSAGE": {
+    "message": "Please enter your PIN for $hostname$.",
+    "description": "Message displayed to the user asking them to enter a PIN for the host they are connecting to.",
+    "placeholders": {
+      "hostname": {
+        "content": "$1",
+        "example": "My Linux desktop"
+      }
+    }
+  },
   "PRODUCT_DESCRIPTION": {
     "message": "Access other computers or allow another user to access your computer securely over the Internet.",
     "description": "Web-app description. Displayed in Chromium's extensions page."
