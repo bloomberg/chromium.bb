@@ -4649,7 +4649,7 @@
             ['exclude', '^browser/ui/webui/keyboard_ui.*'],
           ],
         }],
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'link_settings': {
             'libraries': [
               '-lXss',
