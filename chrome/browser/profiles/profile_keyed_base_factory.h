@@ -47,6 +47,13 @@ class ProfileKeyedBaseFactory {
   // attached to a single |profile|.
   void RegisterUserPrefsOnProfile(Profile* profile);
 
+  // Some unit tests don't run with a Profile, or switch out PrefServices and
+  // require reregistration. They should do neither of those things, but there
+  // are too many of them to go fix.
+  //
+  // DO NOT USE THIS IN REAL CODE.
+  void ForceRegisterPrefsForTest(PrefService* prefs);
+
 #ifndef NDEBUG
   // Returns our name. We don't keep track of this in release mode.
   const char* name() const { return service_name_; }

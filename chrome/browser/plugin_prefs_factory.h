@@ -23,10 +23,6 @@ class PluginPrefsFactory : public RefcountedProfileKeyedServiceFactory {
 
   static ProfileKeyedBase* CreatePrefsForProfile(Profile* profile);
 
-  // Some unit tests that deal with PluginPrefs don't run with a Profile. Let
-  // them still register their preferences.
-  void ForceRegisterPrefsForTest(PrefService* prefs);
-
  private:
   friend struct DefaultSingletonTraits<PluginPrefsFactory>;
 

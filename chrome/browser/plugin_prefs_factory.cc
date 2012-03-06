@@ -28,10 +28,6 @@ PluginPrefs* PluginPrefsFactory::GetPrefsForProfile(Profile* profile) {
   return static_cast<PluginPrefs*>(GetBaseForProfile(profile, true));
 }
 
-void PluginPrefsFactory::ForceRegisterPrefsForTest(PrefService* prefs) {
-  RegisterUserPrefs(prefs);
-}
-
 PluginPrefsFactory::PluginPrefsFactory()
     : RefcountedProfileKeyedServiceFactory(
           "PluginPrefs", ProfileDependencyManager::GetInstance()) {

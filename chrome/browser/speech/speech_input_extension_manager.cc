@@ -96,6 +96,7 @@ class SpeechInputExtensionManager::Factory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory methods:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
+  virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() OVERRIDE { return false; }
   virtual bool ServiceIsNULLWhileTesting() OVERRIDE { return true; }
   virtual bool ServiceIsCreatedWithProfile() OVERRIDE { return true; }
@@ -133,6 +134,13 @@ ProfileKeyedService*
   scoped_refptr<SpeechInputExtensionManager> manager(
       new SpeechInputExtensionManager(profile));
   return new SpeechInputExtensionManagerWrapper(manager);
+}
+
+void SpeechInputExtensionManager::Factory::RegisterUserPrefs(
+    PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kSpeechInputTrayNotificationShown,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 SpeechInputExtensionInterface::SpeechInputExtensionInterface() {

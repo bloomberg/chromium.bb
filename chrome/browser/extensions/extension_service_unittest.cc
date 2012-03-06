@@ -52,6 +52,7 @@
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -425,6 +426,7 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   browser::RegisterUserPrefs(prefs);
   profile->SetPrefService(prefs);
 
+  ThemeServiceFactory::GetInstance()->ForceRegisterPrefsForTest(prefs);
   PluginPrefsFactory::GetInstance()->ForceRegisterPrefsForTest(prefs);
 
   profile_.reset(profile);

@@ -86,6 +86,10 @@ void ProfileKeyedBaseFactory::RegisterUserPrefsOnProfile(Profile* profile) {
   }
 }
 
+void ProfileKeyedBaseFactory::ForceRegisterPrefsForTest(PrefService* prefs) {
+  RegisterUserPrefs(prefs);
+}
+
 bool ProfileKeyedBaseFactory::ServiceRedirectedInIncognito() {
   return false;
 }
