@@ -8218,9 +8218,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_STARTUP_GROUP_NAME" desc="The title of the startup group">
         On startup
       </message>
-      <message name="IDS_OPTIONS2_STARTUP_SHOW_HOME_PAGE" desc="The label of the 'Show home page' startup option radio button">
-        Open the home page
-      </message>
       <message name="IDS_OPTIONS2_STARTUP_SHOW_NEWTAB" desc="The label of the 'Show home page' startup option radio button">
         Open the New Tab page
       </message>

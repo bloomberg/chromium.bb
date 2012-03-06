@@ -1179,16 +1179,16 @@ Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
     // specified on the command line. Filter out any urls that are to be
     // restored by virtue of having been previously pinned.
     AddUniqueURLs(pref.urls, &tabs);
-  } else if (pref.type == SessionStartupPref::HOMEPAGE && !tabs.empty()) {
-    // Make sure the home page is opened even if there are pinned tabs.
+  } else if (pref.type == SessionStartupPref::DEFAULT) {
     std::vector<GURL> urls;
     AddStartupURLs(&urls);
     UrlsToTabs(urls, &tabs);
-  } else if (pref.type == SessionStartupPref::DEFAULT) {
-    Tab tab;
-    tab.is_pinned = false;
-    tab.url = GURL(chrome::kChromeUINewTabURL);
-    tabs.push_back(tab);
+
+  } else if (pref.type == SessionStartupPref::HOMEPAGE) {
+    // If the user had 'homepage' selected, we should have migrated them to
+    // 'URLs' instead.
+    DLOG(ERROR) << "pref.type == HOMEPAGE";
+    NOTREACHED();
   }
 
   if (tabs.empty())
@@ -1489,7 +1489,7 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
   // is the first time the browser is being started), or the set of URLs
   // specified on the command line.
   if (startup_urls->empty()) {
-    startup_urls->push_back(GURL());  // New tab page.
+    startup_urls->push_back(GURL(chrome::kChromeUINewTabURL));
     PrefService* prefs = g_browser_process->local_state();
     if (prefs->FindPreference(prefs::kShouldShowWelcomePage) &&
         prefs->GetBoolean(prefs::kShouldShowWelcomePage)) {
