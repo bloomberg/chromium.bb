@@ -15787,7 +15787,6 @@ var keyboardOverlayData = {
     "8<>CTRL": "keyboardOverlayActivateTab8",
     "9<>ALT": "keyboardOverlayActivateLastWindow",
     "9<>CTRL": "keyboardOverlayActivateLastTab",
-    "ALT": "keyboardOverlayFocusWrenchMenu",
     "ALT<>SHIFT": "keyboardOverlayCycleThroughInputMethods",
     "a<>CTRL": "keyboardOverlaySelectAll",
     "arrowkeys<>CTRL": "keyboardOverlayWordMove",

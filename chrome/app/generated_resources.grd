@@ -14276,9 +14276,6 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_FOCUS_TOOLBAR" desc="The text in the keyboard overlay to explain the shortcut.">
         Focus toolbar
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_FOCUS_WRENCH_MENU" desc="The text in the keyboard overlay to explain the shortcut.">
-        Focus wrench menu
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_GO_BACK" desc="The text in the keyboard overlay to explain the shortcut.">
         Go back
       </message>
