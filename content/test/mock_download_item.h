@@ -108,6 +108,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(GetTargetFilePath, FilePath());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, FilePath());
+  MOCK_METHOD1(SetDisplayName, void(const FilePath&));
   MOCK_CONST_METHOD0(GetUserVerifiedFilePath, FilePath());
   MOCK_CONST_METHOD0(NeedsRename, bool());
   MOCK_METHOD1(OffThreadCancel, void(DownloadFileManager* file_manager));

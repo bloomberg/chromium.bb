@@ -281,6 +281,21 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
   ASSERT_TRUE(observer.CheckUpdated());
 }
 
+TEST_F(DownloadItemTest, DisplayName) {
+  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+  DownloadStateInfo info = item->GetStateInfo();
+  info.target_name = FilePath(FILE_PATH_LITERAL("foo.bar"));
+  item->SetFileCheckResults(info);
+  EXPECT_EQ(FILE_PATH_LITERAL("foo.bar"),
+            item->GetFileNameToReportUser().value());
+  item->SetPathUniquifier(1);
+  EXPECT_EQ(FILE_PATH_LITERAL("foo (1).bar"),
+            item->GetFileNameToReportUser().value());
+  item->SetDisplayName(FilePath(FILE_PATH_LITERAL("new.name")));
+  EXPECT_EQ(FILE_PATH_LITERAL("new.name"),
+            item->GetFileNameToReportUser().value());
+}
+
 static char external_data_test_string[] = "External data test";
 static int destructor_called = 0;
 

@@ -310,9 +310,15 @@ class CONTENT_EXPORT DownloadItem {
   // Returns the final target file path for the download.
   virtual FilePath GetTargetFilePath() const = 0;
 
-  // Returns the file-name that should be reported to the user, which is
-  // target_name possibly with the uniquifier number.
+  // Returns the file-name that should be reported to the user. If a display
+  // name has been explicitly set using SetDisplayName(), this function returns
+  // that display name. Otherwise returns the final target filename.
   virtual FilePath GetFileNameToReportUser() const = 0;
+
+  // Set a display name for the download that will be independent of the target
+  // filename. If |name| is not empty, then GetFileNameToReportUser() will
+  // return |name|. Has no effect on the final target filename.
+  virtual void SetDisplayName(const FilePath& name) = 0;
 
   // Returns the user-verified target file path for the download.
   // This returns the same path as GetTargetFilePath() for safe downloads

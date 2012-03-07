@@ -859,11 +859,17 @@ FilePath DownloadItemImpl::GetTargetFilePath() const {
 }
 
 FilePath DownloadItemImpl::GetFileNameToReportUser() const {
+  if (!display_name_.empty())
+    return display_name_;
   if (state_info_.path_uniquifier > 0) {
     return state_info_.target_name.InsertBeforeExtensionASCII(
         StringPrintf(" (%d)", state_info_.path_uniquifier));
   }
   return state_info_.target_name;
+}
+
+void DownloadItemImpl::SetDisplayName(const FilePath& name) {
+  display_name_ = name;
 }
 
 FilePath DownloadItemImpl::GetUserVerifiedFilePath() const {

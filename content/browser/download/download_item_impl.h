@@ -201,6 +201,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual FilePath GetTargetFilePath() const OVERRIDE;
   virtual FilePath GetFileNameToReportUser() const OVERRIDE;
+  virtual void SetDisplayName(const FilePath& name) OVERRIDE;
   virtual FilePath GetUserVerifiedFilePath() const OVERRIDE;
   virtual bool NeedsRename() const OVERRIDE;
   virtual void OffThreadCancel(DownloadFileManager* file_manager) OVERRIDE;
@@ -245,6 +246,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
 
   // State information used by the download manager.
   DownloadStateInfo state_info_;
+
+  // Display name for the download if different from the target filename.
+  FilePath display_name_;
 
   // The handle to the request information.  Used for operations outside the
   // download system.
