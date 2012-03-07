@@ -99,22 +99,6 @@ class GDataFileSystemTest : public testing::Test {
         &unused) == base::PLATFORM_FILE_OK;
   }
 
-  void UpdateSubdirContent(const FilePath& search_file_path,
-                           const FilePath& directory_path,
-                           scoped_refptr<FindFileDelegate> delegate,
-                           Value* data) {
-    GDataFileSystem::FindFileParams params(
-        search_file_path,
-        false,
-        directory_path,
-        GURL(),
-        true,
-        delegate);
-    file_system_->OnGetDocuments(params,
-                                 HTTP_SUCCESS,
-                                 data);
-  }
-
   bool RemoveFile(const FilePath& file_path) {
     return file_system_->RemoveFileFromFileSystem(file_path) ==
         base::PLATFORM_FILE_OK;

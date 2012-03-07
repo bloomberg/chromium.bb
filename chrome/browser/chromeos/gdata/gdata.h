@@ -29,6 +29,7 @@ class FileStream;
 
 namespace gdata {
 
+class GDataOperationInterface;
 class GDataOperationRegistry;
 
 // Document export format.
@@ -49,7 +50,7 @@ enum DocumentExportFormat {
   XLS,     // Excel (spreadsheets only).
   CSV,     // Excel (spreadsheets only).
   ODS,     // Open Document Spreadsheet (spreadsheets only).
-  TSV,     // Tab Seperated Value (spreadsheets only). Only the first worksheet
+  TSV,     // Tab Separated Value (spreadsheets only). Only the first worksheet
            // is returned in TSV by default.
 };
 
@@ -57,11 +58,7 @@ enum DocumentExportFormat {
 typedef base::Callback<void(GDataErrorCode error,
                             const std::string& token)> AuthStatusCallback;
 typedef base::Callback<void(GDataErrorCode error,
-                            base::Value* feed_data)> GetDataCallback;
-// Callback for directory creation calls. If successful, |entry| will be a
-// dictionary containing gdata entry represeting newly created directory.
-typedef base::Callback<void(GDataErrorCode error,
-                            base::Value* entry)> CreateEntryCallback;
+                            scoped_ptr<base::Value> feed_data)> GetDataCallback;
 typedef base::Callback<void(GDataErrorCode error,
                             const GURL& document_url)> EntryActionCallback;
 typedef base::Callback<void(GDataErrorCode error,
@@ -164,7 +161,7 @@ class GDataAuthService : public content::NotificationObserver {
                        GDataErrorCode error,
                        const std::string& auth_token);
 
-  // Overriden from content::NotificationObserver:
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -181,7 +178,7 @@ class GDataAuthService : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(GDataAuthService);
 };
 
-// This calls provides documents feed service calls.
+// This class provides documents feed service calls.
 class DocumentsService : public GDataAuthService::Observer {
  public:
   // DocumentsService is usually owned and created by GDataFileSystem.
@@ -194,6 +191,7 @@ class DocumentsService : public GDataAuthService::Observer {
   // Cancels all in-flight operations.
   void CancelAll();
 
+  // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
   //
@@ -230,7 +228,7 @@ class DocumentsService : public GDataAuthService::Observer {
   // Can be called on any thread.
   void CreateDirectory(const GURL& parent_content_url,
                        const FilePath::StringType& directory_name,
-                       const CreateEntryCallback& callback);
+                       const GetDataCallback& callback);
 
   // Downloads a file identified by its |content_url|. Upon completion, invokes
   // |callback| with results on the calling thread.
@@ -245,160 +243,40 @@ class DocumentsService : public GDataAuthService::Observer {
   void InitiateUpload(const InitiateUploadParams& params,
                       const InitiateUploadCallback& callback);
 
-  // Resume uploading of a document/file.
+  // Resume uploading of a document/file on the calling thread.
   //
   // Can be called on any thread.
   void ResumeUpload(const ResumeUploadParams& params,
                     const ResumeUploadCallback& callback);
 
  private:
-  // Helper function for GetDocuments(). We should initiate this operation on
-  // the UI thread as the underlying GDataAuthService requires to be used on
-  // the UI thread. |relay_proxy| is used to post a task to the origin thread.
-  void GetDocumentsOnUIThread(
-      const GURL& feed_url,
-      const GetDataCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
-
-  // Helper function for DeleteDocument().
-  void DeleteDocumentOnUIThread(
-    const GURL& document_url,
-    const EntryActionCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy);
-
-  // Helper function for DownloadFile().
-  void DownloadFileOnUIThread(
-    const GURL& document_url,
-    const DownloadActionCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy);
-
-  // Helper function for CreateDirectory.
-  void CreateDirectoryOnUIThread(
-    const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
-    const CreateEntryCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy);
-
-  // Helper function for InitiateUpload.
-  void InitiateUploadOnUIThread(
-      const InitiateUploadParams& params,
-      const InitiateUploadCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
-
-  // Helper function for ResumeUpload.
-  void ResumeUploadOnUIThread(
-      const ResumeUploadParams& params,
-      const ResumeUploadCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy);
-
-    // GDataAuthService::Observer override.
+  // GDataAuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
-  // TODO(zelidrag): Figure out how to declare/implement following
-  // *OnAuthRefresh and On*Completed callbacks in a way that requires less code
-  // duplication.
+  // Submits an operation implementing the GDataOperationInterface interface
+  // to run on the UI thread, and makes the operation retry upon authentication
+  // failures by calling back to DocumentsService::RetryOperation.
+  //
+  // Called on the same thread that creates |operation|.
+  void StartOperationOnUIThread(GDataOperationInterface* operation);
 
-  // Callback when re-authenticating user during document list fetching.
-  void GetDocumentsOnAuthRefresh(
-      const GURL& feed_url,
-      const GetDataCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      const std::string& auth_token);
+  // Starts an operation implementing the GDataOperationInterface interface.
+  //
+  // Must be called on UI thread.
+  void StartOperation(GDataOperationInterface* operation);
 
-  // Pass-through callback for re-authentication during document list fetching.
-  // If the call is successful, parsed document feed will be returned as |root|.
-  void OnGetDocumentsCompleted(
-      const GURL& feed_url,
-      const GetDataCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      base::Value* root);
+  // Called when the authentication token is refreshed.
+  //
+  // Must be called on UI thread.
+  void OnOperationAuthRefresh(GDataOperationInterface* operation,
+                              GDataErrorCode error,
+                              const std::string& auth_token);
 
-  // Callback when re-authenticating user during document delete call.
-  void DownloadDocumentOnAuthRefresh(
-      const DownloadActionCallback& callback,
-      const GURL& content_url,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      const std::string& token);
-
-  // Pass-through callback for re-authentication during document
-  // download request.
-  void OnDownloadDocumentCompleted(
-      const DownloadActionCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      const GURL& content_url,
-      const FilePath& temp_file_path);
-
-  // Callback when re-authenticating user during document delete call.
-  void DeleteDocumentOnAuthRefresh(
-      const EntryActionCallback& callback,
-      const GURL& document_url,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      const std::string& token);
-
-  // Pass-through callback for re-authentication during document delete request.
-  void OnDeleteDocumentCompleted(
-      const EntryActionCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      const GURL& document_url);
-
-  // Callback when re-authenticating user during initiate upload call.
-  void InitiateUploadOnAuthRefresh(
-      const InitiateUploadParams& params,
-      const InitiateUploadCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      const std::string& token);
-
-  // Pass-through callback for re-authentication during initiate upload request.
-  void OnInitiateUploadCompleted(
-      const InitiateUploadParams& params,
-      const InitiateUploadCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      const GURL& upload_location);
-
-  // Callback when re-authenticating user during resume upload call.
-  void ResumeUploadOnAuthRefresh(
-      const ResumeUploadParams& params,
-      const ResumeUploadCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      const std::string& token);
-
-  // Pass-through callback for re-authentication during resume upload request.
-  void OnResumeUploadCompleted(
-      const ResumeUploadParams& params,
-      const ResumeUploadCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      int64 start_range_received,
-      int64 end_range_received);
-
-  // Pass-through callback for re-authentication during directory create
-  // request.
-  void CreateDirectoryOnAuthRefresh(
-      const GURL& parent_content_url,
-      const FilePath::StringType& directory_name,
-      const CreateEntryCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-
-      GDataErrorCode error,
-      const std::string& token);
-
-  // Pass-through callback for CreateDirectory() completion request.
-  void OnCreateDirectoryCompleted(
-      const GURL& parent_content_url,
-      const FilePath::StringType& directory_name,
-      const CreateEntryCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> relay_proxy,
-      GDataErrorCode error,
-      base::Value* document_entry);
+  // Clears any authentication token and retries the operation, which
+  // forces an authentication token refresh.
+  //
+  // Must be called on UI thread.
+  void RetryOperation(GDataOperationInterface* operation);
 
   // Data members.
   Profile* profile_;

@@ -191,7 +191,7 @@ class FindFileDelegate : public base::RefCountedThreadSafe<FindFileDelegate> {
   // Called when |file| search is completed within the file system.
   virtual void OnFileFound(GDataFile* file) = 0;
 
-  // Called when |directory| is found at |directory_path}| within the file
+  // Called when |directory| is found at |directory_path| within the file
   // system.
   virtual void OnDirectoryFound(const FilePath& directory_path,
                                 GDataDirectory* directory) = 0;
@@ -382,7 +382,7 @@ class GDataFileSystem : public ProfileKeyedService {
   // started FindFileByPath() request.
   void OnGetDocuments(const FindFileParams& params,
                       GDataErrorCode status,
-                      base::Value* data);
+                      scoped_ptr<base::Value> data);
 
   // Callback for handling document remove attempt.
   void OnRemovedDocument(
@@ -395,7 +395,7 @@ class GDataFileSystem : public ProfileKeyedService {
   void OnCreateDirectoryCompleted(
       const CreateDirectoryParams& params,
       GDataErrorCode status,
-      base::Value* created_entry);
+      scoped_ptr<base::Value> created_entry);
 
   // Callback for handling file downloading requests.
   void OnFileDownloaded(

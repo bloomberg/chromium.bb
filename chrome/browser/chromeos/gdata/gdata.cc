@@ -78,6 +78,9 @@ const int kMaxDocumentsPerFeed = 1000;
 const int kMaxDocumentsPerFeed = 1000;
 #endif
 
+// Maximum number of attempts for re-authentication per operation.
+const int kMaxReAuthenticateAttemptsPerOperation = 1;
+
 const char kFeedField[] = "feed";
 
 // Templates for file uploading.
@@ -217,11 +220,11 @@ class AuthOperation : public GDataOperationRegistry::Operation,
   virtual ~AuthOperation() {}
   void Start(AuthStatusCallback callback);
 
-  // Overriden from OAuth2AccessTokenConsumer:
+  // Overridden from OAuth2AccessTokenConsumer:
   virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
-  // Overriden from GDataOpertionRegistry::Operation
+  // Overridden from GDataOpertionRegistry::Operation
   virtual void DoCancel() OVERRIDE;
 
  private:
@@ -275,23 +278,58 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
   NotifyFinish(OPERATION_FAILURE);
 }
 
+//=========================== GDataOperationInterface ==========================
+
+// An interface for implementing an operation used by DocumentsService.
+class GDataOperationInterface {
+ public:
+  // Callback to DocumentsService upon for re-authentication.
+  typedef base::Callback<void(GDataOperationInterface* operation)>
+      ReAuthenticateCallback;
+
+  // Starts the actual operation after obtaining an authentication token
+  // |auth_token|.
+  virtual void Start(const std::string& auth_token) = 0;
+
+  // Invoked when the authentication failed with an error code |code|.
+  virtual void OnAuthFailed(GDataErrorCode code) = 0;
+
+  // Sets the callback to DocumentsService when the operation restarts due to
+  // an authentication failure.
+  virtual void SetReAuthenticateCallback(
+      const ReAuthenticateCallback& callback) = 0;
+
+ protected:
+  virtual ~GDataOperationInterface() {}
+};
+
 //============================== UrlFetchOperation =============================
 
-// Base class for operation that are fetching URLs.
+// Base class for operations that are fetching URLs.
 template <typename T>
-class UrlFetchOperation : public GDataOperationRegistry::Operation,
+class UrlFetchOperation : public GDataOperationInterface,
+                          public GDataOperationRegistry::Operation,
                           public URLFetcherDelegate {
  public:
+  typedef T CompletionCallback;
+
   UrlFetchOperation(GDataOperationRegistry* registry,
                     Profile* profile,
-                    const std::string& auth_token)
+                    const CompletionCallback& callback)
       : GDataOperationRegistry::Operation(registry),
-        profile_(profile), auth_token_(auth_token), save_temp_file_(false) {
+        profile_(profile),
+        // Completion callback runs on the origin thread that creates
+        // this operation object.
+        callback_(callback),
+        // MessageLoopProxy is used to run |callback| on the origin thread.
+        relay_proxy_(base::MessageLoopProxy::current()),
+        re_authenticate_count_(0),
+        save_temp_file_(false) {
   }
 
-  void Start(T callback) {
-    DCHECK(!auth_token_.empty());
-    callback_ = callback;
+  // Overridden from GDataOperationInterface.
+  virtual void Start(const std::string& auth_token) OVERRIDE {
+    DCHECK(!auth_token.empty());
     GURL url = GetURL();
     url_fetcher_.reset(URLFetcher::Create(
         url, GetRequestType(), this));
@@ -310,7 +348,7 @@ class UrlFetchOperation : public GDataOperationRegistry::Operation,
     // only the last header being set in request headers.
     url_fetcher_->AddExtraRequestHeader(kGDataVersionHeader);
     url_fetcher_->AddExtraRequestHeader(
-          base::StringPrintf(kAuthorizationHeaderFormat, auth_token_.data()));
+          base::StringPrintf(kAuthorizationHeaderFormat, auth_token.data()));
     std::vector<std::string> headers = GetExtraRequestHeaders();
     for (size_t i = 0; i < headers.size(); ++i) {
       url_fetcher_->AddExtraRequestHeader(headers[i]);
@@ -330,6 +368,14 @@ class UrlFetchOperation : public GDataOperationRegistry::Operation,
     url_fetcher_->Start();
   }
 
+  // Overridden from GDataOperationInterface.
+  virtual void SetReAuthenticateCallback(
+      const ReAuthenticateCallback& callback) OVERRIDE {
+    DCHECK(re_authenticate_callback_.is_null());
+
+    re_authenticate_callback_ = callback;
+  }
+
  protected:
   virtual ~UrlFetchOperation() {}
   // Gets URL for GET request.
@@ -344,7 +390,14 @@ class UrlFetchOperation : public GDataOperationRegistry::Operation,
                               std::string* upload_content) {
     return false;
   }
+
+  // Invoked by OnURLFetchComplete when the operation completes without an
+  // authentication error. Must be implemented by a derived class.
   virtual void ProcessURLFetchResults(const URLFetcher* source) = 0;
+
+  // Invoked by this base class upon an authentication error.
+  // Must be implemented by a derived class.
+  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) = 0;
 
   // Implement GDataOperationRegistry::Operation
   virtual void DoCancel() OVERRIDE {
@@ -362,15 +415,39 @@ class UrlFetchOperation : public GDataOperationRegistry::Operation,
     NotifyProgress(current, total);
   }
 
+  // Overridden from URLFetcherDelegate.
   virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE {
-    // Overriden by each specialization
+    GDataErrorCode code =
+        static_cast<GDataErrorCode>(source->GetResponseCode());
+    DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
+
+    if (code == HTTP_UNAUTHORIZED) {
+      if (!re_authenticate_callback_.is_null() &&
+          ++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerOperation) {
+        re_authenticate_callback_.Run(this);
+        return;
+      }
+
+      OnAuthFailed(code);
+      return;
+    }
+
+    // Overridden by each specialization
     ProcessURLFetchResults(source);
     NotifyFinish(OPERATION_SUCCESS);
   }
 
-  T callback_;
+  // Overridden from GDataOperationInterface.
+  virtual void OnAuthFailed(GDataErrorCode code) OVERRIDE {
+    RunCallbackOnAuthFailed(code);
+    NotifyFinish(OPERATION_FAILURE);
+  }
+
   Profile* profile_;
-  std::string auth_token_;
+  CompletionCallback callback_;
+  ReAuthenticateCallback re_authenticate_callback_;
+  scoped_refptr<base::MessageLoopProxy> relay_proxy_;
+  int re_authenticate_count_;
   bool save_temp_file_;
   scoped_ptr<URLFetcher> url_fetcher_;
 };
@@ -383,26 +460,34 @@ class EntryActionOperation : public UrlFetchOperation<EntryActionCallback> {
  public:
   EntryActionOperation(GDataOperationRegistry* registry,
                        Profile* profile,
-                       const std::string& auth_token,
+                       const EntryActionCallback& callback,
                        const GURL& document_url)
-      : UrlFetchOperation<EntryActionCallback>(registry, profile, auth_token),
+      : UrlFetchOperation<EntryActionCallback>(registry, profile, callback),
         document_url_(document_url) {
   }
 
  protected:
   virtual ~EntryActionOperation() {}
 
+  // Overridden from UrlFetchOperation.
   virtual GURL GetURL() const OVERRIDE {
     return AddStandardUrlParams(document_url_);
   }
 
   virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE {
-    GDataErrorCode code =
-        static_cast<GDataErrorCode>(source->GetResponseCode());
-    DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
+    if (!callback_.is_null()) {
+      GDataErrorCode code =
+          static_cast<GDataErrorCode>(source->GetResponseCode());
+      relay_proxy_->PostTask(FROM_HERE,
+                             base::Bind(callback_, code, document_url_));
+    }
+  }
 
-    if (!callback_.is_null())
-      callback_.Run(code, document_url_);
+  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE {
+    if (!callback_.is_null()) {
+      relay_proxy_->PostTask(FROM_HERE,
+                             base::Bind(callback_, code, document_url_));
+    }
   }
 
   GURL document_url_;
@@ -418,20 +503,20 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
  public:
   GetDataOperation(GDataOperationRegistry* registry,
                    Profile* profile,
-                   const std::string& auth_token)
-      : UrlFetchOperation<GetDataCallback>(registry, profile, auth_token) {
+                   const GetDataCallback& callback)
+      : UrlFetchOperation<GetDataCallback>(registry, profile, callback) {
   }
 
  protected:
   virtual ~GetDataOperation() {}
 
+  // Overridden from UrlFetchOperation.
   virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE {
     std::string data;
     source->GetResponseAsString(&data);
     scoped_ptr<base::Value> root_value;
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
-    DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
     switch (code) {
       case HTTP_SUCCESS:
@@ -446,8 +531,20 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
         break;
     }
 
-    if (!callback_.is_null())
-      callback_.Run(code, root_value.release());
+    if (!callback_.is_null()) {
+      relay_proxy_->PostTask(
+          FROM_HERE,
+          base::Bind(callback_, code, base::Passed(&root_value)));
+    }
+  }
+
+  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE {
+    if (!callback_.is_null()) {
+      scoped_ptr<base::Value> root_value;
+      relay_proxy_->PostTask(
+          FROM_HERE,
+          base::Bind(callback_, code, base::Passed(&root_value)));
+    }
   }
 
   // Parse GData JSON response.
@@ -475,18 +572,18 @@ class GetDataOperation : public UrlFetchOperation<GetDataCallback> {
 //============================ GetDocumentsOperation ===========================
 
 // Document list fetching operation.
-class GetDocumentsOperation : public GetDataOperation  {
+class GetDocumentsOperation : public GetDataOperation {
  public:
   GetDocumentsOperation(GDataOperationRegistry* registry,
                         Profile* profile,
-                        const std::string& auth_token);
+                        const GetDataCallback& callback);
   virtual ~GetDocumentsOperation() {}
   // Sets |url| for document fetching operation. This URL should be set in use
   // case when additional 'pages' of document lists are being fetched.
   void SetUrl(const GURL& url);
 
  private:
-  // Overrides from GetDataOperation.
+  // Overridden from GetDataOperation.
   virtual GURL GetURL() const OVERRIDE;
 
   GURL override_url_;
@@ -496,8 +593,8 @@ class GetDocumentsOperation : public GetDataOperation  {
 
 GetDocumentsOperation::GetDocumentsOperation(GDataOperationRegistry* registry,
                                              Profile* profile,
-                                             const std::string& auth_token)
-    : GetDataOperation(registry, profile, auth_token) {
+                                             const GetDataCallback& callback)
+    : GetDataOperation(registry, profile, callback) {
 }
 
 void GetDocumentsOperation::SetUrl(const GURL& url) {
@@ -518,11 +615,11 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
  public:
   DownloadFileOperation(GDataOperationRegistry* registry,
                         Profile* profile,
-                        const std::string& auth_token,
+                        const DownloadActionCallback& callback,
                         const GURL& document_url)
       : UrlFetchOperation<DownloadActionCallback>(registry,
                                                   profile,
-                                                  auth_token),
+                                                  callback),
         document_url_(document_url) {
     // Make sure we download the content into a temp file.
     save_temp_file_ = true;
@@ -531,12 +628,12 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
  protected:
   virtual ~DownloadFileOperation() {}
 
+  // Overridden from UrlFetchOperation.
   virtual GURL GetURL() const OVERRIDE { return document_url_; }
 
   virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE {
     GDataErrorCode code =
         static_cast<GDataErrorCode>(source->GetResponseCode());
-    DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
     // Take over the ownership of the the downloaded temp file.
     FilePath temp_file;
@@ -546,8 +643,19 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
       code = GDATA_FILE_ERROR;
     }
 
-    if (!callback_.is_null())
-      callback_.Run(code, document_url_, temp_file);
+    if (!callback_.is_null()) {
+      relay_proxy_->PostTask(
+          FROM_HERE,
+          base::Bind(callback_, code, document_url_, temp_file));
+    }
+  }
+
+  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE {
+    if (!callback_.is_null()) {
+      relay_proxy_->PostTask(
+          FROM_HERE,
+          base::Bind(callback_, code, document_url_, FilePath()));
+    }
   }
 
   GURL document_url_;
@@ -559,16 +667,16 @@ class DownloadFileOperation : public UrlFetchOperation<DownloadActionCallback> {
 //=========================== DeleteDocumentOperation ==========================
 
 // Document list fetching operation.
-class DeleteDocumentOperation : public EntryActionOperation  {
+class DeleteDocumentOperation : public EntryActionOperation {
  public:
   DeleteDocumentOperation(GDataOperationRegistry* registry,
                           Profile* profile,
-                          const std::string& auth_token,
+                          const EntryActionCallback& callback,
                           const GURL& document_url);
   virtual ~DeleteDocumentOperation() {}
 
  private:
-  // Overrides from EntryActionOperation.
+  // Overridden from EntryActionOperation.
   virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
 };
@@ -576,9 +684,9 @@ class DeleteDocumentOperation : public EntryActionOperation  {
 DeleteDocumentOperation::DeleteDocumentOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
-    const std::string& auth_token,
+    const EntryActionCallback& callback,
     const GURL& document_url)
-    : EntryActionOperation(registry, profile, auth_token, document_url) {
+    : EntryActionOperation(registry, profile, callback, document_url) {
 }
 
 URLFetcher::RequestType
@@ -593,31 +701,28 @@ DeleteDocumentOperation::GetExtraRequestHeaders() const {
   return headers;
 }
 
-
 //=========================== CreateDirectoryOperation =========================
 
-class CreateDirectoryOperation
-    : public GetDataOperation {
+class CreateDirectoryOperation : public GetDataOperation {
  public:
-  // Empty |parent_content_url| will create the directory in the the root
-  // folder.
+  // Empty |parent_content_url| will create the directory in the root folder.
   CreateDirectoryOperation(GDataOperationRegistry* registry,
                            Profile* profile,
-                           const std::string& auth_token,
+                           const GetDataCallback& callback,
                            const GURL& parent_content_url,
                            const FilePath::StringType& directory_name);
 
  protected:
   virtual ~CreateDirectoryOperation() {}
 
-  // Overrides from UrlFetcherOperation.
+  // Overridden from UrlFetchOperation.
   virtual GURL GetURL() const OVERRIDE;
 
-  // URLFetcherDelegate overrides.
-  virtual URLFetcher::RequestType GetRequestType() const;
+  // Overridden from URLFetcherDelegate.
+  virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
  private:
-  // Overrides from UrlFetcherOperation.
+  // Overridden from UrlFetchOperation.
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
@@ -630,10 +735,10 @@ class CreateDirectoryOperation
 CreateDirectoryOperation::CreateDirectoryOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
-    const std::string& auth_token,
+    const GetDataCallback& callback,
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name)
-    : GetDataOperation(registry, profile, auth_token),
+    : GetDataOperation(registry, profile, callback),
       parent_content_url_(parent_content_url),
       directory_name_(directory_name) {
 }
@@ -682,18 +787,19 @@ class InitiateUploadOperation
  public:
   InitiateUploadOperation(GDataOperationRegistry* registry,
                           Profile* profile,
-                          const std::string& auth_token,
+                          const InitiateUploadCallback& callback,
                           const InitiateUploadParams& params);
 
  protected:
   virtual ~InitiateUploadOperation() {}
 
-  // Overrides from UrlFetcherOperation.
+  // Overridden from UrlFetchOperation.
   virtual GURL GetURL() const OVERRIDE;
   virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE;
+  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
 
  private:
-  // Overrides from UrlFetcherOperation.
+  // Overridden from UrlFetchOperation.
   virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
@@ -709,9 +815,9 @@ class InitiateUploadOperation
 InitiateUploadOperation::InitiateUploadOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
-    const std::string& auth_token,
+    const InitiateUploadCallback& callback,
     const InitiateUploadParams& params)
-    : UrlFetchOperation<InitiateUploadCallback>(registry, profile, auth_token),
+    : UrlFetchOperation<InitiateUploadCallback>(registry, profile, callback),
       params_(params),
       initiate_upload_url_(chrome_browser_net::AppendQueryParameter(
           params.resumable_create_media_link,
@@ -726,7 +832,6 @@ GURL InitiateUploadOperation::GetURL() const {
 void InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   GDataErrorCode code =
       static_cast<GDataErrorCode>(source->GetResponseCode());
-  VLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
   std::string upload_location;
   if (code == HTTP_SUCCESS) {
@@ -740,18 +845,24 @@ void InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
           << ", location=[" << upload_location << "]";
 
   if (!callback_.is_null()) {
-    callback_.Run(code,
-                  GURL(upload_location));
+    relay_proxy_->PostTask(FROM_HERE,
+                           base::Bind(callback_, code, GURL(upload_location)));
   }
 }
 
-URLFetcher::RequestType
-    InitiateUploadOperation::GetRequestType() const {
+void InitiateUploadOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
+  if (!callback_.is_null()) {
+    relay_proxy_->PostTask(FROM_HERE,
+                           base::Bind(callback_, code, GURL()));
+  }
+}
+
+URLFetcher::RequestType InitiateUploadOperation::GetRequestType() const {
   return URLFetcher::POST;
 }
 
 std::vector<std::string>
-    InitiateUploadOperation::GetExtraRequestHeaders() const {
+InitiateUploadOperation::GetExtraRequestHeaders() const {
   std::vector<std::string> headers;
   headers.push_back(kUploadContentType + params_.content_type);
   headers.push_back(
@@ -779,12 +890,11 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
 
 //============================ ResumeUploadOperation ===========================
 
-class ResumeUploadOperation
-    : public UrlFetchOperation<ResumeUploadCallback> {
+class ResumeUploadOperation : public UrlFetchOperation<ResumeUploadCallback> {
  public:
   ResumeUploadOperation(GDataOperationRegistry* registry,
                         Profile* profile,
-                        const std::string& auth_token,
+                        const ResumeUploadCallback& callback,
                         const ResumeUploadParams& params);
 
  protected:
@@ -792,10 +902,12 @@ class ResumeUploadOperation
 
   virtual GURL GetURL() const OVERRIDE;
 
+  // Overridden from UrlFetchOperation.
   virtual void ProcessURLFetchResults(const URLFetcher* source) OVERRIDE;
+  virtual void RunCallbackOnAuthFailed(GDataErrorCode code) OVERRIDE;
 
  private:
-  // Overrides from UrlFetcherOperation.
+  // Overridden from UrlFetchOperation.
   virtual URLFetcher::RequestType GetRequestType() const OVERRIDE;
 
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
@@ -811,9 +923,9 @@ class ResumeUploadOperation
 ResumeUploadOperation::ResumeUploadOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
-    const std::string& auth_token,
+    const ResumeUploadCallback& callback,
     const ResumeUploadParams& params)
-    : UrlFetchOperation<ResumeUploadCallback>(registry, profile, auth_token),
+    : UrlFetchOperation<ResumeUploadCallback>(registry, profile, callback),
       params_(params) {
 }
 
@@ -822,15 +934,12 @@ GURL ResumeUploadOperation::GetURL() const {
 }
 
 void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
-  GDataErrorCode code =
-      static_cast<GDataErrorCode>(source->GetResponseCode());
+  GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
   std::string range_received;
   std::string response_content;
   int64 start_range_received = -1;
   int64 end_range_received = -1;
-
-  VLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
   if (code == HTTP_RESUME_INCOMPLETE) {
     // Retrieve value of the first "Range" header.
@@ -858,7 +967,16 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   }
 
   if (!callback_.is_null()) {
-    callback_.Run(code, start_range_received, end_range_received);
+    relay_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(callback_, code,
+                   start_range_received, end_range_received));
+  }
+}
+
+void ResumeUploadOperation::RunCallbackOnAuthFailed(GDataErrorCode code) {
+  if (!callback_.is_null()) {
+    relay_proxy_->PostTask(FROM_HERE, base::Bind(callback_, code, 0, 0));
   }
 }
 
@@ -932,8 +1050,8 @@ void GDataAuthService::StartAuthentication(GDataOperationRegistry* registry,
 }
 
 void GDataAuthService::OnAuthCompleted(AuthStatusCallback callback,
-                                   GDataErrorCode error,
-                                   const std::string& auth_token) {
+                                       GDataErrorCode error,
+                                       const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == HTTP_SUCCESS)
@@ -978,9 +1096,9 @@ DocumentsService::DocumentsService()
     : profile_(NULL),
       gdata_auth_service_(new GDataAuthService()),
       operation_registry_(new GDataOperationRegistry),
-      weak_ptr_factory_(this) {
-  // The weak pointers is used to post tasks to UI thread.
-  weak_ptr_bound_to_ui_thread_ = weak_ptr_factory_.GetWeakPtr();
+      weak_ptr_factory_(this),
+      // The weak pointers is used to post tasks to UI thread.
+      weak_ptr_bound_to_ui_thread_(weak_ptr_factory_.GetWeakPtr()) {
 }
 
 DocumentsService::~DocumentsService() {
@@ -1015,94 +1133,11 @@ void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
 
 void DocumentsService::GetDocuments(const GURL& url,
                                     const GetDataCallback& callback) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::GetDocumentsOnUIThread,
-          weak_ptr_bound_to_ui_thread_,
-          url,
-          callback,
-          // MessageLoopProxy is used to run |callback| on the origin thread.
-          base::MessageLoopProxy::current()));
-}
-
-void DocumentsService::GetDocumentsOnUIThread(
-    const GURL& url,
-    const GetDataCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!gdata_auth_service_->IsFullyAuthenticated()) {
-    // Fetch OAuth2 authetication token from the refresh token first.
-    gdata_auth_service_->StartAuthentication(
-        operation_registry_.get(),
-        base::Bind(&DocumentsService::GetDocumentsOnAuthRefresh,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   url,
-                   callback,
-                   relay_proxy));
-    return;
-  }
-
-  // operation's lifetime is managed by operation_registry_, we don't need to
-  // clean it here.
-  GetDocumentsOperation* operation = new GetDocumentsOperation(
-      operation_registry_.get(),
-      profile_,
-      gdata_auth_service_->oauth2_auth_token());
+  GetDocumentsOperation* operation =
+      new GetDocumentsOperation(operation_registry_.get(), profile_, callback);
   if (!url.is_empty())
     operation->SetUrl(url);
-
-  operation->Start(base::Bind(&DocumentsService::OnGetDocumentsCompleted,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              url,
-                              callback,
-                              relay_proxy));
-}
-
-void DocumentsService::GetDocumentsOnAuthRefresh(
-    const GURL& url,
-    const GetDataCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != HTTP_SUCCESS) {
-    if (!callback.is_null())
-      relay_proxy->PostTask(
-          FROM_HERE,
-          base::Bind(callback, error, static_cast<base::Value*>(NULL)));
-   return;
-  }
-  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  GetDocumentsOnUIThread(url, callback, relay_proxy);
-}
-
-void DocumentsService::OnGetDocumentsCompleted(
-    const GURL& url,
-    const GetDataCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    base::Value* value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  switch (error) {
-  case HTTP_UNAUTHORIZED:
-    DCHECK(!value);
-    gdata_auth_service_->ClearOAuth2Token();
-    // User authentication might have expired - rerun the request to force
-    // auth token refresh.
-    GetDocumentsOnUIThread(url, callback, relay_proxy);
-    return;
-  default:
-    break;
-  }
-  scoped_ptr<base::Value> root_value(value);
-  if (!callback.is_null())
-    relay_proxy->PostTask(
-        FROM_HERE,
-        base::Bind(callback, error, root_value.release()));
+  StartOperationOnUIThread(operation);
 }
 
 void DocumentsService::DownloadDocument(
@@ -1118,453 +1153,103 @@ void DocumentsService::DownloadDocument(
 
 void DocumentsService::DownloadFile(const GURL& document_url,
                                     const DownloadActionCallback& callback) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::DownloadFileOnUIThread,
-          weak_ptr_bound_to_ui_thread_,
-          document_url,
-          callback,
-          base::MessageLoopProxy::current()));
-}
-
-void DocumentsService::DownloadFileOnUIThread(
-    const GURL& document_url,
-    const DownloadActionCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!gdata_auth_service_->IsFullyAuthenticated()) {
-    // Fetch OAuth2 authetication token from the refresh token first.
-    gdata_auth_service_->StartAuthentication(
-        operation_registry_.get(),
-        base::Bind(&DocumentsService::DownloadDocumentOnAuthRefresh,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   document_url,
-                   relay_proxy));
-    return;
-  }
-  (new DownloadFileOperation(
-      operation_registry_.get(),
-      profile_,
-      gdata_auth_service_->oauth2_auth_token(),
-      document_url))->Start(
-          base::Bind(&DocumentsService::OnDownloadDocumentCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     callback,
-                     relay_proxy));
-}
-
-void DocumentsService::DownloadDocumentOnAuthRefresh(
-    const DownloadActionCallback& callback,
-    const GURL& document_url,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != HTTP_SUCCESS) {
-    if (!callback.is_null())
-      relay_proxy->PostTask(
-          FROM_HERE,
-          base::Bind(callback, error, document_url, FilePath()));
-    return;
-  }
-  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  DownloadFileOnUIThread(document_url, callback, relay_proxy);
-}
-
-void DocumentsService::OnDownloadDocumentCompleted(
-    const DownloadActionCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const GURL& document_url,
-    const FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  switch (error) {
-    case HTTP_UNAUTHORIZED:
-      gdata_auth_service_->ClearOAuth2Token();
-      // User authentication might have expired - rerun the request to force
-      // auth token refresh.
-      DownloadFileOnUIThread(document_url, callback, relay_proxy);
-      return;
-    default:
-      break;
-  }
-  if (!callback.is_null())
-    relay_proxy->PostTask(
-        FROM_HERE,
-        base::Bind(callback, error, document_url, file_path));
+  StartOperationOnUIThread(
+      new DownloadFileOperation(operation_registry_.get(), profile_, callback,
+                                document_url));
 }
 
 void DocumentsService::DeleteDocument(const GURL& document_url,
                                       const EntryActionCallback& callback) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::DeleteDocumentOnUIThread,
-          weak_ptr_bound_to_ui_thread_,
-          document_url,
-          callback,
-          base::MessageLoopProxy::current()));
-}
-
-void DocumentsService::DeleteDocumentOnUIThread(
-    const GURL& document_url,
-    const EntryActionCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!gdata_auth_service_->IsFullyAuthenticated()) {
-    // Fetch OAuth2 authetication token from the refresh token first.
-    gdata_auth_service_->StartAuthentication(
-        operation_registry_.get(),
-        base::Bind(&DocumentsService::DeleteDocumentOnAuthRefresh,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   document_url,
-                   relay_proxy));
-    return;
-  }
-  (new DeleteDocumentOperation(
-      operation_registry_.get(),
-      profile_,
-      gdata_auth_service_->oauth2_auth_token(),
-      document_url))->Start(
-          base::Bind(&DocumentsService::OnDeleteDocumentCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     callback,
-                     relay_proxy));
-}
-
-void DocumentsService::DeleteDocumentOnAuthRefresh(
-    const EntryActionCallback& callback,
-    const GURL& document_url,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != HTTP_SUCCESS) {
-    if (!callback.is_null())
-      relay_proxy->PostTask(
-          FROM_HERE,
-          base::Bind(callback, error, document_url));
-    return;
-  }
-  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  DeleteDocumentOnUIThread(document_url, callback, relay_proxy);
-}
-
-void DocumentsService::OnDeleteDocumentCompleted(
-    const EntryActionCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const GURL& document_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  switch (error) {
-    case HTTP_UNAUTHORIZED:
-      gdata_auth_service_->ClearOAuth2Token();
-      // User authentication might have expired - rerun the request to force
-      // auth token refresh.
-      DeleteDocumentOnUIThread(document_url, callback, relay_proxy);
-      return;
-    default:
-      break;
-  }
-  if (!callback.is_null())
-    relay_proxy->PostTask(
-        FROM_HERE,
-        base::Bind(callback, error, document_url));
+  StartOperationOnUIThread(
+      new DeleteDocumentOperation(operation_registry_.get(), profile_, callback,
+                                  document_url));
 }
 
 void DocumentsService::CreateDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
-    const CreateEntryCallback& callback) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::CreateDirectoryOnUIThread,
-          weak_ptr_bound_to_ui_thread_,
-          parent_content_url,
-          directory_name,
-          callback,
-          base::MessageLoopProxy::current()));
-}
-
-void DocumentsService::CreateDirectoryOnUIThread(
-    const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
-    const CreateEntryCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!gdata_auth_service_->IsFullyAuthenticated()) {
-    // Fetch OAuth2 authetication token from the refresh token first.
-    gdata_auth_service_->StartAuthentication(
-        operation_registry_.get(),
-        base::Bind(&DocumentsService::CreateDirectoryOnAuthRefresh,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   parent_content_url,
-                   directory_name,
-                   callback,
-                   relay_proxy));
-    return;
-  }
-  (new CreateDirectoryOperation(
-      operation_registry_.get(),
-      profile_,
-      gdata_auth_service_->oauth2_auth_token(),
-      parent_content_url,
-      directory_name))->Start(
-          base::Bind(&DocumentsService::OnCreateDirectoryCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     parent_content_url,
-                     directory_name,
-                     callback,
-                     relay_proxy));
-}
-
-void DocumentsService::CreateDirectoryOnAuthRefresh(
-    const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
-    const CreateEntryCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != HTTP_SUCCESS) {
-    if (!callback.is_null())
-      relay_proxy->PostTask(
-          FROM_HERE,
-          base::Bind(callback, error, static_cast<base::Value*>(NULL)));
-    return;
-  }
-  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  CreateDirectoryOnUIThread(parent_content_url, directory_name, callback,
-                            relay_proxy);
-}
-
-void DocumentsService::OnCreateDirectoryCompleted(
-    const GURL& parent_content_url,
-    const FilePath::StringType& directory_name,
-    const CreateEntryCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    base::Value* value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  switch (error) {
-    case HTTP_UNAUTHORIZED:
-      gdata_auth_service_->ClearOAuth2Token();
-      // User authentication might have expired - rerun the request to force
-      // auth token refresh.
-      CreateDirectoryOnUIThread(parent_content_url, directory_name, callback,
-                                relay_proxy);
-      return;
-    default:
-      break;
-  }
-
-  DictionaryValue* dict_value = NULL;
-  Value* entry_value = NULL;
-  if (value && value->GetAsDictionary(&dict_value))
-    dict_value->Get("entry", &entry_value);
-
-  if (!callback.is_null())
-    relay_proxy->PostTask(
-        FROM_HERE,
-        base::Bind(callback, error, entry_value));
+    const GetDataCallback& callback) {
+  StartOperationOnUIThread(
+      new CreateDirectoryOperation(operation_registry_.get(), profile_,
+                                   callback, parent_content_url,
+                                   directory_name));
 }
 
 void DocumentsService::InitiateUpload(const InitiateUploadParams& params,
                                       const InitiateUploadCallback& callback) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::InitiateUploadOnUIThread,
-          weak_ptr_bound_to_ui_thread_,
-          params,
-          callback,
-          base::MessageLoopProxy::current()));
-}
-
-void DocumentsService::InitiateUploadOnUIThread(
-    const InitiateUploadParams& params,
-    const InitiateUploadCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (params.resumable_create_media_link.is_empty()) {
     if (!callback.is_null()) {
-      relay_proxy->PostTask(FROM_HERE,
-                            base::Bind(callback, HTTP_BAD_REQUEST, GURL()));
+      callback.Run(HTTP_BAD_REQUEST, GURL());
     }
     return;
   }
 
-  if (!gdata_auth_service_->IsFullyAuthenticated()) {
-    // Fetch OAuth2 authetication token from the refresh token first.
-    gdata_auth_service_->StartAuthentication(
-        operation_registry_.get(),
-        base::Bind(&DocumentsService::InitiateUploadOnAuthRefresh,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   params,
-                   callback,
-                   relay_proxy));
-    return;
-  }
-  (new InitiateUploadOperation(
-      operation_registry_.get(),
-      profile_,
-      gdata_auth_service_->oauth2_auth_token(),
-      params))->Start(
-          base::Bind(&DocumentsService::OnInitiateUploadCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     params,
-                     callback,
-                     relay_proxy));
-}
-
-void DocumentsService::InitiateUploadOnAuthRefresh(
-    const InitiateUploadParams& params,
-    const InitiateUploadCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != HTTP_SUCCESS) {
-    if (!callback.is_null()) {
-      relay_proxy->PostTask(FROM_HERE,
-                            base::Bind(callback, error, GURL()));
-    }
-    return;
-  }
-  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  InitiateUploadOnUIThread(params, callback, relay_proxy);
-}
-
-void DocumentsService::OnInitiateUploadCompleted(
-    const InitiateUploadParams& params,
-    const InitiateUploadCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const GURL& upload_location) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  switch (error) {
-    case HTTP_UNAUTHORIZED:
-      gdata_auth_service_->ClearOAuth2Token();
-      // User authentication might have expired - rerun the request to force
-      // auth token refresh.
-      InitiateUploadOnUIThread(params, callback, relay_proxy);
-      return;
-    default:
-      break;
-  }
-  if (!callback.is_null()) {
-    relay_proxy->PostTask(FROM_HERE,
-                          base::Bind(callback, error, upload_location));
-  }
+  StartOperationOnUIThread(
+      new InitiateUploadOperation(operation_registry_.get(), profile_, callback,
+                                  params));
 }
 
 void DocumentsService::ResumeUpload(const ResumeUploadParams& params,
                                     const ResumeUploadCallback& callback) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &DocumentsService::ResumeUploadOnUIThread,
-          weak_ptr_bound_to_ui_thread_,
-          params,
-          callback,
-          base::MessageLoopProxy::current()));
-}
-
-void DocumentsService::ResumeUploadOnUIThread(
-    const ResumeUploadParams& params,
-    const ResumeUploadCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!gdata_auth_service_->IsFullyAuthenticated()) {
-    // Fetch OAuth2 authetication token from the refresh token first.
-    gdata_auth_service_->StartAuthentication(
-        operation_registry_.get(),
-        base::Bind(&DocumentsService::ResumeUploadOnAuthRefresh,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   params,
-                   callback,
-                   relay_proxy));
-    return;
-  }
-
-  (new ResumeUploadOperation(
-      operation_registry_.get(),
-      profile_,
-      gdata_auth_service_->oauth2_auth_token(),
-      params))->Start(
-          base::Bind(&DocumentsService::OnResumeUploadCompleted,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     params,
-                     callback,
-                     relay_proxy));
-}
-
-void DocumentsService::ResumeUploadOnAuthRefresh(
-    const ResumeUploadParams& params,
-    const ResumeUploadCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    const std::string& token) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != HTTP_SUCCESS) {
-    if (!callback.is_null()) {
-      relay_proxy->PostTask(FROM_HERE,
-                            base::Bind(callback, error, 0, 0));
-    }
-    return;
-  }
-  DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  ResumeUploadOnUIThread(params, callback, relay_proxy);
-}
-
-void DocumentsService::OnResumeUploadCompleted(
-    const ResumeUploadParams& params,
-    const ResumeUploadCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> relay_proxy,
-    GDataErrorCode error,
-    int64 start_range_received,
-    int64 end_range_received) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  switch (error) {
-    case HTTP_UNAUTHORIZED:
-      gdata_auth_service_->ClearOAuth2Token();
-      // User authentication might have expired - rerun the request to force
-      // auth token refresh.
-      ResumeUploadOnUIThread(params, callback, relay_proxy);
-      return;
-    default:
-      break;
-  }
-  if (!callback.is_null()) {
-    relay_proxy->PostTask(FROM_HERE,
-                          base::Bind(callback,
-                                     error,
-                                     start_range_received,
-                                     end_range_received));
-  }
+  StartOperationOnUIThread(
+      new ResumeUploadOperation(operation_registry_.get(), profile_, callback,
+                                params));
 }
 
 void DocumentsService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void DocumentsService::StartOperationOnUIThread(
+    GDataOperationInterface* operation) {
+  operation->SetReAuthenticateCallback(
+      base::Bind(&DocumentsService::RetryOperation,
+                 weak_ptr_factory_.GetWeakPtr()));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&DocumentsService::StartOperation,
+                 weak_ptr_bound_to_ui_thread_,
+                 operation));  // |operation| is self-contained
+}
+
+void DocumentsService::StartOperation(GDataOperationInterface* operation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!gdata_auth_service_->IsFullyAuthenticated()) {
+    // Fetch OAuth2 authentication token from the refresh token first.
+    gdata_auth_service_->StartAuthentication(
+        operation_registry_.get(),
+        base::Bind(&DocumentsService::OnOperationAuthRefresh,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   operation));
+    return;
+  }
+
+  operation->Start(gdata_auth_service_->oauth2_auth_token());
+}
+
+void DocumentsService::OnOperationAuthRefresh(
+    GDataOperationInterface* operation,
+    GDataErrorCode code,
+    const std::string& auth_token) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (code == HTTP_SUCCESS) {
+    DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
+    StartOperation(operation);
+  } else {
+    operation->OnAuthFailed(code);
+  }
+}
+
+void DocumentsService::RetryOperation(GDataOperationInterface* operation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  gdata_auth_service_->ClearOAuth2Token();
+  // User authentication might have expired - rerun the request to force
+  // auth token refresh.
+  StartOperation(operation);
 }
 
 }  // namespace gdata

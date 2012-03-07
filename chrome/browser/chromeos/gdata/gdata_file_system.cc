@@ -692,7 +692,8 @@ GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
 void GDataFileSystem::OnCreateDirectoryCompleted(
     const CreateDirectoryParams& params,
     GDataErrorCode status,
-    base::Value* created_entry) {
+    scoped_ptr<base::Value> data) {
+
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
     if (!params.callback.is_null())
@@ -701,6 +702,10 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
     return;
   }
 
+  base::DictionaryValue* dict_value = NULL;
+  base::Value* created_entry = NULL;
+  if (data.get() && data->GetAsDictionary(&dict_value) && dict_value)
+    dict_value->Get("entry", &created_entry);
   error = AddNewDirectory(params.created_directory_path, created_entry);
 
   if (error != base::PLATFORM_FILE_OK) {
@@ -729,11 +734,12 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
 void GDataFileSystem::OnGetDocuments(
     const FindFileParams& params,
     GDataErrorCode status,
-    base::Value* data) {
+    scoped_ptr<base::Value> data) {
+
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (error == base::PLATFORM_FILE_OK &&
-      (!data || data->GetType() != Value::TYPE_DICTIONARY)) {
+      (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
     LOG(WARNING) << "No feed content!";
     error = base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -745,7 +751,7 @@ void GDataFileSystem::OnGetDocuments(
 
   GURL next_feed_url;
   error = UpdateDirectoryWithDocumentFeed(
-     params.directory_path, params.feed_url, data, params.initial_feed,
+     params.directory_path, params.feed_url, data.get(), params.initial_feed,
      &next_feed_url);
   if (error != base::PLATFORM_FILE_OK) {
     params.delegate->OnError(error);
