@@ -17,9 +17,6 @@ class RefcountedProfileKeyedService;
 // A specialized ProfileKeyedServiceFactory that manages a
 // RefcountedThreadSafe<>.
 //
-// While the factory returns RefcountedThreadSafe<>s, the factory itself is a
-// base::NotThreadSafe. Only call methods on this object on the UI thread.
-//
 // Implementers of RefcountedProfileKeyedService should note that we guarantee
 // that ShutdownOnUIThread() is called on the UI thread, but actual object
 // destruction can happen anywhere.

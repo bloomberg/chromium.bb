@@ -8,8 +8,6 @@
 #include <map>
 #include <set>
 
-#include "base/threading/non_thread_safe.h"
-
 class PrefService;
 class Profile;
 class ProfileKeyedBase;
@@ -22,7 +20,7 @@ class ProfileDependencyManager;
 // RefcountedProfileKeyedServiceFactory. This object describes general profile
 // dependency management; subclasses react to lifecycle events and implement
 // memory management.
-class ProfileKeyedBaseFactory : public base::NonThreadSafe {
+class ProfileKeyedBaseFactory {
  public:
   // A function that replaces the (possibly internal) object used by this
   // factory. For the majority of cases, this is the object returned to users.
