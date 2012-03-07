@@ -31,30 +31,20 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {
-  const aura::Window::Windows& windows(
-      workspace_manager_->contents_view()->children());
-  for (size_t i = 0; i < windows.size(); ++i)
-    windows[i]->RemoveObserver(this);
 }
 
 void WorkspaceLayoutManager::OnWindowResized() {
-  // Workspace is updated via RootWindowObserver::OnRootWindowResized.
+  // Workspace is updated via OnRootWindowResized.
 }
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
-  child->AddObserver(this);
+  BaseLayoutManager::OnWindowAddedToLayout(child);
   if (!workspace_manager_->IsManagedWindow(child))
     return;
 
   if (child->IsVisible()) {
     workspace_manager_->AddWindow(child);
-  } else if (wm::IsWindowMaximized(child)) {
-    SetChildBoundsDirect(child,
-                         gfx::Screen::GetMonitorWorkAreaNearestWindow(child));
-  } else if (wm::IsWindowFullscreen(child)) {
-    SetChildBoundsDirect(child,
-                         gfx::Screen::GetMonitorAreaNearestWindow(child));
-  } else {
+  } else if (wm::IsWindowNormal(child)) {
     // Align non-maximized/fullscreen windows to a grid.
     SetChildBoundsDirect(
         child, workspace_manager_->AlignBoundsToGrid(child->GetTargetBounds()));
@@ -63,9 +53,8 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
 void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
-  child->RemoveObserver(this);
-  ClearRestoreBounds(child);
   workspace_manager_->RemoveWindow(child);
+  BaseLayoutManager::OnWillRemoveWindowFromLayout(child);
 }
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
@@ -82,25 +71,28 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
 void WorkspaceLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
-  gfx::Rect child_bounds(requested_bounds);
-  if (GetTrackedByWorkspace(child)) {
-    if (wm::IsWindowMaximized(child)) {
-      child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child);
-    } else if (wm::IsWindowFullscreen(child)) {
-      child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
-    } else {
-      child_bounds = gfx::Screen::GetMonitorWorkAreaNearestWindow(child).
-          AdjustToFit(requested_bounds);
-    }
-  }
-  SetChildBoundsDirect(child, child_bounds);
+  if (GetTrackedByWorkspace(child))
+    BaseLayoutManager::SetChildBounds(child, requested_bounds);
+  else
+    SetChildBoundsDirect(child, requested_bounds);
+}
+
+void WorkspaceLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
+  workspace_manager_->SetWorkspaceSize(new_size);
+}
+
+void WorkspaceLayoutManager::OnScreenWorkAreaInsetsChanged() {
+  workspace_manager_->OnScreenWorkAreaInsetsChanged();
 }
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                      const void* key,
                                                      intptr_t old) {
-  if (key == ash::kWindowTrackedByWorkspaceSplitPropKey &&
-      ash::GetTrackedByWorkspace(window)) {
+  BaseLayoutManager::OnWindowPropertyChanged(window, key, old);
+  if (key == aura::client::kShowStateKey) {
+    workspace_manager_->ShowStateChanged(window);
+  } else if (key == ash::kWindowTrackedByWorkspaceSplitPropKey &&
+             ash::GetTrackedByWorkspace(window)) {
     // We currently don't need to support transitioning from true to false, so
     // we ignore it.
     workspace_manager_->AddWindow(window);

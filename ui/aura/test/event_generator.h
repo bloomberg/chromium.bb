@@ -35,6 +35,9 @@ class EventGenerator {
 
   const gfx::Point& current_location() const { return current_location_; }
 
+  // Resets the event flags bitmask.
+  void set_flags(int flags) { flags_ = flags; }
+
   // Generates a left button press event.
   void PressLeftButton();
 
@@ -115,9 +118,10 @@ class EventGenerator {
   // TODO(yusukes): Support native_event() on all platforms.
   void ReleaseKey(ui::KeyboardCode key_code, int flags);
 
- private:
   // Dispatch the |event| to the RootWindow.
   void Dispatch(Event& event);
+
+ private:
   // Dispatch a key event to the RootWindow.
   void DispatchKeyEvent(bool is_press, ui::KeyboardCode key_code, int flags);
 

@@ -9,7 +9,6 @@
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -38,7 +37,6 @@ class WorkspaceManager;
 // various workspace pieces: WorkspaceManager, WorkspaceLayoutManager and
 // WorkspaceEventFilter.
 class ASH_EXPORT WorkspaceController :
-      public aura::RootWindowObserver,
       public aura::WindowObserver,
       public ui::SimpleMenuModel::Delegate {
  public:
@@ -54,12 +52,6 @@ class ASH_EXPORT WorkspaceController :
 
   // Shows the menu allowing you to configure various aspects of workspaces.
   void ShowMenu(views::Widget* widget, const gfx::Point& location);
-
-  // aura::RootWindowObserver overrides:
-  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
-
-  // aura::RootWindowObserver overrides:
-  virtual void OnScreenWorkAreaInsetsChanged() OVERRIDE;
 
   // aura::WindowObserver overrides:
   virtual void OnWindowPropertyChanged(aura::Window* window,

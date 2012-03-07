@@ -11,7 +11,6 @@
 #include "ash/wm/workspace/workspace.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/size.h"
 
@@ -31,7 +30,7 @@ class ShelfLayoutManager;
 class WorkspaceManagerTest;
 
 // WorkspaceManager manages multiple workspaces in the desktop.
-class ASH_EXPORT WorkspaceManager : public aura::WindowObserver {
+class ASH_EXPORT WorkspaceManager {
  public:
   explicit WorkspaceManager(aura::Window* viewport);
   virtual ~WorkspaceManager();
@@ -81,10 +80,8 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver {
 
   void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
 
-  // Overriden from aura::WindowObserver:
-  virtual void OnWindowPropertyChanged(aura::Window* window,
-                                       const void* key,
-                                       intptr_t old) OVERRIDE;
+  // Invoked when the show state of the specified window changes.
+  void ShowStateChanged(aura::Window* window);
 
  private:
   // Enumeration of whether windows should animate or not.
@@ -134,13 +131,6 @@ class ASH_EXPORT WorkspaceManager : public aura::WindowObserver {
   // Sets the bounds of |window|. This sets |ignored_window_| to |window| so
   // that the bounds change is allowed through.
   void SetWindowBounds(aura::Window* window, const gfx::Rect& bounds);
-
-  // Resets the bounds of |window| to its restored bounds (if set), ensuring
-  // it fits in the the windows current workspace.
-  void SetWindowBoundsFromRestoreBounds(aura::Window* window);
-
-  // Reset the bounds of |window|. Use when |window| is fullscreen or maximized.
-  void SetFullScreenOrMaximizedBounds(aura::Window* window);
 
   // Sets the bounds of all workspaces.
   void SetWorkspaceBounds();

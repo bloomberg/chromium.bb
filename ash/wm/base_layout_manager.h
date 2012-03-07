@@ -49,8 +49,6 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
 
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
-
-  // RootWindowObserver overrides:
   virtual void OnScreenWorkAreaInsetsChanged() OVERRIDE;
 
   // WindowObserver overrides:

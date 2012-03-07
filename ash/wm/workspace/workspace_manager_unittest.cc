@@ -101,7 +101,11 @@ TEST_F(WorkspaceManagerTest, AddNormalWindowWhenEmpty) {
   ASSERT_TRUE(manager_->IsManagedWindow(w1.get()));
   EXPECT_FALSE(FindBy(w1.get()));
 
+  EXPECT_TRUE(GetRestoreBounds(w1.get()) == NULL);
+
   w1->Show();
+
+  EXPECT_TRUE(GetRestoreBounds(w1.get()) == NULL);
 
   ASSERT_TRUE(w1->layer() != NULL);
   EXPECT_TRUE(w1->layer()->visible());

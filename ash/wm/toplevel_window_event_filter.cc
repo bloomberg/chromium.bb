@@ -62,7 +62,9 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       // pressed without mouse move event.
       int component =
           target->delegate()->GetNonClientComponent(event->location());
-      if (WindowResizer::GetBoundsChangeForWindowComponent(component)) {
+      if ((event->flags() &
+           (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK)) == 0 &&
+          WindowResizer::GetBoundsChangeForWindowComponent(component)) {
         gfx::Point parent_location(
             ConvertPointToParent(target, event->location()));
         window_resizer_.reset(

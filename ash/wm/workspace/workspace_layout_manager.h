@@ -6,7 +6,7 @@
 #define ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_
 #pragma once
 
-#include "ash/ash_export.h"
+#include "ash/wm/base_layout_manager.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
@@ -27,8 +27,7 @@ namespace internal {
 class WorkspaceManager;
 
 // LayoutManager for top level windows when WorkspaceManager is enabled.
-class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
-                                          public aura::WindowObserver {
+class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
  public:
   explicit WorkspaceLayoutManager(WorkspaceManager* workspace_manager);
   virtual ~WorkspaceLayoutManager();
@@ -38,7 +37,7 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
     return workspace_manager_;
   }
 
-  // Overridden from aura::LayoutManager:
+  // Overridden from BaseLayoutManager:
   virtual void OnWindowResized() OVERRIDE;
   virtual void OnWindowAddedToLayout(aura::Window* child) OVERRIDE;
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE;
@@ -46,6 +45,8 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
                                               bool visibile) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
+  virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
+  virtual void OnScreenWorkAreaInsetsChanged() OVERRIDE;
 
   // Overriden from aura::WindowObserver:
   virtual void OnWindowPropertyChanged(aura::Window* window,

@@ -36,7 +36,6 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
   viewport->SetEventFilter(event_filter_);
   layout_manager_ = new WorkspaceLayoutManager(workspace_manager_.get());
   viewport->SetLayoutManager(layout_manager_);
-  Shell::GetRootWindow()->AddRootWindowObserver(this);
   Shell::GetRootWindow()->AddObserver(this);
   workspace_manager_->set_grid_size(kGridSize);
   event_filter_->set_grid_size(kGridSize);
@@ -44,7 +43,6 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
 
 WorkspaceController::~WorkspaceController() {
   Shell::GetRootWindow()->RemoveObserver(this);
-  Shell::GetRootWindow()->RemoveRootWindowObserver(this);
   // WorkspaceLayoutManager may attempt to access state from us. Destroy it now.
   if (viewport_->layout_manager() == layout_manager_)
     viewport_->SetLayoutManager(NULL);
@@ -70,14 +68,6 @@ void WorkspaceController::ShowMenu(views::Widget* widget,
       views::MenuRunner::MENU_DELETED)
     return;
 #endif  // !defined(OS_MACOSX)
-}
-
-void WorkspaceController::OnRootWindowResized(const gfx::Size& new_size) {
-  workspace_manager_->SetWorkspaceSize(new_size);
-}
-
-void WorkspaceController::OnScreenWorkAreaInsetsChanged() {
-  workspace_manager_->OnScreenWorkAreaInsetsChanged();
 }
 
 void WorkspaceController::OnWindowPropertyChanged(aura::Window* window,

@@ -58,7 +58,15 @@ TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
 
   // Double-click the top resize edge.
   wd.set_window_component(HTTOP);
-  generator.DoubleClickLeftButton();
+  // On X a double click actually generates a drag between each press/release.
+  // Explicitly trigger this path since we had bugs in dealing with it
+  // correctly.
+  generator.PressLeftButton();
+  generator.ReleaseLeftButton();
+  generator.set_flags(ui::EF_IS_DOUBLE_CLICK);
+  generator.PressLeftButton();
+  generator.MoveMouseTo(generator.current_location(), 1);
+  generator.ReleaseLeftButton();
   EXPECT_EQ(work_area.y(), window->bounds().y());
   EXPECT_EQ(work_area.height(), window->bounds().height());
   // Single-axis maximization is not considered real maximization.

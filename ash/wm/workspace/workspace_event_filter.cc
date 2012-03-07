@@ -123,7 +123,8 @@ void WorkspaceEventFilter::UpdateHoveredWindow(
 void WorkspaceEventFilter::HandleVerticalResizeDoubleClick(
     aura::Window* target,
     aura::MouseEvent* event) {
-  if (event->flags() & ui::EF_IS_DOUBLE_CLICK) {
+  if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
+      !wm::IsWindowMaximized(target)) {
     int component =
         target->delegate()->GetNonClientComponent(event->location());
     gfx::Rect work_area =
