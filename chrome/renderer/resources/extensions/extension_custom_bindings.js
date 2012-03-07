@@ -26,11 +26,11 @@ chromeHidden.registerCustomHook('extension',
   apiFunctions.setHandleRequest('getViews', function(properties) {
     var windowId = WINDOW_ID_NONE;
     var type = 'ALL';
-    if (typeof(properties) != 'undefined') {
-      if (typeof(properties.type) != 'undefined') {
+    if (properties) {
+      if (properties.type != null) {
         type = properties.type;
       }
-      if (typeof(properties.windowId) != 'undefined') {
+      if (properties.windowId != null) {
         windowId = properties.windowId;
       }
     }
@@ -42,7 +42,7 @@ chromeHidden.registerCustomHook('extension',
   });
 
   apiFunctions.setHandleRequest('getExtensionTabs', function(windowId) {
-    if (typeof(windowId) == 'undefined')
+    if (windowId == null)
       windowId = WINDOW_ID_NONE;
     return GetExtensionViews(windowId, 'TAB');
   });
