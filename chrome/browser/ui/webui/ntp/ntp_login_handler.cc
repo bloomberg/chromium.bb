@@ -124,22 +124,19 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
+  Browser* browser =
+      BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  if (!browser)
+    return;
 
   if (username.empty()) {
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-      OpenURLParams params(
-          GURL(chrome::kChromeUISyncPromoURL), Referrer(), CURRENT_TAB,
-          content::PAGE_TRANSITION_LINK, false);
-      web_ui()->GetWebContents()->OpenURL(params);
+      browser->ShowSyncSetup();
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
-    Browser* browser =
-        BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
-    if (!browser)
-      return;
     double x = 0;
     double y = 0;
     double width = 0;
