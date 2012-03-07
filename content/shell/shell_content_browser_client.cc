@@ -46,7 +46,7 @@ WebContentsView* ShellContentBrowserClient::CreateWebContentsView(
     devtools_delegate->AddWebContents(web_contents);
 
 #if defined(OS_WIN)
-  return new TabContentsViewWin(web_contents);
+  return new TabContentsViewWin(web_contents, NULL);
 #elif defined(OS_LINUX)
   return new TabContentsViewGtk(web_contents, NULL);
 #elif defined(OS_MACOSX)

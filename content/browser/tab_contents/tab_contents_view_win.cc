@@ -9,10 +9,13 @@
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 #include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/web_drag_dest_win.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_view_win_delegate.h"
 
 using content::RenderWidgetHostView;
 using content::WebContents;
+using content::WebContentsViewWinDelegate;
 
 namespace {
 
@@ -49,20 +52,14 @@ class TempParent : public ui::WindowImpl {
 
 }  // namespace namespace
 
-TabContentsViewWin::TabContentsViewWin(WebContents* web_contents)
-    : parent_(NULL),
-      tab_contents_(static_cast<TabContents*>(web_contents)),
-      view_(NULL) {
+TabContentsViewWin::TabContentsViewWin(WebContents* web_contents,
+                                       WebContentsViewWinDelegate* delegate)
+    : tab_contents_(static_cast<TabContents*>(web_contents)),
+      view_(NULL),
+      delegate_(delegate) {
 }
 
 TabContentsViewWin::~TabContentsViewWin() {
-}
-
-void TabContentsViewWin::SetParent(HWND parent) {
-  DCHECK(!parent_);
-  parent_ = parent;
-
-  ::SetParent(hwnd(), parent_);
 }
 
 void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
@@ -71,6 +68,15 @@ void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
   set_window_style(WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 
   Init(TempParent::Get()->hwnd(), gfx::Rect(initial_size_));
+
+  // Remove the root view drop target so we can register our own.
+  RevokeDragDrop(GetNativeView());
+  drag_dest_ = new WebDragDest(hwnd(), tab_contents_);
+  if (delegate_.get()) {
+    content::WebDragDestDelegate* delegate = delegate_->GetDragDestDelegate();
+    if (delegate)
+      drag_dest_->set_delegate(delegate);
+  }
 }
 
 RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
@@ -103,7 +109,7 @@ gfx::NativeView TabContentsViewWin::GetContentNativeView() const {
 }
 
 gfx::NativeWindow TabContentsViewWin::GetTopLevelNativeWindow() const {
-  return parent_;
+  return GetParent(GetNativeView());
 }
 
 void TabContentsViewWin::GetContainerBounds(gfx::Rect *out) const {
@@ -151,12 +157,12 @@ void TabContentsViewWin::Focus() {
     return;
   }
 
+  if (delegate_.get() && delegate_->Focus())
+    return;
+
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
-  if (rwhv) {
+  if (rwhv)
     rwhv->Focus();
-  } else {
-    SetFocus(hwnd());
-  }
 }
 
 void TabContentsViewWin::SetInitialFocus() {
@@ -167,12 +173,13 @@ void TabContentsViewWin::SetInitialFocus() {
 }
 
 void TabContentsViewWin::StoreFocus() {
-  // TODO(jam): why is this on WebContentsView?
-  NOTREACHED();
+  if (delegate_.get())
+    delegate_->StoreFocus();
 }
 
 void TabContentsViewWin::RestoreFocus() {
-  NOTREACHED();
+  if (delegate_.get())
+    delegate_->RestoreFocus();
 }
 
 bool TabContentsViewWin::IsDoingDrag() const {
@@ -241,7 +248,14 @@ void TabContentsViewWin::ShowCreatedFullscreenWidget(int route_id) {
 
 void TabContentsViewWin::ShowContextMenu(
     const content::ContextMenuParams& params) {
-  NOTIMPLEMENTED();
+  // Allow WebContentsDelegates to handle the context menu operation first.
+  if (tab_contents_->GetDelegate() &&
+      tab_contents_->GetDelegate()->HandleContextMenu(params)) {
+    return;
+  }
+
+  if (delegate_.get())
+    delegate_->ShowContextMenu(params);
 }
 
 void TabContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
@@ -261,7 +275,7 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
 }
 
 void TabContentsViewWin::UpdateDragCursor(WebKit::WebDragOperation operation) {
-  NOTIMPLEMENTED();
+  drag_dest_->set_drag_cursor(operation);
 }
 
 void TabContentsViewWin::GotFocus() {
@@ -270,8 +284,20 @@ void TabContentsViewWin::GotFocus() {
 }
 
 void TabContentsViewWin::TakeFocus(bool reverse) {
-  if (tab_contents_->GetDelegate())
-    tab_contents_->GetDelegate()->TakeFocus(reverse);
+  if (tab_contents_->GetDelegate() &&
+      !tab_contents_->GetDelegate()->TakeFocus(reverse) &&
+      delegate_.get()) {
+    delegate_->TakeFocus(reverse);
+  }
+}
+
+LRESULT TabContentsViewWin::OnDestroy(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  if (drag_dest_.get()) {
+    RevokeDragDrop(GetNativeView());
+    drag_dest_ = NULL;
+  }
+  return 0;
 }
 
 LRESULT TabContentsViewWin::OnWindowPosChanged(
@@ -286,6 +312,9 @@ LRESULT TabContentsViewWin::OnWindowPosChanged(
   RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
+
+  if (delegate_.get())
+    delegate_->SizeChanged(size);
 
   return 0;
 }

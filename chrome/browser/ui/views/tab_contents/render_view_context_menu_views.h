@@ -15,6 +15,7 @@ namespace views {
 class MenuItemView;
 class MenuModelAdapter;
 class MenuRunner;
+class Widget;
 }  // namespace views
 
 class RenderViewContextMenuViews : public RenderViewContextMenu {
@@ -24,7 +25,7 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
 
   virtual ~RenderViewContextMenuViews();
 
-  void RunMenuAt(int x, int y);
+  void RunMenuAt(views::Widget* parent, int x, int y);
 
 #if defined(OS_WIN)
   // Set this menu to show for an external tab contents. This

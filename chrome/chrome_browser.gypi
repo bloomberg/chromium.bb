@@ -1886,7 +1886,7 @@
         'browser/password_manager_delegate_impl.cc',
         'browser/password_manager_delegate_impl.h',
         'browser/platform_util.h',
-	'browser/platform_util_android.cc',
+        'browser/platform_util_android.cc',
         'browser/platform_util_aura.cc',
         'browser/platform_util_chromeos.cc',
         'browser/platform_util_common_linux.cc',
@@ -2517,6 +2517,8 @@
         'browser/tab_contents/chrome_web_contents_view_gtk_delegate.h',
         'browser/tab_contents/chrome_web_contents_view_mac_delegate.h',
         'browser/tab_contents/chrome_web_contents_view_mac_delegate.mm',
+        'browser/tab_contents/chrome_web_contents_view_win_delegate.cc',
+        'browser/tab_contents/chrome_web_contents_view_win_delegate.h',
         'browser/tab_contents/confirm_infobar_delegate.cc',
         'browser/tab_contents/confirm_infobar_delegate.h',
         'browser/tab_contents/insecure_content_infobar_delegate.cc',
@@ -4589,6 +4591,8 @@
             ['exclude', '^browser/google/google_update.h'],
             ['exclude', '^browser/hang_monitor/'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
+            ['exclude', '^browser/tab_contents/chrome_web_contents_view_win_delegate.cc'],
+            ['exclude', '^browser/tab_contents/chrome_web_contents_view_win_delegate.h'],
             ['exclude', '^browser/ui/panels/auto_hiding_desktop_bar_win.cc'],
             ['exclude', '^browser/ui/tabs/dock_info_win.cc'],
             ['exclude', '^browser/ui/views/about_ipc_dialog.cc'],
@@ -4752,13 +4756,13 @@
             }],
           ],
         }, {
-      'sources!': [
-          # The rules only catch files that start or end with gtk, but these
-          # files would be incorrectly named if we forced the gtk at the end.
-          'browser/tab_contents/chrome_web_contents_view_gtk_delegate.cc',
-          'browser/tab_contents/chrome_web_contents_view_gtk_delegate.h',
-        ],
-      }],
+        'sources!': [
+            # The rules only catch files that start or end with gtk, but these
+            # files would be incorrectly named if we forced the gtk at the end.
+            'browser/tab_contents/chrome_web_contents_view_gtk_delegate.cc',
+            'browser/tab_contents/chrome_web_contents_view_gtk_delegate.h',
+          ],
+        }],
         ['input_speech==0', {
           'sources/': [
             ['exclude', '^browser/speech/'],
@@ -5017,6 +5021,11 @@
             # Exclude try chrome dialog.
             ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
+
+            # The rules only catch files that start or end with win, but these
+            # files would be incorrectly named if we forced the win at the end.
+            ['exclude', '^browser/tab_contents/chrome_web_contents_view_win_delegate.cc'],
+            ['exclude', '^browser/tab_contents/chrome_web_contents_view_win_delegate.h'],
           ],
           'conditions': [
             ['use_aura==1',{

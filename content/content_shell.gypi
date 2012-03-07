@@ -45,8 +45,6 @@
         '..',
       ],
       'sources': [
-        'browser/tab_contents/tab_contents_view_win.cc',
-        'browser/tab_contents/tab_contents_view_win.h',
         'shell/layout_test_controller_bindings.cc',
         'shell/layout_test_controller_bindings.h',
         'shell/shell.cc',

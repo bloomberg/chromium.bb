@@ -88,8 +88,7 @@ void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
   // It is not possible to create a native_widget_win that has no parent in
   // and later re-parent it.
   // TODO(avi): This is a cheat. Can this be made cleaner?
-  sad_tab_params.parent_widget = views::Widget::GetWidgetForNativeView(
-      web_contents()->GetView()->GetNativeView());
+  sad_tab_params.parent = web_contents()->GetView()->GetNativeView();
   sad_tab_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   sad_tab_.reset(new views::Widget);

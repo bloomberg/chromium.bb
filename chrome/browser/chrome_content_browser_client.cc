@@ -92,6 +92,8 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"
+#include "chrome/browser/tab_contents/chrome_web_contents_view_win_delegate.h"
+#include "content/browser/tab_contents/tab_contents_view_win.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
@@ -344,7 +346,15 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 
 content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
     WebContents* web_contents) {
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // TODO(jam): turn on by default.
+  if (false) {
+    return new TabContentsViewWin(
+        web_contents, new ChromeWebContentsViewWinDelegate(web_contents));
+  } else {
+    return new TabContentsViewViews(web_contents);
+  }
+#elif defined(TOOLKIT_VIEWS)
   return new TabContentsViewViews(web_contents);
 #elif defined(TOOLKIT_USES_GTK)
   return new content::TabContentsViewGtk(web_contents,

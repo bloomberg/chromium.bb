@@ -6,23 +6,31 @@
 #define CONTENT_BROWSER_TAB_CONTENTS_TAB_CONTENTS_VIEW_WIN_H_
 #pragma once
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/tab_contents/tab_contents_view_helper.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/base/win/window_impl.h"
 
 class RenderWidgetHostViewWin;
+class WebDragDest;
+
+namespace content {
+class WebContentsViewWinDelegate;
+}
 
 // An implementation of WebContentsView for Windows.
-class TabContentsViewWin : public content::WebContentsView,
-                           public ui::WindowImpl {
+class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
+                                          public ui::WindowImpl {
  public:
   // TODO(jam): make this take a TabContents once it's created from content.
-  explicit TabContentsViewWin(content::WebContents* web_contents);
+  TabContentsViewWin(content::WebContents* web_contents,
+                     content::WebContentsViewWinDelegate* delegate);
   virtual ~TabContentsViewWin();
 
-  void SetParent(HWND parent);
-
   BEGIN_MSG_MAP_EX(TabContentsViewWin)
+    MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
     MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
   END_MSG_MAP()
 
@@ -82,10 +90,10 @@ class TabContentsViewWin : public content::WebContentsView,
   TabContents* tab_contents() const { return tab_contents_; }
 
  private:
+  LRESULT OnDestroy(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnWindowPosChanged(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
-
-  HWND parent_;
 
   gfx::Size initial_size_;
 
@@ -93,6 +101,12 @@ class TabContentsViewWin : public content::WebContentsView,
   TabContents* tab_contents_;
 
   RenderWidgetHostViewWin* view_;
+
+  scoped_ptr<content::WebContentsViewWinDelegate> delegate_;
+
+  // The helper object that handles drag destination related interactions with
+  // Windows.
+  scoped_refptr<WebDragDest> drag_dest_;
 
   // Common implementations of some WebContentsView methods.
   TabContentsViewHelper tab_contents_view_helper_;

@@ -328,7 +328,7 @@ void TabContentsViewViews::ShowContextMenu(
   // Enable recursive tasks on the message loop so we can get updates while
   // the context menu is being displayed.
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  context_menu_->RunMenuAt(screen_point.x(), screen_point.y());
+  context_menu_->RunMenuAt(GetTopLevelWidget(), screen_point.x(), screen_point.y());
 }
 
 void TabContentsViewViews::ShowPopupMenu(const gfx::Rect& bounds,

@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -33,10 +32,9 @@ RenderViewContextMenuViews::RenderViewContextMenuViews(
 RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 }
 
-void RenderViewContextMenuViews::RunMenuAt(int x, int y) {
-  TabContentsViewViews* tab =
-      static_cast<TabContentsViewViews*>(source_web_contents_->GetView());
-  views::Widget* parent = tab->GetTopLevelWidget();
+void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
+                                           int x,
+                                           int y) {
   if (menu_runner_->RunMenuAt(parent, NULL,
           gfx::Rect(gfx::Point(x, y), gfx::Size()),
           views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
