@@ -313,6 +313,7 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
+        'metrics_proto',
       ],
     },
     {
