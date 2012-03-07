@@ -72,6 +72,12 @@ FileManager.prototype = {
       'answer.py?hl=en&answer=1061547';
 
   /**
+  * Location of the FAQ about the file actions.
+  */
+  const NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
+      'answer.py?hl=en&answer=1700055&topic=29026&ctx=topic';
+
+  /**
    * Mnemonics for the recurse parameter of the copyFiles method.
    */
   const CP_RECURSE = true;
@@ -2386,9 +2392,9 @@ FileManager.prototype = {
 
       function callback(success) {
         if (!success && selection.entries.length == 1)
-          this.alert.showWithTitle(
+          this.alert.showHtml(
               unescape(selection.entries[0].name),
-              strf('ERROR_VIEWING_FILE'),
+              strf('NO_ACTION_FOR_FILE', NO_ACTION_FOR_FILE_URL),
               function() {});
       }
 
