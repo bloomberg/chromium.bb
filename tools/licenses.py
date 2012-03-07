@@ -61,6 +61,7 @@ PRUNE_PATHS = set([
     os.path.join('v8','src','third_party','valgrind'),
 
     # Used for development and test, not in the shipping product.
+    os.path.join('third_party','android_testrunner'),
     os.path.join('third_party','bidichecker'),
     os.path.join('third_party','cygwin'),
     os.path.join('third_party','gold'),

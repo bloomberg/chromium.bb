@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,12 +23,12 @@ import sys
 import tempfile
 import time
 
-# adb_interface.py is under ../../third_party/android/testrunner/
+# adb_interface.py is under ../../third_party/android_testrunner/
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..',
-   '..', 'third_party', 'android', 'testrunner'))
+   '..', 'third_party', 'android_testrunner'))
 import adb_interface
 import cmd_helper
-import errors  #  is under ../../third_party/android/testrunner/errors.py
+import errors  #  is under ../../third_party/android_testrunner/errors.py
 from run_tests_helper import IsRunningAsBuildbot
 
 
