@@ -17,13 +17,17 @@ message PowerSupplyProperties {
     // Rate of charge/discharge of the battery, in W
     optional double battery_energy_rate = 3;
     optional double battery_voltage = 4;  // Current battery Voltage, in V
-    // Calculated time to battery complete discharge, in S
+    // Calculated time to battery complete discharge, in seconds
     optional int64 battery_time_to_empty = 5;
-    // Calculated time to battery complete charge, in S
+    // Calculated time to battery complete charge, in seconds
     optional int64 battery_time_to_full = 6;
     // Calculated percentage of capacity available
     optional double battery_percentage = 7;
     optional bool battery_is_present = 8;  // Is a battery attached?
     // Is the battery already at full capacity?
     optional bool battery_is_charged = 9;
+    // Averaged time to battery complete discharge, in seconds
+    optional int64 averaged_battery_time_to_empty = 10;
+    // Averaged time to battery complete charge, in seconds
+    optional int64 averaged_battery_time_to_full = 11;
 }
