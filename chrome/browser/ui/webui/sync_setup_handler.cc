@@ -694,6 +694,12 @@ void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
 }
 
 void SyncSetupHandler::CloseSyncSetup() {
+  // Shutdown the SyncSetupFlow first so we mark sync setup as complete.
+  if (flow_) {
+    flow_->OnDialogClosed(std::string());
+    flow_ = NULL;
+  }
+
   // TODO(atwilson): Move UMA tracking of signin events out of sync module.
   if (IsActiveLogin()) {
     if (signin_tracker_.get()) {
@@ -712,15 +718,12 @@ void SyncSetupHandler::CloseSyncSetup() {
     // and shut down sync.
     ProfileSyncService* sync_service = GetSyncService();
     if (sync_service && !sync_service->HasSyncSetupCompleted()) {
+      DVLOG(1) << "Signin aborted by user action";
       sync_service->DisableForUser();
       GetSignin()->SignOut();
     }
   }
 
-  if (flow_) {
-    flow_->OnDialogClosed(std::string());
-    flow_ = NULL;
-  }
   signin_tracker_.reset();
 }
 
