@@ -26,6 +26,7 @@ enum GDataErrorCode {
   HTTP_SERVICE_UNAVAILABLE   = 503,
   GDATA_PARSE_ERROR          = -100,
   GDATA_FILE_ERROR           = -101,
+  GDATA_OTHER_ERROR          = -102,
 };
 
 }  // namespace gdata

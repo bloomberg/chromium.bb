@@ -69,7 +69,8 @@ FilePath TestServer::HTTPSOptions::GetCertificateFile() const {
   return FilePath();
 }
 
-const char* TestServer::kLocalhost = "127.0.0.1";
+const char TestServer::kLocalhost[] = "127.0.0.1";
+const char TestServer::kGDataAuthToken[] = "testtoken";
 
 TestServer::TestServer(Type type,
                        const std::string& host,
@@ -174,6 +175,7 @@ std::string TestServer::GetScheme() const {
   switch (type_) {
     case TYPE_FTP:
       return "ftp";
+    case TYPE_GDATA:
     case TYPE_HTTP:
     case TYPE_SYNC:
       return "http";
@@ -377,6 +379,9 @@ bool TestServer::AddCommandLineArguments(CommandLine* command_line) const {
     command_line->AppendArg("--tcp-echo");
   } else if (type_ == TYPE_UDP_ECHO) {
     command_line->AppendArg("--udp-echo");
+  } else if (type_ == TYPE_GDATA) {
+    // --auth-token will be used in tests for chrome/browser/chromeos/gdata.
+    command_line->AppendArg(std::string("--auth-token=") + kGDataAuthToken);
   } else if (type_ == TYPE_HTTPS) {
     FilePath certificate_path(certificates_dir_);
     certificate_path = certificate_path.Append(

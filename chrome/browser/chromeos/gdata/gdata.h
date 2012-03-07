@@ -166,6 +166,11 @@ class GDataAuthService : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Sets the auth_token as specified.  This should be used only for testing.
+  void set_oauth2_auth_token_for_testing(const std::string& token) {
+    auth_token_ = token;
+  }
+
  private:
   Profile* profile_;
   std::string refresh_token_;
@@ -248,6 +253,8 @@ class DocumentsService : public GDataAuthService::Observer {
   // Can be called on any thread.
   void ResumeUpload(const ResumeUploadParams& params,
                     const ResumeUploadCallback& callback);
+
+  GDataAuthService* gdata_auth_service() { return gdata_auth_service_.get(); }
 
  private:
   // GDataAuthService::Observer override.
