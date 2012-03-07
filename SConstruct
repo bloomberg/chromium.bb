@@ -2715,12 +2715,12 @@ def MakeUnixLikeEnv():
   if unix_like_env.Bit('use_libcrypto'):
     unix_like_env.Append(LIBS=['crypto'])
   else:
-    unix_like_env.Append(CFLAGS=['-DUSE_CRYPTO=0'])
+    unix_like_env.Append(CPPDEFINES=[['USE_CRYPTO', '0']])
 
   if unix_like_env.Bit('enable_tmpfs_redirect_var'):
-    unix_like_env.Append(CPPDEFINES = [['NACL_ENABLE_TMPFS_REDIRECT_VAR', '1']])
+    unix_like_env.Append(CPPDEFINES=[['NACL_ENABLE_TMPFS_REDIRECT_VAR', '1']])
   else:
-    unix_like_env.Append(CPPDEFINES = [['NACL_ENABLE_TMPFS_REDIRECT_VAR', '0']])
+    unix_like_env.Append(CPPDEFINES=[['NACL_ENABLE_TMPFS_REDIRECT_VAR', '0']])
   return unix_like_env
 
 
