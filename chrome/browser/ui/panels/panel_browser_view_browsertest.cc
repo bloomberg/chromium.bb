@@ -177,14 +177,14 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
   // for the purpose of accessing its private members.
   void TestMinimizeAndRestore(bool enable_auto_hiding) {
     PanelManager* panel_manager = PanelManager::GetInstance();
-    int expected_bottom_on_expanded = panel_manager->work_area().height();
+    int expected_bottom_on_expanded = testing_work_area().height();
     int expected_bottom_on_title_only = expected_bottom_on_expanded;
     int expected_bottom_on_minimized = expected_bottom_on_expanded;
 
     // Turn on auto-hiding if requested.
     static const int bottom_thickness = 40;
-    mock_display_settings_provider()->EnableAutoHidingDesktopBar(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
+    mock_auto_hiding_desktop_bar()->EnableAutoHiding(
+        AutoHidingDesktopBar::ALIGN_BOTTOM,
         enable_auto_hiding,
         bottom_thickness);
     if (enable_auto_hiding)
@@ -246,18 +246,16 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     panel3->SetExpansionState(Panel::MINIMIZED);
     EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
 
-    mock_display_settings_provider()->SetDesktopBarVisibility(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
-        DisplaySettingsProvider::DESKTOP_BAR_VISIBLE);
+    mock_auto_hiding_desktop_bar()->SetVisibility(
+        AutoHidingDesktopBar::ALIGN_BOTTOM, AutoHidingDesktopBar::VISIBLE);
     panel_manager->BringUpOrDownTitlebars(true);
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_EQ(Panel::EXPANDED, panel2->expansion_state());
     EXPECT_EQ(Panel::TITLE_ONLY, panel3->expansion_state());
 
-    mock_display_settings_provider()->SetDesktopBarVisibility(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
-        DisplaySettingsProvider::DESKTOP_BAR_HIDDEN);
+    mock_auto_hiding_desktop_bar()->SetVisibility(
+        AutoHidingDesktopBar::ALIGN_BOTTOM, AutoHidingDesktopBar::HIDDEN);
     panel_manager->BringUpOrDownTitlebars(false);
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
@@ -360,14 +358,10 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
 
     int bottom_bar_thickness = 20;
     int right_bar_thickness = 30;
-    mock_display_settings_provider()->EnableAutoHidingDesktopBar(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
-        true,
-        bottom_bar_thickness);
-    mock_display_settings_provider()->EnableAutoHidingDesktopBar(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
-        true,
-        right_bar_thickness);
+    mock_auto_hiding_desktop_bar()->EnableAutoHiding(
+        AutoHidingDesktopBar::ALIGN_BOTTOM, true, bottom_bar_thickness);
+    mock_auto_hiding_desktop_bar()->EnableAutoHiding(
+        AutoHidingDesktopBar::ALIGN_RIGHT, true, right_bar_thickness);
     EXPECT_EQ(
         initial_starting_right_position - manager->StartingRightPosition(),
         right_bar_thickness);
@@ -376,9 +370,9 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     panel->SetExpansionState(Panel::TITLE_ONLY);
     WaitTillBoundsAnimationFinished(panel);
 
-    EXPECT_EQ(manager->work_area().height() - bottom_bar_thickness,
+    EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_GT(manager->work_area().right() - right_bar_thickness,
+    EXPECT_GT(testing_work_area().right() - right_bar_thickness,
               panel->GetBounds().right());
 
     initial_starting_right_position = manager->StartingRightPosition();
@@ -386,19 +380,17 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     bottom_bar_thickness += bottom_bar_thickness_delta;
     int right_bar_thickness_delta = 15;
     right_bar_thickness += right_bar_thickness_delta;
-    mock_display_settings_provider()->SetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
-        bottom_bar_thickness);
-    mock_display_settings_provider()->SetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
-        right_bar_thickness);
+    mock_auto_hiding_desktop_bar()->SetThickness(
+        AutoHidingDesktopBar::ALIGN_BOTTOM, bottom_bar_thickness);
+    mock_auto_hiding_desktop_bar()->SetThickness(
+        AutoHidingDesktopBar::ALIGN_RIGHT, right_bar_thickness);
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(
         initial_starting_right_position - manager->StartingRightPosition(),
         right_bar_thickness_delta);
-    EXPECT_EQ(manager->work_area().height() - bottom_bar_thickness,
+    EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_GT(manager->work_area().right() - right_bar_thickness,
+    EXPECT_GT(testing_work_area().right() - right_bar_thickness,
               panel->GetBounds().right());
 
     initial_starting_right_position = manager->StartingRightPosition();
@@ -406,19 +398,17 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     bottom_bar_thickness -= bottom_bar_thickness_delta;
     right_bar_thickness_delta = 10;
     right_bar_thickness -= right_bar_thickness_delta;
-    mock_display_settings_provider()->SetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM,
-        bottom_bar_thickness);
-    mock_display_settings_provider()->SetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT,
-        right_bar_thickness);
+    mock_auto_hiding_desktop_bar()->SetThickness(
+        AutoHidingDesktopBar::ALIGN_BOTTOM, bottom_bar_thickness);
+    mock_auto_hiding_desktop_bar()->SetThickness(
+        AutoHidingDesktopBar::ALIGN_RIGHT, right_bar_thickness);
     MessageLoopForUI::current()->RunAllPending();
     EXPECT_EQ(
         manager->StartingRightPosition() - initial_starting_right_position,
         right_bar_thickness_delta);
-    EXPECT_EQ(manager->work_area().height() - bottom_bar_thickness,
+    EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
-    EXPECT_GT(manager->work_area().right() - right_bar_thickness,
+    EXPECT_GT(testing_work_area().right() - right_bar_thickness,
               panel->GetBounds().right());
 
     panel->Close();

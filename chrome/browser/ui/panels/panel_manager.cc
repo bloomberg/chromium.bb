@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/gfx/screen.h"
 
 namespace {
 const int kOverflowStripThickness = 26;
@@ -70,8 +71,7 @@ PanelManager::PanelManager()
   docked_strip_.reset(new DockedPanelStrip(this));
   overflow_strip_.reset(new OverflowPanelStrip(this));
   drag_controller_.reset(new PanelDragController());
-  display_settings_provider_.reset(DisplaySettingsProvider::Create(this));
-
+  auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
 }
 
@@ -79,12 +79,23 @@ PanelManager::~PanelManager() {
 }
 
 void PanelManager::OnDisplayChanged() {
-  gfx::Rect work_area = display_settings_provider_->GetWorkArea();
+#if defined(OS_MACOSX)
+  // On OSX, panels should be dropped all the way to the bottom edge of the
+  // screen (and overlap Dock).
+  gfx::Rect work_area = gfx::Screen::GetPrimaryMonitorBounds();
+#else
+  gfx::Rect work_area = gfx::Screen::GetPrimaryMonitorWorkArea();
+#endif
+  SetWorkArea(work_area);
+}
+
+void PanelManager::SetWorkArea(const gfx::Rect& work_area) {
   if (work_area == work_area_)
     return;
   work_area_ = work_area;
 
-  AdjustWorkAreaForDisplaySettingsProviders();
+  auto_hiding_desktop_bar_->UpdateWorkArea(work_area_);
+  AdjustWorkAreaForAutoHidingDesktopBars();
   Layout();
 }
 
@@ -105,11 +116,6 @@ void PanelManager::Layout() {
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
-  // Need to sync the display area if no panel is present. This is because we
-  // could only get display area notifications through a panel window.
-  if (num_panels() == 0)
-    OnDisplayChanged();
-
   int width = browser->override_bounds().width();
   int height = browser->override_bounds().height();
   Panel* panel = new Panel(browser, gfx::Size(width, height));
@@ -243,21 +249,19 @@ void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
   docked_strip_->BringUpOrDownTitlebars(bring_up);
 }
 
-void PanelManager::AdjustWorkAreaForDisplaySettingsProviders() {
+void PanelManager::AdjustWorkAreaForAutoHidingDesktopBars() {
   // Note that we do not care about the desktop bar aligned to the top edge
   // since panels could not reach so high due to size constraint.
   adjusted_work_area_ = work_area_;
-  if (display_settings_provider_->IsAutoHidingDesktopBarEnabled(
-      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_LEFT)) {
-    int space = display_settings_provider_->GetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_LEFT);
+  if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_LEFT)) {
+    int space = auto_hiding_desktop_bar_->GetThickness(
+        AutoHidingDesktopBar::ALIGN_LEFT);
     adjusted_work_area_.set_x(adjusted_work_area_.x() + space);
     adjusted_work_area_.set_width(adjusted_work_area_.width() - space);
   }
-  if (display_settings_provider_->IsAutoHidingDesktopBarEnabled(
-      DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT)) {
-    int space = display_settings_provider_->GetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT);
+  if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_RIGHT)) {
+    int space = auto_hiding_desktop_bar_->GetThickness(
+        AutoHidingDesktopBar::ALIGN_RIGHT);
     adjusted_work_area_.set_width(adjusted_work_area_.width() - space);
   }
 }
@@ -277,13 +281,13 @@ BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
 }
 
 void PanelManager::OnAutoHidingDesktopBarThicknessChanged() {
-  AdjustWorkAreaForDisplaySettingsProviders();
+  AdjustWorkAreaForAutoHidingDesktopBars();
   Layout();
 }
 
 void PanelManager::OnAutoHidingDesktopBarVisibilityChanged(
-    DisplaySettingsProvider::DesktopBarAlignment alignment,
-    DisplaySettingsProvider::DesktopBarVisibility visibility) {
+    AutoHidingDesktopBar::Alignment alignment,
+    AutoHidingDesktopBar::Visibility visibility) {
   docked_strip_->OnAutoHidingDesktopBarVisibilityChanged(alignment, visibility);
 }
 

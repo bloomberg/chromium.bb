@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/ui/panels/display_settings_provider.h"
+#include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "ui/gfx/rect.h"
@@ -24,7 +24,7 @@ class PanelDragController;
 class PanelMouseWatcher;
 
 // This class manages a set of panels.
-class PanelManager : public DisplaySettingsProvider::Observer {
+class PanelManager : public AutoHidingDesktopBar::Observer {
  public:
   // Returns a single instance.
   static PanelManager* GetInstance();
@@ -91,8 +91,8 @@ class PanelManager : public DisplaySettingsProvider::Observer {
     return drag_controller_.get();
   }
 
-  DisplaySettingsProvider* display_settings_provider() const {
-    return display_settings_provider_.get();
+  AutoHidingDesktopBar* auto_hiding_desktop_bar() const {
+    return auto_hiding_desktop_bar_;
   }
 
   PanelMouseWatcher* mouse_watcher() const {
@@ -134,9 +134,9 @@ class PanelManager : public DisplaySettingsProvider::Observer {
     shorten_time_intervals_ = true;
   }
 
-  void set_display_settings_provider(
-      DisplaySettingsProvider* display_settings_provider) {
-    display_settings_provider_.reset(display_settings_provider);
+  void set_auto_hiding_desktop_bar(
+      AutoHidingDesktopBar* auto_hiding_desktop_bar) {
+    auto_hiding_desktop_bar_ = auto_hiding_desktop_bar;
   }
 
   void enable_auto_sizing(bool enabled) {
@@ -145,6 +145,10 @@ class PanelManager : public DisplaySettingsProvider::Observer {
 
   const gfx::Rect& work_area() const {
     return work_area_;
+  }
+
+  void SetWorkAreaForTesting(const gfx::Rect& work_area) {
+    SetWorkArea(work_area);
   }
 
   void SetMouseWatcherForTesting(PanelMouseWatcher* watcher) {
@@ -158,14 +162,18 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   PanelManager();
   virtual ~PanelManager();
 
-  // Overridden from DisplaySettingsProvider::Observer:
+  // Overridden from AutoHidingDesktopBar::Observer:
   virtual void OnAutoHidingDesktopBarThicknessChanged() OVERRIDE;
   virtual void OnAutoHidingDesktopBarVisibilityChanged(
-      DisplaySettingsProvider::DesktopBarAlignment alignment,
-      DisplaySettingsProvider::DesktopBarVisibility visibility) OVERRIDE;
+      AutoHidingDesktopBar::Alignment alignment,
+      AutoHidingDesktopBar::Visibility visibility) OVERRIDE;
+
+  // Applies the new work area. This is called by OnDisplayChanged and the test
+  // code.
+  void SetWorkArea(const gfx::Rect& work_area);
 
   // Adjusts the work area to exclude the influence of auto-hiding desktop bars.
-  void AdjustWorkAreaForDisplaySettingsProviders();
+  void AdjustWorkAreaForAutoHidingDesktopBars();
 
   // Positions the various groupings of panels.
   void Layout();
@@ -200,7 +208,7 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   // right of the screen edges) when they become fully visible.
   gfx::Rect adjusted_work_area_;
 
-  scoped_ptr<DisplaySettingsProvider> display_settings_provider_;
+  scoped_refptr<AutoHidingDesktopBar> auto_hiding_desktop_bar_;
 
   // Whether or not bounds will be updated when the preferred content size is
   // changed. The testing code could set this flag to false so that other tests

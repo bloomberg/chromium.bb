@@ -503,13 +503,10 @@ void DockedPanelStrip::ResizePanelWindow(
 bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
   // We should always bring up the titlebar if the mouse is over the
   // visible auto-hiding bottom bar.
-  DisplaySettingsProvider* provider =
-      panel_manager_->display_settings_provider();
-  if (provider->IsAutoHidingDesktopBarEnabled(
-          DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM) &&
-      provider->GetDesktopBarVisibility(
-          DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM) ==
-              DisplaySettingsProvider::DESKTOP_BAR_VISIBLE &&
+  AutoHidingDesktopBar* desktop_bar = panel_manager_->auto_hiding_desktop_bar();
+  if (desktop_bar->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM) &&
+      desktop_bar->GetVisibility(AutoHidingDesktopBar::ALIGN_BOTTOM) ==
+          AutoHidingDesktopBar::VISIBLE &&
       mouse_y >= display_area_.bottom())
     return true;
 
@@ -550,16 +547,12 @@ void DockedPanelStrip::BringUpOrDownTitlebars(bool bring_up) {
   // If the auto-hiding bottom bar exists, delay the action until the bottom
   // bar is fully visible or hidden. We do not want both bottom bar and panel
   // titlebar to move at the same time but with different speeds.
-  DisplaySettingsProvider* provider =
-      panel_manager_->display_settings_provider();
-  if (provider->IsAutoHidingDesktopBarEnabled(
-          DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM)) {
-    DisplaySettingsProvider::DesktopBarVisibility visibility =
-        provider->GetDesktopBarVisibility(
-            DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM);
-    if (visibility !=
-        (bring_up ? DisplaySettingsProvider::DESKTOP_BAR_VISIBLE
-                  : DisplaySettingsProvider::DESKTOP_BAR_HIDDEN)) {
+  AutoHidingDesktopBar* desktop_bar = panel_manager_->auto_hiding_desktop_bar();
+  if (desktop_bar->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM)) {
+    AutoHidingDesktopBar::Visibility visibility =
+        desktop_bar->GetVisibility(AutoHidingDesktopBar::ALIGN_BOTTOM);
+    if (visibility != (bring_up ? AutoHidingDesktopBar::VISIBLE
+                                : AutoHidingDesktopBar::HIDDEN)) {
       // Occasionally some system, like Windows, might not bring up or down the
       // bottom bar when the mouse enters or leaves the bottom screen area.
       // Thus, we schedule a delayed task to do the work if we do not receive
@@ -640,13 +633,10 @@ int DockedPanelStrip::GetBottomPositionForExpansionState(
   int bottom = display_area_.bottom();
   // If there is an auto-hiding desktop bar aligned to the bottom edge, we need
   // to move the title-only panel above the auto-hiding desktop bar.
-  DisplaySettingsProvider* provider =
-      panel_manager_->display_settings_provider();
+  AutoHidingDesktopBar* desktop_bar = panel_manager_->auto_hiding_desktop_bar();
   if (expansion_state == Panel::TITLE_ONLY &&
-      provider->IsAutoHidingDesktopBarEnabled(
-          DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM)) {
-    bottom -= provider->GetDesktopBarThickness(
-        DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_BOTTOM);
+      desktop_bar->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM)) {
+    bottom -= desktop_bar->GetThickness(AutoHidingDesktopBar::ALIGN_BOTTOM);
   }
 
   return bottom;
@@ -659,15 +649,14 @@ void DockedPanelStrip::OnMouseMove(const gfx::Point& mouse_position) {
 }
 
 void DockedPanelStrip::OnAutoHidingDesktopBarVisibilityChanged(
-    DisplaySettingsProvider::DesktopBarAlignment alignment,
-    DisplaySettingsProvider::DesktopBarVisibility visibility) {
+    AutoHidingDesktopBar::Alignment alignment,
+    AutoHidingDesktopBar::Visibility visibility) {
   if (delayed_titlebar_action_ == NO_ACTION)
     return;
 
-  DisplaySettingsProvider::DesktopBarVisibility expected_visibility =
-      delayed_titlebar_action_ == BRING_UP
-          ? DisplaySettingsProvider::DESKTOP_BAR_VISIBLE
-          : DisplaySettingsProvider::DESKTOP_BAR_HIDDEN;
+  AutoHidingDesktopBar::Visibility expected_visibility =
+      delayed_titlebar_action_ == BRING_UP ? AutoHidingDesktopBar::VISIBLE
+                                           : AutoHidingDesktopBar::HIDDEN;
   if (visibility != expected_visibility)
     return;
 
