@@ -982,6 +982,34 @@
     },
     {
       "api_calls": [
+        "chrome.experimental.fontSettings.getFontList",
+        "chrome.experimental.fontSettings.getFontName",
+        "chrome.experimental.fontSettings.setFontName"
+      ],
+      "crx_path": null,
+      "description": "Sample extension for Font Settings API",
+      "features": [
+        "browser_action",
+        "experimental",
+        "popup"
+      ],
+      "icon": "fonts128.png",
+      "id": "31d10fd5e61ca51eb59073b358d4ab5267cbf318",
+      "name": "Font Settings",
+      "packaged_app": false,
+      "path": "examples\/api\/fontSettings\/",
+      "protocols": [],
+      "search_string": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTNAME CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONTNAME",
+      "source_files": [
+        "manifest.json",
+        "popup.html",
+        "popup.js"
+      ],
+      "source_hash": "42748a86c686a58b7c6b11259bb52c75e4bb5bc7",
+      "zip_path": "examples\/api\/fontSettings.zip"
+    },
+    {
+      "api_calls": [
         "chrome.browserAction.onClicked",
         "chrome.browserAction.setBadgeBackgroundColor",
         "chrome.browserAction.setBadgeText",

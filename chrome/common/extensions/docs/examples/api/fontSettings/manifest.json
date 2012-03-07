@@ -1,0 +1,14 @@
+{
+  "name": "Font Settings",
+  "version": "0.2",
+  "description": "Sample extension for Font Settings API",
+  "browser_action" : {
+    "default_icon": "fonts16.png",
+    "popup" : "popup.html"
+  },
+  "icons": {
+    "16": "fonts16.png",
+    "128": "fonts128.png"
+  },
+  "permissions": ["experimental"]
+}
