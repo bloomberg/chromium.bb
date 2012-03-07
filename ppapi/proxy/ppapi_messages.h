@@ -240,8 +240,12 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                     int32_t /* length */)
 
 // PPB_AudioInput_Dev.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudioInput_NotifyAudioStreamCreated,
-                    ppapi::HostResource /* audio_id */,
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPBAudioInput_EnumerateDevicesACK,
+                    ppapi::HostResource /* audio_input */,
+                    int32_t /* result */,
+                    std::vector<ppapi::DeviceRefData> /* devices */)
+IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudioInput_OpenACK,
+                    ppapi::HostResource /* audio_input */,
                     int32_t /* result_code (will be != PP_OK on failure) */,
                     IPC::PlatformFileForTransit /* socket_handle */,
                     base::SharedMemoryHandle /* handle */,
@@ -576,14 +580,21 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudio_StartOrStop,
                     bool /* play */)
 
 // PPB_AudioInput.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudioInput_Create,
-                           PP_Instance /* instance_id */,
-                           int32_t /* sample_rate */,
-                           uint32_t /* sample_frame_count */,
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBAudioInput_Create,
+                           PP_Instance /* instance */,
                            ppapi::HostResource /* result */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBAudioInput_EnumerateDevices,
+                    ppapi::HostResource /* audio_input */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBAudioInput_Open,
+                    ppapi::HostResource /* audio_input */,
+                    std::string /* device_id */,
+                    int32_t /* sample_rate */,
+                    uint32_t /* sample_frame_count */)
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudioInput_StartOrStop,
-                    ppapi::HostResource /* audio_id */,
+                    ppapi::HostResource /* audio_input */,
                     bool /* capture */)
+IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBAudioInput_Close,
+                    ppapi::HostResource /* audio_input */)
 
 // PPB_Broker.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBBroker_Create,

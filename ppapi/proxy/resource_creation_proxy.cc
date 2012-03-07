@@ -84,20 +84,19 @@ PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
   return 0;
 }
 
-PP_Resource ResourceCreationProxy::CreateAudioInput(
+PP_Resource ResourceCreationProxy::CreateAudioInput0_1(
     PP_Instance instance,
     PP_Resource config_id,
     PPB_AudioInput_Callback audio_input_callback,
     void* user_data) {
-  return PPB_AudioInput_Proxy::CreateProxyResource(instance, config_id,
-                                                   audio_input_callback,
-                                                   user_data);
+  return PPB_AudioInput_Proxy::CreateProxyResource0_1(instance, config_id,
+                                                      audio_input_callback,
+                                                      user_data);
 }
 
-PP_Resource ResourceCreationProxy::CreateAudioInputTrusted(
+PP_Resource ResourceCreationProxy::CreateAudioInput(
     PP_Instance instance) {
-  // Proxied plugins can't created trusted audio input devices.
-  return 0;
+  return PPB_AudioInput_Proxy::CreateProxyResource(instance);
 }
 
 PP_Resource ResourceCreationProxy::CreateBroker(PP_Instance instance) {

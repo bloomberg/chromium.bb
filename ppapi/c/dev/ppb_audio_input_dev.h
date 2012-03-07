@@ -3,19 +3,21 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_audio_input_dev.idl modified Mon Nov 28 22:30:37 2011. */
+/* From dev/ppb_audio_input_dev.idl modified Sat Mar  3 23:06:35 2012. */
 
 #ifndef PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_AUDIO_INPUT_DEV_INTERFACE_0_1 "PPB_AudioInput(Dev);0.1"
-#define PPB_AUDIO_INPUT_DEV_INTERFACE PPB_AUDIO_INPUT_DEV_INTERFACE_0_1
+#define PPB_AUDIO_INPUT_DEV_INTERFACE_0_2 "PPB_AudioInput(Dev);0.2"
+#define PPB_AUDIO_INPUT_DEV_INTERFACE PPB_AUDIO_INPUT_DEV_INTERFACE_0_2
 
 /**
  * @file
@@ -48,64 +50,135 @@ typedef void (*PPB_AudioInput_Callback)(const void* sample_buffer,
  * The <code>PPB_AudioInput_Dev</code> interface contains pointers to several
  * functions for handling audio input resources.
  */
-struct PPB_AudioInput_Dev_0_1 {
+struct PPB_AudioInput_Dev_0_2 {
   /**
-   * Create is a pointer to a function that creates an audio input resource.
-   * No sound will be captured until StartCapture() is called.
+   * Creates an audio input resource.
+   *
+   * @param[in] instance A <code>PP_Instance</code> identifying one instance of
+   * a module.
+   *
+   * @return A <code>PP_Resource</code> corresponding to an audio input resource
+   * if successful, 0 if failed.
    */
-  PP_Resource (*Create)(PP_Instance instance,
-                        PP_Resource config,
-                        PPB_AudioInput_Callback audio_input_callback,
-                        void* user_data);
+  PP_Resource (*Create)(PP_Instance instance);
   /**
-   * IsAudioInput is a pointer to a function that determines if the given
-   * resource is an audio input resource.
+   * Determines if the given resource is an audio input resource.
    *
-   * @param[in] resource A PP_Resource containing a resource.
+   * @param[in] resource A <code>PP_Resource</code> containing a resource.
    *
-   * @return A PP_BOOL containing containing PP_TRUE if the given resource is
-   * an audio input resource, otherwise PP_FALSE.
+   * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if the given
+   * resource is an audio input resource, otherwise <code>PP_FALSE</code>.
    */
-  PP_Bool (*IsAudioInput)(PP_Resource audio_input);
+  PP_Bool (*IsAudioInput)(PP_Resource resource);
   /**
-   * GetCurrrentConfig() returns an audio config resource for the given audio
-   * resource.
+   * Enumerates audio input devices.
    *
-   * @param[in] config A <code>PP_Resource</code> corresponding to an audio
+   * Please note that:
+   * - this method ignores the previous value pointed to by <code>devices</code>
+   *   (won't release reference even if it is not 0);
+   * - <code>devices</code> must be valid until <code>callback</code> is called,
+   *   if the method returns <code>PP_OK_COMPLETIONPENDING</code>;
+   * - the ref count of the returned <code>devices</code> has already been
+   *   increased by 1 for the caller.
+   *
+   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
+   * input resource.
+   * @param[out] devices Once the operation is completed successfully,
+   * <code>devices</code> will be set to a <code>PPB_ResourceArray_Dev</code>
+   * resource, which holds a list of <code>PPB_DeviceRef_Dev</code> resources.
+   * @param[in] callback  A <code>PP_CompletionCallback</code> to run on
+   * completion.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*EnumerateDevices)(PP_Resource audio_input,
+                              PP_Resource* devices,
+                              struct PP_CompletionCallback callback);
+  /**
+   * Opens an audio input device. No sound will be captured until
+   * StartCapture() is called.
+   *
+   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
+   * input resource.
+   * @param[in] device_ref Identifies an audio input device. It could be one of
+   * the resource in the array returned by EnumerateDevices(), or 0 which means
+   * the default device.
+   * @param[in] config A <code>PPB_AudioConfig</code> audio configuration
    * resource.
+   * @param[in] audio_input_callback A <code>PPB_AudioInput_Callback</code>
+   * function that will be called when data is available.
+   * @param[inout] user_data An opaque pointer that will be passed into
+   * <code>audio_input_callback</code>.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to run when this
+   * open operation is completed.
+   *
+   * @return An error code from <code>pp_errors.h</code>.
+   */
+  int32_t (*Open)(PP_Resource audio_input,
+                  PP_Resource device_ref,
+                  PP_Resource config,
+                  PPB_AudioInput_Callback audio_input_callback,
+                  void* user_data,
+                  struct PP_CompletionCallback callback);
+  /**
+   * Returns an audio config resource for the given audio input resource.
+   *
+   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
+   * input resource.
    *
    * @return A <code>PP_Resource</code> containing the audio config resource if
    * successful.
    */
   PP_Resource (*GetCurrentConfig)(PP_Resource audio_input);
   /**
-   * StartCapture() starts the capture of the audio input resource and begins
-   * periodically calling the callback.
+   * Starts the capture of the audio input resource and begins periodically
+   * calling the callback.
    *
-   * @param[in] config A <code>PP_Resource</code> corresponding to an audio
+   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
    * input resource.
    *
    * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if
-   * successful, otherwise <code>PP_FALSE</code>. Also returns
-   * <code>PP_TRUE</code> (and be a no-op) if called while callback is already
-   * in progress.
+   * successful, otherwise <code>PP_FALSE</code>.
+   * Also returns <code>PP_TRUE</code> (and is a no-op) if called while capture
+   * is already started.
    */
   PP_Bool (*StartCapture)(PP_Resource audio_input);
   /**
-   * StopCapture is a pointer to a function that stops the capture of
-   * the audio input resource.
+   * Stops the capture of the audio input resource.
    *
-   * @param[in] config A PP_Resource containing the audio input resource.
+   * @param[in] audio_input A PP_Resource containing the audio input resource.
    *
-   * @return A PP_BOOL containing PP_TRUE if successful, otherwise PP_FALSE.
-   * Also returns PP_TRUE (and is a no-op) if called while capture is already
-   * stopped. If a buffer is being captured, StopCapture will block until the
-   * call completes.
+   * @return A <code>PP_Bool</code> containing <code>PP_TRUE</code> if
+   * successful, otherwise <code>PP_FALSE</code>.
+   * Also returns <code>PP_TRUE</code> (and is a no-op) if called while capture
+   * is already stopped. If a buffer is being captured, StopCapture will block
+   * until the call completes.
    */
   PP_Bool (*StopCapture)(PP_Resource audio_input);
+  /**
+   * Closes the audio input device, and stops capturing if necessary. It is
+   * not valid to call Open() again after a call to this method.
+   * If an audio input resource is destroyed while a device is still open, then
+   * it will be implicitly closed, so you are not required to call this method.
+   *
+   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
+   * input resource.
+   */
+  void (*Close)(PP_Resource audio_input);
 };
 
-typedef struct PPB_AudioInput_Dev_0_1 PPB_AudioInput_Dev;
+typedef struct PPB_AudioInput_Dev_0_2 PPB_AudioInput_Dev;
+
+struct PPB_AudioInput_Dev_0_1 {
+  PP_Resource (*Create)(PP_Instance instance,
+                        PP_Resource config,
+                        PPB_AudioInput_Callback audio_input_callback,
+                        void* user_data);
+  PP_Bool (*IsAudioInput)(PP_Resource resource);
+  PP_Resource (*GetCurrentConfig)(PP_Resource audio_input);
+  PP_Bool (*StartCapture)(PP_Resource audio_input);
+  PP_Bool (*StopCapture)(PP_Resource audio_input);
+};
 /**
  * @}
  */

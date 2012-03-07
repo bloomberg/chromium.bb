@@ -80,17 +80,16 @@ PP_Resource ResourceCreationImpl::CreateAudioTrusted(
   return (new PPB_Audio_Impl(instance))->GetReference();
 }
 
-PP_Resource ResourceCreationImpl::CreateAudioInput(
+PP_Resource ResourceCreationImpl::CreateAudioInput0_1(
     PP_Instance instance,
     PP_Resource config_id,
     PPB_AudioInput_Callback audio_input_callback,
     void* user_data) {
-  return PPB_AudioInput_Impl::Create(instance, config_id,
+  return PPB_AudioInput_Impl::Create0_1(instance, config_id,
       audio_input_callback, user_data);
 }
 
-PP_Resource ResourceCreationImpl::CreateAudioInputTrusted(
-    PP_Instance instance) {
+PP_Resource ResourceCreationImpl::CreateAudioInput(PP_Instance instance) {
   return (new PPB_AudioInput_Impl(instance))->GetReference();
 }
 

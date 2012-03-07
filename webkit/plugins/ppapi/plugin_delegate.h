@@ -225,7 +225,7 @@ class PluginDelegate {
 
   class PlatformAudioInput {
    public:
-    // Starts the playback. Returns false on error or if called before the
+    // Starts the capture. Returns false on error or if called before the
     // stream is created or after the stream is closed.
     virtual bool StartCapture() = 0;
 

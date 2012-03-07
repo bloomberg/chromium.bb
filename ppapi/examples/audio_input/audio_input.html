@@ -1,18 +1,99 @@
 <!DOCTYPE html>
 <html>
   <!--
-  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
   -->
 <head>
   <title>Audio Input Example</title>
+  <script type="text/javascript">
+    var device_array = [];
+
+    function HandleMessage(message_event) {
+      if (message_event.data) {
+        var status = document.getElementById('status');
+        if (message_event.data == 'EnumerationFailed') {
+          status.innerText = 'Device enumeration failed!';
+        } else if (message_event.data == 'OpenFailed') {
+          status.innerText = 'Open device failed!';
+        } else if (message_event.data == 'StartFailed') {
+          status.innerText = 'Start capturing failed!';
+        } else if (message_event.data == 'StopFailed') {
+          status.innerText = 'Stop capturing failed!';
+        } else {
+          device_array = message_event.data.split('#__#');
+
+          var list = document.getElementById('device_list');
+          for (var i = 0; i < device_array.length; ++i) {
+            var list_item = document.createElement('li');
+            var link = document.createElement('a');
+            link.href = 'javascript:UseDesignatedDevice(' + i + ');';
+            link.innerText = device_array[i];
+            list_item.appendChild(link);
+            list.appendChild(list_item);
+          }
+        }
+      }
+    }
+
+    function UseDesignatedDevice(index) {
+      UseDevice(device_array[index], index);
+    }
+
+    function UseDefaultDevice(use_0_1_interface) {
+      var display_text = use_0_1_interface ? 'Default(v0.1)' : 'Default';
+      var command = use_0_1_interface ? 'UseDefault(v0.1)' : 'UseDefault';
+      UseDevice(display_text, command);
+    }
+
+    function UseDevice(display_text, command) {
+      var in_use_device = document.getElementById('in_use_device');
+      in_use_device.innerText = display_text;
+      var plugin = document.getElementById('plugin');
+      plugin.postMessage(command);
+
+      var available_devices = document.getElementById('available_devices');
+      available_devices.parentNode.removeChild(available_devices);
+
+      var control_panel = document.getElementById('control_panel');
+      var link = document.createElement('a');
+      link.href = 'javascript:Stop();';
+      link.innerText = 'Stop';
+      control_panel.appendChild(link);
+    }
+
+    function Stop() {
+      var plugin = document.getElementById('plugin');
+      plugin.postMessage('Stop');
+    }
+
+    function Initialize() {
+      var plugin = document.getElementById('plugin');
+      plugin.addEventListener('message', HandleMessage, false);
+      plugin.postMessage('PageInitialized');
+    }
+
+    document.addEventListener('DOMContentLoaded', Initialize, false);
+  </script>
 </head>
 
 <body>
-
-<embed id="plugin" type="application/x-ppapi-example-audio-input"
-       width="800" height="400"/>
-
+  <embed id="plugin" type="application/x-ppapi-example-audio-input"
+      width="800" height="400"/>
+  <div style="margin-bottom:10px">In-use device:
+    <span id="in_use_device" style="font-weight:bold">None</span>
+  </div>
+  <div id="available_devices">
+    Available device(s), choose one to open:
+    <ul id="device_list">
+      <li><a href="javascript:UseDefaultDevice(true);">
+          Default - use interface version 0.1</a></li>
+      <li><a href="javascript:UseDefaultDevice(false);">
+          Default - use interface version 0.2 and NULL device ref</a></li>
+    </ul>
+  </div>
+  <div id="control_panel"></div>
+  <div id="status"></div>
 </body>
 </html>

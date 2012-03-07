@@ -46,12 +46,12 @@ class ResourceCreationProxy : public InterfaceProxy,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) OVERRIDE;
   virtual PP_Resource CreateAudioTrusted(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateAudioInput(
+  virtual PP_Resource CreateAudioInput0_1(
       PP_Instance instance,
       PP_Resource config_id,
       PPB_AudioInput_Callback audio_input_callback,
       void* user_data) OVERRIDE;
-  virtual PP_Resource CreateAudioInputTrusted(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateAudioInput(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBrowserFont(
       PP_Instance instance,

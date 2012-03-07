@@ -5,7 +5,9 @@
 #ifndef PPAPI_PROXY_PPB_AUDIO_INPUT_PROXY_H_
 #define PPAPI_PROXY_PPB_AUDIO_INPUT_PROXY_H_
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/shared_memory.h"
@@ -20,6 +22,7 @@
 namespace ppapi {
 
 class HostResource;
+struct DeviceRefData;
 
 namespace proxy {
 
@@ -28,11 +31,13 @@ class PPB_AudioInput_Proxy : public InterfaceProxy {
   explicit PPB_AudioInput_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_AudioInput_Proxy();
 
-  static PP_Resource CreateProxyResource(
+  static PP_Resource CreateProxyResource0_1(
       PP_Instance instance,
-      PP_Resource config_id,
+      PP_Resource config,
       PPB_AudioInput_Callback audio_input_callback,
       void* user_data);
+
+  static PP_Resource CreateProxyResource(PP_Instance instance);
 
   // InterfaceProxy implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
@@ -42,23 +47,31 @@ class PPB_AudioInput_Proxy : public InterfaceProxy {
  private:
   // Message handlers.
   // Plugin->renderer message handlers.
-  void OnMsgCreate(PP_Instance instance_id,
-                   int32_t sample_rate,
-                   uint32_t sample_frame_count,
-                   ppapi::HostResource* result);
-  void OnMsgStartOrStop(const ppapi::HostResource& audio_id, bool capture);
+  void OnMsgCreate(PP_Instance instance, ppapi::HostResource* result);
+  void OnMsgEnumerateDevices(const ppapi::HostResource& audio_input);
+  void OnMsgOpen(const ppapi::HostResource& audio_input,
+                 const std::string& device_id,
+                 int32_t sample_rate,
+                 uint32_t sample_frame_count);
+  void OnMsgStartOrStop(const ppapi::HostResource& audio_input, bool capture);
+  void OnMsgClose(const ppapi::HostResource& audio_input);
 
   // Renderer->plugin message handlers.
-  void OnMsgNotifyAudioStreamCreated(const ppapi::HostResource& audio_id,
-                                     int32_t result_code,
-                                     IPC::PlatformFileForTransit socket_handle,
-                                     base::SharedMemoryHandle handle,
-                                     uint32_t length);
+  void OnMsgEnumerateDevicesACK(
+      const ppapi::HostResource& audio_input,
+      int32_t result,
+      const std::vector<ppapi::DeviceRefData>& devices);
+  void OnMsgOpenACK(const ppapi::HostResource& audio_input,
+                    int32_t result,
+                    IPC::PlatformFileForTransit socket_handle,
+                    base::SharedMemoryHandle handle,
+                    uint32_t length);
 
-  void AudioInputChannelConnected(int32_t result,
-                                  const ppapi::HostResource& resource);
+  void EnumerateDevicesACKInHost(int32_t result,
+                                 const ppapi::HostResource& audio_input);
+  void OpenACKInHost(int32_t result, const ppapi::HostResource& audio_input);
 
-  // In the renderer, this is called in response to a stream created message.
+  // In the renderer, this is called in response to an OpenACK message.
   // It will retrieve the shared memory and socket handles and place them into
   // the given out params. The return value is a PPAPI error code.
   //

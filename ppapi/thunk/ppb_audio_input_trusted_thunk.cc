@@ -20,7 +20,7 @@ PP_Resource Create(PP_Instance instance_id) {
   EnterFunction<ResourceCreationAPI> enter(instance_id, true);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateAudioInputTrusted(instance_id);
+  return enter.functions()->CreateAudioInput(instance_id);
 }
 
 int32_t Open(PP_Resource audio_id,
@@ -29,7 +29,7 @@ int32_t Open(PP_Resource audio_id,
   EnterAudioInput enter(audio_id, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->OpenTrusted(config_id, callback));
+  return enter.SetResult(enter.object()->OpenTrusted("", config_id, callback));
 }
 
 int32_t GetSyncSocket(PP_Resource audio_id, int* sync_socket) {

@@ -50,12 +50,12 @@ class ResourceCreationAPI {
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) = 0;
-  virtual PP_Resource CreateAudioInput(
+  virtual PP_Resource CreateAudioInput0_1(
       PP_Instance instance,
       PP_Resource config_id,
       PPB_AudioInput_Callback audio_input_callback,
       void* user_data) = 0;
-  virtual PP_Resource CreateAudioInputTrusted(PP_Instance instance) = 0;
+  virtual PP_Resource CreateAudioInput(PP_Instance instance) = 0;
   virtual PP_Resource CreateBroker(PP_Instance instance) = 0;
   virtual PP_Resource CreateBrowserFont(
       PP_Instance instance,

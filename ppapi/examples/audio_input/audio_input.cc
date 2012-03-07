@@ -6,9 +6,11 @@
 
 #include <algorithm>
 #include <limits>
+#include <vector>
 
 #include "ppapi/cpp/audio_config.h"
 #include "ppapi/cpp/dev/audio_input_dev.h"
+#include "ppapi/cpp/dev/device_ref_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
@@ -28,10 +30,18 @@ class MyInstance : public pp::Instance {
         samples_(NULL),
         timer_interval_(0),
         pending_paint_(false),
-        waiting_for_flush_completion_(false) {
+        waiting_for_flush_completion_(false),
+        audio_input_0_1_(0),
+        audio_input_interface_0_1_(NULL) {
   }
   virtual ~MyInstance() {
-    audio_input_.StopCapture();
+    if (!audio_input_.is_null()) {
+      audio_input_.Close();
+    } else if (audio_input_0_1_ != 0) {
+      audio_input_interface_0_1_->StopCapture(audio_input_0_1_);
+      pp::Module::Get()->core()->ReleaseResource(audio_input_0_1_);
+    }
+
     delete[] samples_;
   }
 
@@ -52,7 +62,11 @@ class MyInstance : public pp::Instance {
     samples_ = new int16_t[sample_count_ * channel_count_];
     memset(samples_, 0, sample_count_ * channel_count_ * sizeof(int16_t));
     audio_input_ = pp::AudioInput_Dev(this, config, CaptureCallback, this);
-    if (!audio_input_.StartCapture())
+
+    audio_input_interface_0_1_ = static_cast<const PPB_AudioInput_Dev_0_1*>(
+        pp::Module::Get()->GetBrowserInterface(
+            PPB_AUDIO_INPUT_DEV_INTERFACE_0_1));
+    if (!audio_input_interface_0_1_)
       return false;
 
     // Try to ensure that we pick up a new set of samples between each
@@ -73,6 +87,42 @@ class MyInstance : public pp::Instance {
       return;
 
     Paint();
+  }
+
+  virtual void HandleMessage(const pp::Var& message_data) {
+    if (message_data.is_string()) {
+      std::string event = message_data.AsString();
+      if (event == "PageInitialized") {
+        pp::CompletionCallback callback = callback_factory_.NewCallback(
+            &MyInstance::EnumerateDevicesFinished);
+        int32_t result = audio_input_.EnumerateDevices(&devices_, callback);
+        if (result != PP_OK_COMPLETIONPENDING)
+          PostMessage(pp::Var("EnumerationFailed"));
+      } else if (event == "UseDefault") {
+        Open(pp::DeviceRef_Dev());
+      } else if (event == "UseDefault(v0.1)") {
+        audio_input_0_1_ = audio_input_interface_0_1_->Create(
+            pp_instance(), audio_input_.config().pp_resource(),
+            CaptureCallback, this);
+        if (audio_input_0_1_ != 0) {
+          if (!audio_input_interface_0_1_->StartCapture(audio_input_0_1_))
+            PostMessage(pp::Var("StartFailed"));
+        } else {
+          PostMessage(pp::Var("OpenFailed"));
+        }
+
+        audio_input_ = pp::AudioInput_Dev();
+      } else if (event == "Stop") {
+        Stop();
+      }
+    } else if (message_data.is_number()) {
+      int index = message_data.AsInt();
+      if (index >= 0 && index < static_cast<int>(devices_.size())) {
+        Open(devices_[index]);
+      } else {
+        PP_NOTREACHED();
+      }
+    }
   }
 
  private:
@@ -161,6 +211,52 @@ class MyInstance : public pp::Instance {
     memcpy(thiz->samples_, samples, num_bytes);
   }
 
+  void Open(const pp::DeviceRef_Dev& device) {
+    pp::CompletionCallback callback = callback_factory_.NewCallback(
+        &MyInstance::OpenFinished);
+    int32_t result = audio_input_.Open(device, callback);
+    if (result != PP_OK_COMPLETIONPENDING)
+      PostMessage(pp::Var("OpenFailed"));
+  }
+
+  void Stop() {
+    if (!audio_input_.is_null()) {
+      if (!audio_input_.StopCapture())
+        PostMessage(pp::Var("StopFailed"));
+    } else if (audio_input_0_1_ != 0) {
+      if (!audio_input_interface_0_1_->StopCapture(audio_input_0_1_))
+        PostMessage(pp::Var("StopFailed"));
+    }
+  }
+
+  void EnumerateDevicesFinished(int32_t result) {
+    static const char* const kDelimiter = "#__#";
+
+    if (result == PP_OK) {
+      std::string device_names;
+      for (size_t index = 0; index < devices_.size(); ++index) {
+        pp::Var name = devices_[index].GetName();
+        PP_DCHECK(name.is_string());
+
+        if (index != 0)
+          device_names += kDelimiter;
+        device_names += name.AsString();
+      }
+      PostMessage(pp::Var(device_names));
+    } else {
+      PostMessage(pp::Var("EnumerationFailed"));
+    }
+  }
+
+  void OpenFinished(int32_t result) {
+    if (result == PP_OK) {
+      if (!audio_input_.StartCapture())
+        PostMessage(pp::Var("StartFailed"));
+    } else {
+      PostMessage(pp::Var("OpenFailed"));
+    }
+  }
+
   pp::CompletionCallbackFactory<MyInstance> callback_factory_;
 
   uint32_t sample_count_;
@@ -176,6 +272,11 @@ class MyInstance : public pp::Instance {
   bool waiting_for_flush_completion_;
 
   pp::AudioInput_Dev audio_input_;
+
+  PP_Resource audio_input_0_1_;
+  const PPB_AudioInput_Dev_0_1* audio_input_interface_0_1_;
+
+  std::vector<pp::DeviceRef_Dev> devices_;
 };
 
 class MyModule : public pp::Module {
