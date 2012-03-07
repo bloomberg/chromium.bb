@@ -12,7 +12,7 @@ import sys
 
 
 # Types of action accepted by recreate_tree().
-DRY_RUN, HARDLINK, SYMLINK, COPY = range(5)[1:]
+HARDLINK, SYMLINK, COPY = range(4)[1:]
 
 
 class MappingError(OSError):
@@ -30,30 +30,50 @@ def os_link(source, link_name):
     os.link(source, link_name)
 
 
-def _process_item(outdir, indir, relfile, action, blacklist):
-  """Processes an input file.
+def preprocess_inputs(indir, infiles, blacklist):
+  """Reads the infiles and expands the directories and applies the blacklist.
 
-  Returns True if processed.
+  Returns the normalized indir and infiles. Converts infiles with a trailing
+  slash as the list of its files.
   """
-  logging.debug(
-      '_process_item(%s, %s, %s, %s, %s)' % (
-        outdir, indir, relfile, action, blacklist))
-  if blacklist and blacklist(relfile):
-    return False
-  infile = os.path.normpath(os.path.join(indir, relfile))
-  if not os.path.isfile(infile):
-    raise MappingError('%s doesn\'t exist' % infile)
+  logging.debug('preprocess_inputs(%s, %s, %s)' % (indir, infiles, blacklist))
+  # Both need to be a local path.
+  indir = os.path.normpath(indir)
+  if not os.path.isdir(indir):
+    raise MappingError('%s is not a directory' % indir)
 
-  if action == DRY_RUN:
-    logging.info('Verified input: %s' % infile)
-    return True
+  # Do not call abspath until it was verified the directory exists.
+  indir = os.path.abspath(indir)
+  outfiles = []
+  for relfile in infiles:
+    if os.path.isabs(relfile):
+      raise MappingError('Can\'t map absolute path %s' % relfile)
+    infile = os.path.normpath(os.path.join(indir, relfile))
+    if not infile.startswith(indir):
+      raise MappingError('Can\'t map file %s outside %s' % (infile, indir))
 
-  outfile = os.path.normpath(os.path.join(outdir, relfile))
+    if relfile.endswith('/'):
+      if not os.path.isdir(infile):
+        raise MappingError(
+            'Input directory %s must have a trailing slash' % infile)
+      for dirpath, dirnames, filenames in os.walk(infile):
+        # Convert the absolute path to subdir + relative subdirectory.
+        relpath = dirpath[len(infile)+1:]
+        outfiles.extend(os.path.join(relpath, f) for f in filenames)
+        for index, dirname in enumerate(dirnames):
+          # Do not process blacklisted directories.
+          if blacklist(os.path.join(relpath, dirname)):
+            del dirnames[index]
+    else:
+      if not os.path.isfile(infile):
+        raise MappingError('Input file %s doesn\'t exist' % infile)
+      outfiles.append(relfile)
+  return outfiles, indir
+
+
+def process_file(outfile, infile, action):
+  """Links a file. The type of link depends on |action|."""
   logging.debug('Mapping %s to %s' % (infile, outfile))
-  outsubdir = os.path.dirname(outfile)
-  if not os.path.isdir(outsubdir):
-    os.makedirs(outsubdir)
-
   if os.path.isfile(outfile):
     raise MappingError('%s already exist' % outfile)
 
@@ -72,82 +92,41 @@ def _process_item(outdir, indir, relfile, action, blacklist):
       shutil.copy(infile, outfile)
   else:
     raise ValueError('Unknown mapping action %s' % action)
-  return True
 
 
-def _recurse_dir(outdir, indir, subdir, action, blacklist):
-  """Processes a directory and all its decendents."""
-  logging.debug(
-      '_recurse_dir(%s, %s, %s, %s, %s)' % (
-        outdir, indir, subdir, action, blacklist))
-  root = os.path.join(indir, subdir)
-  for dirpath, dirnames, filenames in os.walk(root):
-    # Convert the absolute path to subdir + relative subdirectory.
-    relpath = dirpath[len(indir)+1:]
-
-    for filename in filenames:
-      relfile = os.path.join(relpath, filename)
-      _process_item(outdir, indir, relfile, action, blacklist)
-
-    for index, dirname in enumerate(dirnames):
-      # Do not process blacklisted directories.
-      if blacklist(os.path.normpath(os.path.join(relpath, dirname))):
-        del dirnames[index]
-
-
-def recreate_tree(outdir, indir, infiles, action, blacklist):
+def recreate_tree(outdir, indir, infiles, action):
   """Creates a new tree with only the input files in it.
 
   Arguments:
     outdir:    Temporary directory to create the files in.
     indir:     Root directory the infiles are based in.
-    infiles:   List of files to map from |indir| to |outdir|.
+    infiles:   List of files to map from |indir| to |outdir|. Must have been
+               sanitized with preprocess_inputs().
     action:    See assert below.
-    blacklist: Files to unconditionally ignore.
   """
   logging.debug(
-      'recreate_tree(%s, %s, %s, %s, %s)' % (
-        outdir, indir, infiles, action, blacklist))
+      'recreate_tree(%s, %s, %s, %s)' % (outdir, indir, infiles, action))
   logging.info('Mapping from %s to %s' % (indir, outdir))
 
-  assert action in (DRY_RUN, HARDLINK, SYMLINK, COPY)
-  # Both need to be a local path.
-  indir = os.path.normpath(indir)
-  if not os.path.isdir(indir):
-    raise MappingError('%s is not a directory' % indir)
-
-  # Do not call abspath until it was verified the directory exists.
-  indir = os.path.abspath(indir)
-
-  if action != DRY_RUN:
-    outdir = os.path.normpath(outdir)
-    if not os.path.isdir(outdir):
-      logging.info ('Creating %s' % outdir)
-      os.makedirs(outdir)
-    # Do not call abspath until the directory exists.
-    outdir = os.path.abspath(outdir)
+  assert action in (HARDLINK, SYMLINK, COPY)
+  outdir = os.path.normpath(outdir)
+  if not os.path.isdir(outdir):
+    logging.info ('Creating %s' % outdir)
+    os.makedirs(outdir)
+  # Do not call abspath until the directory exists.
+  outdir = os.path.abspath(outdir)
 
   for relfile in infiles:
-    if os.path.isabs(relfile):
-      raise MappingError('Can\'t map absolute path %s' % relfile)
-    infile = os.path.normpath(os.path.join(indir, relfile))
-    if not infile.startswith(indir):
-      raise MappingError('Can\'t map file %s outside %s' % (infile, indir))
-
-    isdir = os.path.isdir(infile)
-    if isdir and not relfile.endswith('/'):
-      raise MappingError(
-          'Input directory %s must have a trailing slash' % infile)
-    if not isdir and relfile.endswith('/'):
-      raise MappingError(
-          'Input file %s must not have a trailing slash' % infile)
-    if isdir:
-      _recurse_dir(outdir, indir, relfile, action, blacklist)
-    else:
-      _process_item(outdir, indir, relfile, action, blacklist)
+    infile = os.path.join(indir, relfile)
+    outfile = os.path.join(outdir, relfile)
+    outsubdir = os.path.dirname(outfile)
+    if not os.path.isdir(outsubdir):
+      os.makedirs(outsubdir)
+    process_file(outfile, infile, action)
 
 
 def _set_write_bit(path, read_only):
+  """Sets or resets the executable bit on a file or directory."""
   mode = os.stat(path).st_mode
   if read_only:
     mode = mode & 0500
