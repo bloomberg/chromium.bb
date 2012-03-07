@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/gtk_util.h"
+#include "ui/base/gtk/scoped_gobject.h"
 #include "ui/gfx/image/image.h"
 
 #include <gtk/gtk.h>
