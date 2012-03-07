@@ -27,7 +27,7 @@ struct ParamTraits<gfx::PluginWindowHandle> {
   static void Write(Message* m, const param_type& p) {
     m->WriteUInt32(reinterpret_cast<uint32>(p));
   }
-  static bool Read(const Message* m, void** iter, param_type* r) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
     DCHECK_EQ(sizeof(param_type), sizeof(uint32));
     return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
   }
