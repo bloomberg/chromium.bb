@@ -86,9 +86,7 @@ class RunBuildStagesTest(mox.MoxTestBase):
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
-    cbuildbot.SimpleBuilder(self.bot_id,
-                            self.options,
-                            self.build_config).Run()
+    cbuildbot.SimpleBuilder(self.options, self.build_config).Run()
 
     self.assertTrue('CHROMEOS_OFFICIAL' in os.environ)
 
@@ -118,9 +116,7 @@ class RunBuildStagesTest(mox.MoxTestBase):
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
-    cbuildbot.SimpleBuilder(self.bot_id,
-                            self.options,
-                            self.build_config).Run()
+    cbuildbot.SimpleBuilder(self.options, self.build_config).Run()
 
     self.assertFalse('CHROMEOS_OFFICIAL' in os.environ)
 
@@ -380,7 +376,6 @@ class FullInterfaceTest(unittest.TestCase):
     sys.exit(mox.IgnoreArg()).InAnyOrder().AndRaise(TestExitedException())
     cros_lib.FindRepoDir().InAnyOrder().AndReturn('/b/test_build1/.repo')
     cbuildbot._RunBuildStagesWrapper(
-        mox.IgnoreArg(),
         mox.IgnoreArg(),
         mox.IgnoreArg()).InAnyOrder().AndReturn(True)
 

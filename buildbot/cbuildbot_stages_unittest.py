@@ -97,7 +97,7 @@ class BuilderStageTest(AbstractStageTest):
     AbstractStageTest.setUp(self)
 
   def ConstructStage(self):
-    return bs.BuilderStage(self.bot_id, self.options, self.build_config)
+    return bs.BuilderStage(self.options, self.build_config)
 
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
@@ -161,9 +161,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     stages.SyncStage.ManifestCheckout(self.next_version)
 
     self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncStage(self.bot_id,
-                                              self.options,
-                                              self.build_config)
+    stage = stages.ManifestVersionedSyncStage(self.options, self.build_config)
     stage.Run()
     self.mox.VerifyAll()
 
@@ -177,8 +175,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.manager.UpdateStatus(success=True)
 
     self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
-                                                        self.options,
+    stage = stages.ManifestVersionedSyncCompletionStage(self.options,
                                                         self.build_config,
                                                         success=True)
     stage.Run()
@@ -195,8 +192,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
 
 
     self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
-                                                        self.options,
+    stage = stages.ManifestVersionedSyncCompletionStage(self.options,
                                                         self.build_config,
                                                         success=False)
     stage.Run()
@@ -208,8 +204,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     stages.ManifestVersionedSyncStage.manifest_manager = None
 
     self.mox.ReplayAll()
-    stage = stages.ManifestVersionedSyncCompletionStage(self.bot_id,
-                                                        self.options,
+    stage = stages.ManifestVersionedSyncCompletionStage(self.options,
                                                         self.build_config,
                                                         success=False)
     stage.Run()
@@ -242,7 +237,7 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
       self.build_type, incr_type='branch', dry_run=True)
 
   def ConstructStage(self):
-    return stages.LKGMCandidateSyncCompletionStage(self.bot_id, self.options,
+    return stages.LKGMCandidateSyncCompletionStage(self.options,
                                                    self.build_config,
                                                    success=True)
 
@@ -296,7 +291,7 @@ class BuildBoardTest(AbstractStageTest):
     self.mox.StubOutWithMock(os.path, 'isdir')
 
   def ConstructStage(self):
-    return stages.BuildBoardStage(self.bot_id, self.options, self.build_config)
+    return stages.BuildBoardStage(self.options, self.build_config)
 
   def testFullBuild(self):
     """Tests whether we correctly run make chroot and setup board for a full."""
@@ -442,7 +437,7 @@ class VMTestStageTest(AbstractStageTest):
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
 
   def ConstructStage(self):
-    return stages.VMTestStage(self.bot_id, self.options, self.build_config,
+    return stages.VMTestStage(self.options, self.build_config,
                               self._current_board, self.archive_stage_mock)
 
   def testFullTests(self):
@@ -467,7 +462,6 @@ class VMTestStageTest(AbstractStageTest):
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
                                 prefix='').AndReturn('some tarball')
     self.archive_stage_mock.TestResultsReady('some tarball')
-    self.archive_stage_mock.VMTestStatus(True)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -495,7 +489,6 @@ class VMTestStageTest(AbstractStageTest):
     commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
                                 prefix='').AndReturn('some tarball')
     self.archive_stage_mock.TestResultsReady('some tarball')
-    self.archive_stage_mock.VMTestStatus(True)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -512,7 +505,7 @@ class UnitTestStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'RunUnitTests')
 
   def ConstructStage(self):
-    return stages.UnitTestStage(self.bot_id, self.options, self.build_config,
+    return stages.UnitTestStage(self.options, self.build_config,
                                 self._current_board)
 
   def testQuickTests(self):
@@ -544,7 +537,7 @@ class HWTestStageTest(AbstractStageTest):
     self.suite = 'bvt'
 
   def ConstructStage(self):
-    return stages.HWTestStage(self.bot_id, self.options, self.build_config,
+    return stages.HWTestStage(self.options, self.build_config,
                               self._current_board, self.archive_stage_mock,
                               self.suite)
 
@@ -579,7 +572,7 @@ class UprevStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(sys, 'exit')
 
   def ConstructStage(self):
-    return stages.UprevStage(self.bot_id, self.options, self.build_config)
+    return stages.UprevStage(self.options, self.build_config)
 
   def testChromeRevSuccess(self):
     """Case where MarkChromeAsStable returns an atom.  We shouldn't exit."""
@@ -705,8 +698,8 @@ class BuildTargetStageTest(AbstractStageTest):
 
   def ConstructStage(self):
     return stages.BuildTargetStage(
-        self.bot_id, self.options, self.build_config,
-        self._current_board, self.archive_stage_mock)
+        self.options, self.build_config, self._current_board,
+        self.archive_stage_mock)
 
   def testAllConditionalPaths(self):
     """Enable all paths to get line coverage."""
@@ -842,7 +835,7 @@ class ArchiveStageTest(AbstractStageTest):
     self._build_config['push_image'] = True
 
   def ConstructStage(self):
-    return stages.ArchiveStage(self.bot_id, self.options, self._build_config,
+    return stages.ArchiveStage(self.options, self._build_config,
                                self._current_board)
 
   @_replace_archive_path
@@ -899,8 +892,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
     stage._PerformStage()
 
   def ConstructStage(self):
-    return stages.UploadPrebuiltsStage(self.bot_id,
-                                       self.options,
+    return stages.UploadPrebuiltsStage(self.options,
                                        self.build_config,
                                        self._current_board)
 
@@ -972,9 +964,7 @@ class PublishUprevChangesStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'UprevPush')
 
   def ConstructStage(self):
-    return stages.PublishUprevChangesStage(self.bot_id,
-                                           self.options,
-                                           self.build_config)
+    return stages.PublishUprevChangesStage(self.options, self.build_config)
 
   def testPush(self):
     """Test values for PublishUprevChanges."""
@@ -1034,12 +1024,12 @@ class BuildStagesResultsTest(unittest.TestCase):
         raise outer_self.failException
 
     # Run two pass stages, and one fail stage.
-    PassStage(self.bot_id, self.options, self.build_config).Run()
-    Pass2Stage(self.bot_id, self.options, self.build_config).Run()
+    PassStage(self.options, self.build_config).Run()
+    Pass2Stage(self.options, self.build_config).Run()
 
     self.assertRaises(
       bs.NonBacktraceBuildException,
-      FailStage(self.bot_id, self.options, self.build_config).Run)
+      FailStage(self.options, self.build_config).Run)
 
   def _verifyRunResults(self, expectedResults):
 

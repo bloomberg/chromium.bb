@@ -33,12 +33,16 @@ class BuilderStage(object):
   # skips their stage.
   option_name = None
 
+  # Class should set this if they have a corresponding setting in
+  # self._build_config that skips their stage.
+  config_name = None
+
   @staticmethod
   def SetTrackingBranch(tracking_branch):
     BuilderStage._tracking_branch = tracking_branch
 
-  def __init__(self, bot_id, options, build_config, suffix=None):
-    self._bot_id = bot_id
+  def __init__(self, options, build_config, suffix=None):
+    self._bot_id = build_config['name']
     self._options = options
     self._build_config = build_config
     self.name = self.name_stage_re.match(self.__class__.__name__).group(1)
@@ -170,7 +174,8 @@ class BuilderStage(object):
 
   def Run(self):
     """Have the builder execute the stage."""
-    if self.option_name and not getattr(self._options, self.option_name):
+    if (self.option_name and not getattr(self._options, self.option_name) or
+        self.config_name and not self._build_config[self.config_name]):
       self._PrintLoudly('Not running Stage %s' % self.name)
       self.HandleSkip()
       return

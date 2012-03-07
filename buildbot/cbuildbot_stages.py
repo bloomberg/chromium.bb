@@ -55,9 +55,9 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
 
 class BoardSpecificBuilderStage(bs.BuilderStage):
 
-  def __init__(self, bot_id, options, build_config, board, suffix=None):
-    super(BoardSpecificBuilderStage, self).__init__(bot_id, options,
-                                                    build_config, suffix)
+  def __init__(self, options, build_config, board, suffix=None):
+    super(BoardSpecificBuilderStage, self).__init__(options, build_config,
+                                                    suffix)
     self._current_board = board
 
     if not isinstance(board, basestring):
@@ -65,7 +65,7 @@ class BoardSpecificBuilderStage(bs.BuilderStage):
 
     # Add a board name suffix to differentiate between various boards (in case
     # more than one board is built on a single builder.)
-    if len(self._boards) > 1:
+    if len(self._boards) > 1 or build_config['grouped']:
       self.name = '%s [%s]' % (self.name, board)
 
   def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
@@ -123,18 +123,17 @@ class CleanUpStage(bs.BuilderStage):
 
 class PatchChangesStage(bs.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
-  def __init__(self, bot_id, options, build_config, gerrit_patches,
-               local_patches):
+  def __init__(self, options, build_config, gerrit_patches, local_patches):
     """Construct a PatchChangesStage.
 
     Args:
-      bot_id, options, build_config: See arguments to bs.BuilderStage.__init__()
+      options, build_config: See arguments to bs.BuilderStage.__init__()
       gerrit_patches: A list of cros_patch.GerritPatch objects to apply.
                       Cannot be None.
       local_patches: A list cros_patch.LocalPatch objects to apply. Cannot be
                      None.
     """
-    bs.BuilderStage.__init__(self, bot_id, options, build_config)
+    bs.BuilderStage.__init__(self, options, build_config)
     self.gerrit_patches = gerrit_patches
     self.local_patches = local_patches
 
@@ -156,8 +155,8 @@ class SyncStage(bs.BuilderStage):
 
   option_name = 'sync'
 
-  def __init__(self, bot_id, options, build_config):
-    super(SyncStage, self).__init__(bot_id, options, build_config)
+  def __init__(self, options, build_config):
+    super(SyncStage, self).__init__(options, build_config)
     self.repo = None
     self.skip_sync = False
     self.internal = self._build_config['internal']
@@ -217,10 +216,9 @@ class ManifestVersionedSyncStage(SyncStage):
 
   manifest_manager = None
 
-  def __init__(self, bot_id, options, build_config):
+  def __init__(self, options, build_config):
     # Perform the sync at the end of the stage to the given manifest.
-    super(ManifestVersionedSyncStage, self).__init__(bot_id, options,
-                                                     build_config)
+    super(ManifestVersionedSyncStage, self).__init__(options, build_config)
     self.repo = None
 
     # If a builder pushes changes (even with dryrun mode), we need a writable
@@ -285,8 +283,8 @@ class ManifestVersionedSyncStage(SyncStage):
 class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
-  def __init__(self, bot_id, options, build_config):
-    super(LKGMCandidateSyncStage, self).__init__(bot_id, options, build_config)
+  def __init__(self, options, build_config):
+    super(LKGMCandidateSyncStage, self).__init__(options, build_config)
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
     self.skip_sync = True
@@ -333,12 +331,12 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
   pool = None
 
-  def __init__(self, bot_id, options, build_config):
-    super(CommitQueueSyncStage, self).__init__(bot_id, options, build_config)
+  def __init__(self, options, build_config):
+    super(CommitQueueSyncStage, self).__init__(options, build_config)
     CommitQueueSyncStage.pool = None
     # Figure out the builder's name from the buildbot waterfall.
-    builder_name = build_config.get('paladin_builder_name')
-    self.builder_name = builder_name if builder_name else bot_id
+    builder_name = build_config['paladin_builder_name']
+    self.builder_name = builder_name if builder_name else build_config['name']
 
   def SaveValidationPool(self):
     """Serializes the validation pool.
@@ -428,9 +426,9 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
 
   option_name = 'sync'
 
-  def __init__(self, bot_id, options, build_config, success):
+  def __init__(self, options, build_config, success):
     super(ManifestVersionedSyncCompletionStage, self).__init__(
-        bot_id, options, build_config)
+        options, build_config)
     self.success = success
 
   def _PerformStage(self):
@@ -616,8 +614,8 @@ class BuildTargetStage(BoardSpecificBuilderStage):
 
   option_name = 'build'
 
-  def __init__(self, bot_id, options, build_config, board, archive_stage):
-    super(BuildTargetStage, self).__init__(bot_id, options, build_config, board)
+  def __init__(self, options, build_config, board, archive_stage):
+    super(BuildTargetStage, self).__init__(options, build_config, board)
     self._env = {}
     if self._build_config.get('useflags'):
       self._env['USE'] = ' '.join(self._build_config['useflags'])
@@ -722,9 +720,10 @@ class ChromeTestStage(BoardSpecificBuilderStage):
   """Run chrome tests in a virtual machine."""
 
   option_name = 'tests'
+  config_name = 'chrome_tests'
 
-  def __init__(self, bot_id, options, build_config, board, archive_stage):
-    super(ChromeTestStage, self).__init__(bot_id, options, build_config, board)
+  def __init__(self, options, build_config, board, archive_stage):
+    super(ChromeTestStage, self).__init__(options, build_config, board)
     self._archive_stage = archive_stage
 
   def _PerformStage(self):
@@ -747,27 +746,31 @@ class ChromeTestStage(BoardSpecificBuilderStage):
 
       self._archive_stage.TestResultsReady(test_tarball)
 
+  def HandleSkip(self):
+    self._archive_stage.TestResultsReady(None)
+
 
 class UnitTestStage(BoardSpecificBuilderStage):
   """Run unit tests."""
 
   option_name = 'tests'
+  config_name = 'unittests'
 
   def _PerformStage(self):
-    if self._build_config['unittests'] and self._options.tests:
-      commands.RunUnitTests(self._build_root,
-                            self._current_board,
-                            full=(not self._build_config['quick_unit']),
-                            nowithdebug=self._build_config['nowithdebug'])
+    commands.RunUnitTests(self._build_root,
+                          self._current_board,
+                          full=(not self._build_config['quick_unit']),
+                          nowithdebug=self._build_config['nowithdebug'])
 
 
 class VMTestStage(BoardSpecificBuilderStage):
   """Run autotests in a virtual machine."""
 
   option_name = 'tests'
+  config_name = 'vm_tests'
 
-  def __init__(self, bot_id, options, build_config, board, archive_stage):
-    super(VMTestStage, self).__init__(bot_id, options, build_config, board)
+  def __init__(self, options, build_config, board, archive_stage):
+    super(VMTestStage, self).__init__(options, build_config, board)
     self._archive_stage = archive_stage
 
   def _PerformStage(self):
@@ -797,27 +800,27 @@ class VMTestStage(BoardSpecificBuilderStage):
                                                    prefix='')
 
       self._archive_stage.TestResultsReady(test_tarball)
-      self._archive_stage.VMTestStatus(tests_passed)
 
+  def HandleSkip(self):
+    self._archive_stage.TestResultsReady(None)
 
 class HWTestStage(BoardSpecificBuilderStage, ForgivingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
   option_name = 'tests'
+  config_name = 'hw_tests'
 
-  def __init__(self, bot_id, options, build_config, board, archive_stage,
-               suite):
-    super(HWTestStage, self).__init__(bot_id, options, build_config, board,
+  def __init__(self, options, build_config, board, archive_stage, suite):
+    super(HWTestStage, self).__init__(options, build_config, board,
                                       suffix=' [%s]' % suite)
     self._archive_stage = archive_stage
-    self.bot_id = bot_id
     self._suite = suite
 
   def _PerformStage(self):
     if not self._archive_stage.WaitForHWTestUploads():
       raise Exception('Missing uploads.')
 
-    build = '%s/%s' % (self.bot_id, self._archive_stage.GetVersion())
+    build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
     commands.RunHWTestSuite(build, self._suite, self._current_board,
                             self._options.debug)
 
@@ -869,10 +872,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
   _VERSION_NOT_SET = '_not_set_version_'
 
   # This stage is intended to run in the background, in parallel with tests.
-  def __init__(self, bot_id, options, build_config, board):
-    super(ArchiveStage, self).__init__(bot_id, options, build_config, board)
+  def __init__(self, options, build_config, board):
+    super(ArchiveStage, self).__init__(options, build_config, board)
     if build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
-      self._gsutil_archive = 'gs://chromeos-image-archive/' + bot_id
+      self._gsutil_archive = 'gs://chromeos-image-archive/' + self._bot_id
     else:
       self._gsutil_archive = build_config['gs_path']
 
@@ -885,12 +888,10 @@ class ArchiveStage(BoardSpecificBuilderStage):
       self._archive_root = os.path.join(self._build_root,
                                         'trybot_archive')
 
-    self.bot_id = bot_id
     self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
     self._version_queue = multiprocessing.Queue()
     self._autotest_tarball_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
-    self._vm_test_status_queue = multiprocessing.Queue()
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._hw_test_uploads_status_queue = multiprocessing.Queue()
 
@@ -932,28 +933,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
                        results are available, this should be set to None.
     """
     self._test_results_queue.put(test_results)
-
-  def VMTestStatus(self, test_status):
-    """Tell Archive Stage that VM test status is ready.
-
-       Args:
-         test_status: The test status from VMTestStage. True if tests passed,
-                      False otherwise.
-    """
-    self._vm_test_status_queue.put(test_status)
-
-  def WaitForVMTestStatus(self):
-    """Waits for VM test status.
-
-    Returns:
-      True if VM tests passed.
-      False otherswise.
-    """
-    cros_lib.Info('Waiting for VM test status...')
-    status = self._vm_test_status_queue.get()
-    # Put the status back so other HWTestStage instances don't starve.
-    self._vm_test_status_queue.put(status)
-    return status
 
   def WaitForHWTestUploads(self):
     """Waits until artifacts needed for HWTest stage are uploaded.
@@ -1108,7 +1087,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       if self._build_config['hw_tests']:
         update_payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
         commands.GenerateNPlus1Payloads(
-            buildroot, self.bot_id,
+            buildroot, self._bot_id,
             os.path.join(self.GetImageDirSymlink(),
                          'chromiumos_test_image.bin'),
             update_payloads_dir, board)
@@ -1265,11 +1244,9 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
   """Uploads binaries generated by this build for developer use."""
 
   option_name = 'prebuilts'
+  config_name = 'prebuilts'
 
   def _PerformStage(self):
-    if not self._build_config['prebuilts']:
-      return
-
     manifest_manager = ManifestVersionedSyncStage.manifest_manager
     overlay_config = self._build_config['overlays']
     prebuilt_type = self._prebuilt_type

@@ -8,6 +8,7 @@
 # pylint: disable=W0403
 import constants
 import copy
+import itertools
 import json
 import optparse
 import sys
@@ -38,14 +39,16 @@ def OverrideConfigForTrybot(build_config):
     A build configuration dictionary with the overrides applied.
   """
   copy_config = copy.deepcopy(build_config)
-  copy_config['uprev'] = True
-  if build_config['internal']:
-    copy_config['overlays'] = 'both'
+  board_specific_configs = copy_config['board_specific_configs'].values()
+  for config in [copy_config] + board_specific_configs:
+    config['uprev'] = True
+    if config['internal']:
+      config['overlays'] = 'both'
 
-  # Most users don't have access to the pdf repository so disable pdf.
-  useflags = copy_config['useflags']
-  if useflags and 'chrome_pdf' in useflags:
-    useflags.remove('chrome_pdf')
+    # Most users don't have access to the pdf repository so disable pdf.
+    useflags = config['useflags']
+    if useflags and 'chrome_pdf' in useflags:
+      useflags.remove('chrome_pdf')
 
   return copy_config
 
@@ -252,6 +255,14 @@ _settings = dict(
 
 # git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
   git_sync=False,
+
+# board_specific_configs -- A mapping from boards in the boards array to
+#                           config objects. Only used for config groups (see
+#                           the add_group method).
+  board_specific_configs={},
+
+# grouped -- Whether this config belongs to a config group.
+  grouped=False,
 )
 
 
@@ -280,7 +291,7 @@ class _config(dict):
 
     new_config.update(overrides)
 
-    return new_config
+    return copy.deepcopy(new_config)
 
   def add_config(self, name, *inherits, **overrides):
     """Derive and add the config to cbuildbots usable config targets
@@ -293,6 +304,7 @@ class _config(dict):
     Returns:
       See the docstring of derive.
     """
+    overrides['name'] = name
     new_config = self.derive(*inherits, **overrides)
 
     # Derive directly from defaults so missing values are added.
@@ -303,7 +315,6 @@ class _config(dict):
     config_dict = _default.derive(self, *inherits, **overrides)
     config_dict.update((key, urllib.quote(config_dict[key]))
       for key in self._URLQUOTED_PARAMS if config_dict.get(key))
-    config_dict['name'] = name
 
     config[name] = config_dict
 
@@ -312,6 +323,26 @@ class _config(dict):
   @classmethod
   def add_raw_config(cls, name, *inherits, **overrides):
     return cls().add_config(name, *inherits, **overrides)
+
+  @classmethod
+  def add_group(cls, name, *configs):
+    """Create a new group of build configurations.
+
+    Args:
+      name: The name to label this configuration; this is what cbuildbot
+            would see.
+      configs: Configurations to build in this group. The first config in
+               the group is considered the primary configuration and is used
+               for syncing and creating the chroot.
+    """
+    board_specific_configs = {}
+    for x in configs:
+      for board in x['boards']:
+        board_specific_configs[board] = _default.derive(x, grouped=True)
+    return configs[0].add_config(name,
+      boards=list(itertools.chain.from_iterable(x['boards'] for x in configs)),
+      board_specific_configs=board_specific_configs
+    )
 
 _default = _config(**_settings)
 
@@ -649,23 +680,28 @@ _release.add_config('x86-mario-release',
   hw_tests=['bvt'],
 )
 
-_alex_release = \
-_release.add_config('x86-alex-release',
-  boards=['x86-alex'],
-  hw_tests=['bvt'],
+_config.add_group('x86-alex-release-group',
+  _release.add_config('x86-alex-release',
+    boards=['x86-alex'],
+    hw_tests=['bvt'],
+  ),
+  _release.add_config('x86-alex_he-release',
+    boards=['x86-alex_he'],
+    vm_tests=None,
+    unittests=None,
+  ),
 )
 
-_release.add_config('x86-alex_he-release',
-  boards=['x86-alex_he'],
-)
-
-_release.add_config('x86-zgb-release',
-  boards=['x86-zgb'],
-  hw_tests=['bvt'],
-)
-
-_release.add_config('x86-zgb_he-release',
-  boards=['x86-zgb_he'],
+_config.add_group('x86-zgb-release-group',
+  _release.add_config('x86-zgb-release',
+    boards=['x86-zgb'],
+    hw_tests=['bvt'],
+  ),
+  _release.add_config('x86-zgb_he-release',
+    boards=['x86-zgb_he'],
+    vm_tests=None,
+    unittests=None,
+  )
 )
 
 _release.add_config('stumpy-release',
@@ -681,24 +717,6 @@ _release.add_config('link-release',
   boards=['link'],
   prebuilts=False,
   vm_tests=None,
-)
-
-_release.add_config('autotest-experimental',
-  boards=['x86-alex'],
-  prebuilts=False,
-  push_image=False,
-  chrome_tests=False,
-  unittests=False,
-
-  # Make this experimental bot build/test incrementally.
-  usepkg_setup_board=True,
-  usepkg_build_packages=True,
-  chroot_replace=False,
-  vm_tests=None,
-  archive_build_debug=False,
-
-  platform='netbook_ALEX',
-  hw_tests=['bvt']
 )
 
 _arm_release = _release.derive(arm)

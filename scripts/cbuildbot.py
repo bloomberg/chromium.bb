@@ -152,7 +152,6 @@ class Builder(object):
   use is builder_instance.Run().
 
   Vars:
-    bot_id:  Name of the build configuration.
     build_config:  The configuration dictionary from cbuildbot_config.
     options:  The options provided from optparse in main().
     completed_stages_file: Where we store resume state.
@@ -163,9 +162,8 @@ class Builder(object):
     local_patches: Local patches to be included in build.
   """
 
-  def __init__(self, bot_id, options, build_config):
+  def __init__(self, options, build_config):
     """Initializes instance variables. Must be called by all subclasses."""
-    self.bot_id = bot_id
     self.build_config = build_config
     self.options = options
 
@@ -205,9 +203,10 @@ class Builder(object):
   def _GetStageInstance(self, stage, *args, **kwargs):
     """Helper function to get an instance given the args.
 
-    Useful as almost all stages just take in bot_id, options, and build_config.
+    Useful as almost all stages just take in options and build_config.
     """
-    return stage(self.bot_id, self.options, self.build_config, *args, **kwargs)
+    config = kwargs.pop('config', self.build_config)
+    return stage(self.options, config, *args, **kwargs)
 
   def _SetReleaseTag(self):
     """Sets the release tag from the manifest_manager.
@@ -337,33 +336,21 @@ class SimpleBuilder(Builder):
 
   def _RunBackgroundStagesForBoard(self, board):
     """Run background board-specific stages for the specified board."""
-
     archive_stage = self.archive_stages[board]
-    vm_test_stage = self._GetStageInstance(stages.VMTestStage, board,
-                                           archive_stage)
-    chrome_test_stage = self._GetStageInstance(stages.ChromeTestStage,
-                                               board, archive_stage)
-    unit_test_stage = self._GetStageInstance(stages.UnitTestStage, board)
-    prebuilts_stage = self._GetStageInstance(stages.UploadPrebuiltsStage,
-                                             board)
+    configs = self.build_config['board_specific_configs']
+    config = configs.get(board, self.build_config)
+    stage_list = [[stages.VMTestStage, board, archive_stage],
+                  [stages.ChromeTestStage, board, archive_stage],
+                  [stages.UnitTestStage, board],
+                  [stages.UploadPrebuiltsStage, board]]
 
-    steps = []
-    if self.build_config['vm_tests']:
-      steps.append(vm_test_stage.Run)
-      if self.build_config['chrome_tests']:
-        steps.append(chrome_test_stage.Run)
     # We can not run hw tests without archiving the payloads.
     if self.options.archive:
-      for suite in self.build_config['hw_tests']:
-        hw_test_stage = self._GetStageInstance(
-            stages.HWTestStage,
-            board,
-            archive_stage=archive_stage,
-            suite=suite)
-        steps.append(hw_test_stage.Run)
-    steps += [unit_test_stage.Run, prebuilts_stage.Run, archive_stage.Run]
+      for suite in config['hw_tests']:
+        stage_list.append([stages.HWTestStage, board, archive_stage, suite])
 
-    background.RunParallelSteps(steps)
+    steps = [self._GetStageInstance(*x, config=config).Run for x in stage_list]
+    background.RunParallelSteps(steps + [archive_stage.Run])
 
   def RunStages(self):
     """Runs through build process."""
@@ -379,19 +366,27 @@ class SimpleBuilder(Builder):
     else:
       self._RunStage(stages.UprevStage)
 
+      configs = self.build_config['board_specific_configs']
       for board in self.build_config['boards']:
-        archive_stage = self._GetStageInstance(stages.ArchiveStage, board)
+        config = configs.get(board, self.build_config)
+        archive_stage = self._GetStageInstance(stages.ArchiveStage, board,
+                                               config=config)
         self.archive_stages[board] = archive_stage
 
+      # Set up a process pool to run test/archive stages in the background.
+      # This process runs task(board) for each board added to the queue.
       queue = multiprocessing.Queue()
       task = self._RunBackgroundStagesForBoard
       with background.BackgroundTaskRunner(queue, task):
-        for board, archive_stage in self.archive_stages.iteritems():
+        for board in self.build_config['boards']:
           # Run BuildTarget in the foreground.
-          self._RunStage(stages.BuildTargetStage, board, archive_stage)
+          archive_stage = self.archive_stages[board]
+          config = configs.get(board, self.build_config)
+          self._RunStage(stages.BuildTargetStage, board, archive_stage,
+                         config=config)
           self.archive_urls[board] = archive_stage.GetDownloadUrl()
 
-          # Kick off the other stages in the background.
+          # Kick off task(board) in the background.
           queue.put([board])
 
     return True
@@ -403,14 +398,14 @@ class DistributedBuilder(SimpleBuilder):
   These builds sync using git/manifest logic in manifest_versions.  In general
   they use a non-distributed builder code for the bulk of the work.
   """
-  def __init__(self, bot_id, options, build_config):
+  def __init__(self, options, build_config):
     """Initializes a buildbot builder.
 
     Extra variables:
       completion_stage_class:  Stage used to complete a build.  Set in the Sync
         stage.
     """
-    super(DistributedBuilder, self).__init__(bot_id, options, build_config)
+    super(DistributedBuilder, self).__init__(options, build_config)
     self.completion_stage_class = None
 
   def GetSyncInstance(self):
@@ -520,7 +515,7 @@ def _BackupPreviousLog(log_file, backup_limit=25):
     os.rename(log_file, log_file + '.' + str(last + 1))
 
 
-def _RunBuildStagesWrapper(bot_id, options, build_config):
+def _RunBuildStagesWrapper(options, build_config):
   """Helper function that wraps RunBuildStages()."""
   def IsDistributedBuilder():
     """Determines whether the build_config should be a DistributedBuilder."""
@@ -553,9 +548,9 @@ def _RunBuildStagesWrapper(bot_id, options, build_config):
       cros_lib.Info("cbuildbot executed with args %s"
                     % ' '.join(map(repr, sys.argv)))
       if IsDistributedBuilder():
-        buildbot = DistributedBuilder(bot_id, options, build_config)
+        buildbot = DistributedBuilder(options, build_config)
       else:
-        buildbot = SimpleBuilder(bot_id, options, build_config)
+        buildbot = SimpleBuilder(options, build_config)
 
       if not buildbot.Run():
         sys.exit(1)
@@ -929,4 +924,4 @@ def main(argv):
                                    cros_lib.Timeout, options.timeout):
         if not options.buildbot:
           build_config = cbuildbot_config.OverrideConfigForTrybot(build_config)
-        _RunBuildStagesWrapper(bot_id, options, build_config)
+        _RunBuildStagesWrapper(options, build_config)
