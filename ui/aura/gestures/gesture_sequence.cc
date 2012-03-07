@@ -351,13 +351,21 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
                                              Gestures* gestures,
                                              float x_velocity,
                                              float y_velocity) {
+  float railed_x_velocity = x_velocity;
+  float railed_y_velocity = y_velocity;
+
+  if (scroll_type_ == ST_HORIZONTAL)
+    railed_y_velocity = 0;
+  else if (scroll_type_ == ST_VERTICAL)
+    railed_x_velocity = 0;
+
   gestures->push_back(linked_ptr<GestureEvent>(new GestureEvent(
       ui::ET_GESTURE_SCROLL_END,
       location.x(),
       location.y(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      x_velocity, y_velocity)));
+      railed_x_velocity, railed_y_velocity)));
 }
 
 void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,

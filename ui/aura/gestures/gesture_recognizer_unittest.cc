@@ -35,7 +35,9 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         pinch_end_(false),
         long_press_(false),
         scroll_x_(0),
-        scroll_y_(0) {
+        scroll_y_(0),
+        velocity_x_(0),
+        velocity_y_(0) {
   }
 
   virtual ~GestureEventConsumeDelegate() {}
@@ -56,6 +58,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
 
     scroll_x_ = 0;
     scroll_y_ = 0;
+    velocity_x_ = 0;
+    velocity_y_ = 0;
   }
 
   bool tap() const { return tap_; }
@@ -76,6 +80,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scroll_x() const { return scroll_x_; }
   float scroll_y() const { return scroll_y_; }
   int touch_id() const { return touch_id_; }
+  float velocity_x() const { return velocity_x_; }
+  float velocity_y() const { return velocity_y_; }
 
   virtual ui::GestureStatus OnGestureEvent(GestureEvent* gesture) OVERRIDE {
     switch (gesture->type()) {
@@ -98,6 +104,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_y_ += gesture->delta_y();
         break;
       case ui::ET_GESTURE_SCROLL_END:
+        velocity_x_ = gesture->delta_x();
+        velocity_y_ = gesture->delta_y();
         scroll_end_ = true;
         break;
       case ui::ET_GESTURE_PINCH_BEGIN:
@@ -135,6 +143,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
 
   float scroll_x_;
   float scroll_y_;
+  float velocity_x_;
+  float velocity_y_;
   int touch_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventConsumeDelegate);
@@ -421,6 +431,100 @@ TEST_F(GestureRecognizerTest, GestureEventScroll) {
   EXPECT_FALSE(delegate->scroll_begin());
   EXPECT_FALSE(delegate->scroll_update());
   EXPECT_TRUE(delegate->scroll_end());
+}
+
+// Check Scroll End Events report correct velocities
+// if the user was on a horizontal rail
+TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kTouchId = 7;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), kTouchId);
+  root_window()->DispatchTouchEvent(&press);
+
+  // Move the touch-point horizontally enough that it is considered a
+  // horizontal scroll.
+  SendScrollEvent(root_window(), 20, 1, kTouchId, delegate.get());
+  EXPECT_EQ(0, delegate->scroll_y());
+  EXPECT_EQ(20, delegate->scroll_x());
+
+  // Get a high x velocity, while still staying on the rail
+  SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
+                   100, 10, kTouchId, 1, kBufferedPoints, delegate.get());
+
+  delegate->Reset();
+  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), kTouchId);
+  root_window()->DispatchTouchEvent(&release);
+
+  EXPECT_TRUE(delegate->scroll_end());
+  EXPECT_EQ(100000, delegate->velocity_x());
+  EXPECT_EQ(0, delegate->velocity_y());
+}
+
+// Check Scroll End Events report correct velocities
+// if the user was on a vertical rail
+TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kTouchId = 7;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), kTouchId);
+  root_window()->DispatchTouchEvent(&press);
+
+  // Move the touch-point vertically enough that it is considered a
+  // vertical scroll.
+  SendScrollEvent(root_window(), 1, 20, kTouchId, delegate.get());
+  EXPECT_EQ(20, delegate->scroll_y());
+  EXPECT_EQ(0, delegate->scroll_x());
+
+  // Get a high y velocity, while still staying on the rail
+  SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
+                   10, 100, kTouchId, 1, kBufferedPoints, delegate.get());
+
+  delegate->Reset();
+  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), kTouchId);
+  root_window()->DispatchTouchEvent(&release);
+
+  EXPECT_TRUE(delegate->scroll_end());
+  EXPECT_EQ(0, delegate->velocity_x());
+  EXPECT_EQ(100000, delegate->velocity_y());
+}
+
+// Check Scroll End Events report correct velocities
+// if the user is not on a rail
+TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
+  const int kTouchId = 7;
+  gfx::Rect bounds(0, 0, 1000, 1000);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), kTouchId);
+  root_window()->DispatchTouchEvent(&press);
+
+  // Move the touch-point such that a non-rail scroll begins
+  SendScrollEvent(root_window(), 20, 20, kTouchId, delegate.get());
+  EXPECT_EQ(20, delegate->scroll_y());
+  EXPECT_EQ(20, delegate->scroll_x());
+
+  SendScrollEvents(root_window(), 1, 1, press.time_stamp(),
+                   10, 100, kTouchId, 1, kBufferedPoints, delegate.get());
+
+  delegate->Reset();
+  TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(101, 201), kTouchId);
+  root_window()->DispatchTouchEvent(&release);
+
+  EXPECT_TRUE(delegate->scroll_end());
+  EXPECT_EQ(10000, delegate->velocity_x());
+  EXPECT_EQ(100000, delegate->velocity_y());
 }
 
 // Check that appropriate touch events generate long press events
