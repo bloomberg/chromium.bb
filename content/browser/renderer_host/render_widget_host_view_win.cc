@@ -2188,6 +2188,11 @@ void RenderWidgetHostViewWin::OnAcceleratedCompositingStateChange() {
           SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
     }
   } else {
+    // Drop the backing store for the accelerated surface when the accelerated
+    // compositor is disabled. Otherwise, a flash of the last presented frame
+    // could appear when it is next enabled.
+    if (accelerated_surface_.get())
+      accelerated_surface_->Suspend();
     hide_compositor_window_at_next_paint_ = true;
   }
 }
