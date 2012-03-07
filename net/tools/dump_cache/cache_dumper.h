@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "net/disk_cache/backend_impl.h"
@@ -63,8 +64,8 @@ class CacheDumper : public CacheDumpWriter {
 // Writes data to a disk.
 class DiskDumper : public CacheDumpWriter {
  public:
-  explicit DiskDumper(const std::wstring& path) : path_(path), entry_(NULL) {
-    file_util::CreateDirectory(FilePath(path));
+  explicit DiskDumper(const FilePath& path) : path_(path), entry_(NULL) {
+    file_util::CreateDirectory(path);
   }
   virtual int CreateEntry(const std::string& key, disk_cache::Entry** entry,
                           const net::CompletionCallback& callback);
@@ -75,7 +76,7 @@ class DiskDumper : public CacheDumpWriter {
                           base::Time last_modified);
 
  private:
-  std::wstring path_;
+  FilePath path_;
   // This is a bit of a hack.  As we get a CreateEntry, we coin the current
   // entry_path_ where we write that entry to disk.  Subsequent calls to
   // WriteEntry() utilize this path for writing to disk.

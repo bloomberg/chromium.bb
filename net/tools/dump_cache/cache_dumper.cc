@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ void CacheDumper::CloseEntry(disk_cache::Entry* entry, base::Time last_used,
 
 // A version of CreateDirectory which supports lengthy filenames.
 // Returns true on success, false on failure.
-bool SafeCreateDirectory(const std::wstring& path) {
+bool SafeCreateDirectory(const FilePath& path) {
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
   // Due to large paths on windows, it can't simply do a
   // CreateDirectory("a/b/c").  Instead, create each subdirectory manually.
@@ -47,18 +47,18 @@ bool SafeCreateDirectory(const std::wstring& path) {
   // If the path starts with the long file header, skip over that
   const std::wstring kLargeFilenamePrefix(L"\\\\?\\");
   std::wstring header(kLargeFilenamePrefix);
-  if (path.find(header) == 0)
+  if (path.value().find(header) == 0)
     pos = 4;
 
   // Create the subdirectories individually
-  while ((pos = path.find(backslash, pos)) != std::wstring::npos) {
-    std::wstring subdir = path.substr(0, pos);
+  while ((pos = path.value().find(backslash, pos)) != std::wstring::npos) {
+    std::wstring subdir = path.value().substr(0, pos);
     CreateDirectoryW(subdir.c_str(), NULL);
     // we keep going even if directory creation failed.
     pos++;
   }
   // Now create the full path
-  return CreateDirectoryW(path.c_str(), NULL) == TRUE;
+  return CreateDirectoryW(path.value().c_str(), NULL) == TRUE;
 #else
   return file_util::CreateDirectory(path);
 #endif
@@ -67,11 +67,10 @@ bool SafeCreateDirectory(const std::wstring& path) {
 int DiskDumper::CreateEntry(const std::string& key,
                             disk_cache::Entry** entry,
                             const net::CompletionCallback& callback) {
-  FilePath path(path_);
   // The URL may not start with a valid protocol; search for it.
   int urlpos = key.find("http");
   std::string url = urlpos > 0 ? key.substr(urlpos) : key;
-  std::string base_path = WideToASCII(path_);
+  std::string base_path = WideToASCII(path_.value());
   std::string new_path =
       net::UrlToFilenameEncoder::Encode(url, base_path, false);
   entry_path_ = FilePath(ASCIIToWide(new_path));
@@ -89,8 +88,7 @@ int DiskDumper::CreateEntry(const std::string& key,
 
   entry_url_ = key;
 
-  FilePath directory = entry_path_.DirName();
-  SafeCreateDirectory(directory.value());
+  SafeCreateDirectory(entry_path_.DirName());
 
   std::wstring file = entry_path_.value();
 #ifdef WIN32_LARGE_FILENAME_SUPPORT
@@ -210,4 +208,3 @@ void DiskDumper::CloseEntry(disk_cache::Entry* entry, base::Time last_used,
   file_util::CloseFile(entry_);
 #endif
 }
-

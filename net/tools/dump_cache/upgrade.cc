@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -213,7 +213,7 @@ bool BaseSM::IsPending() {
 
 class MasterSM : public BaseSM {
  public:
-  MasterSM(const std::wstring& path, HANDLE channel, bool dump_to_disk)
+  MasterSM(const FilePath& path, HANDLE channel, bool dump_to_disk)
       : BaseSM(channel),
         path_(path),
         dump_to_disk_(dump_to_disk) {
@@ -264,7 +264,7 @@ class MasterSM : public BaseSM {
   int read_size_;
   scoped_ptr<disk_cache::Backend> cache_;
   CacheDumpWriter* writer_;
-  const std::wstring& path_;
+  const FilePath path_;
   bool dump_to_disk_;
 };
 
@@ -322,9 +322,7 @@ bool MasterSM::DoInit() {
   } else {
     disk_cache::Backend* cache;
     net::TestCompletionCallback cb;
-    int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                            FilePath::FromWStringHack(path_), 0,
-                                            false,
+    int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, path_, 0, false,
                                             cache_thread_.message_loop_proxy(),
                                             NULL, &cache, cb.callback());
     if (cb.GetResult(rv) != net::OK) {
@@ -561,7 +559,7 @@ void MasterSM::Fail() {
 
 class SlaveSM : public BaseSM {
  public:
-  SlaveSM(const std::wstring& path, HANDLE channel);
+  SlaveSM(const FilePath& path, HANDLE channel);
   virtual ~SlaveSM();
 
   bool DoInit();
@@ -594,13 +592,11 @@ class SlaveSM : public BaseSM {
   scoped_ptr<disk_cache::BackendImpl> cache_;
 };
 
-SlaveSM::SlaveSM(const std::wstring& path, HANDLE channel)
+SlaveSM::SlaveSM(const FilePath& path, HANDLE channel)
     : BaseSM(channel), iterator_(NULL) {
   disk_cache::Backend* cache;
   net::TestCompletionCallback cb;
-  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE,
-                                          FilePath::FromWStringHack(path), 0,
-                                          false,
+  int rv = disk_cache::CreateCacheBackend(net::DISK_CACHE, path, 0, false,
                                           cache_thread_.message_loop_proxy(),
                                           NULL, &cache, cb.callback());
   if (cb.GetResult(rv) != net::OK) {
@@ -892,7 +888,7 @@ HANDLE CreateServer(std::wstring* pipe_number) {
 }
 
 // This is the controller process for an upgrade operation.
-int CopyCache(const std::wstring& output_path, HANDLE pipe, bool copy_to_text) {
+int CopyCache(const FilePath& output_path, HANDLE pipe, bool copy_to_text) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   MasterSM master(output_path, pipe, copy_to_text);
@@ -906,7 +902,7 @@ int CopyCache(const std::wstring& output_path, HANDLE pipe, bool copy_to_text) {
 }
 
 // This process will only execute commands from the controller.
-int RunSlave(const std::wstring& input_path, const std::wstring& pipe_number) {
+int RunSlave(const FilePath& input_path, const std::wstring& pipe_number) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   base::win::ScopedHandle pipe(OpenServer(pipe_number));
