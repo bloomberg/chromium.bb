@@ -401,6 +401,8 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
                         OnAcceleratedSurfaceBuffersSwapped)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
                         OnAcceleratedSurfacePostSubBuffer)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSuspend,
+                        OnAcceleratedSurfaceSuspend)
 #endif
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
@@ -545,6 +547,13 @@ void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(
       "GpuProcessHost::OnAcceleratedSurfacePostSubBuffer");
 
   NOTIMPLEMENTED();
+}
+
+void GpuProcessHost::OnAcceleratedSurfaceSuspend(int32 surface_id) {
+  TRACE_EVENT0("renderer",
+      "GpuProcessHost::OnAcceleratedSurfaceSuspend");
+
+  GpuSurfaceTracker::Get()->Suspend(surface_id);
 }
 
 #endif  // OS_WIN && !USE_AURA

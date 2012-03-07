@@ -112,5 +112,15 @@ void GpuSurfaceTracker::AsyncPresentAndAcknowledge(
       completion_task);
 }
 
+void GpuSurfaceTracker::Suspend(int surface_id) {
+  base::AutoLock lock(lock_);
+
+  SurfaceMap::iterator it = surface_map_.find(surface_id);
+  if (it == surface_map_.end() || !it->second.handle.accelerated_surface)
+    return;
+
+  it->second.handle.accelerated_surface->Suspend();
+}
+
 #endif  // OS_WIN
 

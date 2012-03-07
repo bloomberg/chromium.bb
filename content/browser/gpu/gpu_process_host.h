@@ -115,6 +115,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
   void OnAcceleratedSurfacePostSubBuffer(
       const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params);
+  void OnAcceleratedSurfaceSuspend(int32 surface_id);
 #endif
 
   bool LaunchGpuProcess(const std::string& channel_id);

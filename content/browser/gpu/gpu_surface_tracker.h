@@ -59,7 +59,7 @@ class GpuSurfaceTracker {
   gfx::GLSurfaceHandle GetSurfaceHandle(int surface_id);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // This is a member of GpuSurfaceTracker because it holds the lock for its
+  // These are members of GpuSurfaceTracker because they hold the lock for their
   // duration. This prevents the AcceleratedSurface that it posts to from being
   // destroyed by the main thread during that time. This function is only called
   // on the IO thread. This function only posts tasks asynchronously. If it
@@ -69,6 +69,7 @@ class GpuSurfaceTracker {
                                   const gfx::Size& size,
                                   int64 surface_handle,
                                   const base::Closure& completion_task);
+  void Suspend(int surface_id);
 #endif
 
   // Gets the global instance of the surface tracker. Identical to Get(), but
