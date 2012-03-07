@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <queue>
 #include <vector>
 
 #include "base/platform_file.h"
@@ -444,6 +445,38 @@ class GetFileLocationsFunction : public FileBrowserFunction {
   void GetLocalPathsResponseOnUIThread(const FilePathList& files);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileLocations");
+};
+
+// Get gdata files for the given list of file URLs. Initiate downloading of
+// gdata files if these are not cached. Return a list of local file names.
+class GetGDataFilesFunction : public FileBrowserFunction {
+ public:
+  GetGDataFilesFunction();
+
+ protected:
+  virtual ~GetGDataFilesFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // A callback method to handle the result of
+  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
+  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+
+  // Gets the file on the top of the |remaining_gdata_paths_| or sends the
+  // response if the queue is empty.
+  void GetFileOrSendResponse();
+
+  // Called by GDataFileSystem::GetFile(). Pops the file from
+  // |remaining_gdata_paths_|, and calls GetFileOrSendResponse().
+  void OnFileReady(base::PlatformFileError error,
+                   const FilePath& local_path);
+
+  std::queue<FilePath> remaining_gdata_paths_;
+  ListValue* local_paths_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFiles");
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

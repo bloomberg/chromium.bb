@@ -546,6 +546,30 @@
         ]
       },
       {
+        "name": "getGDataFiles",
+        "description": "Get GData files",
+        "parameters": [
+          {
+            "name": "fileUrls",
+            "type": "array",
+            "description": "Array of gdata file URLs to get.",
+            "items": { "type": "string" }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name" : "localFilePaths",
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "An array of the local file paths for the requested files, one entry for each file in fileUrls."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getVolumeMetadata",
         "description": "Requests volume's metadata",
         "parameters": [
