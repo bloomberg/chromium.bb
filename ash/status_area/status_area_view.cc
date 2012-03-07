@@ -5,6 +5,7 @@
 #include "ash/status_area/status_area_view.h"
 
 #include "ash/ash_export.h"
+#include "ash/focus_cycler.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "base/utf_string_conversions.h"
@@ -20,9 +21,14 @@ namespace internal {
 
 StatusAreaView::StatusAreaView()
     : status_mock_(*ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_AURA_STATUS_MOCK).ToSkBitmap()) {
+          IDR_AURA_STATUS_MOCK).ToSkBitmap()),
+      focus_cycler_for_testing_(NULL) {
 }
 StatusAreaView::~StatusAreaView() {
+}
+
+void StatusAreaView::SetFocusCyclerForTesting(const FocusCycler* focus_cycler) {
+  focus_cycler_for_testing_ = focus_cycler;
 }
 
 gfx::Size StatusAreaView::GetPreferredSize() {
@@ -35,6 +41,14 @@ views::Widget* StatusAreaView::GetWidget() {
 
 const views::Widget* StatusAreaView::GetWidget() const {
   return View::GetWidget();
+}
+
+bool StatusAreaView::CanActivate() const {
+  // We don't want mouse clicks to activate us, but we need to allow
+  // activation when the user is using the keyboard (FocusCycler).
+  const FocusCycler* focus_cycler = focus_cycler_for_testing_ ?
+      focus_cycler_for_testing_ : Shell::GetInstance()->focus_cycler();
+  return focus_cycler->widget_activating() == GetWidget();
 }
 
 void StatusAreaView::OnPaint(gfx::Canvas* canvas) {
