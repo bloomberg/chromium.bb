@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,33 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_MENU_ICON_H_
 #pragma once
 
-#include <string>
+// NetworkMenuIcon Manages an icon that reflects the current state of the
+// network (see chromeos::NetworkLibrary). It takes an optional Delegate
+// argument in the constructor that signals the delegate when the icon changes.
+// Example usage:
+//   class MyIconDelegate : public NetworkMenuIcon::Delegate {
+//     virtual void NetworkMenuIconChanged() OVERRIDE {
+//       string16 tooltip;
+//       const SkBitmap* bitmap = network_icon_->GetIconAndText(&tooltip);
+//       SetIcon(*bitmap);
+//       SetTooltip(tooltip);
+//       SchedulePaint();
+//     }
+//   }
+//   MyIconDelegate my_delegate;
+//   NetworkMenuIcon icon(&my_delegate, NetworkMenuIcon::MENU_MODE);
+//
+// NetworkMenuIcon also provides static functions for fetching network bitmaps
+// (e.g. for network entries in the menu or settings).
+// Example usage:
+//   Network* network = network_library->FindNetworkByPath(my_network_path_);
+//   SetIcon(NetworkMenuIcon::GetBitmap(network);
+//
+// This class is not explicitly thread-safe and functions are expected to be
+// called from the UI thread.
+
 #include <map>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -19,8 +44,6 @@ namespace chromeos {
 
 class NetworkIcon;
 
-// Manages an icon reflecting the current state of the network.
-// Also provides static functions for fetching network bitmaps.
 class NetworkMenuIcon : public ui::AnimationDelegate {
  public:
   enum Mode {
@@ -36,11 +59,18 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
 
   class Delegate {
    public:
-    // Called when the bitmap has changed due to animation. Callback should
+    Delegate() {}
+    virtual ~Delegate() {}
+    // Called when the bitmap has changed due to animation. The callback should
     // trigger a call to GetIconAndText() to generate and retrieve the bitmap.
     virtual void NetworkMenuIconChanged() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
+  // NetworkMenuIcon is owned by the caller. |delegate| can be NULL.
+  // |mode| determines the menu behavior (see enum).
   NetworkMenuIcon(Delegate* delegate, Mode mode);
   virtual ~NetworkMenuIcon();
 
@@ -49,8 +79,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
     last_network_type_ = last_network_type;
   }
 
-  // Generates and returns the icon bitmap. This will never return NULL.
-  // Also sets |text| if not NULL. Behavior varies depending on |mode_|.
+  // Generates and returns the icon bitmap. If |text| is not NULL, sets it to
+  // the tooltip or display text to show, based on the value of mode_.
   const SkBitmap GetIconAndText(string16* text);
 
   // ui::AnimationDelegate implementation.
@@ -58,7 +88,9 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
 
   // Static functions for generating network icon bitmaps:
 
-  // Composites the bitmaps to generate a network icon.
+  // Composites the bitmaps to generate a network icon. Input parameters are
+  // the icon and badges that are composited to generate |result|. Public
+  // primarily for unit tests.
   static const SkBitmap GenerateBitmapFromComponents(
       const SkBitmap& icon,
       const SkBitmap* top_left_badge,
@@ -66,7 +98,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
       const SkBitmap* bottom_left_badge,
       const SkBitmap* bottom_right_badge);
 
-  // Sets a blended bitmap for connecting images.
+  // Returns a modified version of |source| representing the connecting state
+  // of a network. Public for unit tests.
   static const SkBitmap GenerateConnectingBitmap(const SkBitmap& source);
 
   // Returns a bitmap associated with |network|, reflecting its current state.
@@ -89,22 +122,42 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   static int NumBitmaps(BitmapType type);
 
  protected:
-  // Virtual for testing.
+  // Starts the connection animation if necessary and returns its current value.
+  // Virtual so that unit tests can override this.
   virtual double GetAnimation();
 
  private:
+  // Returns the appropriate connecting network if any.
   const Network* GetConnectingNetwork();
-  void SetConnectingIcon(const Network* network, double animation);
-  void SetIconAndText(string16* text);
+  // Sets the icon based on the state of the network and the network library.
+  // Sets text_ to the appropriate tooltip or display text.
+  void SetIconAndText();
+  // Set the icon and text to show a warning if unable to load the cros library.
+  void SetWarningIconAndText();
+  // Sets the icon and text when displaying a connecting state.
+  void SetConnectingIconAndText();
+  // Sets the icon and text when connected to |network|.
+  void SetActiveNetworkIconAndText(const Network* network);
+  // Sets the icon and text when disconnected.
+  void SetDisconnectedIconAndText();
 
+  // Specifies whether this icon is for a normal menu or a dropdown menu.
   Mode mode_;
+  // A delegate may be specified to receive notifications when this animates.
   Delegate* delegate_;
-  SkBitmap empty_vpn_badge_;
+  // Generated bitmap for connecting to a VPN.
   SkBitmap vpn_connecting_badge_;
+  // Animation throbber for animating the icon while conencting.
   ui::ThrobAnimation animation_connecting_;
+  // Cached type of previous displayed network.
   ConnectionType last_network_type_;
+  // The generated icon image.
   scoped_ptr<NetworkIcon> icon_;
-  const Network* connecting_network_;  // weak pointer.
+  // A weak pointer to the currently connecting network. Used only for
+  // comparison purposes; accessing this directly may be invalid.
+  const Network* connecting_network_;
+  // The tooltip or display text associated with the menu icon.
+  string16 text_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuIcon);
 };

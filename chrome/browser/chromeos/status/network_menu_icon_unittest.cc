@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 namespace {
 
+// Compares each pixel in two bitmaps for testing.
 bool CompareTwoBitmaps(const SkBitmap& a, const SkBitmap& b, int log_level) {
   CHECK(!a.empty());
   CHECK(!b.empty());
@@ -113,6 +114,7 @@ class NetworkMenuIconTest : public testing::Test {
     cellular_connecting_bitmap_ = NetworkMenuIcon::GenerateConnectingBitmap(
         NetworkMenuIcon::GetBitmap(NetworkMenuIcon::BARS, 1));
   }
+
   virtual void TearDown() OVERRIDE {
   }
 
@@ -166,6 +168,7 @@ class NetworkMenuIconTest : public testing::Test {
     return false;
   }
 
+ protected:
   ScopedStubCrosEnabler cros_stub_;
   NetworkLibrary* cros_;
   ResourceBundle& rb_;
@@ -262,7 +265,6 @@ class TestNetworkMenuIcon : public NetworkMenuIcon {
   Delegate delegate_;
   double animation_;
 };
-
 
 }  // namespace
 

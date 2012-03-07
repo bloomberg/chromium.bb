@@ -30,11 +30,11 @@ const double kConnectingImageAlpha = 0.5;
 // Animation cycle length.
 const int kThrobDurationMs = 750;
 
-// Network strength bars images.
+// Images for strength bars for wired networks.
 const int kNumBarsImages = 5;
 SkBitmap* kBarsImagesAnimating[kNumBarsImages - 1];
 
-// Network strength arcs images.
+// Imagaes for strength arcs for wireless networks.
 const int kNumArcsImages = 5;
 SkBitmap* kArcsImagesAnimating[kNumArcsImages - 1];
 
@@ -45,7 +45,7 @@ const int kBadgeRightX = 14;
 const int kBadgeTopY = 0;
 const int kBadgeBottomY = 14;
 
-// ID for VPN badge. TODO(stevenjb): replace with yellow lock icon.
+// ID for VPN badge. TODO(stevenjb): replace with correct icon when available.
 const int kVpnBadgeId = IDR_STATUSBAR_NETWORK_SECURE;
 
 int StrengthIndex(int strength, int count) {
@@ -53,7 +53,7 @@ int StrengthIndex(int strength, int count) {
     return 0;
   } else {
     // Return an index in the range [1, count].
-    float findex = (static_cast<float>(strength) / 100.0f) *
+    const float findex = (static_cast<float>(strength) / 100.0f) *
         nextafter(static_cast<float>(count), 0);
     int index = 1 + static_cast<int>(findex);
     index = max(min(index, count), 1);
@@ -73,7 +73,8 @@ int CellularStrengthIndex(const CellularNetwork* cellular) {
 }
 
 const SkBitmap* BadgeForNetworkTechnology(const CellularNetwork* cellular) {
-  int id = -1;
+  const int kUnknownBadgeType = -1;
+  int id = kUnknownBadgeType;
   switch (cellular->network_technology()) {
     case NETWORK_TECHNOLOGY_EVDO:
       switch (cellular->data_left()) {
@@ -135,16 +136,33 @@ const SkBitmap* BadgeForNetworkTechnology(const CellularNetwork* cellular) {
     case NETWORK_TECHNOLOGY_UNKNOWN:
       break;
   }
-  if (id == -1)
+  if (id == kUnknownBadgeType)
     return NULL;
   else
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
+}
+
+// Generates a single empty vpn image for blending.
+const SkBitmap& GetEmptyVpnBadge() {
+  static SkBitmap* empty_vpn_badge = NULL;
+  if (empty_vpn_badge == NULL) {
+    empty_vpn_badge = new SkBitmap();
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
+    empty_vpn_badge->setConfig(SkBitmap::kARGB_8888_Config,
+                               vpn_badge->width(),
+                               vpn_badge->height());
+    empty_vpn_badge->allocPixels();
+    empty_vpn_badge->eraseARGB(0, 0, 0, 0);
+  }
+  return *empty_vpn_badge;
 }
 
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkIcon
+// TODO(stevenjb): Separate class implementation from the definition.
 
 // Sets up and generates an SkBitmap for a Network icon.
 class NetworkIcon {
@@ -179,6 +197,7 @@ class NetworkIcon {
   ~NetworkIcon() {
   }
 
+  // Resets the icon state.
   void ClearIconAndBadges() {
     icon_ = SkBitmap();
     top_left_badge_ = NULL;
@@ -187,6 +206,7 @@ class NetworkIcon {
     bottom_right_badge_ = NULL;
   }
 
+  // Resets the saved state to force an update.
   void SetDirty() {
     state_ = STATE_UNKNOWN;
     strength_index_ = -1;
@@ -207,6 +227,8 @@ class NetworkIcon {
         return;
       }
     }
+
+    // Determine whether or not we need to update the icon.
     bool dirty = bitmap_.empty();
     bool speak = false;
     if (accessibility::IsSpokenFeedbackEnabled()) {
@@ -216,74 +238,40 @@ class NetworkIcon {
         speak = true;
       }
     }
+
+    // If the network state has changed, the icon needs updating.
     if (state_ != network->state()) {
       state_ = network->state();
       dirty = true;
     }
+
     ConnectionType type = network->type();
     if (type == TYPE_WIFI || type == TYPE_CELLULAR) {
-      int index = 0;
-      if (type == TYPE_WIFI) {
-        index = WifiStrengthIndex(
-            static_cast<const WifiNetwork*>(network));
-      } else if (type == TYPE_CELLULAR) {
-        index = CellularStrengthIndex(
-            static_cast<const CellularNetwork*>(network));
-      }
-      if (index != strength_index_) {
-        strength_index_ = index;
+      if (UpdateWirelessStrengthIndex(network))
         dirty = true;
-      }
     }
+
     if (type == TYPE_CELLULAR) {
-      const CellularNetwork* cellular =
-          static_cast<const CellularNetwork*>(network);
-      const SkBitmap* technology_badge = BadgeForNetworkTechnology(cellular);
-      if (technology_badge != bottom_right_badge_)
+      if (UpdateCellularState(network))
         dirty = true;
-      if (cellular->roaming_state() != roaming_state_) {
-        roaming_state_ = cellular->roaming_state();
-        dirty = true;
-      }
     }
+
     if (type == TYPE_VPN) {
       if (cros->connected_network() != connected_network_) {
         connected_network_ = cros->connected_network();
         dirty = true;
       }
     }
+
     if (dirty) {
+      // Set the icon and badges based on the network.
       UpdateIcon(network);
+      // Generate the bitmap from the icon.
       GenerateBitmap();
     }
+
     if (speak) {
-      std::string connection_string;
-      if (Network::IsConnectedState(state_)) {
-        switch (network->type()) {
-          case TYPE_ETHERNET:
-            connection_string = l10n_util::GetStringFUTF8(
-                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-                l10n_util::GetStringUTF16(
-                    IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
-            break;
-          default:
-            connection_string = l10n_util::GetStringFUTF8(
-                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-                UTF8ToUTF16(network->name()));
-            break;
-        }
-      } else if (Network::IsConnectingState(state_)) {
-        const Network* connecting_network = cros->connecting_network();
-        if (connecting_network && connecting_network->type() != TYPE_ETHERNET) {
-          connection_string = l10n_util::GetStringFUTF8(
-              IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
-              UTF8ToUTF16(connecting_network->name()));
-        }
-      } else if (Network::IsDisconnectedState(state_)) {
-        connection_string = l10n_util::GetStringUTF8(
-            IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
-      }
-      accessibility::Speak(connection_string);
+      AccessabilitySpeak(network);
     }
   }
 
@@ -324,7 +312,7 @@ class NetworkIcon {
   }
 
   // Sets up the various badges:
-  // top_left: Cellular Roaming
+  // top_left: cellular roaming
   // top_right: libcros warning
   // bottom_left: VPN
   // bottom_right: disconnected / secure / technology / warning
@@ -376,31 +364,32 @@ class NetworkIcon {
 
     ClearIconAndBadges();
 
-    if (network->type() == TYPE_VPN) {
-      // VPN should never be the primiary active network. This is used for
-      // the icon next to a connected or disconnected VPN.
-      const Network* connected_network = cros->connected_network();
-      if (connected_network && connected_network->type() != TYPE_VPN) {
-        // Set the icon and badges for the connected network.
-        SetIcon(connected_network);
-        SetBadges(connected_network);
-      } else {
-        // Use the ethernet icon for VPN when not connected.
-        icon_ = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
-        // We can be connected to a VPN, even when there is no connected
-        // underlying network. In that case, for the status bar, show the
-        // disconencted badge.
-        if (is_status_bar_) {
-          bottom_right_badge_ =
-              rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-        }
-      }
-      // Overlay the VPN badge.
-      bottom_left_badge_ = rb.GetBitmapNamed(kVpnBadgeId);
-    } else {
+    if (network->type() != TYPE_VPN) {
       SetIcon(network);
       SetBadges(network);
+      return;
     }
+
+    // VPN should never be the primiary active network. This is used for
+    // the icon next to a connected or disconnected VPN.
+    const Network* connected_network = cros->connected_network();
+    if (connected_network && connected_network->type() != TYPE_VPN) {
+      // Set the icon and badges for the connected network.
+      SetIcon(connected_network);
+      SetBadges(connected_network);
+    } else {
+      // Use the ethernet icon for VPN when not connected.
+      icon_ = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
+      // We can be connected to a VPN, even when there is no connected
+      // underlying network. In that case, for the status bar, show the
+      // disconnected badge.
+      if (is_status_bar_) {
+        bottom_right_badge_ =
+            rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+      }
+    }
+    // Overlay the VPN badge.
+    bottom_left_badge_ = rb.GetBitmapNamed(kVpnBadgeId);
   }
 
   // Generates the bitmap. Call after setting the icon and badges.
@@ -432,6 +421,76 @@ class NetworkIcon {
   }
 
  private:
+  // Updates strength_index_ for wifi or cellular networks.
+  // Returns true if strength_index_ changed.
+  bool UpdateWirelessStrengthIndex(const Network* network) {
+    bool dirty = false;
+    ConnectionType type = network->type();
+    int index = 0;
+    if (type == TYPE_WIFI) {
+      index = WifiStrengthIndex(
+          static_cast<const WifiNetwork*>(network));
+    } else if (type == TYPE_CELLULAR) {
+      index = CellularStrengthIndex(
+          static_cast<const CellularNetwork*>(network));
+    }
+    if (index != strength_index_) {
+      strength_index_ = index;
+      dirty = true;
+    }
+    return dirty;
+  }
+
+  // Updates the local state for cellular networks.
+  bool UpdateCellularState(const Network* network) {
+    if (network->type() != TYPE_CELLULAR)
+      return false;
+    bool dirty = false;
+    const CellularNetwork* cellular =
+        static_cast<const CellularNetwork*>(network);
+    const SkBitmap* technology_badge = BadgeForNetworkTechnology(cellular);
+    if (technology_badge != bottom_right_badge_) {
+      dirty = true;
+    }
+    if (cellular->roaming_state() != roaming_state_) {
+      roaming_state_ = cellular->roaming_state();
+      dirty = true;
+    }
+    return dirty;
+  }
+
+  // Generate accessability text and call Speak().
+  void AccessabilitySpeak(const Network* network) {
+    NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+    std::string connection_string;
+    if (Network::IsConnectedState(state_)) {
+      switch (network->type()) {
+        case TYPE_ETHERNET:
+          connection_string = l10n_util::GetStringFUTF8(
+              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+              l10n_util::GetStringUTF16(
+                  IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
+          break;
+        default:
+          connection_string = l10n_util::GetStringFUTF8(
+              IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+              UTF8ToUTF16(network->name()));
+          break;
+      }
+    } else if (Network::IsConnectingState(state_)) {
+      const Network* connecting_network = cros->connecting_network();
+      if (connecting_network && connecting_network->type() != TYPE_ETHERNET) {
+        connection_string = l10n_util::GetStringFUTF8(
+            IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
+            UTF8ToUTF16(connecting_network->name()));
+      }
+    } else if (Network::IsDisconnectedState(state_)) {
+      connection_string = l10n_util::GetStringUTF8(
+          IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
+    }
+    accessibility::Speak(connection_string.c_str());
+  }
+
   std::string service_path_;
   ConnectionState state_;
   int strength_index_;
@@ -448,7 +507,6 @@ class NetworkIcon {
   DISALLOW_COPY_AND_ASSIGN(NetworkIcon);
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuIcon
 
@@ -458,14 +516,6 @@ NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       last_network_type_(TYPE_WIFI),
       connecting_network_(NULL) {
-  // Generate empty images for blending.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
-  empty_vpn_badge_.setConfig(SkBitmap::kARGB_8888_Config,
-                             vpn_badge->width(), vpn_badge->height(), 0);
-  empty_vpn_badge_.allocPixels();
-  empty_vpn_badge_.eraseARGB(0, 0, 0, 0);
-
   // Set up the connection animation throbber.
   animation_connecting_.SetThrobDuration(kThrobDurationMs);
   animation_connecting_.SetTweenType(ui::Tween::LINEAR);
@@ -480,12 +530,13 @@ NetworkMenuIcon::~NetworkMenuIcon() {
 // Public methods:
 
 const SkBitmap NetworkMenuIcon::GetIconAndText(string16* text) {
-  SetIconAndText(text);
+  SetIconAndText();
+  if (text)
+    *text = text_;
   icon_->GenerateBitmap();
   return icon_->GetBitmap();
 }
 
-// ui::AnimationDelegate:
 void NetworkMenuIcon::AnimationProgressed(const ui::Animation* animation) {
   if (animation == &animation_connecting_ && delegate_) {
     // Only update the connecting network from here.
@@ -511,24 +562,22 @@ const Network* NetworkMenuIcon::GetConnectingNetwork() {
   return NULL;
 }
 
-// Starts the connection animation if necessary and returns its current value.
 double NetworkMenuIcon::GetAnimation() {
   if (!animation_connecting_.is_animating()) {
     animation_connecting_.Reset();
-    animation_connecting_.StartThrobbing(-1);
+    animation_connecting_.StartThrobbing(-1 /*throb indefinitely*/);
     return 0;
   }
   return animation_connecting_.GetCurrentValue();
 }
 
-// Fades the bars a bit and cycles through the different bar states.
-void NetworkMenuIcon::SetConnectingIcon(const Network* network,
-                                        double animation) {
+// TODO(stevenjb): move below SetIconAndText.
+void NetworkMenuIcon::SetConnectingIconAndText() {
   int image_count;
   BitmapType bitmap_type;
   SkBitmap** images;
 
-  if (network->type() == TYPE_WIFI) {
+  if (connecting_network_->type() == TYPE_WIFI) {
     image_count = kNumArcsImages - 1;
     bitmap_type = ARCS;
     images = kArcsImagesAnimating;
@@ -537,9 +586,8 @@ void NetworkMenuIcon::SetConnectingIcon(const Network* network,
     bitmap_type = BARS;
     images = kBarsImagesAnimating;
   }
-  int index = static_cast<int>(
-      animation * nextafter(static_cast<float>(image_count), 0));
-  index = max(min(index, image_count - 1), 0);
+  int index = GetAnimation() * nextafter(static_cast<float>(image_count), 0);
+  index = std::max(std::min(index, image_count - 1), 0);
 
   // Lazily cache images.
   if (!images[index]) {
@@ -548,33 +596,30 @@ void NetworkMenuIcon::SetConnectingIcon(const Network* network,
         new SkBitmap(NetworkMenuIcon::GenerateConnectingBitmap(source));
   }
   icon_->set_icon(*images[index]);
+  icon_->SetBadges(connecting_network_);
+  if (mode_ == MENU_MODE) {
+    const int tooltip_id = connecting_network_->configuring()
+        ? IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP
+        : IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP;
+    text_ = l10n_util::GetStringFUTF16(
+        tooltip_id,
+        UTF8ToUTF16(connecting_network_->name()));
+  } else {
+    text_ = UTF8ToUTF16(connecting_network_->name());
+  }
 }
 
 // Sets up the icon and badges for GenerateBitmap().
-void NetworkMenuIcon::SetIconAndText(string16* text) {
+void NetworkMenuIcon::SetIconAndText() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   DCHECK(cros);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   icon_->ClearIconAndBadges();
 
   // If we are connecting to a network, display that.
   connecting_network_ = GetConnectingNetwork();
   if (connecting_network_) {
-    double animation = GetAnimation();
-    SetConnectingIcon(connecting_network_, animation);
-    icon_->SetBadges(connecting_network_);
-    if (text) {
-      if (mode_ == MENU_MODE) {
-        int tooltip_id = connecting_network_->configuring()
-            ? IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP
-            : IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP;
-        *text = l10n_util::GetStringFUTF16(
-            tooltip_id, UTF8ToUTF16(connecting_network_->name()));
-      } else {
-        *text = UTF8ToUTF16(connecting_network_->name());
-      }
-    }
+    SetConnectingIconAndText();
     return;
   }
 
@@ -585,52 +630,7 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
   else
     network = cros->active_network();
   if (network) {
-    bool animating = false;
-    last_network_type_ = network->type();
-    // Icon + badges.
-    icon_->SetDirty();
-    icon_->UpdateIcon(network);
-    // Overlay the VPN badge if connecting to a VPN.
-    if (network->type() != TYPE_VPN && cros->virtual_network()) {
-      if (cros->virtual_network()->connecting()) {
-        const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
-        double animation = GetAnimation();
-        animating = true;
-        // Even though this is the only place we use vpn_connecting_badge_,
-        // it is important that this is a member variable since we set a
-        // pointer to it and access that pointer in icon_->GenerateBitmap().
-        vpn_connecting_badge_ = SkBitmapOperations::CreateBlendedBitmap(
-            empty_vpn_badge_, *vpn_badge, animation);
-        icon_->set_bottom_left_badge(&vpn_connecting_badge_);
-      }
-    }
-    if (!animating)
-      animation_connecting_.Stop();
-    // Text.
-    if (text) {
-      switch (network->type()) {
-        case TYPE_ETHERNET:
-          if (mode_ == MENU_MODE) {
-            *text = l10n_util::GetStringFUTF16(
-                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-                l10n_util::GetStringUTF16(
-                    IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
-          } else {
-            *text = l10n_util::GetStringUTF16(
-                IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-          }
-          break;
-        default:
-          if (mode_ == MENU_MODE) {
-            *text = l10n_util::GetStringFUTF16(
-                IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-                UTF8ToUTF16(network->name()));
-          } else {
-            *text = UTF8ToUTF16(network->name());
-          }
-          break;
-      }
-    }
+    SetActiveNetworkIconAndText(network);
     return;
   }
 
@@ -638,6 +638,58 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
   animation_connecting_.Stop();
 
   // No connecting, connected, or active network.
+  SetDisconnectedIconAndText();
+}
+
+void NetworkMenuIcon::SetActiveNetworkIconAndText(const Network* network) {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  bool animating = false;
+  last_network_type_ = network->type();
+
+  // Set icon and badges. Call SetDirty() since network may have changed.
+  icon_->SetDirty();
+  icon_->UpdateIcon(network);
+  // Overlay the VPN badge if connecting to a VPN.
+  if (network->type() != TYPE_VPN && cros->virtual_network()) {
+    if (cros->virtual_network()->connecting()) {
+      const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
+      const double animation = GetAnimation();
+      animating = true;
+      // Even though this is the only place we use vpn_connecting_badge_,
+      // it is important that this is a member variable since we set a
+      // pointer to it and access that pointer in icon_->GenerateBitmap().
+      vpn_connecting_badge_ = SkBitmapOperations::CreateBlendedBitmap(
+          GetEmptyVpnBadge(), *vpn_badge, animation);
+      icon_->set_bottom_left_badge(&vpn_connecting_badge_);
+    }
+  }
+  if (!animating)
+    animation_connecting_.Stop();
+
+  // Set the text to display.
+  if (network->type() == TYPE_ETHERNET) {
+    if (mode_ == MENU_MODE) {
+      text_ = l10n_util::GetStringFUTF16(
+          IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+          l10n_util::GetStringUTF16(
+              IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
+    } else {
+      text_ = l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+    }
+  } else {
+    if (mode_ == MENU_MODE) {
+      text_ = l10n_util::GetStringFUTF16(
+          IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
+          UTF8ToUTF16(network->name()));
+    } else {
+      text_ = UTF8ToUTF16(network->name());
+    }
+  }
+}
+
+void NetworkMenuIcon::SetDisconnectedIconAndText() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   switch (last_network_type_) {
     case TYPE_ETHERNET:
       icon_->set_icon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
@@ -654,13 +706,10 @@ void NetworkMenuIcon::SetIconAndText(string16* text) {
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
       break;
   }
-  if (text) {
-    if (mode_ == MENU_MODE) {
-      *text =  l10n_util::GetStringUTF16(
-          IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
-    } else {
-      *text = l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_NONE);  }
-  }
+  if (mode_ == MENU_MODE)
+    text_ = l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP);
+  else
+    text_ = l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_NONE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -702,7 +751,8 @@ const SkBitmap NetworkMenuIcon::GenerateConnectingBitmap(
   CR_DEFINE_STATIC_LOCAL(SkBitmap, empty_badge, ());
   if (empty_badge.empty()) {
     empty_badge.setConfig(SkBitmap::kARGB_8888_Config,
-                          source.width(), source.height(), 0);
+                          source.width(),
+                          source.height());
     empty_badge.allocPixels();
     empty_badge.eraseARGB(0, 0, 0, 0);
   }
@@ -740,7 +790,7 @@ const SkBitmap NetworkMenuIcon::GetBitmap(const Network* network) {
 const SkBitmap NetworkMenuIcon::GetVpnBitmap() {
   static SkBitmap* vpn_bitmap = NULL;
   if (vpn_bitmap == NULL) {
-    // Set the disconencted vpn icon (ethernet + VPN) for GetVpnIcon().
+    // Set the disconnected vpn icon (ethernet + VPN) for GetVpnIcon().
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const SkBitmap* ethernet_icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
     gfx::CanvasSkia canvas(
