@@ -2561,8 +2561,10 @@ int main(int argc, char *argv[])
 	ec->option_idle_time = option_idle_time;
 	ec->idle_time = option_idle_time;
 
+#ifdef BUILD_XSERVER_LAUNCHER
 	if (xserver)
 		weston_xserver_init(ec);
+#endif
 
 	if (shell_init(ec) < 0)
 		exit(EXIT_FAILURE);
@@ -2580,8 +2582,10 @@ int main(int argc, char *argv[])
 	/* prevent further rendering while shutting down */
 	ec->state = WESTON_COMPOSITOR_SLEEPING;
 
+#ifdef BUILD_XSERVER_LAUNCHER
 	if (xserver)
 		weston_xserver_destroy(ec);
+#endif
 
 	ec->shell->destroy(ec->shell);
 
