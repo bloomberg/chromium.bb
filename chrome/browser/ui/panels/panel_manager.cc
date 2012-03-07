@@ -161,12 +161,13 @@ void PanelManager::OnPanelClosed(Panel* panel) {
       content::NotificationService::NoDetails());
 }
 
-void PanelManager::StartDragging(Panel* panel) {
-  drag_controller_->StartDragging(panel);
+void PanelManager::StartDragging(Panel* panel,
+                                 const gfx::Point& mouse_location) {
+  drag_controller_->StartDragging(panel, mouse_location);
 }
 
-void PanelManager::Drag(int delta_x, int delta_y) {
-  drag_controller_->Drag(delta_x, delta_y);
+void PanelManager::Drag(const gfx::Point& mouse_location) {
+  drag_controller_->Drag(mouse_location);
 }
 
 void PanelManager::EndDragging(bool cancelled) {

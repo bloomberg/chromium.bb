@@ -594,15 +594,25 @@ void PanelBrowserFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 bool PanelBrowserFrameView::OnMousePressed(const views::MouseEvent& event) {
+  // |event.location| is in the view's coordinate system. Convert it to the
+  // screen coordinate system.
+  gfx::Point mouse_location = event.location();
+  views::View::ConvertPointToScreen(this, &mouse_location);
+
   if (event.IsOnlyLeftMouseButton() &&
-      panel_browser_view_->OnTitlebarMousePressed(event.location())) {
+      panel_browser_view_->OnTitlebarMousePressed(mouse_location)) {
     return true;
   }
   return BrowserNonClientFrameView::OnMousePressed(event);
 }
 
 bool PanelBrowserFrameView::OnMouseDragged(const views::MouseEvent& event) {
-  if (panel_browser_view_->OnTitlebarMouseDragged(event.location()))
+  // |event.location| is in the view's coordinate system. Convert it to the
+  // screen coordinate system.
+  gfx::Point mouse_location = event.location();
+  views::View::ConvertPointToScreen(this, &mouse_location);
+
+  if (panel_browser_view_->OnTitlebarMouseDragged(mouse_location))
     return true;
   return BrowserNonClientFrameView::OnMouseDragged(event);
 }

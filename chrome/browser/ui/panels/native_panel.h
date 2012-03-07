@@ -96,9 +96,11 @@ class NativePanelTesting {
   static NativePanelTesting* Create(NativePanel* native_panel);
   virtual ~NativePanelTesting() {}
 
-  virtual void PressLeftMouseButtonTitlebar(const gfx::Point& point) = 0;
+  // |mouse_location| is in screen coordinates.
+  virtual void PressLeftMouseButtonTitlebar(
+      const gfx::Point& mouse_location) = 0;
   virtual void ReleaseMouseButtonTitlebar() = 0;
-  virtual void DragTitlebar(int delta_x, int delta_y) = 0;
+  virtual void DragTitlebar(const gfx::Point& mouse_location) = 0;
   virtual void CancelDragTitlebar() = 0;
   virtual void FinishDragTitlebar() = 0;
 

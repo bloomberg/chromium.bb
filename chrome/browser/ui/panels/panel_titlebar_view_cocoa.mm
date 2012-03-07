@@ -392,7 +392,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 - (void)mouseDown:(NSEvent*)event {
   if ([controller_ isDraggable]) {
     dragState_ = PANEL_DRAG_CAN_START;
-    dragStartLocation_ = [event locationInWindow];
+    dragStartLocation_ =
+        [[self window] convertBaseToScreen:[event locationInWindow]];
   }
 }
 
@@ -404,8 +405,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (BOOL)exceedsDragThreshold:(NSPoint)mouseLocation {
-  float deltaX = dragStartLocation_.x - mouseLocation.x;
-  float deltaY = dragStartLocation_.y - mouseLocation.y;
+  float deltaX = fabs(dragStartLocation_.x - mouseLocation.x);
+  float deltaY = fabs(dragStartLocation_.y - mouseLocation.y);
   return deltaX > kDragThreshold || deltaY > kDragThreshold;
 }
 
@@ -430,15 +431,19 @@ static NSEvent* MakeMouseEvent(NSEventType type,
                                           dequeue:YES];
 
     switch ([event type]) {
-      case NSLeftMouseDragged:
+      case NSLeftMouseDragged: {
+        // Get current mouse location in Cocoa's screen coordinates.
+        NSPoint mouseLocation =
+            [[self window] convertBaseToScreen:[event locationInWindow]];
         if (dragState_ == PANEL_DRAG_CAN_START) {
-          if (![self exceedsDragThreshold:[event locationInWindow]])
+          if (![self exceedsDragThreshold:mouseLocation])
             return;  // Don't start real drag yet.
-          [self startDrag];
+          [self startDrag:dragStartLocation_];
         }
-        [self dragWithDeltaX:[event deltaX]
-                      deltaY:[event deltaY]];
+        DCHECK(dragState_ == PANEL_DRAG_IN_PROGRESS);
+        [self drag:mouseLocation];
         break;
+      }
 
       case NSKeyUp:
         if ([event keyCode] == kVK_Escape) {
@@ -468,10 +473,10 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   }
 }
 
-- (void)startDrag {
+- (void)startDrag:(NSPoint)mouseLocation {
   DCHECK(dragState_ == PANEL_DRAG_CAN_START);
   dragState_ = PANEL_DRAG_IN_PROGRESS;
-  [controller_ startDrag];
+  [controller_ startDrag:mouseLocation];
 }
 
 - (void)endDrag:(BOOL)cancelled {
@@ -480,12 +485,10 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   dragState_ = PANEL_DRAG_SUPPRESSED;
 }
 
-- (void)dragWithDeltaX:(int)deltaX
-                deltaY:(int)deltaY {
+- (void)drag:(NSPoint)mouseLocation {
   if (dragState_ != PANEL_DRAG_IN_PROGRESS)
     return;
-  [controller_ dragWithDeltaX:deltaX
-                       deltaY:deltaY];
+  [controller_ drag:mouseLocation];
 }
 
 - (void)drawAttention {
@@ -569,8 +572,11 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   [[closeButton_ cell] performClick:closeButton_];
 }
 
-- (void)pressLeftMouseButtonTitlebar {
-  NSEvent* event = MakeMouseEvent(NSLeftMouseDown, NSZeroPoint, 0);
+- (void)pressLeftMouseButtonTitlebar:(NSPoint)mouseLocation {
+  // Convert from Cocoa's screen coordinates to base coordinates since the mouse
+  // event takes base coordinates.
+  NSEvent* event = MakeMouseEvent(
+      NSLeftMouseDown, [[self window] convertScreenToBase:mouseLocation], 0);
   [self mouseDown:event];
 }
 
@@ -579,12 +585,12 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   [self mouseUp:event];
 }
 
-- (void)dragTitlebarDeltaX:(double)delta_x
-                    deltaY:(double)delta_y {
+- (void)dragTitlebar:(NSPoint)mouseLocation {
   if (dragState_ == PANEL_DRAG_CAN_START)
-    [self startDrag];
-  [self dragWithDeltaX:delta_x
-                deltaY:delta_y];
+    [self startDrag:dragStartLocation_];
+  // No need to do any conversion since |mouseLocation| is already in Cocoa's
+  // screen coordinates.
+  [self drag:mouseLocation];
 }
 
 - (void)cancelDragTitlebar {
