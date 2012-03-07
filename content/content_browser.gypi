@@ -381,6 +381,8 @@
     'browser/load_notification_details.h',
     'browser/mach_broker_mac.cc',
     'browser/mach_broker_mac.h',
+    'browser/media_device_notifications_linux.cc',
+    'browser/media_device_notifications_linux.h',
     'browser/mime_registry_message_filter.cc',
     'browser/mime_registry_message_filter.h',
     'browser/net/browser_online_state_observer.cc',

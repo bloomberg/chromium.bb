@@ -54,6 +54,10 @@
 #include "net/base/winsock_init.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "content/browser/media_device_notifications_linux.h"
+#endif
+
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include <glib-object.h>
 #endif
@@ -204,7 +208,7 @@ AudioManager* BrowserMainLoop::GetAudioManager() {
   return g_current_browser_main_loop->audio_manager_.get();
 }
 
-// BrowserMainLoop construction / destructione =============================
+// BrowserMainLoop construction / destruction =============================
 
 BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
     : parameters_(parameters),
@@ -587,6 +591,14 @@ void BrowserMainLoop::InitializeMainThread() {
 void BrowserMainLoop::BrowserThreadsStarted() {
   // RDH needs the IO thread to be created.
   resource_dispatcher_host_.reset(new ResourceDispatcherHost());
+
+#if defined(OS_LINUX)
+  // MediaDeviceNotificationsLinux needs the File Thread.
+  const FilePath kDefaultMtabPath("/etc/mtab");
+  media_device_notifications_linux_ =
+      new MediaDeviceNotificationsLinux(kDefaultMtabPath);
+  media_device_notifications_linux_->Init();
+#endif
 }
 
 void BrowserMainLoop::InitializeToolkit() {

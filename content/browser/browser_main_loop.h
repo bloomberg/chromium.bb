@@ -31,6 +31,7 @@ class BrowserMainParts;
 class BrowserShutdownImpl;
 class BrowserThreadImpl;
 struct MainFunctionParams;
+class MediaDeviceNotificationsLinux;
 class WebKitThread;
 
 // Implements the main browser loop stages called from |BrowserMain()|.
@@ -86,6 +87,9 @@ class BrowserMainLoop {
   scoped_ptr<AudioManager> audio_manager_;
 #if defined(OS_WIN)
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
+#elif defined(OS_LINUX)
+  scoped_refptr<MediaDeviceNotificationsLinux>
+      media_device_notifications_linux_;
 #endif
 
   // Destroy parts_ before main_message_loop_ (required) and before other
