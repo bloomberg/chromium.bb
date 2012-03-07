@@ -138,7 +138,7 @@ class GDataAuthService : public content::NotificationObserver {
 
   // Starts fetching OAuth2 auth token from the refresh token.
   void StartAuthentication(GDataOperationRegistry* registry,
-                           AuthStatusCallback callback);
+                           const AuthStatusCallback& callback);
 
   // True if OAuth2 auth token is retrieved and believed to be fresh.
   bool IsFullyAuthenticated() const { return !auth_token_.empty(); }
@@ -157,7 +157,8 @@ class GDataAuthService : public content::NotificationObserver {
   const std::string& GetOAuth2RefreshToken() { return refresh_token_; }
 
   // Callback for AuthOperation (InternalAuthStatusCallback).
-  void OnAuthCompleted(AuthStatusCallback callback,
+  void OnAuthCompleted(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                       const AuthStatusCallback& callback,
                        GDataErrorCode error,
                        const std::string& auth_token);
 
@@ -172,6 +173,14 @@ class GDataAuthService : public content::NotificationObserver {
   }
 
  private:
+
+  // Helper function for StartAuthentication() call.
+  void StartAuthenticationOnUIThread(
+      GDataOperationRegistry* registry,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      const AuthStatusCallback& callback);
+
+
   Profile* profile_;
   std::string refresh_token_;
   std::string auth_token_;
@@ -179,6 +188,7 @@ class GDataAuthService : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
   base::WeakPtrFactory<GDataAuthService> weak_ptr_factory_;
+  base::WeakPtr<GDataAuthService> weak_ptr_bound_to_ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataAuthService);
 };
@@ -200,7 +210,7 @@ class DocumentsService : public GDataAuthService::Observer {
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
   //
-  // Must be called on UI thread.
+  // Can be called on any thread.
   void Authenticate(const AuthStatusCallback& callback);
 
   // Gets the document feed from |feed_url|. If this URL is empty, the call

@@ -191,6 +191,22 @@ TEST_F(GDataFileSystemTest, SearchExistingFile) {
                                mock_find_file_delegate);
 }
 
+TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
+  LoadRootFeedDocument("root_feed.json");
+  LoadSubdirFeedDocument(
+      FilePath::FromUTF8Unsafe("gdata/Slash \xE2\x88\x95 in directory"),
+      "subdir_feed.json");
+
+  EXPECT_FALSE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Slash / in file 1.txt"))));
+
+  EXPECT_TRUE(FindFile(FilePath::FromUTF8Unsafe(
+      "gdata/Slash \xE2\x88\x95 in file 1.txt")));
+
+  EXPECT_TRUE(FindFile(FilePath::FromUTF8Unsafe(
+      "gdata/Slash \xE2\x88\x95 in directory/SubDirectory File 1.txt")));
+}
+
 TEST_F(GDataFileSystemTest, SearchExistingDocument) {
   LoadRootFeedDocument("root_feed.json");
   scoped_refptr<MockFindFileDelegate> mock_find_file_delegate =

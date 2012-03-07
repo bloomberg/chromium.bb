@@ -216,9 +216,10 @@ class AuthOperation : public GDataOperationRegistry::Operation,
  public:
   AuthOperation(GDataOperationRegistry* registry,
                 Profile* profile,
+                const AuthStatusCallback& callback,
                 const std::string& refresh_token);
   virtual ~AuthOperation() {}
-  void Start(AuthStatusCallback callback);
+  void Start();
 
   // Overridden from OAuth2AccessTokenConsumer:
   virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
@@ -238,14 +239,14 @@ class AuthOperation : public GDataOperationRegistry::Operation,
 
 AuthOperation::AuthOperation(GDataOperationRegistry* registry,
                              Profile* profile,
+                             const AuthStatusCallback& callback,
                              const std::string& refresh_token)
     : GDataOperationRegistry::Operation(registry),
-      profile_(profile), token_(refresh_token) {
+      profile_(profile), token_(refresh_token), callback_(callback) {
 }
 
-void AuthOperation::Start(AuthStatusCallback callback) {
+void AuthOperation::Start() {
   DCHECK(!token_.empty());
-  callback_ = callback;
   std::vector<std::string> scopes;
   scopes.push_back(kDocsListScope);
   scopes.push_back(kSpreadsheetsScope);
@@ -267,12 +268,14 @@ void AuthOperation::DoCancel() {
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
 // used to start fetching user data.
 void AuthOperation::OnGetTokenSuccess(const std::string& access_token) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback_.Run(HTTP_SUCCESS, access_token);
   NotifyFinish(OPERATION_SUCCESS);
 }
 
 // Callback for OAuth2AccessTokenFetcher on failure.
 void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LOG(WARNING) << "AuthOperation: token request using refresh token failed";
   callback_.Run(HTTP_UNAUTHORIZED, std::string());
   NotifyFinish(OPERATION_FAILURE);
@@ -1033,32 +1036,64 @@ void GDataAuthService::Initialize(Profile* profile) {
 
 GDataAuthService::GDataAuthService()
     : profile_(NULL),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_bound_to_ui_thread_(weak_ptr_factory_.GetWeakPtr()) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 GDataAuthService::~GDataAuthService() {
 }
 
-void GDataAuthService::StartAuthentication(GDataOperationRegistry* registry,
-                                           AuthStatusCallback callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void GDataAuthService::StartAuthentication(
+    GDataOperationRegistry* registry,
+    const AuthStatusCallback& callback) {
+  scoped_refptr<base::MessageLoopProxy> relay_proxy(
+      base::MessageLoopProxy::current());
 
-  (new AuthOperation(registry, profile_, GetOAuth2RefreshToken()))->Start(
-      base::Bind(&gdata::GDataAuthService::OnAuthCompleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+  if (IsFullyAuthenticated()) {
+    relay_proxy->PostTask(FROM_HERE,
+         base::Bind(callback, gdata::HTTP_SUCCESS, oauth2_auth_token()));
+  } else if (IsPartiallyAuthenticated()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataAuthService::StartAuthenticationOnUIThread,
+                   weak_ptr_bound_to_ui_thread_,
+                   registry,
+                   relay_proxy,
+                   base::Bind(&GDataAuthService::OnAuthCompleted,
+                              weak_ptr_bound_to_ui_thread_,
+                              relay_proxy,
+                              callback)));
+  } else {
+    relay_proxy->PostTask(FROM_HERE,
+        base::Bind(callback, gdata::HTTP_UNAUTHORIZED, std::string()));
+  }
 }
 
-void GDataAuthService::OnAuthCompleted(AuthStatusCallback callback,
-                                       GDataErrorCode error,
-                                       const std::string& auth_token) {
+void GDataAuthService::StartAuthenticationOnUIThread(
+    GDataOperationRegistry* registry,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const AuthStatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // We have refresh token, let's gets authenticated.
+  (new AuthOperation(registry, profile_,
+                     callback, GetOAuth2RefreshToken()))->Start();
+}
+
+void GDataAuthService::OnAuthCompleted(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const AuthStatusCallback& callback,
+    GDataErrorCode error,
+    const std::string& auth_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == HTTP_SUCCESS)
     auth_token_ = auth_token;
+
   // TODO(zelidrag): Add retry, back-off logic when things go wrong here.
   if (!callback.is_null())
-    callback.Run(error, auth_token);
+    relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error, auth_token));
 }
 
 void GDataAuthService::AddObserver(Observer* observer) {
@@ -1099,6 +1134,7 @@ DocumentsService::DocumentsService()
       weak_ptr_factory_(this),
       // The weak pointers is used to post tasks to UI thread.
       weak_ptr_bound_to_ui_thread_(weak_ptr_factory_.GetWeakPtr()) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 DocumentsService::~DocumentsService() {
@@ -1118,17 +1154,8 @@ void DocumentsService::CancelAll() {
 }
 
 void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (gdata_auth_service_->IsFullyAuthenticated()) {
-    callback.Run(gdata::HTTP_SUCCESS, gdata_auth_service_->oauth2_auth_token());
-  } else if (gdata_auth_service_->IsPartiallyAuthenticated()) {
-    // We have refresh token, let's gets authenticated.
-    gdata_auth_service_->StartAuthentication(operation_registry_.get(),
-                                             callback);
-  } else {
-    callback.Run(gdata::HTTP_UNAUTHORIZED, std::string());
-  }
+  gdata_auth_service_->StartAuthentication(operation_registry_.get(),
+                                           callback);
 }
 
 void DocumentsService::GetDocuments(const GURL& url,

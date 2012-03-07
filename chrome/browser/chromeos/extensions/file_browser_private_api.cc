@@ -1425,6 +1425,12 @@ void AddMountFunction::AddGDataMountPoint() {
   if (!provider || provider->HasMountPoint(mount_point))
     return;
 
+  // Grant R/W permissions to gdata 'folder'. File API layer still
+  // expects this to be satisfied.
+  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+      render_view_host()->GetProcess()->GetID(), mount_point,
+      kReadWriteFilePermissions);
+
   provider->AddRemoteMountPoint(mount_point,
                                 new gdata::GDataFileSystemProxy(profile_));
 }
