@@ -139,6 +139,7 @@ var SpdyView = (function() {
     tablePrinter.addHeaderCell('Host');
     tablePrinter.addHeaderCell('Proxy');
     tablePrinter.addHeaderCell('ID');
+    tablePrinter.addHeaderCell('Protocol Negotiatied');
     tablePrinter.addHeaderCell('Active streams');
     tablePrinter.addHeaderCell('Unclaimed pushed');
     tablePrinter.addHeaderCell('Max');
@@ -162,6 +163,7 @@ var SpdyView = (function() {
       var idCell = tablePrinter.addCell(session.source_id);
       idCell.link = '#events&q=id:' + session.source_id;
 
+      tablePrinter.addCell(session.protocol_negotiated);
       tablePrinter.addCell(session.active_streams);
       tablePrinter.addCell(session.unclaimed_pushed_streams);
       tablePrinter.addCell(session.max_concurrent_streams);
