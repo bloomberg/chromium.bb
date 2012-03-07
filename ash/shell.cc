@@ -589,8 +589,8 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
       switches::kAuraGoogleDialogFrames)) {
     return new internal::DialogFrameView;
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAuraTranslucentFrames)) {
+  // Normal non-compact-mode gets translucent-style window frames for dialogs.
+  if (!IsWindowModeCompact()) {
     internal::CustomFrameViewAsh* frame_view = new internal::CustomFrameViewAsh;
     frame_view->Init(widget);
     return frame_view;

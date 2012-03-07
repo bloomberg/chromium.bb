@@ -451,13 +451,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_AURA)
   {
-    "aura-translucent-frames",
-    IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME,
-    IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAuraTranslucentFrames)
-  },
-  {
     "aura-google-dialog-frames",
     IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_NAME,
     IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_DESCRIPTION,

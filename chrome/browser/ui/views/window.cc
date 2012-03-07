@@ -8,8 +8,10 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
@@ -33,6 +35,33 @@
 //       The remainder of the code here is dealing with the legacy CrOS WM and
 //       can also be removed.
 
+namespace {
+
+views::Widget* CreateViewsWindowWithParent(gfx::NativeWindow parent,
+                                           views::WidgetDelegate* delegate) {
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  params.delegate = delegate;
+#if defined(OS_WIN) || defined(USE_AURA)
+  params.parent = parent;
+#endif
+#if defined(USE_AURA)
+  // Outside of compact mode, dialog windows may have translucent frames.
+  // TODO(jamescook): Find a better way to set this.
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  bool compact_window_mode =
+      cmd->HasSwitch(ash::switches::kAuraForceCompactWindowMode) ||
+      cmd->GetSwitchValueASCII(ash::switches::kAuraWindowMode) ==
+          ash::switches::kAuraWindowModeCompact;
+  if (!compact_window_mode)
+    params.transparent = true;
+#endif
+  widget->Init(params);
+  return widget;
+}
+
+}  // namespace
+
 namespace browser {
 
 views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
@@ -41,7 +70,7 @@ views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
 #if defined(OS_CHROMEOS) && !defined(USE_AURA)
   return chromeos::BubbleWindow::Create(parent, style, delegate);
 #else
-  return views::Widget::CreateWindowWithParent(delegate, parent);
+  return CreateViewsWindowWithParent(parent, delegate);
 #endif
 }
 

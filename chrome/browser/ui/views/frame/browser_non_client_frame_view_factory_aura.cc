@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_aura.h"
 
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
@@ -24,6 +22,8 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     return new PanelBrowserFrameView(
         frame, static_cast<PanelBrowserView*>(browser_view));
   }
+
+  // Compact mode uses special opaque frames.
   if (ash::Shell::GetInstance()->IsWindowModeCompact())
     return new CompactBrowserFrameView(frame, browser_view);
 
@@ -31,15 +31,11 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
   if (browser_view->browser()->is_app() && browser_view->IsMaximized())
     return new AppNonClientFrameViewAura(frame, browser_view);
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(ash::switches::kAuraTranslucentFrames)) {
-    BrowserNonClientFrameViewAura* frame_view =
-        new BrowserNonClientFrameViewAura(frame, browser_view);
-    frame_view->Init();
-    return frame_view;
-  }
-
-  return new OpaqueBrowserFrameView(frame, browser_view);
+  // Default is potentially translucent fancy frames.
+  BrowserNonClientFrameViewAura* frame_view =
+      new BrowserNonClientFrameViewAura(frame, browser_view);
+  frame_view->Init();
+  return frame_view;
 }
 
 }  // namespace browser

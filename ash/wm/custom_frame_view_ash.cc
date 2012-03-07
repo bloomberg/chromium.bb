@@ -156,8 +156,10 @@ int CustomFrameViewAsh::NonClientTopBorderHeight() const {
 // static
 void CustomFrameViewAsh::InitClass() {
   static bool initialized = false;
-  if (!initialized)
+  if (!initialized) {
     title_font_ = new gfx::Font(views::NativeWidgetAura::GetWindowTitleFont());
+    initialized = true;
+  }
 }
 
 }  // namespace internal

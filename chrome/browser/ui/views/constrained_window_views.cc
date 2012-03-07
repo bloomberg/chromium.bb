@@ -566,6 +566,9 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
   params.parent = wrapper->web_contents()->GetNativeView();
+  // TODO(jamescook): In non-compact mode the window header can be transparent.
+  // Check defined(USE_AURA) and set params.transparent = true.
+  // Don't use Shell::GetInstance() here as some tests run this without a Shell.
   Init(params);
 
   wrapper_->constrained_window_tab_helper()->AddConstrainedDialog(this);
@@ -612,10 +615,12 @@ gfx::NativeWindow ConstrainedWindowViews::GetNativeWindow() {
 views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 #if defined(USE_AURA)
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames) ||
-      command_line->HasSwitch(ash::switches::kAuraTranslucentFrames)) {
+  if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames))
     return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
-  }
+  // TODO(jamescook): In non-compact mode we should use fancy translucent
+  // headers.  Figure out how to handle closing the window and communication
+  // with the ConstrainedWindowTabHelper.  Avoid Shell::GetInstance() as
+  // some tests run this without a Shell.
 #endif
   return new ConstrainedWindowFrameView(this);
 }
