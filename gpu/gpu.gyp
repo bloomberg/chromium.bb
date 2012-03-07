@@ -31,7 +31,7 @@
     'gpu_common.gypi',
   ],
   'conditions': [
-    ['component=="static_library" or incremental_chrome_dll==1', {
+    ['component=="static_library"', {
       'targets': [
         {
           'target_name': 'gpu',
