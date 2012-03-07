@@ -475,8 +475,8 @@ bool SyncTest::SetUpLocalPythonTestServer() {
   xmpp_host_port_pair.set_port(xmpp_port);
   xmpp_port_.reset(new net::ScopedPortException(xmpp_port));
 
-  if (!cl->HasSwitch(switches::kSyncNotificationHost)) {
-    cl->AppendSwitchASCII(switches::kSyncNotificationHost,
+  if (!cl->HasSwitch(switches::kSyncNotificationHostPort)) {
+    cl->AppendSwitchASCII(switches::kSyncNotificationHostPort,
                           xmpp_host_port_pair.ToString());
     // The local XMPP server only supports insecure connections.
     cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);

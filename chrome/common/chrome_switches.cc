@@ -1094,9 +1094,8 @@ const char kSyncInvalidateXmppLogin[]       = "sync-invalidate-xmpp-login";
 // Overrides the default notification method for sync.
 const char kSyncNotificationMethod[]        = "sync-notification-method";
 
-// Overrides the default host used for sync notifications. Can be either "host"
-// or "host:port".
-const char kSyncNotificationHost[]          = "sync-notification-host";
+// Overrides the default host:port used for sync notifications.
+const char kSyncNotificationHostPort[]      = "sync-notification-host-port";
 
 // Specifies the sync promo version to display.
 const char kSyncPromoVersion[] = "sync-promo-version";

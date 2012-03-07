@@ -42,6 +42,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_client.h"
+#include "jingle/notifier/base/notification_method.h"
+#include "jingle/notifier/base/notifier_options.h"
+#include "net/base/host_port_pair.h"
+#include "net/url_request/url_request_context_getter.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
 static const FilePath::CharType kSyncDataFolderName[] =
@@ -226,6 +230,52 @@ class SyncBackendHost::Core
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
+namespace {
+
+// Parses the given command line for notifier options.
+notifier::NotifierOptions ParseNotifierOptions(
+    const CommandLine& command_line,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        request_context_getter) {
+  notifier::NotifierOptions notifier_options;
+  notifier_options.request_context_getter = request_context_getter;
+
+  if (command_line.HasSwitch(switches::kSyncNotificationHostPort)) {
+    notifier_options.xmpp_host_port =
+        net::HostPortPair::FromString(
+            command_line.GetSwitchValueASCII(
+                switches::kSyncNotificationHostPort));
+    DVLOG(1) << "Using " << notifier_options.xmpp_host_port.ToString()
+             << " for test sync notification server.";
+  }
+
+  notifier_options.try_ssltcp_first =
+      command_line.HasSwitch(switches::kSyncTrySsltcpFirstForXmpp);
+  DVLOG_IF(1, notifier_options.try_ssltcp_first)
+      << "Trying SSL/TCP port before XMPP port for notifications.";
+
+  notifier_options.invalidate_xmpp_login =
+      command_line.HasSwitch(switches::kSyncInvalidateXmppLogin);
+  DVLOG_IF(1, notifier_options.invalidate_xmpp_login)
+      << "Invalidating sync XMPP login.";
+
+  notifier_options.allow_insecure_connection =
+      command_line.HasSwitch(switches::kSyncAllowInsecureXmppConnection);
+  DVLOG_IF(1, notifier_options.allow_insecure_connection)
+      << "Allowing insecure XMPP connections.";
+
+  if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
+    const std::string notification_method_str(
+        command_line.GetSwitchValueASCII(switches::kSyncNotificationMethod));
+    notifier_options.notification_method =
+        notifier::StringToNotificationMethod(notification_method_str);
+  }
+
+  return notifier_options;
+}
+
+}  // namespace
+
 SyncBackendHost::SyncBackendHost(const std::string& name,
                                  Profile* profile,
                                  const base::WeakPtr<SyncPrefs>& sync_prefs)
@@ -240,10 +290,10 @@ SyncBackendHost::SyncBackendHost(const std::string& name,
       sync_prefs_(sync_prefs),
       chrome_sync_notification_bridge_(profile_),
       sync_notifier_factory_(
+          ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
+                               profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
-          profile_->GetRequestContext(),
-          sync_prefs,
-          *CommandLine::ForCurrentProcess()),
+          sync_prefs),
       frontend_(NULL),
       last_auth_error_(AuthError::None()) {
 }
@@ -257,10 +307,10 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
       initialization_state_(NOT_ATTEMPTED),
       chrome_sync_notification_bridge_(profile_),
       sync_notifier_factory_(
+          ParseNotifierOptions(*CommandLine::ForCurrentProcess(),
+                               profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
-          NULL,
-          base::WeakPtr<sync_notifier::InvalidationVersionTracker>(),
-          *CommandLine::ForCurrentProcess()),
+          base::WeakPtr<sync_notifier::InvalidationVersionTracker>()),
       frontend_(NULL),
       last_auth_error_(AuthError::None()) {
 }

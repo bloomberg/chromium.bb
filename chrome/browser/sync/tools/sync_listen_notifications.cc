@@ -21,6 +21,9 @@
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "jingle/notifier/base/notification_method.h"
+#include "jingle/notifier/base/notifier_options.h"
+#include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_test_util.h"
 
 // This is a simple utility that initializes a sync notifier and
@@ -77,11 +80,52 @@ class NullInvalidationVersionTracker
   virtual void SetMaxVersion(
       syncable::ModelType model_type,
       int64 max_invalidation_version) OVERRIDE {
-    DVLOG(1) << "Setting max invalidation version for "
-             << syncable::ModelTypeToString(model_type) << " to "
-             << max_invalidation_version;
+    LOG(INFO) << "Setting max invalidation version for "
+              << syncable::ModelTypeToString(model_type) << " to "
+              << max_invalidation_version;
   }
 };
+
+const char kEmailSwitch[] = "email";
+const char kTokenSwitch[] = "token";
+const char kHostPortSwitch[] = "host-port";
+const char kTrySslTcpFirstSwitch[] = "try-ssltcp-first";
+const char kAllowInsecureConnectionSwitch[] = "allow-insecure-connection";
+const char kNotificationMethodSwitch[] = "notification-method";
+
+notifier::NotifierOptions ParseNotifierOptions(
+    const CommandLine& command_line,
+    const scoped_refptr<net::URLRequestContextGetter>&
+        request_context_getter) {
+  notifier::NotifierOptions notifier_options;
+  notifier_options.request_context_getter = request_context_getter;
+
+  if (command_line.HasSwitch(kHostPortSwitch)) {
+    notifier_options.xmpp_host_port =
+        net::HostPortPair::FromString(
+            command_line.GetSwitchValueASCII(kHostPortSwitch));
+    LOG(INFO) << "Using " << notifier_options.xmpp_host_port.ToString()
+              << " for test sync notification server.";
+  }
+
+  notifier_options.try_ssltcp_first =
+      command_line.HasSwitch(kTrySslTcpFirstSwitch);
+  LOG_IF(INFO, notifier_options.try_ssltcp_first)
+      << "Trying SSL/TCP port before XMPP port for notifications.";
+
+  notifier_options.allow_insecure_connection =
+      command_line.HasSwitch(kAllowInsecureConnectionSwitch);
+  LOG_IF(INFO, notifier_options.allow_insecure_connection)
+      << "Allowing insecure XMPP connections.";
+
+  if (command_line.HasSwitch(kNotificationMethodSwitch)) {
+    notifier_options.notification_method =
+        notifier::StringToNotificationMethod(
+            command_line.GetSwitchValueASCII(kNotificationMethodSwitch));
+  }
+
+  return notifier_options;
+}
 
 }  // namespace
 
@@ -103,27 +147,34 @@ int main(int argc, char* argv[]) {
 
   // Parse command line.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string email = command_line.GetSwitchValueASCII("email");
-  std::string token = command_line.GetSwitchValueASCII("token");
+  std::string email = command_line.GetSwitchValueASCII(kEmailSwitch);
+  std::string token = command_line.GetSwitchValueASCII(kTokenSwitch);
   // TODO(akalin): Write a wrapper script that gets a token for an
   // email and password and passes that in to this utility.
   if (email.empty() || token.empty()) {
-    std::printf("Usage: %s --email=foo@bar.com --token=token\n\n"
-                "See sync_notifier_factory.cc for more switches.\n\n"
-                "Run chrome and set a breakpoint on "
+    std::printf("Usage: %s --%s=foo@bar.com --%s=token\n"
+                "[--%s=host:port] [--%s] [--%s]\n"
+                "[--%s=(server|p2p)]\n\n"
+                "Run chrome and set a breakpoint on\n"
                 "sync_api::SyncManager::SyncInternal::UpdateCredentials() "
-                "after logging into sync to get the token to pass into this "
-                "utility.\n",
-                argv[0]);
+                "after logging into\n"
+                "sync to get the token to pass into this utility.\n",
+                argv[0],
+                kTokenSwitch, kEmailSwitch, kHostPortSwitch,
+                kTrySslTcpFirstSwitch, kAllowInsecureConnectionSwitch,
+                kNotificationMethodSwitch);
     return -1;
   }
 
+  const notifier::NotifierOptions& notifier_options =
+      ParseNotifierOptions(
+          command_line,
+          new TestURLRequestContextGetter(io_thread.message_loop_proxy()));
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationVersionTracker null_invalidation_version_tracker;
   sync_notifier::SyncNotifierFactory sync_notifier_factory(
-      kClientInfo,
-      new TestURLRequestContextGetter(io_thread.message_loop_proxy()),
-      null_invalidation_version_tracker.AsWeakPtr(), command_line);
+      notifier_options, kClientInfo,
+      null_invalidation_version_tracker.AsWeakPtr());
   scoped_ptr<sync_notifier::SyncNotifier> sync_notifier(
       sync_notifier_factory.CreateSyncNotifier());
   NotificationPrinter notification_printer;

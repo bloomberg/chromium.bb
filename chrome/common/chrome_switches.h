@@ -295,7 +295,7 @@ extern const char kStartMaximized[];
 extern const char kSyncAllowInsecureXmppConnection[];
 extern const char kSyncInvalidateXmppLogin[];
 extern const char kSyncNotificationMethod[];
-extern const char kSyncNotificationHost[];
+extern const char kSyncNotificationHostPort[];
 extern const char kSyncPromoVersion[];
 extern const char kSyncServiceURL[];
 extern const char kSyncThrowUnrecoverableError[];
