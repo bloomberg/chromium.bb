@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 import os
 import sys
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -49,12 +50,52 @@ class TryChangeUnittest(TryChangeTestsBase):
       'InvalidScript', 'NoTryServerAccess', 'PrintSuccess', 'SCM', 'SVN',
       'TryChange', 'USAGE',
       'breakpad', 'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils',
-      'getpass',
+      'getpass', 'gen_parser',
       'json', 'logging', 'optparse', 'os', 'posixpath', 're', 'scm', 'shutil',
       'subprocess2', 'sys', 'tempfile', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)
+
+
+class TryChangeSimpleTest(unittest.TestCase):
+  # Doesn't require supermox to run.
+  def test_flags(self):
+    cmd = [
+      '--bot', 'bot1',
+      '--testfilter', 'test1',
+      '--bot', 'bot2',
+      '--testfilter', 'test2',
+      '--user', 'joe',
+      '--email', 'joe@example.com',
+    ]
+    options, args = trychange.gen_parser(None).parse_args(cmd)
+    self.assertEquals([], args)
+    # pylint: disable=W0212
+    values = trychange._ParseSendChangeOptions(options)
+    self.assertEquals(
+        [
+          ('user', 'joe'),
+          ('name', None),
+          ('email', 'joe@example.com'),
+          ('bot', 'bot1:test1,test2'),
+          ('bot', 'bot2:test1,test2'),
+        ],
+        values)
+
+  def test_flags_bad_combination(self):
+    cmd = [
+      '--bot', 'bot1:test1',
+      '--testfilter', 'test2',
+    ]
+    options, args = trychange.gen_parser(None).parse_args(cmd)
+    self.assertEquals([], args)
+    try:
+      # pylint: disable=W0212
+      trychange._ParseSendChangeOptions(options)
+      self.fail()
+    except ValueError:
+      pass
 
 
 class SVNUnittest(TryChangeTestsBase):
@@ -111,5 +152,4 @@ class GITUnittest(TryChangeTestsBase):
 
 
 if __name__ == '__main__':
-  import unittest
   unittest.main()

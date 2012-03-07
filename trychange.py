@@ -313,10 +313,18 @@ def _ParseSendChangeOptions(options):
   if options.project:
     values.append(('project', options.project))
 
-  for bot in options.bot:
-    values.append(('bot', bot))
-  for t in options.testfilter:
-    values.append(('testfilter', t))
+  filters = ','.join(options.testfilter)
+  if filters:
+    for bot in options.bot:
+      if ':' in bot:
+        raise ValueError(
+            'Can\'t use both --testfilter and --bot builder:test formats '
+            'at the same time')
+      else:
+        values.append(('bot', '%s:%s' % (bot, filters)))
+  else:
+    for bot in options.bot:
+      values.append(('bot', bot))
   return values
 
 
@@ -488,27 +496,11 @@ def GetMungedDiff(path_diff, diff):
   return (diff, changed_files)
 
 
-def TryChange(argv,
-              change,
-              swallow_exception,
-              prog=None,
-              extra_epilog=None):
-  """
-  Args:
-    argv: Arguments and options.
-    change: Change instance corresponding to the CL.
-    swallow_exception: Whether we raise or swallow exceptions.
-  """
+def gen_parser(prog):
   # Parse argv
   parser = optparse.OptionParser(usage=USAGE,
                                  version=__version__,
                                  prog=prog)
-  epilog = EPILOG % { 'prog': prog }
-  if extra_epilog:
-    epilog += extra_epilog
-  parser.epilog = epilog
-  # Remove epilog formatting
-  parser.format_epilog = lambda x: parser.epilog
   parser.add_option("-v", "--verbose", action="count", default=0,
                     help="Prints debugging infos")
   group = optparse.OptionGroup(parser, "Result and status")
@@ -636,6 +628,27 @@ def TryChange(argv,
                    help="SVN url to use to write the changes in; --use_svn is "
                         "implied when using --svn_repo")
   parser.add_option_group(group)
+  return parser
+
+
+def TryChange(argv,
+              change,
+              swallow_exception,
+              prog=None,
+              extra_epilog=None):
+  """
+  Args:
+    argv: Arguments and options.
+    change: Change instance corresponding to the CL.
+    swallow_exception: Whether we raise or swallow exceptions.
+  """
+  parser = gen_parser(prog)
+  epilog = EPILOG % { 'prog': prog }
+  if extra_epilog:
+    epilog += extra_epilog
+  parser.epilog = epilog
+  # Remove epilog formatting
+  parser.format_epilog = lambda x: parser.epilog
 
   options, args = parser.parse_args(argv)
 
