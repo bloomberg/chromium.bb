@@ -20,12 +20,14 @@ void PassphraseTextfield::OnFocus() {
   // If showing the fake password, then clear it when focused.
   if (show_fake_ && !changed_)
     ClearFakePassphrase();
+  Textfield::OnFocus();
 }
 
 void PassphraseTextfield::OnBlur() {
-  // If passowrd is not changed, then show the fake password when blurred.
+  // If password is not changed, then show the fake password when blurred.
   if (show_fake_ && text().empty())
     SetFakePassphrase();
+  Textfield::OnBlur();
 }
 
 std::string PassphraseTextfield::GetPassphrase() {
