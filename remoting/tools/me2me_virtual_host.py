@@ -25,7 +25,6 @@ import socket
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 import urllib2
 import uuid
@@ -332,14 +331,6 @@ class Desktop:
     if not self.session_proc.pid:
       raise Exception("Could not start X session")
 
-    # Allow some time for the desktop session to launch before disabling
-    # key-repeat, since the desktop environment may enable key-repeat during
-    # initialization.
-
-    # TODO(lambroslambrou): A more robust solution would be for the host
-    # process to disable key-repeat in its (per-platform) event-injection code.
-    threading.Timer(30, self.disable_key_repeat).start()
-
   def launch_host(self, host):
     # Start remoting host
     args = [locate_executable(REMOTING_COMMAND),
@@ -347,13 +338,6 @@ class Desktop:
     self.host_proc = subprocess.Popen(args, env=self.child_env)
     if not self.host_proc.pid:
       raise Exception("Could not start remoting host")
-
-  def disable_key_repeat(self):
-    logging.info("Disabling keyboard auto-repeat")
-    try:
-      subprocess.call(["xset", "r", "off"], env=self.child_env)
-    except OSError, e:
-      logging.error("Failed to disable keyboard auto-repeat: " + str(e))
 
 
 class PidFile:

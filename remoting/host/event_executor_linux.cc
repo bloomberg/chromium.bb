@@ -29,7 +29,7 @@ namespace {
 class EventExecutorLinux : public EventExecutor {
  public:
   EventExecutorLinux(MessageLoop* message_loop, Capturer* capturer);
-  virtual ~EventExecutorLinux() {};
+  virtual ~EventExecutorLinux();
 
   bool Init();
 
@@ -37,6 +37,10 @@ class EventExecutorLinux : public EventExecutor {
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
  private:
+  // |mode| is one of the AutoRepeatModeOn, AutoRepeatModeOff,
+  // AutoRepeatModeDefault constants defined by the XChangeKeyboardControl()
+  // API.
+  void SetAutoRepeatForKey(int keycode, int mode);
   void InjectScrollWheelClicks(int button, int count);
 
   MessageLoop* message_loop_;
@@ -259,6 +263,10 @@ EventExecutorLinux::EventExecutorLinux(MessageLoop* message_loop,
       height_(0) {
 }
 
+EventExecutorLinux::~EventExecutorLinux() {
+  CHECK(pressed_keys_.empty());
+}
+
 bool EventExecutorLinux::Init() {
   CHECK(display_);
 
@@ -321,15 +329,36 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
           << " to keycode: " << keycode;
 
   if (event.pressed()) {
-    if (pressed_keys_.find(keycode) != pressed_keys_.end())
+    if (pressed_keys_.find(keycode) != pressed_keys_.end()) {
+      // Key is already held down, so lift the key up to ensure this repeated
+      // press takes effect.
       XTestFakeKeyEvent(display_, keycode, False, CurrentTime);
+    } else {
+      // Key is not currently held down, so disable auto-repeat for this
+      // key to avoid repeated presses in case network congestion delays the
+      // key-released event from the client.
+      SetAutoRepeatForKey(keycode, AutoRepeatModeOff);
+    }
     pressed_keys_.insert(keycode);
   } else {
     pressed_keys_.erase(keycode);
+
+    // Reset the AutoRepeatMode for the key that has been lifted.  In the IT2Me
+    // case, this ensures that key-repeating will continue to work normally
+    // for the local user of the host machine.  "ModeDefault" is used instead
+    // of "ModeOn", since some keys (such as Shift) should not auto-repeat.
+    SetAutoRepeatForKey(keycode, AutoRepeatModeDefault);
   }
 
   XTestFakeKeyEvent(display_, keycode, event.pressed(), CurrentTime);
   XFlush(display_);
+}
+
+void EventExecutorLinux::SetAutoRepeatForKey(int keycode, int mode) {
+  XKeyboardControl control;
+  control.key = keycode;
+  control.auto_repeat_mode = mode;
+  XChangeKeyboardControl(display_, KBKey | KBAutoRepeatMode, &control);
 }
 
 void EventExecutorLinux::InjectScrollWheelClicks(int button, int count) {
