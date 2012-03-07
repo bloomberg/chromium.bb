@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,11 +8,10 @@ Import('env')
 # The PNaCl translators are not supposed to handle incoming native code
 if env.Bit('use_sandboxed_translator'):
   Return()
-
-# NOTE:  because we want to compile everything to bitcode before linking
-# NOTE:  assembler source files requires special trickery, for now we
-# NOTE:  have hacked tools/llvm/llvm-fake.py
-# NOTE:  to recognize sandboxed_*.S as special
+# Do not run these tests with pexes, assuming they are portable, since
+# they use inline assembler.
+if env.Bit('pnacl_stop_with_pexe'):
+  Return()
 
 # env's BUILD_ARCH, BUILD_SUBARCH controls what assembly files to use.
 def GetAssemblerFile(env):

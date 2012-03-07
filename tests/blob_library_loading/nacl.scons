@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -9,9 +9,12 @@ Import('env')
 # nacl-glibc.
 if env.Bit('nacl_glibc'):
   Return()
+
 # Although the regular PNaCl frontend is able to link object files
 # generated from assembly code, the sandboxed version cannot.
 if env.Bit('use_sandboxed_translator'):
+  Return()
+if env.Bit('pnacl_stop_with_pexe'):
   Return()
 
 if env.Bit('bitcode'):

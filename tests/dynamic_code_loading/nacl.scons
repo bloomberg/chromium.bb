@@ -1,9 +1,13 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 Import('env')
+
+# Do not run these tests with pexes, assuming they are portable.
+if env.Bit('pnacl_stop_with_pexe'):
+  Return()
 
 # The test works with PNaCl-ARM but not with PNaCl-x86, because the
 # assembler #defines __arm__ rather than __i386__ or __x86_64__ even

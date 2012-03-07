@@ -3,14 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import re        # For StripArchFromLDCommand hack.
-
 Import('env')
 
-# Browser tests for the pnacl translator.
-
-# TODO(jvoung): allow pnacl to reuse normal NaCl browser tests.
-if not env.Bit('bitcode'):
+# Browser tests for the pnacl translator. This requires starting with a pexe.
+if not (env.Bit('bitcode') and env.Bit('pnacl_stop_with_pexe')):
   Return()
 
 # The PNaCl coordinator cannot yet handle GLibC-based pexe.
@@ -30,29 +26,16 @@ else:
 #----------------------------------------------------------------------
 # Test pexe translation.
 
-# Usually the scons link step produces a nexe. We massage the commandline
-# here to generate pexes, i.e. fully linked bitcode files.
-# TODO(pdox): Clean this up if/when scons leaves a bitcode artifact more
-# naturally for testing the translator inside and outside the browser.
-def StripArchFromLDCommand(env):
-  bitcode_env = env.Clone()
-  old_link = bitcode_env.get('LINK')
-  new_link = re.sub('-arch [\w\d-]+', '', old_link)
-  bitcode_env.Replace(LINK=new_link)
-  return bitcode_env
-
-bitcode_env = StripArchFromLDCommand(env)
-
 # Specify the object file to prevent junk from getting left over
 # in source directory. SCons will default to point "-o" to the source
 # directory if it is an absolute directory.
-test_example_obj = bitcode_env.ComponentObject(
+test_example_obj = env.ComponentObject(
     'pnacl_test_example_obj',
     '${SCONSTRUCT_DIR}/tests/ppapi_test_example/ppapi_test_example.cc')
 
-pexe_name = 'pnacl_test_example.pexe'
+pexe_name = 'pnacl_test_example'
 
-test_example_pexe = bitcode_env.ComponentProgram(
+test_example_pexe = env.ComponentProgram(
     pexe_name,
     [test_example_obj],
     EXTRA_LIBS=['${PPAPI_LIBS}',
@@ -69,19 +52,18 @@ env.Publish(pexe_name,
             'run',
             ['pnacl_test_example.html'])
 
-node = bitcode_env.PPAPIBrowserTester(
+node = env.PPAPIBrowserTester(
     'pnacl_test_example.out',
     url='pnacl_test_example.html',
     nmfs=['pnacl_test_example.nmf'],
-    files=(env.ExtractPublishedFiles(pexe_name, prog_suffix=False) +
-           [borrowed_file]),
+    files=(env.ExtractPublishedFiles(pexe_name) + [borrowed_file]),
     args=['--prefer_portable_in_manifest'])
 
-bitcode_env.AddNodeToTestSuite(node,
-                               ['chrome_browser_tests'],
-                               'run_pnacl_example_browser_test',
-                               is_broken=(is_broken or
-                                   bitcode_env.PPAPIBrowserTesterIsBroken()))
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_pnacl_example_browser_test',
+                       is_broken=(is_broken or
+                                  env.PPAPIBrowserTesterIsBroken()))
 
 #### Test error handling.
 
@@ -112,7 +94,7 @@ env.Depends(pnacl_bad_files, test_example_obj)
 # Borrow bad load test harness.
 borrowed_file = '${STAGING_DIR}/ppapi_bad.js',
 
-node = bitcode_env.PPAPIBrowserTester(
+node = env.PPAPIBrowserTester(
     'pnacl_bad_test.out',
     url='pnacl_bad_test.html',
     # TODO(jvoung): list "nmfs" without clashing with Replicate.
@@ -122,9 +104,8 @@ node = bitcode_env.PPAPIBrowserTester(
     files=pnacl_bad_files + [borrowed_file],
     args=['--allow_404', '--prefer_portable_in_manifest'])
 
-bitcode_env.AddNodeToTestSuite(node,
-                               ['chrome_browser_tests'],
-                               'run_pnacl_bad_browser_test',
-                               is_broken=(is_broken or
-                                   bitcode_env.PPAPIBrowserTesterIsBroken()))
-
+env.AddNodeToTestSuite(node,
+                       ['chrome_browser_tests'],
+                       'run_pnacl_bad_browser_test',
+                       is_broken=(is_broken or
+                                  env.PPAPIBrowserTesterIsBroken()))

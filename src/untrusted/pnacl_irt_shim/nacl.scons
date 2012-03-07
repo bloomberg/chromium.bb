@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -13,7 +13,11 @@ if not env.Bit('bitcode') or not env.Bit('target_x86_64'):
   Return()
 
 # The library must be compiled with nacl-gcc.
-nacl_gcc_env = env.PNaClGetNNaClEnv()
+# Clear out the pnacl_stop_with_pexe bit to allow building this as a
+# library dependency (much like the IRT).
+nacl_gcc_env = env.Clone()
+nacl_gcc_env.ClearBits('pnacl_stop_with_pexe')
+nacl_gcc_env = nacl_gcc_env.PNaClGetNNaClEnv()
 
 # Generate a 'pnacl_shim.c'
 api_glob = env.Glob('${SOURCE_ROOT}/ppapi/api/*.idl')

@@ -1204,15 +1204,10 @@ def CommandValidatorTestNacl(env, name, image,
 pre_base_env.AddMethod(CommandValidatorTestNacl)
 
 
-def ExtractPublishedFiles(env, target_name, prog_suffix=True):
+def ExtractPublishedFiles(env, target_name):
   run_files = ['$STAGING_DIR/' + os.path.basename(published_file.path)
                for published_file in env.GetPublished(target_name, 'run')]
-  # This if-else may be removed when ${PROGSUFFIX} is .pexe for pnacl,
-  # and pnacl never generates a .nexe.
-  if prog_suffix:
-    nexe = '$STAGING_DIR/%s${PROGSUFFIX}' % target_name
-  else:
-    nexe = '$STAGING_DIR/%s' % target_name
+  nexe = '$STAGING_DIR/%s${PROGSUFFIX}' % target_name
   return [env.File(file) for file in run_files + [nexe]]
 
 pre_base_env.AddMethod(ExtractPublishedFiles)

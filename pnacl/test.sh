@@ -169,23 +169,42 @@ get-mode-flags() {
   echo ${modeflags}
 }
 
+#+ Run scons test under a certain configuration
+#+ scons-tests <arch> <mode={newlib,etc.}>
+#+             <pexe=true/false> [optional list of test names]
+#+ If <pexe> is true, we will first build pexes without running the tests,
+#+ then run the tests.
+#+ If no optional tests are listed, we will build all the tests then
+#+ run the "smoke_tests" test suite.
 scons-tests () {
   local arch="$1"
   local mode="$2"
-  shift 2
+  local pexe="$3"
+  shift 3
   scons-clean ${arch} ${mode}
 
   if [ ${mode} == "sbtc" ]; then
     build-sbtc-prerequisites "${arch}"
   fi
 
-  local modeflags=$(get-mode-flags ${mode})
+  local pexe_mode=""
+  if ${pexe}; then
+    pexe_mode="pnacl_stop_with_pexe=1"
+  fi
 
+  local modeflags=$(get-mode-flags ${mode})
   if has-target-name "$@" ; then
-    RunScons ${arch} ${modeflags} "$@"
+    # If a specific test was named, we may either:
+    # (a) with a single invocation build and run the test, or
+    # (b) use separate invocations to build a pexe, then run the test.
+    if ${pexe}; then
+      RunScons ${arch} ${modeflags} "do_not_run_tests=1" ${pexe_mode} "$@"
+    fi
+    RunScons ${arch} ${modeflags} ${pexe_mode} "$@"
   else
-    RunScons ${arch} ${modeflags} "$@"
-    RunScons ${arch} ${modeflags} "$@" smoke_tests
+    # Without specific tests named, we first build then run smoke_tests.
+    RunScons ${arch} ${modeflags} ${pexe_mode} "$@"
+    RunScons ${arch} ${modeflags} ${pexe_mode} "$@" smoke_tests
   fi
 }
 
@@ -201,29 +220,34 @@ browser-tests() {
     "${arch}" "--mode=opt-host,nacl -j1 ${extra}"
 }
 
-test-arm()        { scons-tests arm newlib "$@" ; }
-test-x86-32()     { scons-tests x86-32 newlib "$@" ; }
-test-x86-64()     { scons-tests x86-64 newlib "$@" ; }
+test-arm()        { scons-tests arm newlib false "$@" ; }
+test-x86-32()     { scons-tests x86-32 newlib false "$@" ; }
+test-x86-64()     { scons-tests x86-64 newlib false "$@" ; }
 
-test-arm-newlib()    { scons-tests arm newlib "$@" ; }
-test-x86-32-newlib() { scons-tests x86-32 newlib "$@" ; }
-test-x86-64-newlib() { scons-tests x86-64 newlib "$@" ; }
+test-arm-newlib()    { scons-tests arm newlib false "$@" ; }
+test-x86-32-newlib() { scons-tests x86-32 newlib false "$@" ; }
+test-x86-64-newlib() { scons-tests x86-64 newlib false "$@" ; }
 
 # ARM PIC is tested independently because there is no GlibC for ARM yet.
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1081
-test-arm-pic()    { scons-tests arm pic "$@" ; }
+test-arm-pic()    { scons-tests arm pic false "$@" ; }
 
-test-arm-sbtc()    { scons-tests arm sbtc "$@" ; }
-test-x86-32-sbtc() { scons-tests x86-32 sbtc "$@" ; }
-test-x86-64-sbtc() { scons-tests x86-64 sbtc "$@" ; }
+test-arm-sbtc()    { scons-tests arm sbtc false "$@" ; }
+test-x86-32-sbtc() { scons-tests x86-32 sbtc false "$@" ; }
+test-x86-64-sbtc() { scons-tests x86-64 sbtc false "$@" ; }
 
-test-arm-glibc()    { scons-tests arm glibc "$@" ; }
-test-x86-32-glibc() { scons-tests x86-32 glibc "$@" ; }
-test-x86-64-glibc() { scons-tests x86-64 glibc "$@" ; }
+# NOTE: this is untested...
+test-arm-sbtc-pexe()    { scons-tests arm sbtc true "$@" ; }
+test-x86-32-sbtc-pexe() { scons-tests x86-32 sbtc true "$@" ; }
+test-x86-64-sbtc-pexe() { scons-tests x86-64 sbtc true "$@" ; }
 
-test-arm-sbtc-glibc()    { scons-tests arm sbtc-glibc "$@" ; }
-test-x86-32-sbtc-glibc() { scons-tests x86-32 sbtc-glibc "$@" ; }
-test-x86-64-sbtc-glibc() { scons-tests x86-64 sbtc-glibc "$@" ; }
+test-arm-glibc()    { scons-tests arm glibc false "$@" ; }
+test-x86-32-glibc() { scons-tests x86-32 glibc false "$@" ; }
+test-x86-64-glibc() { scons-tests x86-64 glibc false "$@" ; }
+
+test-arm-sbtc-glibc()    { scons-tests arm sbtc-glibc false "$@" ; }
+test-x86-32-sbtc-glibc() { scons-tests x86-32 sbtc-glibc false "$@" ; }
+test-x86-64-sbtc-glibc() { scons-tests x86-64 sbtc-glibc false "$@" ; }
 
 test-arm-browser()    { browser-tests "arm" "" ; }
 test-x86-32-browser() { browser-tests "x86-32" "" ; }

@@ -15,7 +15,7 @@ RETCODE=0
 readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 
-# extract the relavant scons flags for reporting
+# extract the relevant scons flags for reporting
 relevant() {
   for i in "$@" ; do
     case $i in
@@ -23,6 +23,12 @@ relevant() {
         echo $i
         ;;
       use_sandboxed_translator=1)
+        echo $i
+        ;;
+      do_not_run_tests=1)
+        echo $i
+        ;;
+      pnacl_stop_with_pexe=1)
         echo $i
         ;;
     esac
@@ -212,6 +218,20 @@ browser-tests() {
   local extra=$2
   local test="chrome_browser_tests"
   single-browser-test ${platform} "${extra}" "${test}"
+  # TODO(jvoung): remove this special list once all browser tests are
+  # compatible with pexes. We may still want a nexe invocation if we are
+  # testing something non-portable with the TCB/browser.
+  if [ "${platform}" != arm ]; then
+    # Skip ARM until we have chrome binaries for ARM available.
+    # This would normally do the right thing with a test suite like
+    # 'chrome_browser_tests' (it will be empty). However, requesting
+    # specific tests will force scons to try and download/run.
+    local pexe_tests="run_pnacl_example_browser_test run_pnacl_bad_browser_test"
+    local pexe_mode="pnacl_stop_with_pexe=1"
+    single-browser-test ${platform} "${extra} do_not_run_tests=1 ${pexe_mode}" \
+      "${pexe_tests}"
+    single-browser-test ${platform} "${extra} ${pexe_mode}" "${pexe_tests}"
+  fi
 }
 
 ######################################################################
