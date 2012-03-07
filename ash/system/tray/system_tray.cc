@@ -348,7 +348,7 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
 
 bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
   if (popup_)
-    popup_->Hide();
+    popup_->Show();
   else
     ShowItems(items_, false);
   return true;

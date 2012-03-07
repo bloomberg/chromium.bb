@@ -13,9 +13,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 
-#if defined(USE_ASH)
-#include "ash/focus_cycler.h"
-#include "ash/shell.h"
+#if defined(USE_AURA)
+#include "ui/views/widget/widget.h"
 #endif
 
 // Number of pixels to separate each icon.
@@ -102,26 +101,6 @@ void StatusAreaView::ChildPreferredSizeChanged(View* child) {
   // BrowserView know to relayout, which will reset the bounds of this view.
   Layout();
   PreferredSizeChanged();
-}
-
-bool StatusAreaView::CanActivate() const {
-#if defined(USE_ASH)
-  // We don't want mouse clicks to activate us, but we need to allow
-  // activation when the user is using the keyboard (FocusCycler).
-  ash::internal::FocusCycler* focus_cycler =
-      ash::Shell::GetInstance()->focus_cycler();
-  return focus_cycler->widget_activating() == GetWidget();
-#else
-  return false;
-#endif
-}
-
-views::Widget* StatusAreaView::GetWidget() {
-  return View::GetWidget();
-}
-
-const views::Widget* StatusAreaView::GetWidget() const {
-  return View::GetWidget();
 }
 
 void StatusAreaView::MakeButtonsActive(bool active) {

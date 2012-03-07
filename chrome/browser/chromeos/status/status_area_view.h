@@ -14,21 +14,19 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.
 class StatusAreaView : public views::AccessiblePaneView,
                        public views::Widget::Observer,
-                       public base::SupportsWeakPtr<StatusAreaView>,
-                       public views::WidgetDelegate {
+                       public base::SupportsWeakPtr<StatusAreaView> {
  public:
   enum ButtonBorder {
     NO_BORDER,
     HAS_BORDER
   };
 
-  StatusAreaView();
+  explicit StatusAreaView();
   virtual ~StatusAreaView();
 
   void AddButton(StatusAreaButton* button, ButtonBorder border);
@@ -52,11 +50,6 @@ class StatusAreaView : public views::AccessiblePaneView,
   virtual void Layout() OVERRIDE;
   virtual void PreferredSizeChanged() OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
-
-  // views::WidgetDelegate overrides:
-  virtual bool CanActivate() const OVERRIDE;
-  virtual views::Widget* GetWidget() OVERRIDE;
-  virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
   // Overridden from views::FocusChangeListener:

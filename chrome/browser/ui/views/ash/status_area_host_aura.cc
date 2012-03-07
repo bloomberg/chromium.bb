@@ -105,7 +105,6 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   gfx::Size ps = status_area_view_->GetPreferredSize();
   params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
-  params.delegate = status_area_view_;
   params.parent = status_window;
   params.transparent = true;
   status_area_widget_->Init(params);

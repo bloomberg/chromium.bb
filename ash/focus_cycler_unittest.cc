@@ -7,7 +7,6 @@
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/status_area/status_area_view.h"
 #include "ash/wm/window_util.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/shell_factory.h"
@@ -48,8 +47,6 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   views::Widget* status_widget = internal::CreateStatusArea(NULL);
   ASSERT_TRUE(status_widget);
   focus_cycler->AddWidget(status_widget);
-  static_cast<internal::StatusAreaView*>(status_widget->GetContentsView())->
-      SetFocusCyclerForTesting(focus_cycler.get());
 
   // Add a mock button to the status area.
   status_widget->GetContentsView()->AddChildView(
@@ -91,8 +88,6 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   views::Widget* status_widget = internal::CreateStatusArea(NULL);
   ASSERT_TRUE(status_widget);
   focus_cycler->AddWidget(status_widget);
-  static_cast<internal::StatusAreaView*>(status_widget->GetContentsView())->
-      SetFocusCyclerForTesting(focus_cycler.get());
 
   // Add a mock button to the status area.
   status_widget->GetContentsView()->AddChildView(

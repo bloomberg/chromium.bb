@@ -13,30 +13,21 @@
 namespace ash {
 namespace internal {
 
-class FocusCycler;
-
 class StatusAreaView : public views::WidgetDelegate,
                        public views::AccessiblePaneView {
  public:
   StatusAreaView();
   virtual ~StatusAreaView();
 
-  // Sets the focus cycler.
-  void SetFocusCyclerForTesting(const FocusCycler* focus_cycler);
-
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // views::WidgetDelegate overrides:
-  virtual bool CanActivate() const OVERRIDE;
-
  private:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   SkBitmap status_mock_;
-  const FocusCycler* focus_cycler_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };

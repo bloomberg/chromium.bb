@@ -28,7 +28,6 @@ const int kWindowContainerIds[] = {
     kShellWindowId_LockScreenContainer,
     kShellWindowId_SystemModalContainer,
     kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_SettingBubbleContainer,
     kShellWindowId_DefaultContainer,
 
     // Panel, launcher and status are intentionally checked after other
@@ -37,6 +36,7 @@ const int kWindowContainerIds[] = {
     kShellWindowId_PanelContainer,
     kShellWindowId_LauncherContainer,
     kShellWindowId_StatusContainer,
+    kShellWindowId_SettingBubbleContainer,
 };
 
 aura::Window* GetContainer(int id) {
