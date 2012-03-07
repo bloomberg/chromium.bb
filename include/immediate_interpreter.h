@@ -384,6 +384,19 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty motion_tap_prevent_timeout_;
   // A finger must be at least this far from other fingers when it taps [mm].
   DoubleProperty tapping_finger_min_separation_;
+
+  // y| V  /
+  //  |   /  D   _-
+  //  |  /    _-'
+  //  | /  _-'
+  //  |/_-'   H
+  //  |'____________x
+  // The above quadrant of a cartesian plane shows the angles where we snap
+  // scrolling to vertical or horizontal. Very Vertical or Horizontal scrolls
+  // are snapped, while Diagonal scrolls are not. The two properties below
+  // are the slopes for the two lines.
+  DoubleProperty vertical_scroll_snap_slope_;
+  DoubleProperty horizontal_scroll_snap_slope_;
 };
 
 }  // namespace gestures

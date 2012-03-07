@@ -279,6 +279,97 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
   EXPECT_LT(timeout, 0.0);
 }
 
+struct HardwareStateAnScrollExpectations {
+  HardwareState hs;
+  float dx;
+  float dy;
+};
+
+TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
+  scoped_ptr<ImmediateInterpreter> ii;
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  const float kBig = 5;  // mm
+  const float kSml = 1;  // mm
+
+  const float kX0 = 40;
+  const float kX1 = 60;
+  const float kY = 50;  // heh
+
+  short fid = 1;
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+
+    // Perfect diagonal movement - should scroll diagonally
+    {0, 0, 0, 0, 50, 0, kX0, kY, fid++},
+    {0, 0, 0, 0, 50, 0, kX1, kY, fid--},
+
+    {0, 0, 0, 0, 50, 0, kX0 + kBig, kY + kBig, fid++},
+    {0, 0, 0, 0, 50, 0, kX1 + kBig, kY + kBig, fid++},
+
+    // Almost vertical movement - should snap to vertical
+    {0, 0, 0, 0, 50, 0, kX0, kY, fid++},
+    {0, 0, 0, 0, 50, 0, kX1, kY, fid--},
+
+    {0, 0, 0, 0, 50, 0, kX0 + kSml, kY + kBig, fid++},
+    {0, 0, 0, 0, 50, 0, kX1 + kSml, kY + kBig, fid++},
+
+    // Almost horizontal movement - should snap to horizontal
+    {0, 0, 0, 0, 50, 0, kX0, kY, fid++},
+    {0, 0, 0, 0, 50, 0, kX1, kY, fid--},
+
+    {0, 0, 0, 0, 50, 0, kX0 + kBig, kY + kSml, fid++},
+    {0, 0, 0, 0, 50, 0, kX1 + kBig, kY + kSml, fid++},
+  };
+  ssize_t idx = 0;
+  HardwareStateAnScrollExpectations hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { { 0.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
+    { { 1.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
+    { { 1.010, 0, 2, 2, &finger_states[idx++ * 4 + 2] }, kBig, kBig },
+
+    { { 0.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
+    { { 1.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
+    { { 1.010, 0, 2, 2, &finger_states[idx++ * 4 + 2] },    0, kBig },
+
+    { { 0.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
+    { { 1.000, 0, 2, 2, &finger_states[idx   * 4    ] },    0,    0 },
+    { { 1.010, 0, 2, 2, &finger_states[idx++ * 4 + 2] }, kBig,    0 },
+  };
+
+  for (size_t i = 0; i < arraysize(hardware_states); i++) {
+    HardwareStateAnScrollExpectations& hse = hardware_states[i];
+    if (hse.hs.timestamp == 0.0) {
+      ii.reset(new ImmediateInterpreter(NULL));
+      ii->SetHardwareProperties(hwprops);
+    }
+    Gesture* gs = ii->SyncInterpret(&hse.hs, NULL);
+    if (hse.dx == 0.0 && hse.dy == 0.0) {
+      EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
+      continue;
+    }
+    ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+    EXPECT_EQ(kGestureTypeScroll, gs->type);
+    EXPECT_FLOAT_EQ(hse.dx, gs->details.scroll.dx);
+    EXPECT_FLOAT_EQ(hse.dy, gs->details.scroll.dy);
+  }
+}
+
 TEST(ImmediateInterpreterTest, ThumbRetainTest) {
   ImmediateInterpreter ii(NULL);
   HardwareProperties hwprops = {

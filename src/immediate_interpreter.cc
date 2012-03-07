@@ -182,6 +182,12 @@ int TapRecord::TapType() const {
   return touched_size > 1 ? GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
 }
 
+namespace {
+float DegToRad(float degrees) {
+  return M_PI * degrees / 180.0;
+}
+}  // namespace {}
+
 ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
     : button_type_(0),
       sent_button_down_(false),
@@ -237,7 +243,11 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
                                      0.5),
       motion_tap_prevent_timeout_(prop_reg, "Motion Tap Prevent Timeout",
                                   0.05),
-      tapping_finger_min_separation_(prop_reg, "Tap Min Separation", 10.0) {
+      tapping_finger_min_separation_(prop_reg, "Tap Min Separation", 10.0),
+      vertical_scroll_snap_slope_(prop_reg, "Vertical Scroll Snap Slope",
+                                  tanf(DegToRad(50.0))),  // 50 deg. from horiz.
+      horizontal_scroll_snap_slope_(prop_reg, "Horizontal Scroll Snap Slope",
+                                    tanf(DegToRad(30.0))) {  // 30 deg.
   memset(&prev_state_, 0, sizeof(prev_state_));
 }
 
@@ -1181,11 +1191,11 @@ void ImmediateInterpreter::FillResultGesture(
         }
       }
 
-      // For now, only do horizontal or vertical scroll
-      if (fabsf(dx) > fabsf(dy))
-        dy = 0.0;
-      else
-        dx = 0.0;
+      // See if we should snap to vertical/horizontal
+      if (fabsf(dy) < horizontal_scroll_snap_slope_.val_ * fabsf(dx))
+        dy = 0.0;  // snap to horizontal
+      else if (fabsf(dy) > vertical_scroll_snap_slope_.val_ * fabsf(dx))
+        dx = 0.0;  // snap to vertical
 
       if (max_mag_sq > 0) {
         result_ = Gesture(kGestureScroll,
