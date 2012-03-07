@@ -23,7 +23,7 @@ class PrintBackendChromeOS : public PrintBackend {
                                          PrinterCapsAndDefaults* printer_info);
 
   virtual bool GetPrinterDriverInfo(const std::string& printer_name,
-                                    PrinterDriverInfo* driver_info);
+                                    std::string* driver_info);
 
   virtual bool IsValidPrinter(const std::string& printer_name);
 
@@ -45,9 +45,8 @@ bool PrintBackendChromeOS::GetPrinterCapsAndDefaults(
   return false;
 }
 
-bool PrintBackendChromeOS::GetPrinterDriverInfo(
-    const std::string& printer_name,
-    PrinterDriverInfo* driver_info) {
+bool PrintBackendChromeOS::GetPrinterDriverInfo(const std::string& printer_name,
+                                                std::string* driver_info) {
   NOTREACHED();
   return false;
 }

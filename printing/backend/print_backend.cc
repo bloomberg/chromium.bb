@@ -16,10 +16,6 @@ PrinterCapsAndDefaults::PrinterCapsAndDefaults() {}
 
 PrinterCapsAndDefaults::~PrinterCapsAndDefaults() {}
 
-PrinterDriverInfo::PrinterDriverInfo() {}
-
-PrinterDriverInfo::~PrinterDriverInfo() {}
-
 PrintBackend::~PrintBackend() {}
 
 }  // namespace printing

@@ -4,6 +4,7 @@
 
 #include "printing/backend/print_backend.h"
 
+#include <algorithm>
 #include <objidl.h>
 #include <winspool.h>
 
@@ -50,7 +51,7 @@ class PrintBackendWin : public PrintBackend {
                                          PrinterCapsAndDefaults* printer_info);
 
   virtual bool GetPrinterDriverInfo(const std::string& printer_name,
-                                    PrinterDriverInfo* driver_info);
+                                    std::string* driver_info);
 
   virtual bool IsValidPrinter(const std::string& printer_name);
 };
@@ -178,7 +179,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 
 // Gets the information about driver for a specific printer.
 bool PrintBackendWin::GetPrinterDriverInfo(const std::string& printer_name,
-                                           PrinterDriverInfo* driver_info) {
+                                           std::string* driver_info) {
   DCHECK(driver_info);
   ScopedPrinterHandle printer_handle;
   if (!::OpenPrinter(const_cast<LPTSTR>(UTF8ToWide(printer_name).c_str()),
@@ -200,16 +201,24 @@ bool PrintBackendWin::GetPrinterDriverInfo(const std::string& printer_name,
   const DRIVER_INFO_6* driver_info_6 =
       reinterpret_cast<DRIVER_INFO_6*>(driver_info_buffer.get());
 
+  std::string info[4];
+
   if (driver_info_6->pName)
-    driver_info->driver_name = WideToUTF8(driver_info_6->pName);
+    info[0] = WideToUTF8(driver_info_6->pName);
 
   if (driver_info_6->pDriverPath) {
     scoped_ptr<FileVersionInfo> version_info(
         FileVersionInfo::CreateFileVersionInfo(
             FilePath(driver_info_6->pDriverPath)));
-    driver_info->driver_version = WideToUTF8(version_info->file_version());
-    driver_info->product_name = WideToUTF8(version_info->product_name());
-    driver_info->product_version = WideToUTF8(version_info->product_version());
+    info[1] = WideToUTF8(version_info->file_version());
+    info[2] = WideToUTF8(version_info->product_name());
+    info[3] = WideToUTF8(version_info->product_version());
+  }
+
+  for (size_t i = 0; i < arraysize(info); ++i) {
+    std::replace(info[i].begin(), info[i].end(), ';', ',');
+    driver_info->append(info[i]);
+    driver_info->append(";");
   }
 
   return true;

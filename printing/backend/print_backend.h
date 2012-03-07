@@ -43,16 +43,6 @@ struct PRINTING_EXPORT PrinterCapsAndDefaults {
   std::string defaults_mime_type;
 };
 
-struct PRINTING_EXPORT PrinterDriverInfo {
-  PrinterDriverInfo();
-  ~PrinterDriverInfo();
-
-  std::string driver_name;
-  std::string driver_version;
-  std::string product_name;
-  std::string product_version;
-};
-
 // PrintBackend class will provide interface for different print backends
 // (Windows, CUPS) to implement. User will call CreateInstance() to
 // obtain available print backend.
@@ -79,7 +69,7 @@ class PRINTING_EXPORT PrintBackend
   // Gets the information about driver for a specific printer.
   virtual bool GetPrinterDriverInfo(
       const std::string& printer_name,
-      PrinterDriverInfo* driver_info) = 0;
+      std::string* driver_info) = 0;
 
   // Returns true if printer_name points to a valid printer.
   virtual bool IsValidPrinter(const std::string& printer_name) = 0;
