@@ -1318,8 +1318,9 @@ bool MinidumpGenerator::WriteModuleListStream(
     MDRawDirectory *module_list_stream) {
   TypedMDRVA<MDRawModuleList> list(&writer_);
 
-  int image_count = dynamic_images_ ?
-    dynamic_images_->GetImageCount() : _dyld_image_count();
+  size_t image_count = dynamic_images_ ?
+      static_cast<size_t>(dynamic_images_->GetImageCount()) :
+      _dyld_image_count();
 
   if (!list.AllocateObjectAndArray(image_count, MD_MODULE_SIZE))
     return false;
@@ -1330,7 +1331,7 @@ bool MinidumpGenerator::WriteModuleListStream(
 
   // Write out the executable module as the first one
   MDRawModule module;
-  int executableIndex = FindExecutableModule();
+  size_t executableIndex = FindExecutableModule();
 
   if (!WriteModuleStream(executableIndex, &module)) {
     return false;
@@ -1339,7 +1340,7 @@ bool MinidumpGenerator::WriteModuleListStream(
   list.CopyIndexAfterObject(0, &module, MD_MODULE_SIZE);
   int destinationIndex = 1;  // Write all other modules after this one
 
-  for (int i = 0; i < image_count; ++i) {
+  for (size_t i = 0; i < image_count; ++i) {
     if (i != executableIndex) {
       if (!WriteModuleStream(i, &module)) {
         return false;

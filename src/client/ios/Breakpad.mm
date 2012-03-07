@@ -310,8 +310,6 @@ Breakpad::~Breakpad() {
 
 //=============================================================================
 bool Breakpad::ExtractParameters(NSDictionary *parameters) {
-  NSUserDefaults *stdDefaults = [NSUserDefaults standardUserDefaults];
-
   NSString *serverType = [parameters objectForKey:@BREAKPAD_SERVER_TYPE];
   NSString *display = [parameters objectForKey:@BREAKPAD_PRODUCT_DISPLAY];
   NSString *product = [parameters objectForKey:@BREAKPAD_PRODUCT];
@@ -825,5 +823,6 @@ NSDictionary *BreakpadGenerateReport(BreakpadRef ref,
     }
   } catch(...) {    // don't let exceptions leave this C API
     fprintf(stderr, "BreakpadGenerateReport() : error\n");
+    return nil;
   }
 }

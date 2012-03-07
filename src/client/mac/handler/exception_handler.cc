@@ -422,13 +422,13 @@ kern_return_t ForwardException(mach_port_t task, mach_port_t failed_thread,
 
   current.count = EXC_TYPES_COUNT;
   mach_port_t current_task = mach_task_self();
-  kern_return_t result = task_get_exception_ports(current_task,
-                                                  s_exception_mask,
-                                                  current.masks,
-                                                  &current.count,
-                                                  current.ports,
-                                                  current.behaviors,
-                                                  current.flavors);
+  task_get_exception_ports(current_task,
+                           s_exception_mask,
+                           current.masks,
+                           &current.count,
+                           current.ports,
+                           current.behaviors,
+                           current.flavors);
 
   // Find the first exception handler that matches the exception
   unsigned int found;
@@ -450,6 +450,7 @@ kern_return_t ForwardException(mach_port_t task, mach_port_t failed_thread,
 
   mach_msg_type_number_t thread_state_count = THREAD_STATE_MAX;
   breakpad_thread_state_data_t thread_state;
+  kern_return_t result;
   switch (target_behavior) {
     case EXCEPTION_DEFAULT:
       result = exception_raise(target_port, failed_thread, task, exception,
@@ -629,9 +630,9 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
           exit(1);
 
         // Send a reply and exit
-        result = mach_msg(&(reply.header), MACH_SEND_MSG,
-                          reply.header.msgh_size, 0, MACH_PORT_NULL,
-                          MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+        mach_msg(&(reply.header), MACH_SEND_MSG,
+                 reply.header.msgh_size, 0, MACH_PORT_NULL,
+                 MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
       }
     }
   }
