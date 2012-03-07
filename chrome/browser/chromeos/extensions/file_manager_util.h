@@ -66,6 +66,8 @@ bool TryViewingFile(const FilePath& file);
 
 void InstallCRX(Profile* profile, const FilePath& full_path);
 
+bool ShouldBeOpenedWithPdfPlugin(const char* file_extension);
+
 }  // namespace file_manager_util
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_UTIL_H_

@@ -9,16 +9,16 @@
   },
   "file_browser_handlers": [
     {
-      "id" : "TextAction",
-      "default_title" : "txt file action.",
+      "id" : "AbcAction",
+      "default_title" : "abc file action.",
       "default_icon" : "icon.png",
-      "file_filters" : [ "filesystem:*.tXt", "filesystem:*.text" ]
+      "file_filters" : [ "filesystem:*.aBc", "filesystem:*.abcfile" ]
     },
     {
-      "id" : "JpegAction",
-      "default_title" : "jpg file action",
+      "id" : "123Action",
+      "default_title" : "123 file action",
       "default_icon" : "icon.png",
-      "file_filters" : [ "filesystem:*.jpg", "filesystem:*.jpeg" ]
+      "file_filters" : [ "filesystem:*.123", "filesystem:*.1234" ]
     },
     {
       "id" : "BaseAction",

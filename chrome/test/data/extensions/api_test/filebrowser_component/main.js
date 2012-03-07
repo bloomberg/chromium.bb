@@ -5,8 +5,8 @@
 /*
 This component extension test does the following:
 
-1. Creates a txt and log file on the local file system with some random text.
-2. Finds a registered task (file item context menu) for txt file and invokes it
+1. Creates an abc and log file on the local file system with some random text.
+2. Finds a registered task (file item context menu) for abc file and invokes it
    with url of the test file.
 3. Listens for a message from context menu handler and makes sure its payload
    matches the random text from the test file.
@@ -15,7 +15,7 @@ This component extension test does the following:
 var cleanupError = 'Got unexpected error while cleaning up test directory.';
 
 // Class specified by the client runnig the TestRunner.
-// |expectedTasks| should contain list of actions defined for txt files defined
+// |expectedTasks| should contain list of actions defined for abc files defined
 //     by filesystem_handler part of the test.
 // |fileVerifierFunction| method that will verify test results received from the
 //     filesystem_handler part of the test.
@@ -121,7 +121,7 @@ TestRunner.prototype.onFileCreatorInit_ = function() {
   var self = this;
   this.fileCreator_.createFile('.log',
       function(file, text) {
-        self.fileCreator_.createFile('.tXt',
+        self.fileCreator_.createFile('.aBc',
             self.onFileCreated_.bind(self),
             self.errorCallback_.bind(self));
       },

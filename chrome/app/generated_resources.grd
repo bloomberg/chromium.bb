@@ -9983,6 +9983,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Format device
       </message>
 
+      <message name="IDS_FILE_BROWSER_OPEN_ACTION" desc="Title of the action for opening contents of the file.">
+        Open
+      </message>
+      <message name="IDS_FILE_BROWSER_INSTALL_CRX" desc="Title of the action for installing extension from CRX file.">
+        Open
+      </message>
+
       <message name="IDS_FILE_BROWSER_GALLERY" desc="Title of the action to open the Gallery.">
         View and Edit
       </message>

@@ -93,7 +93,7 @@ function runFileSystemHandlerTest(entries) {
 }
 
 function executeListener(id, details) {
-  if (id != "TextAction" && id != "BaseAction" && id != "JpegAction") {
+  if (id != "AbcAction" && id != "BaseAction" && id != "123Action") {
     chrome.test.fail("Unexpected action id: " + id);
     return;
   }

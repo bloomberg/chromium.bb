@@ -14,7 +14,7 @@ function verifyFileContent(file, originalText, receivedText, callback) {
 };
 
 chrome.test.runTests([function tab() {
-  var expectedTasks = {'TextAction': ['filesystem:*.txt'],
+  var expectedTasks = {'AbcAction': ['filesystem:*.abc'],
                        'BaseAction': ['filesystem:*', 'filesystem:*.*']};
   var expectations = new TestExpectations(expectedTasks, verifyFileContent);
 

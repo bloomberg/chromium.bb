@@ -89,7 +89,7 @@ function readEntryByUrl(entryUrl) {
 // The .log file is created by fileBrowser component extension.
 // We should not be able to get this file's fileEntry.
 function tryOpeningLogFile(origEntry,successCallback, errorCallback) {
-  var logFilePath =origEntry.fullPath.replace('.tXt', '.log');
+  var logFilePath = origEntry.fullPath.replace('.aBc', '.log');
   origEntry.filesystem.root.getFile(logFilePath, {},
                                     successCallback,
                                     errorCallback);
@@ -132,7 +132,7 @@ function runFileSystemHandlerTest(entries) {
 };
 
 function executeListener(id, details) {
-  if (id != "TextAction" && id != "BaseAction" && id != "JpegAction") {
+  if (id != "AbcAction" && id != "BaseAction" && id != "123Action") {
     chrome.test.fail("Unexpected action id: " + id);
     return;
   }
