@@ -284,7 +284,8 @@ GDataFileBase* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
   DCHECK(parent);
   DCHECK(doc->is_folder());
   GDataDirectory* dir = new GDataDirectory(parent);
-  dir->file_name_ = UTF16ToUTF8(doc->title());
+  dir->original_file_name_ = UTF16ToUTF8(doc->title());
+  dir->file_name_ = EscapeUtf8FileName(dir->original_file_name_);
   dir->file_info_.last_modified = doc->updated_time();
   dir->file_info_.last_accessed = doc->updated_time();
   dir->file_info_.creation_time = doc->published_time();
