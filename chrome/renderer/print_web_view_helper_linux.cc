@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   if (draft_metafile.get()) {
     draft_metafile->FinishDocument();
   } else if (print_preview_context_.IsModifiable() &&
-             print_preview_context_.generate_draft_pages()){
+             print_preview_context_.generate_draft_pages()) {
     DCHECK(!draft_metafile.get());
     draft_metafile.reset(
         print_preview_context_.metafile()->GetMetafileForCurrentPage());
@@ -55,13 +55,12 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
   return PreviewPageRendered(page_number, draft_metafile.get());
 }
 
-bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
-                                    WebFrame* frame,
-                                    const WebNode& node) {
+bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
   printing::NativeMetafile metafile;
   if (!metafile.Init())
     return false;
 
+  const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   PrepareFrameAndViewForPrint prep_frame_view(params.params, frame, node);
   int page_count = 0;
   if (!RenderPages(params, frame, node, &page_count, &prep_frame_view,

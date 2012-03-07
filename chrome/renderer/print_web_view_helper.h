@@ -221,11 +221,9 @@ class PrintWebViewHelper
 
   // Page Printing / Rendering ------------------------------------------------
 
-  // Prints all the pages listed in |params|.
+  // Prints all the pages listed in |print_pages_params_|.
   // It will implicitly revert the document to display CSS media type.
-  bool PrintPages(const PrintMsg_PrintPages_Params& params,
-                  WebKit::WebFrame* frame,
-                  const WebKit::WebNode& node);
+  bool PrintPages(WebKit::WebFrame* frame, const WebKit::WebNode& node);
 
   // Prints the page listed in |params|.
 #if defined(USE_X11)
@@ -413,11 +411,11 @@ class PrintWebViewHelper
     void set_error(enum PrintPreviewErrorBuckets error);
 
     // Getters
-    WebKit::WebFrame* frame() const;
+    WebKit::WebFrame* frame();
     const WebKit::WebNode& node() const;
     int total_page_count() const;
-    bool generate_draft_pages();
-    printing::PreviewMetafile* metafile() const;
+    bool generate_draft_pages() const;
+    printing::PreviewMetafile* metafile();
     const PrintMsg_Print_Params& print_params() const;
     const gfx::Size& GetPrintCanvasSize() const;
     int last_error() const;

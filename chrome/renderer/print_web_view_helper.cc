@@ -1095,7 +1095,7 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
   url_str.append(html);
   GURL url(url_str);
 
-  // When loading is done this will call DidStopLoading that will do the
+  // When loading is done this will call didStopLoading() and that will do the
   // actual printing.
   print_web_view_->mainFrame()->loadRequest(WebURLRequest(url));
 
@@ -1103,10 +1103,9 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
-bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
-                                    WebFrame* frame,
-                                    const WebNode& node) {
-  PrintMsg_Print_Params print_params = params.params;
+bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
+  const PrintMsg_PrintPages_Params& params = *print_pages_params_;
+  const PrintMsg_Print_Params& print_params = params.params;
   PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node);
   UpdateFrameAndViewFromCssPageLayout(frame, node, &prep_frame_view,
                                       print_params, ignore_css_margins_,
@@ -1140,9 +1139,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
 #endif  // OS_MACOSX || OS_WIN
 
 void PrintWebViewHelper::didStopLoading() {
-  PrintMsg_PrintPages_Params* params = print_pages_params_.get();
-  DCHECK(params != NULL);
-  PrintPages(*params, print_web_view_->mainFrame(), WebNode());
+  PrintPages(print_web_view_->mainFrame(), WebNode());
 }
 
 // static - Not anonymous so that platform implementations can use it.
@@ -1380,13 +1377,9 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
 bool PrintWebViewHelper::RenderPagesForPrint(
     WebKit::WebFrame* frame,
     const WebKit::WebNode& node) {
-  PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
-  if (print_settings.params.selection_only) {
+  if (print_pages_params_->params.selection_only)
     return CopyAndPrint(frame);
-  } else {
-    // TODO: Always copy before printing.
-    return PrintPages(print_settings, frame, node);
-  }
+  return PrintPages(frame, node);
 }
 
 #if defined(OS_POSIX)
@@ -1707,7 +1700,7 @@ bool PrintWebViewHelper::PrintPreviewContext::IsRendering() const {
 
 bool PrintWebViewHelper::PrintPreviewContext::IsModifiable() const {
   // The only kind of node we can print right now is a PDF node.
-  return !PrintingNodeOrPdfFrame(frame(), node());
+  return !PrintingNodeOrPdfFrame(frame_, node_);
 }
 
 bool PrintWebViewHelper::PrintPreviewContext::IsLastPageOfPrintReadyMetafile()
@@ -1732,7 +1725,7 @@ void PrintWebViewHelper::PrintPreviewContext::set_error(
   error_ = error;
 }
 
-WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() const {
+WebKit::WebFrame* PrintWebViewHelper::PrintPreviewContext::frame() {
   // TODO(vandebo) turn this back into a DCHECK when http://crbug.com/100890 is
   // resolved.
   CHECK(state_ != UNINITIALIZED);
@@ -1749,12 +1742,11 @@ int PrintWebViewHelper::PrintPreviewContext::total_page_count() const {
   return total_page_count_;
 }
 
-bool PrintWebViewHelper::PrintPreviewContext::generate_draft_pages() {
+bool PrintWebViewHelper::PrintPreviewContext::generate_draft_pages() const {
   return generate_draft_pages_;
 }
 
-printing::PreviewMetafile*
-PrintWebViewHelper::PrintPreviewContext::metafile() const {
+printing::PreviewMetafile* PrintWebViewHelper::PrintPreviewContext::metafile() {
   DCHECK(IsRendering());
   return metafile_.get();
 }

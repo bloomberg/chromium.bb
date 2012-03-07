@@ -25,7 +25,6 @@ class TabContentsWrapper;
 
 namespace base {
 class DictionaryValue;
-class StringValue;
 }
 
 namespace printing {
