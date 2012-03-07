@@ -32,9 +32,6 @@ const int kUrlIdPosition = 18;
 const char kDefaultSearchProviderKey[] = "Default Search Provider ID";
 const char kBuiltinKeywordVersion[] = "Builtin Keyword Version";
 
-// Meta table key to store backup value for the default search provider.
-const char kDefaultSearchBackupKey[] = "Default Search Provider Backup";
-
 // Meta table key to store backup value for the default search provider id.
 const char kDefaultSearchIDBackupKey[] =
     "Default Search Provider ID Backup";
@@ -371,61 +368,15 @@ bool KeywordTable::MigrateToVersion39AddSyncGUIDColumn() {
       "ALTER TABLE keywords ADD COLUMN sync_guid VARCHAR");
 }
 
-bool KeywordTable::MigrateToVersion40AddDefaultSearchProviderBackup() {
-  int64 value = 0;
-  if (!meta_table_->GetValue(kDefaultSearchProviderKey, &value)) {
-    // Write default search provider id if it's absent. TemplateURLService
-    // will replace 0 with some real value.
-    if (!meta_table_->SetValue(kDefaultSearchProviderKey, 0))
-      return false;
-  }
-  return meta_table_->SetValue(kDefaultSearchIDBackupKey, value) &&
-         meta_table_->SetValue(
-             kBackupSignatureKey,
-             GetSearchProviderIDSignature(value));
-}
-
-bool KeywordTable::MigrateToVersion41RewriteDefaultSearchProviderBackup() {
-  // Due to crbug.com/101815 version 40 may contain corrupt or empty
-  // signature. So ignore the signature and simply rewrite it.
-  return MigrateToVersion40AddDefaultSearchProviderBackup();
-}
-
-bool KeywordTable::MigrateToVersion42AddFullDefaultSearchProviderBackup() {
-  sql::Transaction transaction(db_);
-  if (!transaction.Begin())
-    return false;
-
-  int64 id = 0;
-  if (!UpdateDefaultSearchProviderIDBackup(&id))
-    return false;
-
-  std::string keyword_backup;
-  if (!UpdateDefaultSearchProviderBackup(id, &keyword_backup))
-    return false;
-
-  std::string keywords;
-  if (!GetTableContents("keywords", &keywords))
-    return false;
-
-  std::string data_to_sign = base::Int64ToString(id) +
-                             keyword_backup +
-                             keywords;
-  std::string signature = protector::SignSetting(data_to_sign);
-  if (signature.empty())
-    return false;
-  if (!meta_table_->SetValue(kBackupSignatureKey, signature))
-    return false;
-
-  return transaction.Commit();
-}
-
-bool KeywordTable::MigrateToVersion43AddKeywordsBackupTable() {
-  return meta_table_->SetValue(kDefaultSearchBackupKey, std::string()) &&
-         UpdateBackupSignature();
-}
-
-bool KeywordTable::MigrateToVersion44UpdateKeywordsBackup() {
+bool KeywordTable::MigrateToVersion44AddDefaultSearchProviderBackup() {
+  // Old meta table key that was used to store backup value for the default
+  // search provider on versions 39 to 42.
+  static const char kDefaultSearchBackupKey[] =
+      "Default Search Provider Backup";
+  meta_table_->DeleteKey(kDefaultSearchBackupKey);
+  // Don't update signature if it's present and valid.
+  if (IsBackupSignatureValid())
+    return true;
   return UpdateBackupSignature();
 }
 
@@ -450,8 +401,11 @@ bool KeywordTable::GetSignatureData(std::string* backup) {
 bool KeywordTable::GetTableContents(const char* table_name,
                                     std::string* contents) {
   DCHECK(contents);
-  std::string table_data;
 
+  if (!db_->DoesTableExist(table_name))
+    return false;
+
+  std::string table_data;
   std::string query =
       "SELECT " + std::string(kKeywordColumnsConcatenated) +
       " FROM " + std::string(table_name) + " ORDER BY id ASC";
@@ -602,22 +556,5 @@ bool KeywordTable::UpdateDefaultSearchProviderIDBackup(TemplateURLID* id) {
   }
 
   *id = default_search_id;
-  return true;
-}
-
-bool KeywordTable::UpdateDefaultSearchProviderBackup(TemplateURLID id,
-                                                     std::string* backup) {
-  DCHECK(backup);
-  std::string backup_url;
-  if (id != 0 && !GetKeywordAsString(id, "keywords", &backup_url)) {
-    LOG(WARNING) << "Failed to get the keyword with id " << id;
-    return false;
-  }
-  if (!meta_table_->SetValue(kDefaultSearchBackupKey, backup_url)) {
-    LOG(WARNING) << "Failed to update the keyword backup";
-    return false;
-  }
-
-  *backup = backup_url;
   return true;
 }
