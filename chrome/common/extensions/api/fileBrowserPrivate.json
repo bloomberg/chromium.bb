@@ -290,11 +290,12 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name": "success",
                 "type": "boolean",
-                "optional": true,
+                "optional": "true",
                 "description": "True of task execution was successfully initiated."
               }
             ]
@@ -314,6 +315,7 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name": "tasks",
@@ -355,11 +357,12 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "success",
                 "type": "boolean",
-                "optional": true,
+                "optional": "true",
                 "description": "True when file watch is successfully added."
               }
             ]
@@ -378,11 +381,12 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "success",
                 "type": "boolean",
-                "optional": true,
+                "optional": "true",
                 "description": "True when file watch is successfully removed."
               }
             ]
@@ -396,11 +400,12 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "fileSystem",
                 "type": "object",
-                "optional": true,
+                "optional": "true",
                 "description": "A DOMFileSystem instance for local file system access. null if the caller has no appropriate permissions."
               }
             ]
@@ -456,6 +461,7 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "success",
@@ -478,6 +484,7 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "fileProperties",
@@ -501,6 +508,7 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "fileProperties",
@@ -525,36 +533,13 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "locations",
                 "type": "array",
                 "items": {"type": "string"},
                 "description": "An array of the file locations for the requested files, one entry for each file in fileUrls."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "getGDataFiles",
-        "description": "Get GData files",
-        "parameters": [
-          {
-            "name": "fileUrls",
-            "type": "array",
-            "description": "Array of gdata file URLs to get.",
-            "items": { "type": "string" }
-          },
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name" : "localFilePaths",
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "An array of the local file paths for the requested files, one entry for each file in fileUrls."
               }
             ]
           }
@@ -572,11 +557,12 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "volumeMetadata",
                 "$ref": "VolumeMetadata",
-                "optional": true,
+                "optional": "true",
                 "description": "A requested metadata dictionary object. undefined if there is no volume with selected devicePath"
               }
             ]
@@ -602,7 +588,7 @@
             "name": "options",
             "type": "object",
             "description": "Name/value pairs for source specific options",
-            "optional": true
+            "optional": "true"
           }
         ]
       },
@@ -624,6 +610,7 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": "false",
             "parameters": [
               {
                 "name" : "mountPoints",
