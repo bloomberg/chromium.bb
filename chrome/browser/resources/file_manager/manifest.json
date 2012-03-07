@@ -107,6 +107,18 @@
         "filesystem:*.ogx",
         "filesystem:*.webm"
       ]
+    },
+    {
+      "id": "open-hosted",
+      "default_title": "__MSG_HOSTED__",
+      "default_icon": "images/icon_preview_16x16.png",
+      "file_filters": [
+        "filesystem:*.gdoc",
+        "filesystem:*.gsheet",
+        "filesystem:*.gslides",
+        "filesystem:*.gdraw",
+        "filesystem:*.gtable"
+      ]
     }
   ],
   "chrome_url_overrides": {

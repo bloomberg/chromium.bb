@@ -2217,9 +2217,13 @@ FileManager.prototype = {
     return new TestAwareMetadataProvider();
   };
 
+  FileManager.prototype.isOnGData = function() {
+    return this.directoryModel_ &&
+        this.directoryModel_.rootPath == '/' + DirectoryModel.GDATA_DIRECTORY;
+  };
+
   FileManager.prototype.getMetadataProvider = function() {
-    if (this.directoryModel_ &&
-        this.directoryModel_.rootPath == '/' + DirectoryModel.GDATA_DIRECTORY)
+    if (this.isOnGData())
       return this.gdataMetadataProvider_;
     else
       return this.localMetadataProvider_;
@@ -2264,6 +2268,10 @@ FileManager.prototype = {
             task.title = str('ACTION_WATCH');
           }
           task.allTasks = tasksList;
+        } else if (task_parts[1] == 'open-hosted') {
+          task.iconUrl =
+          chrome.extension.getURL('images/icon_preview_16x16.png');
+              task.title = str('ACTION_OPEN');
         } else if (task_parts[1] == 'view-pdf') {
           // Do not render this task if disabled.
           if (str('PDF_VIEW_ENABLED') == 'false') continue;
@@ -2541,6 +2549,43 @@ FileManager.prototype = {
       this.openGallery_(urls, noGallery);
     } else if (id == 'view-pdf' || id == 'view-txt' || id == 'install-crx') {
       chrome.fileBrowserPrivate.viewFiles(urls, 'default', function() {});
+    } else if (id == 'open-hosted') {
+      // TODO (kaznacheev)
+      if (this.isOnGData()) {
+        // Hosted file.
+        // We do not have a correct URL to open the Docs page, so we make it up.
+        function makeUpDocsUrl(editUrl, fileUrl) {
+          editUrl = editUrl.replace('/feeds/default/private/full', '');
+          if (fileUrl.match(/\.gsheet$/))
+            return editUrl.replace('%3A', '/ccc?key=');
+          else
+            return  editUrl.replace('%3A', '/d/') + '/edit';
+        }
+
+        chrome.fileBrowserPrivate.getGDataFileProperties(urls,
+            function(results) {
+              for (var i = 0; i != results.length; i++) {
+                chrome.tabs.create({
+                  url: makeUpDocsUrl(results[i].editUrl, results[i].fileUrl)
+                });
+              }
+            });
+      } else {
+        // Local file. Get the url from the text content.
+        for (var i = 0; i != urls.length; i++) {
+          util.readTextFromFileURL(urls[i], 10000 /* max size*/,
+              function(text) {
+                try {
+                  var json = JSON.parse(text);
+                  if ('url' in json) {
+                    chrome.tabs.create({url: json.url});
+                  }
+                } catch(e) {
+                  console.error(e);
+                }
+              });
+        }
+      }
     }
   };
 
