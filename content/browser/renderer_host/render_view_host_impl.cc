@@ -1073,14 +1073,26 @@ void RenderViewHostImpl::OnMsgRequestMove(const gfx::Rect& pos) {
 }
 
 void RenderViewHostImpl::OnMsgDidStartLoading() {
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26646.
+  LOG(ERROR) << "DidStartLoading";
+#endif
   delegate_->DidStartLoading();
 }
 
 void RenderViewHostImpl::OnMsgDidStopLoading() {
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26646.
+  LOG(ERROR) << "DidStopLoading";
+#endif
   delegate_->DidStopLoading();
 }
 
 void RenderViewHostImpl::OnMsgDidChangeLoadProgress(double load_progress) {
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26646.
+  LOG(ERROR) << "DidChangeLoadProgress:" << load_progress;
+#endif
   delegate_->DidChangeLoadProgress(load_progress);
 }
 
@@ -1090,6 +1102,10 @@ void RenderViewHostImpl::OnMsgDocumentAvailableInMainFrame() {
 
 void RenderViewHostImpl::OnMsgDocumentOnLoadCompletedInMainFrame(
     int32 page_id) {
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26646.
+  LOG(ERROR) << "DocumentOnLoadCompletedInMainFrame:" << page_id;
+#endif
   delegate_->DocumentOnLoadCompletedInMainFrame(this, page_id);
 }
 

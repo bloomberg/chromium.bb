@@ -311,17 +311,15 @@ void WebUILoginView::OnTabMainFrameRender() {
   }
 #endif
 
-  bool emit_login_visible = false;
-
+#if defined(USE_AURA)
+  // crosbug.com/26646.
+  LOG(ERROR) << "EmitLoginPromptVisible:";
   // In aura, there will be no window-manager. So chrome needs to emit the
   // 'login-prompt-visible' signal. This needs to happen here, after the page
   // has completed rendering itself.
-#if defined(USE_AURA)
-  emit_login_visible = true;
+  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
+      ->EmitLoginPromptVisible();
 #endif
-  if (emit_login_visible)
-    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
-        ->EmitLoginPromptVisible();
 
   OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI()->GetController());
   // Notify OOBE that the login frame has been rendered. Currently
