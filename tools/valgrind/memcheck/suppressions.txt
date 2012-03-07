@@ -3320,9 +3320,9 @@
    ...
    fun:_ZN6chrome26ChromeContentBrowserClient24RenderProcessHostCreatedEPN7content17RenderProcessHostE
    fun:_ZN21RenderProcessHostImpl4InitEb
-   fun:_ZN18RenderViewHostImpl16CreateRenderView*
-   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
-   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRKN7content19NavigationEntryImplE
+   ...
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP*
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP*
    ...
    fun:_ZN21RenderViewHostManager8NavigateERKN7content19NavigationEntryImplE
    fun:_ZN11TabContents15NavigateToEntryERKN7content19NavigationEntryImplENS0_20NavigationController10ReloadTypeE
