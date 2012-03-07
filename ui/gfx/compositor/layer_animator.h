@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "ui/base/animation/animation_container_element.h"
+#include "ui/base/animation/tween.h"
 #include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
 
@@ -81,6 +82,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
     preemption_strategy_ = strategy;
   }
 
+  PreemptionStrategy preemption_strategy() const {
+    return preemption_strategy_;
+  }
+
   // Start an animation sequence. If an animation for the same property is in
   // progress, it needs to be interrupted with the new animation. The animator
   // takes ownership of this animation sequence.
@@ -118,6 +123,12 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   // list. The observers are notified when animations end.
   void AddObserver(LayerAnimationObserver* observer);
   void RemoveObserver(LayerAnimationObserver* observer);
+
+  // This determines how implicit animations will be tweened. This has no
+  // effect on animations that are explicitly started or scheduled. The default
+  // is Tween::LINEAR.
+  void set_tween_type(Tween::Type tween_type) { tween_type_ = tween_type; }
+  Tween::Type tween_type() const { return tween_type_; }
 
   // For testing purposes only.
   void set_disable_timer_for_test(bool disable_timer) {
@@ -233,6 +244,9 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
 
   // The default length of animations.
   base::TimeDelta transition_duration_;
+
+  // The default tween type for implicit transitions
+  Tween::Type tween_type_;
 
   // Used for coordinating the starting of animations.
   base::TimeTicks last_step_time_;

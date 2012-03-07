@@ -34,6 +34,7 @@ LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
     : delegate_(NULL),
       preemption_strategy_(IMMEDIATELY_SET_NEW_TARGET),
       transition_duration_(transition_duration),
+      tween_type_(Tween::LINEAR),
       is_started_(false),
       disable_timer_for_test_(false) {
 }
@@ -61,9 +62,10 @@ void LayerAnimator::SetTransform(const Transform& transform) {
   base::TimeDelta duration = transition_duration_;
   if (disable_animations_for_test_)
     duration = base::TimeDelta();
-  StartAnimation(new LayerAnimationSequence(
-      LayerAnimationElement::CreateTransformElement(
-          transform, duration)));
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateTransformElement(transform, duration));
+  element->set_tween_type(tween_type_);
+  StartAnimation(new LayerAnimationSequence(element.release()));
 }
 
 Transform LayerAnimator::GetTargetTransform() const {
@@ -76,9 +78,10 @@ void LayerAnimator::SetBounds(const gfx::Rect& bounds) {
   base::TimeDelta duration = transition_duration_;
   if (disable_animations_for_test_)
     duration = base::TimeDelta();
-  StartAnimation(new LayerAnimationSequence(
-      LayerAnimationElement::CreateBoundsElement(
-          bounds, duration)));
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateBoundsElement(bounds, duration));
+  element->set_tween_type(tween_type_);
+  StartAnimation(new LayerAnimationSequence(element.release()));
 }
 
 gfx::Rect LayerAnimator::GetTargetBounds() const {
@@ -91,9 +94,10 @@ void LayerAnimator::SetOpacity(float opacity) {
   base::TimeDelta duration = transition_duration_;
   if (disable_animations_for_test_)
     duration = base::TimeDelta();
-  StartAnimation(new LayerAnimationSequence(
-      LayerAnimationElement::CreateOpacityElement(
-          opacity, duration)));
+  scoped_ptr<LayerAnimationElement> element(
+      LayerAnimationElement::CreateOpacityElement(opacity, duration));
+  element->set_tween_type(tween_type_);
+  StartAnimation(new LayerAnimationSequence(element.release()));
 }
 
 float LayerAnimator::GetTargetOpacity() const {
@@ -106,6 +110,8 @@ void LayerAnimator::SetVisibility(bool visibility) {
   base::TimeDelta duration = transition_duration_;
   if (disable_animations_for_test_)
     duration = base::TimeDelta();
+
+  // Tween type doesn't matter for visibility.
   StartAnimation(new LayerAnimationSequence(
       LayerAnimationElement::CreateVisibilityElement(
           visibility, duration)));
@@ -174,10 +180,9 @@ void LayerAnimator::ScheduleTogether(
   // Scheduling a zero duration pause that affects all the animated properties
   // will prevent any of the sequences from animating until there are no
   // running animations that affect any of these properties.
-  ScheduleAnimation(
-      new LayerAnimationSequence(
-          LayerAnimationElement::CreatePauseElement(animated_properties,
-                                                    base::TimeDelta())));
+  ScheduleAnimation(new LayerAnimationSequence(
+      LayerAnimationElement::CreatePauseElement(animated_properties,
+                                                base::TimeDelta())));
 
   // These animations (provided they don't animate any common properties) will
   // now animate together if trivially scheduled.
@@ -232,20 +237,27 @@ void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
 // LayerAnimator private -------------------------------------------------------
 
 void LayerAnimator::Step(base::TimeTicks now) {
+  TRACE_EVENT0("ui", "LayerAnimator::Step");
+
   last_step_time_ = now;
   // We need to make a copy of the running animations because progressing them
   // and finishing them may indirectly affect the collection of running
   // animations.
   RunningAnimations running_animations_copy = running_animations_;
+  bool needs_redraw = false;
   for (size_t i = 0; i < running_animations_copy.size(); ++i) {
     base::TimeDelta delta = now - running_animations_copy[i].start_time;
     if (delta >= running_animations_copy[i].sequence->duration() &&
         !running_animations_copy[i].sequence->is_cyclic()) {
       FinishAnimation(running_animations_copy[i].sequence);
     } else {
-      running_animations_copy[i].sequence->Progress(delta, delegate());
+      if (running_animations_copy[i].sequence->Progress(delta, delegate()))
+        needs_redraw = true;
     }
   }
+
+  if (needs_redraw)
+    delegate()->ScheduleDrawForAnimation();
 }
 
 void LayerAnimator::SetStartTime(base::TimeTicks start_time) {

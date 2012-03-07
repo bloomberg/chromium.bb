@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ class COMPOSITOR_EXPORT ScreenRotation : public LayerAnimationElement {
  private:
   // Implementation of LayerAnimationDelegate
   virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE;
-  virtual void OnProgress(double t,
+  virtual bool OnProgress(double t,
                           LayerAnimationDelegate* delegate) OVERRIDE;
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE;
   virtual void OnAbort() OVERRIDE;

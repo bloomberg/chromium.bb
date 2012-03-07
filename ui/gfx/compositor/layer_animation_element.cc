@@ -22,8 +22,10 @@ class Pause : public LayerAnimationElement {
 
  private:
   virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {}
-  virtual void OnProgress(double t,
-                          LayerAnimationDelegate* delegate) OVERRIDE {}
+  virtual bool OnProgress(double t,
+                          LayerAnimationDelegate* delegate) OVERRIDE {
+    return false;
+  }
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE {}
   virtual void OnAbort() OVERRIDE {}
 
@@ -45,9 +47,10 @@ class TransformTransition : public LayerAnimationElement {
     start_ = delegate->GetTransformForAnimation();
   }
 
-  virtual void OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetTransformFromAnimation(
         Tween::ValueBetween(t, start_, target_));
+    return true;
   }
 
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
@@ -84,8 +87,9 @@ class BoundsTransition : public LayerAnimationElement {
     start_ = delegate->GetBoundsForAnimation();
   }
 
-  virtual void OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetBoundsFromAnimation(Tween::ValueBetween(t, start_, target_));
+    return true;
   }
 
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
@@ -123,8 +127,9 @@ class OpacityTransition : public LayerAnimationElement {
     start_ = delegate->GetOpacityForAnimation();
   }
 
-  virtual void OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetOpacityFromAnimation(Tween::ValueBetween(t, start_, target_));
+    return true;
   }
 
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
@@ -162,8 +167,9 @@ class VisibilityTransition : public LayerAnimationElement {
     start_ = delegate->GetVisibilityForAnimation();
   }
 
-  virtual void OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) OVERRIDE {
     delegate->SetVisibilityFromAnimation(t == 1.0 ? target_ : start_);
+    return t == 1.0;
   }
 
   virtual void OnGetTarget(TargetValue* target) const OVERRIDE {
@@ -209,19 +215,20 @@ LayerAnimationElement::LayerAnimationElement(
     base::TimeDelta duration)
     : first_frame_(true),
       properties_(properties),
-      duration_(duration) {
+      duration_(duration),
+      tween_type_(Tween::LINEAR) {
 }
 
 LayerAnimationElement::~LayerAnimationElement() {
 }
 
-void LayerAnimationElement::Progress(double t,
+bool LayerAnimationElement::Progress(double t,
                                      LayerAnimationDelegate* delegate) {
   if (first_frame_)
     OnStart(delegate);
-  OnProgress(t, delegate);
-  delegate->ScheduleDrawForAnimation();
+  bool need_draw = OnProgress(Tween::CalculateValue(tween_type_, t), delegate);
   first_frame_ = t == 1.0;
+  return need_draw;
 }
 
 void LayerAnimationElement::GetTargetValue(TargetValue* target) const {

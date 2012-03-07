@@ -19,12 +19,16 @@ namespace ui {
 ScopedLayerAnimationSettings::ScopedLayerAnimationSettings(
     LayerAnimator* animator)
     : animator_(animator),
-      old_transition_duration_(animator->transition_duration_) {
+      old_transition_duration_(animator->transition_duration_),
+      old_tween_type_(animator->tween_type()),
+      old_preemption_strategy_(animator->preemption_strategy()) {
   SetTransitionDuration(kDefaultTransitionDuration);
 }
 
 ScopedLayerAnimationSettings::~ScopedLayerAnimationSettings() {
   animator_->transition_duration_ = old_transition_duration_;
+  animator_->set_tween_type(old_tween_type_);
+  animator_->set_preemption_strategy(old_preemption_strategy_);
 
   for (std::set<ImplicitAnimationObserver*>::const_iterator i =
        observers_.begin(); i != observers_.end(); ++i) {
@@ -46,6 +50,24 @@ void ScopedLayerAnimationSettings::SetTransitionDuration(
 
 base::TimeDelta ScopedLayerAnimationSettings::GetTransitionDuration() const {
   return animator_->transition_duration_;
+}
+
+void ScopedLayerAnimationSettings::SetTweenType(Tween::Type tween_type) {
+  animator_->set_tween_type(tween_type);
+}
+
+Tween::Type ScopedLayerAnimationSettings::GetTweenType() const {
+  return animator_->tween_type();
+}
+
+void ScopedLayerAnimationSettings::SetPreemptionStrategy(
+    LayerAnimator::PreemptionStrategy strategy) {
+  animator_->set_preemption_strategy(strategy);
+}
+
+LayerAnimator::PreemptionStrategy
+ScopedLayerAnimationSettings::GetPreemptionStrategy() const {
+  return animator_->preemption_strategy();
 }
 
 }  // namespace ui

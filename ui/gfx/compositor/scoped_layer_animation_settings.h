@@ -10,12 +10,13 @@
 
 #include "base/time.h"
 
+#include "ui/base/animation/tween.h"
 #include "ui/gfx/compositor/compositor_export.h"
+#include "ui/gfx/compositor/layer_animator.h"
 
 namespace ui {
 
 class ImplicitAnimationObserver;
-class LayerAnimator;
 class LayerAnimationObserver;
 
 // Scoped settings allow you to temporarily change the animator's settings and
@@ -28,12 +29,21 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   virtual ~ScopedLayerAnimationSettings();
 
   void AddObserver(ImplicitAnimationObserver* observer);
+
   void SetTransitionDuration(base::TimeDelta duration);
   base::TimeDelta GetTransitionDuration() const;
+
+  void SetTweenType(Tween::Type tween_type);
+  Tween::Type GetTweenType() const;
+
+  void SetPreemptionStrategy(LayerAnimator::PreemptionStrategy strategy);
+  LayerAnimator::PreemptionStrategy GetPreemptionStrategy() const;
 
  private:
   LayerAnimator* animator_;
   base::TimeDelta old_transition_duration_;
+  Tween::Type old_tween_type_;
+  LayerAnimator::PreemptionStrategy old_preemption_strategy_;
   std::set<ImplicitAnimationObserver*> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedLayerAnimationSettings);

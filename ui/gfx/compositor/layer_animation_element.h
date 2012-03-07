@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/time.h"
+#include "ui/base/animation/tween.h"
 #include "ui/gfx/compositor/compositor_export.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
@@ -80,8 +81,8 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // Updates the delegate to the appropriate value for |t|, which is in the
   // range [0, 1] (0 for initial, and 1 for final). If the animation is not
   // aborted, it is guaranteed that Progress will eventually be called with
-  // t = 1.0.
-  void Progress(double t, LayerAnimationDelegate* delegate);
+  // t = 1.0. Returns true if a redraw is required.
+  bool Progress(double t, LayerAnimationDelegate* delegate);
 
   // Called if the animation is not allowed to complete. This may be called
   // before OnStarted or Progress.
@@ -96,11 +97,14 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // The duration of the animation
   base::TimeDelta duration() const { return duration_; }
 
+  Tween::Type tween_type() const { return tween_type_; }
+  void set_tween_type(Tween::Type tween_type) { tween_type_ = tween_type;}
+
  protected:
   // Called once each time the animation element is run before any call to
   // OnProgress.
   virtual void OnStart(LayerAnimationDelegate* delegate) = 0;
-  virtual void OnProgress(double t, LayerAnimationDelegate* delegate) = 0;
+  virtual bool OnProgress(double t, LayerAnimationDelegate* delegate) = 0;
   virtual void OnGetTarget(TargetValue* target) const = 0;
   virtual void OnAbort() = 0;
 
@@ -108,6 +112,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   bool first_frame_;
   const AnimatableProperties properties_;
   const base::TimeDelta duration_;
+  Tween::Type tween_type_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationElement);
 };

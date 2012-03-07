@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -95,10 +95,10 @@ void ScreenRotation::OnStart(LayerAnimationDelegate* delegate) {
   interpolated_transform_->SetChild(rotation.release());
 }
 
-void ScreenRotation::OnProgress(double t,
+bool ScreenRotation::OnProgress(double t,
                                 LayerAnimationDelegate* delegate) {
   delegate->SetTransformFromAnimation(interpolated_transform_->Interpolate(t));
-  delegate->ScheduleDrawForAnimation();
+  return true;
 }
 
 void ScreenRotation::OnGetTarget(TargetValue* target) const {

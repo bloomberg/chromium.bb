@@ -31,27 +31,29 @@ LayerAnimationSequence::~LayerAnimationSequence() {
                     DetachedFromSequence(this, true));
 }
 
-void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
+bool LayerAnimationSequence::Progress(base::TimeDelta elapsed,
                                       LayerAnimationDelegate* delegate) {
+  bool redraw_required = false;
+
   if (elements_.empty())
-    return;
+    return redraw_required;
 
   if (is_cyclic_ && duration_ > base::TimeDelta()) {
     // If delta = elapsed - last_start_ is huge, we can skip ahead by complete
     // loops to save time.
     base::TimeDelta delta = elapsed - last_start_;
     int64 k = delta.ToInternalValue() / duration_.ToInternalValue() - 1;
-    if (k > 0) {
-      last_start_ += base::TimeDelta::FromInternalValue(
-          k * duration_.ToInternalValue());
-    }
+
+    last_start_ += base::TimeDelta::FromInternalValue(
+      k * duration_.ToInternalValue());
   }
 
   size_t current_index = last_element_ % elements_.size();
   while ((is_cyclic_ || last_element_ < elements_.size()) &&
          (last_start_ + elements_[current_index]->duration() < elapsed)) {
     // Let the element we're passing finish.
-    elements_[current_index]->Progress(1.0, delegate);
+    if (elements_[current_index]->Progress(1.0, delegate))
+      redraw_required = true;
     last_start_ += elements_[current_index]->duration();
     ++last_element_;
     current_index = last_element_ % elements_.size();
@@ -63,7 +65,8 @@ void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
       t = (elapsed - last_start_).InMillisecondsF() /
           elements_[current_index]->duration().InMillisecondsF();
     }
-    elements_[current_index]->Progress(t, delegate);
+    if (elements_[current_index]->Progress(t, delegate))
+      redraw_required = true;
   }
 
   if (!is_cyclic_ && elapsed == duration_) {
@@ -71,6 +74,8 @@ void LayerAnimationSequence::Progress(base::TimeDelta elapsed,
     last_start_ = base::TimeDelta::FromMilliseconds(0);
     NotifyEnded();
   }
+
+  return redraw_required;
 }
 
 void LayerAnimationSequence::GetTargetValue(
