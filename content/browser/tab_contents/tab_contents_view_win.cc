@@ -4,15 +4,19 @@
 
 #include "content/browser/tab_contents/tab_contents_view_win.h"
 
+#include "base/bind.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 #include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/web_contents_drag_win.h"
 #include "content/browser/tab_contents/web_drag_dest_win.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_win_delegate.h"
+#include "ui/gfx/screen.h"
 
+using content::RenderViewHost;
 using content::RenderWidgetHostView;
 using content::WebContents;
 using content::WebContentsViewWinDelegate;
@@ -56,7 +60,8 @@ TabContentsViewWin::TabContentsViewWin(WebContents* web_contents,
                                        WebContentsViewWinDelegate* delegate)
     : tab_contents_(static_cast<TabContents*>(web_contents)),
       view_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      close_tab_after_drag_ends_(false) {
 }
 
 TabContentsViewWin::~TabContentsViewWin() {
@@ -122,6 +127,9 @@ void TabContentsViewWin::GetContainerBounds(gfx::Rect *out) const {
 }
 
 void TabContentsViewWin::SetPageTitle(const string16& title) {
+  // It's possible to get this after the hwnd has been destroyed.
+  if (GetNativeView())
+    ::SetWindowText(GetNativeView(), title.c_str());
 }
 
 void TabContentsViewWin::OnTabCrashed(base::TerminationStatus status,
@@ -148,7 +156,7 @@ void TabContentsViewWin::SizeContents(const gfx::Size& size) {
   }
 }
 
-void TabContentsViewWin::RenderViewCreated(content::RenderViewHost* host) {
+void TabContentsViewWin::RenderViewCreated(RenderViewHost* host) {
 }
 
 void TabContentsViewWin::Focus() {
@@ -183,10 +191,16 @@ void TabContentsViewWin::RestoreFocus() {
 }
 
 bool TabContentsViewWin::IsDoingDrag() const {
-  return false;
+  return drag_handler_.get() != NULL;
 }
 
 void TabContentsViewWin::CancelDragAndCloseTab() {
+  DCHECK(IsDoingDrag());
+  // We can't close the tab while we're in the drag and
+  // |drag_handler_->CancelDrag()| is async.  Instead, set a flag to cancel
+  // the drag and when the drag nested message loop ends, close the tab.
+  drag_handler_->CancelDrag();
+  close_tab_after_drag_ends_ = true;
 }
 
 bool TabContentsViewWin::IsEventTracking() const {
@@ -264,6 +278,7 @@ void TabContentsViewWin::ShowPopupMenu(const gfx::Rect& bounds,
                                        int selected_item,
                                        const std::vector<WebMenuItem>& items,
                                        bool right_aligned) {
+  // External popup menus are only used on Mac.
   NOTIMPLEMENTED();
 }
 
@@ -271,7 +286,12 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
                                        WebKit::WebDragOperationsMask operations,
                                        const SkBitmap& image,
                                        const gfx::Point& image_offset) {
-  NOTIMPLEMENTED();
+  drag_handler_ = new WebContentsDragWin(
+      GetNativeView(),
+      tab_contents_,
+      drag_dest_,
+      base::Bind(&TabContentsViewWin::EndDragging, base::Unretained(this)));
+  drag_handler_->StartDragging(drop_data, operations, image, image_offset);
 }
 
 void TabContentsViewWin::UpdateDragCursor(WebKit::WebDragOperation operation) {
@@ -289,6 +309,20 @@ void TabContentsViewWin::TakeFocus(bool reverse) {
       delegate_.get()) {
     delegate_->TakeFocus(reverse);
   }
+}
+
+void TabContentsViewWin::EndDragging() {
+  drag_handler_ = NULL;
+  if (close_tab_after_drag_ends_) {
+    close_tab_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(0),
+                           this, &TabContentsViewWin::CloseTab);
+  }
+  tab_contents_->SystemDragEnded();
+}
+
+void TabContentsViewWin::CloseTab() {
+  RenderViewHost* rvh = tab_contents_->GetRenderViewHost();
+  rvh->GetDelegate()->Close(rvh);
 }
 
 LRESULT TabContentsViewWin::OnDestroy(
@@ -316,5 +350,40 @@ LRESULT TabContentsViewWin::OnWindowPosChanged(
   if (delegate_.get())
     delegate_->SizeChanged(size);
 
+  return 0;
+}
+
+LRESULT TabContentsViewWin::OnMouseDown(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  // Make sure this TabContents is activated when it is clicked on.
+  if (tab_contents_->GetDelegate())
+    tab_contents_->GetDelegate()->ActivateContents(tab_contents_);
+  return 0;
+}
+
+LRESULT TabContentsViewWin::OnMouseMove(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  // Let our delegate know that the mouse moved (useful for resetting status
+  // bubble state).
+  if (tab_contents_->GetDelegate()) {
+    tab_contents_->GetDelegate()->ContentsMouseEvent(
+        tab_contents_, gfx::Screen::GetCursorScreenPoint(), true);
+  }
+  return 0;
+}
+
+LRESULT TabContentsViewWin::OnReflectedMessage(
+    UINT msg, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  MSG* message = reinterpret_cast<MSG*>(lparam);
+  switch (message->message) {
+    case WM_MOUSEWHEEL:
+      // This message is reflected from the view() to this window.
+      if (GET_KEYSTATE_WPARAM(message->wParam) & MK_CONTROL) {
+        tab_contents_->GetDelegate()->ContentsZoomChange(
+            GET_WHEEL_DELTA_WPARAM(message->wParam) > 0);
+        return 1;
+      }
+    break;
+  }
   return 0;
 }

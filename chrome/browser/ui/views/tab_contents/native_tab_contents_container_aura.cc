@@ -42,9 +42,6 @@ void NativeTabContentsContainerAura::AttachContents(WebContents* contents) {
 }
 
 void NativeTabContentsContainerAura::DetachContents(WebContents* contents) {
-  // Detach the TabContents.  Do this before we unparent the
-  // TabContentsViewViews so that the window hierarchy is intact for any
-  // cleanup during Detach().
   Detach();
 }
 

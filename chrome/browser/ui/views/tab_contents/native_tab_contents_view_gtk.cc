@@ -133,9 +133,6 @@ void NativeTabContentsViewGtk::InitNativeTabContentsView() {
   gtk_object_ref(GTK_OBJECT(GetWidget()->GetNativeView()));
 }
 
-void NativeTabContentsViewGtk::Unparent() {
-}
-
 RenderWidgetHostView* NativeTabContentsViewGtk::CreateRenderWidgetHostView(
     content::RenderWidgetHost* render_widget_host) {
   RenderWidgetHostView* view =

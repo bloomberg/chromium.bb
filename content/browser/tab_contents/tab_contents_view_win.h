@@ -8,6 +8,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/timer.h"
+#include "base/win/win_util.h"
 #include "content/browser/tab_contents/tab_contents_view_helper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_view.h"
@@ -15,6 +17,7 @@
 
 class RenderWidgetHostViewWin;
 class WebDragDest;
+class WebContentsDragWin;
 
 namespace content {
 class WebContentsViewWinDelegate;
@@ -32,6 +35,11 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
   BEGIN_MSG_MAP_EX(TabContentsViewWin)
     MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
     MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
+    MESSAGE_HANDLER(WM_LBUTTONDOWN, OnMouseDown)
+    MESSAGE_HANDLER(WM_MBUTTONDOWN, OnMouseDown)
+    MESSAGE_HANDLER(WM_RBUTTONDOWN, OnMouseDown)
+    MESSAGE_HANDLER(WM_MOUSEMOVE, OnMouseMove)
+    MESSAGE_HANDLER(base::win::kReflectedMessage, OnReflectedMessage)
   END_MSG_MAP()
 
   // Overridden from WebContentsView:
@@ -90,9 +98,18 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
   TabContents* tab_contents() const { return tab_contents_; }
 
  private:
+  void EndDragging();
+  void CloseTab();
+
   LRESULT OnDestroy(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnWindowPosChanged(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnMouseDown(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnMouseMove(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
+  LRESULT OnReflectedMessage(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
 
   gfx::Size initial_size_;
@@ -107,6 +124,16 @@ class CONTENT_EXPORT TabContentsViewWin : public content::WebContentsView,
   // The helper object that handles drag destination related interactions with
   // Windows.
   scoped_refptr<WebDragDest> drag_dest_;
+
+  // Used to handle the drag-and-drop.
+  scoped_refptr<WebContentsDragWin> drag_handler_;
+
+  // Set to true if we want to close the tab after the system drag operation
+  // has finished.
+  bool close_tab_after_drag_ends_;
+
+  // Used to close the tab after the stack has unwound.
+  base::OneShotTimer<TabContentsViewWin> close_tab_timer_;
 
   // Common implementations of some WebContentsView methods.
   TabContentsViewHelper tab_contents_view_helper_;
