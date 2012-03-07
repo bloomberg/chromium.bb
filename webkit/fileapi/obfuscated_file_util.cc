@@ -119,12 +119,14 @@ class ObfuscatedFileEnumerator
       FileSystemDirectoryDatabase* db,
       FileSystemOperationContext* context,
       FileSystemFileUtil* underlying_file_util,
-      const FileSystemPath& virtual_root_path)
+      const FileSystemPath& virtual_root_path,
+      bool recursive)
       : base_path_(base_path),
         virtual_root_path_(virtual_root_path),
         db_(db),
         context_(context),
-        underlying_file_util_(underlying_file_util) {
+        underlying_file_util_(underlying_file_util),
+        recursive_(recursive) {
     DCHECK(db_);
     DCHECK(context_);
     DCHECK(underlying_file_util_);
@@ -139,8 +141,7 @@ class ObfuscatedFileEnumerator
       return;
     FileRecord record = { file_id, file_info,
                           virtual_root_path.internal_path() };
-    display_queue_.push(record);
-    Next();  // Enumerators don't include the directory itself.
+    recurse_queue_.push(record);
   }
 
   ~ObfuscatedFileEnumerator() {}
@@ -151,7 +152,7 @@ class ObfuscatedFileEnumerator
       return FilePath();
     current_ = display_queue_.front();
     display_queue_.pop();
-    if (current_.file_info.is_directory())
+    if (recursive_ && current_.file_info.is_directory())
       recurse_queue_.push(current_);
     return current_.file_path;
   }
@@ -216,6 +217,7 @@ class ObfuscatedFileEnumerator
   FileSystemDirectoryDatabase* db_;
   FileSystemOperationContext* context_;
   FileSystemFileUtil* underlying_file_util_;
+  bool recursive_;
 };
 
 class ObfuscatedOriginEnumerator
@@ -512,7 +514,8 @@ PlatformFileError ObfuscatedFileUtil::ReadDirectory(
 FileSystemFileUtil::AbstractFileEnumerator*
 ObfuscatedFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
-    const FileSystemPath& root_path) {
+    const FileSystemPath& root_path,
+    bool recursive) {
   FileSystemDirectoryDatabase* db = GetDirectoryDatabase(
       root_path.origin(), root_path.type(), false);
   if (!db)
@@ -523,7 +526,7 @@ ObfuscatedFileUtil::CreateFileEnumerator(
       db,
       context,
       underlying_file_util(),
-      root_path);
+      root_path, recursive);
 }
 
 PlatformFileError ObfuscatedFileUtil::GetLocalFilePath(

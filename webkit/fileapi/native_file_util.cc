@@ -174,9 +174,10 @@ PlatformFileError NativeFileUtil::ReadDirectory(
 FileSystemFileUtil::AbstractFileEnumerator*
 NativeFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* unused,
-    const FileSystemPath& root_path) {
+    const FileSystemPath& root_path,
+    bool recursive) {
   return new NativeFileEnumerator(
-      root_path.internal_path(), true,
+      root_path.internal_path(), recursive,
       static_cast<file_util::FileEnumerator::FileType>(
           file_util::FileEnumerator::FILES |
           file_util::FileEnumerator::DIRECTORIES));

@@ -530,7 +530,7 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   FileSystemOperationContext context(NULL);
   FileSystemPath path(origin_url, type, FilePath());
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-      sandbox_file_util_->CreateFileEnumerator(&context, path));
+      sandbox_file_util_->CreateFileEnumerator(&context, path, true));
 
   FilePath file_path_each;
   int64 usage = 0;

@@ -97,7 +97,8 @@ class ObfuscatedFileUtil : public FileSystemFileUtil,
 
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemPath& root_path) OVERRIDE;
+      const FileSystemPath& root_path,
+      bool recursive) OVERRIDE;
 
   virtual base::PlatformFileError GetLocalFilePath(
       FileSystemOperationContext* context,

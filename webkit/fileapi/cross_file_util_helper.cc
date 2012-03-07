@@ -119,7 +119,8 @@ PlatformFileError CrossFileUtilHelper::CopyOrMoveDirectory(
     return error;
 
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
-      src_util_->CreateFileEnumerator(context_, src_path));
+      src_util_->CreateFileEnumerator(context_, src_path,
+                                      true /* recursive */));
   FilePath src_file_path_each;
   while (!(src_file_path_each = file_enum->Next()).empty()) {
     FilePath dest_file_path_each(dest_path.internal_path());

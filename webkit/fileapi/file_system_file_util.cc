@@ -101,9 +101,11 @@ PlatformFileError FileSystemFileUtil::ReadDirectory(
 FileSystemFileUtil::AbstractFileEnumerator*
 FileSystemFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
-    const FileSystemPath& root_path) {
+    const FileSystemPath& root_path,
+    bool recursive) {
   if (underlying_file_util_.get()) {
-    return underlying_file_util_->CreateFileEnumerator(context, root_path);
+    return underlying_file_util_->CreateFileEnumerator(context, root_path,
+                                                       recursive);
   }
   NOTREACHED() << "Subclasses must provide implementation if they have no"
                << "underlying_file_util";

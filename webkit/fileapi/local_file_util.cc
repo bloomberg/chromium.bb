@@ -128,12 +128,13 @@ PlatformFileError LocalFileUtil::ReadDirectory(
 
 FileSystemFileUtil::AbstractFileEnumerator* LocalFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
-    const FileSystemPath& root_path) {
+    const FileSystemPath& root_path,
+    bool recursive) {
   FileSystemPath local_path = GetLocalPath(context, root_path);
   if (local_path.internal_path().empty())
     return new EmptyFileEnumerator();
   return new LocalFileEnumerator(
-      local_path.internal_path(), root_path.internal_path(), true,
+      local_path.internal_path(), root_path.internal_path(), recursive,
       static_cast<file_util::FileEnumerator::FileType>(
           file_util::FileEnumerator::FILES |
           file_util::FileEnumerator::DIRECTORIES));

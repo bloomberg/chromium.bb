@@ -106,7 +106,8 @@ class FileSystemFileUtil {
   // instance.
   virtual AbstractFileEnumerator* CreateFileEnumerator(
       FileSystemOperationContext* context,
-      const FileSystemPath& root_path);
+      const FileSystemPath& root_path,
+      bool recursive);
 
   // Maps |virtual_path| given |context| into |local_file_path| which represents
   // physical file location on the host OS.

@@ -33,7 +33,7 @@ base::PlatformFileError FileUtilHelper::DeleteDirectoryRecursive(
     const FileSystemPath& path) {
 
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> file_enum(
-      file_util->CreateFileEnumerator(context, path));
+      file_util->CreateFileEnumerator(context, path, true /* recursive */));
   FilePath file_path_each;
   std::stack<FilePath> directories;
   while (!(file_path_each = file_enum->Next()).empty()) {
