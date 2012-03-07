@@ -16,6 +16,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 
 namespace {
 
@@ -365,8 +366,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
   // Windows will have cleared the alpha channel of the text we drew. Assume
   // we're drawing to an opaque surface, or at least the text rect area is
   // opaque.
-  skia::MakeOpaque(canvas_, clip.fLeft, clip.fTop, clip.width(),
-                   clip.height());
+  skia::MakeOpaque(canvas_, gfx::SkIRectToRect(clip));
 }
 
 void CanvasSkia::DrawStringInt(const string16& text,
@@ -431,7 +431,7 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   // opaque. We have to do this first since pixelShouldGetHalo will check for
   // 0 to see if a pixel has been modified to transparent, and black text that
   // Windows draw will look transparent to it!
-  skia::MakeOpaque(text_canvas.sk_canvas(), 0, 0, size.width(), size.height());
+  skia::MakeOpaque(text_canvas.sk_canvas(), gfx::Rect(size));
 
   uint32_t halo_premul = SkPreMultiplyColor(halo_color);
   SkBitmap& text_bitmap = const_cast<SkBitmap&>(

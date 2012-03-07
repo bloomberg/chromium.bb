@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@ class Rect;
 UI_EXPORT SkRect RectToSkRect(const gfx::Rect& rect);
 UI_EXPORT SkIRect RectToSkIRect(const gfx::Rect& rect);
 UI_EXPORT gfx::Rect SkRectToRect(const SkRect& rect);
+UI_EXPORT gfx::Rect SkIRectToRect(const SkIRect& rect);
 
 // Creates a vertical gradient shader. The caller owns the shader.
 // Example usage to avoid leaks:

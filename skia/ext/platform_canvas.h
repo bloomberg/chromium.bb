@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,10 @@
 // to get the surface type.
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace skia {
 
@@ -128,7 +132,7 @@ SK_API void DrawToNativeContext(SkCanvas* canvas, PlatformSurface context,
                                 int x, int y, const PlatformRect* src_rect);
 
 // Sets the opacity of each pixel in the specified region to be opaque.
-SK_API void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height);
+SK_API void MakeOpaque(SkCanvas* canvas, const gfx::Rect& rect);
 
 // These calls should surround calls to platform drawing routines, the
 // surface returned here can be used with the native platform routines.

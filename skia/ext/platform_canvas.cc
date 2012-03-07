@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,8 @@
 
 #include "skia/ext/bitmap_platform_device.h"
 #include "third_party/skia/include/core/SkTypes.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 
 namespace skia {
 
@@ -80,19 +82,16 @@ static SkPMColor MakeOpaqueXfermodeProc(SkPMColor src, SkPMColor dst) {
     return dst | (0xFF << SK_A32_SHIFT);
 }
 
-void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
-  if (width <= 0 || height <= 0)
+void MakeOpaque(SkCanvas* canvas, const gfx::Rect& rect) {
+  if (rect.IsEmpty())
     return;
 
-  SkRect rect;
-  rect.setXYWH(SkIntToScalar(x), SkIntToScalar(y),
-               SkIntToScalar(width), SkIntToScalar(height));
   SkPaint paint;
   // so we don't draw anything on a device that ignores xfermodes
   paint.setColor(0);
   // install our custom mode
   paint.setXfermode(new SkProcXfermode(MakeOpaqueXfermodeProc))->unref();
-  canvas->drawRect(rect, paint);
+  canvas->drawRect(gfx::RectToSkRect(rect), paint);
 }
 
 }  // namespace skia

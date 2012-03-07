@@ -31,6 +31,10 @@ gfx::Rect SkRectToRect(const SkRect& rect) {
                    static_cast<int>(rect.height()));
 }
 
+gfx::Rect SkIRectToRect(const SkIRect& rect) {
+  return gfx::Rect(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
 SkShader* CreateGradientShader(int start_point,
                                int end_point,
                                SkColor start_color,
