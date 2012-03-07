@@ -161,10 +161,6 @@ without changes to the corresponding grd file. -->
                file="shared/js/parse_html_subset.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_UTIL"
                file="shared/js/util.js" type="BINDATA" />
-<if expr="is_posix and not is_macosx and not pp_ifdef('chromeos')">
-      <include name="IDR_THIRD_PARTY_FONTS_OPEN_SANS"
-               file="third_party/fonts/open_sans.woff" type="BINDATA" />
-</if>
     </includes>
   </release>
 </grit>
