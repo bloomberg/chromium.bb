@@ -13,7 +13,6 @@
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
-#include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -21,6 +20,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
@@ -1345,7 +1345,7 @@ bool PluginInstance::IsRectTopmost(const gfx::Rect& rect) {
 }
 
 void PluginInstance::SampleGamepads(PP_Instance instance,
-                                    PP_GamepadsSampleData_Dev* data) {
+                                    PP_GamepadsSampleData* data) {
   WebKit::WebGamepads webkit_data;
   delegate()->SampleGamepads(&webkit_data);
   ConvertWebKitGamepadData(webkit_data, data);

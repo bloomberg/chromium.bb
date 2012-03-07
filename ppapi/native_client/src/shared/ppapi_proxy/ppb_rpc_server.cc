@@ -963,13 +963,13 @@ static void PPB_Fullscreen_GetScreenSizeDispatcher(
   );
 }
 
-static void PPB_Gamepad_SampleGamepadsDispatcher(
+static void PPB_Gamepad_SampleDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  PpbGamepadRpcServer::PPB_Gamepad_SampleGamepads(
+  PpbGamepadRpcServer::PPB_Gamepad_Sample(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -3094,7 +3094,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Font_PixelOffsetForCharacter:iCCi:i", PPB_Font_PixelOffsetForCharacterDispatcher },
   { "PPB_Fullscreen_SetFullscreen:ii:i", PPB_Fullscreen_SetFullscreenDispatcher },
   { "PPB_Fullscreen_GetScreenSize:i:Ci", PPB_Fullscreen_GetScreenSizeDispatcher },
-  { "PPB_Gamepad_SampleGamepads:i:C", PPB_Gamepad_SampleGamepadsDispatcher },
+  { "PPB_Gamepad_Sample:i:C", PPB_Gamepad_SampleDispatcher },
   { "PPB_Graphics2D_Create:iCi:i", PPB_Graphics2D_CreateDispatcher },
   { "PPB_Graphics2D_IsGraphics2D:i:i", PPB_Graphics2D_IsGraphics2DDispatcher },
   { "PPB_Graphics2D_Describe:i:Cii", PPB_Graphics2D_DescribeDispatcher },

@@ -10,7 +10,7 @@
 #include <cmath>
 #include <cstring>
 #include <string>
-#include "ppapi/c/dev/ppb_gamepad_dev.h"
+#include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/var.h"
 
@@ -35,8 +35,8 @@ Gamepad::Gamepad(PP_Instance instance)
       quit_(false) {
   pp::Module* module = pp::Module::Get();
   assert(module);
-  gamepad_ = static_cast<const PPB_Gamepad_Dev*>(
-      module->GetBrowserInterface(PPB_GAMEPAD_DEV_INTERFACE));
+  gamepad_ = static_cast<const PPB_Gamepad*>(
+      module->GetBrowserInterface(PPB_GAMEPAD_INTERFACE));
   assert(gamepad_);
 }
 
@@ -84,7 +84,7 @@ void Gamepad::Paint() {
   FillRect(pixel_buffer_, 0, 0, width(), height(), 0xfff0f0f0);
 
   // Get current gamepad data.
-  PP_GamepadsSampleData_Dev gamepad_data;
+  PP_GamepadsSampleData gamepad_data;
   gamepad_->Sample(pp_instance(), &gamepad_data);
 
   // Draw the current state for each connected gamepad.
@@ -92,7 +92,7 @@ void Gamepad::Paint() {
     int width2 = width() / gamepad_data.length / 2;
     int height2 = height() / 2;
     int offset = width2 * 2 * p;
-    PP_GamepadSampleData_Dev& pad = gamepad_data.items[p];
+    PP_GamepadSampleData& pad = gamepad_data.items[p];
 
     if (!pad.connected)
       continue;

@@ -8,7 +8,6 @@
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
-#include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
@@ -22,6 +21,7 @@
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/ppb_file_system.h"
 #include "ppapi/c/ppb_fullscreen.h"
+#include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/c/ppb_image_data.h"
@@ -108,7 +108,7 @@ const PPB_FileSystem* PPBFileSystemInterface();
 const PPB_Find_Dev* PPBFindInterface();
 const PPB_Font_Dev* PPBFontInterface();
 const PPB_Fullscreen* PPBFullscreenInterface();
-const PPB_Gamepad_Dev* PPBGamepadInterface();
+const PPB_Gamepad* PPBGamepadInterface();
 const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_Graphics3D* PPBGraphics3DInterface();
 const PPB_Graphics3DTrusted* PPBGraphics3DTrustedInterface();

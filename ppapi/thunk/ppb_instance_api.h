@@ -6,10 +6,10 @@
 #define PPAPI_THUNK_INSTANCE_API_H_
 
 #include "ppapi/c/dev/ppb_console_dev.h"
-#include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio_config.h"
+#include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_size.h"
@@ -83,7 +83,7 @@ class PPB_Instance_FunctionAPI {
 
   // Gamepad.
   virtual void SampleGamepads(PP_Instance instance,
-                              PP_GamepadsSampleData_Dev* data) = 0;
+                              PP_GamepadsSampleData* data) = 0;
 
   // InputEvent.
   virtual int32_t RequestInputEvents(PP_Instance instance,

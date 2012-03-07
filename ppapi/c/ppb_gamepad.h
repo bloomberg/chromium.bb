@@ -3,22 +3,22 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_gamepad_dev.idl modified Mon Feb 27 13:23:13 2012. */
+/* From ppb_gamepad.idl modified Thu Mar  1 11:41:21 2012. */
 
-#ifndef PPAPI_C_DEV_PPB_GAMEPAD_DEV_H_
-#define PPAPI_C_DEV_PPB_GAMEPAD_DEV_H_
+#ifndef PPAPI_C_PPB_GAMEPAD_H_
+#define PPAPI_C_PPB_GAMEPAD_H_
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_GAMEPAD_DEV_INTERFACE_0_2 "PPB_Gamepad(Dev);0.2"
-#define PPB_GAMEPAD_DEV_INTERFACE PPB_GAMEPAD_DEV_INTERFACE_0_2
+#define PPB_GAMEPAD_INTERFACE_1_0 "PPB_Gamepad;1.0"
+#define PPB_GAMEPAD_INTERFACE PPB_GAMEPAD_INTERFACE_1_0
 
 /**
  * @file
- * This file defines the <code>PPB_Gamepad_Dev</code> interface, which
+ * This file defines the <code>PPB_Gamepad</code> interface, which
  * provides access to gamepad devices.
  */
 
@@ -30,7 +30,7 @@
 /**
  * The data for one gamepad device.
  */
-struct PP_GamepadSampleData_Dev {
+struct PP_GamepadSampleData {
   /**
    * Number of valid elements in the |axes| array.
    */
@@ -66,12 +66,12 @@ struct PP_GamepadSampleData_Dev {
   /* Padding to make the struct the same size between 64 and 32. */
   char unused_pad_[4];
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_GamepadSampleData_Dev, 472);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_GamepadSampleData, 472);
 
 /**
  * The data for all gamepads connected to the system.
  */
-struct PP_GamepadsSampleData_Dev {
+struct PP_GamepadsSampleData {
   /**
    * Number of valid elements in the |items| array.
    */
@@ -81,9 +81,9 @@ struct PP_GamepadsSampleData_Dev {
   /**
    * Data for an individual gamepad device connected to the system.
    */
-  struct PP_GamepadSampleData_Dev items[4];
+  struct PP_GamepadSampleData items[4];
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_GamepadsSampleData_Dev, 1896);
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_GamepadsSampleData, 1896);
 /**
  * @}
  */
@@ -93,20 +93,20 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_GamepadsSampleData_Dev, 1896);
  * @{
  */
 /**
- * The <code>PPB_Gamepad_Dev</code> interface allows retrieving data from
+ * The <code>PPB_Gamepad</code> interface allows retrieving data from
  * gamepad/joystick devices that are connected to the system.
  */
-struct PPB_Gamepad_Dev_0_2 {
+struct PPB_Gamepad_1_0 {
   /**
    * Samples the current state of the connected gamepads.
    */
-  void (*Sample)(PP_Instance instance, struct PP_GamepadsSampleData_Dev* data);
+  void (*Sample)(PP_Instance instance, struct PP_GamepadsSampleData* data);
 };
 
-typedef struct PPB_Gamepad_Dev_0_2 PPB_Gamepad_Dev;
+typedef struct PPB_Gamepad_1_0 PPB_Gamepad;
 /**
  * @}
  */
 
-#endif  /* PPAPI_C_DEV_PPB_GAMEPAD_DEV_H_ */
+#endif  /* PPAPI_C_PPB_GAMEPAD_H_ */
 

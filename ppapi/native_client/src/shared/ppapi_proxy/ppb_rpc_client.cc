@@ -1196,7 +1196,7 @@ NaClSrpcError PpbFullscreenRpcClient::PPB_Fullscreen_GetScreenSize(
   return retval;
 }
 
-NaClSrpcError PpbGamepadRpcClient::PPB_Gamepad_SampleGamepads(
+NaClSrpcError PpbGamepadRpcClient::PPB_Gamepad_Sample(
     NaClSrpcChannel* channel,
     PP_Instance instance,
     nacl_abi_size_t* data_bytes, char* data)  {
@@ -1206,7 +1206,7 @@ NaClSrpcError PpbGamepadRpcClient::PPB_Gamepad_SampleGamepads(
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Gamepad_SampleGamepads:i:C",
+      "PPB_Gamepad_Sample:i:C",
       instance,
       data_bytes, data
   );

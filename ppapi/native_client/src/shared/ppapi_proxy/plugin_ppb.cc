@@ -70,7 +70,7 @@ InterfaceMapElement interface_map[] = {
   { PPB_FIND_DEV_INTERFACE, PluginFind::GetInterface(), true },
   { PPB_FONT_DEV_INTERFACE, PluginFont::GetInterface(), true },
   { PPB_FULLSCREEN_INTERFACE, PluginFullscreen::GetInterface(), true },
-  { PPB_GAMEPAD_DEV_INTERFACE, PluginGamepad::GetInterface(), true },
+  { PPB_GAMEPAD_INTERFACE, PluginGamepad::GetInterface(), true },
   { PPB_GRAPHICS_2D_INTERFACE, PluginGraphics2D::GetInterface(), true },
   { PPB_GRAPHICS_3D_INTERFACE, PluginGraphics3D::GetInterface(), true },
   { PPB_IMAGEDATA_INTERFACE, PluginImageData::GetInterface(), true },

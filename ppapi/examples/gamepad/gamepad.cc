@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #include "ppapi/c/dev/ppb_console_dev.h"
-#include "ppapi/c/dev/ppb_gamepad_dev.h"
+#include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/graphics_2d.h"
@@ -45,8 +45,8 @@ class MyInstance : public pp::Instance {
   virtual ~MyInstance() {}
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
-    gamepad_ = reinterpret_cast<const PPB_Gamepad_Dev*>(
-        pp::Module::Get()->GetBrowserInterface(PPB_GAMEPAD_DEV_INTERFACE));
+    gamepad_ = reinterpret_cast<const PPB_Gamepad*>(
+        pp::Module::Get()->GetBrowserInterface(PPB_GAMEPAD_INTERFACE));
     if (!gamepad_)
       return false;
     return true;
@@ -89,7 +89,7 @@ class MyInstance : public pp::Instance {
     if (image.is_null())
       return image;
 
-    PP_GamepadsSampleData_Dev gamepad_data;
+    PP_GamepadsSampleData gamepad_data;
     gamepad_->Sample(pp_instance(), &gamepad_data);
 
     if (gamepad_data.length > 1 && gamepad_data.items[0].connected) {
@@ -121,7 +121,7 @@ class MyInstance : public pp::Instance {
 
   pp::CompletionCallbackFactory<MyInstance> callback_factory_;
 
-  const PPB_Gamepad_Dev* gamepad_;
+  const PPB_Gamepad* gamepad_;
 
   pp::Graphics2D device_context_;
 };

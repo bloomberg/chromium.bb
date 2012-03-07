@@ -16,7 +16,6 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
-#include "ppapi/c/dev/ppb_gamepad_dev.h"
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/dev/ppp_find_dev.h"
 #include "ppapi/c/dev/ppp_selection_dev.h"
@@ -27,6 +26,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_input_event.h"
+#include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/c/ppp_input_event.h"
 #include "ppapi/c/ppp_messaging.h"
@@ -295,7 +295,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool IsRectTopmost(const gfx::Rect& rect);
 
   // Implementation of PPB_Gamepad.
-  void SampleGamepads(PP_Instance instance, PP_GamepadsSampleData_Dev* data)
+  void SampleGamepads(PP_Instance instance, PP_GamepadsSampleData* data)
       OVERRIDE;
 
   // Implementation of PPP_Messaging.

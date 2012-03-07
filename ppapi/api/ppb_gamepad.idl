@@ -4,19 +4,19 @@
  */
 
 /**
- * This file defines the <code>PPB_Gamepad_Dev</code> interface, which
+ * This file defines the <code>PPB_Gamepad</code> interface, which
  * provides access to gamepad devices.
  */
 
 label Chrome {
-  M19 = 0.2
+  M19 = 1.0
 };
 
 /**
  * The data for one gamepad device.
  */
 [assert_size(472)]
-struct PP_GamepadSampleData_Dev {
+struct PP_GamepadSampleData {
     /**
      * Number of valid elements in the |axes| array.
      */
@@ -64,7 +64,7 @@ struct PP_GamepadSampleData_Dev {
  * The data for all gamepads connected to the system.
  */
 [assert_size(1896)]
-struct PP_GamepadsSampleData_Dev {
+struct PP_GamepadsSampleData {
     /**
      * Number of valid elements in the |items| array.
      */
@@ -76,20 +76,20 @@ struct PP_GamepadsSampleData_Dev {
     /**
      * Data for an individual gamepad device connected to the system.
      */
-    PP_GamepadSampleData_Dev[4] items;
+    PP_GamepadSampleData[4] items;
 };
 
 /**
- * The <code>PPB_Gamepad_Dev</code> interface allows retrieving data from
+ * The <code>PPB_Gamepad</code> interface allows retrieving data from
  * gamepad/joystick devices that are connected to the system.
  */
-[version=0.2, macro="PPB_GAMEPAD_DEV_INTERFACE"]
-interface PPB_Gamepad_Dev {
+[version=1.0, macro="PPB_GAMEPAD_INTERFACE"]
+interface PPB_Gamepad {
   /**
    * Samples the current state of the connected gamepads.
    */
   void Sample(
       [in] PP_Instance instance,
-      [out] PP_GamepadsSampleData_Dev data);
+      [out] PP_GamepadsSampleData data);
 
 };

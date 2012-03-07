@@ -288,7 +288,7 @@ PP_Bool PPB_Instance_Proxy::FlashGetScreenSize(PP_Instance instance,
 }
 
 void PPB_Instance_Proxy::SampleGamepads(PP_Instance instance,
-                                        PP_GamepadsSampleData_Dev* data) {
+                                        PP_GamepadsSampleData* data) {
   NOTIMPLEMENTED();
 }
 

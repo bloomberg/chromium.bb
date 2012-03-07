@@ -501,7 +501,7 @@ class PpbFullscreenRpcServer {
 
 class PpbGamepadRpcServer {
  public:
-  static void PPB_Gamepad_SampleGamepads(
+  static void PPB_Gamepad_Sample(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Instance instance,

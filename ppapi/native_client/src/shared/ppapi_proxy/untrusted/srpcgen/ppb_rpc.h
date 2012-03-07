@@ -439,7 +439,7 @@ class PpbFullscreenRpcClient {
 
 class PpbGamepadRpcClient {
  public:
-  static NaClSrpcError PPB_Gamepad_SampleGamepads(
+  static NaClSrpcError PPB_Gamepad_Sample(
       NaClSrpcChannel* channel,
       PP_Instance instance,
       nacl_abi_size_t* data_bytes, char* data);

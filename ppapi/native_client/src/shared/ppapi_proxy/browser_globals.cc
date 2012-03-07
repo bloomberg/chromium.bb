@@ -388,10 +388,10 @@ const PPB_Fullscreen* PPBFullscreenInterface() {
   return ppb;
 }
 
-const PPB_Gamepad_Dev* PPBGamepadInterface() {
-  static const PPB_Gamepad_Dev* ppb =
-      static_cast<const PPB_Gamepad_Dev*>(
-          GetBrowserInterfaceSafe(PPB_GAMEPAD_DEV_INTERFACE));
+const PPB_Gamepad* PPBGamepadInterface() {
+  static const PPB_Gamepad* ppb =
+      static_cast<const PPB_Gamepad*>(
+          GetBrowserInterfaceSafe(PPB_GAMEPAD_INTERFACE));
   return ppb;
 }
 

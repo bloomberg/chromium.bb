@@ -524,10 +524,10 @@ PP_InputEvent_Class ClassifyInputEvent(WebInputEvent::Type type) {
 }
 
 void ConvertWebKitGamepadData(WebKit::WebGamepads& webkit_data,
-                              PP_GamepadsSampleData_Dev* output_data) {
+                              PP_GamepadsSampleData* output_data) {
   output_data->length = webkit_data.length;
   for (unsigned i = 0; i < webkit_data.length; ++i) {
-    PP_GamepadSampleData_Dev& output_pad = output_data->items[i];
+    PP_GamepadSampleData& output_pad = output_data->items[i];
     const WebKit::WebGamepad& webkit_pad = webkit_data.items[i];
     output_pad.connected = webkit_pad.connected ? PP_TRUE : PP_FALSE;
     if (webkit_pad.connected) {

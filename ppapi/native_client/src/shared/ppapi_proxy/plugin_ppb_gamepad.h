@@ -6,14 +6,14 @@
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_PPB_GAMEPAD_H_
 
 #include "native_client/src/include/nacl_macros.h"
-#include "ppapi/c/dev/ppb_gamepad_dev.h"
+#include "ppapi/c/ppb_gamepad.h"
 
 namespace ppapi_proxy {
 
 // Implements the untrusted side of the PPB_Gamepad interface.
 class PluginGamepad {
  public:
-  static const PPB_Gamepad_Dev* GetInterface();
+  static const PPB_Gamepad* GetInterface();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginGamepad);
