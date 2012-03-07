@@ -1775,6 +1775,17 @@ const char kWebIntentsEnabled[] = "webintents.enabled";
 
 #if defined(USE_AURA)
 const char kPinnedLauncherApps[] = "pinned_launcher_apps";
+
+const char kMaximumSecondsBetweenDoubleClick[] =
+    "gesture.maximum_seconds_between_double_click";
+const char kMaximumTouchDownDurationInSecondsForClick[] =
+    "gesture.maximum_touch_down_duration_in_seconds_for_click";
+const char kMaximumTouchMoveInPixelsForClick[] =
+    "gesture.maximum_touch_move_in_pixels_for_click";
+const char kMinFlickSpeedSquared[] =
+    "gesture.min_flick_speed_squared";
+const char kMinimumTouchDownDurationInSecondsForClick[] =
+    "gesture.minimum_touch_down_duration_in_seconds_for_click";
 #endif
 
 // Indicates whether the browser is in managed mode.

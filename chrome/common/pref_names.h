@@ -664,6 +664,12 @@ extern const char kWebIntentsEnabled[];
 
 #if defined(USE_AURA)
 extern const char kPinnedLauncherApps[];
+
+extern const char kMaximumSecondsBetweenDoubleClick[];
+extern const char kMaximumTouchDownDurationInSecondsForClick[];
+extern const char kMaximumTouchMoveInPixelsForClick[];
+extern const char kMinFlickSpeedSquared[];
+extern const char kMinimumTouchDownDurationInSecondsForClick[];
 #endif
 
 extern const char kInManagedMode[];
