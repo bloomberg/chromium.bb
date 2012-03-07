@@ -7,13 +7,12 @@
 // passing the appropriate data. This is the entry point into the framework for
 // those app bundles.
 
-#include <string>  // TODO(viettrungluu): only needed for temporary hack
-
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -48,6 +47,11 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
   base::mac::SetOverrideOuterBundlePath(info->chrome_outer_bundle_path);
   base::mac::SetOverrideFrameworkBundlePath(
       chrome_versioned_path->Append(chrome::kFrameworkName));
+
+  // This struct is used to communicate information to the Chrome code, prefer
+  // this to modifying the command line below.
+  struct ShellIntegration::AppModeInfo app_mode_info;
+  ShellIntegration::SetAppModeInfo(&app_mode_info);
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(info->argv[0]);

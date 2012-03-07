@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
 class CommandLine;
@@ -92,6 +91,15 @@ class ShellIntegration {
     // implemented yet.
     bool create_in_quick_launch_bar;
   };
+
+  // Data that needs to be passed between the app launcher stub and Chrome.
+  struct AppModeInfo {
+  };
+  static void SetAppModeInfo(const AppModeInfo* info);
+  static const AppModeInfo* AppModeInfo();
+
+  // Is the current instance of Chrome running in App mode.
+  bool IsRunningInAppMode();
 
   // Set up command line arguments for launching a URL or an app.
   // The new command line reuses the current process's user data directory (and

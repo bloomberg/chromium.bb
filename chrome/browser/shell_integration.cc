@@ -33,6 +33,23 @@ ShellIntegration::ShortcutInfo::ShortcutInfo()
 
 ShellIntegration::ShortcutInfo::~ShortcutInfo() {}
 
+static const struct ShellIntegration::AppModeInfo* gAppModeInfo = NULL;
+
+// static
+void ShellIntegration::SetAppModeInfo(const struct AppModeInfo* info) {
+  gAppModeInfo = info;
+}
+
+// static
+const struct ShellIntegration::AppModeInfo* ShellIntegration::AppModeInfo() {
+  return gAppModeInfo;
+}
+
+// static
+bool ShellIntegration::IsRunningInAppMode() {
+  return gAppModeInfo != NULL;
+}
+
 // static
 CommandLine ShellIntegration::CommandLineArgsForLauncher(
     const GURL& url,
