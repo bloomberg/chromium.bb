@@ -26,6 +26,9 @@ namespace chrome_browser_net {
 namespace {
 
 static const char* const kHistogramNames[] = {
+  "NetConnectivity.Pipeline.Depth",
+  "NetConnectivity.Pipeline.HTTP1.1",
+  "NetConnectivity.Pipeline.Success",
   "NetConnectivity.Pipeline.0.NetworkError",
   "NetConnectivity.Pipeline.0.ResponseCode",
   "NetConnectivity.Pipeline.0.Status",
@@ -38,9 +41,12 @@ static const char* const kHistogramNames[] = {
 };
 
 enum HistogramField {
+  FIELD_DEPTH,
+  FIELD_HTTP_1_1,
   FIELD_NETWORK_ERROR,
   FIELD_RESPONSE_CODE,
   FIELD_STATUS,
+  FIELD_SUCCESS,
 };
 
 using content::BrowserThread;
@@ -77,26 +83,50 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
   }
 
   void RunTest(
-      std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests) {
+      std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests,
+      bool collect_stats) {
     HttpPipeliningCompatibilityClient client;
     net::TestCompletionCallback callback;
     client.Start(test_server_.GetURL("").spec(),
-                 requests, callback.callback(),
+                 requests, collect_stats, callback.callback(),
                  context_->GetURLRequestContext());
     callback.WaitForResult();
+  }
 
-    for (size_t i = 0; i < arraysize(kHistogramNames); ++i) {
-      const char* name = kHistogramNames[i];
-      base::Histogram::SampleSet sample = GetHistogram(name);
-      if (ContainsKey(original_samples_, name)) {
-        sample.Subtract(original_samples_[name]);
-      }
-      samples_[name] = sample;
+  void ExpectHistogramCount(int expected_count, int expected_value,
+                            HistogramField field) {
+    const char* name;
+
+    switch (field) {
+      case FIELD_DEPTH:
+        name = "NetConnectivity.Pipeline.Depth";
+        break;
+
+      case FIELD_HTTP_1_1:
+        name = "NetConnectivity.Pipeline.HTTP1.1";
+        break;
+
+      case FIELD_SUCCESS:
+        name = "NetConnectivity.Pipeline.Success";
+        break;
+
+      default:
+        FAIL() << "Unexpected field: " << field;
+    }
+
+    base::Histogram::SampleSet sample = GetHistogram(name);
+    if (ContainsKey(original_samples_, name)) {
+      sample.Subtract(original_samples_[name]);
+    }
+
+    EXPECT_EQ(expected_count, sample.TotalCount()) << name;
+    if (expected_count > 0) {
+      EXPECT_EQ(expected_count, sample.counts(expected_value)) << name;
     }
   }
 
-  base::Histogram::SampleSet GetHistogramValue(int request_id,
-                                               HistogramField field) {
+  void ExpectRequestHistogramCount(int expected_count, int expected_value,
+                                   int request_id, HistogramField field) {
     const char* field_str = "";
     switch (field) {
       case FIELD_STATUS:
@@ -112,13 +142,20 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
         break;
 
       default:
-        NOTREACHED();
-        break;
+        FAIL() << "Unexpected field: " << field;
     }
 
     std::string name = base::StringPrintf("NetConnectivity.Pipeline.%d.%s",
                                           request_id, field_str);
-    return samples_[name];
+    base::Histogram::SampleSet sample = GetHistogram(name.c_str());
+    if (ContainsKey(original_samples_, name)) {
+      sample.Subtract(original_samples_[name]);
+    }
+
+    EXPECT_EQ(expected_count, sample.TotalCount()) << name;
+    if (expected_count > 0) {
+      EXPECT_EQ(expected_count, sample.counts(expected_value)) << name;
+    }
   }
 
   MessageLoopForIO message_loop_;
@@ -176,22 +213,15 @@ TEST_F(HttpPipeliningCompatibilityClientTest, Success) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::SUCCESS));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample.TotalCount());
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample.TotalCount());
-  EXPECT_EQ(1, response_sample.counts(200));
+  ExpectHistogramCount(1, true, FIELD_SUCCESS);
+  ExpectHistogramCount(0, 0, FIELD_DEPTH);
+  ExpectHistogramCount(0, 0, FIELD_HTTP_1_1);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::SUCCESS, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, TooSmall) {
@@ -201,22 +231,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, TooSmall) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::TOO_SMALL));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample.TotalCount());
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample.TotalCount());
-  EXPECT_EQ(1, response_sample.counts(200));
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::TOO_SMALL, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, TooLarge) {
@@ -226,22 +247,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, TooLarge) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::TOO_LARGE));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample.TotalCount());
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample.TotalCount());
-  EXPECT_EQ(1, response_sample.counts(200));
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::TOO_LARGE, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, Mismatch) {
@@ -251,22 +263,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, Mismatch) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::CONTENT_MISMATCH));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample.TotalCount());
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample.TotalCount());
-  EXPECT_EQ(1, response_sample.counts(200));
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::CONTENT_MISMATCH, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, Redirect) {
@@ -276,21 +279,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, Redirect) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::REDIRECTED));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample.TotalCount());
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(0, response_sample.TotalCount());
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::REDIRECTED, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, AuthRequired) {
@@ -300,22 +295,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, AuthRequired) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::BAD_RESPONSE_CODE));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample.TotalCount());
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample.TotalCount());
-  EXPECT_EQ(1, response_sample.counts(401));
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::BAD_RESPONSE_CODE, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(1, 401, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, NoContent) {
@@ -325,22 +311,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, NoContent) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::BAD_RESPONSE_CODE));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample.TotalCount());
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample.TotalCount());
-  EXPECT_EQ(1, response_sample.counts(204));
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::BAD_RESPONSE_CODE, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(1, 204, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, CloseSocket) {
@@ -350,22 +327,14 @@ TEST_F(HttpPipeliningCompatibilityClientTest, CloseSocket) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::NETWORK_ERROR));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(1, network_sample.TotalCount());
-  EXPECT_EQ(1, network_sample.counts(-net::ERR_EMPTY_RESPONSE));
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(0, response_sample.TotalCount());
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::NETWORK_ERROR, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(
+      1, -net::ERR_EMPTY_RESPONSE, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, OldHttpVersion) {
@@ -375,22 +344,13 @@ TEST_F(HttpPipeliningCompatibilityClientTest, OldHttpVersion) {
   std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
   requests.push_back(info);
 
-  RunTest(requests);
+  RunTest(requests, false);
 
-  base::Histogram::SampleSet status_sample =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample.TotalCount());
-  EXPECT_EQ(1, status_sample.counts(
-      HttpPipeliningCompatibilityClient::BAD_HTTP_VERSION));
-
-  base::Histogram::SampleSet network_sample =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample.TotalCount());
-
-  base::Histogram::SampleSet response_sample =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample.TotalCount());
-  EXPECT_EQ(1, response_sample.counts(200));
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::BAD_HTTP_VERSION, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 }
 
 TEST_F(HttpPipeliningCompatibilityClientTest, MultipleRequests) {
@@ -411,52 +371,63 @@ TEST_F(HttpPipeliningCompatibilityClientTest, MultipleRequests) {
   info3.expected_response = "shouldn't matter";
   requests.push_back(info3);
 
-  RunTest(requests);
+  RunTest(requests, true);
 
-  base::Histogram::SampleSet status_sample1 =
-      GetHistogramValue(0, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample1.TotalCount());
-  EXPECT_EQ(1, status_sample1.counts(
-      HttpPipeliningCompatibilityClient::SUCCESS));
+  ExpectHistogramCount(1, false, FIELD_SUCCESS);
 
-  base::Histogram::SampleSet network_sample1 =
-      GetHistogramValue(0, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(0, network_sample1.TotalCount());
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::SUCCESS, 0, FIELD_STATUS);
+  ExpectRequestHistogramCount(0, 0, 0, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(1, 200, 0, FIELD_RESPONSE_CODE);
 
-  base::Histogram::SampleSet response_sample1 =
-      GetHistogramValue(0, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(1, response_sample1.TotalCount());
-  EXPECT_EQ(1, response_sample1.counts(200));
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::NETWORK_ERROR, 1, FIELD_STATUS);
+  ExpectRequestHistogramCount(
+      1, -net::ERR_PIPELINE_EVICTION, 1, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(0, 0, 1, FIELD_RESPONSE_CODE);
 
-  base::Histogram::SampleSet status_sample2 =
-      GetHistogramValue(1, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample2.TotalCount());
-  EXPECT_EQ(1, status_sample2.counts(
-      HttpPipeliningCompatibilityClient::NETWORK_ERROR));
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::NETWORK_ERROR, 2, FIELD_STATUS);
+  ExpectRequestHistogramCount(
+      1, -net::ERR_PIPELINE_EVICTION, 2, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(0, 0, 2, FIELD_RESPONSE_CODE);
 
-  base::Histogram::SampleSet network_sample2 =
-      GetHistogramValue(1, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(1, network_sample2.TotalCount());
-  EXPECT_EQ(1, network_sample2.counts(-net::ERR_PIPELINE_EVICTION));
+  ExpectRequestHistogramCount(
+      1, HttpPipeliningCompatibilityClient::NETWORK_ERROR, 3, FIELD_STATUS);
+  ExpectRequestHistogramCount(
+      1, -net::ERR_PIPELINE_EVICTION, 3, FIELD_NETWORK_ERROR);
+  ExpectRequestHistogramCount(0, 0, 3, FIELD_RESPONSE_CODE);
+}
 
-  base::Histogram::SampleSet response_sample2 =
-      GetHistogramValue(1, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(0, response_sample2.TotalCount());
+TEST_F(HttpPipeliningCompatibilityClientTest, StatsOk) {
+  EXPECT_EQ(HttpPipeliningCompatibilityClient::SUCCESS,
+            internal::ProcessStatsResponse(
+                "max_pipeline_depth:3,were_all_requests_http_1_1:0"));
+  ExpectHistogramCount(1, 3, FIELD_DEPTH);
+  ExpectHistogramCount(1, 0, FIELD_HTTP_1_1);
+}
 
-  base::Histogram::SampleSet status_sample3 =
-      GetHistogramValue(2, FIELD_STATUS);
-  EXPECT_EQ(1, status_sample3.TotalCount());
-  EXPECT_EQ(1, status_sample3.counts(
-      HttpPipeliningCompatibilityClient::NETWORK_ERROR));
+TEST_F(HttpPipeliningCompatibilityClientTest, StatsIndifferentToOrder) {
+  EXPECT_EQ(HttpPipeliningCompatibilityClient::SUCCESS,
+            internal::ProcessStatsResponse(
+                "were_all_requests_http_1_1:1,max_pipeline_depth:2"));
+  ExpectHistogramCount(1, 2, FIELD_DEPTH);
+  ExpectHistogramCount(1, 1, FIELD_HTTP_1_1);
+}
 
-  base::Histogram::SampleSet network_sample3 =
-      GetHistogramValue(2, FIELD_NETWORK_ERROR);
-  EXPECT_EQ(1, network_sample3.TotalCount());
-  EXPECT_EQ(1, network_sample3.counts(-net::ERR_PIPELINE_EVICTION));
+TEST_F(HttpPipeliningCompatibilityClientTest, StatsBadField) {
+  EXPECT_EQ(HttpPipeliningCompatibilityClient::CORRUPT_STATS,
+            internal::ProcessStatsResponse(
+                "foo:3,were_all_requests_http_1_1:1"));
+  ExpectHistogramCount(0, 0, FIELD_DEPTH);
+  ExpectHistogramCount(0, 0, FIELD_HTTP_1_1);
+}
 
-  base::Histogram::SampleSet response_sample3 =
-      GetHistogramValue(2, FIELD_RESPONSE_CODE);
-  EXPECT_EQ(0, response_sample3.TotalCount());
+TEST_F(HttpPipeliningCompatibilityClientTest, StatsTooShort) {
+  EXPECT_EQ(HttpPipeliningCompatibilityClient::CORRUPT_STATS,
+            internal::ProcessStatsResponse("were_all_requests_http_1_1:1"));
+  ExpectHistogramCount(0, 0, FIELD_DEPTH);
+  ExpectHistogramCount(0, 0, FIELD_HTTP_1_1);
 }
 
 }  // anonymous namespace

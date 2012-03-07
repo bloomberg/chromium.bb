@@ -5,6 +5,8 @@
 #include "chrome/browser/net/http_pipelining_compatibility_client.h"
 
 #include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/disk_cache/histogram_macros.h"
@@ -16,7 +18,8 @@
 namespace chrome_browser_net {
 
 HttpPipeliningCompatibilityClient::HttpPipeliningCompatibilityClient()
-    : num_finished_(0) {
+    : num_finished_(0),
+      num_succeeded_(0) {
 }
 
 HttpPipeliningCompatibilityClient::~HttpPipeliningCompatibilityClient() {
@@ -25,6 +28,7 @@ HttpPipeliningCompatibilityClient::~HttpPipeliningCompatibilityClient() {
 void HttpPipeliningCompatibilityClient::Start(
     const std::string& base_url,
     std::vector<RequestInfo>& requests,
+    bool collect_server_stats,
     const net::CompletionCallback& callback,
     net::URLRequestContext* url_request_context) {
   net::HttpNetworkSession* old_session =
@@ -46,6 +50,17 @@ void HttpPipeliningCompatibilityClient::Start(
     requests_.push_back(new Request(i, base_url, requests[i], this,
                                     url_request_context_.get()));
   }
+  if (collect_server_stats) {
+    RequestInfo info;
+    info.filename = "stats.txt";
+    // This is just to determine the expected length of the response.
+    // StatsRequest doesn't expect this exact value, but it does expect this
+    // exact length.
+    info.expected_response =
+        "were_all_requests_http_1_1:1,max_pipeline_depth:5";
+    requests_.push_back(new StatsRequest(requests.size(), base_url, info, this,
+                                         url_request_context_.get()));
+  }
 }
 
 void HttpPipeliningCompatibilityClient::OnRequestFinished(int request_id,
@@ -55,7 +70,12 @@ void HttpPipeliningCompatibilityClient::OnRequestFinished(int request_id,
   CACHE_HISTOGRAM_ENUMERATION(GetMetricName(request_id, "Status"),
                               status, STATUS_MAX);
   ++num_finished_;
+  if (status == SUCCESS) {
+    ++num_succeeded_;
+  }
   if (num_finished_ == requests_.size()) {
+    UMA_HISTOGRAM_BOOLEAN("NetConnectivity.Pipeline.Success",
+                          num_succeeded_ == requests_.size());
     finished_callback_.Run(0);
   }
 }
@@ -192,5 +212,62 @@ void HttpPipeliningCompatibilityClient::Request::Finished(Status result) {
   }
   request_.reset();
 }
+
+HttpPipeliningCompatibilityClient::StatsRequest::StatsRequest(
+    int request_id,
+    const std::string& base_url,
+    const RequestInfo& info,
+    HttpPipeliningCompatibilityClient* client,
+    net::URLRequestContext* url_request_context)
+    : Request(request_id, base_url, info, client, url_request_context) {
+}
+
+HttpPipeliningCompatibilityClient::StatsRequest::~StatsRequest() {
+}
+
+void HttpPipeliningCompatibilityClient::StatsRequest::DoReadFinished() {
+  Status status = internal::ProcessStatsResponse(response());
+  Finished(status);
+}
+
+namespace internal {
+
+HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
+    const std::string& response) {
+  bool were_all_requests_http_1_1 = false;
+  int max_pipeline_depth = 0;
+
+  std::vector<std::pair<std::string, std::string> > kv_pairs;
+  base::SplitStringIntoKeyValuePairs(response, ':', ',', &kv_pairs);
+
+  if (kv_pairs.size() != 2) {
+    return HttpPipeliningCompatibilityClient::CORRUPT_STATS;
+  }
+
+  for (size_t i = 0; i < kv_pairs.size(); ++i) {
+    const std::string& key = kv_pairs[i].first;
+    int value;
+    if (!base::StringToInt(kv_pairs[i].second, &value)) {
+      return HttpPipeliningCompatibilityClient::CORRUPT_STATS;
+    }
+
+    if (key == "were_all_requests_http_1_1") {
+      were_all_requests_http_1_1 = (value == 1);
+    } else if (key == "max_pipeline_depth") {
+      max_pipeline_depth = value;
+    } else {
+      return HttpPipeliningCompatibilityClient::CORRUPT_STATS;
+    }
+  }
+
+  UMA_HISTOGRAM_BOOLEAN("NetConnectivity.Pipeline.HTTP1.1",
+                        were_all_requests_http_1_1);
+  UMA_HISTOGRAM_ENUMERATION("NetConnectivity.Pipeline.Depth",
+                            max_pipeline_depth, 6);
+
+  return HttpPipeliningCompatibilityClient::SUCCESS;
+}
+
+}  // namespace internal
 
 }  // namespace chrome_browser_net

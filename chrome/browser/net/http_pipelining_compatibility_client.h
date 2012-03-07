@@ -44,6 +44,7 @@ class HttpPipeliningCompatibilityClient {
                         // got matched.
     CONTENT_MISMATCH,   // The response didn't match the expected value.
     BAD_HTTP_VERSION,   // Any version older than HTTP/1.1.
+    CORRUPT_STATS,      // The stats.txt response was corrupt.
     STATUS_MAX,
   };
 
@@ -54,9 +55,11 @@ class HttpPipeliningCompatibilityClient {
   // |requests| combined with |base_url|. |base_url| should match the pattern
   // "http://host/". |callback| is invoked once all the requests have completed.
   // URLRequests are initiated in |url_request_context|. Results are recorded to
-  // UMA as they are received.
+  // UMA as they are received. If |collect_server_stats| is true, also collects
+  // pipelining information recorded by the server.
   void Start(const std::string& base_url,
              std::vector<RequestInfo>& requests,
+             bool collect_server_stats,
              const net::CompletionCallback& callback,
              net::URLRequestContext* url_request_context);
 
@@ -82,6 +85,13 @@ class HttpPipeliningCompatibilityClient {
     virtual void OnReadCompleted(net::URLRequest* request,
                                  int bytes_read) OVERRIDE;
 
+   protected:
+    // Called when this request has determined its result. Returns the result to
+    // the |client_|.
+    void Finished(Status result);
+
+    const std::string& response() const { return response_; }
+
    private:
     // Called when a response can be read. Reads bytes into |response_| until it
     // consumes the entire response or it encounters an error.
@@ -89,11 +99,7 @@ class HttpPipeliningCompatibilityClient {
 
     // Called when all bytes have been received. Compares the |response_| to
     // |info_|'s expected response.
-    void DoReadFinished();
-
-    // Called when this request has determined its result. Returns the result to
-    // the |client_|.
-    void Finished(Status result);
+    virtual void DoReadFinished();
 
     const int request_id_;
     scoped_ptr<net::URLRequest> request_;
@@ -101,6 +107,22 @@ class HttpPipeliningCompatibilityClient {
     HttpPipeliningCompatibilityClient* client_;
     scoped_refptr<net::IOBuffer> read_buffer_;
     std::string response_;
+  };
+
+  // A special request that parses a /stats.txt response from the test server.
+  class StatsRequest : public Request {
+   public:
+    // Note that |info.expected_response| is only used to determine the correct
+    // length of the response. The exact string content isn't used.
+    StatsRequest(int request_id,
+                 const std::string& base_url,
+                 const RequestInfo& info,
+                 HttpPipeliningCompatibilityClient* client,
+                 net::URLRequestContext* url_request_context);
+    virtual ~StatsRequest();
+
+   private:
+    virtual void DoReadFinished() OVERRIDE;
   };
 
   // Called when a Request determines its result. Reports to UMA.
@@ -118,9 +140,17 @@ class HttpPipeliningCompatibilityClient {
   ScopedVector<Request> requests_;
   net::CompletionCallback finished_callback_;
   size_t num_finished_;
+  size_t num_succeeded_;
   scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
   scoped_refptr<net::URLRequestContext> url_request_context_;
 };
+
+namespace internal {
+
+HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
+    const std::string& response);
+
+}  // namespace internal
 
 }  // namespace chrome_browser_net
 
