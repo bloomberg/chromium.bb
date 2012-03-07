@@ -178,10 +178,7 @@ class CONTENT_EXPORT AudioRendererHost
   // event is received.
   AudioEntry* LookupByController(media::AudioOutputController* controller);
 
-  // Return resource_context_->media_observer() or a cached copy thereof.
-  // This is necessary because resource_context_ can be destructed before all
-  // AudioEntries have been deleted. The MediaObserver's lifetime is tied to
-  // that of the IO thread, so this is safe.
+  // Returns the MediaObserver from |resource_context_| or NULL if none exists.
   content::MediaObserver* GetMediaObserver();
 
   // A map of stream IDs to audio sources.
@@ -189,7 +186,6 @@ class CONTENT_EXPORT AudioRendererHost
 
   content::ResourceContext* resource_context_;
   AudioManager* audio_manager_;
-  content::MediaObserver* media_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHost);
 };

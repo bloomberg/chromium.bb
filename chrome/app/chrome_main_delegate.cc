@@ -34,7 +34,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
-#include "media/base/media.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -717,12 +716,6 @@ bool ChromeMainDelegate::DelaySandboxInitialization(
 }
 #elif defined(OS_POSIX)
 content::ZygoteForkDelegate* ChromeMainDelegate::ZygoteStarting() {
-  // Each Renderer we spawn will re-attempt initialization of the media
-  // libraries, at which point failure will be detected and handled, so
-  // we do not need to cope with initialization failures here.
-  FilePath media_path;
-  if (PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path))
-    media::InitializeMediaLibrary(media_path);
 #if defined(DISABLE_NACL)
   return NULL;
 #else

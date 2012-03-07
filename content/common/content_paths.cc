@@ -1,10 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/public/common/content_paths.h"
 
 #include "base/file_util.h"
+#include "base/mac/bundle_locations.h"
 #include "base/path_service.h"
 
 namespace content {
@@ -26,6 +27,15 @@ bool PathProvider(int key, FilePath* result) {
       *result = cur;
       return true;
       break;
+    }
+    case DIR_MEDIA_LIBS: {
+#if defined(OS_MACOSX)
+      *result = base::mac::FrameworkBundlePath();
+      *result = result->Append("Libraries");
+      return true;
+#else
+      return PathService::Get(base::DIR_MODULE, result);
+#endif
     }
     default:
       return false;

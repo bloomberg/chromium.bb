@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
  private:
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebKitInitialized() OVERRIDE;
 
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetContentSettingsForCurrentURL(

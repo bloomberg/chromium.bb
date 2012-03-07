@@ -28,7 +28,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/render_view.h"
 #include "crypto/nss_util.h"
-#include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
@@ -223,13 +222,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   std::string error;
   base::LoadNativeLibrary(FilePath(L"crypt32.dll"), &error);
 #endif
-
-  // Note that under Linux, the media library will normally already have
-  // been initialized by the Zygote before this instance became a Renderer.
-  FilePath media_path;
-  PathService::Get(chrome::DIR_MEDIA_LIBS, &media_path);
-  if (!media_path.empty())
-    media::InitializeMediaLibrary(media_path);
 }
 
 ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {
@@ -261,10 +253,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ChromeRenderProcessObserver::WebKitInitialized() {
-  WebRuntimeFeatures::enableMediaPlayer(media::IsMediaLibraryInitialized());
 }
 
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(

@@ -30,6 +30,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../ipc/ipc.gyp:ipc',
+        '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',

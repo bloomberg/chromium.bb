@@ -39,7 +39,6 @@ enum {
                                 // should check that the path exists before
                                 // using it.
   DIR_INTERNAL_PLUGINS,         // Directory where internal plugins reside.
-  DIR_MEDIA_LIBS,               // Directory where the Media libraries reside.
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   DIR_POLICY_FILES,             // Directory for system-wide read-only
                                 // policy files that allow sys-admins

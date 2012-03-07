@@ -868,6 +868,8 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
 }
 
 void RenderMessageFilter::OnMediaLogEvent(const media::MediaLogEvent& event) {
+  if (!resource_context_->GetMediaObserver())
+    return;
   resource_context_->GetMediaObserver()->OnMediaEvent(
       render_process_id_, event);
 }

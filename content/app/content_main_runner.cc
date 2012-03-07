@@ -8,10 +8,12 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/trace_event.h"
+#include "base/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/stats_table.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
@@ -27,6 +29,7 @@
 #include "content/public/common/sandbox_init.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
+#include "media/base/media.h"
 #include "sandbox/src/sandbox_types.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_paths.h"
@@ -197,7 +200,15 @@ int RunZygote(const content::MainFunctionParams& main_function_params,
   };
 
   scoped_ptr<content::ZygoteForkDelegate> zygote_fork_delegate;
-  if (delegate) zygote_fork_delegate.reset(delegate->ZygoteStarting());
+  if (delegate) {
+    zygote_fork_delegate.reset(delegate->ZygoteStarting());
+    // Each Renderer we spawn will re-attempt initialization of the media
+    // libraries, at which point failure will be detected and handled, so
+    // we do not need to cope with initialization failures here.
+    FilePath media_path;
+    if (PathService::Get(content::DIR_MEDIA_LIBS, &media_path))
+      media::InitializeMediaLibrary(media_path);
+  }
 
   // This function call can return multiple times, once per fork().
   if (!ZygoteMain(main_function_params, zygote_fork_delegate.get()))

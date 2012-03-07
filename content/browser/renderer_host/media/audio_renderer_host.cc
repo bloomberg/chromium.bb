@@ -31,8 +31,7 @@ AudioRendererHost::AudioRendererHost(
     content::ResourceContext* resource_context,
     AudioManager* audio_manager)
     : resource_context_(resource_context),
-      audio_manager_(audio_manager),
-      media_observer_(NULL) {
+      audio_manager_(audio_manager) {
 }
 
 AudioRendererHost::~AudioRendererHost() {
@@ -41,6 +40,9 @@ AudioRendererHost::~AudioRendererHost() {
 
 void AudioRendererHost::OnChannelClosing() {
   BrowserMessageFilter::OnChannelClosing();
+
+  // Channel is closing, so |resource_context_| is about to become invalid.
+  resource_context_ = NULL;
 
   // Since the IPC channel is gone, close all requested audio streams.
   DeleteEntries();
@@ -238,7 +240,8 @@ void AudioRendererHost::OnCreateStream(
   // to the map.
   entry->stream_id = stream_id;
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
-  GetMediaObserver()->OnSetAudioStreamStatus(this, stream_id, "created");
+  if (GetMediaObserver())
+    GetMediaObserver()->OnSetAudioStreamStatus(this, stream_id, "created");
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {
@@ -251,7 +254,8 @@ void AudioRendererHost::OnPlayStream(int stream_id) {
   }
 
   entry->controller->Play();
-  GetMediaObserver()->OnSetAudioStreamPlaying(this, stream_id, true);
+  if (GetMediaObserver())
+    GetMediaObserver()->OnSetAudioStreamPlaying(this, stream_id, true);
 }
 
 void AudioRendererHost::OnPauseStream(int stream_id) {
@@ -264,7 +268,8 @@ void AudioRendererHost::OnPauseStream(int stream_id) {
   }
 
   entry->controller->Pause();
-  GetMediaObserver()->OnSetAudioStreamPlaying(this, stream_id, false);
+  if (GetMediaObserver())
+    GetMediaObserver()->OnSetAudioStreamPlaying(this, stream_id, false);
 }
 
 void AudioRendererHost::OnFlushStream(int stream_id) {
@@ -277,13 +282,15 @@ void AudioRendererHost::OnFlushStream(int stream_id) {
   }
 
   entry->controller->Flush();
-  GetMediaObserver()->OnSetAudioStreamStatus(this, stream_id, "flushed");
+  if (GetMediaObserver())
+    GetMediaObserver()->OnSetAudioStreamStatus(this, stream_id, "flushed");
 }
 
 void AudioRendererHost::OnCloseStream(int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  GetMediaObserver()->OnSetAudioStreamStatus(this, stream_id, "closed");
+  if (GetMediaObserver())
+    GetMediaObserver()->OnSetAudioStreamStatus(this, stream_id, "closed");
 
   AudioEntry* entry = LookupById(stream_id);
 
@@ -304,7 +311,8 @@ void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
   if (volume < 0 || volume > 1.0)
     return;
   entry->controller->SetVolume(volume);
-  GetMediaObserver()->OnSetAudioStreamVolume(this, stream_id, volume);
+  if (GetMediaObserver())
+    GetMediaObserver()->OnSetAudioStreamVolume(this, stream_id, volume);
 }
 
 void AudioRendererHost::SendErrorMessage(int32 stream_id) {
@@ -348,7 +356,8 @@ void AudioRendererHost::DeleteEntry(AudioEntry* entry) {
   audio_entries_.erase(entry->stream_id);
 
   // Notify the media observer.
-  GetMediaObserver()->OnDeleteAudioStream(this, entry->stream_id);
+  if (GetMediaObserver())
+    GetMediaObserver()->OnDeleteAudioStream(this, entry->stream_id);
 }
 
 void AudioRendererHost::DeleteEntryOnError(AudioEntry* entry) {
@@ -358,7 +367,8 @@ void AudioRendererHost::DeleteEntryOnError(AudioEntry* entry) {
   // |entry| is destroyed in DeleteEntry().
   SendErrorMessage(entry->stream_id);
 
-  GetMediaObserver()->OnSetAudioStreamStatus(this, entry->stream_id, "error");
+  if (GetMediaObserver())
+    GetMediaObserver()->OnSetAudioStreamStatus(this, entry->stream_id, "error");
   CloseAndDeleteStream(entry);
 }
 
@@ -387,7 +397,7 @@ AudioRendererHost::AudioEntry* AudioRendererHost::LookupByController(
 
 content::MediaObserver* AudioRendererHost::GetMediaObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (!media_observer_)
-    media_observer_ = resource_context_->GetMediaObserver();
-  return media_observer_;
+  if (resource_context_)
+    return resource_context_->GetMediaObserver();
+  return NULL;
 }

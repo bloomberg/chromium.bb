@@ -51,6 +51,8 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   virtual ~MockAudioRendererHost() {
+    // Make sure all audio streams have been deleted.
+    EXPECT_EQ(0u, audio_entries_.size());
   }
 
   // A list of mock methods.
@@ -189,7 +191,6 @@ class AudioRendererHostTest : public testing::Test {
   void Create() {
     EXPECT_CALL(*observer_,
                 OnSetAudioStreamStatus(_, kStreamId, "created"));
-    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
 
     InSequence s;
     // We will first receive an OnStreamCreated() signal.
@@ -262,6 +263,9 @@ class AudioRendererHostTest : public testing::Test {
 
     // Expect an error signal sent through IPC.
     EXPECT_CALL(*host_, OnStreamError(kStreamId));
+
+    // Expect the audio stream will be deleted.
+    EXPECT_CALL(*observer_, OnDeleteAudioStream(_, kStreamId));
 
     // Simulate an error sent from the audio device.
     host_->OnError(controller, 0);

@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
+#include "base/path_service.h"
 #include "base/shared_memory.h"
 #include "base/string_number_conversions.h"  // Temporary
 #include "base/threading/thread_local.h"
@@ -37,6 +38,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_database_observer_impl.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -55,6 +57,7 @@
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
+#include "media/base/media.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
@@ -224,6 +227,13 @@ void RenderThreadImpl::Init() {
   AddFilter(new IndexedDBMessageFilter);
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
+
+  // Note that under Linux, the media library will normally already have
+  // been initialized by the Zygote before this instance became a Renderer.
+  FilePath media_path;
+  PathService::Get(content::DIR_MEDIA_LIBS, &media_path);
+  if (!media_path.empty())
+    media::InitializeMediaLibrary(media_path);
 
   TRACE_EVENT_END_ETW("RenderThreadImpl::Init", 0, "");
 }
@@ -518,6 +528,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   WebKit::WebRuntimeFeatures::enableMediaSource(
       command_line.HasSwitch(switches::kEnableMediaSource));
+
+  WebRuntimeFeatures::enableMediaPlayer(
+      media::IsMediaLibraryInitialized());
 
   WebKit::WebRuntimeFeatures::enableMediaStream(
       command_line.HasSwitch(switches::kEnableMediaStream));
