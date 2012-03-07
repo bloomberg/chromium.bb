@@ -1263,8 +1263,10 @@ create_outputs(struct drm_compositor *ec, int option_connector,
 	}
 
 	ec->crtcs = calloc(resources->count_crtcs, sizeof(uint32_t));
-	if (!ec->crtcs)
+	if (!ec->crtcs) {
+		drmModeFreeResources(resources);
 		return -1;
+	}
 
 	ec->num_crtcs = resources->count_crtcs;
 	memcpy(ec->crtcs, resources->crtcs, sizeof(uint32_t) * ec->num_crtcs);
@@ -1295,6 +1297,7 @@ create_outputs(struct drm_compositor *ec, int option_connector,
 
 	if (wl_list_empty(&ec->base.output_list)) {
 		fprintf(stderr, "No currently active connector found.\n");
+		drmModeFreeResources(resources);
 		return -1;
 	}
 
