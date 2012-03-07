@@ -160,12 +160,11 @@ m17n:mr:itrans	us	mr
 # m17n:mr:inscript	us	mr
 
 # Tamil
+m17n:ta:phonetic	us	ta
+m17n:ta:inscript	us	ta
+m17n:ta:tamil99	us	ta
 m17n:ta:itrans	us	ta
-# TODO(yusukes): Support the following IMEs in m17n-db-contrib.
-# m17n:ta:phonetic	us	ta
-# m17n:ta:inscript	us	ta
-# m17n:ta:tamil99	us	ta
-# m17n:ta:typewriter	us	ta
+m17n:ta:typewriter	us	ta
 
 # Telugu
 m17n:te:itrans	us	te

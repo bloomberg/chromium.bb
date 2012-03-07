@@ -13481,6 +13481,26 @@ Some features may be unavailable.  Please check that the profile exists and you 
                desc="Explanatory message about how to select the previous input method">
         Press ctrl+space to select the previous input method.
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_PHONETIC"
+               desc="The label for a Tamil input method">
+        Tamil input method (Phonetic)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_INSCRIPT"
+               desc="The label for a Tamil input method">
+        Tamil input method (InScript)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_TAMIL99"
+               desc="The label for a Tamil input method">
+        Tamil input method (Tamil99)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_ITRANS"
+               desc="The label for a Tamil input method">
+        Tamil input method (itrans)
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_TAMIL_TYPEWRITER"
+               desc="The label for a Tamil input method">
+        Tamil input method (Typewriter)
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD"
                desc="The label for a input method">
         Standard input method
