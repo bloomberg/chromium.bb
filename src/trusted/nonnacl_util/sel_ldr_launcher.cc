@@ -256,12 +256,17 @@ void SelLdrLauncher::InitCommandLine(const vector<nacl::string>& prefix,
   // The arguments we want to pass to the service runtime are
   // "-X" causes the service runtime to create a bound socket and socket
   //      address at descriptors 3 and 4 in the untrusted code for the nexe or
-  //      IRT to use.  The argument to "-X", dest_fd, is the file descriptor
-  //      or Windows handle over which the internal representation of the sock
-  //      addr is sent in order to bootstrap communications with the untrusted
+  //      IRT to use.  The argument to "-X", 5, is the nexe namespace file
+  //      descriptor over which the internal representation of the sock addr
+  //      is sent in order to bootstrap communications with the untrusted
   //      NaCl module.
+  // "-i" maps the host OS file descriptor dest_fd into the nexe namespace as
+  //      file descriptor 5.
+  // TODO(sehr): remove the -i option and use the dest_fd directly with -X.
   sel_ldr_argv_.push_back("-X");
-  sel_ldr_argv_.push_back(dest_fd);
+  sel_ldr_argv_.push_back("5");
+  sel_ldr_argv_.push_back("-i");
+  sel_ldr_argv_.push_back(nacl::string("5:") + dest_fd);
 }
 
 void SelLdrLauncher::CloseHandlesAfterLaunch() {

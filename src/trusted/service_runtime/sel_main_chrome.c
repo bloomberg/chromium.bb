@@ -32,6 +32,8 @@
 #include "native_client/src/trusted/service_runtime/sel_qualify.h"
 #include "native_client/src/trusted/service_runtime/win/exception_patch/ntdll_patch.h"
 
+static int const kSrpcFd = 5;
+
 int verbosity = 0;
 
 static int g_irt_file_desc = -1;
@@ -87,7 +89,7 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   int ac = 1;
   const char **envp;
   struct NaClApp state;
-  NaClHandle export_addr_to;
+  int export_addr_to = kSrpcFd; /* Used to be set by -X. */
   struct NaClApp *nap = &state;
   NaClErrorCode errcode = LOAD_INTERNAL;
   int ret_code = 1;
@@ -126,10 +128,9 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
    * are 3 and 4.
    */
 
-  /* send socket address on IMC handle - corresponds to sel_main.c's "-X" */
+  /* import IMC handle - used to be "-i" */
   CHECK(handle_count == 1);
-  export_addr_to = handles[0];
-  CHECK(export_addr_to != NACL_INVALID_HANDLE);
+  NaClAddImcHandle(nap, handles[0], export_addr_to);
 
   /*
    * in order to report load error to the browser plugin through the
@@ -205,24 +206,34 @@ void NaClMainForChromium(int handle_count, const NaClHandle *handles,
   NaClGdbHook(&state);
 
   /*
-   * Create a bound socket and socket address pair and bind the former to
+   * If export_addr_to is set to a non-negative integer, we create a
+   * bound socket and socket address pair and bind the former to
    * descriptor 3 and the latter to descriptor 4.  The socket address
    * is written out to the export_addr_to descriptor.
    *
    * The service runtime also accepts a connection on the bound socket
    * and spawns a secure command channel thread to service it.
+   *
+   * If export_addr_to is -1, we only create the bound socket and
+   * socket address pair, and we do not export to an IMC socket.  This
+   * use case is typically only used in testing, where we only "dump"
+   * the socket address to stdout or similar channel.
    */
-  NaClCreateServiceSocket(nap);
-  NaClSendServiceAddressTo(nap, export_addr_to);
-  /*
-   * NB: spawns a thread that uses the command channel.  we do
-   * this after NaClAppLoadFile so that NaClApp object is more
-   * fully populated.  Hereafter any changes to nap should be done
-   * while holding locks.
-   */
-  NaClSecureCommandChannel(nap);
+  if (-2 < export_addr_to) {
+    NaClCreateServiceSocket(nap);
+    if (0 <= export_addr_to) {
+      NaClSendServiceAddressTo(nap, export_addr_to);
+      /*
+       * NB: spawns a thread that uses the command channel.  we do
+       * this after NaClAppLoadFile so that NaClApp object is more
+       * fully populated.  Hereafter any changes to nap should be done
+       * while holding locks.
+       */
+      NaClSecureCommandChannel(nap);
 
-  NaClLog(4, "NaClSecureCommandChannel has spawned channel\n");
+      NaClLog(4, "NaClSecureCommandChannel has spawned channel\n");
+    }
+  }
   NaClLog(4, "secure service = %"NACL_PRIxPTR"\n",
           (uintptr_t) nap->secure_service);
 
