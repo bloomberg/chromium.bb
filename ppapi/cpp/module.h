@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,10 +56,10 @@ class Module {
 
   /// The get_browser_interface() function returns the internal
   /// <code>get_browser_interface</code> pointer.
-  /// TODO(sehr): This should be removed once the NaCl browser plugin no longer
-  /// needs it.
   ///
   /// @return A <code>PPB_GetInterface</code> internal pointer.
+  // TODO(sehr): This should be removed once the NaCl browser plugin no longer
+  // needs it.
   PPB_GetInterface get_browser_interface() const {
     return get_browser_interface_;
   }
@@ -120,13 +120,12 @@ class Module {
   // InternalInit() sets the browser interface and calls the regular Init()
   /// function that can be overridden by the base classes.
   ///
-  /// TODO(brettw) make this private when I can figure out how to make the
-  /// initialize function a friend.
-  ///
   /// @param[in] mod A <code>PP_Module</code>.
   /// @param[in] get_browser_interface The browser interface to set.
   ///
   /// @return true if successful, otherwise false.
+  // TODO(brettw) make this private when I can figure out how to make the
+  // initialize function a friend.
   bool InternalInit(PP_Module mod,
                     PPB_GetInterface get_browser_interface);
 

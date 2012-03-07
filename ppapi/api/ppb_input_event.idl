@@ -64,9 +64,12 @@ enum PP_InputEvent_Type {
 
   /**
    * Notification that a key transitioned from "up" to "down".
-   * TODO(brettw) differentiate from KEYDOWN.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
+   */
+
+  /*
+   * TODO(brettw) differentiate from KEYDOWN.
    */
   PP_INPUTEVENT_TYPE_RAWKEYDOWN = 6,
 
@@ -96,9 +99,11 @@ enum PP_InputEvent_Type {
   PP_INPUTEVENT_TYPE_CHAR = 9,
 
   /**
-   * TODO(brettw) when is this used?
-   *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
+   */
+
+  /*
+   * TODO(brettw) when is this used?
    */
   PP_INPUTEVENT_TYPE_CONTEXTMENU = 10,
 
@@ -516,7 +521,7 @@ interface PPB_MouseInputEvent {
    */
   [returnByValue] PP_Point GetPosition([in] PP_Resource mouse_event);
 
-  /**
+  /*
    * TODO(brettw) figure out exactly what this means.
    */
   int32_t GetClickCount([in] PP_Resource mouse_event);

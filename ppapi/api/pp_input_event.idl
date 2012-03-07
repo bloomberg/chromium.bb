@@ -112,7 +112,7 @@ struct PP_InputEvent_Mouse {
    */
   float_t y;
 
-  // TODO(brettw) figure out exactly what this means.
+  /* TODO(brettw) figure out exactly what this means.*/
   int32_t click_count;
 };
 

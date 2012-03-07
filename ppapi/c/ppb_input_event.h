@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Tue Feb 14 10:47:45 2012. */
+/* From ppb_input_event.idl modified Mon Mar  5 10:11:05 2012. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -85,9 +85,11 @@ typedef enum {
   PP_INPUTEVENT_TYPE_WHEEL = 5,
   /**
    * Notification that a key transitioned from "up" to "down".
-   * TODO(brettw) differentiate from KEYDOWN.
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_KEYBOARD class.
+   */
+  /*
+   * TODO(brettw) differentiate from KEYDOWN.
    */
   PP_INPUTEVENT_TYPE_RAWKEYDOWN = 6,
   /**
@@ -113,9 +115,10 @@ typedef enum {
    */
   PP_INPUTEVENT_TYPE_CHAR = 9,
   /**
-   * TODO(brettw) when is this used?
-   *
    * Register for this event using the PP_INPUTEVENT_CLASS_MOUSE class.
+   */
+  /*
+   * TODO(brettw) when is this used?
    */
   PP_INPUTEVENT_TYPE_CONTEXTMENU = 10,
   /**
@@ -486,7 +489,7 @@ struct PPB_MouseInputEvent_1_1 {
    * mouse drags. The return value will be (0, 0) for non-mouse events.
    */
   struct PP_Point (*GetPosition)(PP_Resource mouse_event);
-  /**
+  /*
    * TODO(brettw) figure out exactly what this means.
    */
   int32_t (*GetClickCount)(PP_Resource mouse_event);
