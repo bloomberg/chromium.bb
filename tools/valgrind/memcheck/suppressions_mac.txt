@@ -2358,12 +2358,4 @@
    fun:find_registered_purgeable_zone
    fun:malloc_make_purgeable
 }
-{
-   bug_116526
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4base19SequencedWorkerPoolC*
-   ...
-   fun:_ZN4base46SequencedWorkerPoolTest_DiscardOnShutdown_Test*
-}
+
