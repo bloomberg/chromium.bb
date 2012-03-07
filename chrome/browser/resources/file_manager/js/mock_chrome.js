@@ -301,6 +301,7 @@ chrome.fileBrowserPrivate = {
       TYPE_COLUMN_LABEL: 'Type',
       DATE_COLUMN_LABEL: 'Date',
       PREVIEW_COLUMN_LABEL: 'Preview',
+      OFFILE_COLUMN_LABEL: 'Available offline',
 
       ERROR_CREATING_FOLDER: 'Unable to create folder "$1": $2',
       ERROR_INVALID_CHARACTER: 'Invalid character: $1',

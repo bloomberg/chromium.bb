@@ -9927,6 +9927,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PREVIEW_COLUMN_LABEL" desc="Preview column label.">
         Preview
       </message>
+       <message name="IDS_FILE_BROWSER_OFFLINE_COLUMN_LABEL" desc="Available offline column label.">
+        Available offline
+      </message>
 
       <message name="IDS_FILE_BROWSER_ERROR_CREATING_FOLDER" desc="Message displayed when we can't create a folder.">
         Unable to create folder "$1": $2

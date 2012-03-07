@@ -314,6 +314,49 @@ FileManager.prototype = {
         callback.bind(null, false, {}));
   }
 
+  function cacheGDataProps(entry, successCallback,
+                           opt_errorCallback, opt_sync) {
+    if ('gdata_' in entry) {
+      invokeCallback(successCallback, !!opt_sync, entry);
+      return;
+    }
+
+    entry.getGDataFileProperties = entry.getGDataFileProperties ||
+                                   function(callback) {
+      var queue = cacheGDataProps.queue_;
+      queue.callbacks.push(callback);
+      queue.urls.push(entry.toURL());
+      if (!queue.scheduled) {
+        queue.scheduled = true;
+        setTimeout(function() {
+          queue.scheduled = false;
+          var callbacks = queue.callbacks;
+          var urls = queue.urls;
+          chrome.fileBrowserPrivate.getGDataFileProperties(urls,
+            function(props) {
+              for (var i = 0; i < callbacks.length; i++) {
+                callbacks[i](props[i]);
+              }
+            });
+          queue.callbacks = [];
+          queue.urls = [];
+        }, 0);
+      }
+    };
+
+    batchAsyncCall(entry, 'getGDataFileProperties', function(props) {
+      entry.gdata_ = props;
+      if (successCallback)
+          successCallback(entry);
+    }, opt_errorCallback);
+  }
+
+  cacheGDataProps.queue_ = {
+    callbacks: [],
+    urls: [],
+    scheduled: false
+  };
+
   function removeChildren(element) {
     element.textContent = '';
   }
@@ -1134,6 +1177,7 @@ FileManager.prototype = {
     }
 
     this.listType_ = type;
+    this.updateColumnModel_();
     this.onResize_();
 
     this.table_.list.endBatchUpdates();
@@ -1180,12 +1224,17 @@ FileManager.prototype = {
           this.renderNameColumnHeader_.bind(this, columns[0].name);
     }
 
-    this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
+    this.regularColumnModel_ = new cr.ui.table.TableColumnModel(columns);
+
+    columns.push(
+       new cr.ui.table.TableColumn('offline', str('OFFLINE_COLUMN_LABEL'), 21));
+    columns[4].renderFunction = this.renderOffline_.bind(this);
+
+    this.gdataColumnModel_ = new cr.ui.table.TableColumnModel(columns);
+
     // Don't pay attention to double clicks on the table header.
     this.table_.querySelector('.list').addEventListener(
         'dblclick', this.onDetailDoubleClick_.bind(this));
-
-    this.table_.columnModel = new cr.ui.table.TableColumnModel(columns);
 
     cr.ui.contextMenuHandler.addContextMenuProperty(
         this.table_.querySelector('.list'));
@@ -1277,6 +1326,15 @@ FileManager.prototype = {
     }
 
   };
+
+  FileManager.prototype.updateColumnModel_ = function() {
+    if (this.listType_ != FileManager.ListType.DETAIL)
+      return;
+    this.table_.columnModel =
+        this.directoryModel_.rootType == DirectoryModel.RootType.GDATA ?
+            this.gdataColumnModel_ : this.regularColumnModel_;
+  };
+
   /**
    * Respond to a command being executed.
    */
@@ -1826,6 +1884,24 @@ FileManager.prototype = {
         div.textContent = self.shortDateFormatter_.format(entry.cachedMtime_);
       }
     }, null, true);
+  };
+
+  FileManager.prototype.renderOffline_ = function(entry, columnId, table) {
+    var doc = this.document_;
+    var div = doc.createElement('div');
+    div.className = 'offline';
+
+    var checkbox = doc.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.addEventListener('click',
+                              this.onPinClick_.bind(this, checkbox, entry));
+
+    cacheGDataProps(entry, function(entry) {
+      checkbox.checked = entry.gdata_.isPinned;
+      div.appendChild(checkbox);
+    });
+    // this.updateDate_(div, entry);
+    return div;
   };
 
   /**
@@ -2979,6 +3055,18 @@ FileManager.prototype = {
     }
   };
 
+  FileManager.prototype.onPinClick_ = function(checkbox, entry, event) {
+    function callback(props) {
+      checkbox.checked = entry.gdata_.isPinned = props[0].isPinned;
+    }
+
+    if (checkbox.checked) {
+      chrome.fileBrowserPrivate.pinGDataFile([entry.toURL()], callback);
+      console.log('Pinning file ', entry.toURL());
+    }
+    event.preventDefault();
+  };
+
   FileManager.prototype.selectDefaultPathInFilenameInput_ = function() {
     var input = this.filenameInput_;
     input.focus();
@@ -3189,6 +3277,7 @@ FileManager.prototype = {
     this.updateCommands_();
     this.updateOkButton_();
     this.updateBreadcrumbs_();
+    this.updateColumnModel_();
 
     // Updated when a user clicks on the label of a file, used to detect
     // when a click is eligible to trigger a rename.  Can be null, or
