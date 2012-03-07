@@ -15,6 +15,15 @@ cr.define('ntp', function() {
   var MenuButton = cr.ui.MenuButton;
   var OtherSessionsMenuButton = cr.ui.define('button');
 
+  // Histogram buckets for UMA tracking of menu usage.
+  var HISTOGRAM_EVENT = {
+      INITIALIZED: 0,
+      SHOW_MENU: 1,
+      LINK_CLICKED: 2,
+      LINK_RIGHT_CLICKED: 3
+  };
+  var HISTOGRAM_EVENT_LIMIT = HISTOGRAM_EVENT.LINK_RIGHT_CLICKED + 1;
+
   OtherSessionsMenuButton.prototype = {
     __proto__: MenuButton.prototype,
 
@@ -23,6 +32,9 @@ cr.define('ntp', function() {
       this.menu = new Menu;
       cr.ui.decorate(this.menu, Menu);
       this.menu.classList.add('footer-menu');
+      this.menu.addEventListener('click', this.onClick_.bind(this), true);
+      this.menu.addEventListener('contextmenu',
+                                 this.onContextMenu_.bind(this), true);
       document.body.appendChild(this.menu);
 
       this.sessions_ = [];
@@ -31,6 +43,36 @@ cr.define('ntp', function() {
 
       this.hidden = false;
       this.showPromo_();
+
+      chrome.send('getForeignSessions');
+      this.recordUmaEvent_(HISTOGRAM_EVENT.INITIALIZED);
+    },
+
+    /**
+     * Record an event in the UMA histogram.
+     * @param {Number} eventId The id of the event to be recorded.
+     */
+    recordUmaEvent_: function(eventId) {
+      chrome.send('metricsHandler:recordInHistogram',
+          ['NewTabPage.OtherSessionsMenu', eventId, HISTOGRAM_EVENT_LIMIT]);
+    },
+
+    /**
+     * Handle a click event for an object in the menu's DOM subtree.
+     */
+    onClick_: function(e) {
+      // Only record the action if it occurred on one of the menu items.
+      if (findAncestorByClass(e.target, 'footer-menu-item'))
+        this.recordUmaEvent_(HISTOGRAM_EVENT.LINK_CLICKED);
+    },
+
+    /**
+     * Handle a context menu event for an object in the menu's DOM subtree.
+     */
+    onContextMenu_: function(e) {
+      // Only record the action if it occurred in one of the menu items.
+      if (findAncestorByClass(e.target, 'footer-menu-item'))
+        this.recordUmaEvent_(HISTOGRAM_EVENT.LINK_RIGHT_CLICKED);
     },
 
     /**
@@ -42,10 +84,14 @@ cr.define('ntp', function() {
     showMenu: function() {
       if (this.sessions_.length == 0)
         chrome.send('getForeignSessions');
-
+      this.recordUmaEvent_(HISTOGRAM_EVENT.SHOW_MENU);
       MenuButton.prototype.showMenu.call(this);
     },
 
+    /**
+     * Add the UI for a foreign session to the menu.
+     * @param {Object} session Object describing the foreign session.
+     */
     addSession_: function(session) {
       var doc = this.ownerDocument;
 
@@ -70,6 +116,11 @@ cr.define('ntp', function() {
       }
     },
 
+    /**
+     * Create the UI for the promo and place it inside the menu.
+     * The promo is shown instead of foreign session data when tab sync is
+     * not enabled for a profile.
+     */
     showPromo_: function() {
       var message = localStrings.getString('otherSessionsEmpty');
       this.menu.appendChild(this.ownerDocument.createTextNode(message));

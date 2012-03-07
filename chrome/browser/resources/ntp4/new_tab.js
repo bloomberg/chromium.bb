@@ -111,7 +111,6 @@ cr.define('ntp', function() {
     if (templateData.showOtherSessionsMenu) {
       cr.ui.decorate($('other-sessions-menu-button'),
                      ntp.OtherSessionsMenuButton);
-      chrome.send('getForeignSessions');
     }
 
     newTabView.appendTilePage(new ntp.MostVisitedPage(),
