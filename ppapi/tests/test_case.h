@@ -206,6 +206,14 @@ class TestCaseFactory {
 #define ASSERT_DOUBLE_EQ(a, b) ASSERT_TRUE( \
     std::fabs((a)-(b)) <= std::numeric_limits<double>::epsilon())
 
+// Runs |function| as a subtest and asserts that it has passed.
+#define ASSERT_SUBTEST_SUCCESS(function) \
+  do { \
+    std::string result = (function); \
+    if (!result.empty()) \
+      return result; \
+  } while (false)
+
 #define PASS() return std::string()
 
 #endif  // PPAPI_TESTS_TEST_CASE_H_

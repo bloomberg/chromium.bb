@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,12 +22,6 @@
 #include "ppapi/utility/completion_callback_factory.h"
 
 REGISTER_TEST_CASE(Transport);
-
-#define RUN_SUBTEST(function) { \
-    std::string result = function; \
-    if (!result.empty()) \
-      return result; \
-  }
 
 namespace {
 
@@ -170,7 +164,7 @@ std::string TestTransport::Clean() {
 }
 
 std::string TestTransport::TestCreate() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
+  ASSERT_SUBTEST_SUCCESS(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
 
   Clean();
 
@@ -178,7 +172,7 @@ std::string TestTransport::TestCreate() {
 }
 
 std::string TestTransport::TestSetProperty() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_STREAM));
+  ASSERT_SUBTEST_SUCCESS(InitTargets(PP_TRANSPORTTYPE_STREAM));
 
   // Try settings STUN and Relay properties.
   ASSERT_EQ(transport1_->SetProperty(
@@ -230,8 +224,8 @@ std::string TestTransport::TestSetProperty() {
 }
 
 std::string TestTransport::TestConnect() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
-  RUN_SUBTEST(Connect());
+  ASSERT_SUBTEST_SUCCESS(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
+  ASSERT_SUBTEST_SUCCESS(Connect());
 
   Clean();
 
@@ -241,8 +235,8 @@ std::string TestTransport::TestConnect() {
 // Creating datagram connection and try sending data over it. Verify
 // that at least some packets are received (some packets may be lost).
 std::string TestTransport::TestSendDataUdp() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
-  RUN_SUBTEST(Connect());
+  ASSERT_SUBTEST_SUCCESS(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
+  ASSERT_SUBTEST_SUCCESS(Connect());
 
   const int kNumPackets = 100;
   const int kSendBufferSize = 1200;
@@ -294,8 +288,8 @@ std::string TestTransport::TestSendDataUdp() {
 // Creating reliable (TCP-like) connection and try sending data over
 // it. Verify that all data is received correctly.
 std::string TestTransport::TestSendDataTcp() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_STREAM));
-  RUN_SUBTEST(Connect());
+  ASSERT_SUBTEST_SUCCESS(InitTargets(PP_TRANSPORTTYPE_STREAM));
+  ASSERT_SUBTEST_SUCCESS(Connect());
 
   const int kTcpSendSize = 100000;
 
@@ -337,8 +331,8 @@ std::string TestTransport::TestSendDataTcp() {
 }
 
 std::string TestTransport::TestConnectAndCloseUdp() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
-  RUN_SUBTEST(Connect());
+  ASSERT_SUBTEST_SUCCESS(InitTargets(PP_TRANSPORTTYPE_DATAGRAM));
+  ASSERT_SUBTEST_SUCCESS(Connect());
 
   std::vector<char> recv_buffer(kReadBufferSize);
   TestCompletionCallback recv_cb(instance_->pp_instance());
@@ -358,8 +352,8 @@ std::string TestTransport::TestConnectAndCloseUdp() {
 }
 
 std::string TestTransport::TestConnectAndCloseTcp() {
-  RUN_SUBTEST(InitTargets(PP_TRANSPORTTYPE_STREAM));
-  RUN_SUBTEST(Connect());
+  ASSERT_SUBTEST_SUCCESS(InitTargets(PP_TRANSPORTTYPE_STREAM));
+  ASSERT_SUBTEST_SUCCESS(Connect());
 
   std::vector<char> recv_buffer(kReadBufferSize);
   TestCompletionCallback recv_cb(instance_->pp_instance());

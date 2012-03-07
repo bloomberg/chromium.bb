@@ -14,10 +14,6 @@
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
-#define ASSERT_SUCCESS(error_message) \
-  if (!(error_message).empty()) \
-    return (error_message);
-
 using pp::NetAddressPrivate;
 using pp::TCPSocketPrivate;
 
@@ -176,8 +172,7 @@ std::string TestTCPServerSocketPrivate::SyncListen(PP_Resource socket,
                                                    uint16_t* port,
                                                    int32_t backlog) {
   PP_NetAddress_Private base_address, local_address;
-  std::string error_message = GetLocalAddress(&base_address);
-  ASSERT_SUCCESS(error_message);
+  ASSERT_SUBTEST_SUCCESS(GetLocalAddress(&base_address));
 
   // TODO (ygorshenin): find more efficient way to select available
   // ports.
@@ -233,12 +228,10 @@ std::string TestTCPServerSocketPrivate::SendMessage(PP_Resource dst,
                                                     const char* message) {
   const size_t message_size = strlen(message);
 
-  std::string error_message = SyncWrite(src, message, message_size);
-  ASSERT_SUCCESS(error_message);
+  ASSERT_SUBTEST_SUCCESS(SyncWrite(src, message, message_size));
 
   std::vector<char> message_buffer(message_size);
-  error_message = SyncRead(dst, &message_buffer[0], message_size);
-  ASSERT_SUCCESS(error_message);
+  ASSERT_SUBTEST_SUCCESS(SyncRead(dst, &message_buffer[0], message_size));
   ASSERT_EQ(0, strncmp(message, &message_buffer[0], message_size));
   PASS();
 }
@@ -246,10 +239,8 @@ std::string TestTCPServerSocketPrivate::SendMessage(PP_Resource dst,
 std::string TestTCPServerSocketPrivate::TestConnectedSockets(PP_Resource lhs,
                                                              PP_Resource rhs) {
   static const char* const kMessage = "simple message";
-  std::string error_message = SendMessage(lhs, rhs, kMessage);
-  ASSERT_SUCCESS(error_message);
-  error_message = SendMessage(rhs, lhs, kMessage);
-  ASSERT_SUCCESS(error_message);
+  ASSERT_SUBTEST_SUCCESS(SendMessage(lhs, rhs, kMessage));
+  ASSERT_SUBTEST_SUCCESS(SendMessage(rhs, lhs, kMessage));
   PASS();
 }
 
@@ -277,8 +268,7 @@ std::string TestTCPServerSocketPrivate::TestListen() {
   ASSERT_TRUE(server_socket != 0);
 
   uint16_t port;
-  std::string error_message = SyncListen(server_socket, &port, kBacklog);
-  ASSERT_SUCCESS(error_message);
+  ASSERT_SUBTEST_SUCCESS(SyncListen(server_socket, &port, kBacklog));
 
   TestCompletionCallback accept_callback(instance_->pp_instance(),
                                          force_async_);
@@ -305,9 +295,8 @@ std::string TestTCPServerSocketPrivate::TestListen() {
   ASSERT_TRUE(tcp_socket_private_interface_->IsTCPSocket(accepted_socket));
 
   ASSERT_TRUE(IsSocketsConnected(client_socket.pp_resource(), accepted_socket));
-  error_message = TestConnectedSockets(client_socket.pp_resource(),
-                                       accepted_socket);
-  ASSERT_SUCCESS(error_message);
+  ASSERT_SUBTEST_SUCCESS(TestConnectedSockets(client_socket.pp_resource(),
+                                              accepted_socket));
 
   tcp_socket_private_interface_->Disconnect(accepted_socket);
   client_socket.Disconnect();
@@ -326,8 +315,7 @@ std::string TestTCPServerSocketPrivate::TestBacklog() {
   ASSERT_TRUE(server_socket != 0);
 
   uint16_t port;
-  std::string error_message = SyncListen(server_socket, &port, 2 * kBacklog);
-  ASSERT_SUCCESS(error_message);
+  ASSERT_SUBTEST_SUCCESS(SyncListen(server_socket, &port, 2 * kBacklog));
 
   std::vector<TCPSocketPrivate*> client_sockets(kBacklog);
   std::vector<TestCompletionCallback*> connect_callbacks(kBacklog);
