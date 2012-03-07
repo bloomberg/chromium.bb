@@ -101,8 +101,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
-// Flaky: http://crbug.com/70773
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_DoesntHangTest) {
+// Flaky: http://crbug.com/114638
+// Moving from DISABLED -> FLAKY because we think the flakiness was fixed just
+// before the mass FLAKY -> DISABLED move and want to ensure that's the case
+// before re-enabling.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, FLAKY_DoesntHangTest) {
   SimpleTest(testUrl(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
   ui_test_utils::CrashTab(browser()->GetSelectedWebContents());
