@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/window.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -38,6 +39,10 @@
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
 
 namespace {
 
@@ -184,7 +189,15 @@ class InstalledBubbleContent : public views::View,
   // Implements the views::LinkListener interface.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
     GetWidget()->Close();
-    ExtensionInstallUI::OpenAppInstalledNTP(browser_, extension_id_);
+    if (NewTabUI::ShouldShowAppsPage()) {
+      ExtensionInstallUI::OpenAppInstalledNTP(browser_, extension_id_);
+    } else {
+#if defined(USE_ASH)
+      ash::Shell::GetInstance()->ToggleAppList();
+#else
+      NOTREACHED();
+#endif
+    }
   }
 
  private:

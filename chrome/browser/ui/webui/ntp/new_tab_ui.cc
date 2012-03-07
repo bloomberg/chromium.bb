@@ -59,7 +59,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/shell.h"
 #endif
 
@@ -297,7 +297,7 @@ bool NewTabUI::ShouldShowAppInstallHint() {
 
 // static
 bool NewTabUI::ShouldShowAppsPage() {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   // Ash shows apps in app list thus should not show apps page in NTP4 unless
   // it is running in compact mode (crbug.com/116852).
   if (ash::Shell::HasInstance())

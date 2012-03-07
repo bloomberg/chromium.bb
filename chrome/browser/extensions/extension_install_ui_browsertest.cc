@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -93,11 +94,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1,
                                                 browser()->profile()));
 
-  EXPECT_EQ(num_tabs + 1, browser()->tab_count());
-  WebContents* web_contents = browser()->GetSelectedWebContents();
-  ASSERT_TRUE(web_contents);
-  EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
-                              "chrome://newtab/", false));
+  if (NewTabUI::ShouldShowAppsPage()) {
+    EXPECT_EQ(num_tabs + 1, browser()->tab_count());
+    WebContents* web_contents = browser()->GetSelectedWebContents();
+    ASSERT_TRUE(web_contents);
+    EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
+                                "chrome://newtab/", false));
+  } else {
+    // TODO(xiyuan): Figure out how to test extension installed bubble?
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
@@ -114,9 +119,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                                                 incognito_profile));
 
   EXPECT_EQ(num_incognito_tabs, incognito_browser->tab_count());
-  EXPECT_EQ(num_normal_tabs + 1, browser()->tab_count());
-  WebContents* web_contents = browser()->GetSelectedWebContents();
-  ASSERT_TRUE(web_contents);
-  EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
-                              "chrome://newtab/", false));
+  if (NewTabUI::ShouldShowAppsPage()) {
+    EXPECT_EQ(num_normal_tabs + 1, browser()->tab_count());
+    WebContents* web_contents = browser()->GetSelectedWebContents();
+    ASSERT_TRUE(web_contents);
+    EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
+                                "chrome://newtab/", false));
+  } else {
+    // TODO(xiyuan): Figure out how to test extension installed bubble?
+  }
 }
