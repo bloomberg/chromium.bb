@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/web_intent_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/web_intent_sheet_controller.h"
 
 #include "base/memory/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -71,45 +71,37 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 }
 @end
 
-@implementation WebIntentBubbleController;
+@implementation WebIntentPickerSheetController;
 
-- (id)initWithPicker:(WebIntentPickerCocoa*)picker
-        parentWindow:(NSWindow*)parent
-          anchoredAt:(NSPoint)point {
+- (id)initWithPicker:(WebIntentPickerCocoa*)picker {
   // Use an arbitrary height because it will reflect the size of the content.
   NSRect contentRect = NSMakeRect(0, 0, kWindowWidth, kVerticalSpacing);
-  // Create an empty window into which content is placed.
-  scoped_nsobject<InfoBubbleWindow> window(
-      [[InfoBubbleWindow alloc] initWithContentRect:contentRect
-                                          styleMask:NSBorderlessWindowMask
-                                            backing:NSBackingStoreBuffered
-                                              defer:NO]);
-  if ((self = [super initWithWindow:window.get()
-                       parentWindow:parent
-                         anchoredAt:point])) {
+
+  // |window| is retained by the ConstrainedWindowMacDelegateCustomSheet when
+  // the sheet is initialized.
+  scoped_nsobject<NSWindow> window(
+      [[NSWindow alloc] initWithContentRect:contentRect
+                                  styleMask:NSTitledWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:YES]);
+
+  if ((self = [super initWithWindow:window.get()])) {
     picker_ = picker;
-
-    [[self bubble] setArrowLocation:info_bubble::kTopLeft];
     [self performLayoutWithModel:NULL];
-    [self showWindow:nil];
-    picker_->set_controller(self);
   }
-
   return self;
+}
+
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(int)returnCode
+        contextInfo:(void*)contextInfo {
+  // Also called when user navigates to another page while the sheet is open.
+  if (picker_)
+    picker_->OnSheetDidEnd(sheet);
 }
 
 - (void)setInlineDispositionTabContents:(TabContentsWrapper*)wrapper {
   contents_ = wrapper;
-}
-
-// We need to watch for window closing so we can notify up via |picker_|.
-- (void)windowWillClose:(NSNotification*)notification {
-  if (picker_) {
-    WebIntentPickerCocoa* temp = picker_;
-    picker_ = NULL;  // Abandon picker, we are done with it.
-    temp->OnCancelled();
-  }
-  [super windowWillClose:notification];
 }
 
 // Pop up a new tab with the Chrome Web Store.
@@ -219,7 +211,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 }
 
 // Add a single button for a specific service
--(CGFloat)addServiceButton:(NSString*)title
+- (CGFloat)addServiceButton:(NSString*)title
                  withImage:(NSImage*)image
                      index:(NSUInteger)index
                 toSubviews:(NSMutableArray*)subviews
@@ -253,7 +245,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 // Layout the contents of the picker bubble.
 - (void)performLayoutWithModel:(WebIntentPickerModel*)model {
   // |offset| is the Y position that should be drawn at next.
-  CGFloat offset = kFramePadding + info_bubble::kBubbleArrowHeight;
+  CGFloat offset = kFramePadding;
 
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
@@ -290,11 +282,9 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, offset);
   windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
                                                        toView:nil];
-  // Adjust the origin by the difference in height.
-  windowFrame.origin = [[self window] frame].origin;
-  windowFrame.origin.y -= NSHeight(windowFrame) -
-      NSHeight([[self window] frame]);
 
+  // Adjust the window frame to accomodate the content.
+  windowFrame=[[self window] frameRectForContentRect:windowFrame];
   [[self window] setFrame:windowFrame display:YES animate:YES];
 
   // Replace the window's content.
@@ -302,4 +292,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
       [NSArray arrayWithObject:contentView]];
 }
 
-@end  // WebIntentBubbleController
+- (void)closeSheet {
+  [NSApp endSheet:[self window]];
+}
+@end  // WebIntentPickerSheetController

@@ -7,9 +7,12 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/web_intent_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/web_intent_sheet_controller.h"
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
+#include "chrome/browser/ui/tab_contents/test_tab_contents_wrapper.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace {
@@ -27,25 +30,26 @@ class MockIntentPickerDelegate : public WebIntentPickerDelegate {
 
 }  // namespace
 
-class WebIntentBubbleControllerTest : public CocoaTest {
+class WebIntentPickerSheetControllerTest
+    : public TabContentsWrapperTestHarness {
  public:
-  virtual ~WebIntentBubbleControllerTest() {
+  WebIntentPickerSheetControllerTest()
+      : ui_thread_(content::BrowserThread::UI, MessageLoopForUI::current()) {}
+
+  virtual ~WebIntentPickerSheetControllerTest() {
     message_loop_.RunAllPending();
   }
-  virtual void TearDown() {
-    // Do not animate out because that is hard to test around.
-    if (window_)
-      [window_ setDelayOnClose:NO];
 
+  virtual void TearDown() {
     if (picker_.get()) {
       EXPECT_CALL(delegate_, OnCancelled());
       EXPECT_CALL(delegate_, OnClosing());
 
-      [controller_ close];
+      [controller_ closeSheet];
       // Closing |controller_| destroys |picker_|.
       ignore_result(picker_.release());
     }
-    CocoaTest::TearDown();
+    TabContentsWrapperTestHarness::TearDown();
   }
 
   void CreatePicker() {
@@ -57,14 +61,12 @@ class WebIntentBubbleControllerTest : public CocoaTest {
   }
 
   void CreateBubble() {
-    CreatePicker();
-    NSPoint anchor=NSMakePoint(0, 0);
+    picker_.reset(new WebIntentPickerCocoa(NULL, contents_wrapper(),
+      &delegate_, &model_));
 
     controller_ =
-        [[WebIntentBubbleController alloc] initWithPicker:picker_.get()
-                                             parentWindow:test_window()
-                                               anchoredAt:anchor];
-    window_ = static_cast<InfoBubbleWindow*>([controller_ window]);
+        [[WebIntentPickerSheetController alloc] initWithPicker:picker_.get()];
+    window_ = [controller_ window];
     [controller_ showWindow:nil];
   }
 
@@ -84,7 +86,8 @@ class WebIntentBubbleControllerTest : public CocoaTest {
     ASSERT_TRUE([[views objectAtIndex:0] isKindOfClass:[NSTextField class]]);
     ASSERT_TRUE([[views objectAtIndex:1] isKindOfClass:[NSImageView class]]);
     for(NSUInteger i = 0; i < icon_count; ++i) {
-      ASSERT_TRUE([[views objectAtIndex:2 + i] isKindOfClass:[NSButton class]]);
+      ASSERT_TRUE([[views objectAtIndex:2 + i] isKindOfClass:
+          [NSButton class]]);
     }
 
     // Verify the Chrome Web Store button.
@@ -98,8 +101,6 @@ class WebIntentBubbleControllerTest : public CocoaTest {
       NSButton* button = [views objectAtIndex:2 + i];
       CheckServiceButton(button, i);
     }
-
-    EXPECT_EQ([window_ delegate], controller_);
   }
 
   // Checks that a service button is hooked up correctly.
@@ -116,21 +117,21 @@ class WebIntentBubbleControllerTest : public CocoaTest {
     EXPECT_TRUE([button stringValue]);
   }
 
-  WebIntentBubbleController* controller_;  // Weak, owns self.
-  InfoBubbleWindow* window_;  // Weak, owned by controller.
+  content::TestBrowserThread ui_thread_;
+  WebIntentPickerSheetController* controller_;  // Weak, owns self.
+  NSWindow* window_;  // Weak, owned by controller.
   scoped_ptr<WebIntentPickerCocoa> picker_;
   MockIntentPickerDelegate delegate_;
-  MessageLoopForUI message_loop_;
   WebIntentPickerModel model_;  // The model used by the picker
 };
 
-TEST_F(WebIntentBubbleControllerTest, EmptyBubble) {
+TEST_F(WebIntentPickerSheetControllerTest, EmptyBubble) {
   CreateBubble();
 
   CheckWindow(/*icon_count=*/0);
 }
 
-TEST_F(WebIntentBubbleControllerTest, PopulatedBubble) {
+TEST_F(WebIntentPickerSheetControllerTest, PopulatedBubble) {
   CreateBubble();
 
   WebIntentPickerModel model;
@@ -144,27 +145,27 @@ TEST_F(WebIntentBubbleControllerTest, PopulatedBubble) {
   CheckWindow(/*icon_count=*/2);
 }
 
-TEST_F(WebIntentBubbleControllerTest, OnCancelledWillSignalClose) {
+TEST_F(WebIntentPickerSheetControllerTest, OnCancelledWillSignalClose) {
   CreatePicker();
 
   EXPECT_CALL(delegate_, OnCancelled());
   EXPECT_CALL(delegate_, OnClosing());
   picker_->OnCancelled();
 
-  ignore_result(picker_.release());  // Closing |picker_| will self-destruct it.
+  ignore_result(picker_.release());  // Closing |picker_| will destruct it.
 }
 
-TEST_F(WebIntentBubbleControllerTest, CloseWillClose) {
+TEST_F(WebIntentPickerSheetControllerTest, CloseWillClose) {
   CreateBubble();
 
   EXPECT_CALL(delegate_, OnCancelled());
   EXPECT_CALL(delegate_, OnClosing());
   picker_->Close();
 
-  ignore_result(picker_.release());  // Closing |picker_| will self-destruct it.
+  ignore_result(picker_.release());  // Closing |picker_| will destruct it.
 }
 
-TEST_F(WebIntentBubbleControllerTest, DontCancelAfterServiceInvokation) {
+TEST_F(WebIntentPickerSheetControllerTest, DontCancelAfterServiceInvokation) {
   CreateBubble();
   model_.AddInstalledService(string16(), GURL(),
       WebIntentPickerModel::DISPOSITION_WINDOW);
@@ -177,5 +178,5 @@ TEST_F(WebIntentBubbleControllerTest, DontCancelAfterServiceInvokation) {
   picker_->OnServiceChosen(0);
   picker_->Close();
 
-  ignore_result(picker_.release());  // Closing |picker_| will self-destruct it.
+  ignore_result(picker_.release());  // Closing |picker_| will destruct it.
 }

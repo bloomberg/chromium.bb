@@ -14,27 +14,28 @@
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 
+class ConstrainedWindow;
 class TabContentsWrapper;
-@class WebIntentBubbleController;
+@class WebIntentPickerSheetController;
 class WebIntentInlineDispositionDelegate;
 
 // A bridge class that enables communication between ObjectiveC and C++.
 class WebIntentPickerCocoa : public WebIntentPicker,
                              public WebIntentPickerModelObserver {
  public:
-  // |browser| and |delegate| cannot be NULL.
-  // |wrapper| is unused.
+  // |wrapper|, and |delegate| must not be NULL.
+  // |browser| should only be NULL for testing purposes.
   WebIntentPickerCocoa(Browser* browser,
                        TabContentsWrapper* wrapper,
                        WebIntentPickerDelegate* delegate,
                        WebIntentPickerModel* model);
   virtual ~WebIntentPickerCocoa();
 
+  void OnSheetDidEnd(NSWindow* sheet);
+
   // WebIntentPickerDelegate forwarding API.
   void OnCancelled();
   void OnServiceChosen(size_t index);
-
-  void set_controller(WebIntentBubbleController* controller);
 
   // WebIntentPicker:
   virtual void Close() OVERRIDE;
@@ -48,6 +49,8 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE;
 
  private:
+  ConstrainedWindow* window_;  // Window for constrained sheet. Weak reference.
+
   // Weak pointer to the |delegate_| to notify about user choice/cancellation.
   WebIntentPickerDelegate* delegate_;
 
@@ -56,10 +59,7 @@ class WebIntentPickerCocoa : public WebIntentPicker,
 
   Browser* browser_;  // The browser we're in. Weak Reference.
 
-  WebIntentBubbleController* controller_;  // Weak reference.
-
-  // Factory for weak ptrs, used for delayed callbacks.
-  base::WeakPtrFactory<WebIntentPickerCocoa> weak_ptr_factory_;
+  WebIntentPickerSheetController* sheet_controller_;  // Weak reference.
 
   // Tab contents wrapper to hold intent page if inline disposition is used.
   scoped_ptr<TabContentsWrapper> inline_disposition_tab_contents_;
@@ -70,9 +70,6 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   // Indicate that we invoked a service, instead of just closing/cancelling.
   bool service_invoked;
 
-  // Post a delayed task to do layout, if it isn't already pending.
-  void PerformDelayedLayout();
-
   // Re-layout the intent picker.
   void PerformLayout();
 
@@ -80,7 +77,7 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   WebIntentPickerCocoa();
 
   // For testing access.
-  friend class WebIntentBubbleControllerTest;
+  friend class WebIntentPickerSheetControllerTest;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerCocoa);
 };
