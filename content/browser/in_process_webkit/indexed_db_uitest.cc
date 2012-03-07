@@ -21,6 +21,7 @@ static const char* kLayoutTestFileNames[] = {
 
 static const char* kWorkerTestFileNames[] = {
   "basics-workers.html",
+  "basics-shared-workers.html",
 //  "objectstore-basics-workers.html",  // Too big.
 };
 
