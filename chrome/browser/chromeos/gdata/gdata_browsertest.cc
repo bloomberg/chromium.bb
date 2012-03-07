@@ -53,9 +53,9 @@ void TestDownloadCallback(gdata::GDataErrorCode* result,
 void TestGetDocumentsCallback(gdata::GDataErrorCode* result_code,
                               base::Value** result_data,
                               gdata::GDataErrorCode error,
-                              base::Value* feed_data) {
+                              scoped_ptr<base::Value> feed_data) {
   *result_code = error;
-  *result_data = feed_data;
+  *result_data = feed_data.release();
   MessageLoop::current()->Quit();
 }
 
