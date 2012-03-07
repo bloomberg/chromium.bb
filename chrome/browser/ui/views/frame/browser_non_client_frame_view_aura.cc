@@ -190,12 +190,13 @@ void BrowserNonClientFrameViewAura::GetAccessibleState(
 void BrowserNonClientFrameViewAura::ButtonPressed(views::Button* sender,
                                                   const views::Event& event) {
   if (sender == maximize_button_) {
+    // The maximize button may move out from under the cursor.
+    ResetWindowControls();
     if (frame()->IsMaximized())
       frame()->Restore();
     else
       frame()->Maximize();
-    // The maximize button may have moved out from under the cursor.
-    ResetWindowControls();
+    // |this| may be deleted - some windows delete their frames on maximize.
   } else if (sender == close_button_) {
     frame()->Close();
   }

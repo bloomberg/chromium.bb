@@ -7,6 +7,7 @@
 #include "base/logging.h"  // DCHECK
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -35,15 +36,23 @@ const int kResizeAreaCornerSize = 16;
 // Space between left edge of window and popup window icon.
 const int kIconOffsetX = 4;
 // Space between top of window and popup window icon.
-const int kIconOffsetY = 4;
+const int kIconOffsetY = 6;
 // Height and width of window icon.
 const int kIconSize = 16;
 // Space between the title text and the caption buttons.
 const int kTitleLogoSpacing = 5;
-// Space between title text and icon.
-const int kTitleOffsetX = 4;
+// Space between window icon and title text.
+const int kTitleIconOffsetX = 4;
+// Space between window edge and title text, when there is no icon.
+const int kTitleNoIconOffsetX = 8;
 // Space between title text and top of window.
-const int kTitleOffsetY = 6;
+const int kTitleOffsetY = 7;
+// Color for the title text.
+const SkColor kTitleColor = SkColorSetRGB(40, 40, 40);
+// Size of header/content separator line below the header image.
+const int kHeaderContentSeparatorSize = 1;
+// Color of header bottom edge line.
+const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(128, 128, 128);
 // Space between close button and right edge of window.
 const int kCloseButtonOffsetX = 0;
 // Space between close button and top edge of window.
@@ -247,26 +256,44 @@ void FramePainter::PaintHeader(views::NonClientFrameView* view,
   // to the edge of the window.
 }
 
+void FramePainter::PaintHeaderContentSeparator(views::NonClientFrameView* view,
+                                               gfx::Canvas* canvas) {
+  // Paint the line just above the content area.
+  gfx::Rect client_bounds = view->GetBoundsForClientView();
+  canvas->FillRect(gfx::Rect(client_bounds.x(),
+                             client_bounds.y() - kHeaderContentSeparatorSize,
+                             client_bounds.width(),
+                             kHeaderContentSeparatorSize),
+                   kHeaderContentSeparatorColor);
+}
+
+int FramePainter::HeaderContentSeparatorSize() const {
+  return kHeaderContentSeparatorSize;
+}
+
 void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
                                  gfx::Canvas* canvas,
                                  const gfx::Font& title_font) {
   // The window icon is painted by its own views::View.
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
-    int icon_right = window_icon_ ? window_icon_->bounds().right() : 0;
+    int title_x = window_icon_ ?
+        window_icon_->bounds().right() + kTitleIconOffsetX :
+        kTitleNoIconOffsetX;
     gfx::Rect title_bounds(
-        icon_right + kTitleOffsetX,
+        title_x,
         kTitleOffsetY,
-        std::max(0, maximize_button_->x() - kTitleLogoSpacing - icon_right),
+        std::max(0, maximize_button_->x() - kTitleLogoSpacing - title_x),
         title_font.GetHeight());
     canvas->DrawStringInt(delegate->GetWindowTitle(),
                           title_font,
-                          SK_ColorBLACK,
+                          kTitleColor,
                           view->GetMirroredXForRect(title_bounds),
                           title_bounds.y(),
                           title_bounds.width(),
                           title_bounds.height());
-  }}
+  }
+}
 
 void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                                 bool maximized_layout) {

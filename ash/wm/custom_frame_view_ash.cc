@@ -18,11 +18,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace {
-// Height of non-client top border in pixels.
-const int kNonClientTopBorderHeight = 10;
-}  // namespace
-
 namespace ash {
 namespace internal {
 
@@ -123,6 +118,7 @@ void CustomFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_BASE_INACTIVE).ToSkBitmap();
   frame_painter_->PaintHeader(this, canvas, theme_bitmap, NULL);
   frame_painter_->PaintTitleBar(this, canvas, *title_font_);
+  frame_painter_->PaintHeaderContentSeparator(this, canvas);
 }
 
 std::string CustomFrameViewAsh::GetClassName() const {
@@ -134,12 +130,13 @@ std::string CustomFrameViewAsh::GetClassName() const {
 void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
   if (sender == maximize_button_) {
+    // The maximize button may move out from under the cursor.
+    ResetWindowControls();
     if (frame_->IsMaximized())
       frame_->Restore();
     else
       frame_->Maximize();
-    // The maximize button may have moved out from under the cursor.
-    ResetWindowControls();
+    // |this| may be deleted - some windows delete their frames on maximize.
   } else if (sender == close_button_) {
     frame_->Close();
   }
@@ -149,8 +146,10 @@ void CustomFrameViewAsh::ButtonPressed(views::Button* sender,
 // CustomFrameViewAsh, private:
 
 int CustomFrameViewAsh::NonClientTopBorderHeight() const {
-  // Reserve enough space to see the buttons, including any offset from top.
-  return close_button_->bounds().bottom();
+  // Reserve enough space to see the buttons, including any offset from top and
+  // reserving space for the separator line.
+  return close_button_->bounds().bottom() +
+      frame_painter_->HeaderContentSeparatorSize();
 }
 
 // static

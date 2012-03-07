@@ -54,6 +54,15 @@ class ASH_EXPORT FramePainter {
                    const SkBitmap* theme_frame,
                    const SkBitmap* theme_frame_overlay);
 
+  // Paints the header/content separator line.  Exists as a separate function
+  // because some windows with complex headers (e.g. browsers with tab strips)
+  // need to draw their own line.
+  void PaintHeaderContentSeparator(views::NonClientFrameView* view,
+                                   gfx::Canvas* canvas);
+
+  // Returns size of the header/content separator line in pixels.
+  int HeaderContentSeparatorSize() const;
+
   // Paint the title bar, primarily the title string.
   void PaintTitleBar(views::NonClientFrameView* view,
                      gfx::Canvas* canvas,
