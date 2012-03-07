@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/time_format.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -81,7 +80,6 @@
 // the same value on all platforms.
 static const double PI = 3.141592653589793;
 
-using content::DownloadFile;
 using content::DownloadItem;
 
 namespace {

@@ -34,7 +34,6 @@ include_rules = [
   "+content/browser/accessibility/browser_accessibility_manager.h",
   "+content/browser/browser_url_handler.h",
   "+content/browser/cert_store.h",
-  "+content/browser/download/download_create_info.h",
   "+content/browser/download/download_file_manager.h",
   "+content/browser/download/download_persistent_store_info.h",
   "+content/browser/download/download_state_info.h",
