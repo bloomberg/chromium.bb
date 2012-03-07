@@ -17,7 +17,8 @@ class Profile;
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer {
  public:
-  OneClickSigninSyncStarter(const std::string& email,
+  OneClickSigninSyncStarter(const std::string& session_index,
+                            const std::string& email,
                             const std::string& password,
                             Profile* profile,
                             bool use_default_settings);

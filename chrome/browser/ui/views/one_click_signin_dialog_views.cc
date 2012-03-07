@@ -33,6 +33,7 @@ const int kMinColumnWidth = 320;
 class OneClickSigninDialogView : public views::DialogDelegateView {
  public:
   OneClickSigninDialogView(Profile* profile,
+                           const std::string& session_index,
                            const std::string& email,
                            const std::string& password);
   virtual ~OneClickSigninDialogView();
@@ -52,7 +53,8 @@ class OneClickSigninDialogView : public views::DialogDelegateView {
   Profile* profile_;
   views::Checkbox* checkbox_;
 
-  // Email address and password of the account that has just logged in.
+  // Information about the account that has just logged in.
+  std::string session_index_;
   std::string email_;
   std::string password_;
 
@@ -61,10 +63,12 @@ class OneClickSigninDialogView : public views::DialogDelegateView {
 
 OneClickSigninDialogView::OneClickSigninDialogView(
     Profile* profile,
+    const std::string& session_index,
     const std::string& email,
     const std::string& password)
     : profile_(profile),
       checkbox_(NULL),
+      session_index_(session_index),
       email_(email),
       password_(password) {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
@@ -131,7 +135,7 @@ bool OneClickSigninDialogView::Cancel() {
 bool OneClickSigninDialogView::Accept() {
   // The starter deletes itself once its done.
   OneClickSigninSyncStarter* starter =
-      new OneClickSigninSyncStarter(email_, password_, profile_,
+      new OneClickSigninSyncStarter(session_index_, email_, password_, profile_,
                                     checkbox_->checked());
   return true;
 }
@@ -152,6 +156,7 @@ views::View* OneClickSigninDialogView::GetContentsView() {
 
 
 void ShowOneClickSigninDialog(Profile* profile,
+                              const std::string& session_index,
                               const std::string& email,
                               const std::string& password) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
@@ -163,7 +168,7 @@ void ShowOneClickSigninDialog(Profile* profile,
     return;
 
   OneClickSigninDialogView* dialog = new OneClickSigninDialogView(
-      profile, email, password);
+      profile, session_index, email, password);
 
   views::Widget* window =  browser::CreateViewsWindow(
       browser_window->GetNativeHandle(), dialog, STYLE_GENERIC);

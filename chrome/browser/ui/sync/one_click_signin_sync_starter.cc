@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 
 OneClickSigninSyncStarter::OneClickSigninSyncStarter(
+    const std::string& session_index,
     const std::string& email,
     const std::string& password,
     Profile* profile,
@@ -23,7 +24,7 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   DCHECK(profile_);
 
   SigninManager* manager = SigninManagerFactory::GetForProfile(profile_);
-  manager->StartSignInWithCredentials(email, password);
+  manager->StartSignInWithCredentials(session_index, email, password);
 }
 
 OneClickSigninSyncStarter::~OneClickSigninSyncStarter() {

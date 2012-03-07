@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
@@ -152,7 +153,8 @@ void SigninManager::ProvideSecondFactorAccessCode(
                                   GaiaAuthFetcher::HostedAccountsNotAllowed);
 }
 
-void SigninManager::StartSignInWithCredentials(const std::string& username,
+void SigninManager::StartSignInWithCredentials(const std::string& session_index,
+                                               const std::string& username,
                                                const std::string& password) {
   DCHECK(authenticated_username_.empty());
   PrepareForSignin();
@@ -176,7 +178,7 @@ void SigninManager::StartSignInWithCredentials(const std::string& username,
   //
   // The resulting SID/LSID can then be used just as if
   // client_login_->StartClientLogin() had completed successfully.
-  client_login_->StartOAuthLoginTokenFetch("");
+  client_login_->StartOAuthLoginTokenFetchWithCookies(session_index);
 }
 
 void SigninManager::ClearTransientSigninData() {

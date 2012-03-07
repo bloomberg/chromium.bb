@@ -14,6 +14,7 @@ class Profile;
 // confirmation from the user.  The implementation of this function is platform
 // specific.
 void ShowOneClickSigninDialog(Profile* profile,
+                              const std::string& session_index,
                               const std::string& email,
                               const std::string& password);
 

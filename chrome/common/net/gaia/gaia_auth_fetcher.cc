@@ -158,14 +158,14 @@ GaiaAuthFetcher::GaiaAuthFetcher(GaiaAuthConsumer* consumer,
       source_(source),
       client_login_gurl_(GaiaUrls::GetInstance()->client_login_url()),
       issue_auth_token_gurl_(GaiaUrls::GetInstance()->issue_auth_token_url()),
-      client_login_to_oauth2_gurl_(
-          GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
       oauth2_token_gurl_(GaiaUrls::GetInstance()->oauth2_token_url()),
       get_user_info_gurl_(GaiaUrls::GetInstance()->get_user_info_url()),
       token_auth_gurl_(GaiaUrls::GetInstance()->token_auth_url()),
       merge_session_gurl_(GaiaUrls::GetInstance()->merge_session_url()),
       uberauth_token_gurl_(base::StringPrintf(kUberAuthTokenURLFormat,
           GaiaUrls::GetInstance()->oauth1_login_url().c_str(), source.c_str())),
+      client_login_to_oauth2_gurl_(
+          GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
       fetch_pending_(false) {}
 
 GaiaAuthFetcher::~GaiaAuthFetcher() {}
@@ -507,25 +507,39 @@ void GaiaAuthFetcher::StartOAuthLoginTokenFetch(
     const std::string& auth_token) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
-  DVLOG(1) << "Starting OAuth login token fetch";
+  DVLOG(1) << "Starting OAuth login token fetch with auth_token";
   request_body_ = MakeGetAuthCodeBody();
-
-  // If no auth_token is given, then make sure to use the cookie jar with this
-  // request.  Otherwise the token contains all the necessary information and
-  // the cookie jar should not be touched.
-  int load_flags = net::LOAD_NORMAL;
-  std::string auth_code_header = "";
-
-  if (!auth_token.empty()) {
-    load_flags = kLoadFlagsIgnoreCookies;
-    auth_code_header = MakeGetAuthCodeHeader(auth_token);
-  }
+  client_login_to_oauth2_gurl_ =
+      GURL(GaiaUrls::GetInstance()->client_login_to_oauth2_url());
 
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
-                                   auth_code_header,
+                                   MakeGetAuthCodeHeader(auth_token),
                                    client_login_to_oauth2_gurl_,
-                                   load_flags,
+                                   kLoadFlagsIgnoreCookies,
+                                   this));
+  fetch_pending_ = true;
+  fetcher_->Start();
+}
+
+void GaiaAuthFetcher::StartOAuthLoginTokenFetchWithCookies(
+    const std::string& session_index) {
+  DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
+
+  DVLOG(1) << "Starting OAuth login token fetch with cookie jar";
+  request_body_ = MakeGetAuthCodeBody();
+
+  std::string url = GaiaUrls::GetInstance()->client_login_to_oauth2_url();
+  if (!session_index.empty())
+    url += "?authuser=" + session_index;
+
+  client_login_to_oauth2_gurl_ = GURL(url);
+
+  fetcher_.reset(CreateGaiaFetcher(getter_,
+                                   request_body_,
+                                   "",
+                                   client_login_to_oauth2_gurl_,
+                                   net::LOAD_NORMAL,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();

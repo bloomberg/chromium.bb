@@ -73,6 +73,13 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   // called on the consumer with results.
   void StartOAuthLoginTokenFetch(const std::string& auth_token);
 
+  // Start fetching OAuth login scoped token from information in the cookie jar
+  // for "lso" service.  In the case of sessions with multiple logged in
+  /// accounts, |session_index| specifies which of the accounts to use.
+  // Either OnOAuthLoginTokenSuccess or OnOAuthLoginTokenFailure method will be
+  // called on the consumer with results.
+  void StartOAuthLoginTokenFetchWithCookies(const std::string& session_index);
+
   // Start a request to get user info.
   // GaiaAuthConsumer will be called back on the same thread when
   // results come back.
@@ -287,7 +294,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   std::string source_;
   const GURL client_login_gurl_;
   const GURL issue_auth_token_gurl_;
-  const GURL client_login_to_oauth2_gurl_;
   const GURL oauth2_token_gurl_;
   const GURL get_user_info_gurl_;
   const GURL token_auth_gurl_;
@@ -296,6 +302,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
 
   // While a fetch is going on:
   scoped_ptr<content::URLFetcher> fetcher_;
+  GURL client_login_to_oauth2_gurl_;
   std::string request_body_;
   std::string requested_service_; // Currently tracked for IssueAuthToken only.
   bool fetch_pending_;

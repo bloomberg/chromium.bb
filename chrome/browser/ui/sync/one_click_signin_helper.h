@@ -41,7 +41,8 @@ class OneClickSigninHelper : public content::WebContentsObserver {
 
  private:
   // The portion of ShowInfoBarIfPossible() that needs to run on the UI thread.
-  static void ShowInfoBarUIThread(const std::string& account,
+  static void ShowInfoBarUIThread(const std::string& session_index,
+                                  const std::string& email,
                                   int child_id,
                                   int route_id);
 
@@ -52,12 +53,14 @@ class OneClickSigninHelper : public content::WebContentsObserver {
   virtual void DidStopLoading() OVERRIDE;
 
   // Save the email address that we can display the info bar correctly.
-  void SaveEmail(const std::string& email);
+  void SaveSessionIndexAndEmail(const std::string& session_index,
+                                const std::string& email);
 
   // Remember the user's password for later use.
   void SavePassword(const std::string& password);
 
-  // Email address and password of the account that has just logged in.
+  // Information about the account that has just logged in.
+  std::string session_index_;
   std::string email_;
   std::string password_;
 

@@ -179,7 +179,7 @@ TEST_F(SigninManagerTest, SignInWithCredentials) {
   manager_->Initialize(profile_.get());
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
-  manager_->StartSignInWithCredentials("user@gmail.com", "password");
+  manager_->StartSignInWithCredentials("0", "user@gmail.com", "password");
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   SimulateValidResponseSignInWithCredentials();

@@ -618,13 +618,13 @@ TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenSuccess) {
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
-TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithEmptyToken) {
+TEST_F(GaiaAuthFetcherTest, OAuthLoginTokenWithCookies) {
   MockGaiaConsumer consumer;
   TestingProfile profile;
   TestURLFetcherFactory factory;
   GaiaAuthFetcher auth(&consumer, std::string(),
                        profile_.GetRequestContext());
-  auth.StartOAuthLoginTokenFetch("");
+  auth.StartOAuthLoginTokenFetchWithCookies("0");
   TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_TRUE(NULL != fetcher);
   EXPECT_EQ(net::LOAD_NORMAL, fetcher->GetLoadFlags());

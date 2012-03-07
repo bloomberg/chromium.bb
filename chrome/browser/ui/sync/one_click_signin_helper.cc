@@ -62,6 +62,7 @@ enum {
 class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   OneClickLoginInfoBarDelegate(InfoBarTabHelper* owner,
+                               const std::string& session_index,
                                const std::string& email,
                                const std::string& password);
   virtual ~OneClickLoginInfoBarDelegate();
@@ -80,7 +81,8 @@ class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   Profile* profile_;
 
-  // Email address and password of the account that has just logged in.
+  // Information about the account that has just logged in.
+  std::string session_index_;
   std::string email_;
   std::string password_;
 
@@ -92,11 +94,13 @@ class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 OneClickLoginInfoBarDelegate::OneClickLoginInfoBarDelegate(
     InfoBarTabHelper* owner,
+    const std::string& session_index,
     const std::string& email,
     const std::string& password)
     : ConfirmInfoBarDelegate(owner),
       profile_(Profile::FromBrowserContext(
           owner->web_contents()->GetBrowserContext())),
+      session_index_(session_index),
       email_(email),
       password_(password),
       button_pressed_(false) {
@@ -135,7 +139,7 @@ string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
 
 bool OneClickLoginInfoBarDelegate::Accept() {
   RecordHistogramAction(HISTOGRAM_ACCEPTED);
-  ShowOneClickSigninDialog(profile_, email_, password_);
+  ShowOneClickSigninDialog(profile_, session_index_, email_, password_);
   button_pressed_ = true;
   return true;
 }
@@ -177,19 +181,23 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
 
   // Parse the information from the value string.
   std::string email;
+  std::string session_index;
   for (size_t i = 0; i < pairs.size(); ++i) {
     const std::pair<std::string, std::string>& pair = pairs[i];
-    if (pair.first == "email")
+    if (pair.first == "email") {
       TrimString(pair.second, "\"", &email);
+    } else if (pair.first == "sessionindex") {
+      session_index = pair.second;
+    }
   }
 
-  if (email.empty())
+  if (email.empty() || session_index.empty())
     return;
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&OneClickSigninHelper::ShowInfoBarUIThread, email,
-                 child_id, route_id));
+      base::Bind(&OneClickSigninHelper::ShowInfoBarUIThread, session_index,
+                 email, child_id, route_id));
 }
 
 OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
@@ -201,6 +209,7 @@ OneClickSigninHelper::~OneClickSigninHelper() {
 
 // static
 void OneClickSigninHelper::ShowInfoBarUIThread(
+    const std::string& session_index,
     const std::string& email,
     int child_id,
     int route_id) {
@@ -237,7 +246,7 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   // connected to a Google account.
   OneClickSigninHelper* helper = wrapper->one_click_signin_helper();
   if (helper)
-    helper->SaveEmail(email);
+    helper->SaveSessionIndexAndEmail(session_index, email);
 #endif
 }
 
@@ -257,15 +266,16 @@ void OneClickSigninHelper::DidStopLoading() {
 
   wrapper->infobar_tab_helper()->AddInfoBar(
       new OneClickLoginInfoBarDelegate(wrapper->infobar_tab_helper(),
-                                       email_, password_));
+                                       session_index_, email_, password_));
 
   email_.clear();
   password_.clear();
 }
 
-void OneClickSigninHelper::SaveEmail(const std::string& email) {
-  // TODO(rogerta): validate that the email address is the same as set in
-  // the form?
+void OneClickSigninHelper::SaveSessionIndexAndEmail(
+    const std::string& session_index,
+    const std::string& email) {
+  session_index_ = session_index;
   email_ = email;
 }
 

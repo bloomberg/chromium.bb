@@ -83,8 +83,11 @@ class SigninManager : public GaiaAuthConsumer,
   void ProvideSecondFactorAccessCode(const std::string& access_code);
 
   // Attempt to sign in this user with existing credentials from the cookie jar.
-  // Otherwise the result is the same as StartSignIn().
-  virtual void StartSignInWithCredentials(const std::string& username,
+  // |session_index| indicates which user account to use if the cookie jar
+  // contains a multi-login session. Otherwise the end result of this call is
+  // the same as StartSignIn().
+  virtual void StartSignInWithCredentials(const std::string& session_index,
+                                          const std::string& username,
                                           const std::string& password);
 
   // Sign a user out, removing the preference, erasing all keys
