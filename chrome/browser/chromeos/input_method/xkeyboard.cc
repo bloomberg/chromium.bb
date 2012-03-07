@@ -95,6 +95,10 @@ class XKeyboardImpl : public XKeyboard {
   // KeepCapsLock("us(colemak)") would return true.
   bool KeepCapsLock(const std::string& xkb_layout_name) const;
 
+  // Returns true if the current thread is the UI thread, or the process is
+  // running on Linux.
+  bool CurrentlyOnUIThread() const;
+
   // Converts |key| to a modifier key name which is used in
   // /usr/share/X11/xkb/symbols/chromeos.
   static std::string ModifierKeyToString(ModifierKey key);
@@ -251,6 +255,7 @@ bool XKeyboardImpl::CapsLockIsEnabled() {
 }
 
 unsigned int XKeyboardImpl::GetNumLockMask() {
+  CHECK(CurrentlyOnUIThread());
   static const unsigned int kBadMask = 0;
 
   unsigned int real_mask = kBadMask;
@@ -283,13 +288,9 @@ unsigned int XKeyboardImpl::GetNumLockMask() {
 
 void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
                                        bool* out_num_lock_enabled) {
-  // For now, don't call CHECK() here to make
-  // TabRestoreServiceTest.DontRestorePrintPreviewTab test happy.
-  // TODO(yusukes): Fix the test, then fix the if(!BrowserThread...) line below.
-  // CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(CurrentlyOnUIThread());
 
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-      (out_num_lock_enabled && !num_lock_mask_)) {
+  if (out_num_lock_enabled && !num_lock_mask_) {
     VLOG(1) << "Cannot get locked modifiers. Num Lock mask unknown.";
     if (out_caps_lock_enabled) {
       *out_caps_lock_enabled = false;
@@ -390,7 +391,7 @@ std::string XKeyboardImpl::CreateFullXkbLayoutName(
 
 void XKeyboardImpl::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
                                        ModifierLockStatus new_num_lock_status) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(CurrentlyOnUIThread());
   if (!num_lock_mask_) {
     LOG(ERROR) << "Cannot set locked modifiers. Num Lock mask unknown.";
     return;
@@ -464,6 +465,19 @@ bool XKeyboardImpl::KeepRightAlt(const std::string& xkb_layout_name) const {
 
 bool XKeyboardImpl::KeepCapsLock(const std::string& xkb_layout_name) const {
   return caps_lock_remapped_xkb_layout_names_.count(xkb_layout_name) > 0;
+}
+
+bool XKeyboardImpl::CurrentlyOnUIThread() const {
+  // It seems that the tot Chrome (as of Mar 7 2012) does not allow browser
+  // tests to call BrowserThread::CurrentlyOn(). It ends up a CHECK failure:
+  //   FATAL:sequenced_worker_pool.cc
+  //   Check failed: constructor_message_loop_.get().
+  // For now, just allow unit/browser tests to call any functions in this class.
+  // TODO(yusukes): Stop special-casing browser_tests and remove this function.
+  if (!is_running_on_chrome_os_) {
+    return true;
+  }
+  return BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 
 // static

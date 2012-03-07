@@ -111,7 +111,8 @@ class XKeyboard {
       const std::string& layout_name,
       const ModifierMap& modifire_map) = 0;
 
-  // Returns a mask (e.g. 1U<<4) for Num Lock. On error, returns 0.
+  // Returns a mask (e.g. 1U<<4) for Num Lock. On error, returns 0. Do not call
+  // the function from non-UI threads.
   // TODO(yusukes): Move this and webdriver::GetXModifierMask() functions in
   // chrome/test/webdriver/keycode_text_conversion_x.cc to ui/base/x/x11_util.
   // The two functions are almost the same.
