@@ -14676,7 +14676,7 @@ Battery full
       </message>
 
       <message name="IDS_LOGIN_ERROR_WHITELIST" desc="Couldn't sign in because user is not whitelisted.">
-        Sorry, you don't have permission to sign in. Check with the notebook owner.
+        You are not authorized to use this device. For sign-in permission contact the device owner.
       </message>
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
         Sorry, your password could not be verified. Please try again.
