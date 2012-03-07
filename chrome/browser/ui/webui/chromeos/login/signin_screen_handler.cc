@@ -513,8 +513,6 @@ void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
 
 void SigninScreenHandler::OnBrowsingDataRemoverDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(ERROR) << "OnBrowsingDataRemoverDone";
-
   cookie_remover_ = NULL;
   cookies_cleared_ = true;
   ShowSigninScreenIfReady();
@@ -539,17 +537,12 @@ void SigninScreenHandler::Observe(int type,
 
 void SigninScreenHandler::OnDnsCleared() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(ERROR) << "OnDnsCleared";
-
   dns_clear_task_running_ = false;
   dns_cleared_ = true;
   ShowSigninScreenIfReady();
 }
 
 void SigninScreenHandler::ShowSigninScreenIfReady() {
-  LOG(ERROR) << "ShowSigninScreenIfReady: dns=" << dns_cleared_
-             << ", cookie=" << cookies_cleared_;
-
   if (!dns_cleared_ || !cookies_cleared_)
     return;
 
@@ -626,7 +619,7 @@ void SigninScreenHandler::UpdateAuthExtension() {
 void SigninScreenHandler::ShowSigninScreenForCreds(
     const std::string& username,
     const std::string& password) {
-  LOG(ERROR) << "ShowSigninScreenForCreds " << username << " " << password;
+  VLOG(2) << "ShowSigninScreenForCreds " << username << " " << password;
 
   test_user_ = username;
   test_pass_ = password;
@@ -842,6 +835,7 @@ void SigninScreenHandler::HandleAccountPickerReady(
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady(const base::ListValue* args) {
+  // crosbug.com/26646.
   LOG(ERROR) << "HandleLoginWebuiReady: first_webui_ready="
              << is_first_webui_ready_
              << ", first_attempt=" << is_first_attempt_;

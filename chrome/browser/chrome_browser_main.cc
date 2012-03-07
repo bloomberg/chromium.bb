@@ -1560,10 +1560,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to apprpriate Parts.
   // (requires supporting early exit).
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "PostProfileInit()";
-#endif
   PostProfileInit();
 
   // Show the First Run UI if this is the first time Chrome has been run on
@@ -1589,10 +1585,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         local_state_->SetBoolean(prefs::kMetricsReportingEnabled, true);
 #endif  // OS_POSIX
     }  // if (!first_run_ui_bypass_)
-#if defined(OS_CHROMEOS)
-    // crosbug.com/26646
-    LOG(ERROR) << "SetNewHomePagePrefs()";
-#endif
+
     Browser::SetNewHomePagePrefs(profile_->GetPrefs());
     browser_process_->profile_manager()->OnImportFinished(profile_);
   }  // if (is_first_run_)
@@ -1649,10 +1642,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // GOOGLE_CHROME_BUILD
 #endif  // OS_WIN
 
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646.
-  LOG(ERROR) << "NetModule::SetResourceProvider()";
-#endif
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
@@ -1708,10 +1697,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "HandleTestParameters()";
-#endif
   HandleTestParameters(parsed_command_line());
   RecordBreakpadStatusUMA(browser_process_->metrics_service());
   about_flags::RecordUMAStatistics(local_state_);
@@ -1750,52 +1735,27 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // TODO(torne): this should maybe be done with
   // ProfileKeyedServiceFactory::ServiceIsCreatedWithProfile() instead?
 #if !defined(OS_ANDROID)
-
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "CouldPrintProxyServiceFactory()";
-#endif
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
 #endif
 
   // Load GPU Blacklist.
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "InitializeGpuDataManager()";
-#endif
   InitializeGpuDataManager(parsed_command_line());
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
 #if !defined(DISABLE_NACL)
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "EarlyStartup()";
-#endif
   NaClProcessHost::EarlyStartup();
 #endif
 
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "PreBrowserStart()";
-#endif
   PreBrowserStart();
 
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "notification_ui_manager()";
-#endif
   // Instantiate the notification UI manager, as this triggers a perf timer
   // used to measure startup time. TODO(stevenjb): Figure out what is actually
   // triggering the timer and call that explicitly in the approprate place.
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
 
-#if defined(OS_CHROMEOS)
-  // crosbug.com/26646
-  LOG(ERROR) << "Before calling Start() :" << parameters().ui_task;
-#endif
   if (parameters().ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
 #if defined(OS_MACOSX)

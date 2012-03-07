@@ -446,12 +446,6 @@ PluginModule::PluginModule(const std::string& name,
       name_(name),
       path_(path),
       reserve_instance_id_(NULL) {
-#if defined(OS_CHROMEOS)
-  // TODO(xiyuan): Remove this once crosbug.com/26646 is resolved.
-  LOG(ERROR) << "#### Create ppapi::PluginModule::PluginModule"
-             << ", name=" << name
-             << ", path=" << path.value();
-#endif  // defined (OS_CHROMEOS)
   // Ensure the globals object is created.
   if (!host_globals)
     host_globals = new HostGlobals;
