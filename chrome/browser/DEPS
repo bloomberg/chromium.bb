@@ -62,7 +62,6 @@ include_rules = [
   "+content/browser/tab_contents/tab_contents_view_gtk.h",
   "+content/browser/tab_contents/tab_contents_view_helper.h",
   "+content/browser/tab_contents/test_tab_contents.h",
-  "+content/browser/tab_contents/title_updated_details.h",
   "+content/browser/tab_contents/web_contents_drag_win.h",
   "+content/browser/tab_contents/web_contents_view_android.h",
   "+content/browser/tab_contents/web_contents_view_mac.h",

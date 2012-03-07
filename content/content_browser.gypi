@@ -651,7 +651,6 @@
     'browser/tab_contents/tab_contents_view_gtk.h',
     'browser/tab_contents/tab_contents_view_helper.cc',
     'browser/tab_contents/tab_contents_view_helper.h',
-    'browser/tab_contents/title_updated_details.h',
     'browser/tab_contents/web_contents_drag_win.cc',
     'browser/tab_contents/web_contents_drag_win.h',
     'browser/tab_contents/web_contents_view_android.cc',

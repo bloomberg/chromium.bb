@@ -235,7 +235,7 @@ enum NotificationType {
 
   // This notification is sent after TabContents' title is updated. The source
   // is a Source<WebContents> with a pointer to the WebContents. The details
-  // is a Details<TitleUpdatedDetails> that contains more information.
+  // is a std::pair<NavigationEntry*, bool> that contains more information.
   NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
 
   // This notification is sent when a WebContents is being hidden, e.g. due

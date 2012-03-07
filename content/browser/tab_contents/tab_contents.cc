@@ -5,6 +5,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 #include <cmath>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -33,7 +34,6 @@
 #include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/browser/tab_contents/title_updated_details.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/intents_messages.h"
 #include "content/common/ssl_status_serialization.h"
@@ -1808,12 +1808,13 @@ bool TabContents::UpdateTitleForEntry(NavigationEntryImpl* entry,
   // Lastly, set the title for the view.
   view_->SetPageTitle(final_title);
 
-  TitleUpdatedDetails details(entry, explicit_set);
+  std::pair<content::NavigationEntry*, bool> details =
+      std::make_pair(entry, explicit_set);
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
       content::Source<WebContents>(this),
-      content::Details<TitleUpdatedDetails>(&details));
+      content::Details<std::pair<content::NavigationEntry*, bool> >(&details));
 
   return true;
 }

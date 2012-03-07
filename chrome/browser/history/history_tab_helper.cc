@@ -1,14 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/history/history_tab_helper.h"
 
+#include <utility>
+
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/title_updated_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -113,16 +114,16 @@ void HistoryTabHelper::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED);
-  TitleUpdatedDetails* title =
-      content::Details<TitleUpdatedDetails>(details).ptr();
+  std::pair<content::NavigationEntry*, bool>* title =
+      content::Details<std::pair<content::NavigationEntry*, bool> >(
+          details).ptr();
 
   if (received_page_title_)
     return;
 
-  // |title->entry()| may be null.
-  if (title->entry()) {
-    UpdateHistoryPageTitle(*title->entry());
-    received_page_title_ = title->explicit_set();
+  if (title->first) {
+    UpdateHistoryPageTitle(*title->first);
+    received_page_title_ = title->second;
   }
 }
 
