@@ -1364,7 +1364,6 @@
         'browser/chromeos/gdata/gdata_file_system_unittest.cc',
         'browser/chromeos/gdata/gdata_operation_registry_unittest.cc',
         'browser/chromeos/gdata/gdata_parser_unittest.cc',
-        'browser/chromeos/gdata/gdata_upload_file_info_unittest.cc',
         'browser/chromeos/gdata/gdata_util_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/imageburner/burn_manager_unittest.cc',

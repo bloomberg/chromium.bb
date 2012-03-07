@@ -12,16 +12,16 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/stringprintf.h"
+#include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
@@ -64,6 +64,10 @@ const char kGetDocumentListURL[] =
 // Root document list url.
 const char kDocumentListRootURL[] =
     "https://docs.google.com/feeds/default/private/full";
+
+const char kUploadContentRange[] = "Content-Range: bytes ";
+const char kUploadContentType[] = "X-Upload-Content-Type: ";
+const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 
 #ifndef NDEBUG
 // Use smaller 'page' size while debugging to ensure we hit feed reload
@@ -164,6 +168,42 @@ GURL AddFeedUrlParams(const GURL& url) {
 }
 
 }  // namespace
+
+//============================== InitiateUploadParams ==========================
+
+InitiateUploadParams::InitiateUploadParams(
+    const std::string& title,
+    const std::string& content_type,
+    int64 content_length,
+    const GURL& resumable_create_media_link)
+    : title(title),
+      content_type(content_type),
+      content_length(content_length),
+      resumable_create_media_link(resumable_create_media_link) {
+}
+
+InitiateUploadParams::~InitiateUploadParams() {
+}
+
+//================================ ResumeUploadParams===========================
+
+ResumeUploadParams::ResumeUploadParams(const std::string& title,
+    int64 start_range,
+    int64 end_range,
+    int64 content_length,
+    const std::string& content_type,
+    scoped_refptr<net::IOBuffer> buf,
+    const GURL& upload_location) : title(title),
+                                   start_range(start_range),
+                                   end_range(end_range),
+                                   content_length(content_length),
+                                   content_type(content_type),
+                                   buf(buf),
+                                   upload_location(upload_location) {
+}
+
+ResumeUploadParams::~ResumeUploadParams() {
+}
 
 //================================ AuthOperation ===============================
 
@@ -643,8 +683,7 @@ class InitiateUploadOperation
   InitiateUploadOperation(GDataOperationRegistry* registry,
                           Profile* profile,
                           const std::string& auth_token,
-                          const UploadFileInfo& upload_file_info,
-                          const GURL& initiate_upload_url);
+                          const InitiateUploadParams& params);
 
  protected:
   virtual ~InitiateUploadOperation() {}
@@ -662,9 +701,8 @@ class InitiateUploadOperation
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
-  UploadFileInfo upload_file_info_;
+  InitiateUploadParams params_;
   GURL initiate_upload_url_;
-
   DISALLOW_COPY_AND_ASSIGN(InitiateUploadOperation);
 };
 
@@ -672,12 +710,11 @@ InitiateUploadOperation::InitiateUploadOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
     const std::string& auth_token,
-    const UploadFileInfo& upload_file_info,
-    const GURL& initiate_upload_url)
+    const InitiateUploadParams& params)
     : UrlFetchOperation<InitiateUploadCallback>(registry, profile, auth_token),
-      upload_file_info_(upload_file_info),
+      params_(params),
       initiate_upload_url_(chrome_browser_net::AppendQueryParameter(
-          initiate_upload_url,
+          params.resumable_create_media_link,
           kUploadParamConvertKey,
           kUploadParamConvertValue)) {
 }
@@ -698,13 +735,12 @@ void InitiateUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
                                                   kUploadResponseLocation,
                                                   &upload_location);
   }
-  VLOG(1) << "Got response for [" << upload_file_info_.title
+  VLOG(1) << "Got response for [" << params_.title
           << "]: code=" << code
           << ", location=[" << upload_location << "]";
 
   if (!callback_.is_null()) {
     callback_.Run(code,
-                  upload_file_info_,
                   GURL(upload_location));
   }
 }
@@ -716,7 +752,11 @@ URLFetcher::RequestType
 
 std::vector<std::string>
     InitiateUploadOperation::GetExtraRequestHeaders() const {
-  return upload_file_info_.GetContentTypeAndLengthHeaders();
+  std::vector<std::string> headers;
+  headers.push_back(kUploadContentType + params_.content_type);
+  headers.push_back(
+      kUploadContentLength + base::Int64ToString(params_.content_length));
+  return headers;
 }
 
 bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
@@ -728,7 +768,7 @@ bool InitiateUploadOperation::GetContentData(std::string* upload_content_type,
   xml_writer.AddAttribute("xmlns", "http://www.w3.org/2005/Atom");
   xml_writer.AddAttribute("xmlns:docs",
                           "http://schemas.google.com/docs/2007");
-  xml_writer.WriteElement("title", upload_file_info_.title);
+  xml_writer.WriteElement("title", params_.title);
   xml_writer.EndElement();  // Ends "entry" element.
   xml_writer.StopWriting();
   upload_content->assign(xml_writer.GetWrittenString());
@@ -745,7 +785,7 @@ class ResumeUploadOperation
   ResumeUploadOperation(GDataOperationRegistry* registry,
                         Profile* profile,
                         const std::string& auth_token,
-                        const UploadFileInfo& upload_file_info);
+                        const ResumeUploadParams& params);
 
  protected:
   virtual ~ResumeUploadOperation() {}
@@ -763,7 +803,7 @@ class ResumeUploadOperation
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
 
-  UploadFileInfo upload_file_info_;
+  ResumeUploadParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadOperation);
 };
@@ -772,13 +812,13 @@ ResumeUploadOperation::ResumeUploadOperation(
     GDataOperationRegistry* registry,
     Profile* profile,
     const std::string& auth_token,
-    const UploadFileInfo& upload_file_info)
+    const ResumeUploadParams& params)
     : UrlFetchOperation<ResumeUploadCallback>(registry, profile, auth_token),
-      upload_file_info_(upload_file_info) {
+      params_(params) {
 }
 
 GURL ResumeUploadOperation::GetURL() const {
-  return upload_file_info_.upload_location;
+  return params_.upload_location;
 }
 
 void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
@@ -804,7 +844,7 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
         end_range_received = ranges[0].last_byte_position();
       }
     }
-    VLOG(1) << "Got response for [" << upload_file_info_.title
+    VLOG(1) << "Got response for [" << params_.title
             << "]: code=" << code
             << ", range_hdr=[" << range_received
             << "], range_parsed=" << start_range_received
@@ -812,14 +852,13 @@ void ResumeUploadOperation::ProcessURLFetchResults(const URLFetcher* source) {
   } else {
     // There might be explanation of unexpected error code in response.
     source->GetResponseAsString(&response_content);
-    VLOG(1) << "Got response for [" << upload_file_info_.title
+    VLOG(1) << "Got response for [" << params_.title
             << "]: code=" << code
             << ", content=[\n" << response_content << "\n]";
   }
 
   if (!callback_.is_null()) {
-    callback_.Run(code, upload_file_info_,
-                  start_range_received, end_range_received);
+    callback_.Run(code, start_range_received, end_range_received);
   }
 }
 
@@ -828,16 +867,31 @@ URLFetcher::RequestType ResumeUploadOperation::GetRequestType() const {
 }
 
 std::vector<std::string> ResumeUploadOperation::GetExtraRequestHeaders() const {
+  // The header looks like
+  // Content-Range: bytes <start_range>-<end_range>/<content_length>
+  // for example:
+  // Content-Range: bytes 7864320-8388607/13851821
+  // Use * for unknown/streaming content length.
+  DCHECK_GE(params_.start_range, 0);
+  DCHECK_GE(params_.end_range, 0);
+  DCHECK_GE(params_.content_length, -1);
+
   std::vector<std::string> headers;
-  headers.push_back(upload_file_info_.GetContentRangeHeader());
+  headers.push_back(
+      std::string(kUploadContentRange) +
+      base::Int64ToString(params_.start_range) + "-" +
+      base::Int64ToString(params_.end_range) + "/" +
+      (params_.content_length == -1 ? "*" :
+          base::Int64ToString(params_.content_length)));
   return headers;
 }
 
 bool ResumeUploadOperation::GetContentData(std::string* upload_content_type,
                                            std::string* upload_content) {
-  *upload_content_type = upload_file_info_.content_type;
-  // TODO(achuith): Get rid of this unnecessary copy.
-  *upload_content = upload_file_info_.GetContent().as_string();
+  *upload_content_type = params_.content_type;
+  *upload_content =
+      std::string(params_.buf->data(),
+                  params_.end_range - params_.start_range + 1);
   return true;
 }
 
@@ -922,9 +976,7 @@ void GDataAuthService::Observe(int type,
 
 DocumentsService::DocumentsService()
     : profile_(NULL),
-      get_documents_started_(false),
       gdata_auth_service_(new GDataAuthService()),
-      uploader_(new GDataUploader(this)),
       operation_registry_(new GDataOperationRegistry),
       weak_ptr_factory_(this) {
   // The weak pointers is used to post tasks to UI thread.
@@ -937,11 +989,6 @@ DocumentsService::~DocumentsService() {
 
 void DocumentsService::Initialize(Profile* profile) {
   profile_ = profile;
-  // TODO(satorux,achuith): GDataUploader depends on DownloadStatusUpdater
-  // which is not present in unit tests. Solve the dependency issue more
-  // cleanly.
-  if (g_browser_process->download_status_updater())
-    uploader_->Initialize(profile);
   // AddObserver() should be called before Initialize() as it could change
   // the refresh token.
   gdata_auth_service_->AddObserver(this);
@@ -997,7 +1044,6 @@ void DocumentsService::GetDocumentsOnUIThread(
     return;
   }
 
-  get_documents_started_ = true;
   // operation's lifetime is managed by operation_registry_, we don't need to
   // clean it here.
   GetDocumentsOperation* operation = new GetDocumentsOperation(
@@ -1336,64 +1382,29 @@ void DocumentsService::OnCreateDirectoryCompleted(
         base::Bind(callback, error, entry_value));
 }
 
-void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
+void DocumentsService::InitiateUpload(const InitiateUploadParams& params,
                                       const InitiateUploadCallback& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &DocumentsService::InitiateUploadOnUIThread,
+          weak_ptr_bound_to_ui_thread_,
+          params,
+          callback,
+          base::MessageLoopProxy::current()));
+}
+
+void DocumentsService::InitiateUploadOnUIThread(
+    const InitiateUploadParams& params,
+    const InitiateUploadCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // If we don't have doucment feed, queue caller of InitiateUpload.
-  if (!feed_value_.get()) {
-    // Check if caller already exists in queue (if file_url is the same);
-    // if yes, overwrite it with new upload_file_info and callback.
-    InitiateUploadCallerQueue::iterator found = std::find_if(
-        initiate_upload_callers_.begin(),
-        initiate_upload_callers_.end(),
-        SameInitiateUploadCaller(upload_file_info.file_url));
-
-    if (found != initiate_upload_callers_.end()) {
-      // Caller already exists in queue, overwrite with the new parameters.
-      found->callback = callback;
-      found->upload_file_info = upload_file_info;
-      DVLOG(1) << "No document feed, overwriting queue slot for "
-               << "InitiateUpload caller for ["
-               << upload_file_info.title << "] ("
-               << upload_file_info.file_url.spec() << ")";
-    } else {
-      // Caller is new, queue it.
-      initiate_upload_callers_.push_back(
-          InitiateUploadCaller(callback, upload_file_info));
-      DVLOG(1) << "No document feed, queuing InitiateUpload caller for ["
-               << upload_file_info.title << "] ("
-               << upload_file_info.file_url.spec() << ")";
+  if (params.resumable_create_media_link.is_empty()) {
+    if (!callback.is_null()) {
+      relay_proxy->PostTask(FROM_HERE,
+                            base::Bind(callback, HTTP_BAD_REQUEST, GURL()));
     }
-
-    // Start GetDocuments if it hasn't even started.
-    if (!get_documents_started_) {
-      GetDocuments(GURL(), base::Bind(&DocumentsService::UpdateFilelist,
-                                      weak_ptr_factory_.GetWeakPtr()));
-    }
-
-    // When UpdateFilelist callback is called after document feed is received,
-    // the queue of InitiateUpload callers will be handled.
-    return;
-  }
-
-  // Retrieve link for resumable-create-media-link to initiate upload.
-  scoped_ptr<DocumentFeed> feed;
-  const Link* resumable_create_media_link = NULL;
-  if (feed_value_.get()) {
-    base::DictionaryValue* feed_dict = NULL;
-    if (static_cast<DictionaryValue*>(feed_value_.get())->
-        GetDictionary(kFeedField, &feed_dict)) {
-      feed.reset(DocumentFeed::CreateFrom(feed_dict));
-      if (feed.get()) {
-        resumable_create_media_link =
-            feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
-      }
-    }
-  }
-  if (!resumable_create_media_link) {
-    if (!callback.is_null())
-      callback.Run(HTTP_SERVICE_UNAVAILABLE, upload_file_info, GURL());
     return;
   }
 
@@ -1403,41 +1414,47 @@ void DocumentsService::InitiateUpload(const UploadFileInfo& upload_file_info,
         operation_registry_.get(),
         base::Bind(&DocumentsService::InitiateUploadOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
+                   params,
                    callback,
-                   upload_file_info));
+                   relay_proxy));
     return;
   }
   (new InitiateUploadOperation(
       operation_registry_.get(),
       profile_,
       gdata_auth_service_->oauth2_auth_token(),
-      upload_file_info,
-      resumable_create_media_link->href()))->Start(
+      params))->Start(
           base::Bind(&DocumentsService::OnInitiateUploadCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
-                     callback));
+                     params,
+                     callback,
+                     relay_proxy));
 }
 
 void DocumentsService::InitiateUploadOnAuthRefresh(
+    const InitiateUploadParams& params,
     const InitiateUploadCallback& callback,
-    const UploadFileInfo& upload_file_info,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
-    if (!callback.is_null())
-      callback.Run(error, upload_file_info, GURL());
+    if (!callback.is_null()) {
+      relay_proxy->PostTask(FROM_HERE,
+                            base::Bind(callback, error, GURL()));
+    }
     return;
   }
   DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  InitiateUpload(upload_file_info, callback);
+  InitiateUploadOnUIThread(params, callback, relay_proxy);
 }
 
 void DocumentsService::OnInitiateUploadCompleted(
+    const InitiateUploadParams& params,
     const InitiateUploadCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
-    const UploadFileInfo& upload_file_info,
     const GURL& upload_location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1446,17 +1463,33 @@ void DocumentsService::OnInitiateUploadCompleted(
       gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
-      InitiateUpload(upload_file_info, callback);
+      InitiateUploadOnUIThread(params, callback, relay_proxy);
       return;
     default:
       break;
   }
-  if (!callback.is_null())
-    callback.Run(error, upload_file_info, upload_location);
+  if (!callback.is_null()) {
+    relay_proxy->PostTask(FROM_HERE,
+                          base::Bind(callback, error, upload_location));
+  }
 }
 
-void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
+void DocumentsService::ResumeUpload(const ResumeUploadParams& params,
                                     const ResumeUploadCallback& callback) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &DocumentsService::ResumeUploadOnUIThread,
+          weak_ptr_bound_to_ui_thread_,
+          params,
+          callback,
+          base::MessageLoopProxy::current()));
+}
+
+void DocumentsService::ResumeUploadOnUIThread(
+    const ResumeUploadParams& params,
+    const ResumeUploadCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!gdata_auth_service_->IsFullyAuthenticated()) {
@@ -1465,8 +1498,9 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
         operation_registry_.get(),
         base::Bind(&DocumentsService::ResumeUploadOnAuthRefresh,
                    weak_ptr_factory_.GetWeakPtr(),
+                   params,
                    callback,
-                   upload_file_info));
+                   relay_proxy));
     return;
   }
 
@@ -1474,32 +1508,38 @@ void DocumentsService::ResumeUpload(const UploadFileInfo& upload_file_info,
       operation_registry_.get(),
       profile_,
       gdata_auth_service_->oauth2_auth_token(),
-      upload_file_info))->Start(
+      params))->Start(
           base::Bind(&DocumentsService::OnResumeUploadCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
-                     callback));
+                     params,
+                     callback,
+                     relay_proxy));
 }
 
 void DocumentsService::ResumeUploadOnAuthRefresh(
+    const ResumeUploadParams& params,
     const ResumeUploadCallback& callback,
-    const UploadFileInfo& upload_file_info,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != HTTP_SUCCESS) {
-    if (!callback.is_null())
-      callback.Run(error, upload_file_info, 0, 0);
+    if (!callback.is_null()) {
+      relay_proxy->PostTask(FROM_HERE,
+                            base::Bind(callback, error, 0, 0));
+    }
     return;
   }
   DCHECK(gdata_auth_service_->IsPartiallyAuthenticated());
-  ResumeUpload(upload_file_info, callback);
+  ResumeUploadOnUIThread(params, callback, relay_proxy);
 }
 
 void DocumentsService::OnResumeUploadCompleted(
+    const ResumeUploadParams& params,
     const ResumeUploadCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
     GDataErrorCode error,
-    const UploadFileInfo& upload_file_info,
     int64 start_range_received,
     int64 end_range_received) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1509,75 +1549,22 @@ void DocumentsService::OnResumeUploadCompleted(
       gdata_auth_service_->ClearOAuth2Token();
       // User authentication might have expired - rerun the request to force
       // auth token refresh.
-      ResumeUpload(upload_file_info, callback);
+      ResumeUploadOnUIThread(params, callback, relay_proxy);
       return;
     default:
       break;
   }
-  if (!callback.is_null())
-    callback.Run(error, upload_file_info,
-                 start_range_received, end_range_received);
+  if (!callback.is_null()) {
+    relay_proxy->PostTask(FROM_HERE,
+                          base::Bind(callback,
+                                     error,
+                                     start_range_received,
+                                     end_range_received));
+  }
 }
 
 void DocumentsService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // TODO(zelidrag): Remove this block once we properly wire these API calls
-  // through extension API.
-  if (CommandLine::ForCurrentProcess()->HasSwitch("test-gdata")) {
-    if (!gdata_auth_service_->IsPartiallyAuthenticated())
-      return;
-
-    if (!feed_value_.get() && !get_documents_started_) {
-      GetDocuments(GURL(),
-                   base::Bind(&DocumentsService::UpdateFilelist,
-                              weak_ptr_factory_.GetWeakPtr()));
-    }
-  }
-}
-
-void DocumentsService::UpdateFilelist(GDataErrorCode status,
-                                      base::Value* data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  get_documents_started_ = false;
-
-  if (!(status == HTTP_SUCCESS && data &&
-        data->GetType() == Value::TYPE_DICTIONARY))
-    return;
-
-  base::DictionaryValue* feed_dict = NULL;
-  scoped_ptr<DocumentFeed> feed;
-  if (static_cast<DictionaryValue*>(data)->GetDictionary(kFeedField,
-                                                         &feed_dict)) {
-    feed.reset(DocumentFeed::CreateFrom(feed_dict));
-  }
-  feed_value_.reset(data);
-
-  // TODO(zelidrag): This part should be removed once we start handling the
-  // results properly.
-  std::string json;
-  base::JSONWriter::Write(feed_value_.get(), true, &json);
-  DVLOG(1) << "Received document feed:\n" << json;
-
-  if (feed.get()) {
-    DVLOG(1) << "Parsed feed info:"
-             << "\n  title = " << feed->title()
-             << "\n  start_index = " << feed->start_index()
-             << "\n  items_per_page = " << feed->items_per_page()
-             << "\n  num_entries = " << feed->entries().size();
-
-    // Now that we have the document feed, start the InitiateUpload operations
-    // of queued callers.
-    for (size_t i = 0; i < initiate_upload_callers_.size(); ++i) {
-      const InitiateUploadCaller& caller = initiate_upload_callers_[i];
-      DVLOG(1) << "Starting InitiateUpload for ["
-               << caller.upload_file_info.title << "] ("
-               << caller.upload_file_info.file_url.spec() << ")";
-      InitiateUpload(caller.upload_file_info, caller.callback);
-    }
-    initiate_upload_callers_.clear();
-  }
 }
 
 }  // namespace gdata

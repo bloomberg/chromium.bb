@@ -53,15 +53,12 @@ base::PlatformFileError GDataToPlatformError(gdata::GDataErrorCode status) {
   }
 }
 
-// Escapes file names since hosted documents from gdata can actually have
-// forward slashes in their titles.
-std::string EscapeFileName(const std::string& input) {
-  std::string tmp;
+// Escapes forward slashes from file names with magic unicode character \u2215
+// pretty much looks the same in UI.
+std::string EscapeUtf8FileName(const std::string& input) {
   std::string output;
-  if (ReplaceChars(input, "%", std::string("%25"), &tmp) &&
-      ReplaceChars(tmp, "/", std::string("%2F"), &output)) {
+  if (ReplaceChars(input, "/", std::string("\xE2\x88\x95"), &output))
     return output;
-  }
 
   return input;
 }
@@ -105,6 +102,53 @@ ReadOnlyFindFileDelegate::OnEnterDirectory(const FilePath&, GDataDirectory*) {
 
 void ReadOnlyFindFileDelegate::OnError(base::PlatformFileError) {
   file_ = NULL;
+}
+
+// FindFileDelegateReplyBase class implementation.
+
+FindFileDelegateReplyBase::FindFileDelegateReplyBase(
+      GDataFileSystem* file_system,
+      const FilePath& search_file_path,
+      bool require_content)
+      : file_system_(file_system),
+        search_file_path_(search_file_path),
+        require_content_(require_content) {
+  reply_message_proxy_ = base::MessageLoopProxy::current();
+}
+
+FindFileDelegateReplyBase::~FindFileDelegateReplyBase() {
+}
+
+FindFileDelegate::FindFileTraversalCommand
+FindFileDelegateReplyBase::OnEnterDirectory(
+      const FilePath& current_directory_path,
+      GDataDirectory* current_dir) {
+  return CheckAndRefreshContent(current_directory_path, current_dir) ?
+             FIND_FILE_CONTINUES : FIND_FILE_TERMINATES;
+}
+
+// Checks if the content of the |directory| under |directory_path| needs to be
+// refreshed. Returns true if directory content is fresh, otherwise it kicks
+// off content request request. After feed content content is received and
+// processed in GDataFileSystem::OnGetDocuments(), that function will also
+// restart the initiated FindFileByPath() request.
+bool FindFileDelegateReplyBase::CheckAndRefreshContent(
+    const FilePath& directory_path, GDataDirectory* directory) {
+  GURL feed_url;
+  if (directory->NeedsRefresh(&feed_url)) {
+    // If content is stale/non-existing, first fetch the content of the
+    // directory in order to traverse it further.
+    file_system_->StartDirectoryRefresh(
+        GDataFileSystem::FindFileParams(
+            search_file_path_,
+            require_content_,
+            directory_path,
+            feed_url,
+            true,    /* is_initial_feed */
+            this));
+    return false;
+  }
+  return true;
 }
 
 // GDataFileBase class.
@@ -160,7 +204,7 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   if (doc->is_file()) {
     file->original_file_name_ = UTF16ToUTF8(doc->filename());
     file->file_name_ =
-        EscapeFileName(file->original_file_name_);
+        EscapeUtf8FileName(file->original_file_name_);
     file->file_info_.size = doc->file_size();
     file->file_md5_ = doc->file_md5();
   } else {
@@ -171,7 +215,7 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
     // case their handling in UI.
     // TODO(zelidrag): Figure out better way how to pass entry info like kind
     // to UI through the File API stack.
-    file->file_name_ = EscapeFileName(
+    file->file_name_ = EscapeUtf8FileName(
         file->original_file_name_ + doc->GetHostedDocumentExtension());
     // We don't know the size of hosted docs and it does not matter since
     // is has no effect on the quota.
@@ -247,6 +291,11 @@ GDataFileBase* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
   // Extract feed link.
   dir->start_feed_url_ = doc->content_url();
   dir->content_url_ = doc->content_url();
+
+  const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
+  if (upload_link)
+    dir->upload_url_ = upload_link->href();
+
   return dir;
 }
 
@@ -342,8 +391,10 @@ GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
 GDataFileSystem::GDataFileSystem(Profile* profile)
     : profile_(profile),
       documents_service_(new DocumentsService),
+      uploader_(new GDataUploader(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   documents_service_->Initialize(profile_);
+  uploader_->Initialize(profile_);
   root_.reset(new GDataDirectory(NULL));
   root_->set_file_name(kGDataRootDirectory);
 
@@ -497,6 +548,81 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
+
+void GDataFileSystem::InitiateUpload(
+    const std::string& file_name,
+    const std::string& content_type,
+    int64 content_length,
+    const FilePath& destination_directory,
+    const InitiateUploadOperationCallback& callback) {
+  GURL destination_directory_url =
+      GetUploadUrlForDirectory(destination_directory);
+
+  if (destination_directory_url.is_empty()) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback,
+                     HTTP_BAD_REQUEST, GURL()));
+    }
+    return;
+  }
+
+  documents_service_->InitiateUpload(
+          InitiateUploadParams(file_name,
+                                 content_type,
+                                 content_length,
+                                 destination_directory_url),
+          base::Bind(&GDataFileSystem::OnUploadLocationReceived,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     // MessageLoopProxy is used to run |callback| on the
+                     // thread where this function was called.
+                     base::MessageLoopProxy::current()));
+}
+
+void GDataFileSystem::OnUploadLocationReceived(
+    const InitiateUploadOperationCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+    GDataErrorCode code,
+    const GURL& upload_location) {
+
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!callback.is_null()) {
+    message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, code,
+                                                       upload_location));
+  }
+}
+
+void GDataFileSystem::ResumeUpload(
+    const ResumeUploadParams& params,
+    const ResumeUploadOperationCallback& callback) {
+  documents_service_->ResumeUpload(
+          params,
+          base::Bind(&GDataFileSystem::OnResumeUpload,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     // MessageLoopProxy is used to run |callback| on the
+                     // thread where this function was called.
+                     base::MessageLoopProxy::current()));
+}
+
+void GDataFileSystem::OnResumeUpload(
+    const ResumeUploadOperationCallback& callback,
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+    GDataErrorCode code,
+    int64 start_range_received,
+    int64 end_range_received) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!callback.is_null()) {
+    message_loop_proxy->PostTask(
+        FROM_HERE,
+        base::Bind(callback, code, start_range_received, end_range_received));
+  }
+  // TODO(achuith): Figure out when we are done with upload and
+  // add appropriate entry to the file system that represents the new file.
+}
+
 
 void GDataFileSystem::UnsafeFindFileByPath(
     const FilePath& file_path, scoped_refptr<FindFileDelegate> delegate) {
@@ -728,6 +854,15 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   if (!dir)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
+  // Get upload url from the root feed. Links for all other collections will be
+  // handled in GDatadirectory::FromDocumentEntry();
+  if (is_initial_feed && dir == root_.get()) {
+    const Link* root_feed_upload_link =
+        feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
+    if (root_feed_upload_link)
+      dir->set_upload_url(root_feed_upload_link->href());
+  }
+
   dir->set_start_feed_url(feed_url);
   dir->set_refresh_time(base::Time::Now());
   if (feed->GetNextFeedURL(next_feed))
@@ -832,6 +967,18 @@ GDataFileSystem::FindFirstMissingParentDirectory(
     }
   }
   return DIRECTORY_ALREADY_PRESENT;
+}
+
+GURL GDataFileSystem::GetUploadUrlForDirectory(
+    const FilePath& destination_directory) {
+  // Find directory element within the cached file system snapshot.
+  scoped_refptr<ReadOnlyFindFileDelegate> find_delegate(
+      new ReadOnlyFindFileDelegate());
+  base::AutoLock lock(lock_);
+  UnsafeFindFileByPath(destination_directory, find_delegate);
+  GDataDirectory* dir = find_delegate->file() ?
+      find_delegate->file()->AsGDataDirectory() : NULL;
+  return dir ? dir->upload_url() : GURL();
 }
 
 // static

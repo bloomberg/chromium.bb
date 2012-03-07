@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/platform_file.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
@@ -38,65 +39,6 @@ base::FileUtilProxy::Entry GDataFileToFileUtilProxyEntry(
   entry.last_modified_time = file.file_info().last_modified;
   return entry;
 }
-
-// Base class for proxy reply delegates. Keeps the track of the calling
-// thread to ensure its specializations will provide reply on it.
-class FindFileDelegateReplyBase : public FindFileDelegate {
- public:
-  FindFileDelegateReplyBase(
-      GDataFileSystem* file_system,
-      const FilePath& search_file_path,
-      bool require_content)
-      : file_system_(file_system),
-        search_file_path_(search_file_path),
-        require_content_(require_content) {
-    reply_message_proxy_ = MessageLoopProxy::current();
-  }
-
-  virtual ~FindFileDelegateReplyBase() {}
-
-  // chromeos::FindFileDelegate overrides.
-  virtual FindFileTraversalCommand OnEnterDirectory(
-      const FilePath& current_directory_path,
-      GDataDirectory* current_dir) {
-    return CheckAndRefreshContent(current_directory_path, current_dir) ?
-               FIND_FILE_CONTINUES : FIND_FILE_TERMINATES;
-  }
-
- protected:
-
-  // Checks if the content of the |directory| under |directory_path| needs to be
-  // refreshed. Returns true if directory content is fresh, otherwise it kicks
-  // off content request request. After feed content content is received and
-  // processed in GDataFileSystem::OnGetDocuments(), that function will also
-  // restart the initiated FindFileByPath() request.
-  bool CheckAndRefreshContent(const FilePath& directory_path,
-                              GDataDirectory* directory) {
-    GURL feed_url;
-    if (directory->NeedsRefresh(&feed_url)) {
-      // If content is stale/non-existing, first fetch the content of the
-      // directory in order to traverse it further.
-      file_system_->StartDirectoryRefresh(
-          GDataFileSystem::FindFileParams(
-              search_file_path_,
-              require_content_,
-              directory_path,
-              feed_url,
-              true,    /* is_initial_feed */
-              this));
-      return false;
-    }
-    return true;
-  }
-
- protected:
-  GDataFileSystem* file_system_;
-  // Search file path.
-  FilePath search_file_path_;
-  // True if the final directory content is required.
-  bool require_content_;
-  scoped_refptr<MessageLoopProxy> reply_message_proxy_;
-};
 
 // GetFileInfoDelegate is used to handle results of proxy's content search
 // during GetFileInfo call and route reply to the calling message loop.
@@ -256,7 +198,7 @@ void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
   FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     scoped_refptr<GetFileInfoDelegate> delegate(
-        new GetFileInfoDelegate(NULL, FilePath(), callback));
+        new GetFileInfoDelegate(file_system_, FilePath(), callback));
     delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -271,7 +213,7 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
   FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
     scoped_refptr<ReadDirectoryDelegate> delegate(
-        new ReadDirectoryDelegate(NULL, FilePath(), callback));
+        new ReadDirectoryDelegate(file_system_, FilePath(), callback));
     delegate->OnError(base::PLATFORM_FILE_ERROR_NOT_FOUND);
     return;
   }
@@ -310,6 +252,7 @@ void GDataFileSystemProxy::CreateDirectory(
 // static.
 bool GDataFileSystemProxy::ValidateUrl(const GURL& url, FilePath* file_path) {
   // what platform you're on.
+  FilePath raw_path;
   fileapi::FileSystemType type = fileapi::kFileSystemTypeUnknown;
   if (!fileapi::CrackFileSystemURL(url, NULL, &type, file_path) ||
       type != fileapi::kFileSystemTypeExternal) {

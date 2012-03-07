@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/string_piece.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/file_stream.h"
@@ -33,20 +32,13 @@ struct UploadFileInfo {
   // Initialize from a DownloadItem.
   void Init(content::DownloadItem* download);
 
-  // Headers for Content-Range and Initiate Upload.
-  std::string GetContentRangeHeader() const;
-  std::vector<std::string> GetContentTypeAndLengthHeaders() const;
-
-  // Get content stored in buf as StringPiece.
-  // Note that StringPiece becomes invalid if buf is modified.
-  base::StringPiece GetContent();
-
   // Data to be initialized by caller before initiating upload request.
   // URL of physical file to be uploaded, used as main identifier in callbacks.
   FilePath file_path;  // The path of the file to be uploaded.
   GURL file_url;  // file: url of the file to the uploaded.
   size_t file_size;  // Last known size of the file.
 
+  // TODO(zelirag, achuith): Make this string16.
   std::string title;  // Title to be used for file to be uploaded.
   std::string content_type;  // Content-Type of file.
   int64 content_length;  // Header content-Length.

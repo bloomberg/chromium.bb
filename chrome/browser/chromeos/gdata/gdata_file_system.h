@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
@@ -153,6 +154,10 @@ class GDataDirectory : public GDataFileBase {
   // Continuing feed's url.
   const GURL& next_feed_url() const { return next_feed_url_; }
   void set_next_feed_url(const GURL& url) { next_feed_url_ = url; }
+  // Upload url is an entry point for initialization of file upload.
+  // It corresponds to resumable-create-media link from gdata feed.
+  const GURL& upload_url() const { return upload_url_; }
+  void set_upload_url(const GURL& url) { upload_url_ = url; }
   // Collection of children GDataFileBase items.
   const GDataFileCollection& children() const { return children_; }
 
@@ -162,6 +167,9 @@ class GDataDirectory : public GDataFileBase {
   GURL start_feed_url_;
   // Continuing feed's url.
   GURL next_feed_url_;
+  // Upload url, corresponds to resumable-create-media link for feed
+  // representing this directory.
+  GURL upload_url_;
   // Collection of children GDataFileBase items.
   GDataFileCollection children_;
 
@@ -198,27 +206,6 @@ class FindFileDelegate : public base::RefCountedThreadSafe<FindFileDelegate> {
   virtual void OnError(base::PlatformFileError error) = 0;
 };
 
-// Delegate used to find a directory element for file system updates.
-class ReadOnlyFindFileDelegate : public FindFileDelegate {
- public:
-  ReadOnlyFindFileDelegate();
-
-  // Returns found file.
-  GDataFileBase* file() { return file_; }
-
- private:
-  // GDataFileSystem::FindFileDelegate overrides.
-  virtual void OnFileFound(gdata::GDataFile* file) OVERRIDE;
-  virtual void OnDirectoryFound(const FilePath&,
-                                GDataDirectory* dir) OVERRIDE;
-  virtual FindFileTraversalCommand OnEnterDirectory(const FilePath&,
-                                                    GDataDirectory*) OVERRIDE;
-  virtual void OnError(base::PlatformFileError) OVERRIDE;
-
-  // File entry that was found.
-  GDataFileBase* file_;
-};
-
 
 // GData file system abstraction layer.
 // GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
@@ -244,6 +231,16 @@ class GDataFileSystem : public ProfileKeyedService {
   // Used for file operations like removing files.
   typedef base::Callback<void(base::PlatformFileError error)>
       FileOperationCallback;
+
+  // Used for file operations like removing files.
+  typedef base::Callback<void(GDataErrorCode code,
+                              const GURL& upload_url)>
+      InitiateUploadOperationCallback;
+
+  typedef base::Callback<void(GDataErrorCode code,
+                              int64 start_range_received,
+                              int64 end_range_received) >
+      ResumeUploadOperationCallback;
 
   // Used to get files from the file system.
   typedef base::Callback<void(base::PlatformFileError error,
@@ -315,6 +312,7 @@ class GDataFileSystem : public ProfileKeyedService {
   GDataFileBase* GetGDataFileInfoFromPath(const FilePath& file_path);
 
  private:
+  friend class GDataUploader;
   friend class GDataFileSystemFactory;
   friend class GDataFileSystemTest;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
@@ -349,6 +347,23 @@ class GDataFileSystem : public ProfileKeyedService {
 
   explicit GDataFileSystem(Profile* profile);
   virtual ~GDataFileSystem();
+
+  // Initiates upload operation of file defined with |file_name|,
+  // |content_type| and |content_length|. The operation will place the newly
+  // created file entity into |destination_directory|.
+  //
+  // Can be called from any thread. |callback| is run on the calling thread.
+  void InitiateUpload(const std::string& file_name,
+                      const std::string& content_type,
+                      int64 content_length,
+                      const FilePath& destination_directory,
+                      const InitiateUploadOperationCallback& callback);
+
+  // Resumes upload operation for chunk of file defined in |params..
+  //
+  // Can be called from any thread. |callback| is run on the calling thread.
+  void ResumeUpload(const ResumeUploadParams& params,
+                    const ResumeUploadOperationCallback& callback);
 
   // Unsafe (unlocked) version of the function above.
   void UnsafeFindFileByPath(const FilePath& file_path,
@@ -389,6 +404,21 @@ class GDataFileSystem : public ProfileKeyedService {
     const GURL& content_url,
     const FilePath& temp_file);
 
+  // Callback for handling file upload initialization requests.
+  void OnUploadLocationReceived(
+      const InitiateUploadOperationCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+      GDataErrorCode code,
+      const GURL& upload_location);
+
+  // Callback for handling file upload resume requests.
+  void OnResumeUpload(
+      const ResumeUploadOperationCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
+      GDataErrorCode code,
+      int64 start_range_received,
+      int64 end_range_received);
+
   // Removes file under |file_path| from in-memory snapshot of the file system.
   // Return PLATFORM_FILE_OK if successful.
   base::PlatformFileError RemoveFileFromFileSystem(const FilePath& file_path);
@@ -415,7 +445,11 @@ class GDataFileSystem : public ProfileKeyedService {
       GURL* last_dir_content_url,
       FilePath* first_missing_parent_path);
 
-  scoped_ptr<GDataDirectory> root_;
+  // Finds and returns upload url of a given directory. Returns empty url
+  // if directory can't be found.
+  GURL GetUploadUrlForDirectory(const FilePath& destination_directory);
+
+    scoped_ptr<GDataDirectory> root_;
   base::Lock lock_;
 
   // The profile hosts the GDataFileSystem.
@@ -423,6 +457,9 @@ class GDataFileSystem : public ProfileKeyedService {
 
   // The document service for the GDataFileSystem.
   scoped_ptr<DocumentsService> documents_service_;
+
+  // File content uploader.
+  scoped_ptr<GDataUploader> uploader_;
 
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
 };
@@ -447,6 +484,61 @@ class GDataFileSystemFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
+};
+
+// Base class for find delegates that require content refreshed.
+// Also, keeps the track of the calling thread message loop proxy to ensure its
+// specializations can provide reply on it.
+class FindFileDelegateReplyBase : public FindFileDelegate {
+ public:
+  FindFileDelegateReplyBase(
+      GDataFileSystem* file_system,
+      const FilePath& search_file_path,
+      bool require_content);
+  virtual ~FindFileDelegateReplyBase();
+
+  // FindFileDelegate overrides.
+  virtual FindFileTraversalCommand OnEnterDirectory(
+      const FilePath& current_directory_path,
+      GDataDirectory* current_dir) OVERRIDE;
+
+ protected:
+  // Checks if the content of the |directory| under |directory_path| needs to be
+  // refreshed. Returns true if directory content is fresh, otherwise it kicks
+  // off content request request. After feed content content is received and
+  // processed in GDataFileSystem::OnGetDocuments(), that function will also
+  // restart the initiated FindFileByPath() request.
+  bool CheckAndRefreshContent(const FilePath& directory_path,
+                              GDataDirectory* directory);
+
+ protected:
+  GDataFileSystem* file_system_;
+  // Search file path.
+  FilePath search_file_path_;
+  // True if the final directory content is required.
+  bool require_content_;
+  scoped_refptr<base::MessageLoopProxy> reply_message_proxy_;
+};
+
+// Delegate used to find a directory element for file system updates.
+class ReadOnlyFindFileDelegate : public FindFileDelegate {
+ public:
+  ReadOnlyFindFileDelegate();
+
+  // Returns found file.
+  GDataFileBase* file() { return file_; }
+
+ private:
+  // GDataFileSystem::FindFileDelegate overrides.
+  virtual void OnFileFound(gdata::GDataFile* file) OVERRIDE;
+  virtual void OnDirectoryFound(const FilePath&,
+                                GDataDirectory* dir) OVERRIDE;
+  virtual FindFileTraversalCommand OnEnterDirectory(const FilePath&,
+                                                    GDataDirectory*) OVERRIDE;
+  virtual void OnError(base::PlatformFileError) OVERRIDE;
+
+  // File entry that was found.
+  GDataFileBase* file_;
 };
 
 }  // namespace gdata

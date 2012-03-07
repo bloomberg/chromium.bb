@@ -21,12 +21,13 @@ class Profile;
 namespace gdata {
 
 class DocumentsService;
+class GDataFileSystem;
 struct UploadFileInfo;
 
 class GDataUploader : public content::DownloadManager::Observer,
                       public content::DownloadItem::Observer {
  public:
-  explicit GDataUploader(DocumentsService* docs_service);
+  explicit GDataUploader(GDataFileSystem* file_system);
   virtual ~GDataUploader();
 
   // Initializes GDataUploader. Become an observer of |profile|'s
@@ -70,9 +71,9 @@ class GDataUploader : public content::DownloadManager::Observer,
   void OpenCompletionCallback(const GURL& file_url, int result);
 
   // DocumentsService callback for InitiateUpload.
-  void OnUploadLocationReceived(GDataErrorCode code,
-      const UploadFileInfo& upload_file_info,
-      const GURL& upload_location);
+  void OnUploadLocationReceived(const GURL& file_url,
+                                GDataErrorCode code,
+                                const GURL& upload_location);
 
   // Uploads the next chunk of data from the file.
   void UploadNextChunk(GDataErrorCode code,
@@ -86,14 +87,14 @@ class GDataUploader : public content::DownloadManager::Observer,
       int bytes_read);
 
   // DocumentsService callback for ResumeUpload.
-  void OnResumeUploadResponseReceived(GDataErrorCode code,
-      const UploadFileInfo& upload_file_info,
-      int64 start_range_received,
-      int64 end_range_received);
+  void OnResumeUploadResponseReceived(const GURL& file_url,
+                                      GDataErrorCode code,
+                                      int64 start_range_received,
+                                      int64 end_range_received);
 
   // Private data.
 
-  DocumentsService* docs_service_;
+  GDataFileSystem* file_system_;
 
   typedef std::set<content::DownloadItem*> DownloadSet;
   DownloadSet pending_downloads_;

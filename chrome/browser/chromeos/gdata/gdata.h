@@ -14,12 +14,12 @@
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/io_buffer.h"
 
 class Profile;
 
@@ -29,7 +29,6 @@ class FileStream;
 
 namespace gdata {
 
-class GDataUploader;
 class GDataOperationRegistry;
 
 // Document export format.
@@ -69,14 +68,49 @@ typedef base::Callback<void(GDataErrorCode error,
                             const GURL& content_url,
                             const FilePath& temp_file)> DownloadActionCallback;
 typedef base::Callback<void(GDataErrorCode error,
-                            const UploadFileInfo& upload_file_info,
                             const GURL& upload_location)>
     InitiateUploadCallback;
 typedef base::Callback<void(GDataErrorCode error,
-                            const UploadFileInfo& upload_file_info,
                             int64 start_range_received,
                             int64 end_range_received) >
     ResumeUploadCallback;
+
+
+// Struct for passing params needed for DocumentsService::ResumeUpload() calls.
+struct ResumeUploadParams {
+  ResumeUploadParams(const std::string& title,
+                     int64 start_range,
+                     int64 end_range,
+                     int64 content_length,
+                     const std::string& content_type,
+                     scoped_refptr<net::IOBuffer> buf,
+                     const GURL& upload_location);
+  ~ResumeUploadParams();
+
+  std::string title;  // Title to be used for file to be uploaded.
+  int64 start_range;  // Start of range of contents currently stored in |buf|.
+  int64 end_range;  // End of range of contents currently stored in |buf|.
+  int64 content_length;  // File content-Length.
+  std::string content_type;   // Content-Type of file.
+  scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
+  GURL upload_location;   // Url of where to upload the file to.
+};
+
+
+// Struct for passing params needed for DocumentsService::InitiateUpload()
+// calls.
+struct InitiateUploadParams {
+  InitiateUploadParams(const std::string& title,
+                       const std::string& content_type,
+                       int64 content_length,
+                       const GURL& resumable_create_media_link);
+  ~InitiateUploadParams();
+
+  std::string title;
+  std::string content_type;
+  int64 content_length;
+  GURL resumable_create_media_link;
+};
 
 // This class provides authentication for GData based services.
 // It integrates specific service integration with OAuth2 stack
@@ -207,45 +241,17 @@ class DocumentsService : public GDataAuthService::Observer {
 
   // Initiate uploading of a document/file.
   //
-  // Must be called on UI thread.
-  void InitiateUpload(const UploadFileInfo& upload_file_info,
+  // Can be called on any thread.
+  void InitiateUpload(const InitiateUploadParams& params,
                       const InitiateUploadCallback& callback);
 
   // Resume uploading of a document/file.
   //
-  // Must be called on UI thread.
-  void ResumeUpload(const UploadFileInfo& upload_file_info,
+  // Can be called on any thread.
+  void ResumeUpload(const ResumeUploadParams& params,
                     const ResumeUploadCallback& callback);
 
  private:
-  // Used to queue callers of InitiateUpload when document feed is not ready.
-  struct InitiateUploadCaller {
-    InitiateUploadCaller(const InitiateUploadCallback& in_callback,
-                         const UploadFileInfo& in_upload_file_info)
-        : callback(in_callback),
-          upload_file_info(in_upload_file_info) {
-    }
-    ~InitiateUploadCaller() {}
-
-    InitiateUploadCallback callback;
-    UploadFileInfo upload_file_info;
-  };
-
-  typedef std::vector<InitiateUploadCaller> InitiateUploadCallerQueue;
-
-  struct SameInitiateUploadCaller {
-   public:
-    explicit SameInitiateUploadCaller(const GURL& in_url)
-        : url(in_url) {
-    }
-
-    bool operator()(const InitiateUploadCaller& caller) const {
-      return caller.upload_file_info.file_url == url;
-    }
-
-    GURL url;
-  };
-
   // Helper function for GetDocuments(). We should initiate this operation on
   // the UI thread as the underlying GDataAuthService requires to be used on
   // the UI thread. |relay_proxy| is used to post a task to the origin thread.
@@ -273,7 +279,19 @@ class DocumentsService : public GDataAuthService::Observer {
     const CreateEntryCallback& callback,
     scoped_refptr<base::MessageLoopProxy> relay_proxy);
 
-  // GDataAuthService::Observer override.
+  // Helper function for InitiateUpload.
+  void InitiateUploadOnUIThread(
+      const InitiateUploadParams& params,
+      const InitiateUploadCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+
+  // Helper function for ResumeUpload.
+  void ResumeUploadOnUIThread(
+      const ResumeUploadParams& params,
+      const ResumeUploadCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy);
+
+    // GDataAuthService::Observer override.
   virtual void OnOAuth2RefreshTokenChanged() OVERRIDE;
 
   // TODO(zelidrag): Figure out how to declare/implement following
@@ -330,29 +348,37 @@ class DocumentsService : public GDataAuthService::Observer {
       const GURL& document_url);
 
   // Callback when re-authenticating user during initiate upload call.
-  void InitiateUploadOnAuthRefresh(const InitiateUploadCallback& callback,
-                                   const UploadFileInfo& upload_file_info,
-                                   GDataErrorCode error,
-                                   const std::string& token);
+  void InitiateUploadOnAuthRefresh(
+      const InitiateUploadParams& params,
+      const InitiateUploadCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      const std::string& token);
 
   // Pass-through callback for re-authentication during initiate upload request.
-  void OnInitiateUploadCompleted(const InitiateUploadCallback& callback,
-                                 GDataErrorCode error,
-                                 const UploadFileInfo& upload_file_info,
-                                 const GURL& upload_location);
+  void OnInitiateUploadCompleted(
+      const InitiateUploadParams& params,
+      const InitiateUploadCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      const GURL& upload_location);
 
   // Callback when re-authenticating user during resume upload call.
-  void ResumeUploadOnAuthRefresh(const ResumeUploadCallback& callback,
-                                 const UploadFileInfo& upload_file_info,
-                                 GDataErrorCode error,
-                                 const std::string& token);
+  void ResumeUploadOnAuthRefresh(
+      const ResumeUploadParams& params,
+      const ResumeUploadCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      const std::string& token);
 
   // Pass-through callback for re-authentication during resume upload request.
-  void OnResumeUploadCompleted(const ResumeUploadCallback& callback,
-                               GDataErrorCode error,
-                               const UploadFileInfo& upload_file_info,
-                               int64 start_range_received,
-                               int64 end_range_received);
+  void OnResumeUploadCompleted(
+      const ResumeUploadParams& params,
+      const ResumeUploadCallback& callback,
+      scoped_refptr<base::MessageLoopProxy> relay_proxy,
+      GDataErrorCode error,
+      int64 start_range_received,
+      int64 end_range_received);
 
   // Pass-through callback for re-authentication during directory create
   // request.
@@ -371,30 +397,13 @@ class DocumentsService : public GDataAuthService::Observer {
       const FilePath::StringType& directory_name,
       const CreateEntryCallback& callback,
       scoped_refptr<base::MessageLoopProxy> relay_proxy,
-
       GDataErrorCode error,
       base::Value* document_entry);
 
-  // TODO(zelidrag): Remove this one once we figure out where the metadata will
-  // really live.
-  // Callback for GetDocuments.
-  void UpdateFilelist(GDataErrorCode status, base::Value* data);
-
   // Data members.
   Profile* profile_;
-  scoped_ptr<base::Value> feed_value_;
-
-  // True if GetDocuments has been started.
-  // We can't just check if |feed_value_| is NULL, because GetDocuments may have
-  // started but waiting for server response.
-  bool get_documents_started_;
-
-  // Queue of InitiateUpload callers while we wait for feed info from server
-  // via GetDocuments.
-  InitiateUploadCallerQueue initiate_upload_callers_;
 
   scoped_ptr<GDataAuthService> gdata_auth_service_;
-  scoped_ptr<GDataUploader> uploader_;
   scoped_ptr<GDataOperationRegistry> operation_registry_;
   base::WeakPtrFactory<DocumentsService> weak_ptr_factory_;
   base::WeakPtr<DocumentsService> weak_ptr_bound_to_ui_thread_;

@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -54,8 +56,8 @@ UploadingExternalData* GetUploadingExternalData(DownloadItem* download) {
 
 }  // namespace
 
-GDataUploader::GDataUploader(DocumentsService* docs_service)
-  : docs_service_(docs_service),
+GDataUploader::GDataUploader(GDataFileSystem* file_system)
+  : file_system_(file_system),
     download_manager_(NULL),
     ALLOW_THIS_IN_INITIALIZER_LIST(uploader_factory_(this)) {
 }
@@ -72,6 +74,9 @@ GDataUploader::~GDataUploader() {
 }
 
 void GDataUploader::Initialize(Profile* profile) {
+  if (!g_browser_process->download_status_updater())
+    return;
+
   download_manager_ =
       DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager();
   download_manager_->AddObserver(this);
@@ -264,20 +269,26 @@ void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
     return;
   }
 
-  docs_service_->InitiateUpload(
-      *upload_file_info,
+  // TODO(achuith): Wire the correct destination directory here.
+  FilePath destination_dir_path(FILE_PATH_LITERAL("gdata"));
+
+  file_system_->InitiateUpload(
+      upload_file_info->title,
+      upload_file_info->content_type,
+      upload_file_info->content_length,
+      destination_dir_path,
       base::Bind(&GDataUploader::OnUploadLocationReceived,
-                 uploader_factory_.GetWeakPtr()));
+                 uploader_factory_.GetWeakPtr(),
+                 upload_file_info->file_url));
 }
 
 void GDataUploader::OnUploadLocationReceived(
+    const GURL& file_url,
     GDataErrorCode code,
-    const UploadFileInfo& in_upload_file_info,
     const GURL& upload_location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(
-      in_upload_file_info.file_url);
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
     return;
 
@@ -382,21 +393,27 @@ void GDataUploader::ReadCompletionCallback(
   upload_file_info->end_range = upload_file_info->start_range +
                                bytes_read - 1;
 
-  docs_service_->ResumeUpload(
-      *upload_file_info,
+  file_system_->ResumeUpload(
+      ResumeUploadParams(upload_file_info->title,
+                         upload_file_info->start_range,
+                         upload_file_info->end_range,
+                         upload_file_info->content_length,
+                         upload_file_info->content_type,
+                         upload_file_info->buf,
+                         upload_file_info->upload_location),
       base::Bind(&GDataUploader::OnResumeUploadResponseReceived,
-                 uploader_factory_.GetWeakPtr()));
+                 uploader_factory_.GetWeakPtr(),
+                 upload_file_info->file_url));
 }
 
 void GDataUploader::OnResumeUploadResponseReceived(
+    const GURL& file_url,
     GDataErrorCode code,
-    const UploadFileInfo& in_upload_file_info,
     int64 start_range_received,
     int64 end_range_received) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(
-      in_upload_file_info.file_url);
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
     return;
 
