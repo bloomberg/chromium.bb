@@ -810,7 +810,7 @@ everything() {
   everything-post-hg
 }
 
-#@ everything            - Checkout everything from the repositories
+#@ everything-hg         - Checkout everything from the repositories
 everything-hg() {
   mkdir -p "${INSTALL_ROOT}"
   if ${PNACL_IN_CROS_CHROOT}; then
