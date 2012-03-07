@@ -187,7 +187,7 @@ found in the LICENSE file.
            class="kd-modaldialog">
         <h2 i18n-content="MODE_AUTHORIZE"></h2>
         <p i18n-content="DESCRIPTION_AUTHORIZE"></p>
-        <div class="centered-button">
+        <div class="centered">
           <button id="auth-button"
                   type="button"
                   i18n-content="CONTINUE_BUTTON">
@@ -199,7 +199,7 @@ found in the LICENSE file.
            class="kd-modaldialog"
            data-ui-mode="home.host">
 
-        <div data-ui-mode="home.host.waiting-for-code" class="message"
+        <div data-ui-mode="home.host.waiting-for-code" class="message centered"
              i18n-content="MESSAGE_GENERATING">
         </div> <!-- host.waiting-for-code -->
 
@@ -216,9 +216,9 @@ found in the LICENSE file.
         </div> <!-- host.waiting-for-connection -->
 
         <div data-ui-mode="home.host.shared">
-          <div id="host-shared-message" class="message"
+          <div id="host-shared-message" class="message centered"
                i18n-content="MESSAGE_SHARED"></div>
-          <div class="centered-button">
+          <div class="centered">
             <button id="stop-sharing-button"
                     type="button"
                     i18n-content="STOP_SHARING_BUTTON">
@@ -226,15 +226,15 @@ found in the LICENSE file.
           </div>
         </div> <!-- host.shared -->
 
-        <div data-ui-mode="home.host.share-failed" class="message">
+        <div data-ui-mode="home.host.share-failed" class="message centered">
           <span id="host-plugin-error" class="error-state"></span>
         </div> <!-- host.share-failed -->
 
-        <div data-ui-mode="home.host.share-finished" class="message"
+        <div data-ui-mode="home.host.share-finished" class="message centered"
              i18n-content="MESSAGE_SESSION_FINISHED">
         </div> <!-- host.share-finished -->
 
-        <div class="centered-button"
+        <div class="centered"
              data-ui-mode="home.host.share-failed home.host.share-finished">
           <button id="host-finished-button"
                   type="button"
@@ -294,7 +294,7 @@ found in the LICENSE file.
           </button>
         </div> <!-- client.connecting -->
 
-        <div data-ui-mode="home.client.pin-prompt" class="message">
+        <div data-ui-mode="home.client.pin-prompt" class="centered">
           <div id="pin-message"
                i18n-content="PIN_MESSAGE"
                class="message"></div>
@@ -314,16 +314,16 @@ found in the LICENSE file.
         </div> <!-- client.pin-prompt -->
 
         <div data-ui-mode="home.client.connect-failed"
-             class="message">
+             class="message centered">
           <span id="connect-error-message" class="error-state"></span>
         </div> <!-- client.connect-failed -->
 
         <div data-ui-mode="home.client.session-finished"
-             class="message" i18n-content="MESSAGE_SESSION_FINISHED">
+             class="message centered" i18n-content="MESSAGE_SESSION_FINISHED">
         </div> <!-- client.session-finished -->
 
         <div data-ui-mode="home.client.connect-failed.it2me home.client.session-finished.it2me"
-             class="centered-button">
+             class="centered">
           <button id="client-finished-it2me-button"
                   type="button"
                   i18n-content="OK"
@@ -332,7 +332,7 @@ found in the LICENSE file.
         </div> <!-- connect-failed.it2me session-finished.it2me -->
 
         <div data-ui-mode="home.client.connect-failed.me2me home.client.session-finished.me2me"
-             class="centered-button">
+             class="centered">
           <button id="client-finished-me2me-button"
                   type="button"
                   i18n-content="OK"

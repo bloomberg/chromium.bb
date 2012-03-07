@@ -226,14 +226,7 @@ section {
   -webkit-box-flex: 1;
 }
 
-.centered-button {
-  /*
-    Used to force buttons to center correctly on Chrome due to a quirk
-    with laying out buttons. http://crbug.com/84654
-
-    TODO(ajwong): Either fix Chrome layout behavior, or if Chrome is actually
-    conforming correctly to the standard, remove this comment.
-  */
+.centered {
   text-align: center;
 }
 
@@ -288,7 +281,6 @@ section {
 }
 
 .message {
-  text-align:center;
   margin-bottom: 24px;
 }
 
