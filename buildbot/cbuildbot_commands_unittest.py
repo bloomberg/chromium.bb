@@ -241,12 +241,9 @@ class CBuildBotTest(mox.MoxTestBase):
   def testBuildMinimal(self):
     """Base case where Build is called with minimal options."""
     buildroot = '/bob/'
-    arg_test = mox.SameElementsAs(['./build_packages',
-                                   '--fast',
-                                   '--nowithautotest',
-                                   '--nousepkg',
-                                   '--board=x86-generic'])
-    cros_lib.RunCommand(arg_test,
+    cmd = ['./build_packages', '--fast', '--nowithautotest',
+           '--board=x86-generic'] + commands._LOCAL_BUILD_FLAGS
+    cros_lib.RunCommand(mox.SameElementsAs(cmd),
                         cwd=mox.StrContains(buildroot),
                         chroot_args=[],
                         enter_chroot=True,

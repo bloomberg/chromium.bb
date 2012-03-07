@@ -33,6 +33,7 @@ _GS_ACL = '/home/chrome-bot/slave_archive_acl'
 _BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
+_LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
 
 class TestException(Exception):
   pass
@@ -212,7 +213,7 @@ def SetupBoard(buildroot, board, fast, usepkg, latest_toolchain,
     cmd.append('--profile=%s' % profile)
 
   if not usepkg:
-    cmd.append('--nousepkg')
+    cmd.extend(_LOCAL_BUILD_FLAGS)
 
   if fast:
     cmd.append('--fast')
@@ -245,7 +246,7 @@ def Build(buildroot, board, build_autotest, fast, usepkg, skip_toolchain_update,
   if skip_toolchain_update: cmd.append('--skip_toolchain_update')
 
   if not usepkg:
-    cmd.append('--nousepkg')
+    cmd.extend(_LOCAL_BUILD_FLAGS)
 
   if nowithdebug:
     cmd.append('--nowithdebug')
