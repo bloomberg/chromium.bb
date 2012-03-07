@@ -9,7 +9,7 @@
 
 label Chrome {
     M17 = 0.1,
-    M18 = 1.0
+    M19 = 1.0
 };
 
 [assert_size(4)]
