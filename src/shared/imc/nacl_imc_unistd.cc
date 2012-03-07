@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -31,7 +31,13 @@
 #include "native_client/src/include/atomic_ops.h"
 
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+
+// Duplicate a file descriptor.
+NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
+  return dup(handle);
+}
 
 namespace nacl {
 

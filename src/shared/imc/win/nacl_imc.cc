@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -23,7 +23,24 @@
 #include "native_client/src/include/atomic_ops.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/trusted/handle_pass/handle_lookup.h"
+
+// Duplicate a Windows HANDLE.
+NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
+  NaClHandle dup_handle;
+  if (DuplicateHandle(GetCurrentProcess(),
+                      handle,
+                      GetCurrentProcess(),
+                      &dup_handle,
+                      0,
+                      FALSE,
+                      DUPLICATE_SAME_ACCESS)) {
+    return dup_handle;
+  } else {
+    return NACL_INVALID_HANDLE;
+  }
+}
 
 namespace nacl {
 

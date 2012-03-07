@@ -17,6 +17,13 @@
 
 #include <algorithm>
 
+#include "native_client/src/shared/imc/nacl_imc_c.h"
+
+// Duplicate a NaCl file descriptor.
+NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {
+  return dup(handle);
+}
+
 namespace nacl {
 
 bool WouldBlock() {

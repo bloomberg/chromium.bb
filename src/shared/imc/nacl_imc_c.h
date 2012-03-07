@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -46,6 +46,8 @@ typedef int NaClHandle;
 #endif
 
 #define NACL_INVALID_HANDLE ((NaClHandle) -1)
+
+NaClHandle NaClDuplicateNaClHandle(NaClHandle handle);
 
 /* The maximum length of the zero-terminated pathname for SocketAddress */
 #define NACL_PATH_MAX 28            /* TBD */
