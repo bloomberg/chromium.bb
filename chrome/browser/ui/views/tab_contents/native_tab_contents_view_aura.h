@@ -34,7 +34,6 @@ class NativeTabContentsViewAura : public views::NativeWidgetAura,
  private:
   // Overridden from NativeTabContentsView:
   virtual void InitNativeTabContentsView() OVERRIDE;
-  virtual void Unparent() OVERRIDE;
   virtual content::RenderWidgetHostView* CreateRenderWidgetHostView(
       RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;

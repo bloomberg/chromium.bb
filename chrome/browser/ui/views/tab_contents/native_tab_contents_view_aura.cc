@@ -177,10 +177,6 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
   GetWidget()->Hide();
 }
 
-void NativeTabContentsViewAura::Unparent() {
-  // Nothing to do.
-}
-
 RenderWidgetHostView* NativeTabContentsViewAura::CreateRenderWidgetHostView(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostView* view =
