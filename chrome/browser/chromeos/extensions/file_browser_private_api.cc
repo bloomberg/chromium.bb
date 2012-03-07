@@ -2046,3 +2046,86 @@ void GetFileLocationsFunction::GetLocalPathsResponseOnUIThread(
   result_.reset(locations);
   SendResponse(true);
 }
+
+GetGDataFilesFunction::GetGDataFilesFunction()
+    : local_paths_(NULL) {
+}
+
+GetGDataFilesFunction::~GetGDataFilesFunction() {
+}
+
+bool GetGDataFilesFunction::RunImpl() {
+  ListValue* file_urls_as_strings = NULL;
+  if (!args_->GetList(0, &file_urls_as_strings))
+    return false;
+
+  // Convert the list of strings to a list of GURLs.
+  UrlList file_urls;
+  for (size_t i = 0; i < file_urls_as_strings->GetSize(); ++i) {
+    std::string file_url_as_string;
+    if (!file_urls_as_strings->GetString(i, &file_url_as_string))
+      return false;
+    file_urls.push_back(GURL(file_url_as_string));
+  }
+
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_urls,
+      base::Bind(&GetGDataFilesFunction::GetLocalPathsResponseOnUIThread,
+                 this));
+  return true;
+}
+
+void GetGDataFilesFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (size_t i = 0; i < files.size(); ++i) {
+    DCHECK(gdata::util::IsUnderGDataMountPoint(files[i]));
+    FilePath gdata_path = gdata::util::ExtractGDataPath(files[i]);
+    remaining_gdata_paths_.push(gdata_path);
+  }
+
+  local_paths_ = new ListValue;
+  GetFileOrSendResponse();
+}
+
+void GetGDataFilesFunction::GetFileOrSendResponse() {
+  // Send the response if all files are obtained.
+  if (remaining_gdata_paths_.empty()) {
+    result_.reset(local_paths_);
+    SendResponse(true);
+    return;
+  }
+
+  gdata::GDataFileSystem* file_system =
+      gdata::GDataFileSystemFactory::GetForProfile(profile_);
+  DCHECK(file_system);
+
+  // Get the file on the top of the queue.
+  FilePath gdata_path = remaining_gdata_paths_.front();
+  file_system->GetFile(
+      gdata_path,
+      base::Bind(&GetGDataFilesFunction::OnFileReady, this));
+}
+
+
+void GetGDataFilesFunction::OnFileReady(
+    base::PlatformFileError error,
+    const FilePath& local_path) {
+  FilePath gdata_path = remaining_gdata_paths_.front();
+
+  if (error != base::PLATFORM_FILE_OK) {
+    // TODO(satorux): What should we do if some files succeeded but some
+    // failed? For now we consider it a failure if any of the files failed.
+    LOG(ERROR) << "Failed to get " << gdata_path.value();
+    SendResponse(false);
+    return;
+  }
+
+  local_paths_->Append(Value::CreateStringValue(local_path.value()));
+  LOG(ERROR) << "Got " << gdata_path.value() << " as " << local_path.value();
+  remaining_gdata_paths_.pop();
+
+  // Start getting the next file.
+  GetFileOrSendResponse();
+}

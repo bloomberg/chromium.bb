@@ -421,6 +421,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetGDataFilePropertiesFunction>();
   RegisterFunction<PinGDataFileFunction>();
   RegisterFunction<GetFileLocationsFunction>();
+  RegisterFunction<GetGDataFilesFunction>();
 
   // Mediaplayer
   RegisterFunction<PlayMediaplayerFunction>();
