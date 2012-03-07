@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillPopupViewBrowserTest,
-                       FLAKY_TestPageNavigationHidingAutofillPopup) {
+                       TestPageNavigationHidingAutofillPopup) {
   EXPECT_CALL(*autofill_popup_view_, Hide()).Times(AtLeast(1));
 
   ui_test_utils::WindowedNotificationObserver observer(
