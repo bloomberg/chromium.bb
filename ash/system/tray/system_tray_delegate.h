@@ -25,6 +25,9 @@ class SystemTrayDelegate {
   // Shows settings.
   virtual void ShowSettings() = 0;
 
+  // Shows the settings related to date, timezone etc.
+  virtual void ShowDateSettings() = 0;
+
   // Shows help.
   virtual void ShowHelp() = 0;
 

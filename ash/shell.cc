@@ -214,6 +214,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowSettings() OVERRIDE {
   }
 
+  virtual void ShowDateSettings() OVERRIDE {
+  }
+
   virtual void ShowHelp() OVERRIDE {
   }
 

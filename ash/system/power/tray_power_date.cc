@@ -22,6 +22,7 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "unicode/datefmt.h"
@@ -71,7 +72,7 @@ string16 FormatNicely(const base::Time& time) {
 namespace tray {
 
 // This view is used for both the tray and the popup.
-class DateView : public views::Label {
+class DateView : public views::View {
  public:
   enum TimeType {
     TIME,
@@ -80,25 +81,33 @@ class DateView : public views::Label {
 
   DateView(base::HourClockType hour_type, TimeType type)
       : hour_type_(hour_type),
-        type_(type) {
+        type_(type),
+        actionable_(false) {
+    SetLayoutManager(new views::FillLayout());
+    label_ = new views::Label;
     UpdateText();
+    AddChildView(label_);
   }
 
   virtual ~DateView() {
     timer_.Stop();
   }
 
+  views::Label* label() const { return label_; }
+
+  void set_actionable(bool actionable) { actionable_ = actionable; }
+
  private:
   void UpdateText() {
     base::Time now = base::Time::Now();
     if (type_ == TIME) {
-      SetText(base::TimeFormatTimeOfDayWithHourClockType(now, hour_type_,
-          base::kDropAmPm));
+      label_->SetText(base::TimeFormatTimeOfDayWithHourClockType(
+          now, hour_type_, base::kDropAmPm));
     } else {
-      SetText(FormatNicely(now));
+      label_->SetText(FormatNicely(now));
     }
 
-    SetTooltipText(base::TimeFormatFriendlyDate(now));
+    label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
     SchedulePaint();
 
     // Try to set the timer to go off at the next change of the minute. We don't
@@ -122,6 +131,32 @@ class DateView : public views::Label {
   }
 
   // Overridden from views::View.
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+    if (!actionable_)
+      return false;
+
+    ash::Shell::GetInstance()->tray_delegate()->ShowDateSettings();
+    return true;
+  }
+
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
+    if (!actionable_)
+      return;
+    gfx::Font font = label_->font();
+    label_->SetFont(font.DeriveFont(0,
+          font.GetStyle() | gfx::Font::UNDERLINED));
+    SchedulePaint();
+  }
+
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
+    if (!actionable_)
+      return;
+    gfx::Font font = label_->font();
+    label_->SetFont(font.DeriveFont(0,
+          font.GetStyle() & ~gfx::Font::UNDERLINED));
+    SchedulePaint();
+  }
+
   virtual void OnLocaleChanged() OVERRIDE {
     UpdateText();
   }
@@ -129,6 +164,8 @@ class DateView : public views::Label {
   base::OneShotTimer<DateView> timer_;
   base::HourClockType hour_type_;
   TimeType type_;
+  bool actionable_;
+  views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(DateView);
 };
@@ -237,9 +274,10 @@ TrayPowerDate::~TrayPowerDate() {
 views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
   date_tray_.reset(new tray::DateView(base::k24HourClock,
                                       tray::DateView::TIME));
-  date_tray_->SetFont(date_tray_->font().DeriveFont(-1, gfx::Font::BOLD));
-  date_tray_->SetAutoColorReadabilityEnabled(false);
-  date_tray_->SetEnabledColor(SK_ColorWHITE);
+  date_tray_->label()->SetFont(
+      date_tray_->label()->font().DeriveFont(-1, gfx::Font::BOLD));
+  date_tray_->label()->SetAutoColorReadabilityEnabled(false);
+  date_tray_->label()->SetEnabledColor(SK_ColorWHITE);
 
   power_tray_.reset(new tray::PowerTrayView());
 
@@ -255,6 +293,8 @@ views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
 views::View* TrayPowerDate::CreateDefaultView(user::LoginStatus status) {
   date_.reset(new tray::DateView(base::k24HourClock,
                                  tray::DateView::DATE));
+  date_->set_actionable(true);
+
   power_.reset(new tray::PowerPopupView());
 
   views::View* container = new views::View;

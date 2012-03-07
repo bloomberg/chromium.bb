@@ -77,6 +77,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     BrowserList::GetLastActive()->OpenOptionsDialog();
   }
 
+  virtual void ShowDateSettings() OVERRIDE {
+    BrowserList::GetLastActive()->OpenAdvancedOptionsDialog();
+  }
+
   virtual void ShowHelp() OVERRIDE {
     BrowserList::GetLastActive()->ShowHelpTab();
   }
