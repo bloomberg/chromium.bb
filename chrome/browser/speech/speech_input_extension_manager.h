@@ -45,7 +45,7 @@ class SpeechInputExtensionInterface {
 
   virtual void StopRecording(bool recognition_failed) = 0;
   virtual bool HasAudioInputDevices() = 0;
-  virtual bool IsRecordingInProcess() = 0;
+  virtual bool IsCapturingAudio() = 0;
 
   // Called from the UI thread.
   virtual bool HasValidRecognizer() = 0;
@@ -117,7 +117,7 @@ class SpeechInputExtensionManager
   // Methods from SpeechRecognizerDelegate.
   virtual void SetRecognitionResult(
       int caller_id,
-      const content::SpeechInputResult& result) OVERRIDE;
+      const content::SpeechRecognitionResult& result) OVERRIDE;
 
   virtual void DidStartReceivingAudio(int caller_id) OVERRIDE;
   virtual void DidCompleteRecording(int caller_id) OVERRIDE;
@@ -125,7 +125,7 @@ class SpeechInputExtensionManager
   virtual void DidStartReceivingSpeech(int caller_id) OVERRIDE;
   virtual void DidStopReceivingSpeech(int caller_id) OVERRIDE;
   virtual void OnRecognizerError(int caller_id,
-                                 content::SpeechInputError error)
+                                 content::SpeechRecognitionErrorCode error)
                                  OVERRIDE;
   virtual void DidCompleteEnvironmentEstimation(int caller_id) OVERRIDE;
   virtual void SetInputVolume(int caller_id, float volume,
@@ -138,7 +138,7 @@ class SpeechInputExtensionManager
 
  private:
   // SpeechInputExtensionInterface methods:
-  virtual bool IsRecordingInProcess() OVERRIDE;
+  virtual bool IsCapturingAudio() OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual bool HasValidRecognizer() OVERRIDE;
   virtual void StartRecording(
@@ -161,7 +161,7 @@ class SpeechInputExtensionManager
   void IsRecordingOnIOThread(const IsRecordingCallback& callback);
 
   void SetRecognitionResultOnUIThread(
-      const content::SpeechInputResult& result,
+      const content::SpeechRecognitionResult& result,
       const std::string& extension_id);
   void DidStartReceivingAudioOnUIThread();
   void StopSucceededOnUIThread();

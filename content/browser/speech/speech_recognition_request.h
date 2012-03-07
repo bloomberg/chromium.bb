@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,14 +18,14 @@
 class URLFetcher;
 
 namespace content {
-struct SpeechInputResult;
+struct SpeechRecognitionResult;
 }
 
 namespace net {
 class URLRequestContextGetter;
 }
 
-namespace speech_input {
+namespace speech {
 
 // Provides a simple interface for sending recorded speech data to the server
 // and get back recognition results.
@@ -38,7 +38,7 @@ class SpeechRecognitionRequest : public content::URLFetcherDelegate {
   class CONTENT_EXPORT Delegate {
    public:
     virtual void SetRecognitionResult(
-        const content::SpeechInputResult& result) = 0;
+        const content::SpeechRecognitionResult& result) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -83,6 +83,6 @@ class SpeechRecognitionRequest : public content::URLFetcherDelegate {
 // the workaround was not needed for my machine).
 typedef SpeechRecognitionRequest::Delegate SpeechRecognitionRequestDelegate;
 
-}  // namespace speech_input
+}  // namespace speech
 
 #endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_

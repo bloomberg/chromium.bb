@@ -53,7 +53,7 @@
 #include "chrome/browser/renderer_host/chrome_render_view_host_observer.h"
 #include "chrome/browser/renderer_host/plugin_info_message_filter.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
-#include "chrome/browser/speech/chrome_speech_input_manager_delegate.h"
+#include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
@@ -1275,9 +1275,9 @@ void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
   return g_browser_process->ResourceDispatcherHostCreated();
 }
 
-content::SpeechInputManagerDelegate*
-    ChromeContentBrowserClient::GetSpeechInputManagerDelegate() {
-  return new speech_input::ChromeSpeechInputManagerDelegate();
+content::SpeechRecognitionManagerDelegate*
+    ChromeContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
+  return new speech::ChromeSpeechRecognitionManagerDelegate();
 }
 
 ui::Clipboard* ChromeContentBrowserClient::GetClipboard() {

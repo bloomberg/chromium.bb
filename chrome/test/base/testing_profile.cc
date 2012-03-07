@@ -36,7 +36,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/speech/chrome_speech_input_preferences.h"
+#include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -651,11 +651,13 @@ TestingProfile::GetGeolocationPermissionContext() {
   return geolocation_permission_context_.get();
 }
 
-content::SpeechInputPreferences* TestingProfile::GetSpeechInputPreferences() {
+content::SpeechRecognitionPreferences*
+    TestingProfile::GetSpeechRecognitionPreferences() {
 #if defined(ENABLE_INPUT_SPEECH)
-  if (!speech_input_preferences_.get())
-    speech_input_preferences_ = new ChromeSpeechInputPreferences(GetPrefs());
-  return speech_input_preferences_.get();
+  if (!speech_recognition_preferences_.get())
+    speech_recognition_preferences_ =
+        new ChromeSpeechRecognitionPreferences(GetPrefs());
+  return speech_recognition_preferences_.get();
 #else
   return NULL;
 #endif

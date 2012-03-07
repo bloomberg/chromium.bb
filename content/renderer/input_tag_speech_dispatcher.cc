@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/speech_input_dispatcher.h"
+#include "content/renderer/input_tag_speech_dispatcher.h"
 
 #include "base/utf_string_conversions.h"
-#include "content/common/speech_input_messages.h"
+#include "content/common/speech_recognition_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
@@ -25,38 +25,39 @@ using WebKit::WebInputElement;
 using WebKit::WebNode;
 using WebKit::WebView;
 
-SpeechInputDispatcher::SpeechInputDispatcher(
+InputTagSpeechDispatcher::InputTagSpeechDispatcher(
     RenderViewImpl* render_view,
     WebKit::WebSpeechInputListener* listener)
     : content::RenderViewObserver(render_view),
       listener_(listener) {
 }
 
-bool SpeechInputDispatcher::OnMessageReceived(const IPC::Message& message) {
+bool InputTagSpeechDispatcher::OnMessageReceived(
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SpeechInputDispatcher, message)
-    IPC_MESSAGE_HANDLER(SpeechInputMsg_SetRecognitionResult,
+  IPC_BEGIN_MESSAGE_MAP(InputTagSpeechDispatcher, message)
+    IPC_MESSAGE_HANDLER(InputTagSpeechMsg_SetRecognitionResult,
                         OnSpeechRecognitionResult)
-    IPC_MESSAGE_HANDLER(SpeechInputMsg_RecordingComplete,
+    IPC_MESSAGE_HANDLER(InputTagSpeechMsg_RecordingComplete,
                         OnSpeechRecordingComplete)
-    IPC_MESSAGE_HANDLER(SpeechInputMsg_RecognitionComplete,
+    IPC_MESSAGE_HANDLER(InputTagSpeechMsg_RecognitionComplete,
                         OnSpeechRecognitionComplete)
-    IPC_MESSAGE_HANDLER(SpeechInputMsg_ToggleSpeechInput,
+    IPC_MESSAGE_HANDLER(InputTagSpeechMsg_ToggleSpeechInput,
                         OnSpeechRecognitionToggleSpeechInput)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-bool SpeechInputDispatcher::startRecognition(
+bool InputTagSpeechDispatcher::startRecognition(
     int request_id,
     const WebKit::WebRect& element_rect,
     const WebKit::WebString& language,
     const WebKit::WebString& grammar,
     const WebKit::WebSecurityOrigin& origin) {
-  VLOG(1) << "SpeechInputDispatcher::startRecognition enter";
+  VLOG(1) << "InputTagSpeechDispatcher::startRecognition enter";
 
-  SpeechInputHostMsg_StartRecognition_Params params;
+  InputTagSpeechHostMsg_StartRecognition_Params params;
   params.grammar = UTF16ToUTF8(grammar);
   params.language = UTF16ToUTF8(language);
   params.origin_url = UTF16ToUTF8(origin.toString());
@@ -66,50 +67,51 @@ bool SpeechInputDispatcher::startRecognition(
   params.element_rect = element_rect;
   params.element_rect.Offset(-scroll.width(), -scroll.height());
 
-  Send(new SpeechInputHostMsg_StartRecognition(params));
-  VLOG(1) << "SpeechInputDispatcher::startRecognition exit";
+  Send(new InputTagSpeechHostMsg_StartRecognition(params));
+  VLOG(1) << "InputTagSpeechDispatcher::startRecognition exit";
   return true;
 }
 
-void SpeechInputDispatcher::cancelRecognition(int request_id) {
-  VLOG(1) << "SpeechInputDispatcher::cancelRecognition enter";
-  Send(new SpeechInputHostMsg_CancelRecognition(routing_id(), request_id));
-  VLOG(1) << "SpeechInputDispatcher::cancelRecognition exit";
+void InputTagSpeechDispatcher::cancelRecognition(int request_id) {
+  VLOG(1) << "InputTagSpeechDispatcher::cancelRecognition enter";
+  Send(new InputTagSpeechHostMsg_CancelRecognition(routing_id(), request_id));
+  VLOG(1) << "InputTagSpeechDispatcher::cancelRecognition exit";
 }
 
-void SpeechInputDispatcher::stopRecording(int request_id) {
-  VLOG(1) << "SpeechInputDispatcher::stopRecording enter";
-  Send(new SpeechInputHostMsg_StopRecording(routing_id(), request_id));
-  VLOG(1) << "SpeechInputDispatcher::stopRecording exit";
+void InputTagSpeechDispatcher::stopRecording(int request_id) {
+  VLOG(1) << "InputTagSpeechDispatcher::stopRecording enter";
+  Send(new InputTagSpeechHostMsg_StopRecording(routing_id(),
+                                                        request_id));
+  VLOG(1) << "InputTagSpeechDispatcher::stopRecording exit";
 }
 
-void SpeechInputDispatcher::OnSpeechRecognitionResult(
+void InputTagSpeechDispatcher::OnSpeechRecognitionResult(
     int request_id,
-    const content::SpeechInputResult& result) {
-  VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionResult enter";
+    const content::SpeechRecognitionResult& result) {
+  VLOG(1) << "InputTagSpeechDispatcher::OnSpeechRecognitionResult enter";
   WebKit::WebSpeechInputResultArray webkit_result(result.hypotheses.size());
   for (size_t i = 0; i < result.hypotheses.size(); ++i) {
     webkit_result[i].assign(result.hypotheses[i].utterance,
         result.hypotheses[i].confidence);
   }
   listener_->setRecognitionResult(request_id, webkit_result);
-  VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionResult exit";
+  VLOG(1) << "InputTagSpeechDispatcher::OnSpeechRecognitionResult exit";
 }
 
-void SpeechInputDispatcher::OnSpeechRecordingComplete(int request_id) {
-  VLOG(1) << "SpeechInputDispatcher::OnSpeechRecordingComplete enter";
+void InputTagSpeechDispatcher::OnSpeechRecordingComplete(int request_id) {
+  VLOG(1) << "InputTagSpeechDispatcher::OnSpeechRecordingComplete enter";
   listener_->didCompleteRecording(request_id);
-  VLOG(1) << "SpeechInputDispatcher::OnSpeechRecordingComplete exit";
+  VLOG(1) << "InputTagSpeechDispatcher::OnSpeechRecordingComplete exit";
 }
 
-void SpeechInputDispatcher::OnSpeechRecognitionComplete(int request_id) {
-  VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionComplete enter";
+void InputTagSpeechDispatcher::OnSpeechRecognitionComplete(int request_id) {
+  VLOG(1) << "InputTagSpeechDispatcher::OnSpeechRecognitionComplete enter";
   listener_->didCompleteRecognition(request_id);
-  VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionComplete exit";
+  VLOG(1) << "InputTagSpeechDispatcher::OnSpeechRecognitionComplete exit";
 }
 
-void SpeechInputDispatcher::OnSpeechRecognitionToggleSpeechInput() {
-  VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionToggleSpeechInput";
+void InputTagSpeechDispatcher::OnSpeechRecognitionToggleSpeechInput() {
+  VLOG(1) <<"InputTagSpeechDispatcher::OnSpeechRecognitionToggleSpeechInput";
 
   WebView* web_view = render_view()->GetWebView();
 

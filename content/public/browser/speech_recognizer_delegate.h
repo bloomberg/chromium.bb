@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNIZER_DELEGATE_H_
 #pragma once
 
-#include "content/public/common/speech_input_result.h"
+#include "content/public/common/speech_recognition_result.h"
 
 namespace content {
 
@@ -15,7 +15,7 @@ namespace content {
 class SpeechRecognizerDelegate {
  public:
   virtual void SetRecognitionResult(int caller_id,
-                                    const SpeechInputResult& result) = 0;
+                                    const SpeechRecognitionResult& result) = 0;
 
   // Invoked when the first audio packet was received from the audio capture
   // device.
@@ -41,7 +41,8 @@ class SpeechRecognizerDelegate {
   // session has already been cancelled when this call is made and the DidXxxx
   // callbacks will not be issued. It is safe to destroy/release the
   // |SpeechRecognizer| object while processing this call.
-  virtual void OnRecognizerError(int caller_id, SpeechInputError error) = 0;
+  virtual void OnRecognizerError(int caller_id,
+                                 SpeechRecognitionErrorCode error) = 0;
 
   // At the start of recognition, a short amount of audio is recorded to
   // estimate the environment/background noise and this callback is issued

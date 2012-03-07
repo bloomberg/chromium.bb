@@ -37,7 +37,8 @@ class ShellBrowserContext : public BrowserContext {
   virtual ResourceContext* GetResourceContext() OVERRIDE;
   virtual GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
-  virtual SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
+  virtual SpeechRecognitionPreferences*
+      GetSpeechRecognitionPreferences() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
@@ -49,7 +50,7 @@ class ShellBrowserContext : public BrowserContext {
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
-  scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
+  scoped_refptr<SpeechRecognitionPreferences> speech_recognition_preferences_;
 
   ShellBrowserMainParts* shell_main_parts_;
 

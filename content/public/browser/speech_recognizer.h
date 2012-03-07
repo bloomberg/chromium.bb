@@ -46,6 +46,6 @@ class SpeechRecognizer : public base::RefCountedThreadSafe<SpeechRecognizer> {
   virtual void CancelRecognition() = 0;
 };
 
-}  // namespace speech_input
+}  // namespace speech
 
 #endif  // CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNIZER_H_

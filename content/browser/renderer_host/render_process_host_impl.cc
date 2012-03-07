@@ -114,7 +114,7 @@
 #endif
 
 #if defined(ENABLE_INPUT_SPEECH)
-#include "content/browser/speech/speech_input_dispatcher_host.h"
+#include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #endif
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -493,9 +493,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
                                               GetID(), resource_context));
 #if defined(ENABLE_INPUT_SPEECH)
-  channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(
+  channel_->AddFilter(new speech::InputTagSpeechDispatcherHost(
       GetID(), browser_context->GetRequestContext(),
-      browser_context->GetSpeechInputPreferences(),
+      browser_context->GetSpeechRecognitionPreferences(),
       content::BrowserMainLoop::GetAudioManager()));
 #endif
   channel_->AddFilter(new FileAPIMessageFilter(

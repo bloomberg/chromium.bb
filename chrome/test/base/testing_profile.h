@@ -17,7 +17,7 @@
 
 namespace content {
 class MockResourceContext;
-class SpeechInputPreferences;
+class SpeechRecognitionPreferences;
 }
 
 namespace history {
@@ -165,7 +165,8 @@ class TestingProfile : public Profile {
   virtual content::ResourceContext* GetResourceContext() OVERRIDE;
   virtual content::GeolocationPermissionContext*
       GetGeolocationPermissionContext() OVERRIDE;
-  virtual content::SpeechInputPreferences* GetSpeechInputPreferences() OVERRIDE;
+  virtual content::SpeechRecognitionPreferences*
+      GetSpeechRecognitionPreferences() OVERRIDE;
   virtual bool DidLastSessionExitCleanly() OVERRIDE;
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
@@ -351,7 +352,8 @@ class TestingProfile : public Profile {
   scoped_refptr<content::GeolocationPermissionContext>
       geolocation_permission_context_;
 
-  scoped_refptr<content::SpeechInputPreferences> speech_input_preferences_;
+  scoped_refptr<content::SpeechRecognitionPreferences>
+      speech_recognition_preferences_;
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.

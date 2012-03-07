@@ -56,6 +56,7 @@
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/idle_user_detector.h"
+#include "content/renderer/input_tag_speech_dispatcher.h"
 #include "content/renderer/web_intents_host.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
@@ -78,7 +79,6 @@
 #include "content/renderer/renderer_accessibility.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
-#include "content/renderer/speech_input_dispatcher.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/web_ui_bindings.h"
@@ -444,7 +444,7 @@ RenderViewImpl::RenderViewImpl(
       queried_for_swapbuffers_complete_callback_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
-      speech_input_dispatcher_(NULL),
+      input_tag_speech_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
       p2p_socket_dispatcher_(NULL),
@@ -4910,10 +4910,11 @@ WebKit::WebGeolocationClient* RenderViewImpl::geolocationClient() {
 WebKit::WebSpeechInputController* RenderViewImpl::speechInputController(
     WebKit::WebSpeechInputListener* listener) {
 #if defined(ENABLE_INPUT_SPEECH)
-  if (!speech_input_dispatcher_)
-    speech_input_dispatcher_ = new SpeechInputDispatcher(this, listener);
+  if (!input_tag_speech_dispatcher_)
+    input_tag_speech_dispatcher_ =
+        new InputTagSpeechDispatcher(this, listener);
 #endif
-  return speech_input_dispatcher_;
+  return input_tag_speech_dispatcher_;
 }
 
 WebKit::WebDeviceOrientationClient* RenderViewImpl::deviceOrientationClient() {

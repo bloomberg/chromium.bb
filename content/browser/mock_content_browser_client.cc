@@ -251,8 +251,8 @@ std::string MockContentBrowserClient::GetWorkerProcessTitle(
 void MockContentBrowserClient::ResourceDispatcherHostCreated() {
 }
 
-SpeechInputManagerDelegate*
-    MockContentBrowserClient::GetSpeechInputManagerDelegate() {
+SpeechRecognitionManagerDelegate*
+    MockContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
   return NULL;
 }
 

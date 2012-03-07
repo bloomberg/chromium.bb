@@ -5,7 +5,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "chrome/browser/speech/speech_input_bubble.h"
+#include "chrome/browser/speech/speech_recognition_bubble.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -24,8 +24,8 @@ const int kWarmingUpAnimationStepMs = 100;
 const int kRecognizingAnimationStepMs = 100;
 
 // A lazily initialized singleton to hold all the image used by the speech
-// input bubbles and safely destroy them on exit.
-class SpeechInputBubbleImages {
+// recognition bubbles and safely destroy them on exit.
+class SpeechRecognitionBubbleImages {
  public:
   const std::vector<SkBitmap>& spinner() { return spinner_; }
   const std::vector<SkBitmap>& warm_up() { return warm_up_; }
@@ -36,8 +36,8 @@ class SpeechInputBubbleImages {
 
  private:
   // Private constructor to enforce singleton.
-  friend struct base::DefaultLazyInstanceTraits<SpeechInputBubbleImages>;
-  SpeechInputBubbleImages();
+  friend struct base::DefaultLazyInstanceTraits<SpeechRecognitionBubbleImages>;
+  SpeechRecognitionBubbleImages();
 
   std::vector<SkBitmap> spinner_;  // Frames for the progress spinner.
   std::vector<SkBitmap> warm_up_;  // Frames for the warm up animation.
@@ -49,7 +49,7 @@ class SpeechInputBubbleImages {
   SkBitmap* mic_mask_;  // Gradient mask used by the volume indicator.
 };
 
-SpeechInputBubbleImages::SpeechInputBubbleImages() {
+SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
   mic_empty_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_SPEECH_INPUT_MIC_EMPTY);
   mic_noise_ = ResourceBundle::GetSharedInstance().GetBitmapNamed(
@@ -100,17 +100,17 @@ SpeechInputBubbleImages::SpeechInputBubbleImages() {
   }
 }
 
-base::LazyInstance<SpeechInputBubbleImages> g_images =
+base::LazyInstance<SpeechRecognitionBubbleImages> g_images =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-SpeechInputBubble::FactoryMethod SpeechInputBubble::factory_ = NULL;
-const int SpeechInputBubble::kBubbleTargetOffsetX = 10;
+SpeechRecognitionBubble::FactoryMethod SpeechRecognitionBubble::factory_ = NULL;
+const int SpeechRecognitionBubble::kBubbleTargetOffsetX = 10;
 
-SpeechInputBubble* SpeechInputBubble::Create(WebContents* web_contents,
-                                             Delegate* delegate,
-                                             const gfx::Rect& element_rect) {
+SpeechRecognitionBubble* SpeechRecognitionBubble::Create(
+    WebContents* web_contents, Delegate* delegate,
+    const gfx::Rect& element_rect) {
   if (factory_)
     return (*factory_)(web_contents, delegate, element_rect);
 
@@ -121,7 +121,8 @@ SpeechInputBubble* SpeechInputBubble::Create(WebContents* web_contents,
   return CreateNativeBubble(web_contents, delegate, element_rect);
 }
 
-SpeechInputBubbleBase::SpeechInputBubbleBase(WebContents* web_contents)
+SpeechRecognitionBubbleBase::SpeechRecognitionBubbleBase(
+    WebContents* web_contents)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       display_mode_(DISPLAY_MODE_RECORDING),
       web_contents_(web_contents) {
@@ -138,13 +139,13 @@ SpeechInputBubbleBase::SpeechInputBubbleBase(WebContents* web_contents)
   buffer_image_->allocPixels();
 }
 
-SpeechInputBubbleBase::~SpeechInputBubbleBase() {
+SpeechRecognitionBubbleBase::~SpeechRecognitionBubbleBase() {
   // This destructor is added to make sure members such as the scoped_ptr
   // get destroyed here and the derived classes don't have to care about such
   // member variables which they don't use.
 }
 
-void SpeechInputBubbleBase::SetWarmUpMode() {
+void SpeechRecognitionBubbleBase::SetWarmUpMode() {
   weak_factory_.InvalidateWeakPtrs();
   display_mode_ = DISPLAY_MODE_WARM_UP;
   animation_step_ = 0;
@@ -152,11 +153,11 @@ void SpeechInputBubbleBase::SetWarmUpMode() {
   UpdateLayout();
 }
 
-void SpeechInputBubbleBase::DoWarmingUpAnimationStep() {
+void SpeechRecognitionBubbleBase::DoWarmingUpAnimationStep() {
   SetImage(g_images.Get().warm_up()[animation_step_]);
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SpeechInputBubbleBase::DoWarmingUpAnimationStep,
+      base::Bind(&SpeechRecognitionBubbleBase::DoWarmingUpAnimationStep,
           weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(
           animation_step_ == 0 ? kWarmingUpAnimationStartMs
@@ -165,41 +166,41 @@ void SpeechInputBubbleBase::DoWarmingUpAnimationStep() {
     animation_step_ = 1;  // Frame 0 is skipped during the animation.
 }
 
-void SpeechInputBubbleBase::SetRecordingMode() {
+void SpeechRecognitionBubbleBase::SetRecordingMode() {
   weak_factory_.InvalidateWeakPtrs();
   display_mode_ = DISPLAY_MODE_RECORDING;
   SetInputVolume(0, 0);
   UpdateLayout();
 }
 
-void SpeechInputBubbleBase::SetRecognizingMode() {
+void SpeechRecognitionBubbleBase::SetRecognizingMode() {
   display_mode_ = DISPLAY_MODE_RECOGNIZING;
   animation_step_ = 0;
   DoRecognizingAnimationStep();
   UpdateLayout();
 }
 
-void SpeechInputBubbleBase::DoRecognizingAnimationStep() {
+void SpeechRecognitionBubbleBase::DoRecognizingAnimationStep() {
   SetImage(g_images.Get().spinner()[animation_step_]);
   if (++animation_step_ >= static_cast<int>(g_images.Get().spinner().size()))
     animation_step_ = 0;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&SpeechInputBubbleBase::DoRecognizingAnimationStep,
+      base::Bind(&SpeechRecognitionBubbleBase::DoRecognizingAnimationStep,
           weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kRecognizingAnimationStepMs));
 }
 
-void SpeechInputBubbleBase::SetMessage(const string16& text) {
+void SpeechRecognitionBubbleBase::SetMessage(const string16& text) {
   weak_factory_.InvalidateWeakPtrs();
   message_text_ = text;
   display_mode_ = DISPLAY_MODE_MESSAGE;
   UpdateLayout();
 }
 
-void SpeechInputBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
-                                              const SkBitmap& bitmap,
-                                              float volume) {
+void SpeechRecognitionBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
+                                                    const SkBitmap& bitmap,
+                                                    float volume) {
   buffer_image_->eraseARGB(0, 0, 0, 0);
 
   int width = mic_image_->width();
@@ -222,7 +223,8 @@ void SpeechInputBubbleBase::DrawVolumeOverlay(SkCanvas* canvas,
   canvas->drawBitmap(*buffer_image_.get(), 0, 0);
 }
 
-void SpeechInputBubbleBase::SetInputVolume(float volume, float noise_volume) {
+void SpeechRecognitionBubbleBase::SetInputVolume(float volume,
+                                                 float noise_volume) {
   mic_image_->eraseARGB(0, 0, 0, 0);
   SkCanvas canvas(*mic_image_);
 
@@ -235,15 +237,15 @@ void SpeechInputBubbleBase::SetInputVolume(float volume, float noise_volume) {
   SetImage(*mic_image_.get());
 }
 
-WebContents* SpeechInputBubbleBase::web_contents() {
+WebContents* SpeechRecognitionBubbleBase::web_contents() {
   return web_contents_;
 }
 
-void SpeechInputBubbleBase::SetImage(const SkBitmap& image) {
+void SpeechRecognitionBubbleBase::SetImage(const SkBitmap& image) {
   icon_image_.reset(new SkBitmap(image));
   UpdateImage();
 }
 
-SkBitmap SpeechInputBubbleBase::icon_image() {
+SkBitmap SpeechRecognitionBubbleBase::icon_image() {
   return (icon_image_ != NULL) ? *icon_image_ : SkBitmap();
 }

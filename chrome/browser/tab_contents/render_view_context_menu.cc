@@ -68,7 +68,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/speech_input_preferences.h"
+#include "content/public/browser/speech_recognition_preferences.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_restriction.h"
@@ -1415,7 +1415,7 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   // Check box for menu item 'Block offensive words'.
   if (id == IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES) {
     return profile_->GetPrefs()->GetBoolean(
-        prefs::kSpeechInputFilterProfanities);
+        prefs::kSpeechRecognitionFilterProfanities);
   }
 
   return false;
@@ -1851,9 +1851,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES: {
       PrefService* prefs = profile_->GetPrefs();
       const bool filter = !prefs->GetBoolean(
-          prefs::kSpeechInputFilterProfanities);
-      prefs->SetBoolean(prefs::kSpeechInputFilterProfanities, filter);
-      profile_->GetSpeechInputPreferences()->SetFilterProfanities(filter);
+          prefs::kSpeechRecognitionFilterProfanities);
+      prefs->SetBoolean(prefs::kSpeechRecognitionFilterProfanities, filter);
+      profile_->GetSpeechRecognitionPreferences()->SetFilterProfanities(filter);
       break;
     }
 

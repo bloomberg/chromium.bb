@@ -60,7 +60,7 @@ class Predictor;
 }
 
 namespace content {
-class SpeechInputPreferences;
+class SpeechRecognitionPreferences;
 class WebUI;
 }
 

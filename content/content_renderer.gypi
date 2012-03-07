@@ -64,6 +64,8 @@
     'renderer/gpu/input_event_filter.h',
     'renderer/idle_user_detector.cc',
     'renderer/idle_user_detector.h',
+    'renderer/input_tag_speech_dispatcher.cc',
+    'renderer/input_tag_speech_dispatcher.h',
     'renderer/java/java_bridge_channel.cc',
     'renderer/java/java_bridge_channel.h',
     'renderer/java/java_bridge_dispatcher.cc',
@@ -172,8 +174,6 @@
     'renderer/renderer_webstoragearea_impl.h',
     'renderer/renderer_webstoragenamespace_impl.cc',
     'renderer/renderer_webstoragenamespace_impl.h',
-    'renderer/speech_input_dispatcher.cc',
-    'renderer/speech_input_dispatcher.h',
     'renderer/text_input_client_observer.cc',
     'renderer/text_input_client_observer.h',
     'renderer/v8_value_converter_impl.cc',
@@ -217,8 +217,8 @@
         }],
         ['input_speech==0', {
           'sources!': [
-            'renderer/speech_input_dispatcher.cc',
-            'renderer/speech_input_dispatcher.h',
+            'renderer/input_tag_speech_dispatcher.cc',
+            'renderer/input_tag_speech_dispatcher.h',
           ]
         }],
         ['notifications==0', {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_SPEECH_INPUT_MANAGER_H_
-#define CONTENT_PUBLIC_BROWSER_SPEECH_INPUT_MANAGER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_MANAGER_H_
+#define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_MANAGER_H_
 
 #include "base/string16.h"
 #include "content/common/content_export.h"
@@ -14,10 +14,10 @@ namespace content {
 // handles requests received from various render views and makes sure only one
 // of them can use speech recognition at a time. It also sends recognition
 // results and status events to the render views when required.
-class SpeechInputManager {
+class SpeechRecognitionManager {
  public:
   // Returns the singleton instance.
-  CONTENT_EXPORT static SpeechInputManager* GetInstance();
+  CONTENT_EXPORT static SpeechRecognitionManager* GetInstance();
 
   // Starts/restarts recognition for an existing request.
   virtual void StartRecognitionForRequest(int caller_id) = 0;
@@ -33,7 +33,7 @@ class SpeechInputManager {
   virtual bool HasAudioInputDevices() = 0;
 
   // Used to determine if something else is currently making use of audio input.
-  virtual bool IsRecordingInProcess() = 0;
+  virtual bool IsCapturingAudio() = 0;
 
   // Returns a human readable string for the model/make of the active audio
   // input device for this computer.
@@ -44,9 +44,9 @@ class SpeechInputManager {
   virtual void ShowAudioInputSettings() = 0;
 
  protected:
-   virtual ~SpeechInputManager() {}
+   virtual ~SpeechRecognitionManager() {}
 };
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_SPEECH_INPUT_MANAGER_H_
+#endif  // CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_MANAGER_H_

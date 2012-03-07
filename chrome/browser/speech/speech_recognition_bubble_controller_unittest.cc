@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/speech/speech_input_bubble_controller.h"
+#include "chrome/browser/speech/speech_recognition_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -18,11 +18,11 @@ using content::WebContents;
 
 class SkBitmap;
 
-namespace speech_input {
+namespace speech {
 
 // A mock bubble class which fakes a focus change or recognition cancel by the
 // user and closing of the info bubble.
-class MockSpeechInputBubble : public SpeechInputBubbleBase {
+class MockSpeechRecognitionBubble : public SpeechRecognitionBubbleBase {
  public:
   enum BubbleType {
     BUBBLE_TEST_FOCUS_CHANGED,
@@ -30,26 +30,29 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
     BUBBLE_TEST_CLICK_TRY_AGAIN,
   };
 
-  MockSpeechInputBubble(WebContents* web_contents,
+  MockSpeechRecognitionBubble(WebContents* web_contents,
                         Delegate* delegate,
                         const gfx::Rect&)
-      : SpeechInputBubbleBase(web_contents) {
-    VLOG(1) << "MockSpeechInputBubble created";
+      : SpeechRecognitionBubbleBase(web_contents) {
+    VLOG(1) << "MockSpeechRecognitionBubble created";
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&InvokeDelegate, delegate));
   }
 
   static void InvokeDelegate(Delegate* delegate) {
-    VLOG(1) << "MockSpeechInputBubble invoking delegate for type " << type_;
+    VLOG(1) << "MockSpeechRecognitionBubble invoking delegate for type "
+            << type_;
     switch (type_) {
       case BUBBLE_TEST_FOCUS_CHANGED:
         delegate->InfoBubbleFocusChanged();
         break;
       case BUBBLE_TEST_CLICK_CANCEL:
-        delegate->InfoBubbleButtonClicked(SpeechInputBubble::BUTTON_CANCEL);
+        delegate->InfoBubbleButtonClicked(
+            SpeechRecognitionBubble::BUTTON_CANCEL);
         break;
       case BUBBLE_TEST_CLICK_TRY_AGAIN:
-        delegate->InfoBubbleButtonClicked(SpeechInputBubble::BUTTON_TRY_AGAIN);
+        delegate->InfoBubbleButtonClicked(
+            SpeechRecognitionBubble::BUTTON_TRY_AGAIN);
         break;
     }
   }
@@ -71,34 +74,34 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
 };
 
 // The test fixture.
-class SpeechInputBubbleControllerTest
-    : public SpeechInputBubbleControllerDelegate,
+class SpeechRecognitionBubbleControllerTest
+    : public SpeechRecognitionBubbleControllerDelegate,
       public BrowserWithTestWindowTest {
  public:
-  SpeechInputBubbleControllerTest()
+  SpeechRecognitionBubbleControllerTest()
       : BrowserWithTestWindowTest(),
         io_thread_(BrowserThread::IO),  // constructs a new thread and loop
         cancel_clicked_(false),
         try_again_clicked_(false),
         focus_changed_(false),
         controller_(ALLOW_THIS_IN_INITIALIZER_LIST(
-            new SpeechInputBubbleController(this))) {
+            new SpeechRecognitionBubbleController(this))) {
     EXPECT_EQ(NULL, test_fixture_);
     test_fixture_ = this;
   }
 
-  ~SpeechInputBubbleControllerTest() {
+  ~SpeechRecognitionBubbleControllerTest() {
     test_fixture_ = NULL;
   }
 
-  // SpeechInputBubbleControllerDelegate methods.
+  // SpeechRecognitionBubbleControllerDelegate methods.
   virtual void InfoBubbleButtonClicked(int caller_id,
-                                       SpeechInputBubble::Button button) {
+                                       SpeechRecognitionBubble::Button button) {
     VLOG(1) << "Received InfoBubbleButtonClicked for button " << button;
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (button == SpeechInputBubble::BUTTON_CANCEL) {
+    if (button == SpeechRecognitionBubble::BUTTON_CANCEL) {
       cancel_clicked_ = true;
-    } else if (button == SpeechInputBubble::BUTTON_TRY_AGAIN) {
+    } else if (button == SpeechRecognitionBubble::BUTTON_TRY_AGAIN) {
       try_again_clicked_ = true;
     }
     message_loop()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -114,20 +117,20 @@ class SpeechInputBubbleControllerTest
   // testing::Test methods.
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
-    SpeechInputBubble::set_factory(
-        &SpeechInputBubbleControllerTest::CreateBubble);
+    SpeechRecognitionBubble::set_factory(
+        &SpeechRecognitionBubbleControllerTest::CreateBubble);
     io_thread_.Start();
   }
 
   virtual void TearDown() {
-    SpeechInputBubble::set_factory(NULL);
+    SpeechRecognitionBubble::set_factory(NULL);
     io_thread_.Stop();
     BrowserWithTestWindowTest::TearDown();
   }
 
   static void ActivateBubble() {
-    if (MockSpeechInputBubble::type() ==
-        MockSpeechInputBubble::BUBBLE_TEST_FOCUS_CHANGED) {
+    if (MockSpeechRecognitionBubble::type() ==
+        MockSpeechRecognitionBubble::BUBBLE_TEST_FOCUS_CHANGED) {
       test_fixture_->controller_->SetBubbleWarmUpMode(kBubbleCallerId);
     } else {
       test_fixture_->controller_->SetBubbleMessage(kBubbleCallerId,
@@ -135,9 +138,10 @@ class SpeechInputBubbleControllerTest
     }
   }
 
-  static SpeechInputBubble* CreateBubble(WebContents* web_contents,
-                                         SpeechInputBubble::Delegate* delegate,
-                                         const gfx::Rect& element_rect) {
+  static SpeechRecognitionBubble* CreateBubble(
+      WebContents* web_contents,
+      SpeechRecognitionBubble::Delegate* delegate,
+      const gfx::Rect& element_rect) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // Set up to activate the bubble soon after it gets created, since we test
     // events sent by the bubble and those are handled only when the bubble is
@@ -152,9 +156,10 @@ class SpeechInputBubbleControllerTest
     // a valid WebContents.
     TabContentsWrapper* wrapper =
         test_fixture_->browser()->GetSelectedTabContentsWrapper();
-    if (wrapper) 
+    if (wrapper)
       web_contents = wrapper->web_contents();
-    return new MockSpeechInputBubble(web_contents, delegate, element_rect);
+    return new MockSpeechRecognitionBubble(web_contents, delegate,
+                                           element_rect);
   }
 
  protected:
@@ -164,25 +169,25 @@ class SpeechInputBubbleControllerTest
   bool cancel_clicked_;
   bool try_again_clicked_;
   bool focus_changed_;
-  scoped_refptr<SpeechInputBubbleController> controller_;
+  scoped_refptr<SpeechRecognitionBubbleController> controller_;
 
   static const int kBubbleCallerId;
-  static SpeechInputBubbleControllerTest* test_fixture_;
+  static SpeechRecognitionBubbleControllerTest* test_fixture_;
 };
 
-SpeechInputBubbleControllerTest*
-SpeechInputBubbleControllerTest::test_fixture_ = NULL;
+SpeechRecognitionBubbleControllerTest*
+SpeechRecognitionBubbleControllerTest::test_fixture_ = NULL;
 
-const int SpeechInputBubbleControllerTest::kBubbleCallerId = 1;
+const int SpeechRecognitionBubbleControllerTest::kBubbleCallerId = 1;
 
-MockSpeechInputBubble::BubbleType MockSpeechInputBubble::type_ =
-    MockSpeechInputBubble::BUBBLE_TEST_FOCUS_CHANGED;
+MockSpeechRecognitionBubble::BubbleType MockSpeechRecognitionBubble::type_ =
+    MockSpeechRecognitionBubble::BUBBLE_TEST_FOCUS_CHANGED;
 
 // Test that the speech bubble UI gets created in the UI thread and that the
 // focus changed callback comes back in the IO thread.
-TEST_F(SpeechInputBubbleControllerTest, TestFocusChanged) {
-  MockSpeechInputBubble::set_type(
-      MockSpeechInputBubble::BUBBLE_TEST_FOCUS_CHANGED);
+TEST_F(SpeechRecognitionBubbleControllerTest, TestFocusChanged) {
+  MockSpeechRecognitionBubble::set_type(
+      MockSpeechRecognitionBubble::BUBBLE_TEST_FOCUS_CHANGED);
 
   controller_->CreateBubble(kBubbleCallerId, 1, 1, gfx::Rect(1, 1));
   MessageLoop::current()->Run();
@@ -194,9 +199,9 @@ TEST_F(SpeechInputBubbleControllerTest, TestFocusChanged) {
 
 // Test that the speech bubble UI gets created in the UI thread and that the
 // recognition cancelled callback comes back in the IO thread.
-TEST_F(SpeechInputBubbleControllerTest, TestRecognitionCancelled) {
-  MockSpeechInputBubble::set_type(
-      MockSpeechInputBubble::BUBBLE_TEST_CLICK_CANCEL);
+TEST_F(SpeechRecognitionBubbleControllerTest, TestRecognitionCancelled) {
+  MockSpeechRecognitionBubble::set_type(
+      MockSpeechRecognitionBubble::BUBBLE_TEST_CLICK_CANCEL);
 
   controller_->CreateBubble(kBubbleCallerId, 1, 1, gfx::Rect(1, 1));
   MessageLoop::current()->Run();
@@ -208,9 +213,9 @@ TEST_F(SpeechInputBubbleControllerTest, TestRecognitionCancelled) {
 
 // Test that the speech bubble UI gets created in the UI thread and that the
 // try-again button click event comes back in the IO thread.
-TEST_F(SpeechInputBubbleControllerTest, TestTryAgainClicked) {
-  MockSpeechInputBubble::set_type(
-      MockSpeechInputBubble::BUBBLE_TEST_CLICK_TRY_AGAIN);
+TEST_F(SpeechRecognitionBubbleControllerTest, TestTryAgainClicked) {
+  MockSpeechRecognitionBubble::set_type(
+      MockSpeechRecognitionBubble::BUBBLE_TEST_CLICK_TRY_AGAIN);
 
   controller_->CreateBubble(kBubbleCallerId, 1, 1, gfx::Rect(1, 1));
   MessageLoop::current()->Run();
@@ -220,4 +225,4 @@ TEST_F(SpeechInputBubbleControllerTest, TestTryAgainClicked) {
   controller_->CloseBubble(kBubbleCallerId);
 }
 
-}  // namespace speech_input
+}  // namespace speech

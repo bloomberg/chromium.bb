@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SPEECH_INPUT_DISPATCHER_H_
-#define CONTENT_RENDERER_SPEECH_INPUT_DISPATCHER_H_
+#ifndef CONTENT_RENDERER_INPUT_TAG_SPEECH_DISPATCHER_H_
+#define CONTENT_RENDERER_INPUT_TAG_SPEECH_DISPATCHER_H_
 
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -12,20 +12,20 @@
 class RenderViewImpl;
 
 namespace content {
-struct SpeechInputResult;
+struct SpeechRecognitionResult;
 }
 
 namespace WebKit {
 class WebSpeechInputListener;
 }
 
-// SpeechInputDispatcher is a delegate for speech input messages used by WebKit.
-// It's the complement of SpeechInputDispatcherHost (owned by RenderViewHost).
-class SpeechInputDispatcher : public content::RenderViewObserver,
-                              public WebKit::WebSpeechInputController {
+// InputTagSpeechDispatcher is a delegate for messages used by WebKit. It's
+// the complement of InputTagSpeechDispatcherHost (owned by RenderViewHost).
+class InputTagSpeechDispatcher : public content::RenderViewObserver,
+                                 public WebKit::WebSpeechInputController {
  public:
-  SpeechInputDispatcher(RenderViewImpl* render_view,
-                        WebKit::WebSpeechInputListener* listener);
+  InputTagSpeechDispatcher(RenderViewImpl* render_view,
+                           WebKit::WebSpeechInputListener* listener);
 
  private:
   // RenderView::Observer implementation.
@@ -41,15 +41,15 @@ class SpeechInputDispatcher : public content::RenderViewObserver,
   virtual void cancelRecognition(int request_id);
   virtual void stopRecording(int request_id);
 
-  void OnSpeechRecognitionResult(int request_id,
-      const content::SpeechInputResult& result);
+  void OnSpeechRecognitionResult(
+      int request_id, const content::SpeechRecognitionResult& result);
   void OnSpeechRecordingComplete(int request_id);
   void OnSpeechRecognitionComplete(int request_id);
   void OnSpeechRecognitionToggleSpeechInput();
 
   WebKit::WebSpeechInputListener* listener_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpeechInputDispatcher);
+  DISALLOW_COPY_AND_ASSIGN(InputTagSpeechDispatcher);
 };
 
-#endif  // CHROME_RENDERER_SPEECH_INPUT_DISPATCHER_H_
+#endif  // CONTENT_RENDERER_INPUT_TAG_SPEECH_DISPATCHER_H_

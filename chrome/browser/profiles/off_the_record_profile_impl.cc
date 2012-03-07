@@ -362,9 +362,9 @@ content::GeolocationPermissionContext*
   return profile_->GetGeolocationPermissionContext();
 }
 
-content::SpeechInputPreferences*
-    OffTheRecordProfileImpl::GetSpeechInputPreferences() {
-  return profile_->GetSpeechInputPreferences();
+content::SpeechRecognitionPreferences*
+    OffTheRecordProfileImpl::GetSpeechRecognitionPreferences() {
+  return profile_->GetSpeechRecognitionPreferences();
 }
 
 UserStyleSheetWatcher* OffTheRecordProfileImpl::GetUserStyleSheetWatcher() {

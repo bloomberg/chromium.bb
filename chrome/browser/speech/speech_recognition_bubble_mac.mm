@@ -4,14 +4,14 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "chrome/browser/speech/speech_input_bubble.h"
+#include "chrome/browser/speech/speech_recognition_bubble.h"
 
 #import "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/speech_input_window_controller.h"
+#import "chrome/browser/ui/cocoa/speech_recognition_window_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -21,44 +21,45 @@ using content::WebContents;
 namespace {
 
 // A class to bridge between the speech recognition C++ code and the Objective-C
-// bubble implementation. See chrome/browser/speech/speech_input_bubble.h for
-// more information on how this gets used.
-class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
+// bubble implementation. See chrome/browser/speech/speech_recognition_bubble.h
+// for more information on how this gets used.
+class SpeechRecognitionBubbleImpl : public SpeechRecognitionBubbleBase {
  public:
-  SpeechInputBubbleImpl(WebContents* web_contents,
+  SpeechRecognitionBubbleImpl(WebContents* web_contents,
                         Delegate* delegate,
                         const gfx::Rect& element_rect);
-  virtual ~SpeechInputBubbleImpl();
+  virtual ~SpeechRecognitionBubbleImpl();
   virtual void Show();
   virtual void Hide();
   virtual void UpdateLayout();
   virtual void UpdateImage();
 
  private:
-  scoped_nsobject<SpeechInputWindowController> window_;
+  scoped_nsobject<SpeechRecognitionWindowController> window_;
   Delegate* delegate_;
   gfx::Rect element_rect_;
 };
 
-SpeechInputBubbleImpl::SpeechInputBubbleImpl(WebContents* web_contents,
-                                             Delegate* delegate,
-                                             const gfx::Rect& element_rect)
-    : SpeechInputBubbleBase(web_contents),
+SpeechRecognitionBubbleImpl::SpeechRecognitionBubbleImpl(
+    WebContents* web_contents,
+    Delegate* delegate,
+    const gfx::Rect& element_rect)
+    : SpeechRecognitionBubbleBase(web_contents),
       delegate_(delegate),
       element_rect_(element_rect) {
 }
 
-SpeechInputBubbleImpl::~SpeechInputBubbleImpl() {
+SpeechRecognitionBubbleImpl::~SpeechRecognitionBubbleImpl() {
   if (window_.get())
     [window_.get() close];
 }
 
-void SpeechInputBubbleImpl::UpdateImage() {
+void SpeechRecognitionBubbleImpl::UpdateImage() {
   if (window_.get())
     [window_.get() setImage:gfx::SkBitmapToNSImage(icon_image())];
 }
 
-void SpeechInputBubbleImpl::Show() {
+void SpeechRecognitionBubbleImpl::Show() {
   if (window_.get()) {
     [window_.get() show];
     return;
@@ -88,7 +89,7 @@ void SpeechInputBubbleImpl::Show() {
   anchor = [view convertPoint:anchor toView:nil];
   anchor = [[view window] convertBaseToScreen:anchor];
 
-  window_.reset([[SpeechInputWindowController alloc]
+  window_.reset([[SpeechRecognitionWindowController alloc]
       initWithParentWindow:parentWindow
                   delegate:delegate_
                 anchoredAt:anchor]);
@@ -97,7 +98,7 @@ void SpeechInputBubbleImpl::Show() {
   [window_.get() show];
 }
 
-void SpeechInputBubbleImpl::Hide() {
+void SpeechRecognitionBubbleImpl::Hide() {
   if (!window_.get())
     return;
 
@@ -105,7 +106,7 @@ void SpeechInputBubbleImpl::Hide() {
   window_.reset();
 }
 
-void SpeechInputBubbleImpl::UpdateLayout() {
+void SpeechRecognitionBubbleImpl::UpdateLayout() {
   if (!window_.get())
     return;
 
@@ -116,10 +117,10 @@ void SpeechInputBubbleImpl::UpdateLayout() {
 
 }  // namespace
 
-SpeechInputBubble* SpeechInputBubble::CreateNativeBubble(
+SpeechRecognitionBubble* SpeechRecognitionBubble::CreateNativeBubble(
     WebContents* web_contents,
     Delegate* delegate,
     const gfx::Rect& element_rect) {
-  return new SpeechInputBubbleImpl(web_contents, delegate, element_rect);
+  return new SpeechRecognitionBubbleImpl(web_contents, delegate, element_rect);
 }
 

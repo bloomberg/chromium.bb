@@ -146,7 +146,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   virtual std::string GetWorkerProcessTitle(
       const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
-  virtual SpeechInputManagerDelegate* GetSpeechInputManagerDelegate() OVERRIDE;
+  virtual SpeechRecognitionManagerDelegate*
+      GetSpeechRecognitionManagerDelegate() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;

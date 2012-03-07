@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/speech_recognizer_delegate.h"
-#include "content/public/common/speech_input_result.h"
+#include "content/public/common/speech_recognition_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -33,11 +33,11 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
     recording_devices_available_ = available;
   }
 
-  void SetRecognitionError(content::SpeechInputError error) {
+  void SetRecognitionError(content::SpeechRecognitionErrorCode error) {
     next_error_ = error;
   }
 
-  void SetRecognitionResult(const content::SpeechInputResult& result) {
+  void SetRecognitionResult(const content::SpeechRecognitionResult& result) {
     next_result_ = result;
   }
 
@@ -59,7 +59,7 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
     return recording_devices_available_;
   }
 
-  virtual bool IsRecordingInProcess() OVERRIDE {
+  virtual bool IsCapturingAudio() OVERRIDE {
     // Only the mock recognizer is supposed to be recording during testing.
     return HasValidRecognizer();
   }
@@ -105,15 +105,15 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
 
   bool recording_devices_available_;
   bool recognizer_is_valid_;
-  content::SpeechInputError next_error_;
-  content::SpeechInputResult next_result_;
+  content::SpeechRecognitionErrorCode next_error_;
+  content::SpeechRecognitionResult next_result_;
   int result_delay_ms_;
 };
 
 SpeechInputExtensionApiTest::SpeechInputExtensionApiTest()
     : recording_devices_available_(true),
       recognizer_is_valid_(false),
-      next_error_(content::SPEECH_INPUT_ERROR_NONE),
+      next_error_(content::SPEECH_RECOGNITION_ERROR_NONE),
       result_delay_ms_(0) {
 }
 
@@ -165,7 +165,7 @@ void SpeechInputExtensionApiTest::StopRecording(bool recognition_failed) {
 void SpeechInputExtensionApiTest::ProvideResults(int caller_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (next_error_ != content::SPEECH_INPUT_ERROR_NONE) {
+  if (next_error_ != content::SPEECH_RECOGNITION_ERROR_NONE) {
     GetManager()->OnRecognizerError(caller_id, next_error_);
     return;
   }
@@ -192,9 +192,10 @@ IN_PROC_BROWSER_TEST_F(SpeechInputExtensionApiTest, NoDevicesAvailable) {
 IN_PROC_BROWSER_TEST_F(SpeechInputExtensionApiTest, RecognitionSuccessful) {
   AutoManagerHook hook(this);
 
-  content::SpeechInputResult result;
+  content::SpeechRecognitionResult result;
   result.hypotheses.push_back(
-      content::SpeechInputHypothesis(UTF8ToUTF16("this is a test"), 0.99));
+      content::SpeechRecognitionHypothesis(
+          UTF8ToUTF16("this is a test"), 0.99));
   SetRecognitionResult(result);
   ASSERT_TRUE(RunExtensionTest("speech_input/recognition")) << message_;
 }
@@ -202,6 +203,6 @@ IN_PROC_BROWSER_TEST_F(SpeechInputExtensionApiTest, RecognitionSuccessful) {
 IN_PROC_BROWSER_TEST_F(SpeechInputExtensionApiTest, RecognitionError) {
   AutoManagerHook hook(this);
 
-  SetRecognitionError(content::SPEECH_INPUT_ERROR_NETWORK);
+  SetRecognitionError(content::SPEECH_RECOGNITION_ERROR_NETWORK);
   ASSERT_TRUE(RunExtensionTest("speech_input/recognition_error")) << message_;
 }

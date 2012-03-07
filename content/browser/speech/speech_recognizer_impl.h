@@ -14,12 +14,12 @@
 #include "content/browser/speech/endpointer/endpointer.h"
 #include "content/browser/speech/speech_recognition_request.h"
 #include "content/public/browser/speech_recognizer.h"
-#include "content/public/common/speech_input_result.h"
+#include "content/public/common/speech_recognition_result.h"
 #include "media/audio/audio_input_controller.h"
 
 class AudioManager;
 
-namespace speech_input {
+namespace speech {
 
 // Records audio, sends recorded audio to server and translates server response
 // to recognition result.
@@ -47,8 +47,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   void StopRecording();
 
   // AudioInputController::EventHandler methods.
-  virtual void OnCreated(media::AudioInputController* controller) OVERRIDE { }
-  virtual void OnRecording(media::AudioInputController* controller) OVERRIDE { }
+  virtual void OnCreated(media::AudioInputController* controller) OVERRIDE {}
+  virtual void OnRecording(media::AudioInputController* controller) OVERRIDE {}
   virtual void OnError(media::AudioInputController* controller,
                        int error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
@@ -57,7 +57,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   // SpeechRecognitionRequest::Delegate methods.
   virtual void SetRecognitionResult(
-      const content::SpeechInputResult& result) OVERRIDE;
+      const content::SpeechRecognitionResult& result) OVERRIDE;
 
   static const int kAudioSampleRate;
   static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
@@ -69,7 +69,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
  private:
   friend class SpeechRecognizerTest;
 
-  void InformErrorAndCancelRecognition(content::SpeechInputError error);
+  void InformErrorAndCancelRecognition(
+      content::SpeechRecognitionErrorCode error);
   void SendRecordedAudioToServer();
 
   void HandleOnError(int error_code);  // Handles OnError in the IO thread.
@@ -103,6 +104,6 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerImpl);
 };
 
-}  // namespace speech_input
+}  // namespace speech
 
 #endif  // CONTENT_BROWSER_SPEECH_SPEECH_RECOGNIZER_IMPL_H_

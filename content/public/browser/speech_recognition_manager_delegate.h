@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_SPEECH_INPUT_MANAGER_DELEGATE_H_
-#define CONTENT_PUBLIC_BROWSER_SPEECH_INPUT_MANAGER_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_MANAGER_DELEGATE_H_
+#define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_MANAGER_DELEGATE_H_
 #pragma once
 
 #include <string>
 
-#include "content/public/common/speech_input_result.h"
+#include "content/public/common/speech_recognition_result.h"
 
 namespace gfx {
 class Rect;
@@ -16,11 +16,11 @@ class Rect;
 
 namespace content {
 
-struct SpeechInputResult;
+struct SpeechRecognitionResult;
 
 // Allows embedders to display the current state of recognition, for getting the
 // user's permission and for fetching optional request information.
-class SpeechInputManagerDelegate {
+class SpeechRecognitionManagerDelegate {
  public:
   // Describes the microphone errors that are reported via ShowMicError.
   enum MicError {
@@ -28,7 +28,7 @@ class SpeechInputManagerDelegate {
     MIC_ERROR_DEVICE_IN_USE
   };
 
-  virtual ~SpeechInputManagerDelegate() {}
+  virtual ~SpeechRecognitionManagerDelegate() {}
 
   // Get the optional request information if available.
   virtual void GetRequestInfo(bool* can_report_metrics,
@@ -62,7 +62,7 @@ class SpeechInputManagerDelegate {
 
   // Called when there has been a error with the recognition.
   virtual void ShowRecognizerError(int caller_id,
-                                   SpeechInputError error) = 0;
+                                   SpeechRecognitionErrorCode error) = 0;
 
   // Called when recognition has ended or has been canceled.
   virtual void DoClose(int caller_id) = 0;
@@ -70,4 +70,4 @@ class SpeechInputManagerDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_SPEECH_INPUT_MANAGER_DELEGATE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_MANAGER_DELEGATE_H_

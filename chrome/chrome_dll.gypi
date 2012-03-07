@@ -276,7 +276,7 @@
                 'app/nibs/PreviewableContents.xib',
                 'app/nibs/SaveAccessoryView.xib',
                 'app/nibs/SadTab.xib',
-                'app/nibs/SpeechInputBubble.xib',
+                'app/nibs/SpeechRecognitionBubble.xib',
                 'app/nibs/TabView.xib',
                 'app/nibs/TaskManager.xib',
                 'app/nibs/Toolbar.xib',

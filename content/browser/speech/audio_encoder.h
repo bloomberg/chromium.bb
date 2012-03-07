@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 
-namespace speech_input {
+namespace speech {
 
 // Provides a simple interface to encode raw audio using the various speech
 // codecs.
@@ -54,6 +54,6 @@ class AudioEncoder {
   DISALLOW_COPY_AND_ASSIGN(AudioEncoder);
 };
 
-}  // namespace speech_input
+}  // namespace speech
 
 #endif  // CONTENT_BROWSER_SPEECH_AUDIO_ENCODER_H_

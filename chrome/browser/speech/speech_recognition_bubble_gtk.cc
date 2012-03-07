@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/speech/speech_input_bubble.h"
+#include "chrome/browser/speech/speech_recognition_bubble.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/speech_input_manager.h"
+#include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -38,18 +38,18 @@ const int kButtonBarHorizontalSpacing = 10;
 // Use black for text labels since the bubble has white background.
 const GdkColor& kLabelTextColor = ui::kGdkBlack;
 
-// Implementation of SpeechInputBubble for GTK. This shows a speech input bubble
-// on screen.
-class SpeechInputBubbleGtk : public SpeechInputBubbleBase,
-                             public BubbleDelegateGtk {
+// Implementation of SpeechRecognitionBubble for GTK. This shows a speech
+// recognition bubble on screen.
+class SpeechRecognitionBubbleGtk : public SpeechRecognitionBubbleBase,
+                                   public BubbleDelegateGtk {
  public:
-  SpeechInputBubbleGtk(WebContents* web_contents,
-                       Delegate* delegate,
-                       const gfx::Rect& element_rect);
-  ~SpeechInputBubbleGtk();
+  SpeechRecognitionBubbleGtk(WebContents* web_contents,
+                             Delegate* delegate,
+                             const gfx::Rect& element_rect);
+  ~SpeechRecognitionBubbleGtk();
 
  private:
-  // SpeechInputBubbleBase:
+  // SpeechRecognitionBubbleBase:
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual void UpdateLayout() OVERRIDE;
@@ -58,9 +58,9 @@ class SpeechInputBubbleGtk : public SpeechInputBubbleBase,
   // BubbleDelegateGtk:
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
 
-  CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnCancelClicked);
-  CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnTryAgainClicked);
-  CHROMEGTK_CALLBACK_0(SpeechInputBubbleGtk, void, OnMicSettingsClicked);
+  CHROMEGTK_CALLBACK_0(SpeechRecognitionBubbleGtk, void, OnCancelClicked);
+  CHROMEGTK_CALLBACK_0(SpeechRecognitionBubbleGtk, void, OnTryAgainClicked);
+  CHROMEGTK_CALLBACK_0(SpeechRecognitionBubbleGtk, void, OnMicSettingsClicked);
 
   Delegate* delegate_;
   BubbleGtk* bubble_;
@@ -74,13 +74,13 @@ class SpeechInputBubbleGtk : public SpeechInputBubbleBase,
   GtkWidget* icon_container_;
   GtkWidget* mic_settings_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpeechInputBubbleGtk);
+  DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionBubbleGtk);
 };
 
-SpeechInputBubbleGtk::SpeechInputBubbleGtk(WebContents* web_contents,
-                                           Delegate* delegate,
-                                           const gfx::Rect& element_rect)
-    : SpeechInputBubbleBase(web_contents),
+SpeechRecognitionBubbleGtk::SpeechRecognitionBubbleGtk(
+    WebContents* web_contents, Delegate* delegate,
+    const gfx::Rect& element_rect)
+    : SpeechRecognitionBubbleBase(web_contents),
       delegate_(delegate),
       bubble_(NULL),
       element_rect_(element_rect),
@@ -93,7 +93,7 @@ SpeechInputBubbleGtk::SpeechInputBubbleGtk(WebContents* web_contents,
       mic_settings_(NULL) {
 }
 
-SpeechInputBubbleGtk::~SpeechInputBubbleGtk() {
+SpeechRecognitionBubbleGtk::~SpeechRecognitionBubbleGtk() {
   // The |Close| call below invokes our |BubbleClosing| method. Since we were
   // destroyed by the caller we don't need to call them back, hence set this
   // flag here.
@@ -101,20 +101,20 @@ SpeechInputBubbleGtk::~SpeechInputBubbleGtk() {
   Hide();
 }
 
-void SpeechInputBubbleGtk::OnCancelClicked(GtkWidget* widget) {
+void SpeechRecognitionBubbleGtk::OnCancelClicked(GtkWidget* widget) {
   delegate_->InfoBubbleButtonClicked(BUTTON_CANCEL);
 }
 
-void SpeechInputBubbleGtk::OnTryAgainClicked(GtkWidget* widget) {
+void SpeechRecognitionBubbleGtk::OnTryAgainClicked(GtkWidget* widget) {
   delegate_->InfoBubbleButtonClicked(BUTTON_TRY_AGAIN);
 }
 
-void SpeechInputBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
-  content::SpeechInputManager::GetInstance()->ShowAudioInputSettings();
+void SpeechRecognitionBubbleGtk::OnMicSettingsClicked(GtkWidget* widget) {
+  content::SpeechRecognitionManager::GetInstance()->ShowAudioInputSettings();
   Hide();
 }
 
-void SpeechInputBubbleGtk::Show() {
+void SpeechRecognitionBubbleGtk::Show() {
   if (bubble_)
     return;  // Nothing further to do since the bubble is already visible.
 
@@ -206,12 +206,12 @@ void SpeechInputBubbleGtk::Show() {
   UpdateLayout();
 }
 
-void SpeechInputBubbleGtk::Hide() {
+void SpeechRecognitionBubbleGtk::Hide() {
   if (bubble_)
     bubble_->Close();
 }
 
-void SpeechInputBubbleGtk::UpdateLayout() {
+void SpeechRecognitionBubbleGtk::UpdateLayout() {
   if (!bubble_)
     return;
 
@@ -273,7 +273,7 @@ void SpeechInputBubbleGtk::UpdateLayout() {
   }
 }
 
-void SpeechInputBubbleGtk::UpdateImage() {
+void SpeechRecognitionBubbleGtk::UpdateImage() {
   SkBitmap image = icon_image();
   if (image.isNull() || !bubble_)
     return;
@@ -283,8 +283,8 @@ void SpeechInputBubbleGtk::UpdateImage() {
   g_object_unref(pixbuf);
 }
 
-void SpeechInputBubbleGtk::BubbleClosing(BubbleGtk* bubble,
-                                         bool closed_by_escape) {
+void SpeechRecognitionBubbleGtk::BubbleClosing(BubbleGtk* bubble,
+                                               bool closed_by_escape) {
   bubble_ = NULL;
   if (!did_invoke_close_)
     delegate_->InfoBubbleFocusChanged();
@@ -292,9 +292,9 @@ void SpeechInputBubbleGtk::BubbleClosing(BubbleGtk* bubble,
 
 }  // namespace
 
-SpeechInputBubble* SpeechInputBubble::CreateNativeBubble(
+SpeechRecognitionBubble* SpeechRecognitionBubble::CreateNativeBubble(
     WebContents* web_contents,
     Delegate* delegate,
     const gfx::Rect& element_rect) {
-  return new SpeechInputBubbleGtk(web_contents, delegate, element_rect);
+  return new SpeechRecognitionBubbleGtk(web_contents, delegate, element_rect);
 }

@@ -12,28 +12,28 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/speech/speech_input_dispatcher_host.h"
-#include "content/browser/speech/speech_input_manager_impl.h"
+#include "content/browser/speech/input_tag_speech_dispatcher_host.h"
+#include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/speech_input_result.h"
+#include "content/public/common/speech_recognition_result.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 using content::NavigationController;
 using content::WebContents;
 
-namespace speech_input {
-class FakeSpeechInputManager;
+namespace speech {
+class FakeSpeechRecognitionManager;
 }
 
-namespace speech_input {
+namespace speech {
 
 const char kTestResult[] = "Pictures of the moon";
 
-class FakeSpeechInputManager : public SpeechInputManagerImpl {
+class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
  public:
-  FakeSpeechInputManager()
+  FakeSpeechRecognitionManager()
       : caller_id_(0),
         delegate_(NULL),
         did_cancel_all_(false),
@@ -61,9 +61,9 @@ class FakeSpeechInputManager : public SpeechInputManagerImpl {
     return recognition_started_event_;
   }
 
-  // SpeechInputManager methods.
+  // SpeechRecognitionManager methods.
   virtual void StartRecognition(
-      SpeechInputDispatcherHost* delegate,
+      InputTagSpeechDispatcherHost* delegate,
       int caller_id,
       int render_process_id,
       int render_view_id,
@@ -72,7 +72,7 @@ class FakeSpeechInputManager : public SpeechInputManagerImpl {
       const std::string& grammar,
       const std::string& origin_url,
       net::URLRequestContextGetter* context_getter,
-      content::SpeechInputPreferences* speech_input_prefs) OVERRIDE {
+      content::SpeechRecognitionPreferences* recognition_prefs) OVERRIDE {
     VLOG(1) << "StartRecognition invoked.";
     EXPECT_EQ(0, caller_id_);
     EXPECT_EQ(NULL, delegate_);
@@ -82,7 +82,7 @@ class FakeSpeechInputManager : public SpeechInputManagerImpl {
     if (should_send_fake_response_) {
       // Give the fake result in a short while.
       MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-          &FakeSpeechInputManager::SetFakeRecognitionResult,
+          &FakeSpeechRecognitionManager::SetFakeRecognitionResult,
           // This class does not need to be refcounted (typically done by
           // PostTask) since it will outlive the test and gets released only
           // when the test shuts down. Disabling refcounting here saves a bit
@@ -104,7 +104,7 @@ class FakeSpeechInputManager : public SpeechInputManagerImpl {
     // Nothing to do here since we aren't really recording.
   }
   virtual void CancelAllRequestsWithDelegate(
-      SpeechInputDispatcherHost* delegate) OVERRIDE {
+      InputTagSpeechDispatcherHost* delegate) OVERRIDE {
     VLOG(1) << "CancelAllRequestsWithDelegate invoked.";
     // delegate_ is set to NULL if a fake result was received (see below), so
     // check that delegate_ matches the incoming parameter only when there is
@@ -118,8 +118,8 @@ class FakeSpeechInputManager : public SpeechInputManagerImpl {
     if (caller_id_) {  // Do a check in case we were cancelled..
       VLOG(1) << "Setting fake recognition result.";
       delegate_->DidCompleteRecording(caller_id_);
-      content::SpeechInputResult results;
-      results.hypotheses.push_back(content::SpeechInputHypothesis(
+      content::SpeechRecognitionResult results;
+      results.hypotheses.push_back(content::SpeechRecognitionHypothesis(
           ASCIIToUTF16(kTestResult), 1.0));
       delegate_->SetRecognitionResult(caller_id_, results);
       delegate_->DidCompleteRecognition(caller_id_);
@@ -130,14 +130,14 @@ class FakeSpeechInputManager : public SpeechInputManagerImpl {
   }
 
   int caller_id_;
-  SpeechInputDispatcherHost* delegate_;
+  InputTagSpeechDispatcherHost* delegate_;
   std::string grammar_;
   bool did_cancel_all_;
   bool should_send_fake_response_;
   base::WaitableEvent recognition_started_event_;
 };
 
-class SpeechInputBrowserTest : public InProcessBrowserTest {
+class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
  public:
   // InProcessBrowserTest methods
   virtual void SetUpCommandLine(CommandLine* command_line) {
@@ -150,7 +150,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  void LoadAndStartSpeechInputTest(const FilePath::CharType* filename) {
+  void LoadAndStartSpeechRecognitionTest(const FilePath::CharType* filename) {
     // The test page calculates the speech button's coordinate in the page on
     // load & sets that coordinate in the URL fragment. We send mouse down & up
     // events at that coordinate to trigger speech recognition.
@@ -171,46 +171,47 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
     mouse_event.type = WebKit::WebInputEvent::MouseUp;
     web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
-    fake_speech_input_manager_.recognition_started_event().Wait();
+    fake_speech_recognition_manager_.recognition_started_event().Wait();
 
     // We should wait for a navigation event, raised by the test page JS code
     // upon the onwebkitspeechchange event, in all cases except when the
     // speech response is inhibited.
-    if (fake_speech_input_manager_.should_send_fake_response())
+    if (fake_speech_recognition_manager_.should_send_fake_response())
       observer.Wait();
   }
 
-  void RunSpeechInputTest(const FilePath::CharType* filename) {
+  void RunSpeechRecognitionTest(const FilePath::CharType* filename) {
     // The fake speech input manager would receive the speech input
     // request and return the test string as recognition result. The test page
     // then sets the URL fragment as 'pass' if it received the expected string.
-    LoadAndStartSpeechInputTest(filename);
+    LoadAndStartSpeechRecognitionTest(filename);
 
     EXPECT_EQ("pass", browser()->GetSelectedWebContents()->GetURL().ref());
   }
 
   // InProcessBrowserTest methods.
   virtual void SetUpInProcessBrowserTestFixture() {
-    fake_speech_input_manager_.set_should_send_fake_response(true);
-    speech_input_manager_ = &fake_speech_input_manager_;
+    fake_speech_recognition_manager_.set_should_send_fake_response(true);
+    speech_recognition_manager_ = &fake_speech_recognition_manager_;
 
     // Inject the fake manager factory so that the test result is returned to
     // the web page.
-    SpeechInputDispatcherHost::set_manager(speech_input_manager_);
+    InputTagSpeechDispatcherHost::set_manager(speech_recognition_manager_);
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
-    speech_input_manager_ = NULL;
+    speech_recognition_manager_ = NULL;
   }
 
-  FakeSpeechInputManager fake_speech_input_manager_;
+  FakeSpeechRecognitionManager fake_speech_recognition_manager_;
 
   // This is used by the static |fakeManager|, and it is a pointer rather than a
   // direct instance per the style guide.
-  static SpeechInputManagerImpl* speech_input_manager_;
+  static SpeechRecognitionManagerImpl* speech_recognition_manager_;
 };
 
-SpeechInputManagerImpl* SpeechInputBrowserTest::speech_input_manager_ = NULL;
+SpeechRecognitionManagerImpl*
+    SpeechRecognitionBrowserTest::speech_recognition_manager_ = NULL;
 
 // TODO(satish): Once this flakiness has been fixed, add a second test here to
 // check for sending many clicks in succession to the speech button and verify
@@ -220,33 +221,34 @@ SpeechInputManagerImpl* SpeechInputBrowserTest::speech_input_manager_ = NULL;
 // TODO(satish): Similar to above, once this flakiness has been fixed add
 // another test here to check that when speech recognition is in progress and
 // a renderer crashes, we get a call to
-// SpeechInputManager::CancelAllRequestsWithDelegate.
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestBasicRecognition) {
-  RunSpeechInputTest(FILE_PATH_LITERAL("basic_recognition.html"));
-  EXPECT_TRUE(fake_speech_input_manager_.grammar().empty());
+// SpeechRecognitionManager::CancelAllRequestsWithDelegate.
+IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, TestBasicRecognition) {
+  RunSpeechRecognitionTest(FILE_PATH_LITERAL("basic_recognition.html"));
+  EXPECT_TRUE(fake_speech_recognition_manager_.grammar().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, GrammarAttribute) {
-  RunSpeechInputTest(FILE_PATH_LITERAL("grammar_attribute.html"));
+IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, GrammarAttribute) {
+  RunSpeechRecognitionTest(FILE_PATH_LITERAL("grammar_attribute.html"));
   EXPECT_EQ("http://example.com/grammar.xml",
-            fake_speech_input_manager_.grammar());
+            fake_speech_recognition_manager_.grammar());
 }
 
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestCancelAll) {
+IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, TestCancelAll) {
   // The test checks that the cancel-all callback gets issued when a session
   // is pending, so don't send a fake response.
   // We are not expecting a navigation event being raised from the JS of the
   // test page JavaScript in this case.
-  fake_speech_input_manager_.set_should_send_fake_response(false);
+  fake_speech_recognition_manager_.set_should_send_fake_response(false);
 
-  LoadAndStartSpeechInputTest(FILE_PATH_LITERAL("basic_recognition.html"));
+  LoadAndStartSpeechRecognitionTest(
+      FILE_PATH_LITERAL("basic_recognition.html"));
 
-  // Make the renderer crash. This should trigger SpeechInputDispatcherHost to
-  // cancel all pending sessions.
+  // Make the renderer crash. This should trigger
+  // InputTagSpeechDispatcherHost to cancel all pending sessions.
   GURL test_url("about:crash");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  EXPECT_TRUE(fake_speech_input_manager_.did_cancel_all());
+  EXPECT_TRUE(fake_speech_recognition_manager_.did_cancel_all());
 }
 
-}  // namespace speech_input
+}  // namespace speech

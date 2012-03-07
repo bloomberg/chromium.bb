@@ -66,7 +66,7 @@ enum IPCMessageStart {
   DOMStorageMsgStart,
   IndexedDBMsgStart,
   PepperFileMsgStart,
-  SpeechInputMsgStart,
+  SpeechRecognitionMsgStart,
   PepperMsgStart,
   AutofillMsgStart,
   SafeBrowsingMsgStart,

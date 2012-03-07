@@ -13,7 +13,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_permission_context.h"
-#include "content/public/browser/speech_input_preferences.h"
+#include "content/public/browser/speech_recognition_preferences.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_download_manager_delegate.h"
 #include "content/shell/shell_resource_context.h"
@@ -63,12 +63,12 @@ class ShellGeolocationPermissionContext : public GeolocationPermissionContext {
   DISALLOW_COPY_AND_ASSIGN(ShellGeolocationPermissionContext);
 };
 
-class ShellSpeechInputPreferences : public SpeechInputPreferences {
+class ShellSpeechRecognitionPreferences : public SpeechRecognitionPreferences {
  public:
-  ShellSpeechInputPreferences() {
+  ShellSpeechRecognitionPreferences() {
   }
 
-  // Overridden from SpeechInputPreferences:
+  // Overridden from SpeechRecognitionPreferences:
   virtual bool FilterProfanities() const OVERRIDE {
     return false;
   }
@@ -77,7 +77,7 @@ class ShellSpeechInputPreferences : public SpeechInputPreferences {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ShellSpeechInputPreferences);
+  DISALLOW_COPY_AND_ASSIGN(ShellSpeechRecognitionPreferences);
 };
 
 }  // namespace
@@ -170,10 +170,11 @@ GeolocationPermissionContext*
   return geolocation_permission_context_;
 }
 
-SpeechInputPreferences* ShellBrowserContext::GetSpeechInputPreferences() {
-  if (!speech_input_preferences_.get())
-    speech_input_preferences_ = new ShellSpeechInputPreferences();
-  return speech_input_preferences_.get();
+SpeechRecognitionPreferences*
+    ShellBrowserContext::GetSpeechRecognitionPreferences() {
+  if (!speech_recognition_preferences_.get())
+    speech_recognition_preferences_ = new ShellSpeechRecognitionPreferences();
+  return speech_recognition_preferences_.get();
 }
 
 bool ShellBrowserContext::DidLastSessionExitCleanly()  {

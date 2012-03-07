@@ -76,7 +76,7 @@ struct PP_NetAddress_Private;
 class RenderWidgetFullscreenPepper;
 class RendererAccessibility;
 class SkBitmap;
-class SpeechInputDispatcher;
+class InputTagSpeechDispatcher;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
 struct ViewMsg_SwapOut_Params;
@@ -1179,7 +1179,7 @@ class RenderViewImpl : public RenderWidget,
   WebIntentsHost* intents_host_;
 
   // The speech dispatcher attached to this view, lazily initialized.
-  SpeechInputDispatcher* speech_input_dispatcher_;
+  InputTagSpeechDispatcher* input_tag_speech_dispatcher_;
 
   // Device orientation dispatcher attached to this view; lazily initialized.
   DeviceOrientationDispatcher* device_orientation_dispatcher_;

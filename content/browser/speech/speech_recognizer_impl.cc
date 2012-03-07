@@ -9,7 +9,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/public/browser/speech_recognizer_delegate.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/speech_input_result.h"
+#include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserMainLoop;
@@ -61,12 +61,12 @@ SpeechRecognizer* SpeechRecognizer::Create(
     bool filter_profanities,
     const std::string& hardware_info,
     const std::string& origin_url) {
-  return new speech_input::SpeechRecognizerImpl(
+  return new speech::SpeechRecognizerImpl(
       delegate, caller_id, language, grammar, context_getter,
       filter_profanities, hardware_info, origin_url);
 }
 
-namespace speech_input {
+namespace speech {
 
 const int SpeechRecognizerImpl::kAudioSampleRate = 16000;
 const int SpeechRecognizerImpl::kAudioPacketIntervalMs = 100;
@@ -208,7 +208,7 @@ void SpeechRecognizerImpl::HandleOnError(int error_code) {
   if (!audio_controller_.get())
     return;
 
-  InformErrorAndCancelRecognition(content::SPEECH_INPUT_ERROR_AUDIO);
+  InformErrorAndCancelRecognition(content::SPEECH_RECOGNITION_ERROR_AUDIO);
 }
 
 void SpeechRecognizerImpl::OnData(AudioInputController* controller,
@@ -272,7 +272,8 @@ void SpeechRecognizerImpl::HandleOnData(string* data) {
   bool speech_was_heard_after_packet = endpointer_.DidStartReceivingSpeech();
   if (!speech_was_heard_after_packet &&
       num_samples_recorded_ >= kNoSpeechTimeoutSec * kAudioSampleRate) {
-    InformErrorAndCancelRecognition(content::SPEECH_INPUT_ERROR_NO_SPEECH);
+    InformErrorAndCancelRecognition(
+        content::SPEECH_RECOGNITION_ERROR_NO_SPEECH);
     return;
   }
 
@@ -303,8 +304,8 @@ void SpeechRecognizerImpl::HandleOnData(string* data) {
 }
 
 void SpeechRecognizerImpl::SetRecognitionResult(
-    const content::SpeechInputResult& result) {
-  if (result.error != content::SPEECH_INPUT_ERROR_NONE) {
+    const content::SpeechRecognitionResult& result) {
+  if (result.error != content::SPEECH_RECOGNITION_ERROR_NONE) {
     InformErrorAndCancelRecognition(result.error);
     return;
   }
@@ -316,8 +317,8 @@ void SpeechRecognizerImpl::SetRecognitionResult(
 }
 
 void SpeechRecognizerImpl::InformErrorAndCancelRecognition(
-    content::SpeechInputError error) {
-  DCHECK_NE(error, content::SPEECH_INPUT_ERROR_NONE);
+    content::SpeechRecognitionErrorCode error) {
+  DCHECK_NE(error, content::SPEECH_RECOGNITION_ERROR_NONE);
   CancelRecognition();
 
   // Guard against the delegate freeing us until we finish our job.
@@ -343,4 +344,4 @@ void SpeechRecognizerImpl::SetAudioManagerForTesting(
   audio_manager_ = audio_manager;
 }
 
-}  // namespace speech_input
+}  // namespace speech

@@ -144,8 +144,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual std::string GetWorkerProcessTitle(
       const GURL& url, content::ResourceContext* context) OVERRIDE;
   virtual void ResourceDispatcherHostCreated() OVERRIDE;
-  virtual content::SpeechInputManagerDelegate*
-      GetSpeechInputManagerDelegate() OVERRIDE;
+  virtual content::SpeechRecognitionManagerDelegate*
+      GetSpeechRecognitionManagerDelegate() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual content::AccessTokenStore* CreateAccessTokenStore() OVERRIDE;

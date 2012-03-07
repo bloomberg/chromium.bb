@@ -283,8 +283,8 @@ std::string ShellContentBrowserClient::GetWorkerProcessTitle(
 void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
 }
 
-SpeechInputManagerDelegate*
-    ShellContentBrowserClient::GetSpeechInputManagerDelegate() {
+SpeechRecognitionManagerDelegate*
+    ShellContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
   return NULL;
 }
 

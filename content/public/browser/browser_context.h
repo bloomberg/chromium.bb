@@ -40,7 +40,7 @@ class DownloadManager;
 class GeolocationPermissionContext;
 class IndexedDBContext;
 class ResourceContext;
-class SpeechInputPreferences;
+class SpeechRecognitionPreferences;
 
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread.
@@ -110,9 +110,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the geolocation permission context for this context.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
 
-  // Returns the speech input preferences. SpeechInputPreferences is a
+  // Returns the speech input preferences. SpeechRecognitionPreferences is a
   // ref counted class, so callers should take a reference if needed.
-  virtual SpeechInputPreferences* GetSpeechInputPreferences() = 0;
+  virtual SpeechRecognitionPreferences* GetSpeechRecognitionPreferences() = 0;
 
   // Returns true if the last time this context was open it was exited cleanly.
   // This doesn't belong here; http://crbug.com/90737

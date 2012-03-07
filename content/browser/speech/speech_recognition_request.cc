@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "content/common/net/url_fetcher_impl.h"
-#include "content/public/common/speech_input_result.h"
+#include "content/public/common/speech_recognition_result.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context.h"
@@ -32,7 +32,7 @@ const char* const kConfidenceString = "confidence";
 const int kMaxResults = 6;
 
 bool ParseServerResponse(const std::string& response_body,
-                         content::SpeechInputResult* result) {
+                         content::SpeechRecognitionResult* result) {
   if (response_body.empty()) {
     LOG(WARNING) << "ParseServerResponse: Response was empty.";
     return false;
@@ -66,9 +66,9 @@ bool ParseServerResponse(const std::string& response_body,
 
   // Process the status.
   switch (status) {
-  case content::SPEECH_INPUT_ERROR_NONE:
-  case content::SPEECH_INPUT_ERROR_NO_SPEECH:
-  case content::SPEECH_INPUT_ERROR_NO_MATCH:
+  case content::SPEECH_RECOGNITION_ERROR_NONE:
+  case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
+  case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:
     break;
 
   default:
@@ -77,7 +77,7 @@ bool ParseServerResponse(const std::string& response_body,
     return false;
   }
 
-  result->error = static_cast<content::SpeechInputError>(status);
+  result->error = static_cast<content::SpeechRecognitionErrorCode>(status);
 
   // Get the hypotheses.
   Value* hypotheses_value = NULL;
@@ -121,7 +121,7 @@ bool ParseServerResponse(const std::string& response_body,
     double confidence = 0.0;
     hypothesis_value->GetDouble(kConfidenceString, &confidence);
 
-    result->hypotheses.push_back(content::SpeechInputHypothesis(
+    result->hypotheses.push_back(content::SpeechRecognitionHypothesis(
         utterance, confidence));
   }
 
@@ -135,7 +135,7 @@ bool ParseServerResponse(const std::string& response_body,
 
 }  // namespace
 
-namespace speech_input {
+namespace speech {
 
 int SpeechRecognitionRequest::url_fetcher_id_for_tests = 0;
 
@@ -211,12 +211,12 @@ void SpeechRecognitionRequest::OnURLFetchComplete(
     const content::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
-  content::SpeechInputResult result;
+  content::SpeechRecognitionResult result;
   std::string data;
   if (!source->GetStatus().is_success() || source->GetResponseCode() != 200 ||
       !source->GetResponseAsString(&data) ||
       !ParseServerResponse(data, &result)) {
-    result.error = content::SPEECH_INPUT_ERROR_NETWORK;
+    result.error = content::SPEECH_RECOGNITION_ERROR_NETWORK;
   }
 
   DVLOG(1) << "SpeechRecognitionRequest: Invoking delegate with result.";
@@ -224,4 +224,4 @@ void SpeechRecognitionRequest::OnURLFetchComplete(
   delegate_->SetRecognitionResult(result);
 }
 
-}  // namespace speech_input
+}  // namespace speech

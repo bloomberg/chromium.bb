@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_H_
-#define CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_H_
+#ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_BUBBLE_H_
+#define CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_BUBBLE_H_
 #pragma once
 
 #include <vector>
@@ -24,11 +24,11 @@ class Canvas;
 class Rect;
 }
 
-// SpeechInputBubble displays a popup info bubble during speech recognition,
-// points to the html element which requested speech input and shows recognition
-// progress events. The popup is closed by the user clicking anywhere outside
-// the popup window, or by the caller destroying this object.
-class SpeechInputBubble {
+// SpeechRecognitionBubble displays a popup info bubble during speech
+// recognition, points to the html element which requested speech recognition
+// and shows progress events. The popup is closed by the user clicking anywhere
+// outside the popup window, or by the caller destroying this object.
+class SpeechRecognitionBubble {
  public:
   // The various buttons which may be part of the bubble.
   enum Button {
@@ -58,31 +58,31 @@ class SpeechInputBubble {
   // Creates the bubble, call |Show| to display it on screen.
   // |web_contents| is the WebContents hosting the page.
   // |element_rect| is the display bounds of the html element requesting speech
-  // input (in page coordinates).
-  static SpeechInputBubble* Create(content::WebContents* web_contents,
-                                   Delegate* delegate,
-                                   const gfx::Rect& element_rect);
+  // recognition (in page coordinates).
+  static SpeechRecognitionBubble* Create(content::WebContents* web_contents,
+                                         Delegate* delegate,
+                                         const gfx::Rect& element_rect);
 
   // This is implemented by platform specific code to create the underlying
   // bubble window. Not to be called directly by users of this class.
-  static SpeechInputBubble* CreateNativeBubble(
+  static SpeechRecognitionBubble* CreateNativeBubble(
       content::WebContents* web_contents,
       Delegate* delegate,
       const gfx::Rect& element_rect);
 
   // |Create| uses the currently registered FactoryMethod to create the
-  // SpeechInputBubble instances. FactoryMethod is intended for testing.
-  typedef SpeechInputBubble* (*FactoryMethod)(content::WebContents*,
-                                              Delegate*,
-                                              const gfx::Rect&);
-  // Sets the factory used by the static method Create. SpeechInputBubble does
-  // not take ownership of |factory|. A value of NULL results in a
-  // SpeechInputBubble being created directly.
+  // SpeechRecognitionBubble instances. FactoryMethod is intended for testing.
+  typedef SpeechRecognitionBubble* (*FactoryMethod)(content::WebContents*,
+                                                    Delegate*,
+                                                    const gfx::Rect&);
+  // Sets the factory used by the static method Create. SpeechRecognitionBubble
+  // does not take ownership of |factory|. A value of NULL results in a
+  // SpeechRecognitionBubble being created directly.
 #if defined(UNIT_TEST)
   static void set_factory(FactoryMethod factory) { factory_ = factory; }
 #endif
 
-  virtual ~SpeechInputBubble() {}
+  virtual ~SpeechRecognitionBubble() {}
 
   // Indicates to the user that audio hardware is initializing. If the bubble is
   // hidden, |Show| must be called to make it appear on screen.
@@ -122,8 +122,8 @@ class SpeechInputBubble {
 };
 
 // Base class for the platform specific bubble implementations, this contains
-// the platform independent code for SpeechInputBubble.
-class SpeechInputBubbleBase : public SpeechInputBubble {
+// the platform independent code for SpeechRecognitionBubble.
+class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
  public:
   // The current display mode of the bubble, useful only for the platform
   // specific implementation.
@@ -134,10 +134,10 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
     DISPLAY_MODE_MESSAGE
   };
 
-  explicit SpeechInputBubbleBase(content::WebContents* web_contents);
-  virtual ~SpeechInputBubbleBase();
+  explicit SpeechRecognitionBubbleBase(content::WebContents* web_contents);
+  virtual ~SpeechRecognitionBubbleBase();
 
-  // SpeechInputBubble methods
+  // SpeechRecognitionBubble methods
   virtual void SetWarmUpMode() OVERRIDE;
   virtual void SetRecordingMode() OVERRIDE;
   virtual void SetRecognizingMode() OVERRIDE;
@@ -168,7 +168,7 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
                          float volume);
 
   // Task factory used for animation timer.
-  base::WeakPtrFactory<SpeechInputBubbleBase> weak_factory_;
+  base::WeakPtrFactory<SpeechRecognitionBubbleBase> weak_factory_;
   int animation_step_;  // Current index/step of the animation.
   std::vector<SkBitmap> animation_frames_;
   std::vector<SkBitmap> warming_up_frames_;
@@ -189,6 +189,6 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
 // Visual Studio where it gets confused between multiple Delegate
 // classes and gives a C2500 error. (I saw this error on the try bots -
 // the workaround was not needed for my machine).
-typedef SpeechInputBubble::Delegate SpeechInputBubbleDelegate;
+typedef SpeechRecognitionBubble::Delegate SpeechRecognitionBubbleDelegate;
 
-#endif  // CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_H_
+#endif  // CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_BUBBLE_H_

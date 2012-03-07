@@ -26,6 +26,18 @@ class ResourceDispatcherHost;
 class SkBitmap;
 struct WebPreferences;
 
+namespace content {
+class AccessTokenStore;
+class BrowserMainParts;
+class RenderProcessHost;
+class SiteInstance;
+class SpeechRecognitionManagerDelegate;
+class WebContents;
+class WebContentsView;
+struct MainFunctionParams;
+struct ShowDesktopNotificationHostMsgParams;
+}
+
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
 }
@@ -322,9 +334,10 @@ class ContentBrowserClient {
   // This is when it can optionally add a delegate or ResourceQueueDelegates.
   virtual void ResourceDispatcherHostCreated() = 0;
 
-  // Allows the embedder to return a delegate for the SpeechInputManager. The
-  // delegate will be owned by the manager. It's valid to return NULL.
-  virtual SpeechInputManagerDelegate* GetSpeechInputManagerDelegate() = 0;
+  // Allows the embedder to return a delegate for the SpeechRecognitionManager.
+  // The delegate will be owned by the manager. It's valid to return NULL.
+  virtual SpeechRecognitionManagerDelegate*
+      GetSpeechRecognitionManagerDelegate() = 0;
 
   // Getters for common objects.
   virtual ui::Clipboard* GetClipboard() = 0;

@@ -28,7 +28,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
-#include "content/common/speech_input_messages.h"
+#include "content/common/speech_recognition_messages.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
@@ -1405,7 +1405,7 @@ void RenderViewHostImpl::DidCancelPopupMenu() {
 #endif
 
 void RenderViewHostImpl::ToggleSpeechInput() {
-  Send(new SpeechInputMsg_ToggleSpeechInput(GetRoutingID()));
+  Send(new InputTagSpeechMsg_ToggleSpeechInput(GetRoutingID()));
 }
 
 void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,

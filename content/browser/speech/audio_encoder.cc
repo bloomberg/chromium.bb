@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ namespace {
 const char* const kContentTypeFLAC = "audio/x-flac; rate=";
 const int kFLACCompressionLevel = 0;  // 0 for speed
 
-class FLACEncoder : public speech_input::AudioEncoder {
+class FLACEncoder : public speech::AudioEncoder {
  public:
   FLACEncoder(int sampling_rate, int bits_per_sample);
   virtual ~FLACEncoder();
@@ -107,7 +107,7 @@ const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
 // make sure it is within the byte range.
 COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
 
-class SpeexEncoder : public speech_input::AudioEncoder {
+class SpeexEncoder : public speech::AudioEncoder {
  public:
   explicit SpeexEncoder(int sampling_rate);
   virtual ~SpeexEncoder();
@@ -163,7 +163,7 @@ void SpeexEncoder::Encode(const short* samples, int num_samples) {
 
 }  // namespace
 
-namespace speech_input {
+namespace speech {
 
 AudioEncoder* AudioEncoder::Create(Codec codec,
                                    int sampling_rate,
@@ -205,4 +205,4 @@ void AudioEncoder::AppendToBuffer(std::string* item) {
   audio_buffers_.push_back(item);
 }
 
-}  // namespace speech_input
+}  // namespace speech

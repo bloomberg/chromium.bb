@@ -30,7 +30,7 @@
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="1048">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSCustomObject" id="1021">
-				<string key="NSClassName">SpeechInputWindowController</string>
+				<string key="NSClassName">SpeechRecognitionWindowController</string>
 			</object>
 			<object class="NSCustomObject" id="1014">
 				<string key="NSClassName">FirstResponder</string>
@@ -674,7 +674,7 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">SpeechInputWindowController</string>
+					<string key="className">SpeechRecognitionWindowController</string>
 					<string key="superclassName">BaseBubbleController</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -716,7 +716,7 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">SpeechInputWindowController</string>
+					<string key="className">SpeechRecognitionWindowController</string>
 					<string key="superclassName">BaseBubbleController</string>
 					<object class="NSMutableDictionary" key="outlets">
 						<string key="NS.key.0">myOutlet1</string>

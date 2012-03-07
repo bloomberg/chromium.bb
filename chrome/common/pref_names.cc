@@ -691,7 +691,7 @@ const char kEnableAutoSpellCorrect[] = "browser.enable_autospellcorrect";
 
 // Boolean pref to define the default setting for "block offensive words".
 // The old key value is kept to avoid unnecessary migration code.
-const char kSpeechInputFilterProfanities[] =
+const char kSpeechRecognitionFilterProfanities[] =
     "browser.speechinput_censor_results";
 
 // Boolean pref to determine if the tray notification balloon for speech input

@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_CONTROLLER_H_
-#define CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_BUBBLE_CONTROLLER_H_
 
 #include <map>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/speech/speech_input_bubble.h"
+#include "chrome/browser/speech/speech_recognition_bubble.h"
 #include "content/public/browser/notification_observer.h"
 
 namespace gfx {
@@ -21,38 +21,38 @@ namespace content {
 class NotificationRegistrar;
 }
 
-namespace speech_input {
+namespace speech {
 
-// This class handles the speech input popup UI on behalf of SpeechInputManager.
-// SpeechInputManager invokes methods in the IO thread and this class processes
+// This class handles the speech recognition popup UI on behalf of
+// SpeechRecognitionManager, which invokes methods in the IO thread, processing
 // those requests in the UI thread. There could be multiple bubble objects alive
 // at the same time but only one of them is visible to the user. User actions on
 // that bubble are reported to the delegate.
-class SpeechInputBubbleController
-    : public base::RefCountedThreadSafe<SpeechInputBubbleController>,
-      public SpeechInputBubbleDelegate,
+class SpeechRecognitionBubbleController
+    : public base::RefCountedThreadSafe<SpeechRecognitionBubbleController>,
+      public SpeechRecognitionBubbleDelegate,
       public content::NotificationObserver {
  public:
   // All methods of this delegate are called in the IO thread.
   class Delegate {
    public:
-    // Invoked when the user clicks on a button in the speech input UI.
-    virtual void InfoBubbleButtonClicked(int caller_id,
-                                         SpeechInputBubble::Button button) = 0;
+    // Invoked when the user clicks on a button in the speech recognition UI.
+    virtual void InfoBubbleButtonClicked(
+        int caller_id, SpeechRecognitionBubble::Button button) = 0;
 
-    // Invoked when the user clicks outside the speech input info bubble causing
-    // it to close and input focus to change.
+    // Invoked when the user clicks outside the speech recognition info bubble
+    // causing it to close and input focus to change.
     virtual void InfoBubbleFocusChanged(int caller_id) = 0;
 
    protected:
     virtual ~Delegate() {}
   };
 
-  explicit SpeechInputBubbleController(Delegate* delegate);
-  virtual ~SpeechInputBubbleController();
+  explicit SpeechRecognitionBubbleController(Delegate* delegate);
+  virtual ~SpeechRecognitionBubbleController();
 
-  // Creates a new speech input UI bubble. One of the SetXxxx methods below need
-  // to be called to specify what to display.
+  // Creates a new speech recognition UI bubble. One of the SetXxxx methods
+  // below need to be called to specify what to display.
   void CreateBubble(int caller_id,
                     int render_process_id,
                     int render_view_id,
@@ -79,9 +79,9 @@ class SpeechInputBubbleController
 
   void CloseBubble(int caller_id);
 
-  // SpeechInputBubble::Delegate methods.
+  // SpeechRecognitionBubble::Delegate methods.
   virtual void InfoBubbleButtonClicked(
-      SpeechInputBubble::Button button) OVERRIDE;
+      SpeechRecognitionBubble::Button button) OVERRIDE;
   virtual void InfoBubbleFocusChanged() OVERRIDE;
 
   // content::NotificationObserver implementation.
@@ -106,7 +106,7 @@ class SpeechInputBubbleController
   };
 
   void InvokeDelegateButtonClicked(int caller_id,
-                                   SpeechInputBubble::Button button);
+                                   SpeechRecognitionBubble::Button button);
   void InvokeDelegateFocusChanged(int caller_id);
   void ProcessRequestInUiThread(int caller_id,
                                 RequestType type,
@@ -133,7 +133,7 @@ class SpeechInputBubbleController
 
   // Map of caller-ids to bubble objects. The bubbles are weak pointers owned by
   // this object and get destroyed by |CloseBubble|.
-  typedef std::map<int, SpeechInputBubble*> BubbleCallerIdMap;
+  typedef std::map<int, SpeechRecognitionBubble*> BubbleCallerIdMap;
   BubbleCallerIdMap bubbles_;
 
   scoped_ptr<content::NotificationRegistrar> registrar_;
@@ -143,9 +143,9 @@ class SpeechInputBubbleController
 // Visual Studio where it gets confused between multiple Delegate
 // classes and gives a C2500 error. (I saw this error on the try bots -
 // the workaround was not needed for my machine).
-typedef SpeechInputBubbleController::Delegate
-    SpeechInputBubbleControllerDelegate;
+typedef SpeechRecognitionBubbleController::Delegate
+    SpeechRecognitionBubbleControllerDelegate;
 
-}  // namespace speech_input
+}  // namespace speech
 
-#endif  // CHROME_BROWSER_SPEECH_SPEECH_INPUT_BUBBLE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_BUBBLE_CONTROLLER_H_

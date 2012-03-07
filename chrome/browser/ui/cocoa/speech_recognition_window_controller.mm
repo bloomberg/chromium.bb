@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "speech_input_window_controller.h"
+#import "speech_recognition_window_controller.h"
 
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
@@ -19,23 +19,23 @@ const int kBubbleControlVerticalSpacing = 10;  // Space between controls.
 const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
 const int kInstructionLabelMaxWidth = 150;
 
-@interface SpeechInputWindowController (Private)
+@interface SpeechRecognitionWindowController (Private)
 - (NSSize)calculateContentSize;
 - (void)layout:(NSSize)size;
 @end
 
-@implementation SpeechInputWindowController
+@implementation SpeechRecognitionWindowController
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-                  delegate:(SpeechInputBubbleDelegate*)delegate
+                  delegate:(SpeechRecognitionBubbleDelegate*)delegate
               anchoredAt:(NSPoint)anchoredAt {
   anchoredAt.y += info_bubble::kBubbleArrowHeight / 2.0;
-  if ((self = [super initWithWindowNibPath:@"SpeechInputBubble"
+  if ((self = [super initWithWindowNibPath:@"SpeechRecognitionBubble"
                               parentWindow:parentWindow
                                 anchoredAt:anchoredAt])) {
     DCHECK(delegate);
     delegate_ = delegate;
-    displayMode_ = SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP;
+    displayMode_ = SpeechRecognitionBubbleBase::DISPLAY_MODE_WARM_UP;
   }
   return self;
 }
@@ -46,11 +46,11 @@ const int kInstructionLabelMaxWidth = 150;
 }
 
 - (IBAction)cancel:(id)sender {
-  delegate_->InfoBubbleButtonClicked(SpeechInputBubble::BUTTON_CANCEL);
+  delegate_->InfoBubbleButtonClicked(SpeechRecognitionBubble::BUTTON_CANCEL);
 }
 
 - (IBAction)tryAgain:(id)sender {
-  delegate_->InfoBubbleButtonClicked(SpeechInputBubble::BUTTON_TRY_AGAIN);
+  delegate_->InfoBubbleButtonClicked(SpeechRecognitionBubble::BUTTON_TRY_AGAIN);
 }
 
 - (IBAction)micSettings:(id)sender {
@@ -76,7 +76,7 @@ const int kInstructionLabelMaxWidth = 150;
   // recording mode, so from warm up it can transition to recording without any
   // UI jank.
   bool isWarmUp = (displayMode_ ==
-                   SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP);
+                   SpeechRecognitionBubbleBase::DISPLAY_MODE_WARM_UP);
 
   if (![iconImage_ isHidden]) {
     NSSize size = [[iconImage_ image] size];
@@ -161,7 +161,7 @@ const int kInstructionLabelMaxWidth = 150;
   if (![iconImage_ isHidden]) {
     rect.size = [[iconImage_ image] size];
     // In warm-up mode only the icon gets displayed so center it vertically.
-    if (displayMode_ == SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP)
+    if (displayMode_ == SpeechRecognitionBubbleBase::DISPLAY_MODE_WARM_UP)
       y = (size.height - rect.size.height) / 2;
     rect.origin.x = (size.width - NSWidth(rect)) / 2;
     rect.origin.y = y;
@@ -169,7 +169,7 @@ const int kInstructionLabelMaxWidth = 150;
   }
 }
 
-- (void)updateLayout:(SpeechInputBubbleBase::DisplayMode)mode
+- (void)updateLayout:(SpeechRecognitionBubbleBase::DisplayMode)mode
          messageText:(const string16&)messageText
            iconImage:(NSImage*)iconImage {
   // The very first time this method is called, the child views would still be
@@ -177,9 +177,10 @@ const int kInstructionLabelMaxWidth = 150;
   // the child views properly so we can do the layout calculations below.
   NSWindow* window = [self window];
   displayMode_ = mode;
-  BOOL is_message = (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE);
-  BOOL is_recording = (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING);
-  BOOL is_warm_up = (mode == SpeechInputBubbleBase::DISPLAY_MODE_WARM_UP);
+  BOOL is_message = (mode == SpeechRecognitionBubbleBase::DISPLAY_MODE_MESSAGE);
+  BOOL is_recording =
+      (mode == SpeechRecognitionBubbleBase::DISPLAY_MODE_RECORDING);
+  BOOL is_warm_up = (mode == SpeechRecognitionBubbleBase::DISPLAY_MODE_WARM_UP);
   [iconImage_ setHidden:is_message];
   [tryAgainButton_ setHidden:!is_message];
   [micSettingsButton_ setHidden:!is_message];
@@ -223,4 +224,4 @@ const int kInstructionLabelMaxWidth = 150;
   [iconImage_ setImage:image];
 }
 
-@end  // implementation SpeechInputWindowController
+@end  // implementation SpeechRecognitionWindowController

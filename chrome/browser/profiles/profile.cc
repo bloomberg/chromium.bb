@@ -96,10 +96,10 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSafeBrowsingReportingEnabled,
                              false,
                              PrefService::UNSYNCABLE_PREF);
-  // TODO(erg): kSpeechInputFilterProfanities should also be moved to
+  // TODO(erg): kSpeechRecognitionFilterProfanities should also be moved to
   // speech_input_extension_manager.cc, but is more involved because of
   // BrowserContext/Profile confusion because of ChromeSpeechInputPreferences.
-  prefs->RegisterBooleanPref(prefs::kSpeechInputFilterProfanities,
+  prefs->RegisterBooleanPref(prefs::kSpeechRecognitionFilterProfanities,
                              true,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDisableExtensions,
