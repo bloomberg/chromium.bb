@@ -37,7 +37,3 @@ BUGCR110926 : svg/custom/animate-target-id-changed.svg = PASS IMAGE TEXT IMAGE+T
 BUGCR110926 : svg/filters/big-sized-filter.svg = PASS IMAGE TEXT IMAGE+TEXT
 BUGCR110926 : svg/transforms/animated-path-inside-transformed-html.xhtml = PASS IMAGE TEXT IMAGE+TEXT
 BUGCR110926 : svg/wicd/test-scalable-background-image1.xhtml = PASS IMAGE TEXT IMAGE+TEXT
-
-// EPOGER: To be rebaselined after skia rev. 3283 lands in webkit
-BUGCR116252 LINUX : platform/chromium-linux/fast/text/chromium-linux-fontconfig-renderstyle.html = IMAGE
-
