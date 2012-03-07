@@ -32,6 +32,9 @@ struct UploadFileInfo {
   // Initialize from a DownloadItem.
   void Init(content::DownloadItem* download);
 
+  // Useful for printf debugging.
+  std::string DebugString() const;
+
   // Data to be initialized by caller before initiating upload request.
   // URL of physical file to be uploaded, used as main identifier in callbacks.
   FilePath file_path;  // The path of the file to be uploaded.
@@ -47,6 +50,8 @@ struct UploadFileInfo {
   // multiple ResumeUpload requests.
   // Location URL where file is to be uploaded to, returned from InitiateUpload.
   GURL upload_location;
+  // Final path in gdata. Looks like /special/gdata/MyFolder/MyFile.
+  FilePath gdata_path;
 
   // TODO(achuith): Use generic stream object after FileStream is refactored to
   // extend a generic stream.

@@ -27,6 +27,8 @@ TEST(GDataUtilTest, IsUnderGDataMountPoint) {
       FilePath::FromUTF8Unsafe("/special/foo.txt")));
   EXPECT_FALSE(IsUnderGDataMountPoint(
       FilePath::FromUTF8Unsafe("/special/gdatax/foo.txt")));
+  EXPECT_FALSE(IsUnderGDataMountPoint(
+      FilePath::FromUTF8Unsafe("special/gdatax/foo.txt")));
 
   EXPECT_TRUE(IsUnderGDataMountPoint(
       FilePath::FromUTF8Unsafe("/special/gdata")));

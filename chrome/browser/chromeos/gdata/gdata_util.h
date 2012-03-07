@@ -10,14 +10,19 @@
 
 class FilePath;
 
+namespace content {
+class DownloadItem;
+class DownloadManager;
+}
+
 namespace gdata {
 namespace util {
 
 // Returns the GData mount point path, which looks like "/special/gdata".
-FilePath GetGDataMountPointPath();
+const FilePath& GetGDataMountPointPath();
 
 // Returns the GData mount path as string.
-std::string GetGDataMountPointPathAsString();
+const std::string& GetGDataMountPointPathAsString();
 
 // Returns true if the given path is under the GData mount point.
 bool IsUnderGDataMountPoint(const FilePath& path);
@@ -26,6 +31,16 @@ bool IsUnderGDataMountPoint(const FilePath& path);
 // point. Returns an empty path if |path| is not under the GData mount point.
 // Examples: ExtractGDatPath("/special/gdata/foo.txt") => "gdata/foo.txt"
 FilePath ExtractGDataPath(const FilePath& path);
+
+// Files to be uploaded to GData are downloaded to this temporary folder first,
+// located at ~/Downloads/.gdata
+FilePath GetGDataTempDownloadFolderPath();
+
+// TODO(achuith): Move this downloads-specific code to a better place.
+// Sets/Gets GData path, for example, '/special/gdata/MyFolder/MyFile',
+// from external data in |download|.
+void SetGDataPath(content::DownloadItem* download, const FilePath& path);
+const FilePath& GetGDataPath(content::DownloadItem* download);
 
 }  // namespace util
 }  // namespace gdata

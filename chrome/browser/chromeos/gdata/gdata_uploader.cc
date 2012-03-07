@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -91,7 +92,8 @@ void GDataUploader::ModelChanged(DownloadManager* download_manager) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadManager::DownloadVector downloads;
-  download_manager->GetAllDownloads(FilePath(), &downloads);
+  download_manager->GetAllDownloads(util::GetGDataTempDownloadFolderPath(),
+                                    &downloads);
   for (size_t i = 0; i < downloads.size(); ++i) {
     OnDownloadUpdated(downloads[i]);
   }
@@ -122,7 +124,7 @@ void GDataUploader::OnDownloadUpdated(DownloadItem* download) {
     default:
       NOTREACHED();
   }
-  DVLOG(1) << "Number of pending downloads=" << pending_downloads_.size();
+  DLOG(INFO) << "Number of pending downloads=" << pending_downloads_.size();
 }
 
 void GDataUploader::AddPendingDownload(DownloadItem* download) {
@@ -132,7 +134,7 @@ void GDataUploader::AddPendingDownload(DownloadItem* download) {
   if (pending_downloads_.find(download) == pending_downloads_.end()) {
     pending_downloads_.insert(download);
     download->AddObserver(this);
-    DVLOG(1) << "new download total bytes=" << download->GetTotalBytes()
+    DLOG(INFO) << "new download total bytes=" << download->GetTotalBytes()
              << ", full path=" << download->GetFullPath().value()
              << ", mime type=" << download->GetMimeType();
   }
@@ -156,7 +158,7 @@ void GDataUploader::UploadDownloadItem(DownloadItem* download) {
   if (!ShouldUpload(download))
     return;
 
-  DVLOG(1) << "Starting upload"
+  DLOG(INFO) << "Starting upload"
            << ", full path=" << download->GetFullPath().value()
            << ", received bytes=" << download->GetReceivedBytes()
            << ", total bytes=" << download->GetTotalBytes()
@@ -186,7 +188,7 @@ void GDataUploader::UpdateUpload(DownloadItem* download) {
     return;
 
   // Update file_size and download_complete.
-  DVLOG(1) << "Updating file size from " << upload_file_info->file_size
+  DLOG(INFO) << "Updating file size from " << upload_file_info->file_size
            << " to " << download->GetReceivedBytes();
   upload_file_info->file_size = download->GetReceivedBytes();
   upload_file_info->download_complete = download->IsComplete();
@@ -211,14 +213,7 @@ void GDataUploader::UploadFile(const GURL& file_url) {
   if (!upload_file_info)
     return;
 
-  DVLOG(1) << "Uploading file: title=[" << upload_file_info->title
-           << "], file_path=[" << upload_file_info->file_path.value()
-           << "], content_type=" << upload_file_info->content_type
-           << ", file_size=" << upload_file_info->file_size;
-
-  // Do nothing if --test-gdata is not present in cmd line flags.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch("test-gdata"))
-    return;
+  DLOG(INFO) << "Uploading file: " << upload_file_info->DebugString();
 
   // Create a FileStream to make sure the file can be opened successfully.
   upload_file_info->file_stream = new net::FileStream(NULL);
@@ -292,7 +287,7 @@ void GDataUploader::OnUploadLocationReceived(
   if (!upload_file_info)
     return;
 
-  DVLOG(1) << "Got upload location [" << upload_location.spec()
+  DLOG(INFO) << "Got upload location [" << upload_location.spec()
            << "] for [" << upload_file_info->title << "]";
 
   if (code != HTTP_SUCCESS) {
@@ -304,54 +299,20 @@ void GDataUploader::OnUploadLocationReceived(
   upload_file_info->upload_location = upload_location;
 
   // Start the upload from the beginning of the file.
-  // start_range:end_range is inclusive, so for example, the range 0:8 is 9
-  // bytes. 0:-1 represents 0 bytes, which is what we want here. The arithmetic
-  // in UploadNextChunk works out correctly with end_range -1.
-  UploadNextChunk(HTTP_RESUME_INCOMPLETE, 0, -1, upload_file_info);
+  UploadNextChunk(upload_file_info);
 }
 
-void GDataUploader::UploadNextChunk(
-    GDataErrorCode code,
-    int64 start_range_received,
-    int64 end_range_received,
-    UploadFileInfo* upload_file_info) {
+void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   // Check that |upload_file_info| is in pending_uploads_.
   DCHECK(upload_file_info == GetUploadFileInfo(upload_file_info->file_url));
-
-  // If code is 308 (RESUME_INCOMPLETE) and range_received is what has been
-  // previously uploaded (i.e. = upload_file_info->end_range), proceed to upload
-  // the next chunk.
-  if (code != HTTP_RESUME_INCOMPLETE ||
-      start_range_received != 0 ||
-      end_range_received != upload_file_info->end_range) {
-    // TODO(achuith): Handle error cases, e.g.
-    // - when previously uploaded data wasn't received by Google Docs server,
-    //   i.e. when end_range_received < upload_file_info->end_range
-    // - when quota is exceeded, which is 1GB for files not converted to Google
-    //   Docs format; even though the quota-exceeded content length
-    //   is specified in the header when posting request to get upload
-    //   location, the server allows us to upload all chunks of entire file
-    //   successfully, but instead of returning 201 (CREATED) status code after
-    //   receiving the last chunk, it returns 403 (FORBIDDEN); response content
-    //   then will indicate quote exceeded exception.
-    NOTREACHED() << "UploadNextChunk http code=" << code
-                 << ", start_range_received=" << start_range_received
-                 << ", end_range_received=" << end_range_received
-                 << ", expected end range=" << upload_file_info->end_range;
-
-    RemovePendingUpload(upload_file_info);
-    return;
-  }
-
-  DVLOG(1) << "Number of pending uploads=" << pending_uploads_.size();
+  DLOG(INFO) << "Number of pending uploads=" << pending_uploads_.size();
 
   // Determine number of bytes to read for this upload iteration, which cannot
   // exceed size of buf i.e. buf_len.
   // Note that end_range = uploaded_bytes - 1.
-  const size_t size_remaining = upload_file_info->file_size
-                                - end_range_received - 1;
+  const size_t size_remaining = upload_file_info->file_size -
+                                upload_file_info->end_range - 1;
   const int bytes_to_read = std::min(size_remaining,
                                      upload_file_info->buf_len);
 
@@ -362,7 +323,6 @@ void GDataUploader::UploadNextChunk(
   else
     DCHECK(size_remaining > kUploadChunkSize);
 
-  upload_file_info->start_range = end_range_received + 1;
   upload_file_info->file_stream->Read(
       upload_file_info->buf,
       bytes_to_read,
@@ -379,7 +339,7 @@ void GDataUploader::ReadCompletionCallback(
   // The Read is asynchronously executed on BrowserThread::UI, where
   // Read() was called.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DVLOG(1) << "ReadCompletionCallback bytes read=" << bytes_read;
+  DLOG(INFO) << "ReadCompletionCallback bytes read=" << bytes_read;
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
@@ -390,8 +350,9 @@ void GDataUploader::ReadCompletionCallback(
   DCHECK_GT(bytes_read, 0) << "Error reading from file "
                            << upload_file_info->file_path.value();
 
+  upload_file_info->start_range = upload_file_info->end_range + 1;
   upload_file_info->end_range = upload_file_info->start_range +
-                               bytes_read - 1;
+                                bytes_read - 1;
 
   file_system_->ResumeUpload(
       ResumeUploadParams(upload_file_info->title,
@@ -417,22 +378,46 @@ void GDataUploader::OnResumeUploadResponseReceived(
   if (!upload_file_info)
     return;
 
-  if (code != HTTP_CREATED) {
-    DVLOG(1) << "Received range " << start_range_received
-             << "-" << end_range_received
-             << " for [" << upload_file_info->title << "]";
+  if (code == HTTP_CREATED) {
+    DLOG(INFO) << "Successfully created uploaded file=["
+             << upload_file_info->title << "]";
 
-    // Continue uploading.
-    UploadNextChunk(code, start_range_received, end_range_received,
-                    upload_file_info);
+    // Done uploading.
+    RemovePendingUpload(upload_file_info);
     return;
   }
 
-  DVLOG(1) << "Successfully created uploaded file=["
-           << upload_file_info->title << "]";
+  // If code is 308 (RESUME_INCOMPLETE) and range_received is what has been
+  // previously uploaded (i.e. = upload_file_info->end_range), proceed to
+  // upload the next chunk.
+  if (code != HTTP_RESUME_INCOMPLETE ||
+      start_range_received != 0 ||
+      end_range_received != upload_file_info->end_range) {
+    // TODO(achuith): Handle error cases, e.g.
+    // - when previously uploaded data wasn't received by Google Docs server,
+    //   i.e. when end_range_received < upload_file_info->end_range
+    // - when quota is exceeded, which is 1GB for files not converted to Google
+    //   Docs format; even though the quota-exceeded content length
+    //   is specified in the header when posting request to get upload
+    //   location, the server allows us to upload all chunks of entire file
+    //   successfully, but instead of returning 201 (CREATED) status code after
+    //   receiving the last chunk, it returns 403 (FORBIDDEN); response content
+    //   then will indicate quote exceeded exception.
+    NOTREACHED() << "UploadNextChunk http code=" << code
+                 << ", start_range_received=" << start_range_received
+                 << ", end_range_received=" << end_range_received
+                 << ", expected end range=" << upload_file_info->end_range;
 
-  // Done uploading.
-  RemovePendingUpload(upload_file_info);
+    RemovePendingUpload(upload_file_info);
+    return;
+  }
+
+  DLOG(INFO) << "Received range " << start_range_received
+           << "-" << end_range_received
+           << " for [" << upload_file_info->title << "]";
+
+  // Continue uploading.
+  UploadNextChunk(upload_file_info);
 }
 
 }  // namespace gdata

@@ -76,10 +76,7 @@ class GDataUploader : public content::DownloadManager::Observer,
                                 const GURL& upload_location);
 
   // Uploads the next chunk of data from the file.
-  void UploadNextChunk(GDataErrorCode code,
-      int64 start_range_received,
-      int64 end_range_received,
-      UploadFileInfo* upload_file_info);
+  void UploadNextChunk(UploadFileInfo* upload_file_info);
 
   // net::FileStream::Read completion callback.
   void ReadCompletionCallback(const GURL& file_url,
