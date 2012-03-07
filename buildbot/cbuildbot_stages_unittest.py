@@ -556,6 +556,27 @@ class HWTestStageTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
+  def testWithSuiteWithInfrastructureFailure(self):
+    """Tests that we warn correctly if we get a returncode of 2."""
+    self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    self.mox.StubOutWithMock(bs.BuilderStage, '_HandleExceptionAsWarning')
+    build = '%s/%s' % (self.bot_id,
+                       self.archive_stage_mock.GetVersion().AndReturn('ver'))
+    error = cros_lib.RunCommandError('HWTests failed', 'run_hw_tests', 2)
+    commands.RunHWTestSuite(build,
+                            self.suite,
+                            self._current_board,
+                            False).AndRaise(error)
+    bs.BuilderStage._HandleExceptionAsWarning(mox.IgnoreArg())
+    self.mox.ReplayAll()
+    try:
+      self.RunStage()
+    except:
+      pass
+
+    self.mox.VerifyAll()
+
 
 class UprevStageTest(AbstractStageTest):
 

@@ -152,6 +152,12 @@ class BuilderStage(object):
     """
     pass
 
+  def _HandleExceptionAsWarning(self, exception):
+    print '\n@@@STEP_WARNINGS@@@'
+    description = traceback.format_exc()
+    print >> sys.stderr, description
+    return results_lib.Results.FORGIVEN, None
+
   def _HandleStageException(self, exception):
     """Called when _PerformStages throws an exception.  Can be overriden.
 

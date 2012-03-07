@@ -34,6 +34,7 @@ _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _PRINT_INTERVAL = 1
 DEFAULT_ARCHIVE_PATH = '/var/www/archive'
 
+
 class NonHaltingBuilderStage(bs.BuilderStage):
   """Build stage that fails a build but finishes the other steps."""
   def Run(self):
@@ -47,10 +48,7 @@ class ForgivingBuilderStage(NonHaltingBuilderStage):
   """Build stage that turns a build step red but not a build."""
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
-    print '\n@@@STEP_WARNINGS@@@'
-    description = traceback.format_exc()
-    print >> sys.stderr, description
-    return results_lib.Results.FORGIVEN, None
+    return self._HandleExceptionAsWarning(exception)
 
 
 class BoardSpecificBuilderStage(bs.BuilderStage):
@@ -802,7 +800,7 @@ class VMTestStage(BoardSpecificBuilderStage):
     self._archive_stage.TestResultsReady(None)
 
 
-class HWTestStage(BoardSpecificBuilderStage, ForgivingBuilderStage):
+class HWTestStage(BoardSpecificBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
   option_name = 'tests'
@@ -813,6 +811,16 @@ class HWTestStage(BoardSpecificBuilderStage, ForgivingBuilderStage):
                                       suffix=' [%s]' % suite)
     self._archive_stage = archive_stage
     self._suite = suite
+
+  # Disable use of calling parents HandleStageException class.
+  # pylint: disable=W0212
+  def _HandleStageException(self, exception):
+    """Override and don't set status to FAIL but FORGIVEN instead."""
+    if isinstance(exception,
+                  cros_lib.RunCommandError) and exception.error_code == 2:
+      return self._HandleExceptionAsWarning(exception)
+    else:
+      return super(HWTestStage, self)._HandleStageException(exception)
 
   def _PerformStage(self):
     if not self._archive_stage.WaitForHWTestUploads():
