@@ -12,16 +12,7 @@
 
 #include "ui/base/ui_export.h"
 
-typedef struct _PangoContext PangoContext;
-
 namespace gfx {
-
-// Creates and returns a PangoContext. The caller owns the context.
-PangoContext* GetPangoContext();
-
-// Returns the resolution (DPI) used by pango. A negative values means the
-// resolution hasn't been set.
-double GetPangoResolution();
 
 // Change windows accelerator style to GTK style. (GTK uses _ for
 // accelerators.  Windows uses & with && as an escape for &.)

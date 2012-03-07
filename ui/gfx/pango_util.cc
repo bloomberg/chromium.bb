@@ -16,6 +16,7 @@
 #include "ui/gfx/rect.h"
 
 #if !defined(USE_WAYLAND) && defined(TOOLKIT_USES_GTK)
+#include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include "ui/gfx/gtk_util.h"
 #else
@@ -144,6 +145,27 @@ float GetPixelsInPoint() {
 }  // namespace
 
 namespace gfx {
+
+PangoContext* GetPangoContext() {
+#if defined(USE_WAYLAND) || defined(USE_AURA)
+  PangoFontMap* font_map = pango_cairo_font_map_get_default();
+  return pango_font_map_create_context(font_map);
+#else
+  return gdk_pango_context_get();
+#endif
+}
+
+double GetPangoResolution() {
+  static double resolution;
+  static bool determined_resolution = false;
+  if (!determined_resolution) {
+    determined_resolution = true;
+    PangoContext* default_context = GetPangoContext();
+    resolution = pango_cairo_context_get_resolution(default_context);
+    g_object_unref(default_context);
+  }
+  return resolution;
+}
 
 void DrawTextOntoCairoSurface(cairo_t* cr,
                               const string16& text,

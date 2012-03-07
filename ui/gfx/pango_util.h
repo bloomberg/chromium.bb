@@ -12,16 +12,23 @@
 
 #include "base/i18n/rtl.h"
 #include "base/string16.h"
-#include "ui/base/ui_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ui_export.h"
 
-// TODO(xji): move other pango related functions from gtk_util to here.
+typedef struct _PangoContext PangoContext;
 
 namespace gfx {
 
 class Font;
 class PlatformFontPango;
 class Rect;
+
+// Creates and returns a PangoContext. The caller owns the context.
+PangoContext* GetPangoContext();
+
+// Returns the resolution (DPI) used by pango. A negative values means the
+// resolution hasn't been set.
+double GetPangoResolution();
 
 // Uses Pango to draw text onto |cr|. This is the public method for d
 void UI_EXPORT DrawTextOntoCairoSurface(cairo_t* cr,

@@ -4,8 +4,6 @@
 
 #include "ui/gfx/linux_util.h"
 
-#include <pango/pango.h>
-#include <pango/pangocairo.h>
 #include <stdlib.h>
 
 #include "base/basictypes.h"
@@ -50,25 +48,6 @@ std::string ConvertAmpersandsTo(const std::string& label,
 }  // namespace
 
 namespace gfx {
-
-#if defined(USE_WAYLAND) || defined(USE_AURA)
-PangoContext* GetPangoContext() {
-  PangoFontMap* font_map = pango_cairo_font_map_get_default();
-  return pango_font_map_create_context(font_map);
-}
-#endif
-
-double GetPangoResolution() {
-  static double resolution;
-  static bool determined_resolution = false;
-  if (!determined_resolution) {
-    determined_resolution = true;
-    PangoContext* default_context = GetPangoContext();
-    resolution = pango_cairo_context_get_resolution(default_context);
-    g_object_unref(default_context);
-  }
-  return resolution;
-}
 
 std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
   return ConvertAmpersandsTo(label, "_");

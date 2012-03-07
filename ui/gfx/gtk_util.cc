@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,12 +140,6 @@ GdkCursor* GetCursor(int type) {
   CR_DEFINE_STATIC_LOCAL(GdkCursorCache, impl, ());
   return impl.GetCursorImpl(static_cast<GdkCursorType>(type));
 }
-
-#if !defined(USE_WAYLAND) && !defined(USE_AURA)
-PangoContext* GetPangoContext() {
-  return gdk_pango_context_get();
-}
-#endif
 
 void InitRCStyles() {
   static const char kRCText[] =
