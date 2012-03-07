@@ -8,7 +8,7 @@
 
 #include "base/values.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
+#include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/extensions/extension.h"
@@ -17,15 +17,21 @@
 
 class BasePanelBrowserTest : public InProcessBrowserTest {
  public:
-  class MockAutoHidingDesktopBar : public AutoHidingDesktopBar {
+  class MockDisplaySettingsProvider : public DisplaySettingsProvider {
    public:
-    virtual ~MockAutoHidingDesktopBar() { }
+    explicit MockDisplaySettingsProvider(Observer* observer)
+        : DisplaySettingsProvider(observer) {
+    }
+    virtual ~MockDisplaySettingsProvider() { }
 
-    virtual void EnableAutoHiding(Alignment alignment,
-                                  bool enabled,
-                                  int thickness) = 0;
-    virtual void SetVisibility(Alignment alignment, Visibility visibility) = 0;
-    virtual void SetThickness(Alignment alignment, int thickness) = 0;
+    virtual void SetWorkArea(const gfx::Rect& work_area) = 0;
+    virtual void EnableAutoHidingDesktopBar(DesktopBarAlignment alignment,
+                                            bool enabled,
+                                            int thickness) = 0;
+    virtual void SetDesktopBarVisibility(DesktopBarAlignment alignment,
+                                         DesktopBarVisibility visibility) = 0;
+    virtual void SetDesktopBarThickness(DesktopBarAlignment alignment,
+                                        int thickness) = 0;
   };
 
   BasePanelBrowserTest();
@@ -93,19 +99,17 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   static void CloseWindowAndWait(Browser* browser);
   static std::string MakePanelName(int index);
 
-  gfx::Rect testing_work_area() const { return testing_work_area_; }
-  void set_testing_work_area(const gfx::Rect& work_area) {
-    testing_work_area_ = work_area;
-  }
+  gfx::Rect GetTestingWorkArea() const;
+  void SetTestingWorkArea(const gfx::Rect& work_area);
 
-  MockAutoHidingDesktopBar* mock_auto_hiding_desktop_bar() const {
-    return mock_auto_hiding_desktop_bar_.get();
+  MockDisplaySettingsProvider* mock_display_settings_provider() const {
+    return mock_display_settings_provider_;
   }
 
   static const FilePath::CharType* kTestDir;
  private:
-  gfx::Rect testing_work_area_;
-  scoped_refptr<MockAutoHidingDesktopBar> mock_auto_hiding_desktop_bar_;
+  // Passed to and owned by PanelManager.
+  MockDisplaySettingsProvider* mock_display_settings_provider_;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_BASE_PANEL_BROWSER_TEST_H_
