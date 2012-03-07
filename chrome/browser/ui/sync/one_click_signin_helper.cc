@@ -222,12 +222,16 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return;
 
   if (!ProfileSyncService::IsSyncEnabled())
     return;
 
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
+  if (!service)
+    return;
 
   if (!profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled) ||
       service->AreCredentialsAvailable())
