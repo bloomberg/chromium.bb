@@ -13,8 +13,11 @@
 
 class Browser;
 class ExtensionHost;
-class RenderViewHost;
 class SkBitmap;
+
+namespace content {
+class RenderViewHost;
+}
 
 class ExtensionViewGtk {
  public:
@@ -45,7 +48,7 @@ class ExtensionViewGtk {
   // connection.
   void RenderViewCreated();
 
-  RenderViewHost* render_view_host() const;
+  content::RenderViewHost* render_view_host() const;
 
  private:
   void CreateWidgetHostView();

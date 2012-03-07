@@ -15,6 +15,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 
+using content::RenderViewHost;
+
 namespace {
 
 // A mock context menu used in this test. This class overrides virtual methods

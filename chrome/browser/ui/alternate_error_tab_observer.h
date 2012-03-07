@@ -27,7 +27,8 @@ class AlternateErrorPageTabObserver : public content::WebContentsObserver,
   Profile* GetProfile() const;
 
   // content::WebContentsObserver overrides:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,
@@ -41,7 +42,7 @@ class AlternateErrorPageTabObserver : public content::WebContentsObserver,
   GURL GetAlternateErrorPageURL() const;
 
   // Send the alternate error page URL to the renderer.
-  void UpdateAlternateErrorPageURL(RenderViewHost* rvh);
+  void UpdateAlternateErrorPageURL(content::RenderViewHost* rvh);
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

@@ -21,6 +21,7 @@
 #include "content/public/browser/site_instance.h"
 
 using content::ChildProcessSecurityPolicy;
+using content::RenderViewHost;
 using content::SiteInstance;
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(

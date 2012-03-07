@@ -8,11 +8,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-class RenderWidgetHost;
 @protocol RenderWidgetHostViewMacDelegate;
 
 namespace content {
 
+class RenderWidgetHost;
 class WebDragDestDelegate;
 struct ContextMenuParams;
 

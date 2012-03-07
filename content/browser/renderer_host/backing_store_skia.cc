@@ -18,7 +18,7 @@
 // Max height and width for layers
 static const int kMaxVideoLayerSize = 23170;
 
-BackingStoreSkia::BackingStoreSkia(RenderWidgetHost* widget,
+BackingStoreSkia::BackingStoreSkia(content::RenderWidgetHost* widget,
                                    const gfx::Size& size)
     : BackingStore(widget, size) {
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());

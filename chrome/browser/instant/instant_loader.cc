@@ -55,6 +55,8 @@
 
 using content::NavigationController;
 using content::NavigationEntry;
+using content::RenderViewHost;
+using content::RenderWidgetHost;
 using content::SessionStorageNamespace;
 using content::WebContents;
 

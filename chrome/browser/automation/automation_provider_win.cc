@@ -32,6 +32,7 @@
 #include "ui/views/widget/root_view.h"
 
 using content::NavigationController;
+using content::RenderViewHost;
 using content::WebContents;
 
 namespace {

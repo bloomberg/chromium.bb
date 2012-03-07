@@ -40,6 +40,7 @@ using content::GlobalRequestID;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::RenderViewHostImpl;
 using content::SessionStorageNamespace;
 using content::SiteInstance;
 using content::UserMetricsAction;

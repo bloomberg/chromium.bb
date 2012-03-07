@@ -172,6 +172,7 @@ using content::NavigationEntry;
 using content::PluginService;
 using content::OpenURLParams;
 using content::Referrer;
+using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
 

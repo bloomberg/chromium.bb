@@ -19,6 +19,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+using content::RenderViewHost;
 using content::WebContents;
 
 namespace {

@@ -27,6 +27,7 @@
 
 using content::DomOperationNotificationDetails;
 using content::NavigationController;
+using content::RenderViewHost;
 
 namespace {
 

@@ -13,10 +13,11 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/render_view_host_observer.h"
 
-class RenderViewHost;
 class TabContents;
 
 namespace content {
+
+class RenderViewHost;
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
     : public DevToolsAgentHost,

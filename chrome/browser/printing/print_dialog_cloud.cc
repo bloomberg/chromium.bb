@@ -114,6 +114,7 @@
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
+using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
 

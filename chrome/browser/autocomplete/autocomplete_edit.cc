@@ -1118,7 +1118,8 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(tab->profile());
   if (prerender_manager) {
-    RenderViewHost* current_host = tab->web_contents()->GetRenderViewHost();
+    content::RenderViewHost* current_host =
+        tab->web_contents()->GetRenderViewHost();
     prerender_manager->AddPrerenderFromOmnibox(
         match.destination_url, current_host->GetSessionStorageNamespace());
   }

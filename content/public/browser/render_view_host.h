@@ -18,13 +18,6 @@ class GURL;
 struct WebDropData;
 struct WebPreferences;
 
-namespace content {
-class RenderViewHostDelegate;
-class SessionStorageNamespace;
-class SiteInstance;
-struct CustomContextMenuContext;
-}
-
 namespace gfx {
 class Point;
 }
@@ -34,6 +27,13 @@ struct WebFindOptions;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 }
+
+namespace content {
+
+class RenderViewHostDelegate;
+class SessionStorageNamespace;
+class SiteInstance;
+struct CustomContextMenuContext;
 
 // A RenderViewHost is responsible for creating and talking to a RenderView
 // object in a child process. It exposes a high level API to users, for things
@@ -46,8 +46,6 @@ struct WebPluginAction;
 // The intent of this interface is to provide a view-agnostic communication
 // conduit with a renderer. This is so we can build HTML views not only as
 // TabContents (see TabContents for an example) but also as views, etc.
-//
-// TODO(joi): Move to content namespace.
 class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
  public:
   // Returns the RenderViewHost given its ID and the ID of its render process.
@@ -142,7 +140,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Executes custom context menu action that was provided from WebKit.
   virtual void ExecuteCustomContextMenuCommand(
-      int action, const content::CustomContextMenuContext& context) = 0;
+      int action, const CustomContextMenuContext& context) = 0;
 
   // Tells the renderer to perform the given action on the media player
   // located at the given point.
@@ -177,7 +175,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Notifies the renderer that the user has closed the FindInPage window
   // (and what action to take regarding the selection).
-  virtual void StopFinding(content::StopFindAction action) = 0;
+  virtual void StopFinding(StopFindAction action) = 0;
 
   // Causes the renderer to invoke the onbeforeunload event handler.  The
   // result will be returned via ViewMsg_ShouldClose. See also ClosePage and
@@ -195,15 +193,15 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void FilesSelectedInChooser(const std::vector<FilePath>& files,
                                       int permissions) = 0;
 
-  virtual content::RenderViewHostDelegate* GetDelegate() const = 0;
+  virtual RenderViewHostDelegate* GetDelegate() const = 0;
 
   // Returns a bitwise OR of bindings types that have been enabled for this
   // RenderView. See BindingsPolicy for details.
   virtual int GetEnabledBindings() const = 0;
 
-  virtual content::SessionStorageNamespace* GetSessionStorageNamespace() = 0;
+  virtual SessionStorageNamespace* GetSessionStorageNamespace() = 0;
 
-  virtual content::SiteInstance* GetSiteInstance() const = 0;
+  virtual SiteInstance* GetSiteInstance() const = 0;
 
   // Requests the renderer to evaluate an xpath to a frame and insert css
   // into that frame's document.
@@ -216,7 +214,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Let the renderer know that the menu has been closed.
   virtual void NotifyContextMenuClosed(
-      const content::CustomContextMenuContext& context) = 0;
+      const CustomContextMenuContext& context) = 0;
 
   // Notification that a move or resize renderer's containing window has
   // started.
@@ -237,7 +235,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void SetZoomLevel(double level) = 0;
 
   // Changes the zoom level for the current main frame.
-  virtual void Zoom(content::PageZoom zoom) = 0;
+  virtual void Zoom(PageZoom zoom) = 0;
 
   // Send the renderer process the current preferences supplied by the
   // RenderViewHostDelegate.
@@ -249,5 +247,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void UpdateWebkitPreferences(const WebPreferences& prefs) = 0;
 };
 
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_H_

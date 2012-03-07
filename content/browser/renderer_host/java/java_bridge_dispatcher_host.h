@@ -11,10 +11,13 @@
 #include "content/public/browser/render_view_host_observer.h"
 
 class NPChannelBase;
-class RenderViewHost;
 class RouteIDGenerator;
 struct NPObject;
 struct NPVariant_Param;
+
+namespace content {
+class RenderViewHost;
+}
 
 // This class handles injecting Java objects into a single RenderView. The Java
 // object itself lives in the browser process on a background thread, while a
@@ -25,7 +28,7 @@ class JavaBridgeDispatcherHost
       public content::RenderViewHostObserver {
  public:
   // We hold a weak pointer to the RenderViewhost. It must outlive this object.
-  JavaBridgeDispatcherHost(RenderViewHost* render_view_host);
+  JavaBridgeDispatcherHost(content::RenderViewHost* render_view_host);
 
   // Injects |object| into the main frame of the corresponding RenderView. A
   // proxy object is created in the renderer and when the main frame's window
@@ -43,7 +46,7 @@ class JavaBridgeDispatcherHost
   // The IPC macros require this to be public.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual void RenderViewHostDestroyed(
-      RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<JavaBridgeDispatcherHost>;

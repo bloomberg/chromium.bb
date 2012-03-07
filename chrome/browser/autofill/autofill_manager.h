@@ -31,14 +31,17 @@ class AutofillMetrics;
 class CreditCard;
 class PersonalDataManager;
 class PrefService;
-class RenderViewHost;
 class TabContentsWrapper;
 
 struct ViewHostMsg_FrameNavigate_Params;
 
+namespace content {
+class RenderViewHost;
+}
+
 namespace gfx {
 class Rect;
-};
+}
 
 namespace IPC {
 class Message;
@@ -167,7 +170,7 @@ class AutofillManager : public content::WebContentsObserver,
   // Returns false if Autofill is disabled or if the host is unavailable.
   bool GetHost(const std::vector<AutofillProfile*>& profiles,
                const std::vector<CreditCard*>& credit_cards,
-               RenderViewHost** host) const WARN_UNUSED_RESULT;
+               content::RenderViewHost** host) const WARN_UNUSED_RESULT;
 
   // Unpacks |unique_id| and fills |profile| or |credit_card| with the
   // appropriate data source.  Returns false if the unpacked id cannot be found.

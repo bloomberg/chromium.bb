@@ -20,6 +20,7 @@
 #include "webkit/glue/webcursor.h"
 
 namespace content {
+class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 }
 
@@ -35,7 +36,6 @@ namespace WebKit {
 class WebTouchEvent;
 }
 
-class RenderWidgetHostImpl;
 class ImageTransportClient;
 
 class RenderWidgetHostViewAura
@@ -49,7 +49,7 @@ class RenderWidgetHostViewAura
 
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
-  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -166,7 +166,7 @@ class RenderWidgetHostViewAura
   friend class content::RenderWidgetHostView;
 
   // Should construct only via RenderWidgetHostView::CreateViewForWidget.
-  explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
+  explicit RenderWidgetHostViewAura(content::RenderWidgetHost* host);
 
  private:
   class WindowObserver;
@@ -201,7 +201,7 @@ class RenderWidgetHostViewAura
   ui::Compositor* GetCompositor();
 
   // The model object.
-  RenderWidgetHostImpl* host_;
+  content::RenderWidgetHostImpl* host_;
 
   aura::Window* window_;
 

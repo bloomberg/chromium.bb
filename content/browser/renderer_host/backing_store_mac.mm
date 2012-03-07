@@ -26,7 +26,7 @@
 // allows acclerated drawing into the layer and lets scrolling and such happen
 // all or mostly on the GPU, which is good for performance.
 
-BackingStoreMac::BackingStoreMac(RenderWidgetHost* widget,
+BackingStoreMac::BackingStoreMac(content::RenderWidgetHost* widget,
                                  const gfx::Size& size)
     : BackingStore(widget, size) {
   cg_layer_.reset(CreateCGLayer());

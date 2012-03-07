@@ -21,6 +21,7 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
+using content::RenderViewHost;
 using content::SiteInstance;
 
 class RenderViewHostManagerTest : public InProcessBrowserTest {

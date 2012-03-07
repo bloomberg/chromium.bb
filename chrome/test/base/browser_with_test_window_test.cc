@@ -26,6 +26,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::TestRenderViewHost;
 using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()

@@ -17,6 +17,7 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
+using content::RenderViewHostImpl;
 using content::WebContents;
 
 class RenderViewHostTest : public InProcessBrowserTest {

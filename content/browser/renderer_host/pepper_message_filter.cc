@@ -46,6 +46,7 @@
 #endif  // ENABLE_FLAPPER_HACKS
 
 using content::BrowserThread;
+using content::RenderViewHostImpl;
 using ppapi::NetAddressPrivateImpl;
 
 namespace {

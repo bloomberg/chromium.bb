@@ -20,6 +20,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "ui/base/ui_base_switches.h"
 
+using content::RenderViewHostImpl;
 using content::WebContents;
 using content::WebUIController;
 using content::WebUIMessageHandler;
@@ -96,7 +97,7 @@ void WebUIImpl::OnWebUISend(const GURL& source_url,
   }
 }
 
-void WebUIImpl::RenderViewCreated(RenderViewHost* render_view_host) {
+void WebUIImpl::RenderViewCreated(content::RenderViewHost* render_view_host) {
   controller_->RenderViewCreated(render_view_host);
 
   // Do not attempt to set the toolkit property if WebUI is not enabled, e.g.,

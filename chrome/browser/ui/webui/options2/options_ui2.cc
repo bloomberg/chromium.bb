@@ -78,6 +78,7 @@
 #include "chrome/browser/ui/webui/options2/certificate_manager_handler2.h"
 #endif
 
+using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
 

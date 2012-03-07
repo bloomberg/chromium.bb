@@ -27,17 +27,21 @@
 using content::NavigationController;
 using content::NavigationEntry;
 using content::RenderViewHostDelegate;
+using content::RenderWidgetHost;
 using content::SessionStorageNamespace;
 using content::SiteInstance;
+using content::TestRenderViewHost;
 using webkit::forms::PasswordForm;
+
+namespace content {
 
 void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         int page_id,
                         const GURL& url,
-                        content::PageTransition transition) {
+                        PageTransition transition) {
   params->page_id = page_id;
   params->url = url;
-  params->referrer = content::Referrer();
+  params->referrer = Referrer();
   params->transition = transition;
   params->redirects = std::vector<GURL>();
   params->should_update_history = false;
@@ -52,7 +56,7 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
 }
 
 TestRenderViewHost* TestRenderViewHost::GetPendingForController(
-    content::NavigationController* controller) {
+    NavigationController* controller) {
   TabContents* tab_contents = static_cast<TabContents*>(
       controller->GetWebContents());
   return static_cast<TestRenderViewHost*>(
@@ -73,7 +77,7 @@ TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
   // For normal RenderViewHosts, this is freed when |Shutdown()| is called.
   // For TestRenderViewHost, the view is explicitly deleted in the destructor
   // below, because TestRenderWidgetHostView::Destroy() doesn't |delete this|.
-  SetView(new content::TestRenderWidgetHostView(this));
+  SetView(new TestRenderWidgetHostView(this));
 }
 
 TestRenderViewHost::~TestRenderViewHost() {
@@ -112,16 +116,16 @@ bool TestRenderViewHost::TestOnMessageReceived(const IPC::Message& msg) {
 }
 
 void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {
-  SendNavigateWithTransition(page_id, url, content::PAGE_TRANSITION_LINK);
+  SendNavigateWithTransition(page_id, url, PAGE_TRANSITION_LINK);
 }
 
 void TestRenderViewHost::SendNavigateWithTransition(
-    int page_id, const GURL& url, content::PageTransition transition) {
+    int page_id, const GURL& url, PageTransition transition) {
   ViewHostMsg_FrameNavigate_Params params;
 
   params.page_id = page_id;
   params.url = url;
-  params.referrer = content::Referrer();
+  params.referrer = Referrer();
   params.transition = transition;
   params.redirects = std::vector<GURL>();
   params.should_update_history = true;
@@ -159,8 +163,6 @@ void TestRenderViewHost::set_simulate_fetch_via_proxy(bool proxy) {
 void TestRenderViewHost::set_contents_mime_type(const std::string& mime_type) {
   contents_mime_type_ = mime_type;
 }
-
-namespace content {
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : rwh_(RenderWidgetHostImpl::From(rwh)),
@@ -331,7 +333,7 @@ void TestRenderViewHostFactory::set_render_process_host_factory(
   render_process_host_factory_ = rph_factory;
 }
 
-RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
+content::RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
     int routing_id,

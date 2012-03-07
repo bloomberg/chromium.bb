@@ -42,6 +42,7 @@ using content::DevToolsManager;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
 using content::NavigationController;
+using content::RenderViewHost;
 using content::WebContents;
 using content::WorkerService;
 using content::WorkerServiceObserver;

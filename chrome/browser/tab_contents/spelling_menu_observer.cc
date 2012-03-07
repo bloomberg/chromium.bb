@@ -229,7 +229,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
     // item, we directly update/ the profile and stop integrating the spelling
     // service immediately.
     if (!integrate_spelling_service_) {
-      RenderViewHost* rvh = proxy_->GetRenderViewHost();
+      content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
       gfx::Rect rect = rvh->GetView()->GetViewBounds();
       ConfirmBubbleModel::Show(rvh->GetView()->GetNativeView(),
                                gfx::Point(rect.CenterPoint().x(), rect.y()),

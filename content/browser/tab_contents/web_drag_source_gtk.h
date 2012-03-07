@@ -20,12 +20,12 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
-class RenderViewHostImpl;
 class SkBitmap;
 struct WebDropData;
 
 namespace content {
 
+class RenderViewHostImpl;
 class WebContents;
 
 // WebDragSourceGtk takes care of managing the drag from a WebContents
@@ -59,7 +59,7 @@ class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
   CHROMEGTK_CALLBACK_1(WebDragSourceGtk, gboolean, OnDragIconExpose,
                        GdkEventExpose*);
 
-  RenderViewHostImpl* GetRenderViewHost() const;
+  content::RenderViewHostImpl* GetRenderViewHost() const;
   gfx::NativeView GetContentNativeView() const;
 
   // The tab we're manging the drag for.

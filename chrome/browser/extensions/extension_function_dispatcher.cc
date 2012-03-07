@@ -98,6 +98,7 @@
 #endif
 
 using extensions::ExtensionAPI;
+using content::RenderViewHost;
 using WebKit::WebSecurityOrigin;
 
 // FactoryRegistry -------------------------------------------------------------

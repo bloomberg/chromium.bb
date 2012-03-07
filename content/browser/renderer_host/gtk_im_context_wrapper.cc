@@ -21,6 +21,8 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
 
+using content::RenderWidgetHostImpl;
+
 namespace {
 // Copied from third_party/WebKit/Source/WebCore/page/EventHandler.cpp
 //

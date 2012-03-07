@@ -23,9 +23,9 @@
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "ui/base/range/range.h"
 
-class RenderWidgetHostImpl;
-
 namespace content {
+
+class RenderWidgetHostImpl;
 
 // Basic implementation shared by concrete RenderWidgetHostView
 // subclasses.

@@ -133,7 +133,7 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
     }
   }
 
-  void AddWatchAndWaitForNotification(RenderViewHost* render_view_host,
+  void AddWatchAndWaitForNotification(content::RenderViewHost* render_view_host,
                                       const std::wstring& iframe_xpath) {
     LOG(WARNING) << "will add geolocation watch";
     std::string script =

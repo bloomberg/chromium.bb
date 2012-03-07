@@ -16,10 +16,9 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "webkit/glue/webdropdata.h"
 
-class RenderViewHostImpl;
-
 namespace content {
 
+class RenderViewHostImpl;
 class WebContents;
 class WebDragDestDelegate;
 
@@ -42,7 +41,7 @@ class CONTENT_EXPORT WebDragDestGtk {
   void set_delegate(WebDragDestDelegate* delegate) { delegate_ = delegate; }
 
  private:
-  RenderViewHostImpl* GetRenderViewHost() const;
+  content::RenderViewHostImpl* GetRenderViewHost() const;
 
   // Called when a system drag crosses over the render view. As there is no drag
   // enter event, we treat it as an enter event (and not a regular motion event)

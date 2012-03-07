@@ -140,7 +140,7 @@ NavigationEntry* FaviconTabHelper::GetActiveEntry() {
 }
 
 void FaviconTabHelper::StartDownload(int id, const GURL& url, int image_size) {
-  RenderViewHost* host = web_contents()->GetRenderViewHost();
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(new IconMsg_DownloadFavicon(
                  host->GetRoutingID(), id, url, image_size));
 }

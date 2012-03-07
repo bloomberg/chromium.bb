@@ -60,6 +60,7 @@
 
 using base::TimeTicks;
 using content::BrowserThread;
+using content::RenderViewHost;
 using switches::kEnableAutofillFeedback;
 using webkit::forms::FormData;
 using webkit::forms::FormDataPredictions;

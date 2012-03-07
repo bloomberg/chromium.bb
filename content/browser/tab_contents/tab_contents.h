@@ -32,8 +32,6 @@
 
 class InterstitialPageImpl;
 class LoadNotificationDetails;
-class RenderViewHost;
-class RenderViewHostImpl;
 class SavePackage;
 class SessionStorageNamespaceImpl;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
@@ -42,6 +40,8 @@ namespace content {
 class DownloadItem;
 class SiteInstance;
 class JavaScriptDialogCreator;
+class RenderViewHost;
+class RenderViewHostImpl;
 class WebContentsDelegate;
 class WebContentsObserver;
 class WebContentsView;
@@ -65,7 +65,8 @@ class CONTENT_EXPORT TabContents
   virtual ~TabContents();
 
   // Returns the content specific prefs for the given RVH.
-  static WebPreferences GetWebkitPrefs(RenderViewHost* rvh, const GURL& url);
+  static WebPreferences GetWebkitPrefs(
+      content::RenderViewHost* rvh, const GURL& url);
 
   // Returns the SavePackage which manages the page saving job. May be NULL.
   SavePackage* save_package() const { return save_package_.get(); }
@@ -135,7 +136,7 @@ class CONTENT_EXPORT TabContents
   virtual void SetViewType(content::ViewType type) OVERRIDE;
   virtual content::ViewType GetViewType() const OVERRIDE;
   virtual content::RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
-  virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual content::RenderWidgetHostView*
       GetRenderWidgetHostView() const OVERRIDE;
   virtual content::WebContentsView* GetView() const OVERRIDE;
@@ -232,36 +233,39 @@ class CONTENT_EXPORT TabContents
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual content::ViewType GetRenderViewType() const OVERRIDE;
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReady(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewGone(content::RenderViewHost* render_view_host,
                               base::TerminationStatus status,
                               int error_code) OVERRIDE;
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidNavigate(
-      RenderViewHost* render_view_host,
+      content::RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
-  virtual void UpdateState(RenderViewHost* render_view_host,
+  virtual void UpdateState(content::RenderViewHost* render_view_host,
                            int32 page_id,
                            const std::string& state) OVERRIDE;
-  virtual void UpdateTitle(RenderViewHost* render_view_host,
+  virtual void UpdateTitle(content::RenderViewHost* render_view_host,
                            int32 page_id,
                            const string16& title,
                            base::i18n::TextDirection title_direction) OVERRIDE;
-  virtual void UpdateEncoding(RenderViewHost* render_view_host,
+  virtual void UpdateEncoding(content::RenderViewHost* render_view_host,
                               const std::string& encoding) OVERRIDE;
   virtual void UpdateTargetURL(int32 page_id, const GURL& url) OVERRIDE;
-  virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void Close(content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RequestMove(const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void SwappedOut(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void SwappedOut(content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
   virtual void DocumentAvailableInMainFrame(
-      RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame(
-      RenderViewHost* render_view_host,
+      content::RenderViewHost* render_view_host,
       int32 page_id) OVERRIDE;
   virtual void RequestOpenURL(const GURL& url,
                               const content::Referrer& referrer,
@@ -273,14 +277,14 @@ class CONTENT_EXPORT TabContents
       WindowOpenDisposition disposition,
       int64 source_frame_id,
       const content::GlobalRequestID& transferred_global_request_id) OVERRIDE;
-  virtual void RunJavaScriptMessage(RenderViewHost* rvh,
+  virtual void RunJavaScriptMessage(content::RenderViewHost* rvh,
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
                                     ui::JavascriptMessageType type,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) OVERRIDE;
-  virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
+  virtual void RunBeforeUnloadConfirm(content::RenderViewHost* rvh,
                                       const string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) OVERRIDE;
@@ -289,9 +293,10 @@ class CONTENT_EXPORT TabContents
   virtual WebPreferences GetWebkitPrefs() OVERRIDE;
   virtual void OnUserGesture() OVERRIDE;
   virtual void OnIgnoredUIEvent() OVERRIDE;
-  virtual void RendererUnresponsive(RenderViewHost* render_view_host,
+  virtual void RendererUnresponsive(content::RenderViewHost* render_view_host,
                                     bool is_during_unload) OVERRIDE;
-  virtual void RendererResponsive(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RendererResponsive(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void LoadStateChanged(const GURL& url,
                                 const net::LoadStateWithParam& load_state,
                                 uint64 upload_position,
@@ -308,30 +313,30 @@ class CONTENT_EXPORT TabContents
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
   virtual void RunFileChooser(
-      RenderViewHost* render_view_host,
+      content::RenderViewHost* render_view_host,
       const content::FileChooserParams& params) OVERRIDE;
   virtual void ToggleFullscreenMode(bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
   virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
-  virtual void WebUISend(RenderViewHost* render_view_host,
-                       const GURL& source_url,
-                       const std::string& name,
-                       const base::ListValue& args) OVERRIDE;
+  virtual void WebUISend(content::RenderViewHost* render_view_host,
+                         const GURL& source_url,
+                         const std::string& name,
+                         const base::ListValue& args) OVERRIDE;
   virtual void RequestToLockMouse() OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
 
   // RenderViewHostManager::Delegate -------------------------------------------
 
   virtual bool CreateRenderViewForRenderManager(
-      RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void BeforeUnloadFiredFromRenderManager(
       bool proceed,
       bool* proceed_to_fire_unload) OVERRIDE;
   virtual void DidStartLoadingFromRenderManager(
-      RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGoneFromRenderManager(
-      RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;
   virtual void NotifySwappedFromRenderManager() OVERRIDE;
   virtual NavigationControllerImpl& GetControllerForRenderManager() OVERRIDE;
@@ -340,7 +345,8 @@ class CONTENT_EXPORT TabContents
       GetLastCommittedNavigationEntryForRenderManager() OVERRIDE;
   virtual bool FocusLocationBarByDefault() OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
-  virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) OVERRIDE;
+  virtual void CreateViewAndSetSizeForRVH(
+      content::RenderViewHost* rvh) OVERRIDE;
 
  protected:
   friend class content::WebContentsObserver;
@@ -379,7 +385,7 @@ class CONTENT_EXPORT TabContents
   friend class TestTabContents;
 
   // Callback function when showing JS dialogs.
-  void OnDialogClosed(RenderViewHost* rvh,
+  void OnDialogClosed(content::RenderViewHost* rvh,
                       IPC::Message* reply_msg,
                       bool success,
                       const string16& user_input);
@@ -459,7 +465,7 @@ class CONTENT_EXPORT TabContents
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
   void DidNavigateAnyFramePostCommit(
-      RenderViewHost* render_view_host,
+      content::RenderViewHost* render_view_host,
       const content::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
@@ -467,7 +473,7 @@ class CONTENT_EXPORT TabContents
   // given RenderViewHost to be larger than the number of restored entries.
   // This is called in CreateRenderView before any navigations in the RenderView
   // have begun, to prevent any races in updating RenderView::next_page_id.
-  void UpdateMaxPageIDIfNecessary(RenderViewHost* rvh);
+  void UpdateMaxPageIDIfNecessary(content::RenderViewHost* rvh);
 
   // Saves the given title to the navigation entry and does associated work. It
   // will update history and the view for the new title, and also synthesize
@@ -507,7 +513,7 @@ class CONTENT_EXPORT TabContents
   // Save a URL to the local filesystem.
   void SaveURL(const GURL& url, const GURL& referrer, bool is_main_frame);
 
-  RenderViewHostImpl* GetRenderViewHostImpl();
+  content::RenderViewHostImpl* GetRenderViewHostImpl();
 
   // Stores random bits of data for others to associate with this object.
   // WARNING: this needs to be deleted after NavigationController.

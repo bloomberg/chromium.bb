@@ -33,6 +33,7 @@ using content::InterstitialPage;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;
+using content::TestRenderViewHost;
 using content::WebContents;
 using content::WebUI;
 using content::WebUIController;
@@ -201,7 +202,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
   }
 
  protected:
-  virtual RenderViewHost* CreateRenderViewHost() OVERRIDE {
+  virtual content::RenderViewHost* CreateRenderViewHost() OVERRIDE {
     return new TestRenderViewHost(
         SiteInstance::Create(tab()->GetBrowserContext()),
         this, MSG_ROUTING_NONE);

@@ -34,6 +34,7 @@ using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
+using content::RenderViewHost;
 using content::RenderWidgetHostView;
 using content::WebContents;
 
@@ -62,7 +63,7 @@ void TabContentsViewViews::CreateView(const gfx::Size& initial_size) {
 }
 
 RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that

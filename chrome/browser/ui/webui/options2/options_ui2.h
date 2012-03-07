@@ -30,8 +30,10 @@ class OptionsUI : public content::WebUIController,
   static RefCountedMemory* GetFaviconResourceBytes();
 
   // WebUIController implementation.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReused(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidBecomeActiveForReusedRenderView() OVERRIDE;
 
   // Overridden from OptionsPageUIHandlerHost:
@@ -44,7 +46,7 @@ class OptionsUI : public content::WebUIController,
 
   // Sets the WebUI CommandLineString property with arguments passed while
   // launching chrome.
-  void SetCommandLineString(RenderViewHost* render_view_host);
+  void SetCommandLineString(content::RenderViewHost* render_view_host);
 
   bool initialized_handlers_;
 

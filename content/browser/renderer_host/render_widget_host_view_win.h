@@ -31,8 +31,11 @@
 #include "webkit/glue/webcursor.h"
 
 class BackingStore;
-class RenderWidgetHost;
 class SkRegion;
+
+namespace content {
+class RenderWidgetHost;
+}
 
 namespace gfx {
 class Size;
@@ -152,7 +155,7 @@ class RenderWidgetHostViewWin
 
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
-  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -239,7 +242,7 @@ class RenderWidgetHostViewWin
   // Should construct only via RenderWidgetHostView::CreateViewForWidget.
   //
   // The view will associate itself with the given widget.
-  explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
+  explicit RenderWidgetHostViewWin(content::RenderWidgetHost* widget);
 
   // Windows Message Handlers
   LRESULT OnCreate(CREATESTRUCT* create_struct);
@@ -382,7 +385,7 @@ class RenderWidgetHostViewWin
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last
   // time. Message handlers must check for a NULL |render_widget_host_|.
-  RenderWidgetHostImpl* render_widget_host_;
+  content::RenderWidgetHostImpl* render_widget_host_;
 
   // When we are doing accelerated compositing
   HWND compositor_host_window_;

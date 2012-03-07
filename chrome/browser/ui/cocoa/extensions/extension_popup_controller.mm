@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 
+using content::RenderViewHost;
+
 namespace {
 // The duration for any animations that might be invoked by this controller.
 const NSTimeInterval kAnimationDuration = 0.2;

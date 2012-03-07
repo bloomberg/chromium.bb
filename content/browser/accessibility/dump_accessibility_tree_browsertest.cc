@@ -24,6 +24,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::OpenURLParams;
+using content::RenderViewHostImpl;
+using content::RenderWidgetHostImpl;
+using content::RenderWidgetHost;
 using content::Referrer;
 
 namespace {

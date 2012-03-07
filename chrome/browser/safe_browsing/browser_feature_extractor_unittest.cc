@@ -96,7 +96,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
         type, std::string());
 
     static int page_id = 0;
-    RenderViewHost* rvh = contents()->pending_rvh();
+    content::RenderViewHost* rvh = contents()->pending_rvh();
     if (!rvh) {
       rvh = contents()->GetRenderViewHost();
     }

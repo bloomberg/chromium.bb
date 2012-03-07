@@ -37,7 +37,7 @@ class NativeTabContentsViewGtk : public views::NativeWidgetGtk,
   virtual void InitNativeTabContentsView() OVERRIDE;
   virtual void Unparent() OVERRIDE;
   virtual content::RenderWidgetHostView* CreateRenderWidgetHostView(
-      RenderWidgetHost* render_widget_host) OVERRIDE;
+      content::RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void SetPageTitle(const string16& title) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,

@@ -27,6 +27,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using content::RenderViewHost;
+
 namespace chromeos {
 namespace accessibility {
 

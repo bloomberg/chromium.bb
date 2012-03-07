@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
+using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
 

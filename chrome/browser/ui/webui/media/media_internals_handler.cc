@@ -38,7 +38,8 @@ void MediaInternalsMessageHandler::OnGetEverything(const ListValue* list) {
 
 void MediaInternalsMessageHandler::OnUpdate(const string16& update) {
   // Don't try to execute JavaScript in a RenderView that no longer exists.
-  RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
+  content::RenderViewHost* host =
+      web_ui()->GetWebContents()->GetRenderViewHost();
   if (host)
     host->ExecuteJavascriptInWebFrame(string16(), update);
 }

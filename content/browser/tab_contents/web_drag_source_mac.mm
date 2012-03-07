@@ -32,6 +32,7 @@ using base::SysNSStringToUTF8;
 using base::SysUTF8ToNSString;
 using base::SysUTF16ToNSString;
 using content::BrowserThread;
+using content::RenderViewHostImpl;
 using net::FileStream;
 
 namespace {

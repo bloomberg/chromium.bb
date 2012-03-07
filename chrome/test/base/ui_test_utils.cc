@@ -75,6 +75,8 @@ using content::DomOperationNotificationDetails;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
+using content::RenderViewHost;
+using content::RenderWidgetHost;
 using content::Referrer;
 using content::WebContents;
 

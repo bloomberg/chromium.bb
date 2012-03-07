@@ -19,6 +19,7 @@
 #include "content/public/common/result_codes.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
 using content::UserMetricsAction;
 
 // static

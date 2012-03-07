@@ -53,7 +53,6 @@ class LoginHandler;
 class MetricEventDurationObserver;
 class NavigationControllerRestoredObserver;
 class Profile;
-class RenderViewHost;
 class TabContents;
 struct AutomationMsg_Find_Params;
 struct Reposition_Params;
@@ -65,6 +64,7 @@ class ChannelProxy;
 
 namespace content {
 class NavigationController;
+class RenderViewHost;
 }
 
 namespace base {
@@ -194,7 +194,7 @@ class AutomationProvider
 
   // Returns the associated view for the tab handle passed in.
   // Returns NULL on failure.
-  RenderViewHost* GetViewForTab(int tab_handle);
+  content::RenderViewHost* GetViewForTab(int tab_handle);
 
   // Called on IPC message deserialization failure. Prints an error message
   // and closes the IPC channel.

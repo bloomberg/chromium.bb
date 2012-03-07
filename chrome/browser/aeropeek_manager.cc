@@ -991,7 +991,7 @@ bool AeroPeekManager::GetTabPreview(int tab_id, SkBitmap* preview) {
   if (!contents)
     return false;
 
-  RenderViewHost* render_view_host = contents->GetRenderViewHost();
+  content::RenderViewHost* render_view_host = contents->GetRenderViewHost();
   if (!render_view_host)
     return false;
 

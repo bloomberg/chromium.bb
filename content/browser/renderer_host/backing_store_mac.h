@@ -12,7 +12,7 @@
 
 class BackingStoreMac : public BackingStore {
  public:
-  BackingStoreMac(RenderWidgetHost* widget, const gfx::Size& size);
+  BackingStoreMac(content::RenderWidgetHost* widget, const gfx::Size& size);
   virtual ~BackingStoreMac();
 
   // A CGLayer that stores the contents of the backing store, cached in GPU

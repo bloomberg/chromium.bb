@@ -26,7 +26,7 @@ gfx::NativeView ExtensionViewGtk::native_view() {
   return extension_host_->host_contents()->GetView()->GetNativeView();
 }
 
-RenderViewHost* ExtensionViewGtk::render_view_host() const {
+content::RenderViewHost* ExtensionViewGtk::render_view_host() const {
   return extension_host_->render_view_host();
 }
 

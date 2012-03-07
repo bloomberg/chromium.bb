@@ -145,7 +145,8 @@ class HtmlDialogUI : public content::WebUIController {
 
  private:
   // WebUIController
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // JS message handler.
   void OnDialogClosed(const base::ListValue* args);

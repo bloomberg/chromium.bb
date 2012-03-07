@@ -90,6 +90,7 @@ using content::DomOperationNotificationDetails;
 using content::DownloadItem;
 using content::DownloadManager;
 using content::NavigationController;
+using content::RenderViewHost;
 using content::WebContents;
 
 // Holds onto start and stop timestamps for a particular tab

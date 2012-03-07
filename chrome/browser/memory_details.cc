@@ -38,6 +38,8 @@
 using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::NavigationEntry;
+using content::RenderViewHost;
+using content::RenderWidgetHost;
 using content::WebContents;
 
 // static

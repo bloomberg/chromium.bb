@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
+using content::RenderViewHost;
+using content::RenderViewHostImpl;
 using content::SessionStorageNamespace;
 using content::SiteInstance;
 

@@ -19,10 +19,10 @@ class ChromeRenderMessageFilter;
 class Extension;
 class ExtensionFunction;
 class Profile;
-class RenderViewHost;
 struct ExtensionHostMsg_Request_Params;
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -98,7 +98,7 @@ class ExtensionFunctionDispatcher
 
   // Message handlers.
   void Dispatch(const ExtensionHostMsg_Request_Params& params,
-                RenderViewHost* sender);
+                content::RenderViewHost* sender);
 
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
@@ -110,7 +110,7 @@ class ExtensionFunctionDispatcher
   //
   // See the comments for ExtensionFunction::GetCurrentBrowser() for more
   // details.
-  Browser* GetCurrentBrowser(RenderViewHost* render_view_host,
+  Browser* GetCurrentBrowser(content::RenderViewHost* render_view_host,
                              bool include_incognito);
 
   // The profile that this dispatcher is associated with.

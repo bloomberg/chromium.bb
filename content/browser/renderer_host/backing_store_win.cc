@@ -69,7 +69,7 @@ void CallStretchDIBits(HDC hdc, int dest_x, int dest_y, int dest_w, int dest_h,
 
 }  // namespace
 
-BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget,
+BackingStoreWin::BackingStoreWin(content::RenderWidgetHost* widget,
                                  const gfx::Size& size)
     : BackingStore(widget, size),
       backing_store_dib_(NULL),

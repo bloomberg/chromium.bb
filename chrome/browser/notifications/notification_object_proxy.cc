@@ -7,6 +7,8 @@
 #include "base/stringprintf.h"
 #include "content/public/browser/render_view_host.h"
 
+using content::RenderViewHost;
+
 NotificationObjectProxy::NotificationObjectProxy(int process_id, int route_id,
     int notification_id, bool worker)
     : process_id_(process_id),

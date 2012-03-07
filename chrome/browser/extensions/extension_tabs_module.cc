@@ -76,6 +76,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::Referrer;
+using content::RenderViewHost;
 using content::WebContents;
 using namespace extensions::api::windows;
 

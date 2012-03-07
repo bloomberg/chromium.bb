@@ -20,7 +20,6 @@
 #include "content/public/common/referrer.h"
 
 class Profile;
-class RenderViewHost;
 class TabContentsWrapper;
 struct FaviconURL;
 
@@ -29,6 +28,7 @@ class ProcessMetrics;
 }
 
 namespace content {
+class RenderViewHost;
 class RenderViewHostDelegate;
 class SessionStorageNamespace;
 }
@@ -107,15 +107,15 @@ class PrerenderContents : public content::NotificationObserver,
   // |source_render_view_host| is the RenderViewHost that initiated
   // prerendering.
   virtual void StartPrerendering(
-      const RenderViewHost* source_render_view_host,
+      const content::RenderViewHost* source_render_view_host,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Verifies that the prerendering is not using too many resources, and kills
   // it if not.
   void DestroyWhenUsingTooManyResources();
 
-  RenderViewHost* render_view_host_mutable();
-  const RenderViewHost* render_view_host() const;
+  content::RenderViewHost* render_view_host_mutable();
+  const content::RenderViewHost* render_view_host() const;
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
   GURL icon_url() const { return icon_url_; }
@@ -165,7 +165,7 @@ class PrerenderContents : public content::NotificationObserver,
       bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
-      RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFinishLoad(int64 frame_id,
                              const GURL& validated_url,
                              bool is_main_frame) OVERRIDE;
@@ -231,7 +231,8 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Called whenever a RenderViewHost is created for prerendering.  Only called
   // once the RenderViewHost has a RenderView and RenderWidgetHostView.
-  virtual void OnRenderViewHostCreated(RenderViewHost* new_render_view_host);
+  virtual void OnRenderViewHostCreated(
+      content::RenderViewHost* new_render_view_host);
 
   content::NotificationRegistrar& notification_registrar() {
     return notification_registrar_;

@@ -12,7 +12,7 @@
 
 class TestBackingStore : public BackingStore {
  public:
-  TestBackingStore(RenderWidgetHost* widget, const gfx::Size& size);
+  TestBackingStore(content::RenderWidgetHost* widget, const gfx::Size& size);
   virtual ~TestBackingStore();
 
   // BackingStore implementation.

@@ -20,6 +20,7 @@
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_screen_utils.h"
 
+using content::RenderViewHostImpl;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 

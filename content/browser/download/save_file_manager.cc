@@ -23,6 +23,7 @@
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
+using content::RenderViewHostImpl;
 
 SaveFileManager::SaveFileManager(ResourceDispatcherHost* rdh)
     : next_id_(0),

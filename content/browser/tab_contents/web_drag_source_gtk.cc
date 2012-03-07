@@ -29,10 +29,11 @@
 #include "ui/gfx/gtk_util.h"
 #include "webkit/glue/webdropdata.h"
 
+using content::RenderViewHostImpl;
+using content::WebContents;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebDragOperationNone;
-using content::WebContents;
 
 namespace content {
 

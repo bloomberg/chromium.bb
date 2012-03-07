@@ -34,6 +34,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::RenderViewHost;
 using content::RenderViewHostDelegate;
 using content::WebContents;
 using webkit::forms::PasswordForm;

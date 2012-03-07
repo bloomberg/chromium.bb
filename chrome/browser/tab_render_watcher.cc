@@ -10,6 +10,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+using content::RenderWidgetHost;
 using content::WebContents;
 
 TabRenderWatcher::TabRenderWatcher(WebContents* tab, Delegate* delegate)
@@ -34,7 +35,7 @@ void TabRenderWatcher::Observe(int type,
           content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
           content::Source<RenderWidgetHost>(rwh));
       delegate_->OnRenderHostCreated(
-          content::Details<RenderViewHost>(details).ptr());
+          content::Details<content::RenderViewHost>(details).ptr());
       break;
     }
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:

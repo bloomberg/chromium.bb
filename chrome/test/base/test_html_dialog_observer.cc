@@ -36,7 +36,7 @@ void TestHtmlDialogObserver::Observe(
     case chrome::NOTIFICATION_HTML_DIALOG_SHOWN:
       if (js_injection_ready_observer_) {
         js_injection_ready_observer_->OnJsInjectionReady(
-            content::Details<RenderViewHost>(details).ptr());
+            content::Details<content::RenderViewHost>(details).ptr());
       }
       web_ui_ = content::Source<content::WebUI>(source).ptr();
       registrar_.Remove(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,

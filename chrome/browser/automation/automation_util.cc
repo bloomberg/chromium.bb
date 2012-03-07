@@ -38,6 +38,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
 using content::WebContents;
 
 namespace {

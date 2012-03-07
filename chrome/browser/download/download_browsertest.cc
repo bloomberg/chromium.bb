@@ -1956,7 +1956,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
-  RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
+  content::RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host != NULL);
   render_view_host->ExecuteJavascriptInWebFrame(
         string16(), ASCIIToUTF16("SubmitForm()"));

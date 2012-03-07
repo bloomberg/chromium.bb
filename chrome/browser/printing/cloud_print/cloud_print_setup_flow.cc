@@ -336,7 +336,8 @@ void CloudPrintSetupFlow::ExecuteJavascriptInIFrame(
     const string16& iframe_xpath,
     const string16& js) {
   if (web_ui_) {
-    RenderViewHost* rvh = web_ui_->GetWebContents()->GetRenderViewHost();
+    content::RenderViewHost* rvh =
+        web_ui_->GetWebContents()->GetRenderViewHost();
     rvh->ExecuteJavascriptInWebFrame(iframe_xpath, js);
   }
 }

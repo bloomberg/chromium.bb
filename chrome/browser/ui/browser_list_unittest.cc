@@ -31,7 +31,7 @@ size_t CountAllTabs() {
 
 // Helper function to navigate to the print preview page.
 void NavigateToPrintUrl(TabContentsWrapper* tab, int page_id) {
-  static_cast<TestRenderViewHost*>(
+  static_cast<content::TestRenderViewHost*>(
       tab->web_contents()->GetRenderViewHost())->SendNavigate(
           page_id, GURL(chrome::kChromeUIPrintURL));
 }

@@ -19,7 +19,7 @@ class ResourceDispatcherHostBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  RenderViewHost* render_view_host() {
+  content::RenderViewHost* render_view_host() {
     return browser()->GetSelectedWebContents()->GetRenderViewHost();
   }
 

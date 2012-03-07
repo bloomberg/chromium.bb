@@ -15,7 +15,6 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 class RenderProcessHost;
-class RenderWidgetHost;
 
 namespace gfx {
 class Rect;
@@ -23,6 +22,7 @@ class Rect;
 
 namespace content {
 class RenderProcessHost;
+class RenderWidgetHost;
 }
 
 namespace skia {
@@ -34,7 +34,9 @@ class CONTENT_EXPORT BackingStore {
  public:
   virtual ~BackingStore();
 
-  RenderWidgetHost* render_widget_host() const { return render_widget_host_; }
+  content::RenderWidgetHost* render_widget_host() const {
+    return render_widget_host_;
+  }
   const gfx::Size& size() { return size_; }
 
   // The number of bytes that this backing store consumes. The default
@@ -72,11 +74,11 @@ class CONTENT_EXPORT BackingStore {
                                   const gfx::Size& view_size) = 0;
  protected:
   // Can only be constructed via subclasses.
-  BackingStore(RenderWidgetHost* widget, const gfx::Size& size);
+  BackingStore(content::RenderWidgetHost* widget, const gfx::Size& size);
 
  private:
   // The owner of this backing store.
-  RenderWidgetHost* render_widget_host_;
+  content::RenderWidgetHost* render_widget_host_;
 
   // The size of the backing store.
   gfx::Size size_;

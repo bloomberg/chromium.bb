@@ -141,7 +141,8 @@ class InstantTest : public InProcessBrowserTest {
   bool SetSuggestionsJavascriptArgument(const std::string& argument) {
     std::wstring script = UTF8ToWide(base::StringPrintf(
         "window.setSuggestionsArgument = %s;", argument.c_str()));
-    RenderViewHost* rvh = preview()->web_contents()->GetRenderViewHost();
+    content::RenderViewHost* rvh =
+        preview()->web_contents()->GetRenderViewHost();
     return ui_test_utils::ExecuteJavaScript(rvh, std::wstring(), script);
   }
 

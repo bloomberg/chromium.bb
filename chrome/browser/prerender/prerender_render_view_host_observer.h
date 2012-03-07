@@ -10,7 +10,10 @@
 #include "content/public/browser/render_view_host_observer.h"
 
 struct FaviconURL;
+
+namespace content {
 class RenderViewHost;
+}
 
 namespace IPC {
 class Message;
@@ -24,9 +27,9 @@ class PrerenderContents;
 class PrerenderRenderViewHostObserver : public content::RenderViewHostObserver {
  public:
   PrerenderRenderViewHostObserver(PrerenderContents* prerender_contents,
-                                  RenderViewHost* render_view_host);
+                                  content::RenderViewHost* render_view_host);
 
-  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
+  virtual void RenderViewHostDestroyed(content::RenderViewHost* rvh) OVERRIDE;
 
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual bool Send(IPC::Message* message) OVERRIDE;

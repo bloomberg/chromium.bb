@@ -180,7 +180,7 @@ class BootTimesLoader
 
   std::vector<TimeMarker> login_time_markers_;
   std::vector<TimeMarker> logout_time_markers_;
-  std::set<RenderWidgetHost*> render_widget_hosts_loading_;
+  std::set<content::RenderWidgetHost*> render_widget_hosts_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(BootTimesLoader);
 };

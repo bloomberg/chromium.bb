@@ -17,10 +17,10 @@ class Extension;
 class ExtensionHost;
 class GURL;
 class Profile;
-class RenderViewHost;
 class TabContentsWrapper;
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -104,7 +104,7 @@ bool GetTabForId(const AutomationId& id, content::WebContents** tab);
 // Gets the render view for the given ID. Returns true on success.
 bool GetRenderViewForId(const AutomationId& id,
                         Profile* profile,
-                        RenderViewHost** rvh);
+                        content::RenderViewHost** rvh);
 
 // Gets the extension for the given ID. Returns true on success.
 bool GetExtensionForId(const AutomationId& id,

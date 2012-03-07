@@ -38,7 +38,8 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
   virtual ~IntentInjector();
 
   // content::WebContentsObserver implementation.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
 

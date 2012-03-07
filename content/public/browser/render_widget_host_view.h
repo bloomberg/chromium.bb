@@ -17,7 +17,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class BrowserAccessibilityManager;
-class RenderWidgetHost;
 
 namespace gfx {
 class Rect;
@@ -25,6 +24,8 @@ class Size;
 }
 
 namespace content {
+
+class RenderWidgetHost;
 
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its

@@ -16,6 +16,7 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
+using content::RenderViewHost;
 using content::WebContents;
 
 IntentInjector::IntentInjector(WebContents* web_contents)
@@ -62,9 +63,8 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
     return;
   }
 
-  static_cast<RenderViewHostImpl*>(render_view_host)->Send(
-      new IntentsMsg_SetWebIntentData(
-          render_view_host->GetRoutingID(), *(source_intent_.get())));
+  render_view_host->Send(new IntentsMsg_SetWebIntentData(
+      render_view_host->GetRoutingID(), *(source_intent_.get())));
 }
 
 bool IntentInjector::OnMessageReceived(const IPC::Message& message) {

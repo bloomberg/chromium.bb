@@ -41,6 +41,7 @@
 #include "ui/gfx/scoped_cg_context_save_gstate_mac.h"
 
 using content::BrowserThread;
+using content::RenderWidgetHost;
 
 // Height of the bottom gradient, in pixels.
 const CGFloat kBottomGradientHeight = 50;

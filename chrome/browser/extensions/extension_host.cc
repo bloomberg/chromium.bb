@@ -53,6 +53,7 @@
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using content::OpenURLParams;
+using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
 

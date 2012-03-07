@@ -12,11 +12,11 @@
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class RenderViewHost;
 class TabContents;
 
 namespace content {
 
+class RenderViewHost;
 class WebContents;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;

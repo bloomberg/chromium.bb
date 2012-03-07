@@ -28,6 +28,10 @@ class CannedBrowsingDataLocalStorageHelper;
 class CookiesTreeModel;
 class Profile;
 
+namespace content {
+class RenderViewHost;
+}
+
 namespace net {
 class CookieList;
 class CookieOptions;
@@ -216,7 +220,7 @@ class TabSpecificContentSettings : public content::WebContentsObserver,
       bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
-      RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) OVERRIDE;
 

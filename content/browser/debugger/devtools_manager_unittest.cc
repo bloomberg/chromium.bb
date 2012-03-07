@@ -180,7 +180,7 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
 }
 
 TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
-  TestRenderViewHost* inspected_rvh = rvh();
+  content::TestRenderViewHost* inspected_rvh = rvh();
   inspected_rvh->set_render_view_created(true);
   EXPECT_FALSE(contents()->GetDelegate());
   TestWebContentsDelegate delegate;

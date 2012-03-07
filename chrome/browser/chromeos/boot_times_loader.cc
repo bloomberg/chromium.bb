@@ -34,6 +34,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::RenderWidgetHost;
 using content::RenderWidgetHostView;
 using content::WebContents;
 

@@ -25,7 +25,6 @@ class Browser;
 class BrowserWindow;
 class PrefService;
 class Profile;
-class RenderViewHost;
 class TabContentsWrapper;
 
 namespace base {
@@ -35,6 +34,7 @@ class Value;
 namespace content {
 class DevToolsAgentHost;
 class DevToolsClientHost;
+class RenderViewHost;
 class WebContents;
 }
 
@@ -46,23 +46,26 @@ class DevToolsWindow : private content::NotificationObserver,
   static void RegisterUserPrefs(PrefService* prefs);
   static TabContentsWrapper* GetDevToolsContents(
       content::WebContents* inspected_tab);
-  static bool IsDevToolsWindow(RenderViewHost* window_rvh);
+  static bool IsDevToolsWindow(content::RenderViewHost* window_rvh);
 
   static DevToolsWindow* OpenDevToolsWindowForWorker(
       Profile* profile,
       content::DevToolsAgentHost* worker_agent);
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
-  static DevToolsWindow* OpenDevToolsWindow(RenderViewHost* inspected_rvh);
-  static DevToolsWindow* ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
-                                              DevToolsToggleAction action);
-  static void InspectElement(RenderViewHost* inspected_rvh, int x, int y);
+  static DevToolsWindow* OpenDevToolsWindow(
+      content::RenderViewHost* inspected_rvh);
+  static DevToolsWindow* ToggleDevToolsWindow(
+      content::RenderViewHost* inspected_rvh,
+      DevToolsToggleAction action);
+  static void InspectElement(
+      content::RenderViewHost* inspected_rvh, int x, int y);
 
   virtual ~DevToolsWindow();
 
   // Overridden from DevToolsClientHost.
   virtual void InspectedTabClosing() OVERRIDE;
   virtual void TabReplaced(content::WebContents* new_tab) OVERRIDE;
-  RenderViewHost* GetRenderViewHost();
+  content::RenderViewHost* GetRenderViewHost();
 
   void Show(DevToolsToggleAction action);
 
@@ -75,10 +78,10 @@ class DevToolsWindow : private content::NotificationObserver,
 
  private:
   static DevToolsWindow* Create(Profile* profile,
-                                RenderViewHost* inspected_rvh,
+                                content::RenderViewHost* inspected_rvh,
                                 bool docked, bool shared_worker_frontend);
   DevToolsWindow(TabContentsWrapper* tab_contents, Profile* profile,
-                 RenderViewHost* inspected_rvh, bool docked);
+                 content::RenderViewHost* inspected_rvh, bool docked);
 
   void CreateDevToolsBrowser();
   bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
@@ -119,9 +122,10 @@ class DevToolsWindow : private content::NotificationObserver,
 
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
-  static DevToolsWindow* ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
-                                              bool force_open,
-                                              DevToolsToggleAction action);
+  static DevToolsWindow* ToggleDevToolsWindow(
+      content::RenderViewHost* inspected_rvh,
+      bool force_open,
+      DevToolsToggleAction action);
   static DevToolsWindow* AsDevToolsWindow(content::DevToolsClientHost*);
 
   // content::DevToolsClientHandlerDelegate overrides.

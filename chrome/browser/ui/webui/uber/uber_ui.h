@@ -26,8 +26,10 @@ class UberUI : public content::WebUIController {
                                           const ListValue& args) OVERRIDE;
 
   // We forward these to |sub_uis_|.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReused(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidBecomeActiveForReusedRenderView() OVERRIDE;
 
  private:

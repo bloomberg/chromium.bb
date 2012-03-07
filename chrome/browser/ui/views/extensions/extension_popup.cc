@@ -24,6 +24,7 @@
 #include "ui/aura/window.h"
 #endif
 
+using content::RenderViewHost;
 using content::WebContents;
 
 namespace {

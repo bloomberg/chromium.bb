@@ -153,7 +153,7 @@ bool GetAutomationIdFromJSONArgs(
 bool GetRenderViewFromJSONArgs(
     DictionaryValue* args,
     Profile* profile,
-    RenderViewHost** rvh,
+    content::RenderViewHost** rvh,
     std::string* error) {
   Value* id_value;
   if (args->Get("auto_id", &id_value)) {

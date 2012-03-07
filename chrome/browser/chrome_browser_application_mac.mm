@@ -478,7 +478,7 @@ void SwizzleInit() {
          !it.done();
          ++it) {
       if (TabContentsWrapper* contents = *it) {
-        if (RenderViewHost* rvh =
+        if (content::RenderViewHost* rvh =
                 contents->web_contents()->GetRenderViewHost()) {
           rvh->EnableRendererAccessibility();
         }

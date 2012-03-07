@@ -225,7 +225,7 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
       bool is_main_frame,
       const GURL& validated_url,
       bool is_error_page,
-      RenderViewHost* render_view_host) {
+      content::RenderViewHost* render_view_host) {
   if (is_main_frame) {
     RecordPageviewEvent(PAGEVIEW_EVENT_LOAD_START);
     if (IsTopSite(validated_url))

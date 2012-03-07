@@ -121,7 +121,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     contents()->GetController().GoBack();
 
     // The pending RVH should commit for cross-site navigations.
-    RenderViewHost* rvh = is_cross_site ?
+    content::RenderViewHost* rvh = is_cross_site ?
         contents()->pending_rvh() :
         contents()->GetRenderViewHost();
     contents()->TestDidNavigate(rvh, entry->GetPageID(), GURL(entry->GetURL()),

@@ -34,6 +34,7 @@
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
+using content::RenderViewHost;
 using content::SiteInstance;
 
 namespace {

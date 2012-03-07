@@ -63,7 +63,6 @@ class ExtensionService;
 class InfoBarTabHelper;
 class Notification;
 class Profile;
-class RenderViewHost;
 class SavePackage;
 class TabContents;
 class TranslateInfoBarDelegate;
@@ -80,6 +79,7 @@ class Message;
 
 namespace content {
 class NavigationController;
+class RenderViewHost;
 class WebContents;
 }
 
@@ -1432,7 +1432,7 @@ class AppLaunchObserver : public content::NotificationObserver {
 class AutofillDisplayedObserver : public content::NotificationObserver {
  public:
   AutofillDisplayedObserver(int notification,
-                            RenderViewHost* render_view_host,
+                            content::RenderViewHost* render_view_host,
                             AutomationProvider* automation,
                             IPC::Message* reply_message);
   virtual ~AutofillDisplayedObserver();
@@ -1444,7 +1444,7 @@ class AutofillDisplayedObserver : public content::NotificationObserver {
 
  private:
   int notification_;
-  RenderViewHost* render_view_host_;
+  content::RenderViewHost* render_view_host_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   content::NotificationRegistrar registrar_;

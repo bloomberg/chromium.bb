@@ -15,12 +15,12 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-class RenderViewHost;
-class RenderWidgetHost;
 class TabContents;
 
 namespace content {
 
+class RenderViewHost;
+class RenderWidgetHost;
 class RenderWidgetHostView;
 
 // The WebContentsView is an interface that is implemented by the platform-

@@ -17,6 +17,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 
+using content::RenderViewHost;
 using content::WebUIMessageHandler;
 
 static base::LazyInstance<base::PropertyAccessor<HtmlDialogUIDelegate*> >

@@ -10,6 +10,9 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
 
+using content::RenderWidgetHost;
+using content::RenderWidgetHostImpl;
+
 // The amount of time in milliseconds that the browser process will wait for a
 // response from the renderer.
 // TODO(rsesek): Using the histogram data, find the best upper-bound for this

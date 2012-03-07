@@ -35,7 +35,8 @@ class PrefsTabHelper : public content::WebContentsObserver,
   virtual void UpdateWebPreferences();
 
   // content::WebContentsObserver overrides, exposed as protected for testing.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
   // content::WebContentsObserver overrides:

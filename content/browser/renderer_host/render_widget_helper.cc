@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using content::RenderViewHostImpl;
 
 // A helper used with DidReceiveUpdateMsg that we hold a pointer to in
 // pending_paints_.

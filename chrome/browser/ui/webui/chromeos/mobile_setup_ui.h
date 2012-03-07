@@ -18,7 +18,8 @@ class MobileSetupUI : public content::WebUIController,
 
  private:
   // WebUIController overrides.
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MobileSetupUI);
 };

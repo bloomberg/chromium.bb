@@ -31,6 +31,7 @@
 #endif
 
 using content::BrowserThread;
+using content::RenderViewHost;
 
 namespace {
 

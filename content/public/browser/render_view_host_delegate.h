@@ -23,7 +23,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class GURL;
-class RenderViewHost;
 class SkBitmap;
 class TabContents;
 class WebKeyboardEvent;
@@ -47,6 +46,7 @@ class Size;
 namespace content {
 
 class BrowserContext;
+class RenderViewHost;
 class WebContents;
 struct ContextMenuParams;
 struct FileChooserParams;

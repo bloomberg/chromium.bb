@@ -14,6 +14,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using content::RenderWidgetHost;
 
 namespace {
 

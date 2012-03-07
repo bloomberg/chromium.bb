@@ -36,7 +36,7 @@ class TabRenderWatcherTest : public InProcessBrowserTest,
   }
 
   // TabRenderWatcher::Delegate implementation.
-  virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE {
+  virtual void OnRenderHostCreated(content::RenderViewHost* host) OVERRIDE {
     host_created_ = true;
   }
 

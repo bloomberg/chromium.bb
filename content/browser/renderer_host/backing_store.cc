@@ -4,7 +4,8 @@
 
 #include "content/browser/renderer_host/backing_store.h"
 
-BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
+BackingStore::BackingStore(content::RenderWidgetHost* widget,
+                           const gfx::Size& size)
     : render_widget_host_(widget),
       size_(size) {
 }

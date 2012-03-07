@@ -19,7 +19,7 @@ void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
 // static
 content::RenderWidgetHostView*
 content::RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
+    content::RenderWidgetHost* widget) {
   NOTIMPLEMENTED();
   return NULL;
 }

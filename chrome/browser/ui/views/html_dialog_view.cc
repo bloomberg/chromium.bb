@@ -30,8 +30,6 @@
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
-class RenderWidgetHost;
-
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -310,7 +308,7 @@ void HtmlDialogView::RegisterDialogAccelerators() {
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, false, false, false));
 }
 
-void HtmlDialogView::OnRenderHostCreated(RenderViewHost* host) {
+void HtmlDialogView::OnRenderHostCreated(content::RenderViewHost* host) {
 }
 
 void HtmlDialogView::OnTabMainFrameLoaded() {

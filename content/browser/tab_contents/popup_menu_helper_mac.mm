@@ -16,6 +16,10 @@
 #import "ui/base/cocoa/base_view.h"
 #include "webkit/glue/webmenurunner_mac.h"
 
+using content::RenderViewHost;
+using content::RenderViewHostImpl;
+using content::RenderWidgetHost;
+
 PopupMenuHelper::PopupMenuHelper(RenderViewHost* render_view_host)
     : render_view_host_(static_cast<RenderViewHostImpl*>(render_view_host)) {
   notification_registrar_.Add(

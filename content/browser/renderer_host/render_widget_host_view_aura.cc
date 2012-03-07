@@ -34,6 +34,8 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 
+using content::RenderWidgetHost;
+using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using WebKit::WebTouchEvent;
 

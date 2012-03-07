@@ -40,7 +40,8 @@ void RestoreTabHelper::SetWindowID(const SessionID& id) {
           web_contents()->GetRenderViewHost()->GetRoutingID(), id.id()));
 }
 
-void RestoreTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
+void RestoreTabHelper::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
   render_view_host->Send(
       new ExtensionMsg_UpdateBrowserWindowId(render_view_host->GetRoutingID(),
                                              window_id_.id()));

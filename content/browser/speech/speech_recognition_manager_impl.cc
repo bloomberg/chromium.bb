@@ -19,6 +19,7 @@
 
 using content::BrowserMainLoop;
 using content::BrowserThread;
+using content::RenderViewHostImpl;
 using content::SpeechRecognitionManager;
 using content::SpeechRecognitionManagerDelegate;
 

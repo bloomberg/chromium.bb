@@ -26,6 +26,7 @@
 #include "net/base/mock_host_resolver.h"
 
 using content::NavigationController;
+using content::RenderViewHost;
 using content::WebContents;
 
 // Simulates a page calling window.open on an URL, and waits for the navigation.

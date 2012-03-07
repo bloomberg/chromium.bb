@@ -34,6 +34,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+using content::RenderWidgetHost;
+
 namespace {
 
 // Assume that somewhere along the line, someone will do width * height * 4

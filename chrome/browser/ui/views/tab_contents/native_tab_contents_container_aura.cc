@@ -14,6 +14,7 @@
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/views_delegate.h"
 
+using content::RenderViewHost;
 using content::WebContents;
 
 ////////////////////////////////////////////////////////////////////////////////

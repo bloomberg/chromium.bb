@@ -104,7 +104,7 @@ class HtmlDialogView
   virtual void RegisterDialogAccelerators();
 
   // TabRenderWatcher::Delegate implementation.
-  virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE;
+  virtual void OnRenderHostCreated(content::RenderViewHost* host) OVERRIDE;
   virtual void OnTabMainFrameLoaded() OVERRIDE;
   virtual void OnTabMainFrameRender() OVERRIDE;
 

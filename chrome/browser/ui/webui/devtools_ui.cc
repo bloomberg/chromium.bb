@@ -103,6 +103,7 @@ DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   profile->GetChromeURLDataManager()->AddDataSource(data_source);
 }
 
-void DevToolsUI::RenderViewCreated(RenderViewHost* render_view_host) {
+void DevToolsUI::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
   content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
 }

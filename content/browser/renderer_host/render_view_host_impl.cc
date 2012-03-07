@@ -61,16 +61,6 @@
 #include "webkit/glue/webdropdata.h"
 
 using base::TimeDelta;
-using content::BrowserContext;
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-using content::DomOperationNotificationDetails;
-using content::DOMStorageContext;
-using content::HostZoomMap;
-using content::RenderViewHostDelegate;
-using content::SessionStorageNamespace;
-using content::SiteInstance;
-using content::UserMetricsAction;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
@@ -100,14 +90,15 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
 
 }  // namespace
 
+namespace content {
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, public:
 
 // static
 RenderViewHost* RenderViewHost::FromID(int render_process_id,
                                        int render_view_id) {
-  content::RenderProcessHost* process =
-      content::RenderProcessHost::FromID(render_process_id);
+  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   if (!process)
     return NULL;
   RenderWidgetHost* widget = RenderWidgetHost::FromIPCChannelListener(
@@ -1685,3 +1676,5 @@ void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
 void RenderViewHostImpl::ClearPowerSaveBlockers() {
   STLDeleteValues(&power_save_blockers_);
 }
+
+}  // namespace content

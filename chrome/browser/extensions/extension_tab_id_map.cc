@@ -21,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
 using content::WebContents;
 
 //

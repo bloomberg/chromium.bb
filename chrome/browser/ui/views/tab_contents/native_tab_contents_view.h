@@ -12,9 +12,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragOperation.h"
 #include "ui/gfx/native_widget_types.h"
 
-class RenderWidgetHost;
 struct WebDropData;
 namespace content {
+class RenderWidgetHost;
 class RenderWidgetHostView;
 }
 namespace gfx {
@@ -37,7 +37,7 @@ class NativeTabContentsView {
   virtual void InitNativeTabContentsView() = 0;
 
   virtual content::RenderWidgetHostView* CreateRenderWidgetHostView(
-      RenderWidgetHost* render_widget_host) = 0;
+      content::RenderWidgetHost* render_widget_host) = 0;
 
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const = 0;
 

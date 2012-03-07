@@ -10,9 +10,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class RenderViewHost;
-
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -21,7 +20,7 @@ class TabRenderWatcher : public content::NotificationObserver {
  public:
   class Delegate {
    public:
-    virtual void OnRenderHostCreated(RenderViewHost* host) = 0;
+    virtual void OnRenderHostCreated(content::RenderViewHost* host) = 0;
     virtual void OnTabMainFrameLoaded() = 0;
     virtual void OnTabMainFrameRender() = 0;
   };

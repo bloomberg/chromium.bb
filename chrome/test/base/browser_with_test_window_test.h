@@ -63,7 +63,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   // Returns the current RenderViewHost for the current tab as a
   // TestRenderViewHost.
-  TestRenderViewHost* TestRenderViewHostForTab(
+  content::TestRenderViewHost* TestRenderViewHostForTab(
       content::WebContents* web_contents);
 
  protected:

@@ -137,7 +137,7 @@ void NativeTabContentsViewGtk::Unparent() {
 }
 
 RenderWidgetHostView* NativeTabContentsViewGtk::CreateRenderWidgetHostView(
-    RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host) {
   RenderWidgetHostView* view =
       RenderWidgetHostView::CreateViewForWidget(render_widget_host);
   view->InitAsChild(NULL);

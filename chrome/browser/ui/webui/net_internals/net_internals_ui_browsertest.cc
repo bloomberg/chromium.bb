@@ -244,7 +244,8 @@ void NetInternalsTest::MessageHandler::PrerenderPage(
 
 void NetInternalsTest::MessageHandler::NavigateToPrerender(
     const ListValue* list_value) {
-  RenderViewHost* host = browser()->GetWebContentsAt(1)->GetRenderViewHost();
+  content::RenderViewHost* host =
+      browser()->GetWebContentsAt(1)->GetRenderViewHost();
   host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16("Click()"));
 }
 

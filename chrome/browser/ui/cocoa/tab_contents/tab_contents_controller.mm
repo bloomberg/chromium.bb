@@ -77,7 +77,7 @@ using content::WebContents;
   // The RWHV is ripped out of the view hierarchy on tab switches, so it never
   // formally resigns first responder status.  Handle this by explicitly sending
   // a Blur() message to the renderer, but only if the RWHV currently has focus.
-  RenderViewHost* rvh = [self webContents]->GetRenderViewHost();
+  content::RenderViewHost* rvh = [self webContents]->GetRenderViewHost();
   if (rvh && rvh->GetView() && rvh->GetView()->HasFocus())
     rvh->Blur();
 }

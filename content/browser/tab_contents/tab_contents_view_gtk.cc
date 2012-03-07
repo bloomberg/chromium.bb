@@ -30,6 +30,7 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
+using content::RenderWidgetHost;
 using content::WebContents;
 
 namespace {
@@ -202,7 +203,7 @@ void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
     rwhv->SetSize(size);
 }
 
-void TabContentsViewGtk::RenderViewCreated(RenderViewHost* host) {
+void TabContentsViewGtk::RenderViewCreated(content::RenderViewHost* host) {
 }
 
 void TabContentsViewGtk::Focus() {

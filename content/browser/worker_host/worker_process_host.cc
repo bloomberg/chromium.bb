@@ -54,6 +54,7 @@
 using content::BrowserThread;
 using content::ChildProcessData;
 using content::ChildProcessHost;
+using content::RenderViewHostImpl;
 using content::ResourceContext;
 using content::UserMetricsAction;
 using content::WorkerDevToolsManager;

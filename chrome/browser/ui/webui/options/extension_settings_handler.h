@@ -155,7 +155,7 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
   std::vector<ExtensionPage> GetActivePagesForExtension(
       const Extension* extension);
   void GetActivePagesForExtensionProcess(
-      const std::set<RenderViewHost*>& views,
+      const std::set<content::RenderViewHost*>& views,
       std::vector<ExtensionPage> *result);
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
@@ -184,7 +184,7 @@ class ExtensionSettingsHandler : public OptionsPageUIHandler,
   // notification is sent when it is in the process of being deleted (and before
   // it is removed from the process). Keep a pointer to it so we can exclude
   // it from the active views.
-  RenderViewHost* deleting_rvh_;
+  content::RenderViewHost* deleting_rvh_;
 
   // We want to register for notifications only after we've responded at least
   // once to the page, otherwise we'd be calling javacsript functions on objects

@@ -189,7 +189,7 @@ void SelectFileDialogExtension::OnFileSelectionCanceled(int32 tab_id) {
   dialog->selection_index_ = 0;
 }
 
-RenderViewHost* SelectFileDialogExtension::GetRenderViewHost() {
+content::RenderViewHost* SelectFileDialogExtension::GetRenderViewHost() {
   if (extension_dialog_)
     return extension_dialog_->host()->render_view_host();
   return NULL;

@@ -27,7 +27,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const content::MainFunctionParams& parameters) OVERRIDE;
   virtual content::WebContentsView* CreateWebContentsView(
       content::WebContents* web_contents) OVERRIDE;
-  virtual void RenderViewHostCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewHostCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderProcessHostCreated(
       content::RenderProcessHost* host) OVERRIDE;
   virtual content::WebUIControllerFactory* GetWebUIControllerFactory() OVERRIDE;
@@ -150,16 +151,16 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual content::AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
   virtual bool IsFastShutdownPossible() OVERRIDE;
-  virtual void OverrideWebkitPrefs(RenderViewHost* rvh,
+  virtual void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                                    const GURL& url,
                                    WebPreferences* prefs) OVERRIDE;
-  virtual void UpdateInspectorSetting(RenderViewHost* rvh,
+  virtual void UpdateInspectorSetting(content::RenderViewHost* rvh,
                                       const std::string& key,
                                       const std::string& value) OVERRIDE;
-  virtual void ClearInspectorSettings(RenderViewHost* rvh) OVERRIDE;
+  virtual void ClearInspectorSettings(content::RenderViewHost* rvh) OVERRIDE;
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) OVERRIDE;
-  virtual void ClearCache(RenderViewHost* rvh) OVERRIDE;
-  virtual void ClearCookies(RenderViewHost* rvh) OVERRIDE;
+  virtual void ClearCache(content::RenderViewHost* rvh) OVERRIDE;
+  virtual void ClearCookies(content::RenderViewHost* rvh) OVERRIDE;
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;
   virtual std::string GetDefaultDownloadName() OVERRIDE;
   virtual bool AllowSocketAPI(content::BrowserContext* browser_context,

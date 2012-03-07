@@ -22,7 +22,7 @@
 class ExtensionMessageHandler : public content::RenderViewHostObserver {
  public:
   // |sender| is guaranteed to outlive this object.
-  explicit ExtensionMessageHandler(RenderViewHost* render_view_host);
+  explicit ExtensionMessageHandler(content::RenderViewHost* render_view_host);
   virtual ~ExtensionMessageHandler();
 
   // RenderViewHostObserver overrides.

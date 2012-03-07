@@ -22,6 +22,8 @@
 #endif
 
 using content::OpenURLParams;
+using content::RenderViewHostImpl;
+using content::RenderWidgetHostImpl;
 using content::Referrer;
 using webkit_glue::WebAccessibility;
 

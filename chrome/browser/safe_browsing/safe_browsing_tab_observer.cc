@@ -90,7 +90,7 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
     safebrowsing_detection_host_.reset();
   }
 
-  RenderViewHost* rvh = wrapper_->web_contents()->GetRenderViewHost();
+  content::RenderViewHost* rvh = wrapper_->web_contents()->GetRenderViewHost();
   rvh->Send(new ChromeViewMsg_SetClientSidePhishingDetection(
       rvh->GetRoutingID(), safe_browsing));
 #endif

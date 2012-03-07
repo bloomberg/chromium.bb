@@ -6,16 +6,16 @@
 
 #include "base/string16.h"
 
-class RenderViewHost;
 class TabContents;
 struct WebDropData;
 
 namespace content {
+class RenderViewHost;
 class WebDragDestDelegate;
 }
 
 // A typedef for a RenderViewHost used for comparison purposes only.
-typedef RenderViewHost* RenderViewHostIdentifier;
+typedef content::RenderViewHost* RenderViewHostIdentifier;
 
 // A class that handles tracking and event processing for a drag and drop
 // over the content area. Assumes something else initiates the drag, this is

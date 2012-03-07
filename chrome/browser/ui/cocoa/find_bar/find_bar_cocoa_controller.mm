@@ -234,7 +234,7 @@ const float kRightEdgeOffset = 25;
     // |ForwardKeyboardEvent()| directly ignores edit commands, which breaks
     // cmd-up/down if we ever decide to include |moveToBeginningOfDocument:| in
     // the list above.
-    RenderViewHost* render_view_host =
+    content::RenderViewHost* render_view_host =
         contents->web_contents()->GetRenderViewHost();
     render_view_host->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
     return YES;

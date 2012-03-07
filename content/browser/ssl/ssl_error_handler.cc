@@ -16,6 +16,7 @@
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::RenderViewHostImpl;
 using content::WebContents;
 
 SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,

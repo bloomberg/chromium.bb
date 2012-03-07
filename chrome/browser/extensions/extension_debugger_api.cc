@@ -147,7 +147,7 @@ class AttachedClientHosts {
           DevToolsManager::GetInstance()->GetDevToolsAgentHostFor(*it);
       if (!agent_host)
         continue;
-      RenderViewHost* rvh =
+      content::RenderViewHost* rvh =
           DevToolsAgentHostRegistry::GetRenderViewHost(agent_host);
       if (rvh && rvh->GetDelegate() &&
           rvh->GetDelegate()->GetAsWebContents() == contents)

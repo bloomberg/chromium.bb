@@ -138,7 +138,7 @@ using internal_cloud_print_helpers::CloudPrintDataSender;
 class MockExternalHtmlDialogUI : public ExternalHtmlDialogUI {
  public:
   MOCK_METHOD1(RenderViewCreated,
-      void(RenderViewHost* render_view_host));
+               void(content::RenderViewHost* render_view_host));
 };
 
 class MockCloudPrintDataSenderHelper : public CloudPrintDataSenderHelper {

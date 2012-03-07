@@ -25,6 +25,7 @@
 using WebKit::WebView;
 using content::BrowserThread;
 using content::RenderProcessHost;
+using content::RenderViewHost;
 
 static const char* kHostZoomMapKeyName = "content_host_zoom_map";
 

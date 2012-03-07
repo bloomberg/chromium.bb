@@ -43,6 +43,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
 using content::WebContents;
 using WebKit::WebNotificationPresenter;
 using WebKit::WebTextDirection;

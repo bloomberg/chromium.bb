@@ -93,6 +93,7 @@ using content::DownloadManager;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
+using content::RenderViewHost;
 using content::SSLStatus;
 using content::UserMetricsAction;
 using content::WebContents;

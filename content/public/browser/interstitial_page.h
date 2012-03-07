@@ -9,7 +9,6 @@
 #include "content/common/content_export.h"
 
 class GURL;
-class RenderViewHost;
 
 namespace gfx {
 class Size;
@@ -18,6 +17,7 @@ class Size;
 namespace content {
 
 class InterstitialPageDelegate;
+class RenderViewHost;
 class WebContents;
 
 // This class is used for showing interstitial pages, pages that show some

@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/test_backing_store.h"
 
-TestBackingStore::TestBackingStore(RenderWidgetHost* widget,
+TestBackingStore::TestBackingStore(content::RenderWidgetHost* widget,
                                    const gfx::Size& size)
     : BackingStore(widget, size) {
 }

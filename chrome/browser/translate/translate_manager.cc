@@ -617,7 +617,7 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
 
   // The script is not available yet.  Queue that request and query for the
   // script.  Once it is downloaded we'll do the translate.
-  RenderViewHost* rvh = web_contents->GetRenderViewHost();
+  content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
   PendingRequest request;
   request.render_process_id = rvh->GetProcess()->GetID();
   request.render_view_id = rvh->GetRoutingID();

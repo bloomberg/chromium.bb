@@ -546,7 +546,7 @@ void LatencyTest::GetMeanFrameTimeMicros(int* frame_time) const {
 }
 
 void LatencyTest::SendInput() {
-  RenderViewHost* rvh = browser()->GetSelectedTabContentsWrapper()->
+  content::RenderViewHost* rvh = browser()->GetSelectedTabContentsWrapper()->
       web_contents()->GetRenderViewHost();
   WebKit::WebMouseEvent mouse_event;
   mouse_event.movementX = 1;

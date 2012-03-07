@@ -25,16 +25,13 @@
 #include "ui/gfx/native_widget_types.h"
 
 class BackingStore;
+class MockRenderWidgetHost;
+class WebCursor;
 struct EditCommand;
 struct ViewHostMsg_UpdateRect_Params;
-class WebCursor;
 
 namespace base {
 class TimeTicks;
-}
-
-namespace content {
-class RenderWidgetHostViewPort;
 }
 
 namespace ui {
@@ -48,16 +45,18 @@ struct WebCompositionUnderline;
 struct WebScreenInfo;
 }
 
+namespace content {
+
+class RenderWidgetHostViewPort;
+
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
-//
-// TODO(joi): Move to content namespace.
 class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                                             public IPC::Channel::Listener {
  public:
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
   // routing id is taken from the RenderProcessHost.
-  RenderWidgetHostImpl(content::RenderProcessHost* process, int routing_id);
+  RenderWidgetHostImpl(RenderProcessHost* process, int routing_id);
   virtual ~RenderWidgetHostImpl();
 
   // Use RenderWidgetHostImpl::From(rwh) to downcast a
@@ -95,9 +94,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void ForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) OVERRIDE;
   virtual const gfx::Point& GetLastScrollOffset() const OVERRIDE;
-  virtual content::RenderProcessHost* GetProcess() const OVERRIDE;
+  virtual RenderProcessHost* GetProcess() const OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
-  virtual content::RenderWidgetHostView* GetView() const OVERRIDE;
+  virtual RenderWidgetHostView* GetView() const OVERRIDE;
   virtual bool IsRenderView() const OVERRIDE;
   virtual void PaintAtSize(TransportDIB::Handle dib_handle,
                            int tag,
@@ -114,7 +113,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void RemoveKeyboardListener(KeyboardListener* listener) OVERRIDE;
 
   // Sets the View of this RenderWidgetHost.
-  void SetView(content::RenderWidgetHostView* view);
+  void SetView(RenderWidgetHostView* view);
 
   int surface_id() const { return surface_id_; }
   bool renderer_accessible() { return renderer_accessible_; }
@@ -414,7 +413,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // crashes, its View is destroyed and this pointer becomes NULL, even though
   // render_view_host_ lives on to load another URL (creating a new View while
   // doing so).
-  content::RenderWidgetHostViewPort* view_;
+  RenderWidgetHostViewPort* view_;
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
@@ -425,10 +424,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   int hung_renderer_delay_ms_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, Resize);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, ResizeThenCrash);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HiddenPaint);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, PaintAtSize);
+  friend class ::MockRenderWidgetHost;
 
   // Tell this object to destroy itself.
   void Destroy();
@@ -534,7 +530,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Created during construction but initialized during Init*(). Therefore, it
   // is guaranteed never to be NULL, but its channel may be NULL if the
   // renderer crashed, so you must always check that.
-  content::RenderProcessHost* process_;
+  RenderProcessHost* process_;
 
   // The ID of the corresponding object in the Renderer Instance.
   int routing_id_;
@@ -689,5 +685,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_IMPL_H_

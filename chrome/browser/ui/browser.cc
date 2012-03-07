@@ -2070,7 +2070,7 @@ void Browser::Zoom(content::PageZoom zoom) {
   if (is_devtools())
     return;
 
-  RenderViewHost* host = GetSelectedWebContents()->GetRenderViewHost();
+  content::RenderViewHost* host = GetSelectedWebContents()->GetRenderViewHost();
   if (zoom == content::PAGE_ZOOM_RESET) {
     host->SetZoomLevel(0);
     content::RecordAction(UserMetricsAction("ZoomNormal"));

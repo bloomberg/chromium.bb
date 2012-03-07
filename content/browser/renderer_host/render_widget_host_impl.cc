@@ -47,14 +47,14 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-using content::RenderWidgetHostViewPort;
-using content::UserMetricsAction;
 using WebKit::WebGestureEvent;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebTextDirection;
+
+namespace {
 
 // How long to (synchronously) wait for the renderer to respond with a
 // PaintRect message, when our backing-store is invalid, before giving up and
@@ -64,8 +64,6 @@ static const int kPaintMsgTimeoutMS = 40;
 
 // How long to wait before we consider a renderer hung.
 static const int kHungRendererDelayMs = 20000;
-
-namespace {
 
 // Returns |true| if the two wheel events should be coalesced.
 bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
@@ -79,6 +77,8 @@ bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
 }
 
 }  // namespace
+
+namespace content {
 
 // static
 RenderWidgetHost* RenderWidgetHost::FromIPCChannelListener(
@@ -107,7 +107,7 @@ size_t RenderWidgetHost::BackingStoreMemorySize() {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostImpl
 
-RenderWidgetHostImpl::RenderWidgetHostImpl(content::RenderProcessHost* process,
+RenderWidgetHostImpl::RenderWidgetHostImpl(RenderProcessHost* process,
                                            int routing_id)
     : view_(NULL),
       renderer_initialized_(false),
@@ -189,7 +189,7 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
   return rwh->AsRenderWidgetHostImpl();
 }
 
-void RenderWidgetHostImpl::SetView(content::RenderWidgetHostView* view) {
+void RenderWidgetHostImpl::SetView(RenderWidgetHostView* view) {
   view_ = RenderWidgetHostViewPort::FromRWHV(view);
 
   if (!view_) {
@@ -198,7 +198,7 @@ void RenderWidgetHostImpl::SetView(content::RenderWidgetHostView* view) {
   }
 }
 
-content::RenderProcessHost* RenderWidgetHostImpl::GetProcess() const {
+RenderProcessHost* RenderWidgetHostImpl::GetProcess() const {
   return process_;
 }
 
@@ -206,7 +206,7 @@ int RenderWidgetHostImpl::GetRoutingID() const {
   return routing_id_;
 }
 
-content::RenderWidgetHostView* RenderWidgetHostImpl::GetView() const {
+RenderWidgetHostView* RenderWidgetHostImpl::GetView() const {
   return view_;
 }
 
@@ -323,7 +323,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
   if (!msg_is_ok) {
     // The message de-serialization failed. Kill the renderer process.
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));
+    RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));
     GetProcess()->ReceivedBadMessage();
   }
   return handled;
@@ -347,10 +347,10 @@ void RenderWidgetHostImpl::WasHidden() {
   process_->WidgetHidden();
 
   bool is_visible = false;
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(this),
-      content::Details<bool>(&is_visible));
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+      Source<RenderWidgetHost>(this),
+      Details<bool>(&is_visible));
 }
 
 void RenderWidgetHostImpl::WasRestored() {
@@ -377,10 +377,10 @@ void RenderWidgetHostImpl::WasRestored() {
   process_->WidgetRestored();
 
   bool is_visible = true;
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<RenderWidgetHost>(this),
-      content::Details<bool>(&is_visible));
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+      Source<RenderWidgetHost>(this),
+      Details<bool>(&is_visible));
 
   // It's possible for our size to be out of sync with the renderer. The
   // following is one case that leads to this:
@@ -981,10 +981,10 @@ void RenderWidgetHostImpl::SetShouldAutoResize(bool enable) {
 }
 
 void RenderWidgetHostImpl::Destroy() {
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      content::Source<RenderWidgetHost>(this),
-      content::NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
+      Source<RenderWidgetHost>(this),
+      NotificationService::NoDetails());
 
   // Tell the view to die.
   // Note that in the process of the view shutting down, it can call a ton
@@ -1009,10 +1009,10 @@ void RenderWidgetHostImpl::CheckRendererIsUnresponsive() {
   }
 
   // OK, looks like we have a hung renderer!
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDERER_PROCESS_HANG,
-      content::Source<RenderWidgetHost>(this),
-      content::NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDERER_PROCESS_HANG,
+      Source<RenderWidgetHost>(this),
+      NotificationService::NoDetails());
   is_unresponsive_ = true;
   NotifyRendererUnresponsive();
 }
@@ -1082,10 +1082,10 @@ void RenderWidgetHostImpl::OnMsgRequestMove(const gfx::Rect& pos) {
 void RenderWidgetHostImpl::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
   PaintAtSizeAckDetails details = {tag, size};
   gfx::Size size_details = size;
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
-      content::Source<RenderWidgetHost>(this),
-      content::Details<PaintAtSizeAckDetails>(&details));
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+      Source<RenderWidgetHost>(this),
+      Details<PaintAtSizeAckDetails>(&details));
 }
 
 void RenderWidgetHostImpl::OnMsgUpdateRect(
@@ -1131,8 +1131,7 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
     if (dib) {
       if (dib->size() < size) {
         DLOG(WARNING) << "Transport DIB too small for given rectangle";
-        content::RecordAction(
-            UserMetricsAction("BadMessageTerminate_RWH1"));
+        RecordAction(UserMetricsAction("BadMessageTerminate_RWH1"));
         GetProcess()->ReceivedBadMessage();
       } else {
         UNSHIPPED_TRACE_EVENT_INSTANT2("test_latency", "UpdateRect",
@@ -1217,10 +1216,10 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
     view_being_painted_ = false;
   }
 
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-      content::Source<RenderWidgetHost>(this),
-      content::NotificationService::NoDetails());
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
+      Source<RenderWidgetHost>(this),
+      NotificationService::NoDetails());
 
   // If we got a resize ack, then perhaps we have another resize to send?
   bool is_resize_ack =
@@ -1261,7 +1260,7 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
 
   int type = static_cast<int>(event_type);
   if (type < WebInputEvent::Undefined) {
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
+    RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
     process_->ReceivedBadMessage();
   } else if (type == WebInputEvent::MouseMove) {
     mouse_move_pending_ = false;
@@ -1281,15 +1280,15 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
 
   // This is used only for testing, and the other end does not use the
   // source object.  On linux, specifying
-  // content::Source<RenderWidgetHost> results in a very strange
+  // Source<RenderWidgetHost> results in a very strange
   // runtime error in the epilogue of the enclosing
   // (OnMsgInputEventAck) method, but not on other platforms; using
-  // 'void' instead is just as safe (since content::NotificationSource
+  // 'void' instead is just as safe (since NotificationSource
   // is not actually typesafe) and avoids this error.
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
-      content::Source<void>(this),
-      content::Details<int>(&type));
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDER_WIDGET_HOST_DID_RECEIVE_INPUT_EVENT_ACK,
+      Source<void>(this),
+      Details<int>(&type));
 }
 
 void RenderWidgetHostImpl::ProcessWheelAck(bool processed) {
@@ -1315,13 +1314,13 @@ void RenderWidgetHostImpl::ProcessTouchAck(
 
 void RenderWidgetHostImpl::OnMsgFocus() {
   // Only RenderViewHost can deal with that message.
-  content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
+  RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
   GetProcess()->ReceivedBadMessage();
 }
 
 void RenderWidgetHostImpl::OnMsgBlur() {
   // Only RenderViewHost can deal with that message.
-  content::RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
+  RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
   GetProcess()->ReceivedBadMessage();
 }
 
@@ -1587,50 +1586,50 @@ void RenderWidgetHostImpl::SelectRange(const gfx::Point& start,
 
 void RenderWidgetHostImpl::Undo() {
   Send(new ViewMsg_Undo(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("Undo"));
+  RecordAction(UserMetricsAction("Undo"));
 }
 
 void RenderWidgetHostImpl::Redo() {
   Send(new ViewMsg_Redo(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("Redo"));
+  RecordAction(UserMetricsAction("Redo"));
 }
 
 void RenderWidgetHostImpl::Cut() {
   Send(new ViewMsg_Cut(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("Cut"));
+  RecordAction(UserMetricsAction("Cut"));
 }
 
 void RenderWidgetHostImpl::Copy() {
   Send(new ViewMsg_Copy(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("Copy"));
+  RecordAction(UserMetricsAction("Copy"));
 }
 
 void RenderWidgetHostImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
   // Windows/Linux don't have the concept of a find pasteboard.
   Send(new ViewMsg_CopyToFindPboard(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("CopyToFindPboard"));
+  RecordAction(UserMetricsAction("CopyToFindPboard"));
 #endif
 }
 
 void RenderWidgetHostImpl::Paste() {
   Send(new ViewMsg_Paste(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("Paste"));
+  RecordAction(UserMetricsAction("Paste"));
 }
 
 void RenderWidgetHostImpl::PasteAndMatchStyle() {
   Send(new ViewMsg_PasteAndMatchStyle(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("PasteAndMatchStyle"));
+  RecordAction(UserMetricsAction("PasteAndMatchStyle"));
 }
 
 void RenderWidgetHostImpl::Delete() {
   Send(new ViewMsg_Delete(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("DeleteSelection"));
+  RecordAction(UserMetricsAction("DeleteSelection"));
 }
 
 void RenderWidgetHostImpl::SelectAll() {
   Send(new ViewMsg_SelectAll(GetRoutingID()));
-  content::RecordAction(UserMetricsAction("SelectAll"));
+  RecordAction(UserMetricsAction("SelectAll"));
 }
 bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   if (!allowed) {
@@ -1669,3 +1668,5 @@ void RenderWidgetHostImpl::AcknowledgePostSubBuffer(int32 route_id,
   if (ui_shim)
     ui_shim->Send(new AcceleratedSurfaceMsg_PostSubBufferACK(route_id));
 }
+
+}  // namespace content

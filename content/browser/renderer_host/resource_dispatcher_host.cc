@@ -89,6 +89,7 @@ using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
 using content::GlobalRequestID;
+using content::RenderViewHostImpl;
 using content::ResourceContext;
 using content::ResourceResponse;
 using content::ResourceThrottle;

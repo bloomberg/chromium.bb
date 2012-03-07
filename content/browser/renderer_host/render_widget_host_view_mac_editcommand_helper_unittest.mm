@@ -15,6 +15,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using content::RenderWidgetHostImpl;
+
 class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
 };
 

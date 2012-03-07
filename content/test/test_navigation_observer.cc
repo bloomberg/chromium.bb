@@ -16,7 +16,7 @@
 class TestNavigationObserver::RVHOSendJS
     : public content::RenderViewHostObserver {
  public:
-  RVHOSendJS(RenderViewHost* render_view_host,
+  RVHOSendJS(content::RenderViewHost* render_view_host,
              JsInjectionReadyObserver* js_injection_ready_observer)
       : content::RenderViewHostObserver(render_view_host),
         js_injection_ready_observer_(js_injection_ready_observer) {
@@ -113,7 +113,7 @@ void TestNavigationObserver::Observe(
       break;
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED:
       rvho_send_js_.reset(new RVHOSendJS(
-          content::Source<RenderViewHost>(source).ptr(),
+          content::Source<content::RenderViewHost>(source).ptr(),
           js_injection_ready_observer_));
       break;
     default:

@@ -557,7 +557,7 @@ void ExtensionWebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     bool is_main_frame,
     const GURL& validated_url,
     bool is_error_page,
-    RenderViewHost* render_view_host) {
+    content::RenderViewHost* render_view_host) {
   // Ignore navigations of sub frames, if the main frame isn't committed yet.
   // This might happen if a sub frame triggers a navigation for both the main
   // frame and itself. Since the sub frame is about to be deleted, and there's

@@ -25,7 +25,8 @@ class RestoreTabHelper : public content::WebContentsObserver {
   const SessionID& window_id() const { return window_id_; }
 
   // content::WebContentsObserver:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
  private:
   // Unique identifier of the tab for session restore. This id is only unique

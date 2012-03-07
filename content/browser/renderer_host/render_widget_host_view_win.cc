@@ -66,6 +66,8 @@
 using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
+using content::RenderWidgetHost;
+using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using ui::ViewProp;
 using WebKit::WebInputEvent;

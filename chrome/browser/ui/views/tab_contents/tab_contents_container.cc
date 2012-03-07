@@ -17,6 +17,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 
 using content::NavigationController;
+using content::RenderViewHost;
 using content::WebContents;
 
 ////////////////////////////////////////////////////////////////////////////////

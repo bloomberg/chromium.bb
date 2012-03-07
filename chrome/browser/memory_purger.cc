@@ -85,7 +85,7 @@ void MemoryPurger::PurgeAll() {
 // static
 void MemoryPurger::PurgeBrowser() {
   // Dump the backing stores.
-  RenderWidgetHost::RemoveAllBackingStores();
+  content::RenderWidgetHost::RemoveAllBackingStores();
 
   // Per-profile cleanup.
   scoped_refptr<PurgeMemoryIOHelper> purge_memory_io_helper(

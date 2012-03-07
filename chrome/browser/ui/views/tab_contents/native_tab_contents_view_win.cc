@@ -108,7 +108,7 @@ void NativeTabContentsViewWin::InitNativeTabContentsView() {
 }
 
 RenderWidgetHostView* NativeTabContentsViewWin::CreateRenderWidgetHostView(
-    RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host) {
   RenderWidgetHostView* view =
       RenderWidgetHostView::CreateViewForWidget(render_widget_host);
 

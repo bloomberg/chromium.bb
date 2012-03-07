@@ -38,7 +38,7 @@ void TestWebContentsView::ShowCreatedFullscreenWidget(int route_id) {
 }
 
 void TestWebContentsView::ShowContextMenu(
-    const content::ContextMenuParams& params) {
+    const ContextMenuParams& params) {
 }
 
 void TestWebContentsView::ShowPopupMenu(const gfx::Rect& bounds,

@@ -11,7 +11,10 @@
 #include "webkit/glue/webpreferences.h"
 
 class SiteInstanceImpl;
+
+namespace content {
 class TestRenderViewHost;
+}
 
 // Subclass TabContents to ensure it creates TestRenderViewHosts and does
 // not do anything involving views.
@@ -21,7 +24,7 @@ class TestTabContents : public TabContents {
                   content::SiteInstance* instance);
   virtual ~TestTabContents();
 
-  TestRenderViewHost* pending_rvh() const;
+  content::TestRenderViewHost* pending_rvh() const;
 
   // State accessor.
   bool cross_navigation_pending() {
@@ -32,11 +35,11 @@ class TestTabContents : public TabContents {
   // alternatives without using command-line switches.
   bool ShouldTransitionCrossSite() { return transition_cross_site; }
 
-  void TestDidNavigate(RenderViewHost* render_view_host,
+  void TestDidNavigate(content::RenderViewHost* render_view_host,
                        int page_id,
                        const GURL& url,
                        content::PageTransition transition);
-  void TestDidNavigateWithReferrer(RenderViewHost* render_view_host,
+  void TestDidNavigateWithReferrer(content::RenderViewHost* render_view_host,
                                    int page_id,
                                    const GURL& url,
                                    const content::Referrer& referrer,
@@ -49,7 +52,7 @@ class TestTabContents : public TabContents {
 
   // Prevent interaction with views.
   virtual bool CreateRenderViewForRenderManager(
-      RenderViewHost* render_view_host) OVERRIDE;
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE {}
 
   // Returns a clone of this TestTabContents. The returned object is also a

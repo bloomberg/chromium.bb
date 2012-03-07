@@ -6,6 +6,8 @@
 
 #include "content/port/browser/render_widget_host_view_port.h"
 
+using content::RenderWidgetHostImpl;
+
 void RenderWidgetHostImpl::OnMsgCreatePluginContainer(
     gfx::PluginWindowHandle id) {
   // TODO(piman): view_ can only be NULL with delayed view creation in

@@ -21,7 +21,6 @@ class CommandLine;
 class FilePath;
 class GURL;
 class PluginProcessHost;
-class RenderViewHost;
 class ResourceDispatcherHost;
 class SkBitmap;
 struct WebPreferences;
@@ -66,6 +65,7 @@ class BrowserMainParts;
 class RenderProcessHost;
 class QuotaPermissionContext;
 class ResourceContext;
+class RenderViewHost;
 class SiteInstance;
 class SpeechInputManagerDelegate;
 class WebContents;
@@ -98,7 +98,8 @@ class ContentBrowserClient {
   virtual WebContentsView* CreateWebContentsView(WebContents* web_contents) = 0;
 
   // Notifies that a new RenderHostView has been created.
-  virtual void RenderViewHostCreated(RenderViewHost* render_view_host) = 0;
+  virtual void RenderViewHostCreated(
+      content::RenderViewHost* render_view_host) = 0;
 
   // Notifies that a RenderProcessHost has been created. This is called before
   // the content layer adds its own BrowserMessageFilters, so that the
@@ -352,27 +353,27 @@ class ContentBrowserClient {
   // Called by WebContents to override the WebKit preferences that are used by
   // the renderer. The content layer will add its own settings, and then it's up
   // to the embedder to update it if it wants.
-  virtual void OverrideWebkitPrefs(RenderViewHost* render_view_host,
+  virtual void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                                    const GURL& url,
                                    WebPreferences* prefs) = 0;
 
   // Inspector setting was changed and should be persisted.
-  virtual void UpdateInspectorSetting(RenderViewHost* rvh,
+  virtual void UpdateInspectorSetting(content::RenderViewHost* rvh,
                                       const std::string& key,
                                       const std::string& value) = 0;
 
   // Clear the Inspector settings.
-  virtual void ClearInspectorSettings(RenderViewHost* rvh) = 0;
+  virtual void ClearInspectorSettings(content::RenderViewHost* rvh) = 0;
 
   // Notifies that BrowserURLHandler has been created, so that the embedder can
   // optionally add their own handlers.
   virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) = 0;
 
   // Clears browser cache.
-  virtual void ClearCache(RenderViewHost* rvh) = 0;
+  virtual void ClearCache(content::RenderViewHost* rvh) = 0;
 
   // Clears browser cookies.
-  virtual void ClearCookies(RenderViewHost* rvh) = 0;
+  virtual void ClearCookies(content::RenderViewHost* rvh) = 0;
 
   // Returns the default download directory.
   // This can be called on any thread.

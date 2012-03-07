@@ -17,14 +17,14 @@
 
 class InterstitialPageImpl;
 class NavigationControllerImpl;
-class RenderViewHost;
-class RenderViewHostImpl;
 class WebUIImpl;
 
 namespace content {
 class BrowserContext;
 class NavigationEntry;
 class NavigationEntryImpl;
+class RenderViewHost;
+class RenderViewHostImpl;
 class RenderWidgetHostView;
 }
 
@@ -55,13 +55,13 @@ class CONTENT_EXPORT RenderViewHostManager
     // If you are attaching to an already-existing RenderView, you should call
     // InitWithExistingID.
     virtual bool CreateRenderViewForRenderManager(
-        RenderViewHost* render_view_host) = 0;
+        content::RenderViewHost* render_view_host) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed, bool* proceed_to_fire_unload) = 0;
     virtual void DidStartLoadingFromRenderManager(
-        RenderViewHost* render_view_host) = 0;
+        content::RenderViewHost* render_view_host) = 0;
     virtual void RenderViewGoneFromRenderManager(
-        RenderViewHost* render_view_host) = 0;
+        content::RenderViewHost* render_view_host) = 0;
     virtual void UpdateRenderViewSizeForRenderManager() = 0;
     virtual void NotifySwappedFromRenderManager() = 0;
     virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
@@ -85,7 +85,7 @@ class CONTENT_EXPORT RenderViewHostManager
     virtual void SetFocusToLocationBar(bool select_all) = 0;
 
     // Creates a view and sets the size for the specified RVH.
-    virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) = 0;
+    virtual void CreateViewAndSetSizeForRVH(content::RenderViewHost* rvh) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -110,14 +110,14 @@ class CONTENT_EXPORT RenderViewHostManager
   // This will be non-NULL between Init() and Shutdown(). You may want to NULL
   // check it in many cases, however. Windows can send us messages during the
   // destruction process after it has been shut down.
-  RenderViewHostImpl* current_host() const;
+  content::RenderViewHostImpl* current_host() const;
 
   // Returns the view associated with the current RenderViewHost, or NULL if
   // there is no current one.
   content::RenderWidgetHostView* GetRenderWidgetHostView() const;
 
   // Returns the pending render view host, or NULL if there is no pending one.
-  RenderViewHostImpl* pending_render_view_host() const;
+  content::RenderViewHostImpl* pending_render_view_host() const;
 
   // Returns the current committed Web UI or NULL if none applies.
   WebUIImpl* web_ui() const { return web_ui_.get(); }
@@ -129,7 +129,8 @@ class CONTENT_EXPORT RenderViewHostManager
   // navigation entry. It may create a new RenderViewHost or re-use an existing
   // one. The RenderViewHost to navigate will be returned. Returns NULL if one
   // could not be created.
-  RenderViewHostImpl* Navigate(const content::NavigationEntryImpl& entry);
+  content::RenderViewHostImpl* Navigate(
+      const content::NavigationEntryImpl& entry);
 
   // Instructs the various live views to stop. Called when the user directed the
   // page to stop loading.
@@ -146,7 +147,7 @@ class CONTENT_EXPORT RenderViewHostManager
   bool ShouldCloseTabOnUnresponsiveRenderer();
 
   // Called when a renderer's main frame navigates.
-  void DidNavigateMainFrame(RenderViewHost* render_view_host);
+  void DidNavigateMainFrame(content::RenderViewHost* render_view_host);
 
   // Set the WebUI after committing a page load. This is useful for navigations
   // initiated from a renderer, where we want to give the new renderer WebUI
@@ -154,7 +155,8 @@ class CONTENT_EXPORT RenderViewHostManager
   void SetWebUIPostCommit(WebUIImpl* web_ui);
 
   // Called when a provisional load on the given renderer is aborted.
-  void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);
+  void RendererAbortedProvisionalLoad(
+      content::RenderViewHost* render_view_host);
 
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
@@ -189,11 +191,11 @@ class CONTENT_EXPORT RenderViewHostManager
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Called when a RenderViewHost is about to be deleted.
-  void RenderViewDeleted(RenderViewHost* rvh);
+  void RenderViewDeleted(content::RenderViewHost* rvh);
 
   // Returns whether the given RenderViewHost is on the list of swapped out
   // RenderViewHosts.
-  bool IsSwappedOut(RenderViewHost* rvh);
+  bool IsSwappedOut(content::RenderViewHost* rvh);
 
  private:
   friend class TestTabContents;
@@ -228,7 +230,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // Sets up the necessary state for a new RenderViewHost navigating to the
   // given entry.
-  bool InitRenderView(RenderViewHost* render_view_host,
+  bool InitRenderView(content::RenderViewHost* render_view_host,
                       const content::NavigationEntryImpl& entry);
 
   // Sets the pending RenderViewHost/WebUI to be the active one. Note that this
@@ -239,7 +241,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // Helper method to terminate the pending RenderViewHost.
   void CancelPending();
 
-  RenderViewHostImpl* UpdateRendererStateForNavigate(
+  content::RenderViewHostImpl* UpdateRendererStateForNavigate(
       const content::NavigationEntryImpl& entry);
 
   // Called when a renderer process is starting to close.  We should not
@@ -261,7 +263,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // Our RenderView host and its associated Web UI (if any, will be NULL for
   // non-DOM-UI pages). This object is responsible for all communication with
   // a child RenderView instance.
-  RenderViewHostImpl* render_view_host_;
+  content::RenderViewHostImpl* render_view_host_;
   scoped_ptr<WebUIImpl> web_ui_;
 
   // A RenderViewHost used to load a cross-site page. This remains hidden
@@ -273,11 +275,11 @@ class CONTENT_EXPORT RenderViewHostManager
   // is. This will happen when we're transitioning between two Web UI pages:
   // the RVH won't be swapped, so the pending pointer will be unused, but there
   // will be a pending Web UI associated with the navigation.
-  RenderViewHostImpl* pending_render_view_host_;
+  content::RenderViewHostImpl* pending_render_view_host_;
   scoped_ptr<WebUIImpl> pending_web_ui_;
 
   // A map of site instance ID to swapped out RenderViewHosts.
-  typedef base::hash_map<int32, RenderViewHostImpl*> RenderViewHostMap;
+  typedef base::hash_map<int32, content::RenderViewHostImpl*> RenderViewHostMap;
   RenderViewHostMap swapped_out_hosts_;
 
   // The intersitial page currently shown if any, not own by this class

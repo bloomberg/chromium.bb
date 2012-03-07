@@ -85,7 +85,7 @@ void BalloonHost::AddNewContents(WebContents* source,
   browser->AddWebContents(new_contents, disposition, initial_pos, user_gesture);
 }
 
-void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
+void BalloonHost::RenderViewCreated(content::RenderViewHost* render_view_host) {
   render_view_host->DisableScrollbarsForThreshold(
       balloon_->min_scrollbar_size());
   render_view_host->WasResized();

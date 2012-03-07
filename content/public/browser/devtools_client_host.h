@@ -15,10 +15,9 @@ namespace IPC {
 class Message;
 }
 
-class RenderViewHost;
-
 namespace content {
 
+class RenderViewHost;
 class WebContents;
 
 class DevToolsFrontendHostDelegate;

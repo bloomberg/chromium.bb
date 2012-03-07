@@ -73,6 +73,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::SSLStatus;
+using content::RenderViewHost;
 using content::WebContents;
 using ui::ViewProp;
 using WebKit::WebCString;

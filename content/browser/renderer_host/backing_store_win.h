@@ -14,7 +14,7 @@
 
 class BackingStoreWin : public BackingStore {
  public:
-  BackingStoreWin(RenderWidgetHost* widget, const gfx::Size& size);
+  BackingStoreWin(content::RenderWidgetHost* widget, const gfx::Size& size);
   virtual ~BackingStoreWin();
 
   HDC hdc() { return hdc_; }

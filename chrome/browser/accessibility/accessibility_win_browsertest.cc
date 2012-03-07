@@ -196,7 +196,7 @@ void RecursiveFindNodeInAccessibilityTree(
 // of the selected tab.
 IAccessible*
 AccessibilityWinBrowserTest::GetRendererAccessible() {
-  TestRenderViewHost::EnableAccessibilityUpdatedNotifications(
+  content::TestRenderViewHost::EnableAccessibilityUpdatedNotifications(
       browser()->GetSelectedWebContents()->GetRenderViewHost());
 
   HWND hwnd_render_widget_host_view =

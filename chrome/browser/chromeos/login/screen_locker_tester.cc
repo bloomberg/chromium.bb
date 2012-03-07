@@ -180,7 +180,7 @@ views::Widget* WebUIScreenLockerTester::GetChildWidget() const {
 
 base::Value* WebUIScreenLockerTester::ExecuteJavascriptAndGetValue(
     const std::string& js_text) {
-  RenderViewHost* rvh = webui()->GetWebContents()->GetRenderViewHost();
+  content::RenderViewHost* rvh = webui()->GetWebContents()->GetRenderViewHost();
   return rvh->ExecuteJavascriptAndGetValue(string16(),
                                            ASCIIToUTF16(js_text));
 }

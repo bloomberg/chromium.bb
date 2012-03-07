@@ -37,7 +37,7 @@ const Extension* ExtensionView::extension() const {
   return host_->extension();
 }
 
-RenderViewHost* ExtensionView::render_view_host() const {
+content::RenderViewHost* ExtensionView::render_view_host() const {
   return host_->render_view_host();
 }
 

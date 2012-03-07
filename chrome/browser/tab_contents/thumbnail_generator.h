@@ -20,8 +20,11 @@
 
 class GURL;
 class Profile;
-class RenderWidgetHost;
 class SkBitmap;
+
+namespace content {
+class RenderWidgetHost;
+}
 
 namespace gfx {
 class Size;
@@ -80,7 +83,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // set, and the backing store is used, then the resulting image will
   // be less then twice the size of the |desired_size| in both
   // dimensions, but might not be the exact size requested.
-  void AskForSnapshot(RenderWidgetHost* renderer,
+  void AskForSnapshot(content::RenderWidgetHost* renderer,
                       bool prefer_backing_store,
                       const ThumbnailReadyCallback& callback,
                       gfx::Size page_size,
@@ -88,18 +91,19 @@ class ThumbnailGenerator : public content::NotificationObserver,
 
   // This returns a thumbnail of a fixed, small size for the given
   // renderer.
-  SkBitmap GetThumbnailForRenderer(RenderWidgetHost* renderer) const;
+  SkBitmap GetThumbnailForRenderer(content::RenderWidgetHost* renderer) const;
 
   // This returns a thumbnail of a fixed, small size for the given
   // renderer. |options| is a bitmask of ThumbnailOptions. If
   // |clip_result| is non-NULL, the result of clipping will be written.
-  SkBitmap GetThumbnailForRendererWithOptions(RenderWidgetHost* renderer,
-                                              int options,
-                                              ClipResult* clip_result) const;
+  SkBitmap GetThumbnailForRendererWithOptions(
+      content::RenderWidgetHost* renderer,
+      int options,
+      ClipResult* clip_result) const;
 
   // Start or stop monitoring notifications for |renderer| based on the value
   // of |monitor|.
-  void MonitorRenderer(RenderWidgetHost* renderer, bool monitor);
+  void MonitorRenderer(content::RenderWidgetHost* renderer, bool monitor);
 
   // Calculates how "boring" a thumbnail is. The boring score is the
   // 0,1 ranged percentage of pixels that are the most common
@@ -135,7 +139,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
 
  private:
   virtual void WidgetDidReceivePaintAtSizeAck(
-      RenderWidgetHost* widget,
+      content::RenderWidgetHost* widget,
       int tag,
       const gfx::Size& size);
 
@@ -145,7 +149,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Indicates that the given widget has changed is visibility.
-  void WidgetHidden(RenderWidgetHost* widget);
+  void WidgetHidden(content::RenderWidgetHost* widget);
 
   // Called when the given web contents are disconnected (either
   // through being closed, or because the renderer is no longer there).

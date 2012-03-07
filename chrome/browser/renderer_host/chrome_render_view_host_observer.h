@@ -19,13 +19,13 @@ class Profile;
 // same lifetime.
 class ChromeRenderViewHostObserver : public content::RenderViewHostObserver {
  public:
-  ChromeRenderViewHostObserver(RenderViewHost* render_view_host,
+  ChromeRenderViewHostObserver(content::RenderViewHost* render_view_host,
                                chrome_browser_net::Predictor* predictor);
   virtual ~ChromeRenderViewHostObserver();
 
   // content::RenderViewHostObserver overrides.
   virtual void RenderViewHostInitialized() OVERRIDE;
-  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
+  virtual void RenderViewHostDestroyed(content::RenderViewHost* rvh) OVERRIDE;
   virtual void Navigate(const GURL& url) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
@@ -39,7 +39,7 @@ class ChromeRenderViewHostObserver : public content::RenderViewHostObserver {
   // Gets the extension or app (if any) that is associated with the RVH.
   const Extension* GetExtension();
   // Cleans up when a RenderViewHost is removed, or on destruction.
-  void RemoveRenderViewHostForExtensions(RenderViewHost* rvh);
+  void RemoveRenderViewHostForExtensions(content::RenderViewHost* rvh);
   void OnFocusedEditableNodeTouched();
 
   Profile* profile_;

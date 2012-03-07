@@ -30,7 +30,7 @@ class ChromeWebContentsViewMacDelegate
   // Overridden from WebContentsViewMacDelegate:
   virtual NSObject<RenderWidgetHostViewMacDelegate>*
       CreateRenderWidgetHostViewDelegate(
-          RenderWidgetHost* render_widget_host) OVERRIDE;
+          content::RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual content::WebDragDestDelegate* DragDelegate() OVERRIDE;
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;

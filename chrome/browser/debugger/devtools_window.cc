@@ -60,6 +60,7 @@ using content::DevToolsManager;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
+using content::RenderViewHost;
 using content::WebContents;
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";

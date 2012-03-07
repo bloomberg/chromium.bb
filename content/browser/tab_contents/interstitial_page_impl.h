@@ -16,11 +16,11 @@
 #include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 
-class RenderViewHostImpl;
 class TabContents;
 
 namespace content {
 class NavigationEntry;
+class RenderViewHostImpl;
 class WebContentsView;
 }
 
@@ -53,7 +53,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void Hide() OVERRIDE;
   virtual void DontProceed() OVERRIDE;
   virtual void Proceed() OVERRIDE;
-  virtual RenderViewHost* GetRenderViewHostForTesting() const OVERRIDE;
+  virtual content::RenderViewHost* GetRenderViewHostForTesting() const OVERRIDE;
   virtual content::InterstitialPageDelegate* GetDelegateForTesting() OVERRIDE;
   virtual void DontCreateViewForTesting() OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
@@ -83,13 +83,13 @@ class CONTENT_EXPORT InterstitialPageImpl
   // RenderViewHostDelegate implementation:
   virtual View* GetViewDelegate() OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
+  virtual void RenderViewGone(content::RenderViewHost* render_view_host,
                               base::TerminationStatus status,
                               int error_code) OVERRIDE;
   virtual void DidNavigate(
-      RenderViewHost* render_view_host,
+      content::RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
-  virtual void UpdateTitle(RenderViewHost* render_view_host,
+  virtual void UpdateTitle(content::RenderViewHost* render_view_host,
                            int32 page_id,
                            const string16& title,
                            base::i18n::TextDirection title_direction) OVERRIDE;
@@ -109,7 +109,7 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // Creates the RenderViewHost containing the interstitial content.
   // Overriden in unit tests.
-  virtual RenderViewHost* CreateRenderViewHost();
+  virtual content::RenderViewHost* CreateRenderViewHost();
 
   // Creates the WebContentsView that shows the interstitial RVH.
   // Overriden in unit tests.
@@ -160,7 +160,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   ActionState action_taken_;
 
   // The RenderViewHost displaying the interstitial contents.
-  RenderViewHostImpl* render_view_host_;
+  content::RenderViewHostImpl* render_view_host_;
 
   // The IDs for the Render[View|Process]Host hidden by this interstitial.
   int original_child_id_;

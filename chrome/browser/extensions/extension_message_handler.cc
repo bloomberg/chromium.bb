@@ -12,7 +12,7 @@
 #include "content/public/browser/render_view_host_delegate.h"
 
 ExtensionMessageHandler::ExtensionMessageHandler(
-    RenderViewHost* render_view_host)
+    content::RenderViewHost* render_view_host)
     : content::RenderViewHostObserver(render_view_host) {
 }
 

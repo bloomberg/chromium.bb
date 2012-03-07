@@ -12,6 +12,8 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/common/content_switches.h"
 
+using content::RenderWidgetHost;
+
 namespace {
 
 // There are two separate caches, |large_cache| and |small_cache|.  large_cache
@@ -145,8 +147,8 @@ BackingStore* CreateBackingStore(RenderWidgetHost* host,
   } else {
     cache = small_cache;
   }
-  BackingStore* backing_store =
-      RenderWidgetHostImpl::From(host)->AllocBackingStore(backing_store_size);
+  BackingStore* backing_store = content::RenderWidgetHostImpl::From(
+      host)->AllocBackingStore(backing_store_size);
   if (backing_store)
     cache->Put(host, backing_store);
   return backing_store;

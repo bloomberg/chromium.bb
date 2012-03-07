@@ -47,6 +47,7 @@
 #endif
 
 using content::NavigationController;
+using content::RenderWidgetHost;
 using content::WebContents;
 
 namespace {

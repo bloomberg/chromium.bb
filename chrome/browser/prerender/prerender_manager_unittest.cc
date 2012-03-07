@@ -42,7 +42,7 @@ class DummyPrerenderContents : public PrerenderContents {
   }
 
   virtual void StartPrerendering(
-      const RenderViewHost* source_render_view_host,
+      const content::RenderViewHost* source_render_view_host,
       content::SessionStorageNamespace* session_storage_namespace) OVERRIDE {
     has_started_ = true;
   }

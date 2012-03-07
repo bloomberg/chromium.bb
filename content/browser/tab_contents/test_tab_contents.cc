@@ -18,7 +18,10 @@
 #include "webkit/forms/password_form.h"
 
 using content::NavigationEntry;
+using content::RenderViewHost;
+using content::RenderViewHostImpl;
 using content::SiteInstance;
+using content::TestRenderViewHost;
 using content::WebContents;
 
 TestTabContents::TestTabContents(content::BrowserContext* browser_context,

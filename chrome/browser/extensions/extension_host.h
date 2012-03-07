@@ -112,7 +112,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   const Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
   content::WebContents* host_contents() const { return host_contents_.get(); }
-  RenderViewHost* render_view_host() const;
+  content::RenderViewHost* render_view_host() const;
   content::RenderProcessHost* render_process_host() const;
   bool did_stop_loading() const { return did_stop_loading_; }
   bool document_element_available() const {
@@ -147,8 +147,10 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // content::WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewDeleted(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void DocumentAvailableInMainFrame() OVERRIDE;
@@ -240,7 +242,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   // A weak pointer to the current or pending RenderViewHost. We don't access
   // this through the host_contents because we want to deal with the pending
   // host, so we can send messages to it before it finishes loading.
-  RenderViewHost* render_view_host_;
+  content::RenderViewHost* render_view_host_;
 
   // Whether the RenderWidget has reported that it has stopped loading.
   bool did_stop_loading_;

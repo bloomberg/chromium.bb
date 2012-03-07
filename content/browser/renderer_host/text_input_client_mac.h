@@ -14,7 +14,9 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
+namespace content {
 class RenderWidgetHost;
+}
 
 // This class helps with the Mac OS X dictionary popup. For the design overview,
 // look at this document:
@@ -44,13 +46,14 @@ class TextInputClientMac {
   // unlock and return that stored value.
   //
   // Returns NSNotFound if the request times out or is not completed.
-  NSUInteger GetCharacterIndexAtPoint(RenderWidgetHost* rwh, gfx::Point point);
+  NSUInteger GetCharacterIndexAtPoint(content::RenderWidgetHost* rwh,
+                                      gfx::Point point);
   // Returns nil if the request times out or is completed.
-  NSAttributedString* GetAttributedSubstringFromRange(RenderWidgetHost* rwh,
-                                                      NSRange range);
+  NSAttributedString* GetAttributedSubstringFromRange(
+      content::RenderWidgetHost* rwh, NSRange range);
   // Returns NSZeroRect if the request times out or is not completed. The result
   // is in WebKit coordinates.
-  NSRect GetFirstRectForRange(RenderWidgetHost* rwh, NSRange range);
+  NSRect GetFirstRectForRange(content::RenderWidgetHost* rwh, NSRange range);
 
   // When the renderer sends the ViewHostMsg reply, the RenderMessageFilter will
   // call the corresponding method on the IO thread to unlock the condition and

@@ -64,6 +64,7 @@
 #endif
 
 using content::BrowserThread;
+using content::RenderViewHost;
 using content::UserMetricsAction;
 using content::WebContents;
 using content::WebUIController;
@@ -200,7 +201,7 @@ void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
   start_ = base::TimeTicks::Now();
   last_paint_ = start_;
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-      content::Source<RenderWidgetHost>(render_view_host));
+                 content::Source<content::RenderWidgetHost>(render_view_host));
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
                &NewTabUI::PaintTimeout);
 

@@ -48,7 +48,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
 
   // Like RenderWidgetHostView::CreateViewForWidget, with cast.
   static RenderWidgetHostViewPort* CreateViewForWidget(
-      RenderWidgetHost* widget);
+      content::RenderWidgetHost* widget);
 
   // Perform all the initialization steps necessary for this object to represent
   // a popup (such as a <select> dropdown), then shows the popup at |pos|.

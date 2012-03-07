@@ -62,8 +62,10 @@ class NewTabUI : public content::WebUIController,
   static int current_pref_version() { return current_pref_version_; }
 
   // WebUIController implementation:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReused(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewReused(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Returns true if the bookmark bar can be displayed over this webui, detached
   // from the location bar.
@@ -115,7 +117,7 @@ class NewTabUI : public content::WebUIController,
   // Reset the CSS caches.
   void InitializeCSSCaches();
 
-  void StartTimingPaint(RenderViewHost* render_view_host);
+  void StartTimingPaint(content::RenderViewHost* render_view_host);
   void PaintTimeout();
 
   Profile* GetProfile() const;

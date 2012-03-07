@@ -8,6 +8,8 @@
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/render_messages.h"
 
+using content::RenderViewHost;
+
 namespace prerender {
 
 PrerenderRenderViewHostObserver::PrerenderRenderViewHostObserver(

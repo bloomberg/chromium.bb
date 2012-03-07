@@ -54,6 +54,7 @@
 
 using content::InterstitialPage;
 using content::NavigationController;
+using content::RenderViewHost;
 using content::WebContents;
 
 #if defined(OS_MACOSX)

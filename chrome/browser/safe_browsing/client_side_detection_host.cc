@@ -216,7 +216,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // before it is.
     VLOG(1) << "Instruct renderer to start phishing detection for URL: "
             << params_.url;
-    RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+    content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
     rvh->Send(new SafeBrowsingMsg_StartPhishingDetection(
         rvh->GetRoutingID(), params_.url));
   }

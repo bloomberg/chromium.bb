@@ -28,14 +28,14 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
   // Create a backing store on the X server. The visual is an Xlib Visual
   // describing the format of the target window and the depth is the color
   // depth of the X window which will be drawn into.
-  BackingStoreGtk(RenderWidgetHost* widget,
+  BackingStoreGtk(content::RenderWidgetHost* widget,
                   const gfx::Size& size,
                   void* visual,
                   int depth);
 
   // This is for unittesting only. An object constructed using this constructor
   // will silently ignore all paints
-  BackingStoreGtk(RenderWidgetHost* widget, const gfx::Size& size);
+  BackingStoreGtk(content::RenderWidgetHost* widget, const gfx::Size& size);
 
   virtual ~BackingStoreGtk();
 

@@ -46,6 +46,7 @@
 
 class HungRendererDialogView;
 
+using content::RenderViewHost;
 using content::WebContents;
 
 namespace {

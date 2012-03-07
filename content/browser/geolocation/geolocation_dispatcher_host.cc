@@ -19,6 +19,7 @@
 
 using content::BrowserThread;
 using content::GeolocationPermissionContext;
+using content::RenderViewHostImpl;
 
 namespace {
 

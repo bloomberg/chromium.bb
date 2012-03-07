@@ -27,9 +27,9 @@
 
 using base::TimeDelta;
 using content::BrowserThread;
-
 using content::BrowserThreadImpl;
-
+using content::RenderWidgetHost;
+using content::RenderWidgetHostImpl;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseWheelEvent;
 
@@ -157,6 +157,14 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
         unhandled_keyboard_event_type_(WebInputEvent::Undefined),
         unresponsive_timer_fired_(false) {
   }
+
+  // Allow poking at a few private members.
+  using RenderWidgetHostImpl::OnMsgPaintAtSizeAck;
+  using RenderWidgetHostImpl::OnMsgUpdateRect;
+  using RenderWidgetHostImpl::RendererExited;
+  using RenderWidgetHostImpl::in_flight_size_;
+  using RenderWidgetHostImpl::is_hidden_;
+  using RenderWidgetHostImpl::resize_ack_pending_;
 
   // Tests that make sure we ignore keyboard event acknowledgments to events we
   // didn't send work by making sure we didn't call UnhandledKeyboardEvent().

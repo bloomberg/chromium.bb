@@ -15,6 +15,7 @@
 #include "net/base/load_flags.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
 
 namespace prerender {
 

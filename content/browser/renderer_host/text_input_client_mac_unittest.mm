@@ -17,6 +17,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
+using content::RenderWidgetHostImpl;
+
 namespace {
 
 const int64 kTaskDelayMs = 200;

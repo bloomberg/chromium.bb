@@ -64,6 +64,7 @@
 using content::BrowserThread;
 using content::NavigationEntry;
 using content::OpenURLParams;
+using content::RenderViewHost;
 using content::Referrer;
 using content::WebContents;
 using printing::Metafile;

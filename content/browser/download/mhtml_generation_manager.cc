@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_types.h"
 
 using content::BrowserThread;
+using content::RenderViewHostImpl;
 using content::WebContents;
 
 MHTMLGenerationManager::Job::Job()

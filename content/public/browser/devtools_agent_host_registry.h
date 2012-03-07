@@ -8,11 +8,10 @@
 
 #include "content/common/content_export.h"
 
-class RenderViewHost;
-
 namespace content {
 
 class DevToolsAgentHost;
+class RenderViewHost;
 class WebContents;
 
 class CONTENT_EXPORT DevToolsAgentHostRegistry {
@@ -22,7 +21,8 @@ class CONTENT_EXPORT DevToolsAgentHostRegistry {
   static DevToolsAgentHost* GetDevToolsAgentHost(RenderViewHost* rvh);
 
   // Returns render view host instance for given |agent_host|.
-  static RenderViewHost* GetRenderViewHost(DevToolsAgentHost* agent_host);
+  static RenderViewHost* GetRenderViewHost(
+      DevToolsAgentHost* agent_host);
 
   // Returns true iff an instance of DevToolsAgentHost for the |rvh|
   // does exist.

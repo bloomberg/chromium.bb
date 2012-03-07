@@ -140,6 +140,7 @@ using content::AccessTokenStore;
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::QuotaPermissionContext;
+using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
 

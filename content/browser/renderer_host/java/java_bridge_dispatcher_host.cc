@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
 
 namespace {
 class JavaBridgeThread : public base::Thread {

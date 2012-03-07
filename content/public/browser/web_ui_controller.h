@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 
 class GURL;
-class RenderViewHost;
 
 namespace base {
 class ListValue;
@@ -19,6 +18,7 @@ class ListValue;
 
 namespace content {
 
+class RenderViewHost;
 class WebUI;
 
 // A WebUI page is controller by the embedder's WebUIController object. It

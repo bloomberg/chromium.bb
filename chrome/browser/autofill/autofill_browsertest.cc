@@ -35,6 +35,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
+using content::RenderViewHost;
 using content::WebContents;
 
 static const char* kDataURIPrefix = "data:text/html;charset=utf-8,";

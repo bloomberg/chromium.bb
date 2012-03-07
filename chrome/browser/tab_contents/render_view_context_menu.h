@@ -25,11 +25,11 @@
 class ExtensionMenuItem;
 class PrintPreviewContextMenuObserver;
 class Profile;
-class RenderViewHost;
 class SpellingMenuObserver;
 class SpellCheckerSubMenuObserver;
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -112,7 +112,7 @@ class RenderViewContextMenuProxy {
 
   // Retrieve the RenderViewHost (or Profile) instance associated with a context
   // menu, respectively.
-  virtual RenderViewHost* GetRenderViewHost() const = 0;
+  virtual content::RenderViewHost* GetRenderViewHost() const = 0;
   virtual Profile* GetProfile() const = 0;
 };
 
@@ -152,7 +152,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
                               bool enabled,
                               bool hidden,
                               const string16& title) OVERRIDE;
-  virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
+  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual Profile* GetProfile() const OVERRIDE;
 
  protected:

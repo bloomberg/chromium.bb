@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #endif
 
+using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
 

@@ -94,7 +94,7 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 
   // TabRenderWatcher::Delegate implementation.
-  virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE;
+  virtual void OnRenderHostCreated(content::RenderViewHost* host) OVERRIDE;
   virtual void OnTabMainFrameLoaded() OVERRIDE;
   virtual void OnTabMainFrameRender() OVERRIDE;
 

@@ -26,6 +26,8 @@
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
+using content::RenderViewHost;
+
 namespace {
 const int kMinWidth = 100;
 const int kMinHeight = 100;

@@ -49,6 +49,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
 using content::SessionStorageNamespace;
 using content::WebContents;
 

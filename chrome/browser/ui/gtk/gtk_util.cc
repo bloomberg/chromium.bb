@@ -55,6 +55,7 @@
 #include <gdk/gdkx.h>  // NOLINT
 #include <gtk/gtk.h>   // NOLINT
 
+using content::RenderWidgetHost;
 using content::WebContents;
 
 namespace {

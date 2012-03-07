@@ -51,6 +51,8 @@
 // We'll likely revise the algorithm to improve quality of thumbnails this
 // service generates.
 
+using content::RenderViewHost;
+using content::RenderWidgetHost;
 using content::WebContents;
 
 namespace {

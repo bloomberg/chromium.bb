@@ -27,6 +27,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "googleurl/src/gurl.h"
 
+using content::RenderViewHost;
+
 ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;
 
 // The minimum/maximum dimensions of the extension popup.

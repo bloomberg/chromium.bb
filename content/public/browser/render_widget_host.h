@@ -21,13 +21,6 @@
 #include "skia/ext/platform_device.h"
 #endif
 
-class RenderWidgetHostImpl;
-
-namespace content {
-class RenderProcessHost;
-class RenderWidgetHostView;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -35,6 +28,12 @@ class Rect;
 namespace skia {
 class PlatformCanvas;
 }
+
+namespace content {
+
+class RenderProcessHost;
+class RenderWidgetHostImpl;
+class RenderWidgetHostView;
 
 // A RenderWidgetHost manages the browser side of a browser<->renderer
 // HWND connection.  The HWND lives in the browser process, and
@@ -206,7 +205,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
 
   virtual const gfx::Point& GetLastScrollOffset() const = 0;
 
-  virtual content::RenderProcessHost* GetProcess() const = 0;
+  virtual RenderProcessHost* GetProcess() const = 0;
 
   virtual int GetRoutingID() const = 0;
 
@@ -214,7 +213,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
   // RenderWidget is being destroyed or the render process crashed. You should
   // never cache this pointer since it can become NULL if the renderer crashes,
   // instead you should always ask for it using the accessor.
-  virtual content::RenderWidgetHostView* GetView() const = 0;
+  virtual RenderWidgetHostView* GetView() const = 0;
 
   // Returns true if this is a RenderViewHost, false if not.
   virtual bool IsRenderView() const = 0;
@@ -294,5 +293,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
   // static_cast to the subclass.
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() = 0;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_H_

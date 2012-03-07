@@ -399,8 +399,8 @@ gboolean DraggedViewGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
 
   // Draw the render area.
   if (!attached_) {
-    RenderWidgetHost* render_widget_host = drag_data_->GetSourceWebContents()->
-      GetRenderViewHost();
+    content::RenderWidgetHost* render_widget_host =
+        drag_data_->GetSourceWebContents()->GetRenderViewHost();
 
     // This leaves room for the border.
     gfx::Rect dest_rect(kDragFrameBorderSize, tab_height,

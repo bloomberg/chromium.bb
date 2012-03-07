@@ -14,6 +14,7 @@
 
 using content::BrowserThread;
 using content::DownloadManager;
+using content::RenderViewHostImpl;
 
 // IO Thread indirections to resource dispatcher host.
 // Provided as targets for PostTask from within this object

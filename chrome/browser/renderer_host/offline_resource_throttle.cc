@@ -28,6 +28,7 @@
 #include "webkit/appcache/appcache_service.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
 using content::ResourceContext;
 using content::WebContents;
 

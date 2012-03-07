@@ -28,7 +28,7 @@ class RenderProcessHost;
 class BackingStoreSkia : public BackingStore {
  public:
   CONTENT_EXPORT BackingStoreSkia(
-      RenderWidgetHost* widget,
+      content::RenderWidgetHost* widget,
       const gfx::Size& size);
 
   virtual ~BackingStoreSkia();

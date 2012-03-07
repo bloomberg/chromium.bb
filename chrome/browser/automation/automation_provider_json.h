@@ -18,7 +18,6 @@ class AutomationProvider;
 class Browser;
 class Extension;
 class Profile;
-class RenderViewHost;
 
 namespace base {
 class DictionaryValue;
@@ -26,6 +25,7 @@ class Value;
 }
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -103,7 +103,7 @@ bool GetAutomationIdFromJSONArgs(
 bool GetRenderViewFromJSONArgs(
     base::DictionaryValue* args,
     Profile* profile,
-    RenderViewHost** rvh,
+    content::RenderViewHost** rvh,
     std::string* error) WARN_UNUSED_RESULT;
 
 // Gets the extension specified by the given dictionary |args|. |args|

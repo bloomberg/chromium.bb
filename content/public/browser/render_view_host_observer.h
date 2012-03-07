@@ -10,10 +10,11 @@
 #include "content/common/content_export.h"
 
 class GURL;
-class RenderViewHost;
-class RenderViewHostImpl;
 
 namespace content {
+
+class RenderViewHost;
+class RenderViewHostImpl;
 
 // An observer API implemented by classes which want to filter IPC messages from
 // RenderViewHost.
@@ -49,7 +50,7 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
   int routing_id() { return routing_id_; }
 
  private:
-  friend class ::RenderViewHostImpl;
+  friend class RenderViewHostImpl;
 
   // Invoked from RenderViewHost. Invokes RenderViewHostDestroyed and NULL out
   // |render_view_host_|.

@@ -21,9 +21,9 @@ class Extension;
 class ExtensionHost;
 class GURL;
 class Profile;
-class RenderViewHost;
 
 namespace content {
+class RenderViewHost;
 class SiteInstance;
 };
 
@@ -75,15 +75,15 @@ class ExtensionProcessManager : public content::NotificationObserver {
   virtual content::SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
   // Registers a RenderViewHost as hosting a given extension.
-  void RegisterRenderViewHost(RenderViewHost* render_view_host,
+  void RegisterRenderViewHost(content::RenderViewHost* render_view_host,
                               const Extension* extension);
 
   // Unregisters a RenderViewHost as hosting any extension.
-  void UnregisterRenderViewHost(RenderViewHost* render_view_host);
+  void UnregisterRenderViewHost(content::RenderViewHost* render_view_host);
 
   // Returns all RenderViewHosts that are registered for the specified
   // extension.
-  std::set<RenderViewHost*> GetRenderViewHostsForExtension(
+  std::set<content::RenderViewHost*> GetRenderViewHostsForExtension(
       const std::string& extension_id);
 
   // Returns true if |host| is managed by this process manager.
@@ -103,8 +103,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Tracks network requests for a given RenderViewHost, used to know
   // when network activity is idle for lazy background pages.
-  void OnNetworkRequestStarted(RenderViewHost* render_view_host);
-  void OnNetworkRequestDone(RenderViewHost* render_view_host);
+  void OnNetworkRequestStarted(content::RenderViewHost* render_view_host);
+  void OnNetworkRequestDone(content::RenderViewHost* render_view_host);
 
   typedef std::set<ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
@@ -146,7 +146,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Contains all extension-related RenderViewHost instances for all extensions.
   // We also keep a cache of the host's view type, because that information
   // is not accessible at registration/deregistration time.
-  typedef std::map<RenderViewHost*, content::ViewType> ExtensionRenderViews;
+  typedef std::map<content::RenderViewHost*,
+      content::ViewType> ExtensionRenderViews;
   ExtensionRenderViews all_extension_views_;
 
   // Close the given |host| iff it's a background page.
@@ -160,7 +161,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Updates a potentially-registered RenderViewHost once it has been
   // associated with a WebContents. This allows us to gather information that
   // was not available when the host was first registered.
-  void UpdateRegisteredRenderView(RenderViewHost* render_view_host);
+  void UpdateRegisteredRenderView(content::RenderViewHost* render_view_host);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

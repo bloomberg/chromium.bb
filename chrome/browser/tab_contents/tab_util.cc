@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
+using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
 

@@ -676,7 +676,7 @@ bool FindBarGtk::MaybeForwardKeyEventToRenderer(GdkEventKey* event) {
   if (!contents)
     return false;
 
-  RenderViewHost* render_view_host =
+  content::RenderViewHost* render_view_host =
       contents->web_contents()->GetRenderViewHost();
 
   // Make sure we don't have a text field element interfering with keyboard

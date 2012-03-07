@@ -16,9 +16,9 @@
 #include "net/base/directory_lister.h"
 
 class Profile;
-class RenderViewHost;
 
 namespace content {
+class RenderViewHost;
 struct FileChooserParams;
 }
 
@@ -33,13 +33,13 @@ class FileSelectHelper
   explicit FileSelectHelper(Profile* profile);
 
   // Show the file chooser dialog.
-  void RunFileChooser(RenderViewHost* render_view_host,
+  void RunFileChooser(content::RenderViewHost* render_view_host,
                       content::WebContents* tab_contents,
                       const content::FileChooserParams& params);
 
   // Enumerates all the files in directory.
   void EnumerateDirectory(int request_id,
-                          RenderViewHost* render_view_host,
+                          content::RenderViewHost* render_view_host,
                           const FilePath& path);
 
  private:
@@ -94,7 +94,7 @@ class FileSelectHelper
   // Kicks off a new directory enumeration.
   void StartNewEnumeration(const FilePath& path,
                            int request_id,
-                           RenderViewHost* render_view_host);
+                           content::RenderViewHost* render_view_host);
 
   // Callbacks from directory enumeration.
   virtual void OnListFile(
@@ -118,7 +118,7 @@ class FileSelectHelper
 
   // The RenderViewHost and WebContents for the page showing a file dialog
   // (may only be one such dialog).
-  RenderViewHost* render_view_host_;
+  content::RenderViewHost* render_view_host_;
   content::WebContents* web_contents_;
 
   // Dialog box used for choosing files to upload from file form fields.

@@ -90,7 +90,7 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
   void RunTestCaseInJavaScript(int test_case_number, bool wait_for_response) {
     std::string script = base::StringPrintf("runTestCase(%d);",
                                             test_case_number);
-    RenderViewHost* host =
+    content::RenderViewHost* host =
         browser()->GetSelectedWebContents()->GetRenderViewHost();
     if (wait_for_response) {
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(

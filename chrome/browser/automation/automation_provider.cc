@@ -101,6 +101,7 @@ using base::Time;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::NavigationController;
+using content::RenderViewHost;
 using content::WebContents;
 
 namespace {

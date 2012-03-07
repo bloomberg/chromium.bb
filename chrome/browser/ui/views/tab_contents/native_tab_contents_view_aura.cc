@@ -30,6 +30,7 @@
 #include "ash/wm/visibility_controller.h"
 #endif
 
+using content::RenderViewHost;
 using content::RenderWidgetHostView;
 using content::WebContents;
 
@@ -178,7 +179,7 @@ void NativeTabContentsViewAura::InitNativeTabContentsView() {
 }
 
 RenderWidgetHostView* NativeTabContentsViewAura::CreateRenderWidgetHostView(
-    RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host) {
   RenderWidgetHostView* view =
       RenderWidgetHostView::CreateViewForWidget(render_widget_host);
 

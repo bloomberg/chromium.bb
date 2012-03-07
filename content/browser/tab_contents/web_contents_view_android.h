@@ -17,7 +17,7 @@ class WebContentsViewAndroid : public content::WebContentsView {
 
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
   virtual content::RenderWidgetHostView* CreateViewForWidget(
-      RenderWidgetHost* render_widget_host) OVERRIDE;
+      content::RenderWidgetHost* render_widget_host) OVERRIDE;
 
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
@@ -27,7 +27,7 @@ class WebContentsViewAndroid : public content::WebContentsView {
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
   virtual void SizeContents(const gfx::Size& size) OVERRIDE;
-  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
+  virtual void RenderViewCreated(content::RenderViewHost* host) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;

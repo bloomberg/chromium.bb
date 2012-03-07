@@ -90,7 +90,7 @@ void WebContentsViewMac::CreateView(const gfx::Size& initial_size) {
 }
 
 RenderWidgetHostView* WebContentsViewMac::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -185,7 +185,7 @@ void WebContentsViewMac::StartDragging(
                               offset:offset];
 }
 
-void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
+void WebContentsViewMac::RenderViewCreated(content::RenderViewHost* host) {
   // We want updates whenever the intrinsic width of the webpage changes.
   // Put the RenderView into that mode. The preferred width is used for example
   // when the "zoom" button in the browser window is clicked.

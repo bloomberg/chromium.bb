@@ -38,6 +38,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;
+using content::TestRenderViewHost;
 using content::WebContents;
 
 // NavigationControllerTest ----------------------------------------------------

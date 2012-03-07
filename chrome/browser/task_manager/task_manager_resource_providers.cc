@@ -103,7 +103,7 @@ int GetMessagePrefixID(bool is_app,
 // TaskManagerRendererResource class
 ////////////////////////////////////////////////////////////////////////////////
 TaskManagerRendererResource::TaskManagerRendererResource(
-    base::ProcessHandle process, RenderViewHost* render_view_host)
+    base::ProcessHandle process, content::RenderViewHost* render_view_host)
     : process_(process),
       render_view_host_(render_view_host),
       pending_stats_update_(false),

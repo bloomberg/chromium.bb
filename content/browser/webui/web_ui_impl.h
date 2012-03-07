@@ -12,7 +12,9 @@
 #include "content/public/browser/web_ui.h"
 #include "ipc/ipc_channel.h"
 
+namespace content {
 class RenderViewHost;
+}
 
 class CONTENT_EXPORT WebUIImpl : public content::WebUI,
                                  public IPC::Channel::Listener {
@@ -23,7 +25,7 @@ class CONTENT_EXPORT WebUIImpl : public content::WebUI,
   // Called by TabContents when the RenderView is first created. This is *not*
   // called for every page load because in some cases RenderViewHostManager will
   // reuse RenderView instances.
-  void RenderViewCreated(RenderViewHost* render_view_host);
+  void RenderViewCreated(content::RenderViewHost* render_view_host);
 
   // WebUI implementation:
   virtual content::WebContents* GetWebContents() const OVERRIDE;

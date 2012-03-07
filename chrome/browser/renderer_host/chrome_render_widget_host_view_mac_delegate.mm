@@ -22,6 +22,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
+using content::RenderViewHost;
+
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
@@ -108,7 +110,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
 
 @implementation ChromeRenderWidgetHostViewMacDelegate
 
-- (id)initWithRenderWidgetHost:(RenderWidgetHost*)renderWidgetHost {
+- (id)initWithRenderWidgetHost:(content::RenderWidgetHost*)renderWidgetHost {
   self = [super init];
   if (self) {
     renderWidgetHost_ = renderWidgetHost;

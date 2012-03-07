@@ -29,6 +29,7 @@
 #endif
 
 using content::BrowserThread;
+using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostViewPort;
 
 namespace {

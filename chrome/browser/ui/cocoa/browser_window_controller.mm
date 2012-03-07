@@ -934,7 +934,7 @@ enum {
   if (resizeRectDirty) {
     // Send new resize rect to foreground tab.
     if (content::WebContents* contents = browser_->GetSelectedWebContents()) {
-      if (RenderViewHost* rvh = contents->GetRenderViewHost()) {
+      if (content::RenderViewHost* rvh = contents->GetRenderViewHost()) {
         rvh->ResizeRectChanged(windowShim_->GetRootWindowResizerRect());
       }
     }

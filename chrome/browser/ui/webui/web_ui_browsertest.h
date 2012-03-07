@@ -15,13 +15,12 @@
 #include "content/test/js_injection_ready_observer.h"
 #include "content/test/test_navigation_observer.h"
 
-class RenderViewHost;
-
 namespace base {
 class Value;
 }
 
 namespace content {
+class RenderViewHost;
 class WebUI;
 class WebUIMessageHandler;
 }
@@ -100,7 +99,7 @@ class WebUIBrowserTest
   // javascript invocation.
   void PreLoadJavascriptLibraries(const std::string& preload_test_fixture,
                                   const std::string& preload_test_name,
-                                  RenderViewHost* preload_host);
+                                  content::RenderViewHost* preload_host);
 
   // Called by javascript-generated test bodies to browse to a page and preload
   // the javascript for the given |preload_test_fixture| and
@@ -146,7 +145,8 @@ class WebUIBrowserTest
 
  private:
   // JsInjectionReadyObserver implementation.
-  virtual void OnJsInjectionReady(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void OnJsInjectionReady(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // Builds a string containing all added javascript libraries.
   void BuildJavascriptLibraries(string16* content);
@@ -168,7 +168,7 @@ class WebUIBrowserTest
                                  const ConstValueVector& function_arguments,
                                  bool is_test,
                                  bool is_async,
-                                 RenderViewHost* preload_host);
+                                 content::RenderViewHost* preload_host);
 
   // Attaches mock and test handlers.
   void SetupHandlers();

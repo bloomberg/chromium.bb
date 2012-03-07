@@ -14,6 +14,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
 
+using content::RenderViewHost;
+using content::RenderWidgetHost;
+
 namespace {
 
 RenderViewHost* FindFirstDevToolsHost() {

@@ -11,7 +11,9 @@
 #include "base/memory/scoped_ptr.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 
+namespace content {
 class RenderWidgetHost;
+}
 
 namespace ChromeRenderWidgetHostViewMacDelegateInternal {
 class SpellCheckRenderViewObserver;
@@ -20,7 +22,7 @@ class SpellCheckRenderViewObserver;
 @interface ChromeRenderWidgetHostViewMacDelegate
     : NSObject<RenderWidgetHostViewMacDelegate> {
  @private
-  RenderWidgetHost* renderWidgetHost_;  // weak
+  content::RenderWidgetHost* renderWidgetHost_;  // weak
   scoped_ptr<ChromeRenderWidgetHostViewMacDelegateInternal::
       SpellCheckRenderViewObserver> spellingObserver_;
 
@@ -48,7 +50,7 @@ class SpellCheckRenderViewObserver;
   BOOL spellcheckChecked_;
 }
 
-- (id)initWithRenderWidgetHost:(RenderWidgetHost*)renderWidgetHost;
+- (id)initWithRenderWidgetHost:(content::RenderWidgetHost*)renderWidgetHost;
 
 - (void)viewGone:(NSView*)view;
 - (BOOL)handleEvent:(NSEvent*)event;

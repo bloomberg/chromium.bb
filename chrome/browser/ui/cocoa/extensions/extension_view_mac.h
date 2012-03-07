@@ -13,8 +13,11 @@
 
 class Browser;
 class ExtensionHost;
-class RenderViewHost;
 class SkBitmap;
+
+namespace content {
+class RenderViewHost;
+}
 
 // This class represents extension views. An extension view internally contains
 // a bridge to an extension process, which draws to the extension view's
@@ -73,7 +76,7 @@ class ExtensionViewMac {
   static const CGFloat kMaxHeight;
 
  private:
-  RenderViewHost* render_view_host() const;
+  content::RenderViewHost* render_view_host() const;
 
   void CreateWidgetHostView();
 

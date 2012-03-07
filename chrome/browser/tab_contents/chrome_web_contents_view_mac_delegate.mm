@@ -29,7 +29,7 @@ ChromeWebContentsViewMacDelegate::~ChromeWebContentsViewMacDelegate() {
 
 NSObject<RenderWidgetHostViewMacDelegate>*
 ChromeWebContentsViewMacDelegate::CreateRenderWidgetHostViewDelegate(
-    RenderWidgetHost* render_widget_host) {
+    content::RenderWidgetHost* render_widget_host) {
   return [[ChromeRenderWidgetHostViewMacDelegate alloc]
       initWithRenderWidgetHost:render_widget_host];
 }

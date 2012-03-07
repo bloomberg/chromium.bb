@@ -217,7 +217,8 @@ void OomPriorityManager::Observe(int type,
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {
       bool visible = *content::Details<bool>(details).ptr();
       if (visible) {
-        focused_tab_pid_ = content::Source<RenderWidgetHost>(source).ptr()->
+        focused_tab_pid_ =
+            content::Source<content::RenderWidgetHost>(source).ptr()->
             GetProcess()->GetHandle();
 
         // If the currently focused tab already has a lower score, do not

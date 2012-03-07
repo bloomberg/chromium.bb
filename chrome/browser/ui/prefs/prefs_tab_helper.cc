@@ -569,7 +569,8 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
   MigratePreferences(prefs);
 }
 
-void PrefsTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
+void PrefsTabHelper::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
   UpdateWebPreferences();
 }
 

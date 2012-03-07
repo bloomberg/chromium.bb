@@ -172,7 +172,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     ui_test_utils::WindowedNotificationObserver host_destroyed(
         content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
         content::NotificationService::AllSources());
-    RenderViewHost* host = dialog_->GetRenderViewHost();
+    content::RenderViewHost* host = dialog_->GetRenderViewHost();
     string16 main_frame;
     std::string button_class =
         (button_type == DIALOG_BTN_OK) ? ".ok" : ".cancel";

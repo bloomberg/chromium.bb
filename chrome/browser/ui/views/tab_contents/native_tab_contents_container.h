@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_NATIVE_TAB_CONTENTS_CONTAINER_H_
 #pragma once
 
-class RenderViewHost;
 class TabContentsContainer;
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -41,8 +41,8 @@ class NativeTabContentsContainer {
 
   // Tells the container that the RenderViewHost for the attached WebContents
   // has changed and it should update focus.
-  virtual void RenderViewHostChanged(RenderViewHost* old_host,
-                                     RenderViewHost* new_host) = 0;
+  virtual void RenderViewHostChanged(content::RenderViewHost* old_host,
+                                     content::RenderViewHost* new_host) = 0;
 
   // Tells the container that |contents| got the focus.
   virtual void WebContentsFocused(content::WebContents* contents) = 0;

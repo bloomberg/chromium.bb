@@ -23,8 +23,11 @@ class BackgroundContents;
 class BalloonHost;
 class Extension;
 class ExtensionHost;
-class RenderViewHost;
 class TabContentsWrapper;
+
+namespace content {
+class RenderViewHost;
+}
 
 // These file contains the resource providers used in the task manager.
 
@@ -33,7 +36,7 @@ class TabContentsWrapper;
 class TaskManagerRendererResource : public TaskManager::Resource {
  public:
   TaskManagerRendererResource(base::ProcessHandle process,
-                              RenderViewHost* render_view_host);
+                              content::RenderViewHost* render_view_host);
   virtual ~TaskManagerRendererResource();
 
   // TaskManager::Resource methods:
@@ -73,7 +76,7 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   int pid_;
 
   // RenderViewHost we use to fetch stats.
-  RenderViewHost* render_view_host_;
+  content::RenderViewHost* render_view_host_;
   // The stats_ field holds information about resource usage in the renderer
   // process and so it is updated asynchronously by the Refresh() call.
   WebKit::WebCache::ResourceTypeStats stats_;

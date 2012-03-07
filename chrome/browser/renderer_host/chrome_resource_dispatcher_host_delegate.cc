@@ -44,6 +44,7 @@
 #endif
 
 using content::BrowserThread;
+using content::RenderViewHost;
 using content::ResourceDispatcherHostLoginDelegate;
 
 namespace {

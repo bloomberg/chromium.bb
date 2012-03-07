@@ -74,7 +74,7 @@ void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
 }
 
 RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
-    RenderWidgetHost* render_widget_host)  {
+    content::RenderWidgetHost* render_widget_host)  {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -142,7 +142,7 @@ void TabContentsViewWin::SizeContents(const gfx::Size& size) {
   }
 }
 
-void TabContentsViewWin::RenderViewCreated(RenderViewHost* host) {
+void TabContentsViewWin::RenderViewCreated(content::RenderViewHost* host) {
 }
 
 void TabContentsViewWin::Focus() {

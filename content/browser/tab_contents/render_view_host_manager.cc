@@ -30,6 +30,8 @@
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::RenderViewHost;
+using content::RenderViewHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using content::SiteInstance;

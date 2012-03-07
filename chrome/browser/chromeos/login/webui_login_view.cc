@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #endif
 
+using content::RenderViewHost;
 using content::WebContents;
 
 namespace {

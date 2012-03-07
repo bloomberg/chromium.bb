@@ -12,9 +12,9 @@
 #include "ui/views/view.h"
 
 class NativeTabContentsContainer;
-class RenderViewHost;
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -63,8 +63,8 @@ class TabContentsContainer : public views::View,
 
   // Called when the RenderViewHost of the hosted TabContents has changed, e.g.
   // to show an interstitial page.
-  void RenderViewHostChanged(RenderViewHost* old_host,
-                             RenderViewHost* new_host);
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host);
 
   // Called when a WebContents is destroyed. This gives us a chance to clean
   // up our internal state if the TabContents is somehow destroyed before we

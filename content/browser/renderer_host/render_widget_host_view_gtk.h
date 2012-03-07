@@ -26,10 +26,13 @@
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 
-class RenderWidgetHost;
-class RenderWidgetHostImpl;
 class GtkIMContextWrapper;
 struct NativeWebKeyboardEvent;
+
+namespace content {
+class RenderWidgetHost;
+class RenderWidgetHostImpl;
+}
 
 #if defined(OS_CHROMEOS)
 namespace ui {
@@ -51,7 +54,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
 
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
-  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -92,7 +95,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {}
+  virtual void WillDestroyRenderWidget(content::RenderWidgetHost* rwh) {}
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual void SelectionChanged(const string16& text,
                                 size_t offset,
@@ -149,7 +152,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   friend class content::RenderWidgetHostView;
 
   // Should construct only via RenderWidgetHostView::CreateViewForWidget.
-  explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
+  explicit RenderWidgetHostViewGtk(content::RenderWidgetHost* widget);
 
  private:
   friend class RenderWidgetHostViewGtkWidget;
@@ -186,7 +189,7 @@ class RenderWidgetHostViewGtk : public content::RenderWidgetHostViewBase {
   gfx::Point GetWidgetCenter();
 
   // The model object.
-  RenderWidgetHostImpl* host_;
+  content::RenderWidgetHostImpl* host_;
 
   // The native UI widget.
   ui::OwnedWidgetGtk view_;

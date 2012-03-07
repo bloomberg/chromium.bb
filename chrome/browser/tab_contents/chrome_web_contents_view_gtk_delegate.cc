@@ -112,7 +112,8 @@ void ChromeWebContentsViewGtkDelegate::ShowContextMenu(
       NOTREACHED();
       return;
     }
-    view = RenderWidgetHost::FromIPCChannelListener(listener)->GetView();
+    view =
+        content::RenderWidgetHost::FromIPCChannelListener(listener)->GetView();
   } else {
     view = view_->web_contents()->GetRenderWidgetHostView();
   }

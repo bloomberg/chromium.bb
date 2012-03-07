@@ -27,6 +27,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::RenderViewHost;
+using content::RenderWidgetHost;
 using content::WebContents;
 
 namespace {

@@ -21,11 +21,14 @@
 #include "webkit/glue/webcursor.h"
 
 @class AcceleratedPluginView;
-class RenderWidgetHostImpl;
 class RenderWidgetHostViewMac;
 @protocol RenderWidgetHostViewMacDelegate;
 class RenderWidgetHostViewMacEditCommandHelper;
 @class ToolTip;
+
+namespace content {
+class RenderWidgetHostImpl;
+}
 
 @protocol RenderWidgetHostViewMacOwner
 - (RenderWidgetHostViewMac*)renderWidgetHostViewMac;
@@ -169,7 +172,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
-  virtual RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
+  virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetBounds(const gfx::Rect& rect) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -310,7 +313,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
 
   // The associated Model.  Can be NULL if Destroy() is called when
   // someone (other than superview) has retained |cocoa_view_|.
-  RenderWidgetHostImpl* render_widget_host_;
+  content::RenderWidgetHostImpl* render_widget_host_;
 
   // This is true when we are currently painting and thus should handle extra
   // paint requests by expanding the invalid rect rather than actually painting.
@@ -354,7 +357,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
   // deleted it will delete this out from under the caller.
-  explicit RenderWidgetHostViewMac(RenderWidgetHost* widget);
+  explicit RenderWidgetHostViewMac(content::RenderWidgetHost* widget);
 
   // If the window is at the root of the plugin container hierachy,
   // we need to update the geometry manually.

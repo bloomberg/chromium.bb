@@ -23,8 +23,9 @@ class NativeTabContentsContainerGtk : public NativeTabContentsContainer,
   virtual void SetFastResize(bool fast_resize) OVERRIDE;
   virtual bool GetFastResize() const OVERRIDE;
   virtual bool FastResizeAtLastLayout() const OVERRIDE;
-  virtual void RenderViewHostChanged(RenderViewHost* old_host,
-                                     RenderViewHost* new_host) OVERRIDE;
+  virtual void RenderViewHostChanged(
+      content::RenderViewHost* old_host,
+      content::RenderViewHost* new_host) OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
   virtual views::View* GetView() OVERRIDE;
 

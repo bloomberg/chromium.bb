@@ -43,8 +43,6 @@ class FilePath;
 class GURL;
 class MessageLoop;
 class Profile;
-class RenderViewHost;
-class RenderWidgetHost;
 class ScopedTempDir;
 class SkBitmap;
 class TabContents;
@@ -56,6 +54,8 @@ struct NavigateParams;
 }
 
 namespace content {
+class RenderViewHost;
+class RenderWidgetHost;
 class WebContents;
 }
 
@@ -155,7 +155,7 @@ DOMElementProxyRef GetActiveDOMDocument(Browser* browser);
 // domAutomationController.send(); otherwise, your test will hang or be flaky.
 // If you want to extract a result, use one of the below functions.
 // Returns true on success.
-bool ExecuteJavaScript(RenderViewHost* render_view_host,
+bool ExecuteJavaScript(content::RenderViewHost* render_view_host,
                        const std::wstring& frame_xpath,
                        const std::wstring& script) WARN_UNUSED_RESULT;
 
@@ -166,18 +166,19 @@ bool ExecuteJavaScript(RenderViewHost* render_view_host,
 // evaluate to the expected type.
 // Note: In order for the domAutomationController to work, you must call
 // EnableDOMAutomation() in your test first.
-bool ExecuteJavaScriptAndExtractInt(RenderViewHost* render_view_host,
+bool ExecuteJavaScriptAndExtractInt(content::RenderViewHost* render_view_host,
                                     const std::wstring& frame_xpath,
                                     const std::wstring& script,
                                     int* result) WARN_UNUSED_RESULT;
-bool ExecuteJavaScriptAndExtractBool(RenderViewHost* render_view_host,
+bool ExecuteJavaScriptAndExtractBool(content::RenderViewHost* render_view_host,
                                      const std::wstring& frame_xpath,
                                      const std::wstring& script,
                                      bool* result) WARN_UNUSED_RESULT;
-bool ExecuteJavaScriptAndExtractString(RenderViewHost* render_view_host,
-                                       const std::wstring& frame_xpath,
-                                       const std::wstring& script,
-                                       std::string* result) WARN_UNUSED_RESULT;
+bool ExecuteJavaScriptAndExtractString(
+    content::RenderViewHost* render_view_host,
+    const std::wstring& frame_xpath,
+    const std::wstring& script,
+    std::string* result) WARN_UNUSED_RESULT;
 
 // Generate the file path for testing a particular test.
 // The file for the tests is all located in
@@ -576,14 +577,14 @@ class DOMMessageQueue : public content::NotificationObserver {
 
 // Takes a snapshot of the given render widget, rendered at |page_size|. The
 // snapshot is set to |bitmap|. Returns true on success.
-bool TakeRenderWidgetSnapshot(RenderWidgetHost* rwh,
+bool TakeRenderWidgetSnapshot(content::RenderWidgetHost* rwh,
                               const gfx::Size& page_size,
                               SkBitmap* bitmap) WARN_UNUSED_RESULT;
 
 // Takes a snapshot of the entire page, according to the width and height
 // properties of the DOM's document. Returns true on success. DOMAutomation
 // must be enabled.
-bool TakeEntirePageSnapshot(RenderViewHost* rvh,
+bool TakeEntirePageSnapshot(content::RenderViewHost* rvh,
                             SkBitmap* bitmap) WARN_UNUSED_RESULT;
 
 }  // namespace ui_test_utils

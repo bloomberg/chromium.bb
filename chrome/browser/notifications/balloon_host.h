@@ -68,7 +68,8 @@ class BalloonHost : public content::WebContentsDelegate,
                               bool user_gesture) OVERRIDE;
 
   // content::WebContentsObserver implementation:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

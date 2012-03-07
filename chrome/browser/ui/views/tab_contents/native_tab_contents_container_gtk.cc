@@ -12,6 +12,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/views/focus/focus_manager.h"
 
+using content::RenderViewHost;
 using content::WebContents;
 
 ////////////////////////////////////////////////////////////////////////////////

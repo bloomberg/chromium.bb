@@ -33,6 +33,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::NavigationController;
+using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIController;
 using content::WebUIMessageHandler;

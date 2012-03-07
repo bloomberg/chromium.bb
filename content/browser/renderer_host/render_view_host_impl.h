@@ -45,11 +45,7 @@ class ListValue;
 }
 
 namespace content {
-class RenderViewHostObserver;
-struct FileChooserParams;
-struct ContextMenuParams;
-struct Referrer;
-struct ShowDesktopNotificationHostMsgParams;
+class TestRenderViewHost;
 }
 
 namespace ui {
@@ -60,15 +56,23 @@ namespace webkit_glue {
 struct WebAccessibility;
 }
 
+namespace content {
+
+class RenderViewHostObserver;
+struct FileChooserParams;
+struct ContextMenuParams;
+struct Referrer;
+struct ShowDesktopNotificationHostMsgParams;
+
 // NotificationObserver used to listen for EXECUTE_JAVASCRIPT_RESULT
 // notifications.
-class ExecuteNotificationObserver : public content::NotificationObserver {
+class ExecuteNotificationObserver : public NotificationObserver {
  public:
   explicit ExecuteNotificationObserver(int id);
   virtual ~ExecuteNotificationObserver();
   virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   int id() const { return id_; }
 
@@ -124,10 +128,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // spec) space. This is useful when restoring tabs, but most callers should
   // pass in NULL which will cause a new SessionStorageNamespace to be created.
   RenderViewHostImpl(
-      content::SiteInstance* instance,
-      content::RenderViewHostDelegate* delegate,
+      SiteInstance* instance,
+      RenderViewHostDelegate* delegate,
       int routing_id,
-      content::SessionStorageNamespace* session_storage_namespace);
+      SessionStorageNamespace* session_storage_namespace);
   virtual ~RenderViewHostImpl();
 
   // RenderViewHost implementation.
@@ -171,7 +175,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void DisableAutoResize(const gfx::Size& new_size) OVERRIDE;
   virtual void EnablePreferredSizeMode() OVERRIDE;
   virtual void ExecuteCustomContextMenuCommand(
-      int action, const content::CustomContextMenuContext& context) OVERRIDE;
+      int action, const CustomContextMenuContext& context) OVERRIDE;
   virtual void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,
       const WebKit::WebMediaPlayerAction& action) OVERRIDE;
@@ -188,32 +192,32 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void ExitFullscreen() OVERRIDE;
   virtual void Find(int request_id, const string16& search_text,
                     const WebKit::WebFindOptions& options) OVERRIDE;
-  virtual void StopFinding(content::StopFindAction action) OVERRIDE;
+  virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void FirePageBeforeUnload(bool for_cross_site_transition) OVERRIDE;
   virtual void FilesSelectedInChooser(const std::vector<FilePath>& files,
                                       int permissions) OVERRIDE;
-  virtual content::RenderViewHostDelegate* GetDelegate() const OVERRIDE;
+  virtual RenderViewHostDelegate* GetDelegate() const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
-  virtual content::SessionStorageNamespace*
+  virtual SessionStorageNamespace*
       GetSessionStorageNamespace() OVERRIDE;
-  virtual content::SiteInstance* GetSiteInstance() const OVERRIDE;
+  virtual SiteInstance* GetSiteInstance() const OVERRIDE;
   virtual void InsertCSS(const string16& frame_xpath,
                          const std::string& css) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
   virtual void NotifyContextMenuClosed(
-      const content::CustomContextMenuContext& context) OVERRIDE;
+      const CustomContextMenuContext& context) OVERRIDE;
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
   virtual void ReloadFrame() OVERRIDE;
   virtual void SetAltErrorPageURL(const GURL& url) OVERRIDE;
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) OVERRIDE;
   virtual void SetZoomLevel(double level) OVERRIDE;
-  virtual void Zoom(content::PageZoom zoom) OVERRIDE;
+  virtual void Zoom(PageZoom zoom) OVERRIDE;
   virtual void SyncRendererPrefs() OVERRIDE;
   virtual void ToggleSpeechInput() OVERRIDE;
   virtual void UpdateWebkitPreferences(const WebPreferences& prefs) OVERRIDE;
 
-  void set_delegate(content::RenderViewHostDelegate* d) {
+  void set_delegate(RenderViewHostDelegate* d) {
     CHECK(d);  // http://crbug.com/82827
     delegate_ = d;
   }
@@ -390,12 +394,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   // one or two places.  Have the caller send the IPC message directly.
 
  protected:
-  friend class content::RenderViewHostObserver;
+  friend class RenderViewHostObserver;
 
   // Add and remove observers for filtering IPC messages.  Clients must be sure
   // to remove the observer before they go away.
-  void AddObserver(content::RenderViewHostObserver* observer);
-  void RemoveObserver(content::RenderViewHostObserver* observer);
+  void AddObserver(RenderViewHostObserver* observer);
+  void RemoveObserver(RenderViewHostObserver* observer);
 
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -436,10 +440,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgDidChangeLoadProgress(double load_progress);
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
-  void OnMsgContextMenu(const content::ContextMenuParams& params);
+  void OnMsgContextMenu(const ContextMenuParams& params);
   void OnMsgToggleFullscreen(bool enter_fullscreen);
   void OnMsgOpenURL(const GURL& url,
-                    const content::Referrer& referrer,
+                    const Referrer& referrer,
                     WindowOpenDisposition disposition,
                     int64 source_frame_id);
   void OnMsgDidContentsPreferredSizeChange(const gfx::Size& new_size);
@@ -490,9 +494,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnRequestDesktopNotificationPermission(const GURL& origin,
                                               int callback_id);
   void OnShowDesktopNotification(
-      const content::ShowDesktopNotificationHostMsgParams& params);
+      const ShowDesktopNotificationHostMsgParams& params);
   void OnCancelDesktopNotification(int notification_id);
-  void OnRunFileChooser(const content::FileChooserParams& params);
+  void OnRunFileChooser(const FileChooserParams& params);
   void OnWebUISend(const GURL& source_url, const std::string& name,
                    const base::ListValue& args);
   void OnDomOperationResponse(const std::string& json_string,
@@ -512,7 +516,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void ClearPowerSaveBlockers();
 
   // Our delegate, which wants to know about changes in the RenderView.
-  content::RenderViewHostDelegate* delegate_;
+  RenderViewHostDelegate* delegate_;
 
   // The SiteInstance associated with this RenderViewHost.  All pages drawn
   // in this RenderViewHost are part of this SiteInstance.  Should not change
@@ -598,7 +602,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   PowerSaveBlockerMap power_save_blockers_;
 
   // A list of observers that filter messages.  Weak references.
-  ObserverList<content::RenderViewHostObserver> observers_;
+  ObserverList<RenderViewHostObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
 };
@@ -606,5 +610,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 #if defined(COMPILER_MSVC)
 #pragma warning(pop)
 #endif
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_IMPL_H_

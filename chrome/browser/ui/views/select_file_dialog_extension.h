@@ -16,7 +16,10 @@
 
 class Browser;
 class ExtensionDialog;
+
+namespace content {
 class RenderViewHost;
+}
 
 // Shows a dialog box for selecting a file or a folder, using the
 // file manager extension implementation.
@@ -43,7 +46,7 @@ class SelectFileDialogExtension
   static void OnFileSelectionCanceled(int32 tab_id);
 
   // For testing, so we can inject JavaScript into the contained view.
-  RenderViewHost* GetRenderViewHost();
+  content::RenderViewHost* GetRenderViewHost();
 
  protected:
   // SelectFileDialog implementation.

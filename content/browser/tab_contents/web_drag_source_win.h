@@ -13,9 +13,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
-class RenderViewHost;
-
 namespace content {
+class RenderViewHost;
 class WebContents;
 }
 
@@ -58,7 +57,7 @@ class WebDragSource : public ui::DragSource,
   // We use this as a channel to the renderer to tell it about various drag
   // drop events that it needs to know about (such as when a drag operation it
   // initiated terminates).
-  RenderViewHost* render_view_host_;
+  content::RenderViewHost* render_view_host_;
 
   content::NotificationRegistrar registrar_;
 

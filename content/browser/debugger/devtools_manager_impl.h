@@ -17,7 +17,6 @@
 #include "content/public/browser/devtools_manager.h"
 
 class GURL;
-class RenderViewHost;
 class TabContents;
 
 namespace IPC {
@@ -27,6 +26,7 @@ class Message;
 namespace content {
 
 class DevToolsAgentHost;
+class RenderViewHost;
 
 // This class is a singleton that manages DevToolsClientHost instances and
 // routes messages between developer tools clients and agents.

@@ -17,6 +17,13 @@
 #include "content/public/common/page_transition_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// This file provides a testing framework for mocking out the RenderProcessHost
+// layer. It allows you to test RenderViewHost, TabContents,
+// NavigationController, and other layers above that without running an actual
+// renderer process.
+//
+// To use, derive your test base class from RenderViewHostTestHarness.
+
 #if defined(USE_AURA)
 namespace aura {
 class RootWindow;
@@ -40,22 +47,14 @@ class Rect;
 class TestTabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
+namespace content {
+
 // Utility function to initialize ViewHostMsg_NavigateParams_Params
 // with given |page_id|, |url| and |transition_type|.
 void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
                         int page_id,
                         const GURL& url,
-                        content::PageTransition transition_type);
-
-// This file provides a testing framework for mocking out the RenderProcessHost
-// layer. It allows you to test RenderViewHost, TabContents,
-// NavigationController, and other layers above that without running an actual
-// renderer process.
-//
-// To use, derive your test base class from RenderViewHostTestHarness.
-
-
-namespace content {
+                        PageTransition transition_type);
 
 // TestRenderViewHostView ------------------------------------------------------
 
@@ -95,10 +94,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       const WebKit::WebMouseWheelEvent& event) OVERRIDE {}
 
   // RenderWidgetHostViewPort implementation.
-  virtual void InitAsPopup(content::RenderWidgetHostView* parent_host_view,
+  virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos) OVERRIDE {}
   virtual void InitAsFullscreen(
-      content::RenderWidgetHostView* reference_host_view) OVERRIDE {}
+      RenderWidgetHostView* reference_host_view) OVERRIDE {}
   virtual void DidBecomeSelected() OVERRIDE {}
   virtual void WasHidden() OVERRIDE {}
   virtual void MovePluginWindows(
@@ -187,8 +186,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool is_showing_;
 };
 
-}  // namespace content
-
 #if defined(COMPILER_MSVC)
 // See comment for same warning on RenderViewHostImpl.
 #pragma warning(push)
@@ -204,10 +201,10 @@ class TestRenderViewHost : public RenderViewHostImpl {
  public:
   // If the given TabContnets has a pending RVH, returns it, otherwise NULL.
   static TestRenderViewHost* GetPendingForController(
-      content::NavigationController* controller);
+      NavigationController* controller);
 
-  TestRenderViewHost(content::SiteInstance* instance,
-                     content::RenderViewHostDelegate* delegate,
+  TestRenderViewHost(SiteInstance* instance,
+                     RenderViewHostDelegate* delegate,
                      int routing_id);
   virtual ~TestRenderViewHost();
 
@@ -223,11 +220,11 @@ class TestRenderViewHost : public RenderViewHostImpl {
   void SendNavigate(int page_id, const GURL& url);
 
   // Calls OnMsgNavigate on the RenderViewHost with the given information,
-  // including a custom content::PageTransition.  Sets the rest of the
+  // including a custom PageTransition.  Sets the rest of the
   // parameters in the message to the "typical" values. This is a helper
   // function for simulating the most common types of loads.
   void SendNavigateWithTransition(int page_id, const GURL& url,
-                                  content::PageTransition transition);
+                                  PageTransition transition);
 
   // Calls OnMsgShouldCloseACK on the RenderViewHost with the given parameter.
   void SendShouldCloseACK(bool proceed);
@@ -311,6 +308,8 @@ class TestRenderViewHost : public RenderViewHostImpl {
 #pragma warning(pop)
 #endif
 
+}  // namespace content
+
 // TestRenderViewHostFactory ---------------------------------------------------
 
 // Manages creation of the RenderViewHosts using our special subclass. This
@@ -325,7 +324,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
 
   virtual void set_render_process_host_factory(
       content::RenderProcessHostFactory* rph_factory);
-  virtual RenderViewHost* CreateRenderViewHost(
+  virtual content::RenderViewHost* CreateRenderViewHost(
       content::SiteInstance* instance,
       content::RenderViewHostDelegate* delegate,
       int routing_id,
@@ -353,9 +352,9 @@ class RenderViewHostTestHarness : public testing::Test {
 
   content::NavigationController& controller();
   virtual TestTabContents* contents();
-  TestRenderViewHost* rvh();
-  TestRenderViewHost* pending_rvh();
-  TestRenderViewHost* active_rvh();
+  content::TestRenderViewHost* rvh();
+  content::TestRenderViewHost* pending_rvh();
+  content::TestRenderViewHost* active_rvh();
   content::BrowserContext* browser_context();
   MockRenderProcessHost* process();
 

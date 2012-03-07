@@ -12,9 +12,9 @@
 #include "ui/base/dragdrop/drop_target.h"
 
 class InterstitialDropTarget;
-class RenderViewHost;
 
 namespace content {
+class RenderViewHost;
 class WebContents;
 class WebDragDestDelegate;
 }
@@ -62,7 +62,7 @@ class CONTENT_EXPORT WebDragDest : public ui::DropTarget {
   // during a drag, we need to re-send the DragEnter message.  WARNING:
   // this pointer should never be dereferenced.  We only use it for comparing
   // pointers.
-  RenderViewHost* current_rvh_;
+  content::RenderViewHost* current_rvh_;
 
   // Used to determine what cursor we should display when dragging over web
   // content area.  This can be updated async during a drag operation.

@@ -103,6 +103,7 @@ bool MovedToCenter(const WebKit::WebMouseEvent& mouse_event,
 
 }  // namespace
 
+using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
 using WebKit::WebInputEventFactory;
@@ -574,7 +575,8 @@ class RenderWidgetHostViewGtkWidget {
   DISALLOW_IMPLICIT_CONSTRUCTORS(RenderWidgetHostViewGtkWidget);
 };
 
-RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
+RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(
+    content::RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
       about_to_validate_and_paint_(false),
       is_hidden_(false),
@@ -674,7 +676,8 @@ void RenderWidgetHostViewGtk::InitAsFullscreen(
   DoPopupOrFullscreenInit(window, bounds);
 }
 
-RenderWidgetHost* RenderWidgetHostViewGtk::GetRenderWidgetHost() const {
+content::RenderWidgetHost*
+RenderWidgetHostViewGtk::GetRenderWidgetHost() const {
   return host_;
 }
 
@@ -1419,7 +1422,7 @@ void RenderWidgetHostViewGtk::ModifyEventMovementAndCoords(
 
 // static
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
+    content::RenderWidgetHost* widget) {
   return new RenderWidgetHostViewGtk(widget);
 }
 

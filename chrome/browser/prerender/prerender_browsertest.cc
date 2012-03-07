@@ -53,6 +53,8 @@ using content::DevToolsManager;
 using content::NavigationController;
 using content::OpenURLParams;
 using content::Referrer;
+using content::RenderViewHost;
+using content::RenderWidgetHost;
 using content::WebContents;
 
 // Prerender tests work as follows:

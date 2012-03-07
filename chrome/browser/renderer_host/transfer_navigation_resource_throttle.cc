@@ -26,8 +26,8 @@ void RequestTransferURLOnUIThread(int render_process_id,
                                   WindowOpenDisposition window_open_disposition,
                                   int64 frame_id,
                                   const GlobalRequestID& request_id) {
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
-                                               render_view_id);
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
   if (!rvh)
     return;
 
