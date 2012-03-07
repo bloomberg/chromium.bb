@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@ class NaClBrokerListener : public IPC::Channel::Listener {
 
  private:
   void OnLaunchLoaderThroughBroker(const std::wstring& loader_channel_id);
-  void OnShareBrowserHandle(int browser_handle);
   void OnStopBroker();
 
   base::ProcessHandle browser_handle_;
