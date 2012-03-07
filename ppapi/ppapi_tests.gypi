@@ -366,7 +366,7 @@
       ],
     },
     {
-      'target_name': 'ppapi_example_gles2',
+      'target_name': 'ppapi_example_video_decode',
       'dependencies': [
         'ppapi_example_skeleton',
         'ppapi.gyp:ppapi_cpp',
@@ -377,8 +377,8 @@
         'lib/gl/include',
       ],
       'sources': [
-        'examples/gles2/gles2.cc',
-        'examples/gles2/testdata.h',
+        'examples/video_decode/video_decode.cc',
+        'examples/video_decode/testdata.h',
       ],
     },
     {

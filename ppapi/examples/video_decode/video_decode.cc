@@ -22,7 +22,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
-#include "ppapi/examples/gles2/testdata.h"
+#include "ppapi/examples/video_decode/testdata.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -39,12 +39,12 @@
 
 namespace {
 
-class GLES2DemoInstance : public pp::Instance,
-                          public pp::Graphics3DClient,
-                          public pp::VideoDecoderClient_Dev {
+class VideoDecodeDemoInstance : public pp::Instance,
+                                public pp::Graphics3DClient,
+                                public pp::VideoDecoderClient_Dev {
  public:
-  GLES2DemoInstance(PP_Instance instance, pp::Module* module);
-  virtual ~GLES2DemoInstance();
+  VideoDecodeDemoInstance(PP_Instance instance, pp::Module* module);
+  virtual ~VideoDecodeDemoInstance();
 
   // pp::Instance implementation (see PPP_Instance).
   virtual void DidChangeView(const pp::Rect& position,
@@ -75,7 +75,8 @@ class GLES2DemoInstance : public pp::Instance,
   // A single decoder's client interface.
   class DecoderClient {
    public:
-    DecoderClient(GLES2DemoInstance* gles2, pp::VideoDecoder_Dev* decoder);
+    DecoderClient(VideoDecodeDemoInstance* gles2,
+                  pp::VideoDecoder_Dev* decoder);
     ~DecoderClient();
 
     void DecodeNextNALUs();
@@ -94,7 +95,7 @@ class GLES2DemoInstance : public pp::Instance,
     void DecoderBitstreamDone(int32_t result, int bitstream_buffer_id);
     void DecoderFlushDone(int32_t result);
 
-    GLES2DemoInstance* gles2_;
+    VideoDecodeDemoInstance* gles2_;
     pp::VideoDecoder_Dev* decoder_;
     pp::CompletionCallbackFactory<DecoderClient> callback_factory_;
     int next_picture_buffer_id_;
@@ -127,7 +128,7 @@ class GLES2DemoInstance : public pp::Instance,
   // LogError(this).s() << "Hello world: " << 42;
   class LogError {
    public:
-    LogError(GLES2DemoInstance* demo) : demo_(demo) {}
+    LogError(VideoDecodeDemoInstance* demo) : demo_(demo) {}
     ~LogError() {
       const std::string& msg = stream_.str();
       demo_->console_if_->Log(demo_->pp_instance(), PP_LOGLEVEL_ERROR,
@@ -139,7 +140,7 @@ class GLES2DemoInstance : public pp::Instance,
     // rules turn streamed string literals to hex pointers on output.
     std::ostringstream& s() { return stream_; }
    private:
-    GLES2DemoInstance* demo_;  // Unowned.
+    VideoDecodeDemoInstance* demo_;  // Unowned.
     std::ostringstream stream_;
   };
 
@@ -152,7 +153,7 @@ class GLES2DemoInstance : public pp::Instance,
   PP_TimeTicks first_frame_delivered_ticks_;
   PP_TimeTicks last_swap_request_ticks_;
   PP_TimeTicks swap_ticks_;
-  pp::CompletionCallbackFactory<GLES2DemoInstance> callback_factory_;
+  pp::CompletionCallbackFactory<VideoDecodeDemoInstance> callback_factory_;
 
   // Unowned pointers.
   const PPB_Console_Dev* console_if_;
@@ -165,14 +166,14 @@ class GLES2DemoInstance : public pp::Instance,
   Decoders video_decoders_;
 };
 
-GLES2DemoInstance::DecoderClient::DecoderClient(GLES2DemoInstance* gles2,
-                                              pp::VideoDecoder_Dev* decoder)
+VideoDecodeDemoInstance::DecoderClient::DecoderClient(
+      VideoDecodeDemoInstance* gles2, pp::VideoDecoder_Dev* decoder)
     : gles2_(gles2), decoder_(decoder), callback_factory_(this),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0), encoded_data_next_pos_to_decode_(0) {
 }
 
-GLES2DemoInstance::DecoderClient::~DecoderClient() {
+VideoDecodeDemoInstance::DecoderClient::~DecoderClient() {
   delete decoder_;
   decoder_ = NULL;
 
@@ -189,7 +190,8 @@ GLES2DemoInstance::DecoderClient::~DecoderClient() {
   picture_buffers_by_id_.clear();
 }
 
-GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
+VideoDecodeDemoInstance::VideoDecodeDemoInstance(PP_Instance instance,
+                                                 pp::Module* module)
     : pp::Instance(instance), pp::Graphics3DClient(this),
       pp::VideoDecoderClient_Dev(this),
       num_frames_rendered_(0),
@@ -205,7 +207,7 @@ GLES2DemoInstance::GLES2DemoInstance(PP_Instance instance, pp::Module* module)
       module->GetBrowserInterface(PPB_OPENGLES2_INTERFACE))));
 }
 
-GLES2DemoInstance::~GLES2DemoInstance() {
+VideoDecodeDemoInstance::~VideoDecodeDemoInstance() {
   for (Decoders::iterator it = video_decoders_.begin();
        it != video_decoders_.end(); ++it) {
     delete it->second;
@@ -214,7 +216,7 @@ GLES2DemoInstance::~GLES2DemoInstance() {
   delete context_;
 }
 
-void GLES2DemoInstance::DidChangeView(
+void VideoDecodeDemoInstance::DidChangeView(
     const pp::Rect& position, const pp::Rect& clip_ignored) {
   if (position.width() == 0 || position.height() == 0)
     return;
@@ -229,7 +231,7 @@ void GLES2DemoInstance::DidChangeView(
   InitializeDecoders();
 }
 
-void GLES2DemoInstance::InitializeDecoders() {
+void VideoDecodeDemoInstance::InitializeDecoders() {
   assert(video_decoders_.empty());
   for (int i = 0; i < kNumDecoders; ++i) {
     DecoderClient* client = new DecoderClient(
@@ -242,7 +244,7 @@ void GLES2DemoInstance::InitializeDecoders() {
   }
 }
 
-void GLES2DemoInstance::DecoderClient::DecoderBitstreamDone(
+void VideoDecodeDemoInstance::DecoderClient::DecoderBitstreamDone(
     int32_t result, int bitstream_buffer_id) {
   assert(bitstream_ids_at_decoder_.erase(bitstream_buffer_id) == 1);
   BitstreamBufferMap::iterator it =
@@ -253,7 +255,7 @@ void GLES2DemoInstance::DecoderClient::DecoderBitstreamDone(
   DecodeNextNALUs();
 }
 
-void GLES2DemoInstance::DecoderClient::DecoderFlushDone(int32_t result) {
+void VideoDecodeDemoInstance::DecoderClient::DecoderFlushDone(int32_t result) {
   assert(result == PP_OK);
   // Check that each bitstream buffer ID we handed to the decoder got handed
   // back to us.
@@ -268,7 +270,7 @@ static bool LookingAtNAL(const unsigned char* encoded, size_t pos) {
       encoded[pos + 2] == 0 && encoded[pos + 3] == 1;
 }
 
-void GLES2DemoInstance::DecoderClient::GetNextNALUBoundary(
+void VideoDecodeDemoInstance::DecoderClient::GetNextNALUBoundary(
     size_t start_pos, size_t* end_pos) {
   assert(LookingAtNAL(kData, start_pos));
   *end_pos = start_pos;
@@ -283,18 +285,18 @@ void GLES2DemoInstance::DecoderClient::GetNextNALUBoundary(
   }
 }
 
-void GLES2DemoInstance::DecoderClient::DecodeNextNALUs() {
+void VideoDecodeDemoInstance::DecoderClient::DecodeNextNALUs() {
   while (encoded_data_next_pos_to_decode_ <= kDataLen &&
          bitstream_ids_at_decoder_.size() < kNumConcurrentDecodes) {
     DecodeNextNALU();
   }
 }
 
-void GLES2DemoInstance::DecoderClient::DecodeNextNALU() {
+void VideoDecodeDemoInstance::DecoderClient::DecodeNextNALU() {
   if (encoded_data_next_pos_to_decode_ == kDataLen) {
     ++encoded_data_next_pos_to_decode_;
     pp::CompletionCallback cb = callback_factory_.NewCallback(
-        &GLES2DemoInstance::DecoderClient::DecoderFlushDone);
+        &VideoDecodeDemoInstance::DecoderClient::DecoderFlushDone);
     decoder_->Flush(cb);
     return;
   }
@@ -312,20 +314,20 @@ void GLES2DemoInstance::DecoderClient::DecodeNextNALU() {
 
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(
-          &GLES2DemoInstance::DecoderClient::DecoderBitstreamDone, id);
+          &VideoDecodeDemoInstance::DecoderClient::DecoderBitstreamDone, id);
   assert(bitstream_ids_at_decoder_.insert(id).second);
   encoded_data_next_pos_to_decode_ = end_pos;
   decoder_->Decode(bitstream_buffer, cb);
 }
 
-void GLES2DemoInstance::ProvidePictureBuffers(
+void VideoDecodeDemoInstance::ProvidePictureBuffers(
     PP_Resource decoder, uint32_t req_num_of_bufs, const PP_Size& dimensions) {
   DecoderClient* client = video_decoders_[decoder];
   assert(client);
   client->ProvidePictureBuffers(req_num_of_bufs, dimensions);
 }
 
-void GLES2DemoInstance::DecoderClient::ProvidePictureBuffers(
+void VideoDecodeDemoInstance::DecoderClient::ProvidePictureBuffers(
     uint32_t req_num_of_bufs, PP_Size dimensions) {
   std::vector<PP_PictureBuffer_Dev> buffers;
   for (uint32_t i = 0; i < req_num_of_bufs; ++i) {
@@ -342,27 +344,27 @@ void GLES2DemoInstance::DecoderClient::ProvidePictureBuffers(
 }
 
 const PP_PictureBuffer_Dev&
-GLES2DemoInstance::DecoderClient::GetPictureBufferById(
+VideoDecodeDemoInstance::DecoderClient::GetPictureBufferById(
     int id) {
   PictureBufferMap::iterator it = picture_buffers_by_id_.find(id);
   assert(it != picture_buffers_by_id_.end());
   return it->second;
 }
 
-void GLES2DemoInstance::DismissPictureBuffer(PP_Resource decoder,
+void VideoDecodeDemoInstance::DismissPictureBuffer(PP_Resource decoder,
                                              int32_t picture_buffer_id) {
   DecoderClient* client = video_decoders_[decoder];
   assert(client);
   client->DismissPictureBuffer(picture_buffer_id);
 }
 
-void GLES2DemoInstance::DecoderClient::DismissPictureBuffer(
+void VideoDecodeDemoInstance::DecoderClient::DismissPictureBuffer(
     int32_t picture_buffer_id) {
   gles2_->DeleteTexture(GetPictureBufferById(picture_buffer_id).texture_id);
   picture_buffers_by_id_.erase(picture_buffer_id);
 }
 
-void GLES2DemoInstance::PictureReady(PP_Resource decoder,
+void VideoDecodeDemoInstance::PictureReady(PP_Resource decoder,
                                      const PP_Picture_Dev& picture) {
   if (first_frame_delivered_ticks_ == -1)
     assert((first_frame_delivered_ticks_ = core_if_->GetTimeTicks()) != -1);
@@ -392,12 +394,12 @@ void GLES2DemoInstance::PictureReady(PP_Resource decoder,
   gles2_if_->DrawArrays(context_->pp_resource(), GL_TRIANGLE_STRIP, 0, 4);
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(
-          &GLES2DemoInstance::PaintFinished, decoder, buffer.id);
+          &VideoDecodeDemoInstance::PaintFinished, decoder, buffer.id);
   last_swap_request_ticks_ = core_if_->GetTimeTicks();
   assert(context_->SwapBuffers(cb) == PP_OK_COMPLETIONPENDING);
 }
 
-void GLES2DemoInstance::NotifyError(PP_Resource decoder,
+void VideoDecodeDemoInstance::NotifyError(PP_Resource decoder,
                                     PP_VideoDecodeError_Dev error) {
   LogError(this).s() << "Received error: " << error;
   assert(!"Unexpected error; see stderr for details");
@@ -405,17 +407,17 @@ void GLES2DemoInstance::NotifyError(PP_Resource decoder,
 
 // This object is the global object representing this plugin library as long
 // as it is loaded.
-class GLES2DemoModule : public pp::Module {
+class VideoDecodeDemoModule : public pp::Module {
  public:
-  GLES2DemoModule() : pp::Module() {}
-  virtual ~GLES2DemoModule() {}
+  VideoDecodeDemoModule() : pp::Module() {}
+  virtual ~VideoDecodeDemoModule() {}
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
-    return new GLES2DemoInstance(instance, this);
+    return new VideoDecodeDemoInstance(instance, this);
   }
 };
 
-void GLES2DemoInstance::InitGL() {
+void VideoDecodeDemoInstance::InitGL() {
   assert(plugin_size_.width() && plugin_size_.height());
   is_painting_ = false;
 
@@ -446,7 +448,7 @@ void GLES2DemoInstance::InitGL() {
   CreateGLObjects();
 }
 
-void GLES2DemoInstance::PaintFinished(int32_t result, PP_Resource decoder,
+void VideoDecodeDemoInstance::PaintFinished(int32_t result, PP_Resource decoder,
                                       int picture_buffer_id) {
   assert(result == PP_OK);
   swap_ticks_ += core_if_->GetTimeTicks() - last_swap_request_ticks_;
@@ -471,7 +473,7 @@ void GLES2DemoInstance::PaintFinished(int32_t result, PP_Resource decoder,
   }
 }
 
-GLuint GLES2DemoInstance::CreateTexture(int32_t width, int32_t height) {
+GLuint VideoDecodeDemoInstance::CreateTexture(int32_t width, int32_t height) {
   GLuint texture_id;
   gles2_if_->GenTextures(context_->pp_resource(), 1, &texture_id);
   assertNoGLError();
@@ -498,11 +500,11 @@ GLuint GLES2DemoInstance::CreateTexture(int32_t width, int32_t height) {
   return texture_id;
 }
 
-void GLES2DemoInstance::DeleteTexture(GLuint id) {
+void VideoDecodeDemoInstance::DeleteTexture(GLuint id) {
   gles2_if_->DeleteTextures(context_->pp_resource(), 1, &id);
 }
 
-void GLES2DemoInstance::CreateGLObjects() {
+void VideoDecodeDemoInstance::CreateGLObjects() {
   // Code and constants for shader.
   static const char kVertexShader[] =
       "varying vec2 v_texCoord;            \n"
@@ -565,7 +567,7 @@ void GLES2DemoInstance::CreateGLObjects() {
   assertNoGLError();
 }
 
-void GLES2DemoInstance::CreateShader(
+void VideoDecodeDemoInstance::CreateShader(
     GLuint program, GLenum type, const char* source, int size) {
   GLuint shader = gles2_if_->CreateShader(context_->pp_resource(), type);
   gles2_if_->ShaderSource(context_->pp_resource(), shader, 1, &source, &size);
@@ -578,6 +580,6 @@ void GLES2DemoInstance::CreateShader(
 namespace pp {
 // Factory function for your specialization of the Module object.
 Module* CreateModule() {
-  return new GLES2DemoModule();
+  return new VideoDecodeDemoModule();
 }
 }  // namespace pp
