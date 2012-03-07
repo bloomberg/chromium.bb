@@ -46,12 +46,6 @@ cr.define('extensions', function() {
       $('dev-controls').addEventListener('webkitTransitionEnd',
           this.handleDevControlsTransitionEnd_.bind(this));
 
-      // Setup the gallery related links and text.
-      $('suggest-gallery').innerHTML =
-          localStrings.getString('extensionSettingsSuggestGallery');
-      $('get-more-extensions').innerHTML =
-          localStrings.getString('extensionSettingsGetMoreExtensions');
-
       // Set up the three dev mode buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click',
           this.handleLoadUnpackedExtension_.bind(this));
@@ -180,10 +174,6 @@ cr.define('extensions', function() {
 
     webui_responded_ = true;
 
-    $('no-extensions').hidden = true;
-    $('suggest-gallery').hidden = true;
-    $('get-more-extensions-container').hidden = true;
-
     if (extensionsData.extensions.length > 0) {
       // Enforce order specified in the data or (if equal) then sort by
       // extension name (case-insensitive).
@@ -196,11 +186,6 @@ cr.define('extensions', function() {
           return a.order < b.order ? -1 : 1;
         }
       });
-
-      $('get-more-extensions-container').hidden = false;
-    } else {
-      $('no-extensions').hidden = false;
-      $('suggest-gallery').hidden = false;
     }
 
     if (extensionsData.developerMode) {

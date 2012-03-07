@@ -4333,8 +4333,11 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSIONS_POLICY_CONTROLLED" desc="The text informing the user that an extension is policy controlled">
         (this extension is managed and can not be removed or disabled)
       </message>
-      <message name="IDS_GET_MORE_EXTENSIONS" desc="The link for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
+      <message name="IDS_GET_MORE_EXTENSIONS_DEPRECATED" desc="The link for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
         <ph name="BEGIN_LINK">&lt;a target="blank_" href="$1"&gt;</ph>Get more extensions<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_GET_MORE_EXTENSIONS" desc="The text for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
+        Get more extensions
       </message>
       <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
         Select the extension directory.

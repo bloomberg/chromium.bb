@@ -20,6 +20,7 @@ body.uber-frame .subpage-sheet-container .page,
 body.uber-frame > .page {
   -webkit-margin-end: 24px;
   min-width: 576px;
+  padding-bottom: 20px;
   padding-top: 55px;
 }
 

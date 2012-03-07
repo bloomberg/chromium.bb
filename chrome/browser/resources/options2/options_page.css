@@ -138,10 +138,6 @@ html[touch-optimized] body {
   right: 0;
 }
 
-#mainview-content .page {
-  padding-bottom: 20px;
-}
-
 /* Omit top padding (currently only on #settings) whenever the search page is
  * showing.
  */

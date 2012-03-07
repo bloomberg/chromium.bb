@@ -30,11 +30,12 @@
 </div>
 
 <div class="page" id="extension-settings">
-  <header id="page-header"><h1 i18n-content="extensionSettings"></h1></header>
-  <div id="dev-toggle" class="checkbox"><label>
-    <input id="toggle-dev-on" type="checkbox">
-    <span i18n-content="extensionSettingsDeveloperMode">
-  </label></div>
+  <header id="page-header"><h1 i18n-content="extensionSettings"></h1>
+    <div id="dev-toggle" class="checkbox header-extras"><label>
+      <input id="toggle-dev-on" type="checkbox">
+      <span i18n-content="extensionSettingsDeveloperMode">
+    </label></div>
+  </header>
   <div id="dev-controls" hidden>
     <button id="load-unpacked"
         i18n-content="extensionSettingsLoadUnpackedButton"></button>
@@ -44,15 +45,18 @@
     <button id="update-extensions-now"
         i18n-content="extensionSettingsUpdateButton"></button>
   </div>
-  <div id="extension-settings-list"></div>
-  <div>
-    <strong id="no-extensions" i18n-content="extensionSettingsNoExtensions"
-        hidden></strong>
+  <div id="extension-settings-list" class="empty-extension-list"></div>
+  <div id="no-extensions">
+    <span id="no-extensions-message"
+        i18n-content="extensionSettingsNoExtensions"></span>
+    <span id="suggest-gallery"
+        i18n-values=".innerHTML:extensionSettingsSuggestGallery">
+    </span>
   </div>
-  <div id="suggest-gallery" hidden></div>
-  <div id="get-more-extensions-container" hidden>
-    <img src="chrome://theme/IDR_WEBSTORE_ICON_32">
-    <div id="get-more-extensions"></div>
+  <div id="get-more-extensions">
+    <a target="blank_"
+        i18n-values="href:extensionSettingsGetMoreExtensionsUrl"
+        i18n-content="extensionSettingsGetMoreExtensions"></a>
   </div>
 </div>
 

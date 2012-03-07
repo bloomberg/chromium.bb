@@ -47,9 +47,14 @@ cr.define('options', function() {
      * @private
      */
      showExtensionNodes_: function() {
-      // Iterate over the extension data and add each item to the list.
-      var list = this;
-      this.data_.extensions.forEach(this.createNode_.bind(this));
+       // Iterate over the extension data and add each item to the list.
+       var list = this;
+       this.data_.extensions.forEach(this.createNode_.bind(this));
+
+       if (this.data_.extensions.length == 0)
+         this.classList.add('empty-extension-list');
+       else
+         this.classList.remove('empty-extension-list');
      },
 
      /**

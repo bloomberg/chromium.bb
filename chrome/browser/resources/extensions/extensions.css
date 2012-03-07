@@ -32,10 +32,8 @@ html.loading * {
 }
 
 #dev-toggle {
-  -webkit-margin-end: 8px;
-  display: block;
+  margin-top: 0;
   text-align: end;
-  margin-top: 5px;
 }
 
 #extension-settings:not(.dev-mode) .developer-extras {
@@ -48,23 +46,35 @@ html.loading * {
 
 /* Contents */
 
+#extension-settings {
+  max-width: 718px;
+}
+
+#no-extensions-message {
+  font-weight: bold;
+}
+
 #suggest-gallery {
   -webkit-padding-start: 10px;
 }
 
-#get-more-extensions-container {
-  display: -webkit-box;
-}
-
 #get-more-extensions {
-  -webkit-padding-start: 10px;
-  padding-top: 5px;
-  font-size: 15px;
+  background: url('chrome://theme/IDR_WEBSTORE_ICON_32') no-repeat left center;
+  font-size: 1.25em;
 }
 
-#extension-settings {
-  max-width: 700px;
-  min-width: 500px;
+#get-more-extensions > a {
+  -webkit-margin-start: 42px;
+  line-height: 32px;
+}
+
+.empty-extension-list {
+  height: 3em;
+}
+
+#extension-settings-list:not(.empty-extension-list) ~ #no-extensions,
+.empty-extension-list ~ #get-more-extensions {
+  display: none;
 }
 
 .extension-list-item-wrapper {

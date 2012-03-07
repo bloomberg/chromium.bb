@@ -44,8 +44,8 @@ cr.define('options', function() {
       // Setup the gallery related links and text.
       $('suggest-gallery').innerHTML =
           localStrings.getString('extensionSettingsSuggestGallery');
-      $('get-more-extensions').innerHTML =
-          localStrings.getString('extensionSettingsGetMoreExtensions');
+      $('get-more-extensions').innerHTML = localStrings.getString(
+          'extensionSettingsGetMoreExtensionsDeprecated');
 
       // Set up the three dev mode buttons (load unpacked, pack and update).
       $('load-unpacked').addEventListener('click',
