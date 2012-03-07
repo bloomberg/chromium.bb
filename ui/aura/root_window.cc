@@ -483,7 +483,11 @@ void RootWindow::OnCompositingEnded(ui::Compositor*) {
   waiting_on_compositing_end_ = false;
   if (draw_on_compositing_end_) {
     draw_on_compositing_end_ = false;
-    Draw();
+
+    // Call ScheduleDraw() instead of Draw() in order to allow other
+    // ui::CompositorObservers to be notified before starting another
+    // draw cycle.
+    ScheduleDraw();
   }
 }
 
