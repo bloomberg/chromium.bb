@@ -221,11 +221,16 @@ browser-tests() {
   # TODO(jvoung): remove this special list once all browser tests are
   # compatible with pexes. We may still want a nexe invocation if we are
   # testing something non-portable with the TCB/browser.
-  if [ "${platform}" != arm ]; then
+  if [[ "${platform}" == arm ]] || \
+    [[ "${platform}" == x86-64 && "${extra}" =~ --nacl_glibc ]]; then
     # Skip ARM until we have chrome binaries for ARM available.
     # This would normally do the right thing with a test suite like
     # 'chrome_browser_tests' (it will be empty). However, requesting
     # specific tests will force scons to try and download/run.
+    # Also skip for x86-64 --nacl_glibc, since we can't run these specific
+    # tests yet.
+    echo "@@@BUILD_STEP -- SKIP pnacl_stop_with_pexe: ${platform} ${extra}@@@"
+  else
     local pexe_tests="run_pnacl_example_browser_test run_pnacl_bad_browser_test"
     local pexe_mode="pnacl_stop_with_pexe=1"
     single-browser-test ${platform} "${extra} do_not_run_tests=1 ${pexe_mode}" \

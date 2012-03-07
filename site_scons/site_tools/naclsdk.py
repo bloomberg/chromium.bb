@@ -392,9 +392,11 @@ def PNaClGetNNaClEnv(env):
 # This adds architecture specific defines for the target architecture.
 # These are normally omitted by PNaCl.
 # For example: __i686__, __arm__, __x86_64__
-def AddBiasForPNaCl(env):
+def AddBiasForPNaCl(env, temporarily_allow=True):
   assert(env.Bit('bitcode'))
-  if env.Bit('pnacl_stop_with_pexe'):
+  # re: the temporarily_allow flag -- that is for:
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1248
+  if env.Bit('pnacl_stop_with_pexe') and not temporarily_allow:
     env.Replace(CC='NO-NATIVE-CC-INVOCATION-ALLOWED',
                 CXX='NO-NATIVE-CXX-INVOCATION-ALLOWED')
     return

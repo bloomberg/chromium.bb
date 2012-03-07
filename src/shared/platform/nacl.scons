@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,7 +8,7 @@ env.Append(CCFLAGS=['-Wno-long-long'])
 
 # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1248
 if env.Bit('bitcode') and env.Bit('nacl_glibc'):
-  env.AddBiasForPNaCl()
+  env.AddBiasForPNaCl(temporarily_allow=True)
 
 platform_inputs = [
     'nacl_check.c',
