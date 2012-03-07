@@ -816,29 +816,15 @@ content::DownloadDangerType DownloadItemImpl::GetDangerType() const {
   return state_info_.danger;
 }
 
+void DownloadItemImpl::SetDangerType(content::DownloadDangerType danger_type) {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  state_info_.danger = danger_type;
+  UpdateSafetyState();
+}
+
 bool DownloadItemImpl::IsDangerous() const {
   return state_info_.IsDangerous();
-}
-
-void DownloadItemImpl::MarkFileDangerous() {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  state_info_.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
-  UpdateSafetyState();
-}
-
-void DownloadItemImpl::MarkUrlDangerous() {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  state_info_.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL;
-  UpdateSafetyState();
-}
-
-void DownloadItemImpl::MarkContentDangerous() {
-  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  state_info_.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
-  UpdateSafetyState();
 }
 
 DownloadPersistentStoreInfo DownloadItemImpl::GetPersistentStoreInfo() const {

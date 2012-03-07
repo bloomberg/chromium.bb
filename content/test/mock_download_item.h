@@ -89,10 +89,8 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
   MOCK_CONST_METHOD0(GetSafetyState, SafetyState());
   MOCK_CONST_METHOD0(GetDangerType, content::DownloadDangerType());
+  MOCK_METHOD1(SetDangerType, void(content::DownloadDangerType));
   MOCK_CONST_METHOD0(IsDangerous, bool());
-  MOCK_METHOD0(MarkFileDangerous, void());
-  MOCK_METHOD0(MarkUrlDangerous, void());
-  MOCK_METHOD0(MarkContentDangerous, void());
   MOCK_METHOD0(GetAutoOpened, bool());
   MOCK_CONST_METHOD0(GetTargetName, const FilePath&());
   MOCK_CONST_METHOD0(PromptUserForSaveLocation, bool());

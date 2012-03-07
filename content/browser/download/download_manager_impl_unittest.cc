@@ -192,7 +192,7 @@ class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
     DownloadItem* item = download_manager_->GetActiveDownloadItem(download_id);
     if (!item)
       return;
-    item->MarkContentDangerous();
+    item->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
     item->MaybeCompleteDownload();
   }
 

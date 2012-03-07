@@ -182,10 +182,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual bool GetFileExternallyRemoved() const OVERRIDE;
   virtual SafetyState GetSafetyState() const OVERRIDE;
   virtual content::DownloadDangerType GetDangerType() const OVERRIDE;
+  virtual void SetDangerType(content::DownloadDangerType danger_type) OVERRIDE;
   virtual bool IsDangerous() const OVERRIDE;
-  virtual void MarkFileDangerous() OVERRIDE;
-  virtual void MarkUrlDangerous() OVERRIDE;
-  virtual void MarkContentDangerous() OVERRIDE;
   virtual bool GetAutoOpened() OVERRIDE;
   virtual const FilePath& GetTargetName() const OVERRIDE;
   virtual bool PromptUserForSaveLocation() const OVERRIDE;

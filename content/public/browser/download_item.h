@@ -286,10 +286,8 @@ class CONTENT_EXPORT DownloadItem {
   virtual SafetyState GetSafetyState() const = 0;
   // Why |safety_state_| is not SAFE.
   virtual DownloadDangerType GetDangerType() const = 0;
+  virtual void SetDangerType(DownloadDangerType danger_type) = 0;
   virtual bool IsDangerous() const = 0;
-  virtual void MarkContentDangerous() = 0;
-  virtual void MarkFileDangerous() = 0;
-  virtual void MarkUrlDangerous() = 0;
 
   virtual bool GetAutoOpened() = 0;
   virtual const FilePath& GetTargetName() const = 0;

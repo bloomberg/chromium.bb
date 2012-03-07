@@ -622,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchDanger) {
   CreateSlowTestDownloads(2, &items);
   ScopedItemVectorCanceller delete_items(&items);
 
-  items[0]->MarkContentDangerous();
+  items[0]->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{\"danger\": \"content\"}]"));
@@ -689,8 +689,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchPlural) {
   ScopedItemVectorCanceller delete_items(&items);
 
   items[0]->Cancel(true);
-  items[1]->MarkContentDangerous();
-  items[2]->MarkContentDangerous();
+  items[1]->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
+  items[2]->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
   items[1]->Rename(items[1]->GetFullPath().DirName().Append(
       FILE_PATH_LITERAL("zzz")));
 
