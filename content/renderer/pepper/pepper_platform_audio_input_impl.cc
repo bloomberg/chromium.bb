@@ -27,28 +27,19 @@ PepperPlatformAudioInputImpl::~PepperPlatformAudioInputImpl() {
   DCHECK(!client_);
 }
 
-bool PepperPlatformAudioInputImpl::Initialize(
+// static
+PepperPlatformAudioInputImpl* PepperPlatformAudioInputImpl::Create(
     uint32_t sample_rate,
     uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-  DCHECK(client);
-  // Make sure we don't call init more than once.
-  DCHECK_EQ(0, stream_id_);
-
-  client_ = client;
-
-  AudioParameters params;
-  params.format = AudioParameters::AUDIO_PCM_LINEAR;
-  params.channels = 1;
-  params.sample_rate = sample_rate;
-  params.bits_per_sample = 16;
-  params.samples_per_packet = sample_count;
-
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperPlatformAudioInputImpl::InitializeOnIOThread,
-                 this, params));
-  return true;
+  scoped_refptr<PepperPlatformAudioInputImpl> audio_input(
+      new PepperPlatformAudioInputImpl);
+  if (audio_input->Initialize(sample_rate, sample_count, client)) {
+    // Balanced by Release invoked in
+    // PepperPlatformAudioInputImpl::ShutDownOnIOThread().
+    return audio_input.release();
+  }
+  return NULL;
 }
 
 bool PepperPlatformAudioInputImpl::StartCapture() {
@@ -72,6 +63,30 @@ void PepperPlatformAudioInputImpl::ShutDown() {
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&PepperPlatformAudioInputImpl::ShutDownOnIOThread, this));
+}
+
+bool PepperPlatformAudioInputImpl::Initialize(
+    uint32_t sample_rate,
+    uint32_t sample_count,
+    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
+  DCHECK(client);
+  // Make sure we don't call init more than once.
+  DCHECK_EQ(0, stream_id_);
+
+  client_ = client;
+
+  AudioParameters params;
+  params.format = AudioParameters::AUDIO_PCM_LINEAR;
+  params.channels = 1;
+  params.sample_rate = sample_rate;
+  params.bits_per_sample = 16;
+  params.samples_per_packet = sample_count;
+
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&PepperPlatformAudioInputImpl::InitializeOnIOThread,
+                 this, params));
+  return true;
 }
 
 void PepperPlatformAudioInputImpl::InitializeOnIOThread(

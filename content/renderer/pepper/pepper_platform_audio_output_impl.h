@@ -21,12 +21,11 @@ class PepperPlatformAudioOutputImpl
       public AudioMessageFilter::Delegate,
       public base::RefCountedThreadSafe<PepperPlatformAudioOutputImpl> {
  public:
-  PepperPlatformAudioOutputImpl();
   virtual ~PepperPlatformAudioOutputImpl();
 
-  // Initialize this audio context. StreamCreated() will be called when the
-  // stream is created.
-  bool Initialize(
+  // Factory function, returns NULL on failure. StreamCreated() will be called
+  // when the stream is created.
+  static PepperPlatformAudioOutputImpl* Create(
       uint32_t sample_rate,
       uint32_t sample_count,
       webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
@@ -37,6 +36,13 @@ class PepperPlatformAudioOutputImpl
   virtual void ShutDown() OVERRIDE;
 
  private:
+  PepperPlatformAudioOutputImpl();
+
+  bool Initialize(
+      uint32_t sample_rate,
+      uint32_t sample_count,
+      webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
+
   // I/O thread backends to above functions.
   void InitializeOnIOThread(const AudioParameters& params);
   void StartPlaybackOnIOThread();

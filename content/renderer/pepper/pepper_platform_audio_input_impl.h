@@ -18,15 +18,14 @@ class PepperPlatformAudioInputImpl
       public AudioInputMessageFilter::Delegate,
       public base::RefCountedThreadSafe<PepperPlatformAudioInputImpl> {
  public:
-  PepperPlatformAudioInputImpl();
   virtual ~PepperPlatformAudioInputImpl();
 
-  // Initialize this audio context. StreamCreated() will be called when the
-  // stream is created.
-  bool Initialize(
-    uint32_t sample_rate,
-    uint32_t sample_count,
-    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
+  // Factory function, returns NULL on failure. StreamCreated() will be called
+  // when the stream is created.
+  static PepperPlatformAudioInputImpl* Create(
+      uint32_t sample_rate,
+      uint32_t sample_count,
+      webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
 
   // PlatformAudioInput implementation (called on main thread).
   virtual bool StartCapture() OVERRIDE;
@@ -34,6 +33,13 @@ class PepperPlatformAudioInputImpl
   virtual void ShutDown() OVERRIDE;
 
  private:
+  PepperPlatformAudioInputImpl();
+
+  bool Initialize(
+      uint32_t sample_rate,
+      uint32_t sample_count,
+      webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
+
   // I/O thread backends to above functions.
   void InitializeOnIOThread(const AudioParameters& params);
   void StartCaptureOnIOThread();

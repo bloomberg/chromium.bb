@@ -27,36 +27,19 @@ PepperPlatformAudioOutputImpl::~PepperPlatformAudioOutputImpl() {
   DCHECK(!client_);
 }
 
-bool PepperPlatformAudioOutputImpl::Initialize(
+// static
+PepperPlatformAudioOutputImpl* PepperPlatformAudioOutputImpl::Create(
     uint32_t sample_rate,
     uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-  DCHECK(client);
-  // Make sure we don't call init more than once.
-  DCHECK_EQ(0, stream_id_);
-
-  client_ = client;
-
-  AudioParameters params;
-  const uint32_t kMaxSampleCountForLowLatency = 2048;
-  // Use the low latency back end if the client request is compatible, and
-  // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
-  if (sample_rate == audio_hardware::GetOutputSampleRate() &&
-      sample_count <= kMaxSampleCountForLowLatency &&
-      sample_count % audio_hardware::GetOutputBufferSize() == 0)
-    params.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
-  else
-    params.format = AudioParameters::AUDIO_PCM_LINEAR;
-  params.channels = 2;
-  params.sample_rate = sample_rate;
-  params.bits_per_sample = 16;
-  params.samples_per_packet = sample_count;
-
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&PepperPlatformAudioOutputImpl::InitializeOnIOThread,
-                 this, params));
-  return true;
+  scoped_refptr<PepperPlatformAudioOutputImpl> audio_output(
+      new PepperPlatformAudioOutputImpl);
+  if (audio_output->Initialize(sample_rate, sample_count, client)) {
+    // Balanced by Release invoked in
+    // PepperPlatformAudioOutputImpl::ShutDownOnIOThread().
+    return audio_output.release();
+  }
+  return NULL;
 }
 
 bool PepperPlatformAudioOutputImpl::StartPlayback() {
@@ -88,6 +71,38 @@ void PepperPlatformAudioOutputImpl::ShutDown() {
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&PepperPlatformAudioOutputImpl::ShutDownOnIOThread, this));
+}
+
+bool PepperPlatformAudioOutputImpl::Initialize(
+    uint32_t sample_rate,
+    uint32_t sample_count,
+    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
+  DCHECK(client);
+  // Make sure we don't call init more than once.
+  DCHECK_EQ(0, stream_id_);
+
+  client_ = client;
+
+  AudioParameters params;
+  const uint32_t kMaxSampleCountForLowLatency = 2048;
+  // Use the low latency back end if the client request is compatible, and
+  // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
+  if (sample_rate == audio_hardware::GetOutputSampleRate() &&
+      sample_count <= kMaxSampleCountForLowLatency &&
+      sample_count % audio_hardware::GetOutputBufferSize() == 0)
+    params.format = AudioParameters::AUDIO_PCM_LOW_LATENCY;
+  else
+    params.format = AudioParameters::AUDIO_PCM_LINEAR;
+  params.channels = 2;
+  params.sample_rate = sample_rate;
+  params.bits_per_sample = 16;
+  params.samples_per_packet = sample_count;
+
+  ChildProcess::current()->io_message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&PepperPlatformAudioOutputImpl::InitializeOnIOThread,
+                 this, params));
+  return true;
 }
 
 void PepperPlatformAudioOutputImpl::InitializeOnIOThread(

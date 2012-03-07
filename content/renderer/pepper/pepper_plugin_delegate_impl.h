@@ -27,6 +27,7 @@
 
 class FilePath;
 class PepperBrokerImpl;
+class PepperDeviceEnumerationEventHandler;
 class PepperPluginDelegateImpl;
 class RenderViewImpl;
 
@@ -406,8 +407,6 @@ class PepperPluginDelegateImpl
   int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
 
  private:
-  class DeviceEnumerationEventHandler;
-
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
   scoped_refptr<PepperBrokerImpl> CreateBroker(
       webkit::ppapi::PluginModule* plugin_module);
@@ -466,7 +465,8 @@ class PepperPluginDelegateImpl
 
   scoped_ptr<content::GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
-  scoped_ptr<DeviceEnumerationEventHandler> device_enumeration_event_handler_;
+  scoped_ptr<PepperDeviceEnumerationEventHandler>
+      device_enumeration_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

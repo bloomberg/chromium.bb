@@ -36,13 +36,14 @@
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/p2p/p2p_transport_impl.h"
 #include "content/renderer/pepper/pepper_broker_impl.h"
+#include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
+#include "content/renderer/pepper/pepper_platform_image_2d_impl.h"
 #include "content/renderer/pepper/pepper_platform_video_capture_impl.h"
 #include "content/renderer/pepper/pepper_proxy_channel_delegate_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -71,7 +72,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/surface/transport_dib.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/ppapi/file_path.h"
@@ -90,56 +90,6 @@ using WebKit::WebView;
 using WebKit::WebFrame;
 
 namespace {
-
-// Implements the Image2D using a TransportDIB.
-class PlatformImage2DImpl
-    : public webkit::ppapi::PluginDelegate::PlatformImage2D {
- public:
-  // This constructor will take ownership of the dib pointer.
-  // On Mac, we assume that the dib is cached by the browser, so on destruction
-  // we'll tell the browser to free it.
-  PlatformImage2DImpl(int width, int height, TransportDIB* dib)
-      : width_(width),
-        height_(height),
-        dib_(dib) {
-  }
-
-#if defined(OS_MACOSX)
-  // On Mac, we have to tell the browser to free the transport DIB.
-  virtual ~PlatformImage2DImpl() {
-    if (dib_.get()) {
-      RenderThreadImpl::current()->Send(
-          new ViewHostMsg_FreeTransportDIB(dib_->id()));
-    }
-  }
-#endif
-
-  virtual skia::PlatformCanvas* Map() {
-    return dib_->GetPlatformCanvas(width_, height_);
-  }
-
-  virtual intptr_t GetSharedMemoryHandle(uint32* byte_count) const {
-    *byte_count = dib_->size();
-#if defined(OS_WIN)
-    return reinterpret_cast<intptr_t>(dib_->handle());
-#elif defined(OS_MACOSX) || defined(OS_ANDROID)
-    return static_cast<intptr_t>(dib_->handle().fd);
-#elif defined(OS_POSIX)
-    return static_cast<intptr_t>(dib_->handle());
-#endif
-  }
-
-  virtual TransportDIB* GetTransportDIB() const {
-    return dib_.get();
-  }
-
- private:
-  int width_;
-  int height_;
-  scoped_ptr<TransportDIB> dib_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformImage2DImpl);
-};
 
 class HostDispatcherWrapper
     : public webkit::ppapi::PluginDelegate::OutOfProcessProxy {
@@ -210,43 +160,6 @@ class QuotaCallbackTranslator : public QuotaDispatcher::Callback {
   PluginCallback callback_;
 };
 
-media_stream::MediaStreamType FromPepperDeviceType(PP_DeviceType_Dev type) {
-  switch (type) {
-    case PP_DEVICETYPE_DEV_INVALID:
-      return content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
-    case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE;
-    case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE;
-    default:
-      NOTREACHED();
-      return content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE;
-  }
-}
-
-PP_DeviceType_Dev FromMediaStreamType(media_stream::MediaStreamType type) {
-  switch (type) {
-    case content::MEDIA_STREAM_DEVICE_TYPE_NO_SERVICE:
-      return PP_DEVICETYPE_DEV_INVALID;
-    case content::MEDIA_STREAM_DEVICE_TYPE_AUDIO_CAPTURE:
-      return PP_DEVICETYPE_DEV_AUDIOCAPTURE;
-    case content::MEDIA_STREAM_DEVICE_TYPE_VIDEO_CAPTURE:
-      return PP_DEVICETYPE_DEV_VIDEOCAPTURE;
-    default:
-      NOTREACHED();
-      return PP_DEVICETYPE_DEV_INVALID;
-  }
-}
-
-ppapi::DeviceRefData FromStreamDeviceInfo(
-    const media_stream::StreamDeviceInfo& info) {
-  ppapi::DeviceRefData data;
-  data.id = info.device_id;
-  data.name = info.name;
-  data.type = FromMediaStreamType(info.stream_type);
-  return data;
-}
-
 class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
  public:
   PluginInstanceLockTarget(webkit::ppapi::PluginInstance* plugin)
@@ -272,121 +185,6 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
 
 }  // namespace
 
-class PepperPluginDelegateImpl::DeviceEnumerationEventHandler
-    : public MediaStreamDispatcherEventHandler,
-      public base::SupportsWeakPtr<DeviceEnumerationEventHandler> {
- public:
-  DeviceEnumerationEventHandler() : next_id_(1) {
-  }
-
-  virtual ~DeviceEnumerationEventHandler() {
-    DCHECK(enumerate_callbacks_.empty());
-    DCHECK(open_callbacks_.empty());
-  }
-
-  int RegisterEnumerateDevicesCallback(
-      const EnumerateDevicesCallback& callback) {
-    enumerate_callbacks_[next_id_] = callback;
-    return next_id_++;
-  }
-
-  int RegisterOpenDeviceCallback(const OpenDeviceCallback& callback) {
-    open_callbacks_[next_id_] = callback;
-    return next_id_++;
-  }
-
-  // MediaStreamDispatcherEventHandler implementation.
-  virtual void OnStreamGenerated(
-      int request_id,
-      const std::string& label,
-      const media_stream::StreamDeviceInfoArray& audio_device_array,
-      const media_stream::StreamDeviceInfoArray& video_device_array) OVERRIDE {
-  }
-
-  virtual void OnStreamGenerationFailed(int request_id) OVERRIDE {
-  }
-
-  virtual void OnVideoDeviceFailed(const std::string& label,
-                                   int index) OVERRIDE {
-  }
-
-  virtual void OnAudioDeviceFailed(const std::string& label,
-                                   int index) OVERRIDE {
-  }
-
-  virtual void OnDevicesEnumerated(
-      int request_id,
-      const media_stream::StreamDeviceInfoArray& device_array) OVERRIDE {
-    NotifyDevicesEnumerated(request_id, true, device_array);
-  }
-
-  virtual void OnDevicesEnumerationFailed(int request_id) OVERRIDE {
-    NotifyDevicesEnumerated(request_id, false,
-                            media_stream::StreamDeviceInfoArray());
-  }
-
-  virtual void OnDeviceOpened(
-      int request_id,
-      const std::string& label,
-      const media_stream::StreamDeviceInfo& device_info) OVERRIDE {
-    NotifyDeviceOpened(request_id, true, label);
-  }
-
-  virtual void OnDeviceOpenFailed(int request_id) OVERRIDE {
-    NotifyDeviceOpened(request_id, false, "");
-  }
-
- private:
-  void NotifyDevicesEnumerated(
-      int request_id,
-      bool succeeded,
-      const media_stream::StreamDeviceInfoArray& device_array) {
-    EnumerateCallbackMap::iterator iter = enumerate_callbacks_.find(request_id);
-    if (iter == enumerate_callbacks_.end()) {
-      NOTREACHED();
-      return;
-    }
-
-    EnumerateDevicesCallback callback = iter->second;
-    enumerate_callbacks_.erase(iter);
-
-    std::vector<ppapi::DeviceRefData> devices;
-    if (succeeded) {
-      devices.reserve(device_array.size());
-      for (media_stream::StreamDeviceInfoArray::const_iterator info =
-               device_array.begin(); info != device_array.end(); ++info) {
-        devices.push_back(FromStreamDeviceInfo(*info));
-      }
-    }
-    callback.Run(request_id, succeeded, devices);
-  }
-
-  void NotifyDeviceOpened(int request_id,
-                          bool succeeded,
-                          const std::string& label) {
-    OpenCallbackMap::iterator iter = open_callbacks_.find(request_id);
-    if (iter == open_callbacks_.end()) {
-      NOTREACHED();
-      return;
-    }
-
-    OpenDeviceCallback callback = iter->second;
-    open_callbacks_.erase(iter);
-
-    callback.Run(request_id, succeeded, label);
-  }
-
-  int next_id_;
-
-  typedef std::map<int, EnumerateDevicesCallback> EnumerateCallbackMap;
-  EnumerateCallbackMap enumerate_callbacks_;
-
-  typedef std::map<int, OpenDeviceCallback> OpenCallbackMap;
-  OpenCallbackMap open_callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceEnumerationEventHandler);
-};
-
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       render_view_(render_view),
@@ -394,7 +192,8 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
       saved_context_menu_action_(0),
       focused_plugin_(NULL),
       last_mouse_event_target_(NULL),
-      device_enumeration_event_handler_(new DeviceEnumerationEventHandler()) {
+      device_enumeration_event_handler_(
+          new PepperDeviceEnumerationEventHandler()) {
 }
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
@@ -726,35 +525,7 @@ SkBitmap* PepperPluginDelegateImpl::GetSadPluginBitmap() {
 
 webkit::ppapi::PluginDelegate::PlatformImage2D*
 PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
-  uint32 buffer_size = width * height * 4;
-
-  // Allocate the transport DIB and the PlatformCanvas pointing to it.
-#if defined(OS_MACOSX)
-  // On the Mac, shared memory has to be created in the browser in order to
-  // work in the sandbox.  Do this by sending a message to the browser
-  // requesting a TransportDIB (see also
-  // chrome/renderer/webplugin_delegate_proxy.cc, method
-  // WebPluginDelegateProxy::CreateBitmap() for similar code). The TransportDIB
-  // is cached in the browser, and is freed (in typical cases) by the
-  // PlatformImage2DImpl's destructor.
-  TransportDIB::Handle dib_handle;
-  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(buffer_size,
-                                                        true,
-                                                        &dib_handle);
-  if (!RenderThreadImpl::current()->Send(msg))
-    return NULL;
-  if (!TransportDIB::is_valid_handle(dib_handle))
-    return NULL;
-
-  TransportDIB* dib = TransportDIB::Map(dib_handle);
-#else
-  static int next_dib_id = 0;
-  TransportDIB* dib = TransportDIB::Create(buffer_size, next_dib_id++);
-  if (!dib)
-    return NULL;
-#endif
-
-  return new PlatformImage2DImpl(width, height, dib);
+  return PepperPlatformImage2DImpl::Create(width, height);
 }
 
 webkit::ppapi::PluginDelegate::PlatformContext3D*
@@ -810,14 +581,8 @@ PepperPluginDelegateImpl::CreateAudioOutput(
     uint32_t sample_rate,
     uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-  scoped_refptr<PepperPlatformAudioOutputImpl> audio_output(
-      new PepperPlatformAudioOutputImpl);
-  if (audio_output->Initialize(sample_rate, sample_count, client)) {
-    // Balanced by Release invoked in
-    // PepperPlatformAudioOutput::ShutDownOnIOThread().
-    return audio_output.release();
-  }
-  return NULL;
+  return PepperPlatformAudioOutputImpl::Create(sample_rate, sample_count,
+                                               client);
 }
 
 webkit::ppapi::PluginDelegate::PlatformAudioInput*
@@ -825,14 +590,8 @@ PepperPluginDelegateImpl::CreateAudioInput(
     uint32_t sample_rate,
     uint32_t sample_count,
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-  scoped_refptr<PepperPlatformAudioInputImpl> audio_input(
-      new PepperPlatformAudioInputImpl);
-  if (audio_input->Initialize(sample_rate, sample_count, client)) {
-    // Balanced by Release invoked in
-    // PepperPlatformAudioInput::ShutDownOnIOThread().
-    return audio_input.release();
-  }
-  return NULL;
+  return PepperPlatformAudioInputImpl::Create(sample_rate, sample_count,
+                                              client);
 }
 
 // If a broker has not already been created for this plugin, creates one.
@@ -1557,12 +1316,13 @@ int PepperPluginDelegateImpl::EnumerateDevices(
 #if defined(ENABLE_WEBRTC)
   render_view_->media_stream_dispatcher()->EnumerateDevices(
       request_id, device_enumeration_event_handler_.get(),
-      FromPepperDeviceType(type), "");
+      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type), "");
 #else
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&DeviceEnumerationEventHandler::OnDevicesEnumerationFailed,
-                 device_enumeration_event_handler_->AsWeakPtr(), request_id));
+      base::Bind(
+          &PepperDeviceEnumerationEventHandler::OnDevicesEnumerationFailed,
+          device_enumeration_event_handler_->AsWeakPtr(), request_id));
 #endif
 
   return request_id;
@@ -1725,11 +1485,11 @@ int PepperPluginDelegateImpl::OpenDevice(PP_DeviceType_Dev type,
 #if defined(ENABLE_WEBRTC)
   render_view_->media_stream_dispatcher()->OpenDevice(
       request_id, device_enumeration_event_handler_.get(), device_id,
-      FromPepperDeviceType(type), "");
+      PepperDeviceEnumerationEventHandler::FromPepperDeviceType(type), "");
 #else
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&DeviceEnumerationEventHandler::OnDeviceOpenFailed,
+      base::Bind(&PepperDeviceEnumerationEventHandler::OnDeviceOpenFailed,
                  device_enumeration_event_handler_->AsWeakPtr(), request_id));
 #endif
 
