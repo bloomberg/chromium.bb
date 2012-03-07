@@ -2389,6 +2389,15 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
     if (sub_page == chrome::kExtensionsSubPage) {
       url = std::string(chrome::kChromeUIUberURL) +
           chrome::kChromeUIExtensionsHost;
+#if defined(OS_CHROMEOS)
+    } else if (sub_page.find(chrome::kInternetOptionsSubPage, 0) !=
+               std::string::npos) {
+      std::string::size_type loc = sub_page.find("?", 0);
+      std::string network_page = loc != std::string::npos ?
+          sub_page.substr(loc) : std::string();
+      url = std::string(chrome::kChromeUIUberURL) +
+          chrome::kChromeUISettingsHost + network_page;
+#endif
     } else {
       url = std::string(chrome::kChromeUIUberURL) +
           chrome::kChromeUISettingsHost + '/' + sub_page;
