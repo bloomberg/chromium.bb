@@ -45,10 +45,14 @@ void SearchEngineDataTypeController::Observe(
 
 // We want to start the TemplateURLService before we begin associating.
 bool SearchEngineDataTypeController::StartModels() {
-  // If the TemplateURLService is loaded, continue with association.
+  // If the TemplateURLService is loaded, continue with association. We force
+  // a load here to prevent the rest of Sync from waiting on
+  // TemplateURLService's lazy load.
   TemplateURLService* turl_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
-  if (turl_service && turl_service->loaded()) {
+  DCHECK(turl_service);
+  turl_service->Load();
+  if (turl_service->loaded()) {
     return true;  // Continue to Associate().
   }
 
