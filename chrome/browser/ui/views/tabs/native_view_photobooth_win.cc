@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,9 @@ void NativeViewPhotoboothWin::PaintScreenshotIntoCanvas(
          SRCCOPY);
   // Windows screws up the alpha channel on all text it draws, and so we need
   // to call makeOpaque _after_ the blit to correct for this.
-  skia::MakeOpaque(canvas->GetSkCanvas(), target_bounds);
+  skia::MakeOpaque(canvas->GetSkCanvas(), target_bounds.x(),
+                   target_bounds.y(), target_bounds.width(),
+                   target_bounds.height());
   ReleaseDC(current_hwnd_, source_dc);
   canvas->EndPlatformPaint();
 }

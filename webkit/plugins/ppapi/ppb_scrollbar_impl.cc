@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,7 +141,7 @@ PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() == base::win::VERSION_XP)
-    skia::MakeOpaque(canvas, rect);
+    skia::MakeOpaque(canvas, rect.x(), rect.y(), rect.width(), rect.height());
 #endif
 
   return PP_TRUE;

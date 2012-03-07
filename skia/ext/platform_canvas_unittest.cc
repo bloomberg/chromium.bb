@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
 
 #include "SkColor.h"
 
@@ -243,7 +242,7 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(0, 0, 100, 100));
+    MakeOpaque(&canvas, 0, 0, 100, 100);
 #endif
   }
   EXPECT_TRUE(VerifyBlackRect(canvas, kLayerX, kLayerY, kLayerW, kLayerH));
@@ -254,7 +253,7 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(kInnerX, kInnerY, kInnerW, kInnerH));
+    MakeOpaque(&canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
   }
   EXPECT_TRUE(VerifyBlackRect(canvas, kInnerX, kInnerY, kInnerW, kInnerH));
@@ -267,7 +266,7 @@ TEST(PlatformCanvas, FillLayer) {
     AddClip(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(kInnerX, kInnerY, kInnerW, kInnerH));
+    MakeOpaque(&canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
     canvas.restore();
   }
@@ -281,7 +280,7 @@ TEST(PlatformCanvas, FillLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(0, 0, 100, 100));
+    MakeOpaque(&canvas, 0, 0, 100, 100);
 #endif
   }
   canvas.restore();
@@ -302,7 +301,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(0, 0, 100, 100));
+    MakeOpaque(&canvas, 0, 0, 100, 100);
 #endif
   }
   canvas.restore();
@@ -317,7 +316,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     LayerSaver layer(canvas, kLayerX, kLayerY, kLayerW, kLayerH);
     DrawNativeRect(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(kInnerX, kInnerY, kInnerW, kInnerH));
+    MakeOpaque(&canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
   }
   canvas.restore();
@@ -332,7 +331,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     canvas.translate(1, 1);
     DrawNativeRect(canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(kInnerX, kInnerY, kInnerW, kInnerH));
+    MakeOpaque(&canvas, kInnerX, kInnerY, kInnerW, kInnerH);
 #endif
   }
   canvas.restore();
@@ -350,7 +349,7 @@ TEST(PlatformCanvas, TranslateLayer) {
     AddClip(canvas, kInnerX + 1, kInnerY + 1, kInnerW - 1, kInnerH - 1);
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(kLayerX, kLayerY, kLayerW, kLayerH));
+    MakeOpaque(&canvas, kLayerX, kLayerY, kLayerW, kLayerH);
 #endif
   }
   canvas.restore();
@@ -378,7 +377,7 @@ TEST(PlatformCanvas, TranslateLayer) {
 
     DrawNativeRect(canvas, 0, 0, 100, 100);
 #if defined(OS_WIN)
-    MakeOpaque(&canvas, gfx::Rect(kLayerX, kLayerY, kLayerW, kLayerH));
+    MakeOpaque(&canvas, kLayerX, kLayerY, kLayerW, kLayerH);
 #endif
   }
   canvas.restore();
