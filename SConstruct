@@ -1380,7 +1380,7 @@ def GenerateManifestFunc(target, source, env):
     v['url'] = 'runnable-ld.so'
   # Write the new manifest!
   target_file = open(str(target[0]), 'w')
-  json.dump(obj, target_file)
+  json.dump(obj, target_file, sort_keys=True, indent=2)
   target_file.close()
   return 0
 

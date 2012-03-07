@@ -1,9 +1,8 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import glob
 import os
 
 Import('env')
@@ -13,115 +12,34 @@ if 'TRUSTED_ENV' not in env:
 if env.Bit('nacl_static_link'):
   Return()
 
-def get_lib(lib):
-  libList = glob.glob(os.path.join(env['NACL_SDK_LIB'], lib))
-  if len(libList) != 1:
-    print 'Can not find correct library version for ' + lib
-    Return()
-  return os.path.basename(libList[0])
-
 toolchain_libraries = [
-    'runnable-ld.so',
-    get_lib('libc.so.*'),
-    get_lib('libm.so.*'),
-    'libgcc_s.so.1',
-    get_lib('libpthread.so.*'),
-    'libstdc++.so.6',
-    get_lib('libdl.so.*'),
-    'libmemusage.so', # For dlopen test only
+    'libmemusage.so', # Will dlopen this library.
     ]
-
-nacl_libraries = [
-    'libplatform.so',
-    'libgio.so',
-    ]
-
-if not env.Bit('irt'):
-  nacl_libraries += [
-      'libppruntime.so',
-      'libimc.so',
-      'libsrpc.so',
-      'libimc_syscalls.so',
-      ]
-
-# Replaces "// libs" with all mapped libraries.
-def generate_nmf(env, target, source):
-  target_file_name = str(target[0])
-  source_file_name = str(source[0])
-  source_file = open(source_file_name, 'r')
-  target_file = open(target_file_name, 'w')
-  lines = source_file.readlines()
-  source_file.close()
-  for line in lines:
-    if line.strip() == '@libs':
-      for k,v in env['manifest_mapping']:
-        file_name = env.subst(k)
-        target_file.write('"' + file_name + '" : { "portable" : { "url": "' +
-                          file_name + '"}},')
-        target_file.write('\n')
-    else:
-      target_file.write(line)
-  target_file.close()
-  return 0
 
 def make_mappings(libdir, libs):
-  return [('%s' % lib, env.File(os.path.join(libdir, lib))) for lib in libs]
+  return [(lib, env.File(os.path.join(libdir, lib))) for lib in libs]
 
-base_file_mapping = (make_mappings('${NACL_SDK_LIB}', toolchain_libraries) +
-                     make_mappings('${LIB_DIR}', nacl_libraries))
-
-dynamic_library_file_mapping = list(base_file_mapping)
-
-test_prog_fname = 'ppapi_test_example_${TARGET_FULLARCH}${PROGSUFFIX}'
-test_prog = env.File('${STAGING_DIR}/' + test_prog_fname)
-dynamic_library_file_mapping.append((test_prog_fname, test_prog))
-dynamic_library_file_mapping.append(('dynamic_library_test.nmf',
-                     '${STAGING_DIR}/dynamic_library_test.nmf'))
-dynamic_library_file_mapping.append(('ppapi_test_example.js',
-                     '../ppapi_test_example/ppapi_test_example.js'))
-
-dynamic_library_nmf_node = env.Command(
-    '${STAGING_DIR}/dynamic_library_test.nmf',
-    ['dynamic_library_test.nmf', '${SCONSTRUCT_DIR}/DEPS'],
-    generate_nmf,
-    manifest_mapping=base_file_mapping)
-
-dynamic_library_node = env.PPAPIBrowserTester(
-    'browser_dynamic_library_test.out', url='dynamic_library_test.html',
-    files=[env.File('dynamic_library_test.html'),
-           env.File('../ppapi_test_example/ppapi_test_example.js'),
-           dynamic_library_nmf_node],
-    map_files=dynamic_library_file_mapping)
-
-env.AddNodeToTestSuite(dynamic_library_node, ['dynamic_library_browser_tests'],
-                       'run_browser_dynamic_library_test',
-                       is_broken=env.PPAPIBrowserTesterIsBroken())
-
+# Allow resolving a URL to the toolchain/ directory (instead of staging).
+browser_dlopen_file_mapping = make_mappings('${NACL_SDK_LIB}',
+                                            toolchain_libraries)
 
 browser_dlopen_nexe_name = 'browser_dlopen_test_%s' % env.get('TARGET_FULLARCH')
 browser_dlopen_nexe = env.ComponentProgram(browser_dlopen_nexe_name,
-                                    'browser_dlopen_test.cc',
-                                    EXTRA_LIBS=[
-                                        '${PPAPI_LIBS}',
-                                        'ppapi_test_lib',
-                                        'platform',
-                                        'dl',
-                                        '${PTHREAD_LIBS}'])
+                                           'browser_dlopen_test.cc',
+                                           EXTRA_LIBS=[
+                                               '${PPAPI_LIBS}',
+                                               'ppapi_test_lib',
+                                               'platform',
+                                               'dl',
+                                               '${PTHREAD_LIBS}'])
 
-browser_dlopen_file_mapping = list(base_file_mapping)
-
-browser_dlopen_nmf_node = env.Command(
-    '${STAGING_DIR}/browser_dlopen_test.nmf',
-    ['browser_dlopen_test.nmf', '${SCONSTRUCT_DIR}/DEPS'],
-    generate_nmf,
-    manifest_mapping=base_file_mapping)
 
 env.Publish(browser_dlopen_nexe_name, 'run', ['browser_dlopen_test.html'])
 
 browser_dlopen_node = env.PPAPIBrowserTester(
     'browser_dlopen_test.out', url='browser_dlopen_test.html',
-    files=env.ExtractPublishedFiles(browser_dlopen_nexe_name) +
-          browser_dlopen_nmf_node,
+    files=env.ExtractPublishedFiles(browser_dlopen_nexe_name),
+    nmfs=['browser_dlopen_test.nmf'],
     map_files=browser_dlopen_file_mapping)
 
 env.AddNodeToTestSuite(browser_dlopen_node, ['dynamic_library_browser_tests'],

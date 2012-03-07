@@ -1,18 +1,14 @@
 {
   "program": {
-    "x86-32": {"url": "lib/runnable-ld.so"},
-    "x86-64": {"url": "lib/runnable-ld.so"},
-    "arm":    {"url": "lib/runnable-ld.so"}
+    "x86-32" : {"url" : "browser_dlopen_test_x86-32.nexe"},
+    "x86-64" : {"url" : "browser_dlopen_test_x86-64.nexe"},
+    "arm" : {"url" : "browser_dlopen_test_arm.nexe"}
   },
   "files": {
-  // NOTE: The following "@libs" line will be replaced by the nacl.scons
-  // build script with full set of libraries upon which this example
-  // depends.
-@libs
-    "main.nexe" : {
-      "x86-32" : {"url" : "browser_dlopen_test_x86-32.nexe"},
-      "x86-64" : {"url" : "browser_dlopen_test_x86-64.nexe"},
-      "arm" : {"url" : "browser_dlopen_test_arm.nexe"}
+    "libmemusage.so" : {
+      "x86-32" : {"url" : "libmemusage.so"},
+      "x86-64" : {"url" : "libmemusage.so"},
+      "arm" : {"url" : "libmemusage.so"}
     }
   }
 }
