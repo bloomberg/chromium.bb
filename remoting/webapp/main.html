@@ -157,11 +157,11 @@ found in the LICENSE file.
     </div> <!-- home -->
 
     <div id="dialog-screen"
-         data-ui-mode="home.host home.client home.auth home.history"
+         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete"
          hidden></div>
 
     <div id="dialog-container"
-         data-ui-mode="home.host home.client home.auth home.history"
+         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete"
          hidden>
 
       <div class="box-spacer"></div>
@@ -386,6 +386,26 @@ found in the LICENSE file.
                   type="button"></button>
         </div>
       </div> <!-- connection-history-dialog -->
+
+      <div id="confirm-host-delete-dialog"
+           class="kd-modaldialog"
+           data-ui-mode="home.confirm-host-delete"
+           hidden>
+        <p id="confirm-host-delete-message"
+           i18n-content="CONFIRM_HOST_DELETE"
+           class="message">
+        </p>
+        <div class="centered-button">
+          <button id="confirm-host-delete"
+                  i18n-content="YES"
+                  type="button">
+          </button>
+          <button id="cancel-host-delete"
+                  i18n-content="NO"
+                  type="button">
+          </button>
+        </div>
+      </div> <!-- home.confirm-host-delete -->
 
       <div class="box-spacer"></div>
 

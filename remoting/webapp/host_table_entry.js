@@ -44,8 +44,15 @@ remoting.HostTableEntry = function() {
   this.hostNameCell_ = null;
   /** @type {function(remoting.HostTableEntry):void} @private */
   this.onRename_ = function(hostId) {};
+  /** @type {function(remoting.HostTableEntry):void} @private */
+  this.onDelete_ = function(hostId) {};
+  // References to event handlers so that they can be removed.
   /** @type {function():void} @private */
   this.onBlurReference_ = function() {};
+  /** @type {function():void} @private */
+  this.onConfirmDeleteReference_ = function() {};
+  /** @type {function():void} @private */
+  this.onCancelDeleteReference_ = function() {};
 };
 
 /**
@@ -59,6 +66,7 @@ remoting.HostTableEntry = function() {
 remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
   this.host = host;
   this.onRename_ = onRename;
+  this.onDelete_ = onDelete;
 
   /** @type {remoting.HostTableEntry} */
   var that = this;
@@ -106,7 +114,9 @@ remoting.HostTableEntry.prototype.init = function(host, onRename, onDelete) {
 
   // Create the host delete cell.
   var deleteButton = /** @type {HTMLElement} */ document.createElement('div');
-  deleteButton.addEventListener('click', function() { onDelete(that); }, false);
+  deleteButton.addEventListener('click',
+                                function() { that.showDeleteConfirmation_(); },
+                                false);
   deleteButton.classList.add('clickable');
   deleteButton.classList.add('host-list-edit');
   var crossImage = /** @type {HTMLElement} */ document.createElement('img');
@@ -132,7 +142,6 @@ remoting.HostTableEntry.prototype.beginRename_ = function() {
 
   /** @type {remoting.HostTableEntry} */
   var that = this;
-  // Keep a reference to the blur event handler so that we can remove it later.
   this.onBlurReference_ = function() { that.commitRename_(); };
   editBox.addEventListener('blur', this.onBlurReference_, false);
 
@@ -158,6 +167,61 @@ remoting.HostTableEntry.prototype.commitRename_ = function() {
 };
 
 /**
+ * Prompt the user to confirm or cancel deletion of a host.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.HostTableEntry.prototype.showDeleteConfirmation_ = function() {
+  var message = document.getElementById('confirm-host-delete-message');
+  l10n.localizeElement(message, this.host.hostName);
+  /** @type {remoting.HostTableEntry} */
+  var that = this;
+  var confirm = document.getElementById('confirm-host-delete');
+  var cancel = document.getElementById('cancel-host-delete');
+  this.onConfirmDeleteReference_ = function() { that.confirmDelete_(); };
+  this.onCancelDeleteReference_ = function() { that.cancelDelete_(); };
+  confirm.addEventListener('click', this.onConfirmDeleteReference_, false);
+  cancel.addEventListener('click', this.onCancelDeleteReference_, false);
+  remoting.setMode(remoting.AppMode.CONFIRM_HOST_DELETE);
+};
+
+/**
+ * Confirm deletion of a host.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.HostTableEntry.prototype.confirmDelete_ = function() {
+  this.onDelete_(this);
+  this.cleanUpConfirmationEventListeners_();
+  remoting.setMode(remoting.AppMode.HOME);
+};
+
+/**
+ * Cancel deletion of a host.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.HostTableEntry.prototype.cancelDelete_ = function() {
+  this.cleanUpConfirmationEventListeners_();
+  remoting.setMode(remoting.AppMode.HOME);
+};
+
+/**
+ * Remove the confirm and cancel event handlers, which refer to this object.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.HostTableEntry.prototype.cleanUpConfirmationEventListeners_ =
+    function() {
+  var confirm = document.getElementById('confirm-host-delete');
+  var cancel = document.getElementById('cancel-host-delete');
+  confirm.removeEventListener('click', this.onConfirmDeleteReference_, false);
+  cancel.removeEventListener('click', this.onCancelDeleteReference_, false);
+  this.onCancelDeleteReference_ = function() {};
+  this.onConfirmDeleteReference_ = function() {};
+};
+
+/**
  * Remove the edit box corresponding to the specified host, and reset its name.
  * @return {void} Nothing.
  * @private
@@ -172,6 +236,11 @@ remoting.HostTableEntry.prototype.removeEditBox_ = function() {
   this.setHostName_();
 };
 
+/**
+ * Create the DOM nodes for the hostname part of the table entry.
+ * @return {void} Nothing.
+ * @private
+ */
 remoting.HostTableEntry.prototype.setHostName_ = function() {
   var hostNameNode = /** @type {HTMLElement} */ document.createElement('span');
   if (this.host.status == 'ONLINE') {

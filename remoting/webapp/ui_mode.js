@@ -37,6 +37,7 @@ remoting.AppMode = {
       CLIENT_SESSION_FINISHED_IT2ME: 'home.client.session-finished.it2me',
       CLIENT_SESSION_FINISHED_ME2ME: 'home.client.session-finished.me2me',
     HISTORY: 'home.history',
+    CONFIRM_HOST_DELETE: 'home.confirm-host-delete',
   IN_SESSION: 'in-session'
 };
 
@@ -49,7 +50,7 @@ remoting.AppMode = {
 remoting.hasModeAttribute = function(element, attr, mode) {
   return element.getAttribute(attr).match(
       new RegExp('(\\s|^)' + mode + '(\\s|$)')) != null;
-}
+};
 
 /**
  * Update the DOM by showing or hiding elements based on whether or not they
