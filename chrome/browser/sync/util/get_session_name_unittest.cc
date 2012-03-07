@@ -4,28 +4,45 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/message_loop.h"
 #include "chrome/browser/sync/util/get_session_name.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
 
-typedef testing::Test SyncGetSessionNameTaskTest;
+namespace {
 
-#if defined(OS_WIN)
-// The test is somewhat silly, and just verifies that we return a computer name.
-TEST_F(SyncGetSessionNameTaskTest, GetComputerName) {
-  std::string computer_name = internal::GetComputerName();
-  EXPECT_TRUE(!computer_name.empty());
-}
-#endif
+class GetSessionNameTest : public ::testing::Test {
+ public:
+  void SetSessionNameAndQuit(const std::string& session_name) {
+    session_name_ = session_name;
+    message_loop_.Quit();
+  }
 
-#if defined(OS_MACOSX)
-// The test is somewhat silly, and just verifies that we return a hardware
-// model name.
-TEST_F(SyncGetSessionNameTaskTest, GetHardwareModelName) {
-  std::string hardware_model = internal::GetHardwareModelName();
-  EXPECT_TRUE(!hardware_model.empty());
-}
-#endif
+ protected:
+  MessageLoop message_loop_;
+  std::string session_name_;
+};
 
+// Call GetSessionNameSynchronouslyForTesting and make sure its return
+// value looks sane.
+TEST_F(GetSessionNameTest, GetSessionNameSynchronously) {
+  const std::string& session_name = GetSessionNameSynchronouslyForTesting();
+  EXPECT_FALSE(session_name.empty());
 }
+
+// Calls GetSessionName and runs the message loop until it comes back
+// with a session name.  Makes sure the returned session name is equal
+// to the return value of GetSessionNameSynchronouslyForTesting().
+TEST_F(GetSessionNameTest, GetSessionName) {
+  GetSessionName(message_loop_.message_loop_proxy(),
+                 base::Bind(&GetSessionNameTest::SetSessionNameAndQuit,
+                            base::Unretained(this)));
+  message_loop_.Run();
+  EXPECT_EQ(session_name_, GetSessionNameSynchronouslyForTesting());
+}
+
+}  // namespace
+
+}  // namespace browser_sync

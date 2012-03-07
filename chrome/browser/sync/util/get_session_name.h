@@ -10,29 +10,18 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
-#include "build/build_config.h"
+
+namespace base {
+class TaskRunner;
+}  // namespace base
 
 namespace browser_sync {
-
-namespace internal {
-#if defined(OS_MACOSX)
-// Returns the Hardware model name, without trailing numbers, if
-// possible.  See http://www.cocoadev.com/index.pl?MacintoshModels for
-// an example list of models. If an error occurs trying to read the
-// model, this simply returns "Unknown".
-std::string GetHardwareModelName();
-#endif
-
-#if defined(OS_WIN)
-// Returns the computer name or the empty string if an error occured.
-std::string GetComputerName();
-#endif
-}  // namespace internal
 
 void GetSessionName(
     const scoped_refptr<base::TaskRunner>& task_runner,
     const base::Callback<void(const std::string&)>& done_callback);
+
+std::string GetSessionNameSynchronouslyForTesting();
 
 }  // namespace browser_sync
 

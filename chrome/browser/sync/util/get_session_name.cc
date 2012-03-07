@@ -8,51 +8,44 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/message_loop_proxy.h"
 #include "base/sys_info.h"
+#include "base/task_runner.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/sync/util/get_session_name_mac.h"
 #elif defined(OS_WIN)
-#include <windows.h>
+#include "chrome/browser/sync/util/get_session_name_win.h"
 #endif
 
 namespace browser_sync {
 
-#if defined(OS_WIN)
-namespace internal {
-
-std::string GetComputerName() {
-  char computer_name[MAX_COMPUTERNAME_LENGTH + 1];
-  DWORD size = sizeof(computer_name);
-  if (GetComputerNameA(computer_name, &size))
-    return computer_name;
-  return std::string();
-}
-
-}  // namespace internal
-#endif
-
 namespace {
 
-void DoGetSessionNameTask(std::string* session_name) {
+std::string GetSessionNameSynchronously() {
+  std::string session_name;
 #if defined(OS_CHROMEOS)
-  *session_name = "Chromebook";
+  session_name = "Chromebook";
 #elif defined(OS_LINUX)
-  *session_name = base::GetLinuxDistro();
+  session_name = base::GetLinuxDistro();
 #elif defined(OS_MACOSX)
-  *session_name = internal::GetHardwareModelName();
+  session_name = internal::GetHardwareModelName();
 #elif defined(OS_WIN)
-  *session_name = internal::GetComputerName();
-#else
-  session_name->clear();
+  session_name = internal::GetComputerName();
 #endif
 
-  if (*session_name == "Unknown" || session_name->empty())
-    *session_name = base::SysInfo::OperatingSystemName();
+  if (session_name == "Unknown" || session_name.empty())
+    session_name = base::SysInfo::OperatingSystemName();
+
+  return session_name;
 }
 
-void GetSessionNameReply(
+void FillSessionName(std::string* session_name) {
+  *session_name = GetSessionNameSynchronously();
+}
+
+void OnSessionNameFilled(
     const base::Callback<void(const std::string&)>& done_callback,
     std::string* session_name) {
   done_callback.Run(*session_name);
@@ -66,11 +59,15 @@ void GetSessionName(
   std::string* session_name = new std::string();
   task_runner->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&DoGetSessionNameTask,
+      base::Bind(&FillSessionName,
                  base::Unretained(session_name)),
-      base::Bind(&GetSessionNameReply,
+      base::Bind(&OnSessionNameFilled,
                  done_callback,
                  base::Owned(session_name)));
+}
+
+std::string GetSessionNameSynchronouslyForTesting() {
+  return GetSessionNameSynchronously();
 }
 
 }  // namespace browser_sync

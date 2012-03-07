@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/util/get_session_name.h"
+#include "chrome/browser/sync/util/get_session_name_mac.h"
 
 #import <Foundation/Foundation.h>
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
