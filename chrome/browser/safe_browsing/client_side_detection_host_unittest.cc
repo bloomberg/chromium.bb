@@ -327,9 +327,13 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
 // Crashes on linux_chromeos. http://crbug.com/115979
 #define MAYBE_OnPhishingDetectionDoneNotPhishing \
     DISABLED_OnPhishingDetectionDoneNotPhishing
+#define MAYBE_OnPhishingDetectionDoneVerdictNotPhishing \
+    DISABLED_OnPhishingDetectionDoneVerdictNotPhishing
 #else
 #define MAYBE_OnPhishingDetectionDoneNotPhishing \
     OnPhishingDetectionDoneNotPhishing
+#define MAYBE_OnPhishingDetectionDoneVerdictNotPhishing \
+    OnPhishingDetectionDoneVerdictNotPhishing
 #endif
 
 TEST_F(ClientSideDetectionHostTest,
@@ -544,7 +548,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   FlushIOMessageLoop();
 }
 
-TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneVerdictNotPhishing) {
+TEST_F(ClientSideDetectionHostTest,
+       MAYBE_OnPhishingDetectionDoneVerdictNotPhishing) {
   // Case 6: renderer sends a verdict string that isn't phishing.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
       contents(),
