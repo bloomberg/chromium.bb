@@ -313,10 +313,6 @@ void WebGraphicsContext3DCommandBufferImpl::reshape(int width, int height) {
   cached_height_ = height;
 
   gl_->ResizeCHROMIUM(width, height);
-
-#ifdef FLIP_FRAMEBUFFER_VERTICALLY
-  scanline_.reset(new uint8[width * 4]);
-#endif  // FLIP_FRAMEBUFFER_VERTICALLY
 }
 
 #ifdef FLIP_FRAMEBUFFER_VERTICALLY
@@ -324,9 +320,10 @@ void WebGraphicsContext3DCommandBufferImpl::FlipVertically(
     uint8* framebuffer,
     unsigned int width,
     unsigned int height) {
-  uint8* scanline = scanline_.get();
-  if (!scanline)
+  if (width == 0)
     return;
+  scanline_.resize(width * 4);
+  uint8* scanline = &scanline_[0];
   unsigned int row_bytes = width * 4;
   unsigned int count = height / 2;
   for (unsigned int i = 0; i < count; i++) {
