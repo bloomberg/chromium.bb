@@ -14,7 +14,6 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/gpu_blacklist.h"
-#include "chrome/browser/gpu_performance_stats.h"
 #include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -205,10 +204,6 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 #endif
   dict->SetString("blacklist_version",
       GpuBlacklist::GetInstance()->GetVersion());
-
-  GpuPerformanceStats stats =
-    GpuPerformanceStats::RetrieveGpuPerformanceStats();
-  dict->Set("performance", stats.ToValue());
 
   return dict;
 }

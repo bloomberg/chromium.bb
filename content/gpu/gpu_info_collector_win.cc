@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <d3d9.h>
 #include <setupapi.h>
+#include <winsatcominterfacei.h>
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -32,12 +33,75 @@ std::string VersionNumberToString(uint32 version_number) {
   return base::IntToString(hi) + "." + base::IntToString(low);
 }
 
+float GetComponentScore(IProvideWinSATAssessmentInfo* subcomponent) {
+  float score;
+  HRESULT hr = subcomponent->get_Score(&score);
+  if (FAILED(hr))
+    return 0.0;
+  return score;
+}
+
+content::GpuPerformanceStats RetrieveGpuPerformanceStats() {
+  HRESULT hr = S_OK;
+  IQueryRecentWinSATAssessment* assessment = NULL;
+  IProvideWinSATResultsInfo* results = NULL;
+  IProvideWinSATAssessmentInfo* subcomponent = NULL;
+  content::GpuPerformanceStats stats;
+
+  hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+  if (FAILED(hr))
+    goto cleanup;
+
+  hr = CoCreateInstance(__uuidof(CQueryWinSAT),
+                        NULL,
+                        CLSCTX_INPROC_SERVER,
+                        __uuidof(IQueryRecentWinSATAssessment),
+                        reinterpret_cast<void**>(&assessment));
+  if (FAILED(hr))
+    goto cleanup;
+
+  hr = assessment->get_Info(&results);
+  if (FAILED(hr))
+    goto cleanup;
+
+  hr = results->get_SystemRating(&stats.overall);
+  if (FAILED(hr))
+    goto cleanup;
+
+  hr = results->GetAssessmentInfo(WINSAT_ASSESSMENT_D3D, &subcomponent);
+  if (FAILED(hr))
+    goto cleanup;
+  stats.gaming = GetComponentScore(subcomponent);
+  subcomponent->Release();
+  subcomponent = NULL;
+
+  hr = results->GetAssessmentInfo(WINSAT_ASSESSMENT_GRAPHICS, &subcomponent);
+  if (FAILED(hr))
+    goto cleanup;
+  stats.graphics = GetComponentScore(subcomponent);
+  subcomponent->Release();
+  subcomponent = NULL;
+
+ cleanup:
+  if (assessment)
+    assessment->Release();
+  if (results)
+    results->Release();
+  if (subcomponent)
+    subcomponent->Release();
+  CoUninitialize();
+
+  return stats;
+}
+
 }  // namespace anonymous
 
 namespace gpu_info_collector {
 
 bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+
+  gpu_info->performance_stats = RetrieveGpuPerformanceStats();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
     std::string requested_implementation_name =
@@ -87,6 +151,8 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   bool rt = true;
   if (!CollectVideoCardInfo(gpu_info))
     rt = false;
+
+  gpu_info->performance_stats = RetrieveGpuPerformanceStats();
 
   return rt;
 }

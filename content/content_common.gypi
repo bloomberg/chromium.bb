@@ -51,6 +51,7 @@
     'public/common/gpu_feature_type.h',
     'public/common/gpu_info.cc',
     'public/common/gpu_info.h',
+    'public/common/gpu_performance_stats.h',
     'public/common/main_function_params.h',
     'public/common/media_stream_request.cc',
     'public/common/media_stream_request.h',

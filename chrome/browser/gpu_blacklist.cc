@@ -43,7 +43,7 @@ Version* GetDateFromString(const std::string& date_string) {
 GpuBlacklist::VersionInfo::VersionInfo(const std::string& version_op,
                                        const std::string& version_string,
                                        const std::string& version_string2) {
-  op_ = StringToOp(version_op);
+  op_ = StringToNumericOp(version_op);
   if (op_ == kUnknown || op_ == kAny)
     return;
   version_.reset(Version::GetVersionFromString(version_string));
@@ -97,25 +97,6 @@ bool GpuBlacklist::VersionInfo::Contains(const Version& version) const {
 
 bool GpuBlacklist::VersionInfo::IsValid() const {
   return op_ != kUnknown;
-}
-
-GpuBlacklist::VersionInfo::Op GpuBlacklist::VersionInfo::StringToOp(
-    const std::string& version_op) {
-  if (version_op == "=")
-    return kEQ;
-  else if (version_op == "<")
-    return kLT;
-  else if (version_op == "<=")
-    return kLE;
-  else if (version_op == ">")
-    return kGT;
-  else if (version_op == ">=")
-    return kGE;
-  else if (version_op == "any")
-    return kAny;
-  else if (version_op == "between")
-    return kBetween;
-  return kUnknown;
 }
 
 GpuBlacklist::OsInfo::OsInfo(const std::string& os,
@@ -200,6 +181,52 @@ GpuBlacklist::StringInfo::Op GpuBlacklist::StringInfo::StringToOp(
   else if (string_op == "endwith")
     return kEndWith;
   return kUnknown;
+}
+
+GpuBlacklist::FloatInfo::FloatInfo(const std::string& float_op,
+                                   const std::string& float_value,
+                                   const std::string& float_value2)
+    : op_(kUnknown),
+      value_(0.f),
+      value2_(0.f) {
+  double dvalue = 0;
+  if (!base::StringToDouble(float_value, &dvalue)) {
+    op_ = kUnknown;
+    return;
+  }
+  value_ = static_cast<float>(dvalue);
+  op_ = StringToNumericOp(float_op);
+  if (op_ == kBetween) {
+    if (!base::StringToDouble(float_value2, &dvalue)) {
+      op_ = kUnknown;
+      return;
+    }
+    value2_ = static_cast<float>(dvalue);
+  }
+}
+
+bool GpuBlacklist::FloatInfo::Contains(float value) const {
+  if (op_ == kUnknown)
+    return false;
+  if (op_ == kAny)
+    return true;
+  if (op_ == kEQ)
+    return (value == value_);
+  if (op_ == kLT)
+    return (value < value_);
+  if (op_ == kLE)
+    return (value <= value_);
+  if (op_ == kGT)
+    return (value > value_);
+  if (op_ == kGE)
+    return (value >= value_);
+  DCHECK(op_ == kBetween);
+  return ((value_ <= value && value <= value2_) ||
+          (value2_ <= value && value <= value_));
+}
+
+bool GpuBlacklist::FloatInfo::IsValid() const {
+  return op_ != kUnknown;
 }
 
 // static
@@ -377,6 +404,51 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
     dictionary_entry_count++;
   }
 
+  DictionaryValue* perf_graphics_value = NULL;
+  if (value->GetDictionary("perf_graphics", &perf_graphics_value)) {
+    std::string op;
+    std::string float_value;
+    std::string float_value2;
+    perf_graphics_value->GetString("op", &op);
+    perf_graphics_value->GetString("value", &float_value);
+    perf_graphics_value->GetString("value2", &float_value2);
+    if (!entry->SetPerfGraphicsInfo(op, float_value, float_value2)) {
+      LOG(WARNING) << "Malformed perf_graphics entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
+  DictionaryValue* perf_gaming_value = NULL;
+  if (value->GetDictionary("perf_gaming", &perf_gaming_value)) {
+    std::string op;
+    std::string float_value;
+    std::string float_value2;
+    perf_gaming_value->GetString("op", &op);
+    perf_gaming_value->GetString("value", &float_value);
+    perf_gaming_value->GetString("value2", &float_value2);
+    if (!entry->SetPerfGamingInfo(op, float_value, float_value2)) {
+      LOG(WARNING) << "Malformed perf_gaming entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
+  DictionaryValue* perf_overall_value = NULL;
+  if (value->GetDictionary("perf_overall", &perf_overall_value)) {
+    std::string op;
+    std::string float_value;
+    std::string float_value2;
+    perf_overall_value->GetString("op", &op);
+    perf_overall_value->GetString("value", &float_value);
+    perf_overall_value->GetString("value2", &float_value2);
+    if (!entry->SetPerfOverallInfo(op, float_value, float_value2)) {
+      LOG(WARNING) << "Malformed perf_overall entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   if (top_level) {
     ListValue* blacklist_value = NULL;
     if (!value->GetList("blacklist", &blacklist_value)) {
@@ -528,6 +600,33 @@ bool GpuBlacklist::GpuBlacklistEntry::SetGLRendererInfo(
   return gl_renderer_info_->IsValid();
 }
 
+bool GpuBlacklist::GpuBlacklistEntry::SetPerfGraphicsInfo(
+    const std::string& op,
+    const std::string& float_string,
+    const std::string& float_string2) {
+  perf_graphics_info_.reset(
+      new FloatInfo(op, float_string, float_string2));
+  return perf_graphics_info_->IsValid();
+}
+
+bool GpuBlacklist::GpuBlacklistEntry::SetPerfGamingInfo(
+    const std::string& op,
+    const std::string& float_string,
+    const std::string& float_string2) {
+  perf_gaming_info_.reset(
+      new FloatInfo(op, float_string, float_string2));
+  return perf_gaming_info_->IsValid();
+}
+
+bool GpuBlacklist::GpuBlacklistEntry::SetPerfOverallInfo(
+    const std::string& op,
+    const std::string& float_string,
+    const std::string& float_string2) {
+  perf_overall_info_.reset(
+      new FloatInfo(op, float_string, float_string2));
+  return perf_overall_info_->IsValid();
+}
+
 bool GpuBlacklist::GpuBlacklistEntry::SetBlacklistedFeatures(
     const std::vector<std::string>& blacklisted_features) {
   size_t size = blacklisted_features.size();
@@ -599,6 +698,15 @@ bool GpuBlacklist::GpuBlacklistEntry::Contains(
     return false;
   if (gl_renderer_info_.get() != NULL &&
       !gl_renderer_info_->Contains(gpu_info.gl_renderer))
+    return false;
+  if (perf_graphics_info_.get() != NULL &&
+      !perf_graphics_info_->Contains(gpu_info.performance_stats.graphics))
+    return false;
+  if (perf_gaming_info_.get() != NULL &&
+      !perf_gaming_info_->Contains(gpu_info.performance_stats.gaming))
+    return false;
+  if (perf_overall_info_.get() != NULL &&
+      !perf_overall_info_->Contains(gpu_info.performance_stats.overall))
     return false;
   for (size_t i = 0; i < exceptions_.size(); ++i) {
     if (exceptions_[i]->Contains(os_type, os_version, gpu_info))
@@ -863,3 +971,24 @@ GpuBlacklist::IsEntrySupportedByCurrentBrowserVersion(
 void GpuBlacklist::OnGpuInfoUpdate() {
   UpdateGpuDataManager();
 }
+
+// static
+GpuBlacklist::NumericOp GpuBlacklist::StringToNumericOp(
+    const std::string& op) {
+  if (op == "=")
+    return kEQ;
+  if (op == "<")
+    return kLT;
+  if (op == "<=")
+    return kLE;
+  if (op == ">")
+    return kGT;
+  if (op == ">=")
+    return kGE;
+  if (op == "any")
+    return kAny;
+  if (op == "between")
+    return kBetween;
+  return kUnknown;
+}
+

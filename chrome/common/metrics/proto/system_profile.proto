@@ -103,7 +103,7 @@ message SystemProfileProto {
       optional string driver_date = 4;
 
       // The GPU performance statistics.
-      // See http://src.chromium.org/viewvc/chrome/trunk/src/content/browser/gpu/gpu_performance_stats.h?view=markup
+      // See http://src.chromium.org/viewvc/chrome/trunk/src/content/public/common/gpu_performance_stats.h?view=markup
       // for details.  Currently logged only on Windows.
       message PerformanceStatistics {
         optional float graphics_score = 1;

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/dx_diag_node.h"
+#include "content/public/common/gpu_performance_stats.h"
 
 namespace content {
 
@@ -74,6 +75,9 @@ struct CONTENT_EXPORT GPUInfo {
   // The device semantics, i.e. whether the Vista and Windows 7 specific
   // semantics are available.
   bool can_lose_context;
+
+  // By default all values are 0.
+  GpuPerformanceStats performance_stats;
 
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.

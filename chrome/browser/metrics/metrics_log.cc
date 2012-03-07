@@ -21,7 +21,6 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/gpu_performance_stats.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -627,8 +626,6 @@ void MetricsLog::RecordEnvironment(
     OPEN_ELEMENT_FOR_SCOPE("gpu");
     const content::GPUInfo& gpu_info =
         GpuDataManager::GetInstance()->GetGPUInfo();
-    GpuPerformanceStats gpu_performance_stats =
-        GpuPerformanceStats::RetrieveGpuPerformanceStats();
 
     // Write the XML version.
     WriteIntAttribute("vendorid", gpu_info.vendor_id);
@@ -642,9 +639,9 @@ void MetricsLog::RecordEnvironment(
     gpu->set_driver_date(gpu_info.driver_date);
     SystemProfileProto::Hardware::Graphics::PerformanceStatistics*
         gpu_performance = gpu->mutable_performance_statistics();
-    gpu_performance->set_graphics_score(gpu_performance_stats.graphics);
-    gpu_performance->set_gaming_score(gpu_performance_stats.gaming);
-    gpu_performance->set_overall_score(gpu_performance_stats.overall);
+    gpu_performance->set_graphics_score(gpu_info.performance_stats.graphics);
+    gpu_performance->set_gaming_score(gpu_info.performance_stats.gaming);
+    gpu_performance->set_overall_score(gpu_info.performance_stats.overall);
   }
 
   {
