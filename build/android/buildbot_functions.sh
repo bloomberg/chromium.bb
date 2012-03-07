@@ -22,11 +22,11 @@ function bb_setup_environment {
 }
 
 # Install the build deps by running
-# build/install-build-deps-android.sh.  This may update local tools.
+# build/install-build-deps-android-sdk.sh.  This may update local tools.
 # $1: source root.
 function bb_install_build_deps {
   echo "@@@BUILD_STEP install build deps android@@@"
-  local script="$1/build/install-build-deps-android.sh"
+  local script="$1/build/install-build-deps-android-sdk.sh"
   if [[ -f "$script" ]]; then
     "$script"
   else
