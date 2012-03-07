@@ -180,11 +180,13 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   // Test if we will drop the low pressure event.
   FingerState fs2[] = {
     { 0, 0, 0, 0, 1, 0, 150, 4000, 2 },
-    { 0, 0, 0, 0, 4, 0, 550, 2000, 2 }
+    { 0, 0, 0, 0, 4, 0, 550, 2000, 2 },
+    { 0, 0, 0, 0, 1, 0, 560, 2000, 2 },
   };
   HardwareState hs2[] = {
     { 110000, 0, 1, 2, &fs2[0] },
-    { 154000, 0, 1, 1, &fs2[1] }
+    { 154000, 0, 1, 1, &fs2[1] },
+    { 184000, 0, 1, 0, &fs2[2] }
   };
   interpreter.pressure_threshold_.val_ = kPressureThreshold;
   base_interpreter->expected_finger_cnt_.push_back(0);
@@ -194,6 +196,10 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   base_interpreter->expected_pressures_.push_back(
       fs2[1].pressure * kPressureScale + kPressureTranslate);
   out = interpreter.SyncInterpret(&hs2[1], NULL);
+
+  base_interpreter->expected_finger_cnt_.push_back(0);
+  base_interpreter->expected_touch_cnt_.push_back(0);
+  out = interpreter.SyncInterpret(&hs2[2], NULL);
 }
 
 }  // namespace gestures
