@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,12 +76,12 @@ class AppsPromo {
   // |promo_data.logo| is empty or not a valid 'data' URL.
   static void ClearPromo();
   static PromoData GetPromo();
-  static void SetPromo(PromoData promo_data);
+  static void SetPromo(const PromoData& promo_data);
 
   // Gets the original URL of the logo. This should only be set when the logo
   // was served over HTTPS.
   static GURL GetSourcePromoLogoURL();
-  static void SetSourcePromoLogoURL(GURL original_url);
+  static void SetSourcePromoLogoURL(const GURL& original_url);
 
   explicit AppsPromo(PrefService* prefs);
   ~AppsPromo();

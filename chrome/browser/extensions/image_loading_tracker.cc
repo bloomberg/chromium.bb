@@ -27,7 +27,7 @@ ImageLoadingTracker::Observer::~Observer() {}
 // ImageLoadingTracker::ImageInfo
 
 ImageLoadingTracker::ImageInfo::ImageInfo(
-    const ExtensionResource resource, gfx::Size max_size)
+    const ExtensionResource& resource, gfx::Size max_size)
     : resource(resource), max_size(max_size) {
 }
 

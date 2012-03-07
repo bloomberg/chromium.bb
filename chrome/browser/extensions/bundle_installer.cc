@@ -40,7 +40,7 @@ AutoApproveForTest g_auto_approve_for_test = DO_NOT_SKIP;
 
 // Creates a dummy extension and sets the manifest's name to the item's
 // localized name.
-scoped_refptr<Extension> CreateDummyExtension(BundleInstaller::Item item,
+scoped_refptr<Extension> CreateDummyExtension(const BundleInstaller::Item& item,
                                               DictionaryValue* manifest) {
   // We require localized names so we can have nice error messages when we can't
   // parse an extension manifest.

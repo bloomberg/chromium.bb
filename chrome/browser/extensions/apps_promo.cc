@@ -170,7 +170,7 @@ AppsPromo::PromoData AppsPromo::GetPromo() {
 }
 
 // static
-void AppsPromo::SetPromo(AppsPromo::PromoData data) {
+void AppsPromo::SetPromo(const AppsPromo::PromoData& data) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kNtpWebStorePromoId, data.id);
   local_state->SetString(prefs::kNtpWebStorePromoButton, data.button);
@@ -187,7 +187,7 @@ GURL AppsPromo::GetSourcePromoLogoURL() {
 }
 
 // static
-void AppsPromo::SetSourcePromoLogoURL(GURL logo_source) {
+void AppsPromo::SetSourcePromoLogoURL(const GURL& logo_source) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kNtpWebStorePromoLogoSource,
                          logo_source.spec());

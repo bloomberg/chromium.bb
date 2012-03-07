@@ -51,7 +51,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     explicit Prompt(PromptType type);
     ~Prompt();
 
-    void SetPermissions(std::vector<string16> permissions);
+    void SetPermissions(const std::vector<string16>& permissions);
     void SetInlineInstallWebstoreData(const std::string& localized_user_count,
                                       double average_rating,
                                       int rating_count);

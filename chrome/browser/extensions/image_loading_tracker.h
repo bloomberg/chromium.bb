@@ -61,7 +61,7 @@ class ImageLoadingTracker : public content::NotificationObserver {
 
   // Information about a single image to load from a extension resource.
   struct ImageInfo {
-    ImageInfo(const ExtensionResource resource, gfx::Size max_size);
+    ImageInfo(const ExtensionResource& resource, gfx::Size max_size);
     ~ImageInfo();
     ExtensionResource resource;
     // If the loaded image is larger than |max_size| it will be resized to those
