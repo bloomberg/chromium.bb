@@ -38,6 +38,9 @@ http://git.libav.org/?p=libav.git;a=commit;h=b7165426917f91ebcad84bdff366824f03b
 ef0d779706c77ca9007527bd8d41e9400682f4e4
   dalecurtis: Fixes uninitialized reads on corrupted OGG files.
 
+cd40c31ee9ad2cca6f3635950b002fd46be07e98
+  dalecurtis: Replaces previous mkv buffer overflow patch.
+
 Patches still existing from the pre-GIT workflow:
 
 to_upstream/
@@ -48,9 +51,6 @@ to_upstream/
 11a_compile_with_disabled_features.patch
   Add CONFIG_* checks to make sure we don't use sipr/compression if
    enwantee(enwantedtche.g. webm doesn't support them).
-
-11b_mkv_buffer_overflow.patch
-  Remainder of the original patch.
 
 12_ogg_seek_to_zero.patch
   rbultje: I've looked into this, but didn't get anywhere yet. I can

@@ -707,17 +707,19 @@ static int ebml_read_float(AVIOContext *pb, int size, double *num)
  */
 static int ebml_read_ascii(AVIOContext *pb, int size, char **str)
 {
-    av_free(*str);
-    *str = NULL;
+    char *res;
+
     /* EBML strings are usually not 0-terminated, so we allocate one
      * byte more, read the string and NULL-terminate it ourselves. */
-    if (size < 0 || !(*str = av_malloc(size + 1)))
+    if (!(res = av_malloc(size + 1)))
         return AVERROR(ENOMEM);
-    if (avio_read(pb, (uint8_t *) *str, size) != size) {
-        av_freep(str);
+    if (avio_read(pb, (uint8_t *) res, size) != size) {
+        av_free(res);
         return AVERROR(EIO);
     }
-    (*str)[size] = '\0';
+    (res)[size] = '\0';
+    av_free(*str);
+    *str = res;
 
     return 0;
 }
@@ -976,8 +978,6 @@ static int matroska_probe(AVProbeData *p)
      * Not fully fool-proof, but good enough. */
     for (i = 0; i < FF_ARRAY_ELEMS(matroska_doctypes); i++) {
         int probelen = strlen(matroska_doctypes[i]);
-        if (total < probelen)
-            continue;
         for (n = 4+size; n <= 4+size+total-probelen; n++)
             if (!memcmp(p->buf+n, matroska_doctypes[i], probelen))
                 return AVPROBE_SCORE_MAX;
