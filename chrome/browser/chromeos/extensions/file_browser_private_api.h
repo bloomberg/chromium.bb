@@ -425,4 +425,25 @@ class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.pinGDataFile");
 };
 
+// Get file locations for the given list of file URLs. Returns a list of
+// location idenfitiers, like ['gdata', 'local'], where 'gdata' means the
+// file is on gdata, and 'local' means the file is on the local drive.
+class GetFileLocationsFunction : public FileBrowserFunction {
+ public:
+  GetFileLocationsFunction();
+
+ protected:
+  virtual ~GetFileLocationsFunction();
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // A callback method to handle the result of
+  // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
+  void GetLocalPathsResponseOnUIThread(const FilePathList& files);
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileLocations");
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_BROWSER_PRIVATE_API_H_

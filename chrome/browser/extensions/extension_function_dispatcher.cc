@@ -419,6 +419,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<IsFullscreenFunction>();
   RegisterFunction<GetGDataFilePropertiesFunction>();
   RegisterFunction<PinGDataFileFunction>();
+  RegisterFunction<GetFileLocationsFunction>();
 
   // Mediaplayer
   RegisterFunction<PlayMediaplayerFunction>();

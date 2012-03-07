@@ -521,6 +521,31 @@
         ]
       },      
       {
+        "name": "getFileLocations",
+        "description": "Get file locations",
+        "parameters": [
+          {
+            "name": "fileUrls",
+            "type": "array",
+            "description": "Array of file URLs to check.",
+            "items": { "type": "string" }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "locations",
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "An array of the file locations for the requested files, one entry for each file in fileUrls."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getVolumeMetadata",
         "description": "Requests volume's metadata",
         "parameters": [

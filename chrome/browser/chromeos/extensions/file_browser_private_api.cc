@@ -1996,3 +1996,46 @@ bool PinGDataFileFunction::DoOperation(const FilePath& /*path*/) {
   return true;
 }
 
+GetFileLocationsFunction::GetFileLocationsFunction() {
+}
+
+GetFileLocationsFunction::~GetFileLocationsFunction() {
+}
+
+bool GetFileLocationsFunction::RunImpl() {
+  ListValue* file_urls_as_strings = NULL;
+  if (!args_->GetList(0, &file_urls_as_strings))
+    return false;
+
+  // Convert the list of strings to a list of GURLs.
+  UrlList file_urls;
+  for (size_t i = 0; i < file_urls_as_strings->GetSize(); ++i) {
+    std::string file_url_as_string;
+    if (!file_urls_as_strings->GetString(i, &file_url_as_string))
+      return false;
+    file_urls.push_back(GURL(file_url_as_string));
+  }
+
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_urls,
+      base::Bind(&GetFileLocationsFunction::GetLocalPathsResponseOnUIThread,
+                 this));
+  return true;
+}
+
+void GetFileLocationsFunction::GetLocalPathsResponseOnUIThread(
+    const FilePathList& files) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ListValue* locations = new ListValue;
+  for (size_t i = 0; i < files.size(); ++i) {
+    if (gdata::util::IsUnderGDataMountPoint(files[i])) {
+      locations->Append(Value::CreateStringValue("gdata"));
+    } else {
+      locations->Append(Value::CreateStringValue("local"));
+    }
+  }
+
+  result_.reset(locations);
+  SendResponse(true);
+}
