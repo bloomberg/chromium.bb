@@ -551,8 +551,17 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                    "Unsynced Count",
                                    full_status.unsynced_count);
     sync_ui_util::AddIntSyncDetail(details,
-                                   "Conflicting Count",
-                                   full_status.conflicting_count);
+                                   "Encryption Conflicts Detected (this cycle)",
+                                   full_status.encryption_conflicts);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Hierarchy Conflicts Detected (this cycle)",
+                                   full_status.hierarchy_conflicts);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Simple Conflicts Detected (this cycle)",
+                                   full_status.simple_conflicts);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Server Conflicts Detected (this cycle)",
+                                   full_status.server_conflicts);
     sync_ui_util::AddIntSyncDetail(details,
                                    "Committed Items (this session)",
                                    full_status.committed_count);

@@ -20,14 +20,6 @@ class StatusControllerTest : public testing::Test {
 
 TEST_F(StatusControllerTest, GetsDirty) {
   StatusController status(routes_);
-  status.increment_num_conflicting_commits_by(1);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  EXPECT_FALSE(status.TestAndClearIsDirty());  // Test that it actually resets.
-  status.increment_num_conflicting_commits_by(0);
-  EXPECT_FALSE(status.TestAndClearIsDirty());
-  status.increment_num_conflicting_commits_by(1);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
   status.set_num_server_changes_remaining(30);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
@@ -77,9 +69,6 @@ TEST_F(StatusControllerTest, StaysClean) {
 // method was actually setting |bar_| instead!).
 TEST_F(StatusControllerTest, ReadYourWrites) {
   StatusController status(routes_);
-  status.increment_num_conflicting_commits_by(1);
-  EXPECT_EQ(1, status.error().num_conflicting_commits);
-
   status.set_num_server_changes_remaining(13);
   EXPECT_EQ(13, status.num_server_changes_remaining());
 

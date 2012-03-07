@@ -330,7 +330,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       // TODO(rlarocque): Figure out a less brittle way of detecting this.
       if (IsTypeEncrypted(waiting_for_encryption_type_) &&
           IsFullySynced() &&
-          GetLastSessionSnapshot()->num_conflicting_updates == 0) {
+          GetLastSessionSnapshot()->num_encryption_conflicts == 0) {
         // Encryption is now complete for the the type in which we were waiting.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
         break;
@@ -776,7 +776,7 @@ ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
 bool ProfileSyncServiceHarness::IsDataSyncedImpl(
     const browser_sync::sessions::SyncSessionSnapshot *snap) {
   return snap &&
-      snap->num_simple_conflicting_updates == 0 &&
+      snap->num_simple_conflicts == 0 &&
       ServiceIsPushingChanges() &&
       GetStatus().notifications_enabled &&
       !service()->HasUnsyncedItems() &&
@@ -1015,10 +1015,14 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
          << service()->HasUnsyncedItems()
          << ", unsynced_count: "
          << snap->unsynced_count
-         << ", num_conflicting_updates: "
-         << snap->num_conflicting_updates
-         << ", num_simple_conflicting_updates: "
-         << snap->num_simple_conflicting_updates
+         << ", encryption conflicts: "
+         << snap->num_encryption_conflicts
+         << ", hierarchy conflicts: "
+         << snap->num_hierarchy_conflicts
+         << ", simple conflicts: "
+         << snap->num_simple_conflicts
+         << ", server conflicts: "
+         << snap->num_server_conflicts
          << ", num_updates_downloaded : "
          << snap->syncer_status.num_updates_downloaded_total
          << ", passphrase_required_reason: "
@@ -1068,7 +1072,7 @@ bool ProfileSyncServiceHarness::WaitForTypeEncryption(
   // TODO(rlarocque): Figure out a less brittle way of detecting this.
   if (IsTypeEncrypted(type) &&
       IsFullySynced() &&
-      GetLastSessionSnapshot()->num_conflicting_updates == 0) {
+      GetLastSessionSnapshot()->num_encryption_conflicts == 0) {
     // Encryption is already complete for |type|; do not wait.
     return true;
   }

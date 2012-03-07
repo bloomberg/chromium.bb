@@ -69,16 +69,6 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
                          *value, "numServerOverwrites");
 }
 
-TEST_F(SessionStateTest, ErrorCountersToValue) {
-  ErrorCounters counters;
-  counters.num_conflicting_commits = 1;
-
-  scoped_ptr<DictionaryValue> value(counters.ToValue());
-  EXPECT_EQ(1u, value->size());
-  ExpectDictIntegerValue(counters.num_conflicting_commits,
-                         *value, "numConflictingCommits");
-}
-
 TEST_F(SessionStateTest, DownloadProgressMarkersToValue) {
   std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
@@ -109,9 +99,6 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
       syncer_status.ToValue());
 
   ErrorCounters errors;
-  errors.num_conflicting_commits = 250;
-  scoped_ptr<DictionaryValue> expected_errors_value(
-      errors.ToValue());
 
   const int kNumServerChangesRemaining = 105;
   const bool kIsShareUsable = true;
@@ -130,8 +117,10 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   const bool kHasMoreToSync = false;
   const bool kIsSilenced = true;
   const int kUnsyncedCount = 1053;
-  const int kNumSimpleConflictingUpdates = 1054;
-  const int kNumConflictingUpdates = 1055;
+  const int kNumEncryptionConflicts = 1054;
+  const int kNumHierarchyConflicts = 1055;
+  const int kNumSimpleConflicts = 1056;
+  const int kNumServerConflicts = 1057;
   const bool kDidCommitItems = true;
 
   SyncSourceInfo source;
@@ -146,18 +135,19 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
                                kHasMoreToSync,
                                kIsSilenced,
                                kUnsyncedCount,
-                               kNumSimpleConflictingUpdates,
-                               kNumConflictingUpdates,
+                               kNumEncryptionConflicts,
+                               kNumHierarchyConflicts,
+                               kNumSimpleConflicts,
+                               kNumServerConflicts,
                                kDidCommitItems,
                                source,
                                0,
                                base::Time::Now(),
                                false);
   scoped_ptr<DictionaryValue> value(snapshot.ToValue());
-  EXPECT_EQ(14u, value->size());
+  EXPECT_EQ(15u, value->size());
   ExpectDictDictionaryValue(*expected_syncer_status_value, *value,
                             "syncerStatus");
-  ExpectDictDictionaryValue(*expected_errors_value, *value, "errors");
   ExpectDictIntegerValue(kNumServerChangesRemaining, *value,
                          "numServerChangesRemaining");
   ExpectDictBooleanValue(kIsShareUsable, *value, "isShareUsable");
@@ -168,10 +158,14 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   ExpectDictBooleanValue(kHasMoreToSync, *value, "hasMoreToSync");
   ExpectDictBooleanValue(kIsSilenced, *value, "isSilenced");
   ExpectDictIntegerValue(kUnsyncedCount, *value, "unsyncedCount");
-  ExpectDictIntegerValue(kNumSimpleConflictingUpdates, *value,
-                         "numSimpleConflictingUpdates");
-  ExpectDictIntegerValue(kNumConflictingUpdates, *value,
-                         "numConflictingUpdates");
+  ExpectDictIntegerValue(kNumEncryptionConflicts, *value,
+                         "numEncryptionConflicts");
+  ExpectDictIntegerValue(kNumHierarchyConflicts, *value,
+                         "numHierarchyConflicts");
+  ExpectDictIntegerValue(kNumSimpleConflicts, *value,
+                         "numSimpleConflicts");
+  ExpectDictIntegerValue(kNumServerConflicts, *value,
+                         "numServerConflicts");
   ExpectDictBooleanValue(kDidCommitItems, *value,
                          "didCommitItems");
   ExpectDictDictionaryValue(*expected_source_value, *value, "source");

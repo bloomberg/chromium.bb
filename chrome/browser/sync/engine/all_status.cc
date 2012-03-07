@@ -32,7 +32,10 @@ sync_api::SyncManager::Status AllStatus::CreateBlankStatus() const {
   // are not to be cleared here.
   sync_api::SyncManager::Status status = status_;
   status.unsynced_count = 0;
-  status.conflicting_count = 0;
+  status.encryption_conflicts = 0;
+  status.hierarchy_conflicts = 0;
+  status.simple_conflicts = 0;
+  status.server_conflicts = 0;
   status.committed_count = 0;
   status.initial_sync_ended = false;
   status.updates_available = 0;
@@ -43,12 +46,12 @@ sync_api::SyncManager::Status AllStatus::CalcSyncing(
     const SyncEngineEvent &event) const {
   sync_api::SyncManager::Status status = CreateBlankStatus();
   const sessions::SyncSessionSnapshot* snapshot = event.snapshot;
-  status.unsynced_count += static_cast<int>(snapshot->unsynced_count);
-  status.conflicting_count += snapshot->errors.num_conflicting_commits;
-  status.committed_count += snapshot->syncer_status.num_successful_commits;
-  // The syncer may not be done yet, which could cause conflicting updates.
-  // But this is only used for status, so it is better to have visibility.
-  status.conflicting_count += snapshot->num_conflicting_updates;
+  status.unsynced_count = static_cast<int>(snapshot->unsynced_count);
+  status.encryption_conflicts = snapshot->num_encryption_conflicts;
+  status.hierarchy_conflicts = snapshot->num_hierarchy_conflicts;
+  status.simple_conflicts = snapshot->num_simple_conflicts;
+  status.server_conflicts = snapshot->num_server_conflicts;
+  status.committed_count = snapshot->syncer_status.num_successful_commits;
 
   if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_BEGIN) {
     status.syncing = true;

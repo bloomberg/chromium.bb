@@ -221,7 +221,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case PROCESS_COMMIT_RESPONSE: {
-        session->mutable_status_controller()->reset_num_conflicting_commits();
         ProcessCommitResponseCommand process_response_command;
         session->mutable_status_controller()->
             set_last_process_commit_response_result(

@@ -16,9 +16,21 @@ package sync_pb;
 message SyncCycleCompletedEventInfo {
   // optional bool syncer_stuck = 1; // Was always false, now obsolete.
 
-  // TODO(rlarocque): rename these counters.
-  optional int32 num_blocking_conflicts = 2;
-  optional int32 num_non_blocking_conflicts = 3;
+  // The client has never set these values correctly.  It set
+  // num_blocking_conflicts to the total number of conflicts detected and set
+  // num_non_blocking_conflicts to the number of blocking (aka. simple)
+  // conflicts.
+  //
+  // These counters have been deprecated to avoid further confusion.  The newer
+  // counters provide more detail and are less buggy.
+  optional int32 num_blocking_conflicts = 2 [deprecated = true];
+  optional int32 num_non_blocking_conflicts = 3 [deprecated = true];
+
+  // These new conflict counters replace the ones above.
+  optional int32 num_encryption_conflicts = 4;
+  optional int32 num_hierarchy_conflicts = 5;
+  optional int32 num_simple_conflicts = 6;
+  optional int32 num_server_conflicts = 7;
 }
 
 message DebugEventInfo {

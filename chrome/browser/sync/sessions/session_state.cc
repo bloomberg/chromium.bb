@@ -91,16 +91,9 @@ DictionaryValue* DownloadProgressMarkersToValue(
 }
 
 ErrorCounters::ErrorCounters()
-    : num_conflicting_commits(0),
-      last_download_updates_result(UNSET),
+    : last_download_updates_result(UNSET),
       last_post_commit_result(UNSET),
       last_process_commit_response_result(UNSET) {
-}
-
-DictionaryValue* ErrorCounters::ToValue() const {
-  DictionaryValue* value = new DictionaryValue();
-  value->SetInteger("numConflictingCommits", num_conflicting_commits);
-  return value;
 }
 
 SyncSessionSnapshot::SyncSessionSnapshot(
@@ -114,8 +107,10 @@ SyncSessionSnapshot::SyncSessionSnapshot(
     bool more_to_sync,
     bool is_silenced,
     int64 unsynced_count,
-    int num_simple_conflicting_updates,
-    int num_conflicting_updates,
+    int num_encryption_conflicts,
+    int num_hierarchy_conflicts,
+    int num_simple_conflicts,
+    int num_server_conflicts,
     bool did_commit_items,
     const SyncSourceInfo& source,
     size_t num_entries,
@@ -130,8 +125,10 @@ SyncSessionSnapshot::SyncSessionSnapshot(
       has_more_to_sync(more_to_sync),
       is_silenced(is_silenced),
       unsynced_count(unsynced_count),
-      num_simple_conflicting_updates(num_simple_conflicting_updates),
-      num_conflicting_updates(num_conflicting_updates),
+      num_encryption_conflicts(num_encryption_conflicts),
+      num_hierarchy_conflicts(num_hierarchy_conflicts),
+      num_simple_conflicts(num_simple_conflicts),
+      num_server_conflicts(num_server_conflicts),
       did_commit_items(did_commit_items),
       source(source),
       num_entries(num_entries),
@@ -149,7 +146,6 @@ SyncSessionSnapshot::~SyncSessionSnapshot() {}
 DictionaryValue* SyncSessionSnapshot::ToValue() const {
   DictionaryValue* value = new DictionaryValue();
   value->Set("syncerStatus", syncer_status.ToValue());
-  value->Set("errors", errors.ToValue());
   // We don't care too much if we lose precision here.
   value->SetInteger("numServerChangesRemaining",
                     static_cast<int>(num_server_changes_remaining));
@@ -163,9 +159,14 @@ DictionaryValue* SyncSessionSnapshot::ToValue() const {
   // We don't care too much if we lose precision here, also.
   value->SetInteger("unsyncedCount",
                     static_cast<int>(unsynced_count));
-  value->SetInteger("numSimpleConflictingUpdates",
-                    num_simple_conflicting_updates);
-  value->SetInteger("numConflictingUpdates", num_conflicting_updates);
+  value->SetInteger("numEncryptionConflicts",
+                    num_encryption_conflicts);
+  value->SetInteger("numHierarchyConflicts",
+                    num_hierarchy_conflicts);
+  value->SetInteger("numSimpleConflicts",
+                    num_simple_conflicts);
+  value->SetInteger("numServerConflicts",
+                    num_server_conflicts);
   value->SetBoolean("didCommitItems", did_commit_items);
   value->SetInteger("numEntries", num_entries);
   value->Set("source", source.ToValue());

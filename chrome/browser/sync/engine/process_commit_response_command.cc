@@ -168,8 +168,6 @@ SyncerError ProcessCommitResponseCommand::ProcessCommitResponse(
     }
   }
 
-  // TODO(sync): move status reporting elsewhere.
-  status->increment_num_conflicting_commits_by(conflicting_commits);
   SyncerUtil::MarkDeletedChildrenSynced(dir, &deleted_folders);
 
   int commit_count = static_cast<int>(proj.size());

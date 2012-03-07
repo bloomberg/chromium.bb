@@ -150,9 +150,11 @@ class StatusController {
   // Note: this includes unresolvable conflicts.
   bool HasConflictingUpdates() const;
 
-  // Aggregate sum of SimpleConflictingItemSize() over all ConflictProgress
-  // objects (one for each ModelSafeGroup currently in-use).
-  // Note: this does not include unresolvable conflicts.
+  // Aggregate sums of various types of conflict counters accross all
+  // ConflictProgress objects (one for each ModelSafeGroup currently in-use).
+  int TotalNumEncryptionConflictingItems() const;
+  int TotalNumHierarchyConflictingItems() const;
+  int TotalNumServerConflictingItems() const;
   int TotalNumSimpleConflictingItems() const;
 
   // Aggregate sum of SimpleConflictingItemSize() and other
@@ -205,8 +207,6 @@ class StatusController {
   }
 
   // A toolbelt full of methods for updating counters and flags.
-  void increment_num_conflicting_commits_by(int value);
-  void reset_num_conflicting_commits();
   void set_num_server_changes_remaining(int64 changes_remaining);
   void set_invalid_store(bool invalid_store);
   void set_num_successful_bookmark_commits(int value);

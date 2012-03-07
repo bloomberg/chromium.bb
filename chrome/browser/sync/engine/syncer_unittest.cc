@@ -2474,7 +2474,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
   }
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
   const StatusController& status(session_->status_controller());
-  EXPECT_EQ(0, status.error().num_conflicting_commits);
+  EXPECT_EQ(0, status.TotalNumServerConflictingItems());
 }
 
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {

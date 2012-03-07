@@ -132,8 +132,18 @@ class SyncManager {
     // Number of unsynced items counted at the start of most recent sync cycle.
     int unsynced_count;
 
-    // Number of conflicting items counted during most recent sync cycle.
-    int conflicting_count;
+    // Number of encryption conflicts counted during most recent sync cycle.
+    int encryption_conflicts;
+
+    // Number of hierarchy conflicts counted during most recent sync cycle.
+    int hierarchy_conflicts;
+
+    // Number of simple conflicts counted during most recent sync cycle.
+    int simple_conflicts;
+
+    // Number of items the server refused to commit due to conflict during most
+    // recent sync cycle.
+    int server_conflicts;
 
     // Number of items successfully committed during most recent sync cycle.
     int committed_count;

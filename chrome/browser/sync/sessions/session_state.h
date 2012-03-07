@@ -87,11 +87,6 @@ struct SyncerStatus {
 struct ErrorCounters {
   ErrorCounters();
 
-  // Caller takes ownership of the returned dictionary.
-  base::DictionaryValue* ToValue() const;
-
-  int num_conflicting_commits;
-
   // Any protocol errors that we received during this sync session.
   SyncProtocolError sync_protocol_error;
 
@@ -120,8 +115,10 @@ struct SyncSessionSnapshot {
       bool more_to_sync,
       bool is_silenced,
       int64 unsynced_count,
-      int num_simple_conflicting_updates,
-      int num_conflicting_updates,
+      int num_encryption_conflicts,
+      int num_hierarchy_conflicts,
+      int num_simple_conflicts,
+      int num_server_conflicts,
       bool did_commit_items,
       const SyncSourceInfo& source,
       size_t num_entries,
@@ -143,8 +140,10 @@ struct SyncSessionSnapshot {
   const bool has_more_to_sync;
   const bool is_silenced;
   const int64 unsynced_count;
-  const int num_simple_conflicting_updates;
-  const int num_conflicting_updates;
+  const int num_encryption_conflicts;
+  const int num_hierarchy_conflicts;
+  const int num_simple_conflicts;
+  const int num_server_conflicts;
   const bool did_commit_items;
   const SyncSourceInfo source;
   const size_t num_entries;
