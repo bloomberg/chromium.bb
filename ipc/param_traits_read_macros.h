@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@
 #undef IPC_STRUCT_TRAITS_END
 #define IPC_STRUCT_TRAITS_BEGIN(struct_name) \
   bool ParamTraits<struct_name>:: \
-      Read(const Message* m, void** iter, param_type* p) { \
+      Read(const Message* m, PickleIterator* iter, param_type* p) { \
     return
 #define IPC_STRUCT_TRAITS_MEMBER(name) ReadParam(m, iter, &p->name) &&
 #define IPC_STRUCT_TRAITS_PARENT(type) ParamTraits<type>::Read(m, iter, p) &&
@@ -36,7 +36,7 @@
 #undef IPC_ENUM_TRAITS
 #define IPC_ENUM_TRAITS(enum_name) \
   bool ParamTraits<enum_name>:: \
-      Read(const Message* m, void** iter, param_type* p) { \
+      Read(const Message* m, PickleIterator* iter, param_type* p) { \
     int type; \
     if (!m->ReadInt(iter, &type)) \
       return false; \

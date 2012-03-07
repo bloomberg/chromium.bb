@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -65,7 +65,7 @@ TEST_F(ChromeRenderViewTest, ExtensionMessagesOpenChannel) {
       render_thread_->sink().GetUniqueMessageMatching(
           ExtensionHostMsg_OpenChannelToExtension::ID);
   ASSERT_TRUE(open_channel_msg);
-  void* iter = IPC::SyncMessage::GetDataIterator(open_channel_msg);
+  PickleIterator iter = IPC::SyncMessage::GetDataIterator(open_channel_msg);
   ExtensionHostMsg_OpenChannelToExtension::SendParam open_params;
   ASSERT_TRUE(IPC::ReadParam(open_channel_msg, &iter, &open_params));
   EXPECT_EQ("testName", open_params.d);

@@ -38,7 +38,7 @@ bool DeserializeSecurityInfo(const std::string& state,
   }
 
   Pickle pickle(state.data(), static_cast<int>(state.size()));
-  void * iter = NULL;
+  PickleIterator iter(pickle);
   return pickle.ReadInt(&iter, cert_id) &&
          pickle.ReadUInt32(&iter, cert_status) &&
          pickle.ReadInt(&iter, security_bits) &&

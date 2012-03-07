@@ -253,7 +253,7 @@ bool URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message,
     case AutomationMsg_RequestStarted::ID:
     case AutomationMsg_RequestData::ID:
     case AutomationMsg_RequestEnd::ID: {
-      void* iter = NULL;
+      PickleIterator iter(message);
       if (message.ReadInt(&iter, request_id))
         return true;
       break;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ const WebInputEvent* InputEventFilter::CrackMessage(
     const IPC::Message& message) {
   DCHECK(message.type() == ViewMsg_HandleInputEvent::ID);
 
-  void* iter = NULL;
+  PickleIterator iter(message);
   const char* data;
   int data_length;
   if (!message.ReadData(&iter, &data, &data_length))

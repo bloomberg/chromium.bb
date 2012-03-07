@@ -83,7 +83,7 @@ void CompressDataHelper::CompressAndWriteStringToPickle(const std::string& str,
 
 // static
 bool CompressDataHelper::ReadAndDecompressStringFromPickle(const Pickle& pickle,
-                                                           void** iter,
+                                                           PickleIterator* iter,
                                                            std::string* str) {
   // Read the size of the original data.
   int original_size = 0;

@@ -252,7 +252,7 @@ bool ExtensionUnpacker::ReadImagesFromFile(const FilePath& extension_path,
     return false;
 
   IPC::Message pickle(file_str.data(), file_str.size());
-  void* iter = NULL;
+  PickleIterator iter(pickle);
   return IPC::ReadParam(&pickle, &iter, images);
 }
 
@@ -266,7 +266,7 @@ bool ExtensionUnpacker::ReadMessageCatalogsFromFile(
     return false;
 
   IPC::Message pickle(file_str.data(), file_str.size());
-  void* iter = NULL;
+  PickleIterator iter(pickle);
   return IPC::ReadParam(&pickle, &iter, catalogs);
 }
 

@@ -962,7 +962,7 @@ void RenderViewHostImpl::OnMsgRenderViewGone(int status, int exit_code) {
 void RenderViewHostImpl::OnMsgNavigate(const IPC::Message& msg) {
   // Read the parameters out of the IPC message directly to avoid making another
   // copy when we filter the URLs.
-  void* iter = NULL;
+  PickleIterator iter(msg);
   ViewHostMsg_FrameNavigate_Params validated_params;
   if (!IPC::ParamTraits<ViewHostMsg_FrameNavigate_Params>::
       Read(&msg, &iter, &validated_params))

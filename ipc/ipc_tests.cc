@@ -140,7 +140,7 @@ TEST_F(IPCChannelTest, BasicMessageTest) {
   EXPECT_TRUE(m.WriteString(v2));
   EXPECT_TRUE(m.WriteWString(v3));
 
-  void* iter = NULL;
+  PickleIterator iter(m);
 
   int vi;
   std::string vs;

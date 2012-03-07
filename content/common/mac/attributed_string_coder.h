@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,7 +102,7 @@ template <>
 struct ParamTraits<mac::AttributedStringCoder::EncodedString> {
   typedef mac::AttributedStringCoder::EncodedString param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -110,7 +110,7 @@ template <>
 struct ParamTraits<mac::AttributedStringCoder::FontAttribute> {
   typedef mac::AttributedStringCoder::FontAttribute param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

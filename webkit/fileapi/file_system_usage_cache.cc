@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -131,7 +131,7 @@ int64 FileSystemUsageCache::Read(const FilePath& usage_file_path,
       file_util::ReadFile(usage_file_path, buffer, kUsageFileSize))
     return -1;
   Pickle read_pickle(buffer, kUsageFileSize);
-  void* iter = NULL;
+  PickleIterator iter(read_pickle);
   int64 fs_usage;
 
   if (!read_pickle.ReadBytes(&iter, &header, kUsageFileHeaderSize) ||

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,7 @@ bool BrowserActionSetIconFunction::RunBrowserAction() {
   base::BinaryValue* binary = NULL;
   EXTENSION_FUNCTION_VALIDATE(details_->GetBinary("imageData", &binary));
   IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
-  void* iter = NULL;
+  PickleIterator iter(bitmap_pickle);
   SkBitmap bitmap;
   EXTENSION_FUNCTION_VALIDATE(
       IPC::ReadParam(&bitmap_pickle, &iter, &bitmap));

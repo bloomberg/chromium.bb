@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ template <>
 struct ParamTraits<webkit_glue::ResourceLoadTimingInfo> {
   typedef webkit_glue::ResourceLoadTimingInfo param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -90,7 +90,7 @@ template <>
 struct ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> > {
   typedef scoped_refptr<webkit_glue::ResourceDevToolsInfo> param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -98,7 +98,7 @@ template <>
 struct ParamTraits<NPVariant_Param> {
   typedef NPVariant_Param param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -106,7 +106,7 @@ template <>
 struct ParamTraits<NPIdentifier_Param> {
   typedef NPIdentifier_Param param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -114,7 +114,7 @@ template <>
 struct ParamTraits<webkit::WebPluginMimeType> {
   typedef webkit::WebPluginMimeType param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -122,7 +122,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<webkit::WebPluginInfo> {
   typedef webkit::WebPluginInfo param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -132,8 +132,8 @@ struct ParamTraits<WebCursor> {
   static void Write(Message* m, const param_type& p) {
     p.Serialize(m);
   }
-  static bool Read(const Message* m, void** iter, param_type* r)  {
-    return r->Deserialize(m, iter);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r)  {
+    return r->Deserialize(iter);
   }
   static void Log(const param_type& p, std::string* l) {
     l->append("<WebCursor>");
@@ -146,7 +146,7 @@ struct ParamTraits<WebKit::WebInputEvent::Type> {
   static void Write(Message* m, const param_type& p) {
     m->WriteInt(p);
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     int type;
     if (!m->ReadInt(iter, &type))
       return false;
@@ -199,7 +199,7 @@ struct ParamTraits<WebInputEventPointer> {
     m->WriteData(reinterpret_cast<const char*>(p), p->size);
   }
   // Note: upon read, the event has the lifetime of the message.
-  static bool Read(const Message* m, void** iter, param_type* r) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
     const char* data;
     int data_length;
     if (!m->ReadData(iter, &data, &data_length)) {
@@ -245,7 +245,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<webkit::forms::PasswordForm> {
   typedef webkit::forms::PasswordForm param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

@@ -47,7 +47,7 @@ bool PickleFromFileInfo(
 bool FileInfoFromPickle(
     const Pickle& pickle,
     fileapi::FileSystemDirectoryDatabase::FileInfo* info) {
-  void* iter = NULL;
+  PickleIterator iter(pickle);
   std::string data_path;
   std::string name;
   int64 internal_time;

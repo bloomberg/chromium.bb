@@ -403,7 +403,7 @@ void ContentSettingsPattern::WriteToMessage(IPC::Message* m) const {
 }
 
 bool ContentSettingsPattern::ReadFromMessage(const IPC::Message* m,
-                                             void** iter) {
+                                             PickleIterator* iter) {
   return IPC::ReadParam(m, iter, &is_valid_) &&
          IPC::ReadParam(m, iter, &parts_);
 }

@@ -30,6 +30,7 @@ struct Cursor;
 #endif
 
 class Pickle;
+class PickleIterator;
 
 namespace WebKit {
 class WebImage;
@@ -55,7 +56,7 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   void GetCursorInfo(WebKit::WebCursorInfo* cursor_info) const;
 
   // Serialization / De-serialization
-  bool Deserialize(const Pickle* pickle, void** iter);
+  bool Deserialize(PickleIterator* iter);
   bool Serialize(Pickle* pickle) const;
 
   // Returns true if GetCustomCursor should be used to allocate a platform
@@ -114,7 +115,7 @@ class WEBKIT_GLUE_EXPORT WebCursor {
 
   // Platform specific Serialization / De-serialization
   bool SerializePlatformData(Pickle* pickle) const;
-  bool DeserializePlatformData(const Pickle* pickle, void** iter);
+  bool DeserializePlatformData(PickleIterator* iter);
 
   // Returns true if the platform data in the current cursor object
   // matches that of the cursor passed in.

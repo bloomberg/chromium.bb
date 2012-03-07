@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -18,7 +18,7 @@ void MessageSchema<ParamType>::Write(Message* msg, const RefParam& p) {
 
 template <class ParamType>
 bool MessageSchema<ParamType>::Read(const Message* msg, Param* p) {
-  void* iter = NULL;
+  PickleIterator iter(*msg);
   if (ReadParam(msg, &iter, p))
     return true;
   NOTREACHED() << "Error deserializing message " << msg->type();
@@ -35,14 +35,14 @@ void SyncMessageSchema<SendParamType, ReplyParamType>::Write(
 template <class SendParamType, class ReplyParamType>
 bool SyncMessageSchema<SendParamType, ReplyParamType>::ReadSendParam(
     const Message* msg, SendParam* p) {
-  void* iter = SyncMessage::GetDataIterator(msg);
+  PickleIterator iter = SyncMessage::GetDataIterator(msg);
   return ReadParam(msg, &iter, p);
 }
 
 template <class SendParamType, class ReplyParamType>
 bool SyncMessageSchema<SendParamType, ReplyParamType>::ReadReplyParam(
     const Message* msg, typename TupleTypes<ReplyParam>::ValueTuple* p) {
-  void* iter = SyncMessage::GetDataIterator(msg);
+  PickleIterator iter = SyncMessage::GetDataIterator(msg);
   return ReadParam(msg, &iter, p);
 }
 

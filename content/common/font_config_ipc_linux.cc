@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ bool FontConfigIPC::Match(std::string* result_family,
     return false;
 
   Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-  void* iter = NULL;
+  PickleIterator iter(reply);
   bool result;
   if (!reply.ReadBool(&iter, &result))
     return false;
@@ -98,7 +98,7 @@ int FontConfigIPC::Open(unsigned filefaceid) {
 
   Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   bool result;
-  void* iter = NULL;
+  PickleIterator iter(reply);
   if (!reply.ReadBool(&iter, &result) ||
       !result) {
     if (result_fd)

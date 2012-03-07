@@ -1126,7 +1126,7 @@ void Channel::ChannelImpl::ClearInputFDs() {
 
 void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
   // The Hello message contains only the process id.
-  void *iter = NULL;
+  PickleIterator iter(msg);
   int pid;
   if (!msg.ReadInt(&iter, &pid))
     NOTREACHED();

@@ -55,7 +55,7 @@ void GetResponseHead(const std::vector<IPC::Message>& messages,
   // The first messages should be received response.
   ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, messages[0].type());
 
-  void* iter = NULL;
+  PickleIterator iter(messages[0]);
   int request_id;
   ASSERT_TRUE(IPC::ReadParam(&messages[0], &iter, &request_id));
   ASSERT_TRUE(IPC::ReadParam(&messages[0], &iter, response_head));
@@ -539,7 +539,7 @@ void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
   // should probably test multiple chunks later
   ASSERT_EQ(ResourceMsg_DataReceived::ID, messages[1].type());
 
-  void* iter = NULL;
+  PickleIterator iter(messages[1]);
   int request_id;
   ASSERT_TRUE(IPC::ReadParam(&messages[1], &iter, &request_id));
   base::SharedMemoryHandle shm_handle;
@@ -618,7 +618,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   int request_id;
   net::URLRequestStatus status;
 
-  void* iter = NULL;
+  PickleIterator iter(msgs[1][1]);
   ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &request_id));
   ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &status));
 
@@ -695,7 +695,7 @@ TEST_F(ResourceDispatcherHostTest, PausedCancel) {
   int request_id;
   net::URLRequestStatus status;
 
-  void* iter = NULL;
+  PickleIterator iter(msgs[0][1]);
   ASSERT_TRUE(IPC::ReadParam(&msgs[0][1], &iter, &request_id));
   ASSERT_TRUE(IPC::ReadParam(&msgs[0][1], &iter, &status));
 
@@ -1069,7 +1069,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
     int request_id;
     net::URLRequestStatus status;
 
-    void* iter = NULL;
+    PickleIterator iter(msgs[index][0]);
     EXPECT_TRUE(IPC::ReadParam(&msgs[index][0], &iter, &request_id));
     EXPECT_TRUE(IPC::ReadParam(&msgs[index][0], &iter, &status));
 
@@ -1233,7 +1233,7 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
   int request_id;
   net::URLRequestStatus status;
 
-  void* iter = NULL;
+  PickleIterator iter(msgs[0][0]);
   EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &request_id));
   EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &status));
 
@@ -1387,7 +1387,7 @@ TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
   int request_id;
   net::URLRequestStatus status;
 
-  void* iter = NULL;
+  PickleIterator iter(msgs[0][0]);
   EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &request_id));
   EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &status));
 

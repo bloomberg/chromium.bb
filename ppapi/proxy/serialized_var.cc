@@ -147,7 +147,8 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
   }
 }
 
-bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m, void** iter) {
+bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
+                                           PickleIterator* iter) {
 #ifndef NDEBUG
   // We should only deserialize something once or will end up with leaked
   // references.

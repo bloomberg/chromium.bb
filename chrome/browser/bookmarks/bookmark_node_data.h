@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 
 class BookmarkNode;
 class Pickle;
+class PickleIterator;
 class Profile;
 
 // BookmarkNodeData is used to represent the following:
@@ -64,7 +65,7 @@ struct BookmarkNodeData {
 
     // For reading/writing this Element.
     void WriteToPickle(Pickle* pickle) const;
-    bool ReadFromPickle(Pickle* pickle, void** iterator);
+    bool ReadFromPickle(Pickle* pickle, PickleIterator* iterator);
 
     // ID of the node.
     int64 id_;

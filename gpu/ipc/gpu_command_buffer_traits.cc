@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,7 @@ void ParamTraits<gpu::CommandBuffer::State> ::Write(Message* m,
 }
 
 bool ParamTraits<gpu::CommandBuffer::State> ::Read(const Message* m,
-                                                   void** iter,
+                                                   PickleIterator* iter,
                                                    param_type* p) {
   int32 temp;
   if (ReadParam(m, iter, &p->num_entries) &&

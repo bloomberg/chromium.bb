@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -350,11 +350,11 @@ TEST(OSExchangeDataTest, TestPickledData) {
 
   Pickle restored_pickle;
   EXPECT_TRUE(copy.GetPickledData(test_cf, &restored_pickle));
-  void* p_iterator = NULL;
+  PickleIterator iterator(restored_pickle);
   int value;
-  EXPECT_TRUE(restored_pickle.ReadInt(&p_iterator, &value));
+  EXPECT_TRUE(restored_pickle.ReadInt(&iterator, &value));
   EXPECT_EQ(1, value);
-  EXPECT_TRUE(restored_pickle.ReadInt(&p_iterator, &value));
+  EXPECT_TRUE(restored_pickle.ReadInt(&iterator, &value));
   EXPECT_EQ(2, value);
 }
 

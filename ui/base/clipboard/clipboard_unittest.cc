@@ -445,7 +445,7 @@ TEST_F(ClipboardTest, DataTest) {
   ASSERT_FALSE(output.empty());
 
   Pickle read_pickle(output.data(), output.size());
-  void* iter = NULL;
+  PickleIterator iter(read_pickle);
   std::string unpickled_string;
   ASSERT_TRUE(read_pickle.ReadString(&iter, &unpickled_string));
   EXPECT_EQ(payload, unpickled_string);
@@ -482,7 +482,7 @@ TEST_F(ClipboardTest, MultipleDataTest) {
   ASSERT_FALSE(output2.empty());
 
   Pickle read_pickle2(output2.data(), output2.size());
-  void* iter2 = NULL;
+  PickleIterator iter2(read_pickle2);
   std::string unpickled_string2;
   ASSERT_TRUE(read_pickle2.ReadString(&iter2, &unpickled_string2));
   EXPECT_EQ(payload2, unpickled_string2);
@@ -504,7 +504,7 @@ TEST_F(ClipboardTest, MultipleDataTest) {
   ASSERT_FALSE(output1.empty());
 
   Pickle read_pickle1(output1.data(), output1.size());
-  void* iter1 = NULL;
+  PickleIterator iter1(read_pickle1);
   std::string unpickled_string1;
   ASSERT_TRUE(read_pickle1.ReadString(&iter1, &unpickled_string1));
   EXPECT_EQ(payload1, unpickled_string1);

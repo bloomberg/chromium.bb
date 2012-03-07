@@ -14,6 +14,8 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
+class PickleIterator;
+
 namespace IPC {
 class Message;
 }
@@ -72,7 +74,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
   void WriteToMessage(IPC::Message* m) const {
     inner_->WriteToMessage(m);
   }
-  bool ReadFromMessage(const IPC::Message* m, void** iter) {
+  bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter) {
     return inner_->ReadFromMessage(m, iter);
   }
 
@@ -106,7 +108,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     void ForceSetVarValueForTest(PP_Var value);
 
     void WriteToMessage(IPC::Message* m) const;
-    bool ReadFromMessage(const IPC::Message* m, void** iter);
+    bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter);
 
     // Sets the cleanup mode. See the CleanupMode enum below. These functions
     // are not just a simple setter in order to require that the appropriate

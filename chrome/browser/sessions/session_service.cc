@@ -1304,8 +1304,8 @@ bool SessionService::ReplacePendingCommand(SessionCommand* command) {
   // well.
   if (command->id() != kCommandUpdateTabNavigation)
     return false;
-  void* iterator = NULL;
   scoped_ptr<Pickle> command_pickle(command->PayloadAsPickle());
+  PickleIterator iterator(*command_pickle);
   SessionID::id_type command_tab_id;
   int command_nav_index;
   if (!command_pickle->ReadInt(&iterator, &command_tab_id) ||
@@ -1323,7 +1323,7 @@ bool SessionService::ReplacePendingCommand(SessionCommand* command) {
         // the command. Make sure we delete the pickle before the command, else
         // the pickle references deleted memory.
         scoped_ptr<Pickle> existing_pickle(existing_command->PayloadAsPickle());
-        iterator = NULL;
+        iterator = PickleIterator(*existing_pickle);
         if (!existing_pickle->ReadInt(&iterator, &existing_tab_id) ||
             !existing_pickle->ReadInt(&iterator, &existing_nav_index)) {
           return false;

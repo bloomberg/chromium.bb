@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ TEST(IPCMessageTest, ListValue) {
   IPC::WriteParam(&msg, input);
 
   ListValue output;
-  void* iter = NULL;
+  PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   EXPECT_TRUE(input.Equals(&output));
@@ -29,7 +29,7 @@ TEST(IPCMessageTest, ListValue) {
   // Also test the corrupt case.
   IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   bad_msg.WriteInt(99);
-  iter = NULL;
+  iter = PickleIterator(bad_msg);
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
 }
 
@@ -56,7 +56,7 @@ TEST(IPCMessageTest, DictionaryValue) {
   IPC::WriteParam(&msg, input);
 
   DictionaryValue output;
-  void* iter = NULL;
+  PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   EXPECT_TRUE(input.Equals(&output));
@@ -64,6 +64,6 @@ TEST(IPCMessageTest, DictionaryValue) {
   // Also test the corrupt case.
   IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   bad_msg.WriteInt(99);
-  iter = NULL;
+  iter = PickleIterator(bad_msg);
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
 }

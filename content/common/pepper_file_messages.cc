@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ void ParamTraits<webkit::ppapi::PepperFilePath>::Write(Message* m,
 }
 
 bool ParamTraits<webkit::ppapi::PepperFilePath>::Read(const Message* m,
-                                                      void** iter,
+                                                      PickleIterator* iter,
                                                       param_type* p) {
   unsigned domain;
   FilePath path;

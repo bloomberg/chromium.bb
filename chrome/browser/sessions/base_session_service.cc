@@ -273,7 +273,7 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
   scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
-  void* iterator = NULL;
+  PickleIterator iterator(*pickle);
   std::string url_spec;
   if (!pickle->ReadInt(&iterator, tab_id) ||
       !pickle->ReadInt(&iterator, &(navigation->index_)) ||
@@ -328,7 +328,7 @@ bool BaseSessionService::RestoreSetTabExtensionAppIDCommand(
   if (!pickle.get())
     return false;
 
-  void* iterator = NULL;
+  PickleIterator iterator(*pickle);
   return pickle->ReadInt(&iterator, tab_id) &&
       pickle->ReadString(&iterator, extension_app_id);
 }
@@ -341,7 +341,7 @@ bool BaseSessionService::RestoreSetWindowAppNameCommand(
   if (!pickle.get())
     return false;
 
-  void* iterator = NULL;
+  PickleIterator iterator(*pickle);
   return pickle->ReadInt(&iterator, window_id) &&
       pickle->ReadString(&iterator, app_name);
 }

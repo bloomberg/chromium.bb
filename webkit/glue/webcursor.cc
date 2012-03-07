@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,18 +70,18 @@ void WebCursor::GetCursorInfo(WebCursorInfo* cursor_info) const {
 #endif
 }
 
-bool WebCursor::Deserialize(const Pickle* pickle, void** iter) {
+bool WebCursor::Deserialize(PickleIterator* iter) {
   int type, hotspot_x, hotspot_y, size_x, size_y, data_len;
 
   const char* data;
 
   // Leave |this| unmodified unless we are going to return success.
-  if (!pickle->ReadInt(iter, &type) ||
-      !pickle->ReadInt(iter, &hotspot_x) ||
-      !pickle->ReadInt(iter, &hotspot_y) ||
-      !pickle->ReadLength(iter, &size_x) ||
-      !pickle->ReadLength(iter, &size_y) ||
-      !pickle->ReadData(iter, &data, &data_len))
+  if (!iter->ReadInt(&type) ||
+      !iter->ReadInt(&hotspot_x) ||
+      !iter->ReadInt(&hotspot_y) ||
+      !iter->ReadLength(&size_x) ||
+      !iter->ReadLength(&size_y) ||
+      !iter->ReadData(&data, &data_len))
     return false;
 
   // Ensure the size is sane, and there is enough data.
@@ -111,7 +111,7 @@ bool WebCursor::Deserialize(const Pickle* pickle, void** iter) {
       }
     }
   }
-  return DeserializePlatformData(pickle, iter);
+  return DeserializePlatformData(iter);
 }
 
 bool WebCursor::Serialize(Pickle* pickle) const {

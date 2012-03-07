@@ -455,9 +455,9 @@ bool BaseFile::SetHashState(const std::string& hash_state_bytes) {
     return false;
 
   Pickle hash_state(hash_state_bytes.c_str(), hash_state_bytes.size());
-  void* data_iterator = NULL;
+  PickleIterator data_iterator(hash_state);
 
-  return secure_hash_->Deserialize(&data_iterator, &hash_state);
+  return secure_hash_->Deserialize(&data_iterator);
 }
 
 bool BaseFile::IsEmptyHash(const std::string& hash) {

@@ -1359,7 +1359,7 @@ bool UpdateTabFunction::OnMessageReceived(const IPC::Message& message) {
     return false;
 
   int message_request_id = -1;
-  void* iter = NULL;
+  PickleIterator iter(message);
   if (!message.ReadInt(&iter, &message_request_id)) {
     NOTREACHED() << "malformed extension message";
     return true;

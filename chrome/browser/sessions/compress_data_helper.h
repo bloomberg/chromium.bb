@@ -11,6 +11,7 @@
 #include <string>
 
 class Pickle;
+class PickleIterator;
 
 class CompressDataHelper {
  public:
@@ -25,7 +26,7 @@ class CompressDataHelper {
   // indicates the position of the data. The same iterator is used by
   // Pickle::Read* functions.
   static bool ReadAndDecompressStringFromPickle(const Pickle& pickle,
-                                                void** iter,
+                                                PickleIterator* iter,
                                                 std::string* str);
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(CompressDataHelper);

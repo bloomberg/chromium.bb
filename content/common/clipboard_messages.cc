@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ void ParamTraits<ui::Clipboard::FormatType>::Write(
 }
 
 bool ParamTraits<ui::Clipboard::FormatType>::Read(
-    const Message* m, void** iter, param_type* r) {
+    const Message* m, PickleIterator* iter, param_type* r) {
   std::string serialization;
   if (!ReadParam(m, iter, &serialization))
     return false;

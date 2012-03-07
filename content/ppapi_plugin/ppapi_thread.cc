@@ -256,7 +256,7 @@ void PpapiThread::OnMsgSetNetworkState(bool online) {
 
 void PpapiThread::OnPluginDispatcherMessageReceived(const IPC::Message& msg) {
   // The first parameter should be a plugin dispatcher ID.
-  void* iter = NULL;
+  PickleIterator iter(msg);
   uint32 id = 0;
   if (!msg.ReadUInt32(&iter, &id)) {
     NOTREACHED();

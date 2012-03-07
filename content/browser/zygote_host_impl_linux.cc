@@ -278,7 +278,7 @@ pid_t ZygoteHostImpl::ForkRequest(
     const ssize_t len = ReadReply(buf, sizeof(buf));
 
     Pickle reply_pickle(buf, len);
-    void* iter = NULL;
+    PickleIterator iter(reply_pickle);
     if (len <= 0 || !reply_pickle.ReadInt(&iter, &pid))
       return base::kNullProcessHandle;
 
@@ -437,7 +437,7 @@ base::TerminationStatus ZygoteHostImpl::GetTerminationStatus(
 
   Pickle read_pickle(buf, len);
   int status, tmp_exit_code;
-  void* iter = NULL;
+  PickleIterator iter(read_pickle);
   if (!read_pickle.ReadInt(&iter, &status) ||
       !read_pickle.ReadInt(&iter, &tmp_exit_code)) {
     LOG(WARNING) << "Error parsing GetTerminationStatus response from zygote.";

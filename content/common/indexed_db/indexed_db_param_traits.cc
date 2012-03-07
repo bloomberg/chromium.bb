@@ -19,7 +19,7 @@ void ParamTraits<content::SerializedScriptValue>::Write(Message* m,
 }
 
 bool ParamTraits<content::SerializedScriptValue>::Read(const Message* m,
-                                                       void** iter,
+                                                       PickleIterator* iter,
                                                        param_type* r) {
   bool is_null;
   bool is_invalid;
@@ -70,7 +70,7 @@ void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<IndexedDBKey>::Read(const Message* m,
-                                     void** iter,
+                                     PickleIterator* iter,
                                      param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type))
@@ -149,7 +149,7 @@ void ParamTraits<IndexedDBKeyRange>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<IndexedDBKeyRange>::Read(const Message* m,
-                                          void** iter,
+                                          PickleIterator* iter,
                                           param_type* r) {
 
   IndexedDBKey lower;

@@ -23,7 +23,7 @@ const int kMaxRecursionDepth = 100;
 
 // Value serialization
 
-static bool ReadValue(const Message* m, void** iter, Value** value,
+static bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
                       int recursion);
 
 static void WriteValue(Message* m, const Value* value, int recursion) {
@@ -102,7 +102,7 @@ static void WriteValue(Message* m, const Value* value, int recursion) {
 
 // Helper for ReadValue that reads a DictionaryValue into a pre-allocated
 // object.
-static bool ReadDictionaryValue(const Message* m, void** iter,
+static bool ReadDictionaryValue(const Message* m, PickleIterator* iter,
                                 DictionaryValue* value, int recursion) {
   int size;
   if (!ReadParam(m, iter, &size))
@@ -122,7 +122,7 @@ static bool ReadDictionaryValue(const Message* m, void** iter,
 
 // Helper for ReadValue that reads a ReadListValue into a pre-allocated
 // object.
-static bool ReadListValue(const Message* m, void** iter,
+static bool ReadListValue(const Message* m, PickleIterator* iter,
                           ListValue* value, int recursion) {
   int size;
   if (!ReadParam(m, iter, &size))
@@ -138,7 +138,7 @@ static bool ReadListValue(const Message* m, void** iter,
   return true;
 }
 
-static bool ReadValue(const Message* m, void** iter, Value** value,
+static bool ReadValue(const Message* m, PickleIterator* iter, Value** value,
                       int recursion) {
   if (recursion > kMaxRecursionDepth) {
     LOG(WARNING) << "Max recursion depth hit in ReadValue.";
@@ -238,7 +238,7 @@ void ParamTraits<unsigned short>::Write(Message* m, const param_type& p) {
   m->WriteBytes(&p, sizeof(param_type));
 }
 
-bool ParamTraits<unsigned short>::Read(const Message* m, void** iter,
+bool ParamTraits<unsigned short>::Read(const Message* m, PickleIterator* iter,
                                        param_type* r) {
   const char* data;
   if (!m->ReadBytes(iter, &data, sizeof(param_type)))
@@ -255,7 +255,7 @@ void ParamTraits<base::Time>::Write(Message* m, const param_type& p) {
   ParamTraits<int64>::Write(m, p.ToInternalValue());
 }
 
-bool ParamTraits<base::Time>::Read(const Message* m, void** iter,
+bool ParamTraits<base::Time>::Read(const Message* m, PickleIterator* iter,
                                    param_type* r) {
   int64 value;
   if (!ParamTraits<int64>::Read(m, iter, &value))
@@ -273,7 +273,7 @@ void ParamTraits<base::TimeDelta> ::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<base::TimeDelta> ::Read(const Message* m,
-                                         void** iter,
+                                         PickleIterator* iter,
                                          param_type* r) {
   int64 value;
   bool ret = ParamTraits<int64> ::Read(m, iter, &value);
@@ -292,7 +292,7 @@ void ParamTraits<base::TimeTicks> ::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<base::TimeTicks> ::Read(const Message* m,
-                                         void** iter,
+                                         PickleIterator* iter,
                                          param_type* r) {
   int64 value;
   bool ret = ParamTraits<int64> ::Read(m, iter, &value);
@@ -311,7 +311,7 @@ void ParamTraits<DictionaryValue>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<DictionaryValue>::Read(
-    const Message* m, void** iter, param_type* r) {
+    const Message* m, PickleIterator* iter, param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type) || type != Value::TYPE_DICTIONARY)
     return false;
@@ -330,7 +330,7 @@ void ParamTraits<ListValue>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<ListValue>::Read(
-    const Message* m, void** iter, param_type* r) {
+    const Message* m, PickleIterator* iter, param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type) || type != Value::TYPE_LIST)
     return false;
@@ -353,7 +353,7 @@ void ParamTraits<NullableString16>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.is_null());
 }
 
-bool ParamTraits<NullableString16>::Read(const Message* m, void** iter,
+bool ParamTraits<NullableString16>::Read(const Message* m, PickleIterator* iter,
                                          param_type* r) {
   string16 string;
   if (!ReadParam(m, iter, &string))
@@ -384,7 +384,9 @@ void ParamTraits<FilePath>::Write(Message* m, const param_type& p) {
   ParamTraits<FilePath::StringType>::Write(m, p.value());
 }
 
-bool ParamTraits<FilePath>::Read(const Message* m, void** iter, param_type* r) {
+bool ParamTraits<FilePath>::Read(const Message* m,
+                                 PickleIterator* iter,
+                                 param_type* r) {
   FilePath::StringType value;
   if (!ParamTraits<FilePath::StringType>::Read(m, iter, &value))
     return false;
@@ -407,7 +409,8 @@ void ParamTraits<base::FileDescriptor>::Write(Message* m, const param_type& p) {
   }
 }
 
-bool ParamTraits<base::FileDescriptor>::Read(const Message* m, void** iter,
+bool ParamTraits<base::FileDescriptor>::Read(const Message* m,
+                                             PickleIterator* iter,
                                              param_type* r) {
   bool valid;
   if (!ReadParam(m, iter, &valid))
@@ -443,7 +446,8 @@ void ParamTraits<IPC::ChannelHandle>::Write(Message* m, const param_type& p) {
 #endif
 }
 
-bool ParamTraits<IPC::ChannelHandle>::Read(const Message* m, void** iter,
+bool ParamTraits<IPC::ChannelHandle>::Read(const Message* m,
+                                           PickleIterator* iter,
                                            param_type* r) {
   return ReadParam(m, iter, &r->name)
 #if defined(OS_POSIX)
@@ -484,7 +488,9 @@ void ParamTraits<LogData>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.params);
 }
 
-bool ParamTraits<LogData>::Read(const Message* m, void** iter, param_type* r) {
+bool ParamTraits<LogData>::Read(const Message* m,
+                                PickleIterator* iter,
+                                param_type* r) {
   return
       ReadParam(m, iter, &r->channel) &&
       ReadParam(m, iter, &r->routing_id) &&

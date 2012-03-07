@@ -161,7 +161,7 @@ bool PageActionSetIconFunction::RunImpl() {
   int icon_index;
   if (args->GetBinary("imageData", &binary)) {
     IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
-    void* iter = NULL;
+    PickleIterator iter(bitmap_pickle);
     scoped_ptr<SkBitmap> bitmap(new SkBitmap);
     EXTENSION_FUNCTION_VALIDATE(
         IPC::ReadParam(&bitmap_pickle, &iter, bitmap.get()));

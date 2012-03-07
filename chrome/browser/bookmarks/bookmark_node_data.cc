@@ -55,7 +55,7 @@ void BookmarkNodeData::Element::WriteToPickle(Pickle* pickle) const {
 }
 
 bool BookmarkNodeData::Element::ReadFromPickle(Pickle* pickle,
-                                               void** iterator) {
+                                               PickleIterator* iterator) {
   std::string url_spec;
   if (!pickle->ReadBool(iterator, &is_url) ||
       !pickle->ReadString(iterator, &url_spec) ||
@@ -294,9 +294,9 @@ void BookmarkNodeData::WriteToPickle(Profile* profile, Pickle* pickle) const {
 }
 
 bool BookmarkNodeData::ReadFromPickle(Pickle* pickle) {
-  void* data_iterator = NULL;
+  PickleIterator data_iterator(*pickle);
   size_t element_count;
-  if (profile_path_.ReadFromPickle(pickle, &data_iterator) &&
+  if (profile_path_.ReadFromPickle(&data_iterator) &&
       pickle->ReadSize(&data_iterator, &element_count)) {
     std::vector<Element> tmp_elements;
     tmp_elements.resize(element_count);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,14 +9,14 @@
 #include "webkit/glue/webkit_glue_export.h"
 
 class Pickle;
+class PickleIterator;
 
 namespace webkit_glue {
 
 // Efficiently serialize/deserialize a NPIdentifier
 WEBKIT_GLUE_EXPORT bool SerializeNPIdentifier(NPIdentifier identifier,
                                               Pickle* pickle);
-WEBKIT_GLUE_EXPORT bool DeserializeNPIdentifier(const Pickle& pickle,
-                                                void** pickle_iter,
+WEBKIT_GLUE_EXPORT bool DeserializeNPIdentifier(PickleIterator* pickle_iter,
                                                 NPIdentifier* identifier);
 
 }  // namespace webkit_glue

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ void ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Write(
 }
 
 bool ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Read(
-    const Message* m, void** iter, param_type* r) {
+    const Message* m, PickleIterator* iter, param_type* r) {
   bool is_null;
   if (!ReadParam(m, iter, &is_null))
     return false;
@@ -128,7 +128,7 @@ void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Write(
 }
 
 bool ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Read(
-    const Message* m, void** iter, param_type* r) {
+    const Message* m, PickleIterator* iter, param_type* r) {
   bool has_object;
   if (!ReadParam(m, iter, &has_object))
     return false;
@@ -177,7 +177,7 @@ void ParamTraits<NPVariant_Param>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<NPVariant_Param>::Read(const Message* m,
-                                        void** iter,
+                                        PickleIterator* iter,
                                         param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type))
@@ -230,9 +230,9 @@ void ParamTraits<NPIdentifier_Param>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<NPIdentifier_Param>::Read(const Message* m,
-                                           void** iter,
+                                           PickleIterator* iter,
                                            param_type* r) {
-  return webkit_glue::DeserializeNPIdentifier(*m, iter, &r->identifier);
+  return webkit_glue::DeserializeNPIdentifier(iter, &r->identifier);
 }
 
 void ParamTraits<NPIdentifier_Param>::Log(const param_type& p, std::string* l) {
@@ -256,7 +256,7 @@ void ParamTraits<webkit::WebPluginMimeType>::Write(Message* m,
 }
 
 bool ParamTraits<webkit::WebPluginMimeType>::Read(const Message* m,
-                                                  void** iter,
+                                                  PickleIterator* iter,
                                                   param_type* p) {
   return
       ReadParam(m, iter, &p->mime_type) &&
@@ -288,7 +288,7 @@ void ParamTraits<webkit::WebPluginInfo>::Write(Message* m,
 }
 
 bool ParamTraits<webkit::WebPluginInfo>::Read(const Message* m,
-                                              void** iter,
+                                              PickleIterator* iter,
                                               param_type* p) {
   return
       ReadParam(m, iter, &p->name) &&
@@ -328,7 +328,7 @@ void ParamTraits<webkit::forms::PasswordForm>::Write(Message* m,
 }
 
 bool ParamTraits<webkit::forms::PasswordForm>::Read(const Message* m,
-                                                    void** iter,
+                                                    PickleIterator* iter,
                                                     param_type* p) {
   return
       ReadParam(m, iter, &p->signon_realm) &&

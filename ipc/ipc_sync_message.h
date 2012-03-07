@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class IPC_EXPORT SyncMessage : public Message {
 
   // Given a reply message, returns an iterator to the beginning of the data
   // (i.e. skips over the synchronous specific data).
-  static void* GetDataIterator(const Message* msg);
+  static PickleIterator GetDataIterator(const Message* msg);
 
   // Given a synchronous message (or its reply), returns its id.
   static int GetMessageId(const Message& msg);
@@ -90,7 +90,8 @@ class IPC_EXPORT MessageReplyDeserializer {
  private:
   // Derived classes need to implement this, using the given iterator (which
   // is skipped past the header for synchronous messages).
-  virtual bool SerializeOutputParameters(const Message& msg, void* iter) = 0;
+  virtual bool SerializeOutputParameters(const Message& msg,
+                                         PickleIterator iter) = 0;
 };
 
 // When sending a synchronous message, this structure contains an object

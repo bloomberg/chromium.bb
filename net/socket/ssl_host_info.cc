@@ -64,7 +64,7 @@ bool SSLHostInfo::ParseInner(const std::string& data) {
   State* state = mutable_state();
 
   Pickle p(data.data(), data.size());
-  void* iter = NULL;
+  PickleIterator iter(p);
 
   int num_der_certs;
   if (!p.ReadInt(&iter, &num_der_certs) ||

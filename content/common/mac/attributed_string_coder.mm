@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ void ParamTraits<AttributedStringCoder::EncodedString>::Write(
 }
 
 bool ParamTraits<AttributedStringCoder::EncodedString>::Read(
-    const Message* m, void** iter, param_type* p) {
+    const Message* m, PickleIterator* iter, param_type* p) {
   bool success = true;
 
   string16 result;
@@ -149,7 +149,7 @@ void ParamTraits<AttributedStringCoder::FontAttribute>::Write(
 }
 
 bool ParamTraits<AttributedStringCoder::FontAttribute>::Read(
-    const Message* m, void** iter, param_type* p) {
+    const Message* m, PickleIterator* iter, param_type* p) {
   bool success = true;
 
   FontDescriptor font;

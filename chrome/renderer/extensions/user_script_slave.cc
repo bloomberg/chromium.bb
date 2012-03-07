@@ -155,10 +155,10 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
     return false;
 
   // Unpickle scripts.
-  void* iter = NULL;
   size_t num_scripts = 0;
   Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()),
                 pickle_size);
+  PickleIterator iter(pickle);
   pickle.ReadSize(&iter, &num_scripts);
 
   scripts_.reserve(num_scripts);

@@ -169,7 +169,7 @@ class Zygote {
     }
 
     Pickle pickle(buf, len);
-    void* iter = NULL;
+    PickleIterator iter(pickle);
 
     int kind;
     if (pickle.ReadInt(&iter, &kind)) {
@@ -204,7 +204,7 @@ class Zygote {
     return false;
   }
 
-  void HandleReapRequest(int fd, const Pickle& pickle, void* iter) {
+  void HandleReapRequest(int fd, const Pickle& pickle, PickleIterator iter) {
     base::ProcessId child;
     base::ProcessId actual_child;
 
@@ -225,7 +225,9 @@ class Zygote {
     base::EnsureProcessTerminated(actual_child);
   }
 
-  void HandleGetTerminationStatus(int fd, const Pickle& pickle, void* iter) {
+  void HandleGetTerminationStatus(int fd,
+                                  const Pickle& pickle,
+                                  PickleIterator iter) {
     base::ProcessHandle child;
 
     if (!pickle.ReadInt(&iter, &child)) {
@@ -347,7 +349,7 @@ class Zygote {
         }
 
         Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-        void* iter = NULL;
+        PickleIterator iter(reply);
         if (!reply.ReadInt(&iter, &real_pid))
           goto error;
         if (real_pid <= 0) {
@@ -393,7 +395,7 @@ class Zygote {
   // Returns -1 on error, otherwise returns twice, returning 0 to the child
   // process and the child process ID to the parent process, like fork().
   base::ProcessId ReadArgsAndFork(const Pickle& pickle,
-                                  void* iter,
+                                  PickleIterator iter,
                                   std::vector<int>& fds,
                                   std::string* uma_name,
                                   int* uma_sample,
@@ -486,7 +488,7 @@ class Zygote {
   // otherwise writes the child_pid back to the browser via |fd|.  Writes a
   // child_pid of -1 on error.
   bool HandleForkRequest(int fd, const Pickle& pickle,
-                         void* iter, std::vector<int>& fds) {
+                         PickleIterator iter, std::vector<int>& fds) {
     std::string uma_name;
     int uma_sample;
     int uma_boundary_value;
@@ -521,7 +523,9 @@ class Zygote {
     return false;
   }
 
-  bool HandleGetSandboxStatus(int fd, const Pickle& pickle, void* iter) {
+  bool HandleGetSandboxStatus(int fd,
+                              const Pickle& pickle,
+                              PickleIterator iter) {
     if (HANDLE_EINTR(write(fd, &sandbox_flags_, sizeof(sandbox_flags_)) !=
                      sizeof(sandbox_flags_))) {
       PLOG(ERROR) << "write";
@@ -567,7 +571,7 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
   }
 
   Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-  void* iter = NULL;
+  PickleIterator iter(reply);
   std::string result, timezone;
   if (!reply.ReadString(&iter, &result) ||
       !reply.ReadString(&iter, &timezone) ||

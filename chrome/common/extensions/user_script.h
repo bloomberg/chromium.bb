@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 
 class Pickle;
+class PickleIterator;
 
 // Represents a user script, either a standalone one, or one that is part of an
 // extension.
@@ -82,7 +83,7 @@ class UserScript {
     // Serialization support. The content and FilePath members will not be
     // serialized!
     void Pickle(::Pickle* pickle) const;
-    void Unpickle(const ::Pickle& pickle, void** iter);
+    void Unpickle(const ::Pickle& pickle, PickleIterator* iter);
 
    private:
     // Where the script file lives on the disk. We keep the path split so that
@@ -187,7 +188,7 @@ class UserScript {
   // Deserialize the script from a pickle. Note that this always succeeds
   // because presumably we were the one that pickled it, and we did it
   // correctly.
-  void Unpickle(const ::Pickle& pickle, void** iter);
+  void Unpickle(const ::Pickle& pickle, PickleIterator* iter);
 
  private:
   // Pickle helper functions used to pickle the individual types of components.
@@ -198,11 +199,11 @@ class UserScript {
   void PickleScripts(::Pickle* pickle, const FileList& scripts) const;
 
   // Unpickle helper functions used to unpickle individual types of components.
-  void UnpickleGlobs(const ::Pickle& pickle, void** iter,
+  void UnpickleGlobs(const ::Pickle& pickle, PickleIterator* iter,
                      std::vector<std::string>* globs);
-  void UnpickleURLPatternSet(const ::Pickle& pickle, void** iter,
+  void UnpickleURLPatternSet(const ::Pickle& pickle, PickleIterator* iter,
                              URLPatternSet* pattern_list);
-  void UnpickleScripts(const ::Pickle& pickle, void** iter,
+  void UnpickleScripts(const ::Pickle& pickle, PickleIterator* iter,
                        FileList* scripts);
 
   // The location to run the script inside the document.

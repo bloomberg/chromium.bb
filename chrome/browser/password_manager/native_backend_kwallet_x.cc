@@ -682,7 +682,7 @@ bool NativeBackendKWallet::CheckSerializedValue(const uint8_t* byte_array,
 void NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
                                             const Pickle& pickle,
                                             PasswordFormList* forms) {
-  void* iter = NULL;
+  PickleIterator iter(pickle);
 
   int version = -1;
   if (!pickle.ReadInt(&iter, &version) || version != kPickleVersion) {
@@ -739,7 +739,7 @@ void NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
   }
 }
 
-bool NativeBackendKWallet::ReadGURL(const Pickle& pickle, void** iter,
+bool NativeBackendKWallet::ReadGURL(const Pickle& pickle, PickleIterator* iter,
                                     GURL* url) {
   std::string url_string;
   if (!pickle.ReadString(iter, &url_string)) {

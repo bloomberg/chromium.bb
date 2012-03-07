@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   void OnAutomationHello(const IPC::Message& hello_message) {
     std::string server_version;
-    void* iter = NULL;
+    PickleIterator iter(hello_message);
     if (!hello_message.ReadString(&iter, &server_version)) {
       // We got an AutomationMsg_Hello from an old automation provider
       // that doesn't send version info. Leave server_version as an empty
@@ -462,7 +462,7 @@ bool AutomationProxy::Send(IPC::Message* message, int timeout_ms) {
 }
 
 void AutomationProxy::InvalidateHandle(const IPC::Message& message) {
-  void* iter = NULL;
+  PickleIterator iter(message);
   int handle;
 
   if (message.ReadInt(&iter, &handle)) {

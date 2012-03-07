@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ void ParamTraits<ContentSetting>::Write(Message* m, const param_type& p) {
   m->WriteInt(static_cast<int>(p));
 }
 
-bool ParamTraits<ContentSetting>::Read(const Message* m, void** iter,
+bool ParamTraits<ContentSetting>::Read(const Message* m, PickleIterator* iter,
                                        param_type* p) {
   int type;
   if (!m->ReadInt(iter, &type))
@@ -51,8 +51,9 @@ void ParamTraits<ContentSettingsType>::Write(Message* m, const param_type& p) {
   m->WriteInt(static_cast<int>(p));
 }
 
-bool ParamTraits<ContentSettingsType>::Read(const Message* m, void** iter,
-                                       param_type* p) {
+bool ParamTraits<ContentSettingsType>::Read(const Message* m,
+                                            PickleIterator* iter,
+                                            param_type* p) {
   int type;
   if (!m->ReadInt(iter, &type))
     return false;

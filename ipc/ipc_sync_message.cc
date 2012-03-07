@@ -74,10 +74,12 @@ bool SyncMessage::IsMessageReplyTo(const Message& msg, int request_id) {
   return GetMessageId(msg) == request_id;
 }
 
-void* SyncMessage::GetDataIterator(const Message* msg) {
-  void* iter = const_cast<char*>(msg->payload());
-  UpdateIter(&iter, kSyncMessageHeaderSize);
-  return iter;
+PickleIterator SyncMessage::GetDataIterator(const Message* msg) {
+  PickleIterator iter(*msg);
+  if (!iter.SkipBytes(kSyncMessageHeaderSize))
+    return PickleIterator();
+  else
+    return iter;
 }
 
 int SyncMessage::GetMessageId(const Message& msg) {
@@ -110,7 +112,7 @@ Message* SyncMessage::GenerateReply(const Message* msg) {
 bool SyncMessage::ReadSyncHeader(const Message& msg, SyncHeader* header) {
   DCHECK(msg.is_sync() || msg.is_reply());
 
-  void* iter = NULL;
+  PickleIterator iter(msg);
   bool result = msg.ReadInt(&iter, &header->message_id);
   if (!result) {
     NOTREACHED();

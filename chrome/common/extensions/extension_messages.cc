@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ struct ParamTraits<Extension::Location> {
     int val = static_cast<int>(p);
     WriteParam(m, val);
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     int val = 0;
     if (!ReadParam(m, iter, &val) ||
         val < Extension::INVALID ||
@@ -64,7 +64,7 @@ void ParamTraits<URLPattern>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.GetAsString());
 }
 
-bool ParamTraits<URLPattern>::Read(const Message* m, void** iter,
+bool ParamTraits<URLPattern>::Read(const Message* m, PickleIterator* iter,
                                    param_type* p) {
   int valid_schemes;
   std::string spec;
@@ -91,7 +91,7 @@ void ParamTraits<URLPatternSet>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.patterns());
 }
 
-bool ParamTraits<URLPatternSet>::Read(const Message* m, void** iter,
+bool ParamTraits<URLPatternSet>::Read(const Message* m, PickleIterator* iter,
                                         param_type* p) {
   std::set<URLPattern> patterns;
   if (!ReadParam(m, iter, &patterns))
@@ -113,7 +113,7 @@ void ParamTraits<ExtensionAPIPermission::ID>::Write(
 }
 
 bool ParamTraits<ExtensionAPIPermission::ID>::Read(
-    const Message* m, void** iter, param_type* p) {
+    const Message* m, PickleIterator* iter, param_type* p) {
   int api_id = -2;
   if (!ReadParam(m, iter, &api_id))
     return false;
@@ -136,7 +136,7 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,
 }
 
 bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const Message* m,
-                                                   void** iter,
+                                                   PickleIterator* iter,
                                                    param_type* p) {
   p->manifest.reset(new DictionaryValue());
   return ReadParam(m, iter, &p->location) &&

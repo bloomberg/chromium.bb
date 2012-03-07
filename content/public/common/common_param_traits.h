@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<GURL> {
   typedef GURL param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -59,7 +59,7 @@ template <>
 struct ParamTraits<ResourceType::Type> {
   typedef ResourceType::Type param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -67,7 +67,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<net::URLRequestStatus> {
   typedef net::URLRequestStatus param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -75,7 +75,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<scoped_refptr<net::UploadData> > {
   typedef scoped_refptr<net::UploadData> param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -83,7 +83,7 @@ template<>
 struct CONTENT_EXPORT ParamTraits<net::HostPortPair> {
   typedef net::HostPortPair param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -91,7 +91,7 @@ template <>
 struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
   typedef scoped_refptr<net::HttpResponseHeaders> param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -99,7 +99,7 @@ template <>
 struct ParamTraits<net::IPEndPoint> {
   typedef net::IPEndPoint param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -107,7 +107,7 @@ template <>
 struct ParamTraits<base::PlatformFileInfo> {
   typedef base::PlatformFileInfo param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -115,7 +115,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<gfx::Point> {
   typedef gfx::Point param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -123,7 +123,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<gfx::Size> {
   typedef gfx::Size param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -131,7 +131,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<gfx::Rect> {
   typedef gfx::Rect param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -146,7 +146,7 @@ struct ParamTraits<gfx::NativeWindow> {
     m->WriteData(reinterpret_cast<const char*>(&p), sizeof(p));
 #endif
   }
-  static bool Read(const Message* m, void** iter, param_type* r) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
 #if defined(OS_WIN)
     return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
 #else
@@ -171,7 +171,7 @@ template <>
 struct CONTENT_EXPORT ParamTraits<ui::Range> {
   typedef ui::Range param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -183,7 +183,7 @@ struct ParamTraits<TransportDIB::Id> {
     WriteParam(m, p.handle);
     WriteParam(m, p.sequence_num);
   }
-  static bool Read(const Message* m, void** iter, param_type* r) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
     return (ReadParam(m, iter, &r->handle) &&
             ReadParam(m, iter, &r->sequence_num));
   }
@@ -204,7 +204,7 @@ struct ParamTraits<TransportDIB::Id> {
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.shmkey);
   }
-  static bool Read(const Message* m, void** iter, param_type* r) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r) {
     return ReadParam(m, iter, &r->shmkey);
   }
   static void Log(const param_type& p, std::string* l) {
@@ -222,7 +222,7 @@ struct CONTENT_EXPORT ParamTraits<SkBitmap> {
 
   // Note: This function expects parameter |r| to be of type &SkBitmap since
   // r->SetConfig() and r->SetPixels() are called.
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
 
   static void Log(const param_type& p, std::string* l);
 };

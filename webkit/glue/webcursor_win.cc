@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -216,8 +216,8 @@ bool WebCursor::SerializePlatformData(Pickle* pickle) const {
   return pickle->WriteUInt32(reinterpret_cast<uint32>(external_cursor_));
 }
 
-bool WebCursor::DeserializePlatformData(const Pickle* pickle, void** iter) {
-  return pickle->ReadUInt32(iter, reinterpret_cast<uint32*>(&external_cursor_));
+bool WebCursor::DeserializePlatformData(PickleIterator* iter) {
+  return iter->ReadUInt32(reinterpret_cast<uint32*>(&external_cursor_));
 }
 
 bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {

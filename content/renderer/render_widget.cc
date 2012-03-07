@@ -507,7 +507,7 @@ void RenderWidget::OnSwapBuffersComplete() {
 
 void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   TRACE_EVENT0("renderer", "RenderWidget::OnHandleInputEvent");
-  void* iter = NULL;
+  PickleIterator iter(message);
 
   const char* data;
   int data_length;

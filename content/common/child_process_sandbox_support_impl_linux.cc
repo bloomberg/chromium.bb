@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ void GetFontFamilyForCharacters(const uint16_t* utf16,
   bool isItalic = false;
   if (n != -1) {
     Pickle reply(reinterpret_cast<char*>(buf), n);
-    void* pickle_iter = NULL;
+    PickleIterator pickle_iter(reply);
     if (reply.ReadString(&pickle_iter, &family_name) &&
         reply.ReadBool(&pickle_iter, &isBold) &&
         reply.ReadBool(&pickle_iter, &isItalic)) {
@@ -64,7 +64,7 @@ void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
   }
 
   Pickle reply(reinterpret_cast<char*>(buf), n);
-  void* pickle_iter = NULL;
+  PickleIterator pickle_iter(reply);
   int useBitmaps, useAutoHint, useHinting, hintStyle, useAntiAlias, useSubpixel;
   if (reply.ReadInt(&pickle_iter, &useBitmaps) &&
       reply.ReadInt(&pickle_iter, &useAutoHint) &&

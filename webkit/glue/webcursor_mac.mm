@@ -493,7 +493,7 @@ bool WebCursor::SerializePlatformData(Pickle* pickle) const {
   return true;
 }
 
-bool WebCursor::DeserializePlatformData(const Pickle* pickle, void** iter) {
+bool WebCursor::DeserializePlatformData(PickleIterator* iter) {
   return true;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,7 +32,7 @@ void DispatchReplyFail(uint32 type,
 bool DispatchReplyOk(const IPC::Message* reply_msg, uint32 type,
                      ChromeProxyDelegate* delegate, SyncMessageContext* ctx,
                      TabsMap* tab2delegate) {
-  void* iter = IPC::SyncMessage::GetDataIterator(reply_msg);
+  PickleIterator iter = IPC::SyncMessage::GetDataIterator(reply_msg);
   switch (type) {
     case AutomationMsg_CreateExternalTab::ID: {
       // Tuple4<HWND, HWND, int, int> out;

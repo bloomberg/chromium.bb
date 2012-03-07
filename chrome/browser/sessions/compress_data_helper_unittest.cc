@@ -23,7 +23,7 @@ TEST_F(CompressDataHelperTest, CompressAndDecompressData) {
   EXPECT_GT(bytes_written, 0);
   EXPECT_LT(bytes_written, max_bytes + 1);
 
-  void* it = NULL;
+  PickleIterator it(pickle);
   std::string data_out;
 
   ASSERT_TRUE(CompressDataHelper::ReadAndDecompressStringFromPickle(
@@ -45,7 +45,7 @@ TEST_F(CompressDataHelperTest, CompressAndDecompressEmptyData) {
 
   EXPECT_EQ(0, bytes_written);
 
-  void* it = NULL;
+  PickleIterator it(pickle);
   std::string data_out;
   ASSERT_TRUE(CompressDataHelper::ReadAndDecompressStringFromPickle(
       pickle, &it, &data_out));
@@ -65,7 +65,7 @@ TEST_F(CompressDataHelperTest, TooMuchData) {
   EXPECT_EQ(0, bytes_written);
 
   // When the data is read, we get an empty string back.
-  void* it = NULL;
+  PickleIterator it(pickle);
   std::string data_out;
   ASSERT_TRUE(CompressDataHelper::ReadAndDecompressStringFromPickle(
       pickle, &it, &data_out));

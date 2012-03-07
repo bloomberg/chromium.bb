@@ -35,7 +35,7 @@ struct ParamTraits<importer::SourceProfile> {
     WriteParam(m, p.app_path);
     WriteParam(m, static_cast<int>(p.services_supported));
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     if (!ReadParam(m, iter, &p->importer_name))
       return false;
 
@@ -83,7 +83,7 @@ struct ParamTraits<history::URLRow> {
     WriteParam(m, p.last_visit());
     WriteParam(m, p.hidden());
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     history::URLID id;
     GURL url;
     string16 title;
@@ -137,7 +137,7 @@ struct ParamTraits<ProfileWriter::BookmarkEntry> {
     WriteParam(m, p.title);
     WriteParam(m, p.creation_time);
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     return
         (ReadParam(m, iter, &p->in_toolbar)) &&
         (ReadParam(m, iter, &p->is_folder)) &&
@@ -172,7 +172,7 @@ struct ParamTraits<history::ImportedFaviconUsage> {
     WriteParam(m, p.png_data);
     WriteParam(m, p.urls);
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     return
         ReadParam(m, iter, &p->favicon_url) &&
         ReadParam(m, iter, &p->png_data) &&
@@ -198,7 +198,7 @@ struct ParamTraits<TemplateURLRef> {
     WriteParam(m, p.index_offset());
     WriteParam(m, p.page_offset());
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     std::string url;
     int index_offset;
     int page_offset;
@@ -224,7 +224,7 @@ struct ParamTraits<TemplateURL::ImageRef> {
     WriteParam(m, p.height);
     WriteParam(m, p.url);
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     std::string type;
     int width;
     int height;
@@ -278,7 +278,7 @@ struct ParamTraits<TemplateURL> {
     WriteParam(m, p.usage_count());
     WriteParam(m, p.prepopulate_id());
   }
-  static bool Read(const Message* m, void** iter, param_type* p) {
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
     string16 short_name;
     string16 description;
     bool includes_suggestions_url;

@@ -24,7 +24,7 @@ template<>
 struct ParamTraits<ui::Clipboard::FormatType> {
   typedef ui::Clipboard::FormatType param_type;
   static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

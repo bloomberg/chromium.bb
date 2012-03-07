@@ -757,7 +757,7 @@ void ExternalTabUITestMockClient::IgnoreFaviconNetworkRequest() {
 
 void ExternalTabUITestMockClient::InvalidateHandle(
     const IPC::Message& message) {
-  void* iter = NULL;
+  PickleIterator iter(message);
   int handle;
   ASSERT_TRUE(message.ReadInt(&iter, &handle));
 

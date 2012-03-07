@@ -216,7 +216,7 @@ bool ExtractNamedURL(GtkSelectionData* selection_data,
       reinterpret_cast<const char*>(
           gtk_selection_data_get_data(selection_data)),
       gtk_selection_data_get_length(selection_data));
-  void* iter = NULL;
+  PickleIterator iter(data);
   std::string title_utf8, url_utf8;
   if (!data.ReadString(&iter, &title_utf8) ||
       !data.ReadString(&iter, &url_utf8)) {

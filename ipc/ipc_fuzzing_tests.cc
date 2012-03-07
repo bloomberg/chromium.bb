@@ -44,7 +44,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferStr) {
   EXPECT_TRUE(m.WriteInt(v1));
   EXPECT_TRUE(m.WriteInt(v2));
 
-  void* iter = NULL;
+  PickleIterator iter(m);
   std::string vs;
   EXPECT_FALSE(m.ReadString(&iter, &vs));
 }
@@ -57,7 +57,7 @@ TEST(IPCMessageIntegrity, ReadBeyondBufferWStr) {
   EXPECT_TRUE(m.WriteInt(v1));
   EXPECT_TRUE(m.WriteInt(v2));
 
-  void* iter = NULL;
+  PickleIterator iter(m);
   std::wstring vs;
   EXPECT_FALSE(m.ReadWString(&iter, &vs));
 }
@@ -68,7 +68,7 @@ TEST(IPCMessageIntegrity, ReadBytesBadIterator) {
   EXPECT_TRUE(m.WriteInt(1));
   EXPECT_TRUE(m.WriteInt(2));
 
-  void* iter = NULL;
+  PickleIterator iter(m);
   const char* data = NULL;
   EXPECT_TRUE(m.ReadBytes(&iter, &data, sizeof(int)));
 }
@@ -84,7 +84,7 @@ TEST(IPCMessageIntegrity, ReadVectorNegativeSize) {
   EXPECT_TRUE(m.WriteInt(3));
 
   std::vector<double> vec;
-  void* iter = 0;
+  PickleIterator iter(m);
   EXPECT_FALSE(ReadParam(&m, &iter, &vec));
 }
 
@@ -97,7 +97,7 @@ TEST(IPCMessageIntegrity, ReadVectorTooLarge1) {
   EXPECT_TRUE(m.WriteInt64(2));
 
   std::vector<int64> vec;
-  void* iter = 0;
+  PickleIterator iter(m);
   EXPECT_FALSE(ReadParam(&m, &iter, &vec));
 }
 
@@ -111,7 +111,7 @@ TEST(IPCMessageIntegrity, ReadVectorTooLarge2) {
   EXPECT_TRUE(m.WriteInt64(2));
 
   std::vector<int64> vec;
-  void* iter = 0;
+  PickleIterator iter(m);
   EXPECT_FALSE(ReadParam(&m, &iter, &vec));
 }
 
@@ -212,7 +212,7 @@ class FuzzerClientListener : public SimpleListener {
       return false;
     int msg_value1 = 0;
     int msg_value2 = 0;
-    void* iter = NULL;
+    PickleIterator iter(*last_msg_);
     if (!last_msg_->ReadInt(&iter, &msg_value1))
       return false;
     if (!last_msg_->ReadInt(&iter, &msg_value2))

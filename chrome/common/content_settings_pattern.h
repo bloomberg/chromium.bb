@@ -16,6 +16,8 @@
 #include "base/gtest_prod_util.h"
 
 class GURL;
+class Pickle;
+class PickleIterator;
 
 namespace content_settings {
 class PatternParser;
@@ -167,7 +169,7 @@ class ContentSettingsPattern {
 
   // Serializes the pattern to an IPC message or deserializes it.
   void WriteToMessage(IPC::Message* m) const;
-  bool ReadFromMessage(const IPC::Message* m, void** iter);
+  bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter);
 
   // True if this is a valid pattern.
   bool IsValid() const { return is_valid_; }

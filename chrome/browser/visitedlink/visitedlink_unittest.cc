@@ -526,7 +526,7 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
             Profile::FromBrowserContext(GetBrowserContext()));
 
     if (msg->type() == ChromeViewMsg_VisitedLink_Add::ID) {
-      void* iter = NULL;
+      PickleIterator iter(*msg);
       std::vector<uint64> fingerprints;
       CHECK(IPC::ReadParam(msg, &iter, &fingerprints));
       counting_profile->CountAddEvent(fingerprints.size());
