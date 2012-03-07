@@ -41,6 +41,10 @@ ef0d779706c77ca9007527bd8d41e9400682f4e4
 cd40c31ee9ad2cca6f3635950b002fd46be07e98
   dalecurtis: Replaces previous mkv buffer overflow patch.
 
+12623a8026c1657aedce2ef10d58bffba85dee2d
+  acolwell: This fixes some invalid memory access caused later in the function
+  by res_chan[] not being set for all channels.
+
 Patches still existing from the pre-GIT workflow:
 
 to_upstream/
