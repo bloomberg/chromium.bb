@@ -28,10 +28,7 @@ class WebUILoginDisplay : public LoginDisplay,
                     bool show_guest,
                     bool show_users,
                     bool show_new_user) OVERRIDE;
-  virtual void PreferencesChanged(const UserList& users,
-                                  bool show_guest,
-                                  bool show_users,
-                                  bool show_new_user) OVERRIDE;
+  virtual void OnPreferencesChanged() OVERRIDE;
   virtual void OnBeforeUserRemoved(const std::string& username) OVERRIDE;
   virtual void OnUserImageChanged(const User& user) OVERRIDE;
   virtual void OnUserRemoved(const std::string& username) OVERRIDE;

@@ -76,6 +76,9 @@ class LoginDisplayHost {
 
   // Resumes a previously started sign in screen.
   virtual void ResumeSignInScreen() = 0;
+
+  // Invoked when system preferences that affect the signin screen have changed.
+  virtual void OnPreferencesChanged() = 0;
 };
 
 }  // namespace chromeos

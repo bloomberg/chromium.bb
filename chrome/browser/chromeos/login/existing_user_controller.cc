@@ -155,14 +155,13 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
 
 void ExistingUserController::Init(const UserList& users) {
   time_init_ = base::Time::Now();
-  UpdateLoginDisplay(users, true);
+  UpdateLoginDisplay(users);
 
   LoginUtils::Get()->PrewarmAuthentication();
   DBusThreadManager::Get()->GetSessionManagerClient()->EmitLoginPromptReady();
 }
 
-void ExistingUserController::UpdateLoginDisplay(const UserList& users,
-                                                bool init) {
+void ExistingUserController::UpdateLoginDisplay(const UserList& users) {
   bool show_users_on_signin;
   UserList filtered_users;
 
@@ -185,12 +184,8 @@ void ExistingUserController::UpdateLoginDisplay(const UserList& users,
   show_guest &= !filtered_users.empty();
   bool show_new_user = true;
   login_display_->set_parent_window(GetNativeWindow());
-  if (init) {
-    login_display_->Init(filtered_users, show_guest, show_users, show_new_user);
-  } else {
-    login_display_->PreferencesChanged(
-        filtered_users, show_guest, show_users, show_new_user);
-  }
+  login_display_->Init(filtered_users, show_guest, show_users, show_new_user);
+  host_->OnPreferencesChanged();
 }
 
 void ExistingUserController::DoAutoEnrollment() {
@@ -214,7 +209,7 @@ void ExistingUserController::Observe(
   if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED) {
     // Signed settings changed notify views and update them.
     const chromeos::UserList& users = chromeos::UserManager::Get()->GetUsers();
-    UpdateLoginDisplay(users, false);
+    UpdateLoginDisplay(users);
     return;
   }
   if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {

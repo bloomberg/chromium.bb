@@ -40,6 +40,7 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
   virtual void StartWizard(const std::string& first_screen_name,
                            DictionaryValue* screen_parameters) OVERRIDE;
   virtual void StartSignInScreen() OVERRIDE;
+  virtual void OnPreferencesChanged() OVERRIDE;
 
   // BaseLoginDisplayHost overrides:
   virtual WizardController* CreateWizardController() OVERRIDE;
@@ -59,6 +60,9 @@ class WebUILoginDisplayHost : public BaseLoginDisplayHost {
 
   // Login display we are using.
   WebUILoginDisplay* webui_login_display_;
+
+  // True if the login display is the current screen.
+  bool is_showing_login_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginDisplayHost);
 };

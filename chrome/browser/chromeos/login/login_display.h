@@ -81,10 +81,7 @@ class LoginDisplay : public RemoveUserDelegate {
 
   // Notifies the login UI that the preferences defining how to visualize it to
   // the user have changed and it needs to refresh.
-  virtual void PreferencesChanged(const UserList& users,
-                                  bool show_guest,
-                                  bool show_users,
-                                  bool show_new_user) = 0;
+  virtual void OnPreferencesChanged() = 0;
 
   // Called when user image has been changed.
   // |user| contains updated user.

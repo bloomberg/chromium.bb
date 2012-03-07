@@ -48,12 +48,7 @@ void WebUILoginDisplay::Init(const UserList& users,
   show_new_user_ = show_new_user;
 }
 
-void WebUILoginDisplay::PreferencesChanged(const UserList& users,
-                                           bool show_guest,
-                                           bool show_users,
-                                           bool show_new_user) {
-  // Set all internal state as for init and then redraw the attached UI.
-  Init(users, show_guest, show_users, show_new_user);
+void WebUILoginDisplay::OnPreferencesChanged() {
   if (webui_handler_)
     webui_handler_->OnPreferencesChanged();
 }
