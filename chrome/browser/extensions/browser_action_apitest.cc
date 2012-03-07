@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  // Test that there is a browser action in the toolbar and that it has no icon.
+  // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
   EXPECT_FALSE(GetBrowserActionsBar().HasIcon(0));
 
@@ -109,15 +109,17 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   // Test that we received the changes.
   EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
 
-  // Tell the extension to update using setIcon({path:...});
+  // Set prev_id which holds the id of the previous image, and use it in the
+  // next test to see if the image changes.
+  uint32_t prev_id = extension->browser_action()->GetIcon(0).getGenerationID();
+
+  // Tell the extension to update the icon using setIcon({path:...}).
   ui_test_utils::NavigateToURL(browser(),
       GURL(extension->GetResourceURL("update2.html")));
   ASSERT_TRUE(catcher.GetNextResult());
-
-  // Test that we received the changes.
   EXPECT_TRUE(GetBrowserActionsBar().HasIcon(0));
-
-  // TODO(aa): Would be nice here to actually compare that the pixels change.
+  EXPECT_TRUE(prev_id !=
+      extension->browser_action()->GetIcon(0).getGenerationID());
 }
 
 // This test is flaky as per http://crbug.com/74557.

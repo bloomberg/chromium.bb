@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 
 #include <algorithm>
+#include <gtk/gtk.h>
 #include <vector>
 
 #include "base/bind.h"
@@ -102,6 +103,7 @@ class BrowserActionButton : public content::NotificationObserver,
         IDR_BROWSER_ACTION_H,
         0,
         NULL));
+    gtk_widget_set_size_request(button(), kButtonWidth, kButtonWidth);
     alignment_.Own(gtk_alignment_new(0, 0, 1, 1));
     gtk_container_add(GTK_CONTAINER(alignment_.get()), button());
     gtk_widget_show(button());
