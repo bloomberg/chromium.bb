@@ -61,7 +61,7 @@ void TestGetDocumentsCallback(gdata::GDataErrorCode* result_code,
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
+IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_Download) {
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   std::string contents;
   service_.DownloadFile(
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
   EXPECT_EQ(expected_contents, contents);
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
+IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_NonExistingDownload) {
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   std::string dummy_contents;
   service_.DownloadFile(
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
   // Do not verify the not found message.
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
+IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_GetDocuments) {
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
   base::Value* result_data = NULL;
   service_.GetDocuments(
@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
   delete result_data;
 }
 
-IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
+IN_PROC_BROWSER_TEST_F(GDataTest, DISABLED_GetDocumentsFailure) {
   // testfile.txt exists but the response is not JSON, so it should
   // emit a parse error instead.
   gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
