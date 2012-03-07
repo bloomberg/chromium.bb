@@ -289,9 +289,7 @@
               # Modify the Info.plist as needed.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['../build/mac/tweak_info_plist.py',
-                         '-s1',
-                         'unused branding',
-                         'unused bundle-id'],
+                         '--svn=1'],
             },
             {
               # Make sure there isn't any Objective-C in the shell's

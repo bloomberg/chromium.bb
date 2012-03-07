@@ -314,18 +314,17 @@
               # Keystone information is included if Keystone is enabled.  The
               # application reads Keystone keys from this plist and not the
               # framework's, and the ticket will reference this Info.plist to
-              # determine the tag of the installed product.  Use -s1 to
-              # include Subversion information.  The -p flag controls whether
+              # determine the tag of the installed product.  Use --svn=1 to
+              # include Subversion information.  The --pdf flag controls whether
               # to insert PDF as a supported type identifier that can be
               # opened.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(tweak_info_plist_path)',
                          '--breakpad=0',
-                         '-k<(mac_keystone)',
-                         '-s1',
-                         '-p<(internal_pdf)',
-                         '<(branding)',
-                         '<(mac_bundle_id)'],
+                         '--keystone=<(mac_keystone)',
+                         '--svn=1',
+                         '--pdf=<(internal_pdf)',
+                         '--bundle_id=<(mac_bundle_id)'],
             },
             {
               'postbuild_name': 'Clean up old versions',

@@ -383,10 +383,9 @@
                   'action': ['<(tweak_info_plist_path)',
                              '--breakpad=<(mac_breakpad_compiled_in)',
                              '--breakpad_uploads=<(mac_breakpad_uploads)',
-                             '-k0',
-                             '-s1',
-                             '<(branding)',
-                             '<(mac_bundle_id)'],
+                             '--keystone=0',
+                             '--svn=1',
+                             '--branding=<(branding)'],
                 },
                 {
                   'postbuild_name': 'Symlink Libraries',
