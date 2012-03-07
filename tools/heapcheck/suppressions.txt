@@ -666,48 +666,6 @@
    fun:GoogleURLTrackerTest*_Test::TestBody
 }
 {
-   bug_52900_a
-   Heapcheck:Leak
-   ...
-   fun:MockRenderProcessHostFactory::CreateRenderProcessHost
-   fun:SiteInstance::GetProcess
-   fun:RenderViewHost
-   fun:TestRenderViewHost
-   fun:TestRenderViewHostFactory::CreateRenderViewHost
-   fun:RenderViewHostFactory::Create
-   fun:RenderViewHostManager::Init
-   fun:TabContents
-   fun:TestTabContents
-   fun:RenderViewHostTestHarness::CreateTestTabContents
-   fun:RenderViewHostTestHarness::SetUp
-}
-{
-   bug_52900_b
-   Heapcheck:Leak
-   ...
-   fun:RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget
-   fun:*::CreateNewFullscreenWidget
-   fun:RenderViewHost::CreateNewFullscreenWidget
-   fun:RenderViewHostTest_CreateFullscreenWidget_Test::TestBody
-}
-{
-   bug_52900_c
-   Heapcheck:Leak
-   ...
-   fun:IPC::TestSink::OnMessageReceived
-   fun:MockRenderProcessHost::Send
-   fun:PurgePluginListCache
-   fun:PluginService::Observe
-   fun:NotificationService::Notify
-   fun:ExtensionService::NotifyExtensionLoaded
-   fun:ExtensionService::OnExtensionLoaded
-   fun:ExtensionService::LoadInstalledExtension
-   fun:ExtensionService::ContinueLoadAllExtensions
-   fun:ExtensionService::LoadAllExtensions
-   fun:ExtensionService::Init
-   fun:ExtensionServiceTest_CleanupOnStartup_Test::TestBody
-}
-{
    bug_53184
    Heapcheck:Leak
    fun:base::WaitableEventWatcher::StartWatching
