@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,7 +177,10 @@ void IPCChannelPosixTest::SpinRunLoop(int milliseconds) {
   // in the case of a bad test. Usually, the run loop will quit sooner than
   // that because all tests use a IPCChannelPosixTestListener which quits the
   // current run loop on any channel activity.
-  loop->PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), milliseconds);
+  loop->PostDelayedTask(
+      FROM_HERE,
+      MessageLoop::QuitClosure(),
+      base::TimeDelta::FromMilliseconds(milliseconds));
   loop->Run();
 }
 

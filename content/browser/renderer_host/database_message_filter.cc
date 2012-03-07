@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,7 +210,7 @@ void DatabaseMessageFilter::DatabaseDeleteFile(const string16& vfs_file_name,
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&DatabaseMessageFilter::DatabaseDeleteFile, this,
                      vfs_file_name, sync_dir, reply_msg, reschedule_count - 1),
-          kDelayDeleteRetryMs);
+          base::TimeDelta::FromMilliseconds(kDelayDeleteRetryMs));
       return;
     }
   }

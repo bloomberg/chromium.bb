@@ -97,10 +97,12 @@ void TraceController::InitStartupTracing(const CommandLine& command_line) {
   }
 
   OnTracingBegan(subscriber.get());
-  BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&AutoStopTraceSubscriberStdio::EndStartupTrace,
                  base::Unretained(subscriber.release())),
-                 delay_secs * 1000);
+      base::TimeDelta::FromSeconds(delay_secs));
 }
 
 bool TraceController::GetKnownCategoriesAsync(TraceSubscriber* subscriber) {

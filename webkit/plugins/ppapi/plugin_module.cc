@@ -185,7 +185,7 @@ void CallOnMainThread(int delay_in_msec,
     GetMainThreadMessageLoop()->PostDelayedTask(
         FROM_HERE,
         base::Bind(callback.func, callback.user_data, result),
-        delay_in_msec);
+        base::TimeDelta::FromMilliseconds(delay_in_msec));
   }
 }
 

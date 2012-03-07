@@ -1053,7 +1053,9 @@ class DoneEventRaceServer : public Worker {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(&NestedCallback, this));
     MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&TimeoutCallback), 9000);
+        FROM_HERE,
+        base::Bind(&TimeoutCallback),
+        base::TimeDelta::FromSeconds(9));
     // Even though we have a timeout on the Send, it will succeed since for this
     // bug, the reply message comes back and is deserialized, however the done
     // event wasn't set.  So we indirectly use the timeout task to notice if a

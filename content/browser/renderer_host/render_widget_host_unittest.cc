@@ -726,11 +726,11 @@ TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
 
   // Immediately try to add a long 30 second timeout.
   EXPECT_FALSE(host_->unresponsive_timer_fired());
-  host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(30000));
+  host_->StartHangMonitorTimeout(TimeDelta::FromSeconds(30));
 
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          MessageLoop::QuitClosure(), 10);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(10));
   MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
@@ -747,8 +747,8 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
   host_->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
 
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          MessageLoop::QuitClosure(), 40);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(40));
   MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }
@@ -767,8 +767,8 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   SendInputEventACK(WebInputEvent::RawKeyDown, true);
 
   // Wait long enough for first timeout and see if it fired.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                          MessageLoop::QuitClosure(), 40);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, MessageLoop::QuitClosure(), TimeDelta::FromMilliseconds(40));
   MessageLoop::current()->Run();
   EXPECT_TRUE(host_->unresponsive_timer_fired());
 }

@@ -445,7 +445,7 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
     context->ipc_message_loop()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&SyncContext::OnSendTimeout, context.get(), message_id),
-        timeout_ms);
+        base::TimeDelta::FromMilliseconds(timeout_ms));
   }
 
   // Wait for reply, or for any other incoming synchronous messages.
