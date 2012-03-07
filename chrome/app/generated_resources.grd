@@ -10323,9 +10323,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Google table
       </message>
 
-      <message name="IDS_FILE_BROWSER_ENQUEUE" desc="Enqueue file menu item used for media playback">
-        Enqueue
-      </message>
       <message name="IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE" desc="Title of error message propmt when user attempts to open a non-supported file in file browser.">
         <ph name="FILENAME">$1</ph>
       </message>
@@ -10334,6 +10331,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FILE_BROWSER_ERROR_UNKNOWN_FILE_TYPE" desc="Error message when user attempts to open a file of unknown type in file browser.">
         <ph name="FILENAME">$1</ph> - Unknown file type.
+      </message>
+
+      <message name="IDS_FILE_BROWSER_AUDIO_PLAYER_TITLE" desc="Title of the Audio Player window.">
+        Audio Player
       </message>
 
       <!-- Bookmark manager -->

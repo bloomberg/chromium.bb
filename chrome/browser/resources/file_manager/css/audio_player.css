@@ -7,6 +7,7 @@
 body {
   padding: 0;
   -webkit-user-select: none;
+  overflow: hidden;
 }
 
 .audio-player {
@@ -49,13 +50,16 @@ body {
   background-color: #1f1f1f;
 }
 
+/* TODO(kaznacheev): Remove display: none when the audio player is title-less */
 .title-button.close {
+  display: none;
   right: 0;
   background-image: url(../images/media/media_close.png);
 }
 
+/* TODO(kaznacheev): Set right: 29px when the audio player is title-less */
 .title-button.collapse {
-  right: 29px;
+  right: 0;
   background-image: url(../images/media/media_collapse.png);
 }
 
@@ -198,12 +202,14 @@ body {
   font-weight: bold;
 }
 
+/* TODO(kaznacheev): Set to 20px when the audio player is title-less. */
 .single-track .data-title {
-  padding-right: 20px;
+  padding-right: 0;
 }
 
+/* TODO(kaznacheev): Set to 50px when the audio player is title-less. */
 .collapsed:not(.single-track) .data-title {
-  padding-right: 50px;
+  padding-right: 20px;
 }
 
 /* Controls bar. */

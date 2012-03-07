@@ -47,6 +47,10 @@ function AudioPlayer(container) {
       createChild(), this.advance_.bind(this));
 
   this.audioControls_.attachMedia(createChild('', 'audio'));
+
+  chrome.fileBrowserPrivate.getStrings(function(strings) {
+    container.ownerDocument.title = strings['AUDIO_PLAYER_TITLE'];
+  })
 }
 
 AudioPlayer.load = function() {
@@ -195,7 +199,8 @@ AudioPlayer.prototype.onExpandCollapse_ = function() {
 };
 
 /* Keep the below constants in sync with the CSS. */
-AudioPlayer.HEADER_HEIGHT = 30;
+// TODO(kaznacheev): Set to 30 when the audio player is title-less.
+AudioPlayer.HEADER_HEIGHT = 0;
 AudioPlayer.TRACK_HEIGHT = 58;
 AudioPlayer.CONTROLS_HEIGHT = 35;
 
