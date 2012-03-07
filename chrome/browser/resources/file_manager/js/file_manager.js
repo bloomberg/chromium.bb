@@ -2247,7 +2247,7 @@ FileManager.prototype = {
           //             (see GetFileTasksFileBrowserFunction::RunImpl).
           task.iconUrl =
               chrome.extension.getURL('images/icon_play_16x16.png');
-          task.title = str('PLAY_MEDIA').replace("&", "");
+          task.title = str('ACTION_LISTEN');
           this.playTask_ = task;
         } else if (task_parts[1] == 'mount-archive') {
           task.iconUrl =
@@ -2256,18 +2256,24 @@ FileManager.prototype = {
         } else if (task_parts[1] == 'gallery') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('OPEN_ACTION');
+          if (selection.urls.filter(FileType.isImage).length) {
+            // Some images sected, use the generic "Open" title.
+            task.title = str('ACTION_OPEN');
+          } else {
+            // The selection is all videos, use the specific "Watch" title.
+            task.title = str('ACTION_WATCH');
+          }
           task.allTasks = tasksList;
         } else if (task_parts[1] == 'view-pdf') {
           // Do not render this task if disabled.
           if (str('PDF_VIEW_ENABLED') == 'false') continue;
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('OPEN_ACTION');
+          task.title = str('ACTION_OPEN');
         } else if (task_parts[1] == 'view-txt') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('OPEN_ACTION');
+          task.title = str('ACTION_OPEN');
         } else if (task_parts[1] == 'install-crx') {
           // TODO(dgozman): change to the right icon.
           task.iconUrl =
@@ -2505,9 +2511,7 @@ FileManager.prototype = {
         // If just a single audio file is selected pass along every audio file
         // in the directory.
         var selectedUrl = urls[0];
-        urls = this.getAllUrlsInCurrentDirectory_().filter(function(url) {
-          return FileType.getMediaType(url) == 'audio';
-        });
+        urls = this.getAllUrlsInCurrentDirectory_().filter(FileType.isAudio);
         position = urls.indexOf(selectedUrl);
       }
       chrome.mediaPlayerPrivate.play(urls, position);
@@ -2584,17 +2588,15 @@ FileManager.prototype = {
     galleryFrame.setAttribute('webkitallowfullscreen', true);
 
     var selectedUrl;
-    if (urls.length == 1 && FileType.getMediaType(urls[0]) == 'image') {
+    if (urls.length == 1 && FileType.isImage(urls[0])) {
       // Single image item selected. Pass to the Gallery as a selected.
       selectedUrl = urls[0];
       // Pass along every image and video in the directory so that it shows up
       // in the ribbon.
       // We do not do that if a single video is selected because the UI is
       // cleaner without the ribbon.
-      urls = this.getAllUrlsInCurrentDirectory_().filter(function(url) {
-        var type = FileType.getMediaType(url);
-        return type == 'image' || type == 'video';
-      });
+      urls = this.getAllUrlsInCurrentDirectory_().filter(
+          FileType.isImageOrVideo);
     } else {
       // Pass just the selected items, select the first entry.
       selectedUrl = urls[0];

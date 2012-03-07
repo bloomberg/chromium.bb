@@ -130,6 +130,26 @@ FileType.getMediaType = function(url) {
   return FileType.getType(url).type;
 };
 
+/*
+ * Helper functions useful with Array.filter().
+ */
+FileType.isAudio = function(url) {
+  return FileType.getMediaType(url) == 'audio';
+};
+
+FileType.isImage = function(url) {
+  return FileType.getMediaType(url) == 'image';
+};
+
+FileType.isVideo = function(url) {
+  return FileType.getMediaType(url) == 'video';
+};
+
+FileType.isImageOrVideo = function(url) {
+  var type = FileType.getMediaType(url);
+  return type == 'image' || type == 'video';
+};
+
 /**
  * Get the preview url for a given type.
  *

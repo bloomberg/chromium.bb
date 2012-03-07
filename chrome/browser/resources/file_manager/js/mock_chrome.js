@@ -324,10 +324,12 @@ chrome.fileBrowserPrivate = {
       MOUNT_ARCHIVE: 'Open',
       FORMAT_DEVICE: 'Format device',
 
-      OPEN_ACTION: 'Open',
+      ACTION_VIEW: 'View',
+      ACTION_OPEN: 'Open',
+      ACTION_WATCH: 'Watch',
+      ACTION_LISTEN: 'Listen',
       INSTALL_CRX: 'Open',
 
-      GALLERY: 'View and Edit',
       GALLERY_EDIT: 'Edit',
       GALLERY_SHARE: 'Share',
       GALLERY_AUTOFIX: 'Auto-fix',
