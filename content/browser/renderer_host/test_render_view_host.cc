@@ -148,7 +148,7 @@ void TestRenderViewHost::SendNavigateWithTransition(
 }
 
 void TestRenderViewHost::SendShouldCloseACK(bool proceed) {
-  OnMsgShouldCloseACK(proceed);
+  OnMsgShouldCloseACK(proceed, base::TimeTicks(), base::TimeTicks());
 }
 
 void TestRenderViewHost::TestOnMsgStartDragging(const WebDropData& drop_data) {

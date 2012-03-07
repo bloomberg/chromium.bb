@@ -35,6 +35,7 @@ struct WebPreferences;
 
 namespace base {
 class ListValue;
+class TimeTicks;
 }
 
 namespace gfx {
@@ -166,9 +167,12 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
     // AttemptToClosePage.  This is called before a cross-site request or before
     // a tab/window is closed (as indicated by the first parameter) to allow the
     // appropriate renderer to approve or deny the request.  |proceed| indicates
-    // whether the user chose to proceed.
-    virtual void ShouldClosePage(bool for_cross_site_transition,
-                                 bool proceed) = 0;
+    // whether the user chose to proceed.  |proceed_time| is the time when the
+    // request was allowed to proceed.
+    virtual void ShouldClosePage(
+        bool for_cross_site_transition,
+        bool proceed,
+        const base::TimeTicks& proceed_time) = 0;
 
     // Called by ResourceDispatcherHost when a response for a pending cross-site
     // request is received.  The ResourceDispatcherHost will pause the response
