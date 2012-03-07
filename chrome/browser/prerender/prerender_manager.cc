@@ -789,6 +789,7 @@ void PrerenderManager::SetPrerenderContentsFactory(
 void PrerenderManager::DoShutdown() {
   DestroyAllContents(FINAL_STATUS_MANAGER_SHUTDOWN);
   STLDeleteElements(&prerender_conditions_);
+  on_close_tab_contents_deleters_.reset();
   profile_ = NULL;
 }
 
