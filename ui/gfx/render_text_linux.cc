@@ -244,8 +244,9 @@ SelectionModel RenderTextLinux::EdgeSelectionModel(
       PangoLayoutRun* end_run = reinterpret_cast<PangoLayoutRun*>(run->data);
       PangoItem* item = end_run->item;
       if (IsForwardMotion(direction, item)) {
-        size_t caret = LayoutIndexToTextIndex(LayoutIndexOfAdjacentGrapheme(
-            item->offset + item->length, CURSOR_BACKWARD));
+        size_t caret = IndexOfAdjacentGrapheme(
+            LayoutIndexToTextIndex(item->offset + item->length),
+            CURSOR_BACKWARD);
         return SelectionModel(text().length(), caret, SelectionModel::TRAILING);
       } else {
         size_t caret = LayoutIndexToTextIndex(item->offset);
@@ -472,31 +473,7 @@ size_t RenderTextLinux::IndexOfAdjacentGrapheme(
   if (index > text().length())
     return text().length();
   EnsureLayout();
-  return LayoutIndexToTextIndex(
-      LayoutIndexOfAdjacentGrapheme(TextIndexToLayoutIndex(index), direction));
-}
-
-GSList* RenderTextLinux::GetRunContainingPosition(size_t position) const {
-  GSList* run = current_line_->runs;
-  while (run) {
-    PangoItem* item = reinterpret_cast<PangoLayoutRun*>(run->data)->item;
-    size_t run_start = LayoutIndexToTextIndex(item->offset);
-    size_t run_end = LayoutIndexToTextIndex(item->offset + item->length);
-
-    if (position >= run_start && position < run_end)
-      return run;
-    run = run->next;
-  }
-  return NULL;
-}
-
-size_t RenderTextLinux::LayoutIndexOfAdjacentGrapheme(
-    size_t layout_index_of_current_grapheme,
-    LogicalCursorDirection direction) const {
-  const char* ch = layout_text_ + layout_index_of_current_grapheme;
-  int char_offset = static_cast<int>(g_utf8_pointer_to_offset(layout_text_,
-                                                              ch));
-  int start_char_offset = char_offset;
+  ptrdiff_t char_offset = ui::UTF16IndexToOffset(text(), 0, index);
   if (direction == CURSOR_BACKWARD) {
     if (char_offset > 0) {
       do {
@@ -511,23 +488,31 @@ size_t RenderTextLinux::LayoutIndexOfAdjacentGrapheme(
                !log_attrs_[char_offset].is_cursor_position);
     }
   }
+  return ui::UTF16OffsetToIndex(text(), 0, char_offset);
+}
 
-  ch = g_utf8_offset_to_pointer(ch, char_offset - start_char_offset);
-  return static_cast<size_t>(ch - layout_text_);
+GSList* RenderTextLinux::GetRunContainingPosition(size_t position) const {
+  position = TextIndexToLayoutIndex(position);
+  for (GSList* run = current_line_->runs; run; run = run->next) {
+    PangoItem* item = reinterpret_cast<PangoLayoutRun*>(run->data)->item;
+    if (position >= static_cast<size_t>(item->offset) &&
+        position < static_cast<size_t>(item->offset + item->length))
+      return run;
+  }
+  return NULL;
 }
 
 SelectionModel RenderTextLinux::FirstSelectionModelInsideRun(
-    const PangoItem* item) const {
+    const PangoItem* item) {
   size_t caret = LayoutIndexToTextIndex(item->offset);
-  size_t cursor = LayoutIndexToTextIndex(
-      LayoutIndexOfAdjacentGrapheme(item->offset, CURSOR_FORWARD));
+  size_t cursor = IndexOfAdjacentGrapheme(caret, CURSOR_FORWARD);
   return SelectionModel(cursor, caret, SelectionModel::TRAILING);
 }
 
 SelectionModel RenderTextLinux::LastSelectionModelInsideRun(
-    const PangoItem* item) const {
-  size_t caret = LayoutIndexToTextIndex(LayoutIndexOfAdjacentGrapheme(
-      item->offset + item->length, CURSOR_BACKWARD));
+    const PangoItem* item) {
+  size_t caret = IndexOfAdjacentGrapheme(
+      LayoutIndexToTextIndex(item->offset + item->length), CURSOR_BACKWARD);
   return SelectionModel(caret, caret, SelectionModel::LEADING);
 }
 

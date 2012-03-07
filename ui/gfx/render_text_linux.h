@@ -51,17 +51,11 @@ class RenderTextLinux : public RenderText {
   // Returns the run that contains |position|. Return NULL if not found.
   GSList* GetRunContainingPosition(size_t position) const;
 
-  // Given |layout_index_of_current_grapheme|, returns the layout (UTF-8) index
-  // of the |next| or previous grapheme in logical order. Returns 0 if there is
-  // no previous grapheme, or the |text_| length if there is no next grapheme.
-  size_t LayoutIndexOfAdjacentGrapheme(size_t layout_index_of_current_grapheme,
-                                       LogicalCursorDirection direction) const;
-
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
   // The returned value represents a cursor/caret position without a selection.
-  SelectionModel FirstSelectionModelInsideRun(const PangoItem* run) const;
-  SelectionModel LastSelectionModelInsideRun(const PangoItem* run) const;
+  SelectionModel FirstSelectionModelInsideRun(const PangoItem* run);
+  SelectionModel LastSelectionModelInsideRun(const PangoItem* run);
 
   // Unref |layout_| and |pango_line_|. Set them to NULL.
   void ResetLayout();
