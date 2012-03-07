@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,14 +36,8 @@ class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
   virtual Browser* CreateBrowser(Profile* profile) OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
 
-  WizardController* controller() const { return controller_; }
-  void set_controller(WizardController* controller) {
-    controller_ = controller;
-  }
-
  private:
   std::string screen_name_;
-  WizardController* controller_;
   LoginDisplayHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardInProcessBrowserTest);

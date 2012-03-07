@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,16 +112,18 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   virtual void SetUpOnMainThread() {
     mock_screen_observer_.reset(new MockScreenObserver());
-    ASSERT_TRUE(controller() != NULL);
-    network_screen_ = controller()->GetNetworkScreen();
+    ASSERT_TRUE(WizardController::default_controller() != NULL);
+    network_screen_ =
+        WizardController::default_controller()->GetNetworkScreen();
     ASSERT_TRUE(network_screen_ != NULL);
-    ASSERT_EQ(controller()->current_screen(), network_screen_);
+    ASSERT_EQ(WizardController::default_controller()->current_screen(),
+              network_screen_);
     network_screen_->screen_observer_ = mock_screen_observer_.get();
     ASSERT_TRUE(network_screen_->actor() != NULL);
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
-    network_screen_->screen_observer_ = controller();
+    network_screen_->screen_observer_ = WizardController::default_controller();
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
   }

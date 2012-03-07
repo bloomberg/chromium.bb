@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@ namespace chromeos {
 
 WizardInProcessBrowserTest::WizardInProcessBrowserTest(const char* screen_name)
     : screen_name_(screen_name),
-      controller_(NULL),
       host_(NULL) {
 }
 
@@ -28,7 +27,6 @@ Browser* WizardInProcessBrowserTest::CreateBrowser(Profile* profile) {
 
   if (!screen_name_.empty()) {
     browser::ShowLoginWizard(screen_name_.c_str(), gfx::Size(1024, 600));
-    controller_ = WizardController::default_controller();
     host_ = BaseLoginDisplayHost::default_host();
   }
   return NULL;
