@@ -154,11 +154,10 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
     for (std::set<GURL>::iterator url = details->urls.begin();
          url != details->urls.end(); ++url) {
       sync_api::WriteNode sync_node(&trans);
-      if (sync_node.InitByClientTagLookup(syncable::TYPED_URLS, url->spec())) {
+      // The deleted URL could have been non-typed, so it might not be found
+      // in the sync DB.
+      if (sync_node.InitByClientTagLookup(syncable::TYPED_URLS, url->spec()))
         sync_node.Remove();
-      } else {
-        NOTREACHED() << "Cannot delete node from sync DB: " << url->spec();
-      }
     }
   }
 }
