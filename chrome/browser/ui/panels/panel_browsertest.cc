@@ -436,12 +436,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateBigPanel) {
-  Panel* panel = CreatePanelWithBounds("BigPanel", testing_work_area());
+  gfx::Rect work_area = GetTestingWorkArea();
+  Panel* panel = CreatePanelWithBounds("BigPanel", work_area);
   gfx::Rect bounds = panel->GetBounds();
   EXPECT_EQ(panel->max_size().width(), bounds.width());
-  EXPECT_LT(bounds.width(), testing_work_area().width());
+  EXPECT_LT(bounds.width(), work_area.width());
   EXPECT_EQ(panel->max_size().height(), bounds.height());
-  EXPECT_LT(bounds.height(), testing_work_area().height());
+  EXPECT_LT(bounds.height(), work_area.height());
   panel->Close();
 }
 
@@ -979,7 +980,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->enable_auto_sizing(true);
   // Bigger space is needed by this test.
-  panel_manager->SetWorkAreaForTesting(gfx::Rect(0, 0, 1200, 900));
+  SetTestingWorkArea(gfx::Rect(0, 0, 1200, 900));
 
   // Create a test panel with tab contents loaded.
   CreatePanelParams params("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -2040,15 +2041,18 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
 class PanelAndNotificationTest : public PanelBrowserTest {
  public:
   PanelAndNotificationTest() : PanelBrowserTest() {
-    // Do not use our own testing work area since desktop notification code
-    // does not have the hook up for testing work area.
-    set_testing_work_area(gfx::Rect());
   }
 
   virtual ~PanelAndNotificationTest() {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    PanelBrowserTest::SetUpOnMainThread();
+
+    // Do not use our own testing work area since desktop notification code
+    // does not have the hook up for testing work area.
+    SetTestingWorkArea(gfx::Rect());
+
     g_browser_process->local_state()->SetInteger(
         prefs::kDesktopNotificationPosition, BalloonCollection::LOWER_RIGHT);
     balloons_ = new BalloonCollectionImpl();
@@ -2056,8 +2060,6 @@ class PanelAndNotificationTest : public PanelBrowserTest {
         g_browser_process->local_state(), balloons_));
     service_.reset(new DesktopNotificationService(browser()->profile(),
                    ui_manager_.get()));
-
-    PanelBrowserTest::SetUpOnMainThread();
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

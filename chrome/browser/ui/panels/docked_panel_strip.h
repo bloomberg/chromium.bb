@@ -10,7 +10,7 @@
 #include <set>
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
+#include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
@@ -88,8 +88,8 @@ class DockedPanelStrip : public PanelStrip,
   int StartingRightPosition() const;
 
   void OnAutoHidingDesktopBarVisibilityChanged(
-      AutoHidingDesktopBar::Alignment alignment,
-      AutoHidingDesktopBar::Visibility visibility);
+      DisplaySettingsProvider::DesktopBarAlignment alignment,
+      DisplaySettingsProvider::DesktopBarVisibility visibility);
 
   void OnFullScreenModeChanged(bool is_full_screen);
 
