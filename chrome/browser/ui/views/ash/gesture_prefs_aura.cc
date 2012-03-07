@@ -53,7 +53,8 @@ const char* kPrefsToObserve[] = {
 
 const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
 
-GesturePrefsObserverAura::GesturePrefsObserverAura() {
+GesturePrefsObserverAura::GesturePrefsObserverAura()
+    : local_state_(0) {
 }
 
 GesturePrefsObserverAura::~GesturePrefsObserverAura() {
