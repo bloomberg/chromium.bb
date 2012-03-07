@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -78,8 +79,8 @@ void BrowserFrame::InitBrowserFrame() {
 #endif
   }
 #if defined(USE_AURA)
-  // Compact mode has opaque frames, otherwise Aura frames are translucent.
-  if (!ash::Shell::GetInstance()->IsWindowModeCompact())
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(ash::switches::kAuraTranslucentFrames))
     params.transparent = true;
   // Aura compact mode fills the monitor with with its windows.
   if (ash::Shell::GetInstance()->IsWindowModeCompact() &&

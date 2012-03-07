@@ -33,28 +33,6 @@
 //       The remainder of the code here is dealing with the legacy CrOS WM and
 //       can also be removed.
 
-namespace {
-
-views::Widget* CreateViewsWindowWithParent(gfx::NativeWindow parent,
-                                           views::WidgetDelegate* delegate) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params;
-  params.delegate = delegate;
-#if defined(OS_WIN) || defined(USE_AURA)
-  params.parent = parent;
-#endif
-#if defined(USE_AURA)
-  // Outside of compact mode, dialog windows may have translucent frames.
-  // TODO(jamescook): Find a better way to set this.
-  if (!ash::Shell::GetInstance()->IsWindowModeCompact())
-    params.transparent = true;
-#endif
-  widget->Init(params);
-  return widget;
-}
-
-}  // namespace
-
 namespace browser {
 
 views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
@@ -63,7 +41,7 @@ views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
 #if defined(OS_CHROMEOS) && !defined(USE_AURA)
   return chromeos::BubbleWindow::Create(parent, style, delegate);
 #else
-  return CreateViewsWindowWithParent(parent, delegate);
+  return views::Widget::CreateWindowWithParent(delegate, parent);
 #endif
 }
 
