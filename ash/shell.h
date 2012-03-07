@@ -195,6 +195,9 @@ class ASH_EXPORT Shell {
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
   }
+  internal::FocusCycler* focus_cycler() {
+    return focus_cycler_.get();
+  }
   AudioController* audio_controller() const {
     return audio_controller_;
   }
