@@ -190,12 +190,12 @@ InterfaceProxy* PPP_Class_Proxy::Create(Dispatcher* dispatcher) {
 // static
 PP_Var PPP_Class_Proxy::CreateProxiedObject(const PPB_Var_Deprecated* var,
                                             Dispatcher* dispatcher,
-                                            PP_Module module_id,
+                                            PP_Instance instance_id,
                                             int64 ppp_class,
                                             int64 class_data) {
   ObjectProxy* object_proxy = new ObjectProxy(dispatcher,
                                               ppp_class, class_data);
-  return var->CreateObject(module_id, &class_interface, object_proxy);
+  return var->CreateObject(instance_id, &class_interface, object_proxy);
 }
 
 // static

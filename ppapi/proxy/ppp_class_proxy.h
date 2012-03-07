@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/interface_proxy.h"
 
@@ -38,7 +38,7 @@ class PPP_Class_Proxy : public InterfaceProxy {
   // PPB_Var_Deprecated interface to use to create the object. The class and
   static PP_Var CreateProxiedObject(const PPB_Var_Deprecated* var,
                                     Dispatcher* dispatcher,
-                                    PP_Module module_id,
+                                    PP_Instance instance_id,
                                     int64 ppp_class,
                                     int64 class_data);
 
