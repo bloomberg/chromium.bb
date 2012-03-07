@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,7 @@ class UpdateEngineClient {
   enum UpdateCheckResult {
     UPDATE_RESULT_SUCCESS,
     UPDATE_RESULT_FAILED,
+    UPDATE_RESULT_NOTIMPLEMENTED,
   };
 
   // Interface for observing changes from the update engine.

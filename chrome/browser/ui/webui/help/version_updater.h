@@ -14,10 +14,6 @@
 // Interface implemented to expose per-platform updating functionality.
 class VersionUpdater {
  public:
-#if defined(OS_CHROMEOS)
-  typedef base::Callback<void(const std::string&)> ChannelCallback;
-#endif
-
   // Update process state machine.
   enum Status {
     CHECKING,
@@ -36,6 +32,12 @@ class VersionUpdater {
     PROMOTE_DISABLED
   };
 #endif  // defined(OS_MACOSX)
+
+  // TODO(jhawkins): Use a delegate interface instead of multiple callback
+  // types.
+#if defined(OS_CHROMEOS)
+  typedef base::Callback<void(const std::string&)> ChannelCallback;
+#endif
 
   // Used to update the client of status changes. int parameter is the progress
   // and should only be non-zero for the UPDATING state.  string16 parameter is

@@ -49,7 +49,7 @@
       <button id="more-info" class="link-button" i18n-content="moreInfoLink">
       </button>
 </if>
-<if expr="pp_ifdef('_google_chrome') and (is_win or is_macosx or pp_ifdef('chromeos'))">
+<if expr="pp_ifdef('chromeos') or (pp_ifdef('_google_chrome') and (is_win or is_macosx))">
       <div id="update-status-container">
         <div id="update-status-icon" class="up-to-date"></div>
         <span id="update-status" i18n-content="updateCheckStarted"></span>

@@ -34,7 +34,7 @@ void VersionUpdaterCros::CheckForUpdate(const StatusCallback& callback) {
   if (!WizardController::default_controller() ||
       WizardController::IsDeviceRegistered()) {
     update_engine_client->RequestUpdateCheck(
-        UpdateEngineClient::EmptyUpdateCheckCallback());
+        base::Bind(&VersionUpdaterCros::OnUpdateCheck, base::Unretained(this)));
   }
 }
 
@@ -99,7 +99,14 @@ void VersionUpdaterCros::UpdateStatusChanged(
   callback_.Run(my_status, progress, string16());
 }
 
-// Callback from UpdateEngine with channel information.
+void VersionUpdaterCros::OnUpdateCheck(
+    UpdateEngineClient::UpdateCheckResult result) {
+  // If version updating is not implemented, this binary is the most up-to-date
+  // possible with respect to automatic updating.
+  if (result == UpdateEngineClient::UPDATE_RESULT_NOTIMPLEMENTED)
+    callback_.Run(UPDATED, 0, string16());
+}
+
 void VersionUpdaterCros::UpdateSelectedChannel(const std::string& channel) {
   channel_callback_.Run(channel);
 }

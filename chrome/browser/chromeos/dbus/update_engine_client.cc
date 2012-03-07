@@ -256,7 +256,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
   virtual bool HasObserver(Observer* observer) OVERRIDE { return false; }
 
   virtual void RequestUpdateCheck(UpdateCheckCallback callback) OVERRIDE {
-    callback.Run(UPDATE_RESULT_FAILED);
+    callback.Run(UPDATE_RESULT_NOTIMPLEMENTED);
   }
   virtual void RebootAfterUpdate() OVERRIDE {}
   virtual void SetReleaseTrack(const std::string& track) OVERRIDE {}

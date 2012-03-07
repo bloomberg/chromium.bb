@@ -31,6 +31,10 @@ class VersionUpdaterCros : public VersionUpdater,
   virtual void UpdateStatusChanged(
       const chromeos::UpdateEngineClient::Status& status) OVERRIDE;
 
+  // Callback from UpdateEngineClient::RequestUpdateCheck().
+  void OnUpdateCheck(chromeos::UpdateEngineClient::UpdateCheckResult result);
+
+  // Callback from UpdateEngineClient::GetReleaseTrack().
   void UpdateSelectedChannel(const std::string& channel);
 
   // Callback used to communicate update status to the client.
