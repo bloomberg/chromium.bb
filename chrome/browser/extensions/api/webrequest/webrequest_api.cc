@@ -34,11 +34,10 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
@@ -50,6 +49,7 @@
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
+using content::ResourceRequestInfo;
 
 namespace helpers = extension_webrequest_api_helpers;
 namespace keys = extension_webrequest_api_constants;
@@ -126,15 +126,14 @@ bool IsRequestFromExtension(const net::URLRequest* request,
   if (!extension_info_map)
     return false;
 
-  const ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
   // If this request was not created by the ResourceDispatcher, |info| is NULL.
   // All requests from extensions are created by the ResourceDispatcher.
   if (!info)
     return false;
 
-  return extension_info_map->process_map().Contains(info->child_id());
+  return extension_info_map->process_map().Contains(info->GetChildID());
 }
 
 // Returns true if the URL is sensitive and requests to this URL must not be
@@ -209,19 +208,18 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
   if (!request->GetUserData(NULL))
     return;
 
-  ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ExtensionTabIdMap::GetInstance()->GetTabAndWindowId(
-      info->child_id(), info->route_id(), tab_id, window_id);
-  *frame_id = info->frame_id();
-  *is_main_frame = info->is_main_frame();
-  *parent_frame_id = info->parent_frame_id();
-  *parent_is_main_frame = info->parent_is_main_frame();
+      info->GetChildID(), info->GetRouteID(), tab_id, window_id);
+  *frame_id = info->GetFrameID();
+  *is_main_frame = info->IsMainFrame();
+  *parent_frame_id = info->GetParentFrameID();
+  *parent_is_main_frame = info->ParentIsMainFrame();
 
   // Restrict the resource type to the values we care about.
   ResourceType::Type* iter =
       std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues),
-                info->resource_type());
+                info->GetResourceType());
   *resource_type = (iter != ARRAYEND(kResourceTypeValues)) ?
       *iter : ResourceType::LAST_TYPE;
 }

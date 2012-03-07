@@ -22,8 +22,7 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/public/browser/resource_request_info.h"
 #include "googleurl/src/url_util.h"
 #include "grit/component_extension_resources_map.h"
 #include "net/base/mime_util.h"
@@ -34,6 +33,8 @@
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_simple_job.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using content::ResourceRequestInfo;
 
 namespace {
 
@@ -178,8 +179,7 @@ bool ExtensionCanLoadInIncognito(const std::string& extension_id,
 bool AllowExtensionResourceLoad(net::URLRequest* request,
                                 bool is_incognito,
                                 ExtensionInfoMap* extension_info_map) {
-  const ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
   // We have seen crashes where info is NULL: crbug.com/52374.
   if (!info) {
@@ -193,7 +193,7 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
   // This is because an extension must run in a single process, and an
   // incognito tab prevents that.
   if (is_incognito &&
-      info->resource_type() == ResourceType::MAIN_FRAME &&
+      info->GetResourceType() == ResourceType::MAIN_FRAME &&
       !ExtensionCanLoadInIncognito(request->url().host(), extension_info_map)) {
     LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
                << "incognito tab.";

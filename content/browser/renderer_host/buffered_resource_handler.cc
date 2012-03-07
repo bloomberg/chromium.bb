@@ -15,7 +15,7 @@
 #include "content/browser/download/download_types.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/renderer_host/x509_user_cert_resource_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -117,7 +117,7 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 }
 
 bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request_);
 
   if (sniff_content_) {
@@ -256,7 +256,7 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
 }
 
 bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request_);
   std::string mime_type;
   request_->GetMimeType(&mime_type);
@@ -282,7 +282,7 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
 
     X509UserCertResourceHandler* x509_cert_handler =
         new X509UserCertResourceHandler(host_, request_,
-                                        info->child_id(), info->route_id());
+                                        info->GetChildID(), info->GetRouteID());
     if (!UseAlternateResourceHandler(request_id, x509_cert_handler))
       return false;
   }
@@ -307,10 +307,10 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
     scoped_refptr<ResourceHandler> handler(
         host_->CreateResourceHandlerForDownload(
             request_,
-            info->context(),
-            info->child_id(),
-            info->route_id(),
-            info->request_id(),
+            info->GetContext(),
+            info->GetChildID(),
+            info->GetRouteID(),
+            info->GetRequestID(),
             DownloadSaveInfo(),
             DownloadResourceHandler::OnStartedCallback()));
 
@@ -330,9 +330,9 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
     return false;
 
   // We don't want to keep buffering as our buffer will fill up.
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request_);
-  host_->PauseRequest(info->child_id(), info->request_id(), true);
+  host_->PauseRequest(info->GetChildID(), info->GetRequestID(), true);
 
   // Get the plugins asynchronously.
   PluginServiceImpl::GetInstance()->GetPlugins(
@@ -366,12 +366,12 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
 
   // Finally, check the plugin list.
   bool allow_wildcard = false;
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request_);
   bool stale = false;
   webkit::WebPluginInfo plugin;
   bool found = PluginServiceImpl::GetInstance()->GetPluginInfo(
-      info->child_id(), info->route_id(), info->context(),
+      info->GetChildID(), info->GetRouteID(), info->GetContext(),
       request_->url(), GURL(), type, allow_wildcard,
       &stale, &plugin, NULL);
 
@@ -400,7 +400,7 @@ bool BufferedResourceHandler::UseAlternateResourceHandler(
   // Remove the non-owning pointer to the CrossSiteResourceHandler, if any,
   // from the extra request info because the CrossSiteResourceHandler (part of
   // the original ResourceHandler chain) will be deleted by the next statement.
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request_);
   info->set_cross_site_handler(NULL);
 
@@ -416,7 +416,7 @@ bool BufferedResourceHandler::UseAlternateResourceHandler(
 
 bool BufferedResourceHandler::ForwardPendingEventsToNextHandler(
     int request_id) {
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request_);
   if (info->pause_count())
     return true;
@@ -460,11 +460,14 @@ void BufferedResourceHandler::OnPluginsLoaded(
   if (!request_)
     return;
 
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request_);
-  host_->PauseRequest(info->child_id(), info->request_id(), false);
-  if (!CompleteResponseStarted(info->request_id()))
-    host_->CancelRequest(info->child_id(), info->request_id(), false);
+  int child_id = info->GetChildID();
+  int request_id = info->GetRequestID();
+
+  host_->PauseRequest(child_id, request_id, false);
+  if (!CompleteResponseStarted(request_id))
+    host_->CancelRequest(child_id, request_id, false);
 }
 
 }  // namespace content

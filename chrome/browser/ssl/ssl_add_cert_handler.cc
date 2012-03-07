@@ -8,9 +8,8 @@
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
@@ -27,9 +26,8 @@ SSLAddCertHandler::SSLAddCertHandler(net::URLRequest* request,
     : cert_(cert),
       render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id) {
-  ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request);
-  network_request_id_ = info->request_id();
+  network_request_id_
+      = content::ResourceRequestInfo::ForRequest(request)->GetRequestID();
   // Stay alive until the process completes and Finished() is called.
   AddRef();
   // Delay adding the certificate until the next mainloop iteration.

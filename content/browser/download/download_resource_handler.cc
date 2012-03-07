@@ -19,7 +19,7 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -33,6 +33,7 @@ using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::ResourceRequestInfoImpl;
 
 DownloadResourceHandler::DownloadResourceHandler(
     ResourceDispatcherHost* rdh,
@@ -92,8 +93,8 @@ bool DownloadResourceHandler::OnResponseStarted(
   set_content_disposition(content_disposition);
   set_content_length(response->content_length);
 
-  const ResourceDispatcherHostRequestInfo* request_info =
-    ResourceDispatcherHost::InfoForRequest(request_);
+  const ResourceRequestInfoImpl* request_info =
+      ResourceDispatcherHost::InfoForRequest(request_);
 
   // Deleted in DownloadManager.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(

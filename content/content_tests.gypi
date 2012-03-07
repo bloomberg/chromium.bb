@@ -38,8 +38,6 @@
         'browser/mock_content_browser_client.h',
         'browser/net/url_request_abort_on_end_job.cc',
         'browser/net/url_request_abort_on_end_job.h',
-        'browser/renderer_host/dummy_resource_handler.cc',
-        'browser/renderer_host/dummy_resource_handler.h',
         'browser/renderer_host/media/mock_media_observer.cc',
         'browser/renderer_host/media/mock_media_observer.h',
         'browser/renderer_host/test_backing_store.cc',

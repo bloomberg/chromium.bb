@@ -14,8 +14,8 @@
 #include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
@@ -30,6 +30,7 @@
 using base::TimeTicks;
 using content::GlobalRequestID;
 using content::HostZoomMap;
+using content::ResourceRequestInfoImpl;
 
 namespace {
 
@@ -138,11 +139,11 @@ bool AsyncResourceHandler::OnResponseStarted(
   content::HostZoomMap* host_zoom_map =
       content::GetHostZoomMapForResourceContext(resource_context);
 
-  ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
-  if (info->resource_type() == ResourceType::MAIN_FRAME && host_zoom_map) {
+  ResourceRequestInfoImpl* info = rdh_->InfoForRequest(request);
+  if (info->GetResourceType() == ResourceType::MAIN_FRAME && host_zoom_map) {
     GURL request_url(request->url());
     filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(
-        info->route_id(),
+        info->GetRouteID(),
         request_url, host_zoom_map->GetZoomLevel(net::GetHostOrSpecFromURL(
             request_url))));
   }

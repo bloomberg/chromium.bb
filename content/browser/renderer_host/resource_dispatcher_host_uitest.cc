@@ -394,7 +394,7 @@ TEST_F(ResourceDispatcherTest, CrossOriginRedirectBlocked) {
                  "Title Of More Awesomeness", 2);
 }
 
-// Tests that ResourceDispatcherHostRequestInfo is updated correctly on failed
+// Tests that ResourceRequestInfoImpl is updated correctly on failed
 // requests, to prevent calling Read on a request that has already failed.
 // See bug 40250.
 TEST_F(ResourceDispatcherTest, CrossSiteFailedRequest) {

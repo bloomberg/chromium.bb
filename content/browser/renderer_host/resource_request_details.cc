@@ -5,9 +5,10 @@
 #include "content/browser/renderer_host/resource_request_details.h"
 
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 
+using content::ResourceRequestInfoImpl;
 using content::WorkerServiceImpl;
 
 ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
@@ -22,10 +23,10 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
       ssl_cert_id_(cert_id),
       ssl_cert_status_(request->ssl_info().cert_status),
       socket_address_(request->GetSocketAddress()) {
-  const ResourceDispatcherHostRequestInfo* info =
+  const ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request);
-  resource_type_ = info->resource_type();
-  frame_id_ = info->frame_id();
+  resource_type_ = info->GetResourceType();
+  frame_id_ = info->GetFrameID();
 
   // If request is from the worker process on behalf of a renderer, use
   // the renderer process id, since it consumes the notification response
@@ -36,8 +37,8 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
   // a single process).
   int temp;
   if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
-          info->child_id(), &origin_child_id_, &temp)) {
-    origin_child_id_ = info->child_id();
+          info->GetChildID(), &origin_child_id_, &temp)) {
+    origin_child_id_ = info->GetChildID();
   }
 }
 

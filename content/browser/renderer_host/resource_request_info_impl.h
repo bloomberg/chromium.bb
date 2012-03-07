@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_REQUEST_INFO_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_REQUEST_INFO_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RESOURCE_REQUEST_INFO_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RESOURCE_REQUEST_INFO_IMPL_H_
 #pragma once
 
 #include <string>
@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "base/time.h"
-#include "content/common/content_export.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/referrer.h"
@@ -23,28 +23,24 @@ class ResourceDispatcherHost;
 class ResourceHandler;
 class SSLClientAuthHandler;
 
-namespace content {
-class CrossSiteResourceHandler;
-class ResourceContext;
-class ResourceDispatcherHostLoginDelegate;
-}
-
-namespace net {
-class URLRequest;
-}
-
 namespace webkit_blob {
 class BlobData;
 }
 
+namespace content {
+class CrossSiteResourceHandler;
+class ResourceContext;
+class ResourceDispatcherHostLoginDelegate;
+
 // Holds the data ResourceDispatcherHost associates with each request.
 // Retrieve this data by calling ResourceDispatcherHost::InfoForRequest.
-class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
+class ResourceRequestInfoImpl : public ResourceRequestInfo,
+                                public base::SupportsUserData::Data {
  public:
   // This will take a reference to the handler.
-  CONTENT_EXPORT ResourceDispatcherHostRequestInfo(
+  CONTENT_EXPORT ResourceRequestInfoImpl(
       ResourceHandler* handler,
-      content::ProcessType process_type,
+      ProcessType process_type,
       int child_id,
       int route_id,
       int origin_pid,
@@ -54,14 +50,32 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
       bool parent_is_main_frame,
       int64 parent_frame_id,
       ResourceType::Type resource_type,
-      content::PageTransition transition_type,
+      PageTransition transition_type,
       uint64 upload_size,
       bool is_download,
       bool allow_download,
       bool has_user_gesture,
       WebKit::WebReferrerPolicy referrer_policy,
-      content::ResourceContext* context);
-  virtual ~ResourceDispatcherHostRequestInfo();
+      ResourceContext* context);
+  virtual ~ResourceRequestInfoImpl();
+
+  // ResourceRequestInfo implementation:
+  virtual ResourceContext* GetContext() const OVERRIDE;
+  virtual int GetChildID() const OVERRIDE;
+  virtual int GetRouteID() const OVERRIDE;
+  virtual int GetOriginPID() const OVERRIDE;
+  virtual int GetRequestID() const OVERRIDE;
+  virtual bool IsMainFrame() const OVERRIDE;
+  virtual int64 GetFrameID() const OVERRIDE;
+  virtual bool ParentIsMainFrame() const OVERRIDE;
+  virtual int64 GetParentFrameID() const OVERRIDE;
+  virtual ResourceType::Type GetResourceType() const OVERRIDE;
+  virtual WebKit::WebReferrerPolicy GetReferrerPolicy() const OVERRIDE;
+  virtual uint64 GetUploadSize() const OVERRIDE;
+  virtual bool GetAssociatedRenderView(int* render_process_id,
+                                       int* render_view_id) const OVERRIDE;
+
+  void AssociateWithRequest(net::URLRequest* request);
 
   // Top-level ResourceHandler servicing this request.
   ResourceHandler* resource_handler() { return resource_handler_.get(); }
@@ -70,19 +84,19 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
   // CrossSiteResourceHandler for this request, if it is a cross-site request.
   // (NULL otherwise.) This handler is part of the chain of ResourceHandlers
   // pointed to by resource_handler, and is not owned by this class.
-  content::CrossSiteResourceHandler* cross_site_handler() {
+  CrossSiteResourceHandler* cross_site_handler() {
     return cross_site_handler_;
   }
-  void set_cross_site_handler(content::CrossSiteResourceHandler* h) {
+  void set_cross_site_handler(CrossSiteResourceHandler* h) {
     cross_site_handler_ = h;
   }
 
   // Pointer to the login delegate, or NULL if there is none for this request.
-  content::ResourceDispatcherHostLoginDelegate* login_delegate() const {
+  ResourceDispatcherHostLoginDelegate* login_delegate() const {
     return login_delegate_.get();
   }
   CONTENT_EXPORT void set_login_delegate(
-      content::ResourceDispatcherHostLoginDelegate* ld);
+      ResourceDispatcherHostLoginDelegate* ld);
 
   // Pointer to the SSL auth, or NULL if there is none for this request.
   SSLClientAuthHandler* ssl_client_auth_handler() const {
@@ -91,42 +105,13 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
   void set_ssl_client_auth_handler(SSLClientAuthHandler* s);
 
   // Identifies the type of process (renderer, plugin, etc.) making the request.
-  content::ProcessType process_type() const {
+  ProcessType process_type() const {
     return process_type_;
   }
-
-  // The child process unique ID of the requestor. This duplicates the value
-  // stored on the request by SetChildProcessUniqueIDForRequest in
-  // url_request_tracking.
-  int child_id() const { return child_id_; }
-
-  // The IPC route identifier for this request (this identifies the RenderView
-  // or like-thing in the renderer that the request gets routed to).
-  int route_id() const { return route_id_; }
 
   // The route_id of pending request can change when it is transferred to a new
   // page (as in iframe transfer using adoptNode JS API).
   void set_route_id(int route_id) { route_id_ = route_id; }
-
-  // The pid of the originating process, if the request is sent on behalf of a
-  // another process.  Otherwise it is 0.
-  int origin_pid() const { return origin_pid_; }
-
-  // Unique identifier for this resource request.
-  int request_id() const { return request_id_; }
-
-  // True if |frame_id_| represents a main frame in the RenderView.
-  bool is_main_frame() const { return is_main_frame_; }
-
-  // Frame ID that sent this resource request. -1 if unknown / invalid.
-  int64 frame_id() const { return frame_id_; }
-
-  // True if |parent_frame_id_| represents a main frame in the RenderView.
-  bool parent_is_main_frame() const { return parent_is_main_frame_; }
-
-  // Frame ID of parent frame of frame that sent this resource request.
-  // -1 if unknown / invalid.
-  int64 parent_frame_id() const { return parent_frame_id_; }
 
   // Number of messages we've sent to the renderer that we haven't gotten an
   // ACK for. This allows us to avoid having too many messages in flight.
@@ -147,14 +132,8 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
   int pause_count() const { return pause_count_; }
   void set_pause_count(int count) { pause_count_ = count; }
 
-  // Identifies the type of resource, such as subframe, media, etc.
-  ResourceType::Type resource_type() const { return resource_type_; }
+  PageTransition transition_type() const { return transition_type_; }
 
-  content::PageTransition transition_type() const { return transition_type_; }
-
-  // When there is upload data, this is the byte count of that data. When there
-  // is no upload, this will be 0.
-  uint64 upload_size() const { return upload_size_; }
   void set_upload_size(uint64 upload_size) { upload_size_ = upload_size; }
 
   // When we're uploading data, this is the the byte offset into the uploaded
@@ -191,12 +170,8 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
   }
   void set_requested_blob_data(webkit_blob::BlobData* data);
 
-  WebKit::WebReferrerPolicy referrer_policy() const { return referrer_policy_; }
-
-  content::ResourceContext* context() const { return context_; }
-
  private:
-  friend class ResourceDispatcherHost;
+  friend class ::ResourceDispatcherHost;
 
   // Request is temporarily not handling network data. Should be used only
   // by the ResourceDispatcherHost, not the event handlers (accessors are
@@ -230,11 +205,11 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
   scoped_refptr<ResourceHandler> resource_handler_;
 
   // Non-owning, may be NULL.
-  content::CrossSiteResourceHandler* cross_site_handler_;
+  CrossSiteResourceHandler* cross_site_handler_;
 
-  scoped_refptr<content::ResourceDispatcherHostLoginDelegate> login_delegate_;
+  scoped_refptr<ResourceDispatcherHostLoginDelegate> login_delegate_;
   scoped_refptr<SSLClientAuthHandler> ssl_client_auth_handler_;
-  content::ProcessType process_type_;
+  ProcessType process_type_;
   int child_id_;
   int route_id_;
   int origin_pid_;
@@ -249,7 +224,7 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
   bool has_user_gesture_;
   int pause_count_;
   ResourceType::Type resource_type_;
-  content::PageTransition transition_type_;
+  PageTransition transition_type_;
   uint64 upload_size_;
   uint64 last_upload_position_;
   base::TimeTicks last_upload_ticks_;
@@ -257,7 +232,7 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
   int memory_cost_;
   scoped_refptr<webkit_blob::BlobData> requested_blob_data_;
   WebKit::WebReferrerPolicy referrer_policy_;
-  content::ResourceContext* context_;
+  ResourceContext* context_;
 
   // "Private" data accessible only to ResourceDispatcherHost (use the
   // accessors above for consistency).
@@ -266,7 +241,9 @@ class ResourceDispatcherHostRequestInfo : public base::SupportsUserData::Data {
   bool has_started_reading_;
   int paused_read_bytes_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostRequestInfo);
+  DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_REQUEST_INFO_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RESOURCE_REQUEST_INFO_IMPL_H_

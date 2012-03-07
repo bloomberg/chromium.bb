@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,8 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/resource_request_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -20,6 +19,7 @@
 #include "webkit/plugins/webplugininfo.h"
 
 using content::PluginService;
+using content::ResourceRequestInfo;
 
 namespace chromeos {
 
@@ -67,8 +67,7 @@ bool GViewRequestInterceptor::ShouldUsePdfPlugin(
     net::URLRequest* request) const {
   FilePath pdf_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-  ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (!info)
     return false;
 
@@ -78,7 +77,7 @@ bool GViewRequestInterceptor::ShouldUsePdfPlugin(
   }
 
   return ChromePluginServiceFilter::GetInstance()->ShouldUsePlugin(
-      info->child_id(), info->route_id(), info->context(),
+      info->GetChildID(), info->GetRouteID(), info->GetContext(),
       request->url(), GURL(), &plugin);
 }
 

@@ -42,7 +42,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
@@ -66,6 +66,7 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ResourceContext;
+using content::ResourceRequestInfoImpl;
 
 namespace {
 
@@ -147,6 +148,7 @@ class ProtocolHandlerRegistryInterceptor
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistryInterceptor);
 };
 
+// TODO(darin): Move this class to src/content
 class ChromeBlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
  public:
   ChromeBlobProtocolHandler(
@@ -160,7 +162,7 @@ class ChromeBlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
  private:
   virtual scoped_refptr<webkit_blob::BlobData>
       LookupBlobData(net::URLRequest* request) const {
-    ResourceDispatcherHostRequestInfo* info =
+    const ResourceRequestInfoImpl* info =
         ResourceDispatcherHost::InfoForRequest(request);
     if (!info)
       return NULL;

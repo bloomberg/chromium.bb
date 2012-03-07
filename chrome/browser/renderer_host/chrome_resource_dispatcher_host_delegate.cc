@@ -30,11 +30,11 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/ssl_config_service.h"
 
@@ -46,6 +46,7 @@
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::ResourceDispatcherHostLoginDelegate;
+using content::ResourceRequestInfo;
 
 namespace {
 
@@ -215,8 +216,8 @@ bool ChromeResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
   ChromeURLRequestUserData* user_data = ChromeURLRequestUserData::Get(request);
   if (user_data && user_data->is_prerender()) {
     int child_id, route_id;
-    if (ResourceDispatcherHost::RenderViewForRequest(
-            request, &child_id, &route_id)) {
+    if (ResourceRequestInfo::ForRequest(request)->GetAssociatedRenderView(
+            &child_id, &route_id)) {
       if (prerender_tracker_->TryCancel(
               child_id, route_id,
               prerender::FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED)) {
@@ -236,8 +237,8 @@ bool ChromeResourceDispatcherHostDelegate::AcceptAuthRequest(
     return true;
 
   int child_id, route_id;
-  if (!ResourceDispatcherHost::RenderViewForRequest(
-          request, &child_id, &route_id)) {
+  if (!ResourceRequestInfo::ForRequest(request)->GetAssociatedRenderView(
+          &child_id, &route_id)) {
     NOTREACHED();
     return true;
   }
@@ -311,8 +312,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     IPC::Message::Sender* sender) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 
-  ResourceDispatcherHostRequestInfo* info =
-      resource_dispatcher_host_->InfoForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
   if (request->url().SchemeIsSecure()) {
     const net::URLRequestContext* context = request->context();
@@ -324,7 +324,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
       if (state->GetDomainState(
               &domain_state, request->url().host(), has_sni)) {
         sender->Send(new ChromeViewMsg_AddStrictSecurityHost(
-            info->route_id(), request->url().host()));
+            info->GetRouteID(), request->url().host()));
       }
     }
   }
@@ -332,8 +332,8 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   // See if the response contains the X-Auto-Login header.  If so, this was
   // a request for a login page, and the server is allowing the browser to
   // suggest auto-login, if available.
-  AutoLoginPrompter::ShowInfoBarIfPossible(request, info->child_id(),
-                                           info->route_id());
+  AutoLoginPrompter::ShowInfoBarIfPossible(request, info->GetChildID(),
+                                           info->GetRouteID());
 }
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
@@ -342,13 +342,12 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   LoadTimingObserver::PopulateTimingInfo(request, response);
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
-  ResourceDispatcherHostRequestInfo* info =
-      resource_dispatcher_host_->InfoForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
   // See if the response contains the X-Google-Accounts-SignIn header.  If so,
   // then the user has just finished signing in, and the server is allowing the
   // browser to suggest connecting the user's profile to the account.
-  OneClickSigninHelper::ShowInfoBarIfPossible(request, info->child_id(),
-                                              info->route_id());
+  OneClickSigninHelper::ShowInfoBarIfPossible(request, info->GetChildID(),
+                                              info->GetRouteID());
 #endif
 }

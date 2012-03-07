@@ -31,13 +31,13 @@ using content::DownloadItem;
 namespace {
 
 void BeginDownload(const GURL& url,
-                   ResourceDispatcherHost* rdh,
                    content::ResourceContext* resource_context,
                    int render_process_host_id,
                    int render_view_host_routing_id,
                    const DownloadResourceHandler::OnStartedCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
   scoped_ptr<net::URLRequest> request(
       new net::URLRequest(url, rdh));
   net::Error error = rdh->BeginDownload(
@@ -145,7 +145,7 @@ void PluginInstaller::StartInstalling(TabContentsWrapper* wrapper) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload,
-                 plugin_url_, ResourceDispatcherHost::Get(),
+                 plugin_url_,
                  wrapper->profile()->GetResourceContext(),
                  web_contents->GetRenderProcessHost()->GetID(),
                  web_contents->GetRenderViewHost()->GetRoutingID(),

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_request_details.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/ssl/ssl_request_info.h"
@@ -27,6 +27,7 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::ResourceRequestInfoImpl;
 using content::SSLStatus;
 using content::WebContents;
 
@@ -40,7 +41,7 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
            << " url: " << request->url().spec()
            << " cert_status: " << std::hex << ssl_info.cert_status;
 
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request);
 
   // A certificate error occurred.  Construct a SSLCertErrorHandler object and
@@ -50,7 +51,7 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
       base::Bind(&SSLCertErrorHandler::Dispatch,
                  new SSLCertErrorHandler(rdh,
                                          request,
-                                         info->resource_type(),
+                                         info->GetResourceType(),
                                          ssl_info,
                                          fatal)));
 }

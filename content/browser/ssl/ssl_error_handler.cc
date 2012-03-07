@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -17,6 +17,7 @@
 
 using content::BrowserThread;
 using content::RenderViewHostImpl;
+using content::ResourceRequestInfoImpl;
 using content::WebContents;
 
 SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
@@ -30,14 +31,12 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
       request_has_been_notified_(false) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request);
-  request_id_.child_id = info->child_id();
-  request_id_.request_id = info->request_id();
+  request_id_.child_id = info->GetChildID();
+  request_id_.request_id = info->GetRequestID();
 
-  if (!ResourceDispatcherHost::RenderViewForRequest(request,
-                                                    &render_process_id_,
-                                                    &render_view_id_))
+  if (!info->GetAssociatedRenderView(&render_process_id_, &render_view_id_))
     NOTREACHED();
 
   // This makes sure we don't disappear on the IO thread until we've given an

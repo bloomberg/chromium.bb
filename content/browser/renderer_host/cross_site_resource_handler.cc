@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_view_host_delegate.h"
@@ -80,7 +80,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
     DLOG(WARNING) << "Request wasn't found";
     return false;
   }
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request);
 
   // If this is a download, just pass the response through without doing a
@@ -170,7 +170,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
   }
 
   // Remove ourselves from the ExtraRequestInfo.
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request);
   info->set_cross_site_handler(NULL);
 
@@ -202,7 +202,7 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
     DLOG(WARNING) << "Cross site response for a request that wasn't found";
     return;
   }
-  ResourceDispatcherHostRequestInfo* info =
+  ResourceRequestInfoImpl* info =
       ResourceDispatcherHost::InfoForRequest(request);
   info->set_cross_site_handler(this);
 

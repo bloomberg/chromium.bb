@@ -9,13 +9,14 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
 
 using content::GlobalRequestID;
 using content::RenderViewHostDelegate;
+using content::ResourceRequestInfo;
 
 namespace {
 
@@ -25,7 +26,7 @@ void RequestTransferURLOnUIThread(int render_process_id,
                                   const content::Referrer& referrer,
                                   WindowOpenDisposition window_open_disposition,
                                   int64 frame_id,
-                                  const GlobalRequestID& request_id) {
+                                  const GlobalRequestID& global_request_id) {
   content::RenderViewHost* rvh =
       content::RenderViewHost::FromID(render_process_id, render_view_id);
   if (!rvh)
@@ -36,8 +37,7 @@ void RequestTransferURLOnUIThread(int render_process_id,
     return;
 
   delegate->RequestTransferURL(
-      new_url, referrer,
-      window_open_disposition, frame_id, request_id);
+      new_url, referrer, window_open_disposition, frame_id, global_request_id);
 }
 
 }  // namespace
@@ -55,24 +55,21 @@ void TransferNavigationResourceThrottle::WillRedirectRequest(
     bool* defer) {
   // TODO(darin): Move this logic into src/content.
 
-  ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
 
   // If a toplevel request is redirecting across extension extents, we want to
   // switch processes. We do this by deferring the redirect and resuming the
   // request once the navigation controller properly assigns the right process
   // to host the new URL.
   // TODO(mpcomplete): handle for cases other than extensions (e.g. WebUI).
-  content::ResourceContext* resource_context = info->context();
+  content::ResourceContext* resource_context = info->GetContext();
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   if (extensions::CrossesExtensionProcessBoundary(
           io_data->GetExtensionInfoMap()->extensions(),
           ExtensionURLInfo(request_->url()), ExtensionURLInfo(new_url))) {
     int render_process_id, render_view_id;
-    if (ResourceDispatcherHost::RenderViewForRequest(
-            request_, &render_process_id, &render_view_id)) {
-
-      GlobalRequestID global_id(info->child_id(), info->request_id());
+    if (info->GetAssociatedRenderView(&render_process_id, &render_view_id)) {
+      GlobalRequestID global_id(info->GetChildID(), info->GetRequestID());
       ResourceDispatcherHost::Get()->MarkAsTransferredNavigation(global_id,
                                                                  request_);
 
@@ -83,8 +80,8 @@ void TransferNavigationResourceThrottle::WillRedirectRequest(
               render_process_id, render_view_id,
               new_url,
               content::Referrer(GURL(request_->referrer()),
-                                info->referrer_policy()),
-              CURRENT_TAB, info->frame_id(), global_id));
+                                info->GetReferrerPolicy()),
+              CURRENT_TAB, info->GetFrameID(), global_id));
 
       *defer = true;
     }

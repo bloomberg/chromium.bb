@@ -32,7 +32,6 @@
 #include "webkit/glue/resource_type.h"
 
 class DownloadFileManager;
-class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
 class ResourceMessageFilter;
 class SaveFileManager;
@@ -44,6 +43,7 @@ struct ViewMsg_SwapOut_Params;
 namespace content {
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
+class ResourceRequestInfoImpl;
 struct GlobalRequestID;
 }
 
@@ -197,9 +197,9 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // Helper functions to get the dispatcher's request info for the request.
   // If the dispatcher didn't create the request then NULL is returned.
-  static ResourceDispatcherHostRequestInfo* InfoForRequest(
+  static content::ResourceRequestInfoImpl* InfoForRequest(
       net::URLRequest* request);
-  static const ResourceDispatcherHostRequestInfo* InfoForRequest(
+  static const content::ResourceRequestInfoImpl* InfoForRequest(
       const net::URLRequest* request);
 
   // Extracts the render view/process host's identifiers from the given request
@@ -279,6 +279,8 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
       const DownloadSaveInfo& save_info,
       const DownloadResourceHandler::OnStartedCallback& started_cb);
 
+  static void ClearLoginDelegate(net::URLRequest* request);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
@@ -291,18 +293,13 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   friend class ShutdownTask;
 
-  // Associates the given info with the given request. The info will then be
-  // owned by the request.
-  void SetRequestInfo(net::URLRequest* request,
-                      ResourceDispatcherHostRequestInfo* info);
-
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
 
   void StartRequest(net::URLRequest* request);
 
   // Returns true if the request is paused.
-  bool PauseRequestIfNeeded(ResourceDispatcherHostRequestInfo* info);
+  bool PauseRequestIfNeeded(content::ResourceRequestInfoImpl* info);
 
   // Resumes the given request by calling OnResponseStarted or OnReadCompleted.
   void ResumeRequest(const content::GlobalRequestID& request_id);
@@ -385,7 +382,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   void UpdateLoadStates();
 
   // Checks the upload state and sends an update if one is necessary.
-  void MaybeUpdateUploadProgress(ResourceDispatcherHostRequestInfo *info,
+  void MaybeUpdateUploadProgress(content::ResourceRequestInfoImpl *info,
                                  net::URLRequest *request);
 
   // Resumes or cancels (if |cancel_requests| is true) any blocked requests.
@@ -413,9 +410,9 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
                         const GURL& new_first_party_for_cookies);
   void OnReleaseDownloadedFile(int request_id);
 
-  // Creates ResourceDispatcherHostRequestInfo for a download or page save.
+  // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.
-  ResourceDispatcherHostRequestInfo* CreateRequestInfo(
+  content::ResourceRequestInfoImpl* CreateRequestInfo(
       ResourceHandler* handler,
       int child_id,
       int route_id,

@@ -29,12 +29,11 @@
 #include "chrome/common/chrome_view_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
@@ -49,6 +48,7 @@
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::Referrer;
+using content::ResourceRequestInfo;
 
 namespace {
 
@@ -972,22 +972,22 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
 void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
                                        int byte_count) {
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
+  // have an associated ResourceRequestInfo.
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
+
   // have a render view associated.  All other jobs will have -1 returned for
   // the render process child and routing ids - the jobs may still match a
   // resource based on their origin id, otherwise BytesRead() will attribute
   // the activity to the Browser resource.
   int render_process_host_child_id = -1, routing_id = -1;
-  ResourceDispatcherHost::RenderViewForRequest(&request,
-                                               &render_process_host_child_id,
-                                               &routing_id);
+  if (info)
+    info->GetAssociatedRenderView(&render_process_host_child_id, &routing_id);
 
   // Get the origin PID of the request's originator.  This will only be set for
   // plugins - for renderer or browser initiated requests it will be zero.
   int origin_pid = 0;
-  const ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(&request);
   if (info)
-    origin_pid = info->origin_pid();
+    origin_pid = info->GetOriginPID();
 
   // This happens in the IO thread, post it to the UI thread.
   BrowserThread::PostTask(

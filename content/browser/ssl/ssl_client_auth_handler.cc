@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/x509_certificate.h"
@@ -15,6 +15,7 @@
 #include "net/url_request/url_request_context.h"
 
 using content::BrowserThread;
+using content::ResourceRequestInfoImpl;
 
 SSLClientAuthHandler::SSLClientAuthHandler(
     net::URLRequest* request,
@@ -76,7 +77,7 @@ void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
   if (request_) {
     request_->ContinueWithCertificate(cert);
 
-    ResourceDispatcherHostRequestInfo* info =
+    ResourceRequestInfoImpl* info =
         ResourceDispatcherHost::InfoForRequest(request_);
     if (info)
       info->set_ssl_client_auth_handler(NULL);

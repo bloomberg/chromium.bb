@@ -10,10 +10,9 @@
 #include "base/time.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/common/automation_messages.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -26,6 +25,7 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
+using content::ResourceRequestInfo;
 
 // The list of filtered headers that are removed from requests sent via
 // StartAsync(). These must be lower case.
@@ -100,16 +100,15 @@ net::URLRequestJob* URLRequestAutomationJob::Factory(
 
   // Returning null here just means that the built-in handler will be used.
   if (scheme_is_http || scheme_is_https) {
-    ResourceDispatcherHostRequestInfo* request_info =
-        ResourceDispatcherHost::InfoForRequest(request);
-    if (request_info) {
-      int child_id = request_info->child_id();
-      int route_id = request_info->route_id();
+    const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+    if (info) {
+      int child_id = info->GetChildID();
+      int route_id = info->GetRouteID();
       AutomationResourceMessageFilter::AutomationDetails details;
       if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
               child_id, route_id, &details)) {
         URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
-            details.tab_handle, request_info->request_id(), details.filter,
+            details.tab_handle, info->GetRequestID(), details.filter,
             details.is_pending_render_view);
         return job;
       }
@@ -234,10 +233,9 @@ uint64 URLRequestAutomationJob::GetUploadProgress() const {
     // We don't support incremental progress notifications in ChromeFrame. When
     // we receive a response for the POST request from Chromeframe, it means
     // that the upload is fully complete.
-    ResourceDispatcherHostRequestInfo* request_info =
-        ResourceDispatcherHost::InfoForRequest(request_);
-    if (request_info) {
-      return request_info->upload_size();
+    const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+    if (info) {
+      return info->GetUploadSize();
     }
   }
   return 0;
@@ -446,11 +444,10 @@ void URLRequestAutomationJob::StartAsync() {
   }
 
   // Get the resource type (main_frame/script/image/stylesheet etc.
-  ResourceDispatcherHostRequestInfo* request_info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   ResourceType::Type resource_type = ResourceType::MAIN_FRAME;
-  if (request_info) {
-    resource_type = request_info->resource_type();
+  if (info) {
+    resource_type = info->GetResourceType();
   }
 
   // Ask automation to start this request.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -426,7 +426,7 @@ bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
                                              int* render_view_id) const {
   for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter.GetData().id != worker_process_id)
-        continue;
+      continue;
 
     // This code assumes one worker per process, see function comment in header!
     WorkerProcessHost::Instances::const_iterator first_instance =
