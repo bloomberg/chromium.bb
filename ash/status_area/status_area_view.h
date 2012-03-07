@@ -6,6 +6,7 @@
 #define ASH_STATUS_AREA_STATUS_AREA_VIEW_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -15,8 +16,8 @@ namespace internal {
 
 class FocusCycler;
 
-class StatusAreaView : public views::WidgetDelegate,
-                       public views::AccessiblePaneView {
+class ASH_EXPORT StatusAreaView : public views::WidgetDelegate,
+                                  public views::AccessiblePaneView {
  public:
   StatusAreaView();
   virtual ~StatusAreaView();
