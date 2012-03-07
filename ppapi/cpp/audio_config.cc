@@ -12,8 +12,12 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_AudioConfig>() {
-  return PPB_AUDIO_CONFIG_INTERFACE;
+template <> const char* interface_name<PPB_AudioConfig_1_1>() {
+  return PPB_AUDIO_CONFIG_INTERFACE_1_1;
+}
+
+template <> const char* interface_name<PPB_AudioConfig_1_0>() {
+  return PPB_AUDIO_CONFIG_INTERFACE_1_0;
 }
 
 }  // namespace
@@ -28,9 +32,13 @@ AudioConfig::AudioConfig(const InstanceHandle& instance,
                          uint32_t sample_frame_count)
     : sample_rate_(sample_rate),
       sample_frame_count_(sample_frame_count) {
-  if (has_interface<PPB_AudioConfig>()) {
+  if (has_interface<PPB_AudioConfig_1_1>()) {
     PassRefFromConstructor(
-        get_interface<PPB_AudioConfig>()->CreateStereo16Bit(
+        get_interface<PPB_AudioConfig_1_1>()->CreateStereo16Bit(
+        instance.pp_instance(), sample_rate, sample_frame_count));
+  } else if (has_interface<PPB_AudioConfig_1_0>()) {
+    PassRefFromConstructor(
+        get_interface<PPB_AudioConfig_1_0>()->CreateStereo16Bit(
         instance.pp_instance(), sample_rate, sample_frame_count));
   }
 }
@@ -38,10 +46,11 @@ AudioConfig::AudioConfig(const InstanceHandle& instance,
 // static
 PP_AudioSampleRate AudioConfig::RecommendSampleRate(
     const InstanceHandle& instance) {
-  if (!has_interface<PPB_AudioConfig>())
-    return PP_AUDIOSAMPLERATE_NONE;
-  return get_interface<PPB_AudioConfig>()->
-      RecommendSampleRate(instance.pp_instance());
+  if (has_interface<PPB_AudioConfig_1_1>()) {
+    return get_interface<PPB_AudioConfig_1_1>()->
+        RecommendSampleRate(instance.pp_instance());
+  }
+  return PP_AUDIOSAMPLERATE_NONE;
 }
 
 // static
@@ -49,13 +58,18 @@ uint32_t AudioConfig::RecommendSampleFrameCount(
     const InstanceHandle& instance,
     PP_AudioSampleRate sample_rate,
     uint32_t requested_sample_frame_count) {
-  if (!has_interface<PPB_AudioConfig>())
-    return 0;
-  return get_interface<PPB_AudioConfig>()->
-      RecommendSampleFrameCount(instance.pp_instance(),
-                                sample_rate,
-                                requested_sample_frame_count);
+  if (has_interface<PPB_AudioConfig_1_1>()) {
+    return get_interface<PPB_AudioConfig_1_1>()->
+        RecommendSampleFrameCount(instance.pp_instance(),
+                                  sample_rate,
+                                  requested_sample_frame_count);
+  }
+  if (has_interface<PPB_AudioConfig_1_0>()) {
+    return get_interface<PPB_AudioConfig_1_0>()->
+        RecommendSampleFrameCount(sample_rate,
+                                  requested_sample_frame_count);
+  }
+  return 0;
 }
 
 }  // namespace pp
-
