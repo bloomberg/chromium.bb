@@ -1001,6 +1001,10 @@ void BrowserOptionsHandler::SendProfilesInfo() {
 }
 
 void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
+  // This handler could have been called in managed mode, for example because
+  // the user fiddled with the web inspector. Silently return in this case.
+  if (!ProfileManager::IsMultipleProfilesEnabled())
+    return;
   ProfileManager::CreateMultiProfileAsync();
 }
 

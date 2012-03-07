@@ -11,6 +11,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -201,6 +203,10 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
 
 void ManageProfileHandler::DeleteProfile(const ListValue* args) {
   DCHECK(args);
+  // This handler could have been called in managed mode, for example because
+  // the user fiddled with the web inspector. Silently return in this case.
+  if (!ProfileManager::IsMultipleProfilesEnabled())
+    return;
 
   ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::PROFILE_DELETED);
 

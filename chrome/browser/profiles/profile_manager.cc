@@ -685,6 +685,8 @@ FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
+  DCHECK(IsMultipleProfilesEnabled());
+
   // Create the next profile in the next available directory slot.
   int next_directory = local_state->GetInteger(prefs::kProfilesNumCreated);
   std::string profile_name = chrome::kMultiProfileDirPrefix;
@@ -844,6 +846,8 @@ bool ProfileManager::ShouldGoOffTheRecord() {
 }
 
 void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
+  DCHECK(IsMultipleProfilesEnabled());
+
   // If we're deleting the last profile, then create a new profile in its
   // place.
   ProfileInfoCache& cache = GetProfileInfoCache();
@@ -892,10 +896,13 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
 // static
 bool ProfileManager::IsMultipleProfilesEnabled() {
 #if defined(OS_CHROMEOS)
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles);
-#else
-  return true;
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
+    return false;
 #endif
+  // |g_browser_process| can be NULL during startup.
+  if (!g_browser_process)
+    return true;
+  return !g_browser_process->local_state()->GetBoolean(prefs::kInManagedMode);
 }
 
 void ProfileManager::AutoloadProfiles() {
