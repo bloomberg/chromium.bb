@@ -237,7 +237,7 @@ void SpeechRecognitionBubbleBase::SetInputVolume(float volume,
   SetImage(*mic_image_.get());
 }
 
-WebContents* SpeechRecognitionBubbleBase::web_contents() {
+WebContents* SpeechRecognitionBubbleBase::GetWebContents() {
   return web_contents_;
 }
 

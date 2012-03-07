@@ -111,7 +111,7 @@ class SpeechRecognitionBubble {
   virtual void SetInputVolume(float volume, float noise_volume) = 0;
 
   // Returns the WebContents for which this bubble gets displayed.
-  virtual content::WebContents* web_contents() = 0;
+  virtual content::WebContents* GetWebContents() = 0;
 
   // The horizontal distance between the start of the html widget and the speech
   // bubble's arrow.
@@ -143,7 +143,7 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   virtual void SetRecognizingMode() OVERRIDE;
   virtual void SetMessage(const string16& text) OVERRIDE;
   virtual void SetInputVolume(float volume, float noise_volume) OVERRIDE;
-  virtual content::WebContents* web_contents() OVERRIDE;
+  virtual content::WebContents* GetWebContents() OVERRIDE;
 
  protected:
   // Updates the platform specific UI layout for the current display mode.

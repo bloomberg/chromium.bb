@@ -102,10 +102,10 @@ void SpeechRecognitionBubbleController::UpdateTabContentsSubscription(
   // If there are any other bubbles existing for the same TabContents, we would
   // have subscribed to tab close notifications on their behalf and we need to
   // stay registered. So we don't change the subscription in such cases.
-  WebContents* web_contents = bubbles_[caller_id]->web_contents();
+  WebContents* web_contents = bubbles_[caller_id]->GetWebContents();
   for (BubbleCallerIdMap::iterator iter = bubbles_.begin();
        iter != bubbles_.end(); ++iter) {
-    if (iter->second->web_contents() == web_contents &&
+    if (iter->second->GetWebContents() == web_contents &&
         iter->first != caller_id) {
       // At least one other bubble exists for the same TabContents. So don't
       // make any change to the subscription.
@@ -131,7 +131,7 @@ void SpeechRecognitionBubbleController::Observe(
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
     BubbleCallerIdMap::iterator iter = bubbles_.begin();
     while (iter != bubbles_.end()) {
-      if (iter->second->web_contents() == web_contents) {
+      if (iter->second->GetWebContents() == web_contents) {
         BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
             base::Bind(
                 &SpeechRecognitionBubbleController::InvokeDelegateButtonClicked,

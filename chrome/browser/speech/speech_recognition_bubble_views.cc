@@ -360,12 +360,12 @@ void SpeechRecognitionBubbleImpl::Show() {
   if (!bubble_) {
     // Anchor to the location icon view, in case |element_rect| is offscreen.
     Browser* browser = Browser::GetOrCreateTabbedBrowser(
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+        Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
     views::View* icon = browser_view->GetLocationBarView() ?
         browser_view->GetLocationBarView()->location_icon_view() : NULL;
     bubble_ = new SpeechRecognitionBubbleView(delegate_, icon, element_rect_,
-                                              web_contents());
+                                              GetWebContents());
     browser::CreateViewsBubble(bubble_);
     UpdateLayout();
   }

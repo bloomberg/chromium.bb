@@ -137,7 +137,7 @@ void SpeechRecognitionBubbleGtk::Show() {
                      kBubbleControlVerticalSpacing);
 
   Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
+      GetWebContents()->GetBrowserContext());
 
   // TODO(tommi): The audio_manager property can only be accessed from the
   // IO thread, so we can't call CanShowAudioInputSettings directly here if
@@ -175,9 +175,9 @@ void SpeechRecognitionBubbleGtk::Show() {
   gtk_container_add(GTK_CONTAINER(content), vbox);
 
   ThemeServiceGtk* theme_provider = ThemeServiceGtk::GetFrom(profile);
-  GtkWidget* reference_widget = web_contents()->GetNativeView();
+  GtkWidget* reference_widget = GetWebContents()->GetNativeView();
   gfx::Rect container_rect;
-  web_contents()->GetContainerBounds(&container_rect);
+  GetWebContents()->GetContainerBounds(&container_rect);
   gfx::Rect target_rect(element_rect_.right() - kBubbleTargetOffsetX,
       element_rect_.bottom(), 1, 1);
 
