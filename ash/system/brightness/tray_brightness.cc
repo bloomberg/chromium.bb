@@ -66,13 +66,13 @@ class BrightnessView : public views::View,
     // the amount the brightness should be increased/decreased.
     // http://crosbug.com/26935
 #if !defined(OS_MACOSX)
-    ash::Shell* shell = ash::Shell::GetInstance();
-    if (value < old_value) {
-      shell->accelerator_controller()->brightness_control_delegate()->
-          HandleBrightnessDown(ui::Accelerator());
-    } else {
-      shell->accelerator_controller()->brightness_control_delegate()->
-          HandleBrightnessUp(ui::Accelerator());
+    AcceleratorController* ac = Shell::GetInstance()->accelerator_controller();
+    if (ac->brightness_control_delegate()) {
+      BrightnessControlDelegate* delegate = ac->brightness_control_delegate();
+      if (value < old_value)
+        delegate->HandleBrightnessDown(ui::Accelerator());
+      else
+        delegate->HandleBrightnessUp(ui::Accelerator());
     }
 #endif  // OS_MACOSX
   }
