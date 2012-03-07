@@ -5934,7 +5934,13 @@
    fun:_ZN21RenderProcessHostImpl17OnMessageReceivedERKN3IPC7MessageE
    fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
 }
-
+{
+   bug_117245
+   Memcheck:Uninitialized
+   fun:_ZN12_GLOBAL__N_124GesturePrefsObserverAura13RegisterPrefsEP11PrefService
+   fun:_Z25GesturePrefsRegisterPrefsP11PrefService
+   fun:_ZN7browser18RegisterLocalStateEP11PrefService
+}
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
