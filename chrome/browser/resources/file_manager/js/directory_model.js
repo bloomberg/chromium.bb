@@ -663,9 +663,9 @@ DirectoryModel.prototype = {
     if (field == 'name' || field == 'cachedMtime_') {
       // Mtime is the tie-breaker for a name sort, so we need to resolve
       // it for both mtime and name sorts.
-      cacheFunction = this.cacheEntryDate;
+      cacheFunction = this.cacheEntryDateAndSize;
     } else if (field == 'cachedSize_') {
-      cacheFunction = this.cacheEntrySize;
+      cacheFunction = this.cacheEntryDateAndSize;
     } else if (field == 'type') {
       cacheFunction = this.cacheEntryFileType;
     } else if (field == 'cachedIconType_') {
@@ -681,7 +681,7 @@ DirectoryModel.prototype = {
       var entry = entries[i];
       if (!(field in entry)) {
         waitCount++;
-        cacheFunction(entry, onCacheDone)
+        cacheFunction(entry, onCacheDone, onCacheDone);
       }
     }
     onCacheDone();  // Finish the fake callback.
@@ -756,7 +756,7 @@ DirectoryModel.prototype = {
                       onGData, onGDataError);
   },
 
-  updateRoots: function(opt_changeDirectoryTo) {
+  updateRoots: function(opt_changeDirectoryTo, opt_callback) {
     var self = this;
     this.resolveRoots_(function(rootEntries) {
       var dm = self.rootsList_;
@@ -767,6 +767,8 @@ DirectoryModel.prototype = {
 
       if (opt_changeDirectoryTo)
         self.changeDirectory(opt_changeDirectoryTo);
+      if (opt_callback)
+        opt_callback();
     });
   },
 

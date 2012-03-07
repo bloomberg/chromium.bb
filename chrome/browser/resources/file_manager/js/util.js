@@ -113,8 +113,8 @@ var util = {
       } else {
         fileEntries.push(entry);
         pendingFiles++;
-        entry.file(function(file) {
-          fileBytes += file.size;
+        entry.getMetadata(function(metadata) {
+          fileBytes += metadata.size;
           pendingFiles--;
           areWeThereYet();
         });

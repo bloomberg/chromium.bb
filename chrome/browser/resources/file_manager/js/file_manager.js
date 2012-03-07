@@ -282,37 +282,11 @@ FileManager.prototype = {
   }
 
   /**
-   * Get the size of a file, caching the result.
+   * Get the size and mtime of a file/directory, caching the result.
    *
    * When this method completes, the fileEntry object will get a
-   * 'cachedSize_' property (if it doesn't already have one) containing the
-   * size of the file in bytes.
-   *
-   * @param {Entry} entry An HTML5 Entry object.
-   * @param {function(Entry)} successCallback The function to invoke once the
-   *     file size is known.
-   * @param {function=} opt_errorCallback Error callback.
-   * @param {boolean=} opt_sync True, if callback should be called sync instead
-   *     of async.
-   */
-  function cacheEntrySize(entry, successCallback, opt_errorCallback, opt_sync) {
-    if (entry.isDirectory) {
-      // No size for a directory, -1 ensures it's sorted before 0 length files.
-      entry.cachedSize_ = -1;
-    }
-
-    if ('cachedSize_' in entry) {
-      invokeCallback(successCallback, !!opt_sync, entry);
-      return;
-    }
-  }
-
-  /**
-   * Get the mtime of a file, caching the result.
-   *
-   * When this method completes, the fileEntry object will get a
-   * 'cachedMtime_' property (if it doesn't already have one) containing the
-   * last modified time of the file as a Date object.
+   * 'cachedSize_' and 'cachedMtime_' properties (if it doesn't already
+   * have one) containing the last modified time of the entry as a Date object.
    *
    * @param {Entry} entry An HTML5 Entry object.
    * @param {function(Entry)} successCallback The function to invoke once the
@@ -321,31 +295,28 @@ FileManager.prototype = {
    * @param {boolean=} opt_sync True, if callback should be called sync instead
    *     of async.
    */
-  function cacheEntryDate(entry, successCallback, opt_errorCallback, opt_sync) {
-    if ('cachedMtime_' in entry) {
+  function cacheEntryDateAndSize(entry, successCallback, opt_errorCallback,
+      opt_sync) {
+    if ('cachedSize_' in entry) {
       invokeCallback(successCallback, !!opt_sync, entry);
       return;
     }
 
-    if (entry.isFile) {
-      batchAsyncCall(entry, 'getMetadata', function(metadata) {
-        entry.cachedMtime_ = metadata.modificationTime;
-        entry.cachedSize_ = metadata.size;
-        if (successCallback)
-          successCallback(entry);
-      });
-    } else {
-      batchAsyncCall(entry, 'getMetadata', function(metadata) {
-        entry.cachedMtime_ = metadata.modificationTime;
-        if (successCallback)
-          successCallback(entry);
-      }, opt_errorCallback);
+    function callback(success, metadata) {
+      entry.cachedMtime_ = metadata.modificationTime;
+      entry.cachedSize_ = (entry.isFile && metadata.size) || -1;
+      if (success && successCallback) successCallback(entry);
+      if (!success && opt_errorCallback) opt_errorCallback();
     }
+
+    batchAsyncCall(entry, 'getMetadata',
+        callback.bind(null, true),
+        callback.bind(null, false, {}));
   }
 
   function removeChildren(element) {
     element.textContent = '';
-  };
+  }
 
   // Public statics.
 
@@ -529,16 +500,10 @@ FileManager.prototype = {
 
     this.summarizeSelection_();
 
-    var sortField = 'cachedMtime_';
-    var sortDirection = 'desc';
-    if (FileManager.DialogType.isModal(this.dialogType_)) {
-      sortField =
-          window.localStorage['sort-field-' + this.dialogType_] ||
-          sortField;
-      sortDirection =
-          window.localStorage['sort-direction-' + this.dialogType_] ||
-          sortDirection;
-    }
+    var sortField =
+        window.localStorage['sort-field-' + this.dialogType_] || 'cachedMtime_';
+    var sortDirection =
+        window.localStorage['sort-direction-' + this.dialogType_] || 'desc';
     this.directoryModel_.fileList.sort(sortField, sortDirection);
 
     this.refocus();
@@ -724,8 +689,7 @@ FileManager.prototype = {
         this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ? -1 : 0;
 
     // TODO(serya): temporary solution.
-    this.directoryModel_.cacheEntryDate = cacheEntryDate;
-    this.directoryModel_.cacheEntrySize = cacheEntrySize;
+    this.directoryModel_.cacheEntryDateAndSize = cacheEntryDateAndSize;
     this.directoryModel_.cacheEntryFileType =
         this.cacheEntryFileType.bind(this);
     this.directoryModel_.cacheEntryIconType =
@@ -757,7 +721,12 @@ FileManager.prototype = {
 
     // TODO(dgozman): add "Add a drive" item.
     this.rootsList_.dataModel = this.directoryModel_.rootsList;
-    this.directoryModel_.updateRoots();
+    var onRootsUpdated = function(){
+      if (this.directoryModel_.rootsList_.length > 1)
+        this.onToggleSidebar_();
+    }.bind(this);
+    this.directoryModel_.updateRoots(null /* opt_changeDirectoryTo */,
+        onRootsUpdated);
   };
 
   FileManager.prototype.initGData_ = function() {
@@ -831,12 +800,10 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onDataModelPermuted_ = function(event) {
-    if (FileManager.DialogType.isModal(this.dialogType_)) {
-      var sortStatus = this.directoryModel_.fileList.sortStatus;
-      window.localStorage['sort-field-' + this.dialogType_] = sortStatus.field;
-      window.localStorage['sort-direction-' + this.dialogType_] =
-          sortStatus.direction;
-    }
+    var sortStatus = this.directoryModel_.fileList.sortStatus;
+    window.localStorage['sort-field-' + this.dialogType_] = sortStatus.field;
+    window.localStorage['sort-direction-' + this.dialogType_] =
+        sortStatus.direction;
   };
 
   /**
@@ -1792,7 +1759,7 @@ FileManager.prototype = {
       div.className = 'align-end-weakrtl';
     div.textContent = '...';
     var self = this;
-    cacheEntrySize(entry, function(entry) {
+    cacheEntryDateAndSize(entry, function(entry) {
       if (entry.cachedSize_ == -1) {
         div.textContent = '';
       } else if (entry.cachedSize_ == 0 &&
@@ -1849,7 +1816,7 @@ FileManager.prototype = {
     div.textContent = '...';
 
     var self = this;
-    cacheEntryDate(entry, function(entry) {
+    cacheEntryDateAndSize(entry, function(entry) {
       if (self.directoryModel_.isSystemDirectoy &&
           entry.cachedMtime_.getTime() == 0) {
         // Mount points for FAT volumes have this time associated with them.
@@ -1995,7 +1962,7 @@ FileManager.prototype = {
       }
 
       if (pendingFiles.length) {
-        cacheEntrySize(pendingFiles.pop(), cacheNextFile);
+        cacheEntryDateAndSize(pendingFiles.pop(), cacheNextFile);
       } else {
         self.dispatchEvent(new cr.Event('selection-summarized'));
       }
@@ -2772,7 +2739,7 @@ FileManager.prototype = {
       if (metadata.thumbnailURL) {
         callback(iconType, metadata.thumbnailURL, metadata.thumbnailTransform);
       } else if (iconType == 'image') {
-        cacheEntrySize(entry, function() {
+        cacheEntryDateAndSize(entry, function() {
           if (FileType.canUseImageUrlForPreview(metadata, entry.cachedSize_)) {
             callback(iconType, entry.toURL(), metadata.imageTransform);
           } else {
