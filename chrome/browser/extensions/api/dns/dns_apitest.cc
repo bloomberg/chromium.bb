@@ -119,11 +119,11 @@ IN_PROC_BROWSER_TEST_F(DNSApiTest, DNSResolveIPLiteral) {
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
 
   int resultCode;
-  EXPECT_TRUE(value->GetInteger(extensions::kResultCodeKey, &resultCode));
+  EXPECT_TRUE(value->GetInteger("resultCode", &resultCode));
   EXPECT_EQ(net::OK, resultCode);
 
   std::string address;
-  EXPECT_TRUE(value->GetString(extensions::kAddressKey, &address));
+  EXPECT_TRUE(value->GetString("address", &address));
   EXPECT_EQ("127.0.0.1", address);
 }
 
@@ -145,11 +145,11 @@ IN_PROC_BROWSER_TEST_F(DNSApiTest, DNSResolveHostname) {
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
 
   int resultCode;
-  EXPECT_TRUE(value->GetInteger(extensions::kResultCodeKey, &resultCode));
+  EXPECT_TRUE(value->GetInteger("resultCode", &resultCode));
   EXPECT_EQ(net::OK, resultCode);
 
   std::string address;
-  EXPECT_TRUE(value->GetString(extensions::kAddressKey, &address));
+  EXPECT_TRUE(value->GetString("address", &address));
   EXPECT_EQ(DNSApiTest::kAddress, address);
 }
 

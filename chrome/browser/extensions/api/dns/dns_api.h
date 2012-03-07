@@ -19,9 +19,6 @@ class IOThread;
 
 namespace extensions {
 
-extern const char kAddressKey[];
-extern const char kResultCodeKey[];
-
 class DNSResolveFunction : public AsyncExtensionFunction {
  public:
   DNSResolveFunction();

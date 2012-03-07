@@ -9,6 +9,7 @@
       'type': 'static_library',
       'sources': [
         '<@(json_schema_files)',
+        '<@(idl_schema_files)',
       ],
       'includes': ['../../../../build/json_schema_compile.gypi'],
       'variables': {
@@ -18,6 +19,9 @@
           'permissions.json',
           'tabs.json',
           'windows.json',
+        ],
+        'idl_schema_files': [
+          'experimental.dns.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',

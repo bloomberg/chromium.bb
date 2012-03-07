@@ -90,7 +90,7 @@ class Type(object):
     props = []
     for prop_name, prop_json in json.get('properties', {}).items():
       # TODO(calamity): support functions (callbacks) as properties.  The model
-      # doesn't support it yet because to h/cc generators don't -- this is
+      # doesn't support it yet because the h/cc generators don't -- this is
       # because we'd need to hook it into a base::Callback or something.
       #
       # However, pragmatically it's not necessary to support them anyway, since
@@ -328,4 +328,3 @@ def GetModelHierarchy(entity):
     entity = entity.parent
   hierarchy.reverse()
   return hierarchy
-

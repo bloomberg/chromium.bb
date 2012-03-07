@@ -14,6 +14,6 @@ if third_party_path not in sys.path:
   sys.path.insert(0, third_party_path)
 import json_minify as minify
 
-def LoadJSON(filename):
+def Load(filename):
   with open(filename, 'r') as handle:
     return json.loads(minify.json_minify(handle.read()))

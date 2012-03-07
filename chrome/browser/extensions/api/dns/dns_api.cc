@@ -8,17 +8,16 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/common/extensions/api/experimental.dns.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
+using namespace extensions::api::experimental;
 
 namespace extensions {
-
-const char kAddressKey[] = "address";
-const char kResultCodeKey[] = "resultCode";
 
 // static
 net::HostResolver* DNSResolveFunction::host_resolver_for_testing;
@@ -42,7 +41,11 @@ void DNSResolveFunction::set_host_resolver_for_testing(
 }
 
 bool DNSResolveFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &hostname_));
+  scoped_ptr<Resolve::Params> params(Resolve::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  hostname_ = params->hostname;
+
   bool result = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&DNSResolveFunction::WorkOnIOThread, this));
@@ -77,14 +80,17 @@ void DNSResolveFunction::WorkOnIOThread() {
 }
 
 void DNSResolveFunction::OnLookupFinished(int resolve_result) {
-  DictionaryValue* api_result = new DictionaryValue();
-  api_result->SetInteger(kResultCodeKey, resolve_result);
+
+  scoped_ptr<ResolveCallbackResolveInfo> resolve_info(
+      new ResolveCallbackResolveInfo());
+  resolve_info->result_code = resolve_result;
   if (resolve_result == net::OK) {
     const struct addrinfo* head = addresses_->head();
     DCHECK(head);
-    api_result->SetString(kAddressKey, net::NetAddressToString(head));
+    resolve_info->address.reset(
+        new std::string(net::NetAddressToString(head)));
   }
-  result_.reset(api_result);
+  result_.reset(Resolve::Result::Create(*resolve_info));
   response_ = true;
 
   bool post_task_result = BrowserThread::PostTask(

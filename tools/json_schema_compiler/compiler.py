@@ -19,7 +19,8 @@ Usage example:
 import cc_generator
 import cpp_type_generator
 import h_generator
-from json_schema import LoadJSON
+import idl_schema
+import json_schema
 import model
 import optparse
 import os.path
@@ -47,17 +48,24 @@ if __name__ == '__main__':
 
   api_model = model.Model()
 
-
   # Actually generate for source file.
-  api_defs = LoadJSON(schema)
+  schema_filename, schema_extension = os.path.splitext(schema)
+  if schema_extension == '.json':
+    api_defs = json_schema.Load(schema)
+  elif schema_extension == '.idl':
+    api_defs = idl_schema.Load(schema)
+  else:
+    sys.exit("Did not recognize file extension %s for schema %s" %
+             (schema_extension, schema))
 
   for target_namespace in api_defs:
     referenced_schemas = target_namespace.get('dependencies', [])
     # Load type dependencies into the model.
+    # TODO(miket): do we need this in IDL?
     for referenced_schema in referenced_schemas:
       referenced_schema_path = os.path.join(
           os.path.dirname(schema), referenced_schema + '.json')
-      referenced_api_defs = LoadJSON(referenced_schema_path)
+      referenced_api_defs = json_schema.Load(referenced_schema_path)
 
       for namespace in referenced_api_defs:
         api_model.AddNamespace(namespace,
