@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -34,6 +35,10 @@ class MockTokenService : public TokenService {
   MOCK_CONST_METHOD1(HasTokenForService, bool(const char*));
 };
 
+ProfileKeyedBase* BuildMockTokenService(Profile* profile) {
+  return new MockTokenService;
+}
+
 class MockObserver : public SigninTracker::Observer {
  public:
   MockObserver() {}
@@ -49,8 +54,9 @@ class SigninTrackerTest : public testing::Test {
   SigninTrackerTest() {}
   virtual void SetUp() OVERRIDE {
     profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
-    mock_token_service_ = new MockTokenService();
-    profile_->SetTokenService(mock_token_service_);
+    mock_token_service_ = static_cast<MockTokenService*>(
+        TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile_.get(), BuildMockTokenService));
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),

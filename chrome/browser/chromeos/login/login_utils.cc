@@ -56,6 +56,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_init.h"
@@ -967,7 +968,8 @@ void LoginUtilsImpl::StartSignedInServices(
     }
   }
   password_.clear();
-  TokenService* token_service = user_profile->GetTokenService();
+  TokenService* token_service =
+      TokenServiceFactory::GetForProfile(user_profile);
   token_service->UpdateCredentials(credentials);
   if (token_service->AreCredentialsValid())
     token_service->StartFetchingTokens();

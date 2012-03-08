@@ -2322,6 +2322,8 @@
         'browser/signin/signin_tracker.h',
         'browser/signin/token_service.cc',
         'browser/signin/token_service.h',
+        'browser/signin/token_service_factory.cc',
+        'browser/signin/token_service_factory.h',
         'browser/signin/ubertoken_fetcher.cc',
         'browser/signin/ubertoken_fetcher.h',
         'browser/simple_message_box.h',

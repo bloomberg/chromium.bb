@@ -9,6 +9,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
@@ -128,9 +129,11 @@ class ProfileSyncServiceTest : public testing::Test {
   }
 
   void IssueTestTokens() {
-    profile_->GetTokenService()->IssueAuthTokenForTest(
+    TokenService* token_service =
+        TokenServiceFactory::GetForProfile(profile_.get());
+    token_service->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token1");
-    profile_->GetTokenService()->IssueAuthTokenForTest(
+    token_service->IssueAuthTokenForTest(
         GaiaConstants::kGaiaOAuth2LoginRefreshToken, "token2");
   }
 

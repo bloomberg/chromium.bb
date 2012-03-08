@@ -26,6 +26,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/speech/speech_input_extension_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -189,6 +190,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   TabRestoreServiceFactory::GetInstance();
   ThemeServiceFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
+  TokenServiceFactory::GetInstance();
   WebIntentsRegistryFactory::GetInstance();
 
   built_factories_ = true;

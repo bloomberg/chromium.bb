@@ -53,6 +53,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -421,7 +422,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     // grab a token and register with the policy server.
     // TODO(mnissler): Remove once OAuth is the only authentication mechanism.
     g_browser_process->browser_policy_connector()->SetUserPolicyTokenService(
-        profile()->GetTokenService());
+        TokenServiceFactory::GetForProfile(profile()));
 
     // Make sure we flip every profile to not share proxies if the user hasn't
     // specified so explicitly.

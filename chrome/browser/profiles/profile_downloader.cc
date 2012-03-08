@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
@@ -202,7 +203,8 @@ void ProfileDownloader::Start() {
   VLOG(1) << "Starting profile downloader...";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TokenService* service = delegate_->GetBrowserProfile()->GetTokenService();
+  TokenService* service =
+      TokenServiceFactory::GetForProfile(delegate_->GetBrowserProfile());
   if (!service) {
     // This can happen in some test paths.
     LOG(WARNING) << "User has no token service";
@@ -254,7 +256,8 @@ void ProfileDownloader::StartFetchingImage() {
 }
 
 void ProfileDownloader::StartFetchingOAuth2AccessToken() {
-  TokenService* service = delegate_->GetBrowserProfile()->GetTokenService();
+  TokenService* service =
+      TokenServiceFactory::GetForProfile(delegate_->GetBrowserProfile());
   DCHECK(!service->GetOAuth2LoginRefreshToken().empty());
 
   std::vector<std::string> scopes;

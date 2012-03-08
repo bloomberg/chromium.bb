@@ -267,12 +267,6 @@ class TestingProfile : public Profile {
   // history service processes all pending requests.
   void BlockUntilHistoryProcessesPendingRequests();
 
-  // Sets the TokenService returned by GetTokenService(). This allows clients
-  // to provide their own mock TokenService implementations. If
-  // SetTokenService() is never called, then GetTokenService() will just
-  // create and return a real TokenService().
-  void SetTokenService(TokenService* service);
-  virtual TokenService* GetTokenService() OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
@@ -317,9 +311,6 @@ class TestingProfile : public Profile {
   // The ProtocolHandlerRegistry. Only created if CreateProtocolHandlerRegistry
   // is invoked.
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
-
-  // The TokenService. Created by CreateTokenService. Filled with dummy data.
-  scoped_ptr<TokenService> token_service_;
 
   // The ProfileSyncService.  Created by CreateProfileSyncService.
   scoped_ptr<ProfileSyncService> profile_sync_service_;

@@ -40,7 +40,6 @@ class PromoCounter;
 class ProtocolHandlerRegistry;
 class TemplateURLFetcher;
 class TestingProfile;
-class TokenService;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
 class VisitedLinkMaster;
@@ -359,9 +358,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the ProtocolHandlerRegistry, creating if not yet created.
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() = 0;
-
-  // Returns the Gaia Token Service, creating if not yet created.
-  virtual TokenService* GetTokenService() = 0;
 
   // Return whether 2 profiles are the same. 2 profiles are the same if they
   // represent the same profile. This can happen if there is pointer equality

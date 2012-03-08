@@ -388,10 +388,6 @@ ProtocolHandlerRegistry* OffTheRecordProfileImpl::GetProtocolHandlerRegistry() {
   return profile_->GetProtocolHandlerRegistry();
 }
 
-TokenService* OffTheRecordProfileImpl::GetTokenService() {
-  return NULL;
-}
-
 bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }

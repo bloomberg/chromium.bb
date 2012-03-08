@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/encryptor.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
@@ -73,7 +74,7 @@ void TokenServiceTestHarness::SetUp() {
   profile_.reset(new TestingProfile());
   profile_->CreateWebDataService(false);
   WaitForDBLoadCompletion();
-  service_ = profile_->GetTokenService();
+  service_ = TokenServiceFactory::GetForProfile(profile_.get());
 
   success_tracker_.ListenFor(chrome::NOTIFICATION_TOKEN_AVAILABLE,
                              content::Source<TokenService>(service_));

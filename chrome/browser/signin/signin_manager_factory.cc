@@ -7,14 +7,13 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/pref_names.h"
 
 SigninManagerFactory::SigninManagerFactory()
     : ProfileKeyedServiceFactory("SigninManager",
                                  ProfileDependencyManager::GetInstance()) {
-  // TODO(atwilson): SigninManager depends on TokenService - when this is
-  // converted to the ProfileKeyedService framework, uncomment this dependency.
-  // DependsOn(TokenServiceFactory::GetInstance());
+  DependsOn(TokenServiceFactory::GetInstance());
 }
 
 SigninManagerFactory::~SigninManagerFactory() {}

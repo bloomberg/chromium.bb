@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -46,7 +47,7 @@ void SigninManager::Initialize(Profile* profile) {
   if (!user.empty())
     SetAuthenticatedUsername(user);
   // TokenService can be null for unit tests.
-  TokenService* token_service = profile_->GetTokenService();
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   if (token_service) {
     token_service->Initialize(GaiaConstants::kChromeSource, profile_);
     if (!authenticated_username_.empty()) {
@@ -61,7 +62,8 @@ bool SigninManager::IsInitialized() const {
 
 void SigninManager::CleanupNotificationRegistration() {
 #if !defined(OS_CHROMEOS)
-  content::Source<TokenService> token_service(profile_->GetTokenService());
+  content::Source<TokenService> token_service(
+      TokenServiceFactory::GetForProfile(profile_));
   if (registrar_.IsRegistered(this,
                               chrome::NOTIFICATION_TOKEN_AVAILABLE,
                               token_service)) {
@@ -130,9 +132,10 @@ void SigninManager::StartSignIn(const std::string& username,
   if (cookie_settings &&
       cookie_settings->IsSettingCookieAllowed(GURL(kGoogleAccountsUrl),
                                               GURL(kGoogleAccountsUrl))) {
+    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   content::Source<TokenService>(profile_->GetTokenService()));
+                   content::Source<TokenService>(token_service));
   }
 #endif
 }
@@ -214,8 +217,9 @@ void SigninManager::SignOut() {
   authenticated_username_.clear();
   profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
   profile_->GetPrefs()->ClearPref(prefs::kIsGooglePlusUser);
-  profile_->GetTokenService()->ResetCredentialsInMemory();
-  profile_->GetTokenService()->EraseTokensFromDB();
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  token_service->ResetCredentialsInMemory();
+  token_service->EraseTokensFromDB();
 }
 
 bool SigninManager::AuthInProgress() const {
@@ -312,9 +316,10 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
 
   password_.clear();  // Don't need it anymore.
 
-  profile_->GetTokenService()->UpdateCredentials(last_result_);
-  DCHECK(profile_->GetTokenService()->AreCredentialsValid());
-  profile_->GetTokenService()->StartFetchingTokens();
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
+  token_service->UpdateCredentials(last_result_);
+  DCHECK(token_service->AreCredentialsValid());
+  token_service->StartFetchingTokens();
 }
 
 void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {

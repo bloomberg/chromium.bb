@@ -35,7 +35,6 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -718,18 +717,6 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   CancelableRequestConsumer consumer;
   history_service_->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
   MessageLoop::current()->Run();
-}
-
-void TestingProfile::SetTokenService(TokenService* service) {
-  DCHECK(!token_service_.get());
-  token_service_.reset(service);
-}
-
-TokenService* TestingProfile::GetTokenService() {
-  if (!token_service_.get()) {
-    token_service_.reset(new TokenService());
-  }
-  return token_service_.get();
 }
 
 ExtensionInfoMap* TestingProfile::GetExtensionInfoMap() {

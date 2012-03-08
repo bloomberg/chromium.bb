@@ -70,7 +70,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() OVERRIDE;
   virtual BookmarkModel* GetBookmarkModel() OVERRIDE;
   virtual ProtocolHandlerRegistry* GetProtocolHandlerRegistry() OVERRIDE;
-  virtual TokenService* GetTokenService() OVERRIDE;
   virtual bool IsSameProfile(Profile* profile) OVERRIDE;
   virtual Time GetStartTime() const OVERRIDE;
   virtual history::TopSites* GetTopSitesWithoutCreating() OVERRIDE;

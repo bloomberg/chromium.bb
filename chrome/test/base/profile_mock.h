@@ -20,7 +20,6 @@ class ProfileMock : public TestingProfile {
   MOCK_METHOD0(GetHistoryServiceWithoutCreating, HistoryService*());
   MOCK_METHOD1(GetWebDataService, WebDataService*(ServiceAccessType access));
   MOCK_METHOD1(GetPasswordStore, PasswordStore* (ServiceAccessType access));
-  MOCK_METHOD0(GetTokenService, TokenService*());
 };
 
 #endif  // CHROME_TEST_BASE_PROFILE_MOCK_H_

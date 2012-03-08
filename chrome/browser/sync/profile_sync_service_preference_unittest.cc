@@ -17,7 +17,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/api/sync_data.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
@@ -137,7 +137,7 @@ class ProfileSyncServicePreferenceTest
      EXPECT_CALL(*factory, CreateGenericChangeProcessor(_, _, _)).
          WillOnce(CreateAndSaveChangeProcessor(&change_processor_));
     service_->RegisterDataTypeController(dtc_);
-    profile_->GetTokenService()->IssueAuthTokenForTest(
+    TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
 
     service_->Initialize();

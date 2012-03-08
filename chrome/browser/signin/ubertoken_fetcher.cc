@@ -6,6 +6,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -24,7 +25,7 @@ UbertokenFetcher::~UbertokenFetcher() {
 }
 
 void UbertokenFetcher::StartFetchingToken() {
-  TokenService* token_service = profile_->GetTokenService();
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   if (token_service->HasOAuthLoginToken()) {
     StartFetchingUbertoken();
   } else {
@@ -39,7 +40,7 @@ void UbertokenFetcher::StartFetchingToken() {
 }
 
 void UbertokenFetcher::StartFetchingUbertoken() {
-  TokenService* token_service = profile_->GetTokenService();
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   DCHECK(token_service->HasOAuthLoginToken());
   gaia::OAuthClientInfo client_info;
   GaiaUrls* urls = GaiaUrls::GetInstance();

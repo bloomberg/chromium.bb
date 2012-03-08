@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/libxml_utils.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -1021,7 +1022,7 @@ bool ResumeUploadOperation::GetContentData(std::string* upload_content_type,
 void GDataAuthService::Initialize(Profile* profile) {
   profile_ = profile;
   // Get OAuth2 refresh token (if we have any) and register for its updates.
-  TokenService* service = profile->GetTokenService();
+  TokenService* service = TokenServiceFactory::GetForProfile(profile_);
   refresh_token_ = service->GetOAuth2LoginRefreshToken();
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
@@ -1117,8 +1118,8 @@ void GDataAuthService::Observe(int type,
 
   auth_token_.clear();
   if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    refresh_token_ =
-        profile_->GetTokenService()->GetOAuth2LoginRefreshToken();
+    TokenService* service = TokenServiceFactory::GetForProfile(profile_);
+    refresh_token_ = service->GetOAuth2LoginRefreshToken();
   } else {
     refresh_token_.clear();
   }

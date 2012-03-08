@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -106,7 +107,7 @@ DictionaryValue* CreateLoginResult(Profile* profile) {
   dictionary->SetString(kLoginKey, username);
   if (!username.empty()) {
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
-    TokenService* token_service = profile->GetTokenService();
+    TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
     if (cmdline->HasSwitch(switches::kAppsGalleryReturnTokens) &&
         token_service->HasTokenForService(GaiaConstants::kGaiaService)) {
       dictionary->SetString(kTokenKey,

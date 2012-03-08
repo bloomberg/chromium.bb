@@ -41,6 +41,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
@@ -58,6 +59,7 @@ class URLRequestContextGetter;
 // The TokenService is a Profile member, so all calls are expected
 // from the UI thread.
 class TokenService : public GaiaAuthConsumer,
+                     public ProfileKeyedService,
                      public WebDataServiceConsumer,
                      public content::NotificationObserver {
  public:
@@ -145,7 +147,7 @@ class TokenService : public GaiaAuthConsumer,
   // Typical use is to create an OAuth2 token for appropriate scope and then
   // use that token to call a Google API.
   virtual bool HasOAuthLoginToken() const;
-  const std::string& GetOAuth2LoginRefreshToken() const;
+  virtual const std::string& GetOAuth2LoginRefreshToken() const;
   const std::string& GetOAuth2LoginAccessToken() const;
 
   // For tests only. Doesn't save to the WebDB.

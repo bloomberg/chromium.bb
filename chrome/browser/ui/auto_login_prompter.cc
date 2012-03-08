@@ -15,6 +15,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -126,7 +127,7 @@ void AutoLoginPrompter::ShowInfoBarUIThread(const std::string& account,
     return;
   }
 
-  if (!profile->GetTokenService()->AreCredentialsValid())
+  if (!TokenServiceFactory::GetForProfile(profile)->AreCredentialsValid())
     return;
 
   SigninManager* signin_manager =

@@ -20,6 +20,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
@@ -177,6 +178,9 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     if (!service_.get()) {
       SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
       signin->SetAuthenticatedUsername("test");
+      token_service_ = static_cast<TokenService*>(
+          TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              &profile_, BuildTokenService));
       ProfileSyncComponentsFactoryMock* factory =
           new ProfileSyncComponentsFactoryMock();
       service_.reset(
@@ -210,9 +214,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
 
       token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
-
-      EXPECT_CALL(profile_, GetTokenService()).
-          WillRepeatedly(Return(token_service_.get()));
 
       service_->RegisterDataTypeController(data_type_controller);
 

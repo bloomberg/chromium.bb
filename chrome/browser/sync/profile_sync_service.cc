@@ -29,6 +29,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -166,7 +167,7 @@ bool ProfileSyncService::AreCredentialsAvailable() {
   if (signin_->GetAuthenticatedUsername().empty())
     return false;
 
-  TokenService* token_service = profile()->GetTokenService();
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   if (!token_service)
     return false;
 
@@ -210,7 +211,7 @@ void ProfileSyncService::TryStart() {
       StartUp();
     }
   } else if (HasSyncSetupCompleted()) {
-    TokenService* token_service = profile()->GetTokenService();
+    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
     if (token_service && token_service->TokensLoadedFromDB() &&
         !AreCredentialsAvailable()) {
       // The token service has lost sync's tokens. We cannot recover from this
@@ -222,15 +223,16 @@ void ProfileSyncService::TryStart() {
 }
 
 void ProfileSyncService::RegisterAuthNotifications() {
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 content::Source<TokenService>(profile_->GetTokenService()));
+                 content::Source<TokenService>(token_service));
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_LOADING_FINISHED,
-                 content::Source<TokenService>(profile_->GetTokenService()));
+                 content::Source<TokenService>(token_service));
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                 content::Source<TokenService>(profile_->GetTokenService()));
+                 content::Source<TokenService>(token_service));
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                  content::Source<Profile>(profile_));
@@ -300,7 +302,7 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   SyncCredentials credentials;
   credentials.email = signin_->GetAuthenticatedUsername();
   DCHECK(!credentials.email.empty());
-  TokenService* service = profile_->GetTokenService();
+  TokenService* service = TokenServiceFactory::GetForProfile(profile_);
   credentials.sync_token = service->GetTokenForService(
       GaiaConstants::kSyncService);
   return credentials;

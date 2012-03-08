@@ -18,6 +18,7 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
@@ -160,7 +161,7 @@ bool AppNotifyChannelSetup::ShouldPromptForLogin() const {
   //    This can happen if the user explicitly revoked access to Google Chrome
   //    from Google Accounts page.
   return username.empty() ||
-         !profile_->GetTokenService()->HasOAuthLoginToken() ||
+         !TokenServiceFactory::GetForProfile(profile_)->HasOAuthLoginToken() ||
          oauth2_access_token_failure_;
 }
 
@@ -218,10 +219,11 @@ void AppNotifyChannelSetup::BeginGetAccessToken() {
   std::vector<std::string> scopes;
   scopes.push_back(GaiaUrls::GetInstance()->oauth1_login_scope());
   scopes.push_back(kOAuth2IssueTokenScope);
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   oauth2_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-      profile_->GetTokenService()->GetOAuth2LoginRefreshToken(),
+      token_service->GetOAuth2LoginRefreshToken(),
       scopes);
 }
 

@@ -16,6 +16,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
@@ -211,6 +212,9 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     if (!service_.get()) {
       SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
       signin->SetAuthenticatedUsername("test_user");
+      token_service_ = static_cast<TokenService*>(
+          TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              &profile_, BuildTokenService));
       ProfileSyncComponentsFactoryMock* factory =
           new ProfileSyncComponentsFactoryMock();
       service_.reset(new PasswordTestProfileSyncService(
@@ -236,9 +240,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       // We need tokens to get the tests going
       token_service_->IssueAuthTokenForTest(
           GaiaConstants::kSyncService, "token");
-
-      EXPECT_CALL(profile_, GetTokenService()).
-          WillRepeatedly(Return(token_service_.get()));
 
       EXPECT_CALL(profile_, GetPasswordStore(_)).
           Times(AtLeast(2)).  // Can be more if we hit NEEDS_CRYPTO.

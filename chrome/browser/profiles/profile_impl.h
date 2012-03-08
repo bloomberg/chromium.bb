@@ -117,7 +117,6 @@ class ProfileImpl : public Profile,
   virtual void InitRegisteredProtocolHandlers() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
-  virtual TokenService* GetTokenService() OVERRIDE;
   virtual ExtensionInfoMap* GetExtensionInfoMap() OVERRIDE;
   virtual PromoCounter* GetInstantPromoCounter() OVERRIDE;
   virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
@@ -229,8 +228,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
   scoped_refptr<PromoResourceService> promo_resource_service_;
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
-
-  scoped_ptr<TokenService> token_service_;
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 

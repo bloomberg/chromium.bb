@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/glue/session_change_processor.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
@@ -253,7 +254,7 @@ class ProfileSyncServiceSessionTest
     EXPECT_CALL(*factory, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
 
-    profile()->GetTokenService()->IssueAuthTokenForTest(
+    TokenServiceFactory::GetForProfile(profile())->IssueAuthTokenForTest(
         GaiaConstants::kSyncService, "token");
     sync_service_->Initialize();
     MessageLoop::current()->Run();

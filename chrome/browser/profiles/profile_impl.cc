@@ -70,7 +70,6 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/transport_security_persister.h"
@@ -1242,13 +1241,6 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
 
 void ProfileImpl::EnsureSessionServiceCreated() {
   SessionServiceFactory::GetForProfile(this);
-}
-
-TokenService* ProfileImpl::GetTokenService() {
-  if (!token_service_.get()) {
-    token_service_.reset(new TokenService());
-  }
-  return token_service_.get();
 }
 
 ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {

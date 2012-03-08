@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -34,12 +35,13 @@ SigninTracker::SigninTracker(Profile* profile, Observer* observer)
   registrar_.Add(this,
                  chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
                  content::Source<Profile>(profile_));
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                 content::Source<TokenService>(profile_->GetTokenService()));
+                 content::Source<TokenService>(token_service));
   registrar_.Add(this,
                  chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
-                 content::Source<TokenService>(profile_->GetTokenService()));
+                 content::Source<TokenService>(token_service));
 
   // Also listen for notifications from the various signed in services (only
   // sync for now).
@@ -141,7 +143,7 @@ void SigninTracker::HandleServiceStateChange() {
 // static
 bool SigninTracker::AreServiceTokensLoaded(Profile* profile) {
   // See if we have all of the tokens required.
-  TokenService* token_service = profile->GetTokenService();
+  TokenService* token_service = TokenServiceFactory::GetForProfile(profile);
   for (int i = 0; i < kNumSignedInServices; ++i) {
     if (!token_service->HasTokenForService(kSignedInServices[i])) {
       // Don't have a token for one of our signed-in services.

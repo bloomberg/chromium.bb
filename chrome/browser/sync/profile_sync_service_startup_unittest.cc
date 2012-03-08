@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_manager_fake.h"
 #include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
@@ -150,9 +151,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Create some tokens in the token service; the service will startup when
   // it is notified that tokens are available.
   service_->signin()->StartSignIn("test_user", "", "", "");
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
 
   service_->OnUserChoseDatatypes(
@@ -169,7 +170,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   service_->Initialize();
   EXPECT_TRUE(service_->ShouldPushChanges());
@@ -185,7 +186,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Pre load the tokens
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
@@ -199,7 +200,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Service should not be started by Initialize() since it's managed.
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
@@ -210,7 +211,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
@@ -236,7 +237,7 @@ TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
   EXPECT_CALL(*data_type_manager, Configure(_, _)).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
@@ -320,7 +321,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
 
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
@@ -333,7 +334,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   // Preload the tokens.
-  profile_->GetTokenService()->IssueAuthTokenForTest(
+  TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   service_->fail_initial_download();
 

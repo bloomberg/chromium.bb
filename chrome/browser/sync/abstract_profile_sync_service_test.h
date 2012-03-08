@@ -59,13 +59,14 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   bool CreateRoot(syncable::ModelType model_type);
 
+  static ProfileKeyedBase* BuildTokenService(Profile* profile);
  protected:
   MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
-  scoped_ptr<TokenService> token_service_;
+  TokenService* token_service_;
   scoped_ptr<TestProfileSyncService> service_;
 };
 

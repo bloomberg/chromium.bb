@@ -25,6 +25,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
@@ -363,6 +364,9 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     personal_data_manager_ = static_cast<PersonalDataManagerMock*>(
         PersonalDataManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             &profile_, PersonalDataManagerMock::Build));
+    token_service_ = static_cast<TokenService*>(
+        TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            &profile_, BuildTokenService));
     // GetHistoryService() gets called indirectly, but the result is ignored, so
     // it is safe to return NULL.
     EXPECT_CALL(profile_, GetHistoryService(_)).
@@ -424,9 +428,6 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
 
      // We need tokens to get the tests going
     token_service_->IssueAuthTokenForTest(GaiaConstants::kSyncService, "token");
-
-    EXPECT_CALL(profile_, GetTokenService()).
-        WillRepeatedly(Return(token_service_.get()));
 
     service_->RegisterDataTypeController(data_type_controller);
     service_->Initialize();

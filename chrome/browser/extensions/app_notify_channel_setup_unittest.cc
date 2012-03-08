@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
-#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
@@ -41,35 +41,48 @@ static const char kValidAccessTokenResponse[] =
 
 class MockTokenService : public TokenService {
  public:
-  MockTokenService() { }
+  MockTokenService() : mockToken_("test_refresh_token") { }
   virtual ~MockTokenService() { }
 
   bool AreCredentialsValid() const OVERRIDE {
     return true;
   }
 
+  const std::string& GetOAuth2LoginRefreshToken() const OVERRIDE {
+    return mockToken_;
+  }
+
+  std::string mockToken_;
+
   MOCK_CONST_METHOD0(HasOAuthLoginToken, bool());
-  MOCK_CONST_METHOD0(GetOAuth2LoginRefreshToken, std::string());
 };
+
+ProfileKeyedBase* BuildMockTokenService(Profile* profile) {
+  return new MockTokenService;
+}
+
+MockTokenService* BuildForProfile(Profile* profile) {
+  return static_cast<MockTokenService*>(
+      TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile, BuildMockTokenService));
+}
 
 class TestProfile : public TestingProfile {
  public:
-  TestProfile() : TestingProfile() { }
-  virtual ~TestProfile() { }
-
-  virtual TokenService* GetTokenService() OVERRIDE {
-    return &token_service_;
+  TestProfile()
+      : TestingProfile(),
+        token_service_(BuildForProfile(this)) {
   }
 
+  virtual ~TestProfile() { }
+
   void SetTokenServiceHasTokenResult(bool result) {
-    EXPECT_CALL(token_service_, HasOAuthLoginToken())
+    EXPECT_CALL(*token_service_, HasOAuthLoginToken())
         .WillRepeatedly(Return(result));
-    EXPECT_CALL(token_service_, GetOAuth2LoginRefreshToken())
-        .WillRepeatedly(Return("test_refresh_token"));
   }
 
  private:
-  MockTokenService token_service_;
+  MockTokenService* token_service_;
 };
 
 class TestDelegate : public AppNotifyChannelSetup::Delegate,
