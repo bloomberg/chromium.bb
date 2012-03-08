@@ -2315,6 +2315,30 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   EXPECT_TRUE(observer.StateEquals(1, s2));
   observer.ClearStates();
 
+  // Toggle the active tab, should make the next index active.
+  strip.ToggleSelectionAt(0);
+  EXPECT_EQ(1, strip.active_index());
+  EXPECT_EQ(3U, strip.selection_model().size());
+  EXPECT_EQ(4, strip.count());
+  ASSERT_EQ(2, observer.GetStateCount());
+  ASSERT_EQ(observer.GetStateAt(0)->action,
+            MockTabStripModelObserver::ACTIVATE);
+  ASSERT_EQ(observer.GetStateAt(1)->action,
+            MockTabStripModelObserver::SELECT);
+  observer.ClearStates();
+
+  // Toggle the first tab back to selected and active.
+  strip.ToggleSelectionAt(0);
+  EXPECT_EQ(0, strip.active_index());
+  EXPECT_EQ(4U, strip.selection_model().size());
+  EXPECT_EQ(4, strip.count());
+  ASSERT_EQ(2, observer.GetStateCount());
+  ASSERT_EQ(observer.GetStateAt(0)->action,
+            MockTabStripModelObserver::ACTIVATE);
+  ASSERT_EQ(observer.GetStateAt(1)->action,
+            MockTabStripModelObserver::SELECT);
+  observer.ClearStates();
+
   // Closing one of the selected tabs, not the active one.
   strip.CloseTabContentsAt(1, TabStripModel::CLOSE_NONE);
   EXPECT_EQ(3, strip.count());
