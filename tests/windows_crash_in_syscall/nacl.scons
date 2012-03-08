@@ -27,11 +27,10 @@ if trusted_env.Bit('target_x86'):
 elif trusted_env.Bit('target_arm'):
   VALIDATOR_LIBS += ['ncvalidate_arm_v2']
 
-DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
-
 runner = trusted_env.ComponentProgram(
     'test_host', ['test_host.c'],
     EXTRA_LIBS=['sel',
+                'sel_debug_dummy',
                 'manifest_proxy',
                 'simple_service',
                 'thread_interface',
@@ -47,7 +46,7 @@ runner = trusted_env.ComponentProgram(
                 'platform_qual_lib',
                 'gio',
                 'dbghelp.lib', # Windows library
-                ] + VALIDATOR_LIBS + DEBUG_LIBS)
+                ] + VALIDATOR_LIBS)
 
 node = env.CommandTest(
     'windows_crash_in_syscall_test.out', [runner, test_prog],

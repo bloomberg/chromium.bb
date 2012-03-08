@@ -258,6 +258,8 @@ env.DualLibrary('nacl_error_code',
                 ['nacl_error_code.c',
                  ])
 
+env.ComponentLibrary('sel_debug_dummy', 'nacl_debug_init_dummy.c')
+
 env.ComponentLibrary('container',
                      ['generic_container/container.c',
                       ])

@@ -22,14 +22,13 @@ if trusted_env.Bit('target_x86'):
 elif trusted_env.Bit('target_arm'):
   VALIDATOR_LIBS += ['ncvalidate_arm_v2']
 
-DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
-
 if trusted_env.Bit('linux'):
   trusted_env.Append(LIBS=['dl'])
 
 runner = trusted_env.ComponentProgram(
     'multidomain_test_host', ['multidomain_test_host.c'],
     EXTRA_LIBS=['sel',
+                'sel_debug_dummy',
                 'manifest_proxy',
                 'simple_service',
                 'thread_interface',
@@ -44,7 +43,7 @@ runner = trusted_env.ComponentProgram(
                 'platform',
                 'platform_qual_lib',
                 'gio',
-                ] + VALIDATOR_LIBS + DEBUG_LIBS)
+                ] + VALIDATOR_LIBS)
 
 test_prog = env.ComponentProgram(
     'multidomain_test_guest', ['multidomain_test_guest.c'],
