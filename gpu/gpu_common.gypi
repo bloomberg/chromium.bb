@@ -84,6 +84,7 @@
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'command_buffer/command_buffer.gyp:gles2_utils',
+        'command_buffer_client',
         'gles2_implementation',
       ],
       'defines': [
@@ -106,6 +107,7 @@
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         'command_buffer/command_buffer.gyp:gles2_utils',
+        'command_buffer_client',
         'gles2_implementation_client_side_arrays_no_check',
       ],
       'sources': [
