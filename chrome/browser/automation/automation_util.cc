@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -444,6 +445,8 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
   if (id.type() != AutomationId::kTypeTab)
     return false;
 
+  printing::PrintPreviewTabController* preview_controller =
+      printing::PrintPreviewTabController::GetInstance();
   BrowserList::const_iterator iter = BrowserList::begin();
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
@@ -453,6 +456,18 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
               id.id()) {
         *tab = wrapper->web_contents();
         return true;
+      }
+      if (preview_controller) {
+        TabContentsWrapper* preview_wrapper =
+            preview_controller->GetPrintPreviewForTab(wrapper);
+        if (preview_wrapper) {
+          std::string preview_id = base::IntToString(
+              preview_wrapper->restore_tab_helper()->session_id().id());
+          if (preview_id == id.id()) {
+            *tab = preview_wrapper->web_contents();
+            return true;
+          }
+        }
       }
     }
   }

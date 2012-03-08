@@ -72,6 +72,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -6662,15 +6663,27 @@ void TestingAutomationProvider::GetTabIds(
 void TestingAutomationProvider::GetViews(
     DictionaryValue* args, IPC::Message* reply_message) {
   ListValue* view_list = new ListValue();
+  printing::PrintPreviewTabController* preview_controller =
+      printing::PrintPreviewTabController::GetInstance();
   BrowserList::const_iterator browser_iter = BrowserList::begin();
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
+      TabContentsWrapper* tab = browser->GetTabContentsWrapperAt(i);
       DictionaryValue* dict = new DictionaryValue();
-      AutomationId id = automation_util::GetIdForTab(
-          browser->GetTabContentsWrapperAt(i));
+      AutomationId id = automation_util::GetIdForTab(tab);
       dict->Set("auto_id", id.ToValue());
       view_list->Append(dict);
+      if (preview_controller) {
+        TabContentsWrapper* preview_tab =
+            preview_controller->GetPrintPreviewForTab(tab);
+        if (preview_tab) {
+          DictionaryValue* dict = new DictionaryValue();
+          AutomationId id = automation_util::GetIdForTab(preview_tab);
+          dict->Set("auto_id", id.ToValue());
+          view_list->Append(dict);
+        }
+      }
     }
   }
 
