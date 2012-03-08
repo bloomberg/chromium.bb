@@ -1,8 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/download/download_prefs.h"
+
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -23,6 +26,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/save_page_type.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
+#endif
 
 using content::BrowserThread;
 using content::DownloadManager;
@@ -83,6 +90,13 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
       BrowserThread::FILE, FROM_HERE,
       base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
                  default_download_path));
+
+  // Create the temp directory for gdata downloads.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
+                 gdata::util::GetGDataTempDownloadFolderPath()));
+
 #endif  // defined(OS_CHROMEOS)
 
   // If the download path is dangerous we forcefully reset it. But if we do

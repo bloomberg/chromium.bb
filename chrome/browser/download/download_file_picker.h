@@ -25,6 +25,13 @@ class DownloadFilePicker : public content::DownloadManager::Observer,
                      int32 download_id);
   virtual ~DownloadFilePicker();
 
+ protected:
+  void RecordFileSelected(const FilePath& path);
+
+  // TODO(achuith, asanka): Should hold a shared reference instead.
+  content::DownloadManager* download_manager_;
+  int32 download_id_;
+
  private:
   // content::DownloadManager::Observer implementation.
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
@@ -35,9 +42,6 @@ class DownloadFilePicker : public content::DownloadManager::Observer,
                             int index,
                             void* params) OVERRIDE;
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
-
-  content::DownloadManager* download_manager_;
-  int32 download_id_;
 
   FilePath suggested_path_;
 

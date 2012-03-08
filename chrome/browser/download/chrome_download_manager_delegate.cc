@@ -4,6 +4,8 @@
 
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -40,6 +42,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/download/download_file_picker_chromeos.h"
+#endif
+
 using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
@@ -61,7 +67,7 @@ struct SafeBrowsingState : public DownloadItem::ExternalData {
   safe_browsing::DownloadProtectionService::DownloadCheckResult verdict;
 };
 
-}
+}  // namespace
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
@@ -138,7 +144,11 @@ void ChromeDownloadManagerDelegate::ChooseDownloadPath(
     const FilePath& suggested_path,
     int32 download_id) {
   // Deletes itself.
+#if defined(OS_CHROMEOS)
+  new DownloadFilePickerChromeOS(
+#else
   new DownloadFilePicker(
+#endif
       download_manager_, web_contents, suggested_path, download_id);
 }
 

@@ -83,6 +83,11 @@ DownloadFilePicker::DownloadFilePicker(
 DownloadFilePicker::~DownloadFilePicker() {
 }
 
+void DownloadFilePicker::RecordFileSelected(const FilePath& path) {
+  FilePickerResult result = ComparePaths(suggested_path_, path);
+  RecordFilePickerResult(download_manager_, result);
+}
+
 void DownloadFilePicker::ModelChanged(DownloadManager* manager) {
 }
 
@@ -94,8 +99,8 @@ void DownloadFilePicker::ManagerGoingDown(DownloadManager* manager) {
 void DownloadFilePicker::FileSelected(const FilePath& path,
                                       int index,
                                       void* params) {
-  FilePickerResult result = ComparePaths(suggested_path_, path);
-  RecordFilePickerResult(download_manager_, result);
+  RecordFileSelected(path);
+
   if (download_manager_)
     download_manager_->FileSelected(path, download_id_);
   delete this;
