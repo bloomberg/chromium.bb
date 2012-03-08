@@ -630,6 +630,10 @@ void RegisterComponentsForUpdate(const CommandLine& command_line) {
     RegisterPnaclComponent(cus);
   }
 
+#if defined(OS_CHROMEOS)
+  // crosbug.com/26446.
+  LOG(ERROR) << "RegisterComponentsForUpdate Start";
+#endif
   cus->Start();
 }
 
@@ -1694,16 +1698,26 @@ bool BrowserInit::ProcessCmdLineImpl(
     BrowserInit* browser_init) {
   DCHECK(last_used_profile);
 #if defined(OS_CHROMEOS)
+  const CommandLine::StringVector argv = command_line.argv();
+  std::string cmd;
+  for (CommandLine::StringVector::const_iterator iter = argv.begin();
+       iter != argv.end();
+       ++iter) {
+    cmd += *iter + " ";
+  }
   // crosbug.com/26446.
-  LOG(ERROR) << "ProcessCmdLineImpl: process_startup" << process_startup
-             << ", channel id=" << command_line.GetSwitchValueASCII(
-                 switches::kAutomationClientChannelID);
+  LOG(ERROR) << "ProcessCmdLineImpl: process_startup=" << process_startup
+             << ", cmd=" << cmd;
 #endif
 
   if (process_startup) {
     if (command_line.HasSwitch(switches::kDisablePromptOnRepost))
       content::NavigationController::DisablePromptOnRepost();
 
+#if defined(OS_CHROMEOS)
+    // crosbug.com/26446.
+    LOG(ERROR) << "RegisterComponentsForUpdate";
+#endif
     RegisterComponentsForUpdate(command_line);
 
     // Look for the testing channel ID ONLY during process startup
@@ -1733,6 +1747,10 @@ bool BrowserInit::ProcessCmdLineImpl(
         expected_tab_count =
             std::max(1, static_cast<int>(urls_to_open.size()));
       }
+#if defined(OS_CHROMEOS)
+      // crosbug.com/26446.
+      LOG(ERROR) << "CreatingAutomationProvider";
+#endif
       if (!CreateAutomationProvider<TestingAutomationProvider>(
           testing_channel_id,
           last_used_profile,

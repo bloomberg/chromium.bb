@@ -68,6 +68,9 @@ void BrowserFrame::InitBrowserFrame() {
     params.type = views::Widget::InitParams::TYPE_PANEL;
   } else if (browser_view_->browser()->is_type_popup()) {
 #if defined(USE_AURA)
+    // Note: InitParams::TYPE_POPUP is currently used by transient windows
+    // which do not have a NonClientFrameView. Use TYPE_BUBBLE instead.
+    params.type = views::Widget::InitParams::TYPE_BUBBLE;
     // In compact mode there is no launcher, so we need to keep panels always
     // on top so they do not get lost.
     if (ash::Shell::GetInstance()->IsWindowModeCompact())
