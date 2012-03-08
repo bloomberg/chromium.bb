@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,9 @@ const char kChromeUIHangURL[] = "chrome://hang";
 const char kChromeUIKillURL[] = "chrome://kill";
 const char kChromeUIShorthangURL[] = "chrome://shorthang";
 
-const char kUnreachableWebDataURL[] = "chrome://chromewebdata/";
+// This error URL is loaded in normal web renderer processes, so it should not
+// have a chrome:// scheme that might let it be confused with a WebUI page.
+const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 
 const char** GetSavableSchemes() {
   return const_cast<const char**>(g_savable_schemes);
