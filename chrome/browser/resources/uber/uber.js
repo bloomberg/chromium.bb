@@ -18,7 +18,6 @@ cr.define('uber', function() {
   * grab it from the DOM on each scroll.
   * @type {Node}
   * @private
-  * @static
   */
   var navFrame;
 
@@ -138,7 +137,7 @@ cr.define('uber', function() {
     else if (e.data.method === 'mouseWheel')
       forwardMouseWheel(e.data.params);
     else
-      console.error('Received unexpected message',  e.data);
+      console.error('Received unexpected message', e.data);
   }
 
   /**
