@@ -864,6 +864,7 @@ void ImmediateInterpreter::UpdateTapState(
 
   switch (tap_to_click_state_) {
     case kTtcIdle:
+      tap_record_.Clear();
       if (hwstate &&
           hwstate->timestamp - last_movement_timestamp_ >=
           motion_tap_prevent_timeout_.val_) {
@@ -1003,9 +1004,6 @@ void ImmediateInterpreter::UpdateTapState(
   Log("TTC: New state: %s", TapToClickStateName(tap_to_click_state_));
   // Take action based on new state:
   switch (tap_to_click_state_) {
-    case kTtcIdle:
-      tap_record_.Clear();
-      break;
     case kTtcTapComplete:
       *timeout = TimeoutForTtcState(tap_to_click_state_);
       break;
