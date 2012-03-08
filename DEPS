@@ -58,7 +58,7 @@ vars = {
   "webrtc_revision": "1538",
   "jsoncpp_revision": "248",
   "nss_revision": "123841",
-  "rlz_revision": "66",
+  "rlz_revision": "71",
 }
 
 deps = {
