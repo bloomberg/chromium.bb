@@ -24,6 +24,7 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/http_server_properties_manager.h"
@@ -115,6 +116,7 @@ void RegisterLocalState(PrefService* local_state) {
   GoogleURLTracker::RegisterPrefs(local_state);
   IntranetRedirectDetector::RegisterPrefs(local_state);
   KeywordEditorController::RegisterPrefs(local_state);
+  ManagedMode::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
   NotificationUIManager::RegisterPrefs(local_state);

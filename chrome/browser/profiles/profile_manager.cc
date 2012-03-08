@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -718,7 +719,6 @@ void ProfileManager::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kProfileLastUsed, "");
   prefs->RegisterIntegerPref(prefs::kProfilesNumCreated, 1);
   prefs->RegisterListPref(prefs::kProfilesLastActive);
-  prefs->RegisterBooleanPref(prefs::kInManagedMode, false);
 }
 
 size_t ProfileManager::GetNumberOfProfiles() {
@@ -899,10 +899,7 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
     return false;
 #endif
-  // |g_browser_process| can be NULL during startup.
-  if (!g_browser_process)
-    return true;
-  return !g_browser_process->local_state()->GetBoolean(prefs::kInManagedMode);
+  return !ManagedMode::IsInManagedMode();
 }
 
 void ProfileManager::AutoloadProfiles() {

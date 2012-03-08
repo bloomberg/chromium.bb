@@ -8,10 +8,8 @@
 
 #include <string>
 
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/managed_mode.h"
 #include "chrome/browser/extensions/extension_preference_api_constants.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
 
 namespace {
 
@@ -25,8 +23,7 @@ namespace keys = extension_preference_api_constants;
 GetManagedModeFunction::~GetManagedModeFunction() { }
 
 bool GetManagedModeFunction::RunImpl() {
-  PrefService* local_state = g_browser_process->local_state();
-  bool in_managed_mode = local_state->GetBoolean(prefs::kInManagedMode);
+  bool in_managed_mode = ManagedMode::IsInManagedMode();
 
   scoped_ptr<DictionaryValue> result(new DictionaryValue);
   result->SetBoolean(keys::kValue, in_managed_mode);
@@ -37,16 +34,12 @@ bool GetManagedModeFunction::RunImpl() {
 EnterManagedModeFunction::~EnterManagedModeFunction() { }
 
 bool EnterManagedModeFunction::RunImpl() {
-  PrefService* local_state = g_browser_process->local_state();
-  bool in_managed_mode = local_state->GetBoolean(prefs::kInManagedMode);
-
   bool confirmed = true;
-  if (!in_managed_mode) {
+  if (!ManagedMode::IsInManagedMode()) {
     // TODO(pamg): WIP. Show modal password dialog and save hashed password. Set
     //     |confirmed| to false if user cancels dialog.
 
-    if (confirmed)
-      local_state->SetBoolean(prefs::kInManagedMode, true);
+    confirmed = ManagedMode::EnterManagedMode();
   }
 
   scoped_ptr<DictionaryValue> result(new DictionaryValue);

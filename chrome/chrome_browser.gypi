@@ -1699,6 +1699,8 @@
         'browser/mac/scoped_authorizationref.h',
         'browser/mac/scoped_ioobject.h',
         'browser/mac/scoped_launch_data.h',
+        'browser/managed_mode.cc',
+        'browser/managed_mode.h',
         'browser/media/media_internals.cc',
         'browser/media/media_internals.h',
         'browser/media/media_stream_devices_menu_model.cc',
