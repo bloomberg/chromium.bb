@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -71,6 +71,10 @@ $(dirname "${0}")/../../../../build/mac/change_mach_o_flags.py"
   # As usual, defaults might have put the plist into whatever format excites
   # it, but Info.plists get converted back to the expected XML format.
   plutil -convert xml1 "${feature_info_plist}"
+
+  # `defaults` also changes the file permissions, so make the file
+  # world-readable again.
+  chmod a+r "${feature_info_plist}"
 }
 
 if [[ ${#} -ne 2 ]]; then
