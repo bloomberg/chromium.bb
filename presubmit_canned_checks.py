@@ -729,47 +729,62 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
 
 
 def CheckOwners(input_api, output_api, source_file_filter=None):
-  if not input_api.is_committing:
-    return []
-  if input_api.tbr:
-    return [output_api.PresubmitNotifyResult(
-        '--tbr was specified, skipping OWNERS check')]
-  if not input_api.change.issue:
-    return [output_api.PresubmitError(
-        "OWNERS check failed: this change has no Rietveld issue number, so "
-        "we can't check it for approvals.")]
+  if input_api.is_committing:
+    if input_api.tbr:
+      return [output_api.PresubmitNotifyResult(
+          '--tbr was specified, skipping OWNERS check')]
+    if not input_api.change.issue:
+      return [output_api.PresubmitError("OWNERS check failed: this change has "
+          "no Rietveld issue number, so we can't check it for approvals.")]
+    needed = 'LGTM from an OWNER'
+    output = output_api.PresubmitError
+  else:
+    needed = 'OWNER reviewers'
+    output = output_api.PresubmitNotifyResult
 
   affected_files = set([f.LocalPath() for f in
       input_api.change.AffectedFiles(file_filter=source_file_filter)])
 
   owners_db = input_api.owners_db
-  owner_email, approvers = _RietveldOwnerAndApprovers(input_api,
-                                                      owners_db.email_regexp)
-  if not owner_email:
+  owner_email, reviewers = _RietveldOwnerAndReviewers(
+      input_api,
+      owners_db.email_regexp,
+      approval_needed=input_api.is_committing)
+
+  if owner_email:
+    reviewers_plus_owner = reviewers.union(set([owner_email]))
+  elif input_api.is_committing:
     return [output_api.PresubmitWarning(
         'The issue was not uploaded so you have no OWNER approval.')]
+  else:
+    owner_email = ''
+    reviewers_plus_owner = set()
 
-  approvers_plus_owner = approvers.union(set([owner_email]))
+  missing_directories = owners_db.directories_not_covered_by(affected_files,
+      reviewers_plus_owner)
+  if missing_directories:
+    return [output('Missing %s for files in these directories:\n    %s' %
+                   (needed, '\n    '.join(missing_directories)))]
 
-  missing_files = owners_db.files_not_covered_by(affected_files,
-                                                 approvers_plus_owner)
-  if missing_files:
-    return [output_api.PresubmitError('Missing LGTM from an OWNER for: %s' %
-                                      ','.join(missing_files))]
-
-  if not approvers:
-    return [output_api.PresubmitError('Missing LGTM from someone other than %s'
-                                      % owner_email)]
+  if input_api.is_committing and not reviewers:
+    return [output('Missing LGTM from someone other than %s' % owner_email)]
   return []
 
 
-def _RietveldOwnerAndApprovers(input_api, email_regexp):
-  """Return the owner and approvers of a change, if any."""
+def _RietveldOwnerAndReviewers(input_api, email_regexp, approval_needed=False):
+  """Return the owner and reviewers of a change, if any.
+
+  If approval_needed is True, only reviewers who have approved the change
+  will be returned.
+  """
   if not input_api.change.issue:
     return None, None
 
   issue_props = input_api.rietveld.get_issue_properties(
       int(input_api.change.issue), True)
+  if not approval_needed:
+    return issue_props['owner_email'], set(issue_props['reviewers'])
+
   owner_email = issue_props['owner_email']
 
   def match_reviewer(r):

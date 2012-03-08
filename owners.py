@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -75,29 +75,27 @@ class Database(object):
     self._load_data_needed_for(files)
     return self._covering_set_of_owners_for(files)
 
-  def files_are_covered_by(self, files, reviewers):
-    """Returns whether every file is owned by at least one reviewer."""
-    return not self.files_not_covered_by(files, reviewers)
+  def directories_not_covered_by(self, files, reviewers):
+    """Returns the set of directories that are not owned by a reviewer.
 
-  def files_not_covered_by(self, files, reviewers):
-    """Returns the set of files that are not owned by at least one reviewer.
+    Determines which of the given files are not owned by at least one of the
+    reviewers, then returns a set containing the applicable enclosing
+    directories, i.e. the ones upward from the files that have OWNERS files.
 
     Args:
         files is a sequence of paths relative to (and under) self.root.
-        reviewers is a sequence of strings matching self.email_regexp."""
+        reviewers is a sequence of strings matching self.email_regexp.
+    """
     self._check_paths(files)
     self._check_reviewers(reviewers)
-    if not reviewers:
-      return files
-
     self._load_data_needed_for(files)
-    files_by_dir = self._files_by_dir(files)
+
+    dirs = set([self.os_path.dirname(f) for f in files])
     covered_dirs = self._dirs_covered_by(reviewers)
-    uncovered_files = []
-    for d, files_in_d in files_by_dir.iteritems():
-      if not self._is_dir_covered_by(d, covered_dirs):
-        uncovered_files.extend(files_in_d)
-    return set(uncovered_files)
+    uncovered_dirs = [self._enclosing_dir_with_owners(d) for d in dirs
+                      if not self._is_dir_covered_by(d, covered_dirs)]
+
+    return set(uncovered_dirs)
 
   def _check_paths(self, files):
     def _is_under(f, pfx):
@@ -108,12 +106,6 @@ class Database(object):
   def _check_reviewers(self, reviewers):
     _assert_is_collection(reviewers)
     assert all(self.email_regexp.match(r) for r in reviewers)
-
-  def _files_by_dir(self, files):
-    dirs = {}
-    for f in files:
-      dirs.setdefault(self.os_path.dirname(f), []).append(f)
-    return dirs
 
   def _dirs_covered_by(self, reviewers):
     dirs = self.owned_by[EVERYONE]
@@ -128,6 +120,15 @@ class Database(object):
     while not dirname in covered_dirs and not self._stop_looking(dirname):
       dirname = self.os_path.dirname(dirname)
     return dirname in covered_dirs
+
+  def _enclosing_dir_with_owners(self, directory):
+    """Returns the innermost enclosing directory that has an OWNERS file."""
+    dirpath = directory
+    while not dirpath in self.owners_for:
+      if self._stop_looking(dirpath):
+        break
+      dirpath = self.os_path.dirname(dirpath)
+    return dirpath
 
   def _load_data_needed_for(self, files):
     for f in files:
