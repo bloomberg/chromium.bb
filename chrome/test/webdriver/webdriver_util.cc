@@ -398,12 +398,13 @@ std::string JsonStringify(const Value* value) {
 
 namespace {
 
-// Truncates the given string to 40 characters, adding an ellipsis if
+// Truncates the given string to 100 characters, adding an ellipsis if
 // truncation was necessary.
 void TruncateString(std::string* data) {
-  if (data->length() > 40) {
-    data->resize(40);
-    data->replace(37, 3, "...");
+  const size_t kMaxLength = 100;
+  if (data->length() > kMaxLength) {
+    data->resize(kMaxLength);
+    data->replace(kMaxLength - 3, 3, "...");
   }
 }
 

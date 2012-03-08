@@ -12,6 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "build/build_config.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -124,8 +125,12 @@ void FileLog::Log(LogLevel level, const base::Time& time,
   if (pad_length < 1)
     pad_length = 1;
   std::string padding(pad_length, ' ');
-  entry += base::StringPrintf(
-      "%s%s\n", padding.c_str(), message.c_str());
+  entry += padding + message;
+#if defined(OS_WIN)
+  entry += "\r\n";
+#else
+  entry += "\n";
+#endif
 
   base::AutoLock auto_lock(lock_);
   fprintf(file_.get(), "%s", entry.c_str());
