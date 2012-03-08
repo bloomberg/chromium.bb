@@ -116,9 +116,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabReload) {
   ASSERT_TRUE(RunExtensionTest("tabs/reload")) << message_;
 }
 
-// Test is timing out on linux and cros and flaky on others.
-// See http://crbug.com/83876
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_CaptureVisibleTabJpeg) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabJpeg) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
@@ -126,9 +124,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_CaptureVisibleTabJpeg) {
                                   "test_jpeg.html")) << message_;
 }
 
-// Test is timing out on linux and cros and flaky on others.
-// See http://crbug.com/83876
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_CaptureVisibleTabPng) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabPng) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
