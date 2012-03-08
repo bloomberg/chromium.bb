@@ -37,7 +37,7 @@ TEST(DomStorageMapTest, DomStorageMapBasics) {
   copy = map->DeepCopy();
   EXPECT_EQ(0u, copy->Length());
   EXPECT_EQ(0u, copy->bytes_used());
-  EXPECT_TRUE(map->SwapValues(&swap));
+  map->SwapValues(&swap);
   EXPECT_TRUE(swap.empty());
 
   // Check the behavior of a map containing some values.
@@ -76,7 +76,7 @@ TEST(DomStorageMapTest, DomStorageMapBasics) {
   EXPECT_TRUE(copy->Key(2).is_null());
   EXPECT_EQ(kItemBytes + kItem2Bytes, copy->bytes_used());
 
-  EXPECT_TRUE(map->SwapValues(&swap));
+  map->SwapValues(&swap);
   EXPECT_EQ(2ul, swap.size());
   EXPECT_EQ(0u, map->Length());
   EXPECT_EQ(0u, map->bytes_used());
@@ -105,16 +105,20 @@ TEST(DomStorageMapTest, EnforcesQuota) {
   EXPECT_TRUE(map->SetItem(kKey2, kValue, &old_nullable_value));
   EXPECT_EQ(1u, map->Length());
 
+  // Verify that the SwapValues method does not do quota checking.
   ValuesMap swap;
-  EXPECT_TRUE(map->SwapValues(&swap));
-  EXPECT_EQ(0u, map->Length());
-
   swap[kKey] = NullableString16(kValue, false);
   swap[kKey2] = NullableString16(kValue, false);
+  map->SwapValues(&swap);
+  EXPECT_GT(map->bytes_used(), kQuota);
 
-  // swap is now too big to fit in the map, the swap should fail.
-  EXPECT_FALSE(map->SwapValues(&swap));
-  EXPECT_EQ(0u, map->Length());
+  // When overbudget, a new value of greater size than the existing value can
+  // not be set, but a new value of lesser or equal size can be set.
+  EXPECT_TRUE(map->SetItem(kKey, kValue, &old_nullable_value));
+  EXPECT_FALSE(map->SetItem(kKey, string16(kValue + kValue),
+                            &old_nullable_value));
+  EXPECT_TRUE(map->SetItem(kKey, string16(), &old_nullable_value));
+  EXPECT_EQ(kValue, old_nullable_value.string());
 }
 
 }  // namespace dom_storage

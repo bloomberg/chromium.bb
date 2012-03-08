@@ -72,14 +72,17 @@ bool DomStorageMap::SetItem(
 
   size_t old_item_size = old_value->is_null() ?
       0 : size_of_item(key, old_value->string());
-  size_t new_size = bytes_used_ - old_item_size + size_of_item(key, value);
-  if (new_size > quota_)
+  size_t new_item_size = size_of_item(key, value);
+  size_t new_bytes_used = bytes_used_ - old_item_size + new_item_size;
+
+  // Only check quota if the size is increasing, this allows
+  // shrinking changes to pre-existing files that are over budget.
+  if (new_item_size > old_item_size && new_bytes_used > quota_)
     return false;
 
   values_[key] = NullableString16(value, false);
   ResetKeyIterator();
-  bytes_used_ -= old_item_size;
-  bytes_used_ += size_of_item(key, value);
+  bytes_used_ = new_bytes_used;
   return true;
 }
 
@@ -96,18 +99,14 @@ bool DomStorageMap::RemoveItem(
   return true;
 }
 
-bool DomStorageMap::SwapValues(ValuesMap* values) {
-  size_t new_size = CountBytes(*values);
-  if (new_size > quota_)
-    return false;
+void DomStorageMap::SwapValues(ValuesMap* values) {
+  // Note: A pre-existing file may be over the quota budget.
   values_.swap(*values);
-  bytes_used_ = new_size;
+  bytes_used_ = CountBytes(values_);
   ResetKeyIterator();
-  return true;
 }
 
 DomStorageMap* DomStorageMap::DeepCopy() const {
-  DCHECK(CountBytes(values_) <= quota_);
   DomStorageMap* copy = new DomStorageMap(quota_);
   copy->values_ = values_;
   copy->bytes_used_ = bytes_used_;

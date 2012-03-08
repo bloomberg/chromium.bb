@@ -30,10 +30,13 @@ class DomStorageMap
                NullableString16* old_value);
   bool RemoveItem(const string16& key, string16* old_value);
 
-  // Replaces values_ with |map|. Returns true on success, false
-  // if the swap was prevented because |map| would exceed this
-  // DomStorageMap's quota_.
-  bool SwapValues(ValuesMap* map);
+  // Swaps this instances values_ with |map|.
+  // Note: to grandfather in pre-existing files that are overbudget,
+  // this method does not do quota checking.
+  void SwapValues(ValuesMap* map);
+
+  // Creates a new instance of DomStorageMap containing
+  // a deep copy of values_.
   DomStorageMap* DeepCopy() const;
 
   size_t bytes_used() const { return bytes_used_; }
