@@ -6,8 +6,13 @@
 #define UI_VIEWS_CONTROLS_SLIDER_H_
 #pragma once
 
+#include "ui/base/animation/animation_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
+
+namespace ui {
+class SlideAnimation;
+}
 
 namespace views {
 
@@ -29,7 +34,8 @@ class VIEWS_EXPORT SliderListener {
   virtual ~SliderListener() {}
 };
 
-class VIEWS_EXPORT Slider : public View {
+class VIEWS_EXPORT Slider : public View,
+                            public ui::AnimationDelegate {
  public:
   enum Orientation {
     HORIZONTAL,
@@ -51,10 +57,17 @@ class VIEWS_EXPORT Slider : public View {
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
 
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+
   SliderListener* listener_;
   Orientation orientation_;
 
+  scoped_ptr<ui::SlideAnimation> move_animation_;
+
   float value_;
+  float animating_value_;
+  bool value_is_valid_;
 
   DISALLOW_COPY_AND_ASSIGN(Slider);
 };

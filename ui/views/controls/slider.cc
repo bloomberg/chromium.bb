@@ -5,19 +5,27 @@
 #include "ui/views/controls/slider.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+
+namespace {
+const int kSlideValueChangeDurationMS = 150;
+}
 
 namespace views {
 
 Slider::Slider(SliderListener* listener, Orientation orientation)
     : listener_(listener),
       orientation_(orientation),
-      value_(0.f) {
+      value_(0.f),
+      animating_value_(0.f),
+      value_is_valid_(false) {
   EnableCanvasFlippingForRTLUI(true);
 }
 
@@ -29,6 +37,9 @@ void Slider::SetValue(float value) {
 }
 
 void Slider::SetValueInternal(float value, SliderChangeReason reason) {
+  bool old_value_valid = value_is_valid_;
+
+  value_is_valid_ = true;
   if (value < 0.0)
    value = 0.0;
   else if (value > 1.0)
@@ -39,7 +50,18 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   value_ = value;
   if (listener_)
     listener_->SliderValueChanged(this, value_, old_value, reason);
-  SchedulePaint();
+
+  if (old_value_valid && MessageLoop::current()) {
+    // Do not animate when setting the value of the slider for the first time.
+    // There is no message-loop when running tests. So we cannot animate then.
+    animating_value_ = old_value;
+    move_animation_.reset(new ui::SlideAnimation(this));
+    move_animation_->SetSlideDuration(kSlideValueChangeDurationMS);
+    move_animation_->Show();
+    AnimationProgressed(move_animation_.get());
+  } else {
+    SchedulePaint();
+  }
 }
 
 gfx::Size Slider::GetPreferredSize() {
@@ -60,16 +82,17 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   const SkColor kButtonColor = SK_ColorBLACK;
 
   gfx::Rect content = GetContentsBounds();
+  float value = move_animation_.get() && move_animation_->is_animating() ?
+      animating_value_ : value_;
 
   int button_cx = 0, button_cy = 0;
   if (orientation_ == HORIZONTAL) {
     int w = content.width() - kButtonRadius * 2;
-    int full = value_ * w;
+    int full = value * w;
     int empty = w - full;
     int y = content.height() / 2 - kLineThickness / 2;
     canvas->FillRect(gfx::Rect(content.x() + kButtonRadius, y,
-                               std::max(0, full - kButtonRadius),
-                               kLineThickness),
+                               full, kLineThickness),
                      kFullColor);
     canvas->FillRect(gfx::Rect(content.x() + full + 2 * kButtonRadius, y,
                           std::max(0, empty - kButtonRadius), kLineThickness),
@@ -79,12 +102,11 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
     button_cy = y + kLineThickness / 2;
   } else {
     int h = content.height() - kButtonRadius * 2;
-    int full = value_ * h;
+    int full = value * h;
     int empty = h - full;
     int x = content.width() / 2 - kLineThickness / 2;
     canvas->FillRect(gfx::Rect(x, content.y() + kButtonRadius,
-                               kLineThickness,
-                               std::max(0, empty - kButtonRadius)),
+                               kLineThickness, empty),
                      kEmptyColor);
     canvas->FillRect(gfx::Rect(x, content.y() + empty + 2 * kButtonRadius,
                                kLineThickness, full),
@@ -118,6 +140,11 @@ bool Slider::OnMouseDragged(const views::MouseEvent& event) {
                      VALUE_CHANGED_BY_USER);
   }
   return true;
+}
+
+void Slider::AnimationProgressed(const ui::Animation* animation) {
+  animating_value_ = animation->CurrentValueBetween(animating_value_, value_);
+  SchedulePaint();
 }
 
 }  // namespace views
