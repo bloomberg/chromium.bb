@@ -27,6 +27,7 @@
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPagePopup.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRange.h"
@@ -56,6 +57,7 @@ using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebPagePopup;
 using WebKit::WebPoint;
 using WebKit::WebPopupMenu;
 using WebKit::WebPopupMenuInfo;
@@ -141,6 +143,8 @@ WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
     case WebKit::WebPopupTypeSelect:
     case WebKit::WebPopupTypeSuggestion:
       return WebPopupMenu::create(render_widget);
+    case WebKit::WebPopupTypePage:
+      return WebPagePopup::create(render_widget);
     default:
       NOTREACHED();
   }
