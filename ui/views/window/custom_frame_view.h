@@ -103,6 +103,13 @@ class CustomFrameView : public NonClientFrameView,
   void LayoutTitleBar();
   void LayoutClientView();
 
+  // Creates, adds and returns a new window caption button (e.g, minimize,
+  // maximize, restore).
+  ImageButton* InitWindowCaptionButton(int accessibility_string_id,
+                                       int normal_image_id,
+                                       int hot_image_id,
+                                       int pushed_image_id);
+
   // The bounds of the client view, in this view's coordinates.
   gfx::Rect client_view_bounds_;
 

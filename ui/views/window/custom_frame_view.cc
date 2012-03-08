@@ -80,9 +80,6 @@ const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 
 CustomFrameView::CustomFrameView(Widget* frame)
     : ALLOW_THIS_IN_INITIALIZER_LIST(close_button_(new ImageButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(restore_button_(new ImageButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(maximize_button_(new ImageButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(minimize_button_(new ImageButton(this))),
       window_icon_(NULL),
       should_show_minmax_buttons_(false),
       should_show_client_edge_(false),
@@ -90,43 +87,20 @@ CustomFrameView::CustomFrameView(Widget* frame)
       frame_background_(new FrameBackground()) {
   InitClass();
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
 
   // Close button images will be set in LayoutWindowControls().
   AddChildView(close_button_);
 
-  restore_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE));
-  restore_button_->SetImage(CustomButton::BS_NORMAL,
-                            rb.GetImageNamed(IDR_RESTORE).ToSkBitmap());
-  restore_button_->SetImage(CustomButton::BS_HOT,
-                            rb.GetImageNamed(IDR_RESTORE_H).ToSkBitmap());
-  restore_button_->SetImage(CustomButton::BS_PUSHED,
-                            rb.GetImageNamed(IDR_RESTORE_P).ToSkBitmap());
-  AddChildView(restore_button_);
+  minimize_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_MINIMIZE,
+      IDR_MINIMIZE, IDR_MINIMIZE_H, IDR_MINIMIZE_P);
 
-  maximize_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
-  maximize_button_->SetImage(CustomButton::BS_NORMAL,
-                             rb.GetImageNamed(IDR_MAXIMIZE).ToSkBitmap());
-  maximize_button_->SetImage(CustomButton::BS_HOT,
-                             rb.GetImageNamed(IDR_MAXIMIZE_H).ToSkBitmap());
-  maximize_button_->SetImage(CustomButton::BS_PUSHED,
-                             rb.GetImageNamed(IDR_MAXIMIZE_P).ToSkBitmap());
-  AddChildView(maximize_button_);
+  maximize_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_MAXIMIZE,
+      IDR_MAXIMIZE, IDR_MAXIMIZE_H, IDR_MAXIMIZE_P);
 
-  minimize_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
-  minimize_button_->SetImage(CustomButton::BS_NORMAL,
-                             rb.GetImageNamed(IDR_MINIMIZE).ToSkBitmap());
-  minimize_button_->SetImage(CustomButton::BS_HOT,
-                             rb.GetImageNamed(IDR_MINIMIZE_H).ToSkBitmap());
-  minimize_button_->SetImage(CustomButton::BS_PUSHED,
-                             rb.GetImageNamed(IDR_MINIMIZE_P).ToSkBitmap());
-  AddChildView(minimize_button_);
+  restore_button_ = InitWindowCaptionButton(IDS_APP_ACCNAME_RESTORE,
+      IDR_RESTORE, IDR_RESTORE_H, IDR_RESTORE_P);
 
   should_show_minmax_buttons_ = frame_->widget_delegate()->CanMaximize();
   should_show_client_edge_ = frame_->widget_delegate()->ShouldShowClientEdge();
@@ -547,6 +521,24 @@ void CustomFrameView::LayoutClientView() {
   client_view_bounds_.SetRect(border_thickness, top_height,
       std::max(0, width() - (2 * border_thickness)),
       std::max(0, height() - top_height - border_thickness));
+}
+
+ImageButton* CustomFrameView::InitWindowCaptionButton(
+    int accessibility_string_id,
+    int normal_image_id,
+    int hot_image_id,
+    int pushed_image_id) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ImageButton* button = new ImageButton(this);
+  button->SetAccessibleName(l10n_util::GetStringUTF16(accessibility_string_id));
+  button->SetImage(CustomButton::BS_NORMAL,
+                   rb.GetImageNamed(normal_image_id).ToSkBitmap());
+  button->SetImage(CustomButton::BS_HOT,
+                   rb.GetImageNamed(hot_image_id).ToSkBitmap());
+  button->SetImage(CustomButton::BS_PUSHED,
+                   rb.GetImageNamed(pushed_image_id).ToSkBitmap());
+  AddChildView(button);
+  return button;
 }
 
 // static
