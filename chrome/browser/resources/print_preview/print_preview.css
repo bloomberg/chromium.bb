@@ -293,10 +293,7 @@ html[dir='rtl'] #decrement {
 #system-dialog-link {
   -webkit-margin-start: 16px;
   margin-top: 10px;
-  /* TODO: Remove !important when it is also removed from link-button in
-   * chrome/browser/resources/shared/css/button.css also removes it.
-   */
-  padding: 0 !important;
+  padding: 0;
 }
 
 /* PDF view */

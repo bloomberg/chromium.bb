@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ cr.define('cr.ui', function() {
       this.addEventListener('mousedown', this);
       this.addEventListener('keydown', this);
 
-      // Adding the 'custom-appearance' class prevents button.css from changing
+      // Adding the 'custom-appearance' class prevents widgets.css from changing
       // the appearance of this element.
       this.classList.add('custom-appearance');
 

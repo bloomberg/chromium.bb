@@ -52,9 +52,9 @@ body.uber-frame header > button {
   top: 21px;
 }
 
-body.uber-frame html[dir='rtl'] header > .search-field-container,
-body.uber-frame html[dir='rtl'] header > .header-extras,
-body.uber-frame html[dir='rtl'] header > button {
+html[dir='rtl'] body.uber-frame header > .search-field-container,
+html[dir='rtl'] body.uber-frame header > .header-extras,
+html[dir='rtl'] body.uber-frame header > button {
   left: 20px;
   right: auto;
 }

@@ -136,11 +136,7 @@ html[dir='rtl'] .entry .title {
 .entry input[type=checkbox] {
   -webkit-margin-end: 6px;
   -webkit-margin-start: 4px;
-  height: 14px;
-  line-height: 12px;
-  text-indent: -1px;
-  top: 2px;
-  width: 14px;
+  line-height: 1em;
 }
 
 /* Checkboxes are shown when checked or focused, or when the entry is hovered.

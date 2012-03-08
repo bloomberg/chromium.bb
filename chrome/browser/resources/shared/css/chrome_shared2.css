@@ -6,8 +6,7 @@
  * chrome:// pages. This contrasts chrome_shared.css, which it is meant to
  * replace, but has CSS specific to options and options-like pages. */
 
-@import url("chrome://resources/css/button.css");
-@import url("chrome://resources/css/checkbox.css");
+@import url("chrome://resources/css/widgets.css");
 
 /* Prevent CSS from overriding the hidden property. */
 [hidden] {
@@ -64,41 +63,6 @@ a {
 
 a:active {
   color: rgb(5, 37, 119);
-}
-
-div.checkbox,
-div.radio {
-  margin: 0.45em 0;
-}
-
-input[type=radio] ~ span,
-input[type=checkbox] ~ span {
-  color: #444;
-}
-
-/* TEXT */
-/* TODO(estade): add more types here? */
-input[type='password'],
-input[type='search'],
-input[type='text'],
-input[type='url'],
-input:not([type]) {
-  border: 1px solid #bfbfbf;
-  border-radius: 2px;
-  font: inherit;
-  height: 2em;
-  margin: 0;
-  padding: 3px;
-}
-
-input[type='search'] {
-  /* NOTE: Keep a relatively high min-width for this so we don't obscure the end
-   * of the default text in relatively spacious languages (i.e. German). */
-  min-width: 160px;
-}
-
-input[type='text']:disabled {
-  color: #888;
 }
 
 /*

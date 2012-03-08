@@ -11,7 +11,7 @@ var css = [
   'list.css',
   'table.css',
   'menu.css',
-  'button.css',
+  'widgets.css',
 ];
 
 var script = [

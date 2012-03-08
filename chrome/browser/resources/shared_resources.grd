@@ -16,10 +16,6 @@ without changes to the corresponding grd file. -->
                file="shared/css/about_memory.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_ALERT_OVERLAY"
                file="shared/css/alert_overlay.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_BUTTON"
-               file="shared/css/button.css" type="BINDATA" />
-      <include name="IDR_SHARED_CSS_CHECKBOX"
-               file="shared/css/checkbox.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_DIALOGS"
                file="shared/css/dialogs.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_LIST"
@@ -44,8 +40,10 @@ without changes to the corresponding grd file. -->
                file="shared/css/tree.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_TREE_JS"
                file="shared/css/tree.css.js" type="BINDATA" />
-      <include name="IDR_SHARED_IMAGES_CHECKMARK"
-               file="shared/images/checkmark.png" type="BINDATA" />
+      <include name="IDR_SHARED_CSS_WIDGETS"
+               file="shared/css/widgets.css" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_CHECK"
+               file="shared/images/check.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_CHECKBOX_BLACK"
                file="shared/images/checkbox_black.png" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_CHECKBOX_WHITE"

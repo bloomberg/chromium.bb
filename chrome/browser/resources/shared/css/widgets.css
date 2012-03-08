@@ -1,0 +1,283 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* This file defines styles for form controls. The order of rule blocks is
+ * important as there are some rules with equal specificity that rely on order
+ * as a tiebreaker. These are marked with OVERRIDE.
+ */
+
+/* Default state **************************************************************/
+
+button:not(.custom-appearance):not(.link-button),
+input[type='button']:not(.custom-appearance):not(.link-button),
+input[type='submit']:not(.custom-appearance):not(.link-button),
+select,
+input[type='checkbox'],
+input[type='radio'] {
+  -webkit-appearance: none;
+  -webkit-user-select: none;
+  background-image: -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
+      inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  color: #444;
+  font: inherit;
+  margin: 0 1px 0 0;
+  text-shadow: 0 1px 0 rgb(240, 240, 240);
+}
+
+button:not(.custom-appearance):not(.link-button),
+input[type='button']:not(.custom-appearance):not(.link-button),
+input[type='submit']:not(.custom-appearance):not(.link-button),
+select {
+  height: 2em;
+  min-width: 4em;
+}
+
+button:not(.custom-appearance):not(.link-button),
+input[type='button']:not(.custom-appearance):not(.link-button),
+input[type='submit']:not(.custom-appearance):not(.link-button) {
+  -webkit-padding-end: 10px;
+  -webkit-padding-start: 10px;
+}
+
+select {
+  -webkit-appearance: none;
+  -webkit-padding-end: 20px;
+  -webkit-padding-start: 6px;
+  /* OVERRIDE */
+  background-image: url('../images/select.png'),
+      -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
+  background-position: right center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[dir='rtl'] select {
+  background-position: center left;
+}
+
+input[type='checkbox'] {
+  bottom: 2px;
+  height: 13px;
+  position: relative;
+  vertical-align: middle;
+  width: 13px;
+}
+
+input[type='radio'] {
+  /* OVERRIDE */
+  border-radius: 100%;
+  height: 15px;
+  position: relative;
+  width: 15px;
+}
+
+/* Checked ********************************************************************/
+
+input[type='checkbox']:checked::before {
+  -webkit-user-select: none;
+  background-image: url('../images/check.png');
+  background-size: 100% 100%;
+  content: '';
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+html[dir='rtl'] input[type='checkbox']:checked::before {
+  -webkit-transform: scaleX(-1);
+}
+
+input[type='radio']:checked::before {
+  background-color: #666;
+  border-radius: 100%;
+  bottom: 25%;
+  content: '';
+  display: block;
+  left: 25%;
+  position: absolute;
+  right: 25%;
+  top: 25%;
+}
+
+/* Hover **********************************************************************/
+
+button:not(.custom-appearance):not(.link-button):enabled:hover,
+input[type='button']:not(.custom-appearance):not(.link-button):enabled:hover,
+input[type='submit']:not(.custom-appearance):not(.link-button):enabled:hover,
+select:enabled:hover,
+input[type='checkbox']:enabled:hover,
+input[type='radio']:enabled:hover {
+  background-image: -webkit-linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
+  border-color: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12),
+      inset 0 1px 2px rgba(255, 255, 255, 0.95);
+  color: black;
+}
+
+select:enabled:hover {
+  /* OVERRIDE */
+  background-image: url('../images/select.png'),
+      -webkit-linear-gradient(#f0f0f0, #f0f0f0 38%, #e0e0e0);
+}
+
+/* Active *********************************************************************/
+
+button:not(.custom-appearance):not(.link-button):enabled:active,
+input[type='button']:not(.custom-appearance):not(.link-button):enabled:active,
+input[type='submit']:not(.custom-appearance):not(.link-button):enabled:active,
+select:enabled:active,
+input[type='checkbox']:enabled:active,
+input[type='radio']:enabled:active {
+  background-image: -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+select:enabled:active {
+  /* OVERRIDE */
+  background-image: url('../images/select.png'),
+      -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
+}
+
+/* Disabled *******************************************************************/
+
+button:not(.custom-appearance):not(.link-button):disabled,
+input[type='button']:not(.custom-appearance):not(.link-button):disabled,
+input[type='submit']:not(.custom-appearance):not(.link-button):disabled,
+select:disabled {
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #999;
+}
+
+select:disabled {
+  background-image: url('../images/disabled_select.png'),
+      -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
+}
+
+input[type='checkbox']:disabled,
+input[type='radio']:disabled {
+  opacity: .75;
+}
+
+/* Focus **********************************************************************/
+
+button:not(.custom-appearance):not(.link-button):focus,
+input[type='submit']:not(.custom-appearance):focus,
+input[type='text']:focus,
+input[type='search']:focus {
+input[type='checkbox']:focus,
+input[type='radio']:focus,
+select:focus {
+  -webkit-transition: border-color 200ms;
+  /* We use border color because it follows the border radius (unlike outline).
+   * This is particularly noticeable on mac. */
+  border-color: rgb(77, 144, 254);
+  outline: none;
+}
+
+/* Link buttons ***************************************************************/
+
+.link-button {
+  -webkit-box-shadow: none;
+  background: transparent none;
+  border: none;
+  color: rgb(17, 85, 204);
+  cursor: pointer;
+  /* Input elements have -webkit-small-control which can override the body font.
+   * Resolve this by using 'inherit'. */
+  font: inherit;
+  margin: 0;
+  padding: 0 4px;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.link-button:active {
+  color: rgb(5, 37, 119);
+  text-decoration: underline;
+}
+
+.link-button[disabled] {
+  color: #888;
+  cursor: default;
+  text-decoration: none;
+}
+
+/* Checkbox/radio helpers ******************************************************
+ *
+ * .checkbox and .radio classes wrap labels. Checkboxes and radios should use
+ * these classes with the markup structure:
+ *
+ *   <div class="checkbox">
+ *     <label>
+ *       <input type="checkbox"></input>
+ *       <span>
+ *     </label>
+ *   </div>
+ */
+
+.checkbox,
+.radio {
+  margin: 0.45em 0;
+}
+
+.checkbox label,
+.radio label {
+  color: #444;
+  /* Don't expand horizontally: <http://crbug.com/112091>. */
+  display: -webkit-inline-box;
+}
+
+.checkbox label input ~ span,
+.radio label input ~ span {
+  -webkit-margin-start: 0.4em;
+  /* Make sure long spans wrap at the same horizontal position they start. */
+  display: block;
+}
+
+.checkbox label:hover,
+.radio label:hover {
+  color: black;
+}
+
+label > input[type=checkbox]:disabled ~ span,
+label > input[type=radio]:disabled ~ span {
+  color: #999;
+}
+
+/* Text inputs ****************************************************************/
+/* TODO(estade): add more types here? */
+input[type='password'],
+input[type='search'],
+input[type='text'],
+input[type='url'],
+input:not([type]) {
+  border: 1px solid #bfbfbf;
+  border-radius: 2px;
+  box-sizing: border-box;
+  font: inherit;
+  height: 2em;
+  margin: 0;
+  padding: 3px;
+}
+
+input[type='search'] {
+  -webkit-appearance: textfield;
+  /* NOTE: Keep a relatively high min-width for this so we don't obscure the end
+   * of the default text in relatively spacious languages (i.e. German). */
+  min-width: 160px;
+}
+
+input[type='text']:disabled {
+  color: #888;
+}
