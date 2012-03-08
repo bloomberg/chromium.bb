@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "ipc/ipc_channel_reader.h"
 
 namespace base {
 class NonThreadSafe;
@@ -21,7 +22,8 @@ class NonThreadSafe;
 
 namespace IPC {
 
-class Channel::ChannelImpl : public MessageLoopForIO::IOHandler {
+class Channel::ChannelImpl : public internal::ChannelReader,
+                             public MessageLoopForIO::IOHandler {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
   ChannelImpl(const IPC::ChannelHandle &channel_handle, Mode mode,
@@ -29,38 +31,22 @@ class Channel::ChannelImpl : public MessageLoopForIO::IOHandler {
   ~ChannelImpl();
   bool Connect();
   void Close();
-  void set_listener(Listener* listener) { listener_ = listener; }
   bool Send(Message* message);
   static bool IsNamedServerInitialized(const std::string& channel_id);
 
  private:
-  enum ReadState { READ_SUCCEEDED, READ_FAILED, READ_PENDING };
-
-  // This will become the virtual interface implemented by this class to
-  // handle platform-specific reading.
-  // TODO(brettw) finish refactoring.
-  ReadState ReadData(char* buffer, int buffer_len, int* bytes_read);
-  bool WillDispatchInputMessage(Message* msg);
-  void HandleHelloMessage(const Message& msg);
-  bool DidEmptyInputBuffers();
-
-  bool DispatchInputData(const char* input_data, int input_data_len);
-
-  // Returns true if the given message is the hello message.
-  bool IsHelloMessage(const Message& m) const;
-
-  // Handles asynchronously read data.
-  //
-  // Optionally call this after returning READ_PENDING from ReadData to
-  // indicate that buffer was filled with the given number of bytes of
-  // data. See ReadData for more.
-  bool AsyncReadComplete(int bytes_read);
+  // ChannelReader implementation.
+  virtual ReadState ReadData(char* buffer,
+                             int buffer_len,
+                             int* bytes_read) OVERRIDE;
+  virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
+  bool DidEmptyInputBuffers() OVERRIDE;
+  virtual void HandleHelloMessage(const Message& msg) OVERRIDE;
 
   static const std::wstring PipeName(const std::string& channel_id);
   bool CreatePipe(const IPC::ChannelHandle &channel_handle, Mode mode);
 
   bool ProcessConnection();
-  bool ProcessIncomingMessages();
   bool ProcessOutgoingMessages(MessageLoopForIO::IOContext* context,
                                DWORD bytes_written);
 
@@ -80,17 +66,8 @@ class Channel::ChannelImpl : public MessageLoopForIO::IOHandler {
 
   HANDLE pipe_;
 
-  Listener* listener_;
-
   // Messages to be sent are queued here.
   std::queue<Message*> output_queue_;
-
-  // We read from the pipe into this buffer
-  char input_buf_[Channel::kReadBufferSize];
-
-  // Large messages that span multiple pipe buffers, get built-up using
-  // this buffer.
-  std::string input_overflow_buf_;
 
   // In server-mode, we have to wait for the client to connect before we
   // can begin reading.  We make use of the input_state_ when performing

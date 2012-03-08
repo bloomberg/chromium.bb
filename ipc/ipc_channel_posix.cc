@@ -300,7 +300,8 @@ int Channel::ChannelImpl::global_pid_ = 0;
 
 Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
                                   Mode mode, Listener* listener)
-    : mode_(mode),
+    : ChannelReader(listener),
+      mode_(mode),
       is_blocked_on_write_(false),
       waiting_connect_(true),
       message_send_bytes_written_(0),
@@ -312,9 +313,7 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
       remote_fd_pipe_(-1),
 #endif  // IPC_USES_READWRITE
       pipe_name_(channel_handle.name),
-      listener_(listener),
       must_unlink_(false) {
-  memset(input_buf_, 0, sizeof(input_buf_));
   memset(input_cmsg_buf_, 0, sizeof(input_cmsg_buf_));
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
@@ -478,71 +477,6 @@ bool Channel::ChannelImpl::Connect() {
   return did_connect;
 }
 
-bool Channel::ChannelImpl::ProcessIncomingMessages() {
-  while (true) {
-    int bytes_read = 0;
-    ReadState read_state = ReadData(input_buf_, Channel::kReadBufferSize,
-                                    &bytes_read);
-    if (read_state == READ_FAILED)
-      return false;
-    if (read_state == READ_PENDING)
-      return true;
-
-    DCHECK(bytes_read > 0);
-    if (!DispatchInputData(input_buf_, bytes_read))
-      return false;
-  }
-}
-
-bool Channel::ChannelImpl::DispatchInputData(const char* input_data,
-                                             int input_data_len) {
-  const char* p;
-  const char* end;
-
-  // Possibly combine with the overflow buffer to make a larger buffer.
-  if (input_overflow_buf_.empty()) {
-    p = input_data;
-    end = input_data + input_data_len;
-  } else {
-    if (input_overflow_buf_.size() >
-        kMaximumMessageSize - input_data_len) {
-      input_overflow_buf_.clear();
-      LOG(ERROR) << "IPC message is too big";
-      return false;
-    }
-    input_overflow_buf_.append(input_data, input_data_len);
-    p = input_overflow_buf_.data();
-    end = p + input_overflow_buf_.size();
-  }
-
-  // Dispatch all complete messages in the data buffer.
-  while (p < end) {
-    const char* message_tail = Message::FindNext(p, end);
-    if (message_tail) {
-      int len = static_cast<int>(message_tail - p);
-      Message m(p, len);
-      if (!WillDispatchInputMessage(&m))
-        return false;
-
-      if (IsHelloMessage(&m))
-        HandleHelloMessage(m);
-      else
-        listener_->OnMessageReceived(m);
-      p = message_tail;
-    } else {
-      // Last message is partial.
-      break;
-    }
-  }
-
-  // Save any partial data in the overflow buffer.
-  input_overflow_buf_.assign(p, end - p);
-
-  if (input_overflow_buf_.empty() && !DidEmptyInputBuffers())
-    return false;
-  return true;
-}
-
 bool Channel::ChannelImpl::ProcessOutgoingMessages() {
   DCHECK(!waiting_connect_);  // Why are we trying to send messages if there's
                               // no connection?
@@ -604,7 +538,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       msg->header()->num_fds = static_cast<uint16>(num_fds);
 
 #if defined(IPC_USES_READWRITE)
-      if (!IsHelloMessage(msg)) {
+      if (!IsHelloMessage(*msg)) {
         // Only the Hello message sends the file descriptor with the message.
         // Subsequently, we can send file descriptors on the dedicated
         // fd_pipe_ which makes Seccomp sandbox operation more efficient.
@@ -624,7 +558,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
     if (bytes_written == 1) {
       fd_written = pipe_;
 #if defined(IPC_USES_READWRITE)
-      if ((mode_ & MODE_CLIENT_FLAG) && IsHelloMessage(msg)) {
+      if ((mode_ & MODE_CLIENT_FLAG) && IsHelloMessage(*msg)) {
         DCHECK_EQ(msg->file_descriptor_set()->size(), 1U);
       }
       if (!msgh.msg_controllen) {
@@ -816,7 +750,7 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
     int new_pipe = 0;
     if (!ServerAcceptConnection(server_listen_pipe_, &new_pipe)) {
       Close();
-      listener_->OnChannelListenError();
+      listener()->OnChannelListenError();
     }
 
     if (pipe_ != -1) {
@@ -826,7 +760,7 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
         DPLOG(ERROR) << "shutdown " << pipe_name_;
       if (HANDLE_EINTR(close(new_pipe)) < 0)
         DPLOG(ERROR) << "close " << pipe_name_;
-      listener_->OnChannelDenied();
+      listener()->OnChannelDenied();
       return;
     }
     pipe_ = new_pipe;
@@ -910,13 +844,13 @@ bool Channel::ChannelImpl::AcceptConnection() {
 void Channel::ChannelImpl::ClosePipeOnError() {
   if (HasAcceptedConnection()) {
     ResetToAcceptingConnectionState();
-    listener_->OnChannelError();
+    listener()->OnChannelError();
   } else {
     Close();
     if (AcceptsConnections()) {
-      listener_->OnChannelListenError();
+      listener()->OnChannelListenError();
     } else {
-      listener_->OnChannelError();
+      listener()->OnChannelError();
     }
   }
 }
@@ -951,10 +885,6 @@ void Channel::ChannelImpl::QueueHelloMessage() {
   }
 #endif  // IPC_USES_READWRITE
   output_queue_.push(msg.release());
-}
-
-bool Channel::ChannelImpl::IsHelloMessage(const Message* m) const {
-  return m->routing_id() == MSG_ROUTING_NONE && m->type() == HELLO_MESSAGE_TYPE;
 }
 
 Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
@@ -1035,6 +965,11 @@ bool Channel::ChannelImpl::ReadFileDescriptorsFromFDPipe() {
 }
 #endif
 
+// On Posix, we need to fix up the file descriptors before the input message
+// is dispatched.
+//
+// This will read from the input_fds_ (READWRITE mode only) and read more
+// handles from the FD pipe if necessary.
 bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
   uint16 header_fds = msg->header()->num_fds;
   if (!header_fds)
@@ -1145,7 +1080,7 @@ void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
     CHECK(descriptor.auto_close);
   }
 #endif  // IPC_USES_READWRITE
-  listener_->OnChannelConnected(pid);
+  listener()->OnChannelConnected(pid);
 }
 
 void Channel::ChannelImpl::Close() {

@@ -16,6 +16,7 @@
 
 #include "base/message_loop.h"
 #include "ipc/file_descriptor_set_posix.h"
+#include "ipc/ipc_channel_reader.h"
 
 #if !defined(OS_MACOSX)
 // On Linux, the seccomp sandbox makes it very expensive to call
@@ -47,7 +48,8 @@
 
 namespace IPC {
 
-class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
+class Channel::ChannelImpl : public internal::ChannelReader,
+                             public MessageLoopForIO::Watcher {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
   ChannelImpl(const IPC::ChannelHandle& channel_handle, Mode mode,
@@ -55,7 +57,6 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   virtual ~ChannelImpl();
   bool Connect();
   void Close();
-  void set_listener(Listener* listener) { listener_ = listener; }
   bool Send(Message* message);
   int GetClientFileDescriptor();
   int TakeClientFileDescriptor();
@@ -70,38 +71,22 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
 #endif  // OS_LINUX
 
  private:
-  enum ReadState { READ_SUCCEEDED, READ_FAILED, READ_PENDING };
-
   bool CreatePipe(const IPC::ChannelHandle& channel_handle);
 
-  bool ProcessIncomingMessages();
   bool ProcessOutgoingMessages();
 
   bool AcceptConnection();
   void ClosePipeOnError();
   int GetHelloMessageProcId();
   void QueueHelloMessage();
-  bool IsHelloMessage(const Message* m) const;
 
-  // Populates the given buffer with data from the pipe.
-  //
-  // Returns the state of the read. On READ_SUCCESS, the number of bytes
-  // read will be placed into |*bytes_read| (which can be less than the
-  // buffer size). On READ_FAILED, the channel will be closed.
-  //
-  // If the return value is READ_PENDING, it means that there was no data
-  // ready for reading. The implementation is then responsible for either
-  // calling AsyncReadComplete with the number of bytes read into the
-  // buffer, or ProcessIncomingMessages to try the read again (depending
-  // on whether the platform's async I/O is "try again" or "write
-  // asynchronously into your buffer").
-  ReadState ReadData(char* buffer, int buffer_len, int* bytes_read);
-
-  // Takes the given data received from the IPC channel and dispatches any
-  // fully completed messages.
-  //
-  // Returns true on success. False means channel error.
-  bool DispatchInputData(const char* input_data, int input_data_len);
+  // ChannelReader implementation.
+  virtual ReadState ReadData(char* buffer,
+                             int buffer_len,
+                             int* bytes_read) OVERRIDE;
+  virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
+  virtual bool DidEmptyInputBuffers() OVERRIDE;
+  virtual void HandleHelloMessage(const Message& msg) OVERRIDE;
 
 #if defined(IPC_USES_READWRITE)
   // Reads the next message from the fd_pipe_ and appends them to the
@@ -110,17 +95,6 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // no messages.
   bool ReadFileDescriptorsFromFDPipe();
 #endif
-
-  // Loads the required file desciptors into the given message. Returns true
-  // on success. False means a fatal channel error.
-  //
-  // This will read from the input_fds_ and read more handles from the FD
-  // pipe if necessary.
-  bool WillDispatchInputMessage(Message* msg);
-
-  // Performs post-dispatch checks. Called when all input buffers are empty,
-  // though there could be more data ready to be read from the OS.
-  bool DidEmptyInputBuffers();
 
   // Finds the set of file descriptors in the given message.  On success,
   // appends the descriptors to the input_fds_ member and returns true
@@ -132,9 +106,6 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // Closes all handles in the input_fds_ list and clears the list. This is
   // used to clean up handles in error conditions to avoid leaking the handles.
   void ClearInputFDs();
-
-  // Handles the first message sent over the pipe which contains setup info.
-  void HandleHelloMessage(const Message& msg);
 
   // MessageLoopForIO::Watcher implementation.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
@@ -178,18 +149,8 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // the pipe.  On POSIX it's used as a key in a local map of file descriptors.
   std::string pipe_name_;
 
-  Listener* listener_;
-
   // Messages to be sent are queued here.
   std::queue<Message*> output_queue_;
-
-  // We read from the pipe into this buffer. Managed by DispatchInputData, do
-  // not access directly outside that function.
-  char input_buf_[Channel::kReadBufferSize];
-
-  // Large messages that span multiple pipe buffers, get built-up using
-  // this buffer.
-  std::string input_overflow_buf_;
 
   // We assume a worst case: kReadBufferSize bytes of messages, where each
   // message has no payload and a full complement of descriptors.

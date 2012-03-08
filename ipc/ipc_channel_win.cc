@@ -30,10 +30,10 @@ Channel::ChannelImpl::State::~State() {
 
 Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
                                   Mode mode, Listener* listener)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(input_state_(this)),
+    : ChannelReader(listener),
+      ALLOW_THIS_IN_INITIALIZER_LIST(input_state_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(output_state_(this)),
       pipe_(INVALID_HANDLE_VALUE),
-      listener_(listener),
       waiting_connect_(mode & MODE_SERVER_FLAG),
       processing_incoming_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -113,7 +113,7 @@ Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
     return READ_FAILED;
 
   DWORD bytes_read = 0;
-  BOOL ok = ReadFile(pipe_, input_buf_, Channel::kReadBufferSize,
+  BOOL ok = ReadFile(pipe_, buffer, buffer_len,
                      &bytes_read, &input_state_.context.overlapped);
   if (!ok) {
     DWORD err = GetLastError();
@@ -138,73 +138,18 @@ Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
 }
 
 bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
+  // We don't need to do anything here.
   return true;
 }
 
 void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
   // The hello message contains one parameter containing the PID.
-  listener_->OnChannelConnected(MessageIterator(msg).NextInt());
+  listener()->OnChannelConnected(MessageIterator(msg).NextInt());
 }
 
 bool Channel::ChannelImpl::DidEmptyInputBuffers() {
+  // We don't need to do anything here.
   return true;
-}
-
-bool Channel::ChannelImpl::DispatchInputData(const char* input_data,
-                                             int input_data_len) {
-  const char* p;
-  const char* end;
-
-  // Possibly combine with the overflow buffer to make a larger buffer.
-  if (input_overflow_buf_.empty()) {
-    p = input_data;
-    end = input_data + input_data_len;
-  } else {
-    if (input_overflow_buf_.size() >
-        kMaximumMessageSize - input_data_len) {
-      input_overflow_buf_.clear();
-      LOG(ERROR) << "IPC message is too big";
-      return false;
-    }
-    input_overflow_buf_.append(input_data, input_data_len);
-    p = input_overflow_buf_.data();
-    end = p + input_overflow_buf_.size();
-  }
-
-  // Dispatch all complete messages in the data buffer.
-  while (p < end) {
-    const char* message_tail = Message::FindNext(p, end);
-    if (message_tail) {
-      int len = static_cast<int>(message_tail - p);
-      Message m(p, len);
-      if (!WillDispatchInputMessage(&m))
-        return false;
-
-      if (IsHelloMessage(m))
-        HandleHelloMessage(m);
-      else
-        listener_->OnMessageReceived(m);
-      p = message_tail;
-    } else {
-      // Last message is partial.
-      break;
-    }
-  }
-
-  // Save any partial data in the overflow buffer.
-  input_overflow_buf_.assign(p, end - p);
-
-  if (input_overflow_buf_.empty() && !DidEmptyInputBuffers())
-    return false;
-  return true;
-}
-
-bool Channel::ChannelImpl::IsHelloMessage(const Message& m) const {
-  return m.routing_id() == MSG_ROUTING_NONE && m.type() == HELLO_MESSAGE_TYPE;
-}
-
-bool Channel::ChannelImpl::AsyncReadComplete(int bytes_read) {
-  return DispatchInputData(input_buf_, bytes_read);
 }
 
 // static
@@ -360,21 +305,6 @@ bool Channel::ChannelImpl::ProcessConnection() {
   return true;
 }
 
-bool Channel::ChannelImpl::ProcessIncomingMessages() {
-  while (true) {
-    int bytes_read = 0;
-    ReadState read_state = ReadData(input_buf_, Channel::kReadBufferSize,
-                                    &bytes_read);
-    if (read_state == READ_FAILED)
-      return false;
-    if (read_state == READ_PENDING)
-      return true;
-    DCHECK(bytes_read > 0);
-    if (!DispatchInputData(input_buf_, bytes_read))
-      return false;
-  }
-}
-
 bool Channel::ChannelImpl::ProcessOutgoingMessages(
     MessageLoopForIO::IOContext* context,
     DWORD bytes_written) {
@@ -475,7 +405,7 @@ void Channel::ChannelImpl::OnIOCompleted(MessageLoopForIO::IOContext* context,
   if (!ok && INVALID_HANDLE_VALUE != pipe_) {
     // We don't want to re-enter Close().
     Close();
-    listener_->OnChannelError();
+    listener()->OnChannelError();
   }
 }
 

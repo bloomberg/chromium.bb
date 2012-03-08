@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,6 +92,17 @@ class IPC_EXPORT Channel : public Message::Sender {
     MODE_OPEN_NAMED_SERVER = MODE_OPEN_ACCESS_FLAG | MODE_SERVER_FLAG |
                              MODE_NAMED_FLAG
 #endif
+  };
+
+  // The Hello message is internal to the Channel class.  It is sent
+  // by the peer when the channel is connected.  The message contains
+  // just the process id (pid).  The message has a special routing_id
+  // (MSG_ROUTING_NONE) and type (HELLO_MESSAGE_TYPE).
+  enum {
+    HELLO_MESSAGE_TYPE = kuint16max  // Maximum value of message type (uint16),
+                                     // to avoid conflicting with normal
+                                     // message types, which are enumeration
+                                     // constants starting from 0.
   };
 
   // The maximum message size in bytes. Attempting to receive a message of this
@@ -197,17 +208,6 @@ class IPC_EXPORT Channel : public Message::Sender {
   // PIMPL to which all channel calls are delegated.
   class ChannelImpl;
   ChannelImpl *channel_impl_;
-
-  // The Hello message is internal to the Channel class.  It is sent
-  // by the peer when the channel is connected.  The message contains
-  // just the process id (pid).  The message has a special routing_id
-  // (MSG_ROUTING_NONE) and type (HELLO_MESSAGE_TYPE).
-  enum {
-    HELLO_MESSAGE_TYPE = kuint16max  // Maximum value of message type (uint16),
-                                     // to avoid conflicting with normal
-                                     // message types, which are enumeration
-                                     // constants starting from 0.
-  };
 };
 
 }  // namespace IPC
