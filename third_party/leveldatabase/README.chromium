@@ -3,6 +3,7 @@ Short Name: leveldb
 URL: http://code.google.com/p/leveldb/
 Version: r58
 License: New BSD
+License File: src/LICENSE
 Security Critical: yes
 
 Description:
