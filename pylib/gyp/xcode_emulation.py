@@ -33,8 +33,8 @@ class XcodeSettings(object):
     # Used by _AdjustLibrary to match .a and .dylib entries in libraries.
     self.library_re = re.compile(r'^lib([^/]+)\.(a|dylib)$')
 
-    # Computed lazily by _GetDeveloperDir().
-    self.developer_dir = None
+    # Computed lazily by _GetSdkBaseDir().
+    self.sdk_base_dir = None
 
   def _Settings(self):
     assert self.configname
@@ -218,11 +218,11 @@ class XcodeSettings(object):
     else:
       return self._GetStandaloneBinaryPath()
 
-  def _GetDeveloperDir(self):
+  def _GetSdkBaseDir(self):
     """Returns the root of the 'Developer' directory. On Xcode 4.2 and prior,
     this is usually just /Developer. Xcode 4.3 moved that folder into the Xcode
     bundle."""
-    if not self.developer_dir:
+    if not self.sdk_base_dir:
       import subprocess
       job = subprocess.Popen(['xcode-select', '-print-path'],
                              stdout=subprocess.PIPE,
@@ -233,18 +233,18 @@ class XcodeSettings(object):
         raise Exception('Error %d running xcode-select' % job.returncode)
       # The Developer folder moved in Xcode 4.3.
       xcode43_sdk_path = os.path.join(
-          out.rstrip(), 'Platforms/MacOSX.platform/Developer')
+          out.rstrip(), 'Platforms/MacOSX.platform/Developer/SDKs')
       if os.path.isdir(xcode43_sdk_path):
-        self.developer_dir = xcode43_sdk_path
+        self.sdk_base_dir = xcode43_sdk_path
       else:
-        self.developer_dir = out.rstrip()
-    return self.developer_dir
+        self.sdk_base_dir = os.path.join(out.rstrip(), 'SDKs')
+    return self.sdk_base_dir
 
   def _SdkPath(self):
     sdk_root = self.GetPerTargetSetting('SDKROOT', default='macosx10.5')
     if sdk_root.startswith('macosx'):
       sdk_root = 'MacOSX' + sdk_root[len('macosx'):]
-    return os.path.join(self._GetDeveloperDir(), 'SDKs/%s.sdk' % sdk_root)
+    return os.path.join(self._GetSdkBaseDir(), '%s.sdk' % sdk_root)
 
   def GetCflags(self, configname):
     """Returns flags that need to be added to .c, .cc, .m, and .mm
