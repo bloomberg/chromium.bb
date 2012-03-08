@@ -89,11 +89,6 @@ void AppListModelBuilder::GetBrowserCommands(const string16& query,
 
   const BrowserCommandData kBrowserCommands[] = {
     {
-      IDC_NEW_INCOGNITO_WINDOW,
-      IDS_APP_LIST_INCOGNITO,
-      IDR_APP_LIST_INCOGNITO,
-    },
-    {
       IDC_OPTIONS,
       IDS_APP_LIST_SETTINGS,
       IDR_APP_LIST_SETTINGS,
