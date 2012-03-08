@@ -74,6 +74,7 @@ class AuthenticatorFactory;
 struct NetworkSettings {
   NetworkSettings()
       : nat_traversal_mode(TransportConfig::NAT_TRAVERSAL_DISABLED),
+        min_port(0),
         max_port(0) {
   }
 
