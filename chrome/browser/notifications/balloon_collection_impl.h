@@ -143,6 +143,10 @@ class BalloonCollectionImpl : public BalloonCollection,
     // to be repositioned.
     bool ComputeOffsetToMoveAbovePanels(const gfx::Rect& panel_bounds);
 
+    void enable_computing_panel_offset() {
+      need_to_compute_panel_offset_ = true;
+    }
+
    private:
     // Layout parameters
     int VerticalEdgeMargin() const;
@@ -160,6 +164,10 @@ class BalloonCollectionImpl : public BalloonCollection,
 
     Placement placement_;
     gfx::Rect work_area_;
+
+    // The flag that indicates that the panel offset computation should be
+    // performed.
+    bool need_to_compute_panel_offset_;
 
     // The offset that guarantees that the notificaitions shown in the
     // lower-right or lower-left corner of the screen will go above currently

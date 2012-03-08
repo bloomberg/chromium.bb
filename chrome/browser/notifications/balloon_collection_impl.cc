@@ -186,6 +186,7 @@ void BalloonCollectionImpl::Observe(
       // Fall through.
     case chrome::NOTIFICATION_PANEL_ADDED:
     case chrome::NOTIFICATION_PANEL_CLOSED:
+      layout_.enable_computing_panel_offset();
       if (layout_.ComputeOffsetToMoveAbovePanels(bounds))
         PositionBalloons(true);
       break;
@@ -275,6 +276,7 @@ void BalloonCollectionImpl::HandleMouseMoveEvent() {
 
 BalloonCollectionImpl::Layout::Layout()
     : placement_(INVALID),
+      need_to_compute_panel_offset_(false),
       offset_to_move_above_panels_(0) {
   RefreshSystemMetrics();
 }
@@ -406,6 +408,13 @@ gfx::Size BalloonCollectionImpl::Layout::ConstrainToSizeLimits(
 
 bool BalloonCollectionImpl::Layout::ComputeOffsetToMoveAbovePanels(
     const gfx::Rect& panel_bounds) {
+  // If the offset is not enabled due to that we have not received a
+  // notification about panel, don't proceed because we don't want to call
+  // PanelManager::GetInstance() to create an instance when panel is not
+  // present.
+  if (!need_to_compute_panel_offset_)
+    return false;
+
   const DockedPanelStrip::Panels& panels =
       PanelManager::GetInstance()->docked_strip()->panels();
   int offset_to_move_above_panels = 0;
