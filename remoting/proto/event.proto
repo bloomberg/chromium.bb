@@ -19,7 +19,7 @@ message KeyEvent {
   // The USB key code.
   // The upper 16-bits are the USB Page (0x07 for key events).
   // The lower 16-bits are the USB Usage ID (which identifies the actual key).
-  optional uint32 usb_key_code = 3;
+  optional uint32 usb_keycode = 3;
 }
 
 // Defines a mouse event message on the event channel. 
