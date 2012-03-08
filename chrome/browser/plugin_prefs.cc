@@ -437,7 +437,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
         BrowserThread::FILE,
         FROM_HERE,
         base::Bind(&PluginPrefs::GetPreferencesDataOnFileThread, this),
-        kPluginUpdateDelayMs);
+        base::TimeDelta::FromMilliseconds(kPluginUpdateDelayMs));
   }
 
   NotifyPluginStatusChanged();

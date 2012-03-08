@@ -130,7 +130,9 @@ class SSLUITest : public InProcessBrowserTest {
 
       // Wait a bit.
       MessageLoop::current()->PostDelayedTask(
-          FROM_HERE, MessageLoop::QuitClosure(), timeout_ms);
+          FROM_HERE,
+          MessageLoop::QuitClosure(),
+          base::TimeDelta::FromMilliseconds(timeout_ms));
       ui_test_utils::RunMessageLoop();
     }
 
@@ -893,8 +895,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   for (int i = 0; i < 10; i++) {
     if (GetConstrainedWindowCount() > 0)
       break;
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            MessageLoop::QuitClosure(), 1000);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
     ui_test_utils::RunMessageLoop();
   }
   ASSERT_EQ(1, GetConstrainedWindowCount());

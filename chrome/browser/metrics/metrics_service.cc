@@ -834,7 +834,7 @@ void MetricsService::StartRecording() {
         base::Bind(&MetricsService::InitTaskGetHardwareClass,
             self_ptr_factory_.GetWeakPtr(),
             MessageLoop::current()->message_loop_proxy()),
-        kInitializationDelaySeconds);
+        base::TimeDelta::FromSeconds(kInitializationDelaySeconds));
   }
 }
 
@@ -943,7 +943,7 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   // calling us back on the task.
   HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
       MessageLoop::current(), callback,
-      kMaxHistogramGatheringWaitDuration);
+      base::TimeDelta::FromMilliseconds(kMaxHistogramGatheringWaitDuration));
 }
 
 void MetricsService::OnHistogramSynchronizationDone() {
