@@ -303,15 +303,9 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../jingle/jingle.gyp:notifier',
         '../net/net.gyp:net',
-        '../third_party/icu/icu.gyp:icuuc',
         '../third_party/sqlite/sqlite.gyp:sqlite',
-        'app/policy/cloud_policy_codegen.gyp:policy',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
-        'common_constants',
-        'common_net',
         'sync',
         'sync_notifier',
       ],
@@ -507,11 +501,10 @@
         '_USE_32BIT_TIME_T',
       ],
       'dependencies': [
-        'common',
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
-        '../skia/skia.gyp:skia',
+        '../sql/sql.gyp:sql',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
       ],
       'export_dependent_settings': [
