@@ -17,6 +17,7 @@ struct dirent;
 
 struct PP_StartFunctions;
 struct PP_ThreadFunctions;
+struct NaClExceptionContext;
 
 #if __cplusplus
 extern "C" {
@@ -165,6 +166,20 @@ struct nacl_irt_random {
 struct nacl_irt_clock {
   int (*getres)(clockid_t clk_id, struct timespec *res);
   int (*gettime)(clockid_t clk_id, struct timespec *tp);
+};
+
+/*
+ * NOTE: This is a 'dev' interface which is NOT stable.
+ * In the future, requests for this interface will fail.
+ */
+#define NACL_IRT_DEV_EXCEPTION_HANDLING_v0_1 \
+  "nacl-irt-dev-exception-handling-0.1"
+typedef void (*NaClExceptionHandler)(struct NaClExceptionContext *context);
+struct nacl_irt_dev_exception_handling {
+  int (*exception_handler)(NaClExceptionHandler handler,
+                           NaClExceptionHandler *old_handler);
+  int (*exception_stack)(void *stack, size_t size);
+  int (*exception_clear_flag)(void);
 };
 
 #if __cplusplus

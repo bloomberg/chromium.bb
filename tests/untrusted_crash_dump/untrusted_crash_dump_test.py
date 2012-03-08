@@ -47,12 +47,11 @@ def CheckStackTrace(core, main_nexe, nmf_filename, addr2line,
       ('layer1', 'layer2(junk[0], t + 1);'),
   ]
   actual = []
-  for i in range(len(expected)):
-    scope = trace[i]
+  for scope in trace:
     lineno = int(scope['lineno'])
     line = linecache.getline(scope['filename'], lineno).strip()
     actual.append((scope['function'], line))
-  if expected != actual:
+  if expected != actual[:len(expected)]:
     sys.stderr.write('ERROR - stack trace does not match expected\n')
     sys.stderr.write('Expected:\n')
     for i in expected:

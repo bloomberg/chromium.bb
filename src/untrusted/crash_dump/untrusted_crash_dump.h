@@ -16,8 +16,9 @@
 
 EXTERN_C_BEGIN
 
-void NaClCrashDumpInit(void);
-void NaClCrashDumpInitThread(void);
+/* These return non-zero on success. */
+int NaClCrashDumpInit(void);
+int NaClCrashDumpInitThread(void);
 
 EXTERN_C_END
 

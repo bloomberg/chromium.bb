@@ -3266,6 +3266,9 @@ irt_variant_tests = [
     'tests/toolchain/nacl.scons',
     'tests/unittests/shared/platform/nacl.scons',
     'tests/untrusted_check/nacl.scons',
+    # NOTE: This test is really an irt-only test, but is in this category so
+    # that it can combine: a shared library, an irt-only sel_ldr test,
+    # and a browser_tester test.
     'tests/untrusted_crash_dump/nacl.scons',
     #### ALPHABETICALLY SORTED ####
     ]
@@ -3576,7 +3579,7 @@ nacl_irt_test_env = nacl_env.Clone(
     INCLUDE_DIR = nacl_env.Dir('${INCLUDE_DIR}'),
     LIB_DIR = nacl_env.Dir('${LIB_DIR}'),
 
-    BUILD_SCONSCRIPTS = irt_variant_tests + irt_only_tests
+    BUILD_SCONSCRIPTS = irt_variant_tests + irt_only_tests,
     )
 nacl_irt_test_env.SetBits('irt')
 nacl_irt_test_env.SetBits('tests_use_irt')

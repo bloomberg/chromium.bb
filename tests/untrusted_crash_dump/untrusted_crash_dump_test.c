@@ -42,7 +42,10 @@ void layer1(int s, int t) {
 }
 
 int main() {
-  NaClCrashDumpInit();
+  if (!NaClCrashDumpInit()) {
+    fprintf(stderr, "ERROR: failed to set up crash dumping\n");
+    return 2;
+  }
 
   fprintf(stderr, "** intended_exit_status=166\n");
   layer1(2, 9);

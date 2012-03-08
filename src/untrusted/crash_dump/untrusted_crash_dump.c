@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sys/nacl_syscalls.h>
 
 #ifdef __GLIBC__
 #include <elf.h>
@@ -22,7 +21,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#include "native_client/src/untrusted/irt/irt.h"
 
 
 #define CRASH_PAGE_CHUNK (64 * 1024)
@@ -32,6 +31,8 @@
 
 
 static pthread_key_t g_CrashStackKey;
+static struct nacl_irt_dev_exception_handling g_ExceptionHandling;
+static int g_ExceptionHandlingEnabled = 0;
 
 
 #ifdef __GLIBC__
@@ -209,19 +210,36 @@ void NaClCrashDumpThreadDestructor(void *arg) {
   munmap(arg, CRASH_STACK_COMPLETE_SIZE);
 }
 
-void NaClCrashDumpInit(void) {
+int NaClCrashDumpInit(void) {
   int result;
+
+  assert(g_ExceptionHandlingEnabled == 0);
+  if (nacl_interface_query(NACL_IRT_DEV_EXCEPTION_HANDLING_v0_1,
+                           &g_ExceptionHandling,
+                           sizeof(g_ExceptionHandling)) == 0) {
+    return 0;
+  }
   result = pthread_key_create(&g_CrashStackKey, NaClCrashDumpThreadDestructor);
   assert(result == 0);
-  result = NACL_SYSCALL(exception_handler)(CrashHandler, NULL);
-  assert(result == 0);
-  NaClCrashDumpInitThread();
+  if (g_ExceptionHandling.exception_handler(CrashHandler, NULL) != 0) {
+    return 0;
+  }
+  g_ExceptionHandlingEnabled = 1;
+  if (!NaClCrashDumpInitThread()) {
+    g_ExceptionHandlingEnabled = 0;
+    return 0;
+  }
+  return 1;
 }
 
-void NaClCrashDumpInitThread(void) {
+int NaClCrashDumpInitThread(void) {
   void *stack;
   void *guard;
   int result;
+
+  if (!g_ExceptionHandlingEnabled) {
+    return 0;
+  }
   /*
    * NOTE: Setting up a per thread stack is only particularly interesting
    *       for stack overflow.
@@ -234,6 +252,7 @@ void NaClCrashDumpInitThread(void) {
                PROT_NONE, MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   assert(guard == stack);
   pthread_setspecific(g_CrashStackKey, stack);
-  result = NACL_SYSCALL(exception_stack)(stack, CRASH_STACK_COMPLETE_SIZE);
-  assert(result == 0);
+  result = g_ExceptionHandling.exception_stack(
+      stack, CRASH_STACK_COMPLETE_SIZE);
+  return result == 0;
 }
