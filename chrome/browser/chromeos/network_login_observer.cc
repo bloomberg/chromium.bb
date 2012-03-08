@@ -56,10 +56,12 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
     WifiNetwork* wifi = *it;
     if (wifi->notify_failure()) {
       // Display login dialog again for bad_passphrase and bad_wepkey errors.
+      // Always re-display for user initiated connections that fail.
       // Always re-display the login dialog for encrypted networks that were
       // added and failed to connect for any reason.
       if (wifi->error() == ERROR_BAD_PASSPHRASE ||
           wifi->error() == ERROR_BAD_WEPKEY ||
+          wifi->connection_started() ||
           (wifi->encrypted() && wifi->added())) {
         CreateModalPopup(new NetworkConfigView(wifi));
         return;  // Only support one failure per notification.
