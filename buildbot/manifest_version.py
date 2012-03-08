@@ -100,7 +100,8 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
     if (result.returncode == 0 and
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')
-      result = cros_lib.RunCommand(['git', 'pull', '--force'],
+      result = cros_lib.RunCommand(['git', 'pull', '--force', 'origin',
+                                    'refs/heads/master'],
                                    cwd=manifest_dir, error_code_ok=True)
       if result.returncode == 0:
         reinitialize = False
