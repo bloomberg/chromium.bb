@@ -126,13 +126,9 @@ void WindowCycleController::AltKeyReleased() {
 // WindowCycleController, private:
 
 void WindowCycleController::StartCycling() {
-  // Most-recently-used cycling is confusing in compact window mode because
-  // you can't see all the windows.
   windows_.reset(new WindowCycleList(
       ash::Shell::GetInstance()->delegate()->GetCycleWindowList(
-          ShellDelegate::SOURCE_KEYBOARD,
-          Shell::GetInstance()->IsWindowModeCompact() ?
-          ShellDelegate::ORDER_LINEAR : ShellDelegate::ORDER_MRU)));
+          ShellDelegate::SOURCE_KEYBOARD)));
 }
 
 void WindowCycleController::Step(Direction direction) {

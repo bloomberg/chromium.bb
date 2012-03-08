@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/ash/status_area_host_aura.h"
 
-#include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
@@ -13,12 +12,9 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/views/ash/multiple_window_indicator_button.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
@@ -35,32 +31,6 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "ui/gfx/native_widget_types.h"
 #endif
-
-namespace {
-
-// Horizontal padding between the side of the status area and the side of the
-// screen in compact mode.
-const int kCompactModeHorizontalOffset = 3;
-
-// Vertical padding between the top of the status area and the top of the screen
-// when we're displaying either the login/lock screen or a browser window in
-// compact mode.
-const int kCompactModeLoginAndLockVerticalOffset = 4;
-const int kCompactModeBrowserVerticalOffset = 2;
-
-}  // namespace
-
-// static
-gfx::Size StatusAreaHostAura::GetCompactModeLoginAndLockOffset() {
-  return gfx::Size(kCompactModeHorizontalOffset,
-                   kCompactModeLoginAndLockVerticalOffset);
-}
-
-// static
-gfx::Size StatusAreaHostAura::GetCompactModeBrowserOffset() {
-  return gfx::Size(kCompactModeHorizontalOffset,
-                   kCompactModeBrowserVerticalOffset);
-}
 
 StatusAreaHostAura::StatusAreaHostAura()
     : status_area_widget_(NULL),
@@ -91,13 +61,6 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
 
   // Create status area view.
   status_area_view_ = new StatusAreaView();
-
-  // Add multiple window indicator button for compact mode. Note this should be
-  // the last button added to status area so that it could be right most there.
-  if (ash::Shell::GetInstance()->IsWindowModeCompact()) {
-    status_area_view_->AddButton(new MultipleWindowIndicatorButton(this),
-                                 StatusAreaView::NO_BORDER);
-  }
 
   // Create widget to hold status area view.
   status_area_widget_ = new views::Widget;
@@ -218,23 +181,7 @@ StatusAreaButton::TextStyle StatusAreaHostAura::GetStatusAreaTextStyle() const {
   if (IsLoginOrLockScreenDisplayed())
     return StatusAreaButton::GRAY_PLAIN_LIGHT;
 #endif
-
-  if (ash::Shell::GetInstance()->IsWindowModeCompact()) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (!browser)
-      return StatusAreaButton::WHITE_HALOED_BOLD;
-
-    ThemeService* theme_service =
-        ThemeServiceFactory::GetForProfile(browser->profile());
-    if (!theme_service->UsingDefaultTheme())
-      return StatusAreaButton::WHITE_HALOED_BOLD;
-
-    return browser->profile()->IsOffTheRecord() ?
-        StatusAreaButton::WHITE_PLAIN_BOLD :
-        StatusAreaButton::GRAY_EMBOSSED_BOLD;
-  } else {
-    return StatusAreaButton::WHITE_HALOED_BOLD;
-  }
+  return StatusAreaButton::WHITE_HALOED_BOLD;
 }
 
 void StatusAreaHostAura::ButtonVisibilityChanged(views::View* button_view) {
@@ -280,9 +227,4 @@ bool StatusAreaHostAura::IsLoginOrLockScreenDisplayed() const {
 
 void StatusAreaHostAura::UpdateAppearance() {
   status_area_view_->UpdateButtonTextStyle();
-
-  gfx::Size offset = IsLoginOrLockScreenDisplayed() ?
-      GetCompactModeLoginAndLockOffset() :
-      GetCompactModeBrowserOffset();
-  ash::Shell::GetInstance()->SetCompactStatusAreaOffset(offset);
 }

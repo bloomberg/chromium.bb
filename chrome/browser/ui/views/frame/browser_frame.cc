@@ -20,15 +20,6 @@
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system/runtime_environment.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ash/ash_switches.h"
-#include "ash/shell.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
-#include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,40 +57,12 @@ void BrowserFrame::InitBrowserFrame() {
     // from being changed to top-most after the window is created without
     // activation.
     params.type = views::Widget::InitParams::TYPE_PANEL;
-  } else if (browser_view_->browser()->is_type_popup()) {
-#if defined(USE_AURA)
-    // Note: InitParams::TYPE_POPUP is currently used by transient windows
-    // which do not have a NonClientFrameView. Use TYPE_BUBBLE instead.
-    params.type = views::Widget::InitParams::TYPE_BUBBLE;
-    // In compact mode there is no launcher, so we need to keep panels always
-    // on top so they do not get lost.
-    if (ash::Shell::GetInstance()->IsWindowModeCompact())
-      params.keep_on_top = true;
-#endif
   }
 #if defined(USE_AURA)
-  // Compact mode has opaque frames, otherwise Aura frames are translucent.
-  if (!ash::Shell::GetInstance()->IsWindowModeCompact())
-    params.transparent = true;
-  // Aura compact mode fills the monitor with with its windows.
-  if (ash::Shell::GetInstance()->IsWindowModeCompact() &&
-      browser_view_->IsBrowserTypeNormal()) {
-    params.bounds = gfx::Screen::GetPrimaryMonitorBounds();
-    params.show_state = ui::SHOW_STATE_MAXIMIZED;
-  }
+  // Aura frames are translucent.
+  params.transparent = true;
 #endif
   Init(params);
-
-  // On ChromeOS and Aura compact mode we always want top-level windows
-  // to appear active.
-  bool disable_inactive_rendering = false;
-#if defined(USE_AURA)
-  disable_inactive_rendering = ash::Shell::GetInstance()->IsWindowModeCompact();
-#elif defined(OS_CHROMEOS)
-  disable_inactive_rendering = true;
-#endif
-  if (disable_inactive_rendering && browser_view_->IsBrowserTypeNormal())
-    DisableInactiveRendering();
 }
 
 int BrowserFrame::GetMinimizeButtonOffset() const {
@@ -107,38 +70,7 @@ int BrowserFrame::GetMinimizeButtonOffset() const {
 }
 
 gfx::Rect BrowserFrame::GetBoundsForTabStrip(views::View* tabstrip) const {
-  gfx::Rect tab_strip_bounds =
-      browser_frame_view_->GetBoundsForTabStrip(tabstrip);
-#if defined(USE_AURA)
-  // Leave space for status area in Aura compact window mode.
-  if (ash::Shell::GetInstance()->IsWindowModeCompact() &&
-      ChromeShellDelegate::instance()) {
-    StatusAreaView* status_area =
-        ChromeShellDelegate::instance()->GetStatusArea();
-    if (status_area) {
-      int reserve_width = 0;
-      gfx::Rect screen_bounds = gfx::Screen::GetPrimaryMonitorBounds();
-      if (base::i18n::IsRTL()) {
-        // Get top-right corner of status area in screen coordinates.
-        gfx::Point status_origin(status_area->bounds().right(), 0);
-        views::View::ConvertPointToScreen(status_area, &status_origin);
-        // Reserve the width between the left edge of screen and the right edge
-        // of status area.
-        reserve_width = status_origin.x() - screen_bounds.x();
-      } else {
-        // Get top-left corner of status area in screen coordinates.
-        gfx::Point status_origin;
-        views::View::ConvertPointToScreen(status_area, &status_origin);
-        // Reserve the width between the right edge of screen and the left edge
-        // of status area.
-        reserve_width = screen_bounds.right() - status_origin.x();
-      }
-      // Views handles the RTL adjustment of tab strip.
-      tab_strip_bounds.set_width(tab_strip_bounds.width() - reserve_width);
-    }
-  }
-#endif
-  return tab_strip_bounds;
+  return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
 }
 
 int BrowserFrame::GetHorizontalTabStripVerticalOffset(bool restored) const {
@@ -160,17 +92,6 @@ void BrowserFrame::TabStripDisplayModeChanged() {
   }
   GetRootView()->Layout();
   native_browser_frame_->TabStripDisplayModeChanged();
-}
-
-bool BrowserFrame::IsSingleWindowMode() const {
-  bool single_window_mode = false;
-#if defined(USE_AURA)
-  single_window_mode = ash::Shell::GetInstance()->IsWindowModeCompact();
-#elif defined(OS_CHROMEOS)
-  single_window_mode =
-      chromeos::system::runtime_environment::IsRunningOnChromeOS();
-#endif
-  return single_window_mode;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

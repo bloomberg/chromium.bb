@@ -1448,7 +1448,7 @@ bool DefaultTabDragController::AreTabsConsecutive() {
 #if defined(USE_AURA) || defined(OS_WIN)
 static bool ShouldCreateTabDragController2() {
 #if defined(USE_AURA)
-  return !ash::Shell::GetInstance()->IsWindowModeCompact();
+  return true;
 #else
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTabBrowserDragging);

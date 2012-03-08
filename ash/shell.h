@@ -76,14 +76,6 @@ class WorkspaceController;
 // takes ownership of the Shell.
 class ASH_EXPORT Shell {
  public:
-  // In compact window mode we fill the screen with a single maximized window,
-  // similar to ChromeOS R17 and earlier.  In managed mode we have overlapping
-  // windows arranged by the workspace.
-  enum WindowMode {
-    MODE_COMPACT,
-    MODE_MANAGED,
-  };
-
   enum BackgroundMode {
     BACKGROUND_IMAGE,
     BACKGROUND_SOLID_COLOR
@@ -99,7 +91,6 @@ class ASH_EXPORT Shell {
    public:
     explicit TestApi(Shell* shell);
 
-    WindowMode ComputeWindowMode(CommandLine* cmd) const;
     internal::RootWindowLayoutManager* root_window_layout();
     internal::InputMethodEventFilter* input_method_event_filter();
     internal::WorkspaceController* workspace_controller();
@@ -124,10 +115,6 @@ class ASH_EXPORT Shell {
 
   // Get the singleton RootWindow used by the Shell.
   static aura::RootWindow* GetRootWindow();
-
-  const gfx::Size& compact_status_area_offset() const {
-    return compact_status_area_offset_;
-  }
 
   BackgroundMode desktop_background_mode() const {
     return desktop_background_mode_;
@@ -156,19 +143,12 @@ class ASH_EXPORT Shell {
   // Returns true if a modal dialog window is currently open.
   bool IsModalWindowOpen() const;
 
-  // See enum WindowMode for details.
-  bool IsWindowModeCompact() const { return window_mode_ == MODE_COMPACT; }
-
-  // Sets the offset between the corner of the status area and the corner of the
-  // screen when we're using the compact window mode.
-  void SetCompactStatusAreaOffset(gfx::Size& offset);
-
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget);
 
-  // Rotate focus through containers that can recieve focus.
+  // Rotate focus through containers that can receive focus.
   void RotateFocus(Direction direction);
 
 #if !defined(OS_MACOSX)
@@ -237,17 +217,8 @@ class ASH_EXPORT Shell {
 
   void Init();
 
-  // Returns the appropriate window mode to use based on the |command_line|.
-  WindowMode ComputeWindowMode(CommandLine* command_line) const;
-
-  // Initializes or re-initializes the layout managers and event filters needed
-  // to support a given window mode and cleans up the unneeded ones.
-  void SetupCompactWindowMode();
-  void SetupManagedWindowMode();
-
-  // Sets the LayoutManager of the container with the specified id to NULL. This
-  // has the effect of deleting the current LayoutManager.
-  void ResetLayoutManager(int container_id);
+  // Initializes the layout managers and event filters.
+  void InitLayoutManagers();
 
   // Disables the workspace grid layout.
   void DisableWorkspaceGridLayout();
@@ -312,9 +283,6 @@ class ASH_EXPORT Shell {
   // the status area.
   internal::ShelfLayoutManager* shelf_;
 
-  // Does not change after Init().
-  WindowMode window_mode_;
-
   // Can change at runtime.
   BackgroundMode desktop_background_mode_;
 
@@ -327,10 +295,6 @@ class ASH_EXPORT Shell {
   // System tray with clock, Wi-Fi signal, etc. (a replacement in progress for
   // |status_widget_|).
   scoped_ptr<SystemTray> tray_;
-
-  // Offset between the corner of the status area and the corner of the screen
-  // when in the compact window mode.
-  gfx::Size compact_status_area_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

@@ -15,17 +15,10 @@
 namespace ash {
 namespace test {
 
-TestShellDelegate::TestShellDelegate()
-    : override_window_mode_(false),
-      window_mode_(Shell::MODE_MANAGED) {
+TestShellDelegate::TestShellDelegate() {
 }
 
 TestShellDelegate::~TestShellDelegate() {
-}
-
-void TestShellDelegate::SetOverrideWindowMode(Shell::WindowMode window_mode) {
-  override_window_mode_ = true;
-  window_mode_ = window_mode;
 }
 
 views::Widget* TestShellDelegate::CreateStatusArea() {
@@ -45,17 +38,14 @@ AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
 }
 
 std::vector<aura::Window*> TestShellDelegate::GetCycleWindowList(
-    CycleSource source,
-    CycleOrder order) const {
+    CycleSource source) const {
   // We just use the Shell's default container of windows, so tests can be
   // written with the usual CreateTestWindowWithId() calls. But window cycling
-  // expects the topmost window at the front of the list, so reverse the order
-  // if we are mimicking MRU.
+  // expects the topmost window at the front of the list, so reverse the order.
   aura::Window* default_container = Shell::GetInstance()->GetContainer(
       internal::kShellWindowId_DefaultContainer);
   std::vector<aura::Window*> windows = default_container->children();
-  if (order != ShellDelegate::ORDER_LINEAR)
-    std::reverse(windows.begin(), windows.end());
+  std::reverse(windows.begin(), windows.end());
   return windows;
 }
 
@@ -73,14 +63,6 @@ LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(
 SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate(
     SystemTray* tray) {
   return NULL;
-}
-
-bool TestShellDelegate::GetOverrideWindowMode(Shell::WindowMode* window_mode) {
-  if (override_window_mode_) {
-    *window_mode = window_mode_;
-    return true;
-  }
-  return false;
 }
 
 }  // namespace test

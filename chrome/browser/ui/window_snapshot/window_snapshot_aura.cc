@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
@@ -23,9 +22,8 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
 
   // When not in compact mode we must take into account the window's position on
   // the desktop.
-  if (!ash::Shell::GetInstance()->IsWindowModeCompact())
-    read_pixels_bounds.set_origin(
-        snapshot_bounds.origin().Add(window->bounds().origin()));
+  read_pixels_bounds.set_origin(
+      snapshot_bounds.origin().Add(window->bounds().origin()));
 
   DCHECK_GE(compositor->size().width(), read_pixels_bounds.right());
   DCHECK_GE(compositor->size().height(), read_pixels_bounds.bottom());

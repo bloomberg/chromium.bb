@@ -37,15 +37,9 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
     EXPECT_EQ(StatusAreaButton::GRAY_PLAIN_LIGHT,
               host->GetStatusAreaTextStyle());
-    EXPECT_EQ(StatusAreaHostAura::GetCompactModeLoginAndLockOffset().ToString(),
-              ash::Shell::GetInstance()->compact_status_area_offset().
-                  ToString());
   } else {
     EXPECT_EQ(StatusAreaButton::WHITE_HALOED_BOLD,
               host->GetStatusAreaTextStyle());
-    EXPECT_EQ(StatusAreaHostAura::GetCompactModeBrowserOffset().ToString(),
-              ash::Shell::GetInstance()->compact_status_area_offset().
-                  ToString());
   }
 
   // ProfileManager expects a profile dir to be set on Chrome OS.
@@ -56,25 +50,8 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
 #endif
 
   Browser* browser = CreateBrowser(ProfileManager::GetDefaultProfile());
-
-  if (ash::Shell::GetInstance()->IsWindowModeCompact()) {
-    EXPECT_EQ(StatusAreaButton::GRAY_EMBOSSED_BOLD,
-              host->GetStatusAreaTextStyle());
-
-    Browser* incognito_browser = CreateIncognitoBrowser();
-    EXPECT_EQ(StatusAreaButton::WHITE_PLAIN_BOLD,
-              host->GetStatusAreaTextStyle());
-
-    incognito_browser->CloseWindow();
-    EXPECT_EQ(StatusAreaButton::GRAY_EMBOSSED_BOLD,
-              host->GetStatusAreaTextStyle());
-  } else {
-    EXPECT_EQ(StatusAreaButton::WHITE_HALOED_BOLD,
-              host->GetStatusAreaTextStyle());
-  }
-
-  EXPECT_EQ(StatusAreaHostAura::GetCompactModeBrowserOffset().ToString(),
-            ash::Shell::GetInstance()->compact_status_area_offset().ToString());
+  EXPECT_EQ(StatusAreaButton::WHITE_HALOED_BOLD,
+            host->GetStatusAreaTextStyle());
 
 #if defined(OS_CHROMEOS)
   // Lock the screen.
@@ -89,22 +66,13 @@ IN_PROC_BROWSER_TEST_F(StatusAreaHostAuraTest, TextStyle) {
     lock_state_observer.Wait();
   ASSERT_TRUE(tester->IsLocked());
   EXPECT_EQ(StatusAreaButton::GRAY_PLAIN_LIGHT, host->GetStatusAreaTextStyle());
-  EXPECT_EQ(StatusAreaHostAura::GetCompactModeLoginAndLockOffset().ToString(),
-            ash::Shell::GetInstance()->compact_status_area_offset().ToString());
 
   chromeos::ScreenLocker::Hide();
   ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_FALSE(tester->IsLocked());
 
-  if (ash::Shell::GetInstance()->IsWindowModeCompact()) {
-    EXPECT_EQ(StatusAreaButton::GRAY_EMBOSSED_BOLD,
-              host->GetStatusAreaTextStyle());
-  } else {
-    EXPECT_EQ(StatusAreaButton::WHITE_HALOED_BOLD,
-              host->GetStatusAreaTextStyle());
-  }
-  EXPECT_EQ(StatusAreaHostAura::GetCompactModeBrowserOffset().ToString(),
-            ash::Shell::GetInstance()->compact_status_area_offset().ToString());
+  EXPECT_EQ(StatusAreaButton::WHITE_HALOED_BOLD,
+            host->GetStatusAreaTextStyle());
 #endif
 
   browser->CloseWindow();

@@ -27,8 +27,6 @@
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/base_layout_manager.h"
-#include "ash/wm/compact_layout_manager.h"
-#include "ash/wm/compact_status_area_layout_manager.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/panel_window_event_filter.h"
@@ -287,10 +285,6 @@ bool Shell::initially_hide_cursor_ = false;
 
 Shell::TestApi::TestApi(Shell* shell) : shell_(shell) {}
 
-Shell::WindowMode Shell::TestApi::ComputeWindowMode(CommandLine* cmd) const {
-  return shell_->ComputeWindowMode(cmd);
-}
-
 internal::RootWindowLayoutManager* Shell::TestApi::root_window_layout() {
   return shell_->root_window_layout_;
 }
@@ -308,11 +302,12 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
 
 Shell::Shell(ShellDelegate* delegate)
     : root_window_(new aura::RootWindow),
+      root_filter_(NULL),
       delegate_(delegate),
       audio_controller_(NULL),
       brightness_controller_(NULL),
+      power_status_controller_(NULL),
       shelf_(NULL),
-      window_mode_(MODE_MANAGED),
       desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
       status_widget_(NULL) {
@@ -425,11 +420,6 @@ void Shell::Init() {
   input_method_filter_.reset(new internal::InputMethodEventFilter);
   AddRootWindowEventFilter(input_method_filter_.get());
 
-  // Window mode must be set before computing containers or layout managers.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!delegate_.get() || !delegate_->GetOverrideWindowMode(&window_mode_))
-    window_mode_ = ComputeWindowMode(command_line);
-
   aura::RootWindow* root_window = GetRootWindow();
   root_window->SetCursor(aura::kCursorPointer);
   if (initially_hide_cursor_)
@@ -447,6 +437,7 @@ void Shell::Init() {
   if (delegate_.get())
     status_widget_ = delegate_->CreateStatusArea();
 
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshUberTray)) {
     // TODO(sad): This is rather ugly at the moment. This is because we are
     // supporting both the old and the new status bar at the same time. This
@@ -484,10 +475,7 @@ void Shell::Init() {
       GetContainer(internal::kShellWindowId_DefaultContainer);
   launcher_.reset(new Launcher(default_container));
 
-  if (window_mode_ == MODE_COMPACT)
-    SetupCompactWindowMode();
-  else
-    SetupManagedWindowMode();
+  InitLayoutManagers();
 
   if (!command_line->HasSwitch(switches::kAuraNoShadows))
     shadow_controller_.reset(new internal::ShadowController());
@@ -512,25 +500,6 @@ void Shell::Init() {
   power_button_controller_.reset(new PowerButtonController);
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);
-}
-
-Shell::WindowMode Shell::ComputeWindowMode(CommandLine* command_line) const {
-  // Some devices don't perform well with overlapping windows.
-  if (command_line->HasSwitch(switches::kAuraForceCompactWindowMode))
-    return MODE_COMPACT;
-
-  // If user set the flag, use their desired behavior.
-  if (command_line->HasSwitch(switches::kAuraWindowMode)) {
-    std::string mode =
-        command_line->GetSwitchValueASCII(switches::kAuraWindowMode);
-    if (mode == switches::kAuraWindowModeCompact)
-      return MODE_COMPACT;
-    if (mode == switches::kAuraWindowModeManaged)
-      return MODE_MANAGED;
-  }
-
-  // Managed is the default.
-  return Shell::MODE_MANAGED;
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
@@ -602,31 +571,16 @@ bool Shell::IsModalWindowOpen() const {
   return !modal_container->children().empty();
 }
 
-void Shell::SetCompactStatusAreaOffset(gfx::Size& offset) {
-  compact_status_area_offset_ = offset;
-
-  // Trigger a relayout.
-  if (IsWindowModeCompact()) {
-    aura::LayoutManager* layout_manager = GetContainer(
-        internal::kShellWindowId_StatusContainer)->layout_manager();
-    if (layout_manager)
-      layout_manager->OnWindowResized();
-  }
-}
-
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAuraGoogleDialogFrames)) {
     return new internal::DialogFrameView;
   }
-  // Normal non-compact-mode gets translucent-style window frames for dialogs.
-  if (!IsWindowModeCompact()) {
-    internal::CustomFrameViewAsh* frame_view = new internal::CustomFrameViewAsh;
-    frame_view->Init(widget);
-    return frame_view;
-  }
-  return NULL;
+  // Use translucent-style window frames for dialogs.
+  internal::CustomFrameViewAsh* frame_view = new internal::CustomFrameViewAsh;
+  frame_view->Init(widget);
+  return frame_view;
 }
 
 void Shell::RotateFocus(Direction direction) {
@@ -638,38 +592,7 @@ void Shell::RotateFocus(Direction direction) {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
-// Compact mode has a simplified layout manager and doesn't use the shelf,
-// desktop background, etc.  The launcher still exists so we can use its
-// data model and list of open windows, but we hide the UI to save space.
-void Shell::SetupCompactWindowMode() {
-  DCHECK(root_window_layout_);
-  DCHECK(status_widget_);
-
-  // Don't use an event filter for the default container, as we don't support
-  // window dragging, double-click to maximize, etc.
-  aura::Window* default_container =
-      GetContainer(internal::kShellWindowId_DefaultContainer);
-  default_container->SetEventFilter(NULL);
-
-  // Set up our new layout managers.
-  internal::CompactLayoutManager* compact_layout_manager =
-      new internal::CompactLayoutManager();
-  compact_layout_manager->set_status_area_widget(status_widget_);
-  internal::CompactStatusAreaLayoutManager* status_area_layout_manager =
-      new internal::CompactStatusAreaLayoutManager(status_widget_);
-  GetContainer(internal::kShellWindowId_StatusContainer)->
-      SetLayoutManager(status_area_layout_manager);
-  default_container->SetLayoutManager(compact_layout_manager);
-
-  // Keep the launcher for its data model, but hide it.  Do this before
-  // maximizing the windows so the work area is the right size.
-  launcher_->widget()->Hide();
-
-  // Set a solid black background.
-  SetDesktopBackgroundMode(BACKGROUND_SOLID_COLOR);
-}
-
-void Shell::SetupManagedWindowMode() {
+void Shell::InitLayoutManagers() {
   DCHECK(root_window_layout_);
   DCHECK(status_widget_);
 
@@ -696,10 +619,6 @@ void Shell::SetupManagedWindowMode() {
 
   // Create the desktop background image.
   SetDesktopBackgroundMode(BACKGROUND_IMAGE);
-}
-
-void Shell::ResetLayoutManager(int container_id) {
-  GetContainer(container_id)->SetLayoutManager(NULL);
 }
 
 void Shell::DisableWorkspaceGridLayout() {

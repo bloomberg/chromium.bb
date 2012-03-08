@@ -29,12 +29,6 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate,
                            public BrowserList::Observer,
                            public content::NotificationObserver {
  public:
-  // Returns the padding between the corner of the status area and the corner of
-  // the screen when we're displaying either the login/lock screen or a browser
-  // window in compact mode.  Exposed here for tests.
-  static gfx::Size GetCompactModeLoginAndLockOffset();
-  static gfx::Size GetCompactModeBrowserOffset();
-
   StatusAreaHostAura();
   virtual ~StatusAreaHostAura();
 

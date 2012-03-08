@@ -26,7 +26,7 @@ void LauncherWindowCycler::Cycle() {
   if (!windows_.get()) {
     windows_.reset(new WindowCycleList(
         ash::Shell::GetInstance()->delegate()->GetCycleWindowList(
-            ShellDelegate::SOURCE_LAUNCHER, ShellDelegate::ORDER_MRU)));
+            ShellDelegate::SOURCE_LAUNCHER)));
   }
   if (windows_->empty())
     delegate_->CreateNewWindow();

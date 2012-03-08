@@ -42,10 +42,6 @@
 #include "ui/views/window/frame_background.h"
 #include "ui/views/window/window_shape.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/aura_switches.h"
-#endif
-
 #if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"
 #endif
@@ -499,13 +495,6 @@ int OpaqueBrowserFrameView::NonClientBorderThickness() const {
        0 : kClientEdgeThickness);
 }
 
-void OpaqueBrowserFrameView::ModifyMaximizedFramePainting(
-    int* theme_offset,
-    SkBitmap** theme_frame,
-    SkBitmap** left_corner,
-    SkBitmap** right_corner) {
-}
-
 int OpaqueBrowserFrameView::CaptionButtonY(bool restored) const {
   // Maximized buttons start at window top so that even if their images aren't
   // drawn flush with the screen edge, they still obey Fitts' Law.
@@ -573,22 +562,11 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
       tp->GetBitmapNamed(IDR_WINDOW_TOP_CENTER),
       tp->GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE),
       tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER));
-#if defined(USE_AURA)
-  // TODO(jamescook): Remove this when Aura defaults to its own window frame,
-  // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
-  // avoid performance penalties associated with transparent layers.
-  frame_background_->SetCornerImages(
-      tp->GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT),
-      tp->GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT),
-      tp->GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT),
-      tp->GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT));
-#else
   frame_background_->SetCornerImages(
       tp->GetBitmapNamed(IDR_WINDOW_TOP_LEFT_CORNER),
       tp->GetBitmapNamed(IDR_WINDOW_TOP_RIGHT_CORNER),
       tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER),
       tp->GetBitmapNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER));
-#endif
   frame_background_->PaintRestored(canvas, this);
 
   // Note: When we don't have a toolbar, we need to draw some kind of bottom
@@ -602,18 +580,6 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_theme_bitmap(GetFrameBitmap());
   frame_background_->set_theme_overlay_bitmap(GetFrameOverlayBitmap());
   frame_background_->set_top_area_height(GetTopAreaHeight());
-
-  // Allow customization of these attributes.
-  SkBitmap* theme_frame = NULL;
-  SkBitmap* left = NULL;
-  SkBitmap* right = NULL;
-  int top_offset = 0;
-  ModifyMaximizedFramePainting(&top_offset, &theme_frame, &left, &right);
-  frame_background_->SetMaximizedCorners(left, right, top_offset);
-  // If user has a theme installed, theme_frame would be NULL and
-  // frame_background_ is unchanged.
-  if (theme_frame)
-    frame_background_->set_theme_bitmap(theme_frame);
 
   // Theme frame must be aligned with the tabstrip as if we were
   // in restored mode.  Note that the top of the tabstrip is
@@ -927,40 +893,6 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
       close_button_size.width() + right_extra_width,
       close_button_size.height());
 
-  // Both ChromeOS and Aura laptop mode use a single main window.
-  if (frame()->IsSingleWindowMode()) {
-    // LayoutWindowControls could be triggered from
-    // NativeWidgetGtk::UpdateWindowTitle(), which could happen when user
-    // navigates in fullscreen mode. And because
-    // BrowserFrameChromeos::IsMaximized() return false for fullscreen mode, we
-    // explicitly test fullscreen mode here and make it use the same code path
-    // as maximized mode.
-    // TODO(oshima): Optimize the relayout logic to defer the frame view's
-    // relayout until it is necessary, i.e when it becomes visible.
-    if (is_maximized || frame()->IsFullscreen()) {
-      minimize_button_->SetVisible(false);
-      restore_button_->SetVisible(false);
-      maximize_button_->SetVisible(false);
-
-      if (browser_view()->browser()->is_devtools()) {
-        close_button_->SetVisible(true);
-        minimize_button_->SetBounds(close_button_->bounds().x(), 0, 0, 0);
-      } else {
-        close_button_->SetVisible(false);
-        // Set the bounds of the minimize button so that we don't have to change
-        // other places that rely on the bounds. Put it slightly to the right
-        // of the edge of the view, so that when we remove the spacing it lines
-        // up with the edge.
-        minimize_button_->SetBounds(width() - FrameBorderThickness(false) +
-            kNewTabCaptionMaximizedSpacing, 0, 0, 0);
-      }
-      return;
-    }
-  }
-  // Aura can transition in and out of single-window mode, so be sure the
-  // close button is visible after the change.
-  close_button_->SetVisible(true);
-
   // When the window is restored, we show a maximized button; otherwise, we show
   // a restore button.
   bool is_restored = !is_maximized && !frame()->IsMinimized();
@@ -978,13 +910,7 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
                             caption_y, visible_button_size.width(),
                             visible_button_size.height());
 
-#if defined(USE_AURA)
-  // TODO(jamescook): Go back to showing minimize button when Aura uses its
-  // own custom window frame, BrowserNonClientFrameViewAura.
-  minimize_button_->SetVisible(false);
-#else
   minimize_button_->SetVisible(true);
-#endif
   minimize_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                       views::ImageButton::ALIGN_BOTTOM);
   gfx::Size minimize_button_size = minimize_button_->GetPreferredSize();

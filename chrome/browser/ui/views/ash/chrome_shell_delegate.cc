@@ -83,25 +83,10 @@ ChromeShellDelegate::CreateAppListViewDelegate() {
 }
 
 std::vector<aura::Window*> ChromeShellDelegate::GetCycleWindowList(
-    CycleSource source,
-    CycleOrder order) const {
-  std::vector<aura::Window*> windows;
-  switch (order) {
-    case ORDER_MRU:
-      // BrowserList maintains a list of browsers sorted by activity.
-      windows = GetBrowserWindows(BrowserList::begin_last_active(),
-                                  BrowserList::end_last_active());
-      break;
-    case ORDER_LINEAR:
-      // Just return windows in creation order.
-      windows = GetBrowserWindows(BrowserList::begin(),
-                                  BrowserList::end());
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  return windows;
+    CycleSource source) const {
+  // BrowserList maintains a list of browsers sorted by activity.
+  return GetBrowserWindows(BrowserList::begin_last_active(),
+                           BrowserList::end_last_active());
 }
 
 void ChromeShellDelegate::StartPartialScreenshot(
@@ -123,9 +108,4 @@ ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate(
 #else
   return NULL;
 #endif
-}
-
-bool ChromeShellDelegate::GetOverrideWindowMode(
-    ash::Shell::WindowMode* window_mode) {
-  return false;
 }

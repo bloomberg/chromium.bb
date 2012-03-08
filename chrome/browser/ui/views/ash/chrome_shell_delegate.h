@@ -40,16 +40,13 @@ class ChromeShellDelegate : public ash::ShellDelegate {
   virtual void Exit() OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(
-      CycleSource source,
-      CycleOrder order) const OVERRIDE;
+      CycleSource source) const OVERRIDE;
   virtual void StartPartialScreenshot(
       ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual ash::LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
       ash::SystemTray* tray) OVERRIDE;
-  virtual bool GetOverrideWindowMode(
-      ash::Shell::WindowMode* window_mode) OVERRIDE;
 
  private:
   static ChromeShellDelegate* instance_;

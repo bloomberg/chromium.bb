@@ -183,8 +183,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   }
 
   std::vector<aura::Window*> GetCycleWindowList(
-      CycleSource source,
-      CycleOrder order) const OVERRIDE {
+      CycleSource source) const OVERRIDE {
     aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
         ash::internal::kShellWindowId_DefaultContainer);
     std::vector<aura::Window*> windows = default_container->children();
@@ -207,11 +206,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate(
       ash::SystemTray* tray) {
     return NULL;
-  }
-
-  virtual bool GetOverrideWindowMode(
-      ash::Shell::WindowMode* window_mode) OVERRIDE {
-    return false;
   }
 
  private:

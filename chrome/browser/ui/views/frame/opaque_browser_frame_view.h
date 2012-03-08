@@ -52,18 +52,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // true, acts as if the window is restored regardless of the real mode.
   int NonClientTopBorderHeight(bool restored) const;
 
-  // Allows a subclass to tweak the frame. Chromeos uses this to support
-  // drawing themes correctly. |theme_offset| is used to adjust the y offset
-  // of the theme frame bitmap, so they start at the right location.
-  // |theme_frame| will be used as theme frame bitmap. |left_corner| and
-  // |right_corner| will be used on the left and right of the tabstrip area
-  // as opposed to the theme frame.
-  virtual void ModifyMaximizedFramePainting(
-      int* theme_offset,
-      SkBitmap** theme_frame,
-      SkBitmap** left_corner,
-      SkBitmap** right_corner);
-
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(

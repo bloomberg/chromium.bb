@@ -8,11 +8,14 @@
 #include "chrome/browser/ui/panels/panel_browser_frame_view.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/compact_browser_frame_view.h"
+#include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 #include "chrome/browser/ui/views/frame/popup_non_client_frame_view.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace browser {
+
+// TODO(jamescook): Delete this entire file when we're sure all Chrome OS
+// is on Aura.
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
@@ -22,7 +25,7 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     case Browser::TYPE_POPUP:
       return new PopupNonClientFrameView(frame);
     default:
-      return new CompactBrowserFrameView(frame, browser_view);
+      return new OpaqueBrowserFrameView(frame, browser_view);
   }
 }
 

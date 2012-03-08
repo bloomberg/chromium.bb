@@ -21,9 +21,6 @@ AshTestBase::~AshTestBase() {
 void AshTestBase::SetUp() {
   // Creates Shell and hook with Desktop.
   TestShellDelegate* delegate = new TestShellDelegate;
-  Shell::WindowMode window_mode = Shell::MODE_MANAGED;
-  if (GetOverrideWindowMode(&window_mode))
-    delegate->SetOverrideWindowMode(window_mode);
   ash::Shell::CreateInstance(delegate);
 
   helper_.SetUp();
@@ -41,10 +38,6 @@ void AshTestBase::TearDown() {
 
   // Tear down the shell.
   Shell::DeleteInstance();
-}
-
-bool AshTestBase::GetOverrideWindowMode(Shell::WindowMode* window_mode) {
-  return false;
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

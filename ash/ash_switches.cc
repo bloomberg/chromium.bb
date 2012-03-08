@@ -14,12 +14,6 @@ namespace switches {
 // Use the in-progress uber system tray.
 const char kAshUberTray[] = "ash-uber-tray";
 
-// Force the "compact" window mode regardless of the value of kAuraWindowMode.
-// This can be used to override a value set in chrome://flags.
-// Also implies fully-opaque windows for performance.
-// TODO(derat): Remove this once the normal mode is usable on all platforms.
-const char kAuraForceCompactWindowMode[] = "aura-force-compact-window-mode";
-
 // Use Google-style dialog box frames.
 const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
 
@@ -34,18 +28,6 @@ const char kAuraNoShadows[] = "aura-no-shadows";
 
 // If present animations are disabled.
 const char kAuraWindowAnimationsDisabled[] = "aura-window-animations-disabled";
-
-// Use a custom window style, e.g. --aura-window-mode=compact.
-// When this flag is not passed we default to "overlapping" mode.
-const char kAuraWindowMode[] = "aura-window-mode";
-
-// Show only a single maximized window, like traditional non-Aura builds.
-// Useful for low-resolution screens, such as on laptops.
-const char kAuraWindowModeCompact[] = "compact";
-
-// Smart window management with workspace manager that automatically lays out
-// windows.
-const char kAuraWindowModeManaged[] = "managed";
 
 // Use Aura to manage windows of type WINDOW_TYPE_PANEL.
 const char kAuraPanelManager[] = "aura-panels";

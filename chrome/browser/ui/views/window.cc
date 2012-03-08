@@ -46,15 +46,9 @@ views::Widget* CreateViewsWindowWithParent(gfx::NativeWindow parent,
   params.parent = parent;
 #endif
 #if defined(USE_AURA)
-  // Outside of compact mode, dialog windows may have translucent frames.
+  // Aura dialogs may have translucent frames.
   // TODO(jamescook): Find a better way to set this.
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  bool compact_window_mode =
-      cmd->HasSwitch(ash::switches::kAuraForceCompactWindowMode) ||
-      cmd->GetSwitchValueASCII(ash::switches::kAuraWindowMode) ==
-          ash::switches::kAuraWindowModeCompact;
-  if (!compact_window_mode)
-    params.transparent = true;
+  params.transparent = true;
 #endif
   widget->Init(params);
   return widget;

@@ -64,7 +64,7 @@ void FocusCycler::RotateFocus(Direction direction) {
       // Activate the browser window.
       const std::vector<aura::Window*>& windows =
           Shell::GetInstance()->delegate()->GetCycleWindowList(
-              ShellDelegate::SOURCE_LAUNCHER, ShellDelegate::ORDER_MRU);
+              ShellDelegate::SOURCE_LAUNCHER);
       if (!windows.empty()) {
         aura::client::GetActivationClient(Shell::GetRootWindow())->
             ActivateWindow(windows[0]);

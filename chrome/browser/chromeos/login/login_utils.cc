@@ -1048,7 +1048,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kTouchDevices,
 #if defined(USE_AURA)
       ash::switches::kAshUberTray,
-      ash::switches::kAuraForceCompactWindowMode,
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
       ash::switches::kAuraPanelManager,

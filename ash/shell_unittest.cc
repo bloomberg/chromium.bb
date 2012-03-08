@@ -287,35 +287,6 @@ TEST_F(ShellTest, IsScreenLocked) {
   EXPECT_FALSE(Shell::GetInstance()->IsScreenLocked());
 }
 
-TEST_F(ShellTest, ComputeWindowMode) {
-  // By default, we use managed mode.
-  Shell* shell = Shell::GetInstance();
-  Shell::TestApi test_api(shell);
-  CommandLine command_line_blank(CommandLine::NO_PROGRAM);
-  EXPECT_EQ(Shell::MODE_MANAGED,
-            test_api.ComputeWindowMode(&command_line_blank));
-
-  // Sometimes we force compact mode.
-  CommandLine command_line_force(CommandLine::NO_PROGRAM);
-  command_line_force.AppendSwitch(switches::kAuraForceCompactWindowMode);
-  EXPECT_EQ(Shell::MODE_COMPACT,
-            test_api.ComputeWindowMode(&command_line_force));
-
-  // The user can set compact mode.
-  CommandLine command_line_compact(CommandLine::NO_PROGRAM);
-  command_line_compact.AppendSwitchASCII(switches::kAuraWindowMode,
-                                         switches::kAuraWindowModeCompact);
-  EXPECT_EQ(Shell::MODE_COMPACT,
-            test_api.ComputeWindowMode(&command_line_compact));
-
-  // The user can set managed.
-  CommandLine command_line_managed(CommandLine::NO_PROGRAM);
-  command_line_managed.AppendSwitchASCII(switches::kAuraWindowMode,
-                                         switches::kAuraWindowModeManaged);
-  EXPECT_EQ(Shell::MODE_MANAGED,
-            test_api.ComputeWindowMode(&command_line_managed));
-}
-
 // Fails on Mac, see http://crbug.com/115662
 #if defined(OS_MACOSX)
 #define MAYBE_ManagedWindowModeBasics FAILS_ManagedWindowModeBasics
@@ -328,8 +299,6 @@ TEST_F(ShellTest, MAYBE_ManagedWindowModeBasics) {
 
   // We start with the usual window containers.
   ExpectAllContainers();
-  // We're not in compact window mode by default.
-  EXPECT_FALSE(shell->IsWindowModeCompact());
   // We have a default container event filter (for window drags).
   EXPECT_TRUE(GetDefaultContainer()->event_filter());
   // Launcher is visible.
@@ -376,58 +345,6 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   // Restoring the window restores it.
   widget->Restore();
   EXPECT_TRUE(Shell::GetInstance()->shelf()->visible());
-
-  // Clean up.
-  widget->Close();
-}
-
-// By implementing GetOverrideWindowMode we make the Shell come up in compact
-// window mode.
-class ShellCompactWindowModeTest : public test::AshTestBase {
- public:
-  ShellCompactWindowModeTest() {}
-  virtual ~ShellCompactWindowModeTest() {}
-
- protected:
-  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode) {
-    *window_mode = Shell::MODE_COMPACT;
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellCompactWindowModeTest);
-};
-
-TEST_F(ShellCompactWindowModeTest, CompactWindowModeBasics) {
-  Shell* shell = Shell::GetInstance();
-  Shell::TestApi test_api(shell);
-
-  EXPECT_TRUE(shell->IsWindowModeCompact());
-  // Compact mode does not use a default container event filter.
-  EXPECT_FALSE(GetDefaultContainer()->event_filter());
-  // We have all the usual containers.
-  ExpectAllContainers();
-
-  // Compact mode has no shelf.
-  EXPECT_TRUE(shell->shelf() == NULL);
-
-  // Create a window.  In compact mode, windows are created maximized.
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_WINDOW);
-  widget_params.bounds.SetRect(11, 22, 300, 400);
-  widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
-  views::Widget* widget = CreateTestWindow(widget_params);
-  widget->Show();
-
-  // Window bounds got updated to fill the work area.
-  EXPECT_EQ(widget->GetWorkAreaBoundsInScreen(),
-            widget->GetWindowScreenBounds());
-  // Launcher is hidden.
-  views::Widget* launcher_widget = shell->launcher()->widget();
-  EXPECT_FALSE(launcher_widget->IsVisible());
-  // Desktop background widget is gone but we have a layer.
-  EXPECT_FALSE(test_api.root_window_layout()->background_widget());
-  EXPECT_TRUE(test_api.root_window_layout()->background_layer());
 
   // Clean up.
   widget->Close();

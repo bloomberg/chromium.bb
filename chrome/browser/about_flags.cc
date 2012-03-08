@@ -87,18 +87,6 @@ const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
     switches::kOmniboxInlineHistoryQuickProviderProhibited }
 };
 
-#if defined(USE_AURA)
-const Experiment::Choice kAuraWindowModeChoices[] = {
-  { IDS_FLAGS_AURA_WINDOW_MODE_AUTOMATIC, "", "" },
-  { IDS_FLAGS_AURA_WINDOW_MODE_COMPACT,
-      ash::switches::kAuraWindowMode,
-      ash::switches::kAuraWindowModeCompact },
-  { IDS_FLAGS_AURA_WINDOW_MODE_MANAGED,
-      ash::switches::kAuraWindowMode,
-      ash::switches::kAuraWindowModeManaged },
-};
-#endif
-
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -457,13 +445,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAuraGoogleDialogFrames)
   },
-  {
-    "aura-window-mode",
-    IDS_FLAGS_AURA_WINDOW_MODE_NAME,
-    IDS_FLAGS_AURA_WINDOW_MODE_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    MULTI_VALUE_TYPE(kAuraWindowModeChoices)
-  },
 #endif  // defined(USE_AURA)
   {
     "enable-gamepad",
@@ -798,16 +779,6 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
                     l10n_util::GetStringUTF16(
                         experiment.visible_description_id));
     bool supported = !!(experiment.supported_platforms & current_platform);
-#if defined(USE_AURA) && defined(OS_CHROMEOS)
-    // Some Chrome OS devices currently require Aura compact window mode, so
-    // don't offer a choice of mode.
-    // TODO(jamescook): Remove after Aura supports normal mode on all devices,
-    // likely around M19.
-    if (experiment.visible_name_id == IDS_FLAGS_AURA_WINDOW_MODE_NAME &&
-        CommandLine::ForCurrentProcess()->
-            HasSwitch(ash::switches::kAuraForceCompactWindowMode))
-      supported = false;
-#endif
     data->SetBoolean("supported", supported);
 
     ListValue* supported_platforms = new ListValue();

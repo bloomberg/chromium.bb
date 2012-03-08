@@ -34,11 +34,6 @@ class SystemTrayDelegate;
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
  public:
-  enum CycleOrder {
-    ORDER_MRU,  // Most recently used
-    ORDER_LINEAR
-  };
-
   // Source requesting the window list.
   enum CycleSource {
     // Windows are going to be used for alt-tab (or F5).
@@ -72,8 +67,7 @@ class ASH_EXPORT ShellDelegate {
   // at the front of the list.  Otherwise any order may be returned.  The list
   // does not contain NULL pointers.
   virtual std::vector<aura::Window*> GetCycleWindowList(
-      CycleSource source,
-      CycleOrder order) const = 0;
+      CycleSource source) const = 0;
 
   // Invoked to start taking partial screenshot.
   virtual void StartPartialScreenshot(
@@ -86,11 +80,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a system-tray delegate. Shell takes ownership of the delegate.
   virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* tray) = 0;
-
-  // Returns true if the delegate wants to override the window mode. Used only
-  // by testing. Returning false causes the shell to determine the default.
-  // TODO(beng): This can probably be removed once we only have one window mode.
-  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode) = 0;
 };
 
 }  // namespace ash

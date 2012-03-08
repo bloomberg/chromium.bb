@@ -17,8 +17,6 @@ class TestShellDelegate : public ShellDelegate {
   TestShellDelegate();
   virtual ~TestShellDelegate();
 
-  void SetOverrideWindowMode(Shell::WindowMode window_mode);
-
   // Overridden from ShellDelegate:
   virtual views::Widget* CreateStatusArea() OVERRIDE;
 #if defined(OS_CHROMEOS)
@@ -27,19 +25,14 @@ class TestShellDelegate : public ShellDelegate {
   virtual void Exit() OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual std::vector<aura::Window*> GetCycleWindowList(
-      CycleSource source,
-      CycleOrder order) const OVERRIDE;
+      CycleSource source) const OVERRIDE;
   virtual void StartPartialScreenshot(
       ScreenshotDelegate* screenshot_delegate) OVERRIDE;
   virtual LauncherDelegate* CreateLauncherDelegate(
       ash::LauncherModel* model) OVERRIDE;
   virtual SystemTrayDelegate* CreateSystemTrayDelegate(SystemTray* t) OVERRIDE;
-  virtual bool GetOverrideWindowMode(Shell::WindowMode* window_mode) OVERRIDE;
 
  private:
-  bool override_window_mode_;
-  Shell::WindowMode window_mode_;
-
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };
 
