@@ -11,6 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_observer.h"
@@ -26,6 +28,12 @@ class OptionsUI : public content::WebUIController,
  public:
   explicit OptionsUI(content::WebUI* web_ui);
   virtual ~OptionsUI();
+
+  // Takes the suggestions from |autocompleteResult| and adds them to
+  // |suggestions| so that they can be passed to a JavaScript function.
+  static void ProcessAutocompleteSuggestions(
+      const AutocompleteResult& autocompleteResult,
+      base::ListValue * const suggestions);
 
   static RefCountedMemory* GetFaviconResourceBytes();
 

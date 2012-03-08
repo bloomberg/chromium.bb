@@ -16,6 +16,8 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +31,7 @@
 #include "chrome/browser/ui/webui/options2/core_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/font_settings_handler2.h"
 #include "chrome/browser/ui/webui/options2/handler_options_handler2.h"
+#include "chrome/browser/ui/webui/options2/home_page_overlay_handler2.h"
 #include "chrome/browser/ui/webui/options2/import_data_handler2.h"
 #include "chrome/browser/ui/webui/options2/language_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/manage_profile_handler2.h"
@@ -178,6 +181,7 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
+  AddOptionsPageUIHandler(localized_strings, new HomePageOverlayHandler());
   AddOptionsPageUIHandler(localized_strings, new WebIntentsSettingsHandler());
 #if defined(OS_CHROMEOS)
   AddOptionsPageUIHandler(localized_strings,
@@ -270,6 +274,27 @@ void OptionsUI::DidBecomeActiveForReusedRenderView() {
   // happens, call reinitializeCore (which is a no-op unless the DOM was already
   // initialized).
   web_ui()->CallJavascriptFunction("OptionsPage.reinitializeCore");
+}
+
+// static
+void OptionsUI::ProcessAutocompleteSuggestions(
+      const AutocompleteResult& autocompleteResult,
+      ListValue * const suggestions) {
+  for (size_t i = 0; i < autocompleteResult.size(); ++i) {
+    const AutocompleteMatch& match = autocompleteResult.match_at(i);
+    AutocompleteMatch::Type type = match.type;
+    if (type != AutocompleteMatch::HISTORY_URL &&
+        type != AutocompleteMatch::HISTORY_TITLE &&
+        type != AutocompleteMatch::HISTORY_BODY &&
+        type != AutocompleteMatch::HISTORY_KEYWORD &&
+        type != AutocompleteMatch::NAVSUGGEST)
+      continue;
+    DictionaryValue* entry = new DictionaryValue();
+    entry->SetString("title", match.description);
+    entry->SetString("displayURL", match.contents);
+    entry->SetString("url", match.destination_url.spec());
+    suggestions->Append(entry);
+  }
 }
 
 // static

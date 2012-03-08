@@ -18,8 +18,6 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/auto_launch_trial.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
@@ -197,8 +195,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
     { "hideAdvancedSettings", IDS_SETTINGS_HIDE_ADVANCED_SETTINGS },
     { "homePage", IDS_OPTIONS2_HOMEPAGE },
     { "homePageChoose", IDS_OPTIONS2_HOMEPAGE_CHOOSE },
-    { "homePageDialogLabel", IDS_OPTIONS2_HOMEPAGE_DIALOG_LABEL },
-    { "homePageTitle", IDS_OPTIONS2_HOMEPAGE_TITLE },
     { "homePageNone", IDS_OPTIONS2_HOMEPAGE_NONE },
     { "homePageNtp", IDS_OPTIONS2_HOMEPAGE_NTP },
     { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
@@ -312,8 +308,6 @@ void BrowserOptionsHandler::GetLocalizedValues(
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterCloudPrintStrings(localized_strings);
-  RegisterTitle(localized_strings, "homePageOverlay",
-                IDS_OPTIONS2_HOMEPAGE_TITLE);
 
   localized_strings->SetString(
       "syncOverview",
@@ -429,10 +423,6 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setDefaultSearchEngine",
       base::Bind(&BrowserOptionsHandler::SetDefaultSearchEngine,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "requestAutocompleteSuggestions",
-      base::Bind(&BrowserOptionsHandler::RequestAutocompleteSuggestions,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "enableInstant",
@@ -559,7 +549,6 @@ void BrowserOptionsHandler::Initialize() {
   profile->GetChromeURLDataManager()->AddDataSource(
       new FaviconSource(profile, FaviconSource::FAVICON));
 
-  homepage_.Init(prefs::kHomePage, prefs, NULL);
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,
                                g_browser_process->local_state(),
                                this);
@@ -577,8 +566,6 @@ void BrowserOptionsHandler::Initialize() {
 
   UpdateSearchEngines();
   ObserveThemeChanged();
-
-  autocomplete_controller_.reset(new AutocompleteController(profile, this));
 
 #if defined(OS_WIN)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -870,16 +857,6 @@ void BrowserOptionsHandler::Observe(
   }
 }
 
-void BrowserOptionsHandler::RequestAutocompleteSuggestions(
-    const ListValue* args) {
-  string16 input;
-  CHECK_EQ(args->GetSize(), 1U);
-  CHECK(args->GetString(0, &input));
-
-  autocomplete_controller_->Start(input, string16(), true, false, false,
-                                  AutocompleteInput::ALL_MATCHES);
-}
-
 void BrowserOptionsHandler::EnableInstant(const ListValue* args) {
   InstantController::Enable(Profile::FromWebUI(web_ui()));
 }
@@ -914,29 +891,6 @@ void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
       !InstantFieldTrial::IsHiddenExperiment(profile));
   web_ui()->CallJavascriptFunction("BrowserOptions.setInstantFieldTrialStatus",
                                    enabled);
-}
-
-void BrowserOptionsHandler::OnResultChanged(bool default_match_changed) {
-  const AutocompleteResult& result = autocomplete_controller_->result();
-  ListValue suggestions;
-  for (size_t i = 0; i < result.size(); ++i) {
-    const AutocompleteMatch& match = result.match_at(i);
-    AutocompleteMatch::Type type = match.type;
-    if (type != AutocompleteMatch::HISTORY_URL &&
-        type != AutocompleteMatch::HISTORY_TITLE &&
-        type != AutocompleteMatch::HISTORY_BODY &&
-        type != AutocompleteMatch::HISTORY_KEYWORD &&
-        type != AutocompleteMatch::NAVSUGGEST)
-      continue;
-    DictionaryValue* entry = new DictionaryValue();
-    entry->SetString("title", match.description);
-    entry->SetString("displayURL", match.contents);
-    entry->SetString("url", match.destination_url.spec());
-    suggestions.Append(entry);
-  }
-
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.updateAutocompleteSuggestions", suggestions);
 }
 
 void BrowserOptionsHandler::SendProfilesInfo() {

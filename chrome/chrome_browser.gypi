@@ -4233,6 +4233,8 @@
         'browser/ui/webui/options2/font_settings_utils2_x11.cc',
         'browser/ui/webui/options2/handler_options_handler2.cc',
         'browser/ui/webui/options2/handler_options_handler2.h',
+        'browser/ui/webui/options2/home_page_overlay_handler2.cc',
+        'browser/ui/webui/options2/home_page_overlay_handler2.h',
         'browser/ui/webui/options2/import_data_handler2.cc',
         'browser/ui/webui/options2/import_data_handler2.h',
         'browser/ui/webui/options2/language_options_handler2.cc',

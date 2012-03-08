@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_handler.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
@@ -33,7 +32,6 @@ namespace options2 {
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler
     : public OptionsPageUIHandler,
-      public AutocompleteControllerDelegate,
       public CloudPrintSetupHandlerDelegate,
       public ProfileSyncServiceObserver,
       public SelectFileDialog::Listener,
@@ -51,9 +49,6 @@ class BrowserOptionsHandler
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged() OVERRIDE;
-
-  // AutocompleteControllerDelegate implementation.
-  virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
 
   // ShellIntegration::DefaultWebClientObserver implementation.
   virtual void SetDefaultWebClientUIState(
@@ -81,10 +76,6 @@ class BrowserOptionsHandler
 
   // Sets the search engine at the given index to be default. Called from WebUI.
   void SetDefaultSearchEngine(const base::ListValue* args);
-
-  // Gets autocomplete suggestions asynchronously for the given string.
-  // Called from WebUI.
-  void RequestAutocompleteSuggestions(const base::ListValue* args);
 
   // Enables/disables Instant.
   void EnableInstant(const base::ListValue* args);
@@ -277,8 +268,6 @@ class BrowserOptionsHandler
   BooleanPrefMember default_browser_policy_;
 
   TemplateURLService* template_url_service_;  // Weak.
-
-  scoped_ptr<AutocompleteController> autocomplete_controller_;
 
   // Used to get |weak_ptr_| to self for use on the File thread.
   base::WeakPtrFactory<BrowserOptionsHandler> weak_ptr_factory_for_file_;

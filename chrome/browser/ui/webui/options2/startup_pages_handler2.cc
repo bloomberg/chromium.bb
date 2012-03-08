@@ -246,22 +246,7 @@ void StartupPagesHandler::RequestAutocompleteSuggestions(
 void StartupPagesHandler::OnResultChanged(bool default_match_changed) {
   const AutocompleteResult& result = autocomplete_controller_->result();
   ListValue suggestions;
-  for (size_t i = 0; i < result.size(); ++i) {
-    const AutocompleteMatch& match = result.match_at(i);
-    AutocompleteMatch::Type type = match.type;
-    if (type != AutocompleteMatch::HISTORY_URL &&
-        type != AutocompleteMatch::HISTORY_TITLE &&
-        type != AutocompleteMatch::HISTORY_BODY &&
-        type != AutocompleteMatch::HISTORY_KEYWORD &&
-        type != AutocompleteMatch::NAVSUGGEST)
-      continue;
-    DictionaryValue* entry = new DictionaryValue();
-    entry->SetString("title", match.description);
-    entry->SetString("displayURL", match.contents);
-    entry->SetString("url", match.destination_url.spec());
-    suggestions.Append(entry);
-  }
-
+  OptionsUI::ProcessAutocompleteSuggestions(result, &suggestions);
   web_ui()->CallJavascriptFunction(
       "StartupOverlay.updateAutocompleteSuggestions", suggestions);
 }

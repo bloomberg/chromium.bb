@@ -28,14 +28,6 @@ cr.define('options', function() {
     homePageIsNtp_: false,
 
     /**
-     * An autocomplete list that can be attached to the home page URL text field
-     * during editing.
-     * @type {HTMLElement}
-     * @private
-     */
-    autocompleteList_: null,
-
-    /**
      * The cached value of the instant.confirm_dialog_shown preference.
      * @type {bool}
      * @private
@@ -157,19 +149,6 @@ cr.define('options', function() {
       Preferences.getInstance().addEventListener(
           'restore_session_state.dialog_shown',
           this.onSessionRestoreDialogShownChanged_.bind(this));
-
-      // Text fields may change widths when the window changes size, so make
-      // sure the suggestion list stays in sync.
-      window.addEventListener('resize', function() {
-        self.autocompleteList_.syncWidthToInput();
-      });
-
-      var suggestionList = new cr.ui.AutocompleteList();
-      suggestionList.autoExpands = true;
-      suggestionList.suggestionUpdateRequestCallback =
-          this.requestAutocompleteSuggestions_.bind(this);
-      $('main-content').appendChild(suggestionList);
-      this.autocompleteList_ = suggestionList;
 
       // Users section.
       var profilesList = $('profiles-list');
@@ -774,36 +753,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Sends an asynchronous request for new autocompletion suggestions for the
-     * the given query. When new suggestions are available, the C++ handler will
-     * call updateAutocompleteSuggestions_.
-     * @param {string} query List of autocomplete suggestions.
-     * @private
-     */
-    requestAutocompleteSuggestions_: function(query) {
-      chrome.send('requestAutocompleteSuggestions', [query]);
-    },
-
-    /**
-     * Updates the autocomplete suggestion list with the given entries.
-     * @param {Array} pages List of autocomplete suggestions.
-     * @private
-     */
-    // This function is duplicated between here and startup_overlay.js. There is
-    // also some autocomplete-related duplication in the C++ handler code,
-    // browser_options_handler2.cc and startup_pages_handler2.cc.
-    // TODO(tbreisacher): remove the duplication by refactoring
-    updateAutocompleteSuggestions_: function(suggestions) {
-      var list = this.autocompleteList_;
-      // If the trigger for this update was a value being selected from the
-      // current list, do nothing.
-      if (list.targetInput && list.selectedItem &&
-          list.selectedItem['url'] == list.targetInput.value)
-        return;
-      list.suggestions = suggestions;
-    },
-
-    /**
      * Get the selected profile item from the profile list. This also works
      * correctly if the list is not displayed.
      * @return {Object} the profile item object, or null if nothing is selected.
@@ -1206,7 +1155,6 @@ cr.define('options', function() {
     'setVirtualKeyboardCheckboxState',
     'showBluetoothSettings',
     'updateAccountPicture',
-    'updateAutocompleteSuggestions',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
     'updateManagedBannerVisibility',
