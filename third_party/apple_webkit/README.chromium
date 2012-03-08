@@ -1,7 +1,13 @@
 Name: WebKit private system interface
 URL: http://svn.webkit.org/repository/webkit/trunk/WebKitLibraries/libWebKitSystemInterfaceLeopard.a@106868
-SVN Revision: r106868
+Version: r106868
 Date: 6 February 2012
+Security Critical: Yes
 
 Local changes:
 Added the contents of LICENSE to WebKitSystemInterface.h.
+Removed architectures ppc, ppc64 from the archive by running:
+  cp third_party/apple_webkit/libWebKitSystemInterfaceLeopard.a .
+  lipo -remove ppc -remove ppc64 \
+    -output third_party/apple_webkit/libWebKitSystemInterfaceLeopard.a \
+    libWebKitSystemInterfaceLeopard.a
