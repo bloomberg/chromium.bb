@@ -1048,9 +1048,8 @@
    fun:GURL::ComponentString
    fun:GURL::HostNoBrackets
    fun:net::::InitSocketPoolHelper
-   fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
+   fun:net::*
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
-   fun:void DispatchToMethod
 }
 {
    bug_81575
