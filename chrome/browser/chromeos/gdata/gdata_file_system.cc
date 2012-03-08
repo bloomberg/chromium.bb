@@ -238,9 +238,9 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   if (thumbnail_link)
     file->thumbnail_url_ = thumbnail_link->href();
 
-  const Link* edit_link = doc->GetLinkByType(Link::EDIT);
-  if (edit_link)
-    file->edit_url_ = edit_link->href();
+  const Link* alternate_link = doc->GetLinkByType(Link::ALTERNATE);
+  if (alternate_link)
+    file->edit_url_ = alternate_link->href();
 
   // TODO(gspencer): Add support for fetching cache state from the cache,
   // when the cache code is done.

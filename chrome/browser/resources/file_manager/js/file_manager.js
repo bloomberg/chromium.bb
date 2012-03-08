@@ -2552,21 +2552,11 @@ FileManager.prototype = {
     } else if (id == 'open-hosted') {
       // TODO (kaznacheev)
       if (this.isOnGData()) {
-        // Hosted file.
-        // We do not have a correct URL to open the Docs page, so we make it up.
-        function makeUpDocsUrl(editUrl, fileUrl) {
-          editUrl = editUrl.replace('/feeds/default/private/full', '');
-          if (fileUrl.match(/\.gsheet$/))
-            return editUrl.replace('%3A', '/ccc?key=');
-          else
-            return  editUrl.replace('%3A', '/d/') + '/edit';
-        }
-
         chrome.fileBrowserPrivate.getGDataFileProperties(urls,
             function(results) {
               for (var i = 0; i != results.length; i++) {
                 chrome.tabs.create({
-                  url: makeUpDocsUrl(results[i].editUrl, results[i].fileUrl)
+                  url: results[i].editUrl
                 });
               }
             });
