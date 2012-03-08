@@ -968,8 +968,9 @@
 {
    bug_79328
    Heapcheck:Leak
+   ...
    fun:TestingProfile::CreateRequestContext
-   fun:browser_sync::*
+   fun:*
 }
 {
    bug_79568
