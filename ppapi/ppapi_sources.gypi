@@ -5,6 +5,7 @@
 {
   'variables': {
     'c_source_files': [
+      'c/pp_array_output.h',
       'c/pp_bool.h',
       'c/pp_completion_callback.h',
       'c/pp_errors.h',
