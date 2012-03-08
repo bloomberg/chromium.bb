@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/interrupt_reasons.h"
+#include "content/browser/download/download_interrupt_reasons_impl.h"
 
 #include "base/logging.h"
+
+namespace content {
 
 #define FILE_ERROR_TO_INTERRUPT_REASON(n, d)  \
     case net::ERR_##n: return DOWNLOAD_INTERRUPT_REASON_FILE_##d;
@@ -15,7 +17,7 @@
 #define SERVER_ERROR_TO_INTERRUPT_REASON(n, d)  \
     case net::ERR_##n: return DOWNLOAD_INTERRUPT_REASON_SERVER_##d;
 
-InterruptReason ConvertNetErrorToInterruptReason(
+DownloadInterruptReason ConvertNetErrorToInterruptReason(
     net::Error net_error, DownloadInterruptSource source) {
   switch (net_error) {
     // File errors.
@@ -88,7 +90,7 @@ InterruptReason ConvertNetErrorToInterruptReason(
 #undef NET_ERROR_TO_INTERRUPT_REASON
 #undef SERVER_ERROR_TO_INTERRUPT_REASON
 
-std::string InterruptReasonDebugString(InterruptReason error) {
+std::string InterruptReasonDebugString(DownloadInterruptReason error) {
 
 #define INTERRUPT_REASON(name, value)  \
     case DOWNLOAD_INTERRUPT_REASON_##name: return #name;
@@ -96,7 +98,7 @@ std::string InterruptReasonDebugString(InterruptReason error) {
   switch (error) {
     INTERRUPT_REASON(NONE, 0)
 
-#include "content/browser/download/interrupt_reason_values.h"
+#include "content/public/browser/download_interrupt_reason_values.h"
 
     default:
       break;
@@ -106,3 +108,5 @@ std::string InterruptReasonDebugString(InterruptReason error) {
 
   return "Unknown error";
 }
+
+}  // namespace content

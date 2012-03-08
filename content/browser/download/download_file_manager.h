@@ -49,9 +49,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "net/base/net_errors.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -110,7 +110,7 @@ class CONTENT_EXPORT DownloadFileManager
   // fine-tune the error message.  It is empty if the transaction
   // was not performed securely.
   void OnResponseCompleted(content::DownloadId global_id,
-                           InterruptReason reason,
+                           content::DownloadInterruptReason reason,
                            const std::string& security_info);
 
   // Handlers for notifications sent from the UI thread and run on the

@@ -36,8 +36,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/message_loop_helpers.h"
 #include "base/time.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_log.h"
@@ -139,10 +139,11 @@ class CONTENT_EXPORT DownloadManager
   // |hash_state| is the current state of the hash of the data that has been
   // downloaded.
   // |reason| is a download interrupt reason code.
-  virtual void OnDownloadInterrupted(int32 download_id,
-                                     int64 size,
-                                     const std::string& hash_state,
-                                     InterruptReason reason) = 0;
+  virtual void OnDownloadInterrupted(
+      int32 download_id,
+      int64 size,
+      const std::string& hash_state,
+      content::DownloadInterruptReason reason) = 0;
 
   // Called when the download is renamed to its final name.
   // |uniquifier| is a number used to make unique names for the file.  It is

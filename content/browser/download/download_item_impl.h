@@ -131,7 +131,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual void MaybeCompleteDownload() OVERRIDE;
   virtual void Interrupted(int64 size,
                            const std::string& hash_state,
-                           InterruptReason reason) OVERRIDE;
+                           content::DownloadInterruptReason reason) OVERRIDE;
   virtual void Delete(DeleteReason reason) OVERRIDE;
   virtual void Remove() OVERRIDE;
   virtual bool TimeRemaining(base::TimeDelta* remaining) const OVERRIDE;
@@ -194,7 +194,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual bool GetOpened() const OVERRIDE;
   virtual const std::string& GetLastModifiedTime() const OVERRIDE;
   virtual const std::string& GetETag() const OVERRIDE;
-  virtual InterruptReason GetLastReason() const OVERRIDE;
+  virtual content::DownloadInterruptReason GetLastReason() const OVERRIDE;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const OVERRIDE;
   virtual DownloadStateInfo GetStateInfo() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
@@ -316,7 +316,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   std::string etag_;
 
   // Last reason.
-  InterruptReason last_reason_;
+  content::DownloadInterruptReason last_reason_;
 
   // Start time for recording statistics.
   base::TimeTicks start_tick_;

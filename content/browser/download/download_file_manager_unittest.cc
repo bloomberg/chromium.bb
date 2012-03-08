@@ -12,6 +12,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/public/browser/download_id.h"
@@ -267,8 +268,8 @@ class DownloadFileManagerTest : public testing::Test {
               id.local(),
               byte_count_[id],
               "",
-              ConvertNetErrorToInterruptReason(error_to_insert,
-                                               DOWNLOAD_INTERRUPT_FROM_DISK)));
+              content::ConvertNetErrorToInterruptReason(
+                  error_to_insert, content::DOWNLOAD_INTERRUPT_FROM_DISK)));
 
       ProcessAllPendingMessages();
       ++error_count_[id];
@@ -347,8 +348,9 @@ class DownloadFileManagerTest : public testing::Test {
                       id.local(),
                       byte_count_[id],
                       "",
-                      ConvertNetErrorToInterruptReason(
-                          rename_error, DOWNLOAD_INTERRUPT_FROM_DISK)));
+                      content::ConvertNetErrorToInterruptReason(
+                          rename_error,
+                          content::DOWNLOAD_INTERRUPT_FROM_DISK)));
       ProcessAllPendingMessages();
       ++error_count_[id];
     } else if (state == COMPLETE) {
@@ -364,7 +366,7 @@ class DownloadFileManagerTest : public testing::Test {
   // DOWNLOAD_INTERRUPT_REASON_NONE.
   // |security_string| is the extra security information, if interrupted.
   void OnResponseCompleted(const DownloadId& id,
-                           InterruptReason reason,
+                           content::DownloadInterruptReason reason,
                            const std::string& security_string) {
     //  OnResponseCompleted
     //    GetDownloadFile
@@ -384,7 +386,7 @@ class DownloadFileManagerTest : public testing::Test {
 
     EXPECT_CALL(*file, Finish());
     EXPECT_CALL(*file, GetDownloadManager());
-    if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+    if (reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
       EXPECT_CALL(*file, GetHash(_))
           .WillOnce(Return(false));
     } else {
@@ -396,7 +398,7 @@ class DownloadFileManagerTest : public testing::Test {
 
     download_file_manager_->OnResponseCompleted(id, reason, security_string);
 
-    if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+    if (reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
       EXPECT_CALL(*download_manager_,
                   OnResponseCompleted(id.local(), byte_count_[id], ""))
           .Times(1);
@@ -413,7 +415,7 @@ class DownloadFileManagerTest : public testing::Test {
 
     ProcessAllPendingMessages();
 
-    if (reason != DOWNLOAD_INTERRUPT_REASON_NONE)
+    if (reason != content::DOWNLOAD_INTERRUPT_REASON_NONE)
       ++error_count_[id];
 
     ClearExpectations(id);
@@ -516,7 +518,7 @@ TEST_F(DownloadFileManagerTest, CompleteDownload) {
   UpdateDownload(dummy_id, kTestData2, strlen(kTestData2), net::OK);
   UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
 
-  OnResponseCompleted(dummy_id, DOWNLOAD_INTERRUPT_REASON_NONE, "");
+  OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
 
   CleanUp(dummy_id);
 }
@@ -533,7 +535,7 @@ TEST_F(DownloadFileManagerTest, CompleteDownloadWithError) {
   UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
 
   OnResponseCompleted(dummy_id,
-                      DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED,
+                      content::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED,
                       "");
 
   CleanUp(dummy_id);
@@ -554,7 +556,7 @@ TEST_F(DownloadFileManagerTest, RenameInProgress) {
   RenameFile(dummy_id, foo, foo, net::OK, IN_PROGRESS, OVERWRITE);
   UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
 
-  OnResponseCompleted(dummy_id, DOWNLOAD_INTERRUPT_REASON_NONE, "");
+  OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
 
   CleanUp(dummy_id);
 }
@@ -590,7 +592,7 @@ TEST_F(DownloadFileManagerTest, RenameCompleting) {
   UpdateDownload(dummy_id, kTestData2, strlen(kTestData2), net::OK);
   UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
 
-  OnResponseCompleted(dummy_id, DOWNLOAD_INTERRUPT_REASON_NONE, "");
+  OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
 
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   RenameFile(dummy_id, foo, foo, net::OK, COMPLETE, OVERWRITE);
@@ -611,7 +613,7 @@ TEST_F(DownloadFileManagerTest, RenameCompletingWithUniquification) {
   UpdateDownload(dummy_id, kTestData2, strlen(kTestData2), net::OK);
   UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
 
-  OnResponseCompleted(dummy_id, DOWNLOAD_INTERRUPT_REASON_NONE, "");
+  OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
 
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   FilePath unique_foo(foo.InsertBeforeExtension(FILE_PATH_LITERAL(" (1)")));
@@ -637,7 +639,7 @@ TEST_F(DownloadFileManagerTest, RenameCompletingWithError) {
   UpdateDownload(dummy_id, kTestData2, strlen(kTestData2), net::OK);
   UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
 
-  OnResponseCompleted(dummy_id, DOWNLOAD_INTERRUPT_REASON_NONE, "");
+  OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
 
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   RenameFile(dummy_id, foo, foo, net::ERR_FILE_PATH_TOO_LONG,
@@ -662,7 +664,7 @@ TEST_F(DownloadFileManagerTest, RenameTwice) {
   RenameFile(dummy_id, crfoo, crfoo, net::OK, IN_PROGRESS, OVERWRITE);
   UpdateDownload(dummy_id, kTestData3, strlen(kTestData3), net::OK);
 
-  OnResponseCompleted(dummy_id, DOWNLOAD_INTERRUPT_REASON_NONE, "");
+  OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
 
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   RenameFile(dummy_id, foo, foo, net::OK, COMPLETE, OVERWRITE);
@@ -701,9 +703,9 @@ TEST_F(DownloadFileManagerTest, TwoDownloads) {
   UpdateDownload(dummy_id2, kTestData5, strlen(kTestData5), net::OK);
   UpdateDownload(dummy_id2, kTestData6, strlen(kTestData6), net::OK);
 
-  OnResponseCompleted(dummy_id2, DOWNLOAD_INTERRUPT_REASON_NONE, "");
+  OnResponseCompleted(dummy_id2, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
 
-  OnResponseCompleted(dummy_id, DOWNLOAD_INTERRUPT_REASON_NONE, "");
+  OnResponseCompleted(dummy_id, content::DOWNLOAD_INTERRUPT_REASON_NONE, "");
 
   FilePath bar(download_dir.path().Append(FILE_PATH_LITERAL("bar.txt")));
   RenameFile(dummy_id2, bar, bar, net::OK, COMPLETE, OVERWRITE);

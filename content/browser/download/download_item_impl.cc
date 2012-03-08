@@ -20,10 +20,10 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -169,7 +169,7 @@ DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
       total_bytes_(info.total_bytes),
       received_bytes_(info.received_bytes),
       bytes_per_sec_(0),
-      last_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
+      last_reason_(content::DOWNLOAD_INTERRUPT_REASON_NONE),
       start_tick_(base::TimeTicks()),
       state_(static_cast<DownloadState>(info.state)),
       start_time_(info.start_time),
@@ -221,7 +221,7 @@ DownloadItemImpl::DownloadItemImpl(
       total_bytes_(info.total_bytes),
       received_bytes_(0),
       bytes_per_sec_(0),
-      last_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
+      last_reason_(content::DOWNLOAD_INTERRUPT_REASON_NONE),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(info.start_time),
@@ -273,7 +273,7 @@ DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
       total_bytes_(0),
       received_bytes_(0),
       bytes_per_sec_(0),
-      last_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
+      last_reason_(content::DOWNLOAD_INTERRUPT_REASON_NONE),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
       start_time_(base::Time::Now()),
@@ -457,8 +457,8 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   last_reason_ = user_cancel ?
-      DOWNLOAD_INTERRUPT_REASON_USER_CANCELED :
-      DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
+      content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED :
+      content::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 
   VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   if (!IsPartialDownload()) {
@@ -603,7 +603,7 @@ void DownloadItemImpl::UpdateTarget() {
 
 void DownloadItemImpl::Interrupted(int64 size,
                                    const std::string& hash_state,
-                                   InterruptReason reason) {
+                                   content::DownloadInterruptReason reason) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1112,7 +1112,7 @@ const std::string& DownloadItemImpl::GetLastModifiedTime() const {
   return last_modified_time_;
 }
 const std::string& DownloadItemImpl::GetETag() const { return etag_; }
-InterruptReason DownloadItemImpl::GetLastReason() const {
+content::DownloadInterruptReason DownloadItemImpl::GetLastReason() const {
   return last_reason_;
 }
 DownloadStateInfo DownloadItemImpl::GetStateInfo() const { return state_info_; }

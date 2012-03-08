@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "content/browser/download/download_persistent_store_info.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +37,9 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_METHOD2(OnAllDataSaved, void(int64, const std::string&));
   MOCK_METHOD0(OnDownloadedFileRemoved, void());
   MOCK_METHOD0(MaybeCompleteDownload, void());
-  MOCK_METHOD3(Interrupted, void(int64, const std::string&, InterruptReason));
+  MOCK_METHOD3(Interrupted, void(int64,
+                                 const std::string&,
+                                 DownloadInterruptReason));
   MOCK_METHOD1(Delete, void(DeleteReason));
   MOCK_METHOD0(Remove, void());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
@@ -101,7 +103,7 @@ class MockDownloadItem : public content::DownloadItem {
   MOCK_CONST_METHOD0(GetOpened, bool());
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
-  MOCK_CONST_METHOD0(GetLastReason, InterruptReason());
+  MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
   MOCK_CONST_METHOD0(GetPersistentStoreInfo, DownloadPersistentStoreInfo());
   MOCK_CONST_METHOD0(GetStateInfo, DownloadStateInfo());
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());

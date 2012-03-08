@@ -23,8 +23,8 @@
 
 #include "base/string16.h"
 #include "content/browser/download/download_state_info.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/public/browser/download_danger_type.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 
 class DownloadFileManager;
 class FilePath;
@@ -183,7 +183,7 @@ class CONTENT_EXPORT DownloadItem {
   // |reason| is the download interrupt reason code that the operation received.
   virtual void Interrupted(int64 size,
                            const std::string& hash_state,
-                           InterruptReason reason) = 0;
+                           DownloadInterruptReason reason) = 0;
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking
@@ -301,7 +301,7 @@ class CONTENT_EXPORT DownloadItem {
   virtual const std::string& GetLastModifiedTime() const = 0;
   virtual const std::string& GetETag() const = 0;
 
-  virtual InterruptReason GetLastReason() const = 0;
+  virtual DownloadInterruptReason GetLastReason() const = 0;
   virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;
   virtual DownloadStateInfo GetStateInfo() const = 0;
   virtual BrowserContext* GetBrowserContext() const = 0;

@@ -7,7 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/download/interrupt_reasons.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 
 namespace download_stats {
 
@@ -15,7 +15,7 @@ namespace download_stats {
 // are all positive (since histograms expect positive sample values).
 const int kAllInterruptReasonCodes[] = {
 #define INTERRUPT_REASON(label, value) (value),
-#include "content/browser/download/interrupt_reason_values.h"
+#include "content/public/browser/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 };
 
@@ -41,7 +41,7 @@ void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len) {
                               256);
 }
 
-void RecordDownloadInterrupted(InterruptReason reason,
+void RecordDownloadInterrupted(content::DownloadInterruptReason reason,
                                int64 received,
                                int64 total) {
   RecordDownloadCount(INTERRUPTED_COUNT);

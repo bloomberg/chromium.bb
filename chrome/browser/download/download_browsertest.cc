@@ -302,7 +302,8 @@ class DownloadTest : public InProcessBrowserTest {
   struct DownloadInfo {
     const char* url_name;  // URL for the download.
     DownloadMethod download_method;  // Navigation or Direct.
-    InterruptReason reason;  // Download interrupt reason (NONE is OK).
+    // Download interrupt reason (NONE is OK).
+    content::DownloadInterruptReason reason;
     bool show_download_item;  // True if the download item appears on the shelf.
   };
 
@@ -697,7 +698,7 @@ class DownloadTest : public InProcessBrowserTest {
         new DownloadTestObserver(
             download_manager,
             1,
-            download_info.reason == DOWNLOAD_INTERRUPT_REASON_NONE ?
+            download_info.reason == content::DOWNLOAD_INTERRUPT_REASON_NONE ?
                 DownloadItem::COMPLETE :  // Really done
                 DownloadItem::INTERRUPTED,
             true,                   // Bail on select file
@@ -2008,7 +2009,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadNavigate) {
   DownloadInfo download_info = {
     "a_zip_file.zip",
     DOWNLOAD_NAVIGATE,
-    DOWNLOAD_INTERRUPT_REASON_NONE,
+    content::DOWNLOAD_INTERRUPT_REASON_NONE,
     true
   };
 
@@ -2021,7 +2022,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadDirect) {
   DownloadInfo download_info = {
     "a_zip_file.zip",
     DOWNLOAD_DIRECT,
-    DOWNLOAD_INTERRUPT_REASON_NONE,
+    content::DOWNLOAD_INTERRUPT_REASON_NONE,
     true
   };
 
@@ -2034,7 +2035,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError404Direct) {
   DownloadInfo download_info = {
     "there_IS_no_spoon.zip",
     DOWNLOAD_DIRECT,
-    DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+    content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
     true
   };
 
@@ -2047,7 +2048,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError404Navigate) {
   DownloadInfo download_info = {
     "there_IS_no_spoon.zip",
     DOWNLOAD_NAVIGATE,
-    DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
+    content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
     false
   };
 
@@ -2060,7 +2061,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError400Direct) {
   DownloadInfo download_info = {
     "zip_file_not_found.zip",
     DOWNLOAD_DIRECT,
-    DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+    content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
     true
   };
 
@@ -2073,7 +2074,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadError400Navigate) {
   DownloadInfo download_info = {
     "zip_file_not_found.zip",
     DOWNLOAD_NAVIGATE,
-    DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
+    content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
     false
   };
 

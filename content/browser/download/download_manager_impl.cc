@@ -22,13 +22,13 @@
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -686,10 +686,11 @@ void DownloadManagerImpl::DownloadCancelled(DownloadItem* download) {
     download->OffThreadCancel(file_manager_);
 }
 
-void DownloadManagerImpl::OnDownloadInterrupted(int32 download_id,
-                                                int64 size,
-                                                const std::string& hash_state,
-                                                InterruptReason reason) {
+void DownloadManagerImpl::OnDownloadInterrupted(
+    int32 download_id,
+    int64 size,
+    const std::string& hash_state,
+    content::DownloadInterruptReason reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadItem* download = GetActiveDownload(download_id);

@@ -38,7 +38,6 @@ include_rules = [
   "+content/browser/download/download_persistent_store_info.h",
   "+content/browser/download/download_state_info.h",
   "+content/browser/download/download_types.h",
-  "+content/browser/download/interrupt_reasons.h",
   "+content/browser/find_pasteboard.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
   "+content/browser/load_notification_details.h",

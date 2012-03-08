@@ -21,8 +21,8 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/download/mock_download_file.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/test/mock_download_manager.h"
@@ -275,7 +275,7 @@ class DownloadManagerTest : public testing::Test {
 
   void OnDownloadInterrupted(int32 download_id, int64 size,
                              const std::string& hash_state,
-                             InterruptReason reason) {
+                             content::DownloadInterruptReason reason) {
     download_manager_->OnDownloadInterrupted(download_id, size,
                                              hash_state, reason);
   }
@@ -970,7 +970,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
 
   int64 error_size = 3;
   OnDownloadInterrupted(0, error_size, "",
-                        DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
+                        content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
   message_loop_.RunAllPending();
 
   EXPECT_TRUE(GetActiveDownloadItem(0) == NULL);

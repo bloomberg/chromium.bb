@@ -96,8 +96,8 @@ void PluginInstaller::OnDownloadUpdated(DownloadItem* download) {
       break;
     }
     case DownloadItem::INTERRUPTED: {
-      InterruptReason reason = download->GetLastReason();
-      DownloadError(InterruptReasonDebugString(reason));
+      content::DownloadInterruptReason reason = download->GetLastReason();
+      DownloadError(content::InterruptReasonDebugString(reason));
       break;
     }
     case DownloadItem::MAX_DOWNLOAD_STATE: {

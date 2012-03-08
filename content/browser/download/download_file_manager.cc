@@ -16,6 +16,7 @@
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
+#include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -115,8 +116,8 @@ void DownloadFileManager::CreateDownloadFile(
             info->download_id.local(),
             0,
             "",
-            ConvertNetErrorToInterruptReason(init_result,
-                                             DOWNLOAD_INTERRUPT_FROM_DISK)));
+            content::ConvertNetErrorToInterruptReason(
+                init_result, content::DOWNLOAD_INTERRUPT_FROM_DISK)));
   } else {
     DCHECK(GetDownloadFile(info->download_id) == NULL);
     downloads_[info->download_id] = download_file.release();
@@ -239,9 +240,9 @@ void DownloadFileManager::UpdateDownload(
                          global_id.local(),
                          bytes_downloaded,
                          hash_state,
-                         ConvertNetErrorToInterruptReason(
+                         content::ConvertNetErrorToInterruptReason(
                              write_result,
-                             DOWNLOAD_INTERRUPT_FROM_DISK)));
+                             content::DOWNLOAD_INTERRUPT_FROM_DISK)));
         }
       }
     }
@@ -251,7 +252,7 @@ void DownloadFileManager::UpdateDownload(
 
 void DownloadFileManager::OnResponseCompleted(
     DownloadId global_id,
-    InterruptReason reason,
+    content::DownloadInterruptReason reason,
     const std::string& security_info) {
   VLOG(20) << __FUNCTION__ << "()" << " id = " << global_id
            << " reason = " << InterruptReasonDebugString(reason)
@@ -269,7 +270,7 @@ void DownloadFileManager::OnResponseCompleted(
     return;
   }
 
-  if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
+  if (reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
     std::string hash;
     if (!download_file->GetHash(&hash) ||
         BaseFile::IsEmptyHash(hash)) {
@@ -472,9 +473,9 @@ void DownloadFileManager::CancelDownloadOnRename(
                  global_id.local(),
                  download_file->BytesSoFar(),
                  download_file->GetHashState(),
-                 ConvertNetErrorToInterruptReason(
+                 content::ConvertNetErrorToInterruptReason(
                      rename_error,
-                     DOWNLOAD_INTERRUPT_FROM_DISK)));
+                     content::DOWNLOAD_INTERRUPT_FROM_DISK)));
 }
 
 void DownloadFileManager::EraseDownload(DownloadId global_id) {

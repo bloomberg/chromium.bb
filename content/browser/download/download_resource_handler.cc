@@ -14,13 +14,14 @@
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/common/resource_response.h"
@@ -265,15 +266,15 @@ void DownloadResourceHandler::OnResponseCompletedInternal(
   // follow their lead.
   if (error_code == net::ERR_CONNECTION_CLOSED)
     error_code = net::OK;
-  InterruptReason reason =
-      ConvertNetErrorToInterruptReason(error_code,
-                                       DOWNLOAD_INTERRUPT_FROM_NETWORK);
+  content::DownloadInterruptReason reason =
+      content::ConvertNetErrorToInterruptReason(
+        error_code, content::DOWNLOAD_INTERRUPT_FROM_NETWORK);
 
   if ((status.status() == net::URLRequestStatus::CANCELED) &&
       (status.error() == net::ERR_ABORTED)) {
     // TODO(ahendrickson) -- Find a better set of codes to use here, as
     // CANCELED/ERR_ABORTED can occur for reasons other than user cancel.
-    reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;  // User canceled.
+    reason = content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
   }
 
   if (status.is_success()) {
@@ -281,16 +282,16 @@ void DownloadResourceHandler::OnResponseCompletedInternal(
     if (response_code >= 400) {
       switch(response_code) {
         case 404:  // File Not Found.
-          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
+          reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
           break;
         case 416:  // Range Not Satisfiable.
-          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
+          reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE;
           break;
         case 412:  // Precondition Failed.
-          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION;
+          reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_PRECONDITION;
           break;
         default:
-          reason = DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+          reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
           break;
       }
     }

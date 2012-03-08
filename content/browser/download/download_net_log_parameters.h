@@ -102,13 +102,13 @@ class ItemRenamedParameters : public net::NetLog::EventParameters {
 // NetLog parameters when a DownloadItem is interrupted.
 class ItemInterruptedParameters : public net::NetLog::EventParameters {
  public:
-  ItemInterruptedParameters(InterruptReason reason,
+  ItemInterruptedParameters(content::DownloadInterruptReason reason,
                             int64 bytes_so_far,
                             const std::string& hash_state);
   virtual base::Value* ToValue() const OVERRIDE;
 
  private:
-  const InterruptReason reason_;
+  const content::DownloadInterruptReason reason_;
   const int64 bytes_so_far_;
   const std::string hash_state_;
 

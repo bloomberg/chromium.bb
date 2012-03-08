@@ -8,8 +8,8 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/test/mock_download_item.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -198,7 +198,8 @@ TEST_F(DownloadItemTest, NotificationAfterInterrupted) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
-  item->Interrupted(kDownloadChunkSize, "", DOWNLOAD_INTERRUPT_REASON_NONE);
+  item->Interrupted(kDownloadChunkSize, "",
+                    content::DOWNLOAD_INTERRUPT_REASON_NONE);
   ASSERT_TRUE(observer.CheckUpdated());
 }
 

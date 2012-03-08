@@ -45,10 +45,11 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void OnResponseCompleted(int32 download_id, int64 size,
                                    const std::string& hash) OVERRIDE;
   virtual void CancelDownload(int32 download_id) OVERRIDE;
-  virtual void OnDownloadInterrupted(int32 download_id,
-                                     int64 size,
-                                     const std::string& hash_state,
-                                     InterruptReason reason) OVERRIDE;
+  virtual void OnDownloadInterrupted(
+      int32 download_id,
+      int64 size,
+      const std::string& hash_state,
+      content::DownloadInterruptReason reason) OVERRIDE;
   virtual void OnDownloadRenamedToFinalName(int download_id,
                                             const FilePath& full_path,
                                             int uniquifier) OVERRIDE;

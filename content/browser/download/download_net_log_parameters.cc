@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "content/browser/download/interrupt_reasons.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "net/base/net_errors.h"
 
 namespace download_net_logs {
@@ -135,7 +135,7 @@ Value* ItemRenamedParameters::ToValue() const {
 }
 
 ItemInterruptedParameters::ItemInterruptedParameters(
-    InterruptReason reason,
+    content::DownloadInterruptReason reason,
     int64 bytes_so_far,
     const std::string& hash_state)
         : reason_(reason),

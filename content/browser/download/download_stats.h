@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
-#include "content/browser/download/interrupt_reasons.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 
 namespace base {
 class Time;
@@ -99,7 +99,7 @@ void RecordDownloadSource(DownloadSource source);
 void RecordDownloadCompleted(const base::TimeTicks& start, int64 download_len);
 
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
-void RecordDownloadInterrupted(InterruptReason reason,
+void RecordDownloadInterrupted(content::DownloadInterruptReason reason,
                                int64 received,
                                int64 total);
 

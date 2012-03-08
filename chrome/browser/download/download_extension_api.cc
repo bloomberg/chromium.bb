@@ -39,8 +39,8 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -188,11 +188,12 @@ scoped_ptr<base::DictionaryValue> DownloadItemToJSON(DownloadItem* item) {
       (item->GetStartTime() - base::Time::UnixEpoch()).InMilliseconds());
   json->SetInteger(kBytesReceivedKey, item->GetReceivedBytes());
   json->SetInteger(kTotalBytesKey, item->GetTotalBytes());
-  if (item->GetState() == DownloadItem::INTERRUPTED)
+  if (item->GetState() == DownloadItem::INTERRUPTED) {
     json->SetInteger(kErrorKey, static_cast<int>(item->GetLastReason()));
-  else if (item->GetState() == DownloadItem::CANCELLED)
+  } else if (item->GetState() == DownloadItem::CANCELLED) {
     json->SetInteger(kErrorKey, static_cast<int>(
-        DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
+        content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
+  }
   // TODO(benjhayden): Implement endTime and fileSize.
   // json->SetInteger(kEndTimeKey, -1);
   json->SetInteger(kFileSizeKey, item->GetTotalBytes());
