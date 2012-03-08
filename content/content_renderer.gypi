@@ -263,6 +263,8 @@
         '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
       ],
       'sources': [
+        'renderer/media/media_stream_center.cc',
+        'renderer/media/media_stream_center.h',
         'renderer/media/media_stream_dependency_factory.cc',
         'renderer/media/media_stream_dispatcher.cc',
         'renderer/media/media_stream_impl.cc',
