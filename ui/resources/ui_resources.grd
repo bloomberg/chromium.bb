@@ -153,6 +153,8 @@
         <include name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="aura/applist.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="aura/applist_h.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="aura/applist_p.png" type="BINDATA" />
+        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="aura/multi_window_resize_h.png" type="BINDATA" />
+        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="aura/multi_window_resize_v.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="aura/window_shadow_active_top_left.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_ACTIVE_TOP" file="aura/window_shadow_active_top.png" type="BINDATA" />
         <include name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="aura/window_shadow_active_top_right.png" type="BINDATA" />
