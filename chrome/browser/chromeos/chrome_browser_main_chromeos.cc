@@ -12,7 +12,6 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_manager.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -478,16 +477,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // on the background FILE thread.
   chromeos::system::StatisticsProvider::GetInstance();
 
-  // Initialize the Chrome OS bluetooth subsystem.
-  // We defer this to PreMainMessageLoopRun because we don't want to check the
-  // parsed command line until after about_flags::ConvertFlagsToSwitches has
-  // been called.
-  // TODO(vlaviano): Move this back to PostMainMessageLoopStart when we remove
-  // the --enable-bluetooth flag.
-  if (parsed_command_line().HasSwitch(switches::kEnableBluetooth)) {
-    chromeos::BluetoothManager::Initialize();
-  }
-
 #if defined(USE_AURA)
   // These are dependent on the ash::Shell singleton already having been
   // initialized.
@@ -527,11 +516,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   screen_lock_observer_.reset();
   resume_observer_.reset();
   brightness_observer_.reset();
-
-  // Shut these down here instead of in the destructor in case we exited before
-  // running BrowserMainLoop::RunMainMessageLoopParts() and never initialized
-  // these.
-  chromeos::BluetoothManager::Shutdown();
 
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.

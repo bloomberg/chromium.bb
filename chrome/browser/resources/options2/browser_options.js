@@ -277,7 +277,7 @@ cr.define('options', function() {
         $('bluetooth-paired-devices-list').addEventListener('change',
             function() {
           var item = $('bluetooth-paired-devices-list').selectedItem;
-          var disabled = !item || !item.paired || item.connected;
+          var disabled = !item || item.connected;
           $('bluetooth-reconnect-device').disabled = disabled;
         });
       }
@@ -1085,7 +1085,7 @@ cr.define('options', function() {
      * with a matching address is found, the existing element is updated.
      * @param {{name: string,
      *          address: string,
-     *          icon: string,
+     *          discovered: boolean,
      *          paired: boolean,
      *          connected: boolean}} device
      *     Decription of the bluetooth device.
@@ -1093,7 +1093,7 @@ cr.define('options', function() {
      */
     addBluetoothDevice_: function(device) {
       var list = $('bluetooth-unpaired-devices-list');
-      if (device.paired) {
+      if (!device.discovered) {
         // Test to see if the device is currently in the unpaired list, in which
         // case it should be removed from that list.
         var index = $('bluetooth-unpaired-devices-list').find(device.address);
