@@ -144,12 +144,6 @@ class BrowserOptionsHandler
 #endif
 
 #if defined(OS_CHROMEOS)
-  // Called when the System configuration screen is used to adjust
-  // the screen brightness.
-  // |args| will be an empty list.
-  void DecreaseScreenBrightnessCallback(const base::ListValue* args);
-  void IncreaseScreenBrightnessCallback(const base::ListValue* args);
-
   void UpdateAccountPicture();
 #endif
 

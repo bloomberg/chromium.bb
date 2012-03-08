@@ -12280,17 +12280,29 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_DEVICE_GROUP_NAME">
         Device
       </message>
+      <message name="IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION">
+        Change settings specific to your device and peripherals.
+      </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION">
         Keyboard:
       </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
         Keyboard settings...
       </message>
+      <message name="IDS_OPTIONS2_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
+        Keyboard settings
+      </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
         Pointer sensitivity:
       </message>
+      <message name="IDS_OPTIONS2_DEVICE_GROUP_POINTER_SECTION">
+        Pointer speed:
+      </message>
       <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
         Pointer settings...
+      </message>
+      <message name="IDS_OPTIONS2_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
+        Pointer settings
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
         Touchpad

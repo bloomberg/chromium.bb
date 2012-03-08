@@ -122,10 +122,6 @@ cr.define('options', function() {
         $('pointer-settings-button').onclick = function(evt) {
           OptionsPage.navigateToPage('pointer-overlay');
         };
-        this.initBrightnessButton_('brightness-decrease-button',
-            'decreaseScreenBrightness');
-        this.initBrightnessButton_('brightness-increase-button',
-            'increaseScreenBrightness');
       }
 
       // Search section.
@@ -487,20 +483,6 @@ cr.define('options', function() {
       $('advanced-settings').style.height = '';
       $('advanced-settings-expander').textContent =
           localStrings.getString('showAdvancedSettings');
-    },
-
-    /**
-     * Initializes a button for controlling screen brightness.
-     * @param {string} id Button ID.
-     * @param {string} callback Name of the callback function.
-     */
-    initBrightnessButton_: function(id, callback) {
-      var button = $(id);
-      cr.ui.decorate(button, RepeatingButton);
-      button.repeatInterval = 300;
-      button.addEventListener(RepeatingButton.Event.BUTTON_HELD, function(e) {
-        chrome.send(callback);
-      });
     },
 
     /**

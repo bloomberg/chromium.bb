@@ -100,18 +100,8 @@ html[dir=rtl] #account-picture-wrapper {
   margin-top: 10px;
 }
 
-#pointer-sensitivity-more {
-  float: right;
-}
-
-html[dir=rtl] #pointer-sensitivity-more {
-  float: left;
-}
-
-#pointer-value,
-#slider-control {
-   display: inline-block;
-   vertical-align: top;
+input[type='range'] {
+  vertical-align: middle;
 }
 
 /* Internet settings */

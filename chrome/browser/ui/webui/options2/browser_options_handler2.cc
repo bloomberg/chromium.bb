@@ -84,8 +84,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros_settings.h"
-#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -283,24 +281,17 @@ void BrowserOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY },
     { "accessibilityVirtualKeyboard",
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_VIRTUAL_KEYBOARD_DESCRIPTION },
-    { "brightnessDecrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DECREASE },
-    { "brightnessIncrease", IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE },
     { "changePicture", IDS_OPTIONS_CHANGE_PICTURE_CAPTION },
     { "datetimeTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME },
-    { "deviceGroupBrightness", IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION },
-    { "deviceGroupKeyboard", IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION },
-    { "deviceGroupPointer", IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION },
+    { "deviceGroupDescription", IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION },
+    { "deviceGroupPointer", IDS_OPTIONS2_DEVICE_GROUP_POINTER_SECTION },
     { "enableScreenlock", IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX },
     { "internetOptionsButtonTitle", IDS_OPTIONS_INTERNET_OPTIONS_BUTTON_TITLE },
     { "keyboardSettingsButtonTitle",
-      IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE },
+      IDS_OPTIONS2_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE },
     { "manageAccountsButtonTitle", IDS_OPTIONS_ACCOUNTS_BUTTON_TITLE },
-    { "pointerSensitivityLess",
-      IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION },
-    { "pointerSensitivityMore",
-      IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION },
     { "pointerSettingsButtonTitle",
-      IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
+      IDS_OPTIONS2_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE },
     { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
     { "timezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION },
@@ -467,16 +458,6 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "themesSetGTK",
       base::Bind(&BrowserOptionsHandler::ThemesSetGTK,
-                 base::Unretained(this)));
-#endif
-#if defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback(
-      "decreaseScreenBrightness",
-      base::Bind(&BrowserOptionsHandler::DecreaseScreenBrightnessCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "increaseScreenBrightness",
-      base::Bind(&BrowserOptionsHandler::IncreaseScreenBrightnessCallback,
                  base::Unretained(this)));
 #endif
   web_ui()->RegisterMessageCallback(
@@ -1050,20 +1031,6 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
     web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture",
                                      email_value);
   }
-}
-
-void BrowserOptionsHandler::DecreaseScreenBrightnessCallback(
-    const ListValue* args) {
-  // Do not allow the options button to turn off the backlight, as that
-  // can make it very difficult to see the increase brightness button.
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      DecreaseScreenBrightness(false);
-}
-
-void BrowserOptionsHandler::IncreaseScreenBrightnessCallback(
-    const ListValue* args) {
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      IncreaseScreenBrightness();
 }
 #endif
 
