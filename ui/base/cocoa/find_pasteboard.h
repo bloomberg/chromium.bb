@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FIND_PASTEBOARD_H_
-#define CONTENT_BROWSER_FIND_PASTEBOARD_H_
+#ifndef UI_BASE_COCOA_FIND_PASTEBOARD_H_
+#define UI_BASE_COCOA_FIND_PASTEBOARD_H_
 #pragma once
 
 #include "base/string16.h"
@@ -13,9 +13,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "content/common/content_export.h"
+#include "ui/base/ui_export.h"
 
-CONTENT_EXPORT extern NSString* kFindPasteboardChangedNotification;
+UI_EXPORT extern NSString* kFindPasteboardChangedNotification;
 
 // Manages the find pasteboard. Use this to copy text to the find pasteboard,
 // to get the text currently on the find pasteboard, and to receive
@@ -54,6 +54,6 @@ CONTENT_EXPORT extern NSString* kFindPasteboardChangedNotification;
 #endif  // __OBJC__
 
 // Also provide a c++ interface
-CONTENT_EXPORT string16 GetFindPboardText();
+UI_EXPORT string16 GetFindPboardText();
 
-#endif  // CONTENT_BROWSER_FIND_PASTEBOARD_H_
+#endif  // UI_BASE_COCOA_FIND_PASTEBOARD_H_

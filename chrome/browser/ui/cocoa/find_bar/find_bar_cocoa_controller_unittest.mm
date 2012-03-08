@@ -9,9 +9,9 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_text_field.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
-#import "content/browser/find_pasteboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "ui/base/cocoa/find_pasteboard.h"
 
 // Expose private variables to make testing easier.
 @interface FindBarCocoaController(Testing)

@@ -273,8 +273,6 @@
     'browser/fileapi/fileapi_message_filter.h',
     'browser/file_metadata_mac.h',
     'browser/file_metadata_mac.mm',
-    'browser/find_pasteboard.h',
-    'browser/find_pasteboard.mm',
     'browser/font_list_async.cc',
     'browser/gamepad/data_fetcher.h',
     'browser/gamepad/gamepad_provider.cc',

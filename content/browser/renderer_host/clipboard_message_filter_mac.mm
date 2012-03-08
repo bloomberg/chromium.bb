@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/sys_string_conversions.h"
-#import "content/browser/find_pasteboard.h"
 #include "content/public/browser/browser_thread.h"
+#import "ui/base/cocoa/find_pasteboard.h"
 
 using content::BrowserThread;
 

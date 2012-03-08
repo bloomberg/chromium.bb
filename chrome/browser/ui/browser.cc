@@ -198,7 +198,7 @@
 #endif  // OS_WIN
 
 #if defined(OS_MACOSX)
-#include "content/browser/find_pasteboard.h"
+#include "ui/base/cocoa/find_pasteboard.h"
 #endif
 
 #if defined(OS_CHROMEOS)

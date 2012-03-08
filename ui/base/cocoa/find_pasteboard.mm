@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/browser/find_pasteboard.h"
+#import "ui/base/cocoa/find_pasteboard.h"
 
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
