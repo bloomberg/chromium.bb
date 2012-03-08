@@ -5926,6 +5926,23 @@
    fun:_ZN14TestingProfile20CreateRequestContextEv
    fun:_ZN30ProfileSyncServiceAutofillTest5SetUpEv
 }
+{
+   bug_117427
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKN3net9HostCache3KeyES2_INS4_5EntryEN4base9TimeTicksEEEEE8allocateE*
+   fun:_ZNSt8_Rb_treeIN3net9HostCache3KeyESt4pairIKS2_S3_INS1_5EntryEN4base9TimeTicksEEESt10_Select1stIS9_ESt4lessIS2_ESaIS9_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeIN3net9HostCache3KeyESt4pairIKS2_S3_INS1_5EntryEN4base9TimeTicksEEESt10_Select1stIS9_ESt4lessIS2_ESaIS9_EE14_M_create_nodeERKS9_
+   fun:_ZNSt8_Rb_treeIN3net9HostCache3KeyESt4pairIKS2_S3_INS1_5EntryEN4base9TimeTicksEEESt10_Select1stIS9_ESt4lessIS2_ESaIS9_EE10_M_insert_EPKSt18_Rb_tree_node_baseSI_RKS9_
+   fun:_ZNSt8_Rb_treeIN3net9HostCache3KeyESt4pairIKS2_S3_INS1_5EntryEN4base9TimeTicksEEESt10_Select1stIS9_ESt4lessIS2_ESaIS9_EE16_M_insert_uniqueERKS9_
+   fun:_ZNSt3mapIN3net9HostCache3KeyESt4pairINS1_5EntryEN4base9TimeTicksEESt4lessIS2_ESaIS3_IKS2_S7_EEE6insertERKSB_
+   fun:_ZN3net13ExpiringCacheINS_9HostCache3KeyENS1_5EntryEE3PutERKS2_RKS3_N4base9TimeTicksENS9_9TimeDeltaE
+   fun:_ZN3net9HostCache3SetERKNS0_3KeyEiRKNS_11AddressListEN4base9TimeTicksENS7_9TimeDeltaE
+   fun:_ZN3net16HostResolverImpl11CacheResultERKNS_9HostCache3KeyEiRKNS_11AddressListEN4base9TimeDeltaE
+   fun:_ZN3net16HostResolverImpl3Job16CompleteRequestsEiRKNS_11AddressListEN4base9TimeDeltaE
+   fun:_ZN3net16HostResolverImpl3Job18OnProcTaskCompleteEiRKNS_11AddressListE
+}
+
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
 
