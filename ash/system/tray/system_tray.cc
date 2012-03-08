@@ -11,6 +11,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/shadow_types.h"
+#include "ash/wm/window_animations.h"
 #include "base/logging.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -29,6 +30,8 @@
 namespace ash {
 
 namespace {
+
+const int kAnimationDurationForPopupMS = 200;
 
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
@@ -218,7 +221,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
 
  private:
   void AutoClose() {
-    StartFade(false);
+    GetWidget()->Close();
   }
 
   // Overridden from views::BubbleDelegateView.
@@ -343,6 +346,15 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
   popup_->non_client_view()->frame_view()->set_border(
       new SystemTrayBubbleBorder(bubble_));
   popup_->AddObserver(this);
+
+  // Setup animation.
+  ash::SetWindowVisibilityAnimationType(popup_->GetNativeWindow(),
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  ash::SetWindowVisibilityAnimationTransition(popup_->GetNativeWindow(),
+      ash::ANIMATE_BOTH);
+  ash::SetWindowVisibilityAnimationDuration(popup_->GetNativeWindow(),
+      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
+
   bubble_->Show();
 }
 

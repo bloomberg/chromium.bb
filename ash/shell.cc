@@ -176,8 +176,10 @@ void CreateSpecialContainers(aura::Window* root_window) {
       lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(drag_drop_container);
 
-  CreateContainer(internal::kShellWindowId_SettingBubbleContainer,
-                  lock_screen_related_containers);
+  aura::Window* settings_bubble_container = CreateContainer(
+      internal::kShellWindowId_SettingBubbleContainer,
+      lock_screen_related_containers);
+  SetChildWindowVisibilityChangesAnimated(settings_bubble_container);
 
   CreateContainer(internal::kShellWindowId_OverlayContainer,
                   lock_screen_related_containers);
