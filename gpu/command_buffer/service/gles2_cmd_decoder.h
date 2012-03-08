@@ -27,6 +27,7 @@ namespace gles2 {
 
 class ContextGroup;
 class GLES2Util;
+class QueryManager;
 
 struct DisallowedFeatures {
   DisallowedFeatures()
@@ -125,6 +126,9 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder {
 
   // Gets the associated ContextGroup
   virtual ContextGroup* GetContextGroup() = 0;
+
+  // Gets the QueryManager for this context.
+  virtual QueryManager* GetQueryManager() = 0;
 
   // Sets a callback which is called when a glResizeCHROMIUM command
   // is processed.

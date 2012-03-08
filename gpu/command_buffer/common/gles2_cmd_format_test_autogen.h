@@ -3329,10 +3329,27 @@ TEST_F(GLES2FormatTest, GenQueriesEXT) {
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLsizei>(11), cmd.n);
-  EXPECT_EQ(static_cast<uint32>(12), cmd.ids_shm_id);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.ids_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.queries_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.queries_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, GenQueriesEXTImmediate) {
+  static GLuint ids[] = { 12, 23, 34, };
+  GenQueriesEXTImmediate& cmd = *GetBufferAs<GenQueriesEXTImmediate>();
+  void* next_cmd = cmd.Set(
+      &cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  EXPECT_EQ(static_cast<uint32>(GenQueriesEXTImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd) +
+            RoundSizeToMultipleOfEntries(cmd.n * 4u),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) +
+      RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+  // TODO(gman): Check that ids were inserted;
 }
 
 TEST_F(GLES2FormatTest, DeleteQueriesEXT) {
@@ -3346,23 +3363,27 @@ TEST_F(GLES2FormatTest, DeleteQueriesEXT) {
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLsizei>(11), cmd.n);
-  EXPECT_EQ(static_cast<uint32>(12), cmd.ids_shm_id);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.ids_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.queries_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.queries_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, IsQueryEXT) {
-  IsQueryEXT& cmd = *GetBufferAs<IsQueryEXT>();
+TEST_F(GLES2FormatTest, DeleteQueriesEXTImmediate) {
+  static GLuint ids[] = { 12, 23, 34, };
+  DeleteQueriesEXTImmediate& cmd = *GetBufferAs<DeleteQueriesEXTImmediate>();
   void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11));
-  EXPECT_EQ(static_cast<uint32>(IsQueryEXT::kCmdId),
+      &cmd, static_cast<GLsizei>(arraysize(ids)), ids);
+  EXPECT_EQ(static_cast<uint32>(DeleteQueriesEXTImmediate::kCmdId),
             cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.id);
+  EXPECT_EQ(sizeof(cmd) +
+            RoundSizeToMultipleOfEntries(cmd.n * 4u),
+            cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLsizei>(arraysize(ids)), cmd.n);
   CheckBytesWrittenMatchesExpectedSize(
-      next_cmd, sizeof(cmd));
+      next_cmd, sizeof(cmd) +
+      RoundSizeToMultipleOfEntries(arraysize(ids) * 4u));
+  // TODO(gman): Check that ids were inserted;
 }
 
 TEST_F(GLES2FormatTest, BeginQueryEXT) {
@@ -3370,12 +3391,16 @@ TEST_F(GLES2FormatTest, BeginQueryEXT) {
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLenum>(11),
-      static_cast<GLuint>(12));
+      static_cast<GLuint>(12),
+      static_cast<uint32>(13),
+      static_cast<uint32>(14));
   EXPECT_EQ(static_cast<uint32>(BeginQueryEXT::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.sync_data_shm_id);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.sync_data_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
 }
@@ -3384,49 +3409,13 @@ TEST_F(GLES2FormatTest, EndQueryEXT) {
   EndQueryEXT& cmd = *GetBufferAs<EndQueryEXT>();
   void* next_cmd = cmd.Set(
       &cmd,
-      static_cast<GLenum>(11));
+      static_cast<GLenum>(11),
+      static_cast<GLuint>(12));
   EXPECT_EQ(static_cast<uint32>(EndQueryEXT::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  CheckBytesWrittenMatchesExpectedSize(
-      next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, GetQueryivEXT) {
-  GetQueryivEXT& cmd = *GetBufferAs<GetQueryivEXT>();
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLenum>(11),
-      static_cast<GLenum>(12),
-      static_cast<uint32>(13),
-      static_cast<uint32>(14));
-  EXPECT_EQ(static_cast<uint32>(GetQueryivEXT::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.params_shm_id);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.params_shm_offset);
-  CheckBytesWrittenMatchesExpectedSize(
-      next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, GetQueryObjectuivEXT) {
-  GetQueryObjectuivEXT& cmd = *GetBufferAs<GetQueryObjectuivEXT>();
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11),
-      static_cast<GLenum>(12),
-      static_cast<uint32>(13),
-      static_cast<uint32>(14));
-  EXPECT_EQ(static_cast<uint32>(GetQueryObjectuivEXT::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.id);
-  EXPECT_EQ(static_cast<GLenum>(12), cmd.pname);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.params_shm_id);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.params_shm_offset);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.submit_count);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
 }

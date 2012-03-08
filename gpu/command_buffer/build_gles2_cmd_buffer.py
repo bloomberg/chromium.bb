@@ -898,15 +898,21 @@ _FUNCTION_INFO = {
   'DeleteBuffers': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteBuffersARB',
+    'resource_type': 'Buffer',
+    'resource_types': 'Buffers',
   },
   'DeleteFramebuffers': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteFramebuffersEXT',
+    'resource_type': 'Framebuffer',
+    'resource_types': 'Framebuffers',
   },
   'DeleteProgram': {'type': 'Delete', 'decoder_func': 'DoDeleteProgram'},
   'DeleteRenderbuffers': {
     'type': 'DELn',
     'gl_test_func': 'glDeleteRenderbuffersEXT',
+    'resource_type': 'Renderbuffer',
+    'resource_types': 'Renderbuffers',
   },
   'DeleteShader': {'type': 'Delete', 'decoder_func': 'DoDeleteShader'},
   'DeleteSharedIdsCHROMIUM': {
@@ -918,7 +924,11 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
-  'DeleteTextures': {'type': 'DELn'},
+  'DeleteTextures': {
+    'type': 'DELn',
+    'resource_type': 'Texture',
+    'resource_types': 'Textures',
+  },
   'DepthRangef': {'decoder_func': 'glDepthRange'},
   'DepthMask': {'decoder_func': 'DoDepthMask', 'expectation': False},
   'DetachShader': {'decoder_func': 'DoDetachShader'},
@@ -949,8 +959,12 @@ _FUNCTION_INFO = {
   'Finish': {
     'impl_func': False,
     'client_test': False,
+    'decoder_func': 'DoFinish',
   },
-  'Flush': {'impl_func': False},
+  'Flush': {
+    'impl_func': False,
+    'decoder_func': 'DoFlush',
+  },
   'FramebufferRenderbuffer': {
     'decoder_func': 'DoFramebufferRenderbuffer',
     'gl_test_func': 'glFramebufferRenderbufferEXT',
@@ -963,10 +977,29 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoGenerateMipmap',
     'gl_test_func': 'glGenerateMipmapEXT',
   },
-  'GenBuffers': {'type': 'GENn', 'gl_test_func': 'glGenBuffersARB'},
-  'GenFramebuffers': {'type': 'GENn', 'gl_test_func': 'glGenFramebuffersEXT'},
-  'GenRenderbuffers': {'type': 'GENn', 'gl_test_func': 'glGenRenderbuffersEXT'},
-  'GenTextures': {'type': 'GENn', 'gl_test_func': 'glGenTextures'},
+  'GenBuffers': {
+    'type': 'GENn',
+    'gl_test_func': 'glGenBuffersARB',
+    'resource_type': 'Buffer',
+    'resource_types': 'Buffers',
+  },
+  'GenFramebuffers': {
+    'type': 'GENn',
+    'gl_test_func': 'glGenFramebuffersEXT',
+    'resource_type': 'Framebuffer',
+    'resource_types': 'Framebuffers',
+  },
+  'GenRenderbuffers': {
+    'type': 'GENn', 'gl_test_func': 'glGenRenderbuffersEXT',
+    'resource_type': 'Renderbuffer',
+    'resource_types': 'Renderbuffers',
+  },
+  'GenTextures': {
+    'type': 'GENn',
+    'gl_test_func': 'glGenTextures',
+    'resource_type': 'Texture',
+    'resource_types': 'Textures',
+  },
   'GenSharedIdsCHROMIUM': {
     'type': 'Custom',
     'decoder_func': 'DoGenSharedIdsCHROMIUM',
@@ -1556,13 +1589,44 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'pepper_interface': 'InstancedArrays',
   },
-  'GenQueriesEXT': {'type': 'Todo'},
-  'DeleteQueriesEXT': {'type': 'Todo'},
-  'IsQueryEXT': {'type': 'Todo'},
-  'BeginQueryEXT': {'type': 'Todo'},
-  'EndQueryEXT': {'type': 'Todo'},
-  'GetQueryivEXT': {'type': 'Todo'},
-  'GetQueryObjectuivEXT': {'type': 'Todo'},
+  'GenQueriesEXT': {
+    'type': 'GENn',
+    'gl_test_func': 'glGenQueriesARB',
+    'resource_type': 'Query',
+    'resource_types': 'Queries',
+  },
+  'DeleteQueriesEXT': {
+    'type': 'DELn',
+    'gl_test_func': 'glDeleteQueriesARB',
+    'resource_type': 'Query',
+    'resource_types': 'Queries',
+  },
+  'IsQueryEXT': {
+    'gen_cmd': False,
+    'client_test': False,
+  },
+  'BeginQueryEXT': {
+    'type': 'Manual',
+    'cmd_args': 'GLenumQueryTarget target, GLidQuery id, void* sync_data',
+    'immediate': False,
+    'gl_test_func': 'glBeginQuery',
+  },
+  'EndQueryEXT': {
+    'type': 'Manual',
+    'cmd_args': 'GLenumQueryTarget target, GLuint submit_count',
+    'gl_test_func': 'glEndnQuery',
+    'client_test': False,
+  },
+  'GetQueryivEXT': {
+    'gen_cmd': False,
+    'client_test': False,
+    'gl_test_func': 'glGetQueryiv',
+  },
+  'GetQueryObjectuivEXT': {
+    'gen_cmd': False,
+    'client_test': False,
+    'gl_test_func': 'glGetQueryObjectuiv',
+  },
 }
 
 
@@ -1650,18 +1714,6 @@ class CWriter(object):
     last_splitter = -1
     while not done:
       splitter = string[0:end].rfind(',')
-      if splitter < 0 or (splitter > 0 and string[splitter - 1] == '"'):
-        if last_splitter == -1:
-          break
-        return last_splitter
-      elif splitter >= 80:
-        end = splitter
-      else:
-        return splitter
-    end = len(string)
-    last_splitter = -1
-    while not done:
-      splitter = string[0:end].rfind(' ')
       if splitter < 0 or (splitter > 0 and string[splitter - 1] == '"'):
         return last_splitter
       elif splitter >= 80:
@@ -2688,7 +2740,7 @@ class GENnHandler(TypeHandler):
         'name': func.original_name,
         'typed_args': func.MakeTypedOriginalArgString(""),
         'args': func.MakeOriginalArgString(""),
-        'resource_type': func.GetInfo('resource_type') or func.name[3:],
+        'resource_types': func.GetInfo('resource_types'),
         'count_name': func.GetOriginalArgs()[0].name,
       }
     file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)
@@ -2697,7 +2749,7 @@ class GENnHandler(TypeHandler):
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     code = """  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  id_handlers_[id_namespaces::k%(resource_type)s]->
+  id_handlers_[id_namespaces::k%(resource_types)s]->
       MakeIds(0, %(args)s);
   helper_->%(name)sImmediate(%(args)s);
 %(log_code)s
@@ -2717,17 +2769,17 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   };
   Cmds expected;
   expected.gen.Init(arraysize(ids), &ids[0]);
-  expected.data[0] = k%(type)ssStartId;
-  expected.data[1] = k%(type)ssStartId + 1;
+  expected.data[0] = k%(types)sStartId;
+  expected.data[1] = k%(types)sStartId + 1;
   gl_->%(name)s(arraysize(ids), &ids[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(k%(type)ssStartId, ids[0]);
-  EXPECT_EQ(k%(type)ssStartId + 1, ids[1]);
+  EXPECT_EQ(k%(types)sStartId, ids[0]);
+  EXPECT_EQ(k%(types)sStartId + 1, ids[1]);
 }
 """
     file.Write(code % {
           'name': func.name,
-          'type': func.name[3:-1],
+          'types': func.GetInfo('resource_types'),
         })
 
   def WriteServiceUnitTest(self, func, file):
@@ -2746,7 +2798,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 }
 """
     self.WriteValidUnitTest(func, file, valid_test,  {
-        'resource_name': func.name[3:-1],
+        'resource_name': func.GetInfo('resource_type'),
       })
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
@@ -2759,7 +2811,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
 }
 """
     self.WriteValidUnitTest(func, file, invalid_test, {
-          'resource_name': func.GetOriginalArgs()[1].name[0:-1]
+          'resource_name': func.GetInfo('resource_type').lower(),
         })
 
   def WriteImmediateServiceUnitTest(self, func, file):
@@ -2779,7 +2831,7 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 }
 """
     self.WriteValidUnitTest(func, file, valid_test, {
-        'resource_name': func.original_name[3:-1],
+        'resource_name': func.GetInfo('resource_type'),
       })
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
@@ -2792,7 +2844,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
 }
 """
     self.WriteValidUnitTest(func, file, invalid_test, {
-          'resource_name': func.GetOriginalArgs()[1].name[0:-1]
+          'resource_name': func.GetInfo('resource_type').lower(),
         })
 
   def WriteImmediateCmdComputeSize(self, func, file):
@@ -3004,22 +3056,22 @@ class DELnHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     code = """
 TEST_F(GLES2ImplementationTest, %(name)s) {
-  GLuint ids[2] = { k%(type)ssStartId, k%(type)ssStartId + 1 };
+  GLuint ids[2] = { k%(types)sStartId, k%(types)sStartId + 1 };
   struct Cmds {
     %(name)sImmediate del;
     GLuint data[2];
   };
   Cmds expected;
   expected.del.Init(arraysize(ids), &ids[0]);
-  expected.data[0] = k%(type)ssStartId;
-  expected.data[1] = k%(type)ssStartId + 1;
+  expected.data[0] = k%(types)sStartId;
+  expected.data[1] = k%(types)sStartId + 1;
   gl_->%(name)s(arraysize(ids), &ids[0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 """
     file.Write(code % {
           'name': func.name,
-          'type': func.GetOriginalArgs()[1].name[0:-1].capitalize(),
+          'types': func.GetInfo('resource_types'),
         })
 
   def WriteServiceUnitTest(self, func, file):
@@ -3041,9 +3093,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 }
 """
     self.WriteValidUnitTest(func, file, valid_test, {
-          'resource_name': func.GetOriginalArgs()[1].name[0:-1],
-          'upper_resource_name':
-              func.GetOriginalArgs()[1].name[0:-1].capitalize(),
+          'resource_name': func.GetInfo('resource_type').lower(),
+          'upper_resource_name': func.GetInfo('resource_type'),
         })
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
@@ -3075,9 +3126,8 @@ TEST_F(%(test_name)s, %(name)sValidArgs) {
 }
 """
     self.WriteValidUnitTest(func, file, valid_test, {
-          'resource_name': func.GetOriginalArgs()[1].name[0:-1],
-          'upper_resource_name':
-              func.GetOriginalArgs()[1].name[0:-1].capitalize(),
+          'resource_name': func.GetInfo('resource_type').lower(),
+          'upper_resource_name': func.GetInfo('resource_type'),
         })
     invalid_test = """
 TEST_F(%(test_name)s, %(name)sInvalidArgs) {
@@ -3110,7 +3160,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs) {
           'name': func.original_name,
           'typed_args': func.MakeTypedOriginalArgString(""),
           'args': func.MakeOriginalArgString(""),
-          'resource_type': func.name[6:-1].lower(),
+          'resource_type': func.GetInfo('resource_type').lower(),
           'count_name': func.GetOriginalArgs()[0].name,
         }
       file.Write("%(return_type)s %(name)s(%(typed_args)s) {\n" % args)

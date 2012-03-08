@@ -439,6 +439,14 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     }
   }
 
+  if (ext.Desire("GL_EXT_occlusion_query_boolean") &&
+      (ext.Have("GL_EXT_occlusion_query_boolean") ||
+       ext.Have("GL_ARB_occlusion_query2"))) {
+    // TODO(gman): Comment in the next line once this really works.
+    // AddExtensionString("GL_EXT_occlusion_query_boolean");
+    feature_flags_.occlusion_query_boolean = true;
+  }
+
   if (ext.Desire("GL_ANGLE_instanced_arrays") &&
       (ext.Have("GL_ANGLE_instanced_arrays") ||
        (ext.Have("GL_ARB_instanced_arrays") &&

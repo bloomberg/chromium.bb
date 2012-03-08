@@ -483,6 +483,21 @@ class MockGLInterface : public GLInterface {
       GLsync sync, GLenum pname, GLsizei bufSize,
       GLsizei* length, GLint* values));
 
+  MOCK_METHOD2(GenQueriesARB, void(GLsizei n, GLuint* ids));
+
+  MOCK_METHOD2(DeleteQueriesARB, void(GLsizei n, const GLuint* ids));
+
+  MOCK_METHOD1(IsQueryARB, GLboolean(GLuint id));
+
+  MOCK_METHOD2(BeginQueryARB, void(GLenum target, GLuint id));
+
+  MOCK_METHOD1(EndQueryARB, void(GLenum target));
+
+  MOCK_METHOD3(GetQueryivARB, void(GLenum target, GLenum pname, GLint* params));
+
+  MOCK_METHOD3(GetQueryObjectuivARB, void(
+      GLuint id, GLenum pname, GLuint* params));
+
   MOCK_METHOD1(SetSurfaceCHROMIUM, void(GLuint));
 
   MOCK_METHOD0(GetGraphicsResetStatusARB, GLenum());

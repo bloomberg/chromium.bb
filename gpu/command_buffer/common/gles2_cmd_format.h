@@ -137,6 +137,17 @@ struct ProgramInfoHeader {
   // ProgramInput inputs[num_attribs + num_uniforms];
 };
 
+// The format of QuerySync used by EXT_occlusion_query_boolean
+struct QuerySync {
+  void Reset() {
+    process_count = 0;
+    result = 0;
+  }
+
+  uint32 process_count;
+  uint32 result;
+};
+
 COMPILE_ASSERT(sizeof(ProgramInput) == 20, ProgramInput_size_not_20);
 COMPILE_ASSERT(offsetof(ProgramInput, type) == 0,
                OffsetOf_ProgramInput_type_not_0);

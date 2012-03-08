@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -50,6 +51,7 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLuint kServiceProgramId = 305;
   static const GLuint kServiceShaderId = 306;
   static const GLuint kServiceElementBufferId = 308;
+  static const GLuint kServiceQueryId = 309;
 
   static const int32 kSharedMemoryId = 401;
   static const size_t kSharedBufferSize = 2048;
@@ -193,16 +195,20 @@ class GLES2DecoderTestBase : public testing::Test {
     return group_->renderbuffer_manager()->GetRenderbufferInfo(service_id);
   }
 
-  TextureManager::TextureInfo* GetTextureInfo(GLuint service_id) {
-    return group_->texture_manager()->GetTextureInfo(service_id);
+  TextureManager::TextureInfo* GetTextureInfo(GLuint client_id) {
+    return group_->texture_manager()->GetTextureInfo(client_id);
   }
 
-  ShaderManager::ShaderInfo* GetShaderInfo(GLuint service_id) {
-    return group_->shader_manager()->GetShaderInfo(service_id);
+  ShaderManager::ShaderInfo* GetShaderInfo(GLuint client_id) {
+    return group_->shader_manager()->GetShaderInfo(client_id);
   }
 
-  ProgramManager::ProgramInfo* GetProgramInfo(GLuint service_id) {
-    return group_->program_manager()->GetProgramInfo(service_id);
+  ProgramManager::ProgramInfo* GetProgramInfo(GLuint client_id) {
+    return group_->program_manager()->GetProgramInfo(client_id);
+  }
+
+  QueryManager::Query* GetQueryInfo(GLuint client_id) {
+    return decoder_->GetQueryManager()->GetQuery(client_id);
   }
 
   ProgramManager* program_manager() {
@@ -414,6 +420,7 @@ class GLES2DecoderTestBase : public testing::Test {
   GLuint client_element_buffer_id_;
   GLuint client_vertex_shader_id_;
   GLuint client_fragment_shader_id_;
+  GLuint client_query_id_;
 
   uint32 shared_memory_id_;
   uint32 shared_memory_offset_;

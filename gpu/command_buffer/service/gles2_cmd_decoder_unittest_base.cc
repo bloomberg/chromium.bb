@@ -44,7 +44,8 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       client_texture_id_(106),
       client_element_buffer_id_(107),
       client_vertex_shader_id_(121),
-      client_fragment_shader_id_(122) {
+      client_fragment_shader_id_(122),
+      client_query_id_(123) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 
@@ -798,6 +799,7 @@ const GLuint GLES2DecoderTestBase::kServiceTextureId;
 const GLuint GLES2DecoderTestBase::kServiceProgramId;
 const GLuint GLES2DecoderTestBase::kServiceShaderId;
 const GLuint GLES2DecoderTestBase::kServiceElementBufferId;
+const GLuint GLES2DecoderTestBase::kServiceQueryId;
 
 const int32 GLES2DecoderTestBase::kSharedMemoryId;
 const size_t GLES2DecoderTestBase::kSharedBufferSize;

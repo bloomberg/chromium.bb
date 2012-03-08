@@ -1524,57 +1524,53 @@
     }
   }
 
-  void GenQueriesEXT(GLsizei n, uint32 ids_shm_id, uint32 ids_shm_offset) {
+  void GenQueriesEXT(
+      GLsizei n, uint32 queries_shm_id, uint32 queries_shm_offset) {
     gles2::GenQueriesEXT* c = GetCmdSpace<gles2::GenQueriesEXT>();
     if (c) {
-      c->Init(n, ids_shm_id, ids_shm_offset);
+      c->Init(n, queries_shm_id, queries_shm_offset);
     }
   }
 
-  void DeleteQueriesEXT(GLsizei n, uint32 ids_shm_id, uint32 ids_shm_offset) {
+  void GenQueriesEXTImmediate(GLsizei n, GLuint* queries) {
+    const uint32 size = gles2::GenQueriesEXTImmediate::ComputeSize(n);
+    gles2::GenQueriesEXTImmediate* c =
+        GetImmediateCmdSpaceTotalSize<gles2::GenQueriesEXTImmediate>(size);
+    if (c) {
+      c->Init(n, queries);
+    }
+  }
+
+  void DeleteQueriesEXT(
+      GLsizei n, uint32 queries_shm_id, uint32 queries_shm_offset) {
     gles2::DeleteQueriesEXT* c = GetCmdSpace<gles2::DeleteQueriesEXT>();
     if (c) {
-      c->Init(n, ids_shm_id, ids_shm_offset);
+      c->Init(n, queries_shm_id, queries_shm_offset);
     }
   }
 
-  void IsQueryEXT(GLuint id) {
-    gles2::IsQueryEXT* c = GetCmdSpace<gles2::IsQueryEXT>();
+  void DeleteQueriesEXTImmediate(GLsizei n, const GLuint* queries) {
+    const uint32 size = gles2::DeleteQueriesEXTImmediate::ComputeSize(n);
+    gles2::DeleteQueriesEXTImmediate* c =
+        GetImmediateCmdSpaceTotalSize<gles2::DeleteQueriesEXTImmediate>(size);
     if (c) {
-      c->Init(id);
+      c->Init(n, queries);
     }
   }
 
-  void BeginQueryEXT(GLenum target, GLuint id) {
+  void BeginQueryEXT(
+      GLenum target, GLuint id, uint32 sync_data_shm_id,
+      uint32 sync_data_shm_offset) {
     gles2::BeginQueryEXT* c = GetCmdSpace<gles2::BeginQueryEXT>();
     if (c) {
-      c->Init(target, id);
+      c->Init(target, id, sync_data_shm_id, sync_data_shm_offset);
     }
   }
 
-  void EndQueryEXT(GLenum target) {
+  void EndQueryEXT(GLenum target, GLuint submit_count) {
     gles2::EndQueryEXT* c = GetCmdSpace<gles2::EndQueryEXT>();
     if (c) {
-      c->Init(target);
-    }
-  }
-
-  void GetQueryivEXT(
-      GLenum target, GLenum pname, uint32 params_shm_id,
-      uint32 params_shm_offset) {
-    gles2::GetQueryivEXT* c = GetCmdSpace<gles2::GetQueryivEXT>();
-    if (c) {
-      c->Init(target, pname, params_shm_id, params_shm_offset);
-    }
-  }
-
-  void GetQueryObjectuivEXT(
-      GLuint id, GLenum pname, uint32 params_shm_id,
-      uint32 params_shm_offset) {
-    gles2::GetQueryObjectuivEXT* c =
-        GetCmdSpace<gles2::GetQueryObjectuivEXT>();
-    if (c) {
-      c->Init(id, pname, params_shm_id, params_shm_offset);
+      c->Init(target, submit_count);
     }
   }
 

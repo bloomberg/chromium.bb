@@ -197,31 +197,30 @@
   OP(RenderbufferStorageMultisampleEXT)                        /* 440 */ \
   OP(TexStorage2DEXT)                                          /* 441 */ \
   OP(GenQueriesEXT)                                            /* 442 */ \
-  OP(DeleteQueriesEXT)                                         /* 443 */ \
-  OP(IsQueryEXT)                                               /* 444 */ \
-  OP(BeginQueryEXT)                                            /* 445 */ \
-  OP(EndQueryEXT)                                              /* 446 */ \
-  OP(GetQueryivEXT)                                            /* 447 */ \
-  OP(GetQueryObjectuivEXT)                                     /* 448 */ \
-  OP(SwapBuffers)                                              /* 449 */ \
-  OP(GetMaxValueInBufferCHROMIUM)                              /* 450 */ \
-  OP(GenSharedIdsCHROMIUM)                                     /* 451 */ \
-  OP(DeleteSharedIdsCHROMIUM)                                  /* 452 */ \
-  OP(RegisterSharedIdsCHROMIUM)                                /* 453 */ \
-  OP(EnableFeatureCHROMIUM)                                    /* 454 */ \
-  OP(ResizeCHROMIUM)                                           /* 455 */ \
-  OP(GetRequestableExtensionsCHROMIUM)                         /* 456 */ \
-  OP(RequestExtensionCHROMIUM)                                 /* 457 */ \
-  OP(GetMultipleIntegervCHROMIUM)                              /* 458 */ \
-  OP(GetProgramInfoCHROMIUM)                                   /* 459 */ \
-  OP(CreateStreamTextureCHROMIUM)                              /* 460 */ \
-  OP(DestroyStreamTextureCHROMIUM)                             /* 461 */ \
-  OP(GetTranslatedShaderSourceANGLE)                           /* 462 */ \
-  OP(PostSubBufferCHROMIUM)                                    /* 463 */ \
-  OP(TexImageIOSurface2DCHROMIUM)                              /* 464 */ \
-  OP(DrawArraysInstancedANGLE)                                 /* 465 */ \
-  OP(DrawElementsInstancedANGLE)                               /* 466 */ \
-  OP(VertexAttribDivisorANGLE)                                 /* 467 */ \
+  OP(GenQueriesEXTImmediate)                                   /* 443 */ \
+  OP(DeleteQueriesEXT)                                         /* 444 */ \
+  OP(DeleteQueriesEXTImmediate)                                /* 445 */ \
+  OP(BeginQueryEXT)                                            /* 446 */ \
+  OP(EndQueryEXT)                                              /* 447 */ \
+  OP(SwapBuffers)                                              /* 448 */ \
+  OP(GetMaxValueInBufferCHROMIUM)                              /* 449 */ \
+  OP(GenSharedIdsCHROMIUM)                                     /* 450 */ \
+  OP(DeleteSharedIdsCHROMIUM)                                  /* 451 */ \
+  OP(RegisterSharedIdsCHROMIUM)                                /* 452 */ \
+  OP(EnableFeatureCHROMIUM)                                    /* 453 */ \
+  OP(ResizeCHROMIUM)                                           /* 454 */ \
+  OP(GetRequestableExtensionsCHROMIUM)                         /* 455 */ \
+  OP(RequestExtensionCHROMIUM)                                 /* 456 */ \
+  OP(GetMultipleIntegervCHROMIUM)                              /* 457 */ \
+  OP(GetProgramInfoCHROMIUM)                                   /* 458 */ \
+  OP(CreateStreamTextureCHROMIUM)                              /* 459 */ \
+  OP(DestroyStreamTextureCHROMIUM)                             /* 460 */ \
+  OP(GetTranslatedShaderSourceANGLE)                           /* 461 */ \
+  OP(PostSubBufferCHROMIUM)                                    /* 462 */ \
+  OP(TexImageIOSurface2DCHROMIUM)                              /* 463 */ \
+  OP(DrawArraysInstancedANGLE)                                 /* 464 */ \
+  OP(DrawElementsInstancedANGLE)                               /* 465 */ \
+  OP(VertexAttribDivisorANGLE)                                 /* 466 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

@@ -105,20 +105,6 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
   // Gets a bucket. Returns NULL if the bucket does not exist.
   Bucket* GetBucket(uint32 bucket_id) const;
 
- protected:
-  // Executes a common command.
-  // Parameters:
-  //    command: the command index.
-  //    arg_count: the number of CommandBufferEntry arguments.
-  //    cmd_data: the command data.
-  // Returns:
-  //   error::kNoError if no error was found, one of
-  //   error::Error otherwise.
-  error::Error DoCommonCommand(
-      unsigned int command,
-      unsigned int arg_count,
-      const void* cmd_data);
-
   // Gets the address of shared memory data, given a shared memory ID and an
   // offset. Also checks that the size is consistent with the shared memory
   // size.
@@ -139,6 +125,20 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
                       unsigned int size) {
     return static_cast<T>(GetAddressAndCheckSize(shm_id, offset, size));
   }
+
+ protected:
+  // Executes a common command.
+  // Parameters:
+  //    command: the command index.
+  //    arg_count: the number of CommandBufferEntry arguments.
+  //    cmd_data: the command data.
+  // Returns:
+  //   error::kNoError if no error was found, one of
+  //   error::Error otherwise.
+  error::Error DoCommonCommand(
+      unsigned int command,
+      unsigned int arg_count,
+      const void* cmd_data);
 
   // Gets an name for a common command.
   const char* GetCommonCommandName(cmd::CommandId command_id) const;

@@ -6,11 +6,13 @@
 
 #include "../client/gles2_implementation.h"
 
+#include <map>
 #include <set>
 #include <queue>
 #include <GLES2/gl2ext.h>
 #include "../client/mapped_memory.h"
 #include "../client/program_info_manager.h"
+#include "../client/query_tracker.h"
 #include "../client/transfer_buffer.h"
 #include "../common/gles2_cmd_utils.h"
 #include "../common/id_allocator.h"
@@ -604,7 +606,8 @@ GLES2Implementation::GLES2Implementation(
       debug_(false),
       sharing_resources_(share_resources),
       bind_generates_resource_(bind_generates_resource),
-      use_count_(0) {
+      use_count_(0),
+      current_query_(NULL) {
   GPU_DCHECK(helper);
   GPU_DCHECK(transfer_buffer);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -685,6 +688,7 @@ bool GLES2Implementation::Initialize(
       new TextureUnit[gl_state_.max_combined_texture_image_units]);
 
   program_info_manager_.reset(ProgramInfoManager::Create(sharing_resources_));
+  query_tracker_.reset(new QueryTracker(mapped_memory_.get()));
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   id_handlers_[id_namespaces::kBuffers]->MakeIds(
@@ -700,6 +704,13 @@ bool GLES2Implementation::Initialize(
 }
 
 GLES2Implementation::~GLES2Implementation() {
+  // Make sure the queries are finished otherwise we'll delete the
+  // shared memory (mapped_memory_) which will free the memory used
+  // by the queries. The GPU process when validating that memory is still
+  // shared will fail and abort (ie, it will stop running).
+  Finish();
+  query_tracker_.reset();
+
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
 #endif
@@ -2970,6 +2981,180 @@ void GLES2Implementation::PostSubBufferCHROMIUM(
   }
 }
 
+void GLES2Implementation::DeleteQueriesEXTHelper(
+    GLsizei n, const GLuint* queries) {
+  if (!id_handlers_[id_namespaces::kQueries]->FreeIds(n, queries)) {
+    SetGLError(
+        GL_INVALID_VALUE,
+        "glDeleteTextures: id not created by this context.");
+    return;
+  }
+  // When you delete a query you can't mark its memory as unused until it's
+  // completed.
+  // Note: If you don't do this you won't mess up the service but you will mess
+  // up yourself.
+
+  // TODO(gman): Consider making this faster by putting pending quereies
+  // on some queue to be removed when they are finished.
+  bool query_pending = false;
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    QueryTracker::Query* query = query_tracker_->GetQuery(queries[ii]);
+    if (query && query->Pending()) {
+      query_pending = true;
+      break;
+    }
+  }
+
+  if (query_pending) {
+    Finish();
+  }
+
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    QueryTracker::Query* query = query_tracker_->GetQuery(queries[ii]);
+    if (query && query->Pending()) {
+      GPU_CHECK(!query->CheckResultsAvailable(helper_));
+    }
+    query_tracker_->RemoveQuery(queries[ii]);
+  }
+  helper_->DeleteQueriesEXTImmediate(n, queries);
+}
+
+GLboolean GLES2Implementation::IsQueryEXT(GLuint id) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] IsQueryEXT(" << id << ")");
+
+  // TODO(gman): To be spec compliant IDs from other contexts sharing
+  // resources need to return true here even though you can't share
+  // queries across contexts?
+  return query_tracker_->GetQuery(id) != NULL;
+}
+
+void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] BeginQueryEXT("
+                 << GLES2Util::GetStringQueryTarget(target)
+                 << ", " << id << ")");
+
+  // if any outstanding queries INV_OP
+  if (current_query_) {
+    SetGLError(
+        GL_INVALID_OPERATION, "glBeginQueryEXT: query already in progress");
+    return;
+  }
+
+  // id = 0 INV_OP
+  if (id == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT: id is 0");
+    return;
+  }
+
+  // TODO(gman) if id not GENned INV_OPERATION
+
+  // if id does not have an object
+  QueryTracker::Query* query = query_tracker_->GetQuery(id);
+  if (!query) {
+    query = query_tracker_->CreateQuery(id, target);
+  } else if (query->target() != target) {
+    SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT: target does not match");
+    return;
+  }
+
+  current_query_ = query;
+
+  // init memory, inc count
+  query->MarkAsActive();
+
+  // tell service about id, shared memory and count
+  helper_->BeginQueryEXT(target, id, query->shm_id(), query->shm_offset());
+}
+
+void GLES2Implementation::EndQueryEXT(GLenum target) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] EndQueryEXT("
+                 << GLES2Util::GetStringQueryTarget(target) << ")");
+
+  if (!current_query_) {
+    SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT: no active query");
+    return;
+  }
+
+  if (current_query_->target() != target) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glEndQueryEXT: target does not match active query");
+    return;
+  }
+
+  helper_->EndQueryEXT(target, current_query_->submit_count());
+  current_query_->MarkAsPending(helper_->InsertToken());
+  current_query_ = NULL;
+}
+
+void GLES2Implementation::GetQueryivEXT(
+    GLenum target, GLenum pname, GLint* params) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] GetQueryivEXT("
+                 << GLES2Util::GetStringQueryTarget(target) << ", "
+                 << GLES2Util::GetStringQueryParameter(pname) << ", "
+                 << static_cast<const void*>(params) << ")");
+
+  if (pname != GL_CURRENT_QUERY_EXT) {
+    SetGLError(GL_INVALID_ENUM, "glGetQueryivEXT: invalid pname");
+    return;
+  }
+  *params = (current_query_ && current_query_->target() == target) ?
+      current_query_->id() : 0;
+  GPU_CLIENT_LOG("  " << *params);
+}
+
+void GLES2Implementation::GetQueryObjectuivEXT(
+    GLuint id, GLenum pname, GLuint* params) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] GetQueryivEXT(" << id << ", "
+                 << GLES2Util::GetStringQueryObjectParameter(pname) << ", "
+                 << static_cast<const void*>(params) << ")");
+
+  QueryTracker::Query* query = query_tracker_->GetQuery(id);
+  if (!query) {
+    SetGLError(GL_INVALID_OPERATION, "glQueryObjectuivEXT: unknown query id");
+    return;
+  }
+
+  if (query == current_query_) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glQueryObjectuivEXT: query active. Did you to call glEndQueryEXT?");
+    return;
+  }
+
+  if (query->NeverUsed()) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glQueryObjectuivEXT: Never used. Did you call glBeginQueryEXT?");
+    return;
+  }
+
+  switch (pname) {
+    case GL_QUERY_RESULT_EXT:
+      if (!query->CheckResultsAvailable(helper_)) {
+        helper_->WaitForToken(query->token());
+        if (!query->CheckResultsAvailable(helper_)) {
+          // TODO(gman): Speed this up.
+          Finish();
+          GPU_CHECK(query->CheckResultsAvailable(helper_));
+        }
+      }
+      *params = query->GetResult();
+      break;
+    case GL_QUERY_RESULT_AVAILABLE_EXT:
+      *params = query->CheckResultsAvailable(helper_);
+      break;
+    default:
+      SetGLError(GL_INVALID_ENUM, "glQueryObjectuivEXT: unknown pname");
+      break;
+  }
+  GPU_CLIENT_LOG("  " << *params);
+}
+
 void GLES2Implementation::DrawArraysInstancedANGLE(
     GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -3069,7 +3254,6 @@ void GLES2Implementation::DrawElementsInstancedANGLE(
       mode, count, type, ToGLuint(indices), primcount);
 #endif
 }
-
 
 }  // namespace gles2
 }  // namespace gpu

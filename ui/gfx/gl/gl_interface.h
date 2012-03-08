@@ -30,6 +30,8 @@ class GL_EXPORT GLInterface {
 
   virtual void BeginQuery(GLenum target, GLuint id) = 0;
 
+  virtual void BeginQueryARB(GLenum target, GLuint id) = 0;
+
   virtual void BindAttribLocation(GLuint program,
                                   GLuint index,
                                   const char* name) = 0;
@@ -156,6 +158,8 @@ class GL_EXPORT GLInterface {
 
   virtual void DeleteQueries(GLsizei n, const GLuint* ids) = 0;
 
+  virtual void DeleteQueriesARB(GLsizei n, const GLuint* ids) = 0;
+
   virtual void DeleteShader(GLuint shader) = 0;
 
   virtual void DeleteTextures(GLsizei n, const GLuint* textures) = 0;
@@ -197,6 +201,8 @@ class GL_EXPORT GLInterface {
 
   virtual void EndQuery(GLenum target) = 0;
 
+  virtual void EndQueryARB(GLenum target) = 0;
+
   virtual void Finish() = 0;
 
   virtual void Flush() = 0;
@@ -221,6 +227,8 @@ class GL_EXPORT GLInterface {
   virtual void GenFramebuffersEXT(GLsizei n, GLuint* framebuffers) = 0;
 
   virtual void GenQueries(GLsizei n, GLuint* ids) = 0;
+
+  virtual void GenQueriesARB(GLsizei n, GLuint* ids) = 0;
 
   virtual void GenRenderbuffersEXT(GLsizei n, GLuint* renderbuffers) = 0;
 
@@ -276,6 +284,8 @@ class GL_EXPORT GLInterface {
 
   virtual void GetQueryiv(GLenum target, GLenum pname, GLint* params) = 0;
 
+  virtual void GetQueryivARB(GLenum target, GLenum pname, GLint* params) = 0;
+
   virtual void GetQueryObjecti64v(GLuint id, GLenum pname, GLint64* params) = 0;
 
   virtual void GetQueryObjectiv(GLuint id, GLenum pname, GLint* params) = 0;
@@ -285,6 +295,10 @@ class GL_EXPORT GLInterface {
                                    GLuint64* params) = 0;
 
   virtual void GetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params) = 0;
+
+  virtual void GetQueryObjectuivARB(GLuint id,
+                                    GLenum pname,
+                                    GLuint* params) = 0;
 
   virtual void GetRenderbufferParameterivEXT(GLenum target,
                                              GLenum pname,
@@ -365,6 +379,8 @@ class GL_EXPORT GLInterface {
   virtual GLboolean IsFramebufferEXT(GLuint framebuffer) = 0;
 
   virtual GLboolean IsProgram(GLuint program) = 0;
+
+  virtual GLboolean IsQueryARB(GLuint query) = 0;
 
   virtual GLboolean IsRenderbufferEXT(GLuint renderbuffer) = 0;
 

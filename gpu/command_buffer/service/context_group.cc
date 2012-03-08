@@ -37,6 +37,7 @@ ContextGroup::ContextGroup(bool bind_generates_resource)
       new NonReusedIdAllocator);
   id_namespaces_[id_namespaces::kRenderbuffers].reset(new IdAllocator);
   id_namespaces_[id_namespaces::kTextures].reset(new IdAllocator);
+  id_namespaces_[id_namespaces::kQueries].reset(new IdAllocator);
 }
 
 ContextGroup::~ContextGroup() {

@@ -25,6 +25,8 @@ class StreamTextureManager;
 namespace gles2 {
 
 class ContextGroup;
+class QueryManager;
+
 class MockGLES2Decoder : public GLES2Decoder {
  public:
   MockGLES2Decoder();
@@ -47,6 +49,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetGLSurface, gfx::GLSurface*());
   MOCK_METHOD0(GetGLContext, gfx::GLContext*());
   MOCK_METHOD0(GetContextGroup, ContextGroup*());
+  MOCK_METHOD0(GetQueryManager, gpu::gles2::QueryManager*());
   MOCK_METHOD1(SetResizeCallback, void(const base::Callback<void(gfx::Size)>&));
   MOCK_METHOD1(SetStreamTextureManager, void(StreamTextureManager*));
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,

@@ -320,6 +320,7 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLuint kProgramsAndShadersStartId = 1;
   static const GLuint kRenderbuffersStartId = 1;
   static const GLuint kTexturesStartId = 1;
+  static const GLuint kQueriesStartId = 1;
 
   typedef MockTransferBuffer::ExpectedMemoryInfo ExpectedMemoryInfo;
 
@@ -334,6 +335,10 @@ class GLES2ImplementationTest : public testing::Test {
   bool NoCommandsWritten() {
     return static_cast<const uint8*>(static_cast<const void*>(commands_))[0] ==
            kInitialValue;
+  }
+
+  QueryTracker::Query* GetQuery(GLuint id) {
+    return gl_->query_tracker_->GetQuery(id);
   }
 
   void Initialize(bool shared_resources, bool bind_generates_resource) {
@@ -457,6 +462,15 @@ class GLES2ImplementationTest : public testing::Test {
     return transfer_buffer_->GetExpectedResultMemory(size);
   }
 
+  int CheckError() {
+    ExpectedMemoryInfo result =
+        GetExpectedResultMemory(sizeof(GetError::Result));
+    EXPECT_CALL(*command_buffer(), OnFlush())
+        .WillOnce(SetMemory(result.ptr, GLuint(GL_NO_ERROR)))
+        .RetiresOnSaturation();
+    return gl_->GetError();
+  }
+
   Sequence sequence_;
   scoped_ptr<MockClientCommandBuffer> command_buffer_;
   scoped_ptr<GLES2CmdHelper> helper_;
@@ -509,6 +523,7 @@ const GLuint GLES2ImplementationTest::kFramebuffersStartId;
 const GLuint GLES2ImplementationTest::kProgramsAndShadersStartId;
 const GLuint GLES2ImplementationTest::kRenderbuffersStartId;
 const GLuint GLES2ImplementationTest::kTexturesStartId;
+const GLuint GLES2ImplementationTest::kQueriesStartId;
 #endif
 
 TEST_F(GLES2ImplementationTest, ShaderSource) {
@@ -2299,6 +2314,126 @@ TEST_F(GLES2ImplementationTest, BufferDataLargerThanTransferBuffer) {
   expected.set_token2.Init(GetNextToken());
   gl_->BufferData(GL_ARRAY_BUFFER, arraysize(buf), buf, GL_DYNAMIC_DRAW);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
+  // Test GetQueryivEXT returns 0 if no current query.
+  GLint param = -1;
+  gl_->GetQueryivEXT(GL_ANY_SAMPLES_PASSED_EXT, GL_CURRENT_QUERY_EXT, &param);
+  EXPECT_EQ(0, param);
+
+  GLuint expected_ids[2] = { 1, 2 }; // These must match what's actually genned.
+  struct GenCmds {
+    GenQueriesEXTImmediate gen;
+    GLuint data[2];
+  };
+  GenCmds expected_gen_cmds;
+  expected_gen_cmds.gen.Init(arraysize(expected_ids), &expected_ids[0]);
+  GLuint ids[arraysize(expected_ids)] = { 0, };
+  gl_->GenQueriesEXT(arraysize(expected_ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(
+      &expected_gen_cmds, commands_, sizeof(expected_gen_cmds)));
+  GLuint id1 = ids[0];
+  GLuint id2 = ids[1];
+  ClearCommands();
+
+  // Test BeginQueryEXT fails if id = 0.
+  gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, 0);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test BeginQueryEXT fails if id not GENed.
+  // TODO(gman):
+
+  // Test BeginQueryEXT inserts command.
+  struct BeginCmds {
+    BeginQueryEXT begin_query;
+  };
+  BeginCmds expected_begin_cmds;
+  const void* commands = GetPut();
+  gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id1);
+  QueryTracker::Query* query = GetQuery(id1);
+  ASSERT_TRUE(query != NULL);
+  expected_begin_cmds.begin_query.Init(
+      GL_ANY_SAMPLES_PASSED_EXT, id1, query->shm_id(), query->shm_offset());
+  EXPECT_EQ(0, memcmp(
+      &expected_begin_cmds, commands, sizeof(expected_begin_cmds)));
+  ClearCommands();
+
+  // Test GetQueryivEXT returns id.
+  param = -1;
+  gl_->GetQueryivEXT(GL_ANY_SAMPLES_PASSED_EXT, GL_CURRENT_QUERY_EXT, &param);
+  EXPECT_EQ(id1, static_cast<GLuint>(param));
+  gl_->GetQueryivEXT(
+      GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT, GL_CURRENT_QUERY_EXT, &param);
+  EXPECT_EQ(0, param);
+
+  // Test BeginQueryEXT fails if between Begin/End.
+  gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id2);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test EndQueryEXT fails if target not same as current query.
+  ClearCommands();
+  gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test EndQueryEXT sends command
+  struct EndCmds {
+    EndQueryEXT end_query;
+  };
+  EndCmds expected_end_cmds;
+  expected_end_cmds.end_query.Init(
+      GL_ANY_SAMPLES_PASSED_EXT, query->submit_count());
+  commands = GetPut();
+  gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
+  EXPECT_EQ(0, memcmp(
+      &expected_end_cmds, commands, sizeof(expected_end_cmds)));
+
+  // Test EndQueryEXT fails if no current query.
+  ClearCommands();
+  gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test 2nd Begin/End increments count.
+  uint32 old_submit_count = query->submit_count();
+  gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id1);
+  EXPECT_NE(old_submit_count, query->submit_count());
+  expected_end_cmds.end_query.Init(
+      GL_ANY_SAMPLES_PASSED_EXT, query->submit_count());
+  commands = GetPut();
+  gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
+  EXPECT_EQ(0, memcmp(
+      &expected_end_cmds, commands, sizeof(expected_end_cmds)));
+
+  // Test BeginQueryEXT fails if target changed.
+  ClearCommands();
+  gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT, id1);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test GetQueryObjectuivEXT fails if unused id
+  GLuint available = 0xBDu;
+  ClearCommands();
+  gl_->GetQueryObjectuivEXT(id2, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(0xBDu, available);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test GetQueryObjectuivEXT fails if bad id
+  ClearCommands();
+  gl_->GetQueryObjectuivEXT(4567, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(0xBDu, available);
+  EXPECT_EQ(GL_INVALID_OPERATION, CheckError());
+
+  // Test GetQueryObjectuivEXT CheckResultsAvailable
+  ClearCommands();
+  gl_->GetQueryObjectuivEXT(id1, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(0u, available);
 }
 
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"

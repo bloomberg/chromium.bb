@@ -650,13 +650,13 @@ error::Error GLES2DecoderImpl::HandleEnableVertexAttribArray(
 
 error::Error GLES2DecoderImpl::HandleFinish(
     uint32 immediate_data_size, const gles2::Finish& c) {
-  glFinish();
+  DoFinish();
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleFlush(
     uint32 immediate_data_size, const gles2::Flush& c) {
-  glFlush();
+  DoFlush();
   return error::kNoError;
 }
 
@@ -2609,50 +2609,69 @@ error::Error GLES2DecoderImpl::HandleTexStorage2DEXT(
 
 error::Error GLES2DecoderImpl::HandleGenQueriesEXT(
     uint32 immediate_data_size, const gles2::GenQueriesEXT& c) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glGenQueriesEXT not implemented");
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  GLuint* queries = GetSharedMemoryAs<GLuint*>(
+      c.queries_shm_id, c.queries_shm_offset, data_size);
+  if (queries == NULL) {
+    return error::kOutOfBounds;
+  }
+  if (!GenQueriesEXTHelper(n, queries)) {
+    return error::kInvalidArguments;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleGenQueriesEXTImmediate(
+    uint32 immediate_data_size, const gles2::GenQueriesEXTImmediate& c) {
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  GLuint* queries = GetImmediateDataAs<GLuint*>(
+      c, data_size, immediate_data_size);
+  if (queries == NULL) {
+    return error::kOutOfBounds;
+  }
+  if (!GenQueriesEXTHelper(n, queries)) {
+    return error::kInvalidArguments;
+  }
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleDeleteQueriesEXT(
     uint32 immediate_data_size, const gles2::DeleteQueriesEXT& c) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glDeleteQueriesEXT not implemented");
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* queries = GetSharedMemoryAs<const GLuint*>(
+      c.queries_shm_id, c.queries_shm_offset, data_size);
+  if (queries == NULL) {
+    return error::kOutOfBounds;
+  }
+  DeleteQueriesEXTHelper(n, queries);
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleIsQueryEXT(
-    uint32 immediate_data_size, const gles2::IsQueryEXT& c) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glIsQueryEXT not implemented");
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
-    uint32 immediate_data_size, const gles2::BeginQueryEXT& c) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT not implemented");
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleEndQueryEXT(
-    uint32 immediate_data_size, const gles2::EndQueryEXT& c) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT not implemented");
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleGetQueryivEXT(
-    uint32 immediate_data_size, const gles2::GetQueryivEXT& c) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glGetQueryivEXT not implemented");
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleGetQueryObjectuivEXT(
-    uint32 immediate_data_size, const gles2::GetQueryObjectuivEXT& c) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glGetQueryObjectuivEXT not implemented");
+error::Error GLES2DecoderImpl::HandleDeleteQueriesEXTImmediate(
+    uint32 immediate_data_size, const gles2::DeleteQueriesEXTImmediate& c) {
+  GLsizei n = static_cast<GLsizei>(c.n);
+  uint32 data_size;
+  if (!SafeMultiplyUint32(n, sizeof(GLuint), &data_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLuint* queries = GetImmediateDataAs<const GLuint*>(
+      c, data_size, immediate_data_size);
+  if (queries == NULL) {
+    return error::kOutOfBounds;
+  }
+  DeleteQueriesEXTHelper(n, queries);
   return error::kNoError;
 }
 

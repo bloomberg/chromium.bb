@@ -1563,6 +1563,37 @@ TEST_F(GLES2ImplementationTest, TexStorage2DEXT) {
   gl_->TexStorage2DEXT(GL_TEXTURE_2D, 2, GL_RGB565, 4, 5);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, GenQueriesEXT) {
+  GLuint ids[2] = { 0, };
+  struct Cmds {
+    GenQueriesEXTImmediate gen;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.gen.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = kQueriesStartId;
+  expected.data[1] = kQueriesStartId + 1;
+  gl_->GenQueriesEXT(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(kQueriesStartId, ids[0]);
+  EXPECT_EQ(kQueriesStartId + 1, ids[1]);
+}
+
+TEST_F(GLES2ImplementationTest, DeleteQueriesEXT) {
+  GLuint ids[2] = { kQueriesStartId, kQueriesStartId + 1 };
+  struct Cmds {
+    DeleteQueriesEXTImmediate del;
+    GLuint data[2];
+  };
+  Cmds expected;
+  expected.del.Init(arraysize(ids), &ids[0]);
+  expected.data[0] = kQueriesStartId;
+  expected.data[1] = kQueriesStartId + 1;
+  gl_->DeleteQueriesEXT(arraysize(ids), &ids[0]);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+// TODO: Implement unit test for BeginQueryEXT
 // TODO: Implement unit test for GenSharedIdsCHROMIUM
 // TODO: Implement unit test for DeleteSharedIdsCHROMIUM
 // TODO: Implement unit test for RegisterSharedIdsCHROMIUM

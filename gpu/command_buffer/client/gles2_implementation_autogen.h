@@ -1409,41 +1409,54 @@ void TexStorage2DEXT(
   helper_->TexStorage2DEXT(target, levels, internalFormat, width, height);
 }
 
-void GenQueriesEXT(GLsizei n, GLuint* ids) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glGenQueriesEXT not implemented");
+void GenQueriesEXT(GLsizei n, GLuint* queries) {
+  GPU_CLIENT_LOG("[" << this << "] glGenQueriesEXT(" << n << ", "
+                 << static_cast<const void*>(queries) << ")");  // NOLINT
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glGenQueriesEXT: n < 0");
+    return;
+  }
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  id_handlers_[id_namespaces::kQueries]->
+      MakeIds(0, n, queries);
+  helper_->GenQueriesEXTImmediate(n, queries);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << queries[i]);
+    }
+  });
 }
 
-void DeleteQueriesEXT(GLsizei n, const GLuint* ids) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glDeleteQueriesEXT not implemented");
+void DeleteQueriesEXT(GLsizei n, const GLuint* queries) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glDeleteQueriesEXT(" << n << ", "
+                 << static_cast<const void*>(queries) << ")");  // NOLINT
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << queries[i]);
+    }
+  });
+  GPU_CLIENT_DCHECK_CODE_BLOCK({
+    for (GLsizei i = 0; i < n; ++i) {
+      GPU_DCHECK(queries[i] != 0);
+    }
+  });
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDeleteQueriesEXT: n < 0");
+    return;
+  }
+  DeleteQueriesEXTHelper(n, queries);
 }
 
-GLboolean IsQueryEXT(GLuint id) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glIsQueryEXT not implemented");
-  return 0;
-}
+GLboolean IsQueryEXT(GLuint id);
 
-void BeginQueryEXT(GLenum target, GLuint id) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT not implemented");
-}
+void BeginQueryEXT(GLenum target, GLuint id);
 
-void EndQueryEXT(GLenum target) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT not implemented");
-}
+void EndQueryEXT(GLenum target);
 
-void GetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glGetQueryivEXT not implemented");
-}
+void GetQueryivEXT(GLenum target, GLenum pname, GLint* params);
 
-void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) {
-  // TODO: for now this is a no-op
-  SetGLError(GL_INVALID_OPERATION, "glGetQueryObjectuivEXT not implemented");
-}
+void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params);
 
 void SwapBuffers();
 

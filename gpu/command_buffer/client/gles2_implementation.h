@@ -16,6 +16,7 @@
 #include "../common/gles2_cmd_utils.h"
 #include "../common/scoped_ptr.h"
 #include "../client/gles2_cmd_helper.h"
+#include "../client/query_tracker.h"
 #include "../client/ring_buffer.h"
 #include "gles2_impl_export.h"
 
@@ -216,6 +217,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
  private:
   friend class ClientSideBufferHelper;
+  friend class GLES2ImplementationTest;
 
   // Used to track whether an extension is available
   enum ExtensionStatus {
@@ -393,6 +395,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   void DeleteTexturesHelper(GLsizei n, const GLuint* textures);
   bool DeleteProgramHelper(GLuint program);
   bool DeleteShaderHelper(GLuint shader);
+  void DeleteQueriesEXTHelper(GLsizei n, const GLuint* textures);
 
   void BufferDataHelper(
       GLenum target, GLsizeiptr size, const void* data, GLenum usage);
@@ -515,6 +518,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   scoped_ptr<MappedMemoryManager> mapped_memory_;
 
   scoped_ptr<ProgramInfoManager> program_info_manager_;
+
+  scoped_ptr<QueryTracker> query_tracker_;
+  QueryTracker::Query* current_query_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };

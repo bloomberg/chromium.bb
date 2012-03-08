@@ -6562,6 +6562,96 @@ TEST_F(GLES2DecoderWithShaderTest,
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest, BeingQueryEXTDisabled) {
+  // Test something fails if off.
+}
+
+TEST_F(GLES2DecoderManualInitTest, BeingEndQueryEXT) {
+  InitDecoder(
+      "GL_EXT_occlusion_query_boolean",      // extensions
+      true,    // has alpha
+      false,   // has depth
+      false,   // has stencil
+      true,    // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  // Test end fails if no begin.
+  EndQueryEXT end_cmd;
+  end_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Test a non-generated id fails.
+  BeginQueryEXT begin_cmd;
+  begin_cmd.Init(
+      GL_ANY_SAMPLES_PASSED_EXT, kInvalidClientId,
+      kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Test id = 0 fails.
+  begin_cmd.Init(
+      GL_ANY_SAMPLES_PASSED_EXT, 0, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  EXPECT_CALL(*gl_, GenQueriesARB(1, _))
+     .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+     .RetiresOnSaturation();
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  // Test bad shared memory fails
+  begin_cmd.Init(
+      GL_ANY_SAMPLES_PASSED_EXT, kNewClientId,
+      kInvalidSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(begin_cmd));
+  begin_cmd.Init(
+      GL_ANY_SAMPLES_PASSED_EXT, kNewClientId,
+      kSharedMemoryId, kInvalidSharedMemoryOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(begin_cmd));
+
+  // Test valid parameters work.
+  EXPECT_CALL(*gl_, BeginQueryARB(GL_ANY_SAMPLES_PASSED_EXT, kNewServiceId))
+      .Times(1)
+      .RetiresOnSaturation();
+  begin_cmd.Init(
+      GL_ANY_SAMPLES_PASSED_EXT, kNewClientId,
+      kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  ASSERT_TRUE(query != NULL);
+  EXPECT_FALSE(query->pending());
+
+  // Test trying begin again fails
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Test end fails with different target
+  end_cmd.Init(GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Test end succeeds
+  EXPECT_CALL(*gl_, EndQueryARB(GL_ANY_SAMPLES_PASSED_EXT))
+      .Times(1)
+      .RetiresOnSaturation();
+  end_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(query->pending());
+
+  EXPECT_CALL(*gl_, DeleteQueriesARB(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
+
 // TODO(gman): Complete this test.
 // TEST_F(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }

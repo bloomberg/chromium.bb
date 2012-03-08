@@ -520,11 +520,11 @@ void GLES2TexStorage2DEXT(
   gles2::GetGLContext()->TexStorage2DEXT(
       target, levels, internalFormat, width, height);
 }
-void GLES2GenQueriesEXT(GLsizei n, GLuint* ids) {
-  gles2::GetGLContext()->GenQueriesEXT(n, ids);
+void GLES2GenQueriesEXT(GLsizei n, GLuint* queries) {
+  gles2::GetGLContext()->GenQueriesEXT(n, queries);
 }
-void GLES2DeleteQueriesEXT(GLsizei n, const GLuint* ids) {
-  gles2::GetGLContext()->DeleteQueriesEXT(n, ids);
+void GLES2DeleteQueriesEXT(GLsizei n, const GLuint* queries) {
+  gles2::GetGLContext()->DeleteQueriesEXT(n, queries);
 }
 GLboolean GLES2IsQueryEXT(GLuint id) {
   return gles2::GetGLContext()->IsQueryEXT(id);

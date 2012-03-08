@@ -36,6 +36,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
@@ -550,6 +551,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual gfx::GLContext* GetGLContext() { return context_.get(); }
   virtual gfx::GLSurface* GetGLSurface() { return surface_.get(); }
   virtual ContextGroup* GetContextGroup() { return group_.get(); }
+  virtual QueryManager* GetQueryManager() { return query_manager_.get(); }
 
   virtual void SetGLError(GLenum error, const char* msg);
   virtual void SetResizeCallback(
@@ -651,6 +653,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DeleteFramebuffersHelper(GLsizei n, const GLuint* client_ids);
   bool GenRenderbuffersHelper(GLsizei n, const GLuint* client_ids);
   void DeleteRenderbuffersHelper(GLsizei n, const GLuint* client_ids);
+  bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
 
   // TODO(gman): Cache these pointers?
   BufferManager* buffer_manager() {
@@ -1068,6 +1072,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glEnableVertexAttribArray.
   void DoEnableVertexAttribArray(GLuint index);
 
+  // Wrapper for glFinish.
+  void DoFinish();
+
+  // Wrapper for glFlush.
+  void DoFlush();
+
   // Wrapper for glFramebufferRenderbufffer.
   void DoFramebufferRenderbuffer(
       GLenum target, GLenum attachment, GLenum renderbuffertarget,
@@ -1477,6 +1487,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<FrameBuffer> offscreen_resolved_frame_buffer_;
   scoped_ptr<Texture> offscreen_resolved_color_texture_;
   GLenum offscreen_saved_color_format_;
+
+  scoped_ptr<QueryManager> query_manager_;
+  QueryManager::Query::Ref current_query_;
 
   base::Callback<void(gfx::Size)> resize_callback_;
 
@@ -2008,6 +2021,8 @@ bool GLES2DecoderImpl::Initialize(
 
   vertex_attrib_manager_.reset(new VertexAttribManager());
   vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
+
+  query_manager_.reset(new QueryManager());
 
   util_.set_num_compressed_texture_formats(
       validators_->compressed_texture_format.GetValues().size());
@@ -2729,6 +2744,7 @@ void GLES2DecoderImpl::Destroy() {
   texture_units_.reset();
   bound_array_buffer_ = NULL;
   bound_element_array_buffer_ = NULL;
+  current_query_ = NULL;
   current_program_ = NULL;
   bound_read_framebuffer_ = NULL;
   bound_draw_framebuffer_ = NULL;
@@ -2784,6 +2800,11 @@ void GLES2DecoderImpl::Destroy() {
       offscreen_resolved_frame_buffer_->Invalidate();
     if (offscreen_resolved_color_texture_.get())
       offscreen_resolved_color_texture_->Invalidate();
+  }
+
+  if (query_manager_.get()) {
+    query_manager_->Destroy(have_context);
+    query_manager_.reset();
   }
 
   if (group_) {
@@ -3135,6 +3156,20 @@ bool GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
     CreateShaderInfo(client_id, service_id, type);
   }
   return true;
+}
+
+void GLES2DecoderImpl::DoFinish() {
+  glFinish();
+  if (!query_manager_->ProcessPendingQueries(this)) {
+    current_decoder_error_ = error::kOutOfBounds;
+  }
+}
+
+void GLES2DecoderImpl::DoFlush() {
+  glFlush();
+  if (!query_manager_->ProcessPendingQueries(this)) {
+    current_decoder_error_ = error::kOutOfBounds;
+  }
 }
 
 void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
@@ -5197,6 +5232,9 @@ error::Error GLES2DecoderImpl::DoDrawArrays(bool instanced,
       } else {
         glDrawArraysInstancedANGLE(mode, first, count, primcount);
       }
+      if (!query_manager_->ProcessPendingQueries(this)) {
+        current_decoder_error_ = error::kOutOfBounds;
+      }
       if (textures_set) {
         RestoreStateForNonRenderableTextures();
       }
@@ -5306,6 +5344,9 @@ error::Error GLES2DecoderImpl::DoDrawElements(bool instanced,
         glDrawElements(mode, count, type, indices);
       } else {
         glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+      }
+      if (!query_manager_->ProcessPendingQueries(this)) {
+        current_decoder_error_ = error::kOutOfBounds;
       }
       if (textures_set) {
         RestoreStateForNonRenderableTextures();
@@ -7888,6 +7929,123 @@ bool GLES2DecoderImpl::WasContextLost() {
     }
   }
   return false;
+}
+
+bool GLES2DecoderImpl::GenQueriesEXTHelper(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (query_manager_->GetQuery(client_ids[ii])) {
+      return false;
+    }
+  }
+  scoped_array<GLuint> service_ids(new GLuint[n]);
+  glGenQueriesARB(n, service_ids.get());
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    query_manager_->CreateQuery(client_ids[ii], service_ids[ii]);
+  }
+  return true;
+}
+
+void GLES2DecoderImpl::DeleteQueriesEXTHelper(
+    GLsizei n, const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    QueryManager::Query* query = query_manager_->GetQuery(client_ids[ii]);
+    if (query && !query->IsDeleted()) {
+      if (query == current_query_) {
+        current_query_ = NULL;
+      }
+      GLuint service_id = query->service_id();
+      glDeleteQueriesARB(1, &service_id);
+      query_manager_->RemoveQuery(client_ids[ii]);
+    }
+  }
+}
+
+error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
+    uint32 immediate_data_size, const gles2::BeginQueryEXT& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint client_id = static_cast<GLuint>(c.id);
+  int32 sync_shm_id = static_cast<int32>(c.sync_data_shm_id);
+  uint32 sync_shm_offset = static_cast<uint32>(c.sync_data_shm_offset);
+
+  if (!feature_info_->feature_flags().occlusion_query_boolean) {
+    SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT: not enabled");
+    return error::kNoError;
+  }
+
+  if (current_query_) {
+    SetGLError(
+        GL_INVALID_OPERATION, "glBeginQueryEXT: query already in progress");
+    return error::kNoError;
+  }
+
+  if (client_id == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT: id is 0");
+    return error::kNoError;
+  }
+
+  QueryManager::Query* query = query_manager_->GetQuery(client_id);
+  if (!query) {
+    // Checks id was made by glGenQueries
+    IdAllocatorInterface* id_allocator =
+        group_->GetIdAllocator(id_namespaces::kQueries);
+    if (!id_allocator->InUse(client_id)) {
+      SetGLError(GL_INVALID_OPERATION,
+                 "glBeginQueryEXT: id not made by glGenQueriesEXT");
+      return error::kNoError;
+    }
+    // Makes object and assoicates with memory.
+    GLuint service_id = 0;
+    glGenQueriesARB(1, &service_id);
+    DCHECK_NE(0u, service_id);
+    query = query_manager_->CreateQuery(client_id, service_id);
+  }
+
+  QuerySync* sync = GetSharedMemoryAs<QuerySync*>(
+      sync_shm_id, sync_shm_offset, sizeof(*sync));
+  if (!sync) {
+    DLOG(ERROR) << "Invalid shared memory referenced by query";
+    return error::kOutOfBounds;
+  }
+
+  if (!query->IsInitialized()) {
+    query->Initialize(target, sync_shm_id, sync_shm_offset);
+  } else if (query->target() != target) {
+    SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT: target does not match");
+    return error::kNoError;
+  } else if (query->shm_id() != sync_shm_id ||
+             query->shm_offset() != sync_shm_offset) {
+    DLOG(ERROR) << "Shared memory used by query not the same as before";
+    return error::kInvalidArguments;
+  }
+
+  query_manager_->RemovePendingQuery(query);
+
+  glBeginQueryARB(target, query->service_id());
+  current_query_ = query;
+
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleEndQueryEXT(
+    uint32 immediate_data_size, const gles2::EndQueryEXT& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  uint32 submit_count = static_cast<GLuint>(c.submit_count);
+
+  if (!current_query_) {
+    SetGLError(GL_INVALID_OPERATION, "glEndQueryEXT: No active query");
+    return error::kNoError;
+  }
+  if (current_query_->target() != target) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glEndQueryEXT: target does not match active query");
+    return error::kNoError;
+  }
+  glEndQueryARB(target);
+  query_manager_->AddPendingQuery(current_query_, submit_count);
+  current_query_ = NULL;
+
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleCreateStreamTextureCHROMIUM(
