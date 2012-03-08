@@ -3762,8 +3762,7 @@ compileCharDef (FileInfo * nested,
     attributes |= CTC_Letter;
   character = addCharOrDots (nested, ruleChars.chars[0], 0);
   character->attributes |= attributes;
-  if (!(attributes & CTC_Letter))
-    character->uppercase = character->lowercase = character->realchar;
+  character->uppercase = character->lowercase = character->realchar;
   cell = compile_findCharOrDots (ruleDots.chars[0], 1);
   if (ruleDots.length == 1 && cell)
     cell->attributes |= attributes;
