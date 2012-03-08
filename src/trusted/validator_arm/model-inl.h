@@ -20,6 +20,10 @@ uint32_t Register::bitmask() const {
   return (1 << _number);
 }
 
+uint32_t Register::number() const {
+  return _number;
+}
+
 bool Register::operator==(const Register &other) const {
   return _number == other._number;
 }

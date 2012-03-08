@@ -212,6 +212,24 @@ class ClassDecoder {
     return false;
   }
 
+  /* Many instructions define control bits in bits 20-24. The useful bits
+   * are defined here.
+   */
+
+  // True if U (updates flags register) flag is defined.
+  inline bool UpdatesFlagsRegister(const Instruction& i) const {
+    return i.bit(20);
+  }
+
+  // True if W (does write) flag is defined.
+  inline bool WritesFlag(const Instruction& i) const {
+    return i.bit(21);
+  }
+  // True if P (pre-indexing) flag is defined.
+  inline bool PreindexingFlag(const Instruction& i) const {
+    return i.bit(24);
+  }
+
  protected:
   ClassDecoder() {}
   virtual ~ClassDecoder() {}
@@ -299,6 +317,36 @@ class Unpredictable : public ClassDecoder {
  *
  * Uses of this class must be carefully evaluated, because it bypasses all
  * further validation.
+ *
+ * Includes:
+ * NOP, YIELD, WFE, WFI, SEV, DBG, PLDW(immediate), PLD(immediate),
+ * PLD(literal), CLREX, DSB, DMB, ISB, PLI(register), PLDW(register),
+ * PLD(register), VEXT, VTBL, VTBX, VHADD, VQADD, VRHADD, VAND(register),
+ * VBIC(register), VORR(register), VORN(register), VEOR(register), VBSL,
+ * VBIT, VBIF, VHSUB, VQSUB, VCGT(register), VCGE(register), VSHL(register),
+ * VQSHL(register), VRSHL(register), VQRSHL(register), VMAX, VMIN (integer),
+ * VABD, VABDL (integer), VABA, VABAL, VADD(integer), VSUB(integer),
+ * VTST(integer), VCEQ(integer), VMLA, VMLAL, VMLS, VMLSL (integer),
+ * VMUL, VMULL(integer/poly), VPMAX, VPMIN(integer), VQDMULH, VQRDMULH,
+ * VPADD(integer), VADD(float), VSUB(float), VPADD(float), VABD(float),
+ * VMLA, VMLS(float), VMUL(float), VCEQ(register), VCGE(register),
+ * VCGT(register), VACGE, VACGT, VACLE, VACLT, VMAX, VMIN(float),
+ * VPMAX, VPMIN(float), VRECPS, VRSQRTS, VADDL, VSUBL, VADDHN, VRADDHN,
+ * VABA, VABAL, VSUBHN, VRSUBHN, VABD, VABDL(integer), VMLA, VMLAL,
+ * VMLS, VMLSL (integer), VQDMLAL, VQDMLSL, VMUL, VMULL (integer), VQDMULL,
+ * VMUL, VMULL (polynomial), VMLA, VMLS (scalar), VMLAL, VMLSL (scalar),
+ * VQDMLAL, VMQDLSL, VMUL(scalar), VMULL(scalar), VQDMULL, VQDMULH, VQRDMULH,
+ * VSHR, VSRA, VRSHR, VRSRA, VSRI, VSHL(immediate), VSLI,
+ * VQSHL, VQSHLU(immediate), VSHRN, VRSHRN, VQSHRUN, VQRSHRUN, VQSHRN, VQRSHRN,
+ * VSHLL, VMOVL, VCVT (floating- and fixed-point), VREV64, VREV32, VREV16,
+ * VPADDL, VCLS, VCLZ, VCNT, VMVN(register), VPADAL, VQABS, VQNEG,
+ * VCGT (immediate #0), VCGE (immediate #0), VCEQ (immediate #0),
+ * VCLE (immediate #0), VCLT (immediate #0), VABS, VNEG, VSWP, VTRN, VUZP,
+ * VZIP, VMOVN, VQMOVUN, VQMOVN, VSHLL, VCVT (half- and single-precision),
+ * VRECPE, VRSQRTE, VCVT (float and integer), VMOV(immediate),
+ * VORR(immediate), VMOV(immediate), VORR(immediate), VMOV(immediate),
+ * VMVN(immediate), VBIC(immediate), VMVN(immediate), VBIC(immediate),
+ * VMVN(immediate), VMOV(immediate)
  */
 class EffectiveNoOp : public ClassDecoder {
  public:
@@ -353,6 +401,22 @@ class Breakpoint : public Roadblock {
  *  - does not write memory,
  *  - should not be permitted to cause a jump by writing r15,
  *  - writes flags when bit 20 is set.
+ *
+ * Includes:
+ * MOV (immediate) 16-bit version, MOVT, AND(register), AND(shifted-reg),
+ * EOR(register), EOR(shifted-reg), SUB(register), SUB(shifted-reg),
+ * RSB(register), RSB(shifted-reg), ADD(register), ADD(shifted-reg),
+ * ADC(register), ADC(shifted-reg), SBC(register), SBC(shifted-reg),
+ * RSC(register), RSC(shifted-reg), ORR(register), ORR(shifted-reg),
+ * MOV(register), LSL(register), LSL(immediate), LSL(register),
+ * LSR(immediate), LSR(register), ASR(immediate), ASR(register),
+ * RRX, ROR(register), ROR(immediate), ROR(register), BIC(register),
+ * BIC(shifted-reg), MVN(register), MVN(shifted-reg), AND(immediate),
+ * EOR(immediate), SUB(immediate), ADR, RSB(immediate), ADD(immediate), ADR,
+ * ADC(immediate), SBC(immediate), RSC(immediate), ORR(immediate),
+ * MOV(immediate), MVN(immediate), MRS, CLZ, SBFX, BFC, BFI, UBFX, UADD16,
+ * UASX, USAX, USUB16, UADD8, USUB8, UQADD16, UQASX, UQSAX, UQSUB16, UQADD8,
+ * UQSUB8, UHADD16, UHASX, UHSAX, UHSUB16, UHADD8, UHSUB8
  */
 class DataProc : public ClassDecoder {
  public:
@@ -360,11 +424,20 @@ class DataProc : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  // Defines the destination register of the data operation.
+  inline Register Rd(const Instruction& i) const {
+    return i.reg(15, 12);
+  }
 };
 
 /*
  * Models the few data-processing instructions that *don't* produce a result,
- * but may still set flags.  e.g. TST.
+ * but may still set flags.
+ *
+ * Includes:
+ * TST(register), TST(shifted-reg), TEQ(register), TEQ(shifted-reg),
+ * CMP(register), CMP(shifted-reg), CMN(register), CMN(shifted-reg),
+ * TST(immediate), TEQ(immediate), CMP(immediate), CMN(immediate)
  */
 class Test : public DataProc {
  public:
@@ -384,6 +457,10 @@ class TestImmediate : public Test {
   virtual bool sets_Z_if_bits_clear(Instruction i,
                                     Register r,
                                     uint32_t mask) const;
+  // Defines the operand register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
@@ -412,6 +489,11 @@ class ImmediateBic : public DataProc {
  *  Note that not all of the Pack/Sat/Rev instructions really set flags, but
  *  we deliberately err on the side of caution to simplify modeling (because we
  *  don't care, in practice, about their flag effects).
+ *
+ * Includes:
+ * PKH, SSAT, USAT, SXTAB16, SXTB16, SEL, SSAT16, SXTAB, SXTB, REV,
+ * SXTAH, SXTH, REV16, UXTAB16, UXTB16, USAT16, UXTAB, UXTB, RBIT,
+ * UXTAH, UXTH, REVSH
  */
 class PackSatRev : public ClassDecoder {
  public:
@@ -419,6 +501,10 @@ class PackSatRev : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  // Defines the destination register.
+  inline Register Rd(const Instruction& i) const {
+    return i.reg(15, 12);
+  }
 };
 
 
@@ -432,6 +518,10 @@ class PackSatRev : public ClassDecoder {
  * deliberately take this shortcut to simplify modeling of the many, many
  * multiply instructions -- some of which always set flags, some of which never
  * do, and some of which set conditionally.
+ *
+ * Includes:
+ * MUL, MLA, MLS, SMLABB et al., SMLAWB et al., SMULWB et al., SMULBB et al.,
+ * USAD8, USADA8, SMLAD, SMUAD, SMLSD, SMUSD, SMMLA, SMMUL, SMMLS
  */
 class Multiply : public ClassDecoder {
  public:
@@ -439,6 +529,10 @@ class Multiply : public ClassDecoder {
 
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+  // Defines the destination register.
+  inline Register Rd(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
@@ -451,17 +545,31 @@ class Multiply : public ClassDecoder {
  * deliberately take this shortcut to simplify modeling of the many, many
  * multiply instructions -- some of which always set flags, some of which never
  * do, and some of which set conditionally.
+ *
+ * Includes:
+ * UMAAL, UMULL, UMLAL, SMULL, SMLAL, SMLALBB, SMLALD, SMLSLD
  */
 class LongMultiply : public Multiply {
  public:
   virtual ~LongMultiply() {}
 
   virtual RegisterList defs(Instruction i) const;
+  // Supplies the lower 32 bits for the destination result.
+  inline Register RdLo(const Instruction& i) const {
+    return i.reg(15, 12);
+  }
+  // Supplies the other 32 bits of the destination result.
+  inline Register RdHi(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
  * Saturating adds and subtracts.  Conceptually equivalent to DataProc,
  * except for the use of the S bit (bit 20) -- they always set flags.
+ *
+ * Includes:
+ * QADD, QSUB, QDADD, QDSUB
  */
 class SatAddSub : public DataProc {
  public:
@@ -475,6 +583,9 @@ class SatAddSub : public DataProc {
  * condition flags in APSR.  The side effects are similar to the Test class,
  * but we model it separately so we can catch code trying to poke the reserved
  * APSR bits.
+ *
+ * Includes:
+ * MSR(immediate), MSR(immediate), MSR(register)
  */
 class MoveToStatusRegister : public ClassDecoder {
  public:
@@ -490,6 +601,10 @@ class MoveToStatusRegister : public ClassDecoder {
 /*
  * A base+immediate store, of unspecified width.  (We don't care whether it
  * stores one byte or 64.)
+ *
+ * Includes:
+ * STRH(immediate), STRD(immediate), STR(immediate), STRB(immediate),
+ * STMDA / STMED, STM / STMIA / STMEA, STMDB / STMFD, STMIB / STMFA
  */
 class StoreImmediate : public ClassDecoder {
  public:
@@ -503,12 +618,19 @@ class StoreImmediate : public ClassDecoder {
     return true;
   }
   virtual Register base_address_register(Instruction i) const;
+  // Defines the base register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
  * A base+register store, of unspecified width.  (We don't care whether it
  * stores one byte or 64.)  Note that only register-post-indexing will pass
  * safety checks -- register pre-indexing is unpredictable to us.
+ *
+ * Includes:
+ * STRH(register), STRD(register), STR(register), STRB(register)
  */
 class StoreRegister : public ClassDecoder {
  public:
@@ -521,12 +643,19 @@ class StoreRegister : public ClassDecoder {
     return true;
   }
   virtual Register base_address_register(Instruction i) const;
+  // Defines the base register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
  * STREX - a lot like a store, but with restricted addressing modes and more
  * register writes.  Unfortunately the encodings aren't compatible, so they
  * don't share code.
+ *
+ * Includes:
+ * STREX, STREXD, STREXB, STREXH
  */
 class StoreExclusive : public ClassDecoder {
  public:
@@ -539,6 +668,14 @@ class StoreExclusive : public ClassDecoder {
     return true;
   }
   virtual Register base_address_register(Instruction i) const;
+  // Defines the base register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
+  // Defines the destination register.
+  inline Register Rd(const Instruction& i) const {
+    return i.reg(15, 12);
+  }
 };
 
 /*
@@ -556,6 +693,10 @@ class AbstractLoad : public ClassDecoder {
 
  protected:
   bool writeback(Instruction i) const;
+  // Defines the destination register.
+  inline Register Rt(const Instruction& i) const {
+    return i.reg(15, 12);
+  }
 };
 
 /*
@@ -564,6 +705,10 @@ class AbstractLoad : public ClassDecoder {
  *
  * Notice we do not care about the width of the loaded value, because it doesn't
  * affect addressing.
+ *
+ * Includes:
+ * LDRH(register), LDRSB(register), LDRSH(register), LDR(register),
+ * LDRB(register)
  */
 class LoadRegister : public AbstractLoad {
  public:
@@ -572,6 +717,10 @@ class LoadRegister : public AbstractLoad {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+  // Defines the base register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
@@ -580,6 +729,11 @@ class LoadRegister : public AbstractLoad {
  *
  * Notice we do not care about the width of the loaded value, because it doesn't
  * affect addressing.
+ *
+ * Includes:
+ * LDRH(immediate), LDRH(literal), LDRSB(immediate), LDRSB(literal),
+ * LDRSH(immediate), LDRSH(literal), LDR(immediate), LDR(literal),
+ * LDRB(immediate), LDRB(literal)
  */
 class LoadImmediate : public AbstractLoad {
  public:
@@ -588,10 +742,17 @@ class LoadImmediate : public AbstractLoad {
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
+  // Defines the base register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
  * Two-register immediate-offset load, which also writes Rt+1.
+ *
+ * Includes:
+ * LDRD(immediate), LDRD(literal)
  */
 class LoadDoubleI : public LoadImmediate {
  public:
@@ -600,10 +761,21 @@ class LoadDoubleI : public LoadImmediate {
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
   virtual bool offset_is_immediate(Instruction i) const;
+  // Defines the second destination register.
+  inline Register Rt2(const Instruction& i) const {
+    return Register(Rt(i).number() + 1);
+  }
+  // Defines the base register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
  * Two-register register-offset load, which also writes Rt+1.
+ *
+ * Includes:
+ * LDRD(register)
  */
 class LoadDoubleR : public LoadRegister {
  public:
@@ -612,15 +784,26 @@ class LoadDoubleR : public LoadRegister {
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+  // Defines the second destination register.
+  inline Register Rt2(const Instruction& i) const {
+    return Register(Rt(i).number() + 1);
+  }
 };
 
 /*
  * LDREX and friends, where writeback is unavailable.
+ *
+ * Includes:
+ * LDREX, LDREXB, LDREXH
  */
 class LoadExclusive : public AbstractLoad {
  public:
   virtual ~LoadExclusive() {}
   virtual Register base_address_register(Instruction i) const;
+  // Defines the base register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
@@ -632,11 +815,18 @@ class LoadDoubleExclusive : public LoadExclusive {
 
   virtual RegisterList defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+  // Defines the second destination register.
+  inline Register Rt2(const Instruction& i) const {
+    return Register(Rt(i).number() + 1);
+  }
 };
 
 /*
  * And, finally, the oddest class of loads: LDM.  In addition to the base
  * register, this may write every other register, subject to a bitmask.
+ *
+ * Includes:
+ * LDMDA / LDMFA, LDM / LDMIA / LDMFD, LDMDB / LDMEA, LDMIB / LDMED
  */
 class LoadMultiple : public ClassDecoder {
  public:
@@ -646,11 +836,21 @@ class LoadMultiple : public ClassDecoder {
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+  // Defines the base register.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
  * A load to a vector register.  Like LoadCoprocessor below, the only visible
- * side effect is from writeback.
+ * side effect is from writeback. Note: Implements VLD1, VLD2, VLD3, and VLD4.
+ *
+ * Includes:
+ * VLD1(multiple), VLD2(multiple), VLD3(multiple), VLD4(multiple),
+ * VLD1(single), VLD1(single, all lanes), VLD2(single),
+ * VLD2(single, all lanes), VLD3(single), VLD3(single, all lanes),
+ * VLD4(single), VLD4(single, all lanes)
  */
 class VectorLoad : public ClassDecoder {
  public:
@@ -660,10 +860,22 @@ class VectorLoad : public ClassDecoder {
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+  /* Defines the base address for the access. */
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
+  /* Contains an address offset applied after the access. */
+  inline Register Rm(const Instruction& i) const {
+    return i.reg(3, 0);
+  }
 };
 
 /*
  * A store from a vector register.
+ *
+ * Includes:
+ * VST1(multiple), VST2(multiple), VST3(multiple), VST4(multiple),
+ * VST1(single), VST2(single), VST3(single), VST4(single)
  */
 class VectorStore : public ClassDecoder {
  public:
@@ -674,6 +886,14 @@ class VectorStore : public ClassDecoder {
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
   virtual bool writes_memory(Instruction i) const;
   virtual Register base_address_register(Instruction i) const;
+  /* Defines the base address for the access. */
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
+  // Contains an address offset applied after the access.
+  inline Register Rm(const Instruction& i) const {
+    return i.reg(3, 0);
+  }
 };
 
 /*
@@ -683,6 +903,9 @@ class VectorStore : public ClassDecoder {
  * - Not permitted to update r15.
  *
  * Coprocessor ops with visible side-effects should extend and override this.
+ *
+ * Includes:
+ * MCRR, MCRR2, CDP, CDP2, MCR, MCR2, MCRR, MCRR2, CDP, CDP2, MCR, MCR2
  */
 class CoprocessorOp : public ClassDecoder {
  public:
@@ -693,12 +916,21 @@ class CoprocessorOp : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
+  // Returns the name (i.e. index) of the coprocessor referenced.
+  inline uint32_t CoprocIndex(const Instruction& i) const {
+    return i.bits(11, 8);
+  }
 };
 
 /*
  * LDC/LDC2, which load data from memory directly into a coprocessor.
  * The only visible side effect of this is optional indexing writeback,
  * controlled by bit 21.
+ *
+ * Includes:
+ * LDC(immediate), LDC2(immediate), LDC(literal), LDC2(literal),
+ * LDC(immed), LDC2(immed), LDC(literal), LDC2(literal),
+ * LDC(literal), LDC2(literal)
  */
 class LoadCoprocessor : public CoprocessorOp {
  public:
@@ -706,6 +938,10 @@ class LoadCoprocessor : public CoprocessorOp {
 
   virtual RegisterList defs(Instruction i) const;
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  // Contains the base address for the access.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
@@ -728,6 +964,10 @@ class StoreCoprocessor : public CoprocessorOp {
     return true;
   }
   virtual Register base_address_register(Instruction i) const;
+  // Contains the base address for the access.
+  inline Register Rn(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
@@ -738,6 +978,16 @@ class MoveFromCoprocessor : public CoprocessorOp {
   virtual ~MoveFromCoprocessor() {}
 
   virtual RegisterList defs(Instruction i) const;
+
+  // Defines the destination core register.
+  inline Register Rt(const Instruction& i) const {
+    Register rt = i.reg(15, 12);
+    if (rt == kRegisterPc) {
+      // Per ARM ISA spec: r15 here is a synonym for the flags register!
+      return kRegisterFlags;
+    }
+    return rt;
+  }
 };
 
 /*
@@ -748,6 +998,14 @@ class MoveDoubleFromCoprocessor : public CoprocessorOp {
   virtual ~MoveDoubleFromCoprocessor() {}
 
   virtual RegisterList defs(Instruction i) const;
+  // Contains the first destination core register.
+  inline Register Rt(const Instruction& i) const {
+    return i.reg(15, 12);
+  }
+  // Contains the second destination core register.
+  inline Register Rt2(const Instruction& i) const {
+    return i.reg(19, 16);
+  }
 };
 
 /*
@@ -766,6 +1024,14 @@ class BxBlx : public ClassDecoder {
   }
   virtual RegisterList defs(Instruction i) const;
   virtual Register branch_target_register(Instruction i) const;
+  // Defines flag that indicates that Link register is used as well.
+  inline bool UsesLinkRegister(const Instruction& i) const {
+    return i.bit(5);
+  }
+  // Contains branch target address and instruction set selection bit.
+  inline Register Rm(const Instruction& i) const {
+    return i.reg(3, 0);
+  }
 };
 
 /*

@@ -51,12 +51,12 @@ SafetyLevel DataProc::safety(const Instruction i) const {
 }
 
 RegisterList DataProc::defs(const Instruction i) const {
-  return i.reg(15, 12) + (i.bit(20)? kRegisterFlags : kRegisterNone);
+  return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
 }
 
 
 RegisterList Test::defs(const Instruction i) const {
-  return (i.bit(20)? kRegisterFlags : kRegisterNone);
+  return (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
 }
 
 
@@ -64,7 +64,7 @@ bool TestImmediate::sets_Z_if_bits_clear(Instruction i,
                                          Register r,
                                          uint32_t mask) const {
   // Rn = 19:16 for TST(immediate) - section A8.6.230
-  return i.reg(19, 16) == r
+  return Rn(i) == r
       && (get_modified_immediate(i) & mask) == mask
       && defs(i)[kRegisterFlags];
 }
@@ -83,7 +83,7 @@ SafetyLevel PackSatRev::safety(const Instruction i) const {
 }
 
 RegisterList PackSatRev::defs(const Instruction i) const {
-  return i.reg(15, 12) + kRegisterFlags;
+  return Rd(i) + kRegisterFlags;
 }
 
 
@@ -95,12 +95,12 @@ SafetyLevel Multiply::safety(const Instruction i) const {
 }
 
 RegisterList Multiply::defs(const Instruction i) const {
-  return kRegisterFlags + i.reg(19, 16);
+  return kRegisterFlags + Rd(i);
 }
 
 
 RegisterList LongMultiply::defs(const Instruction i) const {
-  return Multiply::defs(i) + i.reg(15, 12);
+  return RdHi(i) + RdLo(i);
 }
 
 
@@ -136,21 +136,17 @@ RegisterList StoreImmediate::defs(const Instruction i) const {
 
 RegisterList StoreImmediate::immediate_addressing_defs(
     const Instruction i) const {
-  bool p = i.bit(24);
-  bool w = i.bit(21);
-  if (!p) return base_address_register(i);
-  if (w) return base_address_register(i);
+  if (!PreindexingFlag(i) || WritesFlag(i)) return base_address_register(i);
   return kRegisterNone;
 }
 
 Register StoreImmediate::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
 SafetyLevel StoreRegister::safety(const Instruction i) const {
-  bool pre_index = i.bit(24);
-  if (pre_index) {
+  if (PreindexingFlag(i)) {
     // Computes base address by adding two registers -- cannot predict!
     return FORBIDDEN;
   }
@@ -171,7 +167,7 @@ RegisterList StoreRegister::defs(const Instruction i) const {
 }
 
 Register StoreRegister::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
@@ -183,11 +179,11 @@ SafetyLevel StoreExclusive::safety(const Instruction i) const {
 }
 
 RegisterList StoreExclusive::defs(const Instruction i) const {
-  return i.reg(15, 12);
+  return Rd(i);
 }
 
 Register StoreExclusive::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
@@ -199,9 +195,7 @@ bool AbstractLoad::writeback(const Instruction i) const {
   // Algorithm defined in pseudocode in ARM instruction set spec
   // Valid for LDR, LDR[BH], LDRD
   // Not valid for LDREX and kin
-  bool p = i.bit(24);
-  bool w = i.bit(21);
-  return !p | w;
+  return !PreindexingFlag(i) | WritesFlag(i);
 }
 
 SafetyLevel AbstractLoad::safety(const Instruction i) const {
@@ -211,12 +205,12 @@ SafetyLevel AbstractLoad::safety(const Instruction i) const {
 }
 
 RegisterList AbstractLoad::defs(const Instruction i) const {
-  return i.reg(15, 12) + immediate_addressing_defs(i);
+  return Rt(i) + immediate_addressing_defs(i);
 }
 
 
 SafetyLevel LoadRegister::safety(const Instruction i) const {
-  bool pre_index = i.bit(24);
+  bool pre_index = PreindexingFlag(i);
   if (pre_index) {
     // If pre_index is set, the address of the load is computed as the sum
     // of the two register parameters.  We have checked that the first register
@@ -233,30 +227,28 @@ SafetyLevel LoadRegister::safety(const Instruction i) const {
 
 RegisterList LoadRegister::defs(const Instruction i) const {
   if (writeback(i)) {
-    Register rn(i.bits(19, 16));
-    return AbstractLoad::defs(i) + rn;
+    return AbstractLoad::defs(i) + Rn(i);
   } else {
     return AbstractLoad::defs(i);
   }
 }
 
 Register LoadRegister::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
 RegisterList LoadImmediate::immediate_addressing_defs(const Instruction i)
     const {
   if (writeback(i)) {
-    Register rn(i.bits(19, 16));
-    return rn;
+    return Rn(i);
   } else {
     return kRegisterNone;
   }
 }
 
 Register LoadImmediate::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 bool LoadImmediate::offset_is_immediate(Instruction i) const {
@@ -266,11 +258,11 @@ bool LoadImmediate::offset_is_immediate(Instruction i) const {
 
 
 RegisterList LoadDoubleI::defs(const Instruction i) const {
-  return LoadImmediate::defs(i) + Register(i.bits(15, 12) + 1);
+  return LoadImmediate::defs(i) + Rt2(i);
 }
 
 Register LoadDoubleI::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 bool LoadDoubleI::offset_is_immediate(Instruction i) const {
@@ -280,8 +272,7 @@ bool LoadDoubleI::offset_is_immediate(Instruction i) const {
 
 
 SafetyLevel LoadDoubleR::safety(const Instruction i) const {
-  bool pre_index = i.bit(24);
-  if (pre_index) {
+  if (PreindexingFlag(i)) {
     // If pre_index is set, the address of the load is computed as the sum
     // of the two register parameters.  We have checked that the first register
     // is within the sandbox, but this would allow adding an arbitrary value
@@ -296,29 +287,29 @@ SafetyLevel LoadDoubleR::safety(const Instruction i) const {
 }
 
 RegisterList LoadDoubleR::defs(const Instruction i) const {
-  return LoadRegister::defs(i) + Register(i.bits(15, 12) + 1);
+  return LoadRegister::defs(i) + Rt2(i);
 }
 
 Register LoadDoubleR::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 Register LoadExclusive::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 RegisterList LoadDoubleExclusive::defs(const Instruction i) const {
-  return LoadExclusive::defs(i) + Register(i.bits(15, 12) + 1);
+  return LoadExclusive::defs(i) + Rt2(i);
 }
 
 Register LoadDoubleExclusive::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
 SafetyLevel LoadMultiple::safety(const Instruction i) const {
-  uint32_t rn = i.bits(19, 16);
-  if (i.bit(21) && i.bit(rn)) {
+  // Bottom 16 bits is a register list.
+  if (WritesFlag(i) && i.bit(Rn(i).number())) {
     // In ARMv7, cannot update base register both by popping and by indexing.
     // (Pre-v7 this was still a weird thing to do.)
     return UNPREDICTABLE;
@@ -336,11 +327,11 @@ RegisterList LoadMultiple::defs(const Instruction i) const {
 
 RegisterList LoadMultiple::immediate_addressing_defs(
     const Instruction i) const {
-  return i.bit(21)? i.reg(19, 16) : kRegisterNone;
+  return WritesFlag(i) ? Rn(i) : kRegisterNone;
 }
 
 Register LoadMultiple::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
@@ -356,18 +347,17 @@ SafetyLevel VectorLoad::safety(Instruction i) const {
 
 RegisterList VectorLoad::defs(Instruction i) const {
   // Rm == PC indicates no address writeback.  Otherwise Rn is affected.
-  if (i.reg(3, 0) != kRegisterPc) {
-    return i.reg(19, 16);
+  if (Rm(i) != kRegisterPc) {
+    return Rn(i);
   }
-
   return kRegisterNone;
 }
 
 RegisterList VectorLoad::immediate_addressing_defs(Instruction i) const {
   // Rm == SP indicates automatic update based on size of load.
-  if (i.reg(3, 0) == kRegisterStack) {
+  if (Rm(i) == kRegisterStack) {
     // Rn is updated by a small static displacement.
-    return i.reg(19, 16);
+    return Rn(i);
   }
 
   // Any writeback is not treated as immediate otherwise.
@@ -375,7 +365,7 @@ RegisterList VectorLoad::immediate_addressing_defs(Instruction i) const {
 }
 
 Register VectorLoad::base_address_register(const Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
@@ -387,7 +377,7 @@ SafetyLevel VectorStore::safety(Instruction i) const {
 
 RegisterList VectorStore::defs(Instruction i) const {
   // Rm == PC indicates no address writeback.  Otherwise Rn is affected.
-  if (i.reg(3, 0) != kRegisterPc) {
+  if (Rm(i) != kRegisterPc) {
     return base_address_register(i);
   }
 
@@ -396,7 +386,7 @@ RegisterList VectorStore::defs(Instruction i) const {
 
 RegisterList VectorStore::immediate_addressing_defs(Instruction i) const {
   // Rm == SP indicates automatic update based on size of store.
-  if (i.reg(3, 0) == kRegisterStack) {
+  if (Rm(i) == kRegisterStack) {
     // Rn is updated by a small static displacement.
     return base_address_register(i);
   }
@@ -411,7 +401,7 @@ bool VectorStore::writes_memory(Instruction i) const {
 }
 
 Register VectorStore::base_address_register(Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
@@ -421,9 +411,7 @@ Register VectorStore::base_address_register(Instruction i) const {
 
 SafetyLevel CoprocessorOp::safety(Instruction i) const {
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
-  uint32_t cpid = i.bits(11, 8);
-
-  switch (cpid) {
+  switch (CoprocIndex(i)) {
     default: return FORBIDDEN;
 
     case 10:
@@ -438,7 +426,7 @@ RegisterList LoadCoprocessor::defs(Instruction i) const {
 }
 
 RegisterList LoadCoprocessor::immediate_addressing_defs(Instruction i) const {
-  return i.bit(21)? i.reg(19, 16) : kRegisterNone;
+  return WritesFlag(i) ? Rn(i) : kRegisterNone;
 }
 
 
@@ -447,26 +435,21 @@ RegisterList StoreCoprocessor::defs(Instruction i) const {
 }
 
 RegisterList StoreCoprocessor::immediate_addressing_defs(Instruction i) const {
-  return i.bit(21)? base_address_register(i) : kRegisterNone;
+  return WritesFlag(i) ? base_address_register(i) : kRegisterNone;
 }
 
 Register StoreCoprocessor::base_address_register(Instruction i) const {
-  return i.reg(19, 16);
+  return Rn(i);
 }
 
 
 RegisterList MoveFromCoprocessor::defs(Instruction i) const {
-  Register rd = i.reg(15, 12);
-  if (rd == kRegisterPc) {
-    // Per ARM ISA spec: r15 here is a synonym for the flags register!
-    return kRegisterFlags;
-  }
-  return rd;
+  return Rt(i);
 }
 
 
 RegisterList MoveDoubleFromCoprocessor::defs(Instruction i) const {
-  return i.reg(15, 12) + i.reg(19, 16);
+  return Rt(i) + Rt2(i);
 }
 
 
@@ -475,16 +458,16 @@ RegisterList MoveDoubleFromCoprocessor::defs(Instruction i) const {
  */
 
 RegisterList BxBlx::defs(const Instruction i) const {
-  return kRegisterPc + (i.bit(5)? kRegisterLink : kRegisterNone);
+  return kRegisterPc + (UsesLinkRegister(i) ? kRegisterLink : kRegisterNone);
 }
 
 Register BxBlx::branch_target_register(const Instruction i) const {
-  return i.reg(3, 0);
+  return Rm(i);
 }
 
 
 RegisterList Branch::defs(const Instruction i) const {
-  return kRegisterPc + (i.bit(24)? kRegisterLink : kRegisterNone);
+  return kRegisterPc + (PreindexingFlag(i) ? kRegisterLink : kRegisterNone);
 }
 
 int32_t Branch::branch_target_offset(const Instruction i) const {

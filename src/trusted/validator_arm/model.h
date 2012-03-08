@@ -54,6 +54,11 @@ class Register {
    */
   inline uint32_t bitmask() const;
 
+  /*
+   * Returns the register number for the register.
+   */
+  inline uint32_t number() const;
+
   inline bool operator==(const Register &) const;
   inline bool operator!=(const Register &) const;
 
@@ -164,7 +169,8 @@ class Instruction {
    * A convenience method that's exactly equivalent to
    *   Register(instruction.bits(hi, lo))
    *
-   * This sequence is quite common in inst_classes.cc.
+   * This sequence is quite common in inst_classes.h, inside
+   * instruction-specific register methods, such as Rn, Rd, Rm, and Rt.
    */
   inline const Register reg(int hi, int lo) const;
 
