@@ -26,7 +26,13 @@ void FailTest(int /* result */) {
 }  // namespace;
 
 // Tests a cache hit, which should result in synchronous completion.
-TEST(CertVerifierTest, CacheHit) {
+#if defined(OS_MACOSX)
+// http://crbug.com/117372
+#define MAYBE_CacheHit FAILS_CacheHit
+#else
+#define MAYBE_CacheHit CacheHit
+#endif  // defined(OS_MACOSX)
+TEST(CertVerifierTest, MAYBE_CacheHit) {
   CertVerifier verifier;
 
   FilePath certs_dir = GetTestCertsDirectory();
