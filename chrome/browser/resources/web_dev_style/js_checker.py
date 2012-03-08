@@ -48,8 +48,9 @@ class JSChecker(object):
     class ErrorHandlerImpl(errorhandler.ErrorHandler):
       """Filters out errors that don't apply to Chromium JavaScript code."""
 
-      def __init__(self):
+      def __init__(self, re):
         self._errors = []
+        self.re = re
 
       def HandleFile(self, filename, first_token):
         self._filename = filename
@@ -70,7 +71,10 @@ class JSChecker(object):
            exceptions which are listed here.
         """
 
-        return error.code not in [
+        is_grit_statement = bool(
+            self.re.search("</?(include|if)", error.token.line))
+
+        return not is_grit_statement and error.code not in [
             errors.COMMA_AT_END_OF_LITERAL,
             errors.JSDOC_ILLEGAL_QUESTION_WITH_PIPE,
             errors.JSDOC_TAG_DESCRIPTION_ENDS_WITH_INVALID_CHARACTER,
@@ -83,10 +87,6 @@ class JSChecker(object):
     affected_js_files = filter(lambda f: f.LocalPath().endswith('.js'),
                                affected_files)
     for f in affected_js_files:
-      # Skip options_bundle.js since it's just a bunch of <include>s
-      if self.input_api.os_path.split(f.LocalPath())[1] == 'options_bundle.js':
-        continue
-
       error_lines = []
 
       # check for getElementById()
@@ -98,7 +98,7 @@ class JSChecker(object):
               line))
 
       # Use closure_linter to check for several different errors
-      error_handler = ErrorHandlerImpl()
+      error_handler = ErrorHandlerImpl(self.input_api.re)
       js_checker = checker.JavaScriptStyleChecker(error_handler)
       js_checker.Check(self.input_api.os_path.join(
           self.input_api.change.RepositoryRoot(),
