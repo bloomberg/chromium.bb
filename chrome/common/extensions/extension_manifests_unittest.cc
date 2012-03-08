@@ -784,11 +784,13 @@ TEST_F(ExtensionManifestTest, WebIntents) {
   Testcase testcases[] = {
     {"intent_invalid_1.json", errors::kInvalidIntents},
     {"intent_invalid_2.json", errors::kInvalidIntent},
-    {"intent_invalid_3.json", errors::kInvalidIntentPath},
+    {"intent_invalid_3.json", errors::kInvalidIntentHref},
     {"intent_invalid_4.json", errors::kInvalidIntentDisposition},
     {"intent_invalid_5.json", errors::kInvalidIntentType},
     {"intent_invalid_6.json", errors::kInvalidIntentTitle},
-    {"intent_invalid_packaged_app.json", errors::kCannotAccessPage}
+    {"intent_invalid_packaged_app.json", errors::kCannotAccessPage},
+    {"intent_invalid_href_and_path.json",
+        errors::kInvalidIntentHrefOldAndNewKey}
   };
   RunTestcases(testcases, arraysize(testcases));
 
@@ -821,6 +823,13 @@ TEST_F(ExtensionManifestTest, WebIntents) {
   EXPECT_EQ("", UTF16ToUTF8(extension->intents_services()[0].title));
   EXPECT_EQ(webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW,
             extension->intents_services()[0].disposition);
+
+  // Make sure we support href instead of path.
+  extension = LoadAndExpectSuccess("intent_valid_using_href.json");
+  ASSERT_TRUE(extension.get() != NULL);
+  ASSERT_EQ(1u, extension->intents_services().size());
+  EXPECT_EQ("//services/share",
+      extension->intents_services()[0].service_url.path());
 }
 
 TEST_F(ExtensionManifestTest, WebIntentsWithMultipleMimeTypes) {

@@ -1357,14 +1357,31 @@ bool Extension::LoadWebIntentServices(string16* error) {
       return false;
     }
 
+    std::string href;
     if (one_service->HasKey(keys::kIntentPath)) {
-      if (!one_service->GetString(keys::kIntentPath, &value)) {
-        *error = ASCIIToUTF16(errors::kInvalidIntentPath);
+      if (!one_service->GetString(keys::kIntentPath, &href)) {
+        *error = ASCIIToUTF16(errors::kInvalidIntentHref);
         return false;
       }
+    }
+
+    if (one_service->HasKey(keys::kIntentHref)) {
+      if (!href.empty()) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidIntentHrefOldAndNewKey, *iter,
+            keys::kIntentPath, keys::kIntentHref);
+         return false;
+      }
+      if (!one_service->GetString(keys::kIntentHref, &href)) {
+        *error = ASCIIToUTF16(errors::kInvalidIntentHref);
+        return false;
+      }
+    }
+
+    if (!href.empty()) {
+      GURL service_url(href);
       if (is_hosted_app()) {
         // Hosted apps require an absolute URL for intents.
-        GURL service_url(value);
         if (!service_url.is_valid() ||
             !(web_extent().MatchesURL(service_url))) {
           *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
@@ -1374,12 +1391,12 @@ bool Extension::LoadWebIntentServices(string16* error) {
         service.service_url = service_url;
       } else {
         // We do not allow absolute intent URLs in non-hosted apps.
-        if (GURL(value).is_valid()) {
+        if (service_url.is_valid()) {
           *error =ExtensionErrorUtils::FormatErrorMessageUTF16(
-              errors::kCannotAccessPage, value.c_str());
+              errors::kCannotAccessPage, href);
           return false;
         }
-        service.service_url = GetResourceURL(value);
+        service.service_url = GetResourceURL(href);
       }
     }
 

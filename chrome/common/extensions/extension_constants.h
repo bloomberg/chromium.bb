@@ -46,11 +46,12 @@ namespace extension_manifest_keys {
   extern const char kIncognito[];
   extern const char kIncludeGlobs[];
   extern const char kInputComponents[];
-  extern const char kIntents[];
-  extern const char kIntentType[];
-  extern const char kIntentPath[];
-  extern const char kIntentTitle[];
   extern const char kIntentDisposition[];
+  extern const char kIntentHref[];
+  extern const char kIntentPath[];
+  extern const char kIntents[];
+  extern const char kIntentTitle[];
+  extern const char kIntentType[];
   extern const char kIsolation[];
   extern const char kJs[];
   extern const char kKey[];
@@ -205,7 +206,8 @@ namespace extension_manifest_errors {
   extern const char kInvalidInputComponentType[];
   extern const char kInvalidIntent[];
   extern const char kInvalidIntentDisposition[];
-  extern const char kInvalidIntentPath[];
+  extern const char kInvalidIntentHref[];
+  extern const char kInvalidIntentHrefOldAndNewKey[];
   extern const char kInvalidIntentPageInHostedApp[];
   extern const char kInvalidIntents[];
   extern const char kInvalidIntentType[];

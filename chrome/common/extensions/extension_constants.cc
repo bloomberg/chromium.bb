@@ -44,11 +44,12 @@ const char kId[] = "id";
 const char kIncognito[] = "incognito";
 const char kIncludeGlobs[] = "include_globs";
 const char kInputComponents[] = "input_components";
-const char kIntents[] = "intents";
-const char kIntentType[] = "type";
-const char kIntentPath[] = "path";
-const char kIntentTitle[] = "title";
 const char kIntentDisposition[] = "disposition";
+const char kIntentHref[] = "href";
+const char kIntentPath[] = "path";
+const char kIntents[] = "intents";
+const char kIntentTitle[] = "title";
+const char kIntentType[] = "type";
 const char kIsolation[] = "app.isolation";
 const char kJs[] = "js";
 const char kKey[] = "key";
@@ -264,10 +265,13 @@ const char kInvalidIntent[] =
     "Invalid value for intents[*]";
 const char kInvalidIntentDisposition[] =
     "Invalid value for intents[*].disposition";
-const char kInvalidIntentPath[] =
-  "Invalid value for intents[*].path";
+const char kInvalidIntentHref[] =
+    "Invalid value for intents[*].href";
+const char kInvalidIntentHrefOldAndNewKey[] =
+    "intents[*]: Key \"*\" is deprecated.  Key \"*\" has the same meaning. "
+    "You can not use both.";
 const char kInvalidIntentPageInHostedApp[] =
-    "Invalid value for intents[*].path. Hosted apps must specify an "
+    "Invalid value for intents[*].href. Hosted apps must specify an "
     "absolute URL within app.urls[].";
 const char kInvalidIntents[] =
     "Invalid value for intents";
