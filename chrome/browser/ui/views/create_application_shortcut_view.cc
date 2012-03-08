@@ -249,7 +249,8 @@ CreateApplicationShortcutView::~CreateApplicationShortcutView() {}
 void CreateApplicationShortcutView::InitControls() {
   // Create controls
   app_info_ = new AppInfoView(shortcut_info_.title, shortcut_info_.description,
-                              shortcut_info_.favicon);
+      shortcut_info_.favicon.IsEmpty() ? SkBitmap() :
+                                         *shortcut_info_.favicon.ToSkBitmap());
   create_shortcuts_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_LABEL));
   create_shortcuts_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -436,7 +437,9 @@ bool CreateUrlApplicationShortcutView::Accept() {
   if (!CreateApplicationShortcutView::Accept())
     return false;
 
-  tab_contents_->extension_tab_helper()->SetAppIcon(shortcut_info_.favicon);
+  tab_contents_->extension_tab_helper()->SetAppIcon(
+      shortcut_info_.favicon.IsEmpty() ? SkBitmap() :
+                                         *shortcut_info_.favicon.ToSkBitmap());
   if (tab_contents_->web_contents()->GetDelegate()) {
     tab_contents_->web_contents()->GetDelegate()->ConvertContentsToApplication(
         tab_contents_->web_contents());
