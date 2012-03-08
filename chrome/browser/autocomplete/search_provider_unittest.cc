@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,6 +168,9 @@ void SearchProviderTest::RunTillProviderDone() {
   quit_when_done_ = true;
 #if defined(OS_MACOSX)
   message_loop_.Run();
+#elif defined(OS_ANDROID)
+  // Android doesn't have Run(), only Start().
+  message_loop_.Start();
 #else
   message_loop_.RunWithDispatcher(NULL);
 #endif
