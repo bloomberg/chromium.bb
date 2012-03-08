@@ -131,6 +131,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/ui/ui.gyp:ui',
+        '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         'fileapi',
         'webkit_media',
