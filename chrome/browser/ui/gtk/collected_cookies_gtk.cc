@@ -12,6 +12,7 @@
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -205,7 +206,7 @@ GtkWidget* CollectedCookiesGtk::CreateAllowedPane() {
 
   TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
-  const TabSpecificContentSettings::LocalSharedObjectsContainer& allowed_lsos =
+  const LocalSharedObjectsContainer& allowed_lsos =
       content_settings->allowed_local_shared_objects();
   allowed_cookies_tree_model_.reset(
       new CookiesTreeModel(allowed_lsos.cookies()->Clone(),
@@ -292,7 +293,7 @@ GtkWidget* CollectedCookiesGtk::CreateBlockedPane() {
 
   TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
-  const TabSpecificContentSettings::LocalSharedObjectsContainer& blocked_lsos =
+  const LocalSharedObjectsContainer& blocked_lsos =
       content_settings->blocked_local_shared_objects();
   blocked_cookies_tree_model_.reset(
       new CookiesTreeModel(blocked_lsos.cookies()->Clone(),

@@ -16,6 +16,7 @@
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -377,7 +378,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 - (void)loadTreeModelFromTabContentsWrapper {
   TabSpecificContentSettings* content_settings = wrapper_->content_settings();
 
-  const TabSpecificContentSettings::LocalSharedObjectsContainer& allowed_lsos =
+  const LocalSharedObjectsContainer& allowed_lsos =
       content_settings->allowed_local_shared_objects();
   allowedTreeModel_.reset(
       new CookiesTreeModel(allowed_lsos.cookies()->Clone(),
@@ -389,7 +390,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
                            allowed_lsos.file_systems()->Clone(),
                            NULL,
                            true));
-  const TabSpecificContentSettings::LocalSharedObjectsContainer& blocked_lsos =
+  const LocalSharedObjectsContainer& blocked_lsos =
       content_settings->blocked_local_shared_objects();
   blockedTreeModel_.reset(
       new CookiesTreeModel(blocked_lsos.cookies()->Clone(),

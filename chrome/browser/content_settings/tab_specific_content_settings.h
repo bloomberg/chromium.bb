@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -19,12 +20,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
-class CannedBrowsingDataAppCacheHelper;
-class CannedBrowsingDataCookieHelper;
-class CannedBrowsingDataDatabaseHelper;
-class CannedBrowsingDataFileSystemHelper;
-class CannedBrowsingDataIndexedDBHelper;
-class CannedBrowsingDataLocalStorageHelper;
 class CookiesTreeModel;
 class Profile;
 
@@ -40,50 +35,6 @@ class CookieOptions;
 class TabSpecificContentSettings : public content::WebContentsObserver,
                                    public content::NotificationObserver {
  public:
-  class LocalSharedObjectsContainer {
-   public:
-    explicit LocalSharedObjectsContainer(Profile* profile);
-    ~LocalSharedObjectsContainer();
-
-    // Empties the container.
-    void Reset();
-
-    CannedBrowsingDataAppCacheHelper* appcaches() const {
-      return appcaches_;
-    }
-    CannedBrowsingDataCookieHelper* cookies() const {
-      return cookies_;
-    }
-    CannedBrowsingDataDatabaseHelper* databases() const {
-      return databases_;
-    }
-    CannedBrowsingDataFileSystemHelper* file_systems() const {
-      return file_systems_;
-    }
-    CannedBrowsingDataIndexedDBHelper* indexed_dbs() const {
-      return indexed_dbs_;
-    }
-    CannedBrowsingDataLocalStorageHelper* local_storages() const {
-      return local_storages_;
-    }
-    CannedBrowsingDataLocalStorageHelper* session_storages() const {
-      return session_storages_;
-    }
-
-    bool empty() const;
-
-   private:
-    scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
-    scoped_refptr<CannedBrowsingDataCookieHelper> cookies_;
-    scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
-    scoped_refptr<CannedBrowsingDataFileSystemHelper> file_systems_;
-    scoped_refptr<CannedBrowsingDataIndexedDBHelper> indexed_dbs_;
-    scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
-    scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
-
-    DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);
-  };
-
   explicit TabSpecificContentSettings(content::WebContents* tab);
 
   virtual ~TabSpecificContentSettings();

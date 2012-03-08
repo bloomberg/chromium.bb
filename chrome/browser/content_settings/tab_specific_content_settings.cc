@@ -45,16 +45,6 @@ static base::LazyInstance<TabSpecificList> g_tab_specific =
     LAZY_INSTANCE_INITIALIZER;
 }
 
-bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
-  return appcaches_->empty() &&
-      cookies_->empty() &&
-      databases_->empty() &&
-      file_systems_->empty() &&
-      indexed_dbs_->empty() &&
-      local_storages_->empty() &&
-      session_storages_->empty();
-}
-
 TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
     : content::WebContentsObserver(tab),
       profile_(Profile::FromBrowserContext(tab->GetBrowserContext())),
@@ -479,29 +469,4 @@ void TabSpecificContentSettings::Observe(
                                    &rules);
     Send(new ChromeViewMsg_SetContentSettingRules(rules));
   }
-}
-
-TabSpecificContentSettings::LocalSharedObjectsContainer::
-    LocalSharedObjectsContainer(Profile* profile)
-    : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
-      cookies_(new CannedBrowsingDataCookieHelper(profile)),
-      databases_(new CannedBrowsingDataDatabaseHelper(profile)),
-      file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
-      indexed_dbs_(new CannedBrowsingDataIndexedDBHelper()),
-      local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
-      session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
-}
-
-TabSpecificContentSettings::LocalSharedObjectsContainer::
-    ~LocalSharedObjectsContainer() {
-}
-
-void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
-  appcaches_->Reset();
-  cookies_->Reset();
-  databases_->Reset();
-  file_systems_->Reset();
-  indexed_dbs_->Reset();
-  local_storages_->Reset();
-  session_storages_->Reset();
 }

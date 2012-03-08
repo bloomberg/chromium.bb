@@ -11,6 +11,7 @@
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -326,7 +327,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL));
 
-  const TabSpecificContentSettings::LocalSharedObjectsContainer& allowed_lsos =
+  const LocalSharedObjectsContainer& allowed_lsos =
       content_settings->allowed_local_shared_objects();
   allowed_cookies_tree_model_.reset(
       new CookiesTreeModel(allowed_lsos.cookies()->Clone(),
@@ -392,7 +393,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
               IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL));
   blocked_label_->SetMultiLine(true);
   blocked_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  const TabSpecificContentSettings::LocalSharedObjectsContainer& blocked_lsos =
+  const LocalSharedObjectsContainer& blocked_lsos =
       content_settings->blocked_local_shared_objects();
   blocked_cookies_tree_model_.reset(
       new CookiesTreeModel(blocked_lsos.cookies()->Clone(),
