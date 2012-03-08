@@ -315,13 +315,14 @@ def _ParseSendChangeOptions(options):
 
   filters = ','.join(options.testfilter)
   if filters:
-    for bot in options.bot:
-      if ':' in bot:
-        raise ValueError(
-            'Can\'t use both --testfilter and --bot builder:test formats '
-            'at the same time')
-      else:
-        values.append(('bot', '%s:%s' % (bot, filters)))
+    for botlist in options.bot:
+      for bot in botlist.split(','):
+        if ':' in bot:
+          raise ValueError(
+              'Can\'t use both --testfilter and --bot builder:test formats '
+              'at the same time')
+        else:
+          values.append(('bot', '%s:%s' % (bot, filters)))
   else:
     for bot in options.bot:
       values.append(('bot', bot))

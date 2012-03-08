@@ -62,9 +62,8 @@ class TryChangeSimpleTest(unittest.TestCase):
   # Doesn't require supermox to run.
   def test_flags(self):
     cmd = [
-      '--bot', 'bot1',
+      '--bot', 'bot1,bot2',
       '--testfilter', 'test1',
-      '--bot', 'bot2',
       '--testfilter', 'test2',
       '--user', 'joe',
       '--email', 'joe@example.com',
