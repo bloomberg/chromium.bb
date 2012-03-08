@@ -35,6 +35,7 @@ class Decoder {
   virtual ~Decoder() {}
 
   // Initializes the decoder and sets the output dimensions.
+  // |screen size| must not be empty.
   virtual void Initialize(const SkISize& screen_size) = 0;
 
   // Feeds more data into the decoder.
@@ -45,25 +46,24 @@ class Decoder {
 
   virtual VideoPacketFormat::Encoding Encoding() = 0;
 
-  // Forces the decoder to include the specified |region| the next time
-  // RenderFrame() is called. |region| is expressed in output coordinates.
+  // Marks the specified |region| of the view for update the next time
+  // RenderFrame() is called.  |region| is expressed in |view_size| coordinates.
+  // |view_size| must not be empty.
   virtual void Invalidate(const SkISize& view_size,
                           const SkRegion& region) = 0;
 
-  // Copies invalidated pixels of the video frame to |image_buffer|. Both
-  // decoding a packet or Invalidate() call can result in parts of the frame
-  // to be invalidated. Only the pixels within |clip_area| are copied.
-  // Invalidated pixels outside of |clip_area| remain invalidated.
+  // Copies invalidated pixels within |clip_area| to |image_buffer|. Pixels are
+  // invalidated either by new data received in DecodePacket(), or by explicit
+  // calls to Invalidate(). |clip_area| is specified in |view_size| coordinates.
+  // If |view_size| differs from the source size then the copied pixels will be
+  // scaled accordingly. |view_size| cannot be empty.
   //
-  // The routine sets |output_region| to indicate the updated areas of
-  // |image_buffer|. |output_region| is in output buffer coordinates.
+  // |image_buffer|'s origin must correspond to the top-left of |clip_area|,
+  // and the buffer must be large enough to hold |clip_area| RGBA32 pixels.
+  // |image_stride| gives the output buffer's stride in pixels.
   //
-  // |image_buffer| is assumed to be large enough to hold entire |clip_area|
-  // (RGBA32). The top left corner of the buffer corresponds to the top left
-  // corner of |clip_area|. |image_stride| specifies the size of a single row
-  // of the buffer in bytes.
-  //
-  // Both |clip_area| and |output_region| are expressed in output coordinates.
+  // On return, |output_region| contains the updated area, in |view_size|
+  // coordinates.
   virtual void RenderFrame(const SkISize& view_size,
                            const SkIRect& clip_area,
                            uint8* image_buffer,

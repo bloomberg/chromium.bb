@@ -34,6 +34,8 @@ DecoderVp8::~DecoderVp8() {
 }
 
 void DecoderVp8::Initialize(const SkISize& screen_size) {
+  DCHECK(!screen_size.isEmpty());
+
   screen_size_ = screen_size;
   state_ = kReady;
 }
@@ -107,6 +109,9 @@ VideoPacketFormat::Encoding DecoderVp8::Encoding() {
 
 void DecoderVp8::Invalidate(const SkISize& view_size,
                             const SkRegion& region) {
+  DCHECK_EQ(kReady, state_);
+  DCHECK(!view_size.isEmpty());
+
   for (SkRegion::Iterator i(region); !i.done(); i.next()) {
     SkIRect rect = i.rect();
     rect = ScaleRect(rect, view_size, screen_size_);
@@ -119,6 +124,13 @@ void DecoderVp8::RenderFrame(const SkISize& view_size,
                              uint8* image_buffer,
                              int image_stride,
                              SkRegion* output_region) {
+  DCHECK_EQ(kReady, state_);
+  DCHECK(!view_size.isEmpty());
+
+  // Early-return and do nothing if we haven't yet decoded any frames.
+  if (!last_image_)
+    return;
+
   SkIRect source_clip = SkIRect::MakeWH(last_image_->d_w, last_image_->d_h);
 
   // ScaleYUVToRGB32WithRect doesn't support up-scaling, and our web-app never

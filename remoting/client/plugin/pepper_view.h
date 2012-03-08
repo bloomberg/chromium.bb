@@ -111,7 +111,8 @@ class PepperView : public ChromotingView,
   // True if there is already a Flush() pending on the Graphics2D context.
   bool flush_pending_;
 
-  bool in_teardown_;
+  // True after Initialize() has been called, until TearDown().
+  bool is_initialized_;
 
   base::WeakPtrFactory<PepperView> weak_factory_;
 

@@ -75,7 +75,7 @@ PepperView::PepperView(ChromotingInstance* instance,
     clip_area_(SkIRect::MakeEmpty()),
     source_size_(SkISize::Make(0, 0)),
     flush_pending_(false),
-    in_teardown_(false),
+    is_initialized_(false),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -85,16 +85,22 @@ PepperView::~PepperView() {
 }
 
 bool PepperView::Initialize() {
+  DCHECK(!is_initialized_);
+
+  is_initialized_ = true;
+  InitiateDrawing();
   return true;
 }
 
 void PepperView::TearDown() {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
+  DCHECK(is_initialized_);
+
+  is_initialized_ = false;
 
   // The producer should now return any pending buffers. At this point, however,
   // ReturnBuffer() tasks scheduled by the producer will not be delivered,
   // so we free all the buffers once the producer's queue is empty.
-  in_teardown_ = true;
   base::WaitableEvent done_event(true, false);
   producer_->RequestReturnBuffers(
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done_event)));
@@ -192,7 +198,7 @@ void PepperView::ReturnBuffer(pp::ImageData* buffer) {
   DCHECK(context_->main_message_loop()->BelongsToCurrentThread());
 
   // Free the buffer if there is nothing to paint.
-  if (in_teardown_) {
+  if (!is_initialized_) {
     FreeBuffer(buffer);
     return;
   }
@@ -248,8 +254,7 @@ void PepperView::FreeBuffer(pp::ImageData* buffer) {
 }
 
 void PepperView::InitiateDrawing() {
-  // Do not schedule drawing if there is nothing to paint.
-  if (in_teardown_)
+  if (!is_initialized_)
     return;
 
   pp::ImageData* buffer = AllocateBuffer();
@@ -262,7 +267,6 @@ void PepperView::InitiateDrawing() {
 void PepperView::FlushBuffer(const SkIRect& clip_area,
                              pp::ImageData* buffer,
                              const SkRegion& region) {
-
   // Defer drawing if the flush is already in progress.
   if (flush_pending_) {
     // |merge_buffer_| is guaranteed to be free here because we allocate only

@@ -39,6 +39,7 @@ class FrameProducer {
   virtual void RequestReturnBuffers(const base::Closure& done) = 0;
 
   // Notifies the producer of changes to the output view size or clipping area.
+  // Implementations must cope with empty |view_size| or |clip_area|.
   virtual void SetOutputSizeAndClip(const SkISize& view_size,
                                     const SkIRect& clip_area) = 0;
 

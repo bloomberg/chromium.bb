@@ -94,7 +94,12 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
 }
 
 void RectangleUpdateDecoder::DoPaint() {
-  if (buffers_.empty())
+  // If the view size is empty or we have no output buffers ready, return.
+  if (buffers_.empty() || view_size_.isEmpty())
+    return;
+
+  // If no Decoder is initialized, or the host dimensions are empty, return.
+  if (!decoder_.get() || source_size_.isEmpty())
     return;
 
   // Draw the invalidated region to the buffer.

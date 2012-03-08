@@ -40,7 +40,7 @@ class RectangleUpdateDecoder :
   RectangleUpdateDecoder(base::MessageLoopProxy* message_loop,
                          FrameConsumer* consumer);
 
-  // Initializes decoder with the infromation from the protocol config.
+  // Initializes decoder with the information from the protocol config.
   void Initialize(const protocol::SessionConfig& config);
 
   // Decodes the contents of |packet|. DecodePacket may keep a reference to
@@ -48,7 +48,8 @@ class RectangleUpdateDecoder :
   // executed.
   void DecodePacket(const VideoPacket* packet, const base::Closure& done);
 
-  // FrameProducer implementation.
+  // FrameProducer implementation.  These methods may be called before we are
+  // Initialize()d, or we know the source screen size.
   virtual void DrawBuffer(pp::ImageData* buffer) OVERRIDE;
   virtual void InvalidateRegion(const SkRegion& region) OVERRIDE;
   virtual void RequestReturnBuffers(const base::Closure& done) OVERRIDE;
