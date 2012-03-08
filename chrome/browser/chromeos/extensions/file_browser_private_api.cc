@@ -423,6 +423,7 @@ class FilePropertiesDelegate : public gdata::FindFileDelegate {
 
   GURL thumbnail_url_;
   GURL edit_url_;
+  GURL content_url_;
   int cache_state_;
   base::PlatformFileError error_;
 };
@@ -440,6 +441,7 @@ void FilePropertiesDelegate::CopyProperties(
   DCHECK(property_dict);
   DCHECK(!property_dict->HasKey("thumbnailUrl"));
   DCHECK(!property_dict->HasKey("editUrl"));
+  DCHECK(!property_dict->HasKey("contentUrl"));
   DCHECK(!property_dict->HasKey("isPinned"));
   DCHECK(!property_dict->HasKey("isPresent"));
   DCHECK(!property_dict->HasKey("isDirty"));
@@ -453,6 +455,10 @@ void FilePropertiesDelegate::CopyProperties(
   property_dict->SetString("thumbnailUrl", thumbnail_url_.spec());
   if (!edit_url_.is_empty())
     property_dict->SetString("editUrl", edit_url_.spec());
+
+  if (!content_url_.is_empty())
+    property_dict->SetString("contentUrl", content_url_.spec());
+
   property_dict->SetBoolean(
       "isPinned",
       static_cast<bool>(cache_state_ & gdata::GDataFile::CACHE_STATE_PINNED));
@@ -470,6 +476,7 @@ void FilePropertiesDelegate::OnFileFound(gdata::GDataFile* file) {
   DCHECK(!file->file_info().is_directory);
   thumbnail_url_ = file->thumbnail_url();
   edit_url_ = file->edit_url();
+  content_url_ = file->content_url();
   cache_state_ = file->cache_state();
 }
 

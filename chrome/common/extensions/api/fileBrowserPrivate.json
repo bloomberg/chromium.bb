@@ -74,6 +74,11 @@
             "optional": true,
             "description": "GData edit URL for this file."
           },
+          "contentUrl": {
+            "type": "string",
+            "optional": true,
+            "description": "GData content URL for this file."
+          },
           "isPinned": {
             "type": "boolean",
             "optional": true,
