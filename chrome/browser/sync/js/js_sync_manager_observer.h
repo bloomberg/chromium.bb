@@ -34,7 +34,8 @@ class JsSyncManagerObserver : public sync_api::SyncManager::Observer {
   // sync_api::SyncManager::Observer implementation.
   virtual void OnSyncCycleCompleted(
       const sessions::SyncSessionSnapshot* snapshot) OVERRIDE;
-  virtual void OnAuthError(const GoogleServiceAuthError& auth_error) OVERRIDE;
+  virtual void OnConnectionStatusChange(
+      sync_api::ConnectionStatus status) OVERRIDE;
   virtual void OnUpdatedToken(const std::string& token) OVERRIDE;
   virtual void OnPassphraseRequired(
       sync_api::PassphraseRequiredReason reason,

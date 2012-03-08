@@ -118,16 +118,18 @@ TEST_F(JsSyncManagerObserverTest, OnActionableError) {
 }
 
 
-TEST_F(JsSyncManagerObserverTest, OnAuthError) {
-  GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);
+TEST_F(JsSyncManagerObserverTest, OnConnectionStatusChange) {
+  const sync_api::ConnectionStatus kStatus =
+      sync_api::CONNECTION_AUTH_ERROR;
   DictionaryValue expected_details;
-  expected_details.Set("authError", error.ToValue());
+  expected_details.SetString("status",
+                             sync_api::ConnectionStatusToString(kStatus));
 
   EXPECT_CALL(mock_js_event_handler_,
-              HandleJsEvent("onAuthError",
-                           HasDetailsAsDictionary(expected_details)));
+              HandleJsEvent("onConnectionStatusChange",
+                            HasDetailsAsDictionary(expected_details)));
 
-  js_sync_manager_observer_.OnAuthError(error);
+  js_sync_manager_observer_.OnConnectionStatusChange(kStatus);
   PumpLoop();
 }
 

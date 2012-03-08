@@ -761,8 +761,32 @@ void ProfileSyncService::UpdateAuthErrorState(
   NotifyObservers();
 }
 
-void ProfileSyncService::OnAuthError() {
-  UpdateAuthErrorState(backend_->GetAuthError());
+namespace {
+
+GoogleServiceAuthError ConnectionStatusToAuthError(
+    sync_api::ConnectionStatus status) {
+  switch (status) {
+    case sync_api::CONNECTION_OK:
+      return GoogleServiceAuthError::None();
+      break;
+    case sync_api::CONNECTION_AUTH_ERROR:
+      return GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+      break;
+    case sync_api::CONNECTION_SERVER_ERROR:
+      return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
+      break;
+    default:
+      NOTREACHED();
+      return GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED);
+  }
+}
+
+}  // namespace
+
+void ProfileSyncService::OnConnectionStatusChange(
+    sync_api::ConnectionStatus status) {
+  UpdateAuthErrorState(ConnectionStatusToAuthError(status));
 }
 
 void ProfileSyncService::OnStopSyncingPermanently() {

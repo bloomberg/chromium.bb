@@ -40,14 +40,15 @@ void JsSyncManagerObserver::OnSyncCycleCompleted(
   HandleJsEvent(FROM_HERE, "onSyncCycleCompleted", JsEventDetails(&details));
 }
 
-void JsSyncManagerObserver::OnAuthError(
-    const GoogleServiceAuthError& auth_error) {
+void JsSyncManagerObserver::OnConnectionStatusChange(
+    sync_api::ConnectionStatus status) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.Set("authError", auth_error.ToValue());
-  HandleJsEvent(FROM_HERE, "onAuthError", JsEventDetails(&details));
+  details.SetString("status", sync_api::ConnectionStatusToString(status));
+  HandleJsEvent(FROM_HERE,
+                "onConnectionStatusChange", JsEventDetails(&details));
 }
 
 void JsSyncManagerObserver::OnUpdatedToken(const std::string& token) {

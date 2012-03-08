@@ -41,9 +41,9 @@ void DebugInfoEventListener::OnInitializationComplete(
   CreateAndAddEvent(sync_pb::DebugEventInfo::INITIALIZATION_COMPLETE);
 }
 
-void DebugInfoEventListener::OnAuthError(
-    const GoogleServiceAuthError& auth_error) {
-  CreateAndAddEvent(sync_pb::DebugEventInfo::AUTH_ERROR);
+void DebugInfoEventListener::OnConnectionStatusChange(
+    sync_api::ConnectionStatus status) {
+  CreateAndAddEvent(sync_pb::DebugEventInfo::CONNECTION_STATUS_CHANGE);
 }
 
 void DebugInfoEventListener::OnPassphraseRequired(

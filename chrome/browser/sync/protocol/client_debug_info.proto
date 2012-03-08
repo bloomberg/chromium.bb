@@ -38,8 +38,9 @@ message DebugEventInfo {
   // of these events have some additional info but we are not sending them to
   // server.
   enum EventType {
-    AUTH_ERROR = 1; // Auth error. Note this gets generated even during
-                    // successful auth with the error set to none.
+    CONNECTION_STATUS_CHANGE = 1; // Connection status change. Note this
+                                  // gets generated even during a successful
+                                  // connection.
     UPDATED_TOKEN = 2; // Client received an updated token.
     PASSPHRASE_REQUIRED = 3; // Cryptographer needs passphrase.
     PASSPHRASE_ACCEPTED = 4; // Passphrase was accepted by cryptographer.

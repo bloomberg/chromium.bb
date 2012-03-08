@@ -84,8 +84,8 @@ class SyncBackendHost::Core
   virtual void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,
       bool success) OVERRIDE;
-  virtual void OnAuthError(
-      const GoogleServiceAuthError& auth_error) OVERRIDE;
+  virtual void OnConnectionStatusChange(
+      sync_api::ConnectionStatus status) OVERRIDE;
   virtual void OnPassphraseRequired(
       sync_api::PassphraseRequiredReason reason,
       const sync_pb::EncryptedData& pending_keys) OVERRIDE;
@@ -294,8 +294,7 @@ SyncBackendHost::SyncBackendHost(const std::string& name,
                                profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
           sync_prefs),
-      frontend_(NULL),
-      last_auth_error_(AuthError::None()) {
+      frontend_(NULL) {
 }
 
 SyncBackendHost::SyncBackendHost(Profile* profile)
@@ -311,8 +310,7 @@ SyncBackendHost::SyncBackendHost(Profile* profile)
                                profile_->GetRequestContext()),
           content::GetUserAgent(GURL()),
           base::WeakPtr<sync_notifier::InvalidationVersionTracker>()),
-      frontend_(NULL),
-      last_auth_error_(AuthError::None()) {
+      frontend_(NULL) {
 }
 
 SyncBackendHost::~SyncBackendHost() {
@@ -570,10 +568,6 @@ SyncBackendHost::Status SyncBackendHost::GetDetailedStatus() {
 SyncBackendHost::StatusSummary SyncBackendHost::GetStatusSummary() {
   DCHECK(initialized());
   return core_->sync_manager()->GetStatusSummary();
-}
-
-const GoogleServiceAuthError& SyncBackendHost::GetAuthError() const {
-  return last_auth_error_;
 }
 
 const SyncSessionSnapshot* SyncBackendHost::GetLastSessionSnapshot() const {
@@ -855,13 +849,14 @@ void SyncBackendHost::Core::OnInitializationComplete(
   }
 }
 
-void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
+void SyncBackendHost::Core::OnConnectionStatusChange(
+    sync_api::ConnectionStatus status) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
-      &SyncBackendHost::HandleAuthErrorEventOnFrontendLoop, auth_error);
+      &SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop, status);
 }
 
 void SyncBackendHost::Core::OnPassphraseRequired(
@@ -1343,15 +1338,14 @@ void SyncBackendHost::HandleClearServerDataFailedOnFrontendLoop() {
   frontend_->OnClearServerDataFailed();
 }
 
-void SyncBackendHost::HandleAuthErrorEventOnFrontendLoop(
-    const GoogleServiceAuthError& new_auth_error) {
+void SyncBackendHost::HandleConnectionStatusChangeOnFrontendLoop(
+    sync_api::ConnectionStatus status) {
   if (!frontend_)
     return;
 
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
 
-  last_auth_error_ = new_auth_error;
-  frontend_->OnAuthError();
+  frontend_->OnConnectionStatusChange(status);
 }
 
 void SyncBackendHost::HandleNigoriConfigurationCompletedOnFrontendLoop(

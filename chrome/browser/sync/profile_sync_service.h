@@ -224,7 +224,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       bool success) OVERRIDE;
   virtual void OnSyncCycleCompleted() OVERRIDE;
   virtual void OnSyncConfigureRetry() OVERRIDE;
-  virtual void OnAuthError() OVERRIDE;
+  virtual void OnConnectionStatusChange(
+      sync_api::ConnectionStatus status) OVERRIDE;
   virtual void OnStopSyncingPermanently() OVERRIDE;
   virtual void OnClearServerDataFailed() OVERRIDE;
   virtual void OnClearServerDataSucceeded() OVERRIDE;

@@ -54,8 +54,6 @@
 #include "chrome/browser/sync/util/time.h"
 #include "net/base/network_change_notifier.h"
 
-using std::string;
-
 using base::TimeDelta;
 using browser_sync::AllStatus;
 using browser_sync::Cryptographer;
@@ -87,8 +85,6 @@ using syncable::ModelType;
 using syncable::ModelTypeSet;
 using syncable::SPECIFICS;
 using sync_pb::GetUpdatesCallerInfo;
-
-typedef GoogleServiceAuthError AuthError;
 
 namespace {
 
@@ -749,7 +745,7 @@ bool SyncManager::Init(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(post_factory);
   DVLOG(1) << "SyncManager starting Init...";
-  string server_string(sync_server_and_path);
+  std::string server_string(sync_server_and_path);
   return data_->Init(database_location,
                      event_handler,
                      server_string,
@@ -1736,19 +1732,19 @@ void SyncManager::SyncInternal::OnServerConnectionEvent(
   if (event.connection_code ==
       browser_sync::HttpResponse::SERVER_CONNECTION_OK) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-                      OnAuthError(AuthError::None()));
+                      OnConnectionStatusChange(CONNECTION_OK));
   }
 
   if (event.connection_code == browser_sync::HttpResponse::SYNC_AUTH_ERROR) {
     observing_ip_address_changes_ = false;
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-        OnAuthError(AuthError(AuthError::INVALID_GAIA_CREDENTIALS)));
+                      OnConnectionStatusChange(CONNECTION_AUTH_ERROR));
   }
 
   if (event.connection_code ==
       browser_sync::HttpResponse::SYNC_SERVER_ERROR) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
-        OnAuthError(AuthError(AuthError::CONNECTION_FAILED)));
+                      OnConnectionStatusChange(CONNECTION_SERVER_ERROR));
   }
 }
 
@@ -2435,8 +2431,22 @@ void SyncManager::TriggerOnIncomingNotificationForTest(
                                 sync_notifier::REMOTE_NOTIFICATION);
 }
 
+const char* ConnectionStatusToString(ConnectionStatus status) {
+  switch (status) {
+    case CONNECTION_OK:
+      return "CONNECTION_OK";
+    case CONNECTION_AUTH_ERROR:
+      return "CONNECTION_AUTH_ERROR";
+    case CONNECTION_SERVER_ERROR:
+      return "CONNECTION_SERVER_ERROR";
+    default:
+      NOTREACHED();
+      return "INVALID_CONNECTION_STATUS";
+  }
+}
+
 // Helper function that converts a PassphraseRequiredReason value to a string.
-std::string PassphraseRequiredReasonToString(
+const char* PassphraseRequiredReasonToString(
     PassphraseRequiredReason reason) {
   switch (reason) {
     case REASON_PASSPHRASE_NOT_REQUIRED:

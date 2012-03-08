@@ -72,9 +72,9 @@ class SyncFrontend {
   // retried.
   virtual void OnSyncConfigureRetry() = 0;
 
-  // The backend encountered an authentication problem and requests new
-  // credentials to be provided. See SyncBackendHost::Authenticate for details.
-  virtual void OnAuthError() = 0;
+  // The status of the connection to the sync server has changed.
+  virtual void OnConnectionStatusChange(
+      sync_api::ConnectionStatus status) = 0;
 
   // We are no longer permitted to communicate with the server. Sync should
   // be disabled and state cleaned up at once.
@@ -250,7 +250,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // summarized form.
   Status GetDetailedStatus();
   StatusSummary GetStatusSummary();
-  const GoogleServiceAuthError& GetAuthError() const;
   const sessions::SyncSessionSnapshot* GetLastSessionSnapshot() const;
 
   // Determines if the underlying sync engine has made any local changes to
@@ -446,10 +445,10 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   void HandleClearServerDataSucceededOnFrontendLoop();
   void HandleClearServerDataFailedOnFrontendLoop();
 
-  // Dispatched to from OnAuthError to handle updating frontend UI
-  // components.
-  void HandleAuthErrorEventOnFrontendLoop(
-      const GoogleServiceAuthError& new_auth_error);
+  // Dispatched to from OnConnectionStatusChange to handle updating
+  // frontend UI components.
+  void HandleConnectionStatusChangeOnFrontendLoop(
+      sync_api::ConnectionStatus status);
 
   // Called when configuration of the Nigori node has completed as
   // part of the initialization process.
@@ -508,9 +507,6 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // immediate feedback about the passphrase entered by first trying to decrypt
   // the cached pending keys on the UI thread.
   sync_pb::EncryptedData cached_pending_keys_;
-
-  // UI-thread cache of the last AuthErrorState received from syncapi.
-  GoogleServiceAuthError last_auth_error_;
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
   scoped_ptr<sessions::SyncSessionSnapshot> last_snapshot_;

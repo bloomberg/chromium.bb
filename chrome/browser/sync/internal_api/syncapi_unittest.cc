@@ -667,7 +667,7 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(const SyncSessionSnapshot*));  // NOLINT
   MOCK_METHOD2(OnInitializationComplete,
                void(const WeakHandle<JsBackend>&, bool));  // NOLINT
-  MOCK_METHOD1(OnAuthError, void(const GoogleServiceAuthError&));  // NOLINT
+  MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));  // NOLINT
   MOCK_METHOD2(OnPassphraseRequired,
                void(sync_api::PassphraseRequiredReason,
                     const sync_pb::EncryptedData&));  // NOLINT

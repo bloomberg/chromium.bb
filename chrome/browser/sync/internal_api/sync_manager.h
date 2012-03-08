@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/weak_handle.h"
-#include "chrome/common/net/gaia/google_service_auth_error.h"
 
 namespace browser_sync {
 class Encryptor;
@@ -49,6 +48,13 @@ namespace sync_api {
 class BaseTransaction;
 class HttpPostProviderFactory;
 struct UserShare;
+
+// Used by SyncManager::OnConnectionStatusChange().
+enum ConnectionStatus {
+  CONNECTION_OK,
+  CONNECTION_AUTH_ERROR,
+  CONNECTION_SERVER_ERROR
+};
 
 // Reasons due to which browser_sync::Cryptographer might require a passphrase.
 enum PassphraseRequiredReason {
@@ -280,8 +286,9 @@ class SyncManager {
     virtual void OnSyncCycleCompleted(
         const browser_sync::sessions::SyncSessionSnapshot* snapshot) = 0;
 
-    // Called when user interaction may be required due to an auth problem.
-    virtual void OnAuthError(const GoogleServiceAuthError& auth_error) = 0;
+    // Called when the status of the connection to the sync server has
+    // changed.
+    virtual void OnConnectionStatusChange(ConnectionStatus status) = 0;
 
     // Called when a new auth token is provided by the sync server.
     virtual void OnUpdatedToken(const std::string& token) = 0;
@@ -659,8 +666,10 @@ syncable::ModelTypeSet GetTypesWithEmptyProgressMarkerToken(
     syncable::ModelTypeSet types,
     sync_api::UserShare* share);
 
+const char* ConnectionStatusToString(ConnectionStatus status);
+
 // Returns the string representation of a PassphraseRequiredReason value.
-std::string PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
+const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
 
 }  // namespace sync_api
 
