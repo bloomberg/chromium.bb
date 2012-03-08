@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
-#import "chrome/browser/ui/panels/panel_utils_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -26,6 +25,19 @@ namespace {
 // closing animations, since OSX window manager does not like 0-sized windows
 // (according to avi@).
 const int kMinimumWindowSize = 1;
+
+// TODO(dcheng): Move elsewhere so BrowserWindowCocoa can use them too.
+// Converts global screen coordinates in platfrom-independent coordinates
+// (with the (0,0) in the top-left corner of the primary screen) to the Cocoa
+// screen coordinates (with (0,0) in the low-left corner).
+NSRect ConvertCoordinatesToCocoa(const gfx::Rect& bounds) {
+  // Flip coordinates based on the primary screen.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+
+  return NSMakeRect(
+      bounds.x(), NSHeight([screen frame]) - bounds.height() - bounds.y(),
+      bounds.width(), bounds.height());
+}
 
 }  // namespace
 
@@ -85,7 +97,7 @@ void PanelBrowserWindowCocoa::ShowPanelInactive() {
   SetPanelBoundsInstantly(bounds_);
   is_shown_ = true;
 
-  NSRect finalFrame = cocoa_utils::ConvertRectToCocoaCoordinates(bounds_);
+  NSRect finalFrame = ConvertCoordinatesToCocoa(bounds_);
   [controller_ revealAnimatedWithFrame:finalFrame];
 }
 
@@ -112,7 +124,7 @@ void PanelBrowserWindowCocoa::setBoundsInternal(const gfx::Rect& bounds,
 
   bounds_ = bounds;
 
-  NSRect frame = cocoa_utils::ConvertRectToCocoaCoordinates(bounds);
+  NSRect frame = ConvertCoordinatesToCocoa(bounds);
   [controller_ setPanelFrame:frame animate:animate];
 }
 
@@ -303,10 +315,9 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   NativePanelTestingCocoa(NativePanel* native_panel);
   virtual ~NativePanelTestingCocoa() { }
   // Overridden from NativePanelTesting
-  virtual void PressLeftMouseButtonTitlebar(
-      const gfx::Point& mouse_location) OVERRIDE;
+  virtual void PressLeftMouseButtonTitlebar(const gfx::Point& point) OVERRIDE;
   virtual void ReleaseMouseButtonTitlebar() OVERRIDE;
-  virtual void DragTitlebar(const gfx::Point& mouse_location) OVERRIDE;
+  virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
@@ -334,24 +345,16 @@ PanelTitlebarViewCocoa* NativePanelTestingCocoa::titlebar() const {
 }
 
 void NativePanelTestingCocoa::PressLeftMouseButtonTitlebar(
-    const gfx::Point& mouse_location) {
-  // Convert from platform-indepedent screen coordinates to Cocoa's screen
-  // coordinates because PanelTitlebarViewCocoa method takes Cocoa's screen
-  // coordinates.
-  [titlebar() pressLeftMouseButtonTitlebar:
-      cocoa_utils::ConvertPointToCocoaCoordinates(mouse_location)];
+  const gfx::Point& point) {
+  [titlebar() pressLeftMouseButtonTitlebar];
 }
 
 void NativePanelTestingCocoa::ReleaseMouseButtonTitlebar() {
   [titlebar() releaseLeftMouseButtonTitlebar];
 }
 
-void NativePanelTestingCocoa::DragTitlebar(const gfx::Point& mouse_location) {
-  // Convert from platform-indepedent screen coordinates to Cocoa's screen
-  // coordinates because PanelTitlebarViewCocoa method takes Cocoa's screen
-  // coordinates.
-  [titlebar() dragTitlebar:
-      cocoa_utils::ConvertPointToCocoaCoordinates(mouse_location)];
+void NativePanelTestingCocoa::DragTitlebar(int delta_x, int delta_y) {
+  [titlebar() dragTitlebarDeltaX:delta_x deltaY:delta_y];
 }
 
 void NativePanelTestingCocoa::CancelDragTitlebar() {

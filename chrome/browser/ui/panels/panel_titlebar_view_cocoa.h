@@ -58,7 +58,7 @@ enum PanelDragState {
   ScopedCrTrackingArea closeButtonTrackingArea_;
   PanelDragState dragState_;
   BOOL isDrawingAttention_;
-  NSPoint dragStartLocation_;  // in cocoa's screen coordinates.
+  NSPoint dragStartLocation_;
   // "Glint" animation is used in "Draw Attention" mode.
   scoped_nsobject<RepaintAnimation> glintAnimation_;
   scoped_nsobject<NSTimer> glintAnimationTimer_;
@@ -89,10 +89,10 @@ enum PanelDragState {
 - (void)didChangeMainWindow:(NSNotification*)notification;
 
 // Helpers to control title drag operation, called from more then one place.
-// |mouseLocation| is in Cocoa's screen coordinates.
-- (void)startDrag:(NSPoint)mouseLocation;
+- (void)startDrag;
 - (void)endDrag:(BOOL)cancelled;
-- (void)drag:(NSPoint)mouseLocation;
+- (void)dragWithDeltaX:(int)deltaX
+                deltaY:(int)deltaY;
 
   // Update the visibility of settings button.
 - (void)updateSettingsButtonVisibility:(BOOL)mouseOverWindow;
@@ -122,10 +122,10 @@ enum PanelDragState {
 - (void)simulateCloseButtonClick;
 
 // NativePanelTesting support.
-// |mouseLocation| is in Cocoa's screen coordinates.
-- (void)pressLeftMouseButtonTitlebar:(NSPoint)mouseLocation;
+- (void)pressLeftMouseButtonTitlebar;
 - (void)releaseLeftMouseButtonTitlebar;
-- (void)dragTitlebar:(NSPoint)mouseLocation;
+- (void)dragTitlebarDeltaX:(double)delta_x
+                    deltaY:(double)delta_y;
 - (void)cancelDragTitlebar;
 - (void)finishDragTitlebar;
 

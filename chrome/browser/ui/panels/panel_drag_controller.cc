@@ -15,12 +15,9 @@ PanelDragController::PanelDragController()
 PanelDragController::~PanelDragController() {
 }
 
-void PanelDragController::StartDragging(Panel* panel,
-                                        const gfx::Point& mouse_location) {
+void PanelDragController::StartDragging(Panel* panel) {
   DCHECK(!dragging_panel_);
   DCHECK(panel->draggable());
-
-  last_mouse_location_ = mouse_location;
 
   dragging_panel_ = panel;
   dragging_panel_original_position_ = panel->GetBounds().origin();
@@ -28,15 +25,10 @@ void PanelDragController::StartDragging(Panel* panel,
   dragging_panel_->panel_strip()->StartDraggingPanel(panel);
 }
 
-void PanelDragController::Drag(const gfx::Point& mouse_location) {
+void PanelDragController::Drag(int delta_x, int delta_y) {
   DCHECK(dragging_panel_);
 
-  dragging_panel_->panel_strip()->DragPanel(
-        dragging_panel_,
-        mouse_location.x() - last_mouse_location_.x(),
-        mouse_location.y() - last_mouse_location_.y());
-
-  last_mouse_location_ = mouse_location;
+  dragging_panel_->panel_strip()->DragPanel(dragging_panel_, delta_x, delta_y);
 }
 
 void PanelDragController::EndDragging(bool cancelled) {

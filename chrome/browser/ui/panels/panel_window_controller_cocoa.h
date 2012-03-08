@@ -98,11 +98,11 @@ class PanelBrowserWindowCocoa;
               animate:(BOOL)animate;
 
 // Used by PanelTitlebarViewCocoa when user rearranges the Panels by dragging.
-// |mouseLocation| is in Cocoa's screen coordinates.
 - (BOOL)isDraggable;
-- (void)startDrag:(NSPoint)mouseLocation;
+- (void)startDrag;
 - (void)endDrag:(BOOL)cancelled;
-- (void)drag:(NSPoint)mouseLocation;
+- (void)dragWithDeltaX:(int)deltaX
+                deltaY:(int)deltaY;
 
 // Accessor for titlebar view.
 - (PanelTitlebarViewCocoa*)titlebarView;

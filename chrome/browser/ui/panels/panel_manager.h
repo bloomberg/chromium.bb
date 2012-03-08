@@ -46,9 +46,8 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   void OnPanelClosed(Panel* panel);
 
   // Drags the given panel.
-  // |mouse_location| is in screen coordinate system.
-  void StartDragging(Panel* panel, const gfx::Point& mouse_location);
-  void Drag(const gfx::Point& mouse_location);
+  void StartDragging(Panel* panel);
+  void Drag(int delta_x, int delta_y);
   void EndDragging(bool cancelled);
 
   // Invoked when a panel's expansion state changes.

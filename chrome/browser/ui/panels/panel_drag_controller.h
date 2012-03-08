@@ -19,10 +19,8 @@ class PanelDragController {
   PanelDragController();
   ~PanelDragController();
 
-  // Drags the given panel.
-  // |mouse_location| is in screen coordinate system.
-  void StartDragging(Panel* panel, const gfx::Point& mouse_location);
-  void Drag(const gfx::Point& mouse_location);
+  void StartDragging(Panel* panel);
+  void Drag(int delta_x, int delta_y);
   void EndDragging(bool cancelled);
 
   // Asynchronous confirmation of panel having been closed.
@@ -43,10 +41,6 @@ class PanelDragController {
   // This is used to get back to the original position when we cancel the
   // dragging.
   gfx::Point dragging_panel_original_position_;
-
-  // The mouse location, in screen coordinates, when StartDragging or Drag was
-  // pveviously called.
-  gfx::Point last_mouse_location_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelDragController);
 };

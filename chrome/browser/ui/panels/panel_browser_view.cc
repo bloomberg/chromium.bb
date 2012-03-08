@@ -427,17 +427,19 @@ PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
   return static_cast<PanelBrowserFrameView*>(frame()->GetFrameView());
 }
 
-bool PanelBrowserView::OnTitlebarMousePressed(
-    const gfx::Point& mouse_location) {
+bool PanelBrowserView::OnTitlebarMousePressed(const gfx::Point& location) {
+  // |location| is in the view's coordinate system. Convert it to the screen
+  // coordinate system.
+  mouse_location_ = location;
+  views::View::ConvertPointToScreen(this, &mouse_location_);
+
   mouse_pressed_ = true;
   mouse_pressed_time_ = base::TimeTicks::Now();
   mouse_dragging_state_ = NO_DRAGGING;
-  mouse_location_ = mouse_location;
   return true;
 }
 
-bool PanelBrowserView::OnTitlebarMouseDragged(
-    const gfx::Point& mouse_location) {
+bool PanelBrowserView::OnTitlebarMouseDragged(const gfx::Point& location) {
   if (!mouse_pressed_)
     return false;
 
@@ -445,7 +447,11 @@ bool PanelBrowserView::OnTitlebarMouseDragged(
     return true;
 
   gfx::Point last_mouse_location = mouse_location_;
-  mouse_location_ = mouse_location;
+
+  // |location| is in the view's coordinate system. Convert it to the screen
+  // coordinate system.
+  mouse_location_ = location;
+  views::View::ConvertPointToScreen(this, &mouse_location_);
 
   int delta_x = mouse_location_.x() - last_mouse_location.x();
   int delta_y = mouse_location_.y() - last_mouse_location.y();
@@ -456,11 +462,11 @@ bool PanelBrowserView::OnTitlebarMouseDragged(
     old_focused_view_ = GetFocusManager()->GetFocusedView();
     GetFocusManager()->SetFocusedView(GetFrameView());
 
-    panel_->manager()->StartDragging(panel_.get(), last_mouse_location);
+    panel_->manager()->StartDragging(panel_.get());
     mouse_dragging_state_ = DRAGGING_STARTED;
   }
   if (mouse_dragging_state_ == DRAGGING_STARTED)
-    panel_->manager()->Drag(mouse_location_);
+    panel_->manager()->Drag(delta_x, delta_y);
   return true;
 }
 
@@ -544,9 +550,9 @@ class NativePanelTestingWin : public NativePanelTesting {
 
  private:
   virtual void PressLeftMouseButtonTitlebar(
-      const gfx::Point& mouse_location) OVERRIDE;
+      const gfx::Point& point) OVERRIDE;
   virtual void ReleaseMouseButtonTitlebar() OVERRIDE;
-  virtual void DragTitlebar(const gfx::Point& mouse_location) OVERRIDE;
+  virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
@@ -571,16 +577,23 @@ NativePanelTestingWin::NativePanelTestingWin(
 }
 
 void NativePanelTestingWin::PressLeftMouseButtonTitlebar(
-    const gfx::Point& mouse_location) {
-  panel_browser_view_->OnTitlebarMousePressed(mouse_location);
+    const gfx::Point& point) {
+  panel_browser_view_->OnTitlebarMousePressed(point);
 }
 
 void NativePanelTestingWin::ReleaseMouseButtonTitlebar() {
   panel_browser_view_->OnTitlebarMouseReleased();
 }
 
-void NativePanelTestingWin::DragTitlebar(const gfx::Point& mouse_location) {
-  panel_browser_view_->OnTitlebarMouseDragged(mouse_location);
+void NativePanelTestingWin::DragTitlebar(int delta_x, int delta_y) {
+  gfx::Point new_mouse_location = panel_browser_view_->mouse_location_;
+  new_mouse_location.Offset(delta_x, delta_y);
+
+  // Convert from the screen coordinate system to the view's coordinate system
+  // since OnTitlebarMouseDragged takes the point in the latter.
+  views::View::ConvertPointToView(NULL, panel_browser_view_,
+                                  &new_mouse_location);
+  panel_browser_view_->OnTitlebarMouseDragged(new_mouse_location);
 }
 
 void NativePanelTestingWin::CancelDragTitlebar() {

@@ -551,11 +551,11 @@ void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
       // it here to reduce the reference count.
       gtk_target_list_unref(list);
     }
-    panel_->manager()->StartDragging(panel_.get(), gfx::Point(old_x, old_y));
+    panel_->manager()->StartDragging(panel_.get());
   }
 
   if (drag_widget_) {
-    panel_->manager()->Drag(gfx::Point(new_x, new_y));
+    panel_->manager()->Drag(new_x - old_x, new_y - old_y);
     gdk_event_free(last_mouse_down_);
     last_mouse_down_ = gdk_event_copy(event);
   }
@@ -777,9 +777,9 @@ class NativePanelTestingGtk : public NativePanelTesting {
 
  private:
   virtual void PressLeftMouseButtonTitlebar(
-      const gfx::Point& mouse_location) OVERRIDE;
+      const gfx::Point& point) OVERRIDE;
   virtual void ReleaseMouseButtonTitlebar() OVERRIDE;
-  virtual void DragTitlebar(const gfx::Point& mouse_location) OVERRIDE;
+  virtual void DragTitlebar(int delta_x, int delta_y) OVERRIDE;
   virtual void CancelDragTitlebar() OVERRIDE;
   virtual void FinishDragTitlebar() OVERRIDE;
   virtual bool VerifyDrawingAttention() const OVERRIDE;
@@ -803,7 +803,7 @@ NativePanelTestingGtk::NativePanelTestingGtk(
 }
 
 void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
-    const gfx::Point& mouse_location) {
+    const gfx::Point& point) {
   // If there is an animation, wait for it to finish as we don't handle button
   // clicks while animation is in progress.
   while (panel_browser_window_gtk_->IsAnimatingBounds())
@@ -811,8 +811,8 @@ void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
 
   GdkEvent* event = gdk_event_new(GDK_BUTTON_PRESS);
   event->button.button = 1;
-  event->button.x_root = mouse_location.x();
-  event->button.y_root = mouse_location.y();
+  event->button.x_root = point.x();
+  event->button.y_root = point.y();
   panel_browser_window_gtk_->OnTitlebarButtonPressEvent(
       panel_browser_window_gtk_->titlebar_widget(),
       reinterpret_cast<GdkEventButton*>(event));
@@ -829,13 +829,15 @@ void NativePanelTestingGtk::ReleaseMouseButtonTitlebar() {
   MessageLoopForUI::current()->RunAllPending();
 }
 
-void NativePanelTestingGtk::DragTitlebar(const gfx::Point& mouse_location) {
+void NativePanelTestingGtk::DragTitlebar(int delta_x, int delta_y) {
   // Prevent extra unwanted signals and focus grabs.
   panel_browser_window_gtk_->system_drag_disabled_for_testing_ = true;
 
   GdkEvent* event = gdk_event_new(GDK_MOTION_NOTIFY);
-  event->motion.x_root = mouse_location.x();
-  event->motion.y_root = mouse_location.y();
+  gdk_event_get_root_coords(panel_browser_window_gtk_->last_mouse_down_,
+      &event->motion.x_root, &event->motion.y_root);
+  event->motion.x_root += delta_x;
+  event->motion.y_root += delta_y;
   panel_browser_window_gtk_->DidProcessEvent(event);
   gdk_event_free(event);
   MessageLoopForUI::current()->RunAllPending();
