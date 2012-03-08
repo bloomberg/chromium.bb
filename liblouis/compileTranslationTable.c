@@ -3737,6 +3737,60 @@ compileNoBreak (FileInfo * nested)
 }
 
 static int
+compileCharDef (FileInfo * nested,
+		TranslationTableOpcode opcode,
+		TranslationTableCharacterAttributes attributes)
+{
+  CharsString ruleChars;
+  CharsString ruleDots;
+  TranslationTableCharacter *character;
+  TranslationTableCharacter *cell;
+  TranslationTableCharacter *otherCell;
+  TranslationTableCharacterAttributes attr;
+  int k;
+  if (!getRuleCharsText (nested, &ruleChars))
+    return 0;
+  if (!getRuleDotsPattern (nested, &ruleDots))
+    return 0;
+  if (ruleChars.length != 1 || ruleDots.length < 1)
+    {
+      compileError (nested,
+		    "Exactly one Unicode character and at least one cell are required.");
+      return 0;
+    }
+  if ((attributes & (CTC_UpperCase | CTC_LowerCase)))
+    attributes |= CTC_Letter;
+  character = addCharOrDots (nested, ruleChars.chars[0], 0);
+  character->attributes |= attributes;
+  if (!(attributes & CTC_Letter))
+    character->uppercase = character->lowercase = character->realchar;
+  cell = compile_findCharOrDots (ruleDots.chars[0], 1);
+  if (ruleDots.length == 1 && cell)
+    cell->attributes |= attributes;
+  else
+    {
+      for (k = 0; k < ruleDots.length; k++)
+	{
+	  if (!compile_findCharOrDots (ruleDots.chars[k], 1))
+	    {
+	      attr = attributes;
+	      otherCell = addCharOrDots (nested, ruleDots.chars[k], 1);
+	      if (ruleDots.length != 1)
+		attr = CTC_Space;
+	      otherCell->attributes |= attr;
+	      otherCell->uppercase = otherCell->lowercase =
+		otherCell->realchar;
+	    }
+	}
+    }
+  if (!addRule (nested, opcode, &ruleChars, &ruleDots, 0, 0))
+    return 0;
+  if (ruleDots.length == 1)
+    putCharAndDots (nested, ruleChars.chars[0], ruleDots.chars[0]);
+  return 1;
+}
+
+static int
 compileRule (FileInfo * nested)
 {
   int ok = 1;
@@ -4271,85 +4325,33 @@ doOpcode:
 	      ok = 0;
 	  }
       break;
-
-      {
-	TranslationTableCharacterAttributes attributes = 0;
     case CTO_Space:
-	attributes = CTC_Space;
-	goto doChar;
-    case CTO_Digit:
-	attributes = CTC_Digit;
-	goto doChar;
-    case CTO_LitDigit:
-	attributes = CTC_LitDigit;
-	goto doChar;
-    case CTO_Punctuation:
-	attributes = CTC_Punctuation;
-	goto doChar;
-    case CTO_Math:
-	attributes = CTC_Math;
-	goto doChar;
-    case CTO_Sign:
-	attributes = CTC_Sign;
-	goto doChar;
-    case CTO_Letter:
-	attributes = CTC_Letter;
-	goto doChar;
-    case CTO_UpperCase:
-	attributes = CTC_UpperCase;
-	goto doChar;
-    case CTO_LowerCase:
-	attributes = CTC_LowerCase;
-      doChar:
-	if ((attributes & (CTC_UpperCase | CTC_LowerCase)))
-	  attributes |= CTC_Letter;
-	if (getRuleCharsText (nested, &ruleChars))
-	  if (getRuleDotsPattern (nested, &ruleDots))
-	    {
-	      if (ruleChars.length != 1 || ruleDots.length < 1)
-		{
-		  compileError (nested,
-				"Exactly one Unicode character and at least one cell are required.");
-		  ok = 0;
-		}
-	      {
-		TranslationTableCharacter
-		  * character = addCharOrDots (nested, ruleChars.chars[0], 0);
-		TranslationTableCharacter *cell;
-		character->attributes |= attributes;
-		if (!(attributes & CTC_Letter))
-		  character->uppercase = character->lowercase =
-		    character->realchar;
-		if (ruleDots.length == 1
-		    && (cell = compile_findCharOrDots (ruleDots.chars[0], 1)))
-		  cell->attributes |= attributes;
-		else
-		  {
-		    for (k = 0; k < ruleDots.length; k++)
-		      if (!compile_findCharOrDots (ruleDots.chars[k], 1))
-			{
-			  TranslationTableCharacterAttributes attr =
-			    attributes;
-			  TranslationTableCharacter *cell =
-			    addCharOrDots (nested, ruleDots.chars[k],
-					   1);
-			  if (ruleDots.length != 1)
-			    attr = CTC_Space;
-			  cell->attributes |= attr;
-			  cell->uppercase = cell->lowercase = cell->realchar;
-			}
-		  }
-		if (!addRule
-		    (nested, opcode, &ruleChars, &ruleDots, after, before))
-		  ok = 0;
-		if (ruleDots.length == 1)
-		  putCharAndDots (nested, ruleChars.chars[0],
-				  ruleDots.chars[0]);
-	      }
-	    }
+	compileCharDef (nested, opcode, CTC_Space);
 	break;
-      }
-
+    case CTO_Digit:
+	compileCharDef (nested, opcode, CTC_Digit);
+	break;
+    case CTO_LitDigit:
+	compileCharDef (nested, opcode, CTC_LitDigit);
+	break;
+    case CTO_Punctuation:
+	compileCharDef (nested, opcode, CTC_Punctuation);
+	break;
+    case CTO_Math:
+	compileCharDef (nested, opcode, CTC_Math);
+	break;
+    case CTO_Sign:
+	compileCharDef (nested, opcode, CTC_Sign);
+	break;
+    case CTO_Letter:
+	compileCharDef (nested, opcode, CTC_Letter);
+	break;
+    case CTO_UpperCase:
+	compileCharDef (nested, opcode, CTC_UpperCase);
+	break;
+    case CTO_LowerCase:
+	compileCharDef (nested, opcode, CTC_LowerCase);
+      break;
     case CTO_NoBreak:
       ok = compileNoBreak (nested);
       break;
@@ -4453,7 +4455,7 @@ findTable (const char *tableName)
 	    strcat (trialPath, pathEnd);
 	    strcat (trialPath, tableName);
 	    if (tableFile = fopen (trialPath, "rb"))
-	    break;
+	      break;
 	  }
 	else
 	  {			/* Compile a list of files */
@@ -4463,7 +4465,7 @@ findTable (const char *tableName)
 	    strcat (trialPath, tableName);
 	    currentListPos = k + 1;
 	    if (tableFile = fopen (trialPath, "rb"))
-	    break;
+	      break;
 	    while (currentListPos < listLength)
 	      {
 		for (k = currentListPos; k < listLength; k++)
@@ -4475,7 +4477,7 @@ findTable (const char *tableName)
 		strcat (trialPath, pathEnd);
 		strcat (trialPath, tableName);
 		if (tableFile = fopen (trialPath, "rb"))
-		currentListPos = k + 1;
+		  currentListPos = k + 1;
 		break;
 	      }
 	  }
