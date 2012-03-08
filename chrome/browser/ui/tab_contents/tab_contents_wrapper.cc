@@ -97,7 +97,6 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
   prefs_tab_helper_.reset(new PrefsTabHelper(contents));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
   restore_tab_helper_.reset(new RestoreTabHelper(contents));
-  sad_tab_helper_.reset(new SadTabHelper(contents));
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   snapshot_tab_helper_.reset(new SnapshotTabHelper(contents));
   ssl_helper_.reset(new TabContentsSSLHelper(this));
@@ -108,6 +107,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
 
 #if !defined(OS_ANDROID)
   print_view_manager_.reset(new printing::PrintViewManager(this));
+  sad_tab_helper_.reset(new SadTabHelper(contents));
 #endif
 
   // Create the per-tab observers.
