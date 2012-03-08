@@ -26,7 +26,7 @@
 #include "base/win/win_util.h"
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "chrome/common/auto_start_linux.h"
 #include <glib.h>
 #endif
@@ -128,7 +128,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
                                                 UTF8ToWide(value_name),
                                                 &value));
   autorun_command_line.reset(new CommandLine(CommandLine::FromString(value)));
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 #if defined(GOOGLE_CHROME_BUILD)
   std::string base_desktop_name = "google-chrome-service.desktop";
 #else  // CHROMIUM_BUILD
@@ -157,7 +157,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   EXPECT_FALSE(base::win::ReadCommandFromAutoRun(HKEY_CURRENT_USER,
                                                  UTF8ToWide(value_name),
                                                  &value));
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   EXPECT_FALSE(AutoStart::GetAutostartFileValue(
       GetServiceProcessScopedName(base_desktop_name), "Exec", &exec_value));
 #endif  // defined(OS_WIN)
