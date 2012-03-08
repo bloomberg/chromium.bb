@@ -41,7 +41,7 @@ LockWindowAura::~LockWindowAura() {
 void LockWindowAura::Init() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.bounds = gfx::Rect(ash::Shell::GetRootWindow()->GetHostSize());
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
   // TODO(flackr): Use a property to specify this container rather than
   // depending on shell implementation.
   params.parent =
