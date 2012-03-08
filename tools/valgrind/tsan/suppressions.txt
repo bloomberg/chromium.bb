@@ -632,8 +632,9 @@
   ...
   fun:WebRTCAudioDeviceTest::OnMessageReceived
   ...
-  fun:IPC::Channel::ChannelImpl::ProcessIncomingMessages
+  fun:IPC::*
   fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
+  ...
   fun:base::MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking
   fun:base::MessagePumpLibevent::OnLibeventNotification
   fun:event_process_active
