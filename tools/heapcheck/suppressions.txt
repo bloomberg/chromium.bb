@@ -1844,3 +1844,13 @@
    fun:browser_sync::DataTypeManagerImpl::StartNextType
    fun:browser_sync::DataTypeManagerImpl::DownloadReady
 }
+{
+   bug_117389
+   Heapcheck:Leak
+   ...
+   fun:TestURLRequestContextGetter::GetURLRequestContext
+   ...
+   fun:notifier::Login::StartConnection
+   fun:sync_notifier::InvalidationNotifier::UpdateCredentials
+   fun:sync_notifier::NonBlockingInvalidationNotifier::Core::UpdateCredentials
+}
