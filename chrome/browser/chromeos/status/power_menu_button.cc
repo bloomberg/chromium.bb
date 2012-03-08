@@ -266,7 +266,7 @@ void PowerMenuButton::OnLocaleChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PowerMenuButton, views::ViewMenuDelegate implementation:
+// PowerMenuButton, views::MenuButtonDelegate implementation:
 
 void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // Explicitly query the power status.

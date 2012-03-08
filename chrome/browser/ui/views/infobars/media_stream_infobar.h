@@ -10,7 +10,7 @@
 #include "chrome/browser/media/media_stream_devices_menu_model.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 
 class MediaStreamInfoBarDelegate;
 
@@ -22,7 +22,8 @@ class MenuButton;
 // he wants to grant access to his camera/microphone to the current webpage. It
 // also provides a way for the user to select which device(s) will be used by
 // the page.
-class MediaStreamInfoBar : public InfoBarView, public views::ViewMenuDelegate {
+class MediaStreamInfoBar : public InfoBarView,
+                           public views::MenuButtonDelegate {
  public:
   MediaStreamInfoBar(InfoBarTabHelper* contents,
                      MediaStreamInfoBarDelegate* delegate);
@@ -39,7 +40,7 @@ class MediaStreamInfoBar : public InfoBarView, public views::ViewMenuDelegate {
                              const views::Event& event) OVERRIDE;
   virtual int ContentMinimumWidth() const OVERRIDE;
 
-  // views::ViewMenuDelegate:
+  // views::MenuButtonDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
 
   MediaStreamInfoBarDelegate* delegate_;

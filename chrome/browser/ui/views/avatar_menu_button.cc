@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 
 #include "chrome/browser/profiles/avatar_menu_model.h"
-#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_info_util.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -142,7 +142,7 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
   SchedulePaint();
 }
 
-// views::ViewMenuDelegate implementation
+// views::MenuButtonDelegate implementation
 void AvatarMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   ShowAvatarBubble();
 }

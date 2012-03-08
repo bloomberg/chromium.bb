@@ -96,7 +96,7 @@ views::Link* InfoBarView::CreateLink(const string16& text,
 // static
 views::MenuButton* InfoBarView::CreateMenuButton(
     const string16& text,
-    views::ViewMenuDelegate* menu_delegate) {
+    views::MenuButtonDelegate* menu_delegate) {
   views::MenuButton* menu_button = new views::MenuButton(
       NULL, text, menu_delegate, true);
   menu_button->set_border(new InfoBarButtonBorder);

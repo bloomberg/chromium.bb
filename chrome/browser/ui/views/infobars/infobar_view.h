@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ class LinkListener;
 class MenuButton;
 class MenuRunner;
 class TextButton;
-class ViewMenuDelegate;
+class MenuButtonDelegate;
 }
 
 class InfoBarView : public InfoBar,
@@ -59,7 +59,7 @@ class InfoBarView : public InfoBar,
   // NOTE: Subclasses must ignore button presses if we're unowned.
   static views::MenuButton* CreateMenuButton(
       const string16& text,
-      views::ViewMenuDelegate* menu_delegate);
+      views::MenuButtonDelegate* menu_delegate);
 
   // Creates a text button with an infobar-specific appearance.
   // NOTE: Subclasses must ignore button presses if we're unowned.

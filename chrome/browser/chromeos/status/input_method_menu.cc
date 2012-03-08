@@ -385,7 +385,7 @@ void InputMethodMenu::ActivatedAt(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::ViewMenuDelegate implementation:
+// views::MenuButtonDelegate implementation:
 
 void InputMethodMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   PrepareForMenuOpen();

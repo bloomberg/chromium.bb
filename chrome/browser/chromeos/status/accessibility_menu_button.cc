@@ -52,7 +52,7 @@ AccessibilityMenuButton::~AccessibilityMenuButton() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::ViewMenuDelegate implementation:
+// views::MenuButtonDelegate implementation:
 
 void AccessibilityMenuButton::RunMenu(views::View* source,
                                       const gfx::Point& pt) {

@@ -104,7 +104,7 @@ string16 CapsLockMenuButton::GetLabel(int id) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::ViewMenuDelegate implementation:
+// views::MenuButtonDelegate implementation:
 
 void CapsLockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   static const int kDummyCommandId = 1000;

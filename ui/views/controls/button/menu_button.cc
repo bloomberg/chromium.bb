@@ -15,7 +15,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -48,7 +48,7 @@ const char MenuButton::kViewClassName[] = "views/MenuButton";
 
 MenuButton::MenuButton(ButtonListener* listener,
                        const string16& text,
-                       ViewMenuDelegate* menu_delegate,
+                       MenuButtonDelegate* menu_delegate,
                        bool show_menu_marker)
     : TextButton(listener, text),
       menu_visible_(false),

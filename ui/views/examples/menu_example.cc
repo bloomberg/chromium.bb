@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,9 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_2.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
@@ -59,13 +59,13 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuModel);
 };
 
-class ExampleMenuButton : public MenuButton, public ViewMenuDelegate {
+class ExampleMenuButton : public MenuButton, public MenuButtonDelegate {
  public:
   ExampleMenuButton(const string16& test, bool show_menu_marker);
   virtual ~ExampleMenuButton();
 
  private:
-  // Overridden from ViewMenuDelegate:
+  // Overridden from MenuButtonDelegate:
   virtual void RunMenu(View* source, const gfx::Point& point) OVERRIDE;
 
   scoped_ptr<ExampleMenuModel> menu_model_;

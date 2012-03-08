@@ -1,12 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_CONTROLS_MENU_VIEW_MENU_DELEGATE_H_
-#define UI_VIEWS_CONTROLS_MENU_VIEW_MENU_DELEGATE_H_
+#ifndef UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_DELEGATE_H_
+#define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_DELEGATE_H_
 #pragma once
-
-#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Point;
@@ -18,23 +16,23 @@ class View;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ViewMenuDelegate
+// MenuButtonDelegate
 //
 // An interface that allows a component to tell a View about a menu that it
 // has constructed that the view can show (e.g. for MenuButton views, or as a
 // context menu.)
 //
 ////////////////////////////////////////////////////////////////////////////////
-class ViewMenuDelegate {
+class MenuButtonDelegate {
  public:
-  // Create and show a menu at the specified position. Source is the view the
-  // ViewMenuDelegate was set on.
-  virtual void RunMenu(View* source, const gfx::Point& pt) = 0;
+  // Creates and shows a menu at the specified position. |source| is the view
+  // the MenuButtonDelegate was set on.
+  virtual void RunMenu(View* source, const gfx::Point& point) = 0;
 
  protected:
-  virtual ~ViewMenuDelegate() {}
+  virtual ~MenuButtonDelegate() {}
 };
 
 }  // namespace views
 
-#endif  // UI_VIEWS_CONTROLS_MENU_VIEW_MENU_DELEGATE_H_
+#endif  // UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_DELEGATE_H_

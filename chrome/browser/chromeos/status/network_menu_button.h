@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ namespace chromeos {
 // <icon> will show the strength of the wifi/cellular networks.
 // The label will be BOLD if the network is currently connected.
 class NetworkMenuButton : public StatusAreaButton,
-                          public views::ViewMenuDelegate,
+                          public views::MenuButtonDelegate,
                           public NetworkMenu::Delegate,
                           public NetworkMenuIcon::Delegate,
                           public NetworkLibrary::NetworkDeviceObserver,
@@ -87,7 +87,7 @@ class NetworkMenuButton : public StatusAreaButton,
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
-  // views::ViewMenuDelegate implementation.
+  // views::MenuButtonDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // views::Widget::Observer implementation:

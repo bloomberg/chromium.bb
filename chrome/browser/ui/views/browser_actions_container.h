@@ -17,8 +17,8 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/views/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
+#include "chrome/browser/ui/views/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -26,7 +26,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/tween.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
@@ -265,7 +265,7 @@ class BrowserActionView : public views::View {
 ////////////////////////////////////////////////////////////////////////////////
 class BrowserActionsContainer
     : public views::View,
-      public views::ViewMenuDelegate,
+      public views::MenuButtonDelegate,
       public views::DragController,
       public views::ResizeAreaDelegate,
       public ui::AnimationDelegate,
@@ -340,7 +340,7 @@ class BrowserActionsContainer
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::ViewMenuDelegate:
+  // Overridden from views::MenuButtonDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
 
   // Overridden from views::DragController:

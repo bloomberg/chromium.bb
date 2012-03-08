@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,12 +8,12 @@
 #include "chrome/test/base/view_event_test_base.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
@@ -242,7 +242,7 @@ class TopMenuModel : public CommonMenuModel {
 }  // namespace
 
 class MenuModelAdapterTest : public ViewEventTestBase,
-                             public views::ViewMenuDelegate {
+                             public views::MenuButtonDelegate {
  public:
   MenuModelAdapterTest()
       : ViewEventTestBase(),
@@ -283,7 +283,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
     return button_->GetPreferredSize();
   }
 
-  // views::ViewMenuDelegate implementation.
+  // views::MenuButtonDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE {
     gfx::Point screen_location;
     views::View::ConvertPointToScreen(source, &screen_location);

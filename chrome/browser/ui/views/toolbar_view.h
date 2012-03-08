@@ -20,7 +20,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/view.h"
 
 class BrowserActionsContainer;
@@ -33,7 +33,7 @@ class MenuListener;
 
 // The Browser Window's toolbar.
 class ToolbarView : public views::AccessiblePaneView,
-                    public views::ViewMenuDelegate,
+                    public views::MenuButtonDelegate,
                     public ui::AcceleratorProvider,
                     public LocationBarView::Delegate,
                     public content::NotificationObserver,
@@ -86,7 +86,7 @@ class ToolbarView : public views::AccessiblePaneView,
   virtual bool SetPaneFocus(View* initial_focus) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::ViewMenuDelegate:
+  // Overridden from views::MenuButtonDelegate:
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // Overridden from LocationBarView::Delegate:

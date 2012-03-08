@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
 
 namespace views {
 class MenuRunner;
@@ -23,14 +23,14 @@ class StatusAreaBubbleController;
 // A class for the button in the status area which alerts the user when
 // accessibility features are enabled.
 class AccessibilityMenuButton : public StatusAreaButton,
-                                public views::ViewMenuDelegate,
+                                public views::MenuButtonDelegate,
                                 public views::MenuDelegate,
                                 public content::NotificationObserver {
  public:
   explicit AccessibilityMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~AccessibilityMenuButton();
 
-  // views::ViewMenuDelegate implementation
+  // views::MenuButtonDelegate implementation
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // views::MenuDelegate implementation

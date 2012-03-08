@@ -10,7 +10,7 @@
 #include "base/string16.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 
 // Button to be used to represent status and allow menus to be popped up.
 // Shows current button state by drawing a border around the current icon.
@@ -52,7 +52,7 @@ class StatusAreaButton : public views::MenuButton {
   };
 
   StatusAreaButton(Delegate* button_delegate,
-                   views::ViewMenuDelegate* menu_delegate);
+                   views::MenuButtonDelegate* menu_delegate);
   virtual ~StatusAreaButton() {}
   virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) OVERRIDE;
 

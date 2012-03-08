@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 
 namespace gfx {
 class Canvas;
@@ -30,7 +30,7 @@ void DrawTaskBarDecoration(gfx::NativeWindow window, const gfx::Image* image);
 // The button can optionally have a menu attached to it.
 
 class AvatarMenuButton : public views::MenuButton,
-                         public views::ViewMenuDelegate {
+                         public views::MenuButtonDelegate {
  public:
   // Creates a new button. If |has_menu| is true then clicking on the button
   // will cause the profile menu to be displayed.
@@ -48,7 +48,7 @@ class AvatarMenuButton : public views::MenuButton,
   void ShowAvatarBubble();
 
  private:
-  // views::ViewMenuDelegate
+  // views::MenuButtonDelegate
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   Browser* browser_;

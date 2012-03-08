@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
 
 namespace base {
 class TimeDelta;
@@ -28,7 +28,7 @@ class StatusAreaBubbleContentView;
 // This class will handle getting the power status and populating the menu.
 class PowerMenuButton : public StatusAreaButton,
                         public views::MenuDelegate,
-                        public views::ViewMenuDelegate,
+                        public views::MenuButtonDelegate,
                         public PowerManagerClient::Observer {
  public:
   explicit PowerMenuButton(StatusAreaButton::Delegate* delegate);
@@ -45,7 +45,7 @@ class PowerMenuButton : public StatusAreaButton,
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
-  // views::ViewMenuDelegate implementation.
+  // views::MenuButtonDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // Format strings with power status

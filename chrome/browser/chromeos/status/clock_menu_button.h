@@ -15,8 +15,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
 #include "unicode/calendar.h"
 
 namespace views {
@@ -27,7 +27,7 @@ class MenuRunner;
 // This button shows the current time.
 class ClockMenuButton : public StatusAreaButton,
                         public views::MenuDelegate,
-                        public views::ViewMenuDelegate,
+                        public views::MenuButtonDelegate,
                         public content::NotificationObserver {
  public:
   explicit ClockMenuButton(StatusAreaButton::Delegate* delegate);
@@ -57,7 +57,7 @@ class ClockMenuButton : public StatusAreaButton,
   // views::View implementation
   virtual void OnLocaleChanged() OVERRIDE;
 
-  // views::ViewMenuDelegate implementation.
+  // views::MenuButtonDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
  private:

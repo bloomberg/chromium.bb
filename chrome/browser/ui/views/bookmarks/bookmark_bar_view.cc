@@ -190,7 +190,7 @@ class BookmarkFolderButton : public views::MenuButton {
  public:
   BookmarkFolderButton(views::ButtonListener* listener,
                        const string16& title,
-                       views::ViewMenuDelegate* menu_delegate,
+                       views::MenuButtonDelegate* menu_delegate,
                        bool show_menu_marker)
       : MenuButton(listener, title, menu_delegate, show_menu_marker) {
     show_animation_.reset(new ui::SlideAnimation(this));

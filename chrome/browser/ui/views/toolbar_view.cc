@@ -327,7 +327,7 @@ bool ToolbarView::GetAcceleratorInfo(int id, ui::Accelerator* accel) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, views::ViewMenuDelegate implementation:
+// ToolbarView, views::MenuButtonDelegate implementation:
 
 void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());

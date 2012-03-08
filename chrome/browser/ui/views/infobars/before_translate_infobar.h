@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 
 class TranslateInfoBarDelegate;
 namespace views {
@@ -17,7 +17,7 @@ class MenuButton;
 }
 
 class BeforeTranslateInfoBar : public TranslateInfoBarBase,
-                               public views::ViewMenuDelegate {
+                               public views::MenuButtonDelegate {
  public:
   BeforeTranslateInfoBar(InfoBarTabHelper* owner,
                          TranslateInfoBarDelegate* delegate);
@@ -35,7 +35,7 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
   virtual int ContentMinimumWidth() const OVERRIDE;
   virtual void OriginalLanguageChanged() OVERRIDE;
 
-  // views::ViewMenuDelegate:
+  // views::MenuButtonDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
 
   // The text displayed in the infobar is something like:

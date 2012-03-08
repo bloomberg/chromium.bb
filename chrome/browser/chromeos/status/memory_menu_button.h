@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
 
 namespace base {
 struct SystemMemoryInfoKB;
@@ -26,7 +26,7 @@ class MenuRunner;
 // Memory debugging display that lives in the status area.
 class MemoryMenuButton : public StatusAreaButton,
                          public views::MenuDelegate,
-                         public views::ViewMenuDelegate,
+                         public views::MenuButtonDelegate,
                          public content::NotificationObserver {
  public:
   explicit MemoryMenuButton(StatusAreaButton::Delegate* delegate);
@@ -37,7 +37,7 @@ class MemoryMenuButton : public StatusAreaButton,
   virtual bool IsCommandEnabled(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 
-  // views::ViewMenuDelegate implementation.
+  // views::MenuButtonDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // content::NotificationObserver overrides.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
 #include "ui/views/view.h"
 
 class WizardControllerTest_SwitchLanguage_Test;
@@ -25,7 +25,7 @@ namespace chromeos {
 
 class LanguageList;
 
-class LanguageSwitchMenu : public views::ViewMenuDelegate,
+class LanguageSwitchMenu : public views::MenuButtonDelegate,
                            public views::MenuDelegate {
  public:
   LanguageSwitchMenu();
@@ -52,7 +52,7 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
  private:
   static void LoadFontsForCurrentLocale();
 
-  // views::ViewMenuDelegate implementation.
+  // views::MenuButtonDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // views::MenuDelegate implementation.

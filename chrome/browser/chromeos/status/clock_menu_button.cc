@@ -160,7 +160,7 @@ int ClockMenuButton::horizontal_padding() {
   return 3;
 }
 
-// ClockMenuButton, views::ViewMenuDelegate implementation:
+// ClockMenuButton, views::MenuButtonDelegate implementation:
 
 void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   // View passed in must be a views::MenuButton, i.e. the ClockMenuButton.

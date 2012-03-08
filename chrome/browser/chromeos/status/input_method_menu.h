@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
 
 class PrefService;
 class SkBitmap;
@@ -34,11 +34,11 @@ class MenuRunner;
 namespace chromeos {
 
 // A class for the dropdown menu for switching input method and keyboard layout.
-// Since the class provides the views::ViewMenuDelegate interface, it's easy to
-// create a button widget (e.g. views::MenuButton, StatusAreaButton)
-// which shows the dropdown menu on click.
+// Since the class provides the views::MenuButtonDelegate interface, it's easy
+// to create a button widget (e.g. views::MenuButton, StatusAreaButton) which
+// shows the dropdown menu on click.
 class InputMethodMenu
-    : public views::ViewMenuDelegate,
+    : public views::MenuButtonDelegate,
       public ui::MenuModel,
       public input_method::InputMethodManager::Observer,
       public input_method::InputMethodManager::PreferenceObserver,
@@ -69,8 +69,8 @@ class InputMethodMenu
   virtual void MenuWillShow() OVERRIDE;
   virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) OVERRIDE;
 
-  // views::ViewMenuDelegate implementation. Sub classes can override the method
-  // to adjust the position of the menu.
+  // views::MenuButtonDelegate implementation. Sub classes can override the
+  // method to adjust the position of the menu.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // InputMethodManager::Observer implementation.

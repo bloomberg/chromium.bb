@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"  // ConnectionType
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 
 namespace ui {
 class MenuModel;

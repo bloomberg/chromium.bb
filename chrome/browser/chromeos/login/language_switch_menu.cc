@@ -190,7 +190,7 @@ void LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// views::ViewMenuDelegate implementation.
+// views::MenuButtonDelegate implementation.
 
 void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   DCHECK(menu_ != NULL);

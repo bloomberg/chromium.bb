@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/button/menu_button_delegate.h"
 
 class Browser;
 namespace views {
@@ -20,7 +20,7 @@ class MenuButton;
 class ExtensionInfoBar : public InfoBarView,
                          public ImageLoadingTracker::Observer,
                          public ExtensionInfoBarDelegate::DelegateObserver,
-                         public views::ViewMenuDelegate {
+                         public views::MenuButtonDelegate {
  public:
   ExtensionInfoBar(Browser* browser,
                    InfoBarTabHelper* owner,
@@ -44,7 +44,7 @@ class ExtensionInfoBar : public InfoBarView,
   // ExtensionInfoBarDelegate::DelegateObserver:
   virtual void OnDelegateDeleted() OVERRIDE;
 
-  // views::ViewMenuDelegate:
+  // views::MenuButtonDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt) OVERRIDE;
 
   ExtensionInfoBarDelegate* GetDelegate();
