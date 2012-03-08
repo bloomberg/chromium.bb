@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/cross_file_util_helper.h"
 #include "webkit/fileapi/file_system_path.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"

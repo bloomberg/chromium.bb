@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
-#include "webkit/fileapi/cross_file_util_helper.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_util_helper.h"
@@ -131,14 +130,10 @@ bool FileSystemFileUtilProxy::Copy(
     const FileSystemPath& src_path,
     const FileSystemPath& dest_path,
     const StatusCallback& callback) {
-  CrossFileUtilHelper* helper =
-      new CrossFileUtilHelper(
-          context, src_util, dest_util, src_path, dest_path,
-          CrossFileUtilHelper::OPERATION_COPY);
-
   return base::FileUtilProxy::RelayFileTask(
       message_loop_proxy, FROM_HERE,
-      Bind(&CrossFileUtilHelper::DoWork, Owned(helper)),
+      Bind(&FileUtilHelper::Copy,
+           context, src_util, dest_util, src_path, dest_path),
       callback);
 }
 
@@ -151,13 +146,10 @@ bool FileSystemFileUtilProxy::Move(
       const FileSystemPath& src_path,
       const FileSystemPath& dest_path,
     const StatusCallback& callback) {
-  CrossFileUtilHelper* helper =
-      new CrossFileUtilHelper(
-          context, src_util, dest_util, src_path, dest_path,
-          CrossFileUtilHelper::OPERATION_MOVE);
   return base::FileUtilProxy::RelayFileTask(
       message_loop_proxy, FROM_HERE,
-      Bind(&CrossFileUtilHelper::DoWork, Owned(helper)),
+      Bind(&FileUtilHelper::Move,
+           context, src_util, dest_util, src_path, dest_path),
       callback);
 }
 

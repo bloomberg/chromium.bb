@@ -8,10 +8,10 @@
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/cross_file_util_helper.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_test_helper.h"
+#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/test_file_set.h"
@@ -90,15 +90,21 @@ class FileSystemFileUtilTest : public testing::Test {
         src_helper.NewOperationContext());
     copy_context->set_allowed_bytes_growth(1024 * 1024); // OFSFU path quota.
 
-    CrossFileUtilHelper cross_util_helper(
-        copy_context.get(),
-        src_helper.file_util(),
-        dest_helper.file_util(),
-        src_root,
-        dest_root,
-        copy ? CrossFileUtilHelper::OPERATION_COPY
-        : CrossFileUtilHelper::OPERATION_MOVE);
-    ASSERT_EQ(base::PLATFORM_FILE_OK, cross_util_helper.DoWork());
+    if (copy) {
+      ASSERT_EQ(
+          base::PLATFORM_FILE_OK,
+          FileUtilHelper::Copy(
+              copy_context.get(),
+              src_helper.file_util(), dest_helper.file_util(),
+              src_root, dest_root));
+    } else {
+      ASSERT_EQ(
+          base::PLATFORM_FILE_OK,
+          FileUtilHelper::Move(
+              copy_context.get(),
+              src_helper.file_util(), dest_helper.file_util(),
+              src_root, dest_root));
+    }
 
     // Validate that the destination paths are correct.
     for (size_t i = 0; i < test::kRegularTestCaseSize; ++i) {

@@ -13,6 +13,7 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/file_util_helper.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
@@ -134,24 +135,14 @@ base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilCopy(
     FileSystemOperationContext* context,
     const FileSystemPath& src,
     const FileSystemPath& dest) const {
-  CrossFileUtilHelper cross_util_helper(
-      context,
-      file_util(), file_util(),
-      src, dest,
-      CrossFileUtilHelper::OPERATION_COPY);
-  return cross_util_helper.DoWork();
+  return FileUtilHelper::Copy(context, file_util(), file_util(), src, dest);
 }
 
 base::PlatformFileError FileSystemTestOriginHelper::SameFileUtilMove(
     FileSystemOperationContext* context,
     const FileSystemPath& src,
     const FileSystemPath& dest) const {
-  CrossFileUtilHelper cross_util_helper(
-      context,
-      file_util(), file_util(),
-      src, dest,
-      CrossFileUtilHelper::OPERATION_MOVE);
-  return cross_util_helper.DoWork();
+  return FileUtilHelper::Move(context, file_util(), file_util(), src, dest);
 }
 
 int64 FileSystemTestOriginHelper::GetCachedOriginUsage() const {

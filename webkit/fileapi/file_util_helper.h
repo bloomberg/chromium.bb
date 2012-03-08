@@ -17,6 +17,20 @@ class FileSystemPath;
 // FileSystemFileUtilProxy.  The method should be called on FILE thread.
 class FileUtilHelper {
  public:
+  static base::PlatformFileError Copy(
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* src_file_util,
+      FileSystemFileUtil* dest_file_utile,
+      const FileSystemPath& src_root_path,
+      const FileSystemPath& dest_root_path);
+
+  static base::PlatformFileError Move(
+      FileSystemOperationContext* context,
+      FileSystemFileUtil* src_file_util,
+      FileSystemFileUtil* dest_file_utile,
+      const FileSystemPath& src_root_path,
+      const FileSystemPath& dest_root_path);
+
   static base::PlatformFileError Delete(
       FileSystemOperationContext* context,
       FileSystemFileUtil* file_util,

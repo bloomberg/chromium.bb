@@ -15,8 +15,6 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
       ],
       'sources': [
-        'cross_file_util_helper.cc',
-        'cross_file_util_helper.h',
         'file_system_callback_dispatcher.cc',
         'file_system_callback_dispatcher.h',
         'file_system_context.cc',
