@@ -6421,11 +6421,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
         Updates are disabled by the administrator
       </message>
-      <if expr="pp_ifdef('_google_chrome')">
-        <message name="IDS_REPORT_AN_ISSUE " desc="Text of the button which allows the user to report an issue with Chrome.">
-          Report an issue
-        </message>
-      </if>
+      <message name="IDS_REPORT_AN_ISSUE " desc="Text of the button which allows the user to report an issue with Chrome.">
+        Report an issue
+      </message>
 
       <!-- Print -->
       <message name="IDS_DEFAULT_PRINT_DOCUMENT_TITLE" desc="Default title for a print document">

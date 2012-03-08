@@ -219,7 +219,7 @@ be available for now. -->
         <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
       </message>
       <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
-        Not used in Chromium. Placeholder to keep resources in sync.
+        Get help with using Chromium
       </message>
       <message name="IDS_ABOUT_VERSION_COMPANY_NAME" desc="Company name on the about pages">
         The Chromium Authors

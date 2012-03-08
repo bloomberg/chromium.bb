@@ -36,11 +36,14 @@ class HelpHandler : public content::WebUIMessageHandler {
   void PromoteUpdater(const base::ListValue* args);
 #endif
 
-  // Relaunches the browser. |args| must be NULL.
+  // Relaunches the browser. |args| must be empty.
   void RelaunchNow(const base::ListValue* args);
 
-  // Opens the feedback dialog. |args| must be NULL.
+  // Opens the feedback dialog. |args| must be empty.
   void OpenFeedbackDialog(const base::ListValue* args);
+
+  // Opens the help page. |args| must be empty.
+  void OpenHelpPage(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
   // Sets the release track version.

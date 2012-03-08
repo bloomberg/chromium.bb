@@ -37,41 +37,29 @@ cr.define('help', function() {
       var moreInfoOverlay = help.MoreInfoOverlay.getInstance();
       moreInfoOverlay.initializePage();
 
-      var self = this;
-      var moreInfo = $('more-info');
-      if (moreInfo) {
-        moreInfo.onclick = function() {
-          self.showOverlay_($('more-info-overlay'));
-        };
-      }
+      $('get-help').onclick = chrome.send.bind(chrome, 'openHelpPage');
+      $('report-issue').onclick =
+          chrome.send.bind(chrome, 'openFeedbackDialog');
 
-      var reportIssue = $('report-issue');
-      if (reportIssue)
-        reportIssue.onclick = this.reportAnIssue_.bind(this);
+      this.maybeSetOnClick_($('more-info'),
+          this.showOverlay_.bind(this, $('more-info-overlay')));
 
-      var promote = $('promote');
-      if (promote) {
-        promote.onclick = function() {
-          chrome.send('promoteUpdater');
-        };
-      }
-
-      var relaunch = $('relaunch');
-      if (relaunch) {
-        relaunch.onclick = function() {
-          chrome.send('relaunchNow');
-        };
-      }
+      this.maybeSetOnClick_($('promote'),
+          chrome.send.bind(chrome, 'promoteUpdater'));
+      this.maybeSetOnClick_($('relaunch'),
+          chrome.send.bind(chrome, 'relaunchNow'));
 
       // Attempt to update.
       chrome.send('onPageLoaded');
     },
 
     /**
+     * Assigns |method| to the onclick property of |el| if |el| exists.
      * @private
      */
-    reportAnIssue_: function() {
-      chrome.send('openFeedbackDialog');
+    maybeSetOnClick_: function(el, method) {
+      if (el)
+        el.onclick = method;
     },
 
     /**

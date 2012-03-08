@@ -279,10 +279,10 @@ const char kChromeHelpURL[] =
 #if defined(OFFICIAL_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
-    "https://support.google.com/chromeos/?p=wrench";
+    "https://support.google.com/chromeos/?p=help";
 #endif  // defined(OFFICIAL_BUILD
 #else
-    "https://support.google.com/chrome/?p=wrench";
+    "https://support.google.com/chrome/?p=help";
 #endif
 
 const char kSettingsSearchHelpURL[] =

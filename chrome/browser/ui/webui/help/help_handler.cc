@@ -116,10 +116,8 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "upToDate", IDS_UPGRADE_UP_TO_DATE },
     { "updating", IDS_UPGRADE_UPDATING },
     { "updateAlmostDone", IDS_UPGRADE_SUCCESSFUL_RELAUNCH },
-#if defined(OFFICIAL_BUILD)
     { "getHelpWithChrome",  IDS_GET_HELP_USING_CHROME },
     { "reportAnIssue",  IDS_REPORT_AN_ISSUE },
-#endif
 #if defined(OS_CHROMEOS)
     { "platform", IDS_PLATFORM_LABEL },
     { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
@@ -161,17 +159,19 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 void HelpHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("onPageLoaded",
       base::Bind(&HelpHandler::OnPageLoaded, base::Unretained(this)));
-#if defined(OS_MACOSX)
-  web_ui()->RegisterMessageCallback("promoteUpdater",
-      base::Bind(&HelpHandler::PromoteUpdater, base::Unretained(this)));
-#endif
   web_ui()->RegisterMessageCallback("relaunchNow",
       base::Bind(&HelpHandler::RelaunchNow, base::Unretained(this)));
   web_ui()->RegisterMessageCallback("openFeedbackDialog",
       base::Bind(&HelpHandler::OpenFeedbackDialog, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("openHelpPage",
+      base::Bind(&HelpHandler::OpenHelpPage, base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback("setReleaseTrack",
       base::Bind(&HelpHandler::SetReleaseTrack, base::Unretained(this)));
+#endif
+#if defined(OS_MACOSX)
+  web_ui()->RegisterMessageCallback("promoteUpdater",
+      base::Bind(&HelpHandler::PromoteUpdater, base::Unretained(this)));
 #endif
 }
 
@@ -210,15 +210,22 @@ void HelpHandler::PromoteUpdater(const ListValue* args) {
 #endif
 
 void HelpHandler::RelaunchNow(const ListValue* args) {
-  CHECK(args->empty());
+  DCHECK(args->empty());
   version_updater_->RelaunchBrowser();
 }
 
 void HelpHandler::OpenFeedbackDialog(const ListValue* args) {
-  CHECK(args->empty());
+  DCHECK(args->empty());
   Browser* browser = BrowserList::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   browser->OpenFeedbackDialog();
+}
+
+void HelpHandler::OpenHelpPage(const base::ListValue* args) {
+  DCHECK(args->empty());
+  Browser* browser = BrowserList::FindBrowserWithWebContents(
+      web_ui()->GetWebContents());
+  browser->ShowHelpTab();
 }
 
 #if defined(OS_CHROMEOS)
