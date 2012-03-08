@@ -57,6 +57,8 @@
         'proxy/plugin_var_tracker.h',
         'proxy/ppapi_messages.cc',
         'proxy/ppapi_messages.h',
+        'proxy/ppapi_command_buffer_proxy.h',
+        'proxy/ppapi_command_buffer_proxy.cc',
         'proxy/ppapi_param_traits.cc',
         'proxy/ppapi_param_traits.h',
         'proxy/ppb_audio_input_proxy.cc',
