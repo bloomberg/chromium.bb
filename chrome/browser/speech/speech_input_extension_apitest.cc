@@ -48,6 +48,11 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   // Used as delay when the corresponding call should not be dispatched.
   static const int kDontDispatchCall = -1;
 
+  // InProcessBrowserTest methods.
+  virtual void SetUpOnMainThread() OVERRIDE {
+    manager_ = SpeechInputExtensionManager::GetForProfile(browser()->profile());
+  }
+
   // ExtensionApiTest methods.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -79,7 +84,7 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   virtual void StopRecording(bool recognition_failed) OVERRIDE;
 
   SpeechInputExtensionManager* GetManager() {
-    return SpeechInputExtensionManager::GetForProfile(browser()->profile());
+    return manager_.get();
   }
 
   // Auxiliary class used to hook the API manager into the test during its
@@ -108,6 +113,8 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   content::SpeechRecognitionErrorCode next_error_;
   content::SpeechRecognitionResult next_result_;
   int result_delay_ms_;
+
+  scoped_refptr<SpeechInputExtensionManager> manager_;
 };
 
 SpeechInputExtensionApiTest::SpeechInputExtensionApiTest()

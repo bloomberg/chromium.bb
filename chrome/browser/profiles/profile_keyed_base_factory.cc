@@ -50,7 +50,6 @@ ProfileKeyedBaseFactory::~ProfileKeyedBaseFactory() {
   dependency_manager_->RemoveComponent(this);
 }
 
-
 void ProfileKeyedBaseFactory::DependsOn(ProfileKeyedBaseFactory* rhs) {
   dependency_manager_->AddEdge(rhs, this);
 }
@@ -109,6 +108,8 @@ bool ProfileKeyedBaseFactory::ServiceIsNULLWhileTesting() {
 ProfileKeyedBase* ProfileKeyedBaseFactory::GetBaseForProfile(
     Profile* profile,
     bool create) {
+  DCHECK(CalledOnValidThread());
+
 #ifndef NDEBUG
   dependency_manager_->AssertProfileWasntDestroyed(profile);
 #endif
@@ -157,6 +158,10 @@ ProfileKeyedBase* ProfileKeyedBaseFactory::GetBaseForProfile(
 }
 
 void ProfileKeyedBaseFactory::ProfileDestroyed(Profile* profile) {
+  // While object destruction can be customized in ways where the object is
+  // only dereferenced, this still must run on the UI thread.
+  DCHECK(CalledOnValidThread());
+
   // For unit tests, we also remove the factory function both so we don't
   // maintain a big map of dead pointers, but also since we may have a second
   // object that lives at the same address (see other comments about unit tests
