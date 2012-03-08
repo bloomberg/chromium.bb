@@ -2399,7 +2399,6 @@ def _GetMSBuildGlobalProperties(spec, guid, gyp_file_name):
        ['ProjectGuid', guid],
        ['Keyword', 'Win32Proj'],
        ['RootNamespace', namespace],
-       ['TargetName', target_name],
       ]
   ]
 
@@ -2432,22 +2431,52 @@ def _GetMSBuildLocalProperties(msbuild_toolset):
 
 def _GetMSBuildPropertySheets(configurations):
   user_props = r'$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props'
-  return [
-      ['ImportGroup',
-       {'Label': 'PropertySheets'},
-       ['Import',
-        {'Project': user_props,
-         'Condition': "exists('%s')" % user_props,
-         'Label': 'LocalAppDataPlatform'
-        }
-       ]
-      ]
+  additional_props = {}
+  props_specified = False
+  for name, settings in sorted(configurations.iteritems()):
+    configuration = _GetConfigurationCondition(name, settings)
+    if settings.has_key('msbuild_props'):
+      additional_props[configuration] = _FixPaths(settings['msbuild_props'])
+      props_specified = True
+    else:
+     additional_props[configuration] = ''
+
+  if not props_specified:
+    return [
+        ['ImportGroup',
+         {'Label': 'PropertySheets'},
+         ['Import',
+          {'Project': user_props,
+           'Condition': "exists('%s')" % user_props,
+           'Label': 'LocalAppDataPlatform'
+          }
+         ]
+        ]
     ]
+  else:
+    sheets = []
+    for condition, props in additional_props.iteritems():
+      import_group = [
+        'ImportGroup',
+        {'Label': 'PropertySheets',
+         'Condition': condition
+        },
+        ['Import',
+         {'Project': user_props,
+          'Condition': "exists('%s')" % user_props,
+          'Label': 'LocalAppDataPlatform'
+         }
+        ]
+      ]
+      for props_file in props:
+        import_group.append(['Import', {'Project':props_file}])
+      sheets.append(import_group)
+    return sheets
+
+def _ConvertMSVSBuildAttributes(spec, config, build_file):
 
 
-def _GetMSBuildAttributes(spec, config, build_file):
-  # Use the MSVS attributes and convert them.  In the future, we may want to
-  # support Gyp files specifying 'msbuild_configuration_attributes' directly.
+
   config_type = _GetMSVSConfigurationType(spec, build_file)
   msvs_attributes = _GetMSVSAttributes(spec, config, config_type)
   msbuild_attributes = {}
@@ -2458,19 +2487,58 @@ def _GetMSBuildAttributes(spec, config, build_file):
         directory += '\\'
       msbuild_attributes[a] = directory
     elif a == 'CharacterSet':
-      msbuild_attributes[a] = {
-          '0': 'MultiByte',
-          '1': 'Unicode'
-          }[msvs_attributes[a]]
+      msbuild_attributes[a] = _ConvertMSVSCharacterSet(msvs_attributes[a])
     elif a == 'ConfigurationType':
-      msbuild_attributes[a] = {
-          '1': 'Application',
-          '2': 'DynamicLibrary',
-          '4': 'StaticLibrary',
-          '10': 'Utility'
-          }[msvs_attributes[a]]
+      msbuild_attributes[a] = _ConvertMSVSConfigurationType(msvs_attributes[a])
     else:
       print 'Warning: Do not know how to convert MSVS attribute ' + a
+  return msbuild_attributes
+
+
+def _ConvertMSVSCharacterSet(char_set):
+  if char_set.isdigit():
+    char_set = {
+        '0': 'MultiByte',
+        '1': 'Unicode'
+    }[char_set]
+  return char_set
+
+
+def _ConvertMSVSConfigurationType(config_type):
+  if config_type.isdigit():
+    config_type = {
+        '1': 'Application',
+        '2': 'DynamicLibrary',
+        '4': 'StaticLibrary',
+        '10': 'Utility'
+    }[config_type]
+  return config_type
+
+
+def _GetMSBuildAttributes(spec, config, build_file):
+  if 'msbuild_configuration_attributes' not in config:
+    msbuild_attributes = _ConvertMSVSBuildAttributes(spec, config, build_file)
+
+  else:
+    config_type = _GetMSVSConfigurationType(spec, build_file)
+    config_type = _ConvertMSVSConfigurationType(config_type)
+    msbuild_attributes = config.get('msbuild_configuration_attributes', {})
+    msbuild_attributes['ConfigurationType'] = config_type
+    output_dir = msbuild_attributes.get('OutputDirectory',
+                                      '$(SolutionDir)$(Configuration)\\')
+    msbuild_attributes['OutputDirectory'] = output_dir
+    if 'IntermediateDirectory' not in msbuild_attributes:
+      intermediate = '$(Configuration)\\'
+      msbuild_attributes['IntermediateDirectory'] = intermediate
+    if 'CharacterSet' in msbuild_attributes:
+      msbuild_attributes['CharacterSet'] = _ConvertMSVSCharacterSet(
+          msbuild_attributes['CharacterSet'])
+  if 'TargetName' not in msbuild_attributes:
+    prefix = spec.get('product_prefix', '')
+    product_name = spec.get('product_name', '$(ProjectName)')
+    target_name = prefix + product_name
+    msbuild_attributes['TargetName'] = target_name
+
   return msbuild_attributes
 
 
@@ -2499,6 +2567,8 @@ def _GetMSBuildConfigurationGlobalProperties(spec, configurations, build_file):
                             attributes['IntermediateDirectory'])
     _AddConditionalProperty(properties, condition, 'OutDir',
                             attributes['OutputDirectory'])
+    _AddConditionalProperty(properties, condition, 'TargetName',
+                            attributes['TargetName'])
     if new_paths:
       _AddConditionalProperty(properties, condition, 'ExecutablePath',
                               new_paths)
