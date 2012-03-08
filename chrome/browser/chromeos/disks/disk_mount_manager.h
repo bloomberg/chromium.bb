@@ -143,8 +143,6 @@ class DiskMountManager {
     std::string source_path;
     // Mounted path.
     std::string mount_path;
-    // Auth token;
-    std::string auth_token;
     // Type of mount.
     MountType mount_type;
     // Condition of mount.
@@ -156,18 +154,6 @@ class DiskMountManager {
                    MountCondition condition)
         : source_path(source),
           mount_path(mount),
-          mount_type(type),
-          mount_condition(condition) {
-    }
-
-    MountPointInfo(const std::string& source,
-                   const std::string& mount,
-                   const std::string& token,
-                   const MountType type,
-                   MountCondition condition)
-        : source_path(source),
-          mount_path(mount),
-          auth_token(token),
           mount_type(type),
           mount_condition(condition) {
     }

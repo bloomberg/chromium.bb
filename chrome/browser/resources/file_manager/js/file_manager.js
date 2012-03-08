@@ -2442,7 +2442,6 @@ FileManager.prototype = {
       metrics.recordInterval('Load.GData');
       if (event.status == 'success') {
         self.gdataMounted_ = true;
-        self.gdataAuthToken_ = event.authToken;
         self.gdataMountInfo_ = {
           "mountPath": event.mountPath,
           "sourceUrl": event.sourceUrl,
@@ -2451,7 +2450,6 @@ FileManager.prototype = {
         };
       } else {
         self.gdataMounted_ = false;
-        self.gdataAuthToken_ = null;
         self.gdataMountInfo_ = null;
       }
     }

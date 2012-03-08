@@ -295,10 +295,6 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
             &source_url)) {
       mount_info_value->SetString("sourceUrl", source_url.spec());
     }
-
-    if (mount_info.mount_type == chromeos::MOUNT_TYPE_GDATA)
-      mount_info_value->SetString("authToken", mount_info.auth_token);
-
   } else {
     mount_info_value->SetString("sourceUrl", mount_info.source_path);
   }

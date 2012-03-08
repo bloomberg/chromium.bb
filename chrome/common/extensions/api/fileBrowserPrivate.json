@@ -241,11 +241,6 @@
             "optional": true,
             "description": "Path that sourcePath was mounted to."
           },
-          "authToken": {
-            "type": "string",
-            "optional": true,
-            "description": "Authentication token for gdata calls."
-          },
           "mountType": {
             "type": "string",
             "enum": ["device", "file", "network", "gdata"],

@@ -1492,14 +1492,12 @@ void AddMountFunction::AddGDataMountPoint() {
                                 new gdata::GDataFileSystemProxy(profile_));
 }
 
-void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error,
-                                            const std::string auth_token) {
+void AddMountFunction::RaiseGDataMountEvent(gdata::GDataErrorCode error) {
   chromeos::MountError error_code = error == gdata::HTTP_SUCCESS ?
       chromeos::MOUNT_ERROR_NONE : chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
   DiskMountManager::MountPointInfo mount_info(
       gdata::util::GetGDataMountPointPathAsString(),
       gdata::util::GetGDataMountPointPathAsString(),
-      auth_token,
       chromeos::MOUNT_TYPE_GDATA,
       chromeos::disks::MOUNT_CONDITION_NONE);
   // Raise mount event
@@ -1514,7 +1512,7 @@ void AddMountFunction::OnGDataAuthentication(gdata::GDataErrorCode error,
   if (error == gdata::HTTP_SUCCESS)
     AddGDataMountPoint();
 
-  RaiseGDataMountEvent(error, token);
+  RaiseGDataMountEvent(error);
   SendResponse(true);
 }
 
