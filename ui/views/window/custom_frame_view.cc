@@ -307,22 +307,11 @@ void CustomFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_theme_bitmap(frame_image);
   frame_background_->set_top_area_height(frame_image->height());
 
-#if defined(USE_AURA)
-  // TODO(jamescook): Remove this when Aura defaults to its own window frame,
-  // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
-  // avoid performance penalties associated with transparent layers.
-  frame_background_->SetCornerImages(
-      rb.GetImageNamed(IDR_AURA_WINDOW_TOP_LEFT).ToSkBitmap(),
-      rb.GetImageNamed(IDR_AURA_WINDOW_TOP_RIGHT).ToSkBitmap(),
-      rb.GetImageNamed(IDR_AURA_WINDOW_BOTTOM_LEFT).ToSkBitmap(),
-      rb.GetImageNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT).ToSkBitmap());
-#else
   frame_background_->SetCornerImages(
       rb.GetImageNamed(IDR_WINDOW_TOP_LEFT_CORNER).ToSkBitmap(),
       rb.GetImageNamed(IDR_WINDOW_TOP_RIGHT_CORNER).ToSkBitmap(),
       rb.GetImageNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER).ToSkBitmap(),
       rb.GetImageNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER).ToSkBitmap());
-#endif
   frame_background_->SetSideImages(
       rb.GetImageNamed(IDR_WINDOW_LEFT_SIDE).ToSkBitmap(),
       rb.GetImageNamed(IDR_WINDOW_TOP_CENTER).ToSkBitmap(),

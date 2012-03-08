@@ -528,7 +528,6 @@
       <!-- Images only used by aura. -->
       <if expr="pp_ifdef('use_aura')">
         <include name="IDR_APP_LIST_SETTINGS" file="app_list_settings.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_MULTIPLE_WINDOW" file="statusbar_multiple_window.png" type="BINDATA" />
       </if>
     </includes>
   </release>

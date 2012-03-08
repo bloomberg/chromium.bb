@@ -198,9 +198,6 @@
         <include name="IDR_AURA_WALLPAPER_8_THUMB" file="aura/wallpaper_8_thumb.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPER_9" file="aura/wallpaper_9.jpg" type="BINDATA" />
         <include name="IDR_AURA_WALLPAPER_9_THUMB" file="aura/wallpaper_9_thumb.jpg" type="BINDATA" />
-        <!-- TODO(jamescook): Delete these two corners if we ship translucent frames on all platforms. -->
-        <include name="IDR_AURA_WINDOW_BOTTOM_LEFT" file="aura/window_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_BOTTOM_RIGHT" file="aura/window_bottom_right.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="aura/window_button_separator.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE_ICON" file="aura/slab_close.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_normal.png" type="BINDATA" />
@@ -233,9 +230,6 @@
         <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="aura/window_maximized_restore_normal.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="aura/window_maximized_restore_hot.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="aura/window_maximized_restore_pressed.png" type="BINDATA" />
-        <!-- TODO(jamescook): Delete these two corners if we ship translucent frames on all platforms. -->
-        <include name="IDR_AURA_WINDOW_TOP_LEFT" file="aura/window_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_TOP_RIGHT" file="aura/window_top_right.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="aura/slab_zoom.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="aura/status_volume_all.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="aura/status_brightness.png" type="BINDATA" />
