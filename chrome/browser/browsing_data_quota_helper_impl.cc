@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/url_constants.h"
 #include "webkit/quota/quota_manager.h"
 
 using content::BrowserThread;
@@ -87,7 +88,8 @@ void BrowsingDataQuotaHelperImpl::GotOrigins(
   for (std::set<GURL>::const_iterator itr = origins.begin();
        itr != origins.end();
        ++itr)
-    pending_hosts_.insert(std::make_pair(itr->host(), type));
+    if (!itr->SchemeIs(chrome::kExtensionScheme))
+      pending_hosts_.insert(std::make_pair(itr->host(), type));
 
   DCHECK(type == quota::kStorageTypeTemporary ||
          type == quota::kStorageTypePersistent);

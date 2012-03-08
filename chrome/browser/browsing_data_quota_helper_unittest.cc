@@ -160,6 +160,30 @@ TEST_F(BrowsingDataQuotaHelperTest, FetchData) {
   EXPECT_TRUE(expected == actual);
 }
 
+TEST_F(BrowsingDataQuotaHelperTest, IgnoreExtensions) {
+  const quota::MockOriginData kOrigins[] = {
+    {"http://example.com/", quota::kStorageTypeTemporary, 1},
+    {"https://example.com/", quota::kStorageTypeTemporary, 10},
+    {"http://example.com/", quota::kStorageTypePersistent, 100},
+    {"http://example2.com/", quota::kStorageTypeTemporary, 1000},
+    {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
+        quota::kStorageTypeTemporary, 10000},
+    {"chrome-extension://abcdefghijklmnopqrstuvwxyz/",
+        quota::kStorageTypePersistent, 100000},
+  };
+
+  RegisterClient(kOrigins, arraysize(kOrigins));
+  StartFetching();
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(fetching_completed());
+
+  std::set<QuotaInfo> expected, actual;
+  actual.insert(quota_info().begin(), quota_info().end());
+  expected.insert(QuotaInfo("example.com", 11, 100));
+  expected.insert(QuotaInfo("example2.com", 1000, 0));
+  EXPECT_TRUE(expected == actual);
+}
+
 TEST_F(BrowsingDataQuotaHelperTest, RevokeHostQuota) {
   const std::string kHost1("example1.com");
   const std::string kHost2("example2.com");
