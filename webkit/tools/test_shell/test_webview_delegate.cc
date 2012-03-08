@@ -345,6 +345,10 @@ WebStorageNamespace* TestWebViewDelegate::createSessionStorageNamespace(
 }
 
 WebGraphicsContext3D* TestWebViewDelegate::createGraphicsContext3D(
+    const WebGraphicsContext3D::Attributes& attributes) {
+  return createGraphicsContext3D(attributes, true);
+}
+WebGraphicsContext3D* TestWebViewDelegate::createGraphicsContext3D(
     const WebGraphicsContext3D::Attributes& attributes,
     bool direct) {
   return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(

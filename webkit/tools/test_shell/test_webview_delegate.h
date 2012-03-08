@@ -90,6 +90,9 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace(
       unsigned quota);
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D(
+      const WebKit::WebGraphicsContext3D::Attributes& attributes);
+  // TODO(jamesr): remove this form after deleted upstream.
+  virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes,
       bool direct);
   virtual void didAddMessageToConsole(
