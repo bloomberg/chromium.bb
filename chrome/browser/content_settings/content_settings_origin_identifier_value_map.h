@@ -37,8 +37,8 @@ class OriginIdentifierValueMap {
   struct PatternPair {
     ContentSettingsPattern primary_pattern;
     ContentSettingsPattern secondary_pattern;
-    PatternPair(ContentSettingsPattern primary_pattern,
-                ContentSettingsPattern secondary_pattern);
+    PatternPair(const ContentSettingsPattern& primary_pattern,
+                const ContentSettingsPattern& secondary_pattern);
     bool operator<(const OriginIdentifierValueMap::PatternPair& other) const;
   };
 
@@ -74,7 +74,7 @@ class OriginIdentifierValueMap {
   // non-NULL, the returned |RuleIterator| locks it and releases it when it is
   // destroyed.
   RuleIterator* GetRuleIterator(ContentSettingsType content_type,
-                                ResourceIdentifier resource_identifier,
+                                const ResourceIdentifier& resource_identifier,
                                 base::Lock* lock) const;
 
   OriginIdentifierValueMap();

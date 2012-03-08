@@ -70,8 +70,8 @@ bool OriginIdentifierValueMap::EntryMapKey::operator<(
 }
 
 OriginIdentifierValueMap::PatternPair::PatternPair(
-    ContentSettingsPattern primary_pattern,
-    ContentSettingsPattern secondary_pattern)
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern)
     : primary_pattern(primary_pattern),
       secondary_pattern(secondary_pattern) {
 }
@@ -90,7 +90,7 @@ bool OriginIdentifierValueMap::PatternPair::operator<(
 
 RuleIterator* OriginIdentifierValueMap::GetRuleIterator(
     ContentSettingsType content_type,
-    ResourceIdentifier resource_identifier,
+    const ResourceIdentifier& resource_identifier,
     base::Lock* lock) const {
   EntryMapKey key(content_type, resource_identifier);
   // We access |entries_| here, so we need to lock |lock_| first. The lock must
