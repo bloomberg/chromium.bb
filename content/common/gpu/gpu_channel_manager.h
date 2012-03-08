@@ -20,6 +20,10 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace gfx {
+class GLShareGroup;
+}
+
 namespace IPC {
 struct ChannelHandle;
 }
@@ -76,7 +80,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
 
  private:
   // Message handlers.
-  void OnEstablishChannel(int client_id, int share_client_id);
+  void OnEstablishChannel(int client_id, bool share_context);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnVisibilityChanged(
       int32 render_view_id, int32 client_id, bool visible);
@@ -99,6 +103,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
   // process.
   typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
+  scoped_refptr<gfx::GLShareGroup> share_group_;
   GpuMemoryManager gpu_memory_manager_;
   GpuWatchdog* watchdog_;
 

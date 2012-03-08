@@ -55,7 +55,7 @@ class GpuMessageFilter : public content::BrowserMessageFilter,
 
   int gpu_host_id_;
   int render_process_id_;
-  int share_client_id_;
+  bool share_contexts_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 

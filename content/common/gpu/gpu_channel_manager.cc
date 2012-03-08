@@ -9,6 +9,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/gpu_memory_manager.h"
+#include "ui/gfx/gl/gl_share_group.h"
 
 GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
                                      GpuWatchdog* watchdog,
@@ -82,14 +83,14 @@ bool GpuChannelManager::Send(IPC::Message* msg) {
   return gpu_child_thread_->Send(msg);
 }
 
-void GpuChannelManager::OnEstablishChannel(int client_id, int share_client_id) {
+void GpuChannelManager::OnEstablishChannel(int client_id, bool share_context) {
   IPC::ChannelHandle channel_handle;
 
   gfx::GLShareGroup* share_group = NULL;
-  if (share_client_id) {
-    GpuChannel* share_channel = gpu_channels_[share_client_id];
-    DCHECK(share_channel);
-    share_group = share_channel->share_group();
+  if (share_context) {
+    if (!share_group_)
+      share_group_ = new gfx::GLShareGroup;
+    share_group = share_group_;
   }
 
   scoped_refptr<GpuChannel> channel = new GpuChannel(this,

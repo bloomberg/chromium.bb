@@ -24,7 +24,7 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
                                    RenderWidgetHelper* render_widget_helper)
     : gpu_host_id_(0),
       render_process_id_(render_process_id),
-      share_client_id_(0),
+      share_contexts_(false),
       render_widget_helper_(render_widget_helper) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -32,8 +32,7 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
   if (command_line->HasSwitch(switches::kUIUseGPUProcess)) {
     // When using the GPU process for UI, we need to share renderer GL contexts
     // with the compositor context.
-    share_client_id_ =
-        content::BrowserGpuChannelHostFactory::Get()->gpu_client_id();
+    share_contexts_ = true;
   }
 }
 
@@ -82,7 +81,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
 
   host->EstablishGpuChannel(
       render_process_id_,
-      share_client_id_,
+      share_contexts_,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
                  AsWeakPtr(),
                  reply));
