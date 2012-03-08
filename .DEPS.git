@@ -15,7 +15,7 @@ deps = {
     'src/build/util/support':
         Var('git_url') + '/chromium/support.git@9306628dc48b26b6264fc32a09bd5f926fec7218',
     'src/chrome/browser/resources/software_rendering_list':
-        Var('git_url') + '/chromium/deps/gpu/software_rendering_list.git@6b75c8b69f0b84a7d21244874d8567378dc3c48b',
+        Var('git_url') + '/chromium/deps/gpu/software_rendering_list.git@6af68612b4a90148f66601d6cc0dad9c3f55144b',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
         Var('git_url') + '/native_client/src/native_client/tests/prebuilt.git@3e17365176c94624f46cace174f61834b7f3c35d',
     'src/chrome/test/data/perf/canvas_bench':
@@ -138,7 +138,7 @@ deps_os = {
         'src/chrome/tools/test/reference_build/chrome_mac':
             Var('git_url') + '/chromium/reference_builds/chrome_mac.git@dde16d147a5b8d0229f8adf8eee6d180fb9f4684',
         'src/rlz':
-            Var('git_url') + '/external/rlz.git@989bdfbeafc78e8cdbc7021acddbb8a83e8318e2',
+            Var('git_url') + '/external/rlz.git@ab88db9d10f43f5392ceb95b9e02c655aef25e13',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@9fcac4c557e0cb5d6ecbac6b59aaddeb15469acd',
         'src/third_party/lighttpd':
@@ -172,7 +172,7 @@ deps_os = {
         'src/chrome_frame/tools/test/reference_build/chrome_win':
             Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
         'src/rlz':
-            Var('git_url') + '/external/rlz.git@989bdfbeafc78e8cdbc7021acddbb8a83e8318e2',
+            Var('git_url') + '/external/rlz.git@ab88db9d10f43f5392ceb95b9e02c655aef25e13',
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@06a117a90c15174436bfa20ceebbfdf43b7eb820',
         'src/third_party/lighttpd':
