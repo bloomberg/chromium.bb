@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <X11/keysym.h>
+#include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <signal.h>
 
@@ -199,7 +199,7 @@ void PeriodicalUpdate(
         break;
       case KeyPress:
         {
-          KeySym key = XKeycodeToKeysym(g_display, e.xkey.keycode, 0);
+          KeySym key = XkbKeycodeToKeysym(g_display, e.xkey.keycode, 0, 0);
           if (key == XK_Escape) {
             g_running = false;
             // Quit message_loop only when pipeline is fully stopped.
