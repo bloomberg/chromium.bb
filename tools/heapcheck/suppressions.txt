@@ -1158,7 +1158,7 @@
    fun:net::TransportClientSocketPool::RequestSocket
    fun:net::ClientSocketHandle::Init
    fun:net::::InitSocketPoolHelper
-   fun:net::ClientSocketPoolManager::InitSocketHandleForRawConnect
+   ...
    fun:notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
 }
 {
