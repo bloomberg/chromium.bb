@@ -37,7 +37,8 @@ IirFilterInterpreter::IirFilterInterpreter(PropRegistry* prop_reg,
       a1_(prop_reg, "IIR a1", -1.1429805025399, this),
       a2_(prop_reg, "IIR a2", 0.412801598096189, this),
       iir_dist_thresh_(prop_reg, "IIR Distance Threshold", 10, this),
-      using_iir_(true) {
+      using_iir_(true),
+      is_semi_mt_device_(false) {
   next_.reset(next);
 }
 
@@ -84,6 +85,12 @@ Gesture* IirFilterInterpreter::SyncInterpret(HardwareState* hwstate,
                                      &FingerState::pressure };
     for (size_t f_idx = 0; f_idx < arraysize(fields); f_idx++) {
       float FingerState::*field = fields[f_idx];
+      // Keep the current pressure reading, so we could make sure the pressure
+      // values will be same if there is two fingers on a SemiMT device.
+      if (is_semi_mt_device_ && (field == &FingerState::pressure)) {
+        hist->NextOut()->pressure = fs->pressure;
+        continue;
+      }
       if (using_iir_) {
         hist->NextOut()->*field =
             b3_.val_ * hist->PrevIn(2)->*field +
@@ -109,6 +116,7 @@ Gesture* IirFilterInterpreter::HandleTimer(stime_t now, stime_t* timeout) {
 
 void IirFilterInterpreter::SetHardwareProperties(
     const HardwareProperties& hwprops) {
+  is_semi_mt_device_ = hwprops.support_semi_mt;
   return next_->SetHardwareProperties(hwprops);
 }
 
