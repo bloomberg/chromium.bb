@@ -124,8 +124,8 @@ This file contains the strings for ash.
       </message>
 
       <!-- Status tray items -->
-      <message name="IDS_ASH_STATUS_TRAY_HELP_AND_SETTINGS" desc="The label used for the help-and-settings item in the status tray.">
-        Help and Settings
+      <message name="IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP" desc="The label used for the help-and-settings item in the status tray.">
+        Settings and Help
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SHUT_DOWN" desc="The label used for the button in the status tray to shut down the system.">
         Shut down

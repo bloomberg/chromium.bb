@@ -27,14 +27,13 @@ class SettingsView : public views::View {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
           0, 0, 3));
 
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* icon = new views::ImageView;
-    icon->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).
-        ToSkBitmap());
+    icon->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToSkBitmap());
     AddChildView(icon);
 
-    label_ = new views::Label(bundle.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_HELP_AND_SETTINGS));
+    label_ = new views::Label(rb.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP));
     AddChildView(label_);
   }
 
