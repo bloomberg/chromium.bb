@@ -311,7 +311,17 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
   scoped_ptr<content::TestBrowserThread> io_thread_;
 };
 
-TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
+#if defined(OS_LINUX)
+// Crashes on linux_chromeos. http://crbug.com/115979
+#define MAYBE_OnPhishingDetectionDoneNotPhishing \
+    DISABLED_OnPhishingDetectionDoneNotPhishing
+#else
+#define MAYBE_OnPhishingDetectionDoneNotPhishing \
+    OnPhishingDetectionDoneNotPhishing
+#endif
+
+TEST_F(ClientSideDetectionHostTest,
+       MAYBE_OnPhishingDetectionDoneInvalidVerdict) {
   // Case 0: renderer sends an invalid verdict string that we're unable to
   // parse.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -323,15 +333,15 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 // Crashes on linux_chromeos. http://crbug.com/115979
-#define MAYBE_OnPhishingDetectionDoneNotPhishing \
-    DISABLED_OnPhishingDetectionDoneNotPhishing
+#define MAYBE_OnPhishingDetectionDoneInvalidVerdict \
+    DISABLED_OnPhishingDetectionDoneInvalidVerdict
 #define MAYBE_OnPhishingDetectionDoneVerdictNotPhishing \
     DISABLED_OnPhishingDetectionDoneVerdictNotPhishing
 #else
-#define MAYBE_OnPhishingDetectionDoneNotPhishing \
-    OnPhishingDetectionDoneNotPhishing
+#define MAYBE_OnPhishingDetectionDoneInvalidVerdict \
+    OnPhishingDetectionDoneInvalidVerdict
 #define MAYBE_OnPhishingDetectionDoneVerdictNotPhishing \
     OnPhishingDetectionDoneVerdictNotPhishing
 #endif
