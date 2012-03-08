@@ -42,6 +42,7 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/libpng/libpng.gyp:libpng',
         'gfx_resources',
         'ui',
         'ui_test_support',
