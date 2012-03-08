@@ -548,19 +548,20 @@ set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
   for (size_t i = 0; i < hwstate.finger_cnt; ++i)
     fs[i] = &hwstate.fingers[i];
 
-  GetGesturingFingersCompare compare;
   // Pull the kMaxSize FingerStates w/ the lowest position_y to the
   // front of fs[].
+  GetGesturingFingersCompare compare;
   set<short, kMaxGesturingFingers> ret;
-  if (hwstate.finger_cnt >= kMaxSize) {
+  size_t sorted_cnt;
+  if (hwstate.finger_cnt > kMaxSize) {
     std::partial_sort(fs, fs + kMaxSize, fs + hwstate.finger_cnt, compare);
-    for (size_t i = 0; i < kMaxSize; i++)
-      ret.insert(fs[i]->tracking_id);
+    sorted_cnt = kMaxSize;
   } else {
     std::sort(fs, fs + hwstate.finger_cnt, compare);
-    for (int i = 0; i < hwstate.finger_cnt; i++)
-      ret.insert(fs[i]->tracking_id);
+    sorted_cnt = hwstate.finger_cnt;
   }
+  for (size_t i = 0; i < sorted_cnt; i++)
+    ret.insert(fs[i]->tracking_id);
   return ret;
 }
 
