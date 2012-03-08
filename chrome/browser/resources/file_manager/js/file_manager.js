@@ -3877,16 +3877,92 @@ FileManager.prototype = {
   };
 
   /**
+   * Selects a file. Starts getting a gdata file if needed.
+   *
+   * @param {string} fileUrl The filename as a URL.
+   * @param {number} filterIndex The integer file filter index.
+   */
+  FileManager.prototype.selectFile_ = function(fileUrl, filterIndex) {
+    var self = this;
+    // First check the file location.
+    chrome.fileBrowserPrivate.getFileLocations(
+        [fileUrl],
+        function(locations) {
+          var location = locations[0];
+          if (location == 'gdata') {
+            // Initiate getting the GData file.
+            chrome.fileBrowserPrivate.getGDataFiles(
+              [fileUrl],
+              function(localPaths) {
+                // Add "localPath" parameter to the gdata file URL.
+                fileUrl += '?localPath=' + encodeURIComponent(localPaths[0]);
+                console.log(fileUrl);
+                // Call doSelectFile_ on a timeout, as it's unsafe to
+                // close a window from a callback.
+                setTimeout(self.doSelectFile_.bind(
+                  self, fileUrl, filterIndex), 0);
+              });
+          } else if (location == 'local') {
+            setTimeout(self.doSelectFile_.bind(self, fileUrl, filterIndex), 0);
+          } else {
+            // Not reached.
+          }
+        });
+  };
+
+  /**
    * Selects a file.  Closes the window.
    * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
    *
    * @param {string} fileUrl The filename as a URL.
    * @param {number} filterIndex The integer file filter index.
    */
-  FileManager.prototype.selectFile_ = function(fileUrl, filterIndex) {
+  FileManager.prototype.doSelectFile_ = function(fileUrl, filterIndex) {
     chrome.fileBrowserPrivate.selectFile(fileUrl, filterIndex);
     this.onUnload_();
     window.close();
+  };
+
+
+  /**
+   * Selects a file. Starts getting gdata files if needed.
+   *
+   * @param {Array.<string>} fileUrls Array of filename URLs.
+   */
+  FileManager.prototype.selectFiles_ = function(fileUrls) {
+    var self = this;
+    // First check the file locations.
+    chrome.fileBrowserPrivate.getFileLocations(
+        fileUrls,
+        function(locations) {
+          // Collect gdata file locations, and indxes.
+          var gdataFileUrls = [];
+          var gdataFileIndexes = [];
+          for (var i = 0; i < locations.length; ++i) {
+            var location = locations[i];
+            if (location == 'gdata') {
+              gdataFileUrls.push(fileUrls[i]);
+              gdataFileIndexes.push(i);
+            }
+          }
+          if (gdataFileUrls.length > 0) {
+            // Initiate getting the GData files.
+            chrome.fileBrowserPrivate.getGDataFiles(
+              gdataFileUrls,
+              function(localPaths) {
+                // Add "localPath" parameter to the gdata file URLs.
+                for (var i = 0; i < gdataFileIndexes.length; ++i) {
+                  var gdataIndex = gdataFileIndexes[i];
+                  fileUrls[gdataIndex] += '?localPath=' +
+                    encodeURIComponent(localPaths[i]);
+                }
+              });
+          } else {  // All files are local.
+            // Call doSelectFiles_ on a timeout, as it's unsafe to close a
+            // window from a callback.
+            setTimeout(self.doSelectFiles_.bind(self, fileUrls), 0);
+          }
+        });
   };
 
   /**
@@ -3895,7 +3971,7 @@ FileManager.prototype = {
    *
    * @param {Array.<string>} fileUrls Array of filename URLs.
    */
-  FileManager.prototype.selectFiles_ = function(fileUrls) {
+  FileManager.prototype.doSlectFiles_ = function(fileUrls) {
     chrome.fileBrowserPrivate.selectFiles(fileUrls);
     this.onUnload_();
     window.close();

@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -45,6 +46,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
@@ -87,6 +89,12 @@ const int kReadWriteFilePermissions = base::PLATFORM_FILE_OPEN |
                                       base::PLATFORM_FILE_EXCLUSIVE_WRITE |
                                       base::PLATFORM_FILE_ASYNC |
                                       base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+
+// Unescape rules used for parsing query parameters.
+const net::UnescapeRule::Type kUnescapeRuleForQueryParameters =
+    net::UnescapeRule::SPACES |
+    net::UnescapeRule::URL_SPECIAL_CHARS |
+    net::UnescapeRule::REPLACE_PLUS_WITH_SPACE;
 
 struct LastUsedHandler {
   LastUsedHandler(int t, const FileBrowserHandler* h, URLPatternSet p)
@@ -1209,28 +1217,70 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(
   size_t len = file_urls.size();
   selected_files.reserve(len);
   for (size_t i = 0; i < len; ++i) {
+    FilePath real_path;
     const GURL& file_url = file_urls[i];
-    GURL file_origin_url;
-    FilePath virtual_path;
-    fileapi::FileSystemType type;
-    if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
-                            &virtual_path)) {
-      continue;
+
+    // If "localPath" parameter is set, use it as the real path.
+    // TODO(satorux): Eventually, we should be able to get the real path
+    // from GDataFileSystem instead of passing through with filesystem
+    // URLs. crosbug.com/27510.
+    //
+    // TODO(satorux): GURL::query() is not yet supported for filesystem:
+    // URLs. For now, use GURL::spec() to get the query portion. Should
+    // get rid of the hack once query() is supported: crbug.com/114484.
+    const std::string::size_type query_start = file_url.spec().find('?');
+    if (query_start != std::string::npos) {
+      const std::string query = file_url.spec().substr(query_start + 1);
+      std::vector<std::pair<std::string, std::string> > parameters;
+      if (base::SplitStringIntoKeyValuePairs(
+              query, '=', '&', &parameters)) {
+        for (size_t i = 0; i < parameters.size(); ++i) {
+          if (parameters[i].first == "localPath") {
+            const std::string unescaped_value =
+                net::UnescapeURLComponent(parameters[i].second,
+                                          kUnescapeRuleForQueryParameters);
+            real_path = FilePath::FromUTF8Unsafe(unescaped_value);
+            break;
+          }
+        }
+      }
     }
-    if (type != fileapi::kFileSystemTypeExternal) {
-      NOTREACHED();
-      continue;
+
+    // If "localPath" is not found, build the real path from |file_url|.
+    if (real_path.empty()) {
+      GURL file_origin_url;
+      FilePath virtual_path;
+      fileapi::FileSystemType type;
+
+      if (!CrackFileSystemURL(file_url, &file_origin_url, &type,
+                              &virtual_path)) {
+        continue;
+      }
+      if (type != fileapi::kFileSystemTypeExternal) {
+        NOTREACHED();
+        continue;
+      }
+
+      FilePath root = provider->GetFileSystemRootPathOnFileThread(
+          origin_url,
+          fileapi::kFileSystemTypeExternal,
+          FilePath(virtual_path),
+          false);
+      if (!root.empty()) {
+        real_path = root.Append(virtual_path);
+      } else {
+        LOG(WARNING) << "GetLocalPathsOnFileThread failed "
+                     << file_url.spec();
+      }
     }
-    FilePath root = provider->GetFileSystemRootPathOnFileThread(
-        origin_url,
-        fileapi::kFileSystemTypeExternal,
-        FilePath(virtual_path),
-        false);
-    if (!root.empty()) {
-      selected_files.push_back(root.Append(virtual_path));
-    } else {
-      LOG(WARNING) << "GetLocalPathsOnFileThread failed "
-                   << file_url.spec();
+
+    // TODO(satorux): The real path is human unreadable if the file is
+    // originated from gdata. We should propagate the display name to the
+    // WebKit layer, so the right name is displayed in the web page, and
+    // used for uploading. crosbug.com/27222.
+    if (!real_path.empty()) {
+      DVLOG(1) << "Selected: " << real_path.value();
+      selected_files.push_back(real_path);
     }
   }
 #endif
@@ -2136,7 +2186,7 @@ void GetGDataFilesFunction::OnFileReady(
   }
 
   local_paths_->Append(Value::CreateStringValue(local_path.value()));
-  LOG(ERROR) << "Got " << gdata_path.value() << " as " << local_path.value();
+  DVLOG(1) << "Got " << gdata_path.value() << " as " << local_path.value();
   remaining_gdata_paths_.pop();
 
   // Start getting the next file.
