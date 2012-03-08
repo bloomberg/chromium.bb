@@ -540,8 +540,8 @@ struct GetGesturingFingersCompare {
 
 set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
     const HardwareState& hwstate) const {
-  const size_t kMaxSize = 2;  // We support up to 2 finger gestures
-  if (pointing_.size() <= kMaxSize)
+  // We support up to kMaxGesturingFingers finger gestures
+  if (pointing_.size() <= kMaxGesturingFingers)
     return pointing_;
 
   const FingerState* fs[hwstate.finger_cnt];
@@ -553,9 +553,10 @@ set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
   GetGesturingFingersCompare compare;
   set<short, kMaxGesturingFingers> ret;
   size_t sorted_cnt;
-  if (hwstate.finger_cnt > kMaxSize) {
-    std::partial_sort(fs, fs + kMaxSize, fs + hwstate.finger_cnt, compare);
-    sorted_cnt = kMaxSize;
+  if (hwstate.finger_cnt > kMaxGesturingFingers) {
+    std::partial_sort(fs, fs + kMaxGesturingFingers, fs + hwstate.finger_cnt,
+                      compare);
+    sorted_cnt = kMaxGesturingFingers;
   } else {
     std::sort(fs, fs + hwstate.finger_cnt, compare);
     sorted_cnt = hwstate.finger_cnt;
