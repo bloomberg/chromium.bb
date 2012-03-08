@@ -66,7 +66,7 @@ SpdySM::SpdySM(SMConnection* connection,
                MemoryCache* memory_cache,
                FlipAcceptor* acceptor)
     : seq_num_(0),
-      buffered_spdy_framer_(new BufferedSpdyFramer),
+      buffered_spdy_framer_(new BufferedSpdyFramer(2)),
       valid_spdy_session_(false),
       connection_(connection),
       client_output_list_(connection->output_list()),
@@ -309,7 +309,7 @@ void SpdySM::ResetForNewInterface(int32 server_idx) {
 void SpdySM::ResetForNewConnection() {
   // seq_num is not cleared, intentionally.
   delete buffered_spdy_framer_;
-  buffered_spdy_framer_ = new BufferedSpdyFramer;
+  buffered_spdy_framer_ = new BufferedSpdyFramer(2);
   buffered_spdy_framer_->set_visitor(this);
   valid_spdy_session_ = false;
   client_output_ordering_.Reset();

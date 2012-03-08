@@ -14,6 +14,7 @@
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_transaction_unittest.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
@@ -3949,7 +3950,7 @@ TEST_P(SpdyNetworkTransactionSpdy21Test, NetLog) {
 TEST_P(SpdyNetworkTransactionSpdy21Test, BufferFull) {
   SpdySession::set_use_flow_control(SpdySession::kDisableFlowControl);
 
-  spdy::SpdyFramer framer;
+  spdy::BufferedSpdyFramer framer(2);
 
   scoped_ptr<spdy::SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
@@ -4048,7 +4049,7 @@ TEST_P(SpdyNetworkTransactionSpdy21Test, BufferFull) {
 TEST_P(SpdyNetworkTransactionSpdy21Test, Buffering) {
   SpdySession::set_use_flow_control(SpdySession::kDisableFlowControl);
 
-  spdy::SpdyFramer framer;
+  spdy::BufferedSpdyFramer framer(2);
 
   scoped_ptr<spdy::SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
@@ -4145,7 +4146,7 @@ TEST_P(SpdyNetworkTransactionSpdy21Test, Buffering) {
 
 // Verify the case where we buffer data but read it after it has been buffered.
 TEST_P(SpdyNetworkTransactionSpdy21Test, BufferedAll) {
-  spdy::SpdyFramer framer;
+  spdy::BufferedSpdyFramer framer(2);
 
   scoped_ptr<spdy::SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
@@ -4237,7 +4238,7 @@ TEST_P(SpdyNetworkTransactionSpdy21Test, BufferedAll) {
 
 // Verify the case where we buffer data and close the connection.
 TEST_P(SpdyNetworkTransactionSpdy21Test, BufferedClosed) {
-  spdy::SpdyFramer framer;
+  spdy::BufferedSpdyFramer framer(2);
 
   scoped_ptr<spdy::SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
@@ -4328,7 +4329,7 @@ TEST_P(SpdyNetworkTransactionSpdy21Test, BufferedClosed) {
 
 // Verify the case where we buffer data and cancel the transaction.
 TEST_P(SpdyNetworkTransactionSpdy21Test, BufferedCancelled) {
-  spdy::SpdyFramer framer;
+  spdy::BufferedSpdyFramer framer(2);
 
   scoped_ptr<spdy::SpdyFrame> req(ConstructSpdyGet(NULL, 0, false, 1, LOWEST));
   MockWrite writes[] = { CreateMockWrite(*req) };
