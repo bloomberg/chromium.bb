@@ -87,7 +87,7 @@ html.loading * {
   min-height: 48px;
 }
 
-html[dir="rtl"] .extension-list-item {
+html[dir='rtl'] .extension-list-item {
   background-position: right;
 }
 

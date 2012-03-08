@@ -6,7 +6,7 @@ body.uber-frame {
   -webkit-margin-start: 155px;
 }
 
-html[dir="rtl"] body.uber-frame {
+html[dir='rtl'] body.uber-frame {
   /* Enable vertical scrollbar at all times in RTL to avoid visual glitches when
    * showing sub-pages that vertically overflow. */
   overflow-y: scroll;
@@ -27,12 +27,12 @@ body.uber-frame > .page {
 body.uber-frame header {
   background: white;
   left: 155px;
-  min-width: 600px;
   /* <section>s in options currently amount to 638px total, broken up into
    * 600px max-width + 18px -webkit-padding-start + 20px -webkit-margin-end
    * so we mirror this value here so the headers match width and horizontal
    * alignment when scrolling sideways. */
   max-width: 738px;
+  min-width: 600px;
   position: fixed;
   right: 0;
   top: 0;
@@ -73,10 +73,10 @@ body.uber-frame header > h1 {
  * to the end of the header, such as the managed prefs banner). */
 body.uber-frame header > h1::after {
   -webkit-margin-end: 20px;
+  background-color: #eee;
   content: ' ';
   display: block;
   height: 1px;
-  background-color: #eee;
   position: relative;
   top: 13px;
 }
@@ -85,7 +85,7 @@ body.uber-frame footer {
   border-top: 1px solid #eee;
   margin-top: 16px;
   /* min-width and max-width should match the header */
-  min-width: 600px;
   max-width: 638px;
+  min-width: 600px;
   padding: 8px 0;
 }

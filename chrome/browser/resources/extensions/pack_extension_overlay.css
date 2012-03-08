@@ -2,16 +2,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.packExtensionHeading {
-  width: 520px;
+.pack-extension-heading {
   padding-bottom: 5px;
+  width: 520px;
 }
 
-.packExtensionTextBoxes {
+.pack-extension-text-boxes {
   text-align: right;
 }
 
-.packExtensionTextArea {
+.pack-extension-text-area {
   width: 260px;
 }
 
