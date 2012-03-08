@@ -486,6 +486,7 @@ chrome_pfq.add_config('x86-generic-chrome-pre-flight-queue',
   master=True,
   push_overlays='public',
   chrome_rev=constants.CHROME_REV_LATEST,
+  chrome_tests=False,
 )
 
 chrome_pfq.add_config('arm-tegra2-chrome-pre-flight-queue',
@@ -513,6 +514,7 @@ chrome_pfq_info = chrome_pfq.derive(
 
 chrome_pfq_info.add_config('x86-generic-tot-chrome-pfq-informational',
   boards=['x86-generic'],
+  chrome_tests=False,
 )
 
 cpfq_arm = \
