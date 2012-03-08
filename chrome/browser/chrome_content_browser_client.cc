@@ -347,13 +347,8 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 content::WebContentsView* ChromeContentBrowserClient::CreateWebContentsView(
     WebContents* web_contents) {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // TODO(jam): turn on by default.
-  if (false) {
-    return new TabContentsViewWin(
-        web_contents, new ChromeWebContentsViewWinDelegate(web_contents));
-  } else {
-    return new TabContentsViewViews(web_contents);
-  }
+  return new TabContentsViewWin(
+      web_contents, new ChromeWebContentsViewWinDelegate(web_contents));
 #elif defined(TOOLKIT_VIEWS)
   return new TabContentsViewViews(web_contents);
 #elif defined(TOOLKIT_USES_GTK)
