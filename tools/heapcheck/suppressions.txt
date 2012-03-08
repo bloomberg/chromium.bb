@@ -1021,9 +1021,9 @@
    fun:ObserverListBase::AddObserver
    fun:net::SSLConfigService::AddObserver
    fun:*SSLClientSocketPool
-   fun:*ClientSocketPoolManager
+   ...
    fun:*HttpNetworkSession
-   fun:*ProxyResolvingClientSocket
+   ...
    fun:notifier::XmppClientSocketFactory::CreateTransportClientSocket
    fun:notifier::ChromeAsyncSocket::Connect
    fun:buzz::XmppClient::ProcessStartXmppLogin
@@ -1032,7 +1032,6 @@
    fun:talk_base::TaskRunner::InternalRunTasks
    fun:talk_base::TaskRunner::RunTasks
    fun:notifier::TaskPump::CheckAndRunTasks
-   fun:void DispatchToMethod
 }
 {
    bug_80663

@@ -3292,7 +3292,7 @@
    fun:_ZN16ObserverListBaseIN3net16SSLConfigService8ObserverEE11AddObserverEPS2_
    fun:_ZN3net16SSLConfigService11AddObserverEPNS0_8ObserverE
    ...
-   fun:_ZN8notifier26ProxyResolvingClientSocketC1ERK13scoped_refptrIN3net23URLRequestContextGetterEERKNS2_9SSLConfigERKNS2_12HostPortPairE
+   fun:_ZN8notifier26ProxyResolvingClientSocketC1E*
    fun:_ZN8notifier23XmppClientSocketFactory27CreateTransportClientSocketERKN3net12HostPortPairE
    fun:_ZN8notifier17ChromeAsyncSocket7ConnectERKN9talk_base13SocketAddressE
    fun:_ZN4buzz10XmppClient21ProcessStartXmppLoginEv
