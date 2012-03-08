@@ -51,7 +51,6 @@ class DisplaySettingsProviderWin : public DisplaySettingsProvider {
   // Maximum number of taskbars we're interested in: bottom, left, and right.
   static const int kMaxTaskbars = 3;
 
-  Observer* observer_;
   HMONITOR monitor_;
   Taskbar taskbars_[kMaxTaskbars];
   base::RepeatingTimer<DisplaySettingsProviderWin> polling_timer_;
