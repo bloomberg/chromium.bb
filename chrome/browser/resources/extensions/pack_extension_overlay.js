@@ -34,7 +34,7 @@ cr.define('extensions', function() {
 
     /**
      * Handles a click on the dismiss button.
-     * @param {Event} e
+     * @param {Event} e The click event.
      */
     handleDismiss_: function(e) {
       ExtensionSettings.showOverlay(null);
@@ -42,7 +42,7 @@ cr.define('extensions', function() {
 
     /**
      * Handles a click on the pack button.
-     * @param {Event} e
+     * @param {Event} e The click event.
      */
     handleCommit_: function(e) {
       var extensionPath = $('extensionRootDir').value;
