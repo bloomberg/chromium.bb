@@ -39,16 +39,22 @@ class WebDevStyleGuideTest(SuperMoxTestBase):
     self.input_api.AffectedFiles(
         include_deletes=False, file_filter=None).AndReturn([self.fake_file])
 
-    # Actual creations of PresubmitNotifyResult are defined in each test.
+    # Actual creations of PresubmitError are defined in each test.
+    self.output_api = self.mox.CreateMockAnything()
+    self.mox.StubOutWithMock(self.output_api, 'PresubmitError',
+                             use_mock_anything=True)
+
+    author_msg = ('Was the CSS checker useful? '
+                  'Send feedback or hate mail to dbeam@chromium.org.')
     self.output_api = self.mox.CreateMockAnything()
     self.mox.StubOutWithMock(self.output_api, 'PresubmitNotifyResult',
-                                  use_mock_anything=True)
+                             use_mock_anything=True)
+    self.output_api.PresubmitNotifyResult(author_msg).AndReturn(None)
 
   def VerifyContentsProducesOutput(self, contents, output):
     self.fake_file.NewContents().AndReturn(contents.splitlines())
-    auth_msg = '\n\nSend feedback or hate mail to dbeam@chromium.org'
-    self.output_api.PresubmitNotifyResult(
-        self.fake_file_name + ':\n' + output.strip() + auth_msg).AndReturn(None)
+    self.output_api.PresubmitError(
+        self.fake_file_name + ':\n' + output.strip()).AndReturn(None)
     self.mox.ReplayAll()
     css_checker.CSSChecker(self.input_api, self.output_api).RunChecks()
 
