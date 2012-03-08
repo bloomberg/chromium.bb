@@ -165,6 +165,8 @@ class GLXImageTransportSurface
   void SendBuffersSwapped();
   void SendPostSubBuffer(int x, int y, int width, int height);
 
+  void ResizeSurface(gfx::Size size);
+
   // Tracks the current surface visibility state.
   VisibilityState visibility_state_;
 
@@ -368,9 +370,6 @@ void EGLImageTransportSurface::ReleaseSurface(
 }
 
 void EGLImageTransportSurface::OnResize(gfx::Size size) {
-  if (back_surface_.get())
-    ReleaseSurface(&back_surface_);
-
   back_surface_ = new EGLAcceleratedSurface(size);
 
   GLint previous_fbo_id = 0;
@@ -610,22 +609,17 @@ void GLXImageTransportSurface::SetVisibility(VisibilityState visibility_state) {
 
   switch (visibility_state) {
     case VISIBILITY_STATE_FOREGROUND: {
-      Display* dpy = static_cast<Display*>(GetDisplay());
-      XResizeWindow(dpy, window_, size_.width(), size_.height());
-      needs_resize_ = true;
-      glXWaitX();
+      ResizeSurface(size_);
       break;
     }
     case VISIBILITY_STATE_BACKGROUND: {
-      Display* dpy = static_cast<Display*>(GetDisplay());
-      XResizeWindow(dpy, window_, 1, 1);
-      glXWaitX();
+      ResizeSurface(gfx::Size(1,1));
       break;
     }
     case VISIBILITY_STATE_HIBERNATED: {
-      Display* dpy = static_cast<Display*>(GetDisplay());
-      XResizeWindow(dpy, window_, 1, 1);
-      glXWaitX();
+      ResizeSurface(gfx::Size(1,1));
+      if (bound_)
+        ReleaseSurface();
       break;
     }
     default:
@@ -633,20 +627,22 @@ void GLXImageTransportSurface::SetVisibility(VisibilityState visibility_state) {
   }
 }
 
-void GLXImageTransportSurface::OnResize(gfx::Size size) {
-  TRACE_EVENT0("gpu", "GLXImageTransportSurface::OnResize");
-  size_ = size;
-
+void GLXImageTransportSurface::ResizeSurface(gfx::Size size) {
   Display* dpy = static_cast<Display*>(GetDisplay());
-  XResizeWindow(dpy, window_, size_.width(), size_.height());
+  XResizeWindow(dpy, window_, size.width(), size.height());
   glXWaitX();
   // Seems necessary to perform a swap after a resize
   // in order to resize the front and back buffers (Intel driver bug).
   // This doesn't always happen with scissoring enabled, so do it now.
-  if (gfx::g_GLX_MESA_copy_sub_buffer &&
-      gfx::GLSurface::GetCurrent() == this)
+  if (gfx::g_GLX_MESA_copy_sub_buffer && gfx::GLSurface::GetCurrent() == this)
     gfx::NativeViewGLSurfaceGLX::SwapBuffers();
   needs_resize_ = true;
+}
+
+void GLXImageTransportSurface::OnResize(gfx::Size size) {
+  TRACE_EVENT0("gpu", "GLXImageTransportSurface::OnResize");
+  size_ = size;
+  ResizeSurface(size_);
 }
 
 bool GLXImageTransportSurface::SwapBuffers() {
@@ -800,8 +796,8 @@ void OSMesaImageTransportSurface::ReleaseSurface() {
 }
 
 void OSMesaImageTransportSurface::OnResize(gfx::Size size) {
-  if (shared_mem_.get())
-    ReleaseSurface();
+  shared_mem_.reset();
+  shared_id_ = 0;
 
   GLSurfaceOSMesa::Resize(size);
 

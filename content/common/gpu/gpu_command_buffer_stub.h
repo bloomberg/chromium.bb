@@ -71,9 +71,9 @@ class CONTENT_EXPORT GpuCommandBufferStubBase {
 };
 
 class GpuCommandBufferStub
-    : public IPC::Channel::Listener,
+    : public GpuCommandBufferStubBase,
+      public IPC::Channel::Listener,
       public IPC::Message::Sender,
-      public GpuCommandBufferStubBase,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
   class DestructionObserver {

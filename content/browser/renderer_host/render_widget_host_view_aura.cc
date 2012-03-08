@@ -440,10 +440,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(
     uint64 surface_handle) {
   if (current_surface_ == surface_handle) {
     current_surface_ = 0;
-    // Don't call UpdateExternalTexture: it's possible that a new surface with
-    // the same ID will be re-created right away, in which case we don't want to
-    // flip back and forth. Instead wait until we got the accelerated
-    // compositing deactivation.
+    UpdateExternalTexture();
   }
   image_transport_clients_.erase(surface_handle);
 }
