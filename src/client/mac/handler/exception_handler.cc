@@ -146,82 +146,7 @@ extern "C"
                                    mach_msg_type_number_t in_thread_state_count,
                                    thread_state_t out_thread_state,
                                    mach_msg_type_number_t *out_thread_state_count);
-
-  kern_return_t breakpad_exception_raise_state(mach_port_t exception_port,
-                                               exception_type_t exception,
-                                               const exception_data_t code,
-                                               mach_msg_type_number_t codeCnt,
-                                               int *flavor,
-                                               const thread_state_t old_state,
-                                               mach_msg_type_number_t old_stateCnt,
-                                               thread_state_t new_state,
-                                               mach_msg_type_number_t *new_stateCnt
-                                               );
-
-  kern_return_t breakpad_exception_raise_state_identity(mach_port_t exception_port,
-                                                        mach_port_t thread,
-                                                        mach_port_t task,
-                                                        exception_type_t exception,
-                                                        exception_data_t code,
-                                                        mach_msg_type_number_t codeCnt,
-                                                        int *flavor,
-                                                        thread_state_t old_state,
-                                                        mach_msg_type_number_t old_stateCnt,
-                                                        thread_state_t new_state,
-                                                        mach_msg_type_number_t *new_stateCnt
-                                                        );
-
-  kern_return_t breakpad_exception_raise(mach_port_t port, mach_port_t failed_thread,
-                                         mach_port_t task,
-                                         exception_type_t exception,
-                                         exception_data_t code,
-                                         mach_msg_type_number_t code_count);
 }
-
-
-
-kern_return_t breakpad_exception_raise_state(mach_port_t exception_port,
-					     exception_type_t exception,
-					     const exception_data_t code,
-					     mach_msg_type_number_t codeCnt,
-					     int *flavor,
-					     const thread_state_t old_state,
-					     mach_msg_type_number_t old_stateCnt,
-					     thread_state_t new_state,
-					     mach_msg_type_number_t *new_stateCnt
-                                             )
-{
-  return KERN_SUCCESS;
-}
-
-kern_return_t breakpad_exception_raise_state_identity(mach_port_t exception_port,
-						      mach_port_t thread,
-						      mach_port_t task,
-						      exception_type_t exception,
-						      exception_data_t code,
-						      mach_msg_type_number_t codeCnt,
-						      int *flavor,
-						      thread_state_t old_state,
-						      mach_msg_type_number_t old_stateCnt,
-						      thread_state_t new_state,
-						      mach_msg_type_number_t *new_stateCnt
-                                                      )
-{
-  return KERN_SUCCESS;
-}
-
-kern_return_t breakpad_exception_raise(mach_port_t port, mach_port_t failed_thread,
-                                       mach_port_t task,
-                                       exception_type_t exception,
-                                       exception_data_t code,
-                                       mach_msg_type_number_t code_count) {
-
-  if (task != mach_task_self()) {
-    return KERN_FAILURE;
-  }
-  return ForwardException(task, failed_thread, exception, code, code_count);
-}
-
 
 ExceptionHandler::ExceptionHandler(const string &dump_path,
                                    FilterCallback filter,
@@ -589,7 +514,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         // exceptions that occur in the parent process are caught and
         // processed.  If the exception was not caused by this task, we
         // still need to call into the exception server and have it return
-        // KERN_FAILURE (see breakpad_exception_raise) in order for the kernel
+        // KERN_FAILURE (see catch_exception_raise) in order for the kernel
         // to move onto the host exception handler for the child task
         if (receive.task.name == mach_task_self()) {
           self->SuspendThreads();
@@ -623,7 +548,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 #endif
         }
         // Pass along the exception to the server, which will setup the
-        // message and call breakpad_exception_raise() and put the return
+        // message and call catch_exception_raise() and put the return
         // code into the reply.
         ExceptionReplyMessage reply;
         if (!exc_server(&receive.header, &reply.header))
