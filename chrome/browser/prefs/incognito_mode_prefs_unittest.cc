@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,6 +62,7 @@ typedef IncognitoModePrefsTest IncognitoModePrefsDeathTest;
 #define MAYBE_GetAvailabilityBadValue GetAvailabilityBadValue
 #endif
 
+#if GTEST_HAS_DEATH_TEST
 TEST_F(IncognitoModePrefsDeathTest, MAYBE_GetAvailabilityBadValue) {
   prefs_.SetUserPref(prefs::kIncognitoModeAvailability,
                      Value::CreateIntegerValue(-1));
@@ -79,3 +80,4 @@ TEST_F(IncognitoModePrefsDeathTest, MAYBE_GetAvailabilityBadValue) {
   }, "");
 #endif
 }
+#endif  // GTEST_HAS_DEATH_TEST
