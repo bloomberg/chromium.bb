@@ -6,6 +6,8 @@
 #define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_DELEGATE_H_
 #pragma once
 
+#include "ui/views/views_export.h"
+
 namespace gfx {
 class Point;
 }
@@ -23,7 +25,7 @@ class View;
 // context menu.)
 //
 ////////////////////////////////////////////////////////////////////////////////
-class MenuButtonDelegate {
+class VIEWS_EXPORT MenuButtonDelegate {
  public:
   // Creates and shows a menu at the specified position. |source| is the view
   // the MenuButtonDelegate was set on.
