@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
+#include "chrome/browser/sync/syncable/on_disk_directory_backing_store.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/engine/test_syncable_utils.h"
 #include "chrome/browser/sync/test/fake_encryptor.h"
@@ -102,8 +103,8 @@ class SyncableGeneralTest : public testing::Test {
 
 TEST_F(SyncableGeneralTest, General) {
   Directory dir(&encryptor_, &handler_, NULL);
-  ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
-                             NullTransactionObserver()));
+  ASSERT_EQ(OPENED, dir.OpenInMemoryForTest(
+          "SimpleTest", &delegate_, NullTransactionObserver()));
 
   int64 root_metahandle;
   {
@@ -202,8 +203,8 @@ TEST_F(SyncableGeneralTest, General) {
 
 TEST_F(SyncableGeneralTest, ChildrenOps) {
   Directory dir(&encryptor_, &handler_, NULL);
-  ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
-                             NullTransactionObserver()));
+  ASSERT_EQ(OPENED, dir.OpenInMemoryForTest(
+          "SimpleTest", &delegate_, NullTransactionObserver()));
 
   int64 written_metahandle;
   const Id id = TestIdFactory::FromNumber(99);
@@ -347,8 +348,8 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 
 TEST_F(SyncableGeneralTest, ToValue) {
   Directory dir(&encryptor_, &handler_, NULL);
-  ASSERT_EQ(OPENED, dir.Open(db_path_, "SimpleTest", &delegate_,
-                             NullTransactionObserver()));
+  ASSERT_EQ(OPENED, dir.OpenInMemoryForTest(
+          "SimpleTest", &delegate_, NullTransactionObserver()));
 
   const Id id = TestIdFactory::FromNumber(99);
   {
@@ -384,64 +385,58 @@ TEST_F(SyncableGeneralTest, ToValue) {
 class TestUnsaveableDirectory : public Directory {
  public:
   TestUnsaveableDirectory() : Directory(&encryptor_, &handler_, NULL) {}
-  class UnsaveableBackingStore : public DirectoryBackingStore {
+
+  class UnsaveableBackingStore : public OnDiskDirectoryBackingStore {
    public:
      UnsaveableBackingStore(const std::string& dir_name,
                             const FilePath& backing_filepath)
-         : DirectoryBackingStore(dir_name, backing_filepath) { }
+         : OnDiskDirectoryBackingStore(dir_name, backing_filepath) { }
      virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot) {
        return false;
      }
   };
-  virtual DirectoryBackingStore* CreateBackingStore(
-      const std::string& dir_name,
-      const FilePath& backing_filepath) {
-    return new UnsaveableBackingStore(dir_name, backing_filepath);
+
+  DirOpenResult OpenUnsaveable(
+      const FilePath& file_path, const std::string& name,
+      DirectoryChangeDelegate* delegate,
+      const browser_sync::WeakHandle<TransactionObserver>&
+          transaction_observer) {
+    DirectoryBackingStore *store = new UnsaveableBackingStore(name, file_path);
+    DirOpenResult result =
+        OpenImpl(store, name, delegate, transaction_observer);
+    if (OPENED != result)
+      Close();
+    return result;
   }
+
  private:
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
 };
 
-// Test suite for syncable::Directory.
+// A test fixture for syncable::Directory.  Uses an in-memory database to keep
+// the unit tests fast.
 class SyncableDirectoryTest : public testing::Test {
  protected:
   MessageLoop message_loop_;
-  ScopedTempDir temp_dir_;
   static const char kName[];
   static const Id kId;
 
-  // SetUp() is called before each test case is run.
-  // The sqlite3 DB is deleted before each test is run.
   virtual void SetUp() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    file_path_ = temp_dir_.path().Append(
-        FILE_PATH_LITERAL("Test.sqlite3"));
-    file_util::Delete(file_path_, true);
     dir_.reset(new Directory(&encryptor_, &handler_, NULL));
     ASSERT_TRUE(dir_.get());
-    ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
-                                 &delegate_, NullTransactionObserver()));
+    ASSERT_EQ(OPENED, dir_->OpenInMemoryForTest(kName, &delegate_,
+                                                NullTransactionObserver()));
     ASSERT_TRUE(dir_->good());
   }
 
   virtual void TearDown() {
-    // This also closes file handles.
     dir_->SaveChanges();
     dir_.reset();
-    file_util::Delete(file_path_, true);
   }
 
-  void ReloadDir() {
-    dir_.reset(new Directory(&encryptor_, &handler_, NULL));
-    ASSERT_TRUE(dir_.get());
-    ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
-                                 &delegate_, NullTransactionObserver()));
-  }
-
-  void SaveAndReloadDir() {
-    dir_->SaveChanges();
-    ReloadDir();
+  void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result) {
+    dir_->GetAllMetaHandles(trans, result);
   }
 
   bool IsInDirtyMetahandles(int64 metahandle) {
@@ -489,7 +484,6 @@ class SyncableDirectoryTest : public testing::Test {
   FakeEncryptor encryptor_;
   TestUnrecoverableErrorHandler handler_;
   scoped_ptr<Directory> dir_;
-  FilePath file_path_;
   NullDirectoryChangeDelegate delegate_;
 
   // Creates an empty entry and sets the ID field to the default kId.
@@ -618,77 +612,6 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
     }
     dir_->VacuumAfterSaveChanges(snapshot);
   }
-}
-
-TEST_F(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
-  sync_pb::EntitySpecifics bookmark_specs;
-  sync_pb::EntitySpecifics autofill_specs;
-  sync_pb::EntitySpecifics preference_specs;
-  AddDefaultFieldValue(BOOKMARKS, &bookmark_specs);
-  AddDefaultFieldValue(PREFERENCES, &preference_specs);
-  AddDefaultFieldValue(AUTOFILL, &autofill_specs);
-  dir_->set_initial_sync_ended_for_type(BOOKMARKS, true);
-  dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
-  dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
-
-  syncable::ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
-
-  TestIdFactory id_factory;
-  // Create some items for each type.
-  {
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
-    MutableEntry item1(&trans, CREATE, trans.root_id(), "Item");
-    ASSERT_TRUE(item1.good());
-    item1.Put(SPECIFICS, bookmark_specs);
-    item1.Put(SERVER_SPECIFICS, bookmark_specs);
-    item1.Put(IS_UNSYNCED, true);
-
-    MutableEntry item2(&trans, CREATE_NEW_UPDATE_ITEM,
-                       id_factory.NewServerId());
-    ASSERT_TRUE(item2.good());
-    item2.Put(SERVER_SPECIFICS, bookmark_specs);
-    item2.Put(IS_UNAPPLIED_UPDATE, true);
-
-    MutableEntry item3(&trans, CREATE, trans.root_id(), "Item");
-    ASSERT_TRUE(item3.good());
-    item3.Put(SPECIFICS, preference_specs);
-    item3.Put(SERVER_SPECIFICS, preference_specs);
-    item3.Put(IS_UNSYNCED, true);
-
-    MutableEntry item4(&trans, CREATE_NEW_UPDATE_ITEM,
-                       id_factory.NewServerId());
-    ASSERT_TRUE(item4.good());
-    item4.Put(SERVER_SPECIFICS, preference_specs);
-    item4.Put(IS_UNAPPLIED_UPDATE, true);
-
-    MutableEntry item5(&trans, CREATE, trans.root_id(), "Item");
-    ASSERT_TRUE(item5.good());
-    item5.Put(SPECIFICS, autofill_specs);
-    item5.Put(SERVER_SPECIFICS, autofill_specs);
-    item5.Put(IS_UNSYNCED, true);
-
-    MutableEntry item6(&trans, CREATE_NEW_UPDATE_ITEM,
-      id_factory.NewServerId());
-    ASSERT_TRUE(item6.good());
-    item6.Put(SERVER_SPECIFICS, autofill_specs);
-    item6.Put(IS_UNAPPLIED_UPDATE, true);
-  }
-
-  dir_->SaveChanges();
-  {
-    ReadTransaction trans(FROM_HERE, dir_.get());
-    MetahandleSet all_set;
-    dir_->GetAllMetaHandles(&trans, &all_set);
-    ASSERT_EQ(7U, all_set.size());
-  }
-
-  dir_->PurgeEntriesWithTypeIn(types_to_purge);
-
-  // We first query the in-memory data, and then reload the directory (without
-  // saving) to verify that disk does not still have the data.
-  CheckPurgeEntriesWithTypeInSucceeded(types_to_purge, true);
-  SaveAndReloadDir();
-  CheckPurgeEntriesWithTypeInSucceeded(types_to_purge, false);
 }
 
 TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
@@ -1151,7 +1074,214 @@ TEST_F(SyncableDirectoryTest, TestCaseChangeRename) {
   EXPECT_TRUE(folder.Put(IS_DEL, true));
 }
 
-TEST_F(SyncableDirectoryTest, TestShareInfo) {
+// Create items of each model type, and check that GetModelType and
+// GetServerModelType return the right value.
+TEST_F(SyncableDirectoryTest, GetModelType) {
+  TestIdFactory id_factory;
+  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+    ModelType datatype = ModelTypeFromInt(i);
+    SCOPED_TRACE(testing::Message("Testing model type ") << datatype);
+    switch (datatype) {
+      case UNSPECIFIED:
+      case TOP_LEVEL_FOLDER:
+        continue;  // Datatype isn't a function of Specifics.
+      default:
+        break;
+    }
+    sync_pb::EntitySpecifics specifics;
+    AddDefaultFieldValue(datatype, &specifics);
+
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    MutableEntry folder(&trans, CREATE, trans.root_id(), "Folder");
+    ASSERT_TRUE(folder.good());
+    folder.Put(ID, id_factory.NewServerId());
+    folder.Put(SPECIFICS, specifics);
+    folder.Put(BASE_VERSION, 1);
+    folder.Put(IS_DIR, true);
+    folder.Put(IS_DEL, false);
+    ASSERT_EQ(datatype, folder.GetModelType());
+
+    MutableEntry item(&trans, CREATE, trans.root_id(), "Item");
+    ASSERT_TRUE(item.good());
+    item.Put(ID, id_factory.NewServerId());
+    item.Put(SPECIFICS, specifics);
+    item.Put(BASE_VERSION, 1);
+    item.Put(IS_DIR, false);
+    item.Put(IS_DEL, false);
+    ASSERT_EQ(datatype, item.GetModelType());
+
+    // It's critical that deletion records retain their datatype, so that
+    // they can be dispatched to the appropriate change processor.
+    MutableEntry deleted_item(&trans, CREATE, trans.root_id(), "Deleted Item");
+    ASSERT_TRUE(item.good());
+    deleted_item.Put(ID, id_factory.NewServerId());
+    deleted_item.Put(SPECIFICS, specifics);
+    deleted_item.Put(BASE_VERSION, 1);
+    deleted_item.Put(IS_DIR, false);
+    deleted_item.Put(IS_DEL, true);
+    ASSERT_EQ(datatype, deleted_item.GetModelType());
+
+    MutableEntry server_folder(&trans, CREATE_NEW_UPDATE_ITEM,
+        id_factory.NewServerId());
+    ASSERT_TRUE(server_folder.good());
+    server_folder.Put(SERVER_SPECIFICS, specifics);
+    server_folder.Put(BASE_VERSION, 1);
+    server_folder.Put(SERVER_IS_DIR, true);
+    server_folder.Put(SERVER_IS_DEL, false);
+    ASSERT_EQ(datatype, server_folder.GetServerModelType());
+
+    MutableEntry server_item(&trans, CREATE_NEW_UPDATE_ITEM,
+        id_factory.NewServerId());
+    ASSERT_TRUE(server_item.good());
+    server_item.Put(SERVER_SPECIFICS, specifics);
+    server_item.Put(BASE_VERSION, 1);
+    server_item.Put(SERVER_IS_DIR, false);
+    server_item.Put(SERVER_IS_DEL, false);
+    ASSERT_EQ(datatype, server_item.GetServerModelType());
+
+    browser_sync::SyncEntity folder_entity;
+    folder_entity.set_id(id_factory.NewServerId());
+    folder_entity.set_deleted(false);
+    folder_entity.set_folder(true);
+    folder_entity.mutable_specifics()->CopyFrom(specifics);
+    ASSERT_EQ(datatype, folder_entity.GetModelType());
+
+    browser_sync::SyncEntity item_entity;
+    item_entity.set_id(id_factory.NewServerId());
+    item_entity.set_deleted(false);
+    item_entity.set_folder(false);
+    item_entity.mutable_specifics()->CopyFrom(specifics);
+    ASSERT_EQ(datatype, item_entity.GetModelType());
+  }
+}
+
+// A variant of SyncableDirectoryTest that uses a real sqlite database.
+class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
+ protected:
+  // SetUp() is called before each test case is run.
+  // The sqlite3 DB is deleted before each test is run.
+  virtual void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    file_path_ = temp_dir_.path().Append(
+        FILE_PATH_LITERAL("Test.sqlite3"));
+    file_util::Delete(file_path_, true);
+    dir_.reset(new Directory(&encryptor_, &handler_, NULL));
+    ASSERT_TRUE(dir_.get());
+    ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
+                                 &delegate_, NullTransactionObserver()));
+    ASSERT_TRUE(dir_->good());
+  }
+
+  virtual void TearDown() {
+    // This also closes file handles.
+    dir_->SaveChanges();
+    dir_.reset();
+    file_util::Delete(file_path_, true);
+  }
+
+  void ReloadDir() {
+    dir_.reset(new Directory(&encryptor_, &handler_, NULL));
+    ASSERT_TRUE(dir_.get());
+    ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
+                                 &delegate_, NullTransactionObserver()));
+  }
+
+  void SaveAndReloadDir() {
+    dir_->SaveChanges();
+    ReloadDir();
+  }
+
+  void SwapInUnsaveableDirectory() {
+    dir_.reset(); // Delete the old directory.
+
+    // We first assign the object to a pointer of type TestUnsaveableDirectory
+    // because the OpenUnsaveable function is not available in the parent class.
+    scoped_ptr<TestUnsaveableDirectory> dir(new TestUnsaveableDirectory());
+    ASSERT_TRUE(dir.get());
+    ASSERT_EQ(OPENED, dir->OpenUnsaveable(
+            file_path_, kName, &delegate_, NullTransactionObserver()));
+
+    // Finally, move the unsaveable directory to the dir_ variable.
+    dir_ = dir.Pass();
+  }
+
+  ScopedTempDir temp_dir_;
+  FilePath file_path_;
+};
+
+TEST_F(OnDiskSyncableDirectoryTest, TestPurgeEntriesWithTypeIn) {
+  sync_pb::EntitySpecifics bookmark_specs;
+  sync_pb::EntitySpecifics autofill_specs;
+  sync_pb::EntitySpecifics preference_specs;
+  AddDefaultFieldValue(BOOKMARKS, &bookmark_specs);
+  AddDefaultFieldValue(PREFERENCES, &preference_specs);
+  AddDefaultFieldValue(AUTOFILL, &autofill_specs);
+  dir_->set_initial_sync_ended_for_type(BOOKMARKS, true);
+  dir_->set_initial_sync_ended_for_type(PREFERENCES, true);
+  dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
+
+  syncable::ModelTypeSet types_to_purge(PREFERENCES, AUTOFILL);
+
+  TestIdFactory id_factory;
+  // Create some items for each type.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+    MutableEntry item1(&trans, CREATE, trans.root_id(), "Item");
+    ASSERT_TRUE(item1.good());
+    item1.Put(SPECIFICS, bookmark_specs);
+    item1.Put(SERVER_SPECIFICS, bookmark_specs);
+    item1.Put(IS_UNSYNCED, true);
+
+    MutableEntry item2(&trans, CREATE_NEW_UPDATE_ITEM,
+                       id_factory.NewServerId());
+    ASSERT_TRUE(item2.good());
+    item2.Put(SERVER_SPECIFICS, bookmark_specs);
+    item2.Put(IS_UNAPPLIED_UPDATE, true);
+
+    MutableEntry item3(&trans, CREATE, trans.root_id(), "Item");
+    ASSERT_TRUE(item3.good());
+    item3.Put(SPECIFICS, preference_specs);
+    item3.Put(SERVER_SPECIFICS, preference_specs);
+    item3.Put(IS_UNSYNCED, true);
+
+    MutableEntry item4(&trans, CREATE_NEW_UPDATE_ITEM,
+                       id_factory.NewServerId());
+    ASSERT_TRUE(item4.good());
+    item4.Put(SERVER_SPECIFICS, preference_specs);
+    item4.Put(IS_UNAPPLIED_UPDATE, true);
+
+    MutableEntry item5(&trans, CREATE, trans.root_id(), "Item");
+    ASSERT_TRUE(item5.good());
+    item5.Put(SPECIFICS, autofill_specs);
+    item5.Put(SERVER_SPECIFICS, autofill_specs);
+    item5.Put(IS_UNSYNCED, true);
+
+    MutableEntry item6(&trans, CREATE_NEW_UPDATE_ITEM,
+      id_factory.NewServerId());
+    ASSERT_TRUE(item6.good());
+    item6.Put(SERVER_SPECIFICS, autofill_specs);
+    item6.Put(IS_UNAPPLIED_UPDATE, true);
+  }
+
+  dir_->SaveChanges();
+  {
+    ReadTransaction trans(FROM_HERE, dir_.get());
+    MetahandleSet all_set;
+    GetAllMetaHandles(&trans, &all_set);
+    ASSERT_EQ(7U, all_set.size());
+  }
+
+  dir_->PurgeEntriesWithTypeIn(types_to_purge);
+
+  // We first query the in-memory data, and then reload the directory (without
+  // saving) to verify that disk does not still have the data.
+  CheckPurgeEntriesWithTypeInSucceeded(types_to_purge, true);
+  SaveAndReloadDir();
+  CheckPurgeEntriesWithTypeInSucceeded(types_to_purge, false);
+}
+
+TEST_F(OnDiskSyncableDirectoryTest, TestShareInfo) {
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
   dir_->set_store_birthday("Jan 31st");
   dir_->SetNotificationState("notification_state");
@@ -1184,7 +1314,8 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
   }
 }
 
-TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
+TEST_F(OnDiskSyncableDirectoryTest,
+       TestSimpleFieldsPreservedDuringSaveChanges) {
   Id update_id = TestIdFactory::FromNumber(1);
   Id create_id;
   EntryKernel create_pre_save, update_pre_save;
@@ -1272,7 +1403,7 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
   }
 }
 
-TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
+TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailure) {
   int64 handle1 = 0;
   // Set up an item using a regular, saveable directory.
   {
@@ -1307,11 +1438,9 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
 
   // Now do some operations using a directory for which SaveChanges will
   // always fail.
-  dir_.reset(new TestUnsaveableDirectory());
-  ASSERT_TRUE(dir_.get());
-  ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
-                               &delegate_, NullTransactionObserver()));
+  SwapInUnsaveableDirectory();
   ASSERT_TRUE(dir_->good());
+
   int64 handle2 = 0;
   {
     WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
@@ -1356,7 +1485,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
   }
 }
 
-TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
+TEST_F(OnDiskSyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   int64 handle1 = 0;
   // Set up an item using a regular, saveable directory.
   {
@@ -1381,10 +1510,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
 
   // Now do some operations using a directory for which SaveChanges will
   // always fail.
-  dir_.reset(new TestUnsaveableDirectory());
-  ASSERT_TRUE(dir_.get());
-  ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
-                               &delegate_, NullTransactionObserver()));
+  SwapInUnsaveableDirectory();
   ASSERT_TRUE(dir_->good());
 
   syncable::ModelTypeSet set(BOOKMARKS);
@@ -1392,88 +1518,6 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
   ASSERT_FALSE(dir_->SaveChanges());
   EXPECT_TRUE(IsInMetahandlesToPurge(handle1));
-}
-
-// Create items of each model type, and check that GetModelType and
-// GetServerModelType return the right value.
-TEST_F(SyncableDirectoryTest, GetModelType) {
-  TestIdFactory id_factory;
-  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
-    ModelType datatype = ModelTypeFromInt(i);
-    SCOPED_TRACE(testing::Message("Testing model type ") << datatype);
-    switch (datatype) {
-      case UNSPECIFIED:
-      case TOP_LEVEL_FOLDER:
-        continue;  // Datatype isn't a function of Specifics.
-      default:
-        break;
-    }
-    sync_pb::EntitySpecifics specifics;
-    AddDefaultFieldValue(datatype, &specifics);
-
-    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
-
-    MutableEntry folder(&trans, CREATE, trans.root_id(), "Folder");
-    ASSERT_TRUE(folder.good());
-    folder.Put(ID, id_factory.NewServerId());
-    folder.Put(SPECIFICS, specifics);
-    folder.Put(BASE_VERSION, 1);
-    folder.Put(IS_DIR, true);
-    folder.Put(IS_DEL, false);
-    ASSERT_EQ(datatype, folder.GetModelType());
-
-    MutableEntry item(&trans, CREATE, trans.root_id(), "Item");
-    ASSERT_TRUE(item.good());
-    item.Put(ID, id_factory.NewServerId());
-    item.Put(SPECIFICS, specifics);
-    item.Put(BASE_VERSION, 1);
-    item.Put(IS_DIR, false);
-    item.Put(IS_DEL, false);
-    ASSERT_EQ(datatype, item.GetModelType());
-
-    // It's critical that deletion records retain their datatype, so that
-    // they can be dispatched to the appropriate change processor.
-    MutableEntry deleted_item(&trans, CREATE, trans.root_id(), "Deleted Item");
-    ASSERT_TRUE(item.good());
-    deleted_item.Put(ID, id_factory.NewServerId());
-    deleted_item.Put(SPECIFICS, specifics);
-    deleted_item.Put(BASE_VERSION, 1);
-    deleted_item.Put(IS_DIR, false);
-    deleted_item.Put(IS_DEL, true);
-    ASSERT_EQ(datatype, deleted_item.GetModelType());
-
-    MutableEntry server_folder(&trans, CREATE_NEW_UPDATE_ITEM,
-        id_factory.NewServerId());
-    ASSERT_TRUE(server_folder.good());
-    server_folder.Put(SERVER_SPECIFICS, specifics);
-    server_folder.Put(BASE_VERSION, 1);
-    server_folder.Put(SERVER_IS_DIR, true);
-    server_folder.Put(SERVER_IS_DEL, false);
-    ASSERT_EQ(datatype, server_folder.GetServerModelType());
-
-    MutableEntry server_item(&trans, CREATE_NEW_UPDATE_ITEM,
-        id_factory.NewServerId());
-    ASSERT_TRUE(server_item.good());
-    server_item.Put(SERVER_SPECIFICS, specifics);
-    server_item.Put(BASE_VERSION, 1);
-    server_item.Put(SERVER_IS_DIR, false);
-    server_item.Put(SERVER_IS_DEL, false);
-    ASSERT_EQ(datatype, server_item.GetServerModelType());
-
-    browser_sync::SyncEntity folder_entity;
-    folder_entity.set_id(id_factory.NewServerId());
-    folder_entity.set_deleted(false);
-    folder_entity.set_folder(true);
-    folder_entity.mutable_specifics()->CopyFrom(specifics);
-    ASSERT_EQ(datatype, folder_entity.GetModelType());
-
-    browser_sync::SyncEntity item_entity;
-    item_entity.set_id(id_factory.NewServerId());
-    item_entity.set_deleted(false);
-    item_entity.set_folder(false);
-    item_entity.mutable_specifics()->CopyFrom(specifics);
-    ASSERT_EQ(datatype, item_entity.GetModelType());
-  }
 }
 
 }  // namespace

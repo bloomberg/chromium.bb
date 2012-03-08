@@ -753,7 +753,6 @@ class Directory {
                            TakeSnapshotGetsAllDirtyHandlesTest);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
                            TakeSnapshotGetsOnlyDirtyHandlesTest);
-  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, TestPurgeEntriesWithTypeIn);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
                            TakeSnapshotGetsMetahandlesToPurge);
 
@@ -833,6 +832,14 @@ class Directory {
                      const browser_sync::WeakHandle<TransactionObserver>&
                          transaction_observer);
 
+  // Same as above, but does not create a file to persist the database.  This is
+  // useful for tests where we were not planning to persist this data and don't
+  // want to pay the performance penalty of using a real database.
+  DirOpenResult OpenInMemoryForTest(
+      const std::string& name, DirectoryChangeDelegate* delegate,
+      const browser_sync::WeakHandle<TransactionObserver>&
+          transaction_observer);
+
   // Stops sending events to the delegate and the transaction
   // observer.
   void Close();
@@ -842,7 +849,6 @@ class Directory {
   // by the server only.
   Id NextId();
 
-  const FilePath& file_path() const { return kernel_->db_path; }
   bool good() const { return NULL != store_; }
 
   // The download progress is an opaque token provided by the sync server
@@ -920,21 +926,16 @@ class Directory {
                             WriteTransaction* trans,
                             ScopedKernelLock* lock);
 
-  // Overridden by tests.
-  virtual DirectoryBackingStore* CreateBackingStore(
-      const std::string& dir_name,
-      const FilePath& backing_filepath);
+  DirOpenResult OpenImpl(
+      DirectoryBackingStore* store, const std::string& name,
+      DirectoryChangeDelegate* delegate,
+      const browser_sync::WeakHandle<TransactionObserver>&
+          transaction_observer);
 
  private:
   // These private versions expect the kernel lock to already be held
   // before calling.
   EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
-
-  DirOpenResult OpenImpl(
-      const FilePath& file_path, const std::string& name,
-      DirectoryChangeDelegate* delegate,
-      const browser_sync::WeakHandle<TransactionObserver>&
-          transaction_observer);
 
   template <class T> void TestAndSet(T* kernel_data, const T* data_to_set);
 
@@ -1104,8 +1105,8 @@ class Directory {
   struct Kernel {
     // |delegate| must not be NULL.  |transaction_observer| must be
     // initialized.
-    Kernel(const FilePath& db_path, const std::string& name,
-           const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
+    Kernel(const std::string& name, const KernelLoadInfo& info,
+           DirectoryChangeDelegate* delegate,
            const browser_sync::WeakHandle<TransactionObserver>&
                transaction_observer);
 
@@ -1114,7 +1115,6 @@ class Directory {
     void AddRef();  // For convenience.
     void Release();
 
-    FilePath const db_path;
     // TODO(timsteele): audit use of the member and remove if possible
     volatile base::subtle::AtomicWord refcount;
 

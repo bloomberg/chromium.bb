@@ -15,8 +15,10 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
-#include "chrome/browser/sync/syncable/syncable-inl.h"
+#include "chrome/browser/sync/syncable/on_disk_directory_backing_store.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/syncable/syncable-inl.h"
+#include "chrome/browser/sync/test/test_directory_backing_store.h"
 #include "chrome/browser/sync/util/time.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -48,22 +50,22 @@ class MigrationTest : public testing::TestWithParam<int> {
     return dbs->Load(&metas, &kernel_load_info) == OPENED;
   }
 
-  void SetUpVersion67Database();
-  void SetUpVersion68Database();
-  void SetUpVersion69Database();
-  void SetUpVersion70Database();
-  void SetUpVersion71Database();
-  void SetUpVersion72Database();
-  void SetUpVersion73Database();
-  void SetUpVersion74Database();
-  void SetUpVersion75Database();
-  void SetUpVersion76Database();
-  void SetUpVersion77Database();
+  void SetUpVersion67Database(sql::Connection* connection);
+  void SetUpVersion68Database(sql::Connection* connection);
+  void SetUpVersion69Database(sql::Connection* connection);
+  void SetUpVersion70Database(sql::Connection* connection);
+  void SetUpVersion71Database(sql::Connection* connection);
+  void SetUpVersion72Database(sql::Connection* connection);
+  void SetUpVersion73Database(sql::Connection* connection);
+  void SetUpVersion74Database(sql::Connection* connection);
+  void SetUpVersion75Database(sql::Connection* connection);
+  void SetUpVersion76Database(sql::Connection* connection);
+  void SetUpVersion77Database(sql::Connection* connection);
 
-  void SetUpCurrentDatabaseAndCheckVersion() {
-    SetUpVersion70Database();  // Prepopulates data.
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+  void SetUpCurrentDatabaseAndCheckVersion(sql::Connection* connection) {
+    SetUpVersion77Database(connection);  // Prepopulates data.
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), connection));
 
     ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
     ASSERT_FALSE(dbs->needs_column_refresh_);
@@ -293,8 +295,8 @@ std::map<int64, base::Time> GetExpectedMetaTimes() {
 
 // Extracts a map from metahandle -> time (in proto format) from the
 // given database.
-std::map<int64, int64> GetMetaProtoTimes(sql::Connection &db) {
-  sql::Statement s(db.GetCachedStatement(
+std::map<int64, int64> GetMetaProtoTimes(sql::Connection *db) {
+  sql::Statement s(db->GetCachedStatement(
           SQL_FROM_HERE,
           "SELECT metahandle, mtime, server_mtime, ctime, server_ctime "
           "FROM metas"));
@@ -365,14 +367,13 @@ void ExpectTimes(const MetahandlesIndex& index,
 
 }  // namespace
 
-void MigrationTest::SetUpVersion67Database() {
+void MigrationTest::SetUpVersion67Database(sql::Connection* connection) {
   // This is a version 67 database dump whose contents were backformed from
   // the contents of the version 68 database dump (the v68 migration was
   // actually written first).
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE extended_attributes(metahandle bigint, key varchar(127), "
           "value blob, PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE);"
       "CREATE TABLE metas (metahandle bigint primary key ON CONFLICT FAIL,"
@@ -484,20 +485,19 @@ void MigrationTest::SetUpVersion67Database() {
           "'9010788312004066376x-6609234393368420856x');"
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO share_version VALUES('nick@chromium.org',68);"));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion68Database() {
+void MigrationTest::SetUpVersion68Database(sql::Connection* connection) {
   // This sets up an actual version 68 database dump.  The IDs were
   // canonicalized to be less huge, and the favicons were overwritten
   // with random junk so that they didn't contain any unprintable
   // characters.  A few server URLs were tweaked so that they'd be
   // different from the local URLs.  Lastly, the custom collation on
   // the server_non_unique_name column was removed.
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE extended_attributes(metahandle bigint, key varchar(127), "
           "value blob, PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE);"
       "CREATE TABLE metas (metahandle bigint primary key ON CONFLICT FAIL,"
@@ -594,14 +594,13 @@ void MigrationTest::SetUpVersion68Database() {
           "'9010788312004066376x-6609234393368420856x');"
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO share_version VALUES('nick@chromium.org',68);"));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion69Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion69Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE extended_attributes(metahandle bigint, key varchar(127), "
           "value blob, PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE);"
       "CREATE TABLE metas (metahandle bigint primary key ON CONFLICT FAIL,"
@@ -716,14 +715,13 @@ void MigrationTest::SetUpVersion69Database() {
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO share_version VALUES('nick@chromium.org',69);"
   ));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion70Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion70Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE extended_attributes(metahandle bigint, key varchar(127), "
           "value blob, PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE);"
       "CREATE TABLE share_info (id VARCHAR(128) primary key, "
@@ -825,14 +823,13 @@ void MigrationTest::SetUpVersion70Database() {
           "4E4758',X'C288101C0A13687474703A2F2F7765626B69742E6F72672F78120550"
           "4E473259');"
       ));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion71Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion71Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE extended_attributes(metahandle bigint, key varchar(127), "
           "value blob, PRIMARY KEY(metahandle, key) ON CONFLICT REPLACE);"
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
@@ -931,14 +928,13 @@ void MigrationTest::SetUpVersion71Database() {
       "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,"
           "'9010788312004066376x-6609234393368420856x');"));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion72Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion72Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO 'share_version' VALUES('nick@chromium.org',72);"
       "CREATE TABLE metas(metahandle bigint primary key ON CONFLICT FAIL,"
@@ -1035,14 +1031,13 @@ void MigrationTest::SetUpVersion72Database() {
       "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,"
           "'9010788312004066376x-6609234393368420856x');"));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion73Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion73Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO 'share_version' VALUES('nick@chromium.org',73);"
       "CREATE TABLE metas(metahandle bigint primary key ON CONFLICT FAIL,"
@@ -1140,14 +1135,13 @@ void MigrationTest::SetUpVersion73Database() {
       "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,"
           "'9010788312004066376x-6609234393368420856x',X'C2881000');"));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion74Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion74Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO 'share_version' VALUES('nick@chromium.org',74);"
       "CREATE TABLE models (model_id BLOB primary key, last_download_timestamp"
@@ -1243,14 +1237,13 @@ void MigrationTest::SetUpVersion74Database() {
           "474703A2F2F7765626B69742E6F72672F1204504E4758',X'C288101C0A13687474"
           "703A2F2F7765626B69742E6F72672F781205504E473259');"
       ));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion75Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion75Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO 'share_version' VALUES('nick@chromium.org',75);"
       "CREATE TABLE 'share_info' (id TEXT primary key, name TEXT, store_birthd"
@@ -1350,14 +1343,13 @@ void MigrationTest::SetUpVersion75Database() {
               "X'C288101C0A13687474703A2F2F7765626B69742E6F72672F781205504E473"
               "259');"
       ));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion76Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion76Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO 'share_version' VALUES('nick@chromium.org',76);"
       "CREATE TABLE models (model_id BLOB primary key, progress_marker BLOB, in"
@@ -1448,14 +1440,13 @@ void MigrationTest::SetUpVersion76Database() {
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,'"
           "9010788312004066376x-6609234393368420856x',NULL);"
       ));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
-void MigrationTest::SetUpVersion77Database() {
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(connection.BeginTransaction());
-  ASSERT_TRUE(connection.Execute(
+void MigrationTest::SetUpVersion77Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
       "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
       "INSERT INTO 'share_version' VALUES('nick@chromium.org',77);"
       "CREATE TABLE models (model_id BLOB primary key, progress_marker BLOB, in"
@@ -1540,26 +1531,23 @@ void MigrationTest::SetUpVersion77Database() {
           "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-65542,'"
           "9010788312004066376x-6609234393368420856x',NULL);"
       ));
-  ASSERT_TRUE(connection.CommitTransaction());
+  ASSERT_TRUE(connection->CommitTransaction());
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
-  SetUpVersion67Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
 
-  {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  SetUpVersion67Database(&connection);
 
-    // Columns existing before version 67.
-    ASSERT_TRUE(connection.DoesColumnExist("metas", "name"));
-    ASSERT_TRUE(connection.DoesColumnExist("metas", "unsanitized_name"));
-    ASSERT_TRUE(connection.DoesColumnExist("metas", "server_name"));
-  }
+  // Columns existing before version 67.
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "name"));
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "unsanitized_name"));
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "server_name"));
 
-  scoped_ptr<DirectoryBackingStore> dbs(
-      new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
 
-  dbs->OpenConnectionForTest();
   ASSERT_FALSE(dbs->needs_column_refresh_);
   ASSERT_TRUE(dbs->MigrateVersion67To68());
   ASSERT_EQ(68, dbs->GetVersion());
@@ -1567,21 +1555,20 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
-  SetUpVersion68Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion68Database(&connection);
 
   {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    dbs->OpenConnectionForTest();
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_TRUE(dbs->MigrateVersion68To69());
     ASSERT_EQ(69, dbs->GetVersion());
     ASSERT_TRUE(dbs->needs_column_refresh_);
   }
 
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
   ASSERT_TRUE(connection.DoesColumnExist("metas", "specifics"));
   ASSERT_TRUE(connection.DoesColumnExist("metas", "server_specifics"));
   sql::Statement s(connection.GetUniqueStatement("SELECT non_unique_name,"
@@ -1605,30 +1592,23 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion68To69) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion69To70) {
-  SetUpVersion69Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion69Database(&connection);
+
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "singleton_tag"));
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "unique_server_tag"));
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "unique_client_tag"));
 
   {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_TRUE(connection.DoesColumnExist("metas", "singleton_tag"));
-    ASSERT_FALSE(connection.DoesColumnExist("metas", "unique_server_tag"));
-    ASSERT_FALSE(connection.DoesColumnExist("metas", "unique_client_tag"));
-  }
-
-  {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-
-    dbs->OpenConnectionForTest();
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_TRUE(dbs->MigrateVersion69To70());
     ASSERT_EQ(70, dbs->GetVersion());
     ASSERT_TRUE(dbs->needs_column_refresh_);
   }
-
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
 
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_server_tag"));
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_client_tag"));
@@ -1639,43 +1619,30 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion69To70) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
-  SetUpVersion70Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion70Database(&connection);
+
+  ASSERT_TRUE(connection.DoesColumnExist("share_info", "last_sync_timestamp"));
+  ASSERT_TRUE(connection.DoesColumnExist("share_info", "initial_sync_ended"));
+  ASSERT_FALSE(connection.DoesTableExist("models"));
 
   {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_TRUE(
-        connection.DoesColumnExist("share_info", "last_sync_timestamp"));
-    ASSERT_TRUE(
-        connection.DoesColumnExist("share_info", "initial_sync_ended"));
-    ASSERT_FALSE(connection.DoesTableExist("models"));
-  }
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
 
-  {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-
-    dbs->OpenConnectionForTest();
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_TRUE(dbs->MigrateVersion70To71());
     ASSERT_EQ(71, dbs->GetVersion());
     ASSERT_FALSE(dbs->needs_column_refresh_);
   }
 
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-
-  ASSERT_FALSE(
-      connection.DoesColumnExist("share_info", "last_sync_timestamp"));
-  ASSERT_FALSE(
-      connection.DoesColumnExist("share_info", "initial_sync_ended"));
+  ASSERT_FALSE(connection.DoesColumnExist("share_info", "last_sync_timestamp"));
+  ASSERT_FALSE(connection.DoesColumnExist("share_info", "initial_sync_ended"));
   ASSERT_TRUE(connection.DoesTableExist("models"));
-  ASSERT_TRUE(
-      connection.DoesColumnExist("models", "initial_sync_ended"));
-  ASSERT_TRUE(
-      connection.DoesColumnExist("models", "last_download_timestamp"));
-  ASSERT_TRUE(
-      connection.DoesColumnExist("models", "model_id"));
+  ASSERT_TRUE(connection.DoesColumnExist("models", "initial_sync_ended"));
+  ASSERT_TRUE(connection.DoesColumnExist("models", "last_download_timestamp"));
+  ASSERT_TRUE(connection.DoesColumnExist("models", "model_id"));
 
   sql::Statement s(connection.GetUniqueStatement("SELECT model_id, "
       "initial_sync_ended, last_download_timestamp FROM models"));
@@ -1690,92 +1657,75 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
 
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion71To72) {
-  SetUpVersion71Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion71Database(&connection);
+
+  ASSERT_TRUE(connection.DoesTableExist("extended_attributes"));
 
   {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_TRUE(connection.DoesTableExist("extended_attributes"));
-  }
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
 
-  {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-
-    dbs->OpenConnectionForTest();
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_TRUE(dbs->MigrateVersion71To72());
     ASSERT_EQ(72, dbs->GetVersion());
     ASSERT_FALSE(dbs->needs_column_refresh_);
   }
 
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
   ASSERT_FALSE(connection.DoesTableExist("extended_attributes"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion72To73) {
-  SetUpVersion72Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion72Database(&connection);
+
+  ASSERT_FALSE(connection.DoesColumnExist("share_info", "notification_state"));
 
   {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_FALSE(
-        connection.DoesColumnExist("share_info", "notification_state"));
-  }
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
 
-  {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-
-    ASSERT_TRUE(dbs->OpenConnectionForTest());
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_TRUE(dbs->MigrateVersion72To73());
     ASSERT_EQ(73, dbs->GetVersion());
     ASSERT_FALSE(dbs->needs_column_refresh_);
   }
 
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-  ASSERT_TRUE(
-      connection.DoesColumnExist("share_info", "notification_state"));
+  ASSERT_TRUE(connection.DoesColumnExist("share_info", "notification_state"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion73To74) {
-  SetUpVersion73Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion73Database(&connection);
+
+  ASSERT_FALSE(
+      connection.DoesColumnExist("share_info", "autofill_migration_state"));
+  ASSERT_FALSE(
+      connection.DoesColumnExist("share_info",
+          "bookmarks_added_during_autofill_migration"));
+  ASSERT_FALSE(
+      connection.DoesColumnExist("share_info", "autofill_migration_time"));
+  ASSERT_FALSE(
+      connection.DoesColumnExist("share_info",
+          "autofill_entries_added_during_migration"));
+
+  ASSERT_FALSE(
+      connection.DoesColumnExist("share_info",
+          "autofill_profiles_added_during_migration"));
 
   {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_FALSE(
-        connection.DoesColumnExist("share_info", "autofill_migration_state"));
-    ASSERT_FALSE(
-        connection.DoesColumnExist("share_info",
-            "bookmarks_added_during_autofill_migration"));
-    ASSERT_FALSE(
-        connection.DoesColumnExist("share_info", "autofill_migration_time"));
-    ASSERT_FALSE(
-        connection.DoesColumnExist("share_info",
-            "autofill_entries_added_during_migration"));
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
 
-    ASSERT_FALSE(
-        connection.DoesColumnExist("share_info",
-            "autofill_profiles_added_during_migration"));
-  }
-
-  {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-
-    dbs->OpenConnectionForTest();
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_TRUE(dbs->MigrateVersion73To74());
     ASSERT_EQ(74, dbs->GetVersion());
     ASSERT_FALSE(dbs->needs_column_refresh_);
   }
 
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
   ASSERT_TRUE(
       connection.DoesColumnExist("share_info", "autofill_migration_state"));
   ASSERT_TRUE(
@@ -1793,55 +1743,45 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion73To74) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion74To75) {
-  SetUpVersion74Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion74Database(&connection);
+
+  ASSERT_FALSE(connection.DoesColumnExist("models", "progress_marker"));
+  ASSERT_TRUE(connection.DoesColumnExist("models", "last_download_timestamp"));
 
   {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_FALSE(connection.DoesColumnExist("models", "progress_marker"));
-    ASSERT_TRUE(connection.DoesColumnExist("models",
-        "last_download_timestamp"));
-  }
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
 
-  {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-
-    dbs->OpenConnectionForTest();
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_TRUE(dbs->MigrateVersion74To75());
     ASSERT_EQ(75, dbs->GetVersion());
     ASSERT_FALSE(dbs->needs_column_refresh_);
   }
 
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
-
   ASSERT_TRUE(connection.DoesColumnExist("models", "progress_marker"));
-  ASSERT_FALSE(connection.DoesColumnExist("models",
-      "last_download_timestamp"));
+  ASSERT_FALSE(connection.DoesColumnExist("models", "last_download_timestamp"));
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion75To76) {
-  SetUpVersion75Database();
-  {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_TRUE(
-        connection.DoesColumnExist("share_info", "autofill_migration_state"));
-    ASSERT_TRUE(connection.DoesColumnExist("share_info",
-        "bookmarks_added_during_autofill_migration"));
-    ASSERT_TRUE(
-        connection.DoesColumnExist("share_info", "autofill_migration_time"));
-    ASSERT_TRUE(connection.DoesColumnExist("share_info",
-        "autofill_entries_added_during_migration"));
-    ASSERT_TRUE(connection.DoesColumnExist("share_info",
-        "autofill_profiles_added_during_migration"));
-  }
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion75Database(&connection);
 
-  scoped_ptr<DirectoryBackingStore> dbs(
-      new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-  dbs->OpenConnectionForTest();
+  ASSERT_TRUE(
+      connection.DoesColumnExist("share_info", "autofill_migration_state"));
+  ASSERT_TRUE(connection.DoesColumnExist("share_info",
+      "bookmarks_added_during_autofill_migration"));
+  ASSERT_TRUE(
+      connection.DoesColumnExist("share_info", "autofill_migration_time"));
+  ASSERT_TRUE(connection.DoesColumnExist("share_info",
+      "autofill_entries_added_during_migration"));
+  ASSERT_TRUE(connection.DoesColumnExist("share_info",
+      "autofill_profiles_added_during_migration"));
+
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
   ASSERT_FALSE(dbs->needs_column_refresh_);
   ASSERT_TRUE(dbs->MigrateVersion75To76());
   ASSERT_EQ(76, dbs->GetVersion());
@@ -1851,15 +1791,16 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion75To76) {
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
-  SetUpVersion76Database();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion76Database(&connection);
 
-  scoped_ptr<DirectoryBackingStore> dbs(
-      new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-  dbs->OpenConnectionForTest();
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
   ASSERT_FALSE(dbs->needs_column_refresh_);
 
   EXPECT_EQ(GetExpectedLegacyMetaProtoTimes(INCLUDE_DELETED_ITEMS),
-            GetMetaProtoTimes(dbs->db_));
+            GetMetaProtoTimes(dbs->db_.get()));
   // Since the proto times are expected to be in a legacy format, they may not
   // be compatible with ProtoTimeToTime, so we don't call ExpectTimes().
 
@@ -1867,25 +1808,22 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion76To77) {
   ASSERT_EQ(77, dbs->GetVersion());
 
   EXPECT_EQ(GetExpectedMetaProtoTimes(INCLUDE_DELETED_ITEMS),
-            GetMetaProtoTimes(dbs->db_));
+            GetMetaProtoTimes(dbs->db_.get()));
   // Cannot actually load entries due to version 77 not having all required
   // columns.
   ASSERT_FALSE(dbs->needs_column_refresh_);
 }
 
 TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
-  SetUpVersion77Database();
-  {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_FALSE(
-        connection.DoesColumnExist("metas", "BASE_SERVER_SPECIFICS"));
-  }
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+  SetUpVersion77Database(&connection);
+
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "BASE_SERVER_SPECIFICS"));
 
   {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
-    dbs->OpenConnectionForTest();
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_TRUE(dbs->MigrateVersion77To78());
     ASSERT_EQ(78, dbs->GetVersion());
@@ -1893,48 +1831,45 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion77To78) {
     ASSERT_FALSE(dbs->needs_column_refresh_);
   }
 
-  {
-    sql::Connection connection;
-    ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    ASSERT_TRUE(
-        connection.DoesColumnExist("metas", "base_server_specifics"));
-  }
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "base_server_specifics"));
 }
 
 TEST_P(MigrationTest, ToCurrentVersion) {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
   switch (GetParam()) {
     case 67:
-      SetUpVersion67Database();
+      SetUpVersion67Database(&connection);
       break;
     case 68:
-      SetUpVersion68Database();
+      SetUpVersion68Database(&connection);
       break;
     case 69:
-      SetUpVersion69Database();
+      SetUpVersion69Database(&connection);
       break;
     case 70:
-      SetUpVersion70Database();
+      SetUpVersion70Database(&connection);
       break;
     case 71:
-      SetUpVersion71Database();
+      SetUpVersion71Database(&connection);
       break;
     case 72:
-      SetUpVersion72Database();
+      SetUpVersion72Database(&connection);
       break;
     case 73:
-      SetUpVersion73Database();
+      SetUpVersion73Database(&connection);
       break;
     case 74:
-      SetUpVersion74Database();
+      SetUpVersion74Database(&connection);
       break;
     case 75:
-      SetUpVersion75Database();
+      SetUpVersion75Database(&connection);
       break;
     case 76:
-      SetUpVersion76Database();
+      SetUpVersion76Database(&connection);
       break;
     case 77:
-      SetUpVersion77Database();
+      SetUpVersion77Database(&connection);
       break;
     default:
       // If you see this error, it may mean that you've increased the
@@ -1961,15 +1896,12 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   STLElementDeleter<MetahandlesIndex> index_deleter(&index);
 
   {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+    scoped_ptr<TestDirectoryBackingStore> dbs(
+        new TestDirectoryBackingStore(GetUsername(), &connection));
     ASSERT_EQ(OPENED, dbs->Load(&index, &dir_info));
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
   }
-
-  sql::Connection connection;
-  ASSERT_TRUE(connection.Open(GetDatabasePath()));
 
   // Columns deleted in Version 67.
   ASSERT_FALSE(connection.DoesColumnExist("metas", "name"));
@@ -1997,13 +1929,11 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   ASSERT_FALSE(connection.DoesTableExist("extended_attributes"));
 
   // Columns added in Version 73.
-  ASSERT_TRUE(connection.DoesColumnExist(
-      "share_info", "notification_state"));
+  ASSERT_TRUE(connection.DoesColumnExist("share_info", "notification_state"));
 
   // Column replaced in version 75.
   ASSERT_TRUE(connection.DoesColumnExist("models", "progress_marker"));
-  ASSERT_FALSE(connection.DoesColumnExist("models",
-      "last_download_timestamp"));
+  ASSERT_FALSE(connection.DoesColumnExist("models", "last_download_timestamp"));
 
   // Columns removed in version 76.
   ASSERT_FALSE(
@@ -2045,7 +1975,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   // Check metas
   EXPECT_EQ(GetExpectedMetaProtoTimes(DONT_INCLUDE_DELETED_ITEMS),
-            GetMetaProtoTimes(connection));
+            GetMetaProtoTimes(&connection));
   ExpectTimes(index, GetExpectedMetaTimes());
 
   MetahandlesIndex::iterator it = index.begin();
@@ -2147,10 +2077,10 @@ INSTANTIATE_TEST_CASE_P(DirectoryBackingStore, MigrationTest,
 TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     std::string model_id =
-        DirectoryBackingStore::ModelTypeEnumToModelId(ModelTypeFromInt(i));
+        TestDirectoryBackingStore::ModelTypeEnumToModelId(ModelTypeFromInt(i));
     EXPECT_EQ(i,
-        DirectoryBackingStore::ModelIdToModelTypeEnum(model_id.data(),
-                                                      model_id.size()));
+        TestDirectoryBackingStore::ModelIdToModelTypeEnum(model_id.data(),
+                                                          model_id.size()));
   }
 }
 
@@ -2158,25 +2088,28 @@ TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
 // intentionally crash when a database is this badly corrupted.
 TEST_F(DirectoryBackingStoreTest, DISABLED_Corruption) {
   {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+    scoped_ptr<OnDiskDirectoryBackingStore> dbs(
+        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
     EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
   }
   std::string bad_data("BAD DATA");
   EXPECT_TRUE(file_util::WriteFile(GetDatabasePath(), bad_data.data(),
                                    bad_data.size()));
   {
-    scoped_ptr<DirectoryBackingStore> dbs(
-        new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+    scoped_ptr<OnDiskDirectoryBackingStore> dbs(
+        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
 
     EXPECT_FALSE(LoadAndIgnoreReturnedData(dbs.get()));
   }
 }
 
 TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
-  SetUpCurrentDatabaseAndCheckVersion();
-  scoped_ptr<DirectoryBackingStore> dbs(
-      new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
+  sql::Connection connection;
+  ASSERT_TRUE(connection.OpenInMemory());
+
+  SetUpCurrentDatabaseAndCheckVersion(&connection);
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
   MetahandlesIndex index;
   Directory::KernelLoadInfo kernel_load_info;
   STLElementDeleter<MetahandlesIndex> index_deleter(&index);
@@ -2217,8 +2150,8 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
 }
 
 TEST_F(DirectoryBackingStoreTest, GenerateCacheGUID) {
-  const std::string& guid1 = DirectoryBackingStore::GenerateCacheGUID();
-  const std::string& guid2 = DirectoryBackingStore::GenerateCacheGUID();
+  const std::string& guid1 = TestDirectoryBackingStore::GenerateCacheGUID();
+  const std::string& guid2 = TestDirectoryBackingStore::GenerateCacheGUID();
   EXPECT_EQ(24U, guid1.size());
   EXPECT_EQ(24U, guid2.size());
   // In theory this test can fail, but it won't before the universe

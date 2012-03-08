@@ -33,7 +33,9 @@
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
+#include "chrome/browser/sync/syncable/in_memory_directory_backing_store.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/on_disk_directory_backing_store.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
@@ -440,8 +442,7 @@ void Directory::InitKernelForTest(
     const browser_sync::WeakHandle<TransactionObserver>&
         transaction_observer) {
   DCHECK(!kernel_);
-  kernel_ =  new Kernel(FilePath(), name, KernelLoadInfo(),
-                        delegate, transaction_observer);
+  kernel_ = new Kernel(name, KernelLoadInfo(), delegate, transaction_observer);
 }
 
 Directory::PersistedKernelInfo::PersistedKernelInfo()
@@ -468,12 +469,11 @@ Directory::SaveChangesSnapshot::SaveChangesSnapshot()
 Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 
 Directory::Kernel::Kernel(
-    const FilePath& db_path, const string& name,
+    const std::string& name,
     const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
     const browser_sync::WeakHandle<TransactionObserver>&
         transaction_observer)
-    : db_path(db_path),
-      refcount(1),
+    : refcount(1),
       next_write_transaction_id(0),
       name(name),
       metahandles_index(new Directory::MetahandlesIndex),
@@ -536,8 +536,29 @@ DirOpenResult Directory::Open(
     DirectoryChangeDelegate* delegate,
     const browser_sync::WeakHandle<TransactionObserver>&
         transaction_observer) {
+  TRACE_EVENT0("sync", "SyncDatabaseOpen");
+
+  FilePath db_path(file_path);
+  file_util::AbsolutePath(&db_path);
+  DirectoryBackingStore* store = new OnDiskDirectoryBackingStore(name, db_path);
+
   const DirOpenResult result =
-      OpenImpl(file_path, name, delegate, transaction_observer);
+      OpenImpl(store, name, delegate, transaction_observer);
+
+  if (OPENED != result)
+    Close();
+  return result;
+}
+
+DirOpenResult Directory::OpenInMemoryForTest(
+    const string& name, DirectoryChangeDelegate* delegate,
+    const browser_sync::WeakHandle<TransactionObserver>&
+        transaction_observer) {
+
+  DirectoryBackingStore* store = new InMemoryDirectoryBackingStore(name);
+
+  const DirOpenResult result =
+      OpenImpl(store, name, delegate, transaction_observer);
   if (OPENED != result)
     Close();
   return result;
@@ -562,22 +583,14 @@ void Directory::InitializeIndices() {
   }
 }
 
-DirectoryBackingStore* Directory::CreateBackingStore(
-    const string& dir_name, const FilePath& backing_filepath) {
-  return new DirectoryBackingStore(dir_name, backing_filepath);
-}
-
 DirOpenResult Directory::OpenImpl(
-    const FilePath& file_path,
+    DirectoryBackingStore* store,
     const string& name,
     DirectoryChangeDelegate* delegate,
     const browser_sync::WeakHandle<TransactionObserver>&
         transaction_observer) {
-  TRACE_EVENT0("sync", "SyncDatabaseOpen");
   DCHECK_EQ(static_cast<DirectoryBackingStore*>(NULL), store_);
-  FilePath db_path(file_path);
-  file_util::AbsolutePath(&db_path);
-  store_ = CreateBackingStore(name, db_path);
+  store_ = store;
 
   KernelLoadInfo info;
   // Temporary indices before kernel_ initialized in case Load fails. We 0(1)
@@ -590,7 +603,7 @@ DirOpenResult Directory::OpenImpl(
   if (!VerifyReferenceIntegrityUnsafe(metas_bucket))
     return FAILED_LOGICAL_CORRUPTION;
 
-  kernel_ = new Kernel(db_path, name, info, delegate, transaction_observer);
+  kernel_ = new Kernel(name, info, delegate, transaction_observer);
   kernel_->metahandles_index->swap(metas_bucket);
   InitializeIndices();
   return OPENED;

@@ -8,8 +8,7 @@
 
 #include <string>
 
-#include "base/file_path.h"
-#include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -26,30 +25,37 @@ namespace syncable {
 struct ColumnSpec;
 typedef Directory::MetahandlesIndex MetahandlesIndex;
 
-// Provides sqlite3-based persistence for a syncable::Directory object. You can
+// Interface that provides persistence for a syncable::Directory object. You can
 // load all the persisted data to prime a syncable::Directory on startup by
-// invoking Load.  The only other thing you (or more correctly, a Directory)
-// can do here is save any changes that have occurred since calling Load, which
-// can be done periodically as often as desired*
+// invoking Load.  The only other thing you (or more correctly, a Directory) can
+// do here is save any changes that have occurred since calling Load, which can
+// be done periodically as often as desired.
 //
 // The DirectoryBackingStore will own an sqlite lock on its database for most of
 // its lifetime.  You must not have two DirectoryBackingStore objects accessing
 // the database simultaneously.  Because the lock exists at the database level,
 // not even two separate browser instances would be able to acquire it
 // simultaneously.
+//
+// This class is abstract so that we can extend it in interesting ways for use
+// in tests.  The concrete class used in non-test scenarios is
+// OnDiskDirectoryBackingStore.
 class DirectoryBackingStore : public base::NonThreadSafe {
  public:
-  DirectoryBackingStore(const std::string& dir_name,
-                        const FilePath& backing_filepath);
-
+  explicit DirectoryBackingStore(const std::string& dir_name);
   virtual ~DirectoryBackingStore();
 
   // Loads and drops all currently persisted meta entries into |entry_bucket|
   // and loads appropriate persisted kernel info into |info_bucket|.
+  //
+  // This function can perform some cleanup tasks behind the scenes.  It will
+  // clean up unused entries from the database and migrate to the latest
+  // database version.  The caller can safely ignore these details.
+  //
   // NOTE: On success (return value of OPENED), the buckets are populated with
   // newly allocated items, meaning ownership is bestowed upon the caller.
-  DirOpenResult Load(MetahandlesIndex* entry_bucket,
-                     Directory::KernelLoadInfo* kernel_load_info);
+  virtual DirOpenResult Load(MetahandlesIndex* entry_bucket,
+                             Directory::KernelLoadInfo* kernel_load_info) = 0;
 
   // Updates the on-disk store with the input |snapshot| as a database
   // transaction.  Does NOT open any syncable transactions as this would cause
@@ -58,28 +64,10 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   // calls SaveChanges *must* be the thread that owns/destroys |this|.
   virtual bool SaveChanges(const Directory::SaveChangesSnapshot& snapshot);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion67To68);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion68To69);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion69To70);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion70To71);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion71To72);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion72To73);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion73To74);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion74To75);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion75To76);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion76To77);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion77To78);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);
-  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, GenerateCacheGUID);
-  FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
-  friend class MigrationTest;
-
-  // Opens a connection to the database without performing automatic pruning
-  // of deleted data or migration to latest DB version.
-  bool OpenConnectionForTest();
+ protected:
+  // For test classes.
+  DirectoryBackingStore(const std::string& dir_name,
+                        sql::Connection* connection);
 
   // General Directory initialization and load helpers.
   bool InitializeTables();
@@ -162,10 +150,9 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   bool MigrateVersion76To77();
   bool MigrateVersion77To78();
 
-  sql::Connection db_;
+  scoped_ptr<sql::Connection> db_;
   sql::Statement save_entry_statement_;
   std::string dir_name_;
-  FilePath backing_filepath_;
 
   // Set to true if migration left some old columns around that need to be
   // discarded.

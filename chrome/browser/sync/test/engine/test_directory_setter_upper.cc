@@ -24,8 +24,7 @@ TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 void TestDirectorySetterUpper::SetUp() {
   directory_.reset(new syncable::Directory(&encryptor_, &handler_, NULL));
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  ASSERT_EQ(syncable::OPENED, directory_->Open(
-          temp_dir_.path().Append(syncable::Directory::kSyncDatabaseFilename),
+  ASSERT_EQ(syncable::OPENED, directory_->OpenInMemoryForTest(
           name_, &delegate_, NullTransactionObserver()));
 }
 

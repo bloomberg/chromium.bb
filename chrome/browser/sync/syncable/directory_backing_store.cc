@@ -135,53 +135,27 @@ void AppendColumnList(std::string* output) {
 ///////////////////////////////////////////////////////////////////////////////
 // DirectoryBackingStore implementation.
 
+DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
+  : db_(new sql::Connection()),
+    dir_name_(dir_name),
+    needs_column_refresh_(false) {
+}
+
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
-                                             const FilePath& backing_filepath)
-    : dir_name_(dir_name),
-      backing_filepath_(backing_filepath),
-      needs_column_refresh_(false) {
-  db_.set_exclusive_locking();
-  db_.set_page_size(4096);
+                                             sql::Connection* db)
+  : db_(db),
+    dir_name_(dir_name),
+    needs_column_refresh_(false) {
 }
 
 DirectoryBackingStore::~DirectoryBackingStore() {
-}
-
-DirOpenResult DirectoryBackingStore::Load(
-    MetahandlesIndex* entry_bucket,
-    Directory::KernelLoadInfo* kernel_load_info) {
-  DCHECK(CalledOnValidThread());
-  if (!db_.is_open()) {
-    bool open_did_succeed = db_.Open(backing_filepath_);
-    if (!open_did_succeed)
-      return FAILED_OPEN_DATABASE;
-  }
-
-  if (!InitializeTables())
-    return FAILED_OPEN_DATABASE;
-
-  if (!DropDeletedEntries())
-    return FAILED_DATABASE_CORRUPT;
-  if (!LoadEntries(entry_bucket))
-    return FAILED_DATABASE_CORRUPT;
-  if (!LoadInfo(kernel_load_info))
-    return FAILED_DATABASE_CORRUPT;
-
-  return OPENED;
-}
-
-bool DirectoryBackingStore::OpenConnectionForTest() {
-  if (db_.is_open())
-    return true;
-
-  return db_.Open(backing_filepath_);
 }
 
 bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
   if (handles.empty())
     return true;
 
-  sql::Statement statement(db_.GetCachedStatement(
+  sql::Statement statement(db_->GetCachedStatement(
           SQL_FROM_HERE, "DELETE FROM metas WHERE metahandle = ?"));
 
   for (MetahandleSet::const_iterator i = handles.begin(); i != handles.end();
@@ -197,7 +171,7 @@ bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
 bool DirectoryBackingStore::SaveChanges(
     const Directory::SaveChangesSnapshot& snapshot) {
   DCHECK(CalledOnValidThread());
-  DCHECK(db_.is_open());
+  DCHECK(db_->is_open());
 
   // Back out early if there is nothing to write.
   bool save_info =
@@ -205,7 +179,7 @@ bool DirectoryBackingStore::SaveChanges(
   if (snapshot.dirty_metas.size() < 1 && !save_info)
     return true;
 
-  sql::Transaction transaction(&db_);
+  sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
 
@@ -221,7 +195,7 @@ bool DirectoryBackingStore::SaveChanges(
 
   if (save_info) {
     const Directory::PersistedKernelInfo& info = snapshot.kernel_info;
-    sql::Statement s1(db_.GetCachedStatement(
+    sql::Statement s1(db_->GetCachedStatement(
             SQL_FROM_HERE,
             "UPDATE share_info "
             "SET store_birthday = ?, "
@@ -234,9 +208,9 @@ bool DirectoryBackingStore::SaveChanges(
 
     if (!s1.Run())
       return false;
-    DCHECK_EQ(db_.GetLastChangeCount(), 1);
+    DCHECK_EQ(db_->GetLastChangeCount(), 1);
 
-    sql::Statement s2(db_.GetCachedStatement(
+    sql::Statement s2(db_->GetCachedStatement(
             SQL_FROM_HERE,
             "INSERT OR REPLACE "
             "INTO models (model_id, progress_marker, initial_sync_ended) "
@@ -252,7 +226,7 @@ bool DirectoryBackingStore::SaveChanges(
       s2.BindBool(2, info.initial_sync_ended.Has(ModelTypeFromInt(i)));
       if (!s2.Run())
         return false;
-      DCHECK_EQ(db_.GetLastChangeCount(), 1);
+      DCHECK_EQ(db_->GetLastChangeCount(), 1);
       s2.Reset();
     }
   }
@@ -261,7 +235,7 @@ bool DirectoryBackingStore::SaveChanges(
 }
 
 bool DirectoryBackingStore::InitializeTables() {
-  sql::Transaction transaction(&db_);
+  sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
 
@@ -362,7 +336,7 @@ bool DirectoryBackingStore::InitializeTables() {
       return false;
   }
 
-  sql::Statement s(db_.GetUniqueStatement(
+  sql::Statement s(db_->GetUniqueStatement(
           "SELECT db_create_version, db_create_time FROM share_info"));
   if (!s.Step())
     return false;
@@ -396,14 +370,14 @@ bool DirectoryBackingStore::RefreshColumns() {
   query.append(") SELECT ");
   AppendColumnList(&query);
   query.append(" FROM metas");
-  if (!db_.Execute(query.c_str()))
+  if (!db_->Execute(query.c_str()))
     return false;
 
   // Drop metas.
   SafeDropTable("metas");
 
   // Rename temp_metas -> metas.
-  if (!db_.Execute("ALTER TABLE temp_metas RENAME TO metas"))
+  if (!db_->Execute("ALTER TABLE temp_metas RENAME TO metas"))
     return false;
 
   // Repeat the process for share_info.
@@ -411,7 +385,7 @@ bool DirectoryBackingStore::RefreshColumns() {
   if (!CreateShareInfoTable(true))
     return false;
 
-  if (!db_.Execute(
+  if (!db_->Execute(
           "INSERT INTO temp_share_info (id, name, store_birthday, "
           "db_create_version, db_create_time, next_id, cache_guid,"
           "notification_state) "
@@ -421,7 +395,7 @@ bool DirectoryBackingStore::RefreshColumns() {
     return false;
 
   SafeDropTable("share_info");
-  if (!db_.Execute("ALTER TABLE temp_share_info RENAME TO share_info"))
+  if (!db_->Execute("ALTER TABLE temp_share_info RENAME TO share_info"))
     return false;
 
   needs_column_refresh_ = false;
@@ -435,7 +409,7 @@ bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
   AppendColumnList(&select);
   select.append(" FROM metas ");
 
-  sql::Statement s(db_.GetUniqueStatement(select.c_str()));
+  sql::Statement s(db_->GetUniqueStatement(select.c_str()));
 
   while (s.Step()) {
     EntryKernel *kernel = UnpackEntry(&s);
@@ -447,7 +421,7 @@ bool DirectoryBackingStore::LoadEntries(MetahandlesIndex* entry_bucket) {
 bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
     sql::Statement s(
-        db_.GetUniqueStatement(
+        db_->GetUniqueStatement(
             "SELECT store_birthday, next_id, cache_guid, notification_state "
             "FROM share_info"));
     if (!s.Step())
@@ -465,7 +439,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
 
   {
     sql::Statement s(
-        db_.GetUniqueStatement(
+        db_->GetUniqueStatement(
             "SELECT model_id, progress_marker, initial_sync_ended "
             "FROM models"));
 
@@ -484,7 +458,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   }
   {
     sql::Statement s(
-        db_.GetUniqueStatement(
+        db_->GetUniqueStatement(
             "SELECT MAX(metahandle) FROM metas"));
     if (!s.Step())
       return false;
@@ -523,7 +497,7 @@ bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
     query.append(values);
 
     save_entry_statement_.Assign(
-        db_.GetUniqueStatement(query.c_str()));
+        db_->GetUniqueStatement(query.c_str()));
   } else {
     save_entry_statement_.Reset();
   }
@@ -533,16 +507,16 @@ bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
 }
 
 bool DirectoryBackingStore::DropDeletedEntries() {
-  return db_.Execute("DELETE FROM metas "
-                     "WHERE is_del > 0 "
-                     "AND is_unsynced < 1 "
-                     "AND is_unapplied_update < 1");
+  return db_->Execute("DELETE FROM metas "
+                      "WHERE is_del > 0 "
+                      "AND is_unsynced < 1 "
+                      "AND is_unapplied_update < 1");
 }
 
 bool DirectoryBackingStore::SafeDropTable(const char* table_name) {
   string query = "DROP TABLE IF EXISTS ";
   query.append(table_name);
-  return db_.Execute(query.c_str());
+  return db_->Execute(query.c_str());
 }
 
 void DirectoryBackingStore::DropAllTables() {
@@ -593,8 +567,8 @@ bool DirectoryBackingStore::MigrateToSpecifics(
   std::string update_sql = base::StringPrintf(
       "UPDATE metas SET %s = ? WHERE metahandle = ?", specifics_column);
 
-  sql::Statement query(db_.GetUniqueStatement(query_sql.c_str()));
-  sql::Statement update(db_.GetUniqueStatement(update_sql.c_str()));
+  sql::Statement query(db_->GetUniqueStatement(query_sql.c_str()));
+  sql::Statement update(db_->GetUniqueStatement(update_sql.c_str()));
 
   while (query.Step()) {
     int64 metahandle = query.ColumnInt64(0);
@@ -615,7 +589,7 @@ bool DirectoryBackingStore::MigrateToSpecifics(
 }
 
 bool DirectoryBackingStore::SetVersion(int version) {
-  sql::Statement s(db_.GetCachedStatement(
+  sql::Statement s(db_->GetCachedStatement(
           SQL_FROM_HERE, "UPDATE share_version SET data = ?"));
   s.BindInt(0, version);
 
@@ -623,10 +597,10 @@ bool DirectoryBackingStore::SetVersion(int version) {
 }
 
 int DirectoryBackingStore::GetVersion() {
-  if (!db_.DoesTableExist("share_version"))
+  if (!db_->DoesTableExist("share_version"))
     return 0;
 
-  sql::Statement statement(db_.GetUniqueStatement(
+  sql::Statement statement(db_->GetUniqueStatement(
           "SELECT data FROM share_version"));
   if (statement.Step()) {
     return statement.ColumnInt(0);
@@ -649,15 +623,15 @@ bool DirectoryBackingStore::MigrateVersion67To68() {
 bool DirectoryBackingStore::MigrateVersion69To70() {
   // Added "unique_client_tag", renamed "singleton_tag" to unique_server_tag
   SetVersion(70);
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE metas ADD COLUMN unique_server_tag varchar"))
     return false;
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE metas ADD COLUMN unique_client_tag varchar"))
     return false;
   needs_column_refresh_ = true;
 
-  if (!db_.Execute(
+  if (!db_->Execute(
           "UPDATE metas SET unique_server_tag = singleton_tag"))
     return false;
 
@@ -705,10 +679,10 @@ bool DirectoryBackingStore::MigrateVersion68To69() {
   // former scheme to the latter scheme.
 
   // First, add the two new columns to the schema.
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE metas ADD COLUMN specifics blob"))
     return false;
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE metas ADD COLUMN server_specifics blob"))
     return false;
 
@@ -730,7 +704,7 @@ bool DirectoryBackingStore::MigrateVersion68To69() {
 
   // Lastly, fix up the "Google Chrome" folder, which is of the TOP_LEVEL_FOLDER
   // ModelType: it shouldn't have BookmarkSpecifics.
-  if (!db_.Execute(
+  if (!db_->Execute(
           "UPDATE metas SET specifics = NULL, server_specifics = NULL WHERE "
           "singleton_tag IN ('google_chrome')"))
     return false;
@@ -749,7 +723,7 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
 
   // Move data from the old share_info columns to the new models table.
   {
-    sql::Statement fetch(db_.GetUniqueStatement(
+    sql::Statement fetch(db_->GetUniqueStatement(
             "SELECT last_sync_timestamp, initial_sync_ended FROM share_info"));
     if (!fetch.Step())
       return false;
@@ -761,7 +735,7 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
     DCHECK(!fetch.Step());
     DCHECK(fetch.Succeeded());
 
-    sql::Statement update(db_.GetUniqueStatement(
+    sql::Statement update(db_->GetUniqueStatement(
             "INSERT INTO models (model_id, "
             "last_download_timestamp, initial_sync_ended) VALUES (?, ?, ?)"));
     string bookmark_model_id = ModelTypeEnumToModelId(BOOKMARKS);
@@ -778,14 +752,14 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
 
   if (!CreateShareInfoTableVersion71(kCreateAsTempShareInfo))
     return false;
-  if (!db_.Execute(
+  if (!db_->Execute(
           "INSERT INTO temp_share_info (id, name, store_birthday, "
           "db_create_version, db_create_time, next_id, cache_guid) "
           "SELECT id, name, store_birthday, db_create_version, "
           "db_create_time, next_id, cache_guid FROM share_info"))
     return false;
   SafeDropTable("share_info");
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE temp_share_info RENAME TO share_info"))
     return false;
   SetVersion(71);
@@ -802,7 +776,7 @@ bool DirectoryBackingStore::MigrateVersion71To72() {
 
 bool DirectoryBackingStore::MigrateVersion72To73() {
   // Version 73 added one column to the table 'share_info': notification_state
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE share_info ADD COLUMN notification_state BLOB"))
     return false;
   SetVersion(73);
@@ -817,29 +791,29 @@ bool DirectoryBackingStore::MigrateVersion73To74() {
   //   autofill_entries_added_during_migration
   //   autofill_profiles_added_during_migration
 
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE share_info ADD COLUMN "
           "autofill_migration_state INT default 0"))
     return false;
 
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE share_info ADD COLUMN "
           "bookmarks_added_during_autofill_migration "
           "INT default 0"))
     return false;
 
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE share_info ADD COLUMN autofill_migration_time "
           "INT default 0"))
     return false;
 
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE share_info ADD COLUMN "
           "autofill_entries_added_during_migration "
           "INT default 0"))
     return false;
 
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE share_info ADD COLUMN "
           "autofill_profiles_added_during_migration "
           "INT default 0"))
@@ -861,16 +835,16 @@ bool DirectoryBackingStore::MigrateVersion74To75() {
   // last_download_timestamp, thereby preserving the download state.
 
   // Move aside the old table and create a new empty one at the current schema.
-  if (!db_.Execute("ALTER TABLE models RENAME TO temp_models"))
+  if (!db_->Execute("ALTER TABLE models RENAME TO temp_models"))
     return false;
   if (!CreateModelsTable())
     return false;
 
-  sql::Statement query(db_.GetUniqueStatement(
+  sql::Statement query(db_->GetUniqueStatement(
           "SELECT model_id, last_download_timestamp, initial_sync_ended "
           "FROM temp_models"));
 
-  sql::Statement update(db_.GetUniqueStatement(
+  sql::Statement update(db_->GetUniqueStatement(
           "INSERT INTO models (model_id, "
           "progress_marker, initial_sync_ended) VALUES (?, ?, ?)"));
 
@@ -934,7 +908,7 @@ bool DirectoryBackingStore::MigrateVersion76To77() {
 // since the Unix epoch).
 #define TO_UNIX_TIME_MS(x) #x " = " #x " * 1000"
 #endif
-  sql::Statement update_timestamps(db_.GetUniqueStatement(
+  sql::Statement update_timestamps(db_->GetUniqueStatement(
           "UPDATE metas SET "
           TO_UNIX_TIME_MS(mtime) ", "
           TO_UNIX_TIME_MS(server_mtime) ", "
@@ -949,7 +923,7 @@ bool DirectoryBackingStore::MigrateVersion76To77() {
 
 bool DirectoryBackingStore::MigrateVersion77To78() {
   // Version 78 added one column to table 'metas': base_server_specifics.
-  if (!db_.Execute(
+  if (!db_->Execute(
           "ALTER TABLE metas ADD COLUMN base_server_specifics BLOB")) {
     return false;
   }
@@ -960,14 +934,14 @@ bool DirectoryBackingStore::MigrateVersion77To78() {
 bool DirectoryBackingStore::CreateTables() {
   DVLOG(1) << "First run, creating tables";
   // Create two little tables share_version and share_info
-  if (!db_.Execute(
+  if (!db_->Execute(
           "CREATE TABLE share_version ("
           "id VARCHAR(128) primary key, data INT)")) {
     return false;
   }
 
   {
-    sql::Statement s(db_.GetUniqueStatement(
+    sql::Statement s(db_->GetUniqueStatement(
             "INSERT INTO share_version VALUES(?, ?)"));
     s.BindString(0, dir_name_);
     s.BindInt(1, kCurrentDBVersion);
@@ -982,7 +956,7 @@ bool DirectoryBackingStore::CreateTables() {
   }
 
   {
-    sql::Statement s(db_.GetUniqueStatement(
+    sql::Statement s(db_->GetUniqueStatement(
             "INSERT INTO share_info VALUES"
             "(?, "  // id
             "?, "   // name
@@ -1014,7 +988,7 @@ bool DirectoryBackingStore::CreateTables() {
   {
     // Insert the entry for the root into the metas table.
     const int64 now = browser_sync::TimeToProtoTime(base::Time::Now());
-    sql::Statement s(db_.GetUniqueStatement(
+    sql::Statement s(db_->GetUniqueStatement(
             "INSERT INTO metas "
             "( id, metahandle, is_dir, ctime, mtime) "
             "VALUES ( \"r\", 1, 1, ?, ?)"));
@@ -1033,12 +1007,12 @@ bool DirectoryBackingStore::CreateMetasTable(bool is_temporary) {
   string query = "CREATE TABLE ";
   query.append(name);
   query.append(ComposeCreateTableColumnSpecs());
-  return db_.Execute(query.c_str());
+  return db_->Execute(query.c_str());
 }
 
 bool DirectoryBackingStore::CreateV71ModelsTable() {
   // This is an old schema for the Models table, used from versions 71 to 74.
-  return db_.Execute(
+  return db_->Execute(
       "CREATE TABLE models ("
       "model_id BLOB primary key, "
       "last_download_timestamp INT, "
@@ -1052,7 +1026,7 @@ bool DirectoryBackingStore::CreateModelsTable() {
   // This is the current schema for the Models table, from version 75
   // onward.  If you change the schema, you'll probably want to double-check
   // the use of this function in the v74-v75 migration.
-  return db_.Execute(
+  return db_->Execute(
       "CREATE TABLE models ("
       "model_id BLOB primary key, "
       "progress_marker BLOB, "
@@ -1079,7 +1053,7 @@ bool DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {
 
   query.append(", notification_state BLOB");
   query.append(")");
-  return db_.Execute(query.c_str());
+  return db_->Execute(query.c_str());
 }
 
 bool DirectoryBackingStore::CreateShareInfoTableVersion71(
@@ -1096,6 +1070,7 @@ bool DirectoryBackingStore::CreateShareInfoTableVersion71(
       "db_create_time INT, "
       "next_id INT default -2, "
       "cache_guid TEXT )");
-  return db_.Execute(query.c_str());
+  return db_->Execute(query.c_str());
 }
+
 }  // namespace syncable
