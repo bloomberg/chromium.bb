@@ -103,9 +103,7 @@ bool DownloadDatabase::EnsureColumnExists(
 
 bool DownloadDatabase::InitDownloadTable() {
   CheckThread();
-  bool success = meta_table_.Init(&GetDB(), 0, 0);
-  DCHECK(success);
-  meta_table_.GetValue(kNextDownloadId, &next_id_);
+  GetMetaTable().GetValue(kNextDownloadId, &next_id_);
   if (GetDB().DoesTableExist("downloads")) {
     return EnsureColumnExists("end_time", "INTEGER NOT NULL DEFAULT 0") &&
            EnsureColumnExists("opened", "INTEGER NOT NULL DEFAULT 0");
@@ -224,7 +222,7 @@ int64 DownloadDatabase::CreateDownload(
 
   if (statement.Run()) {
     // TODO(benjhayden) if(info.id>next_id_){setvalue;next_id_=info.id;}
-    meta_table_.SetValue(kNextDownloadId, ++next_id_);
+    GetMetaTable().SetValue(kNextDownloadId, ++next_id_);
 
     return db_handle;
   }

@@ -234,6 +234,10 @@ sql::Connection& HistoryDatabase::GetDB() {
   return db_;
 }
 
+sql::MetaTable& HistoryDatabase::GetMetaTable() {
+  return meta_table_;
+}
+
 // Migration -------------------------------------------------------------------
 
 sql::InitStatus HistoryDatabase::EnsureCurrentVersion(

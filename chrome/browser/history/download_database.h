@@ -64,6 +64,9 @@ class DownloadDatabase {
   // Returns the database for the functions in this interface.
   virtual sql::Connection& GetDB() = 0;
 
+  // Returns the meta-table object for the functions in this interface.
+  virtual sql::MetaTable& GetMetaTable() = 0;
+
   // Creates the downloads table if needed.
   bool InitDownloadTable();
 
@@ -82,7 +85,6 @@ class DownloadDatabase {
 
   int next_id_;
   int next_db_handle_;
-  sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDatabase);
 };

@@ -160,9 +160,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {
     sql::Connection db;
     ASSERT_TRUE(db.Open(temp_dir_.path().Append(chrome::kCookieFilename)));
     sql::MetaTable meta_table_;
-    meta_table_.Init(&db, 0, 0);
-    meta_table_.SetVersionNumber(0);
-    meta_table_.SetCompatibleVersionNumber(0);
+    meta_table_.Init(&db, 1, 1);
+    ASSERT_TRUE(db.Execute("DELETE FROM meta"));
     db.Close();
   }
 
