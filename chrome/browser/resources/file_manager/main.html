@@ -159,12 +159,12 @@
         !this.isAura_'>[TITLE]</div>
     <div class=dialog-container>
       <div class=dialog-sidebar>
-        <div class=close-sidebar></div>
+        <div class=close-sidebar tabindex=0 role="button"></div>
         <list class=roots-list></list>
       </div>
       <div class=dialog-main>
         <div class=dialog-header>
-          <div class=open-sidebar></div>
+          <div class=open-sidebar tabindex=0 role="button"></div>
           <div class=breadcrumbs></div>
           <!-- The outter div is a hack to remove margin between buttons. -->
           <div><button class="detail-view" tabindex="4" disabled></button></div>
@@ -188,8 +188,13 @@
             <div class=spacer></div>
             <div class=tasks></div>
             <div class='delete-button cr-button task-item' command='#delete'
+                    role="button" tabindex=0
                     onclick='fileManager.deleteEntries(
                              fileManager.selection.entries, false)'
+                    onkeypress='if (event.keyCode == 13 ||
+                                    event.keyCode == 32) {
+                                    fileManager.deleteEntries(
+                                      fileManager.selection.entries, false);}'
                     visibleif='this.dialogType_ == "full-page"'
                 ><img src='images/button-icon-delete.png'
                 ><div i18n-content=DELETE_BUTTON_LABEL></div

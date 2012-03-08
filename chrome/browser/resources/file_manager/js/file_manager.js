@@ -667,8 +667,12 @@ FileManager.prototype = {
 
     this.dialogDom_.querySelector('div.open-sidebar').addEventListener(
         'click', this.onToggleSidebar_.bind(this));
+    this.dialogDom_.querySelector('div.open-sidebar').addEventListener(
+        'keypress', this.onToggleSidebarPress_.bind(this));
     this.dialogDom_.querySelector('div.close-sidebar').addEventListener(
         'click', this.onToggleSidebar_.bind(this));
+    this.dialogDom_.querySelector('div.close-sidebar').addEventListener(
+        'keypress', this.onToggleSidebarPress_.bind(this));
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
 
     this.dialogDom_.querySelector('button.detail-view').addEventListener(
@@ -3608,6 +3612,18 @@ FileManager.prototype = {
         }
     }, 0);
   };
+
+  /**
+   * Handles a keypress on the toggle sidebar button.  It has the same effect as
+   * a mouseclick if enter or space is pressed.
+   *
+   * @param {KeyboardEvent} event Information on the key event.
+   */
+  FileManager.prototype.onToggleSidebarPress_ = function(event) {
+    // Check if Enter (13) or Space (32) is pressed.
+    if (event.keyCode == 13 || event.keyCode == 32)
+      this.onToggleSidebar_(event);
+  }
 
   FileManager.prototype.onToggleSidebar_ = function(event) {
     if (this.dialogContainer_.hasAttribute('sidebar')) {
