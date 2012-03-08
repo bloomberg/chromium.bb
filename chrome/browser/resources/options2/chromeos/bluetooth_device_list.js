@@ -169,14 +169,45 @@ cr.define('options.system.bluetooth', function() {
       return new BluetoothListItem(entry);
     },
 
+    /**
+     * Override base implementation of handleClick_, which unconditionally
+     * removes the item.  In this case, removal of the element is deferred
+     * pending confirmation from the Bluetooth adapter.
+     * @param {Event} e The click event object.
+     * @private
+     */
+    handleClick_: function(e) {
+      if (this.disabled)
+        return;
+
+      var target = e.target;
+      if (!target.classList.contains('close-button'))
+        return;
+
+      var listItem = this.getListItemAncestor(target);
+      var selected = this.selectionModel.selectedIndexes;
+      var index = this.getIndexOfListItem(listItem);
+      if (selected.indexOf(index) == -1)
+        selected = [index];
+      for (var j = selected.length - 1; j >= 0; j--) {
+        var index = selected[j];
+        var item = this.getListItemByIndex(index);
+        if (item && item.deletable) {
+          // Device is busy until we hear back from the Bluetooth adapter.
+          // Prevent double removal request.
+          item.deletable = false;
+          // TODO(kevers): Provide visual feedback that the device is busy.
+
+          // Inform the bluetooth adapter that we are disconnecting or
+          // forgetting the device.
+          chrome.send('updateBluetoothDevice',
+            [item.data.address, item.connected ? 'disconnect' : 'forget']);
+        }
+      }
+    },
+
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
-      var item = this.dataModel.item(index);
-      if (item && (item.connected || item.paired)) {
-        // Inform the bluetooth adapter that we are disconnecting the device.
-        chrome.send('updateBluetoothDevice',
-            [item.address, item.connected ? 'disconnect' : 'forget']);
-      }
       this.dataModel.splice(index, 1);
       this.refresh();
       this.updateListVisibility_();

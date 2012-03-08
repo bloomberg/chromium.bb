@@ -1159,6 +1159,22 @@ cr.define('options', function() {
       if (device.pairing)
         BluetoothPairing.showDialog(device);
     },
+
+    /**
+     * Removes an element from the list of available devices.
+     * @param {string} address Unique address of the device.
+     * @private
+     */
+    removeBluetoothDevice_: function(address) {
+      var index = $('bluetooth-unpaired-devices-list').find(address);
+      if (index != undefined) {
+        $('bluetooth-unpaired-devices-list').deleteItemAtIndex(index);
+      } else {
+        index = $('bluetooth-paired-devices-list').find(address);
+        if (index != undefined)
+          $('bluetooth-paired-devices-list').deleteItemAtIndex(index);
+      }
+    }
   };
 
   //Forward public APIs to private implementations.
@@ -1168,6 +1184,7 @@ cr.define('options', function() {
     'guestModeActive',
     'hideBluetoothSettings',
     'removeCloudPrintConnectorSection',
+    'removeBluetoothDevice',
     'setAutoOpenFileTypesDisabledAttribute',
     'setBackgroundModeCheckboxState',
     'setBluetoothState',
