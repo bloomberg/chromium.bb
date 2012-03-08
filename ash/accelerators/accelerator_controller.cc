@@ -38,6 +38,7 @@ enum AcceleratorAction {
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
+  TOGGLE_APP_LIST,
   TOGGLE_CAPS_LOCK,
   VOLUME_DOWN,
   VOLUME_MUTE,
@@ -102,6 +103,8 @@ const struct AcceleratorData {
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_PRINT, false, false, false,
     TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_LWIN, false, true, false,
+    TOGGLE_APP_LIST },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_LWIN, true, false, false,
     TOGGLE_CAPS_LOCK },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F6, false, false, false,
@@ -343,6 +346,9 @@ bool AcceleratorController::AcceleratorPressed(
       // Return true to prevent propagation of the key event because
       // this key combination is reserved for partial screenshot.
       return true;
+    case TOGGLE_APP_LIST:
+      ash::Shell::GetInstance()->ToggleAppList();
+      break;
     case TOGGLE_CAPS_LOCK:
       if (caps_lock_delegate_.get())
         return caps_lock_delegate_->HandleToggleCapsLock();
