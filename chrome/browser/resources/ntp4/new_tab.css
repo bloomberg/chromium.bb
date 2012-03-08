@@ -211,7 +211,7 @@ html[dir='rtl'] .login-status-icon {
 }
 
 .profile-name:hover,
-.link-span:hover {
+.link-span {
   text-decoration: underline;
 }
 
