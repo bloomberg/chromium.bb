@@ -7,36 +7,34 @@
 
 #include <windows.h>
 
-#include "base/basictypes.h"
-#include "base/logging.h"
+#include "base/win/scoped_handle.h"
 
 namespace remoting {
 
-// Used so we always remember to close service control manager handles.
-// The class interface matches that of base::win::ScopedHandle.
-class ScopedScHandle {
+class ScHandleTraits {
  public:
-  ScopedScHandle();
-  explicit ScopedScHandle(SC_HANDLE h);
-  ~ScopedScHandle();
+  typedef SC_HANDLE Handle;
 
-  SC_HANDLE Get() {
-    return handle_;
+  // Closes the handle.
+  static bool CloseHandle(SC_HANDLE handle) {
+    return ::CloseServiceHandle(handle) != FALSE;
   }
 
-  operator SC_HANDLE() {
-    return handle_;
+  // Returns true if the handle value is valid.
+  static bool IsHandleValid(SC_HANDLE handle) {
+    return handle != NULL;
   }
 
-  void Close();
-  bool IsValid() const;
-  void Set(SC_HANDLE new_handle);
-  SC_HANDLE Take();
+  // Returns NULL handle value.
+  static SC_HANDLE NullHandle() {
+    return NULL;
+  }
 
  private:
-  SC_HANDLE handle_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedScHandle);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScHandleTraits);
 };
+
+typedef base::win::GenericScopedHandle<ScHandleTraits> ScopedScHandle;
 
 }  // namespace remoting
 

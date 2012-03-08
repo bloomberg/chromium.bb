@@ -281,7 +281,6 @@
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
           ],
           'sources': [
-            'base/scoped_sc_handle_win.cc',
             'base/scoped_sc_handle_win.h',
             'host/host_service.rc',
             'host/host_service_resource.h',
