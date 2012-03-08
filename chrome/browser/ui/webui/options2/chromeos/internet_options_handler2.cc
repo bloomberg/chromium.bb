@@ -832,11 +832,12 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   chromeos::NetworkProfileType network_profile = network->profile_type();
   dictionary.SetBoolean("showProxy", network_profile != chromeos::PROFILE_NONE);
 
-  // Hide the dhcp/static radio if not ethernet or wifi (or if not enabled)
-  bool staticIPConfig = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableStaticIPConfig);
-  dictionary.SetBoolean("showStaticIPConfig", staticIPConfig &&
-      (type == chromeos::TYPE_WIFI || type == chromeos::TYPE_ETHERNET));
+  // Enable static ip config for ethernet. For wifi, enable if flag is set.
+  bool staticIPConfig = type == chromeos::TYPE_ETHERNET ||
+      (type == chromeos::TYPE_WIFI &&
+       CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableStaticIPConfig));
+  dictionary.SetBoolean("showStaticIPConfig", staticIPConfig);
 
   chromeos::NetworkPropertyUIData preferred_ui_data(ui_data);
   if (network_profile == chromeos::PROFILE_USER) {
