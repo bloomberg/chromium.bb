@@ -94,8 +94,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
                           std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
   virtual WebKit::WebPeerConnectionHandler* createPeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client) OVERRIDE;
-  virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
-      WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;

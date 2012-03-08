@@ -40,8 +40,6 @@ struct ViewMsg_New_Params;
 class WebDatabaseObserverImpl;
 
 namespace WebKit {
-class WebMediaStreamCenter;
-class WebMediaStreamCenterClient;
 class WebStorageEventDispatcher;
 }
 
@@ -54,7 +52,6 @@ class ScopedCOMInitializer;
 }
 
 namespace content {
-class MediaStreamCenter;
 class RenderProcessObserver;
 }
 
@@ -172,11 +169,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
     return audio_message_filter_.get();
   }
 
-  // Creates the embedder implementation of WebMediaStreamCenter.
-  // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
-  WebKit::WebMediaStreamCenter* CreateMediaStreamCenter(
-      WebKit::WebMediaStreamCenterClient* client);
-
   VideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
   }
@@ -219,9 +211,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
   scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
-
-  // Used on the render thread and deleted by WebKit at shutdown.
-  content::MediaStreamCenter* media_stream_center_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;

@@ -48,7 +48,6 @@
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
-#include "content/renderer/media/media_stream_center.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/plugin_channel_host.h"
@@ -209,8 +208,6 @@ void RenderThreadImpl::Init() {
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
   main_thread_indexed_db_dispatcher_.reset(
       IndexedDBDispatcher::ThreadSpecificInstance());
-
-  media_stream_center_ = NULL;
 
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
@@ -925,17 +922,6 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   gpu_channel_->Connect(channel_handle, renderer_process_for_gpu);
 
   return GetGpuChannel();
-}
-
-WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
-    WebKit::WebMediaStreamCenterClient* client) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMediaStream)) {
-    return NULL;
-  }
-  if (!media_stream_center_)
-    media_stream_center_ = new content::MediaStreamCenter(client);
-  return media_stream_center_;
 }
 
 GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
