@@ -93,6 +93,13 @@ cr.define('options.internet', function() {
     },
   };
 
+  /**
+   * Whether the IP configuration list is disabled. Only used for display
+   * purpose.
+   * @type {boolean}
+   */
+  cr.defineProperty(IPConfigList, 'disabled', cr.PropertyKind.BOOL_ATTR);
+
   return {
     IPConfigList: IPConfigList
   };
