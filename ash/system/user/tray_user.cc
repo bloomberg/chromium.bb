@@ -138,7 +138,7 @@ class UserView : public views::View,
     else if (sender == signout_)
       tray->SignOut();
     else if (sender == lock_)
-      tray->LockScreen();
+      tray->RequestLockScreen();
   }
 
   views::Label* username_;

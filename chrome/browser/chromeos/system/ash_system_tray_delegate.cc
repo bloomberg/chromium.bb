@@ -109,7 +109,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     BrowserList::AttemptUserExit();
   }
 
-  virtual void LockScreen() OVERRIDE {
+  virtual void RequestLockScreen() OVERRIDE {
     DBusThreadManager::Get()->GetPowerManagerClient()->
         NotifyScreenLockRequested();
   }
@@ -131,6 +131,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE {
     ash::Shell::GetInstance()->power_status_controller()->
         OnPowerStatusChanged(power_status);
+  }
+
+  virtual void LockScreen() OVERRIDE {
+  }
+
+  virtual void UnlockScreen() OVERRIDE {
+  }
+
+  virtual void UnlockScreenFailed() OVERRIDE {
   }
 
   // TODO(sad): Override more from PowerManagerClient::Observer here (e.g.

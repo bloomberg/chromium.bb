@@ -50,7 +50,7 @@ class SystemTrayDelegate {
   virtual void SignOut() = 0;
 
   // Attempts to lock the screen.
-  virtual void LockScreen() = 0;
+  virtual void RequestLockScreen() = 0;
 };
 
 }  // namespace ash

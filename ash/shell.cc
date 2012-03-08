@@ -264,7 +264,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
   virtual void ShutDown() OVERRIDE {}
   virtual void SignOut() OVERRIDE {}
-  virtual void LockScreen() OVERRIDE {}
+  virtual void RequestLockScreen() OVERRIDE {}
 
   bool muted_;
   float volume_;
