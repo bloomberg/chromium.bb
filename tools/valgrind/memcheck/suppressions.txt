@@ -2947,7 +2947,7 @@
    ...
    fun:_ZN21RenderProcessHostImpl20CreateMessageFiltersEv
    fun:_ZN21RenderProcessHostImpl4InitEb
-   fun:_ZN18RenderViewHostImpl16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEi
+   fun:_ZN7content18RenderViewHostImpl16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEEi
 }
 {
    bug_73358
@@ -4097,9 +4097,9 @@
    fun:_ZN27PasswordManagerDelegateImpl22AddSavePasswordInfoBarEP19PasswordFormManager
    fun:_ZN15PasswordManager14DidStopLoadingEv
    fun:_ZN11TabContents14DidStopLoadingEv
-   fun:_ZN18RenderViewHostImpl19OnMsgDidStopLoadingEv
-   fun:_ZN3IPC7Message8DispatchI18RenderViewHostImplS2_EEbPKS0_PT_PT0_MS5_FvvE
-   fun:_ZN18RenderViewHostImpl17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN7content18RenderViewHostImpl19OnMsgDidStopLoadingEv
+   fun:_ZN3IPC7Message8DispatchIN7content18RenderViewHostImplES3_EEbPKS0_PT_PT0_MS6_FvvE
+   fun:_ZN7content18RenderViewHostImpl17OnMessageReceivedERKN3IPC7MessageE
    fun:_ZN21RenderProcessHostImpl17OnMessageReceivedERKN3IPC7MessageE
 }
 {
@@ -5920,19 +5920,6 @@
    fun:_ZN12browser_sync20UIDataTypeController5StartERKN4base8CallbackIFvNS_18DataTypeController11StartResultERK9SyncErrorEEE
    fun:_ZN12browser_sync19DataTypeManagerImpl13StartNextTypeEv
    fun:_ZN12browser_sync19DataTypeManagerImpl13DownloadReadyENS_7EnumSetIN8syncable9ModelTypeELS3_2ELS3_16EEE
-}
-{
-   bug_117208
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN27PasswordManagerDelegateImpl22AddSavePasswordInfoBarEP19PasswordFormManager
-   fun:_ZN15PasswordManager14DidStopLoadingEv
-   fun:_ZN11TabContents14DidStopLoadingEv
-   fun:_ZN7content18RenderViewHostImpl19OnMsgDidStopLoadingEv
-   fun:_ZN3IPC7Message8DispatchIN7content18RenderViewHostImplES3_EEbPKS0_PT_PT0_MS6_FvvE
-   fun:_ZN7content18RenderViewHostImpl17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN21RenderProcessHostImpl17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
 }
 {
    bug_117245
