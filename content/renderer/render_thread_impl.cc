@@ -914,7 +914,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
     return NULL;
   }
 
-  gpu_channel_ = new GpuChannelHost(this, client_id);
+  gpu_channel_ = new GpuChannelHost(this, 0, client_id);
   gpu_channel_->set_gpu_info(gpu_info);
   content::GetContentClient()->SetGpuInfo(gpu_info);
 

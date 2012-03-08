@@ -67,6 +67,7 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   virtual listeners_iterator ListenersIterator() OVERRIDE;
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
+  virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
 
   // IPC::Channel::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;

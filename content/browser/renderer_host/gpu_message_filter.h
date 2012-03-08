@@ -6,6 +6,9 @@
 #define CONTENT_BROWSER_RENDERER_HOST_GPU_MESSAGE_FILTER_H_
 #pragma once
 
+#include <vector>
+
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_helpers.h"
@@ -34,9 +37,15 @@ class GpuMessageFilter : public content::BrowserMessageFilter,
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
+  // Signals that the handle for a surface id was updated, and it may be time to
+  // unblock existing CreateViewCommandBuffer requests using that surface.
+  void SurfaceUpdated(int32 surface_id);
+
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<GpuMessageFilter>;
+  struct CreateViewCommandBufferRequest;
+
   virtual ~GpuMessageFilter();
 
   // Message handlers called on the browser IO thread:
@@ -53,11 +62,12 @@ class GpuMessageFilter : public content::BrowserMessageFilter,
                                 const content::GPUInfo& gpu_info);
   void CreateCommandBufferCallback(IPC::Message* reply, int32 route_id);
 
-  int gpu_host_id_;
+  int gpu_process_id_;
   int render_process_id_;
   bool share_contexts_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
+  std::vector<linked_ptr<CreateViewCommandBufferRequest> > pending_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMessageFilter);
 };

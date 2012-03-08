@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
-#include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
@@ -313,6 +312,7 @@ void RenderWidgetHostViewAura::Destroy() {
   if (!shared_surface_handle_.is_null()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     factory->DestroySharedSurfaceHandle(shared_surface_handle_);
+    factory->RemoveObserver(this);
   }
   delete window_;
 }
@@ -492,6 +492,7 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
   if (shared_surface_handle_.is_null() && compositor) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     shared_surface_handle_ = factory->CreateSharedSurfaceHandle(compositor);
+    factory->AddObserver(this);
   }
   return shared_surface_handle_;
 }
@@ -935,6 +936,22 @@ void RenderWidgetHostViewAura::OnCompositingEnded(ui::Compositor* compositor) {
   }
   on_compositing_ended_callbacks_.clear();
   compositor->RemoveObserver(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RenderWidgetHostViewAura, ImageTransportFactoryObserver implementation:
+
+void RenderWidgetHostViewAura::OnLostResources(ui::Compositor* compositor) {
+  image_transport_clients_.clear();
+  current_surface_ = 0;
+  UpdateExternalTexture();
+
+  DCHECK(!shared_surface_handle_.is_null());
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  factory->DestroySharedSurfaceHandle(shared_surface_handle_);
+  shared_surface_handle_ = factory->CreateSharedSurfaceHandle(compositor);
+  host_->CompositingSurfaceUpdated();
+  host_->ScheduleComposite();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

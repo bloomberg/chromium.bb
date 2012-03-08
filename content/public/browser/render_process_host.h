@@ -186,6 +186,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
   // 10 milliseconds.
   virtual base::TimeDelta GetChildProcessIdleTime() const = 0;
 
+  // Signals that a compositing surface has been updated after a lost context
+  // event, so that we can process requests from the renderer to create contexts
+  // with that surface.
+  virtual void SurfaceUpdated(int32 surface_id) = 0;
+
   // Static management functions -----------------------------------------------
 
   // Flag to run the renderer in process.  This is primarily

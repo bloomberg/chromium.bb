@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "ui/aura/client/activation_delegate.h"
@@ -43,7 +44,8 @@ class RenderWidgetHostViewAura
       public ui::CompositorObserver,
       public ui::TextInputClient,
       public aura::WindowDelegate,
-      public aura::client::ActivationDelegate {
+      public aura::client::ActivationDelegate,
+      public ImageTransportFactoryObserver {
  public:
   virtual ~RenderWidgetHostViewAura();
 
@@ -174,6 +176,9 @@ class RenderWidgetHostViewAura
 
   // Overridden from ui::CompositorObserver:
   virtual void OnCompositingEnded(ui::Compositor* compositor) OVERRIDE;
+
+  // Overridden from ImageTransportFactoryObserver:
+  virtual void OnLostResources(ui::Compositor* compositor) OVERRIDE;
 
   void UpdateCursorIfOverSelf();
   void UpdateExternalTexture();

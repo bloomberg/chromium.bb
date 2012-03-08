@@ -90,7 +90,9 @@ class GpuChannelHost : public IPC::Message::Sender,
   };
 
   // Called on the render thread
-  GpuChannelHost(GpuChannelHostFactory* factory, int client_id);
+  GpuChannelHost(GpuChannelHostFactory* factory,
+                 int gpu_process_id,
+                 int client_id);
   virtual ~GpuChannelHost();
 
   // Connect to GPU process channel.
@@ -158,6 +160,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   void ForciblyCloseChannel();
 
   GpuChannelHostFactory* factory() const { return factory_; }
+  int gpu_process_id() const { return gpu_process_id_; }
   int client_id() const { return client_id_; }
 
  private:
@@ -185,6 +188,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   };
 
   GpuChannelHostFactory* factory_;
+  int gpu_process_id_;
   int client_id_;
 
   State state_;

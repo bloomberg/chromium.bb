@@ -20,9 +20,23 @@
 
 using content::BrowserThread;
 
+struct GpuMessageFilter::CreateViewCommandBufferRequest {
+  CreateViewCommandBufferRequest(
+      int32 surface_id_,
+      const GPUCreateCommandBufferConfig& init_params_,
+      IPC::Message* reply_)
+      : surface_id(surface_id_),
+        init_params(init_params_),
+        reply(reply_) {
+  }
+  int32 surface_id;
+  GPUCreateCommandBufferConfig init_params;
+  IPC::Message* reply;
+};
+
 GpuMessageFilter::GpuMessageFilter(int render_process_id,
                                    RenderWidgetHelper* render_widget_helper)
-    : gpu_host_id_(0),
+    : gpu_process_id_(0),
       render_process_id_(render_process_id),
       share_contexts_(false),
       render_widget_helper_(render_widget_helper) {
@@ -54,6 +68,24 @@ bool GpuMessageFilter::OnMessageReceived(
   return handled;
 }
 
+void GpuMessageFilter::SurfaceUpdated(int32 surface_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  typedef std::vector<linked_ptr<CreateViewCommandBufferRequest> > RequestList;
+  RequestList retry_requests;
+  retry_requests.swap(pending_requests_);
+  for (RequestList::iterator it = retry_requests.begin();
+      it != retry_requests.end(); ++it) {
+    if ((*it)->surface_id != surface_id) {
+      pending_requests_.push_back(*it);
+    } else {
+      linked_ptr<CreateViewCommandBufferRequest> request = *it;
+      OnCreateViewCommandBuffer(request->surface_id,
+                                request->init_params,
+                                request->reply);
+    }
+  }
+}
+
 void GpuMessageFilter::OnEstablishGpuChannel(
     content::CauseForGpuLaunch cause_for_gpu_launch,
     IPC::Message* reply) {
@@ -66,7 +98,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
   // terminates, the renderer process will not find itself unknowingly sending
   // IPCs to a newly launched GPU process. Also, I will rename this function
   // to something like OnCreateGpuProcess.
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
+  GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
   if (!host) {
     host = GpuProcessHost::GetForClient(
         render_process_id_, cause_for_gpu_launch);
@@ -76,7 +108,7 @@ void GpuMessageFilter::OnEstablishGpuChannel(
       return;
     }
 
-    gpu_host_id_ = host->host_id();
+    gpu_process_id_ = host->host_id();
   }
 
   host->EstablishGpuChannel(
@@ -107,7 +139,18 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
                 << " tried to access a surface for renderer " << renderer_id;
   }
 
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
+  if (compositing_surface.parent_gpu_process_id &&
+      compositing_surface.parent_gpu_process_id != gpu_process_id_) {
+    // If the current handle for the surface is using a different (older) gpu
+    // host, it means the GPU process died and we need to wait until the UI
+    // re-allocates the surface in the new process.
+    linked_ptr<CreateViewCommandBufferRequest> request(
+        new CreateViewCommandBufferRequest(surface_id, init_params, reply));
+    pending_requests_.push_back(request);
+    return;
+  }
+
+  GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
   if (!host || compositing_surface.is_null()) {
     // TODO(apatrick): Eventually, this IPC message will be routed to a
     // GpuProcessStub with a particular routing ID. The error will be set if

@@ -263,6 +263,10 @@ CommandBufferProxy* ContentGLContext::GetCommandBufferProxy() {
   return command_buffer_;
 }
 
+int ContentGLContext::GetGPUProcessID() {
+  return channel_->gpu_process_id();
+}
+
 int ContentGLContext::GetChannelID() {
   return channel_->client_id();
 }

@@ -207,7 +207,7 @@ GpuChannelHost* BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
   browser_process_for_gpu = base::GetCurrentProcessHandle();
 #endif
 
-  gpu_channel_ = new GpuChannelHost(this, gpu_client_id_);
+  gpu_channel_ = new GpuChannelHost(this, gpu_host_id_, gpu_client_id_);
   gpu_channel_->set_gpu_info(request.gpu_info);
   content::GetContentClient()->SetGpuInfo(request.gpu_info);
 

@@ -200,6 +200,9 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
   return base::TimeDelta::FromMilliseconds(0);
 }
 
+void MockRenderProcessHost::SurfaceUpdated(int32 surface_id) {
+}
+
 content::RenderProcessHost::listeners_iterator
     MockRenderProcessHost::ListenersIterator() {
   IDMap<IPC::Channel::Listener> listeners;

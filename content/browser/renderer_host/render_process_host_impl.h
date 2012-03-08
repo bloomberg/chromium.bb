@@ -21,6 +21,7 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 class CommandLine;
+class GpuMessageFilter;
 class RendererMainThread;
 class RenderWidgetHelper;
 
@@ -87,6 +88,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
   virtual bool FastShutdownStarted() const OVERRIDE;
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
+  virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
 
   // IPC::Channel::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -185,6 +187,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.
   scoped_refptr<RenderWidgetHelper> widget_helper_;
+
+  // The filter for GPU-related messages coming from the renderer.
+  // Thread safety note: this field is to be accessed from the UI thread.
+  // We don't keep a reference to it, to avoid it being destroyed on the UI
+  // thread, but we clear this field when we clear channel_. When channel_ goes
+  // away, it posts a task to the IO thread to destroy it there, so we know that
+  // it's valid if non-NULL.
+  GpuMessageFilter* gpu_message_filter_;
 
   // A map of transport DIB ids to cached TransportDIBs
   std::map<TransportDIB::Id, TransportDIB*> cached_dibs_;

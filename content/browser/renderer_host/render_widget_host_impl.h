@@ -336,6 +336,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   static void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id);
   static void AcknowledgePostSubBuffer(int32 route_id, int gpu_host_id);
 
+  // Signals that the compositing surface was updated, e.g. after a lost context
+  // event.
+  void CompositingSurfaceUpdated();
+
  protected:
   virtual RenderWidgetHostImpl* AsRenderWidgetHostImpl() OVERRIDE;
 

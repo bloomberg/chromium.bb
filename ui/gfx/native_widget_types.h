@@ -264,6 +264,7 @@ struct GLSurfaceHandle {
   GLSurfaceHandle()
       : handle(kNullPluginWindow),
         transport(false),
+        parent_gpu_process_id(0),
         parent_client_id(0),
         parent_context_id(0),
         accelerated_surface(NULL) {
@@ -273,6 +274,7 @@ struct GLSurfaceHandle {
   GLSurfaceHandle(PluginWindowHandle handle_, bool transport_)
       : handle(handle_),
         transport(transport_),
+        parent_gpu_process_id(0),
         parent_client_id(0),
         parent_context_id(0),
         accelerated_surface(NULL) {
@@ -282,6 +284,7 @@ struct GLSurfaceHandle {
   bool is_null() const { return handle == kNullPluginWindow && !transport; }
   PluginWindowHandle handle;
   bool transport;
+  int parent_gpu_process_id;
   uint32 parent_client_id;
   uint32 parent_context_id;
   uint32 parent_texture_id[2];

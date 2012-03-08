@@ -184,7 +184,9 @@ class ContentGLContext : public base::SupportsWeakPtr<ContentGLContext>,
 
   CommandBufferProxy* GetCommandBufferProxy();
 
-  // The following 2 IDs let one uniquely identify this context.
+  // The following 3 IDs let one uniquely identify this context.
+  // Gets the GPU process ID for this context.
+  int GetGPUProcessID();
   // Gets the channel ID for this context.
   int GetChannelID();
   // Gets the context ID (relative to the channel).

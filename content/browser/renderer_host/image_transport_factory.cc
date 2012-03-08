@@ -4,10 +4,13 @@
 
 #include "content/browser/renderer_host/image_transport_factory.h"
 
+#include <algorithm>
 #include <map>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "content/common/gpu/client/command_buffer_proxy.h"
@@ -56,6 +59,15 @@ class DefaultTransportFactory
 
   virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() OVERRIDE {
     return NULL;
+  }
+
+  // We don't generate lost context events, so we don't need to keep track of
+  // observers
+  virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE {
+  }
+
+  virtual void RemoveObserver(
+      ImageTransportFactoryObserver* observer) OVERRIDE {
   }
 
  private:
@@ -128,6 +140,15 @@ class InProcessTransportFactory : public DefaultTransportFactory {
     return surface;
   }
 
+  // We don't generate lost context events, so we don't need to keep track of
+  // observers
+  virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE {
+  }
+
+  virtual void RemoveObserver(
+      ImageTransportFactoryObserver* observer) OVERRIDE {
+  }
+
  private:
   scoped_refptr<gfx::GLContext> context_;
   scoped_refptr<gfx::GLSurface> surface_;
@@ -157,11 +178,16 @@ class ImageTransportClientTexture : public ImageTransportClient {
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
 };
 
-class CompositorSwapClient : public base::SupportsWeakPtr<CompositorSwapClient>,
-                             public WebGraphicsContext3DSwapBuffersClient {
+class GpuProcessTransportFactory;
+
+class CompositorSwapClient
+    : public base::SupportsWeakPtr<CompositorSwapClient>,
+      public WebGraphicsContext3DSwapBuffersClient {
  public:
-  explicit CompositorSwapClient(ui::Compositor* compositor)
-      : compositor_(compositor) {
+  CompositorSwapClient(ui::Compositor* compositor,
+                       GpuProcessTransportFactory* factory)
+      : compositor_(compositor),
+        factory_(factory) {
   }
 
   ~CompositorSwapClient() {
@@ -176,11 +202,17 @@ class CompositorSwapClient : public base::SupportsWeakPtr<CompositorSwapClient>,
   }
 
   virtual void OnViewContextSwapBuffersAborted() OVERRIDE {
-    compositor_->OnSwapBuffersAborted();
+    // Recreating contexts directly from here causes issues, so post a task
+    // instead.
+    // TODO(piman): Fix the underlying issues.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&CompositorSwapClient::OnLostContext, this->AsWeakPtr()));
   }
 
  private:
+  void OnLostContext();
   ui::Compositor* compositor_;
+  GpuProcessTransportFactory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorSwapClient);
 };
@@ -232,6 +264,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
         gfx::kNullPluginWindow, true);
     ContentGLContext* context = data->shared_context->content_gl_context();
+    handle.parent_gpu_process_id = context->GetGPUProcessID();
     handle.parent_client_id = context->GetChannelID();
     handle.parent_context_id = context->GetContextID();
     handle.parent_texture_id[0] = data->shared_context->createTexture();
@@ -240,8 +273,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     // TODO(piman): Use a cross-channel synchronization mechanism instead.
     data->shared_context->finish();
 
-    // This handle will not be correct after a GPU process crash / context lost.
-    // TODO(piman): Fix this.
     return handle;
   }
 
@@ -252,15 +283,14 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       PerCompositorData* data = it->second;
       DCHECK(data);
       ContentGLContext* context = data->shared_context->content_gl_context();
+      int gpu_process_id = context->GetGPUProcessID();
       uint32 client_id = context->GetChannelID();
       uint32 context_id = context->GetContextID();
-      if (surface.parent_client_id == client_id &&
+      if (surface.parent_gpu_process_id == gpu_process_id &&
+          surface.parent_client_id == client_id &&
           surface.parent_context_id == context_id) {
         data->shared_context->deleteTexture(surface.parent_texture_id[0]);
         data->shared_context->deleteTexture(surface.parent_texture_id[1]);
-        // Finish is overkill, but flush semantics don't apply cross-channel.
-        // TODO(piman): Use a cross-channel synchronization mechanism instead.
-        data->shared_context->finish();
         break;
       }
     }
@@ -276,6 +306,30 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   }
 
   virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() { return NULL; }
+
+  virtual void AddObserver(ImageTransportFactoryObserver* observer) {
+    observer_list_.AddObserver(observer);
+  }
+
+  virtual void RemoveObserver(ImageTransportFactoryObserver* observer) {
+    observer_list_.RemoveObserver(observer);
+  }
+
+  void OnLostContext(ui::Compositor* compositor) {
+    LOG(ERROR) << "Lost UI compositor context.";
+    PerCompositorData* data = per_compositor_data_[compositor];
+    DCHECK(data);
+
+    // Note: this has the effect of recreating the swap_client, which means we
+    // won't get more reports of lost context from the same gpu process. It's a
+    // good thing.
+    CreateSharedContext(compositor);
+
+    FOR_EACH_OBSERVER(ImageTransportFactoryObserver,
+        observer_list_,
+        OnLostResources(compositor));
+    compositor->OnSwapBuffersAborted();
+  }
 
  private:
   struct PerCompositorData {
@@ -295,24 +349,46 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     tracker->SetSurfaceHandle(
         data->surface_id,
         gfx::GLSurfaceHandle(widget, false));
-    data->swap_client.reset(new CompositorSwapClient(compositor));
+    per_compositor_data_[compositor] = data;
+
+    CreateSharedContext(compositor);
+
+    return data;
+  }
+
+  void CreateSharedContext(ui::Compositor* compositor) {
+    PerCompositorData* data = per_compositor_data_[compositor];
+    DCHECK(data);
+
+    data->swap_client.reset(new CompositorSwapClient(compositor, this));
 
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = true;
     data->shared_context.reset(new WebGraphicsContext3DCommandBufferImpl(
           data->surface_id, GURL(), data->swap_client->AsWeakPtr()));
-    data->shared_context->Initialize(attrs);
-    data->shared_context->makeContextCurrent();
-
-    per_compositor_data_[compositor] = data;
-    return data;
+    if (!data->shared_context->Initialize(attrs)) {
+      // If we can't recreate contexts, we won't be able to show the UI. Better
+      // crash at this point.
+      LOG(FATAL) << "Failed to initialize compositor shared context.";
+    }
+    if (!data->shared_context->makeContextCurrent()) {
+      // If we can't recreate contexts, we won't be able to show the UI. Better
+      // crash at this point.
+      LOG(FATAL) << "Failed to make compositor shared context current.";
+    }
   }
 
   typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
+  ObserverList<ImageTransportFactoryObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessTransportFactory);
 };
+
+void CompositorSwapClient::OnLostContext() {
+  factory_->OnLostContext(compositor_);
+  // Note: previous line destroyed this. Don't access members from now on.
+}
 
 }  // anonymous namespace
 

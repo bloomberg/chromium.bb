@@ -484,7 +484,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           BrowserContext::GetIndexedDBContext(browser_context))));
   channel_->AddFilter(GeolocationDispatcherHost::New(
       GetID(), browser_context->GetGeolocationPermissionContext()));
-  channel_->AddFilter(new GpuMessageFilter(GetID(), widget_helper_.get()));
+  gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
+  channel_->AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
       resource_context, GetID(), content::BrowserMainLoop::GetAudioManager()));
@@ -1045,6 +1046,7 @@ void RenderProcessHostImpl::Cleanup() {
     // away first, since deleting the channel proxy will post a
     // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
     channel_.reset();
+    gpu_message_filter_ = NULL;
 
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
@@ -1071,6 +1073,15 @@ bool RenderProcessHostImpl::SuddenTerminationAllowed() const {
 
 base::TimeDelta RenderProcessHostImpl::GetChildProcessIdleTime() const {
   return base::TimeTicks::Now() - child_process_activity_time_;
+}
+
+void RenderProcessHostImpl::SurfaceUpdated(int32 surface_id) {
+  if (!gpu_message_filter_)
+    return;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+      &GpuMessageFilter::SurfaceUpdated,
+      gpu_message_filter_,
+      surface_id));
 }
 
 IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
@@ -1215,6 +1226,7 @@ void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
 
   child_process_launcher_.reset();
   channel_.reset();
+  gpu_message_filter_ = NULL;
 
   IDMap<IPC::Channel::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
