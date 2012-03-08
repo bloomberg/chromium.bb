@@ -974,14 +974,16 @@ TabRestoreServiceDelegate* TabRestoreService::RestoreTab(
       tab_index = delegate->GetTabCount();
     }
 
-    delegate->AddRestoredTab(tab.navigations,
-                             tab_index,
-                             tab.current_navigation_index,
-                             tab.extension_app_id,
-                             disposition != NEW_BACKGROUND_TAB,
-                             tab.pinned,
-                             tab.from_last_session,
-                             tab.session_storage_namespace);
+    WebContents* web_contents = delegate->AddRestoredTab(
+        tab.navigations,
+        tab_index,
+        tab.current_navigation_index,
+        tab.extension_app_id,
+        disposition != NEW_BACKGROUND_TAB,
+        tab.pinned,
+        tab.from_last_session,
+        tab.session_storage_namespace);
+    web_contents->GetController().LoadIfNecessary();
   }
   RecordAppLaunch(profile(), tab);
   return delegate;

@@ -767,6 +767,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
                                 tab.pinned,
                                 true,
                                 NULL);
+    // Regression check: check that the tab didn't start loading right away. The
+    // focused tab will be loaded by Browser, and TabLoader will load the rest.
+    DCHECK(web_contents->GetController().NeedsReload());
 
     // Set up the file access rights for the selected navigation entry.
     const int id = web_contents->GetRenderProcessHost()->GetID();
