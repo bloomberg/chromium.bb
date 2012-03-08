@@ -10,8 +10,6 @@ import os
 import sys
 import unittest
 
-import mox
-
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 import chromite.lib.cros_test_lib as test_lib
@@ -34,33 +32,25 @@ class SyncerTest(test_lib.MoxTestCase):
                                               'x86')
   col_x86 = gdata_lib.PrepColNameForSS(col_x86)
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
   def testInit(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
-    mocked_scomm = self.mox.CreateMock(gdata_lib.SpreadsheetComm)
-    mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
-
-    tracker_col_ix = 8
+    tcomm, scomm = 'TComm', 'SComm'
 
     # Replay script
-    mocked_scomm.GetColumnIndex('Tracker').AndReturn(tracker_col_ix)
     self.mox.ReplayAll()
 
     # Verify
-    sps.Syncer.__init__(mocked_syncer, mocked_tcomm, mocked_scomm)
+    sps.Syncer.__init__(mocked_syncer, tcomm, scomm)
     self.mox.VerifyAll()
-    self.assertEquals(mocked_scomm, mocked_syncer.scomm)
-    self.assertEquals(mocked_tcomm, mocked_syncer.tcomm)
-    self.assertEquals(tracker_col_ix, mocked_syncer.tracker_col_ix)
+    self.assertEquals(scomm, mocked_syncer.scomm)
+    self.assertEquals(tcomm, mocked_syncer.tcomm)
     self.assertEquals(None, mocked_syncer.teams)
     self.assertEquals(None, mocked_syncer.owners)
     self.assertEquals(False, mocked_syncer.pretend)
     self.assertEquals(False, mocked_syncer.verbose)
 
   def testReduceTeamName(self):
-    mocked_syncer = self.mox.CreateMock(sps.Syncer)
+    syncer = sps.Syncer('tcomm_obj', 'scomm_obj')
 
     tests = {
       'build/bdavirro': 'build',
@@ -72,17 +62,13 @@ class SyncerTest(test_lib.MoxTestCase):
       None: None,
       }
 
-    # Replay script
-    self.mox.ReplayAll()
-
     # Verify
     for key in tests:
-      result = sps.Syncer._ReduceTeamName(mocked_syncer, key)
+      result = syncer._ReduceTeamName(key)
       self.assertEquals(tests[key], result)
-    self.mox.VerifyAll()
 
   def testReduceOwnerName(self):
-    mocked_syncer = self.mox.CreateMock(sps.Syncer)
+    syncer = sps.Syncer('tcomm_obj', 'scomm_obj')
 
     tests = {
       'joe': 'joe',
@@ -93,17 +79,13 @@ class SyncerTest(test_lib.MoxTestCase):
       None: None,
       }
 
-    # Replay script
-    self.mox.ReplayAll()
-
     # Verify
     for key in tests:
-      result = sps.Syncer._ReduceOwnerName(mocked_syncer, key)
+      result = syncer._ReduceOwnerName(key)
       self.assertEquals(tests[key], result)
-    self.mox.VerifyAll()
 
   def testSetTeamFilterOK(self):
-    mocked_syncer = self.mox.CreateMock(sps.Syncer)
+    syncer = sps.Syncer('tcomm_obj', 'scomm_obj')
 
     tests = {
       'build:system:ui': set(['build', 'system', 'ui']),
@@ -114,39 +96,24 @@ class SyncerTest(test_lib.MoxTestCase):
       '': None,
       }
 
-    # Replay script
-    for test in tests:
-      if test:
-        for team in test.split(':'):
-          reduced = sps.Syncer._ReduceTeamName(mocked_syncer, team)
-          mocked_syncer._ReduceTeamName(team).AndReturn(reduced)
-    self.mox.ReplayAll()
-
     # Verify
     for test in tests:
-      sps.Syncer.SetTeamFilter(mocked_syncer, test)
-      self.assertEquals(tests[test], mocked_syncer.teams)
-    self.mox.VerifyAll()
+      syncer.SetTeamFilter(test)
+      self.assertEquals(tests[test], syncer.teams)
 
   def testSetTeamFilterError(self):
-    mocked_syncer = self.mox.CreateMock(sps.Syncer)
+    syncer = sps.Syncer('tcomm_obj', 'scomm_obj')
 
     # "systems" is not valid (should be "system")
     teamarg = 'build:systems'
 
-    # Replay script
-    mocked_syncer._ReduceTeamName('build').AndReturn('build')
-    mocked_syncer._ReduceTeamName('systems').AndReturn('systems')
-    self.mox.ReplayAll()
-
     # Verify
     with self.OutputCapturer():
       self.assertRaises(SystemExit, sps.Syncer.SetTeamFilter,
-                        mocked_syncer, teamarg)
-    self.mox.VerifyAll()
+                        syncer, teamarg)
 
   def testSetOwnerFilter(self):
-    mocked_syncer = self.mox.CreateMock(sps.Syncer)
+    syncer = sps.Syncer('tcomm_obj', 'scomm_obj')
 
     tests = {
       'joe:bill:bob': set(['joe', 'bill', 'bob']),
@@ -158,19 +125,10 @@ class SyncerTest(test_lib.MoxTestCase):
       None: None,
       }
 
-    # Replay script
-    for test in tests:
-      if test:
-        for owner in test.split(':'):
-          reduced = sps.Syncer._ReduceOwnerName(mocked_syncer, owner)
-          mocked_syncer._ReduceOwnerName(owner).AndReturn(reduced)
-    self.mox.ReplayAll()
-
     # Verify
     for test in tests:
-      sps.Syncer.SetOwnerFilter(mocked_syncer, test)
-      self.assertEquals(tests[test], mocked_syncer.owners)
-    self.mox.VerifyAll()
+      syncer.SetOwnerFilter(test)
+      self.assertEquals(tests[test], syncer.owners)
 
   def testRowPassesFilters(self):
     mocked_syncer = self.mox.CreateMock(sps.Syncer)
@@ -259,6 +217,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
+    mocked_scomm.GetColumnIndex('Tracker')
     mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):
@@ -285,6 +244,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
+    mocked_scomm.GetColumnIndex('Tracker')
     mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):
@@ -311,6 +271,7 @@ class SyncerTest(test_lib.MoxTestCase):
       ]
 
     # Replay script
+    mocked_scomm.GetColumnIndex('Tracker')
     mocked_scomm.GetRows().AndReturn(rows)
 
     for ix in xrange(len(rows)):

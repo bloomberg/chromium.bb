@@ -172,6 +172,7 @@ class Creds(object):
 
     self.creds_dirty = False
 
+
 class IssueComment(object):
   """Represent a Tracker issue comment."""
 
@@ -186,6 +187,7 @@ class IssueComment(object):
     if self.text:
       text = '\n  '.join(self.text.split('\n'))
     return '%s:\n  %s' % (self.title, text)
+
 
 class Issue(object):
   """Represents one Tracker Issue."""
@@ -265,11 +267,11 @@ class Issue(object):
 class TrackerComm(object):
   """Class to manage communication with Tracker."""
 
-  __slots__ = [
+  __slots__ = (
     'author',       # Author when creating/editing Tracker issues
     'it_client',    # Issue Tracker client
     'project_name', # Tracker project name
-    ]
+    )
 
   def __init__(self):
     self.author = None
@@ -385,21 +387,18 @@ class SpreadsheetComm(object):
     It is a tuple of column names, each run through PrepColNameForSS.
     """
     if self._columns is None:
-      cols = []
-
       query = gdata.spreadsheet.service.CellQuery()
       query['max-row'] = '1'
       feed = self.gd_client.GetCellsFeed(self.ss_key, self.ws_key, query=query)
-      for entry in feed.entry:
-        # The use of PrepColNameForSS here looks weird, but the values
-        # in row 1 are the unaltered column names, rather than the restricted
-        # column names used for interface purposes.  In other words, if the
-        # spreadsheet looks like it has a column called "Foo Bar", then the
-        # first row will have a value "Foo Bar" but all interaction with that
-        # column for other rows will use column key "foobar".  Translate to
-        # restricted names now with PrepColNameForSS.
-        column = PrepColNameForSS(entry.content.text)
-        cols.append(column)
+
+      # The use of PrepColNameForSS here looks weird, but the values
+      # in row 1 are the unaltered column names, rather than the restricted
+      # column names used for interface purposes.  In other words, if the
+      # spreadsheet looks like it has a column called "Foo Bar", then the
+      # first row will have a value "Foo Bar" but all interaction with that
+      # column for other rows will use column key "foobar".  Translate to
+      # restricted names now with PrepColNameForSS.
+      cols = [PrepColNameForSS(entry.content.text) for entry in feed.entry]
 
       self._columns = tuple(cols)
 
@@ -415,13 +414,10 @@ class SpreadsheetComm(object):
       rows = []
 
       feed = self.gd_client.GetListFeed(self.ss_key, self.ws_key)
-      for rowIx, rowObj in enumerate(feed.entry):
-        row_dict = {}
-        for key, val in rowObj.custom.items():
-          row_dict[key] = ScrubValFromSS(val.text)
-        row = SpreadsheetRow(rowObj, rowIx + self.ROW_NUMBER_OFFSET, row_dict)
-
-        rows.append(row)
+      for rowIx, rowObj in enumerate(feed.entry, start=self.ROW_NUMBER_OFFSET):
+        row_dict = dict((key, ScrubValFromSS(val.text))
+                        for key, val in rowObj.custom.iteritems())
+        rows.append(SpreadsheetRow(rowObj, rowIx, row_dict))
 
       self._rows = tuple(rows)
 
@@ -500,11 +496,11 @@ class SpreadsheetComm(object):
 
   def GetColumnIndex(self, colName):
     """Get the column index (starting at 1) for column |colName|"""
-    for ix, col in enumerate(self.columns):
-      if colName == col:
-        return ix + self.COLUMN_NUMBER_OFFSET
-
-    return None
+    try:
+      # Spreadsheet column indices start at 1, so +1.
+      return self.columns.index(colName) + self.COLUMN_NUMBER_OFFSET
+    except ValueError:
+      return None
 
   def GetRows(self):
     """Return tuple of SpreadsheetRow objects in order."""

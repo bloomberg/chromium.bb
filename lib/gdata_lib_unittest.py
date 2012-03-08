@@ -22,9 +22,6 @@ import gdata_lib
 
 class GdataLibTest(test_lib.TestCase):
 
-  def setUp(self):
-    pass
-
   def testPrepColNameForSS(self):
     tests = {
       'foo': 'foo',
@@ -99,9 +96,6 @@ class CredsTest(test_lib.MoxTestCase):
   PASSWORD = 'worldsbestpassword'
   DOCS_TOKEN = 'SomeDocsAuthToken'
   TRACKER_TOKEN = 'SomeTrackerAuthToken'
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
 
   @test_lib.tempfile_decorator
   def testStoreLoadCreds(self):
@@ -271,9 +265,6 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
       { 'greeting': 'Howdy', 'name': 'Billy Bob', 'title': 'Mr.' },
       { 'greeting': 'Yo', 'name': 'Adriane', 'title': 'Ms.' },
       )
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
 
   def MockScomm(self, connect=True):
     """Return a mocked SpreadsheetComm"""
@@ -470,15 +461,13 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
   def testLoginWithUserPassword(self):
     mocked_scomm = self.MockScomm(connect=False)
     creds = self.GenerateCreds(skip_token=True)
-    mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
 
-    self.mox.StubOutWithMock(gdata_lib.RetrySpreadsheetsService, '__new__')
+    self.mox.StubOutClassWithMocks(gdata_lib, 'RetrySpreadsheetsService')
 
     source = 'SomeSource'
 
     # This is the replay script for the test.
-    gdata_lib.RetrySpreadsheetsService.__new__(
-        gdata_lib.RetrySpreadsheetsService).AndReturn(mocked_gdclient)
+    mocked_gdclient = gdata_lib.RetrySpreadsheetsService()
     mocked_gdclient.ProgrammaticLogin()
     mocked_gdclient.GetClientLoginToken().AndReturn(self.TOKEN)
     self.mox.ReplayAll()
@@ -496,15 +485,13 @@ class SpreadsheetCommTest(test_lib.MoxTestCase):
   def testLoginWithToken(self):
     mocked_scomm = self.MockScomm(connect=False)
     creds = self.GenerateCreds(skip_user=True)
-    mocked_gdclient = self.mox.CreateMock(gdata_lib.RetrySpreadsheetsService)
 
-    self.mox.StubOutWithMock(gdata_lib.RetrySpreadsheetsService, '__new__')
+    self.mox.StubOutClassWithMocks(gdata_lib, 'RetrySpreadsheetsService')
 
     source = 'SomeSource'
 
     # This is the replay script for the test.
-    gdata_lib.RetrySpreadsheetsService.__new__(
-        gdata_lib.RetrySpreadsheetsService).AndReturn(mocked_gdclient)
+    mocked_gdclient = gdata_lib.RetrySpreadsheetsService()
     mocked_gdclient.SetClientLoginToken(creds.docs_auth_token)
     self.mox.ReplayAll()
 
@@ -725,9 +712,6 @@ class IssueCommentTest(unittest.TestCase):
 
 class IssueTest(mox.MoxTestBase):
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
   def testInitOverride(self):
     owner = 'somedude@chromium.org'
     status = 'Assigned'
@@ -778,9 +762,6 @@ class IssueTest(mox.MoxTestBase):
 
 class TrackerCommTest(test_lib.MoxTestCase):
 
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
   def testConnectEmail(self):
     source = 'TheSource'
     token = 'TheToken'
@@ -788,18 +769,14 @@ class TrackerCommTest(test_lib.MoxTestCase):
     mocked_creds.user = 'dude'
     mocked_creds.password = 'shhh'
     mocked_creds.tracker_auth_token = None
-    mocked_itclient = self.mox.CreateMock(
-      gdata.projecthosting.client.ProjectHostingClient)
+    self.mox.StubOutClassWithMocks(gd_ph_client, 'ProjectHostingClient')
     mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
 
     def set_token(*_args, **_kwargs):
       mocked_itclient.auth_token = test_lib.EasyAttr(token_string=token)
 
-    self.mox.StubOutWithMock(gd_ph_client.ProjectHostingClient, '__new__')
-
     # Replay script
-    gd_ph_client.ProjectHostingClient.__new__(
-      gd_ph_client.ProjectHostingClient).AndReturn(mocked_itclient)
+    mocked_itclient = gd_ph_client.ProjectHostingClient()
     mocked_itclient.ClientLogin(mocked_creds.user, mocked_creds.password,
                                 source=source, service='code',
                                 account_type='GOOGLE'
@@ -821,18 +798,14 @@ class TrackerCommTest(test_lib.MoxTestCase):
     mocked_creds.user = 'dude'
     mocked_creds.password = 'shhh'
     mocked_creds.tracker_auth_token = token
-    mocked_itclient = self.mox.CreateMock(
-      gdata.projecthosting.client.ProjectHostingClient)
     mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
 
-    self.mox.StubOutWithMock(gd_ph_client.ProjectHostingClient, '__new__')
-    self.mox.StubOutWithMock(gdata.gauth.ClientLoginToken, '__new__')
+    self.mox.StubOutClassWithMocks(gd_ph_client, 'ProjectHostingClient')
+    self.mox.StubOutClassWithMocks(gdata.gauth, 'ClientLoginToken')
 
     # Replay script
-    gd_ph_client.ProjectHostingClient.__new__(
-      gd_ph_client.ProjectHostingClient).AndReturn(mocked_itclient)
-    gdata.gauth.ClientLoginToken.__new__(gdata.gauth.ClientLoginToken,
-                                         token).AndReturn('TokenObj')
+    mocked_itclient = gd_ph_client.ProjectHostingClient()
+    mocked_token = gdata.gauth.ClientLoginToken(token)
     self.mox.ReplayAll()
 
     # Verify
@@ -841,27 +814,26 @@ class TrackerCommTest(test_lib.MoxTestCase):
                                     source=source)
     self.mox.VerifyAll()
     self.assertEquals(mocked_tcomm.it_client, mocked_itclient)
-    self.assertEquals(mocked_itclient.auth_token, 'TokenObj')
+    self.assertEquals(mocked_itclient.auth_token, mocked_token)
 
   def testGetTrackerIssueById(self):
     mocked_itclient = self.mox.CreateMock(gd_ph_client.ProjectHostingClient)
     mocked_tcomm = self.mox.CreateMock(gdata_lib.TrackerComm)
     mocked_tcomm.it_client = mocked_itclient
     mocked_tcomm.project_name = 'TheProject'
-    mocked_issue = self.mox.CreateMock(gdata_lib.Issue)
 
-    self.mox.StubOutWithMock(gd_ph_client.Query, '__new__')
-    self.mox.StubOutWithMock(gdata_lib.Issue, '__new__')
+    self.mox.StubOutClassWithMocks(gd_ph_client, 'Query')
+    self.mox.StubOutClassWithMocks(gdata_lib, 'Issue')
     self.mox.StubOutWithMock(gdata_lib.Issue, 'InitFromTracker')
 
     issue_id = 12345
     feed = test_lib.EasyAttr(entry=['hi', 'there'])
 
     # Replay script
-    gd_ph_client.Query.__new__(gd_ph_client.Query,
-                               issue_id=str(issue_id)).AndReturn('Q')
-    mocked_itclient.get_issues('TheProject', query='Q').AndReturn(feed)
-    gdata_lib.Issue.__new__(gdata_lib.Issue).AndReturn(mocked_issue)
+    mocked_query = gd_ph_client.Query(issue_id=str(issue_id))
+    mocked_itclient.get_issues('TheProject', query=mocked_query
+                               ).AndReturn(feed)
+    mocked_issue = gdata_lib.Issue()
     mocked_issue.InitFromTracker(feed.entry[0], 'TheProject')
     self.mox.ReplayAll()
 
@@ -927,9 +899,6 @@ class TrackerCommTest(test_lib.MoxTestCase):
 
 
 class RetrySpreadsheetsServiceTest(test_lib.MoxTestCase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
 
   def testRequest(self):
     """Test that calling request method invokes _RetryRequest wrapper."""

@@ -36,6 +36,7 @@ ARCHES = ('amd64', 'arm', 'x86')
 
 oper = operation.Operation('sync_package_status')
 
+
 class SyncError(RuntimeError):
   """Extend RuntimeError for use in this module."""
 
@@ -55,7 +56,7 @@ class Syncer(object):
                         utable.UpgradeTable.STATE_NEEDS_UPGRADE_AND_DUPLICATED,
                         ])
 
-  __slots__ = [
+  __slots__ = (
     'default_owner',  # Default owner to use when creating issues
     'owners',         # Set of owners to select (None means no filter)
     'pretend',        # If True, make no real changes
@@ -64,13 +65,13 @@ class Syncer(object):
     'teams',          # Set of teams to select (None means no filter)
     'tracker_col_ix', # Index of Tracker column in spreadsheet
     'verbose',        # Verbose boolean
-    ]
+    )
 
   def __init__(self, tcomm, scomm, pretend=False, verbose=False):
     self.tcomm = tcomm
     self.scomm = scomm
 
-    self.tracker_col_ix = scomm.GetColumnIndex('Tracker')
+    self.tracker_col_ix = None
 
     self.teams = None
     self.owners = None
@@ -151,14 +152,14 @@ class Syncer(object):
   def Sync(self):
     """Do synchronization between Spreadsheet and Tracker."""
 
+    self.tracker_col_ix = self.scomm.GetColumnIndex('Tracker')
+
     errors = []
 
-    # Go over each row in Spreadsheet.
+    # Go over each row in Spreadsheet.  Row index starts at 2
+    # because spreadsheet rows start at 1 and we don't want the header row.
     rows = self.scomm.GetRows()
-    for rowIx, row in enumerate(rows):
-      # Spreadsheet row index starts at 1, and we don't count
-      # the header row.  So add 2.
-      rowIx += 2
+    for rowIx, row in enumerate(rows, start=self.scomm.ROW_NUMBER_OFFSET):
       if not self._RowPassesFilters(row):
         oper.Info('\nSkipping row %d, pkg: %r (team=%s, owner=%s) ...' %
                   (rowIx, row[COL_PACKAGE], row[COL_TEAM], row[COL_OWNER]))
