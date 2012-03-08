@@ -216,13 +216,16 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
                      index:(NSUInteger)index
                 toSubviews:(NSMutableArray*)subviews
                   atOffset:(CGFloat)offset {
-  NSRect frame = NSMakeRect(kFramePadding, offset, kServiceButtonWidth, 45);
+  // Buttons are displayed centered.
+  CGFloat offsetX = (kWindowWidth - kServiceButtonWidth) / 2.0;
+  NSRect frame = NSMakeRect(offsetX, offset, kServiceButtonWidth, 45);
   scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:frame]);
 
   if (image) {
     [button setImage:image];
     [button setImagePosition:NSImageLeft];
   }
+  [button setAlignment:NSLeftTextAlignment];
   [button setButtonType:NSMomentaryPushInButton];
   [button setBezelStyle:NSRegularSquareBezelStyle];
   [button setTarget:self];
