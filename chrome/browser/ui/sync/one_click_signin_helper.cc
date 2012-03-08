@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
+#include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,29 +35,6 @@
 #include "webkit/forms/password_form_dom_manager.h"
 
 namespace {
-// Enum values used for UMA histograms.
-enum {
-  // The infobar was shown to the user.
-  HISTOGRAM_SHOWN,
-
-  // The user pressed the accept button to perform the suggested action.
-  HISTOGRAM_ACCEPTED,
-
-  // The user pressed the reject to turn off the feature.
-  HISTOGRAM_REJECTED,
-
-  // The user pressed the X button to dismiss the infobar this time.
-  HISTOGRAM_DISMISSED,
-
-  // The user completely ignored the infoar.  Either they navigated away, or
-  // they used the page as is.
-  HISTOGRAM_IGNORED,
-
-  // The user clicked on the learn more link in the infobar.
-  HISTOGRAM_LEARN_MORE,
-
-  HISTOGRAM_MAX
-};
 
 // The infobar asking the user if they want to use one-click sign in.
 class OneClickLoginInfoBarDelegate : public ConfirmInfoBarDelegate {
@@ -105,16 +83,16 @@ OneClickLoginInfoBarDelegate::OneClickLoginInfoBarDelegate(
       password_(password),
       button_pressed_(false) {
   DCHECK(profile_);
-  RecordHistogramAction(HISTOGRAM_SHOWN);
+  RecordHistogramAction(one_click_signin::HISTOGRAM_SHOWN);
 }
 
 OneClickLoginInfoBarDelegate::~OneClickLoginInfoBarDelegate() {
   if (!button_pressed_)
-    RecordHistogramAction(HISTOGRAM_IGNORED);
+    RecordHistogramAction(one_click_signin::HISTOGRAM_IGNORED);
 }
 
 void OneClickLoginInfoBarDelegate::InfoBarDismissed() {
-  RecordHistogramAction(HISTOGRAM_DISMISSED);
+  RecordHistogramAction(one_click_signin::HISTOGRAM_DISMISSED);
   button_pressed_ = true;
 }
 
@@ -138,7 +116,7 @@ string16 OneClickLoginInfoBarDelegate::GetButtonLabel(
 }
 
 bool OneClickLoginInfoBarDelegate::Accept() {
-  RecordHistogramAction(HISTOGRAM_ACCEPTED);
+  RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
   ShowOneClickSigninDialog(profile_, session_index_, email_, password_);
   button_pressed_ = true;
   return true;
@@ -149,13 +127,14 @@ bool OneClickLoginInfoBarDelegate::Cancel() {
       TabContentsWrapper::GetCurrentWrapperForContents(
           owner()->web_contents())->profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
-  RecordHistogramAction(HISTOGRAM_REJECTED);
+  RecordHistogramAction(one_click_signin::HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
 }
 
 void OneClickLoginInfoBarDelegate::RecordHistogramAction(int action) {
-  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action, HISTOGRAM_MAX);
+  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
+                            one_click_signin::HISTOGRAM_MAX);
 }
 
 }  // namespace

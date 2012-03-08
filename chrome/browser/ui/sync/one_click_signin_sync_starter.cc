@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 
+#include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 
@@ -22,6 +24,11 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
       signin_tracker_(profile, this),
       use_default_settings_(use_default_settings) {
   DCHECK(profile_);
+
+  int action = use_default_settings ? one_click_signin::HISTOGRAM_WITH_DEFAULTS
+                                    : one_click_signin::HISTOGRAM_WITH_ADVANCED;
+  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
+                            one_click_signin::HISTOGRAM_MAX);
 
   SigninManager* manager = SigninManagerFactory::GetForProfile(profile_);
   manager->StartSignInWithCredentials(session_index, email, password);
