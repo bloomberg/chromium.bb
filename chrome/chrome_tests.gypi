@@ -3747,21 +3747,6 @@
             '../build/linux/system.gyp:ssl',
           ],
         }],
-        ['OS=="mac"', {
-          # See the comment in this section of the unit_tests target for an
-          # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
-          'dependencies+++': [
-            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
-          'dependencies': [
-            'helper_app'
-          ],
-        },{  # OS!="mac"
-          'dependencies': [
-            'chrome_resources.gyp:packed_extra_resources',
-            'chrome_resources.gyp:packed_resources'
-          ],
-        }],
         ['OS=="linux" and chromeos==1', {
           'include_dirs': [
             '<(grit_out_dir)',
