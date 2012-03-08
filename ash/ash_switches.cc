@@ -4,10 +4,6 @@
 
 #include "ash/ash_switches.h"
 
-#include <string>
-
-#include "base/command_line.h"
-
 namespace ash {
 namespace switches {
 
