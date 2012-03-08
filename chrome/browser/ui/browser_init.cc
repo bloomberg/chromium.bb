@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_dialog.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_trial.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
@@ -583,9 +584,8 @@ bool GetAppLaunchContainer(
 }
 
 void RecordCmdLineAppHistogram() {
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                            extension_misc::APP_LAUNCH_CMD_LINE_APP,
-                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  AppLauncherHandler::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_CMD_LINE_APP);
 }
 
 void RecordAppLaunches(
@@ -596,16 +596,14 @@ void RecordAppLaunches(
   DCHECK(extension_service);
   for (size_t i = 0; i < cmd_line_urls.size(); ++i) {
     if (extension_service->IsInstalledApp(cmd_line_urls.at(i))) {
-      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                                extension_misc::APP_LAUNCH_CMD_LINE_URL,
-                                extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+      AppLauncherHandler::RecordAppLaunchType(
+          extension_misc::APP_LAUNCH_CMD_LINE_URL);
     }
   }
   for (size_t i = 0; i < autolaunch_tabs.size(); ++i) {
     if (extension_service->IsInstalledApp(autolaunch_tabs.at(i).url)) {
-      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                                extension_misc::APP_LAUNCH_AUTOLAUNCH,
-                                extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+      AppLauncherHandler::RecordAppLaunchType(
+          extension_misc::APP_LAUNCH_AUTOLAUNCH);
     }
   }
 }
@@ -1048,10 +1046,8 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
       if (profile->GetExtensionService()->IsInstalledApp(url)) {
         RecordCmdLineAppHistogram();
       } else {
-        UMA_HISTOGRAM_ENUMERATION(
-            extension_misc::kAppLaunchHistogram,
-            extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY,
-            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+        AppLauncherHandler::RecordAppLaunchType(
+            extension_misc::APP_LAUNCH_CMD_LINE_APP_LEGACY);
       }
       WebContents* app_tab = Browser::OpenAppShortcutWindow(
           profile,

@@ -24,6 +24,7 @@
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
@@ -166,9 +167,8 @@ void RecordAppLaunch(Profile* profile, const TabRestoreService::Tab& tab) {
   if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                            extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED,
-                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  AppLauncherHandler::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED);
 }
 
 }  // namespace

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -282,9 +283,8 @@ void LaunchAppFromOmnibox(const AutocompleteMatch& match,
   if (!extension)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                            extension_misc::APP_LAUNCH_OMNIBOX_APP,
-                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  AppLauncherHandler::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_OMNIBOX_APP);
 
   // Look at the preferences to find the right launch container.  If no
   // preference is set, launch as a regular tab.

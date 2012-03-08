@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/ui/gtk/theme_service_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -119,9 +120,8 @@ void RecordAppLaunch(Profile* profile, const GURL& url) {
   if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                            extension_misc::APP_LAUNCH_BOOKMARK_BAR,
-                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  AppLauncherHandler::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_BOOKMARK_BAR);
 }
 
 }  // namespace

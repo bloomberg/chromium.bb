@@ -131,6 +131,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/options/content_settings_handler.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -1747,9 +1748,8 @@ void Browser::OpenCurrentURL() {
 
   DCHECK(profile_->GetExtensionService());
   if (profile_->GetExtensionService()->IsInstalledApp(url)) {
-    UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                              extension_misc::APP_LAUNCH_OMNIBOX_LOCATION,
-                              extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+    AppLauncherHandler::RecordAppLaunchType(
+        extension_misc::APP_LAUNCH_OMNIBOX_LOCATION);
   }
 }
 
@@ -4552,9 +4552,8 @@ void Browser::CommitInstant(TabContentsWrapper* preview_contents) {
   GURL url = preview_contents->web_contents()->GetURL();
   DCHECK(profile_->GetExtensionService());
   if (profile_->GetExtensionService()->IsInstalledApp(url)) {
-    UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                              extension_misc::APP_LAUNCH_OMNIBOX_INSTANT,
-                              extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+    AppLauncherHandler::RecordAppLaunchType(
+        extension_misc::APP_LAUNCH_OMNIBOX_INSTANT);
   }
 }
 

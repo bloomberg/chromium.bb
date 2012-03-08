@@ -40,6 +40,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
@@ -133,9 +134,8 @@ void RecordAppLaunch(Profile* profile, GURL url) {
   if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                            extension_misc::APP_LAUNCH_BOOKMARK_BAR,
-                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  AppLauncherHandler::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_BOOKMARK_BAR);
 }
 
 }  // namespace

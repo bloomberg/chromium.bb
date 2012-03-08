@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/favicon_url.h"
@@ -840,10 +839,25 @@ void AppLauncherHandler::CleanupAfterUninstall() {
 }
 
 // static
-void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                            extension_misc::APP_LAUNCH_NTP_WEBSTORE,
+void AppLauncherHandler::RecordAppLaunchType(
+    extension_misc::AppLaunchBucket bucket) {
+  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,
                             extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+
+  static const bool webstore_link_experiment_exists =
+      base::FieldTrialList::TrialExists(kWebStoreLinkExperiment);
+  if (webstore_link_experiment_exists) {
+    UMA_HISTOGRAM_ENUMERATION(
+        base::FieldTrial::MakeName(extension_misc::kAppLaunchHistogram,
+                                   kWebStoreLinkExperiment),
+        bucket,
+        extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  }
+}
+
+// static
+void AppLauncherHandler::RecordWebStoreLaunch(bool promo_active) {
+  RecordAppLaunchType(extension_misc::APP_LAUNCH_NTP_WEBSTORE);
 
   if (!promo_active) return;
 
@@ -857,8 +871,7 @@ void AppLauncherHandler::RecordAppLaunchByID(
     extension_misc::AppLaunchBucket bucket) {
   CHECK(bucket != extension_misc::APP_LAUNCH_BUCKET_INVALID);
 
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,
-                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+  RecordAppLaunchType(bucket);
 }
 
 // static
@@ -873,18 +886,7 @@ void AppLauncherHandler::RecordAppLaunchByURL(
   if (!profile->GetExtensionService()->IsInstalledApp(url))
     return;
 
-  UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram, bucket,
-                            extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
-
-  static const bool webstore_link_experiment_exists =
-      base::FieldTrialList::TrialExists(kWebStoreLinkExperiment);
-  if (webstore_link_experiment_exists) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName(extension_misc::kAppLaunchHistogram,
-                                   kWebStoreLinkExperiment),
-        bucket,
-        extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
-  }
+  RecordAppLaunchType(bucket);
 }
 
 void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {

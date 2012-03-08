@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_controller.h"
@@ -753,9 +754,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
         browser->profile()->GetExtensionService() &&
 #endif
         browser->profile()->GetExtensionService()->IsInstalledApp(url)) {
-      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppLaunchHistogram,
-                                extension_misc::APP_LAUNCH_SESSION_RESTORE,
-                                extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
+      AppLauncherHandler::RecordAppLaunchType(
+          extension_misc::APP_LAUNCH_SESSION_RESTORE);
     }
 
     WebContents* web_contents =
