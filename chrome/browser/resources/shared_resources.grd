@@ -14,6 +14,8 @@ without changes to the corresponding grd file. -->
     <includes>
       <include name="IDR_SHARED_CSS_ABOUT"
                file="shared/css/about_memory.css" type="BINDATA" />
+      <include name="IDR_SHARED_CSS_ALERT_OVERLAY"
+               file="shared/css/alert_overlay.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_BUTTON"
                file="shared/css/button.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_CHECKBOX"

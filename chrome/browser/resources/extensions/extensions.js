@@ -239,6 +239,8 @@ cr.define('extensions', function() {
     if (node)
       node.classList.add('showing');
     overlay.hidden = !node;
+    uber.invokeMethodOnParent(node ? 'beginInterceptingEvents' :
+                                     'stopInterceptingEvents');
   }
 
   // Export
