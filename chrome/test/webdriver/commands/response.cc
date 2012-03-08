@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,7 +71,13 @@ const Value* Response::GetDictionary() const {
 
 std::string Response::ToJSON() const {
   std::string json;
-  base::JSONWriter::Write(&data_, false, &json);
+  // The |Value| classes do not support int64 and in rare cases we need to
+  // return one. We do this by using a double and passing in the special
+  // option so that the JSONWriter doesn't add '.0' to the end and confuse
+  // the WebDriver client.
+  base::JSONWriter::WriteWithOptions(
+      &data_, false,
+      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION, &json);
   return json;
 }
 

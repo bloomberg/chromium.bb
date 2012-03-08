@@ -161,17 +161,10 @@ InMemoryLog::~InMemoryLog() {  }
 
 void InMemoryLog::Log(LogLevel level, const base::Time& time,
                       const std::string& message) {
-  // base's JSONWriter doesn't obey the spec, and writes
-  // doubles without a fraction with a '.0' postfix. base's Value class
-  // only includes doubles or int types. Instead of returning the timestamp
-  // in unix epoch time, we return it based on the start of chromedriver so
-  // a 32-bit int doesn't overflow.
-  // TODO(kkania): Add int64_t to base Values or fix the JSONWriter/Reader and
-  // use unix epoch time.
-  base::TimeDelta delta(time - base::Time::FromDoubleT(start_time));
+  base::TimeDelta delta = time - base::Time::UnixEpoch();
   DictionaryValue* entry = new DictionaryValue();
   entry->SetInteger("level", level);
-  entry->SetInteger("timestamp", delta.InMilliseconds());
+  entry->SetDouble("timestamp", std::floor(delta.InMillisecondsF()));
   entry->SetString("message", message);
   base::AutoLock auto_lock(entries_lock_);
   entries_list_.Append(entry);
