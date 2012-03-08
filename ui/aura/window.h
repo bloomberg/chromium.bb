@@ -164,6 +164,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // see WindowTest.StackingMadrigal for details.
   void StackChildAbove(Window* child, Window* target);
 
+  // Stacks |child| below |target|. Does nothing if |child| is already below
+  // |target|.
+  void StackChildBelow(Window* child, Window* target);
+
   // Tree operations.
   // TODO(beng): Child windows are currently not owned by the hierarchy. We
   //             should change this.
@@ -321,6 +325,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
  private:
   friend class LayoutManager;
+
+  // Used when stacking windows.
+  enum StackDirection {
+    STACK_ABOVE,
+    STACK_BELOW
+  };
+
   // Called by the public {Set,Get,Clear}Property functions.
   intptr_t SetPropertyInternal(const void* key,
                                const char* name,
@@ -352,8 +363,16 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Called when this window's parent has changed.
   void OnParentChanged();
 
-  // Stacks |child| above |target| without checking for NULL layer delegates.
-  void StackChildAboveImpl(Window* child, Window* target);
+  // Determines the real location for stacking |child| and invokes
+  // StackChildRelativeToImpl().
+  void StackChildRelativeTo(Window* child,
+                            Window* target,
+                            StackDirection direction);
+
+  // Implementation of StackChildRelativeTo().
+  void StackChildRelativeToImpl(Window* child,
+                                Window* target,
+                                StackDirection direction);
 
   // Called when this window's stacking order among its siblings is changed.
   void OnStackingChanged();

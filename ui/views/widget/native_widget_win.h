@@ -216,6 +216,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void StackAbove(gfx::NativeView native_view) OVERRIDE;
   virtual void StackAtTop() OVERRIDE;
+  virtual void StackBelow(gfx::NativeView native_view) OVERRIDE;
   virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;

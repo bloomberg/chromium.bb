@@ -255,35 +255,11 @@ void Window::StackChildAtTop(Window* child) {
 }
 
 void Window::StackChildAbove(Window* child, Window* target) {
-  DCHECK_NE(child, target);
-  DCHECK(child);
-  DCHECK(target);
-  DCHECK_EQ(this, child->parent());
-  DCHECK_EQ(this, target->parent());
+  StackChildRelativeTo(child, target, STACK_ABOVE);
+}
 
-  const size_t target_i =
-      std::find(children_.begin(), children_.end(), target) - children_.begin();
-
-  // By convention we don't stack on top of windows with layers with NULL
-  // delegates.  Walk backward to find a valid target window.
-  // See tests WindowTest.StackingMadrigal and StackOverClosingTransient
-  // for an explanation of this.
-  size_t final_target_i = target_i;
-  while (final_target_i > 0 &&
-         children_[final_target_i]->layer()->delegate() == NULL)
-    --final_target_i;
-  Window* final_target = children_[final_target_i];
-
-  // If we couldn't find a valid target position, don't move anything.
-  if (final_target->layer()->delegate() == NULL)
-    return;
-
-  // Don't try to stack a child above itself.
-  if (child == final_target)
-    return;
-
-  // Move the child and all its transients.
-  StackChildAboveImpl(child, final_target);
+void Window::StackChildBelow(Window* child, Window* target) {
+  StackChildRelativeTo(child, target, STACK_BELOW);
 }
 
 void Window::AddChild(Window* child) {
@@ -670,7 +646,43 @@ void Window::OnParentChanged() {
       WindowObserver, observers_, OnWindowParentChanged(this, parent_));
 }
 
-void Window::StackChildAboveImpl(Window* child, Window* target) {
+void Window::StackChildRelativeTo(Window* child,
+                                  Window* target,
+                                  StackDirection direction) {
+  DCHECK_NE(child, target);
+  DCHECK(child);
+  DCHECK(target);
+  DCHECK_EQ(this, child->parent());
+  DCHECK_EQ(this, target->parent());
+
+  const size_t target_i =
+      std::find(children_.begin(), children_.end(), target) - children_.begin();
+
+  // By convention we don't stack on top of windows with layers with NULL
+  // delegates.  Walk backward to find a valid target window.
+  // See tests WindowTest.StackingMadrigal and StackOverClosingTransient
+  // for an explanation of this.
+  size_t final_target_i = target_i;
+  while (final_target_i > 0 &&
+         children_[final_target_i]->layer()->delegate() == NULL)
+    --final_target_i;
+  Window* final_target = children_[final_target_i];
+
+  // If we couldn't find a valid target position, don't move anything.
+  if (final_target->layer()->delegate() == NULL)
+    return;
+
+  // Don't try to stack a child above itself.
+  if (child == final_target)
+    return;
+
+  // Move the child and all its transients.
+  StackChildRelativeToImpl(child, final_target, direction);
+}
+
+void Window::StackChildRelativeToImpl(Window* child,
+                                      Window* target,
+                                      StackDirection direction) {
   DCHECK_NE(child, target);
   DCHECK(child);
   DCHECK(target);
@@ -683,14 +695,21 @@ void Window::StackChildAboveImpl(Window* child, Window* target) {
       std::find(children_.begin(), children_.end(), target) - children_.begin();
 
   // Don't move the child if it is already in the right place.
-  if (child_i == target_i + 1)
+  if ((direction == STACK_ABOVE && child_i == target_i + 1) ||
+      (direction == STACK_BELOW && child_i + 1 == target_i))
     return;
 
-  const size_t dest_i = child_i < target_i ? target_i : target_i + 1;
+  const size_t dest_i =
+      direction == STACK_ABOVE ?
+      (child_i < target_i ? target_i : target_i + 1) :
+      (child_i < target_i ? target_i - 1 : target_i);
   children_.erase(children_.begin() + child_i);
   children_.insert(children_.begin() + dest_i, child);
 
-  layer()->StackAbove(child->layer(), target->layer());
+  if (direction == STACK_ABOVE)
+    layer()->StackAbove(child->layer(), target->layer());
+  else
+    layer()->StackBelow(child->layer(), target->layer());
 
   // Stack any transient children that share the same parent to be in front of
   // 'child'.
@@ -699,7 +718,7 @@ void Window::StackChildAboveImpl(Window* child, Window* target) {
        it != child->transient_children_.end(); ++it) {
     Window* transient_child = *it;
     if (transient_child->parent_ == this) {
-      StackChildAboveImpl(transient_child, last_transient);
+      StackChildRelativeToImpl(transient_child, last_transient, STACK_ABOVE);
       last_transient = transient_child;
     }
   }

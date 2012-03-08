@@ -428,6 +428,38 @@ TEST_F(WindowTest, StackChildAtTop) {
   EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
 }
 
+// Make sure StackChildBelow works.
+TEST_F(WindowTest, StackChildBelow) {
+  Window parent(NULL);
+  parent.Init(ui::Layer::LAYER_NOT_DRAWN);
+  Window child1(NULL);
+  child1.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child1.set_id(1);
+  Window child2(NULL);
+  child2.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child2.set_id(2);
+  Window child3(NULL);
+  child3.Init(ui::Layer::LAYER_NOT_DRAWN);
+  child3.set_id(3);
+
+  child1.SetParent(&parent);
+  child2.SetParent(&parent);
+  child3.SetParent(&parent);
+  EXPECT_EQ("1 2 3", ChildWindowIDsAsString(&parent));
+
+  parent.StackChildBelow(&child1, &child2);
+  EXPECT_EQ("1 2 3", ChildWindowIDsAsString(&parent));
+
+  parent.StackChildBelow(&child2, &child1);
+  EXPECT_EQ("2 1 3", ChildWindowIDsAsString(&parent));
+
+  parent.StackChildBelow(&child3, &child2);
+  EXPECT_EQ("3 2 1", ChildWindowIDsAsString(&parent));
+
+  parent.StackChildBelow(&child3, &child1);
+  EXPECT_EQ("2 3 1", ChildWindowIDsAsString(&parent));
+}
+
 // Various assertions for StackChildAbove.
 TEST_F(WindowTest, StackChildAbove) {
   Window parent(NULL);
@@ -1306,6 +1338,8 @@ TEST_F(WindowTest, StackWindowsWhoseLayersHaveNoDelegate) {
 }
 
 TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
+  RootWindow* root = root_window();
+
   // Create a window with several transients, then a couple windows on top.
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
@@ -1314,6 +1348,8 @@ TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
   scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));
   scoped_ptr<Window> window3(CreateTestWindowWithId(3, NULL));
 
+  EXPECT_EQ("1 11 12 13 2 3", ChildWindowIDsAsString(root));
+
   // Remove the delegates of a couple of transients, as if they are closing
   // and animating out.
   window11->layer()->set_delegate(NULL);
@@ -1321,16 +1357,9 @@ TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
 
   // Move window1 to the front.  All transients should move with it, and their
   // order should be preserved.
-  RootWindow* root = root_window();
   root->StackChildAtTop(window1.get());
 
-  ASSERT_EQ(6u, root->children().size());
-  EXPECT_EQ(window2.get(), root->children()[0]);
-  EXPECT_EQ(window3.get(), root->children()[1]);
-  EXPECT_EQ(window1.get(), root->children()[2]);
-  EXPECT_EQ(window11.get(), root->children()[3]);
-  EXPECT_EQ(window12.get(), root->children()[4]);
-  EXPECT_EQ(window13.get(), root->children()[5]);
+  EXPECT_EQ("2 3 1 11 12 13", ChildWindowIDsAsString(root));
 }
 
 class TestVisibilityClient : public client::VisibilityClient {

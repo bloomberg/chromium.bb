@@ -825,6 +825,10 @@ void NativeWidgetWin::StackAtTop() {
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
+void NativeWidgetWin::StackBelow(gfx::NativeView native_view) {
+  NOTIMPLEMENTED();
+}
+
 void NativeWidgetWin::SetShape(gfx::NativeRegion region) {
   SetWindowRgn(region, TRUE);
 }

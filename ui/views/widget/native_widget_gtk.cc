@@ -1064,6 +1064,10 @@ void NativeWidgetGtk::StackAtTop() {
   gtk_window_present(GTK_WINDOW(GetNativeView()));
 }
 
+void NativeWidgetGtk::StackBelow(gfx::NativeView native_view) {
+  NOTIMPLEMENTED();
+}
+
 void NativeWidgetGtk::SetShape(gfx::NativeRegion region) {
   if (widget_ && widget_->window) {
     gdk_window_shape_combine_region(widget_->window, region, 0, 0);

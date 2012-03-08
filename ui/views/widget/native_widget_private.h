@@ -171,6 +171,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void SetSize(const gfx::Size& size) = 0;
   virtual void StackAbove(gfx::NativeView native_view) = 0;
   virtual void StackAtTop() = 0;
+  virtual void StackBelow(gfx::NativeView native_view) = 0;
   virtual void SetShape(gfx::NativeRegion shape) = 0;
   virtual void Close() = 0;
   virtual void CloseNow() = 0;

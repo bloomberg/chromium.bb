@@ -33,4 +33,4 @@ class ASH_EXPORT ManagedWorkspace : public Workspace {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_WORKPSACE_MANAGED_WORKSPACE_H_
+#endif  // ASH_WM_WORKSPACE_MANAGED_WORKSPACE_H_
