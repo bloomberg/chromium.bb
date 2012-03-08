@@ -50,8 +50,9 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   // For preparing for read: get the size, apply the range and perform seek.
   void DidStart();
   void CountSize();
-  void GetFileItemInfo(const FilePath& file_path);
-  void DidGetFileItemInfo(base::PlatformFileError rv,
+  void DidCountSize(int error);
+  void DidGetFileItemInfo(size_t index,
+                          base::PlatformFileError error,
                           const base::PlatformFileInfo& file_info);
   void Seek(int64 offset);
 
@@ -60,13 +61,14 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   bool ReadItem();
   void AdvanceItem();
   void AdvanceBytesRead(int result);
-  bool ReadBytesItem(const BlobData::Item& item);
-  bool ReadFileItem(const BlobData::Item& item);
+  bool ReadBytesItem(const BlobData::Item& item, int bytes_to_read);
+  bool ReadFileItem(const BlobData::Item& item, int bytes_to_read);
 
-  void DidOpenFile(base::PlatformFileError rv,
+  void DidOpenFile(int bytes_to_read,
+                   base::PlatformFileError rv,
                    base::PassPlatformFile file,
                    bool created);
-  bool ReadFileStream();
+  bool ReadFileStream(int bytes_to_read);
   void DidReadFileStream(int result);
   void CloseFileStream();
 
@@ -81,13 +83,13 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   scoped_refptr<BlobData> blob_data_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   std::vector<int64> item_length_list_;
-  scoped_ptr<net::FileStream> stream_;
-  size_t item_index_;
   int64 total_size_;
-  int64 current_item_offset_;
   int64 remaining_bytes_;
+  int pending_get_file_info_count_;
+  scoped_ptr<net::FileStream> stream_;
+  size_t current_item_index_;
+  int64 current_item_offset_;
   scoped_refptr<net::DrainableIOBuffer> read_buf_;
-  int bytes_to_read_;
   bool error_;
   bool headers_set_;
   bool byte_range_set_;

@@ -59,11 +59,11 @@ BlobURLRequestJob::BlobURLRequestJob(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       blob_data_(blob_data),
       file_thread_proxy_(file_thread_proxy),
-      item_index_(0),
       total_size_(0),
-      current_item_offset_(0),
       remaining_bytes_(0),
-      bytes_to_read_(0),
+      pending_get_file_info_count_(0),
+      current_item_index_(0),
+      current_item_offset_(0),
       error_(false),
       headers_set_(false),
       byte_range_set_(false) {
@@ -176,23 +176,39 @@ void BlobURLRequestJob::DidStart() {
 }
 
 void BlobURLRequestJob::CountSize() {
-  for (; item_index_ < blob_data_->items().size(); ++item_index_) {
-    const BlobData::Item& item = blob_data_->items().at(item_index_);
-    int64 item_length = static_cast<int64>(item.length);
+  error_ = false;
+  pending_get_file_info_count_ = 0;
+  total_size_ = 0;
+  item_length_list_.resize(blob_data_->items().size());
 
-    // If there is a file item, do the resolving.
+  for (size_t i = 0; i < blob_data_->items().size(); ++i) {
+    const BlobData::Item& item = blob_data_->items().at(i);
     if (item.type == BlobData::TYPE_FILE) {
-      GetFileItemInfo(item.file_path);
-      return;
+      ++pending_get_file_info_count_;
+      base::FileUtilProxy::GetFileInfo(
+          file_thread_proxy_, item.file_path,
+          base::Bind(&BlobURLRequestJob::DidGetFileItemInfo,
+                     weak_factory_.GetWeakPtr(), i));
+      continue;
     }
-
     // Cache the size and add it to the total size.
-    item_length_list_.push_back(item_length);
+    int64 item_length = static_cast<int64>(item.length);
+    item_length_list_[i] = item_length;
     total_size_ += item_length;
   }
 
-  // Reset item_index_ since it will be reused to read the items.
-  item_index_ = 0;
+  if (pending_get_file_info_count_ == 0)
+    DidCountSize(net::OK);
+}
+
+void BlobURLRequestJob::DidCountSize(int error) {
+  DCHECK(!error_);
+
+  // If an error occured, bail out.
+  if (error != net::OK) {
+    NotifyFailure(error);
+    return;
+  }
 
   // Apply the range requirement.
   if (!byte_range_.ComputeBounds(total_size_)) {
@@ -211,17 +227,14 @@ void BlobURLRequestJob::CountSize() {
   NotifySuccess();
 }
 
-void BlobURLRequestJob::GetFileItemInfo(const FilePath& file_path) {
-  base::FileUtilProxy::GetFileInfo(
-        file_thread_proxy_, file_path,
-        base::Bind(&BlobURLRequestJob::DidGetFileItemInfo,
-                   weak_factory_.GetWeakPtr()));
-}
-
 void BlobURLRequestJob::DidGetFileItemInfo(
+    size_t index,
     base::PlatformFileError rv,
     const base::PlatformFileInfo& file_info) {
-  // If an error occured, bail out.
+  // Do nothing if we have encountered an error.
+  if (error_)
+    return;
+
   if (rv == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
     NotifyFailure(net::ERR_FILE_NOT_FOUND);
     return;
@@ -233,7 +246,8 @@ void BlobURLRequestJob::DidGetFileItemInfo(
   // Validate the expected modification time.
   // Note that the expected modification time from WebKit is based on
   // time_t precision. So we have to convert both to time_t to compare.
-  const BlobData::Item& item = blob_data_->items().at(item_index_);
+  DCHECK_LT(index, blob_data_->items().size());
+  const BlobData::Item& item = blob_data_->items().at(index);
   DCHECK(item.type == BlobData::TYPE_FILE);
 
   if (!item.expected_modification_time.is_null() &&
@@ -250,21 +264,21 @@ void BlobURLRequestJob::DidGetFileItemInfo(
     item_length = file_info.size;
 
   // Cache the size and add it to the total size.
-  item_length_list_.push_back(item_length);
+  DCHECK_LT(index, item_length_list_.size());
+  item_length_list_[index] = item_length;
   total_size_ += item_length;
 
-  // Continue counting the size for the remaining items.
-  item_index_++;
-  CountSize();
+  if (--pending_get_file_info_count_ == 0)
+    DidCountSize(net::OK);
 }
 
 void BlobURLRequestJob::Seek(int64 offset) {
   // Skip the initial items that are not in the range.
-  for (item_index_ = 0;
-       item_index_ < blob_data_->items().size() &&
-           offset >= item_length_list_[item_index_];
-       ++item_index_) {
-    offset -= item_length_list_[item_index_];
+  for (current_item_index_ = 0;
+       current_item_index_ < blob_data_->items().size() &&
+           offset >= item_length_list_[current_item_index_];
+       ++current_item_index_) {
+    offset -= item_length_list_[current_item_index_];
   }
 
   // Set the offset that need to jump to for the first item in the range.
@@ -278,27 +292,27 @@ bool BlobURLRequestJob::ReadItem() {
 
   // If we get to the last item but still expect something to read, bail out
   // since something is wrong.
-  if (item_index_ >= blob_data_->items().size()) {
+  if (current_item_index_ >= blob_data_->items().size()) {
     NotifyFailure(net::ERR_FAILED);
     return false;
   }
 
   // Compute the bytes to read for current item.
-  bytes_to_read_ = ComputeBytesToRead();
+  int bytes_to_read = ComputeBytesToRead();
 
   // If nothing to read for current item, advance to next item.
-  if (bytes_to_read_ == 0) {
+  if (bytes_to_read == 0) {
     AdvanceItem();
     return ReadItem();
   }
 
   // Do the reading.
-  const BlobData::Item& item = blob_data_->items().at(item_index_);
+  const BlobData::Item& item = blob_data_->items().at(current_item_index_);
   switch (item.type) {
     case BlobData::TYPE_DATA:
-      return ReadBytesItem(item);
+      return ReadBytesItem(item, bytes_to_read);
     case BlobData::TYPE_FILE:
-      return ReadFileItem(item);
+      return ReadFileItem(item, bytes_to_read);
     default:
       DCHECK(false);
       return false;
@@ -310,7 +324,7 @@ void BlobURLRequestJob::AdvanceItem() {
   CloseFileStream();
 
   // Advance to the next item.
-  item_index_++;
+  current_item_index_++;
   current_item_offset_ = 0;
 }
 
@@ -319,7 +333,7 @@ void BlobURLRequestJob::AdvanceBytesRead(int result) {
 
   // Do we finish reading the current item?
   current_item_offset_ += result;
-  if (current_item_offset_ == item_length_list_[item_index_])
+  if (current_item_offset_ == item_length_list_[current_item_index_])
     AdvanceItem();
 
   // Subtract the remaining bytes.
@@ -331,31 +345,34 @@ void BlobURLRequestJob::AdvanceBytesRead(int result) {
   DCHECK_GE(read_buf_->BytesRemaining(), 0);
 }
 
-bool BlobURLRequestJob::ReadBytesItem(const BlobData::Item& item) {
-  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read_);
+bool BlobURLRequestJob::ReadBytesItem(const BlobData::Item& item,
+                                      int bytes_to_read) {
+  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
 
   memcpy(read_buf_->data(),
          &item.data.at(0) + item.offset + current_item_offset_,
-         bytes_to_read_);
+         bytes_to_read);
 
-  AdvanceBytesRead(bytes_to_read_);
+  AdvanceBytesRead(bytes_to_read);
   return true;
 }
 
-bool BlobURLRequestJob::ReadFileItem(const BlobData::Item& item) {
+bool BlobURLRequestJob::ReadFileItem(const BlobData::Item& item,
+                                     int bytes_to_read) {
   // If the stream already exists, keep reading from it.
   if (stream_ != NULL)
-    return ReadFileStream();
+    return ReadFileStream(bytes_to_read);
 
   base::FileUtilProxy::CreateOrOpen(
       file_thread_proxy_, item.file_path, kFileOpenFlags,
       base::Bind(&BlobURLRequestJob::DidOpenFile,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), bytes_to_read));
   SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   return false;
 }
 
-void BlobURLRequestJob::DidOpenFile(base::PlatformFileError rv,
+void BlobURLRequestJob::DidOpenFile(int bytes_to_read,
+                                    base::PlatformFileError rv,
                                     base::PassPlatformFile file,
                                     bool created) {
   if (rv != base::PLATFORM_FILE_OK) {
@@ -366,7 +383,7 @@ void BlobURLRequestJob::DidOpenFile(base::PlatformFileError rv,
   DCHECK(!stream_.get());
   stream_.reset(new net::FileStream(file.ReleaseValue(), kFileOpenFlags, NULL));
 
-  const BlobData::Item& item = blob_data_->items().at(item_index_);
+  const BlobData::Item& item = blob_data_->items().at(current_item_index_);
   {
     // stream_.Seek() blocks the IO thread, see http://crbug.com/75548.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -377,17 +394,17 @@ void BlobURLRequestJob::DidOpenFile(base::PlatformFileError rv,
     }
   }
 
-  ReadFileStream();
+  ReadFileStream(bytes_to_read);
 }
 
-bool BlobURLRequestJob::ReadFileStream() {
+bool BlobURLRequestJob::ReadFileStream(int bytes_to_read) {
   DCHECK(stream_.get());
   DCHECK(stream_->IsOpen());
-  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read_);
+  DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
 
   // Start the asynchronous reading.
   int rv = stream_->Read(read_buf_,
-                         bytes_to_read_,
+                         bytes_to_read,
                          base::Bind(&BlobURLRequestJob::DidReadFileStream,
                                     base::Unretained(this)));
 
@@ -397,8 +414,8 @@ bool BlobURLRequestJob::ReadFileStream() {
     return false;
   }
 
-  // For all other errors, bail out.
-  if (rv < 0) {
+  // For all other errors (and for unexpected EOF case), bail out.
+  if (rv <= 0) {
     NotifyFailure(net::ERR_FAILED);
     return false;
   }
@@ -413,7 +430,7 @@ bool BlobURLRequestJob::ReadFileStream() {
 }
 
 void BlobURLRequestJob::DidReadFileStream(int result) {
-  if (result < 0) {
+  if (result <= 0) {
     NotifyFailure(net::ERR_FAILED);
     return;
   }
@@ -451,14 +468,11 @@ int BlobURLRequestJob::BytesReadCompleted() {
 
 int BlobURLRequestJob::ComputeBytesToRead() const {
   int64 current_item_remaining_bytes =
-      item_length_list_[item_index_] - current_item_offset_;
-  int bytes_to_read = (read_buf_->BytesRemaining() >
-                       current_item_remaining_bytes)
-      ? static_cast<int>(current_item_remaining_bytes)
-      : read_buf_->BytesRemaining();
-  if (bytes_to_read > remaining_bytes_)
-    bytes_to_read = static_cast<int>(remaining_bytes_);
-  return bytes_to_read;
+      item_length_list_[current_item_index_] - current_item_offset_;
+  int64 remaining_bytes = std::min(current_item_remaining_bytes,
+                                   remaining_bytes_);
+  return std::min(read_buf_->BytesRemaining(),
+                  static_cast<int>(remaining_bytes));
 }
 
 bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
