@@ -60,9 +60,10 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
   DictionaryValue* result_dict = NULL;
   EXPECT_TRUE(result->GetAsDictionary(&result_dict));
 
-  Value* int_temp_value = NULL;
+  Value* int_temp_value_out = NULL;
   int int_temp = 0;
-  EXPECT_TRUE(result_dict->Remove("integer", &int_temp_value));
+  EXPECT_TRUE(result_dict->Remove("integer", &int_temp_value_out));
+  scoped_ptr<Value> int_temp_value(int_temp_value_out);
   EXPECT_TRUE(int_temp_value->GetAsInteger(&int_temp));
   EXPECT_EQ(5, int_temp);
 

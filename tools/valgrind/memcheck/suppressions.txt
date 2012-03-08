@@ -5860,15 +5860,6 @@
    fun:_ZN7WebCore19CCSingleThreadProxy11doCompositeEv
 }
 {
-   bug_116580
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base5Value18CreateIntegerValueEi
-   fun:_ZNK4test3api21additional_properties26ReturnAdditionalProperties6Result12ResultObject7ToValueEv
-   fun:_ZN4test3api21additional_properties26ReturnAdditionalProperties6Result6CreateERKNS3_12ResultObjectE
-   fun:_ZN86JsonSchemaCompilerAdditionalPropertiesTest_ReturnAdditionalPropertiesResultCreate_Test8TestBodyEv
-}
-{
    bug_116923_a
    Memcheck:Leak
    fun:_Znw*
