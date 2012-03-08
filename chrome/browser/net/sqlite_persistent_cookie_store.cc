@@ -296,10 +296,9 @@ bool InitTable(sql::Connection* db) {
       return false;
   }
 
-  // Try to create the index every time. Older versions did not have this index,
-  // so we want those people to get it.
-  if (!db->Execute("CREATE INDEX IF NOT EXISTS cookie_times ON cookies"
-                   " (creation_utc)"))
+  // Older code created an index on creation_utc, which is already
+  // primary key for the table.
+  if (!db->Execute("DROP INDEX IF EXISTS cookie_times"))
     return false;
 
   if (!db->Execute("CREATE INDEX IF NOT EXISTS domain ON cookies(host_key)"))
