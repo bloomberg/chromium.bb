@@ -6,6 +6,7 @@
 #define ASH_WM_CUSTOM_FRAME_VIEW_ASH_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"  // ButtonListener
 #include "ui/views/window/non_client_view.h"
@@ -22,12 +23,11 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
 
 // A NonClientFrameView used for dialogs and other non-browser windows.
 // See also views::CustomFrameView and BrowserNonClientFrameViewAura.
-class CustomFrameViewAsh : public views::NonClientFrameView,
-                           public views::ButtonListener {
+class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
+                                      public views::ButtonListener {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -36,6 +36,8 @@ class CustomFrameViewAsh : public views::NonClientFrameView,
   virtual ~CustomFrameViewAsh();
 
   void Init(views::Widget* frame);
+
+  views::ImageButton* close_button() { return close_button_; }
 
   // views::NonClientFrameView overrides:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
@@ -76,7 +78,6 @@ class CustomFrameViewAsh : public views::NonClientFrameView,
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAsh);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_CUSTOM_FRAME_VIEW_ASH_H_

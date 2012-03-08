@@ -49,6 +49,7 @@
 #if defined(USE_AURA)
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/wm/custom_frame_view_ash.h"
 #include "base/command_line.h"
 #endif
 
@@ -444,21 +445,6 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_theme_overlay_bitmap(NULL);
   frame_background_->set_top_area_height(theme_frame->height());
 
-#if defined(USE_AURA)
-  // TODO(jamescook): Remove this when Aura defaults to its own window frame,
-  // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
-  // avoid performance penalties associated with transparent layers.
-  frame_background_->SetCornerImages(
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT),
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT),
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT),
-      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT));
-  frame_background_->SetSideImages(
-      rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE),
-      rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER),
-      rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE),
-      rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER));
-#else
   frame_background_->SetCornerImages(
       resources_->GetPartBitmap(FRAME_TOP_LEFT_CORNER),
       resources_->GetPartBitmap(FRAME_TOP_RIGHT_CORNER),
@@ -469,8 +455,6 @@ void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
       resources_->GetPartBitmap(FRAME_TOP_EDGE),
       resources_->GetPartBitmap(FRAME_RIGHT_EDGE),
       resources_->GetPartBitmap(FRAME_BOTTOM_EDGE));
-#endif
-
   frame_background_->PaintRestored(canvas, this);
 }
 
@@ -551,6 +535,36 @@ void ConstrainedWindowFrameView::InitClass() {
   }
 }
 
+#if defined(USE_ASH)
+// Ash has its own window frames, but we need the special close semantics for
+// constrained windows.
+class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
+ public:
+  explicit ConstrainedWindowFrameViewAsh()
+      : ash::CustomFrameViewAsh(),
+        container_(NULL) {
+  }
+
+  void Init(ConstrainedWindowViews* container) {
+    container_ = container;
+    ash::CustomFrameViewAsh::Init(container);
+    // Always use "active" look.
+    SetInactiveRenderingDisabled(true);
+  }
+
+  // views::ButtonListener overrides:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
+    if (sender == close_button())
+      container_->CloseConstrainedWindow();
+  }
+
+ private:
+  ConstrainedWindowViews* container_;  // not owned
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowFrameViewAsh);
+};
+#endif  // defined(USE_ASH)
+
 ////////////////////////////////////////////////////////////////////////////////
 // ConstrainedWindowViews, public:
 
@@ -565,9 +579,10 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
   params.parent = wrapper->web_contents()->GetNativeView();
-  // TODO(jamescook): In non-compact mode the window header can be transparent.
-  // Check defined(USE_AURA) and set params.transparent = true.
-  // Don't use Shell::GetInstance() here as some tests run this without a Shell.
+#if defined(USE_ASH)
+  // Ash window headers can be transparent.
+  params.transparent = true;
+#endif
   Init(params);
 
   wrapper_->constrained_window_tab_helper()->AddConstrainedDialog(this);
@@ -616,10 +631,9 @@ views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(ash::switches::kAuraGoogleDialogFrames))
     return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(this);
-  // TODO(jamescook): In non-compact mode we should use fancy translucent
-  // headers.  Figure out how to handle closing the window and communication
-  // with the ConstrainedWindowTabHelper.  Avoid Shell::GetInstance() as
-  // some tests run this without a Shell.
+  ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;
+  frame->Init(this);
+  return frame;
 #endif
   return new ConstrainedWindowFrameView(this);
 }

@@ -578,7 +578,7 @@ views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
     return new internal::DialogFrameView;
   }
   // Use translucent-style window frames for dialogs.
-  internal::CustomFrameViewAsh* frame_view = new internal::CustomFrameViewAsh;
+  CustomFrameViewAsh* frame_view = new CustomFrameViewAsh;
   frame_view->Init(widget);
   return frame_view;
 }

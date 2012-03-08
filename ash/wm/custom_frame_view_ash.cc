@@ -19,7 +19,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
-namespace internal {
 
 // static
 const char CustomFrameViewAsh::kViewClassName[] = "ash/wm/CustomFrameViewAsh";
@@ -161,5 +160,4 @@ void CustomFrameViewAsh::InitClass() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash
