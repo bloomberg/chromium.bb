@@ -81,16 +81,17 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
   gfx::Rect bounds = CalculateBoundsForDrag(details_, location);
   if (constrain_size_)
     AdjustBoundsForMainWindow(&bounds);
-  if (bounds != details_.window->bounds()) {
+  if (bounds != details_.window->bounds())
     did_move_or_resize_ = true;
-    details_.window->SetBounds(bounds);
-  }
   if (!attached_windows_.empty()) {
     if (details_.window_component == HTRIGHT)
       LayoutAttachedWindowsHorizontally(bounds);
     else
       LayoutAttachedWindowsVertically(bounds);
   }
+  if (bounds != details_.window->bounds())
+    details_.window->SetBounds(bounds);
+  // WARNING: we may have been deleted.
 }
 
 void WorkspaceWindowResizer::CompleteDrag() {
