@@ -42,7 +42,6 @@ bool RcdBetterThan(std::string a, std::string b) {
 // Names of API modules that can be used without listing it in the
 // permissions section of the manifest.
 const char* kNonPermissionModuleNames[] = {
-  "app",
   "browserAction",
   "devtools",
   "extension",
@@ -615,16 +614,6 @@ std::set<std::string> ExtensionPermissionSet::GetAPIsAsStrings() const {
       apis_str.insert(permission->name());
   }
   return apis_str;
-}
-
-std::set<std::string> ExtensionPermissionSet::
-    GetAPIsWithAnyAccessAsStrings() const {
-  std::set<std::string> result = GetAPIsAsStrings();
-  for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i)
-    result.insert(kNonPermissionModuleNames[i]);
-  for (size_t i = 0; i < kNumNonPermissionFunctionNames; ++i)
-    result.insert(GetPermissionName(kNonPermissionFunctionNames[i]));
-  return result;
 }
 
 bool ExtensionPermissionSet::HasAnyAccessToAPI(

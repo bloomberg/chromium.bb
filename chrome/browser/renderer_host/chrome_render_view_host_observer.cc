@@ -104,6 +104,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   content::RenderProcessHost* process = render_view_host()->GetProcess();
 
   if (extension->is_app()) {
+    Send(new ExtensionMsg_ActivateApplication(extension->id()));
     // Though we already record the associated process ID for the renderer in
     // InitRenderViewHostForExtensions, the process might have crashed and been
     // restarted (hence the re-initialization), so we need to update that
@@ -126,21 +127,13 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
     }
   }
 
-  switch (type) {
-    case Extension::TYPE_EXTENSION:
-    case Extension::TYPE_USER_SCRIPT:
-    case Extension::TYPE_HOSTED_APP:
-    case Extension::TYPE_PACKAGED_APP:
-    case Extension::TYPE_PLATFORM_APP:
-      Send(new ExtensionMsg_ActivateExtension(extension->id()));
-      break;
-
-    case Extension::TYPE_UNKNOWN:
-    case Extension::TYPE_THEME:
-      break;
-
-    default:
-      NOTREACHED();
+  if (type == Extension::TYPE_EXTENSION ||
+      type == Extension::TYPE_USER_SCRIPT ||
+      type == Extension::TYPE_PACKAGED_APP ||
+      type == Extension::TYPE_PLATFORM_APP ||
+      (type == Extension::TYPE_HOSTED_APP &&
+       extension->location() == Extension::COMPONENT)) {
+    Send(new ExtensionMsg_ActivateExtension(extension->id()));
   }
 }
 

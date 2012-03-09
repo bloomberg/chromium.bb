@@ -220,14 +220,12 @@ TEST(ExtensionFeatureTest, ParseContexts) {
   contexts->Append(Value::CreateStringValue("privileged"));
   contexts->Append(Value::CreateStringValue("unprivileged"));
   contexts->Append(Value::CreateStringValue("content_script"));
-  contexts->Append(Value::CreateStringValue("web_page"));
   value->Set("contexts", contexts);
   scoped_ptr<Feature> feature(Feature::Parse(value.get()));
-  EXPECT_EQ(4u, feature->contexts()->size());
+  EXPECT_EQ(3u, feature->contexts()->size());
   EXPECT_TRUE(feature->contexts()->count(Feature::PRIVILEGED_CONTEXT));
   EXPECT_TRUE(feature->contexts()->count(Feature::UNPRIVILEGED_CONTEXT));
   EXPECT_TRUE(feature->contexts()->count(Feature::CONTENT_SCRIPT_CONTEXT));
-  EXPECT_TRUE(feature->contexts()->count(Feature::WEB_PAGE_CONTEXT));
 
   value->SetString("contexts", "all");
   scoped_ptr<Feature> feature2(Feature::Parse(value.get()));

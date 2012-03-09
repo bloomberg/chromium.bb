@@ -118,32 +118,30 @@ class ExtensionImpl : public ChromeV8Extension {
     ChromeV8Context* v8_context = dispatcher->v8_context_set().GetCurrent();
     CHECK(v8_context);
 
-    // TODO(kalman): can we just cache this in the ChromeV8Context instance?
-    scoped_ptr<std::set<std::string> > apis;
+    std::string extension_id = v8_context->extension_id();
+    ExtensionAPI::SchemaMap schemas;
+    ExtensionAPI::GetSchemasFilter filter =
+        dispatcher->is_extension_process() ?
+            ExtensionAPI::ALL : ExtensionAPI::ONLY_UNPRIVILEGED;
 
-    const std::string& extension_id = v8_context->extension_id();
     if (dispatcher->IsTestExtensionId(extension_id)) {
-      apis.reset(new std::set<std::string>());
-      // The minimal set of APIs that tests need.
-      apis->insert("extension");
+      ExtensionAPI::GetInstance()->GetDefaultSchemas(filter, &schemas);
     } else {
-      apis = ExtensionAPI::GetInstance()->GetAPIsForContext(
-          v8_context->context_type(),
-          dispatcher->extensions()->GetByID(extension_id),
-          UserScriptSlave::GetDataSourceURLForFrame(v8_context->web_frame()));
+      const ::Extension* extension =
+          dispatcher->extensions()->GetByID(extension_id);
+      CHECK(extension) << extension_id << " not found";
+      ExtensionAPI::GetInstance()->GetSchemasForExtension(
+          *extension, filter, &schemas);
     }
 
     v8::Persistent<v8::Context> context(v8::Context::New());
     v8::Context::Scope context_scope(context);
-    v8::Handle<v8::Array> api(v8::Array::New(apis->size()));
+    v8::Handle<v8::Array> api(v8::Array::New(schemas.size()));
     size_t api_index = 0;
-    for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
-        ++i) {
-      // TODO(kalman): this caching is actually useless now, because
-      // SchemaGeneratedBindings is per-context not per-process. We should
-      // (e.g.) hang a SchemaRegistry off ExtensionDispatcher (which maintains
-      // a *single* v8::Context rather than multiple ones as here).
-      api->Set(api_index, GetV8SchemaForAPI(self, context, *i));
+    for (ExtensionAPI::SchemaMap::iterator it = schemas.begin();
+        it != schemas.end(); ++it) {
+      std::string api_name = it->first;
+      api->Set(api_index, GetV8SchemaForAPI(self, context, api_name));
       ++api_index;
     }
 
@@ -325,7 +323,6 @@ class ExtensionImpl : public ChromeV8Extension {
 
 namespace extensions {
 
-// static
 ChromeV8Extension* SchemaGeneratedBindings::Get(
     ExtensionDispatcher* extension_dispatcher) {
   return new ExtensionImpl(extension_dispatcher);

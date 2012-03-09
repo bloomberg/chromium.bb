@@ -13,10 +13,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
 using extensions::ExtensionAPI;
-using extensions::Feature;
 
 TEST(ExtensionAPI, IsPrivileged) {
   ExtensionAPI* extension_api = ExtensionAPI::GetInstance();
@@ -36,8 +33,6 @@ TEST(ExtensionAPI, IsPrivileged) {
   EXPECT_TRUE(extension_api->IsPrivileged("history.search"));
 
   // Whole APIs that are unprivileged.
-  EXPECT_FALSE(extension_api->IsPrivileged("app.getDetails"));
-  EXPECT_FALSE(extension_api->IsPrivileged("app.isInstalled"));
   EXPECT_FALSE(extension_api->IsPrivileged("storage.local"));
   EXPECT_FALSE(extension_api->IsPrivileged("storage.local.onChanged"));
   EXPECT_FALSE(extension_api->IsPrivileged("storage.local.set"));
@@ -45,18 +40,34 @@ TEST(ExtensionAPI, IsPrivileged) {
   EXPECT_FALSE(extension_api->IsPrivileged("storage.set"));
 }
 
-scoped_refptr<Extension> CreateExtensionWithPermissions(
-    const std::set<std::string>& permissions) {
+TEST(ExtensionAPI, IsWholeAPIPrivileged) {
+  ExtensionAPI* extension_api = ExtensionAPI::GetInstance();
+
+  // Completely unprivileged.
+  EXPECT_FALSE(extension_api->IsWholeAPIPrivileged("storage"));
+
+  // Partially unprivileged.
+  EXPECT_FALSE(extension_api->IsWholeAPIPrivileged("extension"));
+  EXPECT_FALSE(extension_api->IsWholeAPIPrivileged("test"));
+
+  // Nothing unprivileged.
+  EXPECT_TRUE(extension_api->IsWholeAPIPrivileged("history"));
+
+  // Paranoid above... paranoid here, too.
+  EXPECT_TRUE(extension_api->IsWholeAPIPrivileged(""));
+  EXPECT_TRUE(extension_api->IsWholeAPIPrivileged("<unknown-namespace>"));
+}
+
+TEST(ExtensionAPI, Depends) {
+  // Fake extension with the "ttsEngine" permission but not the "tts"
+  // permission; it must load TTS.
   DictionaryValue manifest;
-  manifest.SetString("name", "extension");
+  manifest.SetString("name", "test extension");
   manifest.SetString("version", "1.0");
   {
-    scoped_ptr<ListValue> permissions_list(new ListValue());
-    for (std::set<std::string>::const_iterator i = permissions.begin();
-        i != permissions.end(); ++i) {
-      permissions_list->Append(Value::CreateStringValue(*i));
-    }
-    manifest.Set("permissions", permissions_list.release());
+    scoped_ptr<ListValue> permissions(new ListValue());
+    permissions->Append(Value::CreateStringValue("ttsEngine"));
+    manifest.Set("permissions", permissions.release());
   }
 
   std::string error;
@@ -65,105 +76,8 @@ scoped_refptr<Extension> CreateExtensionWithPermissions(
   CHECK(extension.get());
   CHECK(error.empty());
 
-  return extension;
+  ExtensionAPI::SchemaMap schemas;
+  ExtensionAPI::GetInstance()->GetSchemasForExtension(
+      *extension, ExtensionAPI::ALL, &schemas);
+  EXPECT_EQ(1u, schemas.count("tts"));
 }
-
-scoped_refptr<Extension> CreateExtensionWithPermission(
-    const std::string& permission) {
-  std::set<std::string> permissions;
-  permissions.insert(permission);
-  return CreateExtensionWithPermissions(permissions);
-}
-
-TEST(ExtensionAPI, ExtensionWithUnprivilegedAPIs) {
-  scoped_refptr<Extension> extension;
-  {
-    std::set<std::string> permissions;
-    permissions.insert("storage");
-    permissions.insert("history");
-    extension = CreateExtensionWithPermissions(permissions);
-  }
-
-  scoped_ptr<std::set<std::string> > privileged_apis =
-      ExtensionAPI::GetInstance()->GetAPIsForContext(
-          Feature::PRIVILEGED_CONTEXT, extension.get(), GURL());
-
-  scoped_ptr<std::set<std::string> > unprivileged_apis =
-      ExtensionAPI::GetInstance()->GetAPIsForContext(
-          Feature::UNPRIVILEGED_CONTEXT, extension.get(), GURL());
-
-  scoped_ptr<std::set<std::string> > content_script_apis =
-      ExtensionAPI::GetInstance()->GetAPIsForContext(
-          Feature::CONTENT_SCRIPT_CONTEXT, extension.get(), GURL());
-
-  // "storage" is completely unprivileged.
-  EXPECT_EQ(1u, privileged_apis->count("storage"));
-  EXPECT_EQ(1u, unprivileged_apis->count("storage"));
-  EXPECT_EQ(1u, content_script_apis->count("storage"));
-
-  // "extension" is partially unprivileged.
-  EXPECT_EQ(1u, privileged_apis->count("extension"));
-  EXPECT_EQ(1u, unprivileged_apis->count("extension"));
-  EXPECT_EQ(1u, content_script_apis->count("extension"));
-
-  // "history" is entirely privileged.
-  EXPECT_EQ(1u, privileged_apis->count("history"));
-  EXPECT_EQ(0u, unprivileged_apis->count("history"));
-  EXPECT_EQ(0u, content_script_apis->count("history"));
-}
-
-TEST(ExtensionAPI, ExtensionWithDependencies) {
-  // Extension with the "ttsEngine" permission but not the "tts" permission; it
-  // must load TTS.
-  {
-    scoped_refptr<Extension> extension =
-        CreateExtensionWithPermission("ttsEngine");
-    scoped_ptr<std::set<std::string> > apis =
-        ExtensionAPI::GetInstance()->GetAPIsForContext(
-            Feature::PRIVILEGED_CONTEXT, extension.get(), GURL());
-    EXPECT_EQ(1u, apis->count("ttsEngine"));
-    EXPECT_EQ(1u, apis->count("tts"));
-  }
-
-  // Conversely, extension with the "tts" permission but not the "ttsEngine"
-  // permission shouldn't get the "ttsEngine" permission.
-  {
-    scoped_refptr<Extension> extension =
-        CreateExtensionWithPermission("tts");
-    scoped_ptr<std::set<std::string> > apis =
-        ExtensionAPI::GetInstance()->GetAPIsForContext(
-            Feature::PRIVILEGED_CONTEXT, extension.get(), GURL());
-    EXPECT_EQ(0u, apis->count("ttsEngine"));
-    EXPECT_EQ(1u, apis->count("tts"));
-  }
-}
-
-bool MatchesURL(const std::string& api_name, const std::string& url) {
-  scoped_ptr<std::set<std::string> > apis =
-      ExtensionAPI::GetInstance()->GetAPIsForContext(
-          Feature::WEB_PAGE_CONTEXT, NULL, GURL(url));
-  return apis->count(api_name);
-}
-
-TEST(ExtensionAPI, URLMatching) {
-  // "app" API is available to all URLs that content scripts can be injected.
-  EXPECT_TRUE(MatchesURL("app", "http://example.com/example.html"));
-  EXPECT_TRUE(MatchesURL("app", "https://blah.net"));
-  EXPECT_TRUE(MatchesURL("app", "file://somefile.html"));
-
-  // But not internal URLs (for chrome-extension:// the app API is injected by
-  // GetSchemasForExtension).
-  EXPECT_FALSE(MatchesURL("app", "about:flags"));
-  EXPECT_FALSE(MatchesURL("app", "chrome://flags"));
-  EXPECT_FALSE(MatchesURL("app", "chrome-extension://fakeextension"));
-
-  // "storage" API (for example) isn't available to any URLs.
-  EXPECT_FALSE(MatchesURL("storage", "http://example.com/example.html"));
-  EXPECT_FALSE(MatchesURL("storage", "https://blah.net"));
-  EXPECT_FALSE(MatchesURL("storage", "file://somefile.html"));
-  EXPECT_FALSE(MatchesURL("storage", "about:flags"));
-  EXPECT_FALSE(MatchesURL("storage", "chrome://flags"));
-  EXPECT_FALSE(MatchesURL("storage", "chrome-extension://fakeextension"));
-}
-
-}  // namespace

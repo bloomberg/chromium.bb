@@ -10,7 +10,6 @@
   <release seq="1">
     <includes>
       <include name="IDR_EXTENSION_MANIFEST_FEATURES" file="extensions\api\_manifest_features.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_APP" file="extensions\api\app.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_BOOKMARKS" file="extensions\api\bookmarks.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_BROWSERACTION" file="extensions\api\browserAction.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_BROWSING_DATA" file="extensions\api\browsingData.json" type="BINDATA" />

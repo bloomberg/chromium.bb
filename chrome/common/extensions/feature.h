@@ -22,21 +22,11 @@ namespace extensions {
 class Feature {
  public:
   // The JavaScript contexts the feature is supported in.
-  // TODO(kalman): s/PRIVILEGED/BLESSED_EXTENSION/
   enum Context {
     UNSPECIFIED_CONTEXT,
-
-    // A context in a privileged extension process.
-    PRIVILEGED_CONTEXT,
-
-    // A context in a normal, unprivileged renderer.
-    UNPRIVILEGED_CONTEXT,
-
-    // A context from a content script.
-    CONTENT_SCRIPT_CONTEXT,
-
-    // A normal web page. This should have an associated URL matching pattern.
-    WEB_PAGE_CONTEXT,
+    PRIVILEGED_CONTEXT,  // A context in a privileged extension process.
+    UNPRIVILEGED_CONTEXT,  // A context in a normal, unprivileged renderer.
+    CONTENT_SCRIPT_CONTEXT  // A context from a content script.
   };
 
   // The location required of extensions the feature is supported in.
