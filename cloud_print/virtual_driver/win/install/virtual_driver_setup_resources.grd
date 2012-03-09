@@ -79,7 +79,7 @@ file.
       </message>
       <message name="IDS_DRIVER_NAME"
                meaning="Driver Name" desc="The user visible name of the printer we create and its associated driver.">
-        Google Cloud Print Printer
+        Google Cloud Printer
       </message>
     </messages>
   </release>
