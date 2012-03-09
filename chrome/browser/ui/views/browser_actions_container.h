@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
-#include "chrome/browser/ui/views/extensions/extension_keybinding_registry.h"
+#include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -505,7 +505,7 @@ class BrowserActionsContainer
   BrowserActionOverflowMenuController* overflow_menu_;
 
   // The class that registers for keyboard shortcuts for extension commands.
-  ExtensionKeybindingRegistry extension_keybinding_registry_;
+  ExtensionKeybindingRegistryViews extension_keybinding_registry_;
 
   // The animation that happens when the container snaps to place.
   scoped_ptr<ui::SlideAnimation> resize_animation_;

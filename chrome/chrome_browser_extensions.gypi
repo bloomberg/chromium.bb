@@ -267,6 +267,8 @@
         'browser/extensions/extension_install_dialog.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
+        'browser/extensions/extension_keybinding_registry.cc',
+        'browser/extensions/extension_keybinding_registry.h',
         'browser/extensions/extension_managed_mode_api.cc',
         'browser/extensions/extension_managed_mode_api.h',
         'browser/extensions/extension_management_api.cc',

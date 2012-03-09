@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/gtk/download/download_in_progress_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/download/download_shelf_gtk.h"
 #include "chrome/browser/ui/gtk/edit_search_engine_dialog.h"
+#include "chrome/browser/ui/gtk/extensions/extension_keybinding_registry_gtk.h"
 #include "chrome/browser/ui/gtk/find_bar_gtk.h"
 #include "chrome/browser/ui/gtk/fullscreen_exit_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/global_menu_bar.h"
@@ -1586,6 +1587,9 @@ gboolean BrowserWindowGtk::OnMainWindowDeleteEvent(GtkWidget* widget,
 }
 
 void BrowserWindowGtk::OnMainWindowDestroy(GtkWidget* widget) {
+  // Make sure we destroy this object while the main window is still valid.
+  extension_keybinding_registry_.reset(NULL);
+
   // BUG 8712. When we gtk_widget_destroy() in Close(), this will emit the
   // signal right away, and we will be here (while Close() is still in the
   // call stack).  In order to not reenter Close(), and to also follow the
@@ -1888,6 +1892,10 @@ void BrowserWindowGtk::InitWidgets() {
   // proper control layout.
   UpdateCustomFrame();
 
+  // Add the keybinding registry, now that the window has been realized.
+  extension_keybinding_registry_.reset(
+      new ExtensionKeybindingRegistryGtk(browser_->profile(), window_));
+
   // We have to call this after the first window is created, but after that only
   // when the theme changes. This sets the icon that will be used for windows
   // that have not explicitly been assigned an icon.
@@ -2155,8 +2163,12 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
 }
 
 // Let the focused widget have first crack at the key event so we don't
-// override their accelerators.
+// override their accelerators, except if there is a priority keybinding
+// handler registered (it should take precedence).
 gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
+  if (extension_keybinding_registry_->HasPriorityHandler(event))
+    return FALSE;
+
   // If a widget besides the native view is focused, we have to try to handle
   // the custom accelerators before letting it handle them.
   WebContents* current_web_contents =

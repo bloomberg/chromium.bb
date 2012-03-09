@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
@@ -37,6 +38,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
+#include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
@@ -95,7 +97,8 @@ class BrowserActionButton : public content::NotificationObserver,
         image_(NULL),
         tracker_(this),
         tab_specific_icon_(NULL),
-        default_icon_(NULL) {
+        default_icon_(NULL),
+        accel_group_(NULL) {
     button_.reset(new CustomDrawButton(
         theme_provider,
         IDR_BROWSER_ACTION,
@@ -129,11 +132,17 @@ class BrowserActionButton : public content::NotificationObserver,
     signals_.Connect(button(), "drag-begin",
                      G_CALLBACK(&OnDragBegin), this);
     signals_.ConnectAfter(widget(), "expose-event",
-                          G_CALLBACK(OnExposeEvent), this);
+                     G_CALLBACK(OnExposeEvent), this);
+    signals_.Connect(toolbar->widget(), "realize",
+                     G_CALLBACK(OnRealize), this);
 
     registrar_.Add(
         this, chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED,
         content::Source<ExtensionAction>(extension->browser_action()));
+    registrar_.Add(
+        this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+        content::Source<Profile>(
+            toolbar->browser()->profile()->GetOriginalProfile()));
   }
 
   ~BrowserActionButton() {
@@ -156,10 +165,18 @@ class BrowserActionButton : public content::NotificationObserver,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) {
-    if (type == chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED)
+    switch (type) {
+     case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_UPDATED:
       UpdateState();
-    else
+      break;
+     case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+     case chrome::NOTIFICATION_WINDOW_CLOSED:
+      DisconnectBrowserActionPopupAccelerator();
+      break;
+     default:
       NOTREACHED();
+      break;
+    }
   }
 
   // ImageLoadingTracker::Observer implementation.
@@ -328,6 +345,81 @@ class BrowserActionButton : public content::NotificationObserver,
     button->toolbar_->DragStarted(button, drag_context);
   }
 
+  // The accelerator handler for when the shortcuts to open the popup is struck.
+  static gboolean OnGtkAccelerator(GtkAccelGroup* accel_group,
+                                   GObject* acceleratable,
+                                   guint keyval,
+                                   GdkModifierType modifier,
+                                   void* user_data) {
+    // Open the popup for this extension.
+    BrowserActionButton::OnClicked(
+        NULL, static_cast<BrowserActionButton*>(user_data));
+    return TRUE;
+  }
+
+  // The handler for when the browser action is realized. |user_data| contains a
+  // pointer to the BrowserAction shown.
+  static void OnRealize(GtkWidget* widget, void* user_data) {
+    BrowserActionButton* button = static_cast<BrowserActionButton*>(user_data);
+    button->ConnectBrowserActionPopupAccelerator();
+  }
+
+  // Connect the accelerator for the browser action popup.
+  void ConnectBrowserActionPopupAccelerator() {
+    // Iterate through all the keybindings and see if one is assigned to the
+    // browserAction.
+    const std::vector<Extension::ExtensionKeybinding>& commands =
+        extension_->keybindings();
+    for (size_t i = 0; i < commands.size(); ++i) {
+      if (commands[i].command_name() !=
+              extension_manifest_values::kBrowserActionKeybindingEvent)
+        continue;
+
+      // Found the browser action shortcut command, register it.
+      keybinding_.reset(new ui::AcceleratorGtk(
+          commands[i].accelerator().key_code(),
+          commands[i].accelerator().IsShiftDown(),
+          commands[i].accelerator().IsCtrlDown(),
+          commands[i].accelerator().IsAltDown()));
+
+      gfx::NativeWindow window =
+          toolbar_->browser()->window()->GetNativeHandle();
+      accel_group_ = gtk_accel_group_new();
+      gtk_window_add_accel_group(window, accel_group_);
+
+      gtk_accel_group_connect(
+          accel_group_,
+          keybinding_.get()->GetGdkKeyCode(),
+          keybinding_.get()->gdk_modifier_type(),
+          GtkAccelFlags(0),
+          g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
+
+      // Since we've added an accelerator, we'll need to unregister it before
+      // the window is closed, so we listen for the window being closed.
+      registrar_.Add(this,
+                     chrome::NOTIFICATION_WINDOW_CLOSED,
+                     content::Source<GtkWindow>(window));
+      break;
+    }
+  }
+
+  // Disconnect the accelerator for the browser action popup and delete clean up
+  // the accelerator group registration.
+  void DisconnectBrowserActionPopupAccelerator() {
+    if (accel_group_) {
+      gfx::NativeWindow window =
+          toolbar_->browser()->window()->GetNativeHandle();
+      gtk_accel_group_disconnect_key(
+          accel_group_,
+          keybinding_.get()->GetGdkKeyCode(),
+          static_cast<GdkModifierType>(keybinding_.get()->modifiers()));
+      gtk_window_remove_accel_group(window, accel_group_);
+      g_object_unref(accel_group_);
+      accel_group_ = NULL;
+      keybinding_.reset(NULL);
+    }
+  }
+
   // The toolbar containing this button.
   BrowserActionsToolbarGtk* toolbar_;
 
@@ -360,6 +452,12 @@ class BrowserActionButton : public content::NotificationObserver,
 
   ui::GtkSignalRegistrar signals_;
   content::NotificationRegistrar registrar_;
+
+  // The accelerator group used to handle accelerators, owned by this object.
+  GtkAccelGroup* accel_group_;
+
+  // The keybinding accelerator registered to show the browser action popup.
+  scoped_ptr<ui::AcceleratorGtk> keybinding_;
 
   // The context menu view and model for this extension action.
   scoped_ptr<MenuGtk> context_menu_;

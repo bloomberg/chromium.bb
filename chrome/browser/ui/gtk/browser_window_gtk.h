@@ -30,6 +30,7 @@ class Browser;
 class BrowserTitlebar;
 class BrowserToolbarGtk;
 class DownloadShelfGtk;
+class ExtensionKeybindingRegistryGtk;
 class FindBarGtk;
 class FullscreenExitBubbleGtk;
 class GlobalMenuBar;
@@ -499,6 +500,11 @@ class BrowserWindowGtk : public BrowserWindow,
   // A container that manages the GtkWidget*s of developer tools for the
   // selected tab contents.
   scoped_ptr<TabContentsContainerGtk> devtools_container_;
+
+  // The Extension Keybinding Registry responsible for registering listeners for
+  // accelerators that are sent to the window, that are destined to be turned
+  // into events and sent to the extension.
+  scoped_ptr<ExtensionKeybindingRegistryGtk> extension_keybinding_registry_;
 
   DevToolsDockSide devtools_dock_side_;
 
