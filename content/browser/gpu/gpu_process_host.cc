@@ -90,6 +90,29 @@ void SendGpuProcessMessage(int client_id,
   }
 }
 
+void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
+                                               int route_id,
+                                               bool alive) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    GpuProcessHost* host = GpuProcessHost::FromID(host_id);
+    if (host) {
+      if (alive)
+        host->Send(new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
+      else {
+        host->ForceShutdown();
+      }
+    }
+  } else {
+    BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
+                 host_id,
+                 route_id,
+                 alive));
+  }
+}
+
 }  // anonymous namespace
 
 #if defined(TOOLKIT_USES_GTK)
@@ -534,11 +557,9 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
       params.surface_id,
       params.size,
       params.surface_handle,
-      base::Bind(SendOnIO,
+      base::Bind(&AcceleratedSurfaceBuffersSwappedCompleted,
                  host_id_,
-                 content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-                 new AcceleratedSurfaceMsg_BuffersSwappedACK(
-                     params.route_id)));
+                 params.route_id));
 }
 
 void GpuProcessHost::OnAcceleratedSurfacePostSubBuffer(

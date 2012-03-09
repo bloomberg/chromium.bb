@@ -65,10 +65,11 @@ class GpuSurfaceTracker {
   // on the IO thread. This function only posts tasks asynchronously. If it
   // were to synchronously call the UI thread, there would be a possiblity of
   // deadlock.
-  void AsyncPresentAndAcknowledge(int surface_id,
-                                  const gfx::Size& size,
-                                  int64 surface_handle,
-                                  const base::Closure& completion_task);
+  void AsyncPresentAndAcknowledge(
+      int surface_id,
+      const gfx::Size& size,
+      int64 surface_handle,
+      const base::Callback<void(bool)>& completion_task);
   void Suspend(int surface_id);
 #endif
 

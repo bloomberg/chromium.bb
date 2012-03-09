@@ -96,12 +96,12 @@ void GpuSurfaceTracker::AsyncPresentAndAcknowledge(
     int surface_id,
     const gfx::Size& size,
     int64 surface_handle,
-    const base::Closure& completion_task) {
+    const base::Callback<void(bool)>& completion_task) {
   base::AutoLock lock(lock_);
 
   SurfaceMap::iterator it = surface_map_.find(surface_id);
   if (it == surface_map_.end() || !it->second.handle.accelerated_surface) {
-    completion_task.Run();
+    completion_task.Run(true);
     return;
   }
 

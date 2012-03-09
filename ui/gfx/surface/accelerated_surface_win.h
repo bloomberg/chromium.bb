@@ -18,30 +18,35 @@
 
 class PresentThread;
 
-class AcceleratedPresenter : public base::RefCounted<AcceleratedPresenter> {
+class AcceleratedPresenter
+    : public base::RefCountedThreadSafe<AcceleratedPresenter> {
  public:
+  typedef base::Callback<void(bool)> CompletionTaskl;
+
   AcceleratedPresenter();
 
   // The public member functions are called on the main thread.
-  void AsyncPresentAndAcknowledge(gfx::NativeWindow window,
-                                  const gfx::Size& size,
-                                  int64 surface_id,
-                                  const base::Closure& completion_task);
+  void AsyncPresentAndAcknowledge(
+      gfx::NativeWindow window,
+      const gfx::Size& size,
+      int64 surface_id,
+      const base::Callback<void(bool)>& completion_task);
   bool Present(gfx::NativeWindow window);
   void Suspend();
   void WaitForPendingTasks();
 
  private:
-  friend class base::RefCounted<AcceleratedPresenter>;
+  friend class base::RefCountedThreadSafe<AcceleratedPresenter>;
 
   ~AcceleratedPresenter();
 
   // These member functions are called on the PresentThread with which the
   // presenter has affinity.
-  void DoPresentAndAcknowledge(gfx::NativeWindow window,
-                               const gfx::Size& size,
-                               int64 surface_id,
-                               const base::Closure& completion_task);
+  void DoPresentAndAcknowledge(
+      gfx::NativeWindow window,
+      const gfx::Size& size,
+      int64 surface_id,
+      const base::Callback<void(bool)>& completion_task);
   void DoSuspend();
 
   // The thread with which this presenter has affinity.
@@ -71,13 +76,14 @@ class SURFACE_EXPORT AcceleratedSurface {
   // Schedule a frame to be presented. The completion callback will be invoked
   // when it is safe to write to the surface on another thread. The lock for
   // this surface will be held while the completion callback runs.
-  void AsyncPresentAndAcknowledge(HWND window,
-                                  const gfx::Size& size,
-                                  int64 surface_id,
-                                  const base::Closure& completion_task);
+  void AsyncPresentAndAcknowledge(
+      gfx::NativeWindow window,
+      const gfx::Size& size,
+      int64 surface_id,
+      const base::Callback<void(bool)>& completion_task);
 
   // Synchronously present a frame with no acknowledgement.
-  bool Present(HWND window);
+  bool Present(gfx::NativeWindow window);
 
   // Temporarily release resources until a new surface is asynchronously
   // presented. Present will not be able to represent the last surface after

@@ -140,9 +140,8 @@ void PresentThread::ResetDevice() {
     return;
 
   hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
-  if (FAILED(hr)) {
+  if (FAILED(hr))
     device_ = NULL;
-  }
 }
 
 void PresentThread::Init() {
@@ -179,7 +178,7 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
     gfx::NativeWindow window,
     const gfx::Size& size,
     int64 surface_id,
-    const base::Closure& completion_task) {
+    const base::Callback<void(bool)>& completion_task) {
   present_thread_->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&AcceleratedPresenter::DoPresentAndAcknowledge,
@@ -260,15 +259,22 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
     gfx::NativeWindow window,
     const gfx::Size& size,
     int64 surface_id,
-    const base::Closure& completion_task) {
+    const base::Callback<void(bool)>& completion_task) {
   TRACE_EVENT1("surface", "DoPresentAndAcknowledge", "surface_id", surface_id);
 
   HRESULT hr;
 
   base::AutoLock locked(lock_);
 
+  if (!present_thread_->device()) {
+    if (!completion_task.is_null())
+      completion_task.Run(false);
+    return;
+  }
+
   // Ensure the task is always run and while the lock is taken.
-  base::ScopedClosureRunner scoped_completion_runner(completion_task);
+  base::ScopedClosureRunner scoped_completion_runner(base::Bind(completion_task,
+                                                                true));
 
   // Round up size so the swap chain is not continuously resized with the
   // surface, which could lead to memory fragmentation.
@@ -380,7 +386,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   scoped_completion_runner.Release();
   if (!completion_task.is_null())
-    completion_task.Run();
+    completion_task.Run(true);
 
   {
     TRACE_EVENT0("surface", "Present");
@@ -411,7 +417,7 @@ void AcceleratedSurface::AsyncPresentAndAcknowledge(
     HWND window,
     const gfx::Size& size,
     int64 surface_id,
-    const base::Closure& completion_task) {
+    const base::Callback<void(bool)>& completion_task) {
   if (!surface_id)
     return;
 
