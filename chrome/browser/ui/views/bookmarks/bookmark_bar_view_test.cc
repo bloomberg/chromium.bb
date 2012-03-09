@@ -105,6 +105,10 @@ class ViewsDelegateImpl : public views::ViewsDelegate {
     return NULL;
   }
 
+  virtual bool UseTransparentWindows() const OVERRIDE {
+    return false;
+  }
+
   virtual void AddRef() OVERRIDE {
   }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 #endif
   virtual views::NonClientFrameView* CreateDefaultNonClientFrameView(
       views::Widget* widget) OVERRIDE;
+  virtual bool UseTransparentWindows() const OVERRIDE;
   virtual void AddRef() OVERRIDE;
   virtual void ReleaseRef() OVERRIDE;
 

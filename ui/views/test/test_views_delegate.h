@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,8 @@ class TestViewsDelegate : public ViewsDelegate {
  public:
   TestViewsDelegate();
   virtual ~TestViewsDelegate();
+
+  void SetUseTransparentWindows(bool transparent);
 
   // Overridden from ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const OVERRIDE;
@@ -51,6 +53,7 @@ class TestViewsDelegate : public ViewsDelegate {
 #endif
   virtual NonClientFrameView* CreateDefaultNonClientFrameView(
       Widget* widget) OVERRIDE;
+  virtual bool UseTransparentWindows() const OVERRIDE;
   virtual void AddRef() OVERRIDE {}
   virtual void ReleaseRef() OVERRIDE {}
 
@@ -58,6 +61,7 @@ class TestViewsDelegate : public ViewsDelegate {
 
  private:
   mutable scoped_ptr<ui::Clipboard> clipboard_;
+  bool use_transparent_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };

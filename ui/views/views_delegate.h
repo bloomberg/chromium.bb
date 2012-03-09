@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,6 +83,11 @@ class VIEWS_EXPORT ViewsDelegate {
   // views::CustomFrameView type will be used.
   virtual NonClientFrameView* CreateDefaultNonClientFrameView(
       Widget* widget) = 0;
+
+  // Returns whether the embedding app wants windows to be created with the
+  // views::Widget marked as transparent.  For example, an app may wish to
+  // apply transparent window frames in the NonClientFrameView.
+  virtual bool UseTransparentWindows() const = 0;
 
   // AddRef/ReleaseRef are invoked while a menu is visible. They are used to
   // ensure we don't attempt to exit while a menu is showing.

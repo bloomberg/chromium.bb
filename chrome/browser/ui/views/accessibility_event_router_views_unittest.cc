@@ -68,6 +68,9 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
       views::Widget* widget) OVERRIDE {
     return NULL;
   }
+  virtual bool UseTransparentWindows() const OVERRIDE {
+    return false;
+  }
   virtual void AddRef() OVERRIDE {}
   virtual void ReleaseRef() OVERRIDE {}
 

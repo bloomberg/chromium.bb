@@ -113,7 +113,8 @@ Widget::InitParams::InitParams()
       delegate(NULL),
       child(false),
       transient(false),
-      transparent(false),
+      transparent(ViewsDelegate::views_delegate &&
+                  ViewsDelegate::views_delegate->UseTransparentWindows()),
       accept_events(true),
       can_activate(true),
       keep_on_top(false),
@@ -135,7 +136,9 @@ Widget::InitParams::InitParams(Type type)
       delegate(NULL),
       child(type == TYPE_CONTROL),
       transient(type == TYPE_BUBBLE || type == TYPE_POPUP || type == TYPE_MENU),
-      transparent(false),
+      transparent(type == TYPE_WINDOW &&
+                  ViewsDelegate::views_delegate &&
+                  ViewsDelegate::views_delegate->UseTransparentWindows()),
       accept_events(true),
       can_activate(
           type != TYPE_POPUP && type != TYPE_MENU && type != TYPE_CONTROL),

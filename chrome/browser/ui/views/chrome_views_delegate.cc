@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@
 #include "chrome/browser/app_icon_win.h"
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/shell.h"
 #endif
 
@@ -130,10 +130,19 @@ HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
 
 views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
     views::Widget* widget) {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   return ash::Shell::GetInstance()->CreateDefaultNonClientFrameView(widget);
 #else
   return NULL;
+#endif
+}
+
+bool ChromeViewsDelegate::UseTransparentWindows() const {
+#if defined(USE_ASH)
+  // Ash uses transparent window frames above.
+  return true;
+#else
+  return false;
 #endif
 }
 

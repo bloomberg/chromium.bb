@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,13 +9,18 @@
 
 namespace views {
 
-TestViewsDelegate::TestViewsDelegate() {
+TestViewsDelegate::TestViewsDelegate()
+    : use_transparent_windows_(false) {
   DCHECK(!ViewsDelegate::views_delegate);
   ViewsDelegate::views_delegate = this;
 }
 
 TestViewsDelegate::~TestViewsDelegate() {
   ViewsDelegate::views_delegate = NULL;
+}
+
+void TestViewsDelegate::SetUseTransparentWindows(bool transparent) {
+  use_transparent_windows_ = transparent;
 }
 
 ui::Clipboard* TestViewsDelegate::GetClipboard() const {
@@ -42,6 +47,10 @@ bool TestViewsDelegate::GetSavedWindowPlacement(
 NonClientFrameView* TestViewsDelegate::CreateDefaultNonClientFrameView(
     Widget* widget) {
   return NULL;
+}
+
+bool TestViewsDelegate::UseTransparentWindows() const {
+  return use_transparent_windows_;
 }
 
 int TestViewsDelegate::GetDispositionForEvent(int event_flags) {
