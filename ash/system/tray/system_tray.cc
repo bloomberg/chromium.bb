@@ -31,6 +31,9 @@ namespace ash {
 
 namespace {
 
+const int kPaddingFromRightEdgeOfScreen = 10;
+const int kPaddingFromBottomOfScreen = 10;
+
 const int kAnimationDurationForPopupMS = 200;
 
 const int kArrowHeight = 10;
@@ -185,9 +188,10 @@ namespace internal {
 class SystemTrayBubble : public views::BubbleDelegateView {
  public:
   SystemTrayBubble(ash::SystemTray* tray,
+                   views::View* anchor,
                    std::vector<ash::SystemTrayItem*>& items,
                    bool detailed)
-      : views::BubbleDelegateView(tray, views::BubbleBorder::BOTTOM_RIGHT),
+      : views::BubbleDelegateView(anchor, views::BubbleBorder::BOTTOM_RIGHT),
         tray_(tray),
         items_(items),
         detailed_(detailed),
@@ -272,10 +276,15 @@ SystemTray::SystemTray()
     : items_(),
       bubble_(NULL),
       popup_(NULL) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-      5, 0, 3));
-  set_background(new SystemTrayBackground);
+  container_ = new views::View;
+  container_->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 5, 0, 3));
+  container_->set_background(new SystemTrayBackground);
+  set_border(views::Border::CreateEmptyBorder(0, 0,
+        kPaddingFromBottomOfScreen, kPaddingFromRightEdgeOfScreen));
   set_notify_enter_exit_on_child(true);
+  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  AddChildView(container_);
 }
 
 SystemTray::~SystemTray() {
@@ -294,7 +303,7 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
   SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
   views::View* tray_item = item->CreateTrayView(delegate->GetUserLoginStatus());
   if (tray_item) {
-    AddChildViewAt(tray_item, 0);
+    container_->AddChildViewAt(tray_item, 0);
     PreferredSizeChanged();
   }
 }
@@ -324,14 +333,14 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
       ++it) {
     (*it)->DestroyTrayView();
   }
-  RemoveAllChildViews(true);
+  container_->RemoveAllChildViews(true);
 
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
       it != items_.end();
       ++it) {
     views::View* view = (*it)->CreateTrayView(login_status);
     if (view)
-      AddChildViewAt(view, 0);
+      container_->AddChildViewAt(view, 0);
   }
   PreferredSizeChanged();
 }
@@ -339,7 +348,7 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
 void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
   CHECK(!popup_);
   CHECK(!bubble_);
-  bubble_ = new internal::SystemTrayBubble(this, items, detailed);
+  bubble_ = new internal::SystemTrayBubble(this, container_, items, detailed);
   popup_ = views::BubbleDelegateView::CreateBubble(bubble_);
   bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   popup_->non_client_view()->frame_view()->set_background(NULL);
@@ -367,12 +376,14 @@ bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void SystemTray::OnMouseEntered(const views::MouseEvent& event) {
-  static_cast<SystemTrayBackground*>(background())->set_hovering(true);
+  static_cast<SystemTrayBackground*>(container_->background())->
+      set_hovering(true);
   SchedulePaint();
 }
 
 void SystemTray::OnMouseExited(const views::MouseEvent& event) {
-  static_cast<SystemTrayBackground*>(background())->set_hovering(false);
+  static_cast<SystemTrayBackground*>(container_->background())->
+      set_hovering(false);
   SchedulePaint();
 }
 

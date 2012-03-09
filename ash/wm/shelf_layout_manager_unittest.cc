@@ -86,7 +86,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
             bottom + (shelf->max_height() - launcher_bounds.height()) / 2);
   gfx::Rect status_bounds(shelf->status()->GetNativeView()->bounds());
   EXPECT_EQ(status_bounds.y(),
-            bottom + (shelf->max_height() - status_bounds.height()) / 2);
+            bottom + shelf->max_height() - status_bounds.height());
 }
 
 // Makes sure LayoutShelf invoked while animating cleans things up.

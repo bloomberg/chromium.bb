@@ -56,6 +56,9 @@ class ASH_EXPORT SystemTray : public views::View,
 
   std::vector<SystemTrayItem*> items_;
 
+  // The container for all the tray views of the items.
+  views::View* container_;
+
   // The popup widget and the delegate.
   internal::SystemTrayBubble* bubble_;
   views::Widget* popup_;
