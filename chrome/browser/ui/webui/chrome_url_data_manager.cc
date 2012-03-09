@@ -22,6 +22,11 @@
 #include "grit/platform_locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined (TOOLKIT_GTK)
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
@@ -164,10 +169,19 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
     web_font_size_id = IDS_WEB_FONT_SIZE_XP;
   }
 #endif
-  localized_strings->SetString("fontfamily",
-      l10n_util::GetStringUTF16(web_font_family_id));
+
+  std::string font_family = l10n_util::GetStringUTF8(web_font_family_id);
+
+#if defined(TOOLKIT_GTK)
+  // Use the system font on Linux/GTK. Keep the hard-coded font families as
+  // backup in case for some crazy reason this one isn't available.
+  font_family = ui::ResourceBundle::GetSharedInstance().GetFont(
+      ui::ResourceBundle::BaseFont).GetFontName() + ", " + font_family;
+#endif
+
+  localized_strings->SetString("fontfamily", font_family);
   localized_strings->SetString("fontsize",
-      l10n_util::GetStringUTF16(web_font_size_id));
+      l10n_util::GetStringUTF8(web_font_size_id));
   localized_strings->SetString("textdirection",
       base::i18n::IsRTL() ? "rtl" : "ltr");
 }
