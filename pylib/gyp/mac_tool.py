@@ -151,8 +151,8 @@ class MacTool(object):
     # The format of PkgInfo is eight characters, representing the bundle type
     # and bundle signature, each four characters. If that is missing, four
     # '?' characters are used instead.
-    signature_code = plist['CFBundleSignature']
-    if len(signature_code) != 4:
+    signature_code = plist.get('CFBundleSignature', '????')
+    if len(signature_code) != 4:  # Wrong length resets everything, too.
       signature_code = '?' * 4
 
     dest = os.path.join(os.path.dirname(info_plist), 'PkgInfo')
