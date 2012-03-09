@@ -172,7 +172,7 @@ input[type='radio']:disabled {
 button:not(.custom-appearance):not(.link-button):focus,
 input[type='submit']:not(.custom-appearance):focus,
 input[type='text']:focus,
-input[type='search']:focus {
+input[type='search']:focus,
 input[type='checkbox']:focus,
 input[type='radio']:focus,
 select:focus {
