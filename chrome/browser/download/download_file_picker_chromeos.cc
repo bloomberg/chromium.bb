@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 
 using content::BrowserThread;
@@ -69,8 +70,6 @@ void DownloadFilePickerChromeOS::FileSelected(const FilePath& path,
 
         // Swap the gdata path with a local path. Local path must be created
         // on the file thread.
-        // TODO(achuith): DownloadFilePicker should have a referenced counted
-        // pointer to DownloadManager. Unretained is not really safe here.
         // TODO(achuith): Use SequencedWorkerPool/TaskRunner interface once it
         // supports PostTaskAndReply.
         FilePath* download_path(new FilePath());
@@ -78,7 +77,7 @@ void DownloadFilePickerChromeOS::FileSelected(const FilePath& path,
             base::Bind(&GetGDataTempDownloadPath,
                        download_path),
             base::Bind(&GDataTempFileSelected,
-                       base::Unretained(download_manager_),
+                       download_manager_,
                        base::Owned(download_path),
                        download_id_));
       }

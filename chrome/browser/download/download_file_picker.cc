@@ -8,6 +8,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,14 +87,6 @@ DownloadFilePicker::~DownloadFilePicker() {
 void DownloadFilePicker::RecordFileSelected(const FilePath& path) {
   FilePickerResult result = ComparePaths(suggested_path_, path);
   RecordFilePickerResult(download_manager_, result);
-}
-
-void DownloadFilePicker::ModelChanged(DownloadManager* manager) {
-}
-
-void DownloadFilePicker::ManagerGoingDown(DownloadManager* manager) {
-  DCHECK_EQ(download_manager_, manager);
-  download_manager_ = NULL;
 }
 
 void DownloadFilePicker::FileSelected(const FilePath& path,

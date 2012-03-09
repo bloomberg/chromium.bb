@@ -7,17 +7,16 @@
 #pragma once
 
 #include "chrome/browser/ui/select_file_dialog.h"
-#include "content/public/browser/download_manager.h"
 
 class FilePath;
 
 namespace content {
+class DownloadManager;
 class WebContents;
 }
 
 // Handles showing a dialog to the user to ask for the filename for a download.
-class DownloadFilePicker : public content::DownloadManager::Observer,
-                           public SelectFileDialog::Listener {
+class DownloadFilePicker : public SelectFileDialog::Listener {
  public:
   DownloadFilePicker(content::DownloadManager* download_manager,
                      content::WebContents* web_contents,
@@ -28,15 +27,10 @@ class DownloadFilePicker : public content::DownloadManager::Observer,
  protected:
   void RecordFileSelected(const FilePath& path);
 
-  // TODO(achuith, asanka): Should hold a shared reference instead.
-  content::DownloadManager* download_manager_;
+  scoped_refptr<content::DownloadManager> download_manager_;
   int32 download_id_;
 
  private:
-  // content::DownloadManager::Observer implementation.
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
-
   // SelectFileDialog::Listener implementation.
   virtual void FileSelected(const FilePath& path,
                             int index,
