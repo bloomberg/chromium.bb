@@ -5,8 +5,6 @@
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 
@@ -29,7 +27,7 @@ syncable::ModelType ThemeDataTypeController::type() const {
 }
 
 bool ThemeDataTypeController::StartModels() {
-  ExtensionSystemFactory::GetForProfile(profile_)->Init(true);
+  profile_->InitExtensions(true);
   return true;
 }
 

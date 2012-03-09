@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -241,7 +239,7 @@ bool SyncExtensionHelper::ExtensionStatesMatch(
 }
 
 void SyncExtensionHelper::SetupProfile(Profile* profile) {
-  ExtensionSystemFactory::GetForProfile(profile)->Init(true);
+  profile->InitExtensions(true);
   profile_extensions_.insert(make_pair(profile, ExtensionNameMap()));
 }
 

@@ -35,8 +35,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider_impl.h"
 #include "chrome/browser/extensions/external_extension_provider_interface.h"
@@ -46,7 +44,6 @@
 #include "chrome/browser/extensions/pack_extension_job.cc"
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
-#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -56,7 +53,6 @@
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -376,6 +372,20 @@ class MockProviderVisitor
   DISALLOW_COPY_AND_ASSIGN(MockProviderVisitor);
 };
 
+class ExtensionTestingProfile : public TestingProfile {
+ public:
+  ExtensionTestingProfile() : service_(NULL) {
+  }
+
+  void set_extensions_service(ExtensionService* service) {
+    service_ = service;
+  }
+  virtual ExtensionService* GetExtensionService() { return service_; }
+
+ private:
+  ExtensionService* service_;
+};
+
 // Our message loop may be used in tests which require it to be an IO loop.
 ExtensionServiceTestBase::ExtensionServiceTestBase()
     : loop_(MessageLoop::TYPE_IO),
@@ -408,7 +418,7 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
 void ExtensionServiceTestBase::InitializeExtensionService(
     const FilePath& pref_file, const FilePath& extensions_install_dir,
     bool autoupdate_enabled) {
-  TestingProfile* profile = new TestingProfile();
+  ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   // Create a PrefService that only contains user defined preference values.
   PrefService* prefs =
       PrefServiceMockBuilder().WithUserFilePrefs(pref_file).Create();
@@ -421,13 +431,13 @@ void ExtensionServiceTestBase::InitializeExtensionService(
 
   profile_.reset(profile);
 
-  service_ = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile))->CreateExtensionService(
-          CommandLine::ForCurrentProcess(),
-          extensions_install_dir,
-          autoupdate_enabled);
+  service_ = profile->CreateExtensionService(
+      CommandLine::ForCurrentProcess(),
+      extensions_install_dir,
+      autoupdate_enabled);
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
+  profile->set_extensions_service(service_);
 
   // When we start up, we want to make sure there is no external provider,
   // since the ExtensionService on Windows will use the Registry as a default
@@ -461,9 +471,7 @@ void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
 }
 
 void ExtensionServiceTestBase::InitializeExtensionProcessManager() {
-  static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile_.get()))->
-      CreateExtensionProcessManager();
+  profile_->CreateExtensionProcessManager();
 }
 
 void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
@@ -490,8 +498,8 @@ void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
 
 void ExtensionServiceTestBase::InitializeRequestContext() {
   ASSERT_TRUE(profile_.get());
-  TestingProfile* profile =
-      static_cast<TestingProfile*>(profile_.get());
+  ExtensionTestingProfile* profile =
+      static_cast<ExtensionTestingProfile*>(profile_.get());
   profile->CreateRequestContext();
 }
 
@@ -738,7 +746,7 @@ class ExtensionServiceTest
                 enabled_extension_count);
     }
 
-    // Update() should the temporary input file.
+    // Update() should delete the temporary input file.
     EXPECT_FALSE(file_util::PathExists(path));
   }
 
@@ -3852,12 +3860,11 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  ExtensionService* service = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile.get()))->
-      CreateExtensionService(
-          command_line.get(),
-          install_dir,
-          false);
+  // Owned by |profile|.
+  ExtensionService* service =
+      profile->CreateExtensionService(command_line.get(),
+                                      install_dir,
+                                      false);
   EXPECT_TRUE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -3867,12 +3874,9 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   command_line->AppendSwitch(switches::kDisableExtensions);
-  service = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile.get()))->
-      CreateExtensionService(
-          command_line.get(),
-          install_dir,
-          false);
+  service = profile->CreateExtensionService(command_line.get(),
+                                            install_dir,
+                                            false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -3881,12 +3885,9 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  service = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile.get()))->
-      CreateExtensionService(
-          command_line.get(),
-          install_dir,
-          false);
+  service = profile->CreateExtensionService(command_line.get(),
+                                            install_dir,
+                                            false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -3896,12 +3897,9 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  service = static_cast<TestExtensionSystem*>(
-      ExtensionSystemFactory::GetForProfile(profile.get()))->
-      CreateExtensionService(
-          command_line.get(),
-          install_dir,
-          false);
+  service = profile->CreateExtensionService(command_line.get(),
+                                            install_dir,
+                                            false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();

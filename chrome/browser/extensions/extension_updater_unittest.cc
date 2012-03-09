@@ -18,12 +18,9 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_service.h"
-#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
@@ -815,21 +812,17 @@ class ExtensionUpdaterTest : public testing::Test {
     // service, not on our mock |service|.  This allows us to fake
     // the CrxInstaller actions we want.
     TestingProfile profile;
-    static_cast<TestExtensionSystem*>(
-        ExtensionSystemFactory::GetForProfile(&profile))->
-        CreateExtensionService(
-            CommandLine::ForCurrentProcess(),
-            FilePath(),
-            false);
-    ExtensionService* extension_service =
-        ExtensionSystemFactory::GetForProfile(&profile)->extension_service();
-    extension_service->set_extensions_enabled(true);
-    extension_service->set_show_extensions_prompts(false);
+    profile.CreateExtensionService(
+        CommandLine::ForCurrentProcess(),
+        FilePath(),
+        false);
+    profile.GetExtensionService()->set_extensions_enabled(true);
+    profile.GetExtensionService()->set_show_extensions_prompts(false);
 
     scoped_refptr<CrxInstaller> fake_crx1(
-        CrxInstaller::Create(extension_service, NULL));
+        CrxInstaller::Create(profile.GetExtensionService(), NULL));
     scoped_refptr<CrxInstaller> fake_crx2(
-        CrxInstaller::Create(extension_service, NULL));
+        CrxInstaller::Create(profile.GetExtensionService(), NULL));
 
     if (updates_start_running) {
       // Add fake CrxInstaller to be returned by service.UpdateExtension().

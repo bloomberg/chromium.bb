@@ -12,8 +12,6 @@
 #include "chrome/browser/extensions/extension_devtools_events.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -34,8 +32,7 @@ ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
           ExtensionDevToolsEvents::OnPageEventNameForTab(tab_id)),
       on_tab_close_event_name_(
           ExtensionDevToolsEvents::OnTabCloseEventNameForTab(tab_id)) {
-  extension_devtools_manager_ =
-      ExtensionSystemFactory::GetForProfile(profile)->devtools_manager();
+  extension_devtools_manager_ = profile_->GetExtensionDevToolsManager();
   DCHECK(extension_devtools_manager_.get());
 }
 

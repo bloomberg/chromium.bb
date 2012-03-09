@@ -58,7 +58,6 @@ class ExtensionGlobalError;
 class ExtensionManagementEventRouter;
 class ExtensionPreferenceEventRouter;
 class ExtensionSyncData;
-class ExtensionSystem;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
 class ExtensionWebNavigationEventRouter;
@@ -707,11 +706,8 @@ class ExtensionService
 
   NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
-  // The normal profile associated with this ExtensionService.
+  // The profile this ExtensionService is part of.
   Profile* profile_;
-
-  // The ExtensionSystem for the profile above.
-  ExtensionSystem* system_;
 
   // Preferences for the owning profile (weak reference).
   ExtensionPrefs* extension_prefs_;

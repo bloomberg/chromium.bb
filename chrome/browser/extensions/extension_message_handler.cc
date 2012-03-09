@@ -5,8 +5,6 @@
 #include "chrome/browser/extensions/extension_message_handler.h"
 
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_process_host.h"
@@ -40,9 +38,8 @@ void ExtensionMessageHandler::OnPostMessage(int port_id,
                                             const std::string& message) {
   Profile* profile = Profile::FromBrowserContext(
       render_view_host()->GetProcess()->GetBrowserContext());
-  ExtensionMessageService* message_service =
-      ExtensionSystemFactory::GetForProfile(profile)->message_service();
-  if (message_service) {
-    message_service->PostMessageFromRenderer(port_id, message);
+  if (profile->GetExtensionMessageService()) {
+    profile->GetExtensionMessageService()->PostMessageFromRenderer(
+        port_id, message);
   }
 }
