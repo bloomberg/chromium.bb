@@ -56,9 +56,13 @@ struct wl_closure {
 	uint32_t *start;
 };
 
+#define MAX_FDS_OUT	28
+#define CLEN		(CMSG_LEN(MAX_FDS_OUT * sizeof(int32_t)))
+
 struct wl_connection {
 	struct wl_buffer in, out;
 	struct wl_buffer fds_in, fds_out;
+	int n_fds_out;
 	int fd;
 	void *data;
 	wl_connection_update_func_t update;
@@ -217,7 +221,7 @@ build_cmsg(struct wl_buffer *buffer, char *data, int *clen)
 static void
 close_fds(struct wl_buffer *buffer)
 {
-	int fds[32], i, count;
+	int fds[MAX_FDS_OUT], i, count;
 	size_t size;
 
 	size = buffer->head - buffer->tail;
@@ -252,7 +256,7 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 {
 	struct iovec iov[2];
 	struct msghdr msg;
-	char cmsg[128];
+	char cmsg[CLEN];
 	int len, count, clen;
 
 	if (mask & WL_CONNECTION_WRITABLE) {
@@ -389,6 +393,21 @@ wl_message_size_extra(const struct wl_message *message)
 	return extra;
 }
 
+static int
+wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
+{
+	if (connection->n_fds_out + 1 > MAX_FDS_OUT) {
+		if (wl_connection_data(connection, WL_CONNECTION_WRITABLE))
+			return -1;
+		connection->n_fds_out = 0;
+	}
+
+	wl_buffer_put(&connection->fds_out, &fd, sizeof fd);
+	connection->n_fds_out++;
+
+	return 0;
+}
+
 struct wl_closure *
 wl_connection_vmarshal(struct wl_connection *connection,
 		       struct wl_object *sender,
@@ -510,8 +529,11 @@ wl_connection_vmarshal(struct wl_connection *connection,
 				abort();
 			}
 			*fd_ptr = dup_fd;
-			wl_buffer_put(&connection->fds_out,
-				      &dup_fd, sizeof dup_fd);
+			if (wl_connection_put_fd(connection, dup_fd)) {
+				printf("request could not be mashaled: "
+				       "can't send file descriptor");
+				return NULL;
+			}
 			break;
 		default:
 			fprintf(stderr, "unhandled format code: '%c'\n",
