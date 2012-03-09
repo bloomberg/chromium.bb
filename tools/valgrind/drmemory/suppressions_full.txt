@@ -904,6 +904,13 @@ ntdll.dll!KiUserCallbackDispatcher
 dxgi.dll!*
 WinSATAPI.DLL!*
 
+# Suppress anything in cmd.exe.  It's safer to suppress these than disable
+# following, since someone might launch a Chrome process via cmd.exe.
+LEAK
+name=cmd.exe
+...
+cmd.exe!*
+
 ###############################################################
 # Benign issues in Chromium
 
