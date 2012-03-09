@@ -33,6 +33,9 @@
  *
  */
 
+#ifndef _XF86DRMMODE_H_
+#define _XF86DRMMODE_H_
+
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -427,4 +430,6 @@ extern int drmModeSetPlane(int fd, uint32_t plane_id, uint32_t crtc_id,
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
+#endif
+
 #endif
