@@ -19,7 +19,7 @@ from chromite.buildbot import cbuildbot_results as results_lib
 _PRINT_INTERVAL = 1
 
 
-class BackgroundException(Exception):
+class BackgroundException(bs.NonBacktraceBuildException):
   pass
 
 
@@ -95,8 +95,8 @@ class BackgroundSteps(multiprocessing.Process):
       try:
         results_lib.Results.Clear()
         step()
-      except bs.NonBacktraceBuildException:
-        error = traceback.format_exc()
+      except bs.NonBacktraceBuildException as ex:
+        error = str(ex)
       except Exception:
         traceback.print_exc(file=sys.stderr)
         error = traceback.format_exc()
