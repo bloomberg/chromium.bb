@@ -424,11 +424,6 @@ static int video_get_buffer(AVCodecContext *s, AVFrame *pic)
     buf = &avci->buffer[avci->buffer_count];
 
     if(buf->base[0] && (buf->width != w || buf->height != h || buf->pix_fmt != s->pix_fmt)){
-        if(s->active_thread_type&FF_THREAD_FRAME) {
-            av_log_missing_feature(s, "Width/height changing with frame threads is", 0);
-            return -1;
-        }
-
         for (i = 0; i < AV_NUM_DATA_POINTERS; i++) {
             av_freep(&buf->base[i]);
             buf->data[i]= NULL;

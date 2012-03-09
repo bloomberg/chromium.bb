@@ -45,6 +45,10 @@ cd40c31ee9ad2cca6f3635950b002fd46be07e98
   acolwell: This fixes some invalid memory access caused later in the function
   by res_chan[] not being set for all channels.
 
+TBDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  dalecurtis: Allow frame size changes for multithreaded decode.  Doesn't work
+  for all codecs (H264, MPEG, RV40), but works for the ones we want.
+
 Patches still existing from the pre-GIT workflow:
 
 to_upstream/
