@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const DeletableItem = options.DeletableItem;
-  const DeletableItemList = options.DeletableItemList;
+  /** @const */ var DeletableItem = options.DeletableItem;
+  /** @const */ var DeletableItemList = options.DeletableItemList;
 
   /**
    * Creates a new list item with support for inline editing.

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options.browser_options', function() {
-  const DeletableItem = options.DeletableItem;
-  const DeletableItemList = options.DeletableItemList;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
+  /** @const */ var DeletableItem = options.DeletableItem;
+  /** @const */ var DeletableItemList = options.DeletableItemList;
+  /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   var localStrings = new LocalStrings();
 

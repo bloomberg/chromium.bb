@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 cr.define('options.autofillOptions', function() {
-  const DeletableItem = options.DeletableItem;
-  const DeletableItemList = options.DeletableItemList;
-  const InlineEditableItem = options.InlineEditableItem;
-  const InlineEditableItemList = options.InlineEditableItemList;
+  /** @const */ var DeletableItem = options.DeletableItem;
+  /** @const */ var DeletableItemList = options.DeletableItemList;
+  /** @const */ var InlineEditableItem = options.InlineEditableItem;
+  /** @const */ var InlineEditableItemList = options.InlineEditableItemList;
 
   function AutofillEditProfileButton(guid, edit) {
     var editButtonEl = document.createElement('button');

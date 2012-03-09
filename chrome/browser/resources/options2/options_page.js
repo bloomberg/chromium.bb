@@ -21,7 +21,7 @@ cr.define('options', function() {
     this.tab = null;
   }
 
-  const HORIZONTAL_OFFSET = 155;
+  /** @const */ var HORIZONTAL_OFFSET = 155;
 
   /**
    * This is the absolute difference maintained between standard and

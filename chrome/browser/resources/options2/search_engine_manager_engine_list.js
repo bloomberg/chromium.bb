@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options.search_engines', function() {
-  const InlineEditableItemList = options.InlineEditableItemList;
-  const InlineEditableItem = options.InlineEditableItem;
-  const ListSelectionController = cr.ui.ListSelectionController;
+  /** @const */ var InlineEditableItemList = options.InlineEditableItemList;
+  /** @const */ var InlineEditableItem = options.InlineEditableItem;
+  /** @const */ var ListSelectionController = cr.ui.ListSelectionController;
 
   /**
    * Creates a new search engine list item.

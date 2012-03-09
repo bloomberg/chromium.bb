@@ -8,7 +8,7 @@
  */
 
 cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
+  /** @const */ var OptionsPage = options.OptionsPage;
 
   /**
    * Base class for settings dialogs.

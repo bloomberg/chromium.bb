@@ -71,7 +71,7 @@ cr.define('options', function() {
 
       // On Startup section.
       var startupSetPagesLink = $('startup-set-pages');
-      const showPagesValue = Number($('startup-show-pages').value);
+      /** @const */ var showPagesValue = Number($('startup-show-pages').value);
 
       Preferences.getInstance().addEventListener('session.restore_on_startup',
                                                  function(event) {

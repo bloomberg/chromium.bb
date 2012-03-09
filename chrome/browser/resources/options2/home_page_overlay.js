@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
-  const SettingsDialog = options.SettingsDialog;
+  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var SettingsDialog = options.SettingsDialog;
 
   /**
    * HomePageOverlay class

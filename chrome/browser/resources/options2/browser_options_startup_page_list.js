@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options.browser_options', function() {
-  const AutocompleteList = cr.ui.AutocompleteList;
-  const InlineEditableItem = options.InlineEditableItem;
-  const InlineEditableItemList = options.InlineEditableItemList;
+  /** @const */ var AutocompleteList = cr.ui.AutocompleteList;
+  /** @const */ var InlineEditableItem = options.InlineEditableItem;
+  /** @const */ var InlineEditableItemList = options.InlineEditableItemList;
 
   /**
    * Creates a new startup page list item.

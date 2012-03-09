@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const OptionsPage = options.OptionsPage;
-  const SettingsDialog = options.SettingsDialog;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var SettingsDialog = options.SettingsDialog;
 
   /**
    * StartupOverlay class

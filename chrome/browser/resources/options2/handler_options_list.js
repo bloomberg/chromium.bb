@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
-  const HandlerOptions = options.HandlerOptions;
-  const DeletableItem = options.DeletableItem;
-  const DeletableItemList = options.DeletableItemList;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var List = cr.ui.List;
+  /** @const */ var ListItem = cr.ui.ListItem;
+  /** @const */ var HandlerOptions = options.HandlerOptions;
+  /** @const */ var DeletableItem = options.DeletableItem;
+  /** @const */ var DeletableItemList = options.DeletableItemList;
 
-  const localStrings = new LocalStrings();
+  /** @const */ var localStrings = new LocalStrings();
 
   /**
    * Creates a new ignored protocol / content handler list item.

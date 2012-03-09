@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 cr.define('options.passwordManager', function() {
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const DeletableItemList = options.DeletableItemList;
-  const DeletableItem = options.DeletableItem;
-  const List = cr.ui.List;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var DeletableItemList = options.DeletableItemList;
+  /** @const */ var DeletableItem = options.DeletableItem;
+  /** @const */ var List = cr.ui.List;
 
   /**
    * Creates a new passwords list item.

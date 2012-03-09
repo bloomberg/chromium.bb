@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const DeletableItemList = options.DeletableItemList;
-  const DeletableItem = options.DeletableItem;
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
+  /** @const */ var DeletableItemList = options.DeletableItemList;
+  /** @const */ var DeletableItem = options.DeletableItem;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   // This structure maps the various cookie type names from C++ (hence the
   // underscores) to arrays of the different types of data each has, along with
   // the i18n name for the description of that data type.
-  const cookieInfo = {
+  /** @const */ var cookieInfo = {
     'cookie': [['name', 'label_cookie_name'],
                ['content', 'label_cookie_content'],
                ['domain', 'label_cookie_domain'],
@@ -39,7 +39,7 @@ cr.define('options', function() {
                     ['temporary', 'label_file_system_temporary_usage']],
   };
 
-  const localStrings = new LocalStrings();
+  /** @const */ var localStrings = new LocalStrings();
 
   /**
    * Returns the item's height, like offsetHeight but such that it works better

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const Tree = cr.ui.Tree;
-  const TreeItem = cr.ui.TreeItem;
+  /** @const */ var Tree = cr.ui.Tree;
+  /** @const */ var TreeItem = cr.ui.TreeItem;
 
   /**
    * Creates a new tree item for certificate data.

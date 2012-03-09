@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
-  const ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
   // The GUID of the loaded address.
   var guid;

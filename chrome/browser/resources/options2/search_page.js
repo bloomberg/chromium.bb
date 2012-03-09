@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const OptionsPage = options.OptionsPage;
+  /** @const */ var OptionsPage = options.OptionsPage;
 
   /**
    * Encapsulated handling of a search bubble.
@@ -548,8 +548,8 @@ cr.define('options', function() {
      * @private
      */
     keyDownEventHandler_: function(event) {
-      const ESCAPE_KEY_CODE = 27;
-      const FORWARD_SLASH_KEY_CODE = 191;
+      /** @const */ var ESCAPE_KEY_CODE = 27;
+      /** @const */ var FORWARD_SLASH_KEY_CODE = 191;
 
       switch (event.keyCode) {
         case ESCAPE_KEY_CODE:

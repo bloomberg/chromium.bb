@@ -6,7 +6,7 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
   var ArrayDataModel = cr.ui.ArrayDataModel;
 
-  const localStrings = new LocalStrings();
+  /** @const */ var localStrings = new LocalStrings();
 
   /**
    * ManageProfileOverlay class

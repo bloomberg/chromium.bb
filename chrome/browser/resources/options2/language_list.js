@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const DeletableItem = options.DeletableItem;
-  const DeletableItemList = options.DeletableItemList;
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var DeletableItem = options.DeletableItem;
+  /** @const */ var DeletableItemList = options.DeletableItemList;
+  /** @const */ var List = cr.ui.List;
+  /** @const */ var ListItem = cr.ui.ListItem;
+  /** @const */ var ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
    * Creates a new Language list item.
