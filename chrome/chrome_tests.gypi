@@ -773,24 +773,6 @@
     {
       'target_name': 'ui_tests',
       'type': 'executable',
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)',
-          'files': [
-            # Keep 'test_case.html.mock-http-headers' with 'test_case.html'.
-            '../ppapi/tests/test_case.html',
-            '../ppapi/tests/test_case.html.mock-http-headers',
-            '../ppapi/tests/test_page.css',
-            '../ppapi/native_client/tests/ppapi_tests/test_case.nmf',
-          ],
-        },
-        {
-          'destination': '<(PRODUCT_DIR)/test_url_loader_data',
-          'files': [
-            '../ppapi/tests/test_url_loader_data/hello.txt',
-          ],
-        },
-      ],
       'dependencies': [
         'browser',
         'chrome',
@@ -809,7 +791,6 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
-        '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
       ],
@@ -817,6 +798,9 @@
         '..',
       ],
       'sources': [
+        # NOTE: DON'T ADD NEW TESTS HERE!
+        # New tests should be browser_tests. browser_tests are sharded and are
+        # less flakier.
         'app/chrome_main_uitest.cc',
         'browser/audio_layout_uitest.cc',
         'browser/browser_encoding_uitest.cc',
@@ -864,20 +848,15 @@
         'test/ui/layout_plugin_uitest.cc',
         'test/ui/named_interface_uitest.cc',
         'test/ui/npapi_uitest.cc',
-        'test/ui/ppapi_uitest.cc',
         'test/ui/sandbox_uitests.cc',
         '../content/browser/appcache/appcache_ui_test.cc',
         '../content/browser/in_process_webkit/dom_storage_uitest.cc',
         '../content/browser/in_process_webkit/indexed_db_uitest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_uitest.cc',
         '../content/worker/test/worker_uitest.cc',
+        # DON'T ADD NEW FILES! SEE NOTE AT TOP OF SECTION.
       ],
       'conditions': [
-        ['disable_nacl==0 and disable_nacl_untrusted==0', {
-          'dependencies': [
-            '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
-          ],
-        }],
         ['target_arch!="arm"', {
           'dependencies': [
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
@@ -2521,6 +2500,24 @@
       'type': 'executable',
       'msvs_cygwin_shell': 0,
       'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            # Keep 'test_case.html.mock-http-headers' with 'test_case.html'.
+            '../ppapi/tests/test_case.html',
+            '../ppapi/tests/test_case.html.mock-http-headers',
+            '../ppapi/tests/test_page.css',
+            '../ppapi/native_client/tests/ppapi_tests/test_case.nmf',
+          ],
+        },
+        {
+          'destination': '<(PRODUCT_DIR)/test_url_loader_data',
+          'files': [
+            '../ppapi/tests/test_url_loader_data/hello.txt',
+          ],
+        },
+      ],
       'dependencies': [
         'browser',
         'browser/sync/protocol/sync_proto.gyp:sync_proto',
@@ -2545,6 +2542,7 @@
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/webkit.gyp:test_shell_test_support',
         # Runtime dependencies
+        '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../webkit/webkit.gyp:pull_in_copy_TestNetscapePlugIn',
       ],
@@ -2891,6 +2889,7 @@
         'test/data/webui/print_preview.cc',
         'test/data/webui/print_preview.js',
         'test/gpu/gpu_feature_browsertest.cc',
+        'test/ui/ppapi_uitest.cc',
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
         '../base/files/file_path_watcher_browsertest.cc',
@@ -2951,9 +2950,16 @@
         },
       ],
       'conditions': [
-        ['disable_nacl!=1', {
+        ['disable_nacl==0', {
           'sources':[
             'browser/extensions/extension_nacl_browsertest.cc',
+          ],
+          'conditions': [
+            ['disable_nacl_untrusted==0', {
+              'dependencies': [
+              '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
+              ],
+            }],
           ],
         }],
         ['chromeos==0', {
