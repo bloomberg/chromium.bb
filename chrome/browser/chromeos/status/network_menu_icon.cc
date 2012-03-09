@@ -32,11 +32,13 @@ const int kThrobDurationMs = 750;
 
 // Images for strength bars for wired networks.
 const int kNumBarsImages = 5;
-SkBitmap* kBarsImagesAnimating[kNumBarsImages - 1];
+SkBitmap* kBarsImagesAnimatingSmall[kNumBarsImages - 1];
+SkBitmap* kBarsImagesAnimatingLarge[kNumBarsImages - 1];
 
 // Imagaes for strength arcs for wireless networks.
 const int kNumArcsImages = 5;
-SkBitmap* kArcsImagesAnimating[kNumArcsImages - 1];
+SkBitmap* kArcsImagesAnimatingSmall[kNumArcsImages - 1];
+SkBitmap* kArcsImagesAnimatingLarge[kNumArcsImages - 1];
 
 // Badge offsets.  If a badge is large enough that it won't fit within the icon
 // when using the right or bottom offset, it gets shifted inwards so it will.
@@ -158,6 +160,17 @@ const SkBitmap& GetEmptyVpnBadge() {
   return *empty_vpn_badge;
 }
 
+const SkBitmap GetVpnResource(int resource_id) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  const SkBitmap* ethernet_icon = rb.GetBitmapNamed(resource_id);
+  gfx::CanvasSkia canvas(
+      gfx::Size(ethernet_icon->width(), ethernet_icon->height()), false);
+  canvas.DrawBitmapInt(*ethernet_icon, 0, 0);
+  const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
+  canvas.DrawBitmapInt(*vpn_badge, kBadgeLeftX, kBadgeBottomY);
+  return canvas.ExtractBitmap();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -168,8 +181,9 @@ const SkBitmap& GetEmptyVpnBadge() {
 class NetworkIcon {
  public:
   // Default constructor is used by the status bar icon (NetworkMenuIcon).
-  NetworkIcon()
+  explicit NetworkIcon(NetworkMenuIcon::ResourceSize size)
       : state_(STATE_UNKNOWN),
+        resource_size_(size),
         strength_index_(-1),
         top_left_badge_(NULL),
         top_right_badge_(NULL),
@@ -181,9 +195,11 @@ class NetworkIcon {
   }
 
   // Service path constructor for cached network service icons.
-  explicit NetworkIcon(const std::string& service_path)
+  NetworkIcon(const std::string& service_path,
+              NetworkMenuIcon::ResourceSize size)
       : service_path_(service_path),
         state_(STATE_UNKNOWN),
+        resource_size_(size),
         strength_index_(-1),
         top_left_badge_(NULL),
         top_right_badge_(NULL),
@@ -281,7 +297,9 @@ class NetworkIcon {
 
     switch (network->type()) {
       case TYPE_ETHERNET: {
-        icon_ = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
+        icon_ = *rb.GetBitmapNamed(
+            resource_size_ == NetworkMenuIcon::SIZE_SMALL ?
+                IDR_STATUSBAR_WIRED : IDR_STATUSBAR_WIRED_LARGE);
         break;
       }
       case TYPE_WIFI: {
@@ -290,7 +308,7 @@ class NetworkIcon {
         if (strength_index_ == -1)
           strength_index_ = WifiStrengthIndex(wifi);
         icon_ = NetworkMenuIcon::GetBitmap(
-            NetworkMenuIcon::ARCS, strength_index_);
+            NetworkMenuIcon::ARCS, strength_index_, resource_size_);
         break;
       }
       case TYPE_CELLULAR: {
@@ -299,13 +317,15 @@ class NetworkIcon {
         if (strength_index_ == -1)
           strength_index_ = CellularStrengthIndex(cellular);
         icon_ = NetworkMenuIcon::GetBitmap(
-            NetworkMenuIcon::BARS, strength_index_);
+            NetworkMenuIcon::BARS, strength_index_, resource_size_);
         break;
       }
       default: {
         LOG(WARNING) << "Request for icon for unsupported type: "
                      << network->type();
-        icon_ = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
+        icon_ = *rb.GetBitmapNamed(
+            resource_size_ == NetworkMenuIcon::SIZE_SMALL ?
+                IDR_STATUSBAR_WIRED : IDR_STATUSBAR_WIRED_LARGE);
         break;
       }
     }
@@ -396,12 +416,16 @@ class NetworkIcon {
   void GenerateBitmap() {
     if (icon_.empty())
       return;
-    bitmap_ = NetworkMenuIcon::GenerateBitmapFromComponents(
-        icon_,
-        top_left_badge_,
-        top_right_badge_,
-        bottom_left_badge_,
-        bottom_right_badge_);
+    if (resource_size_ == NetworkMenuIcon::SIZE_SMALL) {
+      bitmap_ = NetworkMenuIcon::GenerateBitmapFromComponents(
+          icon_,
+          top_left_badge_,
+          top_right_badge_,
+          bottom_left_badge_,
+          bottom_right_badge_);
+    } else {
+      bitmap_ = icon_;
+    }
   }
 
   const SkBitmap GetBitmap() const { return bitmap_; }
@@ -493,6 +517,7 @@ class NetworkIcon {
 
   std::string service_path_;
   ConnectionState state_;
+  NetworkMenuIcon::ResourceSize resource_size_;
   int strength_index_;
   SkBitmap bitmap_;
   SkBitmap icon_;
@@ -513,6 +538,7 @@ class NetworkIcon {
 NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
     : mode_(mode),
       delegate_(delegate),
+      resource_size_(SIZE_SMALL),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       last_network_type_(TYPE_WIFI),
       connecting_network_(NULL) {
@@ -521,13 +547,21 @@ NetworkMenuIcon::NetworkMenuIcon(Delegate* delegate, Mode mode)
   animation_connecting_.SetTweenType(ui::Tween::LINEAR);
 
   // Initialize the icon.
-  icon_.reset(new NetworkIcon());
+  icon_.reset(new NetworkIcon(resource_size_));
 }
 
 NetworkMenuIcon::~NetworkMenuIcon() {
 }
 
 // Public methods:
+
+void NetworkMenuIcon::SetResourceSize(ResourceSize size) {
+  if (size == resource_size_)
+    return;
+
+  resource_size_ = size;
+  icon_.reset(new NetworkIcon(resource_size_));
+}
 
 const SkBitmap NetworkMenuIcon::GetIconAndText(string16* text) {
   SetIconAndText();
@@ -580,18 +614,20 @@ void NetworkMenuIcon::SetConnectingIconAndText() {
   if (connecting_network_->type() == TYPE_WIFI) {
     image_count = kNumArcsImages - 1;
     bitmap_type = ARCS;
-    images = kArcsImagesAnimating;
+    images = resource_size_ == SIZE_SMALL ? kArcsImagesAnimatingSmall :
+                                            kArcsImagesAnimatingLarge;
   } else {
     image_count = kNumBarsImages - 1;
     bitmap_type = BARS;
-    images = kBarsImagesAnimating;
+    images = resource_size_ == SIZE_SMALL ? kBarsImagesAnimatingSmall :
+                                            kBarsImagesAnimatingLarge;
   }
   int index = GetAnimation() * nextafter(static_cast<float>(image_count), 0);
   index = std::max(std::min(index, image_count - 1), 0);
 
   // Lazily cache images.
   if (!images[index]) {
-    SkBitmap source = GetBitmap(bitmap_type, index + 1);
+    SkBitmap source = GetBitmap(bitmap_type, index + 1, resource_size_);
     images[index] =
         new SkBitmap(NetworkMenuIcon::GenerateConnectingBitmap(source));
   }
@@ -692,16 +728,18 @@ void NetworkMenuIcon::SetDisconnectedIconAndText() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   switch (last_network_type_) {
     case TYPE_ETHERNET:
-      icon_->set_icon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
+      icon_->set_icon(*rb.GetBitmapNamed(
+            resource_size_ == SIZE_SMALL ? IDR_STATUSBAR_WIRED :
+                                           IDR_STATUSBAR_WIRED_LARGE));
       icon_->set_bottom_right_badge(
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
       break;
     case TYPE_WIFI:
-      icon_->set_icon(GetDisconnectedBitmap(ARCS));
+      icon_->set_icon(GetDisconnectedBitmap(ARCS, resource_size_));
       break;
     case TYPE_CELLULAR:
     default:
-      icon_->set_icon(GetDisconnectedBitmap(BARS));
+      icon_->set_icon(GetDisconnectedBitmap(BARS, resource_size_));
       icon_->set_bottom_right_badge(
           rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
       break;
@@ -763,20 +801,26 @@ const SkBitmap NetworkMenuIcon::GenerateConnectingBitmap(
 }
 
 // Generates and caches an icon bitmap for a network's current state.
-const SkBitmap NetworkMenuIcon::GetBitmap(const Network* network) {
+const SkBitmap NetworkMenuIcon::GetBitmap(const Network* network,
+                                          ResourceSize size) {
   DCHECK(network);
   // Maintain a static (global) icon map. Note: Icons are never destroyed;
   // it is assumed that a finite and reasonable number of network icons will be
   // created during a session.
   typedef std::map<std::string, NetworkIcon*> NetworkIconMap;
-  static NetworkIconMap* icon_map = NULL;
-  if (icon_map == NULL)
-    icon_map = new NetworkIconMap;
+  static NetworkIconMap* icon_map_small = NULL;
+  static NetworkIconMap* icon_map_large = NULL;
+  if (icon_map_small == NULL)
+    icon_map_small = new NetworkIconMap;
+  if (icon_map_large == NULL)
+    icon_map_large = new NetworkIconMap;
+  NetworkIconMap* icon_map = size == SIZE_SMALL ? icon_map_small :
+                                                  icon_map_large;
   // Find or add the icon.
   NetworkIcon* icon;
   NetworkIconMap::iterator iter = icon_map->find(network->service_path());
   if (iter == icon_map->end()) {
-    icon = new NetworkIcon(network->service_path());
+    icon = new NetworkIcon(network->service_path(), size);
     icon_map->insert(std::make_pair(network->service_path(), icon));
   } else {
     icon = iter->second;
@@ -787,24 +831,23 @@ const SkBitmap NetworkMenuIcon::GetBitmap(const Network* network) {
 }
 
 // Returns an icon for a disconnected VPN.
-const SkBitmap NetworkMenuIcon::GetVpnBitmap() {
-  static SkBitmap* vpn_bitmap = NULL;
-  if (vpn_bitmap == NULL) {
-    // Set the disconnected vpn icon (ethernet + VPN) for GetVpnIcon().
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const SkBitmap* ethernet_icon = rb.GetBitmapNamed(IDR_STATUSBAR_WIRED);
-    gfx::CanvasSkia canvas(
-        gfx::Size(ethernet_icon->width(), ethernet_icon->height()), false);
-    canvas.DrawBitmapInt(*ethernet_icon, 0, 0);
-    const SkBitmap* vpn_badge = rb.GetBitmapNamed(kVpnBadgeId);
-    canvas.DrawBitmapInt(*vpn_badge, kBadgeLeftX, kBadgeBottomY);
-    vpn_bitmap = new SkBitmap(canvas.ExtractBitmap());
+const SkBitmap NetworkMenuIcon::GetVpnBitmap(ResourceSize size) {
+  if (size == SIZE_SMALL) {
+    static SkBitmap* vpn_bitmap = NULL;
+    if (vpn_bitmap == NULL)
+      vpn_bitmap = new SkBitmap(GetVpnResource(IDR_STATUSBAR_WIRED));
+    return *vpn_bitmap;
+  } else {
+    static SkBitmap* vpn_bitmap = NULL;
+    if (vpn_bitmap == NULL)
+      vpn_bitmap = new SkBitmap(GetVpnResource(IDR_STATUSBAR_WIRED_LARGE));
+    return *vpn_bitmap;
   }
-  return *vpn_bitmap;
 }
 
-const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type, int index) {
-  static int arcs_width = 0, arcs_height = 0, bars_width = 0, bars_height = 0;
+const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type,
+                                          int index,
+                                          ResourceSize size) {
   int width, height;
   SkBitmap* images;
   if (type == ARCS) {
@@ -812,25 +855,19 @@ const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type, int index) {
       return SkBitmap();
 
     images = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_STATUSBAR_NETWORK_ARCS);
-    if (arcs_width == 0)
-      arcs_width = images->width();
-    if (arcs_height == 0)
-      arcs_height = images->height() / kNumArcsImages;
-    width = arcs_width;
-    height = arcs_height;
+        size == SIZE_SMALL ? IDR_STATUSBAR_NETWORK_ARCS :
+                             IDR_STATUSBAR_NETWORK_ARCS_LARGE);
+    width = images->width();
+    height = images->height() / kNumArcsImages;
   } else {
     if (index >= kNumBarsImages)
       return SkBitmap();
 
     images = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_STATUSBAR_NETWORK_BARS);
-    if (bars_width == 0)
-      bars_width = images->width();
-    if (bars_height == 0)
-      bars_height = images->height() / kNumBarsImages;
-    width = bars_width;
-    height = bars_height;
+        size == SIZE_SMALL ? IDR_STATUSBAR_NETWORK_BARS :
+                             IDR_STATUSBAR_NETWORK_BARS_LARGE);
+    width = images->width();
+    height = images->height() / kNumBarsImages;
   }
 
   SkIRect subset = SkIRect::MakeXYWH(0, index * height, width, height);
@@ -839,12 +876,14 @@ const SkBitmap NetworkMenuIcon::GetBitmap(BitmapType type, int index) {
   return image;
 }
 
-const SkBitmap NetworkMenuIcon::GetDisconnectedBitmap(BitmapType type) {
-  return GetBitmap(type, 0);
+const SkBitmap NetworkMenuIcon::GetDisconnectedBitmap(BitmapType type,
+                                                      ResourceSize size) {
+  return GetBitmap(type, 0, size);
 }
 
-const SkBitmap NetworkMenuIcon::GetConnectedBitmap(BitmapType type) {
-  return GetBitmap(type, NumBitmaps(type) - 1);
+const SkBitmap NetworkMenuIcon::GetConnectedBitmap(BitmapType type,
+                                                   ResourceSize size) {
+  return GetBitmap(type, NumBitmaps(type) - 1, size);
 }
 
 int NetworkMenuIcon::NumBitmaps(BitmapType type) {

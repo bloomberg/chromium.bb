@@ -165,7 +165,8 @@ NetworkInfoDictionary::NetworkInfoDictionary() {
 
 NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
   set_service_path(network->service_path());
-  set_icon(chromeos::NetworkMenuIcon::GetBitmap(network));
+  set_icon(chromeos::NetworkMenuIcon::GetBitmap(network,
+      chromeos::NetworkMenuIcon::SIZE_SMALL));
   set_name(network->name());
   set_connecting(network->connecting());
   set_connected(network->connected());
@@ -181,8 +182,8 @@ NetworkInfoDictionary::NetworkInfoDictionary(
     const chromeos::Network* network,
     const chromeos::Network* remembered) {
   set_service_path(remembered->service_path());
-  set_icon(
-      chromeos::NetworkMenuIcon::GetBitmap(network ? network : remembered));
+  set_icon(chromeos::NetworkMenuIcon::GetBitmap(
+      network ? network : remembered, chromeos::NetworkMenuIcon::SIZE_SMALL));
   set_name(remembered->name());
   set_connecting(network ? network->connecting() : false);
   set_connected(network ? network->connected() : false);
@@ -1214,7 +1215,8 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
     network_dict.set_service_path(kOtherNetworksFakePath);
     network_dict.set_icon(
         chromeos::NetworkMenuIcon::GetDisconnectedBitmap(
-            chromeos::NetworkMenuIcon::BARS));
+            chromeos::NetworkMenuIcon::BARS,
+            chromeos::NetworkMenuIcon::SIZE_SMALL));
     network_dict.set_name(
         l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS));
     network_dict.set_connectable(true);
