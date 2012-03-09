@@ -534,6 +534,12 @@
       '-process_count',
       # crbug.com/115646
       '-translate.TranslateTest.testSeveralLanguages',
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      # crbug.com/117573
+      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
+      '-cookies.CookiesTest.testCookiesHttps',
     ],
 
     'linux': [
@@ -569,6 +575,9 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/117573
+      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
+      '-cookies.CookiesTest.testCookiesHttps',
       # crbug.com/101787
       '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
       # crbug.com/97179
