@@ -5,6 +5,7 @@
 """Module containing the various individual commands a builder can run."""
 
 import constants
+import getpass
 import logging
 import os
 import re
@@ -29,7 +30,7 @@ _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
                              'chromeos/binhost')
 _GSUTIL_PATH = '/b/build/scripts/slave/gsutil'
-_GS_ACL = '/home/chrome-bot/slave_archive_acl'
+_GS_ACL = '/home/%(user)s/slave_archive_acl' % {'user' : getpass.getuser()}
 _BINHOST_PACKAGE_FILE = '/etc/portage/make.profile/package.installable'
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')

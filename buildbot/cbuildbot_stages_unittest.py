@@ -834,6 +834,14 @@ class ArchiveStageTest(AbstractStageTest):
     self._build_config['upload_symbols'] = True
     self._build_config['push_image'] = True
 
+    self.mox.StubOutWithMock(stages.ArchiveStage, 'GetVersion')
+    stages.ArchiveStage.GetVersion().MultipleTimes().AndReturn('0.0.0.1')
+    self.mox.StubOutWithMock(background, 'RunParallelSteps')
+    self.mox.StubOutWithMock(commands, 'PushImages')
+    self.mox.StubOutWithMock(commands, 'RemoveOldArchives')
+    self.mox.StubOutWithMock(commands, 'UpdateLatestFile')
+    self.mox.StubOutWithMock(commands, 'UploadArchivedFile')
+
   def ConstructStage(self):
     return stages.ArchiveStage(self.options, self._build_config,
                                self._current_board)
@@ -841,24 +849,36 @@ class ArchiveStageTest(AbstractStageTest):
   @_replace_archive_path
   def testArchive(self):
     """Simple did-it-run test."""
-    self.mox.StubOutWithMock(stages.ArchiveStage, 'GetVersion')
-    stages.ArchiveStage.GetVersion().MultipleTimes().AndReturn('0.0.0.1')
-
     # TODO(davidjames): Test the individual archive steps as well.
-    self.mox.StubOutWithMock(background, 'RunParallelSteps')
     background.RunParallelSteps(mox.IgnoreArg())
 
-    self.mox.StubOutWithMock(commands, 'PushImages')
     commands.PushImages(self.build_root,
                         board=self._current_board,
                         branch_name='master',
                         archive_url=mox.IgnoreArg(),
                         profile=None)
 
-    self.mox.StubOutWithMock(commands, 'RemoveOldArchives')
     commands.RemoveOldArchives(mox.IgnoreArg(), mox.IgnoreArg())
-    self.mox.StubOutWithMock(commands, 'UpdateLatestFile')
-    self.mox.StubOutWithMock(commands, 'UploadArchivedFile')
+    commands.UpdateLatestFile(mox.IgnoreArg(), mox.IgnoreArg())
+    commands.UploadArchivedFile(mox.IgnoreArg(), mox.IgnoreArg(),
+                                'LATEST', False)
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+  @cros_test_lib.tempdir_decorator
+  def testNoPushImagesForRemoteTrybot(self):
+    """Test that remote trybot overrides work to disable push images."""
+    argv = ['--remote-trybot', '-r', self.tempdir, '--buildnumber=1234',
+            'x86-mario-release']
+    parser = cbuildbot._CreateParser()
+    (self.options, args) = cbuildbot._ParseCommandLine(parser, argv)
+    test_config = config.config['x86-mario-release']
+    self._build_config = config.OverrideConfigForTrybot(test_config)
+
+    background.RunParallelSteps(mox.IgnoreArg())
+    commands.RemoveOldArchives(mox.IgnoreArg(), mox.IgnoreArg())
     commands.UpdateLatestFile(mox.IgnoreArg(), mox.IgnoreArg())
     commands.UploadArchivedFile(mox.IgnoreArg(), mox.IgnoreArg(),
                                 'LATEST', False)

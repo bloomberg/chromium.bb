@@ -751,6 +751,10 @@ def _CreateParser():
                          "default, if this option isn't given but cbuildbot "
                          'is invoked from a repo checkout, cbuildbot will '
                          'use the repo root.')
+  group.add_option('--remote-trybot', dest='remote_trybot', action='store_true',
+                    default=False,
+                    help=('This is running on a remote trybot machine.  '
+                          'Requires --user and --timestamp to be set.'))
   group.add_option('--timeout', action='store', type='int', default=0,
                     help="Specify the maximum amount of time this job can run "
                          "for, at which point the build will be aborted.  If "
@@ -824,6 +828,9 @@ def _FinishParsing(options, args):
 
   if len(args) > 1 and not options.remote:
     cros_lib.Die('Multiple configs not supported if not running with --remote.')
+
+  if options.buildbot and options.remote_trybot:
+    cros_lib.Die('--buildbot and --remote-trybot cannot be used together.')
 
   # Record whether --debug was set explicitly vs. it was inferred.
   options.debug_forced = False

@@ -5,6 +5,7 @@
 """Module containing the various stages that a builder runs."""
 
 import cPickle
+import datetime
 import multiprocessing
 import os
 import Queue
@@ -870,15 +871,11 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
   option_name = 'archive'
   _VERSION_NOT_SET = '_not_set_version_'
+  _REMOTE_TRYBOT_ARCHIVE_URL = 'gs://chromeos-trybot'
 
   # This stage is intended to run in the background, in parallel with tests.
   def __init__(self, options, build_config, board):
     super(ArchiveStage, self).__init__(options, build_config, board)
-    if build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
-      self._gsutil_archive = 'gs://chromeos-image-archive/' + self._bot_id
-    else:
-      self._gsutil_archive = build_config['gs_path']
-
     # Set version is dependent on setting external to class.  Do not use
     # directly.  Use GetVersion() instead.
     self._set_version = ArchiveStage._VERSION_NOT_SET
@@ -977,22 +974,32 @@ class ArchiveStage(BoardSpecificBuilderStage):
     if not version:
       return None
 
-    if not self._options.buildbot:
-      return self._GetArchivePath()
-    elif self._gsutil_archive:
+    if self._options.buildbot or self._options.remote_trybot:
       upload_location = self.GetGSUploadLocation()
       url_prefix = 'https://sandbox.google.com/storage/'
       return upload_location.replace('gs://', url_prefix)
     else:
-      # 'http://botname/archive/bot_id/version'
-      return 'http://%s/archive/%s/%s' % (socket.getfqdn(), self._bot_id,
-                                          version)
+      return self._GetArchivePath()
+
+  def _GetGSUtilArchiveDir(self):
+    if self._options.remote_trybot:
+      current_time = datetime.datetime.utcnow()
+      return os.path.join(
+          self._REMOTE_TRYBOT_ARCHIVE_URL,
+          current_time.strftime('%Y_%m_%d'),
+          self._bot_id,
+          str(self._options.buildnumber))
+    elif self._build_config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT:
+      return 'gs://chromeos-image-archive/' + self._bot_id
+    else:
+      return self._build_config['gs_path']
 
   def GetGSUploadLocation(self):
     """Get the Google Storage location where we should upload artifacts."""
+    gsutil_archive = self._GetGSUtilArchiveDir()
     version = self.GetVersion()
-    if version and self._gsutil_archive:
-      return '%s/%s' % (self._gsutil_archive, version)
+    if version:
+      return '%s/%s' % (gsutil_archive, version)
 
   def _GetArchivePath(self):
     version = self.GetVersion()
@@ -1044,10 +1051,14 @@ class ArchiveStage(BoardSpecificBuilderStage):
     return archive_path
 
   def _PerformStage(self):
+    if self._options.remote_trybot:
+      debug = self._options.debug_forced
+    else:
+      debug = self._options.debug
+
     buildroot = self._build_root
     config = self._build_config
     board = self._current_board
-    debug = self._options.debug
     upload_url = self.GetGSUploadLocation()
     archive_path = self._SetupArchivePath()
     image_dir = self.GetImageDirSymlink()
@@ -1227,8 +1238,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
     if version:
       commands.UpdateLatestFile(self._bot_archive_root, version)
 
-    commands.UploadArchivedFile(self._bot_archive_root, self._gsutil_archive,
-                                'LATEST', debug)
+    commands.UploadArchivedFile(self._bot_archive_root,
+                                self._GetGSUtilArchiveDir(), 'LATEST', debug)
 
     commands.RemoveOldArchives(self._bot_archive_root,
                                self._options.max_archive_builds)

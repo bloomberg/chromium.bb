@@ -50,6 +50,9 @@ def OverrideConfigForTrybot(build_config):
     if useflags and 'chrome_pdf' in useflags:
       useflags.remove('chrome_pdf')
 
+    config['upload_symbols'] = False
+    config['push_image'] = False
+
   return copy_config
 
 
