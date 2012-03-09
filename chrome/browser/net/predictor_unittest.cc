@@ -44,7 +44,7 @@ class WaitForResolutionHelper {
   void Run() {
     for (UrlList::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
       if (predictor_->GetResolutionDuration(*i) ==
-          UrlInfo::kNullDuration)
+          UrlInfo::NullDuration())
         return;  // We don't have resolution for that host.
 
     // When all hostnames have been resolved, exit the loop.

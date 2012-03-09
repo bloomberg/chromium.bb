@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/format_macros.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
@@ -21,7 +22,41 @@ using base::TimeTicks;
 
 namespace chrome_browser_net {
 
-static bool detailed_logging_enabled = false;
+namespace {
+
+// The number of OS cache entries we can guarantee(?) before cache eviction
+// might likely take place.
+const int kMaxGuaranteedDnsCacheSize = 50;
+
+// Common low end TTL for sites is 5 minutes.  However, DNS servers give us the
+// remaining time, not the original 5 minutes.  Hence it doesn't much matter
+// whether we found something in the local cache, or an ISP cache, it will on
+// average be 2.5 minutes before it expires.  We could try to model this with
+// 180 seconds, but simpler is just to do the lookups all the time (wasting OS
+// calls(?)), and let that OS cache decide what to do (with TTL in hand).  We
+// use a small time to help get some duplicate suppression, in case a page has
+// a TON of copies of the same domain name, so that we don't thrash the OS to
+// death.  Hopefully it is small enough that we're not hurting our cache hit
+// rate (i.e., we could always ask the OS).
+const int kDefaultCacheExpirationDuration = 5;
+
+TimeDelta MaxNonNetworkDnsLookupDuration() {
+  return TimeDelta::FromMilliseconds(15);
+}
+
+bool detailed_logging_enabled = false;
+
+struct GlobalState {
+  GlobalState() {
+    cache_expiration_duration =
+        TimeDelta::FromSeconds(kDefaultCacheExpirationDuration);
+  }
+  TimeDelta cache_expiration_duration;
+};
+
+base::LazyInstance<GlobalState>::Leaky global_state;
+
+}  // anonymous namespace
 
 // Use command line switch to enable detailed logging.
 void EnablePredictorDetailedLog(bool enable) {
@@ -34,8 +69,8 @@ int UrlInfo::sequence_counter = 1;
 UrlInfo::UrlInfo()
     : state_(PENDING),
       old_prequeue_state_(state_),
-      resolve_duration_(kNullDuration),
-      queue_duration_(kNullDuration),
+      resolve_duration_(NullDuration()),
+      queue_duration_(NullDuration()),
       sequence_number_(0),
       motivation_(NO_PREFETCH_MOTIVATION),
       was_linked_(false) {
@@ -63,39 +98,22 @@ bool UrlInfo::NeedsDnsUpdate() {
   }
 }
 
-const TimeDelta UrlInfo::kNullDuration(TimeDelta::FromMilliseconds(-1));
-
-// Common low end TTL for sites is 5 minutes.  However, DNS servers give us
-// the remaining time, not the original 5 minutes.  Hence it doesn't much matter
-// whether we found something in the local cache, or an ISP cache, it will
-// on average be 2.5 minutes before it expires.  We could try to model this with
-// 180 seconds, but simpler is just to do the lookups all the time (wasting
-// OS calls(?)), and let that OS cache decide what to do (with TTL in hand).
-// We use a small time to help get some duplicate suppression, in case a page
-// has a TON of copies of the same domain name, so that we don't thrash the OS
-// to death.  Hopefully it is small enough that we're not hurting our cache hit
-// rate (i.e., we could always ask the OS).
-TimeDelta UrlInfo::cache_expiration_duration_(TimeDelta::FromSeconds(5));
-
-const TimeDelta UrlInfo::kMaxNonNetworkDnsLookupDuration(
-    TimeDelta::FromMilliseconds(15));
-
-// Used by test ONLY.  The value is otherwise constant.
+// Used by test ONLY. The value is otherwise constant.
 // static
 void UrlInfo::set_cache_expiration(TimeDelta time) {
-  cache_expiration_duration_ = time;
+  global_state.Pointer()->cache_expiration_duration = time;
 }
 
 // static
 TimeDelta UrlInfo::get_cache_expiration() {
-  return cache_expiration_duration_;
+  return global_state.Get().cache_expiration_duration;
 }
 
 void UrlInfo::SetQueuedState(ResolutionMotivation motivation) {
   DCHECK(PENDING == state_ || FOUND == state_ || NO_SUCH_NAME == state_);
   old_prequeue_state_ = state_;
   state_ = QUEUED;
-  queue_duration_ = resolve_duration_ = kNullDuration;
+  queue_duration_ = resolve_duration_ = NullDuration();
   SetMotivation(motivation);
   GetDuration();  // Set time_
   DLogResultsStats("DNS Prefetch in queue");
@@ -113,14 +131,14 @@ void UrlInfo::RemoveFromQueue() {
   DCHECK(ASSIGNED == state_);
   state_ = old_prequeue_state_;
   DLogResultsStats("DNS Prefetch reset to prequeue");
-  static const TimeDelta kBoundary = TimeDelta::FromSeconds(2);
+  const TimeDelta kBoundary = TimeDelta::FromSeconds(2);
   if (queue_duration_ > kBoundary) {
     UMA_HISTOGRAM_MEDIUM_TIMES("DNS.QueueRecycledDeltaOver2",
                                queue_duration_ - kBoundary);
     return;
   }
   // Make a custom linear histogram for the region from 0 to boundary.
-  const size_t kBucketCount = 52;
+  static const size_t kBucketCount = 52;
   static base::Histogram* histogram(NULL);
   if (!histogram)
     histogram = base::LinearHistogram::FactoryTimeGet(
@@ -138,9 +156,10 @@ void UrlInfo::SetFoundState() {
   DCHECK(ASSIGNED == state_);
   state_ = FOUND;
   resolve_duration_ = GetDuration();
-  if (kMaxNonNetworkDnsLookupDuration <= resolve_duration_) {
+  const TimeDelta max_duration = MaxNonNetworkDnsLookupDuration();
+  if (max_duration <= resolve_duration_) {
     UMA_HISTOGRAM_CUSTOM_TIMES("DNS.PrefetchResolution", resolve_duration_,
-        kMaxNonNetworkDnsLookupDuration, TimeDelta::FromMinutes(15), 100);
+        max_duration, TimeDelta::FromMinutes(15), 100);
   }
   sequence_number_ = sequence_counter++;
   DLogResultsStats("DNS PrefetchFound");
@@ -150,7 +169,7 @@ void UrlInfo::SetNoSuchNameState() {
   DCHECK(ASSIGNED == state_);
   state_ = NO_SUCH_NAME;
   resolve_duration_ = GetDuration();
-  if (kMaxNonNetworkDnsLookupDuration <= resolve_duration_) {
+  if (MaxNonNetworkDnsLookupDuration() <= resolve_duration_) {
     DHISTOGRAM_TIMES("DNS.PrefetchNotFoundName", resolve_duration_);
   }
   sequence_number_ = sequence_counter++;
@@ -178,8 +197,7 @@ bool UrlInfo::IsStillCached() const {
     return false;
 
   TimeDelta time_since_resolution = TimeTicks::Now() - time_;
-
-  return time_since_resolution < cache_expiration_duration_;
+  return time_since_resolution < global_state.Get().cache_expiration_duration;
 }
 
 void UrlInfo::DLogResultsStats(const char* message) const {

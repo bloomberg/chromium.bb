@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,14 +64,12 @@ class UrlInfo {
       FOUND,         // DNS resolution completed.
       NO_SUCH_NAME,  // DNS resolution completed.
   };
-  static const base::TimeDelta kMaxNonNetworkDnsLookupDuration;
-  // The number of OS cache entries we can guarantee(?) before cache eviction
-  // might likely take place.
-  static const int kMaxGuaranteedDnsCacheSize = 50;
 
   typedef std::vector<UrlInfo> UrlInfoTable;
 
-  static const base::TimeDelta kNullDuration;
+  static base::TimeDelta NullDuration() {
+    return base::TimeDelta::FromMilliseconds(-1);
+  }
 
   // UrlInfo are usually made by the default constructor during
   // initializing of the Predictor's map (of info for Hostnames).
@@ -150,9 +148,6 @@ class UrlInfo {
 
   // Helper function for about:dns printing.
   std::string GetAsciiMotivation() const;
-
-  // The next declaration is non-const to facilitate testing.
-  static base::TimeDelta cache_expiration_duration_;
 
   // The current state of this instance.
   DnsProcessingState state_;
