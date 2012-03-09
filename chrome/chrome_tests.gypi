@@ -2451,6 +2451,14 @@
             'test/data/resource.rc',
           ],
         }],
+        ['OS=="android"', {
+          'sources!': [
+            'browser/shell_integration_unittest.cc',
+          ],
+          'sources/': [
+            ['exclude', '^browser/themes/'],
+          ],
+        }],
         ['enable_plugin_installation==0', {
           'sources!': [
             'browser/plugin_finder_unittest.cc',
