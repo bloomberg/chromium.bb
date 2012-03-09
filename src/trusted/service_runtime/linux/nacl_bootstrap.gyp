@@ -89,6 +89,7 @@
         # coming after the -fno-stack-protector we added above.
         '-fstack-protector',
         '-fstack-protector-all',
+        '-fprofile-generate',
       ],
       'conditions': [
         ['clang==1', {
