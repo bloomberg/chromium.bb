@@ -39,7 +39,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -158,6 +160,10 @@ void WizardController::Init(const std::string& first_screen_name,
   }
 
   AdvanceToScreen(first_screen_name);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 chromeos::NetworkScreen* WizardController::GetNetworkScreen() {

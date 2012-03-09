@@ -19,7 +19,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -122,7 +124,27 @@ WebUILoginView::WebUILoginView()
       login_window_(NULL),
       status_window_(NULL),
       host_window_frozen_(false),
-      status_area_visibility_on_init_(true) {
+      status_area_visibility_on_init_(true),
+      login_page_is_loaded_(false),
+      should_emit_login_prompt_visible_(true) {
+#if !defined(USE_AURA)
+  // The X window manager emits this signal in non-Aura builds.
+  should_emit_login_prompt_visible_ = false;
+#endif
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_WEBUI_READY,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
+                 content::NotificationService::AllSources());
+
 #if defined(USE_VIRTUAL_KEYBOARD)
   // Make sure the singleton VirtualKeyboardManager object is created.
   VirtualKeyboardManager::GetInstance();
@@ -291,8 +313,12 @@ void WebUILoginView::OnTabMainFrameLoaded() {
 }
 
 void WebUILoginView::OnTabMainFrameRender() {
+  if (!login_page_is_loaded_)
+    return;
+
   VLOG(1) << "WebUI login main frame rendered.";
   tab_watcher_.reset();
+
   StatusAreaViewChromeos::SetScreenMode(GetScreenMode());
   // In aura there's a global status area shown already.
 #if defined(USE_AURA)
@@ -312,15 +338,12 @@ void WebUILoginView::OnTabMainFrameRender() {
   }
 #endif
 
-#if defined(USE_AURA)
-  // crosbug.com/26646.
-  LOG(ERROR) << "EmitLoginPromptVisible:";
-  // In aura, there will be no window-manager. So chrome needs to emit the
-  // 'login-prompt-visible' signal. This needs to happen here, after the page
-  // has completed rendering itself.
-  chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
-      ->EmitLoginPromptVisible();
-#endif
+  if (should_emit_login_prompt_visible_) {
+    // crosbug.com/26646.
+    LOG(ERROR) << "EmitLoginPromptVisible:";
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        EmitLoginPromptVisible();
+  }
 
   OobeUI* oobe_ui = static_cast<OobeUI*>(GetWebUI()->GetController());
   // Notify OOBE that the login frame has been rendered. Currently
@@ -381,6 +404,21 @@ views::Widget::InitParams::Type WebUILoginView::GetStatusAreaWidgetType() {
   return views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
 }
 
+void WebUILoginView::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
+  switch (type) {
+    case chrome::NOTIFICATION_LOGIN_WEBUI_READY:
+    case chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED:
+    case chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN:
+    case chrome::NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN:
+      login_page_is_loaded_ = true;
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification " << type;
+  }
+}
+
 // WebUILoginView private: -----------------------------------------------------
 
 bool WebUILoginView::HandleContextMenu(
@@ -391,6 +429,20 @@ bool WebUILoginView::HandleContextMenu(
 #else
   return true;
 #endif
+}
+
+void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
+                                                        GetFocusManager());
+
+  // Make sure error bubble is cleared on keyboard event. This is needed
+  // when the focus is inside an iframe. Only clear on KeyDown to prevent hiding
+  // an immediate authentication error (See crbug.com/103643).
+  if (event.type == WebKit::WebInputEvent::KeyDown) {
+    content::WebUI* web_ui = GetWebUI();
+    if (web_ui)
+      web_ui->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
+  }
 }
 
 bool WebUILoginView::IsPopupOrPanel(const WebContents* source) const {
@@ -413,20 +465,6 @@ void WebUILoginView::ReturnFocus(bool reverse) {
   webui_login_->dom_contents()->web_contents()->
       FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
-}
-
-void WebUILoginView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
-                                                        GetFocusManager());
-
-  // Make sure error bubble is cleared on keyboard event. This is needed
-  // when the focus is inside an iframe. Only clear on KeyDown to prevent hiding
-  // an immediate authentication error (See crbug.com/103643).
-  if (event.type == WebKit::WebInputEvent::KeyDown) {
-    content::WebUI* web_ui = GetWebUI();
-    if (web_ui)
-      web_ui->CallJavascriptFunction("cr.ui.Oobe.clearErrors");
-  }
 }
 
 }  // namespace chromeos

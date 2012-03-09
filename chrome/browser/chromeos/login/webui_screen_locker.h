@@ -31,7 +31,6 @@ class WebUIScreenLockerTester;
 // the Oobe account picker screen.
 class WebUIScreenLocker : public WebUILoginView,
                           public LoginDisplay::Delegate,
-                          public content::NotificationObserver,
                           public ScreenLockerDelegate,
                           public LockWindow::Observer {
  public:
@@ -63,7 +62,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;
 
-  // content::NotificationObserver implementation.
+  // content::NotificationObserver (via WebUILoginView) implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;

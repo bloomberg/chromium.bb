@@ -176,64 +176,28 @@ class SigninScreenHandler : public BaseScreenHandler,
   // sign-in (allow BWSI and allow whitelist) are changed.
   void UpdateAuthExtension();
 
-  // Handles confirmation message of user authentication that was performed by
-  // the authentication extension.
+  // WebUI message handlers.
   void HandleCompleteLogin(const base::ListValue* args);
-
-  // Handles get existing user list request when populating account picker.
   void HandleGetUsers(const base::ListValue* args);
-
-  // Handles authentication request when signing in an existing user.
   void HandleAuthenticateUser(const base::ListValue* args);
-
-  // Handles entering as the demo user.
   void HandleLaunchDemoUser(const base::ListValue* args);
-
-  // Handles entering bwsi mode request.
   void HandleLaunchIncognito(const base::ListValue* args);
-
-  // Handles fix captive portal request (starts guest session with specific
-  // start URL).
   void HandleFixCaptivePortal(const base::ListValue* args);
-
-  // Handles offline login request.
   void HandleOfflineLogin(const base::ListValue* args);
-
-  // Handles system shutdown request.
   void HandleShutdownSystem(const base::ListValue* args);
-
-  // Handles remove user request.
   void HandleRemoveUser(const base::ListValue* args);
-
-  // Handles 'showAddUser' request to show proper sign-in screen.
   void HandleShowAddUser(const base::ListValue* args);
-
-  // Handles Enterprise Enrollment screen toggling.
   void HandleToggleEnrollmentScreen(const base::ListValue* args);
-
-  // Handles 'launchHelpApp' request.
   void HandleLaunchHelpApp(const base::ListValue* args);
-
-  // Handle 'createAccount' request.
   void HandleCreateAccount(const base::ListValue* args);
-
-  // Handle 'accountPickerReady' request.
   void HandleAccountPickerReady(const base::ListValue* args);
-
-  // Handle 'loginWebuiReady' request.
   void HandleLoginWebuiReady(const base::ListValue* args);
-
-  // Handle 'loginRequestNetworkState' request.
   void HandleLoginRequestNetworkState(const base::ListValue* args);
-
-  // Handle 'loginAddNetworkStateObserver' request.
   void HandleLoginAddNetworkStateObserver(const base::ListValue* args);
-
-  // Handle 'loginRemoveNetworkStateObserver' request.
   void HandleLoginRemoveNetworkStateObserver(const base::ListValue* args);
-
-  // Handle 'signOutUser' request.
   void HandleSignOutUser(const base::ListValue* args);
+  void HandleUserImagesLoaded(const base::ListValue* args);
+  void HandleNetworkErrorShown(const base::ListValue* args);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);

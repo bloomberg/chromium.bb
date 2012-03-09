@@ -814,14 +814,24 @@ enum NotificationType {
   // Sent when webui login screen is ready and gaia iframe has loaded.
   NOTIFICATION_LOGIN_WEBUI_READY,
 
+  // Sent when the user images on the WebUI login screen have all been loaded.
+  NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
+
   // Sent when proxy dialog is closed.
   NOTIFICATION_LOGIN_PROXY_CHANGED,
+
+  // Sent when a network error message is displayed on the WebUI login screen.
+  NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
 
   // Sent when a panel state changed.
   NOTIFICATION_PANEL_STATE_CHANGED,
 
   // Sent when the window manager's layout mode has changed.
   NOTIFICATION_LAYOUT_MODE_CHANGED,
+
+  // Sent when the first OOBE screen has been displayed.  Note that the screen
+  // may not be fully rendered at this point.
+  NOTIFICATION_WIZARD_FIRST_SCREEN_SHOWN,
 
   // Sent when the wizard's content view is destroyed. The source and details
   // are not used.

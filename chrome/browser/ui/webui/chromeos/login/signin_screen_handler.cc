@@ -206,7 +206,7 @@ void NetworkStateInformer::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_LOGIN_PROXY_CHANGED);
   SendStateToObservers(kReasonProxyChanged);
 }
 
@@ -450,6 +450,12 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("signOutUser",
       base::Bind(&SigninScreenHandler::HandleSignOutUser,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("userImagesLoaded",
+      base::Bind(&SigninScreenHandler::HandleUserImagesLoaded,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("networkErrorShown",
+      base::Bind(&SigninScreenHandler::HandleNetworkErrorShown,
+                 base::Unretained(this)));
 }
 
 void SigninScreenHandler::HandleGetUsers(const base::ListValue* args) {
@@ -532,7 +538,7 @@ void SigninScreenHandler::Observe(int type,
   if (type == chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED)
     UpdateAuthExtension();
   else
-    NOTREACHED();
+    NOTREACHED() << "Unexpected notification " << type;
 }
 
 void SigninScreenHandler::OnDnsCleared() {
@@ -906,6 +912,20 @@ void SigninScreenHandler::HandleSignOutUser(const base::ListValue* args) {
   if (!delegate_)
     return;
   delegate_->Signout();
+}
+
+void SigninScreenHandler::HandleUserImagesLoaded(const base::ListValue* args) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_USER_IMAGES_LOADED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+}
+
+void SigninScreenHandler::HandleNetworkErrorShown(const base::ListValue* args) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {

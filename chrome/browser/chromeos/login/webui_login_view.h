@@ -14,6 +14,8 @@
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/tab_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -39,6 +41,7 @@ namespace chromeos {
 class WebUILoginView : public views::WidgetDelegateView,
                        public StatusAreaButton::Delegate,
                        public content::WebContentsDelegate,
+                       public content::NotificationObserver,
                        public TabRenderWatcher::Delegate {
  public:
   static const int kStatusAreaCornerPadding;
@@ -80,6 +83,11 @@ class WebUILoginView : public views::WidgetDelegateView,
   void SetStatusAreaVisible(bool visible);
 
  protected:
+  // Let non-login derived classes suppress emission of this signal.
+  void set_should_emit_login_prompt_visible(bool emit) {
+    should_emit_login_prompt_visible_ = emit;
+  }
+
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
@@ -107,6 +115,11 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Returns the type to use for the status area widget.
   virtual views::Widget::InitParams::Type GetStatusAreaWidgetType();
 
+  // Overridden from content::NotificationObserver.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   StatusAreaView* status_area_;
 
   // DOMView for rendering a webpage as a webui login.
@@ -128,6 +141,8 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Called when focus is returned from status area.
   // |reverse| is true when focus is traversed backwards (using Shift-Tab).
   void ReturnFocus(bool reverse);
+
+  content::NotificationRegistrar registrar_;
 
   // Login window which shows the view.
   views::Widget* login_window_;
@@ -154,6 +169,15 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   // Caches StatusArea visibility setting before it has been initialized.
   bool status_area_visibility_on_init_;
+
+  // Has the login page told us that it's ready?  This is triggered by either
+  // all of the user images or the GAIA prompt being loaded, whichever comes
+  // first.
+  bool login_page_is_loaded_;
+
+  // Should we emit the login-prompt-visible signal when the login page is
+  // displayed?
+  bool should_emit_login_prompt_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUILoginView);
 };

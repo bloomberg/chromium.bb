@@ -42,6 +42,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
     : ScreenLockerDelegate(screen_locker),
       lock_ready_(false),
       webui_ready_(false) {
+  set_should_emit_login_prompt_visible(false);
 }
 
 void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
@@ -140,7 +141,7 @@ void WebUIScreenLocker::Observe(
       break;
     }
     default:
-      NOTREACHED();
+      WebUILoginView::Observe(type, source, details);
   }
 }
 

@@ -117,6 +117,9 @@ cr.define('login', function() {
         this.enterButtonElement.addEventListener('blur',
             this.parentNode.handleBlur.bind(this.parentNode));
       }
+
+      this.imageElement.addEventListener('load',
+          this.parentNode.handlePodImageLoad.bind(this.parentNode, this));
     },
 
     /**
@@ -448,6 +451,9 @@ cr.define('login', function() {
     // Activated pod, i.e. the pod of current login attempt.
     activatedPod_: undefined,
 
+    // Pods whose initial images haven't been loaded yet.
+    podsWithPendingImages_: [],
+
     /** @inheritDoc */
     decorate: function() {
       this.style.left = 0;
@@ -601,9 +607,12 @@ cr.define('login', function() {
       this.focusedPod_ = undefined;
       this.activatedPod_ = undefined;
 
-      // Popoulate the pod row.
+      // Populate the pod row.
       for (var i = 0; i < users.length; ++i) {
         this.addUserPod(users[i], animated);
+      }
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        this.podsWithPendingImages_.push(pod);
       }
     },
 
@@ -817,6 +826,21 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = 0;
+    },
+
+    /**
+     * Called when a pod's user image finishes loading.
+     */
+    handlePodImageLoad: function(pod) {
+      var index = this.podsWithPendingImages_.indexOf(pod);
+      if (index == -1) {
+        return;
+      }
+
+      this.podsWithPendingImages_.splice(index, 1);
+      if (this.podsWithPendingImages_.length == 0) {
+        chrome.send('userImagesLoaded');
+      }
     }
   };
 

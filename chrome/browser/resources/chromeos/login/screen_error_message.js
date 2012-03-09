@@ -196,6 +196,7 @@ cr.define('login', function() {
                 currentScreen.classList.add('hidden');
             });
         }
+        chrome.send('networkErrorShown');
       } else {
         if (!offlineMessage.classList.contains('faded')) {
           console.log('Hide offline message.');
