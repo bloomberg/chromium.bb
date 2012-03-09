@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,6 +104,19 @@ void SocketStreamDispatcherHost::OnClose(net::SocketStream* socket) {
     return;
   }
   DeleteSocketStreamHost(socket_id);
+}
+
+void SocketStreamDispatcherHost::OnSSLCertificateError(
+    net::SocketStream* socket, const net::SSLInfo& ssl_info, bool fatal) {
+  int socket_id = SocketStreamHost::SocketIdFromSocketStream(socket);
+  DVLOG(1) << "SocketStreamDispatcherHost::OnSSLCertificateError socket_id="
+           << socket_id;
+  if (socket_id == content_common::kNoSocketId) {
+    LOG(ERROR) << "NoSocketId in OnSSLCertificateError";
+    return;
+  }
+  // TODO(toyoshim): Use SSLManager to handle cert error.
+  socket->ContinueDespiteCertError();
 }
 
 bool SocketStreamDispatcherHost::CanGetCookies(net::SocketStream* socket,

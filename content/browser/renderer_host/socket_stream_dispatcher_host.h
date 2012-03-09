@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,10 @@ class SocketStreamHost;
 
 namespace content {
 class ResourceContext;
+}
+
+namespace net {
+class SSLInfo;
 }
 
 // Dispatches ViewHostMsg_SocketStream_* messages sent from renderer.
@@ -45,6 +49,9 @@ class SocketStreamDispatcherHost : public content::BrowserMessageFilter,
   virtual void OnReceivedData(net::SocketStream* socket,
                               const char* data, int len) OVERRIDE;
   virtual void OnClose(net::SocketStream* socket) OVERRIDE;
+  virtual void OnSSLCertificateError(net::SocketStream* socket,
+                                     const net::SSLInfo& ssl_info,
+                                     bool fatal) OVERRIDE;
   virtual bool CanGetCookies(net::SocketStream* socket,
                              const GURL& url) OVERRIDE;
   virtual bool CanSetCookie(net::SocketStream* request,
