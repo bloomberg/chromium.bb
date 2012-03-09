@@ -12,18 +12,15 @@
 
 namespace extensions {
 
-WebRequestCustomBindings::WebRequestCustomBindings(
-    int dependency_count,
-    const char** dependencies)
-    : ChromeV8Extension(
-          "extensions/web_request_custom_bindings.js",
-          IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS,
-          dependency_count,
-          dependencies,
-          NULL) {}
+WebRequestCustomBindings::WebRequestCustomBindings()
+    : ChromeV8Extension(NULL) {
+  RouteStaticFunction("GetUniqueSubEventName", &GetUniqueSubEventName);
+}
 
 // Attach an event name to an object.
-static v8::Handle<v8::Value> GetUniqueSubEventName(const v8::Arguments& args) {
+// static
+v8::Handle<v8::Value> WebRequestCustomBindings::GetUniqueSubEventName(
+    const v8::Arguments& args) {
   static int next_event_id = 0;
   DCHECK(args.Length() == 1);
   DCHECK(args[0]->IsString());
@@ -31,14 +28,6 @@ static v8::Handle<v8::Value> GetUniqueSubEventName(const v8::Arguments& args) {
   std::string unique_event_name =
       event_name + "/" + base::IntToString(++next_event_id);
   return v8::String::New(unique_event_name.c_str());
-}
-
-v8::Handle<v8::FunctionTemplate> WebRequestCustomBindings::GetNativeFunction(
-    v8::Handle<v8::String> name) {
-  if (name->Equals(v8::String::New("GetUniqueSubEventName")))
-    return v8::FunctionTemplate::New(GetUniqueSubEventName);
-
-  return ChromeV8Extension::GetNativeFunction(name);
 }
 
 }  // extensions

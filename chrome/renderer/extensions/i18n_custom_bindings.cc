@@ -12,21 +12,9 @@
 
 namespace extensions {
 
-I18NCustomBindings::I18NCustomBindings(
-    int dependency_count, const char** dependencies)
-    : ChromeV8Extension(
-          "extensions/i18n_custom_bindings.js",
-          IDR_I18N_CUSTOM_BINDINGS_JS,
-          dependency_count,
-          dependencies,
-          NULL) {}
-
-v8::Handle<v8::FunctionTemplate> I18NCustomBindings::GetNativeFunction(
-    v8::Handle<v8::String> name) {
-  if (name->Equals(v8::String::New("GetL10nMessage")))
-    return v8::FunctionTemplate::New(GetL10nMessage);
-
-  return ChromeV8Extension::GetNativeFunction(name);
+I18NCustomBindings::I18NCustomBindings()
+    : ChromeV8Extension(NULL) {
+  RouteStaticFunction("GetL10nMessage", &GetL10nMessage);
 }
 
 // static

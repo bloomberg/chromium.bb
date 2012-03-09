@@ -4,13 +4,13 @@
 
 // Custom bindings for the pageActions API.
 
-(function() {
+var pageActionsNatives = requireNative('page_actions');
+var GetCurrentPageActions = pageActionsNatives.GetCurrentPageActions;
 
-native function GetChromeHidden();
-native function GetCurrentPageActions();
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
-GetChromeHidden().registerCustomHook('pageActions',
-                                     function(bindingsAPI, extensionId) {
+chromeHidden.registerCustomHook('pageActions',
+                                function(bindingsAPI, extensionId) {
   var pageActions = GetCurrentPageActions(extensionId);
   var oldStyleEventName = 'pageActions';
   for (var i = 0; i < pageActions.length; ++i) {
@@ -18,5 +18,3 @@ GetChromeHidden().registerCustomHook('pageActions',
     chrome.pageActions[pageActions[i]] = new chrome.Event(oldStyleEventName);
   }
 });
-
-})();

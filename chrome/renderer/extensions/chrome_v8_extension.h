@@ -10,6 +10,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/string_piece.h"
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
+#include "chrome/renderer/native_handler.h"
 #include "v8/include/v8.h"
 
 #include <map>
@@ -26,30 +27,16 @@ class RenderView;
 
 // This is a base class for chrome extension bindings.  Common features that
 // are shared by different modules go here.
-class ChromeV8Extension : public v8::Extension {
+// TODO(koz): Rename this to ExtensionNativeModule.
+class ChromeV8Extension : public NativeHandler {
  public:
   typedef std::set<ChromeV8Extension*> InstanceSet;
   static const InstanceSet& GetAll();
 
-  ChromeV8Extension(const char* name,
-                    int resource_id,
-                    ExtensionDispatcher* extension_dispatcher);
-  ChromeV8Extension(const char* name,
-                    int resource_id,
-                    int dependency_count,
-                    const char** dependencies,
-                    ExtensionDispatcher* extension_dispatcher);
+  explicit ChromeV8Extension(ExtensionDispatcher* extension_dispatcher);
   virtual ~ChromeV8Extension();
 
   ExtensionDispatcher* extension_dispatcher() { return extension_dispatcher_; }
-
-  void ContextWillBeReleased(ChromeV8Context* context);
-
-  // Derived classes should call this at the end of their implementation in
-  // order to expose common native functions, like GetChromeHidden, to the
-  // v8 extension.
-  virtual v8::Handle<v8::FunctionTemplate>
-      GetNativeFunction(v8::Handle<v8::String> name) OVERRIDE;
 
  protected:
   template<class T>
@@ -73,32 +60,12 @@ class ChromeV8Extension : public v8::Extension {
   bool CheckCurrentContextAccessToExtensionAPI(
       const std::string& function_name) const;
 
-  // Create a handler for |context|. If a subclass of ChromeV8Extension wishes
-  // to support handlers, it should override this.
-  virtual ChromeV8ExtensionHandler* CreateHandler(ChromeV8Context* context);
-
   // Returns the chromeHidden object for the current context.
   static v8::Handle<v8::Value> GetChromeHidden(const v8::Arguments& args);
 
   ExtensionDispatcher* extension_dispatcher_;
 
  private:
-  static base::StringPiece GetStringResource(int resource_id);
-
-  // Helper to print from bindings javascript.
-  static v8::Handle<v8::Value> Print(const v8::Arguments& args);
-
-  // Handle a native function call from JavaScript.
-  static v8::Handle<v8::Value> HandleNativeFunction(const v8::Arguments& args);
-
-  // Get the handler instance for |context|, or NULL if no such context exists.
-  ChromeV8ExtensionHandler* GetHandler(ChromeV8Context* context) const;
-
-  // Map of all current handlers.
-  typedef std::map<ChromeV8Context*,
-                   linked_ptr<ChromeV8ExtensionHandler> > HandlerMap;
-  HandlerMap handlers_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeV8Extension);
 };
 

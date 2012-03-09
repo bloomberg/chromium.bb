@@ -11,18 +11,11 @@
 
 namespace {
 
-v8::Handle<v8::String> GetResource(int resourceId) {
-  const ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
-  return v8::String::NewExternal(new StaticV8ExternalAsciiStringResource(
-      resource_bundle.GetRawDataResource(resourceId)));
-}
-
 } // namespace
 
-ModuleSystem::ModuleSystem(const std::map<std::string, std::string>* source_map)
-    : source_map_(source_map) {
-  RouteFunction("Run",
-      base::Bind(&ModuleSystem::Run, base::Unretained(this)));
+ModuleSystem::ModuleSystem(SourceMap* source_map)
+    : source_map_(source_map),
+      natives_enabled_(true) {
   RouteFunction("GetSource",
       base::Bind(&ModuleSystem::GetSource, base::Unretained(this)));
   RouteFunction("GetNative",
@@ -47,12 +40,21 @@ void ModuleSystem::RegisterNativeHandler(const std::string& name,
       linked_ptr<NativeHandler>(native_handler.release());
 }
 
+void ModuleSystem::RunString(const std::string& code, const std::string& name) {
+  v8::HandleScope handle_scope;
+  RunString(v8::String::New(code.c_str()), v8::String::New(name.c_str()));
+}
+
 void ModuleSystem::EnsureRequireLoaded() {
   v8::HandleScope handle_scope;
   if (!require_.IsEmpty())
     return;
   v8::Handle<v8::Object> bootstrap = NewInstance();
-  v8::Handle<v8::Value> result = RunString(GetResource(IDR_REQUIRE_JS));
+  // NOTE v8 takes ownership of the StaticV8ExternalAsciiStringResource.
+  v8::Handle<v8::String> source = v8::String::NewExternal(
+      new StaticV8ExternalAsciiStringResource(GetResource(IDR_REQUIRE_JS)));
+  v8::Handle<v8::Value> result = RunString(source,
+                                           v8::String::New("require.js"));
   v8::Handle<v8::Function> require_factory =
       v8::Handle<v8::Function>::Cast(result);
   CHECK(!require_factory.IsEmpty())
@@ -67,32 +69,38 @@ void ModuleSystem::EnsureRequireLoaded() {
       v8::Handle<v8::Function>::Cast(require));
 }
 
-v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code) {
+v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
+                                              v8::Handle<v8::String> name) {
   v8::HandleScope handle_scope;
-  return handle_scope.Close(v8::Script::New(code)->Run());
-}
-
-v8::Handle<v8::Value> ModuleSystem::Run(const v8::Arguments& args) {
-  CHECK_EQ(1, args.Length());
-  v8::HandleScope handle_scope;
-  return handle_scope.Close(v8::Script::New(args[0]->ToString())->Run());
+  return handle_scope.Close(v8::Script::New(code, name)->Run());
 }
 
 v8::Handle<v8::Value> ModuleSystem::GetSource(const v8::Arguments& args) {
   CHECK_EQ(1, args.Length());
+
+  v8::HandleScope handle_scope;
   std::string module_name = *v8::String::AsciiValue(args[0]->ToString());
-  std::map<std::string, std::string>::const_iterator p =
-      source_map_->find(module_name);
-  if (p == source_map_->end())
+  if (!source_map_->Contains(module_name))
     return v8::Undefined();
-  return v8::String::New(p->second.c_str());
+  return handle_scope.Close(source_map_->GetSource(module_name));
 }
 
 v8::Handle<v8::Value> ModuleSystem::GetNative(const v8::Arguments& args) {
   CHECK_EQ(1, args.Length());
+  if (!natives_enabled_)
+    return ThrowException("Natives disabled");
   std::string native_name = *v8::String::AsciiValue(args[0]->ToString());
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);
   if (i == native_handler_map_.end())
     return v8::Undefined();
   return i->second->NewInstance();
+}
+
+base::StringPiece ModuleSystem::GetResource(int resourceId) {
+  const ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
+  return resource_bundle.GetRawDataResource(resourceId);
+}
+
+v8::Handle<v8::Value> ModuleSystem::ThrowException(const std::string& message) {
+  return v8::ThrowException(v8::String::New(message.c_str()));
 }

@@ -4,11 +4,7 @@
 
 // Custom bindings for the storage API.
 
-(function() {
-
-native function GetChromeHidden();
-
-var chromeHidden = GetChromeHidden();
+var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
 chromeHidden.registerCustomType('StorageArea', function(typesAPI) {
   var sendRequest = typesAPI.sendRequest;
@@ -43,5 +39,3 @@ chromeHidden.registerCustomType('StorageArea', function(typesAPI) {
 
   return StorageArea;
 });
-
-})();

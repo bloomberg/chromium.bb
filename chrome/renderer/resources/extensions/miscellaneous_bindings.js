@@ -7,16 +7,15 @@
 // scripts or background pages.
 // See user_script_slave.cc for script that is loaded by content scripts only.
 
-var chrome = chrome || {};
-(function () {
-  native function CloseChannel(portId, notifyBrowser);
-  native function PortAddRef(portId);
-  native function PortRelease(portId);
-  native function PostMessage(portId, msg);
-  native function GetChromeHidden();
-  native function Print();
+  require('json_schema');
+  require('event_bindings');
+  var miscNatives = requireNative('miscellaneous_bindings');
+  var CloseChannel = miscNatives.CloseChannel;
+  var PortAddRef = miscNatives.PortAddRef;
+  var PortRelease = miscNatives.PortRelease;
+  var PostMessage = miscNatives.PostMessage;
 
-  var chromeHidden = GetChromeHidden();
+  var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
   var manifestVersion;
   var extensionId;
 
@@ -210,4 +209,3 @@ var chrome = chrome || {};
 
     chrome.extension.inIncognitoContext = inIncognitoContext;
   });
-})();

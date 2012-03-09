@@ -13,30 +13,18 @@
 
 namespace extensions {
 
-TTSCustomBindings::TTSCustomBindings(
-    int dependency_count,
-    const char** dependencies)
-    : ChromeV8Extension(
-          "extensions/tts_custom_bindings.js",
-          IDR_TTS_CUSTOM_BINDINGS_JS,
-          dependency_count,
-          dependencies,
-          NULL) {}
+TTSCustomBindings::TTSCustomBindings()
+    : ChromeV8Extension(NULL) {
+  RouteStaticFunction("GetNextTTSEventId", &GetNextTTSEventId);
+}
 
-static v8::Handle<v8::Value> GetNextTTSEventId(const v8::Arguments& args) {
+// static
+v8::Handle<v8::Value> TTSCustomBindings::GetNextTTSEventId(
+    const v8::Arguments& args) {
   // Note: this works because the TTS API only works in the
   // extension process, not content scripts.
   static int next_tts_event_id = 1;
   return v8::Integer::New(next_tts_event_id++);
-}
-
-v8::Handle<v8::FunctionTemplate>
-TTSCustomBindings::GetNativeFunction(
-    v8::Handle<v8::String> name) {
-  if (name->Equals(v8::String::New("GetNextTTSEventId")))
-    return v8::FunctionTemplate::New(GetNextTTSEventId);
-
-  return ChromeV8Extension::GetNativeFunction(name);
 }
 
 }  // extensions
