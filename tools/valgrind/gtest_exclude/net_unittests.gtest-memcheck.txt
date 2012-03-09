@@ -17,3 +17,6 @@ DiskCacheBackendTest.NewEvictionInvalidEntryWithLoad
 DiskCacheBackendTest.NewEvictionTrimInvalidEntry
 DiskCacheBackendTest.NewEvictionTrimInvalidEntry2
 DiskCacheBackendTest.NewEvictionInvalidEntryEnumeration
+# flaky failure on Linux Tests (valgrind)(2), 
+# see http://code.google.com/p/chromium/issues/detail?id=117196
+SSLClientSocketTest.VerifyReturnChainProperlyOrdered
