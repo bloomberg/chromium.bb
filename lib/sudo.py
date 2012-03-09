@@ -74,19 +74,21 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     # First check to see if we're already authed.  If so, then we don't
     # need to prompt the user for their password.
 
-    returncode = subprocess.call('sudo -n true 2> /dev/null && ' +
-                                 'sudo -n true < /dev/null > /dev/null 2>&1',
-                                 shell=True, close_fds=True)
+    ret = cros_build_lib.RunCommand(
+        'sudo -n true 2> /dev/null && ' +
+        'sudo -n true < /dev/null > /dev/null 2>&1',
+        print_cmd=False, shell=True, error_code_ok=True)
 
-    if returncode != 0:
+    if ret.returncode != 0:
       # We need to go interactive and allow sudo to ask for credentials.
 
       cros_build_lib.Info('Launching sudo keepalive process. '
                           'This may ask for your password twice.',
                           flush=True)
 
-      subprocess.check_call('sudo true; sudo true < /dev/null > /dev/null 2>&1',
-                            shell=True, close_fds=True)
+      cros_build_lib.RunCommand(
+          'sudo true; sudo true < /dev/null > /dev/null 2>&1',
+          shell=True, print_cmd=False)
 
     repeat_interval = self._repeat_interval * 60
     cmd = 'sudo -n true && sudo -n true < /dev/null > /dev/null 2>&1'
