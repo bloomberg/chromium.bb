@@ -40,6 +40,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
@@ -124,8 +125,8 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
-  Browser* browser =
-      BrowserList::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  content::WebContents* web_contents = web_ui()->GetWebContents();
+  Browser* browser = BrowserList::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
 
@@ -151,7 +152,11 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     DCHECK(success);
     success = args->GetDouble(3, &height);
     DCHECK(success);
-    gfx::Rect rect(x, y, width, height);
+
+    double zoom =
+        WebKit::WebView::zoomLevelToZoomFactor(web_contents->GetZoomLevel());
+    gfx::Rect rect(x * zoom, y * zoom, width * zoom, height * zoom);
+
     browser->window()->ShowAvatarBubble(web_ui()->GetWebContents(), rect);
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::NTP_AVATAR_BUBBLE);
   }
