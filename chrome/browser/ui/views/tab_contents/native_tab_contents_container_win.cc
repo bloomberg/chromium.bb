@@ -119,7 +119,9 @@ void NativeTabContentsContainerWin::RequestFocus() {
     // browser window.  Because this change of focus was not user requested,
     // don't send it to listeners.
     views::AutoNativeNotificationDisabler local_notification_disabler;
-    GetFocusManager()->ClearFocus();
+    views::FocusManager* focus_manager = GetFocusManager();
+    if (focus_manager)  // NULL in unittests when using TabContentsViewWin.
+      focus_manager->ClearFocus();
   }
   View::RequestFocus();
 }

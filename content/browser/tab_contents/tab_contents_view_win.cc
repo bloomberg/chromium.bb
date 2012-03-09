@@ -65,6 +65,8 @@ TabContentsViewWin::TabContentsViewWin(WebContents* web_contents,
 }
 
 TabContentsViewWin::~TabContentsViewWin() {
+  if (IsWindow(hwnd()))
+    DestroyWindow(hwnd());
 }
 
 void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {

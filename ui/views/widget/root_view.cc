@@ -112,7 +112,9 @@ void RootView::NotifyNativeViewHierarchyChanged(bool attached,
 bool RootView::OnKeyEvent(const KeyEvent& event) {
   bool consumed = false;
 
-  View* v = GetFocusManager()->GetFocusedView();
+  View* v = NULL;
+  if (GetFocusManager())  // NULL in unittests.
+    v = GetFocusManager()->GetFocusedView();
   // Special case to handle right-click context menus triggered by the
   // keyboard.
   if (v && v->enabled() && ((event.key_code() == ui::VKEY_APPS) ||
