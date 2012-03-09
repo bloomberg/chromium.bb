@@ -151,6 +151,7 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // entrypoints in that case).
   bool InitializeModule(const EntryPoints& entry_points);
 
+  // Note: This may be null.
   PluginDelegate::ModuleLifetime* lifetime_delegate_;
 
   // Tracker for completion callbacks, used mainly to ensure that all callbacks

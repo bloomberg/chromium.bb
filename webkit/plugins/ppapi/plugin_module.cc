@@ -478,7 +478,7 @@ PluginModule::~PluginModule() {
 
   // Notifications that we've been deleted should be last.
   HostGlobals::Get()->ModuleDeleted(pp_module_);
-  if (!is_crashed_) {
+  if (!is_crashed_ && lifetime_delegate_) {
     // When the plugin crashes, we immediately tell the lifetime delegate that
     // we're gone, so we don't want to tell it again.
     lifetime_delegate_->PluginModuleDead(this);
@@ -589,7 +589,8 @@ void PluginModule::PluginCrashed() {
        i != instances_.end(); ++i)
     (*i)->InstanceCrashed();
 
-  lifetime_delegate_->PluginModuleDead(this);
+  if (lifetime_delegate_)
+    lifetime_delegate_->PluginModuleDead(this);
 }
 
 void PluginModule::SetReserveInstanceIDCallback(
