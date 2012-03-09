@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,18 +47,18 @@ void CheckURLs(const GURL& server_base_url) {
   url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
       server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_IN_PROGRESS);
   expected_url = base::StringPrintf(
-      "%scontrol?jobid=12345678&status=in_progress", expected_url_base.c_str());
+      "%scontrol?jobid=12345678&status=IN_PROGRESS", expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
       server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_ERROR);
-  expected_url = base::StringPrintf("%scontrol?jobid=12345678&status=error",
+  expected_url = base::StringPrintf("%scontrol?jobid=12345678&status=ERROR",
                                     expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
   url = CloudPrintHelpers::GetUrlForJobStatusUpdate(
       server_base_url, "12345678", cloud_print::PRINT_JOB_STATUS_COMPLETED);
-  expected_url = base::StringPrintf("%scontrol?jobid=12345678&status=done",
+  expected_url = base::StringPrintf("%scontrol?jobid=12345678&status=DONE",
                                     expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
@@ -71,7 +71,7 @@ void CheckURLs(const GURL& server_base_url) {
   url = CloudPrintHelpers::GetUrlForJobStatusUpdate(server_base_url,
                                                     "87654321", details);
   expected_url = base::StringPrintf(
-      "%scontrol?jobid=87654321&status=in_progress&code=2"
+      "%scontrol?jobid=87654321&status=IN_PROGRESS&code=2"
       "&message=Out%%20of%%20Paper&numpages=345&pagesprinted=47",
       expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());

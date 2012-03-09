@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,16 +20,16 @@ std::string StringFromJobStatus(cloud_print::PrintJobStatus status) {
   std::string ret;
   switch (status) {
     case cloud_print::PRINT_JOB_STATUS_IN_PROGRESS:
-      ret = "in_progress";
+      ret = "IN_PROGRESS";
       break;
     case cloud_print::PRINT_JOB_STATUS_ERROR:
-      ret = "error";
+      ret = "ERROR";
       break;
     case cloud_print::PRINT_JOB_STATUS_COMPLETED:
-      ret = "done";
+      ret = "DONE";
       break;
     default:
-      ret = "unknown";
+      ret = "UNKNOWN";
       NOTREACHED();
       break;
   }
