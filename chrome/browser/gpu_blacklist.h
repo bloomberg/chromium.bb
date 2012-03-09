@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,8 +49,7 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
 
   // Loads blacklist information from a json file.
   // If failed, the current GpuBlacklist is un-touched.
-  bool LoadGpuBlacklist(const std::string& browser_version_string,
-                        const std::string& json_context,
+  bool LoadGpuBlacklist(const std::string& json_context,
                         OsFilter os_filter);
 
   // Collects system information and combines them with gpu_info and blacklist
@@ -98,6 +97,7 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
  private:
   friend class GpuBlacklistTest;
   friend struct DefaultSingletonTraits<GpuBlacklist>;
+  FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, ChromeVersionEntry);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, CurrentBlacklistValidation);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownField);
   FRIEND_TEST_ALL_PREFIXES(GpuBlacklistTest, UnknownExceptionField);
@@ -329,6 +329,10 @@ class GpuBlacklist : public content::GpuDataManagerObserver {
   static OsType GetOsType();
 
   GpuBlacklist();
+
+  bool LoadGpuBlacklist(const std::string& browser_version_string,
+                        const std::string& json_context,
+                        OsFilter os_filter);
 
   bool LoadGpuBlacklist(const base::DictionaryValue& parsed_json,
                         OsFilter os_filter);

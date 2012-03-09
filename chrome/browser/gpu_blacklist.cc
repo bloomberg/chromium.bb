@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/sys_info.h"
 #include "base/version.h"
 #include "chrome/browser/gpu_util.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
@@ -747,6 +748,14 @@ GpuBlacklist::GpuBlacklist()
 GpuBlacklist::~GpuBlacklist() {
   Clear();
   GpuDataManager::GetInstance()->RemoveObserver(this);
+}
+
+bool GpuBlacklist::LoadGpuBlacklist(
+    const std::string& json_context, GpuBlacklist::OsFilter os_filter) {
+  chrome::VersionInfo chrome_version_info;
+  std::string chrome_version_string =
+      chrome_version_info.is_valid() ? chrome_version_info.Version() : "0";
+  return LoadGpuBlacklist(chrome_version_string, json_context, os_filter);
 }
 
 bool GpuBlacklist::LoadGpuBlacklist(

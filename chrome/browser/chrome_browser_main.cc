@@ -462,13 +462,9 @@ void InitializeGpuDataManager(const CommandLine& parsed_command_line) {
   const base::StringPiece gpu_blacklist_json(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_GPU_BLACKLIST));
-  chrome::VersionInfo version_info;
-  std::string chrome_version_string =
-      version_info.is_valid() ? version_info.Version() : "0";
   GpuBlacklist* gpu_blacklist = GpuBlacklist::GetInstance();
   bool succeed = gpu_blacklist->LoadGpuBlacklist(
-      chrome_version_string, gpu_blacklist_json.as_string(),
-      GpuBlacklist::kCurrentOsOnly);
+      gpu_blacklist_json.as_string(), GpuBlacklist::kCurrentOsOnly);
   DCHECK(succeed);
   gpu_blacklist->UpdateGpuDataManager();
 }
