@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/views/ash/app_list/app_list_model_builder.h"
 
-#include "base/string_util.h"
 #include "base/i18n/case_conversion.h"
+#include "base/i18n/string_search.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -16,6 +18,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_collator.h"
 
 namespace {
 
@@ -26,16 +29,29 @@ struct BrowserCommandData {
   int icon_id;
 };
 
-// Binary predict to sort app list items alphabetically.
-bool AppPrecedes(const ash::AppListItemModel* a,
-                 const ash::AppListItemModel* b) {
-  return a->title() < b->title();
-}
+// ModelItemSortData provides a string key to sort with
+// l10n_util::StringComparator.
+struct ModelItemSortData {
+  explicit ModelItemSortData(ash::AppListItemModel* item)
+      : item(item),
+        key(base::i18n::ToLower(UTF8ToUTF16(item->title()))) {
+  }
+
+  // Needed by StringComparator<Element> in SortVectorWithStringKey, which uses
+  // this method to get a key to sort.
+  const string16& GetStringKey() const {
+    return key;
+  }
+
+  ash::AppListItemModel* item;
+  string16 key;
+};
 
 // Returns true if given |str| matches |query|. Currently, it returns
 // if |query| is a substr of |str|.
 bool MatchesQuery(const string16& query, const string16& str) {
-  return query.empty() || str.find(query) != string16::npos;
+  return query.empty() ||
+      base::i18n::StringSearchIgnoringCaseAndAccents(query, str);
 }
 
 }  // namespace
@@ -56,9 +72,22 @@ void AppListModelBuilder::Build(const std::string& query) {
   GetExtensionApps(normalized_query, &items);
   GetBrowserCommands(normalized_query, &items);
 
-  std::sort(items.begin(), items.end(), &AppPrecedes);
-  for (Items::const_iterator it = items.begin(); it != items.end(); ++it) {
-    model_->AddItem(*it);
+  SortAndPopulateModel(items);
+}
+
+void AppListModelBuilder::SortAndPopulateModel(const Items& items) {
+  // Sort items case insensitive alphabetically.
+  std::vector<ModelItemSortData> sorted;
+  for (Items::const_iterator it = items.begin(); it != items.end(); ++it)
+    sorted.push_back(ModelItemSortData(*it));
+
+  l10n_util::SortVectorWithStringKey(g_browser_process->GetApplicationLocale(),
+                                     &sorted,
+                                     false /* needs_stable_sort */);
+  for (std::vector<ModelItemSortData>::const_iterator it = sorted.begin();
+       it != sorted.end();
+       ++it) {
+    model_->AddItem(it->item);
   }
 }
 
@@ -74,8 +103,7 @@ void AppListModelBuilder::GetExtensionApps(const string16& query,
   for (ExtensionSet::const_iterator app = extensions->begin();
        app != extensions->end(); ++app) {
     if ((*app)->ShouldDisplayInLauncher() &&
-        MatchesQuery(query,
-                     base::i18n::ToLower(UTF8ToUTF16((*app)->name())))) {
+        MatchesQuery(query, UTF8ToUTF16((*app)->name()))) {
       items->push_back(new ExtensionAppItem(profile_, *app));
     }
   }
@@ -98,7 +126,7 @@ void AppListModelBuilder::GetBrowserCommands(const string16& query,
 
   for (size_t i = 0; i < arraysize(kBrowserCommands); ++i) {
     string16 title = l10n_util::GetStringUTF16(kBrowserCommands[i].title_id);
-    if (MatchesQuery(query, base::i18n::ToLower(title))) {
+    if (MatchesQuery(query, title)) {
       items->push_back(new BrowserCommandItem(browser,
                                               kBrowserCommands[i].command_id,
                                               kBrowserCommands[i].title_id,

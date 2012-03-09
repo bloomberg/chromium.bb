@@ -24,7 +24,9 @@ class AppListModelBuilder {
   typedef std::vector<ash::AppListItemModel*> Items;
 
   FRIEND_TEST_ALL_PREFIXES(AppListModelBuilderTest, GetExtensionApps);
+  FRIEND_TEST_ALL_PREFIXES(AppListModelBuilderTest, SortAndPopulateModel);
 
+  void SortAndPopulateModel(const Items& items);
   void GetExtensionApps(const string16& query, Items* items);
   void GetBrowserCommands(const string16& query, Items* items);
 

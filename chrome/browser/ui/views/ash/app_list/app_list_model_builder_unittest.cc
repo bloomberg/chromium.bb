@@ -10,6 +10,20 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+class TestAppListItemModel : public ash::AppListItemModel {
+ public:
+  explicit TestAppListItemModel(const std::string& title) {
+    SetTitle(title);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestAppListItemModel);
+};
+
+}  // namespace
+
 class AppListModelBuilderTest : public ExtensionServiceTestBase {
  public:
   AppListModelBuilderTest() {}
@@ -42,4 +56,27 @@ TEST_F(AppListModelBuilderTest, Build) {
   EXPECT_EQ("Hosted App", model->GetItem(0)->title());
   EXPECT_EQ("Packaged App 1", model->GetItem(1)->title());
   EXPECT_EQ("Packaged App 2", model->GetItem(2)->title());
+}
+
+TEST_F(AppListModelBuilderTest, SortAndPopulateModel) {
+  const char* kInput[] = {
+    "CB", "Ca", "B", "a",
+  };
+  const char* kExpected[] = {
+    "a", "B", "Ca", "CB",
+  };
+
+  scoped_ptr<ash::AppListModel> model(new ash::AppListModel());
+
+  AppListModelBuilder::Items items;
+  for (size_t i = 0; i < arraysize(kInput); ++i)
+    items.push_back(new TestAppListItemModel(kInput[i]));
+
+  AppListModelBuilder builder(profile_.get(), model.get());
+  builder.SortAndPopulateModel(items);
+
+  EXPECT_EQ(static_cast<int>(arraysize(kExpected)),
+            model->item_count());
+  for (size_t i = 0; i < arraysize(kExpected); ++i)
+    EXPECT_EQ(kExpected[i], model->GetItem(i)->title());
 }
