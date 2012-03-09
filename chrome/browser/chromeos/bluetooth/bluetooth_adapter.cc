@@ -4,157 +4,437 @@
 
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 
-#include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/dbus/bluetooth_adapter_client.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_device_client.h"
+#include "chrome/browser/chromeos/dbus/bluetooth_manager_client.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
-
-namespace {
-
-// Used to ignore whether or not our method calls work, since we were
-// ignoring them before I added callbacks to the methods.
-void EmptyAdapterCallback(const dbus::ObjectPath& object_path,
-                          bool success) {
-}
-
-};
+#include "dbus/object_path.h"
 
 namespace chromeos {
 
-class BluetoothAdapterImpl : public BluetoothAdapter,
-                             public BluetoothAdapterClient::Observer {
- public:
-  explicit BluetoothAdapterImpl(const std::string& id) : id_(id) {
-    DBusThreadManager* dbus_thread_manager = DBusThreadManager::Get();
-    DCHECK(dbus_thread_manager);
-    bluetooth_adapter_client_ =
-        dbus_thread_manager->GetBluetoothAdapterClient();
-    DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->AddObserver(this);
-  }
-
-  virtual ~BluetoothAdapterImpl() {
-    DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->RemoveObserver(this);
-  }
-
-  // BluetoothAdapter override.
-  virtual void AddObserver(BluetoothAdapter::Observer* observer) OVERRIDE {
-    DCHECK(observer);
-    observers_.AddObserver(observer);
-  }
-
-  // BluetoothAdapter override.
-  virtual void RemoveObserver(BluetoothAdapter::Observer* observer) OVERRIDE {
-    DCHECK(observer);
-    observers_.RemoveObserver(observer);
-  }
-
-  // BluetoothAdapter override.
-  virtual const std::string& Id() const OVERRIDE {
-    return id_;
-  }
-
-  // BluetoothAdapter override.
-  virtual void StartDiscovery() OVERRIDE {
-    DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->StartDiscovery(
-        dbus::ObjectPath(id_),
-        base::Bind(&EmptyAdapterCallback));
-  }
-
-  // BluetoothAdapter override.
-  virtual void StopDiscovery() OVERRIDE {
-    DCHECK(bluetooth_adapter_client_);
-    bluetooth_adapter_client_->StopDiscovery(dbus::ObjectPath(id_),
-                                             base::Bind(&EmptyAdapterCallback));
-  }
-
-  // BluetoothAdapterClient::Observer override.
-  virtual void AdapterPropertyChanged(const dbus::ObjectPath& object_path,
-                                      const std::string& property_name)
-      OVERRIDE {
-    if (object_path.value() != id_)
-      return;
-
-    DCHECK(bluetooth_adapter_client_);
-    BluetoothAdapterClient::Properties* properties =
-        bluetooth_adapter_client_->GetProperties(object_path);
-
-    DCHECK(properties);
-    if (property_name != properties->discovering.name())
-      return;
-
-    bool discovering = properties->discovering.value();
-
-    DVLOG(1) << id_ << ": object_path = " << object_path.value()
-            << ", Discovering = " << discovering;
-    if (discovering) {
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DiscoveryStarted(object_path.value()));
-    } else {
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DiscoveryEnded(object_path.value()));
-    }
-  }
-
-  // BluetoothAdapterClient::Observer override.
-  virtual void DeviceFound(const dbus::ObjectPath& object_path,
-                           const std::string& address,
-                           const BluetoothDeviceClient::Properties& properties)
-      OVERRIDE {
-    if (object_path.value() != id_) {
-      return;
-    }
-    // TODO(vlaviano): later, we will want to persist the device.
-    scoped_ptr<BluetoothDevice> device(
-        BluetoothDevice::Create(properties.address.value(),
-                                properties.bluetooth_class.value(),
-                                properties.icon.value(),
-                                properties.name.value(),
-                                properties.paired.value(),
-                                properties.connected.value()));
-    if (device.get() != NULL) {
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceFound(object_path.value(), device.get()));
-    } else {
-      LOG(WARNING) << "Could not create BluetoothDevice from properties.";
-    }
-  }
-
-  // BluetoothAdapterClient::Observer override.
-  virtual void DeviceDisappeared(const dbus::ObjectPath& object_path,
-                                 const std::string& address) OVERRIDE {
-    if (object_path.value() != id_) {
-      return;
-    }
-    // For now, we don't propagate this event to our observers.
-  }
-
- private:
-  // Owned by the dbus thread manager.
-  BluetoothAdapterClient* bluetooth_adapter_client_;
-
-  ObserverList<BluetoothAdapter::Observer> observers_;
-
-  // An opaque identifier that we provide to clients.
-  // We use the dbus object path for the adapter as the id.
-  const std::string id_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterImpl);
-};
-
-BluetoothAdapter::BluetoothAdapter() {
+BluetoothAdapter::BluetoothAdapter() : weak_ptr_factory_(this),
+                                       track_default_(false),
+                                       powered_(false),
+                                       discovering_(false) {
+  DBusThreadManager::Get()->GetBluetoothManagerClient()->
+      AddObserver(this);
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      AddObserver(this);
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      AddObserver(this);
 }
 
 BluetoothAdapter::~BluetoothAdapter() {
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      RemoveObserver(this);
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      RemoveObserver(this);
+  DBusThreadManager::Get()->GetBluetoothManagerClient()->
+      RemoveObserver(this);
+
+  STLDeleteValues(&devices_);
+}
+
+void BluetoothAdapter::AddObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void BluetoothAdapter::RemoveObserver(Observer* observer) {
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
+void BluetoothAdapter::DefaultAdapter() {
+  DVLOG(1) << "Tracking default adapter";
+  track_default_ = true;
+  DBusThreadManager::Get()->GetBluetoothManagerClient()->
+      DefaultAdapter(base::Bind(&BluetoothAdapter::AdapterCallback,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothAdapter::FindAdapter(const std::string& address) {
+  DVLOG(1) << "Using adapter " << address;
+  track_default_ = false;
+  DBusThreadManager::Get()->GetBluetoothManagerClient()->
+      FindAdapter(address,
+                  base::Bind(&BluetoothAdapter::AdapterCallback,
+                             weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BluetoothAdapter::AdapterCallback(const dbus::ObjectPath& adapter_path,
+                                       bool success) {
+  if (success) {
+    ChangeAdapter(adapter_path);
+  } else if (!object_path_.value().empty()) {
+    RemoveAdapter();
+  }
+}
+
+void BluetoothAdapter::DefaultAdapterChanged(
+    const dbus::ObjectPath& adapter_path) {
+  if (track_default_)
+    ChangeAdapter(adapter_path);
+}
+
+void BluetoothAdapter::AdapterRemoved(const dbus::ObjectPath& adapter_path) {
+  if (adapter_path == object_path_)
+    RemoveAdapter();
+}
+
+void BluetoothAdapter::ChangeAdapter(const dbus::ObjectPath& adapter_path) {
+  if (adapter_path == object_path_)
+    return;
+
+  // Determine whether this is a change of adapter or gaining an adapter,
+  // remember for later so we can send the right notification.
+  bool was_present = false;
+  if (object_path_.value().empty()) {
+    DVLOG(1) << "Adapter path initialized to " << adapter_path.value();
+    was_present = false;
+  } else {
+    DVLOG(1) << "Adapter path changed from " << object_path_.value()
+             << " to " << adapter_path.value();
+    was_present = true;
+
+    // Invalidate the devices list, since the property update does not
+    // remove them.
+    ClearDevices();
+  }
+
+  object_path_ = adapter_path;
+
+  // Update properties to their new values.
+  BluetoothAdapterClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      GetProperties(object_path_);
+
+  PoweredChanged(properties->powered.value());
+  DiscoveringChanged(properties->discovering.value());
+  DevicesChanged(properties->devices.value());
+
+  // Notify observers if we did not have an adapter before, the case of
+  // moving from one to another is hidden from layers above.
+  if (!was_present) {
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      AdapterPresentChanged(this, true));
+  }
+}
+
+void BluetoothAdapter::RemoveAdapter() {
+  DVLOG(1) << "Adapter lost.";
+  PoweredChanged(false);
+  DiscoveringChanged(false);
+  ClearDevices();
+
+  object_path_ = dbus::ObjectPath("");
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    AdapterPresentChanged(this, false));
+}
+
+bool BluetoothAdapter::IsPresent() const {
+  return !object_path_.value().empty();
+}
+
+bool BluetoothAdapter::IsPowered() const {
+  return powered_;
+}
+
+void BluetoothAdapter::SetPowered(bool powered, ErrorCallback callback) {
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      GetProperties(object_path_)->powered.Set(
+          powered,
+          base::Bind(&BluetoothAdapter::OnSetPowered,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback));
+}
+
+void BluetoothAdapter::OnSetPowered(ErrorCallback callback, bool success) {
+  if (!success)
+    callback.Run();
+}
+
+void BluetoothAdapter::PoweredChanged(bool powered) {
+  if (powered == powered_)
+    return;
+
+  powered_ = powered;
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    AdapterPoweredChanged(this, powered_));
+}
+
+bool BluetoothAdapter::IsDiscovering() const {
+  return discovering_;
+}
+
+void BluetoothAdapter::SetDiscovering(bool discovering,
+                                      ErrorCallback callback) {
+  if (discovering) {
+    DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+        StartDiscovery(object_path_,
+                       base::Bind(&BluetoothAdapter::OnStartDiscovery,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  } else {
+    DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+        StopDiscovery(object_path_,
+                      base::Bind(&BluetoothAdapter::OnStopDiscovery,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 callback));
+  }
+}
+
+void BluetoothAdapter::OnStartDiscovery(ErrorCallback callback,
+                                        const dbus::ObjectPath& adapter_path,
+                                        bool success) {
+  if (success) {
+    DVLOG(1) << object_path_.value() << ": started discovery.";
+
+    // Clear devices found in previous discovery attempts
+    ClearDiscoveredDevices();
+  } else {
+    // TODO(keybuk): in future, don't run the callback if the error was just
+    // that we were already discovering.
+    callback.Run();
+  }
+}
+
+void BluetoothAdapter::OnStopDiscovery(ErrorCallback callback,
+                                       const dbus::ObjectPath& adapter_path,
+                                       bool success) {
+  if (success) {
+    DVLOG(1) << object_path_.value() << ": stopped discovery.";
+
+    // Leave found devices available for perusing.
+  } else {
+    // TODO(keybuk): in future, don't run the callback if the error was just
+    // that we weren't discovering.
+    callback.Run();
+  }
+}
+
+void BluetoothAdapter::DiscoveringChanged(bool discovering) {
+  if (discovering == discovering_)
+    return;
+
+  discovering_ = discovering;
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    AdapterDiscoveringChanged(this, discovering_));
+}
+
+void BluetoothAdapter::AdapterPropertyChanged(
+    const dbus::ObjectPath& adapter_path,
+    const std::string& property_name) {
+  if (adapter_path != object_path_)
+    return;
+
+  BluetoothAdapterClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      GetProperties(object_path_);
+
+  if (property_name == properties->powered.name()) {
+    PoweredChanged(properties->powered.value());
+
+  } else if (property_name == properties->discovering.name()) {
+    DiscoveringChanged(properties->discovering.value());
+
+  } else if (property_name == properties->devices.name()) {
+    DevicesChanged(properties->devices.value());
+
+  }
+}
+
+void BluetoothAdapter::DevicePropertyChanged(
+    const dbus::ObjectPath& device_path,
+    const std::string& property_name) {
+  UpdateDevice(device_path);
+}
+
+void BluetoothAdapter::UpdateDevice(const dbus::ObjectPath& device_path) {
+  BluetoothDeviceClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      GetProperties(device_path);
+
+  // When we first see a device, we may not know the address yet and need to
+  // wait for the DevicePropertyChanged signal before adding the device.
+  const std::string address = properties->address.value();
+  if (address.empty())
+    return;
+
+  // If the device is already known this may be just an update to properties,
+  // or it may be the device going from discovered to connected and gaining
+  // an object path. Update the existing object and notify observers.
+  DevicesMap::iterator iter = devices_.find(address);
+  if (iter != devices_.end()){
+    BluetoothDevice* device = iter->second;
+
+    if (device->WasDiscovered())
+      device->SetObjectPath(device_path);
+    device->Update(properties, true);
+
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceChanged(this, device));
+    return;
+  }
+
+  // Device has an address and was not previously known, add to the map
+  // and notify observers.
+  BluetoothDevice* device = BluetoothDevice::CreateBound(device_path,
+                                                         properties);
+  devices_[address] = device;
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    DeviceAdded(this, device));
+}
+
+BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
+  DeviceList devices;
+  for (DevicesMap::iterator iter = devices_.begin();
+       iter != devices_.end(); ++iter)
+    devices.push_back(iter->second);
+
+  return devices;
+}
+
+void BluetoothAdapter::ClearDevices() {
+  for (DevicesMap::iterator iter = devices_.begin();
+       iter != devices_.end(); ++iter) {
+    BluetoothDevice* device = iter->second;
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceRemoved(this, device));
+
+    delete device;
+  }
+  devices_.clear();
+}
+
+void BluetoothAdapter::DeviceCreated(const dbus::ObjectPath& adapter_path,
+                                     const dbus::ObjectPath& device_path) {
+  if (adapter_path != object_path_)
+    return;
+
+  UpdateDevice(device_path);
+}
+
+void BluetoothAdapter::DeviceRemoved(const dbus::ObjectPath& adapter_path,
+                                     const dbus::ObjectPath& device_path) {
+  if (adapter_path != object_path_)
+    return;
+
+  const std::string address = DBusThreadManager::Get()->
+      GetBluetoothDeviceClient()->GetProperties(device_path)->address.value();
+
+  DevicesMap::iterator iter = devices_.find(address);
+  if (iter == devices_.end())
+    return;
+
+  BluetoothDevice* device = iter->second;
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    DeviceRemoved(this, device));
+
+  delete device;
+  devices_.erase(iter);
+}
+
+void BluetoothAdapter::DevicesChanged(
+    const std::vector<dbus::ObjectPath>& devices) {
+  for (std::vector<dbus::ObjectPath>::const_iterator iter =
+           devices.begin(); iter != devices.end(); ++iter)
+    UpdateDevice(*iter);
+}
+
+void BluetoothAdapter::ClearDiscoveredDevices() {
+  DevicesMap::iterator iter = devices_.begin();
+  while (iter != devices_.end()) {
+    BluetoothDevice* device = iter->second;
+    DevicesMap::iterator temp = iter;
+    ++iter;
+
+    if (device->WasDiscovered()) {
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceRemoved(this, device));
+
+      delete device;
+      devices_.erase(temp);
+    }
+  }
+}
+
+void BluetoothAdapter::DeviceFound(
+    const dbus::ObjectPath& adapter_path, const std::string& address,
+    const BluetoothDeviceClient::Properties& properties) {
+  if (adapter_path != object_path_)
+    return;
+
+  // DeviceFound can also be called to indicate that a device we've
+  // paired with or previously connected to is now visible to the adapter,
+  // so check it's not already in the list and just update if it is.
+  BluetoothDevice* device;
+  DevicesMap::iterator iter = devices_.find(address);
+  if (iter == devices_.end()) {
+    device = BluetoothDevice::CreateUnbound(&properties);
+    devices_[address] = device;
+
+    if (device->IsSupported())
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceAdded(this, device));
+  } else {
+    device = iter->second;
+    device->Update(&properties, false);
+
+    if (device->IsSupported() || !device->WasDiscovered())
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceChanged(this, device));
+  }
+}
+
+void BluetoothAdapter::DeviceDisappeared(const dbus::ObjectPath& adapter_path,
+                                         const std::string& address) {
+  if (adapter_path != object_path_)
+    return;
+
+  DevicesMap::iterator iter = devices_.find(address);
+  if (iter == devices_.end())
+    return;
+
+  BluetoothDevice* device = iter->second;
+
+  // DeviceDisappeared can also be called to indicate that a device we've
+  // paired with or previously connected to is no longer visible to the
+  // adapter, so only delete discovered devices.
+  if (device->WasDiscovered()) {
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceRemoved(this, device));
+
+    delete device;
+    devices_.erase(iter);
+  } else {
+    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                      DeviceChanged(this, device));
+  }
+}
+
+
+// static
+BluetoothAdapter* BluetoothAdapter::CreateDefaultAdapter() {
+  BluetoothAdapter* adapter = new BluetoothAdapter;
+  adapter->DefaultAdapter();
+  return adapter;
 }
 
 // static
-BluetoothAdapter* BluetoothAdapter::Create(const std::string& id) {
-  return new BluetoothAdapterImpl(id);
+BluetoothAdapter* BluetoothAdapter::Create(const std::string& address) {
+  BluetoothAdapter* adapter = new BluetoothAdapter;
+  adapter->FindAdapter(address);
+  return adapter;
 }
 
 }  // namespace chromeos
