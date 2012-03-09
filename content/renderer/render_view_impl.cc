@@ -4040,8 +4040,10 @@ void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
 
 void RenderViewImpl::OnSetWebUIProperty(const std::string& name,
                                         const std::string& value) {
-  DCHECK(enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI);
-  GetWebUIBindings()->SetProperty(name, value);
+  if (enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI)
+    GetWebUIBindings()->SetProperty(name, value);
+  else
+    NOTREACHED() << "WebUI bindings not enabled.";
 }
 
 void RenderViewImpl::OnDragTargetDragEnter(const WebDropData& drop_data,

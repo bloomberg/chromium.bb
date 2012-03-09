@@ -205,8 +205,7 @@ void MockRenderProcessHost::SurfaceUpdated(int32 surface_id) {
 
 content::RenderProcessHost::listeners_iterator
     MockRenderProcessHost::ListenersIterator() {
-  IDMap<IPC::Channel::Listener> listeners;
-  return listeners_iterator(&listeners);
+  return listeners_iterator(&listeners_);
 }
 
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {

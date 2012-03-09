@@ -24,6 +24,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_browser_thread.h"
+#include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -261,6 +262,10 @@ class TabContentsTest : public RenderViewHostTestHarness {
   }
 
   virtual void SetUp() {
+    // These tests treat tabcontentstest as a privileged WebUI scheme.
+    // We must register it similarly to kChromeUIScheme.
+    url_util::AddStandardScheme("tabcontentstest");
+
     old_browser_client_ = content::GetContentClient()->browser();
     content::GetContentClient()->set_browser(&browser_client_);
     RenderViewHostTestHarness::SetUp();
