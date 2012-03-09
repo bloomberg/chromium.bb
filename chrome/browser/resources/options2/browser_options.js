@@ -45,6 +45,8 @@ cr.define('options', function() {
 
       $('advanced-settings-expander').onclick =
           this.toggleAdvancedSettings_.bind(this);
+      $('advanced-settings').addEventListener('webkitTransitionEnd',
+          this.advancedSettingsTransitionEnded_.bind(this));
 
       // Sync (Sign in) section.
       this.updateSyncState_(templateData.syncData);
@@ -437,31 +439,63 @@ cr.define('options', function() {
      * @private
      */
     toggleAdvancedSettings_: function() {
-      if ($('advanced-settings').style.height == '')
-        this.showAdvancedSettings_();
-      else
-        this.hideAdvancedSettings_();
+      var advancedSettings = $('advanced-settings');
+      var advancedSettingsContainer = $('advanced-settings-container');
+
+      if (advancedSettings.style.height == '') {
+        // Unhide the advanced settings section.
+        advancedSettings.hidden = false;
+
+        // Delay starting the transition so that hidden change will be
+        // processed.
+        setTimeout(function() {
+          // Reveal the advanced settings section using a WebKit transition.
+          advancedSettings.classList.add('sliding');
+          advancedSettings.style.height =
+              advancedSettingsContainer.offsetHeight + 'px';
+        }, 0);
+      } else {
+        // Before we start hiding the advanced settings section, we need to set
+        // the height to a pixel value.
+        advancedSettings.style.height =
+            advancedSettingsContainer.offsetHeight + 'px';
+
+        // Delay starting the transition so that the height change will be
+        // processed.
+        setTimeout(function() {
+          // Hide the advanced settings section using a WebKit transition.
+          advancedSettings.classList.add('sliding');
+          advancedSettings.style.height = '';
+        }, 0);
+      }
     },
 
     /**
-     * Show advanced settings.
+     * Called after the advanced settings transition has ended.
      * @private
      */
-    showAdvancedSettings_: function() {
-      $('advanced-settings').style.height =
-          $('advanced-settings-container').offsetHeight + 20 + 'px';
-      $('advanced-settings-expander').textContent =
-          localStrings.getString('hideAdvancedSettings');
-    },
+    advancedSettingsTransitionEnded_: function(event) {
+      if (event.propertyName != 'height')
+        return;
 
-    /**
-     * Hide advanced settings.
-     * @private
-     */
-    hideAdvancedSettings_: function() {
-      $('advanced-settings').style.height = '';
-      $('advanced-settings-expander').textContent =
-          localStrings.getString('showAdvancedSettings');
+      var expander = $('advanced-settings-expander');
+      var advancedSettings = $('advanced-settings');
+
+      // Disable WebKit transitions.
+      advancedSettings.classList.remove('sliding');
+
+      if (advancedSettings.style.height == '') {
+        // Hide the advanced settings content so it can't get tab focus.
+        advancedSettings.hidden = true;
+
+        expander.textContent = localStrings.getString('showAdvancedSettings');
+      } else {
+        // Set the advanced section height to 'auto' to allow for size changes
+        // (due to font change or dynamic content).
+        advancedSettings.style.height = 'auto';
+
+        expander.textContent = localStrings.getString('hideAdvancedSettings');
+      }
     },
 
     /**

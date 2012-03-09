@@ -328,7 +328,11 @@ input[type='range'] {
 }
 
 #advanced-settings {
-  -webkit-transition: height 500ms;
   height: 0;
+  margin-top: 8px;
   overflow: hidden;
+}
+
+#advanced-settings.sliding {
+  -webkit-transition: height 500ms linear;
 }
