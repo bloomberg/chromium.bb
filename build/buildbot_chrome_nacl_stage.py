@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -202,7 +202,7 @@ def BuildAndTest(options):
     env['VS80COMNTOOLS'] = 'c:\\Program Files\\Microsoft Visual Studio 8.0\\Common7\\Tools\\'
 
   # Run nacl/chrome integration tests.
-  cmd = scons + ['-k', 'platform=x86-%d' % bits,
+  cmd = scons + ['--verbose', '-k', 'platform=x86-%d' % bits,
       'disable_dynamic_plugin_loading=1',
       'chrome_browser_path=%s' % chrome_filename,
   ]
