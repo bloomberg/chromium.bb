@@ -1,0 +1,101 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file contains mocks for classes in gdata.h
+
+#ifndef CHROME_BROWSER_CHROMEOS_GDATA_GDATA_MOCK_H_
+#define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_MOCK_H_
+#pragma once
+
+#include "base/platform_file.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+class FilePath;
+
+namespace gdata {
+
+class MockDocumentsService : public DocumentsServiceInterface {
+ public:
+  // DocumentsService is usually owned and created by GDataFileSystem.
+  MockDocumentsService();
+  virtual ~MockDocumentsService();
+
+  // DocumentServiceInterface overrides.
+  MOCK_METHOD1(Initialize, void(Profile*));
+  MOCK_METHOD0(CancelAll, void(void));
+  MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
+  MOCK_METHOD2(GetDocuments, void(const GURL& feed_url,
+                                  const GetDataCallback& callback));
+  MOCK_METHOD2(DeleteDocument, void(const GURL& document_url,
+                                    const EntryActionCallback& callback));
+  MOCK_METHOD3(DownloadDocument, void(const GURL& content_url,
+                                      DocumentExportFormat format,
+                                      const DownloadActionCallback& callback));
+  MOCK_METHOD3(CreateDirectory,
+               void(const GURL& parent_content_url,
+                    const FilePath::StringType& directory_name,
+                    const GetDataCallback& callback));
+  MOCK_METHOD2(DownloadFile, void(const GURL& content_url,
+                                  const DownloadActionCallback& callback));
+  MOCK_METHOD2(InitiateUpload,
+               void(const InitiateUploadParams& upload_file_info,
+                    const InitiateUploadCallback& callback));
+  MOCK_METHOD2(ResumeUpload, void(const ResumeUploadParams& upload_file_info,
+                                  const ResumeUploadCallback& callback));
+
+  // Helper stub methods for functions which take callbacks, so that
+  // the callbacks get called with testable results.
+
+  // Will call |callback| with HTTP_SUCCESS and the token "test_auth_token"
+  // as the token.
+  void AuthenticateStub(const AuthStatusCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS and a StringValue with the current
+  // value of |feed_data_|.
+  void GetDocumentsStub(const GURL& feed_url,
+                        const GetDataCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS and the |document_url|.
+  void DeleteDocumentStub(const GURL& document_url,
+                          const EntryActionCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
+  // portion of the URL as the temporary file path.
+  void DownloadDocumentStub(const GURL& content_url,
+                            DocumentExportFormat format,
+                            const DownloadActionCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS and the current value of
+  // |directory_data_|.
+  void CreateDirectoryStub(const GURL& parent_content_url,
+                           const FilePath::StringType& directory_name,
+                           const GetDataCallback& callback);
+
+  // Will call |callback| with HTTP_SUCCESS, the given URL, and the host+path
+  // portion of the URL as the temporary file path.
+  void DownloadFileStub(const GURL& content_url,
+                        const DownloadActionCallback& callback);
+
+  void set_feed_data(base::Value* document_data) {
+    feed_data_.reset(document_data);
+  }
+
+  void set_directory_data(base::Value* document_data) {
+    directory_data_.reset(document_data);
+  }
+
+ private:
+  // Feed data to be returned from GetDocuments.
+  scoped_ptr<base::Value> feed_data_;
+
+  // Feed data to be returned from CreateDirectory.
+  scoped_ptr<base::Value> directory_data_;
+};
+
+}  // namespace gdata
+
+#endif  // CHROME_BROWSER_CHROMEOS_GDATA_GDATA_MOCK_H_
