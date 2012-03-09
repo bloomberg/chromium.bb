@@ -1154,3 +1154,8 @@ UNINITIALIZED READ
 name=http://crbug.com/116277
 *!MOZ_Z_deflate
 *!zipCloseFileInZipRaw64
+
+LEAK
+name=http://crbug.com/115296
+...
+*!ModuleSystemTest*
