@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-. /usr/lib/shflags
+. /usr/share/misc/shflags
 
 DEFINE_string out "testlog.txt" "Output log from replay"
 DEFINE_string only_honor "Tap Enable,Sensitivity" \
