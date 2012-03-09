@@ -2453,10 +2453,18 @@
         }],
         ['OS=="android"', {
           'sources!': [
+            'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/shell_integration_unittest.cc',
+            'browser/ui/window_sizer_unittest.cc',
           ],
           'sources/': [
+            ['exclude', '^browser/printing/'],
             ['exclude', '^browser/themes/'],
+            ['exclude', '^browser/ui/panels'],
+            ['exclude', '^browser/ui/tabs/'],
+            ['exclude', '^browser/ui/toolbar/'],
+            ['exclude', '^browser/ui/webui/options/'],
+            ['exclude', '^browser/ui/webui/print_preview/'],
           ],
         }],
         ['enable_plugin_installation==0', {
