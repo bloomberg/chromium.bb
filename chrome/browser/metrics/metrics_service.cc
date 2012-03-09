@@ -163,6 +163,7 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
+#include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/network_stats.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -649,11 +650,14 @@ void MetricsService::InitializeMetricsState() {
   server_url_xml_ = ASCIIToUTF16(kServerUrlXml);
   server_url_proto_ = ASCIIToUTF16(kServerUrlProto);
   network_stats_server_ = "chrome.googleechotest.com";
+  // TODO(simonjam): Figure out where this will be hosted.
+  http_pipelining_test_server_ = "";
 #else
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   server_url_xml_ = dist->GetStatsServerURL();
   server_url_proto_ = ASCIIToUTF16(kServerUrlProto);
   network_stats_server_ = dist->GetNetworkStatsServer();
+  http_pipelining_test_server_ = dist->GetHttpPipeliningTestServer();
 #endif
 
   PrefService* pref = g_browser_process->local_state();
@@ -1256,8 +1260,11 @@ void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
                              log_manager_.has_unsent_logs());
 
   // Collect network stats if UMA upload succeeded.
-  if (server_is_healthy && io_thread_)
+  if (server_is_healthy && io_thread_) {
     chrome_browser_net::CollectNetworkStats(network_stats_server_, io_thread_);
+    chrome_browser_net::CollectPipeliningCapabilityStatsOnUIThread(
+        http_pipelining_test_server_, io_thread_);
+  }
 
   // Reset the cached response data.
   response_code_ = content::URLFetcher::RESPONSE_CODE_INVALID;

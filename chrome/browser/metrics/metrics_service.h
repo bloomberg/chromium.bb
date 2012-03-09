@@ -362,6 +362,9 @@ class MetricsService : public content::NotificationObserver,
   // The TCP/UDP echo server to collect network connectivity stats.
   std::string network_stats_server_;
 
+  // The HTTP pipelining test server.
+  std::string http_pipelining_test_server_;
+
   // The IOThread for accessing global HostResolver to resolve
   // network_stats_server_ host. |io_thread_| is accessed on IO thread and it is
   // safe to access it on IO thread.

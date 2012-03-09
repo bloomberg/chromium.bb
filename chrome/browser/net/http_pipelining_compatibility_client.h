@@ -15,6 +15,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
+class IOThread;
+
 namespace chrome_browser_net {
 
 // Class for performing a background test of users' Internet connections.
@@ -151,6 +153,9 @@ HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
     const std::string& response);
 
 }  // namespace internal
+
+void CollectPipeliningCapabilityStatsOnUIThread(
+    const std::string& pipeline_test_server, IOThread* io_thread);
 
 }  // namespace chrome_browser_net
 

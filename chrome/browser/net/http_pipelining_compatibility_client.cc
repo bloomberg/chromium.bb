@@ -4,16 +4,24 @@
 
 #include "chrome/browser/net/http_pipelining_compatibility_client.h"
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/io_thread.h"
+#include "chrome/common/chrome_version_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
+#include "net/base/network_change_notifier.h"
 #include "net/disk_cache/histogram_macros.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_version.h"
+#include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace chrome_browser_net {
 
@@ -199,7 +207,8 @@ void HttpPipeliningCompatibilityClient::Request::DoReadFinished() {
 }
 
 void HttpPipeliningCompatibilityClient::Request::Finished(Status result) {
-  const net::URLRequestStatus& status = request_->status();
+  const net::URLRequestStatus status = request_->status();
+  request_.reset();
   if (status.status() == net::URLRequestStatus::FAILED) {
     // Network errors trump all other status codes, because network errors can
     // be detected by the network stack even with real content. If we determine
@@ -210,7 +219,7 @@ void HttpPipeliningCompatibilityClient::Request::Finished(Status result) {
   } else {
     client_->OnRequestFinished(request_id_, result);
   }
-  request_.reset();
+  // WARNING: We may be deleted at this point.
 }
 
 HttpPipeliningCompatibilityClient::StatsRequest::StatsRequest(
@@ -260,7 +269,7 @@ HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
     }
   }
 
-  UMA_HISTOGRAM_BOOLEAN("NetConnectivity.Pipeline.HTTP1.1",
+  UMA_HISTOGRAM_BOOLEAN("NetConnectivity.Pipeline.AllHTTP11",
                         were_all_requests_http_1_1);
   UMA_HISTOGRAM_ENUMERATION("NetConnectivity.Pipeline.Depth",
                             max_pipeline_depth, 6);
@@ -269,5 +278,98 @@ HttpPipeliningCompatibilityClient::Status ProcessStatsResponse(
 }
 
 }  // namespace internal
+
+namespace {
+
+void DeleteClient(HttpPipeliningCompatibilityClient* client, int rv) {
+  delete client;
+}
+
+void CollectPipeliningCapabilityStatsOnIOThread(
+    const std::string& pipeline_test_server,
+    net::URLRequestContextGetter* url_request_context_getter) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  net::URLRequestContext* url_request_context =
+      url_request_context_getter->GetURLRequestContext();
+  if (!url_request_context->proxy_service()->config().proxy_rules().empty()) {
+    // Pipelining with explicitly configured proxies is disabled for now.
+    return;
+  }
+
+  const base::FieldTrial::Probability kDivisor = 100;
+  base::FieldTrial::Probability probability_per_group = 0;
+
+  const char* kTrialName = "HttpPipeliningCompatibility";
+  base::FieldTrial* trial = base::FieldTrialList::Find(kTrialName);
+  if (trial) {
+    return;
+  }
+  // After October 30, 2012 builds, it will always be in default group
+  // (disable_network_stats).
+  trial = new base::FieldTrial(kTrialName, kDivisor,
+                               "disable_test", 2012, 10, 30);
+
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    // TODO(simonjam): Enable this: probability_per_group = 1;
+  }
+
+  int collect_stats_group = trial->AppendGroup("enable_test",
+                                               probability_per_group);
+  if (trial->group() != collect_stats_group) {
+    return;
+  }
+
+  std::vector<HttpPipeliningCompatibilityClient::RequestInfo> requests;
+
+  HttpPipeliningCompatibilityClient::RequestInfo info1;
+  info1.filename = "alphabet.txt";
+  info1.expected_response = "abcdefghijklmnopqrstuvwxyz";
+  requests.push_back(info1);
+
+  HttpPipeliningCompatibilityClient::RequestInfo info2;
+  info2.filename = "reverse.txt";
+  info2.expected_response = "zyxwvutsrqponmlkjihgfedcba";
+  requests.push_back(info2);
+
+  HttpPipeliningCompatibilityClient::RequestInfo info3;
+  info3.filename = "cached.txt";
+  info3.expected_response = "azbycxdwevfugthsirjqkplomn";
+  requests.push_back(info3);
+
+  HttpPipeliningCompatibilityClient::RequestInfo info4;
+  info4.filename = "chunked.txt";
+  info4.expected_response = "chunkedencodingisfun";
+  requests.push_back(info4);
+
+  HttpPipeliningCompatibilityClient::RequestInfo info5;
+  info5.filename = "cached.txt";
+  info5.expected_response = "azbycxdwevfugthsirjqkplomn";
+  requests.push_back(info5);
+
+  HttpPipeliningCompatibilityClient* client =
+      new HttpPipeliningCompatibilityClient;
+  client->Start(pipeline_test_server, requests, true,
+                base::Bind(&DeleteClient, client),
+                url_request_context_getter->GetURLRequestContext());
+}
+
+}  // anonymous namespace
+
+void CollectPipeliningCapabilityStatsOnUIThread(
+    const std::string& pipeline_test_server, IOThread* io_thread) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (pipeline_test_server.empty())
+    return;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&CollectPipeliningCapabilityStatsOnIOThread,
+                 pipeline_test_server,
+                 make_scoped_refptr(
+                     io_thread->system_url_request_context_getter())));
+}
 
 }  // namespace chrome_browser_net

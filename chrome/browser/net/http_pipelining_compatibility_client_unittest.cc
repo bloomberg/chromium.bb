@@ -27,7 +27,7 @@ namespace {
 
 static const char* const kHistogramNames[] = {
   "NetConnectivity.Pipeline.Depth",
-  "NetConnectivity.Pipeline.HTTP1.1",
+  "NetConnectivity.Pipeline.AllHTTP11",
   "NetConnectivity.Pipeline.Success",
   "NetConnectivity.Pipeline.0.NetworkError",
   "NetConnectivity.Pipeline.0.ResponseCode",
@@ -103,7 +103,7 @@ class HttpPipeliningCompatibilityClientTest : public testing::Test {
         break;
 
       case FIELD_HTTP_1_1:
-        name = "NetConnectivity.Pipeline.HTTP1.1";
+        name = "NetConnectivity.Pipeline.AllHTTP11";
         break;
 
       case FIELD_SUCCESS:

@@ -193,6 +193,10 @@ std::string BrowserDistribution::GetNetworkStatsServer() const {
   return "";
 }
 
+std::string BrowserDistribution::GetHttpPipeliningTestServer() const {
+  return "";
+}
+
 std::wstring BrowserDistribution::GetDistributionData(HKEY root_key) {
   return L"";
 }

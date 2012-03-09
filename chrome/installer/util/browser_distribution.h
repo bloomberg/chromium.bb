@@ -96,6 +96,8 @@ class BrowserDistribution {
 
   virtual std::string GetNetworkStatsServer() const;
 
+  virtual std::string GetHttpPipeliningTestServer() const;
+
 #if defined(OS_WIN)
   virtual std::wstring GetDistributionData(HKEY root_key);
 #endif
