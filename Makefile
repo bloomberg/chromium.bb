@@ -120,12 +120,14 @@ $(OBJDIR)/%.o : src/%.cc
 	$(CXX) $(CXXFLAGS) -MD -c -o $@ $<
 	@mv $(@:$.o=$.d) $(DEPDIR)
 
+LIBDIR = /usr/lib
+
 install: $(SONAME)
 	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER) install
-	install -D -m 0644 $(SONAME) \
-		$(DESTDIR)/usr/lib/$(SONAME:$(OBJDIR)/%=%)
+	install -D -m 0755 $(SONAME) \
+		$(DESTDIR)$(LIBDIR)/$(SONAME:$(OBJDIR)/%=%)
 	ln -s $(SONAME:$(OBJDIR)/%=%) \
-		$(DESTDIR)/usr/lib/$(SONAME:$(OBJDIR)/%.0=%)
+		$(DESTDIR)$(LIBDIR)/$(SONAME:$(OBJDIR)/%.0=%)
 	install -D -m 0644 \
 		include/gestures.h $(DESTDIR)/usr/include/gestures/gestures.h
 
