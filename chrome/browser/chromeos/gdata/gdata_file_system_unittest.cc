@@ -8,6 +8,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string16.h"
@@ -15,6 +17,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_mock.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
@@ -36,12 +39,30 @@ namespace gdata {
 class GDataFileSystemTest : public testing::Test {
  protected:
   GDataFileSystemTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        file_system_(NULL) {
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
+    callback_helper_ = new CallbackHelper;
     profile_.reset(new TestingProfile);
-    file_system_ = GDataFileSystemFactory::GetForProfile(profile_.get());
+
+    // Allocate and keep a weak pointer to the mock, and inject it into the
+    // GDataFileSystem object.
+    mock_doc_service_ = new MockDocumentsService;
+
+    EXPECT_CALL(*mock_doc_service_, Initialize(profile_.get())).Times(1);
+
+    ASSERT_FALSE(file_system_);
+    file_system_ = new GDataFileSystem(profile_.get(), mock_doc_service_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    ASSERT_TRUE(file_system_);
+    EXPECT_CALL(*mock_doc_service_, CancelAll()).Times(1);
+    file_system_->Shutdown();
+    delete file_system_;
+    file_system_ = NULL;
   }
 
   // Loads test json file as root ("/gdata") element.
@@ -138,10 +159,33 @@ class GDataFileSystemTest : public testing::Test {
     return value;
   }
 
+  // This is used as a helper for registering callbacks that need to be
+  // RefCountedThreadSafe, and a place where we can fetch results from various
+  // operations.
+  class CallbackHelper
+    : public base::RefCountedThreadSafe<CallbackHelper> {
+   public:
+    CallbackHelper() : last_error_(base::PLATFORM_FILE_OK) {}
+    virtual ~CallbackHelper() {}
+    virtual void GetFileCallback(base::PlatformFileError error,
+                                 const FilePath& file_path) {
+      last_error_ = error;
+      download_path_ = file_path;
+    }
+    virtual void FileOperationCallback(base::PlatformFileError error) {
+      last_error_ = error;
+    }
+
+    base::PlatformFileError last_error_;
+    FilePath download_path_;
+  };
+
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_refptr<CallbackHelper> callback_helper_;
   GDataFileSystem* file_system_;
+  MockDocumentsService* mock_doc_service_;
 };
 
 
@@ -425,7 +469,7 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
   EXPECT_FALSE(last_dir_content_url.is_empty());    // non-root directory.
 
   // Missing two folders on the path.
-  FilePath dir_path3 = dir_path2.Append(FILE_PATH_LITERAL("Another Foder"));
+  FilePath dir_path3 = dir_path2.Append(FILE_PATH_LITERAL("Another Folder"));
   EXPECT_EQ(
       GDataFileSystem::FOUND_MISSING,
       file_system_->FindFirstMissingParentDirectory(dir_path3,
@@ -452,9 +496,6 @@ TEST_F(GDataFileSystemTest, FindFirstMissingParentDirectory) {
           &first_missing_parent_path));
 }
 
-// TODO(satorux): Write a test for GetFile() once DocumentsService is
-// mockable.
-
 TEST_F(GDataFileSystemTest, GetGDataFileInfoFromPath) {
   LoadRootFeedDocument("root_feed.json");
 
@@ -469,4 +510,40 @@ TEST_F(GDataFileSystemTest, GetGDataFileInfoFromPath) {
   ASSERT_TRUE(non_existent == NULL);
 }
 
+// Create a directory through the document service
+TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
+  LoadRootFeedDocument("root_feed.json");
+  EXPECT_CALL(*mock_doc_service_,
+              CreateDirectory(_, "Sample Directory Title", _)).Times(1);
+
+  // Set last error so it's not a valid error code.
+  callback_helper_->last_error_ = static_cast<base::PlatformFileError>(1);
+  file_system_->CreateDirectory(
+      FilePath(FILE_PATH_LITERAL("gdata/Sample Directory Title")),
+      false,  // is_exclusive
+      true,  // is_recursive
+      base::Bind(&CallbackHelper::FileOperationCallback,
+                 callback_helper_.get()));
+  message_loop_.RunAllPending();  // Wait to get our result.
+  // TODO(gspencer): Uncomment this when we get a blob that
+  // works that can be returned from the mock.
+  // EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
+}
+
+TEST_F(GDataFileSystemTest, GetFile) {
+  LoadRootFeedDocument("root_feed.json");
+
+  GDataFileSystem::GetFileCallback callback =
+      base::Bind(&CallbackHelper::GetFileCallback,
+                 callback_helper_.get());
+
+  EXPECT_CALL(*mock_doc_service_,
+              DownloadFile(GURL("https://file_content_url/"), _));
+
+  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  file_system_->GetFile(file_in_root, callback);
+  message_loop_.RunAllPending();  // Wait to get our result.
+  EXPECT_STREQ("file_content_url/",
+               callback_helper_->download_path_.value().c_str());
+}
 }   // namespace gdata

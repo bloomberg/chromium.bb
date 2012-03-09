@@ -403,9 +403,10 @@ GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
 
 // GDataFileSystem class implementatsion.
 
-GDataFileSystem::GDataFileSystem(Profile* profile)
+GDataFileSystem::GDataFileSystem(Profile* profile,
+                                 DocumentsServiceInterface* documents_service)
     : profile_(profile),
-      documents_service_(new DocumentsService),
+      documents_service_(documents_service),
       gdata_uploader_(new GDataUploader(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       gdata_download_observer_(new GDataDownloadObserver()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -1122,7 +1123,7 @@ GDataFileSystemFactory::~GDataFileSystemFactory() {
 
 ProfileKeyedService* GDataFileSystemFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new GDataFileSystem(profile);
+  return new GDataFileSystem(profile, new DocumentsService);
 }
 
 }  // namespace gdata
