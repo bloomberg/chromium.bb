@@ -85,7 +85,7 @@ void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
 
 void DockedPanelStrip::AddPanel(Panel* panel) {
   DCHECK_NE(this, panel->panel_strip());
-  panel->set_panel_strip(this);
+  panel->SetPanelStrip(this);
 
   // Always update limits, even on existing panels, in case the limits changed
   // while panel was out of the strip.
@@ -194,7 +194,7 @@ int DockedPanelStrip::GetRightMostAvailablePosition() const {
 
 void DockedPanelStrip::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
-  panel->set_panel_strip(NULL);
+  panel->SetPanelStrip(NULL);
 
   if (panel->expansion_state() != Panel::EXPANDED)
     DecrementMinimizedPanels();

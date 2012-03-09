@@ -64,6 +64,8 @@ void Panel::Initialize(const gfx::Rect& bounds) {
   DCHECK(!bounds.IsEmpty());
   initialized_ = true;
   native_panel_ = CreateNativePanel(browser_, this, bounds);
+  if (panel_strip_ != NULL)
+    native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
 }
 
 void Panel::OnNativePanelClosed() {
@@ -157,6 +159,12 @@ void Panel::SetAppIconVisibility(bool visible) {
   native_panel_->SetPanelAppIconVisibility(visible);
 }
 
+void  Panel::SetPanelStrip(PanelStrip* new_strip) {
+  panel_strip_ = new_strip;
+  if (panel_strip_ != NULL && initialized_)
+    native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
+}
+
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
@@ -168,6 +176,9 @@ void Panel::SetExpansionState(ExpansionState new_state) {
   // The minimized panel should not get the focus.
   if (expansion_state_ == MINIMIZED)
     Deactivate();
+
+  DCHECK(initialized_ && panel_strip_ != NULL);
+  native_panel_->PreventActivationByOS(panel_strip_->IsPanelMinimized(this));
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,

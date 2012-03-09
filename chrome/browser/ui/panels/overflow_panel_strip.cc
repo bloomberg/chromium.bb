@@ -82,7 +82,7 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
   // TODO(jianli): consider using other container to improve the perf for
   // inserting to the front. http://crbug.com/106222
   DCHECK_NE(this, panel->panel_strip());
-  panel->set_panel_strip(this);
+  panel->SetPanelStrip(this);
 
   // Newly created panels that were temporarily in the panel strip
   // are added to the back of the overflow, whereas panels that are
@@ -118,7 +118,7 @@ void OverflowPanelStrip::AddPanel(Panel* panel) {
 
 void OverflowPanelStrip::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
-  panel->set_panel_strip(NULL);
+  panel->SetPanelStrip(NULL);
 
   size_t index = 0;
   Panels::iterator iter = panels_.begin();

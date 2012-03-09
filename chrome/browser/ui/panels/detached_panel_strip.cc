@@ -35,13 +35,13 @@ void DetachedPanelStrip::RefreshLayout() {
 
 void DetachedPanelStrip::AddPanel(Panel* panel) {
   DCHECK_NE(this, panel->panel_strip());
-  panel->set_panel_strip(this);
+  panel->SetPanelStrip(this);
   panels_.insert(panel);
 }
 
 void DetachedPanelStrip::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
-  panel->set_panel_strip(NULL);
+  panel->SetPanelStrip(NULL);
   panels_.erase(panel);
 }
 

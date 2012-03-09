@@ -222,7 +222,7 @@ class Panel : public BrowserWindow,
   PanelStrip* panel_strip() const { return panel_strip_; }
 
   // Sets the current panel strip that contains this panel.
-  void set_panel_strip(PanelStrip* new_strip) { panel_strip_ = new_strip; }
+  void SetPanelStrip(PanelStrip* new_strip);
 
   ExpansionState expansion_state() const { return expansion_state_; }
   ExpansionState old_expansion_state() const { return old_expansion_state_; }
