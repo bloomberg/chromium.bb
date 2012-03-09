@@ -133,6 +133,7 @@
     '../build/win_precompile.gypi',
     'app/policy/policy_templates.gypi',
     'chrome_browser.gypi',
+    'chrome_browser_extensions.gypi',
     'chrome_common.gypi',
     'chrome_dll.gypi',
     'chrome_exe.gypi',
