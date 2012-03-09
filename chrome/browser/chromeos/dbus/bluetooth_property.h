@@ -73,7 +73,7 @@ class BluetoothProperty : public dbus::Property<T> {
                                  bluetooth_common::kSetProperty);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(this->name());
-    AppendToWriter(&writer, value);
+    this->AppendToWriter(&writer, value);
 
     dbus::ObjectProxy *object_proxy = this->property_set()->object_proxy();
     DCHECK(object_proxy);
