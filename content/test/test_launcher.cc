@@ -635,17 +635,23 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   testing::InitGoogleTest(&argc, argv);
   TestTimeouts::Initialize();
+  int exit_code = 0;
 
   // Make sure the entire browser code is loaded into memory. Reading it
   // from disk may be slow on a busy bot, and can easily exceed the default
   // timeout causing flaky test failures. Use an empty test that only starts
   // and closes a browser with a long timeout to avoid those problems.
-  int exit_code = RunTest(launcher_delegate,
-                          kEmptyTestName,
-                          TestTimeouts::large_test_timeout_ms(),
-                          NULL);
-  if (exit_code != 0)
-    return exit_code;
+  // NOTE: we don't do this when specifying a filter because this slows down the
+  // common case of running one test locally, and also on trybots when sharding
+  // as this one test runs ~200 times and wastes a few minutes.
+  if (!should_shard && !command_line->HasSwitch(kGTestFilterFlag)) {
+    exit_code = RunTest(launcher_delegate,
+                        kEmptyTestName,
+                        TestTimeouts::large_test_timeout_ms(),
+                        NULL);
+    if (exit_code != 0)
+      return exit_code;
+  }
 
   int cycles = 1;
   if (command_line->HasSwitch(kGTestRepeatFlag)) {
