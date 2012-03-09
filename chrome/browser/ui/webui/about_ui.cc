@@ -535,11 +535,12 @@ void FinishCryptohomeDataRequestInternal(
   output.append(AddBoolRow("Pkcs11IsTpmTokenReady", is_tpm_token_ready));
   output.append("</table>");
 
-  std::string token_name, user_pin;
-  crypto::GetTPMTokenInfo(&token_name, &user_pin);
   output.append("<h3>crypto:</h3>");
   output.append("<table>");
   output.append(AddBoolRow("IsTPMTokenReady", crypto::IsTPMTokenReady()));
+  std::string token_name, user_pin;
+  if (crypto::IsTPMTokenReady())
+    crypto::GetTPMTokenInfo(&token_name, &user_pin);
   output.append(AddStringRow("token_name", token_name));
   output.append(AddStringRow("user_pin", std::string(user_pin.length(), '*')));
   output.append("</table>");
