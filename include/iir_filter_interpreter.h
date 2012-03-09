@@ -90,6 +90,7 @@ class IirFilterInterpreter : public Interpreter, public PropertyDelegate {
   // unittest purpose.
   bool using_iir_;
   map<short, IoHistory, kMaxFingers> histories_;
+  bool is_semi_mt_device_;
 };
 
 }  // namespace gestures
