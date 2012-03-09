@@ -39,9 +39,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kHomepageIsNewTabPage,
     prefs::kHomePageIsNewTabPage,
     Value::TYPE_BOOLEAN },
-  { key::kRestoreOnStartup,
-    prefs::kRestoreOnStartup,
-    Value::TYPE_INTEGER },
   { key::kRestoreOnStartupURLs,
     prefs::kURLsToRestoreOnStartup,
     Value::TYPE_LIST },
@@ -316,6 +313,7 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
   handlers_.push_back(new IncognitoModePolicyHandler());
   handlers_.push_back(new JavascriptPolicyHandler());
   handlers_.push_back(new ProxyPolicyHandler());
+  handlers_.push_back(new RestoreOnStartupPolicyHandler());
   handlers_.push_back(new SyncPolicyHandler());
 
 #if !defined(OS_CHROMEOS)

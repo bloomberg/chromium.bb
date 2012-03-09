@@ -21,6 +21,7 @@
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/content_settings.h"
@@ -967,6 +968,58 @@ void JavascriptPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetValue(prefs::kManagedDefaultJavaScriptSetting,
                     Value::CreateIntegerValue(setting));
   }
+}
+
+// RestoreOnStartupPolicyHandler implementation --------------------------------
+
+RestoreOnStartupPolicyHandler::RestoreOnStartupPolicyHandler()
+    : SimplePolicyHandler(key::kRestoreOnStartup,
+                          prefs::kRestoreOnStartup,
+                          Value::TYPE_INTEGER) {
+}
+
+RestoreOnStartupPolicyHandler::~RestoreOnStartupPolicyHandler() {
+}
+
+bool RestoreOnStartupPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  if (!SimplePolicyHandler::CheckPolicySettings(policies, errors))
+    return false;
+
+  // If the restore urls at start up policy is set, session cookies are treated
+  // as permanent cookies and site data needed to restore the session is not
+  // cleared so we have to warn the user in that case.
+  const base::Value* restore_policy = policies.GetValue(key::kRestoreOnStartup);
+
+  if (restore_policy) {
+    int restore_value;
+    if (restore_policy->GetAsInteger(&restore_value) &&
+        SessionStartupPref::PrefValueToType(restore_value) ==
+            SessionStartupPref::LAST) {
+      const base::Value* cookies_policy =
+          policies.GetValue(key::kCookiesSessionOnlyForUrls);
+      const base::Value* exit_policy =
+          policies.GetValue(key::kClearSiteDataOnExit);
+
+      const base::ListValue *cookies_value;
+      if (cookies_policy->GetAsList(&cookies_value) &&
+          !cookies_value->empty()) {
+        errors->AddError(key::kCookiesSessionOnlyForUrls,
+                         IDS_POLICY_OVERRIDDEN,
+                         key::kRestoreOnStartup);
+      }
+
+      bool exit_value;
+      if (exit_policy->GetAsBoolean(&exit_value) && exit_value) {
+        errors->AddError(key::kClearSiteDataOnExit,
+                         IDS_POLICY_OVERRIDDEN,
+                         key::kRestoreOnStartup);
+      }
+    }
+  }
+
+  return true;
 }
 
 }  // namespace policy

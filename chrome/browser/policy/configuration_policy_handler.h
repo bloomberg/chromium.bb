@@ -291,7 +291,7 @@ class ProxyPolicyHandler : public ConfigurationPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(ProxyPolicyHandler);
 };
 
-//
+// Handles JavaScript policies.
 class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
  public:
   JavascriptPolicyHandler();
@@ -305,6 +305,20 @@ class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(JavascriptPolicyHandler);
+};
+
+// Handles RestoreOnStartup policy.
+class RestoreOnStartupPolicyHandler : public SimplePolicyHandler {
+ public:
+  RestoreOnStartupPolicyHandler();
+  virtual ~RestoreOnStartupPolicyHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RestoreOnStartupPolicyHandler);
 };
 
 }  // namespace policy

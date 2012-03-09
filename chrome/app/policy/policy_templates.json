@@ -752,7 +752,9 @@
 
       If set to disabled site data will not be cleared on exit.
 
-      If this policy is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the default which is to preserve site data on shut down and the user will be able to change this.''',
+      If this policy is left not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the default which is to preserve site data on shut down and the user will be able to change this.
+
+      If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not clear cookies or other data relevant to restoring the previous browsing session completely.''',
       'label': '''Clear site data on browser shutdown''',
     },
     {
@@ -1155,7 +1157,7 @@
             {
               'name': 'RestoreOnStartupIsLastSession',
               'value': 1,
-              'caption': '''Reopen the URLs that were open last'''
+              'caption': '''Restore the last session'''
             },
             {
               'name': 'RestoreOnStartupIsURLs',
@@ -1175,7 +1177,8 @@
 
           If you choose 'Open home page' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          If you choose 'Reopen the URLs that were open last', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopened.
+          If you choose 'Restore the last session', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopened and the browsing session will be restored as it was left.
+          Choosing this option disables some settings that rely on sessions or that perform actions on exit (such as Clear browsing data on exit or session-only cookies).
 
           If you choose 'Open a list of URLs', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -1574,7 +1577,9 @@
           'caption': '''Allow session only cookies on these sites''',
           'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to set session only cookies.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.''',
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
+
+          If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respectred and cookies will be stored permanently for those sites.''',
         },
         {
           'name': 'ImagesAllowedForUrls',
