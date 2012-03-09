@@ -352,6 +352,19 @@ class TabStrip : public AbstractTabStripView,
   // Releases ownership of the current TabDragController.
   TabDragController* ReleaseDragController();
 
+  // Returns the number of non-closing tabs between |index1| and |index2|.
+  int NumNonClosingTabs(int index1, int index2) const;
+
+  // Updates |num_visible_tabs_| based on |width| and the specified tab size.
+  // Additionally updates |first_visible_tab_index_|.
+  void UpdateNumVisibleTabs(int non_closing_tab_count,
+                            int width,
+                            double tab_size);
+
+  // Makes sure |model_index| is within the set of visible tabs. Only does
+  // something if stacking.
+  void EnsureModelIndexIsVisible(int model_index);
+
   // -- Tab Resize Layout -----------------------------------------------------
 
   // Returns the exact (unrounded) current width of each tab.
@@ -410,16 +423,17 @@ class TabStrip : public AbstractTabStripView,
   // Invoked prior to starting a new animation.
   void PrepareForAnimation();
 
-  // Generates the ideal bounds of the TabStrip when all Tabs have finished
-  // animating to their desired position/bounds. This is used by the standard
-  // Layout method and other callers like the TabDragController that need
-  // stable representations of Tab positions.
+  // Generates the ideal bounds for each of the tabs as well as the new tab
+  // button.
   void GenerateIdealBounds();
 
   // Same as GenerateIdealBounds, except used with in stacking mode. Only
   // intended to be called by GenerateIdealBounds. Returns location for
   // new tab button.
-  double GenerateIdealBoundsWithStacking();
+  double GenerateIdealBoundsWithStacking(int mini_tab_count,
+                                         int non_closing_tab_count,
+                                         double new_tab_x,
+                                         double selected_size);
 
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
@@ -498,6 +512,14 @@ class TabStrip : public AbstractTabStripView,
 
   // Size we last layed out at.
   gfx::Size last_layout_size_;
+
+  // If |stacking_| is true this is the index (into tab_data_) of the first
+  // tab completely shown.
+  int first_visible_tab_index_;
+
+  // If |stacking_| is true this is the number of tabs totally visible, the
+  // rest are compresses on the left/right edge.
+  int num_visible_tabs_;
 
   // Are we in stacking/scrolling mode?
   bool stacking_;

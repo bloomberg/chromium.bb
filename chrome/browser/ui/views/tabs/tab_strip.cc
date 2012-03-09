@@ -76,6 +76,9 @@ static inline int Round(double x) {
   return static_cast<int>(floor(x + 0.5));
 }
 
+// Max width reserved for stacked tabs along a particular edge.
+static const double kMaxEdgeStackWidth = 24;
+
 namespace {
 
 // Animation delegate used when a dragged tab is released. When done sets the
@@ -385,6 +388,8 @@ TabStrip::TabStrip(TabStripController* controller)
       animation_container_(new ui::AnimationContainer()),
       attaching_dragged_tab_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)),
+      first_visible_tab_index_(0),
+      num_visible_tabs_(0),
       stacking_(TouchModeSupport::IsTouchOptimized()) {
   Init();
 }
@@ -454,6 +459,12 @@ void TabStrip::MoveTab(int from_model_index, int to_model_index) {
 }
 
 void TabStrip::RemoveTabAt(int model_index) {
+  if (stacking_) {
+    int count = tab_count() - 1;
+    if (first_visible_tab_index_ + num_visible_tabs_ > count)
+      first_visible_tab_index_ = std::max(0, first_visible_tab_index_ - 1);
+  }
+
   if (in_tab_close_ && model_index != GetModelCount())
     StartMouseInitiatedRemoveTabAnimation(model_index);
   else
@@ -502,6 +513,9 @@ void TabStrip::PrepareForCloseAt(int model_index) {
 
 void TabStrip::SetSelection(const TabStripSelectionModel& old_selection,
                             const TabStripSelectionModel& new_selection) {
+  // Make sure the active tab is visible.
+  EnsureModelIndexIsVisible(new_selection.active());
+
   // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
   // a different size to the selected ones.
   bool tiny_tabs = current_unselected_width_ != current_selected_width_;
@@ -1230,12 +1244,8 @@ void TabStrip::LayoutDraggedTabsAt(const std::vector<BaseTab*>& tabs,
 void TabStrip::LayoutDraggedTabsAtWithStacking(
     BaseTab* active_tab,
     const gfx::Point& location) {
+  // TODO: this is wrong.
   active_tab->SetX(location.x());
-  GenerateIdealBounds();
-  for (int i = 0; i < tab_count(); ++i) {
-    tab_data_[i].tab->SetBoundsRect(tab_data_[i].ideal_bounds);
-  }
-  newtab_button_->SetBoundsRect(newtab_button_bounds_);
 }
 
 void TabStrip::CalculateBoundsForDraggedTabs(const std::vector<BaseTab*>& tabs,
@@ -1267,12 +1277,8 @@ int TabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
 
 void TabStrip::RemoveAndDeleteTab(BaseTab* tab) {
   int tab_data_index = TabIndexOfTab(tab);
-
   DCHECK(tab_data_index != -1);
-
-  // Remove the Tab from the TabStrip's list...
   tab_data_.erase(tab_data_.begin() + tab_data_index);
-
   delete tab;
 }
 
@@ -1338,6 +1344,46 @@ void TabStrip::DestroyDragController() {
 
 TabDragController* TabStrip::ReleaseDragController() {
   return drag_controller_.release();
+}
+
+int TabStrip::NumNonClosingTabs(int index1, int index2) const {
+  int count = 0;
+  for (int i = index1; i < index2; ++i) {
+    if (!base_tab_at_tab_index(i)->closing())
+      count++;
+  }
+  return count;
+}
+
+void TabStrip::UpdateNumVisibleTabs(int non_closing_tab_count,
+                                    int width,
+                                    double tab_size) {
+  num_visible_tabs_ = (width + kTabHOffset) / (tab_size + kTabHOffset);
+  num_visible_tabs_ = std::max(1, num_visible_tabs_);
+  // Make sure the first_visible_tab_index_ is valid.
+  // TODO: this isn't quite right, it doesn't take into account closing tabs.
+  first_visible_tab_index_ =
+      std::min(first_visible_tab_index_, non_closing_tab_count -
+               num_visible_tabs_);
+  first_visible_tab_index_ = std::max(0, first_visible_tab_index_);
+}
+
+void TabStrip::EnsureModelIndexIsVisible(int model_index) {
+  if (!stacking_ || model_index == TabStripSelectionModel::kUnselectedIndex)
+    return;
+
+  int original = first_visible_tab_index_;
+  int active_index = ModelIndexToTabIndex(model_index);
+  if (active_index < first_visible_tab_index_)
+    first_visible_tab_index_ = active_index;
+  else if (active_index >= first_visible_tab_index_ + num_visible_tabs_)
+    first_visible_tab_index_ = active_index - num_visible_tabs_ + 1;
+
+  if (original != first_visible_tab_index_) {
+    PrepareForAnimation();
+    GenerateIdealBounds();
+    AnimateToIdealBounds();
+  }
 }
 
 void TabStrip::GetDesiredTabWidths(int tab_count,
@@ -1629,10 +1675,6 @@ void TabStrip::PrepareForAnimation() {
   }
 }
 
-// Called from:
-// - BasicLayout
-// - Tab insertion/removal
-// - Tab reorder
 void TabStrip::GenerateIdealBounds() {
   int non_closing_tab_count = 0;
   int mini_tab_count = 0;
@@ -1683,8 +1725,11 @@ void TabStrip::GenerateIdealBounds() {
 
   // If we're in stacking mode, update the positions now that we have
   // appropriate widths.
-  if (stacking_)
-    tab_x = GenerateIdealBoundsWithStacking();
+  if (stacking_ && tab_x - kTabHOffset >
+      width() - newtab_button_bounds_.width()) {
+    tab_x = GenerateIdealBoundsWithStacking(
+        mini_tab_count, non_closing_tab_count, tab_x, selected);
+  }
 
   // Update bounds of new tab button.
   int new_tab_x;
@@ -1701,63 +1746,104 @@ void TabStrip::GenerateIdealBounds() {
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, new_tab_y));
 }
 
-double TabStrip::GenerateIdealBoundsWithStacking() {
-  int active_tab_index = -1;
-  for (int i = 0; i < tab_count(); ++i) {
-    if (IsActiveTab(tab_data_[i].tab)) {
-      active_tab_index = i;
+double TabStrip::GenerateIdealBoundsWithStacking(int mini_tab_count,
+                                                 int non_closing_tab_count,
+                                                 double new_tab_x,
+                                                 double selected_size) {
+  if (non_closing_tab_count == mini_tab_count)
+    return new_tab_x;
+
+  // Pinned tabs always have their desired size, and don't stack. We rely on
+  // GenerateIdealBounds to have positioned pinned tabs already, so don't move
+  // them.
+  int tab_index = 0;
+  double next_x = 0;
+  for (; tab_index < tab_count(); ++tab_index) {
+    BaseTab* tab = base_tab_at_tab_index(tab_index);
+    if (!tab->closing() && !tab->data().mini) {
+      next_x = ideal_bounds(tab_index).x();
       break;
     }
   }
-  if (active_tab_index < 0)
-    return 0.0;
+  if (tab_index == tab_count())
+    return new_tab_x;
 
-  // Pinned tabs always have their desired size, and don't pan. We rely on
-  // GenerateIdealBounds to have positioned pinned tabs already, so don't move
-  // them.
-  int first_unpinned = GetMiniTabCount();
-  int left_start = 0;
-  if (first_unpinned > 0) {
-    const gfx::Rect& last_pinned = ideal_bounds(first_unpinned - 1);
-    left_start = last_pinned.right() + kTabHOffset + kMiniToNonMiniGap;
+  // Always reserve kMaxEdgeStackWidth on each side for stacking. We don't
+  // later try to adjust as it can lead to tabs bouncing around.
+  int available_width = width() -
+      (kNewTabButtonHOffset + newtab_button_bounds_.width()) - next_x -
+      2 * kMaxEdgeStackWidth;
+  if (available_width <= 0)
+    return new_tab_x;
+  UpdateNumVisibleTabs(non_closing_tab_count, available_width, selected_size);
+  int stacked_leading_index = tab_index;
+  int stacked_trailing_index = first_visible_tab_index_;
+  for (int visible_count = 0;
+       stacked_trailing_index < tab_count() &&
+           visible_count < num_visible_tabs_; ++stacked_trailing_index) {
+    if (!base_tab_at_tab_index(stacked_trailing_index)->closing())
+      visible_count++;
+  }
+  int stacked_leading_count =
+      NumNonClosingTabs(stacked_leading_index, first_visible_tab_index_);
+  int stacked_trailing_count =
+      NumNonClosingTabs(stacked_trailing_index, tab_count());
+
+  // Stacked tabs to the left.
+  if (stacked_leading_count > 0) {
+    double stacked_offset =
+        kMaxEdgeStackWidth / static_cast<double>(stacked_leading_count);
+    for (; tab_index < first_visible_tab_index_; ++tab_index) {
+      if (base_tab_at_tab_index(tab_index)->closing())
+        continue;
+      gfx::Rect bounds = ideal_bounds(tab_index);
+      bounds.set_x(next_x);
+      set_ideal_bounds(tab_index, bounds);
+      next_x += stacked_offset;
+    }
+  } else {
+    tab_index = first_visible_tab_index_;
   }
 
-  std::vector<int> ideal;
-  ideal.resize(tab_count());
-  // Figure out where each tab would like to be, if there were room.
-  // These are relative to the active_tab.
-  int ideal_x = 0;
-  for (int i = active_tab_index - 1; i >= first_unpinned; --i) {
-    ideal_x -= ideal_bounds(i).width() + kTabHOffset;
-    ideal[i] = ideal_x;
-  }
-  ideal_x = 0;
-  for (int i = active_tab_index + 1; i < tab_count(); ++i) {
-    ideal_x += ideal_bounds(i - 1).width() + kTabHOffset;
-    ideal[i] = ideal_x;
+  if (stacked_leading_count > 0 && stacked_trailing_count == 0) {
+    // If there are no stacked tabs on the right and there is extra space, give
+    // it to the last stacked tab on the left.
+    next_x += available_width + kMaxEdgeStackWidth -
+        (num_visible_tabs_ * selected_size +
+         std::max(num_visible_tabs_ - 1, 0) * kTabHOffset);
   }
 
-  static const int kOffsetForEdgeStack = 6;
-  // We want tabs to draw underlayed at the left edge, the right edge, and
-  // to the left and the right of the active tab. As we walk through the
-  // tabs from left to right, clamp locations. TODO(scottmg): Limit to only
-  // N tabs in each of these spots, depending on design.
-  int active_x = tab_data_[active_tab_index].tab->bounds().x();
-  int new_tab_x = 0;
-  for (int i = first_unpinned; i < tab_count(); ++i) {
-    gfx::Rect new_bounds = ideal_bounds(i);
-    int target = active_x + ideal[i];
-    int left_edge = left_start + (i - first_unpinned) * kOffsetForEdgeStack;
-    int right_edge = width() - new_bounds.width() - newtab_button_->width() -
-        (tab_count() - 1 - i) * kOffsetForEdgeStack;
-    int smallest_valid_x = left_edge, largest_valid_x = right_edge;
-    target = std::max(smallest_valid_x, target);
-    target = std::min(largest_valid_x, target);
-    new_bounds.set_x(target);
-    new_tab_x = std::max(new_tab_x, new_bounds.x() + new_bounds.width());
-    set_ideal_bounds(i, new_bounds);
+  // Totally visible tabs.
+  for (int visible_count = 0;
+       tab_index < tab_count() && visible_count < num_visible_tabs_;
+       tab_index++) {
+    if (base_tab_at_tab_index(tab_index)->closing())
+      continue;
+    gfx::Rect bounds = ideal_bounds(tab_index);
+    bounds.set_x(next_x);
+    next_x = bounds.right() + kTabHOffset;
+    set_ideal_bounds(tab_index, bounds);
+    visible_count++;
   }
-  return new_tab_x + kTabHOffset;
+
+  // Stacked tabs to the right.
+  if (stacked_trailing_count == 0)
+    return next_x;
+
+  double stacked_offset =
+      kMaxEdgeStackWidth / static_cast<double>(stacked_trailing_count);
+  next_x = width() - (kNewTabButtonHOffset + newtab_button_bounds_.width()) -
+      (stacked_trailing_count - 1) * stacked_offset - selected_size;
+  for (; tab_index < tab_count(); ++tab_index) {
+    if (base_tab_at_tab_index(tab_index)->closing())
+      continue;
+    gfx::Rect bounds = ideal_bounds(tab_index);
+    bounds.set_x(next_x);
+    set_ideal_bounds(tab_index, bounds);
+    next_x += stacked_offset;
+  }
+
+  return next_x + kTabHOffset;
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
