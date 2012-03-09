@@ -53,10 +53,6 @@ def _GitCleanDirectory(directory):
   try:
     cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=directory)
     cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=directory)
-    if repository.InARepoRepository(directory, require_project=True):
-      cros_lib.RunCommand(['repo', 'sync', '-d', '-l', '.'], cwd=directory)
-    else:
-      cros_lib.RunCommand(['git', 'checkout', 'origin/master'], cwd=directory)
   except cros_lib.RunCommandError, e:
     err_msg = 'Failed to clean git "%s" %s' % (directory, e.message)
     logging.error(err_msg)
@@ -79,6 +75,7 @@ def CreatePushBranch(git_repo):
       repository.RepoSyncUsingSSH(git_repo)
       cros_lib.RunCommand(['repo', 'start', PUSH_BRANCH, '.'], cwd=git_repo)
     else:
+      cros_lib.RunCommand(['git', 'checkout', 'origin/master'], cwd=git_repo)
       cros_lib.RunCommand(['git', 'checkout', '-B', PUSH_BRANCH, '-t',
                            'origin/master'], cwd=git_repo)
   except cros_lib.RunCommandError, e:
