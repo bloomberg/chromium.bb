@@ -329,19 +329,20 @@ void BluetoothAdapter::DeviceRemoved(const dbus::ObjectPath& adapter_path,
   if (adapter_path != object_path_)
     return;
 
-  const std::string address = DBusThreadManager::Get()->
-      GetBluetoothDeviceClient()->GetProperties(device_path)->address.value();
+  DevicesMap::iterator iter = devices_.begin();
+  while (iter != devices_.end()) {
+    BluetoothDevice* device = iter->second;
+    DevicesMap::iterator temp = iter;
+    ++iter;
 
-  DevicesMap::iterator iter = devices_.find(address);
-  if (iter == devices_.end())
-    return;
+    if (device->object_path_ == device_path) {
+      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                        DeviceRemoved(this, device));
 
-  BluetoothDevice* device = iter->second;
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    DeviceRemoved(this, device));
-
-  delete device;
-  devices_.erase(iter);
+      delete device;
+      devices_.erase(temp);
+    }
+  }
 }
 
 void BluetoothAdapter::DevicesChanged(

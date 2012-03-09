@@ -315,11 +315,10 @@ void BluetoothOptionsHandler::DeviceRemoved(BluetoothAdapter* adapter,
   DCHECK(adapter == adapter_.get());
   DCHECK(device);
 
-  base::DictionaryValue js_properties;
-  js_properties.SetString("address", device->address());
+  base::StringValue address(device->address());
   web_ui()->CallJavascriptFunction(
       "options.BrowserOptions.removeBluetoothDevice",
-      js_properties);
+      address);
 }
 
 void BluetoothOptionsHandler::ErrorCallback() {
