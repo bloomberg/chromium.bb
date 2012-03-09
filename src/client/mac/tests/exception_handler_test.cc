@@ -64,6 +64,7 @@ using testing::Test;
 
 class ExceptionHandlerTest : public Test {
  public:
+  void InProcessCrash(bool aborting);
   AutoTempDir tempDir;
   string lastDumpName;
 };
@@ -75,8 +76,13 @@ static void Crasher() {
   fprintf(stdout, "A = %d", *a);
 }
 
-static void SoonToCrash() {
-  Crasher();
+static void AbortCrasher() {
+  fprintf(stdout, "Going to crash...\n");
+  abort();
+}
+
+static void SoonToCrash(void(*crasher)()) {
+  crasher();
 }
 
 static bool MDCallback(const char *dump_dir, const char *file_name,
@@ -94,7 +100,7 @@ static bool MDCallback(const char *dump_dir, const char *file_name,
   return true;
 }
 
-TEST_F(ExceptionHandlerTest, InProcess) {
+void ExceptionHandlerTest::InProcessCrash(bool aborting) {
   // Give the child process a pipe to report back on.
   int fds[2];
   ASSERT_EQ(0, pipe(fds));
@@ -105,7 +111,7 @@ TEST_F(ExceptionHandlerTest, InProcess) {
     close(fds[0]);
     ExceptionHandler eh(tempDir.path(), NULL, MDCallback, &fds[1], true, NULL);
     // crash
-    SoonToCrash();
+    SoonToCrash(aborting ? &AbortCrasher : &Crasher);
     // not reached
     exit(1);
   }
@@ -127,6 +133,16 @@ TEST_F(ExceptionHandlerTest, InProcess) {
   EXPECT_NE(0, WIFEXITED(ret));
   EXPECT_EQ(0, WEXITSTATUS(ret));
 }
+
+TEST_F(ExceptionHandlerTest, InProcess) {
+  InProcessCrash(false);
+}
+
+#if TARGET_OS_IPHONE
+TEST_F(ExceptionHandlerTest, InProcessAbort) {
+  InProcessCrash(true);
+}
+#endif
 
 static bool DumpNameMDCallback(const char *dump_dir, const char *file_name,
                                void *context, bool success) {

@@ -187,11 +187,15 @@ class ExceptionHandler {
                                   int exception_code,
                                   int exception_subcode,
                                   mach_port_t thread_name,
-                                  bool exit_after_write);
+                                  bool exit_after_write,
+                                  bool report_current_thread);
 
   // When installed, this static function will be call from a newly created
   // pthread with |this| as the argument
   static void *WaitForMessage(void *exception_handler_class);
+
+  // Signal handler for SIGABRT.
+  static void SignalHandler(int sig, siginfo_t* info, void* uc);
 
   // disallow copy ctor and operator=
   explicit ExceptionHandler(const ExceptionHandler &);
@@ -257,6 +261,10 @@ class ExceptionHandler {
 
   // True, if we're using the mutext to indicate when mindump writing occurs
   bool use_minidump_write_mutex_;
+
+  // Old signal handler for SIGABRT. Used to be able to restore it when
+  // uninstalling.
+  scoped_ptr<struct sigaction> old_handler_;
 
 #if !TARGET_OS_IPHONE
   // Client for out-of-process dump generation.

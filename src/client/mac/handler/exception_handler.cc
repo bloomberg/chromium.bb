@@ -29,6 +29,7 @@
 
 #include <map>
 #include <pthread.h>
+#include <signal.h>
 #include <TargetConditionals.h>
 
 #include "client/mac/handler/exception_handler.h"
@@ -53,8 +54,14 @@
   extern ProtectedMemoryAllocator *gBreakpadAllocator;
 #endif
 
-
 namespace google_breakpad {
+
+static union {
+#if USE_PROTECTED_ALLOCATIONS
+  char protected_buffer[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
+#endif
+  google_breakpad::ExceptionHandler *handler;
+} gProtectedData;
 
 using std::map;
 
@@ -274,7 +281,8 @@ bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
                                                   int exception_code,
                                                   int exception_subcode,
                                                   mach_port_t thread_name,
-                                                  bool exit_after_write) {
+                                                  bool exit_after_write,
+                                                  bool report_current_thread) {
   bool result = false;
 
   if (directCallback_) {
@@ -306,7 +314,8 @@ bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
     // Putting the MinidumpGenerator in its own context will ensure that the
     // destructor is executed, closing the newly created minidump file.
     if (!dump_path_.empty()) {
-      MinidumpGenerator md;
+      MinidumpGenerator md(mach_task_self(),
+                           report_current_thread ? NULL : mach_thread_self());
       if (exception_type && exception_code) {
         // If this is a real exception, give the filter (if any) a chance to
         // decide if this should be sent.
@@ -496,7 +505,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         self->last_minidump_write_result_ =
           self->WriteMinidumpWithException(exception_type, exception_code,
                                            0, thread,
-                                           false);
+                                           false, false);
 
 #if USE_PROTECTED_ALLOCATIONS
         if(gBreakpadAllocator)
@@ -530,7 +539,8 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 
         // Generate the minidump with the exception data.
         self->WriteMinidumpWithException(receive.exception, receive.code[0],
-                                         subcode, receive.thread.name, true);
+                                         subcode, receive.thread.name, true,
+                                         false);
 
 #if USE_PROTECTED_ALLOCATIONS
         // This may have become protected again within
@@ -565,7 +575,43 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
   return NULL;
 }
 
+//static
+void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
+  gProtectedData.handler->WriteMinidumpWithException(EXC_CRASH,
+                                                     0xDEADBEEF,
+                                                     0,
+                                                     mach_thread_self(),
+                                                     true,
+                                                     true);
+}
+
 bool ExceptionHandler::InstallHandler() {
+  // If a handler is already installed, something is really wrong.
+  if (gProtectedData.handler != NULL) {
+    return false;
+  }
+#if TARGET_OS_IPHONE
+  if (!IsOutOfProcess()) {
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGABRT);
+    sa.sa_sigaction = ExceptionHandler::SignalHandler;
+    sa.sa_flags = SA_SIGINFO;
+
+    scoped_ptr<struct sigaction> old(new struct sigaction);
+    if (sigaction(SIGABRT, &sa, old.get()) == -1) {
+      return false;
+    }
+    old_handler_.swap(old);
+    gProtectedData.handler = this;
+#if USE_PROTECTED_ALLOCATIONS
+    assert(((size_t)(*gProtectedData.protected_buffer) & PAGE_MASK) == 0);
+    mprotect(gProtectedData.protected_buffer, PAGE_SIZE, PROT_READ);
+#endif
+  }
+#endif
+
   try {
 #if USE_PROTECTED_ALLOCATIONS
     previous_ = new (gBreakpadAllocator->Allocate(sizeof(ExceptionParameters)) )
@@ -603,6 +649,16 @@ bool ExceptionHandler::InstallHandler() {
 
 bool ExceptionHandler::UninstallHandler(bool in_exception) {
   kern_return_t result = KERN_SUCCESS;
+
+  if (old_handler_.get()) {
+    sigaction(SIGABRT, old_handler_.get(), NULL);
+#if USE_PROTECTED_ALLOCATIONS
+    mprotect(gProtectedData.protected_buffer, PAGE_SIZE,
+        PROT_READ | PROT_WRITE);
+#endif
+    old_handler_.reset();
+    gProtectedData.handler = NULL;
+  }
 
   if (installed_exception_handler_) {
     mach_port_t current_task = mach_task_self();
