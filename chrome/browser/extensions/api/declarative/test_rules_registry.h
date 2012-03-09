@@ -6,55 +6,37 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_TEST_RULES_REGISTRY_H__
 #pragma once
 
-#include "chrome/browser/extensions/api/declarative/rules_registry.h"
-
-#include <map>
-#include <string>
-
-#include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_with_cache.h"
 
 namespace extensions {
 
-// This is currently a trivial stub that can only store and retrieve rules.
-//
-// TODO(battre): Generalize this into a StoringRulesRegistry from which
-// other concrete RulesRegistries can derive. The purpose of this class
-// would then be to handle just the storage of rules.
-class TestRulesRegistry : public RulesRegistry {
+// This is a trivial test RulesRegistry that can only store and retrieve rules.
+class TestRulesRegistry : public RulesRegistryWithCache {
  public:
   TestRulesRegistry();
   virtual ~TestRulesRegistry();
 
-  // RulesRegistry implementation:
-  virtual std::string AddRules(
+  void SetOwnerThread(content::BrowserThread::ID owner_thread);
+
+  // RulesRegistryWithCache implementation:
+  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
+  virtual std::string AddRulesImpl(
       const std::string& extension_id,
       const std::vector<linked_ptr<RulesRegistry::Rule> >& rules) OVERRIDE;
-  virtual std::string RemoveRules(
+  virtual std::string RemoveRulesImpl(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) OVERRIDE;
-  virtual std::string RemoveAllRules(
+  virtual std::string RemoveAllRulesImpl(
       const std::string& extension_id) OVERRIDE;
-  virtual std::string GetRules(
-      const std::string& extension_id,
-      const std::vector<std::string>& rule_identifiers,
-      std::vector<linked_ptr<RulesRegistry::Rule> >* out) OVERRIDE;
-  virtual std::string GetAllRules(
-      const std::string& extension_id,
-      std::vector<linked_ptr<RulesRegistry::Rule> >* out) OVERRIDE;
-  virtual void OnExtensionUnloaded(const std::string& extension_id) OVERRIDE;
-  virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
-  void SetOwnerThread(content::BrowserThread::ID owner_thread) {
-    owner_thread_ = owner_thread;
-  }
+  // Sets the result message that will be returned by the next call of
+  // AddRulesImpl, RemoveRulesImpl and RemoveAllRulesImpl.
+  void SetResult(const std::string& result);
 
  private:
-  // Map of rule identifier to actual rule.
-  // TODO(battre): consider the extension_ids as part of the key.
-  typedef std::map<std::string, linked_ptr<RulesRegistry::Rule> >
-      RulesDictionary;
-  RulesDictionary rules_;
+  // The string that gets returned by the implementation functions of
+  // RulesRegistryWithCache. Defaults to "".
+  std::string result_;
   content::BrowserThread::ID owner_thread_;
 };
 

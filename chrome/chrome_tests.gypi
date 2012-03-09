@@ -1441,6 +1441,7 @@
         'browser/event_disposition.h',
         'browser/extensions/api/declarative/initializing_rules_registry_unittest.cc',
         'browser/extensions/api/declarative/rules_registry_service_unittest.cc',
+        'browser/extensions/api/declarative/rules_registry_with_cache_unittest.cc',
         'browser/extensions/api/declarative/substring_set_matcher_unittest.cc',
         'browser/extensions/api/declarative/url_matcher_unittest.cc',
         'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',

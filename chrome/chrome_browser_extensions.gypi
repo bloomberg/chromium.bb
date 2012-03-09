@@ -100,6 +100,8 @@
         'browser/extensions/api/declarative/rules_registry.h',
         'browser/extensions/api/declarative/rules_registry_service.cc',
         'browser/extensions/api/declarative/rules_registry_service.h',
+        'browser/extensions/api/declarative/rules_registry_with_cache.cc',
+        'browser/extensions/api/declarative/rules_registry_with_cache.h',
         'browser/extensions/api/declarative/substring_set_matcher.cc',
         'browser/extensions/api/declarative/substring_set_matcher.h',
         'browser/extensions/api/declarative/test_rules_registry.cc',

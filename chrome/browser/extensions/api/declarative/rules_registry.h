@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/api/experimental.declarative.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,7 +60,8 @@ class RulesRegistry
 
   // Unregisters all rules listed in |rule_identifiers| and owned by
   // |extension_id| from this RulesRegistry.
-  // Some or all IDs in |rule_identifiers| may not affect this RulesRegistry.
+  // Some or all IDs in |rule_identifiers| may not be stored in this
+  // RulesRegistry and are ignored.
   //
   // Returns an empty string if the function is successful or an error
   // message otherwise.
@@ -74,7 +76,8 @@ class RulesRegistry
   virtual std::string RemoveAllRules(const std::string& extension_id) = 0;
 
   // Returns all rules listed in |rule_identifiers| and owned by |extension_id|
-  // registered in this RuleRegistry.
+  // registered in this RuleRegistry. Entries in |rule_identifiers| that
+  // are unknown are ignored.
   //
   // The returned rules are stored in |out|. Ownership is passed to the caller.
   //
