@@ -886,19 +886,47 @@ class ArchiveStage(BoardSpecificBuilderStage):
                                         'trybot_archive')
 
     self._bot_archive_root = os.path.join(self._archive_root, self._bot_id)
-    self._version_queue = multiprocessing.Queue()
-    self._autotest_tarball_queue = multiprocessing.Queue()
-    self._test_results_queue = multiprocessing.Queue()
+
+    # Queues that are populated during the Archive stage.
     self._breakpad_symbols_queue = multiprocessing.Queue()
     self._hw_test_uploads_status_queue = multiprocessing.Queue()
 
+    # Queues that are populated by other stages.
+    self._version_queue = multiprocessing.Queue()
+    self._autotest_tarball_queue = multiprocessing.Queue()
+    self._test_results_queue = multiprocessing.Queue()
+
   def SetVersion(self, path_to_image):
     """Sets the cros version for the given built path to an image.
+
+    This must be called in order for archive stage to finish.
 
     Args:
       path_to_image: Path to latest image.""
     """
     self._version_queue.put(path_to_image)
+
+  def AutotestTarballReady(self, autotest_tarball):
+    """Tell Archive Stage that autotest tarball is ready.
+
+    This must be called in order for archive stage to finish.
+
+    Args:
+      autotest_tarball: The filename of the autotest tarball.
+    """
+    self._autotest_tarball_queue.put(autotest_tarball)
+
+  def TestResultsReady(self, test_results):
+    """Tell Archive Stage that test results are ready.
+
+    This must be called twice (with VM test results and Chrome test results)
+    in order for archive stage to finish.
+
+    Args:
+      test_results: The test results tarball from the tests. If no tests
+                    results are available, this should be set to None.
+    """
+    self._test_results_queue.put(test_results)
 
   def GetVersion(self):
     """Gets the version for the archive stage."""
@@ -913,23 +941,6 @@ class ArchiveStage(BoardSpecificBuilderStage):
         self._set_version = None
 
     return self._set_version
-
-  def AutotestTarballReady(self, autotest_tarball):
-    """Tell Archive Stage that autotest tarball is ready.
-
-       Args:
-         autotest_tarball: The filename of the autotest tarball.
-    """
-    self._autotest_tarball_queue.put(autotest_tarball)
-
-  def TestResultsReady(self, test_results):
-    """Tell Archive Stage that test results are ready.
-
-       Args:
-         test_results: The test results tarball from the tests. If no tests
-                       results are available, this should be set to None.
-    """
-    self._test_results_queue.put(test_results)
 
   def WaitForHWTestUploads(self):
     """Waits until artifacts needed for HWTest stage are uploaded.
@@ -1021,9 +1032,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
-    vm_tests = bool(self._build_config['vm_tests'])
-    chrome_tests = bool(vm_tests and self._build_config['chrome_tests'])
-    for _ in range(vm_tests + chrome_tests):
+    for _ in range(2):
       cros_lib.Info('Waiting for test results dir...')
       test_tarball = self._test_results_queue.get()
       if test_tarball:
@@ -1213,9 +1222,8 @@ class ArchiveStage(BoardSpecificBuilderStage):
     def BuildAndArchiveArtifacts(num_upload_processes=10):
       with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
         # Run archiving steps in parallel.
-        steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages]
-        if self._options.tests:
-          steps += [ArchiveArtifactsForHWTesting, ArchiveTestResults]
+        steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
+                 ArchiveArtifactsForHWTesting, ArchiveTestResults]
 
         background.RunParallelSteps(steps)
 
