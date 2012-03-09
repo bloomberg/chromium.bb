@@ -16,6 +16,12 @@ class CookiesTest(pyauto.PyUITest):
     super(CookiesTest, self).__init__(methodName)
     self.test_host = os.environ.get('COOKIES_TEST_HOST', 'www.google.com')
 
+  def setUp(self):
+    pyauto.PyUITest.setUp(self);
+    # Set the startup preference to "open the home page", if the startup
+    # preference is "continue where I left off", session cookies will be saved.
+    self.SetPrefs(pyauto.kRestoreOnStartup, 0);
+
   def _CookieCheckIncognitoWindow(self, url, cookies_enabled=True):
     """Check the cookie for the given URL in an incognito window."""
     # Navigate to the URL in an incognito window and verify no cookie is set.
