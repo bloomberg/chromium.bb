@@ -5,7 +5,6 @@
 #include "ash/shell/panel_window.h"
 
 #include "ash/wm/panel_frame_view.h"
-#include "ash/wm/toplevel_frame_view.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"

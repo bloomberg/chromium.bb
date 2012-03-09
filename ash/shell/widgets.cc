@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/toplevel_frame_view.h"
 #include "base/utf_string_conversions.h"  // ASCIIToUTF16
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -36,7 +35,7 @@ class WidgetsWindow : public views::WidgetDelegateView {
   // Overridden from views::WidgetDelegate:
   virtual views::View* GetContentsView() OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
-  virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
+  virtual bool CanResize() const OVERRIDE;
 
  private:
   views::NativeTextButton* button_;
@@ -122,8 +121,8 @@ string16 WidgetsWindow::GetWindowTitle() const {
   return ASCIIToUTF16("Examples: Widgets");
 }
 
-views::NonClientFrameView* WidgetsWindow::CreateNonClientFrameView() {
-  return new ash::internal::ToplevelFrameView;
+bool WidgetsWindow::CanResize() const {
+  return true;
 }
 
 }  // namespace

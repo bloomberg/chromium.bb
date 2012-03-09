@@ -9,7 +9,6 @@
 #include "ash/shell/panel_window.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/wm/shadow_types.h"
-#include "ash/wm/toplevel_frame_view.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -304,10 +303,6 @@ bool WindowTypeLauncher::CanResize() const {
 
 string16 WindowTypeLauncher::GetWindowTitle() const {
   return ASCIIToUTF16("Examples: Window Builder");
-}
-
-views::NonClientFrameView* WindowTypeLauncher::CreateNonClientFrameView() {
-  return new ash::internal::ToplevelFrameView;
 }
 
 void WindowTypeLauncher::ButtonPressed(views::Button* sender,

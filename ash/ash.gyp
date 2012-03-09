@@ -184,8 +184,6 @@
         'wm/stacking_controller.h',
         'wm/status_area_layout_manager.cc',
         'wm/status_area_layout_manager.h',
-        'wm/toplevel_frame_view.cc',
-        'wm/toplevel_frame_view.h',
         'wm/toplevel_layout_manager.cc',
         'wm/toplevel_layout_manager.h',
         'wm/toplevel_window_event_filter.cc',

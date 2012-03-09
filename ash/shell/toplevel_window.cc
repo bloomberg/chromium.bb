@@ -4,7 +4,6 @@
 
 #include "ash/shell/toplevel_window.h"
 
-#include "ash/wm/toplevel_frame_view.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -51,10 +50,6 @@ bool ToplevelWindow::CanResize() const {
 
 bool ToplevelWindow::CanMaximize() const {
   return params_.can_maximize;
-}
-
-views::NonClientFrameView* ToplevelWindow::CreateNonClientFrameView() {
-  return new ash::internal::ToplevelFrameView;
 }
 
 }  // namespace shell
