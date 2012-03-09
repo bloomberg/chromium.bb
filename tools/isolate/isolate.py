@@ -121,14 +121,10 @@ def run(outdir, resultfile, indir, infiles, read_only, cmd):
     if read_only:
       tree_creator.make_writable(outdir, True)
 
-    # TODO(maruel): Remove me. Layering violation. Used by
-    # base/base_paths_linux.cc
-    env = os.environ.copy()
-    env['CR_SOURCE_ROOT'] = outdir.encode()
     # Rebase the command to the right path.
-    cmd[0] = os.path.join(outdir, cmd[0])
-    logging.info('Running %s' % cmd)
-    result = subprocess.call(cmd, cwd=outdir, env=env)
+    cwd = os.path.join(outdir, os.path.relpath(os.getcwd(), indir))
+    logging.info('Running %s, cwd=%s' % (cmd, cwd))
+    result = subprocess.call(cmd, cwd=cwd)
     if not result and resultfile:
       # Signal the build tool that the test succeeded.
       touch(resultfile)
@@ -181,6 +177,9 @@ def main():
   parser.add_option(
       '--read-only', action='store_true',
       help='Make the temporary tree read-only')
+  parser.add_option(
+      '--files', metavar='FILE',
+      help='File to be read containing input files')
 
   options, args = parser.parse_args()
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
@@ -190,6 +189,12 @@ def main():
 
   if not options.root:
     parser.error('--root is required.')
+
+  if options.files:
+    args = [
+        i.decode('utf-8')
+        for i in open(options.files, 'rb').read().splitlines() if i
+    ] + args
 
   infiles, cmd = separate_inputs_command(args, options.root)
   if not infiles:

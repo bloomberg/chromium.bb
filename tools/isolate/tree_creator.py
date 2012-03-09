@@ -58,7 +58,7 @@ def preprocess_inputs(indir, infiles, blacklist):
             'Input directory %s must have a trailing slash' % infile)
       for dirpath, dirnames, filenames in os.walk(infile):
         # Convert the absolute path to subdir + relative subdirectory.
-        relpath = dirpath[len(infile)+1:]
+        relpath = dirpath[len(indir)+1:]
         outfiles.extend(os.path.join(relpath, f) for f in filenames)
         for index, dirname in enumerate(dirnames):
           # Do not process blacklisted directories.
