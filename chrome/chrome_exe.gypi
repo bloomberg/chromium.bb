@@ -361,8 +361,8 @@
               # prepare their Breakpad symbol files.
               'postbuild_name': 'Make More Helpers',
               'action': [
-                'tools/build/mac/make_more_helpers.sh',
-                '<(version_full)',
+                '../build/mac/make_more_helpers.sh',
+                'Versions/<(version_full)',
                 '<(mac_product_name)',
               ],
             },

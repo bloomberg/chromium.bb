@@ -46,6 +46,11 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 ShellBrowserMainParts::~ShellBrowserMainParts() {
 }
 
+#if !defined(OS_MACOSX)
+void ShellBrowserMainParts::PreMainMessageLoopStart() {
+}
+#endif
+
 MessageLoop* ShellBrowserMainParts::GetMainMessageLoop() {
   return NULL;
 }

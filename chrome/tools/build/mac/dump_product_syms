@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -127,7 +127,7 @@ for SRC_NAME in "${SRC_NAMES[@]}"; do
 
     "${SRC_APP_NAME} Helper.app")
       # Google Chrome Helper EH and Google Chrome Helper NP are produced by
-      # chrome/tools/build/mac/make_more_helpers.sh.
+      # build/mac/make_more_helpers.sh.
       redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \
                           "${SRC_STEM} EH" "${SRC_STEM} EH.app"
       redump_syms_variant "${BPAD_SYM_PATH}" "${SRC_STEM}" \

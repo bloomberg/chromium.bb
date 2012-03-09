@@ -57,6 +57,7 @@
         'shell/shell_browser_context.h',
         'shell/shell_browser_main.cc',
         'shell/shell_browser_main.h',
+        'shell/shell_browser_main_mac.mm',
         'shell/shell_content_browser_client.cc',
         'shell/shell_content_browser_client.h',
         'shell/shell_content_client.cc',
@@ -273,6 +274,15 @@
           ],
           'dependencies': [
             'content_shell_framework',
+            'content_shell_helper_app',
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/<(content_shell_product_name).app/Contents/Frameworks',
+              'files': [
+                '<(PRODUCT_DIR)/<(content_shell_product_name) Helper.app',
+              ],
+            },
           ],
           'postbuilds': [
             {
@@ -298,6 +308,22 @@
               'postbuild_name': 'Tweak Info.plist',
               'action': ['../build/mac/tweak_info_plist.py',
                          '--svn=1'],
+            },
+            {
+              # This postbuid step is responsible for creating the following
+              # helpers:
+              #
+              # Content Shell Helper EH.app and Content Shell Helper NP.app are
+              # created from Content Shell Helper.app.
+              #
+              # The EH helper is marked for an executable heap. The NP helper
+              # is marked for no PIE (ASLR).
+              'postbuild_name': 'Make More Helpers',
+              'action': [
+                '../build/mac/make_more_helpers.sh',
+                'Frameworks',
+                '<(content_shell_product_name)',
+              ],
             },
             {
               # Make sure there isn't any Objective-C in the shell's
@@ -334,7 +360,72 @@
             'shell/shell_content_main.cc',
             'shell/shell_content_main.h',
           ],
-        },
+        },  # target content_shell_framework
+        {
+          'target_name': 'content_shell_helper_app',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'product_name': '<(content_shell_product_name) Helper',
+          'mac_bundle': 1,
+          'dependencies': [
+            'content_shell_framework',
+          ],
+          'sources': [
+            'shell/shell_main.cc',
+            'shell/mac/helper-Info.plist',
+          ],
+          # TODO(mark): Come up with a fancier way to do this.  It should only
+          # be necessary to list helper-Info.plist once, not the three times it
+          # is listed here.
+          'mac_bundle_resources!': [
+            'shell/mac/helper-Info.plist',
+          ],
+          # TODO(mark): For now, don't put any resources into this app.  Its
+          # resources directory will be a symbolic link to the browser app's
+          # resources directory.
+          'mac_bundle_resources/': [
+            ['exclude', '.*'],
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': 'shell/mac/helper-Info.plist',
+          },
+          'postbuilds': [
+            {
+              # The framework defines its load-time path
+              # (DYLIB_INSTALL_NAME_BASE) relative to the main executable
+              # (chrome).  A different relative path needs to be used in
+              # content_shell_helper_app.
+              'postbuild_name': 'Fix Framework Link',
+              'action': [
+                'install_name_tool',
+                '-change',
+                '/Library/Frameworks/<(content_shell_product_name) Framework.framework/Versions/A/<(content_shell_product_name) Framework',
+                '@executable_path/../../../../Frameworks/<(content_shell_product_name) Framework.framework/<(content_shell_product_name) Framework',
+                '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}'
+              ],
+            },
+            {
+              # Modify the Info.plist as needed.  The script explains why this
+              # is needed.  This is also done in the chrome and chrome_dll
+              # targets.  In this case, --breakpad=0, --keystone=0, and --svn=0
+              # are used because Breakpad, Keystone, and Subversion keys are
+              # never placed into the helper.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['../build/mac/tweak_info_plist.py',
+                         '--breakpad=0',
+                         '--keystone=0',
+                         '--svn=0'],
+            },
+            {
+              # Make sure there isn't any Objective-C in the helper app's
+              # executable.
+              'postbuild_name': 'Verify No Objective-C',
+              'action': [
+                '../build/mac/verify_no_objc.sh',
+              ],
+            },
+          ],
+        },  # target content_shell_helper_app
       ],
     }],  # OS=="mac"
   ],

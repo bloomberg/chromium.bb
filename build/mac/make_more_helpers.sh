@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Usage: make_more_helpers.sh <version> <app_name>
+# Usage: make_more_helpers.sh <directory_within_contents> <app_name>
 #
 # This script creates additional helper .app bundles for Chromium, based on
 # the existing helper .app bundle, changing their Mach-O header's flags to
@@ -24,13 +24,13 @@
 set -eu
 
 make_helper() {
-  local versioned_dir="${1}"
+  local containing_dir="${1}"
   local app_name="${2}"
   local feature="${3}"
   local flags="${4}"
 
   local helper_name="${app_name} Helper"
-  local helper_stem="${versioned_dir}/${helper_name}"
+  local helper_stem="${containing_dir}/${helper_name}"
   local original_helper="${helper_stem}.app"
   if [[ ! -d "${original_helper}" ]]; then
     echo "${0}: error: ${original_helper} is a required directory" >& 2
@@ -50,8 +50,7 @@ make_helper() {
   local helper_feature_exe="${feature_helper}/Contents/MacOS/${helper_feature}"
   mv "${feature_helper}/Contents/MacOS/${helper_name}" "${helper_feature_exe}"
 
-  local change_flags="\
-$(dirname "${0}")/../../../../build/mac/change_mach_o_flags.py"
+  local change_flags="$(dirname "${0}")/change_mach_o_flags.py"
   "${change_flags}" ${flags} "${helper_feature_exe}"
 
   local feature_info="${feature_helper}/Contents/Info"
@@ -78,16 +77,15 @@ $(dirname "${0}")/../../../../build/mac/change_mach_o_flags.py"
 }
 
 if [[ ${#} -ne 2 ]]; then
-  echo "usage: ${0} <version> <app_name>" >& 2
+  echo "usage: ${0} <directory_within_contents> <app_name>" >& 2
   exit 1
 fi
 
-VERSION="${1}"
+DIRECTORY_WITHIN_CONTENTS="${1}"
 APP_NAME="${2}"
 
 CONTENTS_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}"
-VERSIONED_DIR="${CONTENTS_DIR}/Versions"
-CURRENT_VERSIONED_DIR="${VERSIONED_DIR}/${VERSION}"
+CONTAINING_DIR="${CONTENTS_DIR}/${DIRECTORY_WITHIN_CONTENTS}"
 
-make_helper "${CURRENT_VERSIONED_DIR}" "${APP_NAME}" "EH" "--executable-heap"
-make_helper "${CURRENT_VERSIONED_DIR}" "${APP_NAME}" "NP" "--no-pie"
+make_helper "${CONTAINING_DIR}" "${APP_NAME}" "EH" "--executable-heap"
+make_helper "${CONTAINING_DIR}" "${APP_NAME}" "NP" "--no-pie"
