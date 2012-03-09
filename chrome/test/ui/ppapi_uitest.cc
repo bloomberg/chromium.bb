@@ -638,8 +638,14 @@ TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessFlashFullscreen) {
   RunTestViaHTTP("FlashFullscreen");
 }
 
+// http://crbug.com/107175.
+#if defined(OS_WIN)
+#define MAYBE_Fullscreen DISABLED_Fullscreen
+#else
+#define MAYBE_Fullscreen Fullscreen
+#endif
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(Fullscreen)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(Fullscreen)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
 
 TEST_PPAPI_IN_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
