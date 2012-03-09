@@ -2895,7 +2895,6 @@
         '../base/files/file_path_watcher_browsertest.cc',
         '../content/app/startup_helper_win.cc',
         '../content/browser/accessibility/dump_accessibility_tree_browsertest.cc',
-        '../content/browser/accessibility/dump_accessibility_tree_helper.cc',
         '../content/browser/accessibility/dump_accessibility_tree_helper_mac.mm',
         '../content/browser/accessibility/dump_accessibility_tree_helper_win.cc',
         '../content/browser/accessibility/renderer_accessibility_browsertest.cc',

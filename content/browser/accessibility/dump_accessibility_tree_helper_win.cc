@@ -155,8 +155,7 @@ void DumpAccessibilityTreeHelper::Initialize() {
   // STATE_MAP(IA2_STATE_VERTICAL) // Untested.
 }
 
-string16 DumpAccessibilityTreeHelper::ToString(
-    BrowserAccessibility* node, char* prefix) {
+string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node) {
   if (role_string_map.empty())
     Initialize();
 
@@ -165,16 +164,11 @@ string16 DumpAccessibilityTreeHelper::ToString(
   std::map<int32, string16>::iterator it;
 
   for (it = state_string_map.begin(); it != state_string_map.end(); ++it) {
-    if (it->first & acc_obj->ia2_state()) {
-      if (!state.empty())
-        state += L",";
-      state += it->second;
-    }
+    if (it->first & acc_obj->ia2_state())
+      state += it->second + L"|";
   }
-  return UTF8ToUTF16(prefix) +
-         role_string_map[acc_obj->ia2_role()] +
-         L" name='" + acc_obj->name() +
-         L"' state=" + state + L"\r\n";
+  return acc_obj->name() + L"|" + role_string_map[acc_obj->ia2_role()] + L"|" +
+      state;
 }
 
 const FilePath::StringType DumpAccessibilityTreeHelper::GetActualFileSuffix()
@@ -185,4 +179,8 @@ const FilePath::StringType DumpAccessibilityTreeHelper::GetActualFileSuffix()
 const FilePath::StringType DumpAccessibilityTreeHelper::GetExpectedFileSuffix()
     const {
   return FILE_PATH_LITERAL("-expected-win.txt");
+}
+
+const string16 DumpAccessibilityTreeHelper::GetLineEnding() const {
+  return L"\r\n";
 }

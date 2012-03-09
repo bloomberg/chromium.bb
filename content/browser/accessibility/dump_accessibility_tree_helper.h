@@ -11,13 +11,15 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 
 // A utility class for retrieving platform specific accessibility information.
-// This is extended by a subclass for each platform where accessibility is
-// implemented.
 class DumpAccessibilityTreeHelper {
  public:
   // Dumps a BrowserAccessibility tree into a string.
   void DumpAccessibilityTree(BrowserAccessibility* node,
-                             string16* contents);
+                             string16* contents) {
+    *contents += ToString(node) + GetLineEnding();
+    for (size_t i = 0; i < node->children().size(); ++i)
+      DumpAccessibilityTree(node->children()[i], contents);
+  }
 
   // Suffix of the expectation file corresponding to html file.
   // Example:
@@ -27,15 +29,12 @@ class DumpAccessibilityTreeHelper {
   const FilePath::StringType GetActualFileSuffix() const;
   const FilePath::StringType GetExpectedFileSuffix() const;
 
- protected:
-  void RecursiveDumpAccessibilityTree(BrowserAccessibility* node,
-                                      string16* contents,
-                                      int indent);
+  // Line ending to use in our dump.
+  const string16 GetLineEnding() const;
 
+ protected:
   // Returns a platform specific representation of a BrowserAccessibility.
-  // Should be zero or more complete lines, each with |prefix| prepended
-  // (to indent each line).
-  string16 ToString(BrowserAccessibility* node, char* prefix);
+  string16 ToString(BrowserAccessibility* node);
 
   void Initialize();
 };

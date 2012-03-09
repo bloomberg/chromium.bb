@@ -13,16 +13,13 @@
 
 void DumpAccessibilityTreeHelper::Initialize() {}
 
-string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node,
-                                               char* prefix) {
+string16 DumpAccessibilityTreeHelper::ToString(BrowserAccessibility* node) {
   BrowserAccessibilityCocoa* cocoa_node = node->toBrowserAccessibilityCocoa();
-  NSString* dump =
-      [NSString stringWithFormat:@"%s%@ subrole=%@ title='%@' value='%@'\n",
-       prefix,
-       [cocoa_node role],
-       [cocoa_node subrole],
-       [cocoa_node title],
-       [cocoa_node value]];
+  NSString* dump = [NSString stringWithFormat:@"%@|%@|%@|%@",
+      [cocoa_node role],
+      [cocoa_node subrole],
+      [cocoa_node title],
+      [cocoa_node value]];
   std::string tempVal = [dump cStringUsingEncoding:NSUTF8StringEncoding];
 
   return UTF8ToUTF16(tempVal);
@@ -36,4 +33,8 @@ const FilePath::StringType DumpAccessibilityTreeHelper::GetActualFileSuffix()
 const FilePath::StringType DumpAccessibilityTreeHelper::GetExpectedFileSuffix()
     const {
   return FILE_PATH_LITERAL("-expected-mac.txt");
+}
+
+const string16 DumpAccessibilityTreeHelper::GetLineEnding() const {
+  return UTF8ToUTF16("\n");
 }
