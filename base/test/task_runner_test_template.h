@@ -48,8 +48,8 @@
 //
 // Easy!
 
-#ifndef BASE_TASK_RUNNER_TEST_TEMPLATE_H_
-#define BASE_TASK_RUNNER_TEST_TEMPLATE_H_
+#ifndef BASE_TEST_TASK_RUNNER_TEST_TEMPLATE_H_
+#define BASE_TEST_TASK_RUNNER_TEST_TEMPLATE_H_
 #pragma once
 
 #include <cstddef>
@@ -212,4 +212,4 @@ REGISTER_TYPED_TEST_CASE_P(
 
 }  // namespace base
 
-#endif  //#define BASE_TASK_RUNNER_TEST_TEMPLATE_H_
+#endif  //#define BASE_TEST_TASK_RUNNER_TEST_TEMPLATE_H_
