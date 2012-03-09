@@ -13,8 +13,6 @@ var remoting = remoting || {};
  */
 remoting.AskPinDialog = function(daemon) {
   this.startDaemon_ = false;
-  this.screen_ = document.getElementById('dialog-screen');
-  this.dialog_ = document.getElementById('ask-pin-dialog');
   this.daemon_ = daemon;
   this.okButton_ = document.getElementById('daemon-pin-ok');
   this.spinner_ = document.getElementById('start-daemon-spinner');
@@ -27,7 +25,8 @@ remoting.AskPinDialog = function(daemon) {
     event.preventDefault();
     that.onSubmit_();
   };
-  this.dialog_.addEventListener('submit', onSubmit, false);
+  var form = document.getElementById('ask-pin-form');
+  form.addEventListener('submit', onSubmit, false);
 };
 
 /**
@@ -37,8 +36,7 @@ remoting.AskPinDialog = function(daemon) {
  * @return {void} Nothing.
  */
 remoting.AskPinDialog.prototype.showForStart = function() {
-  this.screen_.hidden = false;
-  this.dialog_.hidden = false;
+  remoting.setMode(remoting.AppMode.ASK_PIN);
   this.startDaemon_ = true;
 };
 
@@ -48,8 +46,7 @@ remoting.AskPinDialog.prototype.showForStart = function() {
  * @return {void} Nothing.
  */
 remoting.AskPinDialog.prototype.showForPin = function() {
-  this.screen_.hidden = false;
-  this.dialog_.hidden = false;
+  remoting.setMode(remoting.AppMode.ASK_PIN);
   this.startDaemon_ = false;
 };
 
@@ -57,8 +54,7 @@ remoting.AskPinDialog.prototype.showForPin = function() {
  * @return {void} Nothing.
  */
 remoting.AskPinDialog.prototype.hide = function() {
-  this.screen_.hidden = true;
-  this.dialog_.hidden = true;
+  remoting.setMode(remoting.AppMode.HOME);
 };
 
 /** @private */

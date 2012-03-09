@@ -157,19 +157,18 @@ found in the LICENSE file.
     </div> <!-- home -->
 
     <div id="dialog-screen"
-         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete"
+         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.ask-pin"
          hidden></div>
 
     <div id="dialog-container"
-         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete"
+         data-ui-mode="home.host home.client home.auth home.history home.confirm-host-delete home.ask-pin"
          hidden>
 
       <div class="box-spacer"></div>
 
-      <div id="ask-pin-dialog" hidden>
+      <div id="ask-pin-dialog" data-ui-mode="home.ask-pin" hidden>
         <p i18n-content="ASK_PIN_DIALOG_DESCRIPTION"></p>
-        <form id="ask-pin-form"
-              action="">
+        <form id="ask-pin-form" action="">
           <label for="daemon-pin-input"
                  i18n-content="ASK_PIN_DIALOG_LABEL"></label>
           <input id="daemon-pin-entry" type="password">

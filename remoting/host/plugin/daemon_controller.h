@@ -54,18 +54,23 @@ class DaemonController {
   virtual bool SetPin(const std::string& pin) = 0;
 
   // Start the daemon process. Since this may require that the daemon be
-  // downloaded and installed, this may take a long time--poll GetState
-  // until the state is STATE_STARTED or STATE_START_FAILED. Start fails
-  // synchronously and returns false if sufficient state has not been set,
-  // including a valid PIN.
+  // downloaded and installed, Start may return before the daemon process
+  // is actually running--poll GetState until the state is STATE_STARTED
+  // or STATE_START_FAILED.
+  //
+  // Start fails synchronously and returns false if sufficient state has
+  // not been set, including a valid PIN.
   virtual bool Start() = 0;
 
   // Stop the daemon process. It is permitted to call Stop while the daemon
   // process is being installed, in which case the installation should be
   // aborted if possible; if not then it is sufficient to ensure that the
   // daemon process is not started automatically upon successful installation.
-  // Returns false if sufficient state has not been set; Stop is not permitted
-  // to fail for any other reason.
+  // As with Start, Stop may return before the operation is complete--poll
+  // GetState until the state is STATE_STOPPED.
+  //
+  // Stop fails synchronously and returns false if sufficient state has not
+  // been set.
   virtual bool Stop() = 0;
 
   static DaemonController* Create();
