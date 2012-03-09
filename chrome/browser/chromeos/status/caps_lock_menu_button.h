@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/button/menu_button_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
@@ -78,7 +79,12 @@ class CapsLockMenuButton : public content::NotificationObserver,
   // Updates the button from the current state.
   void UpdateUIFromCurrentCapsLock(bool enabled);
 
-  PrefService* prefs_;
+  // Initializes |remap_search_key_to_|.
+  void InitializePrefMember();
+
+  bool initialized_prefs_;
+  content::NotificationRegistrar registrar_;
+
   IntegerPrefMember remap_search_key_to_;
 
   // The currently showing status view. NULL if menu is not being displayed.
