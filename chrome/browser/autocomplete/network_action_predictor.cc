@@ -53,6 +53,21 @@ enum DatabaseAction {
   DATABASE_ACTION_COUNT
 };
 
+bool IsAutocompleteMatchSearchType(const AutocompleteMatch& match) {
+  switch (match.type) {
+    // Matches using the user's default search engine.
+    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
+    case AutocompleteMatch::SEARCH_HISTORY:
+    case AutocompleteMatch::SEARCH_SUGGEST:
+    // A match that uses a non-default search engine (e.g. for tab-to-search).
+    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 }
 
 const int NetworkActionPredictor::kMaximumDaysToKeepEntry = 14;
@@ -149,9 +164,16 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
   }
 
   // Downgrade prerender to preconnect if this is a search match or if omnibox
-  // prerendering is disabled.
-  if (action == ACTION_PRERENDER && !prerender::IsOmniboxEnabled(profile_))
+  // prerendering is disabled. There are cases when Instant will not handle a
+  // search suggestion and in those cases it would be good to prerender the
+  // search results, however search engines have not been set up to correctly
+  // handle being prerendered and until they are we should avoid it.
+  // http://crbug.com/117495
+  if (action == ACTION_PRERENDER &&
+      (IsAutocompleteMatchSearchType(match) ||
+       !prerender::IsOmniboxEnabled(profile_))) {
     action = ACTION_PRECONNECT;
+  }
 
   return action;
 }
@@ -160,18 +182,7 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
 // i.e., it is now quite likely that the user will select the related domain.
 // static
 bool NetworkActionPredictor::IsPreconnectable(const AutocompleteMatch& match) {
-  switch (match.type) {
-    // Matches using the user's default search engine.
-    case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
-    case AutocompleteMatch::SEARCH_HISTORY:
-    case AutocompleteMatch::SEARCH_SUGGEST:
-    // A match that uses a non-default search engine (e.g. for tab-to-search).
-    case AutocompleteMatch::SEARCH_OTHER_ENGINE:
-      return true;
-
-    default:
-      return false;
-  }
+  return IsAutocompleteMatchSearchType(match);
 }
 
 void NetworkActionPredictor::Shutdown() {
