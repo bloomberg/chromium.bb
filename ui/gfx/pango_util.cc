@@ -107,15 +107,16 @@ cairo_font_options_t* GetCairoFontOptions() {
   if (rgba_style)
     g_free(rgba_style);
 #else
-  // For non-GTK builds (read: Aura), use the same settings that were previously
-  // used for GTK Chrome OS builds: RGB subpixel rendering with strong hinting.
-  // Note: We should probably be getting per-font settings from FontConfig here,
-  // but this path will be made obsolete by http://crbug.com/105550.
+  // For non-GTK builds (read: Aura), use RGB subpixel rendering with light
+  // hinting.  Note: We should probably be getting per-font settings from
+  // FontConfig here, but this path will be made obsolete by
+  // http://crbug.com/105550.
   cairo_font_options_set_antialias(cairo_font_options,
                                    CAIRO_ANTIALIAS_SUBPIXEL);
   cairo_font_options_set_subpixel_order(cairo_font_options,
                                         CAIRO_SUBPIXEL_ORDER_RGB);
-  cairo_font_options_set_hint_style(cairo_font_options, CAIRO_HINT_STYLE_FULL);
+  cairo_font_options_set_hint_style(cairo_font_options,
+                                    CAIRO_HINT_STYLE_SLIGHT);
 #endif
 
   return cairo_font_options;
