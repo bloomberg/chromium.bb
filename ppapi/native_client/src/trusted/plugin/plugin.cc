@@ -1178,7 +1178,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
   bool was_successful = LoadNaClModule(
       wrapper.get(), &error_info,
       callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation),
-      pp::BlockUntilComplete());
+      callback_factory_.NewCallback(&Plugin::NexeDidCrash));
 
   if (!was_successful) {
     ReportLoadError(error_info);
