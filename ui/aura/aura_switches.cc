@@ -8,9 +8,6 @@
 
 namespace switches {
 
-// Enable the holding of mouse movements in order to throttle window resizing.
-const char kAuraDisableHoldMouseMoves[] = "aura-disable-hold-mouse-moves";
-
 // Initial dimensions for the host window in the form "1024x768".
 const char kAuraHostWindowSize[] = "aura-host-window-size";
 

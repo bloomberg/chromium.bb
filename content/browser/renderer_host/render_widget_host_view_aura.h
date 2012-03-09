@@ -7,10 +7,8 @@
 #pragma once
 
 #include <map>
-#include <vector>
 
 #include "base/callback.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -274,10 +272,6 @@ class RenderWidgetHostViewAura
   // This flag is used to differentiate between these synthetic mouse move
   // events vs. normal mouse move events.
   bool synthetic_move_sent_;
-
-  // Used to prevent further resizes while a resize is pending.
-  class ResizeLock;
-  std::vector<linked_ptr<ResizeLock> > resize_locks_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

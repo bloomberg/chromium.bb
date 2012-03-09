@@ -6,14 +6,12 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/backing_store_skia.h"
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
@@ -35,7 +33,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 
-using content::BrowserThread;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
@@ -51,12 +48,6 @@ namespace {
 // if it approaches the border. |kMouseLockBorderPercentage| specifies the width
 // of the border area, in percentage of the corresponding dimension.
 const int kMouseLockBorderPercentage = 15;
-
-// When accelerated compositing is enabled and a widget resize is pending,
-// we delay further resizes of the UI. The following constant is the maximum
-// length of time that we should delay further UI resizes while waiting for a
-// resized frame from a renderer.
-const int kResizeLockTimeoutMs = 67;
 
 ui::TouchStatus DecideTouchStatus(const WebKit::WebTouchEvent& event,
                                   WebKit::WebTouchPoint* point) {
@@ -123,43 +114,6 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
   RenderWidgetHostViewAura* view_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
-};
-
-class RenderWidgetHostViewAura::ResizeLock :
-    public base::SupportsWeakPtr<RenderWidgetHostViewAura::ResizeLock> {
- public:
-  ResizeLock(RenderWidgetHostViewAura* view, const gfx::Size new_size)
-      : view_(view),
-        new_size_(new_size) {
-    view_->window_->GetRootWindow()->HoldMouseMoves();
-
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&RenderWidgetHostViewAura::ResizeLock::CancelLock,
-                   AsWeakPtr()),
-        kResizeLockTimeoutMs);
-  }
-
-  ~ResizeLock() {
-    if (view_) {
-      view_->window_->GetRootWindow()->ReleaseMouseMoves();
-    }
-  }
-
-  void CancelLock() {
-    view_->window_->GetRootWindow()->ReleaseMouseMoves();
-    view_ = NULL;
-  }
-
-  const gfx::Size& expected_size() const {
-    return new_size_;
-  }
-
- private:
-  RenderWidgetHostViewAura* view_;
-  gfx::Size new_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResizeLock);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,9 +202,6 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  if (window_->bounds().size() != rect.size() &&
-      host_->is_accelerated_compositing_active())
-    resize_locks_.push_back(make_linked_ptr(new ResizeLock(this, rect.size())));
   window_->SetBounds(rect);
   host_->WasResized();
 }
@@ -397,28 +348,13 @@ void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
 void RenderWidgetHostViewAura::UpdateExternalTexture() {
   if (current_surface_ != 0 &&
       host_->is_accelerated_compositing_active()) {
-
     ImageTransportClient* container =
         image_transport_clients_[current_surface_];
     if (container)
       container->Update();
     window_->SetExternalTexture(container);
-
-    if (!container)
-      resize_locks_.clear();
-    else {
-      std::vector<linked_ptr<ResizeLock> >::iterator it = resize_locks_.begin();
-      while (it != resize_locks_.end()) {
-        if ((*it)->expected_size() == container->size())
-          break;
-        ++it;
-      }
-      if (it != resize_locks_.end())
-        resize_locks_.erase(resize_locks_.begin(), ++it);
-    }
   } else {
     window_->SetExternalTexture(NULL);
-    resize_locks_.clear();
   }
 }
 

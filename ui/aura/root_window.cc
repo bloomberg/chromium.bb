@@ -102,17 +102,10 @@ RootWindow::RootWindow()
           gesture_recognizer_(GestureRecognizer::Create(this))),
       synthesize_mouse_move_(false),
       waiting_on_compositing_end_(false),
-      draw_on_compositing_end_(false),
-      defer_draw_scheduling_(false),
-      mouse_move_hold_count_(0),
-      should_hold_mouse_moves_(false),
-      release_mouse_moves_after_draw_(false) {
+      draw_on_compositing_end_(false) {
   SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);
   last_mouse_location_ = host_->QueryMouseLocation();
-
-  should_hold_mouse_moves_ = !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAuraDisableHoldMouseMoves);
 
   ui::Compositor::Initialize(false);
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget(),
@@ -190,18 +183,10 @@ bool RootWindow::ConfineCursorToWindow() {
 void RootWindow::Draw() {
   if (waiting_on_compositing_end_) {
     draw_on_compositing_end_ = true;
-    defer_draw_scheduling_ = false;
     return;
   }
   waiting_on_compositing_end_ = true;
-
   compositor_->Draw(false);
-  defer_draw_scheduling_ = false;
-
-  if (release_mouse_moves_after_draw_) {
-    release_mouse_moves_after_draw_ = false;
-    ReleaseMouseMoves();
-  }
 }
 
 void RootWindow::ScheduleFullDraw() {
@@ -209,26 +194,56 @@ void RootWindow::ScheduleFullDraw() {
 }
 
 bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
-  if (mouse_move_hold_count_) {
-    if (event->type() == ui::ET_MOUSE_DRAGGED ||
-        (event->flags() & ui::EF_IS_SYNTHESIZED)) {
-      held_mouse_move_.reset(new MouseEvent(*event, NULL, NULL));
-      return true;
-    } else {
-      DispatchHeldMouseMove();
-    }
+  static const int kMouseButtonFlagMask =
+      ui::EF_LEFT_MOUSE_BUTTON |
+      ui::EF_MIDDLE_MOUSE_BUTTON |
+      ui::EF_RIGHT_MOUSE_BUTTON;
+
+  event->UpdateForRootTransform(layer()->transform());
+
+  last_mouse_location_ = event->location();
+  synthesize_mouse_move_ = false;
+
+  Window* target =
+      mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
+  if (!target)
+    target = GetEventHandlerForPoint(event->location());
+  switch (event->type()) {
+    case ui::ET_MOUSE_MOVED:
+      HandleMouseMoved(*event, target);
+      break;
+    case ui::ET_MOUSE_PRESSED:
+      if (!mouse_pressed_handler_)
+        mouse_pressed_handler_ = target;
+      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
+      Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      mouse_pressed_handler_ = NULL;
+      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
+      Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
+      break;
+    default:
+      break;
   }
-  return DispatchMouseEventImpl(event);
+  if (target && target->delegate()) {
+    int flags = event->flags();
+    gfx::Point location_in_window = event->location();
+    Window::ConvertPointToWindow(this, target, &location_in_window);
+    if (IsNonClientLocation(target, location_in_window))
+      flags |= ui::EF_IS_NON_CLIENT;
+    MouseEvent translated_event(*event, this, target, event->type(), flags);
+    return ProcessMouseEvent(target, &translated_event);
+  }
+  return false;
 }
 
 bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
-  DispatchHeldMouseMove();
   KeyEvent translated_event(*event);
   return ProcessKeyEvent(focused_window_, &translated_event);
 }
 
 bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
-  DispatchHeldMouseMove();
   event->UpdateForRootTransform(layer()->transform());
 
   last_mouse_location_ = event->location();
@@ -252,7 +267,6 @@ bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
 }
 
 bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
-  DispatchHeldMouseMove();
   event->UpdateForRootTransform(layer()->transform());
   bool handled = false;
   Window* target =
@@ -289,7 +303,6 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
 }
 
 bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
-  DispatchHeldMouseMove();
   Window* target = gesture_handler_ ? gesture_handler_ : capture_window_;
   if (!target)
     target = GetEventHandlerForPoint(event->location());
@@ -307,7 +320,6 @@ bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
 }
 
 void RootWindow::OnHostResized(const gfx::Size& size) {
-  DispatchHeldMouseMove();
   // The compositor should have the same size as the native root window host.
   compositor_->WidgetSizeChanged(size);
 
@@ -321,7 +333,6 @@ void RootWindow::OnHostResized(const gfx::Size& size) {
 }
 
 void RootWindow::OnNativeScreenResized(const gfx::Size& size) {
-  DispatchHeldMouseMove();
   if (use_fullscreen_host_window_)
     SetHostSize(size);
 }
@@ -438,20 +449,6 @@ void RootWindow::ToggleFullScreen() {
 }
 #endif
 
-void RootWindow::HoldMouseMoves() {
-  if (should_hold_mouse_moves_)
-    ++mouse_move_hold_count_;
-}
-
-void RootWindow::ReleaseMouseMoves() {
-  if (should_hold_mouse_moves_) {
-    --mouse_move_hold_count_;
-    DCHECK_GE(mouse_move_hold_count_, 0);
-    if (!mouse_move_hold_count_)
-      DispatchHeldMouseMove();
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindow, Window overrides:
 
@@ -472,12 +469,7 @@ void RootWindow::SetTransform(const ui::Transform& transform) {
 // RootWindow, ui::CompositorDelegate implementation:
 
 void RootWindow::ScheduleDraw() {
-  if (!defer_draw_scheduling_) {
-    defer_draw_scheduling_ = true;
-    if (!release_mouse_moves_after_draw_) {
-      HoldMouseMoves();
-      release_mouse_moves_after_draw_ = true;
-    }
+  if (!schedule_paint_factory_.HasWeakPtrs()) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&RootWindow::Draw, schedule_paint_factory_.GetWeakPtr()));
@@ -796,61 +788,6 @@ void RootWindow::Init() {
   Show();
   compositor()->SetRootLayer(layer());
   host_->SetRootWindow(this);
-}
-
-bool RootWindow::DispatchMouseEventImpl(MouseEvent* event) {
-  static const int kMouseButtonFlagMask =
-      ui::EF_LEFT_MOUSE_BUTTON |
-      ui::EF_MIDDLE_MOUSE_BUTTON |
-      ui::EF_RIGHT_MOUSE_BUTTON;
-
-  event->UpdateForRootTransform(layer()->transform());
-
-  last_mouse_location_ = event->location();
-  synthesize_mouse_move_ = false;
-
-  Window* target =
-      mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
-  if (!target)
-    target = GetEventHandlerForPoint(event->location());
-  switch (event->type()) {
-    case ui::ET_MOUSE_MOVED:
-      HandleMouseMoved(*event, target);
-      break;
-    case ui::ET_MOUSE_PRESSED:
-      if (!mouse_pressed_handler_)
-        mouse_pressed_handler_ = target;
-      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
-      Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
-      break;
-    case ui::ET_MOUSE_RELEASED:
-      mouse_pressed_handler_ = NULL;
-      mouse_button_flags_ = event->flags() & kMouseButtonFlagMask;
-      Env::GetInstance()->set_mouse_button_flags(mouse_button_flags_);
-      break;
-    default:
-      break;
-  }
-  if (target && target->delegate()) {
-    int flags = event->flags();
-    gfx::Point location_in_window = event->location();
-    Window::ConvertPointToWindow(this, target, &location_in_window);
-    if (IsNonClientLocation(target, location_in_window))
-      flags |= ui::EF_IS_NON_CLIENT;
-    MouseEvent translated_event(*event, this, target, event->type(), flags);
-    return ProcessMouseEvent(target, &translated_event);
-  }
-  return false;
-}
-
-void RootWindow::DispatchHeldMouseMove() {
-  if (held_mouse_move_.get()) {
-    // If a mouse move has been synthesized, the target location is suspect,
-    // so drop the held event.
-    if (!synthesize_mouse_move_)
-      DispatchMouseEventImpl(held_mouse_move_.get());
-    held_mouse_move_.reset();
-  }
 }
 
 gfx::Rect RootWindow::GetInitialHostWindowBounds() const {
