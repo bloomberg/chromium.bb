@@ -727,6 +727,7 @@ const char kBluetoothAgentInterface[] = "org.bluez.Agent";
 const char kRelease[] = "Release";
 const char kRequestPinCode[] = "RequestPinCode";
 const char kRequestPasskey[] = "RequestPasskey";
+const char kDisplayPinCode[] = "DisplayPinCode";
 const char kDisplayPasskey[] = "DisplayPasskey";
 const char kRequestConfirmation[] = "RequestConfirmation";
 const char kAuthorize[] = "Authorize";
