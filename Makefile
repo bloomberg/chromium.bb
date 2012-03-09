@@ -79,16 +79,6 @@ CXXFLAGS+=\
 	-DGESTURES_INTERNAL=1 \
 	-I..
 
-LINK_FLAGS=\
-	-lbase \
-	-lpthread \
-	-lrt
-
-TEST_LINK_FLAGS=\
-	-lgcov \
-	-lglib-2.0 \
-	-lgtest
-
 KEYBOARD_TOUCHPAD_HELPER=keyboard_touchpad_helper
 
 # Local compilation needs these flags, esp for code coverage testing
@@ -101,9 +91,26 @@ CXXFLAGS+=\
 	-fprofile-arcs
 else
 CXXFLAGS+=\
-	-DXLOGGING \
-	$(shell $(PKG_CONFIG) --cflags pixman-1)
+	-DXLOGGING
+PC_DEPS += pixman-1
 endif
+
+PKG_CONFIG ?= pkg-config
+PC_DEPS += libchrome-85268
+PC_CFLAGS := $(shell $(PKG_CONFIG) --cflags $(PC_DEPS))
+PC_LIBS := $(shell $(PKG_CONFIG) --libs $(PC_DEPS))
+
+CXXFLAGS += $(PC_CFLAGS)
+LINK_FLAGS += $(PC_LIBS)
+
+LINK_FLAGS+=\
+	-lpthread \
+	-lrt
+
+TEST_LINK_FLAGS=\
+	-lgcov \
+	-lglib-2.0 \
+	-lgtest
 
 all: $(SONAME)
 	$(MAKE) -C $(KEYBOARD_TOUCHPAD_HELPER)

@@ -28,10 +28,15 @@ CXXFLAGS+=\
 	-DGESTURES_INTERNAL=1 \
 	-I..
 
-CFLAGS+=$(CXXFLAGS)
+PKG_CONFIG ?= pkg-config
+PC_DEPS = libchrome-85268
+PC_CFLAGS := $(shell $(PKG_CONFIG) --cflags $(PC_DEPS))
+PC_LIBS := $(shell $(PKG_CONFIG) --libs $(PC_DEPS))
+
+CXXFLAGS += $(PC_CFLAGS)
 
 LINK_FLAGS=\
-	-lbase \
+	$(PC_LIBS) \
 	-lgflags \
 	-lpthread \
 	-lrt \
