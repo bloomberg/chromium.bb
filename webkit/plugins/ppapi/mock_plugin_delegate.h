@@ -142,6 +142,13 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void TCPServerSocketAccept(uint32 real_socket_id);
   virtual void TCPServerSocketStopListening(uint32 real_socket_id,
                                             uint32 temp_socket_id);
+
+  // Add/remove a network list observer.
+  virtual bool AddNetworkListObserver(
+      webkit_glue::NetworkListObserver* observer) OVERRIDE;
+  virtual void RemoveNetworkListObserver(
+      webkit_glue::NetworkListObserver* observer) OVERRIDE;
+
   virtual int32_t ShowContextMenu(
       PluginInstance* instance,
       webkit::ppapi::PPB_Flash_Menu_Impl* menu,

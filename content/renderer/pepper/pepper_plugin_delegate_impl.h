@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
@@ -299,6 +300,11 @@ class PepperPluginDelegateImpl
   virtual void TCPServerSocketAccept(uint32 real_socket_id) OVERRIDE;
   virtual void TCPServerSocketStopListening(uint32 real_socket_id,
                                             uint32 temp_socket_id) OVERRIDE;
+
+  virtual bool AddNetworkListObserver(
+      webkit_glue::NetworkListObserver* observer) OVERRIDE;
+  virtual void RemoveNetworkListObserver(
+      webkit_glue::NetworkListObserver* observer) OVERRIDE;
 
   virtual int32_t ShowContextMenu(
       webkit::ppapi::PluginInstance* instance,

@@ -11,6 +11,7 @@
 #include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/socket_client.h"
 #include "content/renderer/render_view_impl.h"
+#include "webkit/glue/network_list_observer.h"
 
 namespace content {
 
@@ -50,7 +51,7 @@ P2PSocketDispatcher::P2PSocketDispatcher(RenderViewImpl* render_view)
       message_loop_(base::MessageLoopProxy::current()),
       network_notifications_started_(false),
       network_list_observers_(
-          new ObserverListThreadSafe<NetworkListObserver>()),
+          new ObserverListThreadSafe<webkit_glue::NetworkListObserver>()),
       async_message_sender_(new AsyncMessageSender(this)) {
 }
 
@@ -66,7 +67,7 @@ P2PSocketDispatcher::~P2PSocketDispatcher() {
 }
 
 void P2PSocketDispatcher::AddNetworkListObserver(
-    NetworkListObserver* network_list_observer) {
+    webkit_glue::NetworkListObserver* network_list_observer) {
   network_list_observers_->AddObserver(network_list_observer);
   network_notifications_started_ = true;
   async_message_sender_->Send(
@@ -74,7 +75,7 @@ void P2PSocketDispatcher::AddNetworkListObserver(
 }
 
 void P2PSocketDispatcher::RemoveNetworkListObserver(
-    NetworkListObserver* network_list_observer) {
+    webkit_glue::NetworkListObserver* network_list_observer) {
   network_list_observers_->RemoveObserver(network_list_observer);
 }
 
@@ -120,8 +121,8 @@ void P2PSocketDispatcher::UnregisterHostAddressRequest(int id) {
 
 void P2PSocketDispatcher::OnNetworkListChanged(
     const net::NetworkInterfaceList& networks) {
-  network_list_observers_->Notify(&NetworkListObserver::OnNetworkListChanged,
-                                  networks);
+  network_list_observers_->Notify(
+      &webkit_glue::NetworkListObserver::OnNetworkListChanged, networks);
 }
 
 void P2PSocketDispatcher::OnGetHostAddressResult(

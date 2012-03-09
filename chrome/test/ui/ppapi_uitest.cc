@@ -728,6 +728,9 @@ TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetFamily)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_GetPort)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAddress)
 
+TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_Basic)
+TEST_PPAPI_IN_PROCESS(NetworkMonitorPrivate_2Monitors)
+
 // PPB_TCPSocket_Private currently isn't supported in-process.
 TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {
   RunTestViaHTTP("TCPSocketPrivate");

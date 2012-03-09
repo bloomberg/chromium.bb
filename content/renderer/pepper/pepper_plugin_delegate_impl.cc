@@ -38,6 +38,7 @@
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
 #include "content/renderer/p2p/p2p_transport_impl.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/pepper_broker_impl.h"
 #include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
 #include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
@@ -1087,6 +1088,25 @@ void PepperPluginDelegateImpl::TCPServerSocketStopListening(
         new PpapiHostMsg_PPBTCPServerSocket_Destroy(real_socket_id));
     tcp_server_sockets_.Remove(real_socket_id);
   }
+}
+
+bool PepperPluginDelegateImpl::AddNetworkListObserver(
+    webkit_glue::NetworkListObserver* observer) {
+  content::P2PSocketDispatcher* socket_dispatcher =
+      render_view_->p2p_socket_dispatcher();
+  if (!socket_dispatcher) {
+    return false;
+  }
+  socket_dispatcher->AddNetworkListObserver(observer);
+  return true;
+}
+
+void PepperPluginDelegateImpl::RemoveNetworkListObserver(
+    webkit_glue::NetworkListObserver* observer) {
+  content::P2PSocketDispatcher* socket_dispatcher =
+      render_view_->p2p_socket_dispatcher();
+  if (socket_dispatcher)
+      socket_dispatcher->RemoveNetworkListObserver(observer);
 }
 
 int32_t PepperPluginDelegateImpl::ShowContextMenu(

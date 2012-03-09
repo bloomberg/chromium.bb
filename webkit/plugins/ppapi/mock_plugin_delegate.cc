@@ -314,6 +314,15 @@ void MockPluginDelegate::TCPServerSocketStopListening(uint32 real_socket_id,
                                                       uint32 temp_socket_id) {
 }
 
+bool MockPluginDelegate::AddNetworkListObserver(
+    webkit_glue::NetworkListObserver* observer) {
+  return false;
+}
+
+void MockPluginDelegate::RemoveNetworkListObserver(
+    webkit_glue::NetworkListObserver* observer) {
+}
+
 int32_t MockPluginDelegate::ShowContextMenu(
     PluginInstance* instance,
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,

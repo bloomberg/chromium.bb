@@ -11,15 +11,15 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
-#include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/base/network.h"
+#include "webkit/glue/network_list_observer.h"
 
 namespace content {
 
 // IpcNetworkManager is a NetworkManager for libjingle that gets a
 // list of network interfaces from the browser.
 class IpcNetworkManager : public talk_base::NetworkManagerBase,
-                          public P2PSocketDispatcher::NetworkListObserver {
+                          public webkit_glue::NetworkListObserver {
  public:
   // Constructor doesn't take ownership of the |socket_dispatcher|.
   CONTENT_EXPORT IpcNetworkManager(P2PSocketDispatcher* socket_dispatcher);
