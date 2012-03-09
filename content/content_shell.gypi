@@ -122,6 +122,24 @@
     {
       'target_name': 'content_shell_resources',
       'type': 'none',
+      'dependencies': [
+        'generate_content_shell_resources',
+      ],
+      'variables': {
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/content',
+      },
+      'includes': [ '../build/grit_target.gypi' ],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak'
+          ],
+        },
+      ],
+    }, {
+      'target_name': 'generate_content_shell_resources',
+      'type': 'none',
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/content',
       },
@@ -132,15 +150,6 @@
             'grit_grd_file': 'shell/shell_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
-        },
-      ],
-      'includes': [ '../build/grit_target.gypi' ],
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)',
-          'files': [
-            '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak'
-          ],
         },
       ],
     },
