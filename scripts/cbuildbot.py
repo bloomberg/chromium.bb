@@ -691,7 +691,6 @@ def _CreateParser():
                     dest='profile',
                     help=('Name of profile to sub-specify board variant.'))
   parser.add_option('--remote', default=False, action='store_true',
-                    dest='remote',
                     help=('Specifies that this tryjob should be run remotely.'))
 
   # Advanced options
@@ -836,7 +835,11 @@ def _FinishParsing(options, args):
   if options.debug:
     options.debug_forced = True
   else:
-    options.debug = not options.buildbot
+    # We don't set debug by default for
+    # 1. --buildbot invocations.
+    # 2. --remote invocations, because it needs to push changes to the tryjob
+    #    repo.
+    options.debug = not options.buildbot and not options.remote
 
 
 def _PostParseCheck(options, args):
@@ -883,14 +886,23 @@ def main(argv):
   _PostParseCheck(options, args)
 
   if options.remote:
+    cros_lib.DebugLevel.SetDebugLevel(cros_lib.DebugLevel.WARNING)
+
     # Verify configs are valid.
     for bot in args:
       _GetConfig(bot)
 
     # Verify gerrit patches are valid.
+    print 'Verifying patches...'
     _PreProcessPatches(options.gerrit_patches, options.local_patches)
 
-    remote_try.RemoteTryJob(options, args).Submit()
+    print 'Submitting tryjob...'
+    tryjob = remote_try.RemoteTryJob(options, args)
+    tryjob.Submit(dryrun=options.debug)
+    print 'Tryjob submitted!'
+    print ('Go to %s to view the status of your job.'
+           % tryjob.GetTrybotConsoleLink())
+    print '**Please allow 1 minute for this job to show up on the console.**'
     sys.exit(0)
 
   if args:

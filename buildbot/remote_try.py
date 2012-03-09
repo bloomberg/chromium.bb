@@ -32,22 +32,30 @@ class RemoteTryJob(object):
       options: The parsed options passed into cbuildbot.
       bots: A list of configs to run tryjobs for.
     """
-    self.values = {}
-    self.user = self.values['user'] = getpass.getuser()
+    self.options = options
+    self.user = getpass.getuser()
     cwd = os.path.dirname(os.path.realpath(__file__))
-    self.values['email'] = [cros_lib.GetProjectUserEmail(cwd)]
+    self.user_email = cros_lib.GetProjectUserEmail(cwd)
     # Name of the job that appears on the waterfall.
-    self.values['name'] = ','.join(options.gerrit_patches)
-    self.values['bot'] = bots[:]
+    self.name = ','.join(options.gerrit_patches)
+    self.bots = bots[:]
     self.description = ('name: %s\n patches: %s\nbots: %s' %
-                        (self.values['name'], options.gerrit_patches,
-                         self.values['bot']))
+                        (self.name, options.gerrit_patches,
+                         self.bots))
     self.buildroot = options.buildroot
-    extra_args = []
-    extra_args.append('--gerrit-patches=%s'
+    self.extra_args = []
+    self.extra_args.append('--gerrit-patches=%s'
                       % ' '.join(options.gerrit_patches))
-    self.values['extra_args'] = extra_args
     self.tryjob_repo = None
+
+  @property
+  def values(self):
+    return {
+        'user' : self.user,
+        'email' : [self.user_email],
+        'name' : ','.join(self.options.gerrit_patches),
+        'bot' : self.bots,
+        'extra_args' : self.extra_args,}
 
   def _Submit(self, dryrun):
     """Internal submission function.  See Submit() for arg description."""
@@ -93,3 +101,8 @@ class RemoteTryJob(object):
     finally:
       if workdir is None:
         shutil.rmtree(self.tryjob_repo)
+
+  def GetTrybotConsoleLink(self):
+    """Get link to the console for the user."""
+    return ('http://chromegw/p/tryserver.chromiumos/console?name=%s'
+            % self.user_email)
