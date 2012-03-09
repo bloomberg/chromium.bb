@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -183,7 +183,7 @@ class CrashReport(object):
 
     # The stack trace begins with the thread header, which is identified by a
     # HEX number. The thread names appear to be incorrect in spindumps.
-    user_thread_re = re.compile('^  Thread ([0-9a-fx]{4})')
+    user_thread_re = re.compile('^  Thread ([0-9a-fx]+)')
 
     # When this method is called, the fd has been walked right up to the first
     # line.
