@@ -218,6 +218,8 @@
         'wm/workspace/maximized_workspace.h',
         'wm/workspace/multi_window_resize_controller.cc',
         'wm/workspace/multi_window_resize_controller.h',
+        'wm/workspace/phantom_window_controller.cc',
+        'wm/workspace/phantom_window_controller.h',
         'wm/workspace/workspace.cc',
         'wm/workspace/workspace.h',
         'wm/workspace/workspace_event_filter.cc',

@@ -145,6 +145,9 @@ class UI_EXPORT CanvasSkia {
   // Extracts a bitmap from the contents of this canvas.
   SkBitmap ExtractBitmap() const;
 
+  // Draws a dashed rectangle of the specified color.
+  void DrawDashedRect(const gfx::Rect& rect, SkColor color);
+
   // Saves a copy of the drawing state onto a stack, operating on this copy
   // until a balanced call to Restore() is made.
   void Save();

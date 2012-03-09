@@ -101,6 +101,53 @@ SkBitmap CanvasSkia::ExtractBitmap() const {
   return result;
 }
 
+void CanvasSkia::DrawDashedRect(const gfx::Rect& rect, SkColor color) {
+  // Create a 2D bitmap containing alternating on/off pixels - we do this
+  // so that you never get two pixels of the same color around the edges
+  // of the focus rect (this may mean that opposing edges of the rect may
+  // have a dot pattern out of phase to each other).
+  static SkColor last_color;
+  static SkBitmap* dots = NULL;
+  if (!dots || last_color != color) {
+    int col_pixels = 32;
+    int row_pixels = 32;
+
+    delete dots;
+    last_color = color;
+    dots = new SkBitmap;
+    dots->setConfig(SkBitmap::kARGB_8888_Config, col_pixels, row_pixels);
+    dots->allocPixels();
+    dots->eraseARGB(0, 0, 0, 0);
+
+    uint32_t* dot = dots->getAddr32(0, 0);
+    for (int i = 0; i < row_pixels; i++) {
+      for (int u = 0; u < col_pixels; u++) {
+        if ((u % 2 + i % 2) % 2 != 0) {
+          dot[i * row_pixels + u] = color;
+        }
+      }
+    }
+  }
+
+  // Make a shader for the bitmap with an origin of the box we'll draw. This
+  // shader is refcounted and will have an initial refcount of 1.
+  SkShader* shader = SkShader::CreateBitmapShader(
+      *dots, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
+  // Assign the shader to the paint & release our reference. The paint will
+  // now own the shader and the shader will be destroyed when the paint goes
+  // out of scope.
+  SkPaint paint;
+  paint.setShader(shader);
+  shader->unref();
+
+  DrawRect(gfx::Rect(rect.x(), rect.y(), rect.width(), 1), paint);
+  DrawRect(gfx::Rect(rect.x(), rect.y() + rect.height() - 1, rect.width(), 1),
+           paint);
+  DrawRect(gfx::Rect(rect.x(), rect.y(), 1, rect.height()), paint);
+  DrawRect(gfx::Rect(rect.x() + rect.width() - 1, rect.y(), 1, rect.height()),
+           paint);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CanvasSkia, Canvas implementation:
 
@@ -190,47 +237,7 @@ void CanvasSkia::DrawLine(const gfx::Point& p1,
 }
 
 void CanvasSkia::DrawFocusRect(const gfx::Rect& rect) {
-  // Create a 2D bitmap containing alternating on/off pixels - we do this
-  // so that you never get two pixels of the same color around the edges
-  // of the focus rect (this may mean that opposing edges of the rect may
-  // have a dot pattern out of phase to each other).
-  static SkBitmap* dots = NULL;
-  if (!dots) {
-    int col_pixels = 32;
-    int row_pixels = 32;
-
-    dots = new SkBitmap;
-    dots->setConfig(SkBitmap::kARGB_8888_Config, col_pixels, row_pixels);
-    dots->allocPixels();
-    dots->eraseARGB(0, 0, 0, 0);
-
-    uint32_t* dot = dots->getAddr32(0, 0);
-    for (int i = 0; i < row_pixels; i++) {
-      for (int u = 0; u < col_pixels; u++) {
-        if ((u % 2 + i % 2) % 2 != 0) {
-          dot[i * row_pixels + u] = SK_ColorGRAY;
-        }
-      }
-    }
-  }
-
-  // Make a shader for the bitmap with an origin of the box we'll draw. This
-  // shader is refcounted and will have an initial refcount of 1.
-  SkShader* shader = SkShader::CreateBitmapShader(
-      *dots, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
-  // Assign the shader to the paint & release our reference. The paint will
-  // now own the shader and the shader will be destroyed when the paint goes
-  // out of scope.
-  SkPaint paint;
-  paint.setShader(shader);
-  shader->unref();
-
-  DrawRect(gfx::Rect(rect.x(), rect.y(), rect.width(), 1), paint);
-  DrawRect(gfx::Rect(rect.x(), rect.y() + rect.height() - 1, rect.width(), 1),
-           paint);
-  DrawRect(gfx::Rect(rect.x(), rect.y(), 1, rect.height()), paint);
-  DrawRect(gfx::Rect(rect.x() + rect.width() - 1, rect.y(), 1, rect.height()),
-           paint);
+  DrawDashedRect(rect, SK_ColorGRAY);
 }
 
 void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {

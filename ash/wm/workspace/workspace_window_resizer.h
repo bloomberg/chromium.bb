@@ -10,10 +10,12 @@
 
 #include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace ash {
 namespace internal {
 
+class PhantomWindowController;
 class RootWindowEventFilter;
 
 // WindowResizer implementation for workspaces. This enforces that windows are
@@ -54,7 +56,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                          const std::vector<aura::Window*>& attached_windows);
 
  private:
-  explicit WorkspaceWindowResizer(const Details& details);
+  // Returns the final bounds to place the window at. This differs from
+  // the current if there is a grid.
+  gfx::Rect GetFinalBounds() const;
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
   void LayoutAttachedWindowsHorizontally(const gfx::Rect& bounds);
@@ -79,6 +83,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // left/right multi window resize and top/bottom resize.
   int PrimaryAxisSize(const gfx::Size& size) const;
   int PrimaryAxisCoordinate(int x, int y) const;
+
+  // Updates the bounds of the phantom window.
+  void UpdatePhantomWindow();
 
   aura::Window* window() const { return details_.window; }
 
@@ -112,6 +119,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   // Sum of the sizes in |initial_size_|.
   int total_initial_size_;
+
+  // Gives a previews of where the the window will end up. Only used if there
+  // is a grid and the caption is being dragged.
+  scoped_ptr<PhantomWindowController> phantom_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

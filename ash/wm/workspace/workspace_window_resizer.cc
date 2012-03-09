@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/phantom_window_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_property.h"
@@ -22,6 +23,12 @@ namespace ash {
 namespace internal {
 
 namespace {
+
+// Duration of the animation when snapping the window into place.
+const int kSnapDurationMS = 100;
+
+// Delay before the phantom window is shown (in milliseconds).
+const int kPhantomDelayMS = 200;
 
 const aura::WindowProperty<int> kHeightBeforeObscuredProp = {0};
 const aura::WindowProperty<int>* const kHeightBeforeObscuredKey =
@@ -83,6 +90,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
     AdjustBoundsForMainWindow(&bounds);
   if (bounds != details_.window->bounds())
     did_move_or_resize_ = true;
+  UpdatePhantomWindow();
   if (!attached_windows_.empty()) {
     if (details_.window_component == HTRIGHT)
       LayoutAttachedWindowsHorizontally(bounds);
@@ -95,31 +103,18 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location) {
 }
 
 void WorkspaceWindowResizer::CompleteDrag() {
+  if (phantom_window_controller_.get()) {
+    phantom_window_controller_->DelayedClose(kSnapDurationMS);
+    phantom_window_controller_.reset();
+  }
+
   // This code only matters when dragging the caption and there's a grid, so
   // it doesn't need to worry about attached windows.
   if (details_.grid_size <= 1 || !did_move_or_resize_ ||
       details_.window_component != HTCAPTION)
     return;
 
-  gfx::Rect bounds(AdjustBoundsToGrid(details_));
-  if (GetHeightBeforeObscured(window()) || constrain_size_) {
-    // Two things can happen:
-    // . We'll snap to the grid, which may result in different bounds. When
-    //   dragging we only snap on release.
-    // . If the bounds are different, and the windows height was truncated
-    //   because it touched the bottom, than snapping to the grid may cause the
-    //   window to no longer touch the bottom. Push it back up.
-    gfx::Rect initial_bounds(window()->bounds());
-    bool at_bottom = TouchesBottomOfScreen();
-    if (at_bottom && bounds.y() != initial_bounds.y()) {
-      if (bounds.y() < initial_bounds.y()) {
-        bounds.set_height(bounds.height() + details_.grid_size -
-                              (initial_bounds.y() - bounds.y()));
-      }
-      AdjustBoundsForMainWindow(&bounds);
-    }
-  }
-
+  gfx::Rect bounds(GetFinalBounds());
   if (bounds == details_.window->bounds())
     return;
 
@@ -132,11 +127,14 @@ void WorkspaceWindowResizer::CompleteDrag() {
   ui::ScopedLayerAnimationSettings scoped_setter(
       details_.window->layer()->GetAnimator());
   // Use a small duration since the grid is small.
-  scoped_setter.SetTransitionDuration(base::TimeDelta::FromMilliseconds(100));
+  scoped_setter.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kSnapDurationMS));
   details_.window->SetBounds(bounds);
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
+  phantom_window_controller_.reset();
+
   if (!did_move_or_resize_)
     return;
 
@@ -239,6 +237,28 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
        details_.bounds_change != kBoundsChange_Repositions)) {
     ClearCachedWidths();
   }
+}
+
+gfx::Rect WorkspaceWindowResizer::GetFinalBounds() const {
+  gfx::Rect bounds(AdjustBoundsToGrid(details_));
+  if (GetHeightBeforeObscured(window()) || constrain_size_) {
+    // Two things can happen:
+    // . We'll snap to the grid, which may result in different bounds. When
+    //   dragging we only snap on release.
+    // . If the bounds are different, and the windows height was truncated
+    //   because it touched the bottom, than snapping to the grid may cause the
+    //   window to no longer touch the bottom. Push it back up.
+    gfx::Rect initial_bounds(window()->bounds());
+    bool at_bottom = TouchesBottomOfScreen();
+    if (at_bottom && bounds.y() != initial_bounds.y()) {
+      if (bounds.y() < initial_bounds.y()) {
+        bounds.set_height(bounds.height() + details_.grid_size -
+                              (initial_bounds.y() - bounds.y()));
+      }
+      AdjustBoundsForMainWindow(&bounds);
+    }
+  }
+  return bounds;
 }
 
 void WorkspaceWindowResizer::LayoutAttachedWindowsHorizontally(
@@ -394,6 +414,19 @@ int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
       NOTREACHED();
   }
   return 0;
+}
+
+void WorkspaceWindowResizer::UpdatePhantomWindow() {
+  if (!did_move_or_resize_ || details_.window_component != HTCAPTION ||
+      !wm::IsWindowNormal(details_.window) || details_.grid_size <= 1)
+    return;
+
+  gfx::Rect phantom_bounds(GetFinalBounds());
+  if (!phantom_window_controller_.get()) {
+    phantom_window_controller_.reset(
+        new PhantomWindowController(details_.window, kPhantomDelayMS));
+  }
+  phantom_window_controller_->Show(phantom_bounds);
 }
 
 }  // namespace internal
