@@ -125,6 +125,7 @@ void SearchEngineTabHelper::OnPageHasOSDD(
       keyword,
       doc_url,
       base_entry->GetFavicon().url,
+      web_contents(),
       new TemplateURLFetcherUICallbacks(this, web_contents()),
       provider_type);
 }

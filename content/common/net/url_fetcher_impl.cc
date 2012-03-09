@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/timer.h"
+#include "content/common/net/url_request_user_data.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/common/url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
@@ -243,6 +244,9 @@ class URLFetcherImpl::Core
                                      // Read buffer
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
                                      // Cookie/cache info for the request
+  int render_process_id_;            // The RenderView associated with the
+  int render_view_id_;               // request
+  GURL first_party_for_cookies_;     // The first party URL for the request
   net::ResponseCookies cookies_;     // Response cookies
   net::HttpRequestHeaders extra_request_headers_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
@@ -543,6 +547,8 @@ URLFetcherImpl::Core::Core(URLFetcherImpl* fetcher,
       load_flags_(net::LOAD_NORMAL),
       response_code_(RESPONSE_CODE_INVALID),
       buffer_(new net::IOBuffer(kBufferSize)),
+      render_process_id_(-1),
+      render_view_id_(-1),
       was_fetched_via_proxy_(false),
       is_chunked_upload_(false),
       num_retries_(0),
@@ -757,6 +763,9 @@ void URLFetcherImpl::Core::RetryOrCompleteUrlFetch() {
     backoff_delay = base::TimeDelta();
   }
   request_context_getter_ = NULL;
+  render_process_id_ = -1;
+  render_view_id_ = -1;
+  first_party_for_cookies_ = GURL();
   bool posted = delegate_loop_proxy_->PostTask(
       FROM_HERE, base::Bind(&Core::OnCompletedURLRequest, this, backoff_delay));
 
@@ -804,6 +813,13 @@ void URLFetcherImpl::Core::StartURLRequest() {
   request_->set_load_flags(flags);
   request_->set_context(request_context_getter_->GetURLRequestContext());
   request_->set_referrer(referrer_);
+  request_->set_first_party_for_cookies(first_party_for_cookies_.is_empty() ?
+      original_url_ : first_party_for_cookies_);
+  if (render_process_id_ != -1 && render_view_id_ != -1) {
+    request_->SetUserData(
+        URLRequestUserData::kUserDataKey,
+        new URLRequestUserData(render_process_id_, render_view_id_));
+  }
 
   switch (request_type_) {
     case GET:
@@ -883,6 +899,9 @@ void URLFetcherImpl::Core::CancelURLRequest() {
   // delete the object, but we cannot delay the destruction of the request
   // context.
   request_context_getter_ = NULL;
+  render_process_id_ = -1;
+  render_view_id_ = -1;
+  first_party_for_cookies_ = GURL();
   was_cancelled_ = true;
   file_writer_.reset();
 }
@@ -1015,6 +1034,20 @@ void URLFetcherImpl::SetRequestContext(
   core_->request_context_getter_ = request_context_getter;
 }
 
+void URLFetcherImpl::AssociateWithRenderView(
+    const GURL& first_party_for_cookies,
+    int render_process_id,
+    int render_view_id) {
+  DCHECK(core_->first_party_for_cookies_.is_empty());
+  DCHECK_EQ(core_->render_process_id_, -1);
+  DCHECK_EQ(core_->render_view_id_, -1);
+  DCHECK_GE(render_process_id, 0);
+  DCHECK_GE(render_view_id, 0);
+  core_->first_party_for_cookies_ = first_party_for_cookies;
+  core_->render_process_id_ = render_process_id;
+  core_->render_view_id_ = render_view_id;
+}
+
 void URLFetcherImpl::SetAutomaticallyRetryOn5xx(bool retry) {
   core_->automatically_retry_on_5xx_ = retry;
 }
@@ -1063,12 +1096,6 @@ void URLFetcherImpl::set_was_fetched_via_proxy(bool flag) {
 }
 
 void URLFetcherImpl::Start() {
-  core_->Start();
-}
-
-void URLFetcherImpl::StartWithRequestContextGetter(
-    net::URLRequestContextGetter* request_context_getter) {
-  SetRequestContext(request_context_getter);
   core_->Start();
 }
 

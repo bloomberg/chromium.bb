@@ -242,6 +242,8 @@
     'common/navigation_gesture.h',
     'common/net/url_fetcher_impl.cc',
     'common/net/url_fetcher_impl.h',
+    'common/net/url_request_user_data.cc',
+    'common/net/url_request_user_data.h',
     'common/np_channel_base.cc',
     'common/np_channel_base.h',
     'common/npobject_base.h',

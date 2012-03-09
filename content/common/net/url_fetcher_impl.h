@@ -51,6 +51,9 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
       net::HttpRequestHeaders* headers) OVERRIDE;
   virtual void SetRequestContext(
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
+  virtual void AssociateWithRenderView(const GURL& first_party_for_cookies,
+                                       int render_process_id,
+                                       int render_view_id) OVERRIDE;
   virtual void SetAutomaticallyRetryOn5xx(bool retry) OVERRIDE;
   virtual void SetMaxRetries(int max_retries) OVERRIDE;
   virtual int GetMaxRetries() const OVERRIDE;
@@ -61,8 +64,6 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
   virtual net::HostPortPair GetSocketAddress() const OVERRIDE;
   virtual bool WasFetchedViaProxy() const OVERRIDE;
   virtual void Start() OVERRIDE;
-  virtual void StartWithRequestContextGetter(
-      net::URLRequestContextGetter* request_context_getter) OVERRIDE;
   virtual const GURL& GetOriginalURL() const OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;

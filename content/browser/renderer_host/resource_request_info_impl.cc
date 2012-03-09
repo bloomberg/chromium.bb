@@ -7,6 +7,7 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/worker_host/worker_service_impl.h"
+#include "content/common/net/url_request_user_data.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "net/url_request/url_request.h"
 #include "webkit/blob/blob_data.h"
@@ -46,6 +47,21 @@ void ResourceRequestInfo::AllocateForTesting(
           context);                          // context
   info->AssociateWithRequest(request);
 }
+
+// static
+bool ResourceRequestInfo::GetRenderViewForRequest(
+    const net::URLRequest* request,
+    int* render_process_id,
+    int* render_view_id) {
+  URLRequestUserData* user_data = static_cast<URLRequestUserData*>(
+      request->GetUserData(URLRequestUserData::kUserDataKey));
+  if (!user_data)
+    return false;
+  *render_process_id = user_data->render_process_id();
+  *render_view_id = user_data->render_view_id();
+  return true;
+}
+
 
 ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     ResourceHandler* handler,
@@ -171,6 +187,13 @@ bool ResourceRequestInfoImpl::GetAssociatedRenderView(
 
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
   request->SetUserData(NULL, this);
+  int render_process_id;
+  int render_view_id;
+  if (GetAssociatedRenderView(&render_process_id, &render_view_id)) {
+    request->SetUserData(
+        URLRequestUserData::kUserDataKey,
+        new URLRequestUserData(render_process_id, render_view_id));
+  }
 }
 
 void ResourceRequestInfoImpl::set_resource_handler(

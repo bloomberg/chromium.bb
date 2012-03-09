@@ -73,6 +73,10 @@ struct WebPluginAction;
 //     void Start(const GURL* url, net::URLRequestContextGetter* context) {
 //       fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
 //       fetcher_->SetRequestContext(context);
+//       fetcher_->AssociateWithRenderView(
+//           proxy_->GetRenderViewHost()->GetSiteInstance()->GetSite(),
+//           proxy_->GetRenderViewHost()->GetProcess()->GetID(),
+//           proxy_->GetRenderViewHost()->GetRoutingID());
 //       fetcher_->Start();
 //     }
 //

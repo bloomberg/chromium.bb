@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/network_delegate.h"
 
+class CookieSettings;
 class ExtensionEventRouterForwarder;
 class ExtensionInfoMap;
 class PrefService;
@@ -26,16 +27,18 @@ class URLBlacklistManager;
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegate {
  public:
-  // If |profile| is NULL, events will be broadcasted to all profiles, otherwise
-  // they will only be sent to the specified profile.
+  // If |profile| is NULL, events will be broadcasted to all profiles,
+  // otherwise they will only be sent to the specified profile.
   // |enable_referrers| should be initialized on the UI thread (see below)
-  // beforehand. This object's owner is responsible for cleaning it up
-  // at shutdown.
+  // beforehand. This object's owner is responsible for cleaning it up at
+  // shutdown. If |cookie_settings| is NULL, all cookies are enabled,
+  // otherwise, the settings are enforced on all observed network requests.
   ChromeNetworkDelegate(
       ExtensionEventRouterForwarder* event_router,
       ExtensionInfoMap* extension_info_map,
       const policy::URLBlacklistManager* url_blacklist_manager,
       void* profile,
+      CookieSettings* cookie_settings,
       BooleanPrefMember* enable_referrers);
   virtual ~ChromeNetworkDelegate();
 
@@ -74,9 +77,15 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       const net::AuthChallengeInfo& auth_info,
       const AuthCallback& callback,
       net::AuthCredentials* credentials) OVERRIDE;
+  virtual bool CanGetCookies(const net::URLRequest* request,
+                             const net::CookieList& cookie_list) OVERRIDE;
+  virtual bool CanSetCookie(const net::URLRequest* request,
+                            const std::string& cookie_line,
+                            net::CookieOptions* options) OVERRIDE;
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   void* profile_;
+  scoped_refptr<CookieSettings> cookie_settings_;
 
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
 

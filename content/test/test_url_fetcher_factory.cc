@@ -88,6 +88,12 @@ void TestURLFetcher::SetRequestContext(
     net::URLRequestContextGetter* request_context_getter) {
 }
 
+void TestURLFetcher::AssociateWithRenderView(
+    const GURL& first_party_for_cookies,
+    int render_process_id,
+    int render_view_id) {
+}
+
 void TestURLFetcher::SetAutomaticallyRetryOn5xx(bool retry) {
 }
 
@@ -122,11 +128,6 @@ bool TestURLFetcher::WasFetchedViaProxy() const {
 
 void TestURLFetcher::Start() {
   // Overriden to do nothing. It is assumed the caller will notify the delegate.
-}
-
-void TestURLFetcher::StartWithRequestContextGetter(
-    net::URLRequestContextGetter* request_context_getter) {
-  NOTIMPLEMENTED();
 }
 
 const GURL& TestURLFetcher::GetOriginalURL() const {

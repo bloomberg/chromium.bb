@@ -10,9 +10,11 @@
 #include "base/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
 #include "chrome/browser/extensions/api/webrequest/webrequest_api_constants.h"
 #include "chrome/browser/extensions/api/webrequest/webrequest_api_helpers.h"
@@ -24,6 +26,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/test/test_browser_thread.h"
 #include "net/base/auth.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_test_util.h"
@@ -95,18 +98,26 @@ class TestIPCSender : public IPC::Message::Sender {
 };
 
 class ExtensionWebRequestTest : public testing::Test {
+ public:
+  ExtensionWebRequestTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        io_thread_(content::BrowserThread::IO, &message_loop_) {}
+
  protected:
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     event_router_ = new ExtensionEventRouterForwarder();
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, NULL, &profile_, &enable_referrers_));
+        event_router_.get(), NULL, NULL, &profile_,
+        CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_));
     context_ = new TestURLRequestContext();
     context_->set_network_delegate(network_delegate_.get());
   }
 
-  MessageLoopForIO io_loop_;
+  MessageLoopForIO message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   TestingProfile profile_;
   TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;
@@ -404,18 +415,26 @@ struct HeaderModificationTest {
 
 class ExtensionWebRequestHeaderModificationTest :
     public testing::TestWithParam<HeaderModificationTest> {
+ public:
+  ExtensionWebRequestHeaderModificationTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        io_thread_(content::BrowserThread::IO, &message_loop_) {}
+
  protected:
   virtual void SetUp() {
     event_router_ = new ExtensionEventRouterForwarder();
     enable_referrers_.Init(
         prefs::kEnableReferrers, profile_.GetTestingPrefService(), NULL);
     network_delegate_.reset(new ChromeNetworkDelegate(
-        event_router_.get(), NULL, NULL, &profile_, &enable_referrers_));
+        event_router_.get(), NULL, NULL, &profile_,
+        CookieSettings::Factory::GetForProfile(&profile_), &enable_referrers_));
     context_ = new TestURLRequestContext();
     context_->set_network_delegate(network_delegate_.get());
   }
 
-  MessageLoopForIO io_loop_;
+  MessageLoopForIO message_loop_;
+  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
   TestingProfile profile_;
   TestDelegate delegate_;
   BooleanPrefMember enable_referrers_;

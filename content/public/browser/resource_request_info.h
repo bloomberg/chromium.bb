@@ -33,6 +33,15 @@ class ResourceRequestInfo {
       net::URLRequest* request,
       ResourceContext* context);
 
+  // Returns the associated RenderView for a given process. Returns false, if
+  // there is no associated RenderView. This method does not rely on the
+  // request being allocated by the ResourceDispatcherHost, but works for all
+  // URLRequests that are associated with a RenderView.
+  CONTENT_EXPORT static bool GetRenderViewForRequest(
+      const net::URLRequest* request,
+      int* render_process_id,
+      int* render_view_id);
+
   // Returns the associated ResourceContext.
   virtual ResourceContext* GetContext() const = 0;
 

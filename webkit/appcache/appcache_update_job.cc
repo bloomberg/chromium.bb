@@ -105,6 +105,7 @@ AppCacheUpdateJob::URLFetcher::~URLFetcher() {
 
 void AppCacheUpdateJob::URLFetcher::Start() {
   request_->set_context(job_->service_->request_context());
+  request_->set_first_party_for_cookies(job_->manifest_url_);
   request_->set_load_flags(request_->load_flags() |
                            net::LOAD_DISABLE_INTERCEPT);
   if (existing_response_headers_)

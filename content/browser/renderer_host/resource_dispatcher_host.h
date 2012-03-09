@@ -184,11 +184,6 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   virtual void OnSSLCertificateError(net::URLRequest* request,
                                      const net::SSLInfo& ssl_info,
                                      bool fatal) OVERRIDE;
-  virtual bool CanGetCookies(const net::URLRequest* request,
-                             const net::CookieList& cookie_list) const OVERRIDE;
-  virtual bool CanSetCookie(const net::URLRequest* request,
-                            const std::string& cookie_line,
-                            net::CookieOptions* options) const OVERRIDE;
   virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
   virtual void OnReadCompleted(net::URLRequest* request,
                                int bytes_read) OVERRIDE;

@@ -381,8 +381,9 @@ void URLFetcherProtectTest::OnURLFetchComplete(
     static int count = 0;
     count++;
     if (count < 20) {
-      fetcher_->StartWithRequestContextGetter(new TestURLRequestContextGetter(
-          io_message_loop_proxy()));
+      fetcher_->SetRequestContext(
+          new TestURLRequestContextGetter(io_message_loop_proxy()));
+      fetcher_->Start();
     } else {
       // We have already sent 20 requests continuously. And we expect that
       // it takes more than 1 second due to the overload protection settings.
@@ -492,8 +493,9 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
   EXPECT_FALSE(data.empty());
   if (!data.empty() && data_.empty()) {
     data_ = data;
-    fetcher_->StartWithRequestContextGetter(
+    fetcher_->SetRequestContext(
         new TestURLRequestContextGetter(io_message_loop_proxy()));
+    fetcher_->Start();
   } else {
     EXPECT_EQ(data, data_);
     delete fetcher_;  // Have to delete this here and not in the destructor,

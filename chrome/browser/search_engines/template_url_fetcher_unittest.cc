@@ -147,8 +147,8 @@ void TemplateURLFetcherTest::StartDownload(
   GURL osdd_url = test_server_.GetURL("files/" + osdd_file_name);
   GURL favicon_url;
   test_util_.profile()->GetTemplateURLFetcher()->ScheduleDownload(
-      keyword, osdd_url, favicon_url, new TemplateURLFetcherTestCallbacks(this),
-      provider_type);
+      keyword, osdd_url, favicon_url, NULL,
+      new TemplateURLFetcherTestCallbacks(this), provider_type);
 }
 
 void TemplateURLFetcherTest::WaitForDownloadToFinish() {

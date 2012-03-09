@@ -14,6 +14,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -191,7 +193,12 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
       GURL(alternate_nav_url_), content::URLFetcher::HEAD, this));
   fetcher_->SetRequestContext(
       controller_->GetBrowserContext()->GetRequestContext());
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+
+  content::WebContents* web_contents = controller_->GetWebContents();
+  fetcher_->AssociateWithRenderView(
+      web_contents->GetURL(),
+      web_contents->GetRenderProcessHost()->GetID(),
+      web_contents->GetRenderViewHost()->GetRoutingID());
   fetcher_->Start();
 }
 

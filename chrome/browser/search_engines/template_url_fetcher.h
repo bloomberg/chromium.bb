@@ -15,6 +15,10 @@ class Profile;
 class TemplateURL;
 class TemplateURLFetcherCallbacks;
 
+namespace content {
+class WebContents;
+}
+
 // TemplateURLFetcher is responsible for downloading OpenSearch description
 // documents, creating a TemplateURL from the OSDD, and adding the TemplateURL
 // to the TemplateURLService. Downloading is done in the background.
@@ -33,9 +37,12 @@ class TemplateURLFetcher {
   // If TemplateURLFetcher is not already downloading the OSDD for osdd_url,
   // it is downloaded. If successful and the result can be parsed, a TemplateURL
   // is added to the TemplateURLService. Takes ownership of |callbacks|.
+  // |web_contents| specifies which WebContents displays the page the OSDD is
+  // downloaded for. |web_contents| must not be NULL, except for during tests.
   void ScheduleDownload(const string16& keyword,
                         const GURL& osdd_url,
                         const GURL& favicon_url,
+                        content::WebContents* web_contents,
                         TemplateURLFetcherCallbacks* callbacks,
                         ProviderType provider_type);
 

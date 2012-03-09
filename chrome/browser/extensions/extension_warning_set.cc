@@ -144,6 +144,7 @@ void ExtensionWarningSet::NotifyWarningsOnUI(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!profile ||
+      !g_browser_process->profile_manager() ||
       !g_browser_process->profile_manager()->IsValidProfile(profile)) {
     return;
   }

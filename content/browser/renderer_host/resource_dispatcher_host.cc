@@ -1435,36 +1435,6 @@ void ResourceDispatcherHost::OnSSLCertificateError(
   SSLManager::OnSSLCertificateError(this, request, ssl_info, is_hsts_host);
 }
 
-bool ResourceDispatcherHost::CanGetCookies(
-    const net::URLRequest* request,
-    const net::CookieList& cookie_list) const {
-  VLOG(1) << "OnGetCookies: " << request->url().spec();
-  int render_process_id, render_view_id;
-  if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
-    return false;
-
-  const ResourceRequestInfoImpl* info = InfoForRequest(request);
-
-  return content::GetContentClient()->browser()->AllowGetCookie(
-      request->url(), request->first_party_for_cookies(), cookie_list,
-      info->GetContext(), render_process_id, render_view_id);
-}
-
-bool ResourceDispatcherHost::CanSetCookie(const net::URLRequest* request,
-                                          const std::string& cookie_line,
-                                          net::CookieOptions* options) const {
-  VLOG(1) << "OnSetCookie: " << request->url().spec();
-
-  int render_process_id, render_view_id;
-  if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
-    return false;
-
-  const ResourceRequestInfoImpl* info = InfoForRequest(request);
-  return content::GetContentClient()->browser()->AllowSetCookie(
-      request->url(), request->first_party_for_cookies(), cookie_line,
-      info->GetContext(), render_process_id, render_view_id, options);
-}
-
 void ResourceDispatcherHost::OnResponseStarted(net::URLRequest* request) {
   VLOG(1) << "OnResponseStarted: " << request->url().spec();
   ResourceRequestInfoImpl* info = InfoForRequest(request);

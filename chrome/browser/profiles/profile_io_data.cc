@@ -450,6 +450,7 @@ void ProfileIOData::LazyInitialize() const {
         profile_params_->extension_info_map,
         url_blacklist_manager_.get(),
         profile_params_->profile,
+        profile_params_->cookie_settings,
         &enable_referrers_));
 
   fraudulent_certificate_reporter_.reset(

@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
@@ -19,6 +21,8 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_info.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -99,14 +103,17 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
     ExtensionInfoMap* extension_info_map,
     const policy::URLBlacklistManager* url_blacklist_manager,
     void* profile,
+    CookieSettings* cookie_settings,
     BooleanPrefMember* enable_referrers)
     : event_router_(event_router),
       profile_(profile),
+      cookie_settings_(cookie_settings),
       extension_info_map_(extension_info_map),
       enable_referrers_(enable_referrers),
       url_blacklist_manager_(url_blacklist_manager) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
+  DCHECK(!profile || cookie_settings);
 }
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
@@ -233,4 +240,56 @@ ChromeNetworkDelegate::OnAuthRequired(
   return ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
       profile_, extension_info_map_.get(), request, auth_info,
       callback, credentials);
+}
+
+bool ChromeNetworkDelegate::CanGetCookies(
+    const net::URLRequest* request,
+    const net::CookieList& cookie_list) {
+  // NULL during tests, or when we're running in the system context.
+  if (!cookie_settings_)
+    return true;
+
+  bool allow = cookie_settings_->IsReadingCookieAllowed(
+      request->url(), request->first_party_for_cookies());
+
+  int render_process_id = -1;
+  int render_view_id = -1;
+  if (content::ResourceRequestInfo::GetRenderViewForRequest(
+          request, &render_process_id, &render_view_id)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TabSpecificContentSettings::CookiesRead,
+                   render_process_id, render_view_id,
+                   request->url(), cookie_list, !allow));
+  }
+
+  return allow;
+}
+
+bool ChromeNetworkDelegate::CanSetCookie(
+    const net::URLRequest* request,
+    const std::string& cookie_line,
+    net::CookieOptions* options) {
+  // NULL during tests, or when we're running in the system context.
+  if (!cookie_settings_)
+    return true;
+
+  bool allow = cookie_settings_->IsSettingCookieAllowed(
+      request->url(), request->first_party_for_cookies());
+
+  if (cookie_settings_->IsCookieSessionOnly(request->url()))
+    options->set_force_session();
+
+  int render_process_id = -1;
+  int render_view_id = -1;
+  if (content::ResourceRequestInfo::GetRenderViewForRequest(
+          request, &render_process_id, &render_view_id)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&TabSpecificContentSettings::CookieChanged,
+                   render_process_id, render_view_id,
+                   request->url(), cookie_line, *options, !allow));
+  }
+
+  return allow;
 }

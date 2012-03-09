@@ -392,6 +392,7 @@ void IOThread::Init() {
       NULL,
       NULL,
       NULL,
+      NULL,
       &system_enable_referrers_));
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));

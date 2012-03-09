@@ -18,6 +18,9 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/load_flags.h"
@@ -33,6 +36,7 @@ class TemplateURLFetcher::RequestDelegate
                   const string16& keyword,
                   const GURL& osdd_url,
                   const GURL& favicon_url,
+                  content::WebContents* web_contents,
                   TemplateURLFetcherCallbacks* callbacks,
                   ProviderType provider_type);
 
@@ -78,6 +82,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     const string16& keyword,
     const GURL& osdd_url,
     const GURL& favicon_url,
+    content::WebContents* web_contents,
     TemplateURLFetcherCallbacks* callbacks,
     ProviderType provider_type)
     : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(content::URLFetcher::Create(
@@ -101,7 +106,14 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
   }
 
   url_fetcher_->SetRequestContext(fetcher->profile()->GetRequestContext());
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  // Can be NULL during tests.
+  if (web_contents) {
+    url_fetcher_->AssociateWithRenderView(
+        web_contents->GetURL(),
+        web_contents->GetRenderProcessHost()->GetID(),
+        web_contents->GetRenderViewHost()->GetRoutingID());
+  }
+
   url_fetcher_->Start();
 }
 
@@ -240,6 +252,7 @@ void TemplateURLFetcher::ScheduleDownload(
     const string16& keyword,
     const GURL& osdd_url,
     const GURL& favicon_url,
+    content::WebContents* web_contents,
     TemplateURLFetcherCallbacks* callbacks,
     ProviderType provider_type) {
   DCHECK(osdd_url.is_valid());
@@ -281,7 +294,7 @@ void TemplateURLFetcher::ScheduleDownload(
   }
 
   requests_->push_back(
-      new RequestDelegate(this, keyword, osdd_url, favicon_url,
+      new RequestDelegate(this, keyword, osdd_url, favicon_url, web_contents,
                           owned_callbacks.release(), provider_type));
 }
 

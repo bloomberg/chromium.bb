@@ -295,8 +295,9 @@ void BurnManager::FetchConfigFile(Delegate* delegate) {
 
   config_fetcher_.reset(content::URLFetcher::Create(
       config_file_url_, content::URLFetcher::GET, this));
-  config_fetcher_->StartWithRequestContextGetter(
+  config_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
+  config_fetcher_->Start();
 }
 
 void BurnManager::OnURLFetchComplete(const content::URLFetcher* source) {

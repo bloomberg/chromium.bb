@@ -52,6 +52,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/network_delegate.h"
 #include "net/base/static_cookie_policy.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_cache.h"
@@ -100,10 +101,84 @@ struct TestShellRequestContextParams {
   bool no_proxy;
 };
 
+//-----------------------------------------------------------------------------
+
+bool g_accept_all_cookies = false;
+
+class TestShellNetworkDelegate : public net::NetworkDelegate {
+ public:
+  virtual ~TestShellNetworkDelegate() {}
+
+ private:
+  // net::NetworkDelegate implementation.
+  virtual int OnBeforeURLRequest(net::URLRequest* request,
+                                 const net::CompletionCallback& callback,
+                                 GURL* new_url) OVERRIDE {
+    return net::OK;
+  }
+  virtual int OnBeforeSendHeaders(net::URLRequest* request,
+                                  const net::CompletionCallback& callback,
+                                  net::HttpRequestHeaders* headers) OVERRIDE {
+    return net::OK;
+  }
+  virtual void OnSendHeaders(net::URLRequest* request,
+                             const net::HttpRequestHeaders& headers) OVERRIDE {}
+  virtual int OnHeadersReceived(
+      net::URLRequest* request,
+      const net::CompletionCallback& callback,
+      net::HttpResponseHeaders* original_response_headers,
+      scoped_refptr<net::HttpResponseHeaders>*
+          override_response_headers) OVERRIDE {
+    return net::OK;
+  }
+  virtual void OnBeforeRedirect(net::URLRequest* request,
+                                const GURL& new_location) OVERRIDE {}
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE {}
+  virtual void OnRawBytesRead(const net::URLRequest& request,
+                              int bytes_read) OVERRIDE {}
+  virtual void OnCompleted(net::URLRequest* request, bool started) OVERRIDE {}
+  virtual void OnURLRequestDestroyed(net::URLRequest* request) OVERRIDE {}
+
+  virtual void OnPACScriptError(int line_number,
+                                const string16& error) OVERRIDE {
+  }
+  virtual AuthRequiredResponse OnAuthRequired(
+      net::URLRequest* request,
+      const net::AuthChallengeInfo& auth_info,
+      const AuthCallback& callback,
+      net::AuthCredentials* credentials) OVERRIDE {
+    return AUTH_REQUIRED_RESPONSE_NO_ACTION;
+  }
+  virtual bool CanGetCookies(
+      const net::URLRequest* request,
+      const net::CookieList& cookie_list) OVERRIDE {
+    StaticCookiePolicy::Type policy_type = g_accept_all_cookies ?
+        StaticCookiePolicy::ALLOW_ALL_COOKIES :
+        StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
+
+    StaticCookiePolicy policy(policy_type);
+    int rv = policy.CanGetCookies(
+        request->url(), request->first_party_for_cookies());
+    return rv == net::OK;
+  }
+  virtual bool CanSetCookie(const net::URLRequest* request,
+                            const std::string& cookie_line,
+                            net::CookieOptions* options) OVERRIDE {
+    StaticCookiePolicy::Type policy_type = g_accept_all_cookies ?
+        StaticCookiePolicy::ALLOW_ALL_COOKIES :
+        StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
+
+    StaticCookiePolicy policy(policy_type);
+    int rv = policy.CanSetCookie(
+        request->url(), request->first_party_for_cookies());
+    return rv == net::OK;
+  }
+};
+
 TestShellRequestContextParams* g_request_context_params = NULL;
 TestShellRequestContext* g_request_context = NULL;
+TestShellNetworkDelegate* g_network_delegate = NULL;
 base::Thread* g_cache_thread = NULL;
-bool g_accept_all_cookies = false;
 
 struct FileOverHTTPParams {
   FileOverHTTPParams(std::string in_file_path_template, GURL in_http_prefix)
@@ -141,6 +216,9 @@ class IOThread : public base::Thread {
 
     g_request_context->AddRef();
 
+    g_network_delegate = new TestShellNetworkDelegate();
+    g_request_context->set_network_delegate(g_network_delegate);
+
     SimpleAppCacheSystem::InitializeOnIOThread(g_request_context);
     SimpleSocketStreamBridge::InitializeOnIOThread(g_request_context);
     SimpleFileWriter::InitializeOnIOThread(g_request_context);
@@ -159,8 +237,14 @@ class IOThread : public base::Thread {
     SimpleAppCacheSystem::CleanupOnIOThread();
 
     if (g_request_context) {
+      g_request_context->set_network_delegate(NULL);
       g_request_context->Release();
       g_request_context = NULL;
+    }
+
+    if (g_network_delegate) {
+      delete g_network_delegate;
+      g_network_delegate = NULL;
     }
   }
 };
@@ -474,32 +558,6 @@ class RequestProxy : public net::URLRequest::Delegate,
                                      bool fatal) OVERRIDE {
     // Allow all certificate errors.
     request->ContinueDespiteLastError();
-  }
-
-  virtual bool CanGetCookies(
-      const net::URLRequest* request,
-      const net::CookieList& cookie_list) const OVERRIDE {
-    StaticCookiePolicy::Type policy_type = g_accept_all_cookies ?
-        StaticCookiePolicy::ALLOW_ALL_COOKIES :
-        StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
-
-    StaticCookiePolicy policy(policy_type);
-    int rv = policy.CanGetCookies(
-        request->url(), request->first_party_for_cookies());
-    return rv == net::OK;
-  }
-
-  virtual bool CanSetCookie(const net::URLRequest* request,
-                            const std::string& cookie_line,
-                            net::CookieOptions* options) const OVERRIDE {
-    StaticCookiePolicy::Type policy_type = g_accept_all_cookies ?
-        StaticCookiePolicy::ALLOW_ALL_COOKIES :
-        StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
-
-    StaticCookiePolicy policy(policy_type);
-    int rv = policy.CanSetCookie(
-        request->url(), request->first_party_for_cookies());
-    return rv == net::OK;
   }
 
   virtual void OnReadCompleted(net::URLRequest* request,
@@ -924,6 +982,7 @@ void SimpleResourceLoaderBridge::Init(
 
   DCHECK(!g_request_context_params);
   DCHECK(!g_request_context);
+  DCHECK(!g_network_delegate);
   DCHECK(!g_io_thread);
 
   g_request_context_params = new TestShellRequestContextParams(
@@ -941,6 +1000,7 @@ void SimpleResourceLoaderBridge::Shutdown() {
     g_cache_thread = NULL;
 
     DCHECK(!g_request_context) << "should have been nulled by thread dtor";
+    DCHECK(!g_network_delegate) << "should have been nulled by thread dtor";
   } else {
     delete g_request_context_params;
     g_request_context_params = NULL;

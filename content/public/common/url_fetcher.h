@@ -156,6 +156,12 @@ class CONTENT_EXPORT URLFetcher {
   virtual void SetRequestContext(
       net::URLRequestContextGetter* request_context_getter) = 0;
 
+  // Mark URLRequests started by the URLFetcher to stem from the given render
+  // view.
+  virtual void AssociateWithRenderView(const GURL& first_party_for_cookies,
+                                       int render_process_id,
+                                       int render_view_id) = 0;
+
   // If |retry| is false, 5xx responses will be propagated to the observer,
   // if it is true URLFetcher will automatically re-execute the request,
   // after backoff_delay() elapses. URLFetcher has it set to true by default.
@@ -191,10 +197,6 @@ class CONTENT_EXPORT URLFetcher {
   // Start the request.  After this is called, you may not change any other
   // settings.
   virtual void Start() = 0;
-
-  // Restarts the URLFetcher with a new URLRequestContextGetter.
-  virtual void StartWithRequestContextGetter(
-      net::URLRequestContextGetter* request_context_getter) = 0;
 
   // Return the URL that we were asked to fetch.
   virtual const GURL& GetOriginalURL() const = 0;
