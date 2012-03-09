@@ -318,5 +318,5 @@ SyncPromoUI::Version SyncPromoUI::GetSyncPromoVersion() {
     return version;
   }
 
-  return VERSION_DEFAULT;
+  return VERSION_SIMPLE;
 }
