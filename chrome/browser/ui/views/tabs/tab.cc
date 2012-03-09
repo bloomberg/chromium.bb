@@ -19,7 +19,7 @@
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
@@ -380,7 +380,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
 
 void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   // Render the inactive tab background. We'll use this for clipping.
-  gfx::CanvasSkia background_canvas(size(), false);
+  gfx::Canvas background_canvas(size(), false);
   PaintInactiveTabBackground(&background_canvas);
 
   SkBitmap background_image = background_canvas.ExtractBitmap();

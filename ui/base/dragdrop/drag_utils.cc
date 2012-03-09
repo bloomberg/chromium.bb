@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "googleurl/src/gurl.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
@@ -38,7 +38,7 @@ void CreateDragImageForFile(const FilePath& file_name,
   // Add +2 here to allow room for the halo.
   const int height = font.GetHeight() + icon->height() +
                      kLinkDragImageVPadding + 2;
-  gfx::CanvasSkia canvas(gfx::Size(width, height), false /* translucent */);
+  gfx::Canvas canvas(gfx::Size(width, height), false /* translucent */);
 
   // Paint the icon.
   canvas.DrawBitmapInt(*icon, (width - icon->width()) / 2, 0);
@@ -65,8 +65,8 @@ void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
                               ui::OSExchangeData* data_object) {
-  SetDragImageOnDataObject(
-      canvas.AsCanvasSkia()->ExtractBitmap(), size, cursor_offset, data_object);
+  SetDragImageOnDataObject(canvas.ExtractBitmap(), size, cursor_offset,
+                           data_object);
 }
 
 }  // namespace drag_utils

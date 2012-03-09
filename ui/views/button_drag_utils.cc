@@ -10,7 +10,7 @@
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/text_button.h"
 
@@ -41,7 +41,7 @@ void SetURLAndDragImage(const GURL& url,
   button.SetBounds(0, 0, prefsize.width(), prefsize.height());
 
   // Render the image.
-  gfx::CanvasSkia canvas(prefsize, false);
+  gfx::Canvas canvas(prefsize, false);
   button.PaintButton(&canvas, views::TextButton::PB_FOR_DRAG);
   drag_utils::SetDragImageOnDataObject(canvas, prefsize,
       gfx::Point(prefsize.width() / 2, prefsize.height() / 2), data);

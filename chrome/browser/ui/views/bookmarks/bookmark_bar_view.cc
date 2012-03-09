@@ -55,7 +55,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
@@ -938,7 +938,7 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
       views::TextButton* button = GetBookmarkButton(i);
-      gfx::CanvasSkia canvas(button->size(), false);
+      gfx::Canvas canvas(button->size(), false);
       button->PaintButton(&canvas, views::TextButton::PB_FOR_DRAG);
       drag_utils::SetDragImageOnDataObject(canvas, button->size(), press_pt,
                                            data);

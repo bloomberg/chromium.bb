@@ -13,7 +13,7 @@
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
@@ -836,7 +836,7 @@ void MenuController::StartDrag(SubmenuView* source,
   View::ConvertPointToView(NULL, item, &press_loc);
   gfx::Point widget_loc(press_loc);
   View::ConvertPointToWidget(item, &widget_loc);
-  gfx::CanvasSkia canvas(gfx::Size(item->width(), item->height()), false);
+  gfx::Canvas canvas(gfx::Size(item->width(), item->height()), false);
   item->PaintButton(&canvas, MenuItemView::PB_FOR_DRAG);
 
   OSExchangeData data;

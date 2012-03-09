@@ -11,7 +11,7 @@
 #endif
 
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/views/border.h"

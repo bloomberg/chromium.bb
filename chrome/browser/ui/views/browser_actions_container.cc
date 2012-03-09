@@ -333,7 +333,7 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   if (icon.isNull())
     icon = button_->default_icon();
 
-  gfx::Canvas* canvas = new gfx::CanvasSkia(icon, false);
+  gfx::Canvas* canvas = new gfx::Canvas(icon, false);
 
   if (tab_id >= 0) {
     gfx::Rect bounds(icon.width(), icon.height() + ToolbarView::kVertSpacing);

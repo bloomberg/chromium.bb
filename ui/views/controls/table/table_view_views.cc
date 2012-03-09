@@ -7,7 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
@@ -223,7 +223,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
   int min_y, max_y;
   {
     SkRect sk_clip_rect;
-    if (canvas->GetSkCanvas()->getClipBounds(&sk_clip_rect)) {
+    if (canvas->sk_canvas()->getClipBounds(&sk_clip_rect)) {
       gfx::Rect clip_rect = gfx::SkRectToRect(sk_clip_rect);
       min_y = clip_rect.y();
       max_y = clip_rect.bottom();

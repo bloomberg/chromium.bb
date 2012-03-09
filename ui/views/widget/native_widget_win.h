@@ -32,7 +32,7 @@ class ViewProp;
 }
 
 namespace gfx {
-class CanvasSkia;
+class Canvas;
 class Font;
 class Rect;
 }
@@ -551,7 +551,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   // A canvas that contains the window contents in the case of a layered
   // window.
-  scoped_ptr<gfx::CanvasSkia> layered_window_contents_;
+  scoped_ptr<gfx::Canvas> layered_window_contents_;
 
   // We must track the invalid rect ourselves, for two reasons:
   // For layered windows, Windows will not do this properly with

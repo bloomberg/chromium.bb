@@ -110,7 +110,7 @@ void DropdownBarView::OnPaint(gfx::Canvas* canvas) {
   OnPaintBorder(canvas);
 
   if (animation_offset() > 0) {
-     gfx::CanvasSkia animating_edges(
+     gfx::Canvas animating_edges(
          gfx::Size(bounds().width(), kAnimatingEdgeHeight), false);
      canvas->Translate(bounds().origin());
      OnPaintBackground(&animating_edges);

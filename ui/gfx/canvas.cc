@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,20 +6,20 @@
 
 namespace gfx {
 
-CanvasSkia* Canvas::AsCanvasSkia() {
-  return NULL;
+Canvas::Canvas()
+    : CanvasSkia() {
 }
 
-const CanvasSkia* Canvas::AsCanvasSkia() const {
-  return NULL;
+Canvas::Canvas(SkCanvas* canvas)
+    : CanvasSkia(canvas) {
 }
 
-SkCanvas* Canvas::GetSkCanvas() {
-  return NULL;
+Canvas::Canvas(const gfx::Size& size, bool is_opaque)
+    : CanvasSkia(size, is_opaque) {
 }
 
-const SkCanvas* Canvas::GetSkCanvas() const {
-  return NULL;
+Canvas::Canvas(const SkBitmap& bitmap, bool is_opaque)
+    : CanvasSkia(bitmap, is_opaque) {
 }
 
 }  // namespace gfx

@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"

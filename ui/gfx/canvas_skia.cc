@@ -13,6 +13,7 @@
 #include "ui/gfx/brush.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 
@@ -85,9 +86,8 @@ int CanvasSkia::GetStringWidth(const string16& text, const gfx::Font& font) {
 
 // static
 int CanvasSkia::DefaultCanvasTextAlignment() {
-  if (!base::i18n::IsRTL())
-    return gfx::Canvas::TEXT_ALIGN_LEFT;
-  return gfx::Canvas::TEXT_ALIGN_RIGHT;
+  return base::i18n::IsRTL() ? Canvas::TEXT_ALIGN_RIGHT
+                             : Canvas::TEXT_ALIGN_LEFT;
 }
 
 SkBitmap CanvasSkia::ExtractBitmap() const {

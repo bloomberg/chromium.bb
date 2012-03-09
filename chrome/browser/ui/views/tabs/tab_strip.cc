@@ -32,7 +32,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/size.h"

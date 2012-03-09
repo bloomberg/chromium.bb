@@ -17,7 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSolidColorLayer.h"
 #include "ui/base/animation/animation.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/compositor_switches.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/interpolated_transform.h"
@@ -325,7 +325,7 @@ void Layer::SuppressPaint() {
 void Layer::paintContents(WebKit::WebCanvas* web_canvas,
                           const WebKit::WebRect& clip) {
   TRACE_EVENT0("ui", "Layer::paintContents");
-  gfx::CanvasSkia canvas(web_canvas);
+  gfx::Canvas canvas(web_canvas);
   if (delegate_)
     delegate_->OnPaintLayer(&canvas);
 }

@@ -7,7 +7,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -135,7 +135,7 @@ gfx::Size DraggedTabView::GetPreferredSize() {
 
 void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   gfx::Size ps = GetPreferredSize();
-  gfx::CanvasSkia scale_canvas(ps, false);
+  gfx::Canvas scale_canvas(ps, false);
   SkBitmap& bitmap_device = const_cast<SkBitmap&>(
       skia::GetTopDevice(*scale_canvas.sk_canvas())->accessBitmap(true));
   bitmap_device.eraseARGB(0, 0, 0, 0);

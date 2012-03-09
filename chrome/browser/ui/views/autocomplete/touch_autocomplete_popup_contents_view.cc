@@ -82,8 +82,7 @@ void TouchAutocompletePopupContentsView::LayoutChildren() {
   }
 }
 
-void TouchAutocompletePopupContentsView::PaintResultViews(
-    gfx::CanvasSkia* canvas) {
+void TouchAutocompletePopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
   AutocompletePopupContentsView::PaintResultViews(canvas);
 
   // Draw divider lines.

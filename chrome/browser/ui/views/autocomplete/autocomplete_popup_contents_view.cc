@@ -27,7 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -516,7 +516,7 @@ void AutocompletePopupContentsView::OnMouseExited(
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, protected:
 
-void AutocompletePopupContentsView::PaintResultViews(gfx::CanvasSkia* canvas) {
+void AutocompletePopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
   canvas->sk_canvas()->drawColor(AutocompleteResultView::GetColor(
       AutocompleteResultView::NORMAL, AutocompleteResultView::BACKGROUND));
   View::PaintChildren(canvas);
@@ -553,7 +553,7 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   // Instead, we paint all our children into a second canvas and use that as a
   // shader to fill a path representing the round-rect clipping region. This
   // yields a nice anti-aliased edge.
-  gfx::CanvasSkia contents_canvas(size(), true);
+  gfx::Canvas contents_canvas(size(), true);
   PaintResultViews(&contents_canvas);
 
   // We want the contents background to be slightly transparent so we can see

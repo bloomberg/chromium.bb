@@ -8,7 +8,7 @@
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"

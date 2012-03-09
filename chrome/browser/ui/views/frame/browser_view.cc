@@ -92,7 +92,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/controls/single_split_view.h"
 #include "ui/views/events/event.h"
 #include "ui/views/focus/external_focus_tracker.h"

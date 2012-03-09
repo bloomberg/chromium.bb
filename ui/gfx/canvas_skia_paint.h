@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "skia/ext/canvas_paint.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/canvas.h"
 
 // Define a gfx::CanvasSkiaPaint type that wraps our gfx::Canvas like the
 // skia::PlatformCanvasPaint wraps PlatformCanvas.
@@ -16,7 +16,7 @@
 namespace skia {
 
 template<> inline
-PlatformCanvas* GetPlatformCanvas(skia::CanvasPaintT<gfx::CanvasSkia>* canvas) {
+PlatformCanvas* GetPlatformCanvas(skia::CanvasPaintT<gfx::Canvas>* canvas) {
   PlatformCanvas* platform_canvas = canvas->platform_canvas();
   DCHECK(platform_canvas);
   return platform_canvas;
@@ -26,7 +26,7 @@ PlatformCanvas* GetPlatformCanvas(skia::CanvasPaintT<gfx::CanvasSkia>* canvas) {
 
 namespace gfx {
 
-typedef skia::CanvasPaintT<CanvasSkia> CanvasSkiaPaint;
+typedef skia::CanvasPaintT<Canvas> CanvasSkiaPaint;
 
 }  // namespace gfx
 

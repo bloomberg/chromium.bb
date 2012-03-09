@@ -25,8 +25,8 @@
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/mouse_wheel_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_paint.h"
-#include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/native_theme_win.h"
@@ -2386,7 +2386,7 @@ void NativeWidgetWin::ClientAreaSizeChanged() {
               std::max(0, static_cast<int>(r.bottom - r.top)));
   delegate_->OnNativeWidgetSizeChanged(s);
   if (use_layered_buffer_)
-    layered_window_contents_.reset(new gfx::CanvasSkia(s, false));
+    layered_window_contents_.reset(new gfx::Canvas(s, false));
 }
 
 void NativeWidgetWin::UpdateDWMFrame() {
