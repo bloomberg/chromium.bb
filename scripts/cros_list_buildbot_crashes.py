@@ -112,7 +112,7 @@ class CrashTriager(object):
                                  self._ProcessCrashListForBot, self.jobs):
       for bot_id, build_config in cbuildbot_config.config.iteritems():
         if build_config['vm_tests']:
-          queue.put((bot_id, build_config))
+          self.config_queue.put((bot_id, build_config))
       yield
 
   def _GetStackTrace(self, crash_report_url):
