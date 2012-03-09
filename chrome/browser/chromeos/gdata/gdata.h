@@ -57,12 +57,8 @@ enum DocumentExportFormat {
 // Different callback types for various functionalities in DocumentsService.
 typedef base::Callback<void(GDataErrorCode error,
                             const std::string& token)> AuthStatusCallback;
-
-// Note: feed_data argument should be passed using base::Passed(&feed_data), not
-// feed_data.Pass().
 typedef base::Callback<void(GDataErrorCode error,
                             scoped_ptr<base::Value> feed_data)> GetDataCallback;
-
 typedef base::Callback<void(GDataErrorCode error,
                             const GURL& document_url)> EntryActionCallback;
 typedef base::Callback<void(GDataErrorCode error,
@@ -197,47 +193,47 @@ class GDataAuthService : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(GDataAuthService);
 };
 
-// This defines an interface for sharing by DocumentService and
-// MockDocumentService so that we can do testing of clients of DocumentService.
-class DocumentsServiceInterface {
+// This class provides documents feed service calls.
+class DocumentsService : public GDataAuthService::Observer {
  public:
-  virtual ~DocumentsServiceInterface() {}
+  // DocumentsService is usually owned and created by GDataFileSystem.
+  DocumentsService();
+  virtual ~DocumentsService();
 
   // Initializes the documents service tied with |profile|.
-  virtual void Initialize(Profile* profile) = 0;
+  void Initialize(Profile* profile);
 
   // Cancels all in-flight operations.
-  virtual void CancelAll() = 0;
+  void CancelAll();
 
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
   //
   // Can be called on any thread.
-  virtual void Authenticate(const AuthStatusCallback& callback) = 0;
+  void Authenticate(const AuthStatusCallback& callback);
 
   // Gets the document feed from |feed_url|. If this URL is empty, the call
   // will fetch the default ('root') document feed. Upon completion,
   // invokes |callback| with results on the calling thread.
   //
   // Can be called on any thread.
-  virtual void GetDocuments(const GURL& feed_url,
-                            const GetDataCallback& callback) = 0;
+  void GetDocuments(const GURL& feed_url, const GetDataCallback& callback);
 
-  // Deletes a document identified by its 'self' |url| and |etag|.
+  // Delete a document identified by its 'self' |url| and |etag|.
   // Upon completion, invokes |callback| with results on the calling thread.
   //
   // Can be called on any thread.
-  virtual void DeleteDocument(const GURL& document_url,
-                              const EntryActionCallback& callback) = 0;
+  void DeleteDocument(const GURL& document_url,
+                      const EntryActionCallback& callback);
 
   // Downloads a document identified by its |content_url| in a given |format|.
   // Upon completion, invokes |callback| with results on the calling thread.
   //
   // Can be called on any thread.
-  virtual void DownloadDocument(const GURL& content_url,
-                                DocumentExportFormat format,
-                                const DownloadActionCallback& callback) = 0;
+  void DownloadDocument(const GURL& content_url,
+                        DocumentExportFormat format,
+                        const DownloadActionCallback& callback);
 
   // Creates new collection with |directory_name| under parent directory
   // identified with |parent_content_url|. If |parent_content_url| is empty,
@@ -245,60 +241,28 @@ class DocumentsServiceInterface {
   // invokes |callback| and passes newly created entry on the calling thread.
   //
   // Can be called on any thread.
-  virtual void CreateDirectory(const GURL& parent_content_url,
-                               const FilePath::StringType& directory_name,
-                               const GetDataCallback& callback) = 0;
+  void CreateDirectory(const GURL& parent_content_url,
+                       const FilePath::StringType& directory_name,
+                       const GetDataCallback& callback);
 
   // Downloads a file identified by its |content_url|. Upon completion, invokes
   // |callback| with results on the calling thread.
   //
   // Can be called on any thread.
-  virtual void DownloadFile(const GURL& content_url,
-                            const DownloadActionCallback& callback) = 0;
+  void DownloadFile(const GURL& content_url,
+                    const DownloadActionCallback& callback);
 
-  // Initiates uploading of a document/file.
+  // Initiate uploading of a document/file.
   //
   // Can be called on any thread.
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) = 0;
+  void InitiateUpload(const InitiateUploadParams& params,
+                      const InitiateUploadCallback& callback);
 
-  // Resumes uploading of a document/file on the calling thread.
+  // Resume uploading of a document/file on the calling thread.
   //
   // Can be called on any thread.
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) = 0;
-};
-
-// This class provides documents feed service calls.
-class DocumentsService
-    : public DocumentsServiceInterface,
-      public GDataAuthService::Observer {
- public:
-  // DocumentsService is usually owned and created by GDataFileSystem.
-  DocumentsService();
-  virtual ~DocumentsService();
-
-  // DocumentsServiceInterface Overrides
-  virtual void Initialize(Profile* profile) OVERRIDE;
-  virtual void CancelAll() OVERRIDE;
-  virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
-  virtual void GetDocuments(const GURL& feed_url,
-                            const GetDataCallback& callback) OVERRIDE;
-  virtual void DeleteDocument(const GURL& document_url,
-                              const EntryActionCallback& callback) OVERRIDE;
-  virtual void DownloadDocument(
-      const GURL& content_url,
-      DocumentExportFormat format,
-      const DownloadActionCallback& callback) OVERRIDE;
-  virtual void CreateDirectory(const GURL& parent_content_url,
-                               const FilePath::StringType& directory_name,
-                               const GetDataCallback& callback) OVERRIDE;
-  virtual void DownloadFile(const GURL& content_url,
-                            const DownloadActionCallback& callback) OVERRIDE;
-  virtual void InitiateUpload(const InitiateUploadParams& params,
-                              const InitiateUploadCallback& callback) OVERRIDE;
-  virtual void ResumeUpload(const ResumeUploadParams& params,
-                            const ResumeUploadCallback& callback) OVERRIDE;
+  void ResumeUpload(const ResumeUploadParams& params,
+                    const ResumeUploadCallback& callback);
 
   GDataAuthService* gdata_auth_service() { return gdata_auth_service_.get(); }
 

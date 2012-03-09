@@ -348,8 +348,7 @@ class GDataFileSystem : public ProfileKeyedService {
     FileOperationCallback callback;
   };
 
-  explicit GDataFileSystem(Profile* profile,
-                           DocumentsServiceInterface* documents_service);
+  explicit GDataFileSystem(Profile* profile);
   virtual ~GDataFileSystem();
 
   // Initiates upload operation of file defined with |file_name|,
@@ -480,7 +479,7 @@ class GDataFileSystem : public ProfileKeyedService {
   Profile* profile_;
 
   // The document service for the GDataFileSystem.
-  scoped_ptr<DocumentsServiceInterface> documents_service_;
+  scoped_ptr<DocumentsService> documents_service_;
 
   // File content uploader.
   scoped_ptr<GDataUploader> gdata_uploader_;
