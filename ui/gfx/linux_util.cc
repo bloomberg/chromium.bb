@@ -4,15 +4,7 @@
 
 #include "ui/gfx/linux_util.h"
 
-#include <stdlib.h>
-
-#include "base/basictypes.h"
-#include "base/command_line.h"
-#include "base/linux_util.h"
 #include "base/string_util.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkUnPreMultiply.h"
-#include "ui/gfx/rect.h"
 
 namespace {
 
