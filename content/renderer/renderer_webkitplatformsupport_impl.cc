@@ -38,6 +38,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamCenter.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
@@ -84,6 +86,10 @@ using WebKit::WebIDBFactory;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyPath;
 using WebKit::WebKitPlatformSupport;
+using WebKit::WebMediaStreamCenter;
+using WebKit::WebMediaStreamCenterClient;
+using WebKit::WebPeerConnectionHandler;
+using WebKit::WebPeerConnectionHandlerClient;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebStorageArea;
 using WebKit::WebStorageEventDispatcher;
@@ -648,9 +654,9 @@ void RendererWebKitPlatformSupportImpl::GetPlugins(
 
 //------------------------------------------------------------------------------
 
-WebKit::WebPeerConnectionHandler*
+WebPeerConnectionHandler*
 RendererWebKitPlatformSupportImpl::createPeerConnectionHandler(
-    WebKit::WebPeerConnectionHandlerClient* client) {
+    WebPeerConnectionHandlerClient* client) {
   WebFrame* web_frame = WebFrame::frameForCurrentContext();
   if (!web_frame)
     return NULL;
@@ -658,4 +664,16 @@ RendererWebKitPlatformSupportImpl::createPeerConnectionHandler(
   if (!render_view)
     return NULL;
   return render_view->CreatePeerConnectionHandler(client);
+}
+
+//------------------------------------------------------------------------------
+
+WebMediaStreamCenter*
+RendererWebKitPlatformSupportImpl::createMediaStreamCenter(
+    WebMediaStreamCenterClient* client) {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  if (!render_thread)
+    return NULL;
+  return render_thread->CreateMediaStreamCenter(client);
 }
