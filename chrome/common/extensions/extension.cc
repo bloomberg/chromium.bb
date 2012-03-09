@@ -1324,6 +1324,101 @@ bool Extension::LoadAppIsolation(string16* error) {
   return true;
 }
 
+bool Extension::LoadWebIntentAction(const std::string& action_name,
+                                    const DictionaryValue& intent_service,
+                                    string16* error) {
+  DCHECK(error);
+  webkit_glue::WebIntentServiceData service;
+  std::string value;
+
+  service.action = UTF8ToUTF16(action_name);
+
+  ListValue* mime_types = NULL;
+  if (!intent_service.HasKey(keys::kIntentType) ||
+      !intent_service.GetList(keys::kIntentType, &mime_types) ||
+      mime_types->GetSize() == 0) {
+    *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+        errors::kInvalidIntentType, action_name);
+    return false;
+  }
+
+  std::string href;
+  if (intent_service.HasKey(keys::kIntentPath)) {
+    if (!intent_service.GetString(keys::kIntentPath, &href)) {
+      *error = ASCIIToUTF16(errors::kInvalidIntentHref);
+      return false;
+    }
+  }
+
+  if (intent_service.HasKey(keys::kIntentHref)) {
+    if (!href.empty()) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidIntentHrefOldAndNewKey, action_name,
+          keys::kIntentPath, keys::kIntentHref);
+       return false;
+    }
+    if (!intent_service.GetString(keys::kIntentHref, &href)) {
+      *error = ASCIIToUTF16(errors::kInvalidIntentHref);
+      return false;
+    }
+  }
+
+  if (!href.empty()) {
+    GURL service_url(href);
+    if (is_hosted_app()) {
+      // Hosted apps require an absolute URL for intents.
+      if (!service_url.is_valid() ||
+          !(web_extent().MatchesURL(service_url))) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidIntentPageInHostedApp, action_name);
+        return false;
+      }
+      service.service_url = service_url;
+    } else {
+      // We do not allow absolute intent URLs in non-hosted apps.
+      if (service_url.is_valid()) {
+        *error =ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kCannotAccessPage, href);
+        return false;
+      }
+      service.service_url = GetResourceURL(href);
+    }
+  }
+
+  if (intent_service.HasKey(keys::kIntentTitle) &&
+      !intent_service.GetString(keys::kIntentTitle, &service.title)) {
+    *error = ASCIIToUTF16(errors::kInvalidIntentTitle);
+    return false;
+  }
+
+  if (intent_service.HasKey(keys::kIntentDisposition)) {
+    if (!intent_service.GetString(keys::kIntentDisposition, &value) ||
+        (value != values::kIntentDispositionWindow &&
+         value != values::kIntentDispositionInline)) {
+      *error = ASCIIToUTF16(errors::kInvalidIntentDisposition);
+      return false;
+    }
+    if (value == values::kIntentDispositionInline) {
+      service.disposition =
+          webkit_glue::WebIntentServiceData::DISPOSITION_INLINE;
+    } else {
+      service.disposition =
+          webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW;
+    }
+  }
+
+  for (size_t i = 0; i < mime_types->GetSize(); ++i) {
+    if (!mime_types->GetString(i, &service.type)) {
+      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+          errors::kInvalidIntentTypeElement, action_name,
+          std::string(base::IntToString(i)));
+      return false;
+    }
+    intents_services_.push_back(service);
+  }
+  return true;
+}
+
 bool Extension::LoadWebIntentServices(string16* error) {
   DCHECK(error);
 
@@ -1336,100 +1431,30 @@ bool Extension::LoadWebIntentServices(string16* error) {
     return false;
   }
 
-  std::string value;
   for (DictionaryValue::key_iterator iter(all_services->begin_keys());
        iter != all_services->end_keys(); ++iter) {
-    webkit_glue::WebIntentServiceData service;
-
+    // Any entry in the intents dictionary can either have a list of
+    // dictionaries, or just a single dictionary attached to that. Try
+    // lists first, fall back to single dictionary.
+    ListValue* service_list = NULL;
     DictionaryValue* one_service = NULL;
-    if (!all_services->GetDictionaryWithoutPathExpansion(*iter, &one_service)) {
-      *error = ASCIIToUTF16(errors::kInvalidIntent);
-      return false;
-    }
-    service.action = UTF8ToUTF16(*iter);
-
-    ListValue* mime_types = NULL;
-    if (!one_service->HasKey(keys::kIntentType) ||
-        !one_service->GetList(keys::kIntentType, &mime_types) ||
-        mime_types->GetSize() == 0) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidIntentType, *iter);
-      return false;
-    }
-
-    std::string href;
-    if (one_service->HasKey(keys::kIntentPath)) {
-      if (!one_service->GetString(keys::kIntentPath, &href)) {
-        *error = ASCIIToUTF16(errors::kInvalidIntentHref);
-        return false;
-      }
-    }
-
-    if (one_service->HasKey(keys::kIntentHref)) {
-      if (!href.empty()) {
-        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidIntentHrefOldAndNewKey, *iter,
-            keys::kIntentPath, keys::kIntentHref);
-         return false;
-      }
-      if (!one_service->GetString(keys::kIntentHref, &href)) {
-        *error = ASCIIToUTF16(errors::kInvalidIntentHref);
-        return false;
-      }
-    }
-
-    if (!href.empty()) {
-      GURL service_url(href);
-      if (is_hosted_app()) {
-        // Hosted apps require an absolute URL for intents.
-        if (!service_url.is_valid() ||
-            !(web_extent().MatchesURL(service_url))) {
-          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidIntentPageInHostedApp, *iter);
-          return false;
+    if (all_services->GetListWithoutPathExpansion(*iter, &service_list)) {
+      for (size_t i = 0; i < service_list->GetSize(); ++i) {
+        if (!service_list->GetDictionary(i, &one_service)) {
+            *error = ASCIIToUTF16(errors::kInvalidIntent);
+            return false;
         }
-        service.service_url = service_url;
-      } else {
-        // We do not allow absolute intent URLs in non-hosted apps.
-        if (service_url.is_valid()) {
-          *error =ExtensionErrorUtils::FormatErrorMessageUTF16(
-              errors::kCannotAccessPage, href);
+        if (!LoadWebIntentAction(*iter, *one_service, error))
           return false;
-        }
-        service.service_url = GetResourceURL(href);
       }
-    }
-
-    if (one_service->HasKey(keys::kIntentTitle) &&
-        !one_service->GetString(keys::kIntentTitle, &service.title)) {
-      *error = ASCIIToUTF16(errors::kInvalidIntentTitle);
-      return false;
-    }
-
-    if (one_service->HasKey(keys::kIntentDisposition)) {
-      if (!one_service->GetString(keys::kIntentDisposition, &value) ||
-          (value != values::kIntentDispositionWindow &&
-           value != values::kIntentDispositionInline)) {
-        *error = ASCIIToUTF16(errors::kInvalidIntentDisposition);
+    } else {
+      if (!all_services->GetDictionaryWithoutPathExpansion(*iter,
+                                                           &one_service)) {
+        *error = ASCIIToUTF16(errors::kInvalidIntent);
         return false;
       }
-      if (value == values::kIntentDispositionInline) {
-        service.disposition =
-            webkit_glue::WebIntentServiceData::DISPOSITION_INLINE;
-      } else {
-        service.disposition =
-            webkit_glue::WebIntentServiceData::DISPOSITION_WINDOW;
-      }
-    }
-
-    for (size_t i = 0; i < mime_types->GetSize(); ++i) {
-      if (!mime_types->GetString(i, &service.type)) {
-        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidIntentTypeElement, *iter,
-            std::string(base::IntToString(i)));
+      if (!LoadWebIntentAction(*iter, *one_service, error))
         return false;
-      }
-      intents_services_.push_back(service);
     }
   }
   return true;

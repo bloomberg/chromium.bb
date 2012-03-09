@@ -700,6 +700,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadLaunchContainer(string16* error);
   bool LoadLaunchURL(string16* error);
   bool LoadAppIsolation(string16* error);
+
+  // Parses a single action in the manifest.
+  bool LoadWebIntentAction(const std::string& action_name,
+                           const base::DictionaryValue& intent_service,
+                           string16* error);
   bool LoadWebIntentServices(string16* error);
   bool LoadBackgroundScripts(string16* error);
   bool LoadBackgroundPage(const ExtensionAPIPermissionSet& api_permissions,

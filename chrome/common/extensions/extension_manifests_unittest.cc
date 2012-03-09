@@ -790,7 +790,8 @@ TEST_F(ExtensionManifestTest, WebIntents) {
     {"intent_invalid_6.json", errors::kInvalidIntentTitle},
     {"intent_invalid_packaged_app.json", errors::kCannotAccessPage},
     {"intent_invalid_href_and_path.json",
-        errors::kInvalidIntentHrefOldAndNewKey}
+        errors::kInvalidIntentHrefOldAndNewKey},
+    {"intent_invalid_multi_href.json", errors::kInvalidIntent},
   };
   RunTestcases(testcases, arraysize(testcases));
 
@@ -860,7 +861,7 @@ TEST_F(ExtensionManifestTest, WebIntentsWithMultipleMimeTypes) {
                      extension_manifest_errors::kInvalidIntentTypeElement);
 }
 
-TEST_F(ExtensionManifestTest,WebIntentsInHostedApps) {
+TEST_F(ExtensionManifestTest, WebIntentsInHostedApps) {
   LoadAndExpectError("intent_invalid_hosted_app_1.json",
                      errors::kInvalidIntentPageInHostedApp);
   LoadAndExpectError("intent_invalid_hosted_app_2.json",
@@ -880,6 +881,24 @@ TEST_F(ExtensionManifestTest,WebIntentsInHostedApps) {
             extension->intents_services()[1].service_url.spec());
   EXPECT_EQ("http://www.cloudfilepicker.com/intents/share.html",
             extension->intents_services()[2].service_url.spec());
+}
+
+TEST_F(ExtensionManifestTest, WebIntentsMultiHref) {
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("intent_valid_multi_href.json"));
+  ASSERT_TRUE(extension.get() != NULL);
+  ASSERT_EQ(2u, extension->intents_services().size());
+
+  const std::vector<webkit_glue::WebIntentServiceData> &intents =
+      extension->intents_services();
+
+  EXPECT_EQ("chrome-extension", intents[0].service_url.scheme());
+  EXPECT_EQ("//services/sharelink.html",intents[0].service_url.path());
+  EXPECT_EQ("text/uri-list",UTF16ToUTF8(intents[0].type));
+
+  EXPECT_EQ("chrome-extension", intents[1].service_url.scheme());
+  EXPECT_EQ("//services/shareimage.html",intents[1].service_url.path());
+  EXPECT_EQ("image/*",UTF16ToUTF8(intents[1].type));
 }
 
 TEST_F(ExtensionManifestTest, PortsInPermissions) {
