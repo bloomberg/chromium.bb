@@ -41,10 +41,6 @@ namespace net {
 class IPEndPoint;
 }  // namespace net
 
-namespace webkit_glue {
-class NetworkListObserver;
-}  // webkit_glue
-
 namespace content {
 
 class P2PHostAddressRequest;
@@ -55,18 +51,30 @@ class P2PSocketClient;
 // same thread.
 class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
  public:
+  class NetworkListObserver {
+   public:
+    virtual ~NetworkListObserver() { }
+
+    virtual void OnNetworkListChanged(
+        const net::NetworkInterfaceList& list) = 0;
+
+   protected:
+    NetworkListObserver() { }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(NetworkListObserver);
+  };
+
   explicit P2PSocketDispatcher(RenderViewImpl* render_view);
   virtual ~P2PSocketDispatcher();
 
   // Add a new network list observer. Each observer is called
-  // immidiately after it is registered and then later whenever
+  // immidiately after its't registered and then later whenever
   // network configuration changes.
-  void AddNetworkListObserver(
-      webkit_glue::NetworkListObserver* network_list_observer);
+  void AddNetworkListObserver(NetworkListObserver* network_list_observer);
 
   // Removes network list observer.
-  void RemoveNetworkListObserver(
-      webkit_glue::NetworkListObserver* network_list_observer);
+  void RemoveNetworkListObserver(NetworkListObserver* network_list_observer);
 
   // RenderViewObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -105,7 +113,7 @@ class CONTENT_EXPORT P2PSocketDispatcher : public content::RenderViewObserver {
   IDMap<P2PHostAddressRequest> host_address_requests_;
 
   bool network_notifications_started_;
-  scoped_refptr<ObserverListThreadSafe<webkit_glue::NetworkListObserver> >
+  scoped_refptr<ObserverListThreadSafe<NetworkListObserver> >
       network_list_observers_;
 
   scoped_refptr<AsyncMessageSender> async_message_sender_;

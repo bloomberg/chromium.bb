@@ -71,7 +71,6 @@ struct WebFileChooserParams;
 namespace webkit_glue {
 class ClipboardClient;
 class P2PTransport;
-class NetworkListObserver;
 }  // namespace webkit_glue
 
 namespace webkit {
@@ -482,12 +481,6 @@ class PluginDelegate {
   virtual void TCPServerSocketAccept(uint32 real_socket_id) = 0;
   virtual void TCPServerSocketStopListening(uint32 real_socket_id,
                                             uint32 temp_socket_id) = 0;
-
-  // Add/remove a network list observer.
-  virtual bool AddNetworkListObserver(
-      webkit_glue::NetworkListObserver* observer) = 0;
-  virtual void RemoveNetworkListObserver(
-      webkit_glue::NetworkListObserver* observer) = 0;
 
   // Show the given context menu at the given position (in the plugin's
   // coordinates).

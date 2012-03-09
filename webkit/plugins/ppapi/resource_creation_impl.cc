@@ -26,7 +26,6 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/ppb_network_monitor_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_server_socket_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_tcp_socket_private_impl.h"
@@ -248,7 +247,8 @@ PP_Resource ResourceCreationImpl::CreateNetworkMonitor(
     PP_Instance instance,
     PPB_NetworkMonitor_Callback callback,
     void* user_data) {
-  return PPB_NetworkMonitor_Private_Impl::Create(instance, callback, user_data);
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
