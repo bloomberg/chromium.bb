@@ -189,11 +189,14 @@ function load() {
   if (path.length > 1) {
     // Skip starting slash and remove trailing slash (if any).
     var pageName = path.slice(1).replace(/\/$/, '');
-    // Proxy page is now per network and only reachable from internet details.
-    if (pageName != 'proxy') {
-      // Show page, but don't update history (there's already an entry for it).
-      OptionsPage.showPageByName(pageName, false);
+
+    if (pageName == 'proxy') {
+      // The following page doesn't have a unique URL at the moment, so do
+      // something sensible if a user pastes this link or refreshes on this URL.
+      pageName = ProxyOptions ? ProxyOptions.getInstance().parentPage.name :
+                                AdvancedOptions.getInstance().name;
     }
+    OptionsPage.showPageByName(pageName, true, {replaceState: true});
   } else {
     OptionsPage.showDefaultPage();
   }

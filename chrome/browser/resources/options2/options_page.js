@@ -77,9 +77,16 @@ cr.define('options', function() {
    * @param {string} pageName Page name.
    * @param {boolean} updateHistory True if we should update the history after
    *     showing the page.
+   * @param {Object=} opt_propertyBag An optional bag of properties including
+   *     replaceState (if history state should be replaced instead of pushed).
    * @private
    */
-  OptionsPage.showPageByName = function(pageName, updateHistory) {
+  OptionsPage.showPageByName = function(pageName,
+                                        updateHistory,
+                                        opt_propertyBag) {
+    // If |opt_propertyBag| is non-truthy, homogenize to object.
+    opt_propertyBag = opt_propertyBag || {};
+
     // Find the currently visible root-level page.
     var rootPage = null;
     for (var name in this.registeredPages) {
@@ -96,7 +103,7 @@ cr.define('options', function() {
       // If it's not a page, try it as an overlay.
       if (!targetPage && this.showOverlay_(pageName, rootPage)) {
         if (updateHistory)
-          this.updateHistoryState_();
+          this.updateHistoryState_(!!opt_propertyBag.replaceState);
         return;
       } else {
         targetPage = this.getDefaultPage();
@@ -112,9 +119,15 @@ cr.define('options', function() {
     var isRootPageLocked =
         rootPage && rootPage.sticky && targetPage.parentPage;
 
+    var allPageNames = Array.prototype.concat.call(
+        Object.keys(this.registeredPages),
+        Object.keys(this.registeredOverlayPages));
+
     // Notify pages if they will be hidden.
-    for (var name in this.registeredPages) {
-      var page = this.registeredPages[name];
+    for (var i = 0; i < allPageNames.length; ++i) {
+      var name = allPageNames[i];
+      var page = this.registeredPages[name] ||
+                 this.registeredOverlayPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
       if (page.willHidePage && name != pageName &&
@@ -124,8 +137,10 @@ cr.define('options', function() {
     }
 
     // Update visibilities to show only the hierarchy of the target page.
-    for (var name in this.registeredPages) {
-      var page = this.registeredPages[name];
+    for (var i = 0; i < allPageNames.length; ++i) {
+      var name = allPageNames[i];
+      var page = this.registeredPages[name] ||
+                 this.registeredOverlayPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
       page.visible = name == pageName || page.isAncestorOfPage(targetPage);
@@ -133,14 +148,16 @@ cr.define('options', function() {
 
     // Update the history and current location.
     if (updateHistory)
-      this.updateHistoryState_();
+      this.updateHistoryState_(!!opt_propertyBag.replaceState);
 
     // Update tab title.
     this.setTitle_(targetPage.title);
 
     // Notify pages if they were shown.
-    for (var name in this.registeredPages) {
-      var page = this.registeredPages[name];
+    for (var i = 0; i < allPageNames.length; ++i) {
+      var name = allPageNames[i];
+      var page = this.registeredPages[name] ||
+                 this.registeredOverlayPages[name];
       if (!page.parentPage && isRootPageLocked)
         continue;
       if (!targetPageWasVisible && page.didShowPage &&
@@ -175,22 +192,31 @@ cr.define('options', function() {
   /**
    * Pushes the current page onto the history stack, overriding the last page
    * if it is the generic chrome://settings/.
+   * @param {boolean} replace If true, allow no history events to be created.
    * @private
    */
-  OptionsPage.updateHistoryState_ = function() {
+  OptionsPage.updateHistoryState_ = function(replace) {
     var page = this.getTopmostVisiblePage();
-    var path = location.pathname;
+    var path = window.location.pathname + window.location.hash;
     if (path)
-      path = path.slice(1).replace(/\/$/, '');  // Remove trailing slash.
+      path = path.slice(1).replace(/\/(?:#|$)/, '');  // Remove trailing slash.
     // The page is already in history (the user may have clicked the same link
     // twice). Do nothing.
-    if (path == page.name)
+    if (path == page.name &&
+        !document.documentElement.classList.contains('loading')) {
       return;
+    }
+
+    // If settings are embedded, tell the outer page to set its "path" to the
+    // inner frame's path.
+    var outerPath = (page == this.getDefaultPage() ? '' : page.name) +
+                    window.location.hash;
+    uber.invokeMethodOnParent('setPath', {path: outerPath});
 
     // If there is no path, the current location is chrome://settings/.
     // Override this with the new page.
-    var historyFunction = path ? window.history.pushState :
-                                 window.history.replaceState;
+    var historyFunction = path && !replace ? window.history.pushState :
+                                             window.history.replaceState;
     historyFunction.call(window.history,
                          {pageName: page.name},
                          page.title,
@@ -262,7 +288,7 @@ cr.define('options', function() {
     overlay.visible = false;
 
     if (overlay.didClosePage) overlay.didClosePage();
-    this.updateHistoryState_();
+    this.updateHistoryState_(false);
   };
 
   /**
@@ -440,12 +466,7 @@ cr.define('options', function() {
    */
   OptionsPage.setState = function(data) {
     if (data && data.pageName) {
-      // It's possible an overlay may be the last top-level page shown.
-      if (this.isOverlayVisible_() &&
-          !this.registeredOverlayPages[data.pageName.toLowerCase()]) {
-        this.hideOverlay_();
-      }
-
+      this.willClose();
       this.showPageByName(data.pageName, false);
     }
   };
@@ -603,7 +624,7 @@ cr.define('options', function() {
   OptionsPage.reinitializeCore = function() {
     if (this.initialized_)
       chrome.send('coreOptionsInitialize');
-  }
+  };
 
   OptionsPage.prototype = {
     __proto__: cr.EventTarget.prototype,

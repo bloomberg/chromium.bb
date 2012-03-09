@@ -741,7 +741,7 @@ void SyncSetupHandler::OpenSyncSetup() {
   // If the wizard is already visible, just focus that one.
   if (FocusExistingWizardIfPresent()) {
     if (!IsActiveLogin())
-        CloseOverlay();
+      CloseOverlay();
     return;
   }
 

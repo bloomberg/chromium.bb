@@ -109,7 +109,7 @@ void UberUI::RegisterSubpage(const std::string& page_url) {
   content::WebUI* webui =
       web_ui()->GetWebContents()->CreateWebUI(GURL(page_url));
 
-  webui->SetFrameXPath("//iframe[@src='" + page_url + "']");
+  webui->SetFrameXPath("//iframe[starts-with(@src,'" + page_url + "')]");
   sub_uis_[page_url] = webui;
 }
 

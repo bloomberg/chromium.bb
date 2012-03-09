@@ -7,18 +7,19 @@ cr.define('uber', function() {
 
   /**
    * Options for how web history should be handled.
-   **/
+   */
   var HISTORY_STATE_OPTION = {
     PUSH: 1,    // Push a new history state.
-    REPLACE: 2  // Replace the current history state.
+    REPLACE: 2, // Replace the current history state.
+    NONE: 3,    // Ignore this history state change.
   };
 
   /**
-  * We cache a reference to the #navigation frame here to so we don't need to
-  * grab it from the DOM on each scroll.
-  * @type {Node}
-  * @private
-  */
+   * We cache a reference to the #navigation frame here so we don't need to grab
+   * it from the DOM on each scroll.
+   * @type {Node}
+   * @private
+   */
   var navFrame;
 
   /**
@@ -30,7 +31,7 @@ cr.define('uber', function() {
 
     // Select a page based on the page-URL.
     var params = resolvePageInfo();
-    showPage(params.id, HISTORY_STATE_OPTION.REPLACE, params.path);
+    showPage(params.id, HISTORY_STATE_OPTION.NONE, params.path);
 
     window.addEventListener('message', handleWindowMessage);
     window.setTimeout(function() {
@@ -40,7 +41,7 @@ cr.define('uber', function() {
     // HACK(dbeam): This makes the assumption that any second part to a path
     // will result in needing background navigation. We shortcut it to avoid
     // flicker on load.
-    if (params.path && window.location.pathname.indexOf('settings') == 0)
+    if (params.path && params.id == 'settings')
       backgroundNavigation();
   }
 
@@ -89,7 +90,7 @@ cr.define('uber', function() {
    */
   function onPopHistoryState(e) {
     if (e.state && e.state.pageId)
-      showPage(e.state.pageId, HISTORY_STATE_OPTION.PUSH);
+      showPage(e.state.pageId, HISTORY_STATE_OPTION.NONE);
   }
 
   /**
@@ -126,8 +127,10 @@ cr.define('uber', function() {
       backgroundNavigation();
     else if (e.data.method === 'stopInterceptingEvents')
       foregroundNavigation();
+    else if (e.data.method === 'setPath')
+      setPath(e.origin, e.data.params.path);
     else if (e.data.method === 'setTitle')
-      setTitle_(e.origin, e.data.params.title);
+      setTitle(e.origin, e.data.params.title);
     else if (e.data.method === 'showPage')
       showPage(e.data.params.pageId, HISTORY_STATE_OPTION.PUSH);
     else if (e.data.method === 'navigationControlsLoaded')
@@ -170,19 +173,59 @@ cr.define('uber', function() {
   }
 
   /**
+   * Get an iframe based on the origin of a received post message.
+   * @param {string} origin The origin of a post message.
+   * @return {!HTMLElement} The frame associated to |origin| or null.
+   */
+  function getIframeFromOrigin(origin) {
+    assert(origin.substr(-1) != '/', 'invalid origin given');
+    var query = '.iframe-container > iframe[src^="' + origin + '/"]';
+    return document.querySelector(query);
+  }
+
+  /**
+   * Changes the path past the page title (i.e. chrome://chrome/settings/(.*)).
+   * @param {string} path The new /path/ to be set after the page name.
+   * @param {number} historyOption The type of history modification to make.
+   */
+  function changePathTo(path, historyOption) {
+    assert(!path || path.substr(-1) != '/', 'invalid path given');
+
+    var histFunc;
+    if (historyOption == HISTORY_STATE_OPTION.PUSH)
+      histFunc = window.history.pushState;
+    else if (historyOption == HISTORY_STATE_OPTION.REPLACE)
+      histFunc = window.history.replaceState;
+
+    assert(histFunc, 'invalid historyOption given ' + historyOption);
+
+    var pageId = getSelectedIframe().id;
+    var args = [{pageId: pageId}, '', '/' + pageId + '/' + (path || '')];
+    histFunc.apply(window.history, args);
+  }
+
+  /**
+   * Sets the "path" of the page (actually the path after the first '/' char).
+   * @param {Object} origin The origin of the source iframe.
+   * @param {string} title The new "path".
+   */
+  function setPath(origin, path) {
+    assert(!path || path[0] != '/', 'invalid path sent from ' + origin);
+    // Only update the currently displayed path if this is the visible frame.
+    if (getIframeFromOrigin(origin).parentNode == getSelectedIframe())
+      changePathTo(path, HISTORY_STATE_OPTION.REPLACE);
+  }
+
+  /**
    * Sets the title of the page.
    * @param {Object} origin The origin of the source iframe.
    * @param {string} title The title of the page.
    */
-  function setTitle_(origin, title) {
-    // |iframe.src| always contains a trailing backslash while |origin| does not
-    // so add the trailing source for normalization.
-    var query = '.iframe-container > iframe[src="' + origin + '/"]';
-
+  function setTitle(origin, title) {
     // Cache the title for the client iframe, i.e., the iframe setting the
     // title. querySelector returns the actual iframe element, so use parentNode
     // to get back to the container.
-    var container = document.querySelector(query).parentNode;
+    var container = getIframeFromOrigin(origin).parentNode;
     container.dataset.title = title;
 
     // Only update the currently displayed title if this is the visible frame.
@@ -195,25 +238,29 @@ cr.define('uber', function() {
    * @param {String} pageId Should matche an id of one of the iframe containers.
    * @param {integer} historyOption Indicates whether we should push or replace
    *     browser history.
-   * @param {String=} path An optional sub-page path.
+   * @param {String} path A sub-page path.
    */
   function showPage(pageId, historyOption, path) {
     var container = $(pageId);
     var lastSelected = document.querySelector('.iframe-container.selected');
-    if (lastSelected === container)
-      return;
 
     // Lazy load of iframe contents.
+    var sourceUrl = container.dataset.url + (path || '');
     var frame = container.querySelector('iframe');
-    var sourceUrl = container.dataset.url;
     if (!frame) {
       frame = container.ownerDocument.createElement('iframe');
       container.appendChild(frame);
       frame.src = sourceUrl;
+    } else {
+      // There's no particularly good way to know what the current URL of the
+      // content frame is as we don't have access to its contentWindow's
+      // location, so just replace every time until necessary to do otherwise.
+      frame.contentWindow.location.replace(sourceUrl);
     }
-    // If there is a non-empty path, alter the location of the frame.
-    if (path && path.length)
-      frame.contentWindow.location.replace(sourceUrl + path);
+
+    // If the last selected container is already showing, ignore the rest.
+    if (lastSelected === container)
+      return;
 
     if (lastSelected)
       lastSelected.classList.remove('selected');
@@ -228,10 +275,8 @@ cr.define('uber', function() {
     var selectedFrame = getSelectedIframe().querySelector('iframe');
     uber.invokeMethodOnWindow(selectedFrame.contentWindow, 'frameSelected');
 
-    if (historyOption == HISTORY_STATE_OPTION.PUSH)
-      window.history.pushState({pageId: pageId}, '', '/' + pageId);
-    else if (historyOption == HISTORY_STATE_OPTION.REPLACE)
-      window.history.replaceState({pageId: pageId}, '', '/' + pageId);
+    if (historyOption != HISTORY_STATE_OPTION.NONE)
+      changePathTo(path, historyOption);
 
     updateNavigationControls();
   }
