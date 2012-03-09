@@ -244,15 +244,6 @@ class EBuild(object):
         self.is_stable = True
     fileinput.close()
 
-  def GetStableCommitId(self):
-    """Return the CROS_WORKON_COMMIT setting from a stable EBuild."""
-    with open(self.ebuild_path, 'r') as infile:
-      for line in infile:
-        m = self._WORKON_COMMIT_PATTERN.match(line)
-        if m is not None:
-          return m.group(1)
-    return None
-
   def GetSourcePath(self, srcroot):
     """Get the commit id for this ebuild."""
     # Grab and evaluate CROS_WORKON variables from this ebuild.

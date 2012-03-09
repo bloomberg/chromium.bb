@@ -128,18 +128,16 @@ class RepoRepository(object):
     repo_url: gitserver URL to fetch repo manifest from.
     directory: local path where to checkout the repository.
     branch: Branch to check out the manifest at.
-    stable_sync:  Sync to latest stable commit rather than ToT.
   """
   DEFAULT_MANIFEST = 'default'
   # Use our own repo, in case android.kernel.org (the default location) is down.
   _INIT_CMD = ['repo', 'init', '--repo-url', constants.REPO_URL]
 
-  def __init__(self, repo_url, directory, branch=None, stable_sync=False,
-               referenced_repo=None, manifest=None, depth=None):
+  def __init__(self, repo_url, directory, branch=None, referenced_repo=None,
+               manifest=None, depth=None):
     self.repo_url = repo_url
     self.directory = directory
     self.branch = branch
-    self._stable_sync = stable_sync
 
     # It's perfectly acceptable to pass in a reference pathway that isn't
     # usable.  Detect it, and suppress the setting so that any depth
@@ -250,40 +248,6 @@ class RepoRepository(object):
       os.unlink(manifest_path)
       shutil.copyfile(local_manifest, manifest_path)
 
-  def _SyncToEBuilds(self):
-    """Synchronize cros-workon packages to their stable commits.
-
-    Find all stable ebuilds inheriting from 'cros-workon':  if the
-    package repository's current tip-of-tree doesn't match the last
-    recorded stable revision in the ebuild, 'git checkout' the
-    stable revision.
-    """
-    overlay_list = portage_utilities.FindOverlays(self.directory, 'both')
-    directory_src = os.path.join(self.directory, 'src')
-    overlay_dict = dict((o, []) for o in overlay_list)
-    repo_hash_map = {}
-    repo_package_map = collections.defaultdict(list)
-    portage_utilities.BuildEBuildDictionary(overlay_dict, True, None)
-    for ebuild in itertools.chain.from_iterable(overlay_dict.values()):
-      _, repo_path = ebuild.GetSourcePath(directory_src)
-      stable_hash = ebuild.GetStableCommitId()
-      if stable_hash:
-        repo_package_map[repo_path].append(ebuild.package)
-        if repo_path in repo_hash_map:
-          if repo_hash_map[repo_path] != stable_hash:
-            message = ('Conflicting git revisions '
-                       'for repository %s in these packages:' % repo_path)
-            cros_lib.Die('\n    '.join(
-                             [message] + repo_package_map[repo_path]))
-          continue
-        repo_hash_map[repo_path] = stable_hash
-        latest_hash = ebuild.GetCommitId(directory_src)
-        if stable_hash != latest_hash:
-          print 'Syncing package %s to last stable commit:' % ebuild.package
-          cros_lib.RunCommand(['git', 'checkout', stable_hash],
-                              cwd=repo_path, print_cmd=False)
-          print
-
   def Sync(self, local_manifest=None, jobs=_DEFAULT_SYNC_JOBS, cleanup=True):
     """Sync/update the source.  Changes manifest if specified.
 
@@ -326,10 +290,6 @@ class RepoRepository(object):
       err_msg = 'Failed to sync sources %s' % e.message
       logging.error(err_msg)
       raise SrcCheckOutException(err_msg)
-
-    if self._stable_sync:
-      logging.info('Syncing cros-workon repositories to last stable commit.')
-      self._SyncToEBuilds()
 
   def GetRelativePath(self, path):
     """Returns full path including source directory of path in repo."""

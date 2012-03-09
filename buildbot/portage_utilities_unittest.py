@@ -193,6 +193,9 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(portage_utilities.filecmp, 'cmp')
     self.mox.StubOutWithMock(portage_utilities.fileinput, 'input')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetVersion')
+
+    portage_utilities.EBuild.GetVersion('/sources', '0.0.1').AndReturn('0.0.1')
 
     ebuild_9999 = self.m_ebuild._unstable_ebuild_path
     portage_utilities.os.path.exists(ebuild_9999).AndReturn(True)

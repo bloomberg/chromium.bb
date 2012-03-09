@@ -242,7 +242,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
     dry_run = self._options.debug
 
-    self._InitializeRepo(stable_sync=True)
+    self._InitializeRepo()
 
     ManifestVersionedSyncStage.manifest_manager = \
         manifest_version.BuildSpecsManager(

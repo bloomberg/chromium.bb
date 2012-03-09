@@ -157,7 +157,7 @@ _settings = dict(
 
 # uprev -- Uprevs the local ebuilds to build new changes since last stable.
 #          build.  If master then also pushes these changes on success.
-  uprev=False,
+  uprev=True,
 
 # overlays -- Select what overlays to look at for revving and prebuilts. This
 #             can be 'public', 'private' or 'both'.
@@ -406,7 +406,6 @@ full = _config(
 paladin = _config(
   important=True,
   build_type=constants.PALADIN_TYPE,
-  uprev=True,
   overlays='public',
   prebuilts=True,
   manifest_version=True,
@@ -416,7 +415,7 @@ paladin = _config(
 
 incremental = _config(
   build_type=constants.INCREMENTAL_TYPE,
-  uprev=True,
+  uprev=False,
   overlays='public',
   prebuilts=False,
 )
