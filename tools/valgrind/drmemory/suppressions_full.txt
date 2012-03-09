@@ -852,6 +852,12 @@ name=http://code.google.com/p/drmemory/issues/detail?id=778 c
 *!_PR_AttachThread
 *!_PRI_AttachThread
 
+LEAK
+name=http://code.google.com/p/drmemory/issues/detail?id=778 d
+KERNELBASE.dll!TlsSetValue
+MSWSOCK.dll!*
+KERNEL32.dll!BaseThreadInitThunk
+
 # Bit-level fps in rich edit layer.
 UNINITIALIZED READ
 name=http://code.google.com/p/drmemory/issues/detail?id=791
@@ -1159,3 +1165,37 @@ LEAK
 name=http://crbug.com/115296
 ...
 *!ModuleSystemTest*
+
+LEAK
+name=http://crbug.com/117427 a
+...
+*!net::HostCache::Set
+*!net::HostResolverImpl::CacheResult
+*!net::HostResolverImpl::Job::CompleteRequests
+*!net::HostResolverImpl::Job::OnProcTaskComplete
+*!base::internal::RunnableAdapter<void (__thiscall net::HostResolverImpl::Job::*)(int,net::AddressList const &)>::Run
+
+# Probably related to 117427.  Someone is not tearing down DNS resolution during
+# testing.
+LEAK
+name=http://crbug.com/117427 b
+*!generic_cpp_alloc
+*!operator new
+*!base::internal::WeakReferenceOwner::GetRef
+*!base::SupportsWeakPtr<net::HostResolverImpl>::AsWeakPtr
+*!net::HostResolverImpl::Job::Job
+*!net::HostResolverImpl::Resolve
+*!net::SingleRequestHostResolver::Resolve
+*!net::TransportConnectJob::DoResolveHost
+*!net::TransportConnectJob::DoLoop
+*!net::TransportConnectJob::ConnectInternal
+*!net::ConnectJob::Connect
+*!net::internal::ClientSocketPoolBaseHelper::RequestSocketInternal
+*!net::internal::ClientSocketPoolBaseHelper::RequestSocket
+*!net::ClientSocketPoolBase<net::TransportSocketParams>::RequestSocket
+*!net::TransportClientSocketPool::RequestSocket
+*!net::ClientSocketHandle::Init<net::TransportSocketParams,net::TransportClientSocketPool>
+*!net::`anonymous namespace'::InitSocketPoolHelper
+*!net::InitSocketHandleForRawConnect
+*!notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
+*!base::internal::RunnableAdapter<void (__thiscall notifier::ProxyResolvingClientSocket::*)(int)>::Run
