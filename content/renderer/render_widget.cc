@@ -102,7 +102,6 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       suppress_next_char_events_(false),
       is_accelerated_compositing_active_(false),
       animation_update_pending_(false),
-      animation_task_posted_(false),
       invalidation_task_posted_(false),
       screen_info_(screen_info),
       invert_(false) {
@@ -713,7 +712,6 @@ void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
 
 void RenderWidget::AnimationCallback() {
   TRACE_EVENT0("renderer", "RenderWidget::AnimationCallback");
-  animation_task_posted_ = false;
   if (!animation_update_pending_) {
     TRACE_EVENT0("renderer", "EarlyOut_NoAnimationUpdatePending");
     return;
@@ -752,29 +750,27 @@ void RenderWidget::AnimateIfNeeded() {
     // Set a timer to call us back after animationInterval before
     // running animation callbacks so that if a callback requests another
     // we'll be sure to run it at the proper time.
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&RenderWidget::AnimationCallback, this),
-        animationInterval);
-    animation_task_posted_ = true;
+    animation_timer_.Stop();
+    animation_timer_.Start(FROM_HERE, animationInterval, this,
+                           &RenderWidget::AnimationCallback);
     animation_update_pending_ = false;
     webwidget_->animate(0.0);
     return;
   }
   TRACE_EVENT0("renderer", "EarlyOut_AnimatedTooRecently");
-  if (animation_task_posted_)
-    return;
-  // This code uses base::Time::Now() to calculate the floor and next fire
-  // time because javascript's Date object uses base::Time::Now().  The
-  // message loop uses base::TimeTicks, which on windows can have a
-  // different granularity than base::Time.
-  // The upshot of all this is that this function might be called before
-  // base::Time::Now() has advanced past the animation_floor_time_.  To
-  // avoid exposing this delay to javascript, we keep posting delayed
-  // tasks until base::Time::Now() has advanced far enough.
-  base::TimeDelta delay = animation_floor_time_ - now;
-  animation_task_posted_ = true;
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&RenderWidget::AnimationCallback, this), delay);
+  if (!animation_timer_.IsRunning()) {
+    // This code uses base::Time::Now() to calculate the floor and next fire
+    // time because javascript's Date object uses base::Time::Now().  The
+    // message loop uses base::TimeTicks, which on windows can have a
+    // different granularity than base::Time.
+    // The upshot of all this is that this function might be called before
+    // base::Time::Now() has advanced past the animation_floor_time_.  To
+    // avoid exposing this delay to javascript, we keep posting delayed
+    // tasks until base::Time::Now() has advanced far enough.
+    base::TimeDelta delay = animation_floor_time_ - now;
+    animation_timer_.Start(FROM_HERE, delay, this,
+                           &RenderWidget::AnimationCallback);
+  }
 }
 
 bool RenderWidget::IsRenderingVSynced() {
@@ -1013,7 +1009,7 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
 
   // When GPU rendering, combine pending animations and invalidations into
   // a single update.
-  if (is_accelerated_compositing_active_ && animation_task_posted_)
+  if (is_accelerated_compositing_active_ && animation_timer_.IsRunning())
     return;
 
   // Perform updating asynchronously.  This serves two purposes:
@@ -1051,7 +1047,7 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 
   // When GPU rendering, combine pending animations and invalidations into
   // a single update.
-  if (is_accelerated_compositing_active_ && animation_task_posted_)
+  if (is_accelerated_compositing_active_ && animation_timer_.IsRunning())
     return;
 
   // Perform updating asynchronously.  This serves two purposes:
@@ -1149,10 +1145,9 @@ void RenderWidget::scheduleAnimation() {
   TRACE_EVENT0("gpu", "RenderWidget::scheduleAnimation");
   if (!animation_update_pending_) {
     animation_update_pending_ = true;
-    if (!animation_task_posted_) {
-      animation_task_posted_ = true;
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&RenderWidget::AnimationCallback, this));
+    if (!animation_timer_.IsRunning()) {
+      animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0), this,
+                             &RenderWidget::AnimationCallback);
     }
   }
 }

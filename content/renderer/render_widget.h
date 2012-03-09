@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "content/common/content_export.h"
 #include "content/renderer/paint_aggregator.h"
 #include "ipc/ipc_channel.h"
@@ -490,9 +491,9 @@ class CONTENT_EXPORT RenderWidget
   // compositor.
   bool is_accelerated_compositing_active_;
 
+  base::OneShotTimer<RenderWidget> animation_timer_;
   base::Time animation_floor_time_;
   bool animation_update_pending_;
-  bool animation_task_posted_;
   bool invalidation_task_posted_;
 
   bool has_disable_gpu_vsync_switch_;
