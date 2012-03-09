@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ TEST(AutofillEntryTest, Culling) {
     source.push_back(base::Time::FromInternalValue(
         internal_value + i * offset));
   }
-  sort(source.begin(), source.end());
+  std::sort(source.begin(), source.end());
   EXPECT_TRUE(AutofillEntry::CullTimeStamps(source, &result));
 
   EXPECT_EQ(result.size(), kMaxAutofillTimeStamps);
