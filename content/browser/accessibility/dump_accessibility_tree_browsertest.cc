@@ -67,6 +67,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   EXPECT_TRUE(file_util::PathExists(test_path))
       << test_path.LossyDisplayName();
 
+  // Output the test path to help anyone who encounters a failure and needs
+  // to know where to look.
+  printf("Path to test files: %s\n", test_path.MaybeAsASCII().c_str());
+
   // Grab all HTML files.
   file_util::FileEnumerator file_enumerator(test_path,
                                             false,
@@ -77,6 +81,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   FilePath html_file(file_enumerator.Next());
   ASSERT_FALSE(html_file.empty());
   do {
+    printf("Testing %s\n", html_file.BaseName().MaybeAsASCII().c_str());
+
     std::string html_contents;
     file_util::ReadFileToString(html_file, &html_contents);
 
@@ -102,12 +108,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     tree_updated_observer.Wait();
 
     // Perform a diff (or write the initial baseline).
-    string16 actual_contents;
+    string16 actual_contents_utf16;
     helper_.DumpAccessibilityTree(
         host_view->GetBrowserAccessibilityManager()->GetRoot(),
-        &actual_contents);
-    std::string actual_contents8 = UTF16ToUTF8(actual_contents);
-    EXPECT_EQ(expected_contents, actual_contents8);
+        &actual_contents_utf16);
+    std::string actual_contents = UTF16ToUTF8(actual_contents_utf16);
+    EXPECT_TRUE(expected_contents == actual_contents);
+    if (expected_contents != actual_contents) {
+      printf("*** EXPECTED: ***\n%s\n", expected_contents.c_str());
+      printf("*** ACTUAL: ***\n%s\n", actual_contents.c_str());
+    }
 
     if (!file_util::PathExists(expected_file)) {
       FilePath actual_file =
@@ -115,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                    helper_.GetActualFileSuffix());
 
       EXPECT_TRUE(file_util::WriteFile(
-          actual_file, actual_contents8.c_str(), actual_contents8.size()));
+          actual_file, actual_contents.c_str(), actual_contents.size()));
 
       ADD_FAILURE() << "No expectation found. Create it by doing:\n"
           << "mv " << actual_file.LossyDisplayName() << " "
