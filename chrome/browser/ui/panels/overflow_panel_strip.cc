@@ -279,20 +279,25 @@ gfx::Rect OverflowPanelStrip::ComputeLayout(
   DCHECK(index != kInvalidPanelIndex);
 
   gfx::Rect bounds;
-  int bottom = (index == 0) ? display_area_.bottom() :
-      panels_[index - 1]->GetBounds().y();
   bounds.set_x(display_area_.x());
-  bounds.set_y(bottom - iconified_size.height());
 
+  int bottom;
   if (static_cast<int>(index) < max_visible_panels()) {
     bounds.set_width(current_display_width_);
     bounds.set_height(iconified_size.height());
+    bottom = (index == 0) ? display_area_.bottom() :
+        panels_[index - 1]->GetBounds().y();
   } else {
     // Invisible for overflow-on-overflow.
+    // Hidden panels are positioned at the top of the overflow area.
+    // This makes the panel look like it "minimizes" to the top of the
+    // visible overflow panels.
     bounds.set_width(0);
     bounds.set_height(0);
+    bottom = panels_[max_visible_panels() - 1]->GetBounds().y();
   }
 
+  bounds.set_y(bottom - iconified_size.height());
   return bounds;
 }
 
@@ -377,7 +382,11 @@ void OverflowPanelStrip::AnimationProgressed(const ui::Animation* animation) {
       bounds.set_height(0);
     } else {
       bounds.set_width(current_display_width);
-      bounds.set_height(overflow_panel->IconOnlySize().height());
+      // Height and position needs update if panel was previously hidden.
+      if (!bounds.height()) {
+        bounds.set_height(overflow_panel->IconOnlySize().height());
+        bounds.set_y(panels_[i - 1]->GetBounds().y() - bounds.height());
+      }
     }
 
     overflow_panel->SetPanelBoundsInstantly(bounds);
