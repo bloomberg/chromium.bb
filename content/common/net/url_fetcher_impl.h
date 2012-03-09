@@ -58,6 +58,9 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
   virtual void SetMaxRetries(int max_retries) OVERRIDE;
   virtual int GetMaxRetries() const OVERRIDE;
   virtual base::TimeDelta GetBackoffDelay() const OVERRIDE;
+  virtual void SaveResponseToFileAtPath(
+      const FilePath& file_path,
+      scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) OVERRIDE;
   virtual void SaveResponseToTemporaryFile(
       scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) OVERRIDE;
   virtual net::HttpResponseHeaders* GetResponseHeaders() const OVERRIDE;
@@ -84,7 +87,8 @@ class CONTENT_EXPORT URLFetcherImpl : public content::URLFetcher{
   // How should the response be stored?
   enum ResponseDestinationType {
     STRING,  // Default: In a std::string
-    FILE  // Write to a file
+    PERMANENT_FILE,  // Write to a permanent file.
+    TEMP_FILE,  // Write to a temporary file.
   };
 
   // Returns the delegate.

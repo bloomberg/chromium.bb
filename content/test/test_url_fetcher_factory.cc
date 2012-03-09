@@ -109,6 +109,11 @@ base::TimeDelta TestURLFetcher::GetBackoffDelay() const {
   return fake_backoff_delay_;
 }
 
+void TestURLFetcher::SaveResponseToFileAtPath(
+    const FilePath& file_path,
+    scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
+}
+
 void TestURLFetcher::SaveResponseToTemporaryFile(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
 }

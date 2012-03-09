@@ -175,8 +175,20 @@ class CONTENT_EXPORT URLFetcher {
   virtual base::TimeDelta GetBackoffDelay() const = 0;
 
   // By default, the response is saved in a string. Call this method to save the
+  // response to a file instead. Must be called before Start().
+  // |file_message_loop_proxy| will be used for all file operations.
+  // To save to a temporary file, use SaveResponseToTemporaryFile().
+  // The created file is removed when the URLFetcher is deleted unless you
+  // take ownership by calling GetResponseAsFilePath().
+  virtual void SaveResponseToFileAtPath(
+      const FilePath& file_path,
+      scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) = 0;
+
+  // By default, the response is saved in a string. Call this method to save the
   // response to a temporary file instead. Must be called before Start().
   // |file_message_loop_proxy| will be used for all file operations.
+  // The created file is removed when the URLFetcher is deleted unless you
+  // take ownership by calling GetResponseAsFilePath().
   virtual void SaveResponseToTemporaryFile(
       scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) = 0;
 
@@ -229,7 +241,7 @@ class CONTENT_EXPORT URLFetcher {
 
   // Get the path to the file containing the response body. Returns false
   // if the response body was not saved to a file. If take_ownership is
-  // true, caller takes responsibility for the temp file, and it will not
+  // true, caller takes responsibility for the file, and it will not
   // be removed once the URLFetcher is destroyed.  User should not take
   // ownership more than once, or call this method after taking ownership.
   virtual bool GetResponseAsFilePath(bool take_ownership,

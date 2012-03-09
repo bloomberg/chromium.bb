@@ -101,7 +101,8 @@ class URLFetcherImpl::Core
   };
 
   // Class FileWriter encapsulates all state involved in writing response bytes
-  // to a file. It is only used if |Core::response_destination_| == FILE.
+  // to a file. It is only used if |Core::response_destination_| == TEMP_FILE ||
+  // |Core::response_destination_| == PERMANENT_FILE.
   // Each instance of FileWriter is owned by a URLFetcher::Core, which manages
   // its lifetime and never transfers ownership.  While writing to
   // a file, all function calls happen on the IO thread.
@@ -111,10 +112,8 @@ class URLFetcherImpl::Core
                scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
 
     ~FileWriter();
+    void CreateFileAtPath(const FilePath& file_path);
     void CreateTempFile();
-    void DidCreateTempFile(base::PlatformFileError error_code,
-                           base::PassPlatformFile file_handle,
-                           const FilePath& file_path);
 
     // Record |num_bytes_| response bytes in |core_->buffer_| to the file.
     void WriteBuffer(int num_bytes);
@@ -138,6 +137,20 @@ class URLFetcherImpl::Core
     base::PlatformFileError error_code() const { return error_code_; }
 
    private:
+    // Callback which gets the result of a permanent file creation.
+    void DidCreateFile(const FilePath& file_path,
+                       base::PlatformFileError error_code,
+                       base::PassPlatformFile file_handle,
+                       bool created);
+    // Callback which gets the result of a temporary file creation.
+    void DidCreateTempFile(base::PlatformFileError error_code,
+                           base::PassPlatformFile file_handle,
+                           const FilePath& file_path);
+    // This method is used to implement DidCreateFile and DidCreateTempFile.
+    void DidCreateFileInternal(const FilePath& file_path,
+                               base::PlatformFileError error_code,
+                               base::PassPlatformFile file_handle);
+
     // Callback which gets the result of closing the file.
     void DidCloseFile(base::PlatformFileError error);
 
@@ -286,6 +299,9 @@ class URLFetcherImpl::Core
   // Where should responses be saved?
   ResponseDestinationType response_destination_;
 
+  // Path to the file where the response is written.
+  FilePath response_destination_file_path_;
+
   // If |automatically_retry_on_5xx_| is false, 5xx responses will be
   // propagated to the observer, if it is true URLFetcher will automatically
   // re-execute the request, after the back-off delay has expired.
@@ -343,6 +359,19 @@ URLFetcherImpl::Core::FileWriter::~FileWriter() {
   RemoveFile();
 }
 
+void URLFetcherImpl::Core::FileWriter::CreateFileAtPath(
+    const FilePath& file_path) {
+  DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(file_message_loop_proxy_.get());
+  base::FileUtilProxy::CreateOrOpen(
+      file_message_loop_proxy_,
+      file_path,
+      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
+      base::Bind(&URLFetcherImpl::Core::FileWriter::DidCreateFile,
+                 weak_factory_.GetWeakPtr(),
+                 file_path));
+}
+
 void URLFetcherImpl::Core::FileWriter::CreateTempFile() {
   DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(file_message_loop_proxy_.get());
@@ -351,28 +380,6 @@ void URLFetcherImpl::Core::FileWriter::CreateTempFile() {
       0,  // No additional file flags.
       base::Bind(&URLFetcherImpl::Core::FileWriter::DidCreateTempFile,
                  weak_factory_.GetWeakPtr()));
-}
-
-void URLFetcherImpl::Core::FileWriter::DidCreateTempFile(
-    base::PlatformFileError error_code,
-    base::PassPlatformFile file_handle,
-    const FilePath& file_path) {
-  DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
-
-  if (base::PLATFORM_FILE_OK != error_code) {
-    error_code_ = error_code;
-    RemoveFile();
-    core_->delegate_loop_proxy_->PostTask(
-        FROM_HERE, base::Bind(&Core::InformDelegateFetchIsComplete, core_));
-    return;
-  }
-
-  file_path_ = file_path;
-  file_handle_ = file_handle.ReleaseValue();
-  total_bytes_written_ = 0;
-
-  core_->io_message_loop_proxy_->PostTask(
-      FROM_HERE, base::Bind(&Core::StartURLRequestWhenAppropriate, core_));
 }
 
 void URLFetcherImpl::Core::FileWriter::WriteBuffer(int num_bytes) {
@@ -452,6 +459,43 @@ void URLFetcherImpl::Core::FileWriter::CloseFileAndCompleteRequest() {
                    weak_factory_.GetWeakPtr()));
     file_handle_ = base::kInvalidPlatformFileValue;
   }
+}
+
+void URLFetcherImpl::Core::FileWriter::DidCreateFile(
+    const FilePath& file_path,
+    base::PlatformFileError error_code,
+    base::PassPlatformFile file_handle,
+    bool created) {
+  DidCreateFileInternal(file_path, error_code, file_handle);
+}
+
+void URLFetcherImpl::Core::FileWriter::DidCreateTempFile(
+    base::PlatformFileError error_code,
+    base::PassPlatformFile file_handle,
+    const FilePath& file_path) {
+  DidCreateFileInternal(file_path, error_code, file_handle);
+}
+
+void URLFetcherImpl::Core::FileWriter::DidCreateFileInternal(
+    const FilePath& file_path,
+    base::PlatformFileError error_code,
+    base::PassPlatformFile file_handle) {
+  DCHECK(core_->io_message_loop_proxy_->BelongsToCurrentThread());
+
+  if (base::PLATFORM_FILE_OK != error_code) {
+    error_code_ = error_code;
+    RemoveFile();
+    core_->delegate_loop_proxy_->PostTask(
+        FROM_HERE, base::Bind(&Core::InformDelegateFetchIsComplete, core_));
+    return;
+  }
+
+  file_path_ = file_path;
+  file_handle_ = file_handle.ReleaseValue();
+  total_bytes_written_ = 0;
+
+  core_->io_message_loop_proxy_->PostTask(
+      FROM_HERE, base::Bind(&Core::StartURLRequestWhenAppropriate, core_));
 }
 
 void URLFetcherImpl::Core::FileWriter::DidCloseFile(
@@ -589,16 +633,25 @@ void URLFetcherImpl::Core::StartOnIOThread() {
       StartURLRequestWhenAppropriate();
       break;
 
-    case FILE:
+    case PERMANENT_FILE:
+    case TEMP_FILE:
       DCHECK(file_message_loop_proxy_.get())
           << "Need to set the file message loop proxy.";
 
-      file_writer_.reset(
-          new FileWriter(this, file_message_loop_proxy_));
+      file_writer_.reset(new FileWriter(this, file_message_loop_proxy_));
 
-      // If the temp file is successfully created,
+      // If the file is successfully created,
       // Core::StartURLRequestWhenAppropriate() will be called.
-      file_writer_->CreateTempFile();
+      switch (response_destination_) {
+        case PERMANENT_FILE:
+          file_writer_->CreateFileAtPath(response_destination_file_path_);
+          break;
+        case TEMP_FILE:
+          file_writer_->CreateTempFile();
+          break;
+        default:
+          NOTREACHED();
+      }
       break;
 
     default:
@@ -675,7 +728,8 @@ bool URLFetcherImpl::Core::WriteBuffer(int num_bytes) {
       write_complete = true;
       break;
 
-    case FILE:
+    case PERMANENT_FILE:
+    case TEMP_FILE:
       file_writer_->WriteBuffer(num_bytes);
       // WriteBuffer() sends a request the file thread.
       // The write is not done yet.
@@ -1065,10 +1119,20 @@ base::TimeDelta URLFetcherImpl::GetBackoffDelay() const {
   return core_->backoff_delay_;
 }
 
+void URLFetcherImpl::SaveResponseToFileAtPath(
+    const FilePath& file_path,
+    scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
+  DCHECK(core_->delegate_loop_proxy_->BelongsToCurrentThread());
+  core_->file_message_loop_proxy_ = file_message_loop_proxy;
+  core_->response_destination_ = PERMANENT_FILE;
+  core_->response_destination_file_path_ = file_path;
+}
+
 void URLFetcherImpl::SaveResponseToTemporaryFile(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
+  DCHECK(core_->delegate_loop_proxy_->BelongsToCurrentThread());
   core_->file_message_loop_proxy_ = file_message_loop_proxy;
-  core_->response_destination_ = FILE;
+  core_->response_destination_ = TEMP_FILE;
 }
 
 net::HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {
@@ -1153,7 +1217,9 @@ bool URLFetcherImpl::GetResponseAsString(
 bool URLFetcherImpl::GetResponseAsFilePath(bool take_ownership,
                                            FilePath* out_response_path) const {
   DCHECK(core_->delegate_loop_proxy_->BelongsToCurrentThread());
-  if (core_->response_destination_ != FILE || !core_->file_writer_.get())
+  const bool destination_is_file = core_->response_destination_ == TEMP_FILE ||
+      core_->response_destination_ == PERMANENT_FILE;
+  if (!destination_is_file || !core_->file_writer_.get())
     return false;
 
   *out_response_path = core_->file_writer_->file_path();
