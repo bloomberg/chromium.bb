@@ -23,6 +23,7 @@
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_input_event.h"
@@ -272,13 +273,13 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Because going to/from fullscreen is asynchronous, there are 4 states:
   // - normal            : desired_fullscreen_state_ == false
-  //                       fullscreen_ == false
+  //                       view_data_.is_fullscreen == false
   // - fullscreen pending: desired_fullscreen_state_ == true
-  //                       fullscreen_ == false
+  //                       view_data_.is_fullscreen == false
   // - fullscreen        : desired_fullscreen_state_ == true
-  //                       fullscreen_ == true
+  //                       view_data_.is_fullscreen == true
   // - normal pending    : desired_fullscreen_state_ = false
-  //                       fullscreen_ = true
+  //                       view_data_.is_fullscreen = true
   bool IsFullscreenOrPending();
 
   // Switches between fullscreen and normal mode. The transition is
@@ -358,6 +359,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                                               uint32_t event_classes) OVERRIDE;
   virtual void ClearInputEventRequest(PP_Instance instance,
                                       uint32_t event_classes) OVERRIDE;
+  virtual void ClosePendingUserGesture(PP_Instance instance,
+                                       PP_TimeTicks timestamp);
   virtual void ZoomChanged(PP_Instance instance, double factor) OVERRIDE;
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
@@ -472,6 +475,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void KeepSizeAttributesBeforeFullscreen();
   void SetSizeAttributesForFullscreen();
   void ResetSizeAttributesAfterFullscreen();
+
+  // Helper function to determine if an action has a user gesture.
+  bool HasUserGesture();
 
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
@@ -619,6 +625,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool text_input_caret_set_;
 
   PP_CompletionCallback lock_mouse_callback_;
+
+  // Track pending user gestures so out-of-process plugins can respond to
+  // a user gesture after it has been processed.
+  PP_TimeTicks pending_user_gesture_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,6 @@ TestFullscreen::TestFullscreen(TestingInstance* instance)
       screen_mode_(instance),
       fullscreen_pending_(false),
       normal_pending_(false),
-      saw_first_fullscreen_didchangeview(false),
       set_fullscreen_true_callback_(instance->pp_instance()),
       fullscreen_callback_(instance->pp_instance()),
       normal_callback_(instance->pp_instance()) {
@@ -134,16 +133,6 @@ std::string TestFullscreen::TestNormalToFullscreenToNormal() {
   normal_pending_ = true;
   if (!screen_mode_.SetFullscreen(false))
     return ReportError("SetFullscreen(false) in fullscreen", false);
-  // Normal is now pending, so additional requests should fail.
-  if (screen_mode_.SetFullscreen(false))
-    return ReportError("SetFullscreen(false) in normal pending", true);
-  if (screen_mode_.SetFullscreen(true))
-    return ReportError("SetFullscreen(true) in normal pending", true);
-  if (!screen_mode_.IsFullscreen())
-    return ReportError("IsFullscreen() in normal transition", false);
-  // No graphics devices can be bound while in transition.
-  if (instance_->BindGraphics(graphics2d_))
-    return ReportError("BindGraphics() in normal transition", true);
   // DidChangeView() will call the callback once out of fullscreen mode.
   normal_callback_.WaitForResult();
   if (normal_pending_)
@@ -180,25 +169,20 @@ void TestFullscreen::SimulateUserGesture() {
 }
 
 void TestFullscreen::FailFullscreenTest(const std::string& error) {
-  screen_mode_.SetFullscreen(false);
-  fullscreen_pending_ = false;
   error_ = error;
   pp::Module::Get()->core()->CallOnMainThread(0, fullscreen_callback_);
 }
 
 void TestFullscreen::FailNormalTest(const std::string& error) {
-  normal_pending_ = false;
   error_ = error;
   pp::Module::Get()->core()->CallOnMainThread(0, normal_callback_);
 }
 
 void TestFullscreen::PassFullscreenTest() {
-  fullscreen_pending_ = false;
   pp::Module::Get()->core()->CallOnMainThread(0, fullscreen_callback_);
 }
 
 void TestFullscreen::PassNormalTest() {
-  normal_pending_ = false;
   pp::Module::Get()->core()->CallOnMainThread(0, normal_callback_);
 }
 
@@ -218,27 +202,6 @@ bool TestFullscreen::HandleInputEvent(const pp::InputEvent& event) {
   fullscreen_pending_ = true;
   if (!screen_mode_.SetFullscreen(true)) {
     FailFullscreenTest(ReportError("SetFullscreen(true) in normal", false));
-    return false;
-  }
-  // Fullscreen is now pending, so additional requests should fail.
-  if (screen_mode_.SetFullscreen(true)) {
-    FailFullscreenTest(
-        ReportError("SetFullscreen(true) in fullscreen pending", true));
-    return false;
-  }
-  if (screen_mode_.SetFullscreen(false)) {
-    FailFullscreenTest(
-        ReportError("SetFullscreen(false) in fullscreen pending", true));
-  }
-  if (screen_mode_.IsFullscreen()) {
-    FailFullscreenTest(
-        ReportError("IsFullscreen() in fullscreen transition", true));
-    return false;
-  }
-  // No graphics devices can be bound while in transition.
-  if (instance_->BindGraphics(graphics2d_)) {
-    FailFullscreenTest(
-        ReportError("BindGraphics() in fullscreen transition", true));
     return false;
   }
   // DidChangeView() will complete the transition to fullscreen.
@@ -283,13 +246,10 @@ bool TestFullscreen::PaintPlugin(pp::Size size, ColorPremul color) {
   return true;
 }
 
-// Transitions to/from fullscreen is asynchornous ending at DidChangeView.
-// When going to fullscreen, two DidChangeView calls are generated:
-// one for moving the plugin to the middle of window and one for stretching
-// the window and placing the plugin in the middle of the screen.
-// This is not something we advertise to users and not something they should
-// rely on. But the test checks for these, so we know when the underlying
-// implementation changes.
+// Transitions to/from fullscreen is asynchronous ending at DidChangeView.
+// The number of calls to DidChangeView during fullscreen / normal transitions
+// isn't specified by the API. The test waits until it the screen has
+// transitioned to the desired state.
 //
 // WebKit does not change the plugin size, but Pepper does explicitly set
 // it to screen width and height when SetFullscreen(true) is called and
@@ -307,21 +267,13 @@ void TestFullscreen::DidChangeView(const pp::View& view) {
       error_ = "Failed to initialize plugin image";
   }
 
-  if (fullscreen_pending_ && !saw_first_fullscreen_didchangeview) {
-    saw_first_fullscreen_didchangeview = true;
-    if (screen_mode_.IsFullscreen())
-      FailFullscreenTest("DidChangeView1 is in fullscreen");
+  bool is_fullscreen = screen_mode_.IsFullscreen();
+  if (fullscreen_pending_ && is_fullscreen) {
+    fullscreen_pending_ = false;
+    if (!HasMidScreen(position, screen_size_))
+      FailFullscreenTest("DidChangeView is not in the middle of the screen");
     else if (position.size() != screen_size_)
-      FailFullscreenTest("DidChangeView1 does not have screen size");
-    // Wait for the 2nd DidChangeView.
-  } else if (fullscreen_pending_) {
-    saw_first_fullscreen_didchangeview = false;
-    if (!screen_mode_.IsFullscreen())
-      FailFullscreenTest("DidChangeView2 is not in fullscreen");
-    else if (!HasMidScreen(position, screen_size_))
-      FailFullscreenTest("DidChangeView2 is not in the middle of the screen");
-    else if (position.size() != screen_size_)
-      FailFullscreenTest("DidChangeView2 does not have screen size");
+      FailFullscreenTest("DidChangeView does not have screen size");
     // NOTE: we cannot reliably test for clip size being equal to the screen
     // because it might be affected by JS console, info bars, etc.
     else if (!instance_->BindGraphics(graphics2d_))
@@ -330,7 +282,7 @@ void TestFullscreen::DidChangeView(const pp::View& view) {
       FailFullscreenTest("Failed to paint plugin image in fullscreen");
     else
       PassFullscreenTest();
-  } else if (normal_pending_) {
+  } else if (normal_pending_ && !is_fullscreen) {
     normal_pending_ = false;
     if (screen_mode_.IsFullscreen())
       FailNormalTest("DidChangeview is in fullscreen");

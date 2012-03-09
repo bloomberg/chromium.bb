@@ -638,19 +638,8 @@ TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessFlashFullscreen) {
   RunTestViaHTTP("FlashFullscreen");
 }
 
-// http://crbug.com/107175.
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-#define MAYBE_Fullscreen FAILS_Fullscreen
-#else
-#define MAYBE_Fullscreen Fullscreen
-#endif
-
-// TODO(bbudge) Fix fullscreen on Mac.
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_Fullscreen)
-// TODO(bbudge) Will fail until we add an ACK message to extend user gesture.
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FAILS_Fullscreen)
-// TODO(bbudge) Enable when PPB_Testing_Dev SimulateInputEvent is proxied.
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_Fullscreen)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(Fullscreen)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(Fullscreen)
 
 TEST_PPAPI_IN_PROCESS(FlashClipboard)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)

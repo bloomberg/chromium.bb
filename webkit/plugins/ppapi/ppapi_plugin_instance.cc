@@ -10,6 +10,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "ppapi/c/dev/ppb_find_dev.h"
@@ -48,6 +49,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
@@ -116,6 +118,7 @@ using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
+using WebKit::WebScopedUserGesture;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
 using WebKit::WebView;
@@ -300,7 +303,8 @@ PluginInstance::PluginInstance(
       text_input_caret_(0, 0, 0, 0),
       text_input_caret_bounds_(0, 0, 0, 0),
       text_input_caret_set_(false),
-      lock_mouse_callback_(PP_BlockUntilComplete()) {
+      lock_mouse_callback_(PP_BlockUntilComplete()),
+      pending_user_gesture_(0.0) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -680,6 +684,15 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
       // Actually send the event.
       std::vector< ::ppapi::InputEventData > events;
       CreateInputEventData(event, &events);
+
+      // Allow the user gesture to be pending after the plugin handles the
+      // event. This allows out-of-process plugins to respond to the user
+      // gesture after processing has finished here.
+      WebFrame* frame = container_->element().document().frame();
+      if (frame->isProcessingUserGesture()) {
+        pending_user_gesture_ =
+            ::ppapi::EventTimeToPPTimeTicks(event.timeStampSeconds);
+      }
 
       // Each input event may generate more than one PP_InputEvent.
       for (size_t i = 0; i < events.size(); i++) {
@@ -1232,19 +1245,15 @@ bool PluginInstance::SetFullscreen(bool fullscreen) {
   if (view_data_.is_fullscreen != desired_fullscreen_state_)
     return false;
 
-  // The browser will allow us to go into fullscreen mode only when processing
-  // a user gesture. This is guaranteed to work with in-process plugins and
-  // out-of-process syncronous proxies, but might be an issue with Flash when
-  // it switches over from PPB_FlashFullscreen.
-  // TODO(polina, bbudge): make this work with asynchronous proxies.
-  WebFrame* frame = container_->element().document().frame();
-  if (fullscreen && !frame->isProcessingUserGesture())
+  if (fullscreen && !HasUserGesture())
     return false;
 
   VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   desired_fullscreen_state_ = fullscreen;
 
   if (fullscreen) {
+    // Create the user gesture in case we're processing one that's pending.
+    WebScopedUserGesture user_gesture;
     // WebKit does not resize the plugin to fill the screen in fullscreen mode,
     // so we will tweak plugin's attributes to support the expected behavior.
     KeepSizeAttributesBeforeFullscreen();
@@ -1696,6 +1705,24 @@ void PluginInstance::SimulateInputEvent(const InputEventData& input_event) {
       it != events.end(); ++it) {
     web_view->handleInputEvent(*it->get());
   }
+}
+
+void PluginInstance::ClosePendingUserGesture(PP_Instance instance,
+                                             PP_TimeTicks timestamp) {
+  // Close the pending user gesture if the plugin had a chance to respond.
+  // Don't close the pending user gesture if the timestamps are equal since
+  // there may be multiple input events with the same timestamp.
+  if (timestamp > pending_user_gesture_)
+    pending_user_gesture_ = 0.0;
+}
+
+bool PluginInstance::HasUserGesture() {
+  PP_TimeTicks now =
+      ::ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
+  // Give a lot of slack so tests won't be flaky. Well behaved plugins will
+  // close the user gesture.
+  const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
+  return (now - pending_user_gesture_ < kUserGestureDurationInSeconds);
 }
 
 PPB_Instance_FunctionAPI* PluginInstance::AsPPB_Instance_FunctionAPI() {

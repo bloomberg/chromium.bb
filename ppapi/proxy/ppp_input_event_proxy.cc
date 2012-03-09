@@ -101,6 +101,7 @@ void PPP_InputEvent_Proxy::OnMsgHandleInputEvent(PP_Instance instance,
   CallWhileUnlocked(ppp_input_event_impl_->HandleInputEvent,
                     instance,
                     resource->pp_resource());
+  HandleInputEventAck(instance, data.event_time_stamp);
 }
 
 void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
@@ -112,6 +113,19 @@ void PPP_InputEvent_Proxy::OnMsgHandleFilteredInputEvent(
   *result = CallWhileUnlocked(ppp_input_event_impl_->HandleInputEvent,
                               instance,
                               resource->pp_resource());
+  HandleInputEventAck(instance, data.event_time_stamp);
+}
+
+void PPP_InputEvent_Proxy::HandleInputEventAck(
+    PP_Instance instance, PP_TimeTicks timestamp) {
+  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
+  if (dispatcher) {
+    // Note that we're sending the message to the host PPB_InstanceProxy.
+    dispatcher->Send(new PpapiMsg_PPPInputEvent_HandleInputEvent_ACK(
+        API_ID_PPB_INSTANCE, instance, timestamp));
+  } else {
+    NOTREACHED();
+  }
 }
 
 }  // namespace proxy

@@ -7,12 +7,13 @@
 
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
+#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_size.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_gamepad.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_size.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/shared_impl/api_id.h"
 
@@ -92,6 +93,8 @@ class PPB_Instance_FunctionAPI {
                                               uint32_t event_classes) = 0;
   virtual void ClearInputEventRequest(PP_Instance instance,
                                       uint32_t event_classes) = 0;
+  virtual void ClosePendingUserGesture(PP_Instance instance,
+                                       PP_TimeTicks timestamp) = 0;
 
   // Messaging.
   virtual void PostMessage(PP_Instance instance, PP_Var message) = 0;

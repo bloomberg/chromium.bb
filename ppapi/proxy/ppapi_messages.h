@@ -30,6 +30,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
@@ -433,6 +434,10 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiMsg_PPPInputEvent_HandleFilteredInputEvent,
                            PP_Instance /* instance */,
                            ppapi::InputEventData /* data */,
                            PP_Bool /* result */)
+// (Message from the plugin to the browser that it handled an input event.)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPInputEvent_HandleInputEvent_ACK,
+                    PP_Instance /* instance */,
+                    PP_TimeTicks /* timestamp */)
 
 // PPP_Instance.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPInstance_DidCreate,

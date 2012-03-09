@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppb_instance_proxy.h"
 
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/pp_time.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/c/ppb_instance.h"
@@ -107,6 +108,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgRequestInputEvents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ClearInputEvents,
                         OnHostMsgClearInputEvents)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPInputEvent_HandleInputEvent_ACK,
+                        OnMsgHandleInputEventAck)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_LockMouse,
                         OnHostMsgLockMouse)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UnlockMouse,
@@ -319,6 +322,12 @@ void PPB_Instance_Proxy::ClearInputEventRequest(PP_Instance instance,
                                                 uint32_t event_classes) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_ClearInputEvents(
       API_ID_PPB_INSTANCE, instance, event_classes));
+}
+
+void PPB_Instance_Proxy::ClosePendingUserGesture(PP_Instance instance,
+                                                 PP_TimeTicks timestamp) {
+  // Not called on the plugin side.
+  NOTREACHED();
 }
 
 void PPB_Instance_Proxy::ZoomChanged(PP_Instance instance,
@@ -545,6 +554,13 @@ void PPB_Instance_Proxy::OnHostMsgClearInputEvents(PP_Instance instance,
   EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     enter.functions()->ClearInputEventRequest(instance, event_classes);
+}
+
+void PPB_Instance_Proxy::OnMsgHandleInputEventAck(PP_Instance instance,
+                                                  PP_TimeTicks timestamp) {
+  EnterInstanceNoLock enter(instance, false);
+  if (enter.succeeded())
+    enter.functions()->ClosePendingUserGesture(instance, timestamp);
 }
 
 void PPB_Instance_Proxy::OnHostMsgPostMessage(
