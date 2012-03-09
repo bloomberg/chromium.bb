@@ -27,7 +27,7 @@ PRUNE_PATHS = set([
     # Assume for now that breakpad has their licensing in order.
     os.path.join('breakpad'),
 
-    # This is just a tiny vsprops file, presumably written by the googleurl
+    # This is just a tiny vsprops file, presumably written by the google-url
     # authors.  Not third-party code.
     os.path.join('googleurl','third_party','icu'),
 
@@ -98,6 +98,8 @@ ADDITIONAL_PATHS = (
     os.path.join('third_party','icu','source','data','brkitr'),
     # Fake directory so we can include the strongtalk license.
     os.path.join('v8', 'strongtalk'),
+    # Fake directory so we can include the google-url license.
+    'googleurl',
 )
 
 
@@ -105,6 +107,11 @@ ADDITIONAL_PATHS = (
 # can't provide a README.chromium.  Please prefer a README.chromium
 # wherever possible.
 SPECIAL_CASES = {
+    'googleurl': {
+        "Name": "google-url",
+        "URL": "http://code.google.com/p/google-url/",
+        "License File": "LICENSE.txt",
+    },
     os.path.join('third_party', 'angle'): {
         "Name": "Almost Native Graphics Layer Engine",
         "URL": "http://code.google.com/p/angleproject/",
