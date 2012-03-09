@@ -100,6 +100,7 @@ enum IPCMessageStart {
   GamepadMsgStart,
   ShellMsgStart,
   AccessibilityMsgStart,
+  PrerenderMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

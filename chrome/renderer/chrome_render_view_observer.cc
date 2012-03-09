@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/icon_messages.h"
+#include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -267,7 +268,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 
   // Filter only.
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering);
+    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering);
   IPC_END_MESSAGE_MAP()
 
   return handled;

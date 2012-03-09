@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,12 +46,6 @@ class PrerenderTabHelper : public content::WebContentsObserver {
 
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager() const;
-
-  // Checks with the PrerenderManager if the specified URL has been preloaded,
-  // and if so, swap the RenderViewHost with the preload into this TabContents
-  // object. |opener_url| denotes the window.opener url that is set for this
-  // tab and is empty if there is no opener set.
-  bool MaybeUsePrerenderedPage(const GURL& url, const GURL& opener_url);
 
   // Returns whether the TabContents being observed is currently prerendering.
   bool IsPrerendering();

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/prerender_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
@@ -219,7 +220,7 @@ bool PluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
   // interest in them.
   IPC_BEGIN_MESSAGE_MAP(PluginPlaceholder, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_LoadBlockedPlugins, OnLoadBlockedPlugins)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
   IPC_END_MESSAGE_MAP()
 
   return false;

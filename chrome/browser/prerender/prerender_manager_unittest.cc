@@ -236,13 +236,7 @@ class PrerenderManagerTest : public testing::Test {
 TEST_F(PrerenderManagerTest, EmptyTest) {
   EXPECT_FALSE(prerender_manager()->MaybeUsePrerenderedPage(
       NULL,
-      GURL("http://www.google.com/"),
-      GURL()));
-
-  EXPECT_FALSE(prerender_manager()->MaybeUsePrerenderedPage(
-      NULL,
-      GURL("http://www.google.com/search"),
-      GURL("http://www.google.com")));
+      GURL("http://www.google.com/")));
 }
 
 TEST_F(PrerenderManagerTest, FoundTest) {

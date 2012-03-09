@@ -125,15 +125,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Cancels all active prerenders with the ORIGIN_OMNIBOX origin.
   void CancelOmniboxPrerenders();
 
-  // For a given WebContents that wants to navigate to the URL supplied,
-  // determines whether a prerendered version of the URL can be used,
-  // and substitutes the prerendered RVH into the WebContents. |opener_url| is
-  // set to the window.opener url that the WebContents should have set and
-  // will be empty if there is no opener set. Returns whether or not a
-  // prerendered RVH could be used or not.
+  // If |url| matches a valid prerendered page, try to swap it into
+  // |web_contents| and merge browsing histories. Returns |true| if a
+  // prerendered page is swapped in, |false| otherwise.
   bool MaybeUsePrerenderedPage(content::WebContents* web_contents,
-                               const GURL& url,
-                               const GURL& opener_url);
+                               const GURL& url);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.

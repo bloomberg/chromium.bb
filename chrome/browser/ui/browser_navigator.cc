@@ -16,6 +16,8 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -361,6 +363,18 @@ void InitializeExtraHeaders(browser::NavigateParams* params,
 #endif
 }
 
+// If a prerendered page exists for |url|, replace the page at |target_contents|
+// with it.
+bool SwapInPrerender(TabContentsWrapper* target_contents, const GURL& url) {
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(
+          target_contents->profile());
+  if (!prerender_manager)
+    return false;
+  return prerender_manager->MaybeUsePrerenderedPage(
+      target_contents->web_contents(), url);
+}
+
 }  // namespace
 
 namespace browser {
@@ -534,6 +548,9 @@ void Navigate(NavigateParams* params) {
 
     InitializeExtraHeaders(params, params->target_contents->profile(),
                            &extra_headers);
+
+    if (SwapInPrerender(params->target_contents, url))
+      return;
 
     // Try to handle non-navigational URLs that popup dialogs and such, these
     // should not actually navigate.

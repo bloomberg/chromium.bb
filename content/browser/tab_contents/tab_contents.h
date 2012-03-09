@@ -115,6 +115,10 @@ class CONTENT_EXPORT TabContents
     opener_web_ui_type_ = opener_web_ui_type;
   }
 
+  void set_has_opener(bool has_opener) {
+    has_opener_ = has_opener;
+  }
+
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
     return java_bridge_dispatcher_host_manager_.get();
   }
@@ -218,6 +222,7 @@ class CONTENT_EXPORT TabContents
   virtual content::WebUI::TypeID GetWebUITypeForCurrentState() OVERRIDE;
   virtual content::WebUI* GetWebUIForCurrentState() OVERRIDE;
   virtual bool GotResponseToLockMouseRequest(bool allowed) OVERRIDE;
+  virtual bool HasOpener() const OVERRIDE;
 
   // Implementation of PageNavigator.
   virtual content::WebContents* OpenURL(
@@ -661,6 +666,9 @@ class CONTENT_EXPORT TabContents
 
   // Our view type. Default is VIEW_TYPE_TAB_CONTENTS.
   content::ViewType view_type_;
+
+  // Is there an opener associated with this?
+  bool has_opener_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContents);
 };

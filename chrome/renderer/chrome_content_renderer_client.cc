@@ -50,6 +50,7 @@
 #include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/plugins/plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
+#include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerender_webmediaplayer.h"
 #include "chrome/renderer/print_web_view_helper.h"
@@ -157,6 +158,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #if defined(ENABLE_SAFE_BROWSING)
   phishing_classifier_.reset(safe_browsing::PhishingClassifierFilter::Create());
 #endif
+  prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
 
   RenderThread* thread = RenderThread::Get();
 
@@ -168,6 +170,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
   thread->AddObserver(spellcheck_.get());
   thread->AddObserver(visited_link_slave_.get());
+  thread->AddObserver(prerender_dispatcher_.get());
 
   thread->RegisterExtension(extensions_v8::ExternalExtension::Get());
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
@@ -642,6 +645,15 @@ bool ChromeContentRendererClient::ShouldFork(WebFrame* frame,
                                              const GURL& url,
                                              bool is_initial_navigation,
                                              bool* send_referrer) {
+  DCHECK(!frame->parent());
+
+  // If |url| matches one of the prerendered URLs, stop this navigation and try
+  // to swap in the prerendered page on the browser process. If the prerendered
+  // page no longer exists by the time the OpenURL IPC is handled, a normal
+  // navigation is attempted.
+  if (prerender_dispatcher_.get() && prerender_dispatcher_->IsPrerenderURL(url))
+    return true;
+
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
 
   // Determine if the new URL is an extension (excluding bookmark apps).

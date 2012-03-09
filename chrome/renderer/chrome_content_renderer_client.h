@@ -26,6 +26,10 @@ class VisitedLinkSlave;
 
 struct ChromeViewHostMsg_GetPluginInfo_Status;
 
+namespace prerender {
+class PrerenderDispatcher;
+}
+
 namespace safe_browsing {
 class PhishingClassifierFilter;
 }
@@ -159,6 +163,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<SpellCheck> spellcheck_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
+  scoped_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
 };
 
 }  // namespace chrome

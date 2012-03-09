@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -184,15 +184,12 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
   RecordPageviewEvent(PAGEVIEW_EVENT_NEW_URL);
   if (IsTopSite(url))
     RecordPageviewEvent(PAGEVIEW_EVENT_TOP_SITE_NEW_URL);
-  if (!tab_->core_tab_helper()->delegate())
-    return;  // PrerenderManager needs a delegate to handle the swap.
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;
   if (prerender_manager->IsWebContentsPrerendering(web_contents()))
     return;
   prerender_manager->MarkWebContentsAsNotPrerendered(web_contents());
-  MaybeUsePrerenderedPage(url, opener_url);
 }
 
 void PrerenderTabHelper::UpdateTargetURL(int32 page_id, const GURL& url) {
@@ -245,17 +242,6 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
 PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
   return PrerenderManagerFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-}
-
-bool PrerenderTabHelper::MaybeUsePrerenderedPage(const GURL& url,
-                                                 const GURL& opener_url) {
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (!prerender_manager)
-    return false;
-  DCHECK(!prerender_manager->IsWebContentsPrerendering(web_contents()));
-  return prerender_manager->MaybeUsePrerenderedPage(web_contents(),
-                                                    url,
-                                                    opener_url);
 }
 
 bool PrerenderTabHelper::IsPrerendering() {

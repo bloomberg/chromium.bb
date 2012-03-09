@@ -363,6 +363,9 @@ class WebContents : public PageNavigator {
 
   // Focuses the location bar.
   virtual void SetFocusToLocationBar(bool select_all) = 0;
+
+  // Does this have an opener associated with it?
+  virtual bool HasOpener() const = 0;
 };
 
 }  // namespace content

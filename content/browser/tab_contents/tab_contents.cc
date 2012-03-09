@@ -265,7 +265,8 @@ TabContents::TabContents(content::BrowserContext* browser_context,
           static_cast<int>(content::kMaximumZoomFactor * 100)),
       temporary_zoom_settings_(false),
       content_restrictions_(0),
-      view_type_(content::VIEW_TYPE_TAB_CONTENTS) {
+      view_type_(content::VIEW_TYPE_TAB_CONTENTS),
+      has_opener_(false) {
   render_manager_.Init(browser_context, site_instance, routing_id);
 
   // We have the initial size of the view be based on the size of the passed in
@@ -1349,6 +1350,10 @@ content::WebUI* TabContents::GetWebUIForCurrentState() {
 bool TabContents::GotResponseToLockMouseRequest(bool allowed) {
   return GetRenderViewHost() ?
       GetRenderViewHostImpl()->GotResponseToLockMouseRequest(allowed) : false;
+}
+
+bool TabContents::HasOpener() const {
+  return has_opener_;
 }
 
 bool TabContents::FocusLocationBarByDefault() {

@@ -172,8 +172,13 @@ class TestPrerenderContents : public PrerenderContents {
     // When the PrerenderContents is destroyed, quit the UI message loop.
     // This happens on navigation to used prerendered pages, and soon
     // after cancellation of unused prerendered pages.
-    if (quit_message_loop_on_destruction_)
-      MessageLoopForUI::current()->Quit();
+    if (quit_message_loop_on_destruction_) {
+      // The message loop may not be running if this is swapped in
+      // synchronously on a Navigation.
+      MessageLoop* loop = MessageLoopForUI::current();
+      if (loop->is_running())
+        loop->Quit();
+    }
   }
 
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE {
@@ -488,7 +493,8 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       const std::string& html_file,
       const std::deque<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads) {
-    PrerenderTestURLImpl(test_server()->GetURL(html_file),
+    GURL url = test_server()->GetURL(html_file);
+    PrerenderTestURLImpl(url, url,
                          expected_final_status_queue,
                          expected_number_of_loads);
   }
@@ -499,7 +505,19 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       int expected_number_of_loads) {
     std::deque<FinalStatus> expected_final_status_queue(1,
                                                         expected_final_status);
-    PrerenderTestURLImpl(url,
+    PrerenderTestURLImpl(url, url,
+                         expected_final_status_queue,
+                         expected_number_of_loads);
+  }
+
+  void PrerenderTestURL(
+      const GURL& prerender_url,
+      const GURL& destination_url,
+      FinalStatus expected_final_status,
+      int expected_number_of_loads) {
+    std::deque<FinalStatus> expected_final_status_queue(1,
+                                                        expected_final_status);
+    PrerenderTestURLImpl(prerender_url, destination_url,
                          expected_final_status_queue,
                          expected_number_of_loads);
   }
@@ -691,14 +709,18 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
 
  private:
   void PrerenderTestURLImpl(
-      const GURL& url,
+      const GURL& prerender_url,
+      const GURL& destination_url,
       const std::deque<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads) {
-    dest_url_ = url;
+    // TODO(cbentzel): Remove dest_url_?
+    dest_url_ = destination_url;
 
     std::vector<net::TestServer::StringPair> replacement_text;
     replacement_text.push_back(
-        make_pair("REPLACE_WITH_PRERENDER_URL", dest_url_.spec()));
+        make_pair("REPLACE_WITH_PRERENDER_URL", prerender_url.spec()));
+    replacement_text.push_back(
+        make_pair("REPLACE_WITH_DESTINATION_URL", destination_url.spec()));
     std::string replacement_path;
     ASSERT_TRUE(net::TestServer::GetFilePathWithReplacements(
         loader_path_,
@@ -789,17 +811,11 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       }
     }
 
-    // ui_test_utils::NavigateToURL waits until DidStopLoading is called on
-    // the current tab.  As that tab is going to end up deleted, and may never
-    // finish loading before that happens, exit the message loop on the deletion
-    // of the used prerender contents instead.
-    //
-    // As PrerenderTestURL waits until the prerendered page has completely
-    // loaded, there is no race between loading |dest_url| and swapping the
-    // prerendered TabContents into the tab.
+    // Navigate to the prerendered URL, but don't run the message loop. Browser
+    // issued navigations to prerendered pages will synchronously swap in the
+    // prerendered page.
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), dest_url, disposition, ui_test_utils::BROWSER_TEST_NONE);
-    ui_test_utils::RunMessageLoop();
 
     // Make sure the PrerenderContents found earlier was used or removed.
     EXPECT_TRUE(GetPrerenderContents() == NULL);
@@ -965,6 +981,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("files/prerender/prerender_page.html");
 }
 
+// Checks that client-issued redirects work with prerendering.
+// This version navigates to the final destination page, rather than the
+// page which does the redirection via a mouse click.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderClientRedirectNavigateToSecondViaClick) {
+  GURL prerender_url = test_server()->GetURL(
+      CreateClientRedirect("files/prerender/prerender_page.html"));
+  GURL destination_url = test_server()->GetURL(
+      "files/prerender/prerender_page.html");
+  PrerenderTestURL(prerender_url, destination_url, FINAL_STATUS_USED, 2);
+  OpenDestURLViaClick();
+}
+
 // Checks that a prerender for an https will prevent a prerender from happening.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHttps) {
   net::TestServer https_server(net::TestServer::TYPE_HTTPS,
@@ -1054,6 +1083,19 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                    FINAL_STATUS_USED,
                    1);
   NavigateToURL("files/prerender/prerender_page.html");
+}
+
+// Checks that server-issued redirects work with prerendering.
+// This version navigates to the final destination page, rather than the
+// page which does the redirection via a mouse click.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderServerRedirectNavigateToSecondViaClick) {
+  GURL prerender_url = test_server()->GetURL(
+      CreateServerRedirect("files/prerender/prerender_page.html"));
+  GURL destination_url = test_server()->GetURL(
+      "files/prerender/prerender_page.html");
+  PrerenderTestURL(prerender_url, destination_url, FINAL_STATUS_USED, 1);
+  OpenDestURLViaClick();
 }
 
 // Checks that server-issued redirects from an http to an https

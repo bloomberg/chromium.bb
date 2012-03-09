@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/prerender_messages.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -131,7 +131,7 @@ void PrerenderHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
 bool PrerenderHelper::OnMessageReceived(
     const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PrerenderHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
   IPC_END_MESSAGE_MAP()
   // Return false on ViewMsg_SetIsPrerendering so other observers can see the
   // message.

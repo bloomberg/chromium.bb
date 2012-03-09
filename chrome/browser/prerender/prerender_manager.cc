@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/prerender_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/navigation_controller.h"
@@ -324,9 +324,9 @@ void PrerenderManager::CancelOmniboxPrerenders() {
 }
 
 bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
-                                               const GURL& url,
-                                               const GURL& opener_url) {
+                                               const GURL& url) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!IsWebContentsPrerendering(web_contents));
   RecordNavigation(url);
 
   scoped_ptr<PrerenderContents> prerender_contents(
@@ -334,11 +334,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   if (prerender_contents.get() == NULL)
     return false;
 
-  // Do not use the prerendered version if the opener url corresponding to the
-  // window.opener property has the same origin as the url.
-  // NOTE: This is broken in the cases where the document domain is modified
-  // using the javascript property for "document.domain".
-  if (opener_url.GetOrigin() == url.GetOrigin()) {
+  // Do not use the prerendered version if there is an opener object.
+  if (web_contents->HasOpener()) {
     prerender_contents.release()->Destroy(FINAL_STATUS_WINDOW_OPENER);
     return false;
   }
@@ -424,8 +421,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   prerender_contents->set_final_status(FINAL_STATUS_USED);
 
   new_render_view_host->Send(
-      new ChromeViewMsg_SetIsPrerendering(new_render_view_host->GetRoutingID(),
-                                          false));
+      new PrerenderMsg_SetIsPrerendering(new_render_view_host->GetRoutingID(),
+                                         false));
 
   TabContentsWrapper* new_tab_contents =
       prerender_contents->ReleasePrerenderContents();

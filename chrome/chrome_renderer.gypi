@@ -181,6 +181,8 @@
         'renderer/plugins/plugin_placeholder.h',
         'renderer/plugins/plugin_uma.cc',
         'renderer/plugins/plugin_uma.h',
+        'renderer/prerender/prerender_dispatcher.cc',
+        'renderer/prerender/prerender_dispatcher.h',
         'renderer/prerender/prerender_helper.cc',
         'renderer/prerender/prerender_helper.h',
         'renderer/prerender/prerender_webmediaplayer.cc',

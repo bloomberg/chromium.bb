@@ -307,12 +307,6 @@ IPC_MESSAGE_ROUTED4(ChromeViewMsg_TranslatePage,
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_RevertTranslation,
                     int /* page id */)
 
-// Tells a renderer if it's currently being prerendered.  Must only be set
-// to true before any navigation occurs, and only set to false at most once
-// after that.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetIsPrerendering,
-                    bool /* whether the RenderView is prerendering */)
-
 // Sent on process startup to indicate whether this process is running in
 // incognito mode.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetIsIncognitoProcess,

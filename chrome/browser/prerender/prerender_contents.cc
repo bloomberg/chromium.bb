@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/icon_messages.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/prerender_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -58,6 +58,29 @@ struct PrerenderURLPredicate {
   }
   GURL url_;
 };
+
+// Tells the render process at |child_id| whether |url| is a new prerendered
+// page, or whether |url| is being removed as a prerendered page. Currently
+// this will only inform the render process that created the prerendered page
+// with <link rel="prerender"> tags about it. This means that if the user
+// clicks on a link for a prerendered URL in a different page, the prerender
+// will not be swapped in.
+void InformRenderProcessAboutPrerender(const GURL& url,
+                                       bool is_add,
+                                       int child_id) {
+  if (child_id < 0)
+    return;
+  content::RenderProcessHost* render_process_host =
+      content::RenderProcessHost::FromID(child_id);
+  if (!render_process_host)
+    return;
+  IPC::Message* message = NULL;
+  if (is_add)
+    message = new PrerenderMsg_AddPrerenderURL(url);
+  else
+    message = new PrerenderMsg_RemovePrerenderURL(url);
+  render_process_host->Send(message);
+}
 
 }  // end namespace
 
@@ -225,7 +248,8 @@ PrerenderContents::PrerenderContents(
       child_id_(-1),
       route_id_(-1),
       origin_(origin),
-      experiment_id_(experiment_id) {
+      experiment_id_(experiment_id),
+      creator_child_id_(-1) {
   DCHECK(prerender_manager != NULL);
 }
 
@@ -246,6 +270,13 @@ void PrerenderContents::StartPrerendering(
   DCHECK(prerender_contents_.get() == NULL);
 
   prerendering_has_started_ = true;
+  DCHECK(creator_child_id_ == -1);
+  DCHECK(alias_urls_.size() == 1);
+  if (source_render_view_host)
+    creator_child_id_ = source_render_view_host->GetProcess()->GetID();
+  InformRenderProcessAboutPrerender(prerender_url_, true,
+                                    creator_child_id_);
+
   WebContents* new_contents = WebContents::Create(
       profile_, NULL, MSG_ROUTING_NONE, NULL, session_storage_namespace);
   prerender_contents_.reset(new TabContentsWrapper(new_contents));
@@ -361,8 +392,14 @@ PrerenderContents::~PrerenderContents() {
       match_complete_status_,
       final_status_);
 
-  if (child_id_ != -1 && route_id_ != -1)
+  if (child_id_ != -1 && route_id_ != -1) {
     prerender_tracker_->OnPrerenderingFinished(child_id_, route_id_);
+    for (std::vector<GURL>::const_iterator it = alias_urls_.begin();
+         it != alias_urls_.end();
+         ++it) {
+      InformRenderProcessAboutPrerender(*it, false, creator_child_id_);
+    }
+  }
 
   // If we still have a TabContents, clean up anything we need to and then
   // destroy it.
@@ -417,7 +454,7 @@ void PrerenderContents::Observe(int type,
         // first navigation, so there's no need to send the message just after
         // the TabContents is created.
         new_render_view_host->Send(
-            new ChromeViewMsg_SetIsPrerendering(
+            new PrerenderMsg_SetIsPrerendering(
                 new_render_view_host->GetRoutingID(),
                 true));
 
@@ -474,6 +511,7 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
   }
 
   alias_urls_.push_back(url);
+  InformRenderProcessAboutPrerender(url, true, creator_child_id_);
   prerender_tracker_->AddPrerenderURLOnUIThread(url);
   return true;
 }

@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/prerender/prerender_webmediaplayer.h"
 
-#include "chrome/common/render_messages.h"
+#include "chrome/common/prerender_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_log.h"
@@ -59,7 +59,7 @@ void PrerenderWebMediaPlayer::cancelLoad() {
 
 bool PrerenderWebMediaPlayer::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PrerenderWebMediaPlayer, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetIsPrerendering, OnSetIsPrerendering)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_SetIsPrerendering, OnSetIsPrerendering)
   IPC_END_MESSAGE_MAP()
 
   return false;

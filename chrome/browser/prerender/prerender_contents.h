@@ -339,6 +339,9 @@ class PrerenderContents : public content::NotificationObserver,
   // List of all pages the prerendered page has tried to prerender.
   PendingPrerenderList pending_prerender_list_;
 
+  // The process that created the child id.
+  int creator_child_id_;
+
   DISALLOW_COPY_AND_ASSIGN(PrerenderContents);
 };
 

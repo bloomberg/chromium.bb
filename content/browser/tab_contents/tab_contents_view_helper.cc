@@ -81,6 +81,7 @@ TabContents* TabContentsViewHelper::CreateNewWindow(
                       NULL);
   new_contents->set_opener_web_ui_type(
       web_contents->GetWebUITypeForCurrentState());
+  new_contents->set_has_opener(!params.opener_url.is_empty());
 
   if (params.opener_suppressed) {
     // When the opener is suppressed, the original renderer cannot access the
