@@ -28,3 +28,5 @@ KioskModeTest.EnableKioskModeTest
 BookmarksUITest.BookmarksLoaded
 # Flaky on Linux UI. http://crbug.com/91843
 BookmarksUITest.CommandAgainGoesBackToBookmarksTab
+# Flaky on Chromium OS UI (valgrind)(2). http://crbug.com/39401
+BookmarksUITest.ShouldRedirectToExtension
