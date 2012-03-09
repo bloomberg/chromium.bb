@@ -34,9 +34,11 @@ class ASH_EXPORT SystemTray : public views::View,
   // Removes an existing tray item.
   void RemoveTrayItem(SystemTrayItem* item);
 
-  // Shows details of a particular item. If |close_delay| is non-zero, then the
-  // view is automatically closed after the specified time.
-  void ShowDetailedView(SystemTrayItem* item, int close_delay_in_seconds);
+  // Shows details of a particular item. If |close_delay_in_seconds| is
+  // non-zero, then the view is automatically closed after the specified time.
+  void ShowDetailedView(SystemTrayItem* item,
+                        int close_delay_in_seconds,
+                        bool activate);
 
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
@@ -44,7 +46,9 @@ class ASH_EXPORT SystemTray : public views::View,
   const std::vector<SystemTrayItem*>& items() const { return items_; }
 
  private:
-  void ShowItems(std::vector<SystemTrayItem*>& items, bool details);
+  void ShowItems(std::vector<SystemTrayItem*>& items,
+                 bool details,
+                 bool activate);
 
   // Overridden from views::View.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;

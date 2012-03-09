@@ -120,7 +120,7 @@ void TrayBrightness::OnBrightnessChanged(float percent, bool user_initiated) {
   }
   if (!user_initiated)
     return;
-  PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds);
+  PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
 }  // namespace internal

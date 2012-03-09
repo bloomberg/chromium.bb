@@ -182,7 +182,7 @@ void TrayVolume::OnVolumeChanged(float percent) {
     return;
   }
 
-  PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds);
+  PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
 }  // namespace internal

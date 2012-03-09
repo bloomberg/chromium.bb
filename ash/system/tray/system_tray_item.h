@@ -45,7 +45,7 @@ class ASH_EXPORT SystemTrayItem {
   // something, e.g. volume, network availability etc. changes). If
   // |for_seconds| is non-zero, then the popup is closed after the specified
   // time.
-  void PopupDetailedView(int for_seconds);
+  void PopupDetailedView(int for_seconds, bool activate);
 
  private:
 

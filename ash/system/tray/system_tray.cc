@@ -195,6 +195,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
         tray_(tray),
         items_(items),
         detailed_(detailed),
+        can_activate_(true),
         autoclose_delay_(0) {
     set_margin(0);
     set_parent_window(ash::Shell::GetInstance()->GetContainer(
@@ -212,6 +213,8 @@ class SystemTrayBubble : public views::BubbleDelegateView {
         (*it)->DestroyDefaultView();
     }
   }
+
+  void set_can_activate(bool activate) { can_activate_ = activate; }
 
   void StartAutoCloseTimer(int seconds) {
     autoclose_.Stop();
@@ -247,6 +250,10 @@ class SystemTrayBubble : public views::BubbleDelegateView {
     }
   }
 
+  virtual bool CanActivate() const OVERRIDE {
+    return can_activate_;
+  }
+
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
     autoclose_.Stop();
   }
@@ -263,6 +270,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
   ash::SystemTray* tray_;
   std::vector<ash::SystemTrayItem*> items_;
   bool detailed_;
+  bool can_activate_;
 
   int autoclose_delay_;
   base::OneShotTimer<SystemTrayBubble> autoclose_;
@@ -312,15 +320,19 @@ void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
   NOTIMPLEMENTED();
 }
 
-void SystemTray::ShowDetailedView(SystemTrayItem* item, int close_delay) {
-  if (popup_)
+void SystemTray::ShowDetailedView(SystemTrayItem* item,
+                                  int close_delay,
+                                  bool activate) {
+  if (popup_) {
+    popup_->RemoveObserver(this);
     popup_->Close();
+  }
   popup_ = NULL;
   bubble_ = NULL;
 
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
-  ShowItems(items, true);
+  ShowItems(items, true, activate);
   bubble_->StartAutoCloseTimer(close_delay);
 }
 
@@ -345,10 +357,13 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
   PreferredSizeChanged();
 }
 
-void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
+void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
+                           bool detailed,
+                           bool activate) {
   CHECK(!popup_);
   CHECK(!bubble_);
   bubble_ = new internal::SystemTrayBubble(this, container_, items, detailed);
+  bubble_->set_can_activate(activate);
   popup_ = views::BubbleDelegateView::CreateBubble(bubble_);
   bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   popup_->non_client_view()->frame_view()->set_background(NULL);
@@ -358,7 +373,7 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items, bool detailed) {
 
   // Setup animation.
   ash::SetWindowVisibilityAnimationType(popup_->GetNativeWindow(),
-      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+      ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   ash::SetWindowVisibilityAnimationTransition(popup_->GetNativeWindow(),
       ash::ANIMATE_BOTH);
   ash::SetWindowVisibilityAnimationDuration(popup_->GetNativeWindow(),
@@ -371,7 +386,7 @@ bool SystemTray::OnMousePressed(const views::MouseEvent& event) {
   if (popup_)
     popup_->Hide();
   else
-    ShowItems(items_, false);
+    ShowItems(items_, false, true);
   return true;
 }
 

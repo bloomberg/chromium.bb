@@ -16,8 +16,8 @@ SystemTrayItem::SystemTrayItem() {
 SystemTrayItem::~SystemTrayItem() {
 }
 
-void SystemTrayItem::PopupDetailedView(int for_seconds) {
-  Shell::GetInstance()->tray()->ShowDetailedView(this, for_seconds);
+void SystemTrayItem::PopupDetailedView(int for_seconds, bool activate) {
+  Shell::GetInstance()->tray()->ShowDetailedView(this, for_seconds, activate);
 }
 
 }  // namespace ash
