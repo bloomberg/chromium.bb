@@ -4,6 +4,11 @@
 # http://code.google.com/p/drmemory/issues/detail?id=318
 AudioRendererHostTest.*
 
+# Hits a DCHECK, and then a DR assertion while printing the backtrace.
+# http://code.google.com/p/drmemory/issues/detail?id=826
+WebsiteSettingsModelTest.HTTPConnection
+WebsiteSettingsModelTest.HTTPSConnection
+
 ##################################################
 # un-analyzed Dr. Memory bugs:
 
