@@ -9,13 +9,15 @@
 #include "ash/wm/root_window_event_filter.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
+#include "grit/ui_resources.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -50,21 +52,21 @@ class MultiWindowResizeController::ResizeView : public views::View {
   explicit ResizeView(MultiWindowResizeController* controller,
                       Direction direction)
       : controller_(controller),
-        direction_(direction) {
+        direction_(direction),
+        image_(NULL) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    int image_id =
+        direction == TOP_BOTTOM ? IDR_AURA_MULTI_WINDOW_RESIZE_H :
+                                  IDR_AURA_MULTI_WINDOW_RESIZE_V;
+    image_ = rb.GetImageNamed(image_id).ToSkBitmap();
   }
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(30, 30);
+    return gfx::Size(image_->width(), image_->height());
   }
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    // TODO: replace with real assets.
-    SkPaint paint;
-    paint.setColor(SkColorSetARGB(128, 0, 0, 0));
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setAntiAlias(true);
-    canvas->AsCanvasSkia()->GetSkCanvas()->drawCircle(
-        SkIntToScalar(15), SkIntToScalar(15), SkIntToScalar(15), paint);
+    canvas->DrawBitmapInt(*image_, 0, 0);
   }
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     gfx::Point location(event.location());
@@ -93,6 +95,7 @@ class MultiWindowResizeController::ResizeView : public views::View {
  private:
   MultiWindowResizeController* controller_;
   const Direction direction_;
+  const SkBitmap* image_;
 
   DISALLOW_COPY_AND_ASSIGN(ResizeView);
 };
