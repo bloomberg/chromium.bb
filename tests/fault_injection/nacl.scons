@@ -74,7 +74,7 @@ for extra_os_env, test_args, out_name, run_name, html_file in [
     node = env.PPAPIBrowserTester(
         out_name,
         url=html_file,
-        nmfs=['fault_pm_nameservice.nmf'],
+        nmf_names=['fault_pm_nameservice_test'],
         files=env.ExtractPublishedFiles(pm_ns_nexe_name),
         args=['--debug'],
         test_args=test_args,

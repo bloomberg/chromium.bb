@@ -45,7 +45,7 @@ for (ostr, thr, delay_us, envar) in [
   node = env.PPAPIBrowserTester(
     'pm_redir_'+ ostr + '_' + thr + '_' + delay_us + '_test.out',
     url='pm_redir_test.html',
-    nmfs=['pm_redir.nmf'],
+    nmf_names=['pm_redir_test'],
     files=env.ExtractPublishedFiles(pm_rd_nexe_name),
     # args=['--debug'], # debug turns on srpc-level output, also on stdout
     test_args=[('stream', ostr), ('thread', thr), ('delay_us', delay_us)],

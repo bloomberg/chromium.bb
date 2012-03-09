@@ -37,7 +37,7 @@ node = env.PPAPIBrowserTester(
     'inbrowser_trusted_crash_in_startup_test.out',
     python_tester_script=env.File('crash_dump_tester.py'),
     url='trusted_crash_in_startup.html',
-    nmfs=['inbrowser_crash_test.nmf'],
+    nmf_names=['inbrowser_crash_test'],
     files=[crash_test_nexe,
            env.File('trusted_crash_in_startup.html')],
     osenv='NACL_CRASH_TEST=1',
@@ -59,7 +59,7 @@ node = env.PPAPIBrowserTester(
     'inbrowser_crash_in_syscall_test.out',
     python_tester_script=env.File('crash_dump_tester.py'),
     url='crash_in_syscall.html',
-    nmfs=['inbrowser_crash_in_syscall.nmf'],
+    nmf_names=['inbrowser_crash_in_syscall'],
     files=[crash_in_syscall_nexe,
            env.File('crash_in_syscall.html')],
     args=platform_args + ['--expected_crash_dumps=%i' % expected_crash_dumps])
@@ -73,7 +73,7 @@ node = env.PPAPIBrowserTester(
     'inbrowser_untrusted_crash_test.out',
     python_tester_script=env.File('crash_dump_tester.py'),
     url='untrusted_crash.html',
-    nmfs=['inbrowser_crash_test.nmf'],
+    nmf_names=['inbrowser_crash_test'],
     files=[crash_test_nexe,
            env.File('untrusted_crash.html')],
     args=platform_args + ['--expected_crash_dumps=0'])

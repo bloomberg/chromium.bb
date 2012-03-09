@@ -1385,6 +1385,52 @@ def GenerateManifestFunc(target, source, env):
   return 0
 
 
+def GenerateManifestDynamicLink(env, dest_file, lib_list_file,
+                                manifest, exe_file):
+  # Run sel_ldr on the nexe to trace the NEEDED libraries.
+  lib_list_node = env.Command(
+      lib_list_file,
+      [GetSelLdr(env),
+       '${NACL_SDK_LIB}/runnable-ld.so',
+       exe_file,
+       '${SCONSTRUCT_DIR}/DEPS'],
+      # We ignore the return code using '-' in order to build tests
+      # where binaries do not validate.  This is a Scons feature.
+      '-${SOURCES[0]} -a -E LD_TRACE_LOADED_OBJECTS=1 ${SOURCES[1]} '
+      '--library-path ${NACL_SDK_LIB}:${LIB_DIR} ${SOURCES[2].posix} '
+      '> ${TARGET}')
+  return env.Command(dest_file,
+                     [manifest, lib_list_node],
+                     GenerateManifestFunc)[0]
+
+
+def GenerateSimpleManifestStaticLink(env, dest_file, exe_name):
+  def Func(target, source, env):
+    archs = ('x86-32', 'x86-64', 'arm')
+    nmf_data = {'program': dict((arch, {'url': '%s_%s.nexe' % (exe_name, arch)})
+                                for arch in archs)}
+    fh = open(target[0].abspath, 'w')
+    json.dump(nmf_data, fh, sort_keys=True, indent=2)
+    fh.close()
+  node = env.Command(dest_file, [], Func)[0]
+  # Scons does not track the dependency of dest_file on exe_name or on
+  # the Python code above, so we should always recreate dest_file when
+  # it is used.
+  env.AlwaysBuild(node)
+  return node
+
+
+def GenerateSimpleManifest(env, dest_file, exe_name):
+  static_manifest = GenerateSimpleManifestStaticLink(
+      env, '%s.static' % dest_file, exe_name)
+  if env.Bit('nacl_static_link'):
+    return static_manifest
+  else:
+    return GenerateManifestDynamicLink(
+        env, dest_file, '%s.tmp_lib_list' % dest_file, static_manifest,
+        '${STAGING_DIR}/%s_%s.nexe' % (exe_name, env['TARGET_FULLARCH']))
+
+
 # Returns a pair (main program, is_portable), based on the program
 # specified in manifest file.
 def GetMainProgramFromManifest(env, manifest):
@@ -1432,22 +1478,13 @@ def GeneratedManifestNode(env, manifest):
         '${SOURCES[0]} ${SOURCES[1]} -L${NACL_SDK_LIB} -L${LIB_DIR} ' +
         ' --flat-url-scheme --base-nmf ${SOURCES[2]} -o ${TARGET}')
   else:
-    # Run sel_ldr on the nexe to trace the NEEDED libraries.
-    lib_list_node = env.Command(
+    return GenerateManifestDynamicLink(
+        env, '${STAGING_DIR}/' + manifest_base_name,
+        # Note that CopyLibsForExtension() assumes that it can find
+        # the library list file under this '*.libs' filename.
         '${STAGING_DIR}/' + manifest_base_name + '.libs',
-        [GetSelLdr(env),
-         '${NACL_SDK_LIB}/runnable-ld.so',
-         env.File('${STAGING_DIR}/' + os.path.basename(main_program)),
-         '${SCONSTRUCT_DIR}/DEPS'],
-        # We ignore return code using '-' in order to build tests where binaries
-        # do not validate. This is the scons feature.
-        '-${SOURCES[0]} -a -E LD_TRACE_LOADED_OBJECTS=1 ${SOURCES[1]} '
-        '--library-path ${NACL_SDK_LIB}:${LIB_DIR} ${SOURCES[2].posix} '
-        '> ${TARGET}')
-    nmf_node = env.Command(
-        '${STAGING_DIR}/' + manifest_base_name,
-        [manifest, lib_list_node],
-        GenerateManifestFunc)
+        manifest,
+        env.File('${STAGING_DIR}/' + os.path.basename(main_program)))
   return result
 
 
@@ -1496,6 +1533,9 @@ def PPAPIBrowserTester(env,
                        url,
                        files,
                        nmfs=None,
+                       # List of executable basenames to generate
+                       # manifest files for.
+                       nmf_names=(),
                        map_files=(),
                        extensions=(),
                        mime_types=(),
@@ -1577,6 +1617,10 @@ def PPAPIBrowserTester(env,
         env.Alias(group, generated_manifest)
       # Generated manifests are served in the root of the HTTP server
       command.extend(['--file', generated_manifest])
+  for nmf_name in nmf_names:
+    tmp_manifest = '%s.tmp/%s.nmf' % (target, nmf_name)
+    command.extend(['--map_file', '%s.nmf' % nmf_name,
+                    GenerateSimpleManifest(env, tmp_manifest, nmf_name)])
   if 'browser_test_tool' in ARGUMENTS:
     command.extend(['--tool', ARGUMENTS['browser_test_tool']])
 

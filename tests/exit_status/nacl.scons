@@ -39,7 +39,7 @@ for out_name, run_name, test_args in [
     node = env.PPAPIBrowserTester(
         out_name,
         url='pm_exit_status_test.html',
-        nmfs=['pm_exit_status.nmf'],
+        nmf_names=['pm_exit_status_test'],
         files=env.ExtractPublishedFiles(pm_es_nexe_name),
         args=['--debug'],
         test_args=test_args,

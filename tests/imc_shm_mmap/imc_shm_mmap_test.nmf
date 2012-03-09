@@ -1,7 +1,0 @@
-{
-  "program": {
-    "x86-32": {"url": "imc_shm_mmap_test_x86-32.nexe"},
-    "x86-64": {"url": "imc_shm_mmap_test_x86-64.nexe"},
-    "arm": {"url": "imc_shm_mmap_test_arm.nexe"}
-  }
-}

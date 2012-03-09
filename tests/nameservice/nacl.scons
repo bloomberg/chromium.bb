@@ -77,7 +77,7 @@ env.Publish(pm_ns_nexe_name, 'run',
 node = env.PPAPIBrowserTester(
     'pm_nameservice_browser_test.out',
     url='pm_nameservice_test.html',
-    nmfs=['pm_nameservice.nmf'],
+    nmf_names=['pm_nameservice_test'],
     files=env.ExtractPublishedFiles(pm_ns_nexe_name),
     args=['--debug'],
     osenv=['NACLVERBOSITY=0:pp_weak_ref=0:weak_ref=0']
