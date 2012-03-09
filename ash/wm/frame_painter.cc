@@ -198,6 +198,22 @@ int FramePainter::NonClientHitTest(views::NonClientFrameView* view,
   return HTCAPTION;
 }
 
+gfx::Size FramePainter::GetMinimumSize(views::NonClientFrameView* view) {
+  gfx::Size min_size = frame_->client_view()->GetMinimumSize();
+  // Ensure we can display the top of the caption area.
+  gfx::Rect client_bounds = view->GetBoundsForClientView();
+  min_size.Enlarge(0, client_bounds.y());
+  // Ensure we have enough space for the window icon and buttons.  We allow
+  // the title string to collapse to zero width.
+  int title_width = GetTitleOffsetX() +
+      maximize_button_->width() +
+      button_separator_->width() +
+      close_button_->width();
+  if (title_width > min_size.width())
+    min_size.set_width(title_width);
+  return min_size;
+}
+
 void FramePainter::PaintHeader(views::NonClientFrameView* view,
                                gfx::Canvas* canvas,
                                const SkBitmap* theme_frame,
@@ -277,9 +293,7 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
   // The window icon is painted by its own views::View.
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
-    int title_x = window_icon_ ?
-        window_icon_->bounds().right() + kTitleIconOffsetX :
-        kTitleNoIconOffsetX;
+    int title_x = GetTitleOffsetX();
     gfx::Rect title_bounds(
         title_x,
         kTitleOffsetY,
@@ -351,6 +365,12 @@ void FramePainter::SetButtonImages(views::ImageButton* button,
                    theme_provider->GetBitmapNamed(hot_bitmap_id));
   button->SetImage(views::CustomButton::BS_PUSHED,
                    theme_provider->GetBitmapNamed(pushed_bitmap_id));
+}
+
+int FramePainter::GetTitleOffsetX() const {
+  return window_icon_ ?
+      window_icon_->bounds().right() + kTitleIconOffsetX :
+      kTitleNoIconOffsetX;
 }
 
 }  // namespace ash

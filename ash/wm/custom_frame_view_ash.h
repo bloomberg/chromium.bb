@@ -54,6 +54,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   virtual void Layout() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,

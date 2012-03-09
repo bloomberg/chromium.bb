@@ -124,6 +124,10 @@ std::string CustomFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }
 
+gfx::Size CustomFrameViewAsh::GetMinimumSize() {
+  return frame_painter_->GetMinimumSize(this);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener overrides:
 void CustomFrameViewAsh::ButtonPressed(views::Button* sender,

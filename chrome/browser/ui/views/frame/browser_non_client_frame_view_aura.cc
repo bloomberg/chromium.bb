@@ -83,7 +83,7 @@ gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForTabStrip(
   bool restored = !frame()->IsMaximized();
   return gfx::Rect(kTabstripLeftSpacing,
                    GetHorizontalTabStripVerticalOffset(restored),
-                   maximize_button_->x() - kTabstripRightSpacing,
+                   std::max(0, maximize_button_->x() - kTabstripRightSpacing),
                    tabstrip->GetPreferredSize().height());
 }
 
@@ -182,6 +182,10 @@ bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& l) const {
 void BrowserNonClientFrameViewAura::GetAccessibleState(
     ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_TITLEBAR;
+}
+
+gfx::Size BrowserNonClientFrameViewAura::GetMinimumSize() {
+  return frame_painter_->GetMinimumSize(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

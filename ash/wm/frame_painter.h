@@ -47,6 +47,7 @@ class ASH_EXPORT FramePainter {
       const gfx::Rect& client_bounds) const;
   int NonClientHitTest(views::NonClientFrameView* view,
                        const gfx::Point& point);
+  gfx::Size GetMinimumSize(views::NonClientFrameView* view);
 
   // Paints the frame header.
   void PaintHeader(views::NonClientFrameView* view,
@@ -78,6 +79,9 @@ class ASH_EXPORT FramePainter {
                        int normal_bitmap_id,
                        int hot_bitmap_id,
                        int pushed_bitmap_id);
+
+  // Returns the offset between window left edge and title string.
+  int GetTitleOffsetX() const;
 
   // Not owned
   views::Widget* frame_;

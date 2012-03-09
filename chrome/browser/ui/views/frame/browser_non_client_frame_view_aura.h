@@ -47,6 +47,7 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual void Layout() OVERRIDE;
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
