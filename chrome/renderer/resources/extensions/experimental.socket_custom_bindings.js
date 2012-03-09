@@ -4,10 +4,11 @@
 
 // Custom bindings for the experimental.socket API.
 
-  var experimentalSocketNatives = requireNative('experimental_socket');
-  var GetNextSocketEventId = experimentalSocketNatives.GetNextSocketEventId;
+(function() {
+  native function GetChromeHidden();
+  native function GetNextSocketEventId();
 
-  var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+  var chromeHidden = GetChromeHidden();
 
   chromeHidden.registerCustomHook('experimental.socket', function(api) {
       var apiFunctions = api.apiFunctions;
@@ -55,3 +56,5 @@
           }
         });
     });
+
+})();

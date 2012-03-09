@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-  var eventBindingsNatives = requireNative('event_bindings');
-  var AttachEvent = eventBindingsNatives.AttachEvent;
-  var DetachEvent = eventBindingsNatives.DetachEvent;
-  var Print = eventBindingsNatives.Print;
+var chrome = chrome || {};
+(function () {
+  native function GetChromeHidden();
+  native function AttachEvent(eventName);
+  native function DetachEvent(eventName, manual);
+  native function Print();
 
-  var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+  var chromeHidden = GetChromeHidden();
 
   // Local implementation of JSON.parse & JSON.stringify that protect us
   // from being clobbered by an extension.
@@ -309,3 +311,4 @@
   chromeHidden.dispatchError = function(msg) {
     console.error(msg);
   };
+})();

@@ -15,10 +15,14 @@
 
 namespace extensions {
 
-TabsCustomBindings::TabsCustomBindings()
-    : ChromeV8Extension(NULL) {
-  RouteStaticFunction("OpenChannelToTab", &OpenChannelToTab);
-}
+TabsCustomBindings::TabsCustomBindings(
+    int dependency_count, const char** dependencies)
+    : ChromeV8Extension(
+          "extensions/tabs_custom_bindings.js",
+          IDR_TABS_CUSTOM_BINDINGS_JS,
+          dependency_count,
+          dependencies,
+          NULL) {}
 
 // static
 v8::Handle<v8::Value> TabsCustomBindings::OpenChannelToTab(
@@ -41,6 +45,14 @@ v8::Handle<v8::Value> TabsCustomBindings::OpenChannelToTab(
     return v8::Integer::New(port_id);
   }
   return v8::Undefined();
+}
+
+v8::Handle<v8::FunctionTemplate> TabsCustomBindings::GetNativeFunction(
+    v8::Handle<v8::String> name) {
+  if (name->Equals(v8::String::New("OpenChannelToTab")))
+    return v8::FunctionTemplate::New(OpenChannelToTab);
+
+  return ChromeV8Extension::GetNativeFunction(name);
 }
 
 }  // extensions

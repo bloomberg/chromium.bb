@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 
-class ChromeV8Extension;
 class ExtensionDispatcher;
 
 namespace content {
@@ -31,7 +30,7 @@ namespace extensions {
 class MiscellaneousBindings {
  public:
   // Creates an instance of the extension.
-  static ChromeV8Extension* Get(ExtensionDispatcher* dispatcher);
+  static v8::Extension* Get(ExtensionDispatcher* dispatcher);
 
   // Delivers a message sent using content script messaging to some of the
   // contexts in |bindings_context_set|. If |restrict_to_render_view| is

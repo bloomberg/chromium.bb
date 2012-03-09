@@ -4,7 +4,11 @@
 
 // Custom bindings for the declarative API.
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+(function() {
+
+native function GetChromeHidden();
+
+var chromeHidden = GetChromeHidden();
 
 chromeHidden.registerCustomHook('experimental.declarative',
                                 function(bindingsAPI) {
@@ -74,3 +78,5 @@ chromeHidden.registerCustomHook('experimental.declarative',
                 this.definition.parameters);
   });
 });
+
+})();

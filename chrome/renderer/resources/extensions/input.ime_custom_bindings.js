@@ -5,9 +5,11 @@
 // Custom bindings for the input ime API. Only injected into the
 // v8 contexts for extensions which have permission for the API.
 
-var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+(function() {
 
-chromeHidden.registerCustomHook('input.ime', function() {
+native function GetChromeHidden();
+
+GetChromeHidden().registerCustomHook('input.ime', function() {
   chrome.input.ime.onKeyEvent.dispatch = function(engineID, keyData) {
     var args = Array.prototype.slice.call(arguments);
     if (this.validate_) {
@@ -34,3 +36,5 @@ chromeHidden.registerCustomHook('input.ime', function() {
     }
   };
 });
+
+})();

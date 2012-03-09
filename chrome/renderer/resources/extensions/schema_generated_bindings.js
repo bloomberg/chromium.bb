@@ -5,15 +5,15 @@
 // This script contains privileged chrome extension related javascript APIs.
 // It is loaded by pages whose URL has the chrome-extension protocol.
 
-  require('json_schema');
-  require('event_bindings');
-  var natives = requireNative('schema_generated_bindings');
-  var GetExtensionAPIDefinition = natives.GetExtensionAPIDefinition;
-  var GetNextRequestId = natives.GetNextRequestId;
-  var StartRequest = natives.StartRequest;
-  var SetIconCommon = natives.SetIconCommon;
+var chrome = chrome || {};
+(function() {
+  native function GetChromeHidden();
+  native function GetExtensionAPIDefinition();
+  native function GetNextRequestId();
+  native function StartRequest();
+  native function SetIconCommon();
 
-  var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
+  var chromeHidden = GetChromeHidden();
 
   // The object to generate the bindings for "internal" APIs in, so that
   // extensions can't directly call them (without access to chromeHidden),
@@ -753,3 +753,4 @@
     if (chrome.test)
       chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
   });
+})();
