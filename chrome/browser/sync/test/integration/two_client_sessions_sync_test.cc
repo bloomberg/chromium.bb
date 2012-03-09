@@ -35,7 +35,12 @@ static const char* kURL2 = "http://127.0.0.1/bubba2";
 // (as well as multi-window). We're currently only checking basic single-window/
 // single-tab functionality.
 
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, SingleClientChanged) {
+// All tests involving changes to the sessions appear to be flaky, especially
+// on windows.
+// crbug.com/85294
+
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
+                       DISABLED_SingleClientChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -75,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       SingleClientEnabledEncryptionAndChanged) {
+                       DISABLED_SingleClientEnabledEncryptionAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -111,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, BothChanged) {
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DISABLED_BothChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -142,14 +147,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows.Get()));
 }
 
-// Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
-#if defined(OS_MACOSX)
-#define MAYBE_FirstChangesAndSetsPassphrase DISABLED_FirstChangesAndSetsPassphrase
-#else
-#define MAYBE_FirstChangesAndSetsPassphrase FirstChangesAndSetsPassphrase
-#endif
+// Flaky (number of conflicting nodes is off). http://crbug.com/85294.
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       MAYBE_FirstChangesAndSetsPassphrase) {
+                       DISABLED_FirstChangesAndSetsPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -194,16 +194,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
 }
 
-// Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
-#if defined(OS_MACOSX)
-#define MAYBE_FirstChangesWhileSecondWaitingForPassphrase \
-        DISABLED_FirstChangesWhileSecondWaitingForPassphrase
-#else
-#define MAYBE_FirstChangesWhileSecondWaitingForPassphrase \
-        FirstChangesWhileSecondWaitingForPassphrase
-#endif
+// Flaky (number of conflicting nodes is off). http://crbug.com/85294.
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       MAYBE_FirstChangesWhileSecondWaitingForPassphrase) {
+                       DISABLED_FirstChangesWhileSecondWaitingForPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -255,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       SecondChangesAfterEncrAndPassphraseChange) {
+                       DISABLED_SecondChangesAfterEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -303,16 +296,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 }
 
-// Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
-#if defined(OS_MACOSX)
-#define MAYBE_SecondChangesBeforeEncrAndPassphraseChange \
-        DISABLED_SecondChangesBeforeEncrAndPassphraseChange
-#else
-#define MAYBE_SecondChangesBeforeEncrAndPassphraseChange \
-        SecondChangesBeforeEncrAndPassphraseChange
-#endif
+// Flaky (number of conflicting nodes is off). http://crbug.com/85294.
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       MAYBE_SecondChangesBeforeEncrAndPassphraseChange) {
+                       DISABLED_SecondChangesBeforeEncrAndPassphraseChange) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -363,16 +349,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows.Get()));
 }
 
-// Flaky on OSX (number of conflicting nodes is off). http://crbug.com/85294.
-#if defined(OS_MACOSX)
-#define MAYBE_BothChangeWithEncryptionAndPassphrase \
-        DISABLED_BothChangeWithEncryptionAndPassphrase
-#else
-#define MAYBE_BothChangeWithEncryptionAndPassphrase \
-        BothChangeWithEncryptionAndPassphrase
-#endif
+// Flaky (number of conflicting nodes is off). http://crbug.com/85294.
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       MAYBE_BothChangeWithEncryptionAndPassphrase) {
+                       DISABLED_BothChangeWithEncryptionAndPassphrase) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
