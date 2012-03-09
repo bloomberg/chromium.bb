@@ -971,6 +971,7 @@ glibc-copy() {
                       libm.so.${ver} \
                       libdl.so.${ver} \
                       librt.so.${ver} \
+                      libmemusage.so \
                       libpthread_nonshared.a \
                       libpthread.so.${ver} \
                       runnable-ld.so \
@@ -1010,6 +1011,8 @@ glibc-copy() {
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2615
   make-glibc-link all libc_nonshared.a libc_nonshared.a
   make-glibc-link all libpthread_nonshared.a libpthread_nonshared.a
+
+  make-glibc-link all libmemusage.so libmemusage.so
 
   # Copy linker scripts
   # We currently only depend on elf[64]_nacl.x,
