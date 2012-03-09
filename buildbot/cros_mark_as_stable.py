@@ -132,12 +132,16 @@ def PushChange(stable_branch, tracking_branch, dryrun):
   Raises:
       OSError: Error occurred while pushing.
   """
-  # Sanity check to make sure we're on a stabilizing branch before pushing.
+  # For the commit queue, our local branch may contain commits that were just
+  # tested and pushed during the CommitQueueCompletion stage. After syncing,
+  # our local branch should be rebased so that these changes are no longer
+  # present.
+  repository.RepoSyncUsingSSH('.')
+
   if not _DoWeHaveLocalCommits(stable_branch, tracking_branch):
     cros_build_lib.Info('No work found to push.  Exiting')
     return
 
-  repository.RepoSyncUsingSSH('.')
   description = _SimpleRunCommand('git log --format=format:%s%n%n%b ' +
                                   tracking_branch + '..')
   description = 'Marking set of ebuilds as stable\n\n%s' % description
