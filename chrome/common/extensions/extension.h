@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 #include <algorithm>
 
@@ -231,11 +232,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // In a few special circumstances, we want to create an Extension and give it
   // an explicit id. Most consumers should just use the other Create() method.
   static scoped_refptr<Extension> Create(const FilePath& path,
-                                         Location location,
-                                         const base::DictionaryValue& value,
-                                         int flags,
-                                         const std::string& explicit_id,
-                                         std::string* error);
+      Location location,
+      const base::DictionaryValue& value,
+      int flags,
+      const std::string& explicit_id,
+      std::string* error);
 
   // Given two install sources, return the one which should take priority
   // over the other. If an extension is installed from two sources A and B,
@@ -368,7 +369,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                      std::string* output,
                                      bool is_public);
 
-  // Given an extension, icon size and match type, read a valid icon if present
+  // Given an extension, icon size, and match type, read a valid icon if present
   // and decode it into result. In the browser process, this will DCHECK if not
   // called on the file thread. To easily load extension images on the UI
   // thread, see ImageLoadingTracker.
@@ -407,7 +408,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Parses the host and api permissions from the specified permission |key|
   // from |manifest_|.
   bool ParsePermissions(const char* key,
-                        int flags,
                         string16* error,
                         ExtensionAPIPermissionSet* api_permissions,
                         URLPatternSet* host_permissions);
@@ -690,8 +690,17 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // into strong types and discard the value. But doing both is bad.
   bool InitFromValue(int flags, string16* error);
 
-  // Helpers to load various chunks of the manifest.
-  bool LoadManifestVersion(string16* error);
+  // The following are helpers for InitFromValue to load various features of the
+  // extension from the manifest.
+
+  bool CheckMinimumChromeVersion(string16* error);
+  bool LoadAppIsolation(string16* error);
+
+  bool LoadRequiredFeatures(string16* error);
+  bool LoadName(string16* error);
+  bool LoadVersion(string16* error);
+
+  bool LoadAppFeatures(string16* error);
   bool LoadExtent(const char* key,
                   URLPatternSet* extent,
                   const char* list_error,
@@ -699,28 +708,77 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                   string16* error);
   bool LoadLaunchContainer(string16* error);
   bool LoadLaunchURL(string16* error);
-  bool LoadAppIsolation(string16* error);
 
-  // Parses a single action in the manifest.
-  bool LoadWebIntentAction(const std::string& action_name,
-                           const base::DictionaryValue& intent_service,
-                           string16* error);
-  bool LoadWebIntentServices(string16* error);
+  bool LoadSharedFeatures(const ExtensionAPIPermissionSet& api_permissions,
+                          string16* error);
+  bool LoadDescription(string16* error);
+  bool LoadManifestVersion(string16* error);
+  bool LoadHomepageURL(string16* error);
+  bool LoadUpdateURL(string16* error);
+  bool LoadIcons(string16* error);
+  bool LoadCommands(string16* error);
+  bool LoadPlugins(string16* error);
+  bool LoadNaClModules(string16* error);
+  bool LoadWebAccessibleResources(string16* error);
+  bool CheckRequirements(string16* error);
+  bool LoadDefaultLocale(string16* error);
+  bool LoadOfflineEnabled(string16* error);
+  bool LoadOptionsPage(string16* error);
   bool LoadBackgroundScripts(string16* error);
   bool LoadBackgroundPage(const ExtensionAPIPermissionSet& api_permissions,
                           string16* error);
   bool LoadBackgroundPersistent(
       const ExtensionAPIPermissionSet& api_permissions,
       string16* error);
-  bool LoadBackgroundAllowJsAccess(
+  bool LoadBackgroundAllowJSAccess(
       const ExtensionAPIPermissionSet& api_permissions,
       string16* error);
+  // Parses a single action in the manifest.
+  bool LoadWebIntentAction(const std::string& action_name,
+                           const base::DictionaryValue& intent_service,
+                           string16* error);
+  bool LoadWebIntentServices(string16* error);
+  bool LoadExtensionFeatures(const ExtensionAPIPermissionSet& api_permissions,
+                             string16* error);
+  bool LoadDevToolsPage(string16* error);
+  bool LoadInputComponents(const ExtensionAPIPermissionSet& api_permissions,
+                           string16* error);
+  bool LoadContentScripts(string16* error);
+  bool LoadPageAction(string16* error);
+  bool LoadBrowserAction(string16* error);
+  bool LoadFileBrowserHandlers(string16* error);
+  // Helper method to load a FileBrowserHandlerList from the manifest.
+  FileBrowserHandlerList* LoadFileBrowserHandlersHelper(
+      const base::ListValue* extension_actions, string16* error);
+  // Helper method to load an FileBrowserHandler from manifest.
+  FileBrowserHandler* LoadFileBrowserHandler(
+      const base::DictionaryValue* file_browser_handlers, string16* error);
+  bool LoadChromeURLOverrides(string16* error);
+  bool LoadOmnibox(string16* error);
+  bool LoadTextToSpeechVoices(string16* error);
+  bool LoadIncognitoMode(string16* error);
+  bool LoadContentSecurityPolicy(string16* error);
+
+  bool LoadThemeFeatures(string16* error);
+  bool LoadThemeImages(const base::DictionaryValue* theme_value,
+                       string16* error);
+  bool LoadThemeColors(const base::DictionaryValue* theme_value,
+                       string16* error);
+  bool LoadThemeTints(const base::DictionaryValue* theme_value,
+                      string16* error);
+  bool LoadThemeDisplayProperties(const base::DictionaryValue* theme_value,
+                                  string16* error);
+
+  // Helper function for implementing HasCachedImage/GetCachedImage. A return
+  // value of NULL means there is no matching image cached (we allow caching an
+  // empty SkBitmap).
+  SkBitmap* GetCachedImageImpl(const ExtensionResource& source,
+                               const gfx::Size& max_size) const;
 
   // Helper method that loads a UserScript object from a
   // dictionary in the content_script list of the manifest.
   bool LoadUserScriptHelper(const base::DictionaryValue* content_script,
                             int definition_index,
-                            int flags,
                             string16* error,
                             UserScript* result);
 
@@ -737,13 +795,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // browser_action entries in the manifest.
   ExtensionAction* LoadExtensionActionHelper(
       const base::DictionaryValue* extension_action, string16* error);
-
-  // Helper method to load an FileBrowserHandlerList from the manifest.
-  FileBrowserHandlerList* LoadFileBrowserHandlers(
-      const base::ListValue* extension_actions, string16* error);
-  // Helper method to load an FileBrowserHandler from manifest.
-  FileBrowserHandler* LoadFileBrowserHandler(
-      const base::DictionaryValue* file_browser_handlers, string16* error);
 
   // Returns true if the extension has more than one "UI surface". For example,
   // an extension that has a browser action and a page action.
@@ -762,12 +813,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // permissions |permissions|.
   bool CanSpecifyHostPermission(const URLPattern& pattern,
       const ExtensionAPIPermissionSet& permissions) const;
-
-  // Helper function for implementing HasCachedImage/GetCachedImage. A return
-  // value of NULL means there is no matching image cached (we allow caching an
-  // empty SkBitmap).
-  SkBitmap* GetCachedImageImpl(const ExtensionResource& source,
-                               const gfx::Size& max_size) const;
 
   // Cached images for this extension. This should only be touched on the UI
   // thread.
@@ -902,7 +947,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // URL for fetching an update manifest
   GURL update_url_;
 
-  // The manifest that this extension was created from.
+  // The manifest from which this extension was created.
   //
   // NOTE: This is an owned pointer, but can't use scoped_ptr because that would
   // require manifest.h, which would in turn create a circulate dependency
