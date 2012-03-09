@@ -86,7 +86,8 @@ class RegistryEntry {
 
     // File association ProgId
     std::wstring chrome_html_prog_id(ShellUtil::kRegClasses);
-    file_util::AppendToPath(&chrome_html_prog_id, ShellUtil::kChromeHTMLProgId);
+    chrome_html_prog_id.push_back(FilePath::kSeparators[0]);
+    chrome_html_prog_id.append(ShellUtil::kChromeHTMLProgId);
     chrome_html_prog_id.append(suffix);
     entries->push_front(new RegistryEntry(
         chrome_html_prog_id, ShellUtil::kChromeHTMLProgIdDesc));
@@ -184,7 +185,8 @@ class RegistryEntry {
     // Application Registration.
     FilePath chrome_path(chrome_exe);
     std::wstring app_path_key(ShellUtil::kAppPathsRegistryKey);
-    file_util::AppendToPath(&app_path_key, chrome_path.BaseName().value());
+    app_path_key.push_back(FilePath::kSeparators[0]);
+    app_path_key.append(chrome_path.BaseName().value());
     entries->push_front(new RegistryEntry(app_path_key, chrome_exe));
     entries->push_front(new RegistryEntry(app_path_key,
         ShellUtil::kAppPathsRegistryPathName, chrome_path.DirName().value()));
@@ -201,7 +203,8 @@ class RegistryEntry {
                                      std::list<RegistryEntry*>* entries) {
     // Protocols associations.
     std::wstring url_key(ShellUtil::kRegClasses);
-    file_util::AppendToPath(&url_key, protocol);
+    url_key.push_back(FilePath::kSeparators[0]);
+    url_key.append(protocol);
 
     // This registry value tells Windows that this 'class' is a URL scheme
     // so IE, explorer and other apps will route it to our handler.
@@ -239,7 +242,8 @@ class RegistryEntry {
     html_prog_id.append(suffix);
     for (int i = 0; ShellUtil::kFileAssociations[i] != NULL; i++) {
       std::wstring ext_key(ShellUtil::kRegClasses);
-      file_util::AppendToPath(&ext_key, ShellUtil::kFileAssociations[i]);
+      ext_key.push_back(FilePath::kSeparators[0]);
+      ext_key.append(ShellUtil::kFileAssociations[i]);
       entries->push_front(new RegistryEntry(ext_key, html_prog_id));
     }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -89,26 +89,6 @@ class InstallUtil {
   // is running Chrome process from the Chrome SxS installation (as indicated
   // by either --chrome-sxs or the executable path).
   static bool IsChromeSxSProcess();
-
-  // Adds all DLLs in install_path whose names are given by dll_names to a
-  // work item list containing registration or unregistration actions.
-  //
-  // install_path: Install path containing the registrable DLLs.
-  // dll_names: the array of strings containing dll_names
-  // dll_names_count: the number of DLL names in dll_names
-  // do_register: whether to register or unregister the DLLs
-  // user_level_registration: whether to use alternate DLL entry point names to
-  //     perform non-admin registration.
-  // registration_list: the WorkItemList that this method populates
-  //
-  // Returns true if at least one DLL was successfully added to
-  // registration_list.
-  static bool BuildDLLRegistrationList(const std::wstring& install_path,
-                                       const wchar_t** const dll_names,
-                                       int dll_names_count,
-                                       bool do_register,
-                                       bool user_level_registration,
-                                       WorkItemList* registration_list);
 
   // Deletes the registry key at path key_path under the key given by root_key.
   static bool DeleteRegistryKey(HKEY root_key, const std::wstring& key_path);

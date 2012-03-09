@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -14,7 +14,6 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -337,23 +336,6 @@ bool CheckIsChromeSxSProcess() {
 bool InstallUtil::IsChromeSxSProcess() {
   static bool sxs = CheckIsChromeSxSProcess();
   return sxs;
-}
-
-bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
-                                           const wchar_t** const dll_names,
-                                           int dll_names_count,
-                                           bool do_register,
-                                           bool user_level_registration,
-                                           WorkItemList* registration_list) {
-  DCHECK(NULL != registration_list);
-  bool success = true;
-  for (int i = 0; i < dll_names_count; i++) {
-    std::wstring dll_file_path(install_path);
-    file_util::AppendToPath(&dll_file_path, dll_names[i]);
-    success = registration_list->AddSelfRegWorkItem(dll_file_path,
-        do_register, user_level_registration) && success;
-  }
-  return (dll_names_count > 0) && success;
 }
 
 // This method tries to delete a registry key and logs an error message

@@ -50,7 +50,8 @@ namespace {
 void AddChromeToMediaPlayerList() {
   std::wstring reg_path(installer::kMediaPlayerRegPath);
   // registry paths can also be appended like file system path
-  file_util::AppendToPath(&reg_path, installer::kChromeExe);
+  reg_path.push_back(FilePath::kSeparators[0]);
+  reg_path.append(installer::kChromeExe);
   VLOG(1) << "Adding Chrome to Media player list at " << reg_path;
   scoped_ptr<WorkItem> work_item(WorkItem::CreateCreateRegKeyWorkItem(
       HKEY_LOCAL_MACHINE, reg_path));

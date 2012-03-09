@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <windows.h>
 
-#include "base/file_util.h"
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/win/registry.h"
@@ -16,23 +16,26 @@ using base::win::RegKey;
 
 namespace {
 
-wchar_t test_root[] = L"DeleteRegValueWorkItemTest";
+const wchar_t kTestRoot[] = L"DeleteRegValueWorkItemTest";
+const wchar_t kWriteNew[] = L"WriteNew";
+const wchar_t kNameStr[] = L"name_str";
+const wchar_t kNameDword[] = L"name_dword";
 
 class DeleteRegValueWorkItemTest : public testing::Test {
  protected:
   virtual void SetUp() {
     // Create a temporary key for testing
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    key.DeleteKey(test_root);
-    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
+    key.DeleteKey(kTestRoot);
+    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kTestRoot, KEY_READ));
     ASSERT_EQ(ERROR_SUCCESS,
-        key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
+        key.Create(HKEY_CURRENT_USER, kTestRoot, KEY_READ));
   }
   virtual void TearDown() {
     logging::CloseLogFile();
     // Clean up the temporary key
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(test_root));
+    ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kTestRoot));
   }
 };
 
@@ -42,14 +45,15 @@ class DeleteRegValueWorkItemTest : public testing::Test {
 // recreated after Rollback().
 TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
   RegKey key;
-  std::wstring parent_key(test_root);
-  file_util::AppendToPath(&parent_key, L"WriteNew");
+  std::wstring parent_key(kTestRoot);
+  parent_key.push_back(FilePath::kSeparators[0]);
+  parent_key.append(kWriteNew);
   ASSERT_EQ(ERROR_SUCCESS,
       key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ | KEY_WRITE));
-  std::wstring name_str(L"name_str");
+  std::wstring name_str(kNameStr);
   std::wstring data_str(L"data_111");
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name_str.c_str(), data_str.c_str()));
-  std::wstring name_dword(L"name_dword");
+  std::wstring name_dword(kNameDword);
   DWORD data_dword = 100;
   ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name_dword.c_str(), data_dword));
 
@@ -98,12 +102,13 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
 // Try deleting a value that doesn't exist.
 TEST_F(DeleteRegValueWorkItemTest, DeleteNonExistentValue) {
   RegKey key;
-  std::wstring parent_key(test_root);
-  file_util::AppendToPath(&parent_key, L"WriteNew");
+  std::wstring parent_key(kTestRoot);
+  parent_key.push_back(FilePath::kSeparators[0]);
+  parent_key.append(kWriteNew);
   ASSERT_EQ(ERROR_SUCCESS,
       key.Create(HKEY_CURRENT_USER, parent_key.c_str(), KEY_READ | KEY_WRITE));
-  std::wstring name_str(L"name_str");
-  std::wstring name_dword(L"name_dword");
+  std::wstring name_str(kNameStr);
+  std::wstring name_dword(kNameDword);
   EXPECT_FALSE(key.HasValue(name_str.c_str()));
   EXPECT_FALSE(key.HasValue(name_dword.c_str()));
 

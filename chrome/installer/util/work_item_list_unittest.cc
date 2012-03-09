@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,18 +20,19 @@ using base::win::RegKey;
 
 namespace {
 
-wchar_t test_root[] = L"ListList";
-wchar_t data_str[] = L"data_111";
+const wchar_t kTestRoot[] = L"ListList";
+const wchar_t kDataStr[] = L"data_111";
+const wchar_t kName[] = L"name";
 
 class WorkItemListTest : public testing::Test {
  protected:
   virtual void SetUp() {
     // Create a temporary key for testing
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    key.DeleteKey(test_root);
-    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
+    key.DeleteKey(kTestRoot);
+    ASSERT_NE(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, kTestRoot, KEY_READ));
     ASSERT_EQ(ERROR_SUCCESS,
-        key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
+        key.Create(HKEY_CURRENT_USER, kTestRoot, KEY_READ));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
@@ -41,7 +42,7 @@ class WorkItemListTest : public testing::Test {
 
     // Clean up the temporary key
     RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-    ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(test_root));
+    ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(kTestRoot));
   }
 
   ScopedTempDir temp_dir_;
@@ -64,15 +65,16 @@ TEST_F(WorkItemListTest, ExecutionSuccess) {
       WorkItem::CreateCreateDirWorkItem(dir_to_create)));
   work_item_list->AddWorkItem(work_item.release());
 
-  std::wstring key_to_create(test_root);
-  file_util::AppendToPath(&key_to_create, L"ExecutionSuccess");
+  std::wstring key_to_create(kTestRoot);
+  key_to_create.push_back(FilePath::kSeparators[0]);
+  key_to_create.append(L"ExecutionSuccess");
 
   work_item.reset(reinterpret_cast<WorkItem*>(
       WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create)));
   work_item_list->AddWorkItem(work_item.release());
 
-  std::wstring name(L"name");
-  std::wstring data(data_str);
+  std::wstring name(kName);
+  std::wstring data(kDataStr);
   work_item.reset(reinterpret_cast<WorkItem*>(
       WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, key_to_create,
                                           name, data, false)));
@@ -86,7 +88,7 @@ TEST_F(WorkItemListTest, ExecutionSuccess) {
       key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   std::wstring read_out;
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
-  EXPECT_EQ(0, read_out.compare(data_str));
+  EXPECT_EQ(0, read_out.compare(kDataStr));
   key.Close();
   EXPECT_TRUE(file_util::PathExists(dir_to_create));
 
@@ -115,17 +117,19 @@ TEST_F(WorkItemListTest, ExecutionFailAndRollback) {
       WorkItem::CreateCreateDirWorkItem(dir_to_create)));
   work_item_list->AddWorkItem(work_item.release());
 
-  std::wstring key_to_create(test_root);
-  file_util::AppendToPath(&key_to_create, L"ExecutionFail");
+  std::wstring key_to_create(kTestRoot);
+  key_to_create.push_back(FilePath::kSeparators[0]);
+  key_to_create.append(L"ExecutionFail");
 
   work_item.reset(reinterpret_cast<WorkItem*>(
       WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create)));
   work_item_list->AddWorkItem(work_item.release());
 
-  std::wstring not_created_key(test_root);
-  file_util::AppendToPath(&not_created_key, L"NotCreated");
-  std::wstring name(L"name");
-  std::wstring data(data_str);
+  std::wstring not_created_key(kTestRoot);
+  not_created_key.push_back(FilePath::kSeparators[0]);
+  not_created_key.append(L"NotCreated");
+  std::wstring name(kName);
+  std::wstring data(kDataStr);
   work_item.reset(reinterpret_cast<WorkItem*>(
       WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, not_created_key,
                                           name, data, false)));
@@ -175,14 +179,15 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
       WorkItem::CreateConditionalWorkItemList(
           new ConditionRunIfFileExists(dir_to_create)));
 
-  std::wstring key_to_create(test_root);
-  file_util::AppendToPath(&key_to_create, L"ExecutionSuccess");
+  std::wstring key_to_create(kTestRoot);
+  key_to_create.push_back(FilePath::kSeparators[0]);
+  key_to_create.append(L"ExecutionSuccess");
   work_item.reset(reinterpret_cast<WorkItem*>(
       WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create)));
   conditional_work_item_list->AddWorkItem(work_item.release());
 
-  std::wstring name(L"name");
-  std::wstring data(data_str);
+  std::wstring name(kName);
+  std::wstring data(kDataStr);
   work_item.reset(reinterpret_cast<WorkItem*>(
       WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, key_to_create,
                                           name, data, false)));
@@ -198,7 +203,7 @@ TEST_F(WorkItemListTest, ConditionalExecutionSuccess) {
       key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   std::wstring read_out;
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(name.c_str(), &read_out));
-  EXPECT_EQ(0, read_out.compare(data_str));
+  EXPECT_EQ(0, read_out.compare(kDataStr));
   key.Close();
   EXPECT_TRUE(file_util::PathExists(dir_to_create));
 
@@ -230,14 +235,15 @@ TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
       WorkItem::CreateConditionalWorkItemList(
           new ConditionRunIfFileExists(dir_to_create.AppendASCII("c"))));
 
-  std::wstring key_to_create(test_root);
-  file_util::AppendToPath(&key_to_create, L"ExecutionSuccess");
+  std::wstring key_to_create(kTestRoot);
+  key_to_create.push_back(FilePath::kSeparators[0]);
+  key_to_create.append(L"ExecutionSuccess");
   work_item.reset(reinterpret_cast<WorkItem*>(
       WorkItem::CreateCreateRegKeyWorkItem(HKEY_CURRENT_USER, key_to_create)));
   conditional_work_item_list->AddWorkItem(work_item.release());
 
-  std::wstring name(L"name");
-  std::wstring data(data_str);
+  std::wstring name(kName);
+  std::wstring data(kDataStr);
   work_item.reset(reinterpret_cast<WorkItem*>(
       WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER, key_to_create,
                                           name, data, false)));
@@ -268,5 +274,3 @@ TEST_F(WorkItemListTest, ConditionalExecutionConditionFailure) {
       key.Open(HKEY_CURRENT_USER, key_to_create.c_str(), KEY_READ));
   EXPECT_FALSE(file_util::PathExists(top_dir_to_create));
 }
-
-
