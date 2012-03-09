@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
+#include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
@@ -1013,6 +1014,89 @@ TEST_F(ProfileSyncServiceSessionTest, ExistingTabs) {
       GetEntryAtIndex(0)->GetVirtualURL());
   ASSERT_EQ(GURL("http://bar2"), iter->second.tab()->
       GetEntryAtIndex(1)->GetVirtualURL());
+}
+
+TEST_F(ProfileSyncServiceSessionTest, MissingHeaderAndTab) {
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+  AddTab(browser(), GURL("http://bar1"));
+  NavigateAndCommitActiveTab(GURL("http://bar2"));
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  SyncError error;
+  std::string local_tag = model_associator_->GetCurrentMachineTag();
+
+  ASSERT_TRUE(model_associator_->DisassociateModels(&error));
+  {
+    // Create a sync node with the local tag but neither header nor tab field.
+    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    sync_api::ReadNode root(&trans);
+    root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
+    sync_api::WriteNode extra_header(&trans);
+    ASSERT_TRUE(extra_header.InitUniqueByCreation(syncable::SESSIONS,
+                                                  root, "new_tag"));
+    sync_pb::SessionSpecifics specifics;
+    specifics.set_session_tag(local_tag);
+    extra_header.SetSessionSpecifics(specifics);
+  }
+  ASSERT_TRUE(model_associator_->AssociateModels(&error));
+  ASSERT_FALSE(error.IsSet());
+}
+
+TEST_F(ProfileSyncServiceSessionTest, MultipleHeaders) {
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+  AddTab(browser(), GURL("http://bar1"));
+  NavigateAndCommitActiveTab(GURL("http://bar2"));
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  SyncError error;
+  std::string local_tag = model_associator_->GetCurrentMachineTag();
+
+  ASSERT_TRUE(model_associator_->DisassociateModels(&error));
+  {
+    // Create another sync node with a header field and the local tag.
+    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    sync_api::ReadNode root(&trans);
+    root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
+    sync_api::WriteNode extra_header(&trans);
+    ASSERT_TRUE(extra_header.InitUniqueByCreation(syncable::SESSIONS,
+                                                  root, local_tag + "_"));
+    sync_pb::SessionSpecifics specifics;
+    specifics.set_session_tag(local_tag);
+    specifics.mutable_header();
+    extra_header.SetSessionSpecifics(specifics);
+  }
+  ASSERT_TRUE(model_associator_->AssociateModels(&error));
+  ASSERT_FALSE(error.IsSet());
+}
+
+TEST_F(ProfileSyncServiceSessionTest, CorruptedForeign) {
+  AddTab(browser(), GURL("http://foo1"));
+  NavigateAndCommitActiveTab(GURL("http://foo2"));
+  AddTab(browser(), GURL("http://bar1"));
+  NavigateAndCommitActiveTab(GURL("http://bar2"));
+  CreateRootHelper create_root(this);
+  ASSERT_TRUE(StartSyncService(create_root.callback(), false));
+  SyncError error;
+
+  ASSERT_TRUE(model_associator_->DisassociateModels(&error));
+  {
+    // Create another sync node with neither header nor tab field and a foreign
+    // tag.
+    std::string foreign_tag = "foreign_tag";
+    sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
+    sync_api::ReadNode root(&trans);
+    root.InitByTagLookup(syncable::ModelTypeToRootTag(syncable::SESSIONS));
+    sync_api::WriteNode extra_header(&trans);
+    ASSERT_TRUE(extra_header.InitUniqueByCreation(syncable::SESSIONS,
+                                                  root, foreign_tag));
+    sync_pb::SessionSpecifics specifics;
+    specifics.set_session_tag(foreign_tag);
+    extra_header.SetSessionSpecifics(specifics);
+  }
+  ASSERT_TRUE(model_associator_->AssociateModels(&error));
+  ASSERT_FALSE(error.IsSet());
 }
 
 }  // namespace browser_sync

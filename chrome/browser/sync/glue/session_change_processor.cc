@@ -214,20 +214,22 @@ void SessionChangeProcessor::Observe(
   // Note that if we fail to associate, it means something has gone wrong,
   // such as our local session being deleted, so we disassociate and associate
   // again.
+  SyncError error;
   bool reassociation_needed = !modified_tabs.empty() &&
-      !session_model_associator_->AssociateTabs(modified_tabs);
+      !session_model_associator_->AssociateTabs(modified_tabs, &error);
 
   // Note, we always associate windows because it's possible a tab became
   // "interesting" by going to a valid URL, in which case it needs to be added
   // to the window's tab information.
   if (!reassociation_needed) {
     reassociation_needed =
-        !session_model_associator_->AssociateWindows(false);
+        !session_model_associator_->AssociateWindows(false, &error);
   }
 
   if (reassociation_needed) {
-    DVLOG(1) << "Reassociation of local models triggered.";
-    SyncError error;
+    LOG(WARNING) << "Reassociation of local models triggered.";
+    // Needing to reassociate would have set the error already so clear it.
+    error = SyncError();
     session_model_associator_->DisassociateModels(&error);
     session_model_associator_->AssociateModels(&error);
     if (error.IsSet()) {
@@ -254,6 +256,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
 
+  std::string local_tag = session_model_associator_->GetCurrentMachineTag();
   for (sync_api::ChangeRecordList::const_iterator it =
            changes.Get().begin(); it != changes.Get().end(); ++it) {
     const sync_api::ChangeRecord& change = *it;
@@ -265,8 +268,16 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
       DCHECK_EQ(syncable::GetModelTypeFromSpecifics(it->specifics),
                 syncable::SESSIONS);
       const sync_pb::SessionSpecifics& specifics = it->specifics.session();
-      session_model_associator_->DisassociateForeignSession(
-          specifics.session_tag());
+      if (specifics.session_tag() == local_tag) {
+        // Another client has attempted to delete our local data (possibly by
+        // error or their/our clock is inaccurate). Just ignore the deletion
+        // for now to avoid any possible ping-pong delete/reassociate sequence.
+        LOG(WARNING) << "Local session data deleted. Ignoring until next local "
+                     << "navigation event.";
+      } else {
+        session_model_associator_->DisassociateForeignSession(
+            specifics.session_tag());
+      }
       continue;
     }
 
@@ -284,8 +295,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
 
     const sync_pb::SessionSpecifics& specifics(
         sync_node.GetSessionSpecifics());
-    if (specifics.session_tag() ==
-            session_model_associator_->GetCurrentMachineTag() &&
+    if (specifics.session_tag() == local_tag &&
         !setup_for_test_) {
       // We should only ever receive a change to our own machine's session info
       // if encryption was turned on. In that case, the data is still the same,
@@ -321,7 +331,8 @@ void SessionChangeProcessor::StopImpl() {
 
 void SessionChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile_);
+  if (!profile_)
+    return;
   notification_registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
@@ -344,7 +355,6 @@ void SessionChangeProcessor::StartObserving() {
 
 void SessionChangeProcessor::StopObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(profile_);
   notification_registrar_.RemoveAll();
 }
 
