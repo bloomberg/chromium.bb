@@ -29,7 +29,6 @@
 .app-contents > span {
   display: block;
   overflow: hidden;
-  text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -180,9 +179,11 @@ html[dir='rtl'] .apps-promo-extras {
 
 .app-install-hint {
   -webkit-transition: opacity 150ms;
+  color: inherit;
   display: block;
   opacity: 0.8;
   position: absolute;
+  text-decoration: none;
 }
 
 .app-install-hint:active {
@@ -197,7 +198,7 @@ html[dir='rtl'] .apps-promo-extras {
   left: 20%;
   position: absolute;
   right: 20%;
-  top: 12.5%;
+  top: 10%;
   width: 60%;
 }
 
@@ -234,6 +235,15 @@ html[dir='rtl'] .apps-promo-extras {
 
 html.dragging-mode .app-install-hint {
   opacity: 0;
+}
+
+.app-install-hint > span {
+  font-size: 1.2em;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 80%;
+  white-space: nowrap;
 }
 
 /* Only display on the first apps page, and only if it has less than 18

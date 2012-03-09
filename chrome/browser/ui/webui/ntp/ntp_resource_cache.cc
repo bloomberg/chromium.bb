@@ -346,6 +346,8 @@ void NTPResourceCache::CreateNewTabHTML() {
       NewTabUI::ShouldShowWebStoreFooterLink());
   localized_strings.SetBoolean("appInstallHintEnabled",
       NewTabUI::ShouldShowAppInstallHint());
+  localized_strings.SetString("appInstallHintText",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
   localized_strings.SetBoolean("isSuggestionsPageEnabled",
       NewTabUI::IsSuggestionsPageEnabled());
   localized_strings.SetBoolean("showAppsPage", NewTabUI::ShouldShowAppsPage());
