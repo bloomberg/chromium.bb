@@ -43,6 +43,8 @@
         'accelerators/accelerator_dispatcher_win.cc',
         'accelerators/accelerator_filter.cc',
         'accelerators/accelerator_filter.h',
+        'accelerators/accelerator_table.cc',
+        'accelerators/accelerator_table.h',
         'accelerators/nested_dispatcher_controller.cc',
         'accelerators/nested_dispatcher_controller.h',
         'app_list/app_list.cc',

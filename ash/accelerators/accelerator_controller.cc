@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/launcher/launcher.h"
@@ -26,120 +27,6 @@
 #include "ui/gfx/compositor/screen_rotation.h"
 
 namespace {
-
-enum AcceleratorAction {
-  BRIGHTNESS_DOWN,
-  BRIGHTNESS_UP,
-  CYCLE_BACKWARD,
-  CYCLE_FORWARD,
-  EXIT,
-  NEXT_IME,
-  PREVIOUS_IME,
-  SWITCH_IME,  // Switch to another IME depending on the accelerator.
-  TAKE_SCREENSHOT,
-  TAKE_PARTIAL_SCREENSHOT,
-  TOGGLE_APP_LIST,
-  TOGGLE_CAPS_LOCK,
-  VOLUME_DOWN,
-  VOLUME_MUTE,
-  VOLUME_UP,
-#if defined(OS_CHROMEOS)
-  LOCK_SCREEN,
-#endif
-#if !defined(NDEBUG)
-  PRINT_LAYER_HIERARCHY,
-  PRINT_WINDOW_HIERARCHY,
-  ROTATE_SCREEN,
-  TOGGLE_DESKTOP_BACKGROUND_MODE,
-  TOGGLE_ROOT_WINDOW_FULL_SCREEN,
-#endif
-};
-
-// Accelerators handled by AcceleratorController.
-const struct AcceleratorData {
-  ui::EventType type;
-  ui::KeyboardCode keycode;
-  bool shift;
-  bool ctrl;
-  bool alt;
-  AcceleratorAction action;
-} kAcceleratorData[] = {
-  // Accelerators that should be processed before a key is sent to an IME.
-  { ui::ET_KEY_RELEASED, ui::VKEY_MENU, true, false, true, NEXT_IME },
-  { ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, true, false, true, NEXT_IME },
-  { ui::ET_KEY_PRESSED, ui::VKEY_SPACE, false, true, false, PREVIOUS_IME },
-  // Shortcuts for Japanese IME.
-  { ui::ET_KEY_PRESSED, ui::VKEY_CONVERT, false, false, false, SWITCH_IME },
-  { ui::ET_KEY_PRESSED, ui::VKEY_NONCONVERT, false, false, false, SWITCH_IME },
-  { ui::ET_KEY_PRESSED, ui::VKEY_DBE_SBCSCHAR, false, false, false,
-    SWITCH_IME },
-  { ui::ET_KEY_PRESSED, ui::VKEY_DBE_DBCSCHAR, false, false, false,
-    SWITCH_IME },
-  // Shortcuts for Koren IME.
-  { ui::ET_KEY_PRESSED, ui::VKEY_HANGUL, false, false, false, SWITCH_IME },
-  { ui::ET_KEY_PRESSED, ui::VKEY_SPACE, true, false, false, SWITCH_IME },
-
-  // Accelerators that should be processed after a key is sent to an IME.
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_TAB, false, false, true,
-    CYCLE_FORWARD },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_TAB, true, false, true,
-    CYCLE_BACKWARD },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, false, false, false,
-    CYCLE_FORWARD },
-#if defined(OS_CHROMEOS)
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_BRIGHTNESS_DOWN, false, false, false,
-    BRIGHTNESS_DOWN },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_BRIGHTNESS_UP, false, false, false,
-    BRIGHTNESS_UP },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, true, false, LOCK_SCREEN },
-#endif
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_Q, true, true, false, EXIT },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, true, false, false,
-    CYCLE_BACKWARD },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, false, true, false,
-    TAKE_SCREENSHOT },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F5, true, true, false,
-    TAKE_PARTIAL_SCREENSHOT },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_PRINT, false, false, false,
-    TAKE_SCREENSHOT },
-  // On Chrome OS, Search key is mapped to LWIN.
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_LWIN, false, true, false,
-    TOGGLE_APP_LIST },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_LWIN, true, false, false,
-    TOGGLE_CAPS_LOCK },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F6, false, false, false,
-    BRIGHTNESS_DOWN },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F7, false, false, false,
-    BRIGHTNESS_UP },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F8, false, false, false,
-    VOLUME_MUTE },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_VOLUME_MUTE, false, false, false,
-    VOLUME_MUTE },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F9, false, false, false,
-    VOLUME_DOWN },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_VOLUME_DOWN, false, false, false,
-    VOLUME_DOWN },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F10, false, false, false, VOLUME_UP },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_VOLUME_UP, false, false, false,
-    VOLUME_UP },
-#if !defined(NDEBUG)
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_HOME, false, true, false,
-    ROTATE_SCREEN },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_B, false, true, true,
-    TOGGLE_DESKTOP_BACKGROUND_MODE },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F11, false, true, false,
-    TOGGLE_ROOT_WINDOW_FULL_SCREEN },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, false, false, true,
-    PRINT_LAYER_HIERARCHY },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, false, true,
-    PRINT_WINDOW_HIERARCHY },
-  // For testing on systems where Alt-Tab is already mapped.
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, false, false, true,
-    CYCLE_FORWARD },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, true, false, true,
-    CYCLE_BACKWARD },
-#endif
-};
 
 bool HandleCycleWindow(ash::WindowCycleController::Direction direction,
                        bool is_alt_down) {
@@ -254,7 +141,7 @@ AcceleratorController::~AcceleratorController() {
 }
 
 void AcceleratorController::Init() {
-  for (size_t i = 0; i < arraysize(kAcceleratorData); ++i) {
+  for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
     ui::Accelerator accelerator(kAcceleratorData[i].keycode,
                                 kAcceleratorData[i].shift,
                                 kAcceleratorData[i].ctrl,
