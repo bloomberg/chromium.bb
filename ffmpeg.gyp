@@ -364,6 +364,9 @@
 
       'target_name': 'ffmpeg',
       'msvs_guid': 'D7A94F58-576A-45D9-A45F-EB87C63ABBB0',
+      'dependencies': [
+        '../../base/base.gyp:base',
+      ],
       'sources': [
         # Hacks to introduce C99 types into Visual Studio.
         'chromium/include/win/inttypes.h',
@@ -508,6 +511,9 @@
 
             ['component == "shared_library"', {
               'cflags!': ['-fvisibility=hidden'],
+              'xcode_settings': {
+                'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',  # no -fvisibility=hidden
+              },
             }],
 
             # Add pkg-config result to include path when use_system_ffmpeg != 0
