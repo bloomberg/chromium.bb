@@ -7,6 +7,7 @@ import any_helper
 import code
 import cpp_util
 import model
+import sys
 import util_cc_helper
 
 class CCGenerator(object):
@@ -100,8 +101,9 @@ class CCGenerator(object):
     else:
       (c.Concat(self._GeneratePropertyFunctions(
           cpp_namespace, type_.properties.values()))
-        .Append('%(namespace)s::%(classname)s() {}')
-        .Append('%(namespace)s::~%(classname)s() {}')
+        .Sblock('%(namespace)s::%(classname)s()')
+        .Concat(self._GenerateInitializersAndBody(type_))
+        .Eblock('%(namespace)s::~%(classname)s() {}')
         .Append()
       )
       if type_.from_json:
@@ -115,6 +117,41 @@ class CCGenerator(object):
     c.Substitute({'classname': classname, 'namespace': cpp_namespace})
 
     return c
+
+  def _GenerateInitializersAndBody(self, type_):
+    items = []
+    for prop in type_.properties.values():
+      if prop.optional:
+        continue
+
+      t = prop.type_
+      if t == PropertyType.INTEGER:
+        items.append('%s(0)' % prop.unix_name)
+      elif t == PropertyType.DOUBLE:
+        items.append('%s(0.0)' % prop.unix_name)
+      elif t == PropertyType.BOOLEAN:
+        items.append('%s(false)' % prop.unix_name)
+      elif (t == PropertyType.ADDITIONAL_PROPERTIES or
+            t == PropertyType.ANY or
+            t == PropertyType.ARRAY or
+            t == PropertyType.CHOICES or
+            t == PropertyType.ENUM or
+            t == PropertyType.OBJECT or
+            t == PropertyType.REF or
+            t == PropertyType.STRING):
+        # TODO(miket): It would be nice to initialize CHOICES and ENUM, but we
+        # don't presently have the semantics to indicate which one of a set
+        # should be the default.
+        continue
+      else:
+        sys.exit("Unhandled PropertyType: %s" % t)
+
+    if items:
+      s = ': %s' % (', '.join(items))
+    else:
+      s = ''
+    s = s + ' {}'
+    return code.Code().Append(s)
 
   def _GenerateTypePopulate(self, cpp_namespace, type_):
     """Generates the function for populating a type given a pointer to it.
@@ -578,4 +615,3 @@ class CCGenerator(object):
           prop_name,
           self._cpp_type_generator.GetEnumNoneValue(prop)))
     return c
-
