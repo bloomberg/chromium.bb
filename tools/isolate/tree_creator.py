@@ -2,13 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Creates a tree of hardlinks, symlinks or copy the inputs files."""
+"""File related utility functions.
+
+Creates a tree of hardlinks, symlinks or copy the inputs files. Calculate files
+hash.
+"""
 
 import ctypes
+import hashlib
 import logging
 import os
 import shutil
+import stat
 import sys
+import time
 
 
 # Types of action accepted by recreate_tree().
@@ -30,20 +37,9 @@ def os_link(source, link_name):
     os.link(source, link_name)
 
 
-def preprocess_inputs(indir, infiles, blacklist):
-  """Reads the infiles and expands the directories and applies the blacklist.
-
-  Returns the normalized indir and infiles. Converts infiles with a trailing
-  slash as the list of its files.
-  """
-  logging.debug('preprocess_inputs(%s, %s, %s)' % (indir, infiles, blacklist))
-  # Both need to be a local path.
-  indir = os.path.normpath(indir)
-  if not os.path.isdir(indir):
-    raise MappingError('%s is not a directory' % indir)
-
-  # Do not call abspath until it was verified the directory exists.
-  indir = os.path.abspath(indir)
+def expand_directories(indir, infiles, blacklist):
+  """Expands the directories, applies the blacklist and verifies files exist."""
+  logging.debug('expand_directories(%s, %s, %s)' % (indir, infiles, blacklist))
   outfiles = []
   for relfile in infiles:
     if os.path.isabs(relfile):
@@ -68,10 +64,40 @@ def preprocess_inputs(indir, infiles, blacklist):
       if not os.path.isfile(infile):
         raise MappingError('Input file %s doesn\'t exist' % infile)
       outfiles.append(relfile)
-  return outfiles, indir
+  return outfiles
 
 
-def process_file(outfile, infile, action):
+def process_inputs(indir, infiles, need_hash, read_only):
+  """Returns a dictionary of input files, populated with the files' mode and
+  hash.
+
+  The file mode is manipulated if read_only is True. In practice, we only save
+  one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r).
+  """
+  outdict = {}
+  for infile in infiles:
+    filepath = os.path.join(indir, infile)
+    filemode = stat.S_IMODE(os.stat(filepath).st_mode)
+    # Remove write access for non-owner.
+    filemode &= ~(stat.S_IWGRP | stat.S_IWOTH)
+    if read_only:
+      filemode &= ~stat.S_IWUSR
+    if filemode & stat.S_IXUSR:
+      filemode |= (stat.S_IXGRP | stat.S_IXOTH)
+    else:
+      filemode &= ~(stat.S_IXGRP | stat.S_IXOTH)
+    outdict[infile] = {
+      'mode': filemode,
+    }
+    if need_hash:
+      h = hashlib.sha1()
+      with open(filepath, 'rb') as f:
+        h.update(f.read())
+      outdict[infile]['sha-1'] = h.hexdigest()
+  return outdict
+
+
+def link_file(outfile, infile, action):
   """Links a file. The type of link depends on |action|."""
   logging.debug('Mapping %s to %s' % (infile, outfile))
   if os.path.isfile(outfile):
@@ -98,10 +124,9 @@ def recreate_tree(outdir, indir, infiles, action):
   """Creates a new tree with only the input files in it.
 
   Arguments:
-    outdir:    Temporary directory to create the files in.
+    outdir:    Output directory to create the files in.
     indir:     Root directory the infiles are based in.
-    infiles:   List of files to map from |indir| to |outdir|. Must have been
-               sanitized with preprocess_inputs().
+    infiles:   List of files to map from |indir| to |outdir|.
     action:    See assert below.
   """
   logging.debug(
@@ -122,7 +147,7 @@ def recreate_tree(outdir, indir, infiles, action):
     outsubdir = os.path.dirname(outfile)
     if not os.path.isdir(outsubdir):
       os.makedirs(outsubdir)
-    process_file(outfile, infile, action)
+    link_file(outfile, infile, action)
 
 
 def _set_write_bit(path, read_only):
@@ -148,3 +173,19 @@ def make_writable(root, read_only):
 
     for dirname in dirnames:
       _set_write_bit(os.path.join(dirpath, dirname), read_only)
+
+
+def rmtree(root):
+  """Wrapper around shutil.rmtree() to retry automatically on Windows."""
+  if sys.platform == 'win32':
+    for i in range(3):
+      try:
+        shutil.rmtree(root)
+        break
+      except WindowsError:  # pylint: disable=E0602
+        delay = (i+1)*2
+        print >> sys.stderr, (
+            'The test has subprocess outliving it. Sleep %d seconds.' % delay)
+        time.sleep(delay)
+  else:
+    shutil.rmtree(root)

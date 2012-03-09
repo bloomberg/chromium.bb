@@ -4,58 +4,32 @@
 # found in the LICENSE file.
 
 """Does one of the following depending on the --mode argument:
-  check     verify all the inputs exist, touches the file specified with
+  check     Verifies all the inputs exist, touches the file specified with
             --result and exits.
-  hashtable puts a manifest file and hard links each of the inputs into the
+  hashtable Puts a manifest file and hard links each of the inputs into the
             output directory.
-  remap     stores all the inputs files in a directory without running the
+  remap     Stores all the inputs files in a directory without running the
             executable.
-  run       recreates a tree with all the inputs files and run the executable
+  run       Recreates a tree with all the inputs files and run the executable
             in it.
 
 See more information at
 http://dev.chromium.org/developers/testing/isolated-testing
 """
 
-import hashlib
 import json
 import logging
 import optparse
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
-import time
 
 import tree_creator
 
 # Needs to be coherent with the file's docstring above.
 VALID_MODES = ('check', 'hashtable', 'remap', 'run')
-
-
-def touch(filename):
-  """Implements the equivalent of the 'touch' command."""
-  if not os.path.exists(filename):
-    open(filename, 'a').close()
-  os.utime(filename, None)
-
-
-def rmtree(root):
-  """Wrapper around shutil.rmtree() to retry automatically on Windows."""
-  if sys.platform == 'win32':
-    for i in range(3):
-      try:
-        shutil.rmtree(root)
-        break
-      except WindowsError:  # pylint: disable=E0602
-        delay = (i+1)*2
-        print >> sys.stderr, (
-            'The test has subprocess outliving it. Sleep %d seconds.' % delay)
-        time.sleep(delay)
-  else:
-    shutil.rmtree(root)
 
 
 def relpath(path, root):
@@ -66,16 +40,26 @@ def relpath(path, root):
   return out
 
 
-def separate_inputs_command(args, root):
+def separate_inputs_command(args, root, files):
   """Strips off the command line from the inputs.
 
   gyp provides input paths relative to cwd. Convert them to be relative to root.
+  OptionParser kindly strips off '--' from sys.argv if it's provided and that's
+  the first non-arg value. Manually look up if it was present in sys.argv.
   """
   cmd = []
   if '--' in args:
     i = args.index('--')
     cmd = args[i+1:]
     args = args[:i]
+  elif '--' in sys.argv:
+    # optparse is messing with us. Fix it manually.
+    cmd = args
+    args = []
+  if files:
+    args = [
+      i.decode('utf-8') for i in open(files, 'rb').read().splitlines() if i
+    ] + args
   cwd = os.getcwd()
   return [relpath(os.path.join(cwd, arg), root) for arg in args], cmd
 
@@ -85,73 +69,84 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
 
   It's behavior depends on |mode|.
   """
-  if mode == 'run':
-    return run(outdir, resultfile, indir, infiles, read_only, cmd)
+  mode_fn = getattr(sys.modules[__name__], 'MODE' + mode)
+  assert mode_fn
 
-  if mode == 'hashtable':
-    return hashtable(outdir, resultfile, indir, infiles)
+  infiles = tree_creator.expand_directories(
+        indir, infiles, lambda x: re.match(r'.*\.(svn|pyc)$', x))
 
-  assert mode in ('check', 'remap'), mode
-  if mode == 'remap':
-    if not outdir:
-      outdir = tempfile.mkdtemp(prefix='isolate')
-    tree_creator.recreate_tree(
-        outdir, indir, infiles, tree_creator.HARDLINK)
-    if read_only:
-      tree_creator.make_writable(outdir, True)
-
-  if resultfile:
-    # Signal the build tool that the test succeeded.
-    with open(resultfile, 'wb') as f:
-      for infile in infiles:
-        f.write(infile.encode('utf-8'))
-        f.write('\n')
-
-
-def run(outdir, resultfile, indir, infiles, read_only, cmd):
-  """Implements the 'run' mode."""
   if not cmd:
-    print >> sys.stderr, 'Using first input %s as executable' % infiles[0]
     cmd = [infiles[0]]
+  if cmd[0].endswith('.py'):
+    cmd.insert(0, sys.executable)
+
+  # Only hashtable mode really needs the sha-1.
+  dictfiles = tree_creator.process_inputs(
+      indir, infiles, mode == 'hashtable', read_only)
+
+  if not outdir:
+    outdir = os.path.dirname(resultfile)
+  result = mode_fn(outdir, indir, dictfiles, read_only, cmd)
+
+  if result == 0:
+    # Saves the resulting file.
+    out = {
+      'command': cmd,
+      'files': dictfiles,
+    }
+    with open(resultfile, 'wb') as f:
+      json.dump(out, f)
+  return result
+
+
+def MODEcheck(outdir, indir, dictfiles, read_only, cmd):
+  """No-op."""
+  return 0
+
+
+def MODEhashtable(outdir, indir, dictfiles, read_only, cmd):
+  """Ignores cmd and read_only."""
+  for relfile, properties in dictfiles.iteritems():
+    infile = os.path.join(indir, relfile)
+    outfile = os.path.join(outdir, properties['sha-1'])
+    if os.path.isfile(outfile):
+      # Just do a quick check that the file size matches.
+      if os.stat(infile).st_size == os.stat(outfile).st_size:
+        continue
+      # Otherwise, an exception will be raised.
+    tree_creator.link_file(outfile, infile, tree_creator.HARDLINK)
+  return 0
+
+
+def MODEremap(outdir, indir, dictfiles, read_only, cmd):
+  """Ignores cmd."""
+  if not outdir:
+    outdir = tempfile.mkdtemp(prefix='isolate')
+  tree_creator.recreate_tree(
+      outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
+  if read_only:
+    tree_creator.make_writable(outdir, True)
+  return 0
+
+
+def MODErun(outdir, indir, dictfiles, read_only, cmd):
+  """Ignores outdir."""
   outdir = None
   try:
     outdir = tempfile.mkdtemp(prefix='isolate')
     tree_creator.recreate_tree(
-        outdir, indir, infiles, tree_creator.HARDLINK)
+        outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
     if read_only:
       tree_creator.make_writable(outdir, True)
 
     # Rebase the command to the right path.
     cwd = os.path.join(outdir, os.path.relpath(os.getcwd(), indir))
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
-    result = subprocess.call(cmd, cwd=cwd)
-    if not result and resultfile:
-      # Signal the build tool that the test succeeded.
-      touch(resultfile)
-    return result
+    return subprocess.call(cmd, cwd=cwd)
   finally:
     if read_only:
       tree_creator.make_writable(outdir, False)
-    rmtree(outdir)
-
-
-def hashtable(outdir, resultfile, indir, infiles):
-  """Implements the 'hashtable' mode."""
-  results = {}
-  for relfile in infiles:
-    infile = os.path.join(indir, relfile)
-    h = hashlib.sha1()
-    with open(infile, 'rb') as f:
-      h.update(f.read())
-    digest = h.hexdigest()
-    outfile = os.path.join(outdir, digest)
-    tree_creator.process_file(outfile, infile, tree_creator.HARDLINK)
-    results[relfile] = {'sha1': digest}
-  json.dump(
-      {
-        'files': results,
-      },
-      open(resultfile, 'wb'))
+    tree_creator.rmtree(outdir)
 
 
 def main():
@@ -167,13 +162,14 @@ def main():
       help='Determines the action to be taken: %s' % ', '.join(VALID_MODES))
   parser.add_option(
       '--result', metavar='FILE',
-      help='File to be touched when the command succeeds')
+      help='Output file containing the json information about inputs')
   parser.add_option(
       '--root', metavar='DIR', help='Base directory to fetch files, required')
   parser.add_option(
       '--outdir', metavar='DIR',
       help='Directory used to recreate the tree or store the hash table. '
-           'Defaults to a /tmp subdirectory for modes run and remap.')
+           'For run and remap, uses a /tmp subdirectory. For the other modes, '
+           'defaults to the directory containing --result')
   parser.add_option(
       '--read-only', action='store_true',
       help='Make the temporary tree read-only')
@@ -189,24 +185,30 @@ def main():
 
   if not options.root:
     parser.error('--root is required.')
+  if not options.result:
+    parser.error('--result is required.')
 
-  if options.files:
-    args = [
-        i.decode('utf-8')
-        for i in open(options.files, 'rb').read().splitlines() if i
-    ] + args
+  # Normalize the root input directory.
+  indir = os.path.normpath(options.root)
+  if not os.path.isdir(indir):
+    parser.error('%s is not a directory' % indir)
 
-  infiles, cmd = separate_inputs_command(args, options.root)
+  # Do not call abspath until it was verified the directory exists.
+  indir = os.path.abspath(indir)
+
+  logging.info('sys.argv: %s' % sys.argv)
+  logging.info('cwd: %s' % os.getcwd())
+  logging.info('Args: %s' % args)
+  infiles, cmd = separate_inputs_command(args, indir, options.files)
   if not infiles:
     parser.error('Need at least one input file to map')
-  # Preprocess the input files.
+  logging.info('infiles: %s' % infiles)
+
   try:
-    infiles, root = tree_creator.preprocess_inputs(
-          options.root, infiles, lambda x: re.match(r'.*\.(svn|pyc)$', x))
     return isolate(
         options.outdir,
-        options.result,
-        root,
+        os.path.abspath(options.result),
+        indir,
         infiles,
         options.mode,
         options.read_only,
