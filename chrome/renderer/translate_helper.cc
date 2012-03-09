@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
@@ -67,6 +68,8 @@ void TranslateHelper::PageCaptured(const string16& contents) {
     language = DetermineTextLanguage(contents);
     UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.LanguageDetection",
                                base::TimeTicks::Now() - begin_time);
+  } else {
+    VLOG(1) << "PageLanguageFromMetaTag: " << language;
   }
 
   Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
@@ -157,6 +160,8 @@ std::string TranslateHelper::DetermineTextLanguage(const string16& text) {
     // for Simplified Chinese.
     language = LanguageCodeWithDialects(cld_language);
   }
+  VLOG(1) << "Detected lang_id: " << language << ", from Text:\n" << text
+          << "\n*************************************\n";
   return language;
 }
 
