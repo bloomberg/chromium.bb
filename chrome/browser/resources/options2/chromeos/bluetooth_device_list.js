@@ -16,7 +16,6 @@ cr.define('options.system.bluetooth', function() {
    * Creates a new bluetooth list item.
    * @param {{name: string,
    *          address: string,
-   *          discovered: boolean,
    *          paired: boolean,
    *          connected: boolean,
    *          pairing: string|undefined,
@@ -33,8 +32,8 @@ cr.define('options.system.bluetooth', function() {
     for (var key in device)
       el.data[key] = device[key];
     el.decorate();
-    // Only show the close button for non-discovered devices.
-    el.deletable = !device.discovered;
+    // Only show the close button for paired devices.
+    el.deletable = device.paired;
     return el;
   }
 
@@ -45,7 +44,6 @@ cr.define('options.system.bluetooth', function() {
      * Description of the Bluetooth device.
      * @type {{name: string,
      *         address: string,
-     *         discovered: boolean,
      *         paired: boolean,
      *         connected: boolean,
      *         pairing: string|undefined,
@@ -63,7 +61,7 @@ cr.define('options.system.bluetooth', function() {
       this.connected = this.data.connected;
       // Though strictly speaking, a connected device will also be paired, we
       // are interested in tracking paired devices that are not connected.
-      this.paired = !this.data.discovered && !this.data.connected;
+      this.paired = this.data.paired && !this.data.connected;
       this.connecting = !!this.data.pairing;
       var content = this.data.name;
       // Update label for devices that are paired but not connected.
@@ -108,7 +106,6 @@ cr.define('options.system.bluetooth', function() {
      * existing device is updated.
      * @param {{name: string,
      *          address: string,
-     *          discovered: boolean,
      *          paired: boolean,
      *          connected: boolean,
      *          pairing: string|undefined,
