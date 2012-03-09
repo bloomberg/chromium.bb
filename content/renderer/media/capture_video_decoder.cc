@@ -145,6 +145,7 @@ void CaptureVideoDecoder::InitializeOnDecoderThread(
   statistics_callback_ = stat_callback;
   filter_callback.Run(media::PIPELINE_OK);
   state_ = kNormal;
+  capture_engine_->StartCapture(this, capability_);
 }
 
 void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& callback) {
@@ -193,7 +194,6 @@ void CaptureVideoDecoder::SeekOnDecoderThread(base::TimeDelta time,
 
   cb.Run(media::PIPELINE_OK);
   state_ = kNormal;
-  capture_engine_->StartCapture(this, capability_);
 }
 
 void CaptureVideoDecoder::OnStoppedOnDecoderThread(

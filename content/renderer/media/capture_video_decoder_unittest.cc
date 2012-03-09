@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,20 +119,12 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   }
 
   void Initialize() {
-    EXPECT_CALL(*vc_manager_, AddDevice(_, _))
-        .WillOnce(Return(vc_impl_.get()));
-    decoder_->Initialize(NULL,
-                         media::NewExpectedStatusCB(media::PIPELINE_OK),
-                         NewStatisticsCallback());
-    message_loop_->RunAllPending();
-  }
-
-  void Start() {
     // Issue a read.
     EXPECT_CALL(*this, FrameReady(_));
     decoder_->Read(read_cb_);
 
-    // Issue a seek.
+    EXPECT_CALL(*vc_manager_, AddDevice(_, _))
+        .WillOnce(Return(vc_impl_.get()));
     int buffer_count = 1;
     EXPECT_CALL(*vc_impl_, StartCapture(capture_client(), _))
         .Times(1)
@@ -142,8 +134,10 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     EXPECT_CALL(*vc_impl_, FeedBuffer(_))
         .Times(buffer_count)
         .WillRepeatedly(DeleteDataBuffer());
-    decoder_->Seek(base::TimeDelta(),
-                   media::NewExpectedStatusCB(media::PIPELINE_OK));
+
+    decoder_->Initialize(NULL,
+                         media::NewExpectedStatusCB(media::PIPELINE_OK),
+                         NewStatisticsCallback());
     message_loop_->RunAllPending();
   }
 
@@ -192,21 +186,12 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CaptureVideoDecoderTest);
 };
 
-TEST_F(CaptureVideoDecoderTest, Initialize) {
-  // Test basic initialize and teardown.
-  Initialize();
-
-  // Natural size should be initialized to default capability.
-  EXPECT_EQ(kWidth, decoder_->natural_size().width());
-  EXPECT_EQ(kHeight, decoder_->natural_size().height());
-
-  Stop();
-}
-
 TEST_F(CaptureVideoDecoderTest, Play) {
   // Test basic initialize, play, and teardown sequence.
   Initialize();
-  Start();
+  // Natural size should be initialized to default capability.
+  EXPECT_EQ(kWidth, decoder_->natural_size().width());
+  EXPECT_EQ(kHeight, decoder_->natural_size().height());
   Play();
   Flush();
   Stop();
@@ -215,7 +200,6 @@ TEST_F(CaptureVideoDecoderTest, Play) {
 TEST_F(CaptureVideoDecoderTest, OnDeviceInfoReceived) {
   // Test that natural size gets updated as device information is sent.
   Initialize();
-  Start();
 
   gfx::Size expected_size(kWidth * 2, kHeight * 2);
 
