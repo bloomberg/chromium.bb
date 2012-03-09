@@ -3303,6 +3303,8 @@
         'browser/ui/gtk/infobars/infobar_gtk.h',
         'browser/ui/gtk/infobars/link_infobar_gtk.cc',
         'browser/ui/gtk/infobars/link_infobar_gtk.h',
+        'browser/ui/gtk/infobars/media_stream_infobar_gtk.cc',
+        'browser/ui/gtk/infobars/media_stream_infobar_gtk.h',
         'browser/ui/gtk/infobars/translate_infobar_base_gtk.cc',
         'browser/ui/gtk/infobars/translate_infobar_base_gtk.h',
         'browser/ui/gtk/infobars/translate_message_infobar_gtk.cc',

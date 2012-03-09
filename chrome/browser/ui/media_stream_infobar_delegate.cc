@@ -110,14 +110,14 @@ void MediaStreamInfoBarDelegate::AddDeviceWithId(
 // MediaStreamInfoBarDelegate::CreateInfoBar is implemented in platform-specific
 // files.
 
-#if !defined(TOOLKIT_VIEWS)
+#if defined(OS_MAC)
 // TODO(macourteau): This section is temporary, until the InfoBar is implemented
-// on other platforms, to make sure everything compiles and links.
+// on MacOS, to make sure everything compiles and links.
 InfoBar* MediaStreamInfoBarDelegate::CreateInfoBar(InfoBarTabHelper* owner) {
   DCHECK(owner);
   return NULL;
 }
-#endif  // !TOOLKIT_VIEWS
+#endif  // OS_MAC
 
 void MediaStreamInfoBarDelegate::InfoBarDismissed() {
   // Deny the request if the infobar was closed with the 'x' button, since
