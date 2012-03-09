@@ -11,7 +11,6 @@ without changes to the corresponding grd file. fb9 -->
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_APP_BINDINGS_JS" file="resources\extensions\app.js" type="BINDATA" />
       <include name="IDR_BLOCKED_PLUGIN_HTML" file="resources\blocked_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_CLICK_TO_PLAY_PLUGIN_HTML" file="resources\click_to_play_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DISABLED_PLUGIN_HTML" file="resources\disabled_plugin.html" flattenhtml="true" type="BINDATA" />
@@ -30,7 +29,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_WEBSTORE_BINDINGS_JS" file="resources\extensions\webstore.js" type="BINDATA" />
 
       <!-- Custom bindings for extension APIs. -->
-      <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="resources\extensions\i18n_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_APP_CUSTOM_BINDINGS_JS" file="resources\extensions\app_custom_bindings.js" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS" file="resources\extensions\browser_action_custom_bindings.js" type="BINDATA" />
       <include name="IDR_CHROME_PRIVATE_CUSTOM_BINDINGS_JS" file="resources\extensions\chrome_private_custom_bindings.js" type="BINDATA" />
       <include name="IDR_CONTENT_SETTINGS_CUSTOM_BINDINGS_JS" file="resources\extensions\content_settings_custom_bindings.js" type="BINDATA" />
@@ -41,6 +40,7 @@ without changes to the corresponding grd file. fb9 -->
       <include name="IDR_EXTENSION_CUSTOM_BINDINGS_JS" file="resources\extensions\extension_custom_bindings.js" type="BINDATA" />
       <include name="IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS" file="resources\extensions\file_browser_handler_custom_bindings.js" type="BINDATA" />
       <include name="IDR_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_JS" file="resources\extensions\file_browser_private_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_I18N_CUSTOM_BINDINGS_JS" file="resources\extensions\i18n_custom_bindings.js" type="BINDATA" />
       <include name="IDR_INPUT_IME_CUSTOM_BINDINGS_JS" file="resources\extensions\input.ime_custom_bindings.js" type="BINDATA" />
       <include name="IDR_OMNIBOX_CUSTOM_BINDINGS_JS" file="resources\extensions\omnibox_custom_bindings.js" type="BINDATA" />
       <include name="IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS" file="resources\extensions\page_actions_custom_bindings.js" type="BINDATA" />

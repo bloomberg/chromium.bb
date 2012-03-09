@@ -21,6 +21,7 @@ struct Mappings {
     contexts["privileged"] = extensions::Feature::PRIVILEGED_CONTEXT;
     contexts["unprivileged"] = extensions::Feature::UNPRIVILEGED_CONTEXT;
     contexts["content_script"] = extensions::Feature::CONTENT_SCRIPT_CONTEXT;
+    contexts["web_page"] = extensions::Feature::WEB_PAGE_CONTEXT;
 
     locations["component"] = extensions::Feature::COMPONENT_LOCATION;
 

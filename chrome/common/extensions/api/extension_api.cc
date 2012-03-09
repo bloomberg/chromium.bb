@@ -15,28 +15,13 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_permission_set.h"
+#include "googleurl/src/gurl.h"
 #include "grit/common_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace extensions {
 
 namespace {
-
-// Adds any APIs listed in "dependencies" found in |schema| but not in
-// |reference| to |out|.
-void GetMissingDependencies(
-    const DictionaryValue& schema,
-    const ExtensionAPI::SchemaMap& reference,
-    std::set<std::string>* out) {
-  ListValue* dependencies = NULL;
-  if (!schema.GetList("dependencies", &dependencies))
-    return;
-  for (size_t i = 0; i < dependencies->GetSize(); ++i) {
-    std::string api_name;
-    if (dependencies->GetString(i, &api_name) && !reference.count(api_name))
-      out->insert(api_name);
-  }
-}
 
 // Returns whether the list at |name_space_node|.|child_kind| contains any
 // children with an { "unprivileged": true } property.
@@ -95,6 +80,7 @@ void ExtensionAPI::LoadSchemaFromResource(int resource_id) {
 
 ExtensionAPI::ExtensionAPI() {
   static int kJsonApiResourceIds[] = {
+    IDR_EXTENSION_API_JSON_APP,
     IDR_EXTENSION_API_JSON_BOOKMARKS,
     IDR_EXTENSION_API_JSON_BROWSERACTION,
     IDR_EXTENSION_API_JSON_BROWSING_DATA,
@@ -178,6 +164,27 @@ ExtensionAPI::ExtensionAPI() {
       partially_unprivileged_apis_.insert(it->first);
     }
   }
+
+  // Populate |url_matching_apis_|.
+  for (SchemaMap::const_iterator it = schemas_.begin();
+      it != schemas_.end(); ++it) {
+    ListValue* matches = NULL;
+    {
+      Value* matches_value = NULL;
+      if (!it->second->Get("matches", &matches_value))
+        continue;
+      CHECK_EQ(Value::TYPE_LIST, matches_value->GetType());
+      matches = static_cast<ListValue*>(matches_value);
+    }
+    URLPatternSet pattern_set;
+    for (size_t i = 0; i < matches->GetSize(); ++i) {
+      std::string pattern;
+      CHECK(matches->GetString(i, &pattern));
+      pattern_set.AddPattern(
+          URLPattern(UserScript::kValidUserScriptSchemes, pattern));
+    }
+    url_matching_apis_[it->first] = pattern_set;
+  }
 }
 
 ExtensionAPI::~ExtensionAPI() {
@@ -257,59 +264,109 @@ const base::DictionaryValue* ExtensionAPI::GetSchema(
   return maybe_schema != schemas_.end() ? maybe_schema->second.get() : NULL;
 }
 
-void ExtensionAPI::GetSchemasForExtension(const Extension& extension,
-                                          GetSchemasFilter filter,
-                                          SchemaMap* out) const {
-  // Check both required_permissions and optional_permissions since we need
-  // to return all schemas that might be needed.
-  GetSchemasForPermissions(*extension.required_permission_set(), filter, out);
-  GetSchemasForPermissions(*extension.optional_permission_set(), filter, out);
+scoped_ptr<std::set<std::string> > ExtensionAPI::GetAPIsForContext(
+    Feature::Context context,
+    const Extension* extension,
+    const GURL& url) const {
+  scoped_ptr<std::set<std::string> > result(new std::set<std::string>());
 
-  // Note that dependency resolution might introduce APIs outside of the filter
-  // (for example, "extensions" has unprivileged componenents but relies on
-  // "tabs" which doesn't). It doesn't matter because schema_generated_bindings
-  // does individual function/event based checking anyway, but it's a shame.
-  ResolveDependencies(out);
+  switch (context) {
+    case Feature::UNSPECIFIED_CONTEXT:
+      break;
+
+    case Feature::PRIVILEGED_CONTEXT:
+      // Availability is determined by the permissions of the extension.
+      CHECK(extension);
+      GetAllowedAPIs(extension, result.get());
+      ResolveDependencies(result.get());
+      break;
+
+    case Feature::UNPRIVILEGED_CONTEXT:
+    case Feature::CONTENT_SCRIPT_CONTEXT:
+      // Availability is determined by the permissions of the extension
+      // (but only those APIs that are unprivileged).
+      CHECK(extension);
+      GetAllowedAPIs(extension, result.get());
+      // Resolving dependencies before removing unprivileged APIs means that
+      // some unprivileged APIs may have unrealised dependencies. Too bad!
+      ResolveDependencies(result.get());
+      RemovePrivilegedAPIs(result.get());
+      break;
+
+    case Feature::WEB_PAGE_CONTEXT:
+      // Availablility is determined by the url.
+      CHECK(url.is_valid());
+      GetAPIsMatchingURL(url, result.get());
+      break;
+  }
+
+  return result.Pass();
 }
 
-void ExtensionAPI::ResolveDependencies(SchemaMap* out) const {
+void ExtensionAPI::GetAllowedAPIs(
+    const Extension* extension, std::set<std::string>* out) const {
+  for (SchemaMap::const_iterator i = schemas_.begin(); i != schemas_.end();
+      ++i) {
+    if (extension->required_permission_set()->HasAnyAccessToAPI(i->first) ||
+        extension->optional_permission_set()->HasAnyAccessToAPI(i->first)) {
+      out->insert(i->first);
+    }
+  }
+}
+
+void ExtensionAPI::ResolveDependencies(std::set<std::string>* out) const {
   std::set<std::string> missing_dependencies;
-  for (SchemaMap::const_iterator i = out->begin(); i != out->end(); ++i)
-    GetMissingDependencies(*i->second, *out, &missing_dependencies);
+  for (std::set<std::string>::iterator i = out->begin(); i != out->end(); ++i)
+    GetMissingDependencies(*i, *out, &missing_dependencies);
 
   while (missing_dependencies.size()) {
-    std::string api_name = *missing_dependencies.begin();
-    missing_dependencies.erase(api_name);
-    linked_ptr<const DictionaryValue> schema = schemas_.find(api_name)->second;
-    (*out)[api_name] = schema;
-    GetMissingDependencies(*schema, *out, &missing_dependencies);
+    std::string next = *missing_dependencies.begin();
+    missing_dependencies.erase(next);
+    out->insert(next);
+    GetMissingDependencies(next, *out, &missing_dependencies);
   }
 }
 
-void ExtensionAPI::GetDefaultSchemas(GetSchemasFilter filter,
-                                     SchemaMap* out) const {
-  scoped_refptr<ExtensionPermissionSet> default_permissions(
-      new ExtensionPermissionSet());
-  GetSchemasForPermissions(*default_permissions, filter, out);
-  ResolveDependencies(out);
-}
+void ExtensionAPI::GetMissingDependencies(
+    const std::string& api_name,
+    const std::set<std::string>& excluding,
+    std::set<std::string>* out) const {
+  const base::DictionaryValue* schema = GetSchema(api_name);
+  CHECK(schema) << "Schema for " << api_name << " not found";
 
-void ExtensionAPI::GetSchemasForPermissions(
-    const ExtensionPermissionSet& permissions,
-    GetSchemasFilter filter,
-    SchemaMap* out) const {
-  for (SchemaMap::const_iterator it = schemas_.begin(); it != schemas_.end();
-      ++it) {
-    if (filter == ONLY_UNPRIVILEGED && IsWholeAPIPrivileged(it->first))
-      continue;
-    if (permissions.HasAnyAccessToAPI(it->first))
-      (*out)[it->first] = it->second;
+  ListValue* dependencies = NULL;
+  if (!schema->GetList("dependencies", &dependencies))
+    return;
+
+  for (size_t i = 0; i < dependencies->GetSize(); ++i) {
+    std::string api_name;
+    if (dependencies->GetString(i, &api_name) && !excluding.count(api_name))
+      out->insert(api_name);
   }
 }
 
-bool ExtensionAPI::IsWholeAPIPrivileged(const std::string& api_name) const {
-  return !completely_unprivileged_apis_.count(api_name) &&
-         !partially_unprivileged_apis_.count(api_name);
+void ExtensionAPI::RemovePrivilegedAPIs(std::set<std::string>* apis) const {
+  std::set<std::string> privileged_apis;
+  for (std::set<std::string>::iterator i = apis->begin(); i != apis->end();
+      ++i) {
+    if (!completely_unprivileged_apis_.count(*i) &&
+        !partially_unprivileged_apis_.count(*i)) {
+      privileged_apis.insert(*i);
+    }
+  }
+  for (std::set<std::string>::iterator i = privileged_apis.begin();
+      i != privileged_apis.end(); ++i) {
+    apis->erase(*i);
+  }
+}
+
+void ExtensionAPI::GetAPIsMatchingURL(const GURL& url,
+                                      std::set<std::string>* out) const {
+  for (std::map<std::string, URLPatternSet>::const_iterator i =
+      url_matching_apis_.begin(); i != url_matching_apis_.end(); ++i) {
+    if (i->second.MatchesURL(url))
+      out->insert(i->first);
+  }
 }
 
 }  // namespace extensions

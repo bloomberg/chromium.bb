@@ -12,8 +12,11 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
+#include "chrome/common/extensions/feature.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,6 +24,7 @@ class ListValue;
 class Value;
 }
 
+class GURL;
 class Extension;
 class ExtensionPermissionSet;
 
@@ -29,18 +33,6 @@ namespace extensions {
 // C++ Wrapper for the JSON API definitions in chrome/common/extensions/api/.
 class ExtensionAPI {
  public:
-  // Filtering option for the GetSchemas functions.
-  enum GetSchemasFilter {
-    // Returns all schemas that an extension has permission for.
-    ALL,
-
-    // Returns schemas for only APIs with unprivileged components (i.e. those
-    // where !IsWholeAPIPrivileged).
-    ONLY_UNPRIVILEGED
-  };
-
-  typedef std::map<std::string, linked_ptr<const DictionaryValue> > SchemaMap;
-
   // Returns the single instance of this class.
   static ExtensionAPI* GetInstance();
 
@@ -50,26 +42,17 @@ class ExtensionAPI {
   // content scripts, or other low-privileged contexts.
   bool IsPrivileged(const std::string& name) const;
 
-  // Returns whether *every* path in the API is privileged. This will be false
-  // for APIs such as "storage" which is entirely unprivileged, and "test"
-  // which has unprivileged components.
-  bool IsWholeAPIPrivileged(const std::string& api_name) const;
-
-  // Gets a map of API name (aka namespace) to API schema.
-  const SchemaMap& schemas() { return schemas_; }
-
   // Gets the schema for the extension API with namespace |api_name|.
   // Ownership remains with this object.
   const base::DictionaryValue* GetSchema(const std::string& api_name) const;
 
-  // Gets the API schemas that are available to an Extension.
-  void GetSchemasForExtension(const Extension& extension,
-                              GetSchemasFilter filter,
-                              SchemaMap* out) const;
-
-  // Gets the schemas for the default set of APIs that are available to every
-  // extension.
-  void GetDefaultSchemas(GetSchemasFilter filter, SchemaMap* out) const;
+  // Gets the APIs available to |context| given an |extension| and |url|. The
+  // extension or URL may not be relevant to all contexts, and may be left
+  // NULL/empty.
+  scoped_ptr<std::set<std::string> > GetAPIsForContext(
+      Feature::Context context,
+      const Extension* extension,
+      const GURL& url) const;
 
  private:
   friend struct DefaultSingletonTraits<ExtensionAPI>;
@@ -93,18 +76,34 @@ class ExtensionAPI {
                              const std::string& child_kind,
                              const std::string& child_name) const;
 
-  // Gets the schemas for the APIs that are allowed by a permission set.
-  void GetSchemasForPermissions(const ExtensionPermissionSet& permissions,
-                                GetSchemasFilter filter,
-                                SchemaMap* out) const;
+  // Adds all APIs to |out| that |extension| has any permission (required or
+  // optional) to use.
+  void GetAllowedAPIs(
+      const Extension* extension, std::set<std::string>* out) const;
 
   // Adds dependent schemas to |out| as determined by the "dependencies"
   // property.
-  void ResolveDependencies(SchemaMap* out) const;
+  void ResolveDependencies(std::set<std::string>* out) const;
+
+  // Adds any APIs listed in "dependencies" found in the schema for |api_name|
+  // but not in |excluding| to |out|.
+  void GetMissingDependencies(
+      const std::string& api_name,
+      const std::set<std::string>& excluding,
+      std::set<std::string>* out) const;
+
+  // Removes all APIs from |apis| which are *entirely* privileged. This won't
+  // include APIs such as "storage" which is entirely unprivileged, nor
+  // "extension" which has unprivileged components.
+  void RemovePrivilegedAPIs(std::set<std::string>* apis) const;
+
+  // Adds an APIs that match |url| to |out|.
+  void GetAPIsMatchingURL(const GURL& url, std::set<std::string>* out) const;
 
   static ExtensionAPI* instance_;
 
   // Schemas for each namespace.
+  typedef std::map<std::string, linked_ptr<const DictionaryValue> > SchemaMap;
   SchemaMap schemas_;
 
   // APIs that are entirely unprivileged.
@@ -112,6 +111,9 @@ class ExtensionAPI {
 
   // APIs that are not entirely unprivileged, but have unprivileged components.
   std::set<std::string> partially_unprivileged_apis_;
+
+  // APIs that have URL matching permissions.
+  std::map<std::string, URLPatternSet> url_matching_apis_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAPI);
 };

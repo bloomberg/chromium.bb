@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ chrome.extension.sendRequest("getApi", function(apis) {
         return;
       module[section].forEach(function(entry) {
         var path = namespace + "." + entry.name;
-        if (entry.unprivileged) {
+        if (module.unprivileged || entry.unprivileged) {
           unprivilegedPaths.push(path);
         } else {
           privilegedPaths.push(path);
@@ -36,7 +36,7 @@ chrome.extension.sendRequest("getApi", function(apis) {
     if (module.properties) {
       for (var propName in module.properties) {
         var path = namespace + "." + propName;
-        if (module.properties[propName].unprivileged) {
+        if (module.unprivileged || module.properties[propName].unprivileged) {
           unprivilegedPaths.push(path);
         } else {
           privilegedPaths.push(path);
@@ -69,7 +69,7 @@ function testPath(path, expectError) {
       if (typeof(module) == "undefined")
         return true;
     } else {
-      // This is the last component - we expect it to either be defined or
+      // This is the last component - we expect it to either be undefined or
       // to throw an error on access.
       try {
         if (typeof(module[parts[i]]) == "undefined" &&
