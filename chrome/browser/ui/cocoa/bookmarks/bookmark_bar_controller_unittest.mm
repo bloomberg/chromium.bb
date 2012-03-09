@@ -13,6 +13,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #import "chrome/browser/ui/cocoa/animation_utils.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -272,8 +274,11 @@ class BookmarkBarControllerTestBase : public CocoaProfileTest {
     ASSERT_TRUE(profile());
 
     FilePath extension_dir;
-    profile()->CreateExtensionService(CommandLine::ForCurrentProcess(),
-                                      extension_dir, false);
+    static_cast<TestExtensionSystem*>(
+        ExtensionSystemFactory::GetForProfile(profile()))->
+        CreateExtensionService(
+            CommandLine::ForCurrentProcess(),
+            extension_dir, false);
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);

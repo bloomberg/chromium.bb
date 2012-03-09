@@ -21,11 +21,13 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/extensions/api/webrequest/webrequest_api.h"
 #include "chrome/browser/extensions/extension_info_map.h"
-#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
+#include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/plugin_prefs.h"
@@ -85,8 +87,6 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
 }
 
 void OffTheRecordProfileImpl::Init() {
-  extension_process_manager_.reset(ExtensionProcessManager::Create(this));
-
   BrowserList::AddObserver(this);
 
   ProfileDependencyManager::GetInstance()->CreateProfileServices(this, false);
@@ -124,6 +124,13 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
     io_data_.GetResourceContextNoInit());
 
+  ExtensionService* extension_service =
+      ExtensionSystemFactory::GetForProfile(this)->extension_service();
+  if (extension_service) {
+    extension_service->extension_prefs()->
+        ClearIncognitoSessionOnlyContentSettings();
+  }
+
   ProfileDependencyManager::GetInstance()->DestroyProfileServices(this);
 
   BrowserThread::PostTask(
@@ -137,12 +144,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
-
-  ExtensionService* extension_service = GetExtensionService();
-  if (extension_service) {
-    ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
-    extension_prefs->ClearIncognitoSessionOnlyContentSettings();
-  }
 
   // Clears any data the network stack contains that may be related to the
   // OTR session.
@@ -196,33 +197,25 @@ VisitedLinkMaster* OffTheRecordProfileImpl::GetVisitedLinkMaster() {
   return NULL;
 }
 
+ExtensionPrefValueMap* OffTheRecordProfileImpl::GetExtensionPrefValueMap() {
+  return NULL;
+}
+
 ExtensionService* OffTheRecordProfileImpl::GetExtensionService() {
-  return GetOriginalProfile()->GetExtensionService();
+  return ExtensionSystemFactory::GetForProfile(this)->extension_service();
 }
 
 UserScriptMaster* OffTheRecordProfileImpl::GetUserScriptMaster() {
-  return GetOriginalProfile()->GetUserScriptMaster();
-}
-
-ExtensionDevToolsManager*
-    OffTheRecordProfileImpl::GetExtensionDevToolsManager() {
-  // TODO(mpcomplete): figure out whether we should return the original
-  // profile's version.
-  return NULL;
+  return ExtensionSystemFactory::GetForProfile(this)->user_script_master();
 }
 
 ExtensionProcessManager*
     OffTheRecordProfileImpl::GetExtensionProcessManager() {
-  return extension_process_manager_.get();
-}
-
-ExtensionMessageService*
-    OffTheRecordProfileImpl::GetExtensionMessageService() {
-  return GetOriginalProfile()->GetExtensionMessageService();
+  return ExtensionSystemFactory::GetForProfile(this)->process_manager();
 }
 
 ExtensionEventRouter* OffTheRecordProfileImpl::GetExtensionEventRouter() {
-  return GetOriginalProfile()->GetExtensionEventRouter();
+  return ExtensionSystemFactory::GetForProfile(this)->event_router();
 }
 
 ExtensionSpecialStoragePolicy*
@@ -407,10 +400,6 @@ history::TopSites* OffTheRecordProfileImpl::GetTopSites() {
 void OffTheRecordProfileImpl::MarkAsCleanShutdown() {
 }
 
-void OffTheRecordProfileImpl::InitExtensions(bool extensions_enabled) {
-  NOTREACHED();
-}
-
 void OffTheRecordProfileImpl::InitPromoResources() {
   NOTREACHED();
 }
@@ -447,10 +436,6 @@ void OffTheRecordProfileImpl::OnBrowserAdded(const Browser* browser) {
 }
 
 void OffTheRecordProfileImpl::OnBrowserRemoved(const Browser* browser) {
-}
-
-ExtensionInfoMap* OffTheRecordProfileImpl::GetExtensionInfoMap() {
-  return profile_->GetExtensionInfoMap();
 }
 
 ChromeURLDataManager* OffTheRecordProfileImpl::GetChromeURLDataManager() {

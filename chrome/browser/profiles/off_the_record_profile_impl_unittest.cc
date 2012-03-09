@@ -7,6 +7,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -142,6 +143,9 @@ TEST_F(OffTheRecordProfileImplTest, GetHostZoomMap) {
       new OffTheRecordProfileImpl(parent_profile.get()));
   child_profile->InitHostZoomMap();
 
+  ProfileDependencyManager::GetInstance()->CreateProfileServices(
+      child_profile.get(), false);
+
   // Prepare child host zoom map.
   HostZoomMap* child_zoom_map =
       HostZoomMap::GetForBrowserContext(child_profile.get());
@@ -159,12 +163,12 @@ TEST_F(OffTheRecordProfileImplTest, GetHostZoomMap) {
 
   EXPECT_NE(parent_zoom_map->GetZoomLevel(host),
             child_zoom_map->GetZoomLevel(host)) <<
-                "Child change must not propaget to parent.";
+                "Child change must not propagate to parent.";
 
   parent_zoom_map->SetZoomLevel(host, zoom_level_40);
   ASSERT_EQ(parent_zoom_map->GetZoomLevel(host), zoom_level_40);
 
   EXPECT_EQ(parent_zoom_map->GetZoomLevel(host),
             child_zoom_map->GetZoomLevel(host)) <<
-                "Parent change should propaget to child.";
+                "Parent change should propagate to child.";
 }

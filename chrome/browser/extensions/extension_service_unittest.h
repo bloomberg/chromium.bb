@@ -55,7 +55,7 @@ class ExtensionServiceTestBase : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   FilePath extensions_install_dir_;
   FilePath data_dir_;
-  // Owned by |profile_|.
+  // Managed by ExtensionSystemFactory.
   ExtensionService* service_;
   size_t expected_extensions_count_;
   content::TestBrowserThread ui_thread_;
