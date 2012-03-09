@@ -5630,6 +5630,9 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
 }
 
 void Browser::ShowSyncSetup() {
+  // TODO(yfriedman): remove OS_ANDROID clause when browser is excluded from
+  // Android build.
+#if !defined(OS_ANDROID)
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           profile()->GetOriginalProfile());
@@ -5648,6 +5651,7 @@ void Browser::ShowSyncSetup() {
     LoginUIServiceFactory::GetForProfile(
         profile()->GetOriginalProfile())->ShowLoginUI();
   }
+#endif
 }
 
 void Browser::ToggleSpeechInput() {

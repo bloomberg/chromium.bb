@@ -68,7 +68,9 @@
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
-#else
+#endif
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #endif
 
@@ -294,7 +296,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(content::WebUI* web_ui,
     return &NewWebUI<PrintPreviewUI>;
   }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUISyncPromoHost) {
     // If the sync promo page is enabled then use the sync promo WebUI otherwise
     // use the NTP WebUI. We don't want to return NULL if the sync promo page

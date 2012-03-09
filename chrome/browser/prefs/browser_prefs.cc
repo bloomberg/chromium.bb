@@ -197,7 +197,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ProfileImpl::RegisterUserPrefs(user_prefs);
   ProtocolHandlerRegistry::RegisterPrefs(user_prefs);
   SessionStartupPref::RegisterUserPrefs(user_prefs);
-  SyncPromoUI::RegisterUserPrefs(user_prefs);
   TemplateURLPrepopulateData::RegisterUserPrefs(user_prefs);
   TranslatePrefs::RegisterUserPrefs(user_prefs);
   web_intents::RegisterUserPrefs(user_prefs);
@@ -219,6 +218,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #if !defined(OS_ANDROID)
   PluginsUI::RegisterUserPrefs(user_prefs);
   PromoResourceService::RegisterUserPrefs(user_prefs);
+  SyncPromoUI::RegisterUserPrefs(user_prefs);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

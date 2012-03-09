@@ -130,11 +130,13 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
     return;
 
   if (username.empty()) {
+#if !defined(OS_ANDROID)
     // The user isn't signed in, show the sync promo.
     if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
       browser->ShowSyncSetup();
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
+#endif
   } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
     double x = 0;
@@ -205,17 +207,22 @@ void NTPLoginHandler::UpdateLogin() {
       if (header.empty())
         header = CreateSpanWithClass(UTF8ToUTF16(username), "profile-name");
     }
-  } else if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
-    string16 signed_in_link = l10n_util::GetStringUTF16(
-        IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
-    signed_in_link = CreateSpanWithClass(signed_in_link, "link-span");
-    header = l10n_util::GetStringFUTF16(
-        IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER,
-        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
-    sub_header = l10n_util::GetStringFUTF16(
-        IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER, signed_in_link);
-    // Record that the user was shown the promo.
-    RecordInHistogram(NTP_SIGN_IN_PROMO_VIEWED);
+  } else {
+#if !defined(OS_ANDROID)
+    // Android uses a custom sync promo
+    if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
+      string16 signed_in_link = l10n_util::GetStringUTF16(
+          IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK);
+      signed_in_link = CreateSpanWithClass(signed_in_link, "link-span");
+      header = l10n_util::GetStringFUTF16(
+          IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_HEADER,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+      sub_header = l10n_util::GetStringFUTF16(
+          IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER, signed_in_link);
+      // Record that the user was shown the promo.
+      RecordInHistogram(NTP_SIGN_IN_PROMO_VIEWED);
+    }
+#endif
   }
 
   StringValue header_value(header);

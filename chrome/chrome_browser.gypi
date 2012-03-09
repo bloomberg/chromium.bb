@@ -4807,6 +4807,7 @@
             ['exclude', '^browser/ui/webui/options'],
             ['exclude', '^browser/ui/webui/options2'],
             ['exclude', '^browser/ui/webui/print_preview/'],
+            ['exclude', '^browser/ui/webui/sync_promo'],
           ],
         }],
         ['OS=="mac"', {
