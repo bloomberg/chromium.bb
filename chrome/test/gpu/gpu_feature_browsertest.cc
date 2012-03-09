@@ -24,6 +24,9 @@
 
 using content::GpuDataManager;
 using content::GpuFeatureType;
+using trace_analyzer::Query;
+using trace_analyzer::TraceAnalyzer;
+using trace_analyzer::TraceEventVector;
 
 namespace {
 
@@ -34,7 +37,7 @@ typedef uint32 GpuResultFlags;
 
 class GpuFeatureTest : public InProcessBrowserTest {
  public:
-  GpuFeatureTest() : gpu_enabled_(false) {}
+  GpuFeatureTest() : trace_categories_("test_gpu"), gpu_enabled_(false) {}
 
   virtual void SetUpInProcessBrowserTestFixture() {
     FilePath test_dir;
@@ -111,35 +114,37 @@ class GpuFeatureTest : public InProcessBrowserTest {
     using trace_analyzer::Query;
     using trace_analyzer::TraceAnalyzer;
 
-    ASSERT_TRUE(tracing::BeginTracing("test_gpu"));
+    ASSERT_TRUE(tracing::BeginTracing(trace_categories_));
 
     // Have to use a new tab for the blacklist to work.
     RunTest(url, NULL, true);
 
-    std::string json_events;
-    ASSERT_TRUE(tracing::EndTracing(&json_events));
+    ASSERT_TRUE(tracing::EndTracing(&trace_events_json_));
 
-    scoped_ptr<TraceAnalyzer> analyzer(TraceAnalyzer::Create(json_events));
-    analyzer->AssociateBeginEndEvents();
-    trace_analyzer::TraceEventVector events;
+    analyzer_.reset(TraceAnalyzer::Create(trace_events_json_));
+    analyzer_->AssociateBeginEndEvents();
+    TraceEventVector events;
 
     // This measurement is flaky, because the GPU process is sometimes
     // started before the test (always with force-compositing-mode on CrOS).
     if (expectations & EXPECT_NO_GPU_PROCESS) {
-      EXPECT_EQ(0u, analyzer->FindEvents(
+      EXPECT_EQ(0u, analyzer_->FindEvents(
           Query::MatchBeginName("OnGraphicsInfoCollected"), &events));
     }
 
     // Check for swap buffers if expected:
     if (expectations & EXPECT_GPU_SWAP_BUFFERS) {
-      EXPECT_GT(analyzer->FindEvents(Query::EventName() ==
-                                     Query::String("SwapBuffers"), &events),
+      EXPECT_GT(analyzer_->FindEvents(Query::EventName() ==
+                                      Query::String("SwapBuffers"), &events),
                 size_t(0));
     }
   }
 
  protected:
   FilePath gpu_test_dir_;
+  scoped_ptr<TraceAnalyzer> analyzer_;
+  std::string trace_categories_;
+  std::string trace_events_json_;
   bool gpu_enabled_;
 };
 
@@ -369,6 +374,36 @@ class ThreadedCompositorTest : public GpuFeatureTest {
 IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, DISABLED_ThreadedCompositor) {
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
+}
+
+// TODO(jbates) unmark FLAKY once it's verified to not be flaky.
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, FLAKY_RafNoDamage) {
+  trace_categories_ = "-test_*";
+  const FilePath url(FILE_PATH_LITERAL("feature_raf_no_damage.html"));
+  RunTest(url, GpuResultFlags(0));
+
+  TraceEventVector events;
+  size_t num_events = analyzer_->FindEvents(
+      Query::MatchBeginName("___RafWithNoDamage___"), &events);
+
+  trace_analyzer::RateStats stats;
+  trace_analyzer::RateStatsOptions stats_options;
+  stats_options.trim_min = stats_options.trim_max = num_events / 10;
+  EXPECT_TRUE(trace_analyzer::GetRateStats(events, &stats, &stats_options));
+
+  LOG(INFO) << "Number of RAFs: " << num_events <<
+      " Mean: " << stats.mean_us <<
+      " Min: " << stats.min_us <<
+      " Max: " << stats.max_us <<
+      " StdDev: " << stats.standard_deviation_us;
+
+  // Expect that the average time between RAFs is more than 15ms. That will
+  // indicate that the renderer is not simply spinning on RAF.
+  EXPECT_GT(stats.mean_us, 15000.0);
+
+  if (stats.mean_us <= 15000.0) {
+    fprintf(stderr, "\n\nTRACE JSON:\n\n%s\n\n", trace_events_json_.c_str());
+  }
 }
 
 }  // namespace anonymous

@@ -538,7 +538,7 @@ void LatencyTest::GetMeanFrameTimeMicros(int* frame_time) const {
   // Search for compositor swaps (or UpdateRects in the software path).
   analyzer_->FindEvents(query_swaps_, &events);
   RateStats stats;
-  ASSERT_TRUE(GetRateStats(events, &stats));
+  ASSERT_TRUE(GetRateStats(events, &stats, NULL));
 
   // Check that the number of swaps is close to kNumFrames.
   EXPECT_LT(num_frames_ - num_frames_ / 4, static_cast<int>(events.size()));

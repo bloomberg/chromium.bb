@@ -340,7 +340,7 @@ class ThroughputTest : public BrowserPerfTest {
     TraceEventVector rate_events(frames->begin() + kIgnoreSomeFrames,
                                  frames->end() - kIgnoreSomeFrames);
     trace_analyzer::RateStats stats;
-    ASSERT_TRUE(GetRateStats(rate_events, &stats));
+    ASSERT_TRUE(GetRateStats(rate_events, &stats, NULL));
     LOG(INFO) << "FPS = " << 1000000.0 / stats.mean_us;
 
     // Print perf results.
