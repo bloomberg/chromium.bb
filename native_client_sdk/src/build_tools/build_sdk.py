@@ -127,6 +127,10 @@ def GetToolchainNaClLib(tcname, tcpath, arch, xarch):
       return os.path.join(tcpath, 'x86_64-nacl', 'lib')
   buildbot_common.ErrorExit('Unknown architecture.')
 
+def GetPNaClNativeLib(tcpath, arch):
+  if arch not in ['arm', 'x86-32', 'x86-64']:
+    buildbot_common.ErrorExit('Unknown architecture %s.' % arch)
+  return os.path.join(tcpath, 'lib-' + arch)
 
 def GetBuildArgs(tcname, tcpath, outdir, arch, xarch=None):
   """Return list of scons build arguments to generate user libraries."""
@@ -255,7 +259,7 @@ def UntarToolchains(pepperdir, platform, arch, toolchains):
     # Then rename/move it to the pepper toolchain directory
     srcdir = os.path.join(tmpdir, 'sdk', 'nacl-sdk')
     newlibdir = os.path.join(pepperdir, 'toolchain', tcname + '_newlib')
-    buildbot_common.MoveDir(srcdir, newlibdir)
+    buildbot_common.Move(srcdir, newlibdir)
 
   if 'glibc' in toolchains:
     # Untar the glibc toolchains
@@ -266,7 +270,7 @@ def UntarToolchains(pepperdir, platform, arch, toolchains):
     # Then rename/move it to the pepper toolchain directory
     srcdir = os.path.join(tmpdir, 'toolchain', tcname)
     glibcdir = os.path.join(pepperdir, 'toolchain', tcname + '_glibc')
-    buildbot_common.MoveDir(srcdir, glibcdir)
+    buildbot_common.Move(srcdir, glibcdir)
 
   # Untar the pnacl toolchains
   if 'pnacl' in toolchains:
@@ -279,7 +283,7 @@ def UntarToolchains(pepperdir, platform, arch, toolchains):
 
     # Then rename/move it to the pepper toolchain directory
     pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
-    buildbot_common.MoveDir(tmpdir, pnacldir)
+    buildbot_common.Move(tmpdir, pnacldir)
 
 
 def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
@@ -300,7 +304,7 @@ def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
           GetBuildArgs('newlib', newlibdir, pepperdir, 'x86', '64'),
           cwd=NACL_DIR, shell=(platform=='win'))
       InstallHeaders(GetToolchainNaClInclude('newlib', newlibdir, 'x86'),
-                     pepper_ver, 
+                     pepper_ver,
                      'newlib')
 
     if 'glibc' in toolchains:
@@ -321,8 +325,14 @@ def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
       buildbot_common.Run(
           GetBuildArgs('pnacl', pnacldir, pepperdir, 'x86', '64'),
           cwd=NACL_DIR, shell=(platform=='win'))
+      # Pnacl libraries are typically bitcode, but some are native and
+      # will be looked up in the native library directory.
+      buildbot_common.Move(
+          os.path.join(GetToolchainNaClLib('pnacl', pnacldir, 'x86', '64'),
+                       'libpnacl_irt_shim.a'),
+          GetPNaClNativeLib(pnacldir, 'x86-64'))
       InstallHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
-                     pepper_ver, 
+                     pepper_ver,
                      'newlib')
   else:
     buildbot_common.ErrorExit('Missing arch %s' % arch)

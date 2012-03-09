@@ -68,9 +68,9 @@ def MakeDir(dst):
   oshelpers.Mkdir(['-p', dst])
 
 
-def MoveDir(src, dst):
+def Move(src, dst):
   """Move the path src to dst."""
-  print 'mv -fr %s %s' % (src, dst)
+  print 'mv -f %s %s' % (src, dst)
   oshelpers.Move(['-f', src, dst])
 
 
