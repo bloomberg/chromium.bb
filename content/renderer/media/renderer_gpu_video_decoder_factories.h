@@ -13,8 +13,9 @@
 #include "media/filters/gpu_video_decoder.h"
 #include "ui/gfx/size.h"
 
-class GpuChannelHost;
 class ContentGLContext;
+class GpuChannelHost;
+class WebGraphicsContext3DCommandBufferImpl;
 namespace base {
 class WaitableEvent;
 }
@@ -25,15 +26,19 @@ class WaitableEvent;
 // implementation from render_view_impl.cc which is already far too large.
 //
 // The public methods of the class can be called from any thread, and are
-// internally trampolined to the thread on which the class was constructed
-// (de-facto, the renderer thread) if called from a different thread.
+// internally trampolined to the appropriate thread.  GPU/GL-related calls go to
+// the constructor-argument loop (mostly that's the compositor thread, or the
+// renderer thread if threaded compositing is disabled), and shmem-related calls
+// go to the render thread.
 class CONTENT_EXPORT RendererGpuVideoDecoderFactories
     : public media::GpuVideoDecoder::Factories {
  public:
   // Takes a ref on |gpu_channel_host| and tests |context| for NULL before each
   // use.
-  RendererGpuVideoDecoderFactories(GpuChannelHost* gpu_channel_host,
-                                   base::WeakPtr<ContentGLContext> context);
+  RendererGpuVideoDecoderFactories(
+      GpuChannelHost* gpu_channel_host,
+      MessageLoop* message_loop,
+      WebGraphicsContext3DCommandBufferImpl* wgc3dcbi);
 
   virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
       media::VideoDecodeAccelerator::Profile profile,
@@ -52,10 +57,16 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   virtual ~RendererGpuVideoDecoderFactories();
 
  private:
-  // Async versions of the public methods.  These all run on |message_loop_|
-  // exclusively, and use output parameters instead of return values.  Finally,
-  // each takes a WaitableEvent* param to signal completion (except for
-  // DeleteTexture, which is fire-and-forget).
+  // Helper for the constructor to acquire the ContentGLContext on the
+  // compositor thread (when it is enabled).
+  void AsyncGetContext(WebGraphicsContext3DCommandBufferImpl* wgc3dcbi,
+                       base::WaitableEvent* waiter);
+
+  // Async versions of the public methods.  They use output parameters instead
+  // of return values and each takes a WaitableEvent* param to signal completion
+  // (except for DeleteTexture, which is fire-and-forget).
+  // AsyncCreateSharedMemory runs on the renderer thread and the rest run on
+  // |message_loop_|.
   void AsyncCreateVideoDecodeAccelerator(
       media::VideoDecodeAccelerator::Profile profile,
       media::VideoDecodeAccelerator::Client* client,

@@ -9,21 +9,44 @@
 #include "content/common/child_thread.h"
 #include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/client/content_gl_context.h"
+#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
 RendererGpuVideoDecoderFactories::~RendererGpuVideoDecoderFactories() {}
 RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
-    GpuChannelHost* gpu_channel_host, base::WeakPtr<ContentGLContext> context)
-    : message_loop_(MessageLoop::current()),
-      gpu_channel_host_(gpu_channel_host),
-      context_(context) {
+    GpuChannelHost* gpu_channel_host, MessageLoop* message_loop,
+    WebGraphicsContext3DCommandBufferImpl* wgc3dcbi)
+    : message_loop_(message_loop),
+      gpu_channel_host_(gpu_channel_host) {
+  if (MessageLoop::current() == message_loop_) {
+    AsyncGetContext(wgc3dcbi, NULL);
+    return;
+  }
+  // Threaded compositor requires us to wait for the context to be acquired.
+  base::WaitableEvent waiter(false, false);
+  message_loop_->PostTask(FROM_HERE, base::Bind(
+      &RendererGpuVideoDecoderFactories::AsyncGetContext,
+      // Unretained to avoid ref/deref'ing |*this|, which is not yet stored in a
+      // scoped_refptr.  Safe because the Wait() below keeps us alive until this
+      // task completes.
+      base::Unretained(this), wgc3dcbi, &waiter));
+  waiter.Wait();
+}
+
+void RendererGpuVideoDecoderFactories::AsyncGetContext(
+    WebGraphicsContext3DCommandBufferImpl* wgc3dcbi,
+    base::WaitableEvent* waiter) {
+  wgc3dcbi->makeContextCurrent();
+  context_ = wgc3dcbi->context()->AsWeakPtr();
+  if (waiter)
+    waiter->Signal();
 }
 
 media::VideoDecodeAccelerator*
 RendererGpuVideoDecoderFactories::CreateVideoDecodeAccelerator(
     media::VideoDecodeAccelerator::Profile profile,
     media::VideoDecodeAccelerator::Client* client) {
+  DCHECK_NE(MessageLoop::current(), message_loop_);
   media::VideoDecodeAccelerator* vda = NULL;
   base::WaitableEvent waiter(false, false);
   message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -38,9 +61,11 @@ void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
       media::VideoDecodeAccelerator::Client* client,
       media::VideoDecodeAccelerator** vda,
       base::WaitableEvent* waiter) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   if (context_) {
     *vda = gpu_channel_host_->CreateVideoDecoder(
-        context_->GetCommandBufferProxy()->route_id(), profile, client);
+        context_->GetCommandBufferProxy()->route_id(),
+        profile, client);
   } else {
     *vda = NULL;
   }
@@ -51,6 +76,7 @@ bool RendererGpuVideoDecoderFactories::CreateTextures(
     int32 count, const gfx::Size& size,
     std::vector<uint32>* texture_ids,
     uint32* texture_target) {
+  DCHECK_NE(MessageLoop::current(), message_loop_);
   bool success = false;
   base::WaitableEvent waiter(false, false);
   message_loop_->PostTask(FROM_HERE, base::Bind(
@@ -63,6 +89,7 @@ bool RendererGpuVideoDecoderFactories::CreateTextures(
 void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
     int32 count, const gfx::Size& size, std::vector<uint32>* texture_ids,
     uint32* texture_target, bool* success, base::WaitableEvent* waiter) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   if (!context_) {
     *success = false;
     waiter->Signal();
@@ -93,6 +120,7 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
 }
 
 void RendererGpuVideoDecoderFactories::DeleteTexture(uint32 texture_id) {
+  DCHECK_NE(MessageLoop::current(), message_loop_);
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncDeleteTexture, this, texture_id));
 }
@@ -108,9 +136,10 @@ void RendererGpuVideoDecoderFactories::AsyncDeleteTexture(uint32 texture_id) {
 
 base::SharedMemory* RendererGpuVideoDecoderFactories::CreateSharedMemory(
     size_t size) {
+  DCHECK_NE(MessageLoop::current(), ChildThread::current()->message_loop());
   base::SharedMemory* shm = NULL;
   base::WaitableEvent waiter(false, false);
-  message_loop_->PostTask(FROM_HERE, base::Bind(
+  ChildThread::current()->message_loop()->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory, this,
       size, &shm, &waiter));
   waiter.Wait();
@@ -119,6 +148,7 @@ base::SharedMemory* RendererGpuVideoDecoderFactories::CreateSharedMemory(
 
 void RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory(
     size_t size, base::SharedMemory** shm, base::WaitableEvent* waiter) {
+  DCHECK_EQ(MessageLoop::current(), ChildThread::current()->message_loop());
   *shm = ChildThread::current()->AllocateSharedMemory(size);
   waiter->Signal();
 }

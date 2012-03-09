@@ -42,9 +42,10 @@ GpuVideoDecoder::BufferTimeData::~BufferTimeData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
     MessageLoop* message_loop,
+    MessageLoop* vda_loop,
     const scoped_refptr<Factories>& factories)
     : gvd_loop_proxy_(message_loop->message_loop_proxy()),
-      render_loop_proxy_(base::MessageLoopProxy::current()),
+      vda_loop_proxy_(vda_loop->message_loop_proxy()),
       factories_(factories),
       state_(kNormal),
       demuxer_read_in_progress_(false),
@@ -81,7 +82,7 @@ void GpuVideoDecoder::Stop(const base::Closure& callback) {
     callback.Run();
     return;
   }
-  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+  vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Destroy, vda_));
   vda_ = NULL;
   callback.Run();
@@ -136,7 +137,7 @@ void GpuVideoDecoder::Flush(const base::Closure& callback)  {
     pending_reset_cb_ = callback;
   }
 
-  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+  vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Reset, vda_));
 }
 
@@ -244,7 +245,7 @@ void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
   if (buffer->IsEndOfStream()) {
     if (state_ == kNormal) {
       state_ = kDrainingDecoder;
-      render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+      vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
           &VideoDecodeAccelerator::Flush, vda_));
     }
     return;
@@ -260,7 +261,7 @@ void GpuVideoDecoder::RequestBufferDecode(const scoped_refptr<Buffer>& buffer) {
   DCHECK(inserted);
   RecordBufferTimeData(bitstream_buffer, *buffer);
 
-  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+  vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::Decode, vda_, bitstream_buffer));
 }
 
@@ -345,7 +346,7 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
         picture_buffers.back().id(), picture_buffers.back())).second;
     DCHECK(inserted);
   }
-  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+  vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::AssignPictureBuffers, vda_, picture_buffers));
 }
 
@@ -426,7 +427,7 @@ void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
   }
   if (!vda_)
     return;
-  render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+  vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::ReusePictureBuffer, vda_, picture_buffer_id));
 }
 
@@ -530,6 +531,8 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
         &GpuVideoDecoder::NotifyError, this, error));
     return;
   }
+  if (!vda_)
+    return;
   vda_ = NULL;
   DLOG(ERROR) << "VDA Error: " << error;
   if (host())

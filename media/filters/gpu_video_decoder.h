@@ -54,6 +54,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   };
 
   GpuVideoDecoder(MessageLoop* message_loop,
+                  MessageLoop* vda_loop,
                   const scoped_refptr<Factories>& factories);
   virtual ~GpuVideoDecoder();
 
@@ -150,10 +151,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   // if they arrive on other loops.
   scoped_refptr<base::MessageLoopProxy> gvd_loop_proxy_;
 
-  // Creation message loop (typically the render thread).  All calls to vda_
-  // must be made on this loop (and beware this loop is paused during the
-  // Pause/Flush/Stop dance PipelineImpl::Stop() goes through).
-  scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
+  // Message loop on which to makes all calls to vda_.  (beware this loop may be
+  // paused during the Pause/Flush/Stop dance PipelineImpl::Stop() goes
+  // through).
+  scoped_refptr<base::MessageLoopProxy> vda_loop_proxy_;
 
   scoped_refptr<Factories> factories_;
 

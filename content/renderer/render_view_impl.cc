@@ -55,6 +55,7 @@
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
+#include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
 #include "content/renderer/web_intents_host.h"
@@ -2142,14 +2143,20 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   WebGraphicsContext3DCommandBufferImpl* context3d =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(
           webview()->graphicsContext3D());
-  if (context3d && context3d->makeContextCurrent()) {
+  if (context3d) {
+    MessageLoop* factories_loop =
+        RenderThreadImpl::current()->compositor_thread() ?
+        RenderThreadImpl::current()->compositor_thread()->GetWebThread()
+            ->message_loop() :
+        MessageLoop::current();
     GpuChannelHost* gpu_channel_host =
         RenderThreadImpl::current()->EstablishGpuChannelSync(
             content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
     collection->AddVideoDecoder(new media::GpuVideoDecoder(
         message_loop_factory->GetMessageLoop("GpuVideoDecoder"),
+        factories_loop,
         new RendererGpuVideoDecoderFactories(
-            gpu_channel_host, context3d->context()->AsWeakPtr())));
+            gpu_channel_host, factories_loop, context3d)));
   }
 #endif
 
