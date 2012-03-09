@@ -222,6 +222,9 @@ void StartupPagesHandler::SaveStartupPagesPref() {
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
   pref.urls = startup_custom_pages_table_model_->GetURLs();
 
+  if (pref.urls.empty())
+    pref.type = SessionStartupPref::DEFAULT;
+
   SessionStartupPref::SetStartupPref(prefs, pref);
 }
 
