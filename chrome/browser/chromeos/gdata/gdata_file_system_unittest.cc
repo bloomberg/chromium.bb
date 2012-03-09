@@ -57,7 +57,9 @@ class GDataFileSystemTest : public testing::Test {
     ASSERT_TRUE(document.get());
     ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
     GURL unused;
-    ASSERT_TRUE(UpdateContent(directory_path, document.get()));
+    scoped_ptr<ListValue> feed_list(new ListValue());
+    feed_list->Append(document.release());
+    ASSERT_TRUE(UpdateContent(directory_path, feed_list.get()));
   }
 
   void AddDirectoryFromFile(const FilePath& directory_path,
@@ -89,14 +91,11 @@ class GDataFileSystemTest : public testing::Test {
   // Updates the content of directory under |directory_path| with parsed feed
   // |value|.
   bool UpdateContent(const FilePath& directory_path,
-                     Value* value) {
+                     ListValue* list) {
     GURL unused;
     return file_system_->UpdateDirectoryWithDocumentFeed(
         directory_path,
-        GURL(),   // feed_url
-        value,
-        true,     // is_initial_feed
-        &unused) == base::PLATFORM_FILE_OK;
+        list) == base::PLATFORM_FILE_OK;
   }
 
   bool RemoveFile(const FilePath& file_path) {

@@ -301,13 +301,14 @@ class GDataFileSystem : public ProfileKeyedService {
   // Can be called from any thread. |callback| is run on the calling thread.
   void GetFile(const FilePath& file_path, const GetFileCallback& callback);
 
+  // Initiates directory feed fetching operation and continues previously
   // initiated FindFileByPath() attempt upon its completion. Safe to be called
   // from any thread. Internally, it will route content refresh request to
   // DocumentsService::GetDocuments() which will initiated content
   // fetching from UI thread as required by gdata library (UrlFetcher).
   //
   // Can be called from any thread.
-  void StartDirectoryRefresh(const FindFileParams& params);
+  void RefreshDirectoryAndContinueSearch(const FindFileParams& params);
 
   // Finds file object by |file_path| and returns the file info.
   // Returns NULL if it does not find the file.
@@ -371,6 +372,13 @@ class GDataFileSystem : public ProfileKeyedService {
   void UnsafeFindFileByPath(const FilePath& file_path,
                             scoped_refptr<FindFileDelegate> delegate);
 
+  // Starts directory refresh operation as a result of
+  // RefreshDirectoryAndContinueSearch call. |feed_list| is used to collect
+  // individual parts of document feeds as they are being retrieved from
+  // DocumentsService.
+  void ContinueDirectoryRefresh(const FindFileParams& params,
+                                scoped_ptr<base::ListValue> feed_list);
+
   // Converts document feed from gdata service into DirectoryInfo. On failure,
   // returns NULL and fills in |error| with an appropriate value.
   GDataDirectory* ParseGDataFeed(GDataErrorCode status,
@@ -383,6 +391,7 @@ class GDataFileSystem : public ProfileKeyedService {
   // the content of the refreshed directory object and continue initially
   // started FindFileByPath() request.
   void OnGetDocuments(const FindFileParams& params,
+                      scoped_ptr<base::ListValue> feed_list,
                       GDataErrorCode status,
                       scoped_ptr<base::Value> data);
 
@@ -425,15 +434,15 @@ class GDataFileSystem : public ProfileKeyedService {
   // Return PLATFORM_FILE_OK if successful.
   base::PlatformFileError RemoveFileFromFileSystem(const FilePath& file_path);
 
-  // Updates content of the directory identified with |directory_path|. If the
-  // feed was not complete, it will return URL for the remaining portion in
-  // |next_feed|. On success, returns PLATFORM_FILE_OK.
+  // Parses the content of |feed_data| and returns DocumentFeed instance
+  // represeting it.
+  DocumentFeed* ParseDocumentFeed(base::Value* feed_data);
+
+  // Updates content of the directory identified with |directory_path| with
+  // feeds collected in |feed_list|.
+  // On success, returns PLATFORM_FILE_OK.
   base::PlatformFileError UpdateDirectoryWithDocumentFeed(
-      const FilePath& directory_path,
-      const GURL& feed_url,
-      base::Value* data,
-      bool is_initial_feed,
-      GURL* next_feed);
+      const FilePath& directory_path, base::ListValue* feed_list);
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
@@ -447,9 +456,21 @@ class GDataFileSystem : public ProfileKeyedService {
       GURL* last_dir_content_url,
       FilePath* first_missing_parent_path);
 
+  // Returns root GCache directory. Should match <user_profile_dir>/GCache/v1/.
+  FilePath GetGCacheDirectoryPath() const;
+
+  // Saves collected root feeds in GCache directory under
+  // <user_profile_dir>/GCache/v1/meta/last_feed.json.
+  void SaveRootFeeds(scoped_ptr<base::ListValue> feed_vector);
+  static void SaveRootFeedsOnIOThreadPool(
+      const FilePath& meta_cache_path,
+      scoped_ptr<base::ListValue> feed_vector);
+
   // Finds and returns upload url of a given directory. Returns empty url
   // if directory can't be found.
   GURL GetUploadUrlForDirectory(const FilePath& destination_directory);
+
+  void NotifyDirectoryChanged(const FilePath& directory_path);
 
     scoped_ptr<GDataDirectory> root_;
   base::Lock lock_;

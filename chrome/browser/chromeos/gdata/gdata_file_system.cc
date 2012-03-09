@@ -16,9 +16,12 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
@@ -37,6 +40,13 @@ const int kRefreshTimeInSec = 5*60;
 
 const char kGDataRootDirectory[] = "gdata";
 const char kFeedField[] = "feed";
+
+// TODO(zelidrag): Remove these after http://codereview.chromium.org/9549018/
+// lands.
+const FilePath::CharType kGDataCacheDirname[] = FILE_PATH_LITERAL("GCache");
+const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
+const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
+const FilePath::CharType kLastFeedFile[] = FILE_PATH_LITERAL("last_feed.json");
 
 // Converts gdata error code into file platform error code.
 base::PlatformFileError GDataToPlatformError(gdata::GDataErrorCode status) {
@@ -142,7 +152,7 @@ bool FindFileDelegateReplyBase::CheckAndRefreshContent(
   if (directory->NeedsRefresh(&feed_url)) {
     // If content is stale/non-existing, first fetch the content of the
     // directory in order to traverse it further.
-    file_system_->StartDirectoryRefresh(
+    file_system_->RefreshDirectoryAndContinueSearch(
         GDataFileSystem::FindFileParams(
             search_file_path_,
             require_content_,
@@ -440,15 +450,14 @@ void GDataFileSystem::FindFileByPath(
   UnsafeFindFileByPath(file_path, delegate);
 }
 
-void GDataFileSystem::StartDirectoryRefresh(
+void GDataFileSystem::RefreshDirectoryAndContinueSearch(
     const FindFileParams& params) {
+  scoped_ptr<base::ListValue> feed_list(new base::ListValue());
   // Kick off document feed fetching here if we don't have complete data
   // to finish this call.
-  documents_service_->GetDocuments(
-      params.feed_url,
-      base::Bind(&GDataFileSystem::OnGetDocuments,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 params));
+  // |feed_list| will contain the list of all collected feed updates that
+  // we will receive through calls of DocumentsService::GetDocuments().
+  ContinueDirectoryRefresh(params, feed_list.Pass());
 }
 
 void GDataFileSystem::Remove(const FilePath& file_path,
@@ -742,8 +751,22 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   }
 }
 
+void GDataFileSystem::ContinueDirectoryRefresh(
+    const FindFileParams& params, scoped_ptr<base::ListValue> feed_list) {
+  // Kick off document feed fetching here if we don't have complete data
+  // to finish this call.
+  documents_service_->GetDocuments(
+      params.feed_url,
+      base::Bind(&GDataFileSystem::OnGetDocuments,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 params,
+                 base::Passed(&feed_list)));
+}
+
+
 void GDataFileSystem::OnGetDocuments(
     const FindFileParams& params,
+    scoped_ptr<base::ListValue> feed_list,
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
 
@@ -760,31 +783,96 @@ void GDataFileSystem::OnGetDocuments(
     return;
   }
 
+  // TODO(zelidrag): Find a faster way to get next url rather than parsing
+  // the entire feed.
   GURL next_feed_url;
-  error = UpdateDirectoryWithDocumentFeed(
-     params.directory_path, params.feed_url, data.get(), params.initial_feed,
-     &next_feed_url);
+  scoped_ptr<DocumentFeed> current_feed(ParseDocumentFeed(data.get()));
+  if (!current_feed.get()) {
+    params.delegate->OnError(base::PLATFORM_FILE_ERROR_FAILED);
+    return;
+  }
+
+  // Add the current feed to the list of collected feeds for this directory.
+  feed_list->Append(data.release());
+
+  // Check if we need to collect more data to complete the directory list.
+  if (current_feed->GetNextFeedURL(&next_feed_url) &&
+      !next_feed_url.is_empty()) {
+    // Kick of the remaining part of the feeds.
+    ContinueDirectoryRefresh(FindFileParams(params.file_path,
+                                            params.require_content,
+                                            params.directory_path,
+                                            next_feed_url,
+                                            false,  /* initial_feed */
+                                            params.delegate),
+                             feed_list.Pass());
+    return;
+  }
+
+  error = UpdateDirectoryWithDocumentFeed(params.directory_path,
+                                          feed_list.get());
   if (error != base::PLATFORM_FILE_OK) {
     params.delegate->OnError(error);
     return;
   }
 
-  // Fetch the rest of the content if the feed is not completed.
-  if (!next_feed_url.is_empty()) {
-    StartDirectoryRefresh(FindFileParams(params.file_path,
-                                         params.require_content,
-                                         params.directory_path,
-                                         next_feed_url,
-                                         false,  /* initial_feed */
-                                         params.delegate));
-    return;
-  }
+  // If this was the root feed, cache its content.
+  if (params.directory_path == FilePath(kGDataRootDirectory))
+    SaveRootFeeds(feed_list.Pass());
 
   // Continue file content search operation.
   FindFileByPath(params.file_path,
                  params.delegate);
 }
 
+
+FilePath GDataFileSystem::GetGCacheDirectoryPath() const {
+  FilePath base_cache_path;
+  chrome::GetUserCacheDirectory(profile_->GetPath(), &base_cache_path);
+  FilePath gdata_cache_path;
+  gdata_cache_path = base_cache_path.Append(kGDataCacheDirname);
+  return gdata_cache_path.Append(kGDataCacheVersionDir);
+}
+
+void GDataFileSystem::SaveRootFeeds(scoped_ptr<base::ListValue> feed_vector) {
+  FilePath meta_cache_path =
+      GetGCacheDirectoryPath().Append(kGDataCacheMetaDir);
+
+  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&GDataFileSystem::SaveRootFeedsOnIOThreadPool,
+                 meta_cache_path,
+                 base::Passed(&feed_vector)));
+}
+
+// Static.
+void GDataFileSystem::SaveRootFeedsOnIOThreadPool(
+    const FilePath& meta_cache_path,
+    scoped_ptr<base::ListValue> feed_vector) {
+  if (!file_util::DirectoryExists(meta_cache_path)) {
+    if (!file_util::CreateDirectory(meta_cache_path)) {
+      LOG(WARNING) << "GData metadata cache directory can't be created at "
+                   << meta_cache_path.value();
+      return;
+    }
+  }
+
+  FilePath file_name = meta_cache_path.Append(kLastFeedFile);
+  std::string json;
+  base::JSONWriter::Write(feed_vector.get(),
+                          false,   // pretty_print
+                          &json);
+
+  int file_size = static_cast<int>(json.length());
+  if (file_util::WriteFile(file_name, json.data(), file_size) != file_size) {
+    LOG(WARNING) << "GData metadata file can't be stored at "
+                 << file_name.value();
+    if (!file_util::Delete(file_name, true)) {
+      LOG(WARNING) << "GData metadata file can't be deleted at "
+                   << file_name.value();
+      return;
+    }
+  }
+}
 
 void GDataFileSystem::OnRemovedDocument(
     const FileOperationCallback& callback,
@@ -839,22 +927,21 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromFileSystem(
   return base::PLATFORM_FILE_OK;
 }
 
+DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
+  DCHECK(feed_data->IsType(Value::TYPE_DICTIONARY));
+  base::DictionaryValue* feed_dict = NULL;
+  if (!static_cast<base::DictionaryValue*>(feed_data)->GetDictionary(
+          kFeedField, &feed_dict)) {
+    return NULL;
+  }
+  // Parse the document feed.
+  return DocumentFeed::CreateFrom(feed_dict);
+}
+
 
 base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
-    const FilePath& directory_path, const GURL& feed_url,
-    base::Value* data, bool is_initial_feed, GURL* next_feed) {
-  base::DictionaryValue* feed_dict = NULL;
-  scoped_ptr<DocumentFeed> feed;
-  if (!static_cast<base::DictionaryValue*>(data)->GetDictionary(
-          kFeedField, &feed_dict)) {
-    return base::PLATFORM_FILE_ERROR_FAILED;
-  }
-
-  // Parse the document feed.
-  feed.reset(DocumentFeed::CreateFrom(feed_dict));
-  if (!feed.get())
-    return base::PLATFORM_FILE_ERROR_FAILED;
-
+    const FilePath& directory_path,
+    base::ListValue* feed_list) {
   // We need to lock here as well (despite FindFileByPath lock) since directory
   // instance below is a 'live' object.
   base::AutoLock lock(lock_);
@@ -872,44 +959,58 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   if (!dir)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  // Get upload url from the root feed. Links for all other collections will be
-  // handled in GDatadirectory::FromDocumentEntry();
-  if (is_initial_feed && dir == root_.get()) {
-    const Link* root_feed_upload_link =
-        feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
-    if (root_feed_upload_link)
-      dir->set_upload_url(root_feed_upload_link->href());
-  }
-
-  dir->set_start_feed_url(feed_url);
   dir->set_refresh_time(base::Time::Now());
-  if (feed->GetNextFeedURL(next_feed))
-    dir->set_next_feed_url(*next_feed);
 
   // Remove all child elements if we are refreshing the entire content.
-  if (is_initial_feed)
-    dir->RemoveChildren();
+  dir->RemoveChildren();
 
-  for (ScopedVector<DocumentEntry>::const_iterator iter =
-           feed->entries().begin();
-       iter != feed->entries().end(); ++iter) {
-    DocumentEntry* doc = *iter;
+  bool first_feed = true;
+  // Get through all collected feeds and fill in directory structure for all
+  // of them.
+  for (base::ListValue::const_iterator feeds_iter = feed_list->begin();
+       feeds_iter != feed_list->end(); ++feeds_iter) {
+    scoped_ptr<DocumentFeed> feed(ParseDocumentFeed(*feeds_iter));
+    if (!feed.get())
+      return base::PLATFORM_FILE_ERROR_FAILED;
 
-    // For now, skip elements of the root directory feed that have parent.
-    // TODO(zelidrag): In theory, we could reconstruct the entire FS snapshot
-    // of the root file feed only instead of fetching one dir/collection at the
-    // time.
-    if (dir == root_.get()) {
-      const Link* parent_link = doc->GetLinkByType(Link::PARENT);
-      if (parent_link)
-        continue;
+    // Get upload url from the root feed. Links for all other collections will
+    // be handled in GDatadirectory::FromDocumentEntry();
+    if (dir == root_.get() && first_feed) {
+      const Link* root_feed_upload_link =
+          feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
+      if (root_feed_upload_link)
+        dir->set_upload_url(root_feed_upload_link->href());
     }
 
-    GDataFileBase* file = GDataFileBase::FromDocumentEntry(dir, doc);
-    if (file)
-      dir->AddFile(file);
+    first_feed = false;
+
+    for (ScopedVector<DocumentEntry>::const_iterator iter =
+             feed->entries().begin();
+         iter != feed->entries().end(); ++iter) {
+      DocumentEntry* doc = *iter;
+
+      // For now, skip elements of the root directory feed that have parent.
+      // TODO(oleg): http://crosbug.com/26908. In theory, we could reconstruct
+      // the entire FS snapshot instead of fetching one dir/collection at
+      // the time.
+      if (dir == root_.get()) {
+        const Link* parent_link = doc->GetLinkByType(Link::PARENT);
+        if (parent_link)
+          continue;
+      }
+
+      GDataFileBase* file = GDataFileBase::FromDocumentEntry(dir, doc);
+      if (file)
+        dir->AddFile(file);
+    }
   }
+
+  NotifyDirectoryChanged(directory_path);
   return base::PLATFORM_FILE_OK;
+}
+
+void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
+  // TODO(zelidrag): Notify all observers on directory content change here.
 }
 
 base::PlatformFileError GDataFileSystem::AddNewDirectory(
