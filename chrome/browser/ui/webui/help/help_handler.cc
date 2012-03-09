@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -20,11 +21,15 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_client.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "v8/include/v8.h"
+#include "webkit/glue/user_agent.h"
+#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -121,14 +126,15 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 #if defined(OS_CHROMEOS)
     { "platform", IDS_PLATFORM_LABEL },
     { "firmware", IDS_ABOUT_PAGE_FIRMWARE },
-    // TODO(jhawkins): more_info_handler.cc.
-    { "moreInfoTitle", IDS_PRODUCT_OS_NAME },
-    { "moreInfoLink", IDS_MORE_INFO },
+    { "showMoreInfo", IDS_SHOW_MORE_INFO },
+    { "hideMoreInfo", IDS_HIDE_MORE_INFO },
     { "channel", IDS_ABOUT_PAGE_CHANNEL },
     { "stable", IDS_ABOUT_PAGE_CHANNEL_STABLE },
     { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
     { "dev", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
-    { "ok", IDS_OK },
+    { "webkit", IDS_WEBKIT },
+    { "userAgent", IDS_ABOUT_VERSION_USER_AGENT },
+    { "commandLine", IDS_ABOUT_VERSION_COMMAND_LINE },
 #endif
   };
 
@@ -154,6 +160,19 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   string16 tos = l10n_util::GetStringFUTF16(
       IDS_ABOUT_TERMS_OF_SERVICE, UTF8ToUTF16(chrome::kChromeUITermsURL));
   localized_strings->SetString("productTOS", tos);
+
+  localized_strings->SetString("webkitVersion",
+                               webkit_glue::GetWebKitVersion());
+
+  localized_strings->SetString("jsEngine", "V8");
+  localized_strings->SetString("jsEngineVersion", v8::V8::GetVersion());
+
+  localized_strings->SetString("userAgentInfo",
+                               content::GetUserAgent(GURL()));
+
+  CommandLine::StringType command_line =
+      CommandLine::ForCurrentProcess()->GetCommandLineString();
+  localized_strings->SetString("commandLineInfo", command_line);
 }
 
 void HelpHandler::RegisterMessages() {

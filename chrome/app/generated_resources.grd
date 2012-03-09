@@ -8143,8 +8143,14 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_HELP_TITLE" desc="Label used for title of the help page.">
         Help
       </message>
-      <message name="IDS_MORE_INFO" desc="The label of the more info link.">
-        More info
+      <message name="IDS_WEBKIT" desc="The name of the WebKit project; should not require translation.">
+        WebKit
+      </message>
+      <message name="IDS_SHOW_MORE_INFO" desc="The label of the 'More info' link.">
+        More info...
+      </message>
+      <message name="IDS_HIDE_MORE_INFO" desc="The label of the 'Hide info' link.">
+        Hide info...
       </message>
 
       <!-- The About page is now part of options. -->

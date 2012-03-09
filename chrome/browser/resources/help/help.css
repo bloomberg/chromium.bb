@@ -18,8 +18,6 @@ body {
 }
 
 #version-container {
-  font-size: 90%;
-  line-height: 1.5em;
   margin-top: 30px;
 }
 
@@ -83,11 +81,18 @@ body {
   background-image: url('chrome://theme/IDR_UPDATE_FAIL');
 }
 
-/* TODO(jhawkins): Copied from extensions.css; refactor. */
-#overlay {
-  z-index: 5;
+#more-info-expander {
+  -webkit-padding-start: 0;
 }
 
-#overlay .page:not(.showing) {
-  display: none;
+#more-info-container.visible {
+  margin-bottom: 1.5em;
+  max-height: 22em;
+}
+
+#more-info-container {
+  -webkit-transition: all 500ms linear;
+  margin-bottom: 0;
+  max-height: 0;
+  overflow: hidden;
 }

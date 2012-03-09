@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 <include src="../uber/uber_utils.js">
-<include src="more_info_overlay.js">
 
 cr.define('help', function() {
   var localStrings = new LocalStrings();
@@ -34,23 +33,43 @@ cr.define('help', function() {
       if (productTOS)
         productTOS.innerHTML = localStrings.getString('productTOS');
 
-      var moreInfoOverlay = help.MoreInfoOverlay.getInstance();
-      moreInfoOverlay.initializePage();
-
       $('get-help').onclick = chrome.send.bind(chrome, 'openHelpPage');
       $('report-issue').onclick =
           chrome.send.bind(chrome, 'openFeedbackDialog');
 
-      this.maybeSetOnClick_($('more-info'),
-          this.showOverlay_.bind(this, $('more-info-overlay')));
+      this.maybeSetOnClick_($('more-info-expander'),
+          this.toggleMoreInfo_.bind(this));
 
       this.maybeSetOnClick_($('promote'),
           chrome.send.bind(chrome, 'promoteUpdater'));
       this.maybeSetOnClick_($('relaunch'),
           chrome.send.bind(chrome, 'relaunchNow'));
 
+      var channelChanger = $('channel-changer');
+      if (channelChanger) {
+        var self = this;
+        channelChanger.onchange = function(event) {
+          self.setReleaseChannel_(event.target.value);
+        }
+      }
+
       // Attempt to update.
       chrome.send('onPageLoaded');
+    },
+
+    /**
+     * Toggles the visible state of the 'More Info' section.
+     * @private
+     */
+    toggleMoreInfo_: function() {
+      var moreInfo = $('more-info-container');
+      var visible = moreInfo.className == 'visible';
+      moreInfo.className = visible ? '' : 'visible';
+      moreInfo.addEventListener('webkitTransitionEnd', function(event) {
+        $('more-info-expander').textContent = visible ?
+            localStrings.getString('showMoreInfo') :
+                localStrings.getString('hideMoreInfo');
+      });
     },
 
     /**
@@ -169,7 +188,7 @@ cr.define('help', function() {
      * @private
      */
     updateEnableReleaseChannel_: function(enabled) {
-      $('more-info').hidden = !enabled;
+      $('channel-changer-container').hidden = !enabled;
     },
 
     /**
