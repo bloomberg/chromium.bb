@@ -1034,7 +1034,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     if not self._options.buildbot:
       # Trybot: Clear artifacts from all previous runs.
-      shutil.rmtree(self._archive_root, ignore_errors=True)
+      shutil.rmtree(self._bot_archive_root, ignore_errors=True)
     else:
       # Buildbot: Clear out any leftover build artifacts, if present.
       shutil.rmtree(archive_path, ignore_errors=True)
