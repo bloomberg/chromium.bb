@@ -93,11 +93,13 @@ void SetGDataPath(DownloadItem* download, const FilePath& path) {
 }
 
 // Return path stored in DownloadItem external data with key GDataPath.
-const FilePath& GetGDataPath(DownloadItem* download) {
+FilePath GetGDataPath(DownloadItem* download) {
   GDataExternalData* data = static_cast<GDataExternalData*>(
       download->GetExternalData(&kGDataPathKey));
+  // If data is NULL, we've somehow lost the gdata path selected
+  // by the file picker.
   DCHECK(data);
-  return data->file_path();
+  return data ? ExtractGDataPath(data->file_path()) : FilePath();
 }
 
 }  // namespace util

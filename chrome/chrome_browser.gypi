@@ -520,6 +520,8 @@
         'browser/chromeos/frame/panel_controller.h',
         'browser/chromeos/gdata/gdata.cc',
         'browser/chromeos/gdata/gdata.h',
+        'browser/chromeos/gdata/gdata_download_observer.cc',
+        'browser/chromeos/gdata/gdata_download_observer.h',
         'browser/chromeos/gdata/gdata_errorcode.h',
         'browser/chromeos/gdata/gdata_file_system.cc',
         'browser/chromeos/gdata/gdata_file_system.h',

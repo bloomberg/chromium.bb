@@ -15,9 +15,13 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "webkit/fileapi/file_system_file_util_proxy.h"
@@ -392,10 +396,17 @@ GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
 GDataFileSystem::GDataFileSystem(Profile* profile)
     : profile_(profile),
       documents_service_(new DocumentsService),
-      uploader_(new GDataUploader(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+      gdata_uploader_(new GDataUploader(ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+      gdata_download_observer_(new GDataDownloadObserver()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   documents_service_->Initialize(profile_);
-  uploader_->Initialize(profile_);
+
+  // download_manager will be NULL for unit tests.
+  content::DownloadManager* download_manager =
+    g_browser_process->download_status_updater() ?
+        DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager() :
+        NULL;
+  gdata_download_observer_->Initialize(gdata_uploader_.get(), download_manager);
   root_.reset(new GDataDirectory(NULL));
   root_->set_file_name(kGDataRootDirectory);
 

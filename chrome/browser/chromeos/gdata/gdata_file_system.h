@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
 
 #include <map>
+#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,6 +24,7 @@ namespace gdata {
 
 class DocumentsService;
 class GDataDirectory;
+class GDataDownloadObserver;
 class GDataFile;
 
 // Base class for representing files and directories in gdata virtual file
@@ -459,7 +461,9 @@ class GDataFileSystem : public ProfileKeyedService {
   scoped_ptr<DocumentsService> documents_service_;
 
   // File content uploader.
-  scoped_ptr<GDataUploader> uploader_;
+  scoped_ptr<GDataUploader> gdata_uploader_;
+  // Downloads observer.
+  scoped_ptr<GDataDownloadObserver> gdata_download_observer_;
 
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
 };

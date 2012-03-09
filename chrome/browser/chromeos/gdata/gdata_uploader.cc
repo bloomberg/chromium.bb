@@ -8,212 +8,39 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
 using content::BrowserThread;
-using content::DownloadManager;
-using content::DownloadItem;
-
-namespace gdata {
 
 namespace {
 
-// Threshold file size after which we stream the file.
-const int64 kStreamingFileSize = 1 << 20;  // 1MB
 // Google Documents List API requires uploading in chunks of 512kB.
 const size_t kUploadChunkSize = 512 * 1024;
 
-// Key for DownloadItem::ExternalData.
-const char kUploadingKey[] = "Uploading";
-
-// External Data stored in DownloadItem for ongoing uploads.
-class UploadingExternalData : public DownloadItem::ExternalData {
- public:
-  explicit UploadingExternalData(const GURL& url) : file_url_(url) {}
-  virtual ~UploadingExternalData() {}
-
-  const GURL& file_url() const { return file_url_; }
-
- private:
-  GURL file_url_;
-};
-
-// Extracts UploadingExternalData* from |download|.
-// static
-UploadingExternalData* GetUploadingExternalData(DownloadItem* download) {
-  return static_cast<UploadingExternalData*>(download
-      ->GetExternalData(&kUploadingKey));
-}
-
 }  // namespace
+
+namespace gdata {
 
 GDataUploader::GDataUploader(GDataFileSystem* file_system)
   : file_system_(file_system),
-    download_manager_(NULL),
     ALLOW_THIS_IN_INITIALIZER_LIST(uploader_factory_(this)) {
 }
 
 GDataUploader::~GDataUploader() {
-  if (download_manager_)
-    download_manager_->RemoveObserver(this);
-
-  for (DownloadSet::iterator it = pending_downloads_.begin();
-      it != pending_downloads_.end();
-      ++it) {
-    (*it)->RemoveObserver(this);
-  }
 }
 
-void GDataUploader::Initialize(Profile* profile) {
-  if (!g_browser_process->download_status_updater())
-    return;
-
-  download_manager_ =
-      DownloadServiceFactory::GetForProfile(profile)->GetDownloadManager();
-  download_manager_->AddObserver(this);
-}
-
-void GDataUploader::ManagerGoingDown(DownloadManager* download_manager) {
-  download_manager->RemoveObserver(this);
-  download_manager_ = NULL;
-}
-
-void GDataUploader::ModelChanged(DownloadManager* download_manager) {
+void GDataUploader::UploadFile(UploadFileInfo* upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(upload_file_info);
 
-  DownloadManager::DownloadVector downloads;
-  download_manager->GetAllDownloads(util::GetGDataTempDownloadFolderPath(),
-                                    &downloads);
-  for (size_t i = 0; i < downloads.size(); ++i) {
-    OnDownloadUpdated(downloads[i]);
-  }
-}
-
-void GDataUploader::OnDownloadUpdated(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  const DownloadItem::DownloadState state = download->GetState();
-  switch (state) {
-    case DownloadItem::IN_PROGRESS:
-      AddPendingDownload(download);
-      UploadDownloadItem(download);
-      break;
-
-    case DownloadItem::COMPLETE:
-      UploadDownloadItem(download);
-      RemovePendingDownload(download);
-      break;
-
-    // TODO(achuith): Stop the pending upload and delete the file.
-    case DownloadItem::CANCELLED:
-    case DownloadItem::REMOVING:
-    case DownloadItem::INTERRUPTED:
-      RemovePendingDownload(download);
-      break;
-
-    default:
-      NOTREACHED();
-  }
-  DLOG(INFO) << "Number of pending downloads=" << pending_downloads_.size();
-}
-
-void GDataUploader::AddPendingDownload(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Add ourself as an observer of this download if we've never seen it before.
-  if (pending_downloads_.find(download) == pending_downloads_.end()) {
-    pending_downloads_.insert(download);
-    download->AddObserver(this);
-    DLOG(INFO) << "new download total bytes=" << download->GetTotalBytes()
-             << ", full path=" << download->GetFullPath().value()
-             << ", mime type=" << download->GetMimeType();
-  }
-}
-
-void GDataUploader::RemovePendingDownload(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!download->IsInProgress());
-
-  DownloadSet::iterator it = pending_downloads_.find(download);
-  if (it != pending_downloads_.end()) {
-    pending_downloads_.erase(it);
-    download->RemoveObserver(this);
-  }
-}
-
-void GDataUploader::UploadDownloadItem(DownloadItem* download) {
-  // Update metadata of ongoing upload.
-  UpdateUpload(download);
-
-  if (!ShouldUpload(download))
-    return;
-
-  DLOG(INFO) << "Starting upload"
-           << ", full path=" << download->GetFullPath().value()
-           << ", received bytes=" << download->GetReceivedBytes()
-           << ", total bytes=" << download->GetTotalBytes()
-           << ", mime type=" << download->GetMimeType();
-
-  UploadFileInfo* upload_file_info = new UploadFileInfo();
-  upload_file_info->Init(download);
-  const GURL& file_url = upload_file_info->file_url;
-  pending_uploads_.insert(std::make_pair(file_url, upload_file_info));
-  // Set the UploadingKey in |download|.
-  download->SetExternalData(&kUploadingKey,
-                            new UploadingExternalData(file_url));
-
-  UploadFile(file_url);
-}
-
-void GDataUploader::UpdateUpload(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  UploadingExternalData* external_data = GetUploadingExternalData(download);
-  if (!external_data)
-    return;
-
-  UploadFileInfo* upload_file_info =
-      GetUploadFileInfo(external_data->file_url());
-  if (!upload_file_info)
-    return;
-
-  // Update file_size and download_complete.
-  DLOG(INFO) << "Updating file size from " << upload_file_info->file_size
-           << " to " << download->GetReceivedBytes();
-  upload_file_info->file_size = download->GetReceivedBytes();
-  upload_file_info->download_complete = download->IsComplete();
-}
-
-bool GDataUploader::ShouldUpload(DownloadItem* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Upload if the item is in pending_downloads_,
-  // is complete or large enough to stream, and,
-  // is not already being uploaded.
-  return pending_downloads_.find(download) != pending_downloads_.end() &&
-         (download->IsComplete() ||
-             download->GetReceivedBytes() > kStreamingFileSize) &&
-         GetUploadingExternalData(download) == NULL;
-}
-
-void GDataUploader::UploadFile(const GURL& file_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
-  if (!upload_file_info)
-    return;
-
-  DLOG(INFO) << "Uploading file: " << upload_file_info->DebugString();
+  // Add upload_file_info to our internal map and take ownership.
+  pending_uploads_[upload_file_info->file_url] = upload_file_info;
+  DVLOG(1) << "Uploading file: " << upload_file_info->DebugString();
 
   // Create a FileStream to make sure the file can be opened successfully.
   upload_file_info->file_stream = new net::FileStream(NULL);
@@ -231,8 +58,22 @@ void GDataUploader::UploadFile(const GURL& file_url) {
       base::PLATFORM_FILE_ASYNC,
       base::Bind(&GDataUploader::OpenCompletionCallback,
                  uploader_factory_.GetWeakPtr(),
-                 file_url));
+                 upload_file_info->file_url));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
+}
+
+void GDataUploader::UpdateUpload(const GURL& file_url,
+                                 size_t file_size,
+                                 bool download_complete) {
+  UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
+  if (!upload_file_info)
+    return;
+
+  // Update file_size and download_complete.
+  DVLOG(1) << "Updating file size from " << upload_file_info->file_size
+           << " to " << file_size;
+  upload_file_info->file_size = file_size;
+  upload_file_info->download_complete = download_complete;
 }
 
 UploadFileInfo* GDataUploader::GetUploadFileInfo(const GURL& file_url) {
@@ -264,14 +105,11 @@ void GDataUploader::OpenCompletionCallback(const GURL& file_url, int result) {
     return;
   }
 
-  // TODO(achuith): Wire the correct destination directory here.
-  FilePath destination_dir_path(FILE_PATH_LITERAL("gdata"));
-
   file_system_->InitiateUpload(
       upload_file_info->title,
       upload_file_info->content_type,
       upload_file_info->content_length,
-      destination_dir_path,
+      upload_file_info->gdata_path.DirName(),
       base::Bind(&GDataUploader::OnUploadLocationReceived,
                  uploader_factory_.GetWeakPtr(),
                  upload_file_info->file_url));
@@ -287,7 +125,7 @@ void GDataUploader::OnUploadLocationReceived(
   if (!upload_file_info)
     return;
 
-  DLOG(INFO) << "Got upload location [" << upload_location.spec()
+  DVLOG(1) << "Got upload location [" << upload_location.spec()
            << "] for [" << upload_file_info->title << "]";
 
   if (code != HTTP_SUCCESS) {
@@ -306,7 +144,7 @@ void GDataUploader::UploadNextChunk(UploadFileInfo* upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Check that |upload_file_info| is in pending_uploads_.
   DCHECK(upload_file_info == GetUploadFileInfo(upload_file_info->file_url));
-  DLOG(INFO) << "Number of pending uploads=" << pending_uploads_.size();
+  DVLOG(1) << "Number of pending uploads=" << pending_uploads_.size();
 
   // Determine number of bytes to read for this upload iteration, which cannot
   // exceed size of buf i.e. buf_len.
@@ -339,7 +177,7 @@ void GDataUploader::ReadCompletionCallback(
   // The Read is asynchronously executed on BrowserThread::UI, where
   // Read() was called.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DLOG(INFO) << "ReadCompletionCallback bytes read=" << bytes_read;
+  DVLOG(1) << "ReadCompletionCallback bytes read=" << bytes_read;
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(file_url);
   if (!upload_file_info)
@@ -379,7 +217,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
     return;
 
   if (code == HTTP_CREATED) {
-    DLOG(INFO) << "Successfully created uploaded file=["
+    DVLOG(1) << "Successfully created uploaded file=["
              << upload_file_info->title << "]";
 
     // Done uploading.
@@ -412,7 +250,7 @@ void GDataUploader::OnResumeUploadResponseReceived(
     return;
   }
 
-  DLOG(INFO) << "Received range " << start_range_received
+  DVLOG(1) << "Received range " << start_range_received
            << "-" << end_range_received
            << " for [" << upload_file_info->title << "]";
 

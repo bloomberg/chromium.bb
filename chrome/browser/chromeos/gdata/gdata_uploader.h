@@ -13,10 +13,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
-#include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
-
-class Profile;
+#include "googleurl/src/gurl.h"
 
 namespace gdata {
 
@@ -24,42 +21,20 @@ class DocumentsService;
 class GDataFileSystem;
 struct UploadFileInfo;
 
-class GDataUploader : public content::DownloadManager::Observer,
-                      public content::DownloadItem::Observer {
+class GDataUploader {
  public:
   explicit GDataUploader(GDataFileSystem* file_system);
   virtual ~GDataUploader();
 
-  // Initializes GDataUploader. Become an observer of |profile|'s
-  // DownloadManager.
-  void Initialize(Profile* profile);
+  // Uploads a file specified by |upload_file_info|. Transfers ownership.
+  void UploadFile(UploadFileInfo* upload_file_info);
+
+  // Updates size and download_completed of streaming upload.
+  void UpdateUpload(const GURL& file_url,
+                    size_t file_size,
+                    bool download_complete);
 
  private:
-  // DownloadManager overrides.
-  virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
-  virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
-
-  // DownloadItem overrides.
-  virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
-  virtual void OnDownloadOpened(content::DownloadItem* download) OVERRIDE {}
-
-  // Adds/Removes |download| to pending_downloads_.
-  // Also start/stop observing |download|.
-  void AddPendingDownload(content::DownloadItem* download);
-  void RemovePendingDownload(content::DownloadItem* download);
-
-  // Start the upload of a downloaded/downloading file.
-  void UploadDownloadItem(content::DownloadItem* download);
-
-  // Update metadata of ongoing upload if it exists.
-  void UpdateUpload(content::DownloadItem* download);
-
-  // Check if this DownloadItem should be uploaded.
-  bool ShouldUpload(content::DownloadItem* download);
-
-  // Uploads a file. |file_url| is a file:// url of the downloaded file.
-  void UploadFile(const GURL& file_url);
-
   // Lookup UploadFileInfo* in pending_uploads_.
   UploadFileInfo* GetUploadFileInfo(const GURL& file_url);
 
@@ -93,14 +68,8 @@ class GDataUploader : public content::DownloadManager::Observer,
 
   GDataFileSystem* file_system_;
 
-  typedef std::set<content::DownloadItem*> DownloadSet;
-  DownloadSet pending_downloads_;
-
   typedef std::map<GURL, UploadFileInfo*> UploadFileInfoMap;
   UploadFileInfoMap pending_uploads_;
-
-  // We observe the DownloadManager for new downloads.
-  content::DownloadManager* download_manager_;
 
   // Factory for various callbacks.
   base::WeakPtrFactory<GDataUploader> uploader_factory_;
