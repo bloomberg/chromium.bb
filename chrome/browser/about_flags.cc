@@ -26,6 +26,7 @@
 
 #if defined(USE_AURA)
 #include "ash/ash_switches.h"
+#include "ui/aura/aura_switches.h"
 #endif
 
 using content::UserMetricsAction;
@@ -444,6 +445,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_AURA_GOOGLE_DIALOG_FRAMES_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAuraGoogleDialogFrames)
+  },
+  {
+    "aura-disable-hold-mouse-moves",
+    IDS_FLAGS_AURA_DISABLE_HOLD_MOUSE_MOVES_NAME,
+    IDS_FLAGS_AURA_DISABLE_HOLD_MOUSE_MOVES_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kAuraDisableHoldMouseMoves)
   },
 #endif  // defined(USE_AURA)
   {
