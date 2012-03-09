@@ -420,7 +420,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
   }
 
   int drop_index;
-  if (args_->GetSize() == 2)
+  if (HasOptionalArgument(1))
     EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &drop_index));
   else
     drop_index = drop_parent->child_count();
