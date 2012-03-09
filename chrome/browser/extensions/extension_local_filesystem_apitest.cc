@@ -52,9 +52,8 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTest) {
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestWrite) {
   AddTmpMountPoint();
   ASSERT_TRUE(RunExtensionTest("filesystem_handler_write")) << message_;
-  ASSERT_FALSE(RunComponentExtensionSubtest("filebrowser_component",
-                                            "write.html"));
-  EXPECT_EQ(0u, message_.find(kExpectedWriteError)) << message_;
+  ASSERT_TRUE(RunComponentExtensionSubtest("filebrowser_component",
+                                            "write.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,

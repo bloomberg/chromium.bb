@@ -977,8 +977,7 @@ class
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         handler_pid_,
         final_file_path,
-        handler_extension_->location() != Extension::COMPONENT ?
-            kReadOnlyFilePermissions : kReadWriteFilePermissions);
+        kReadWriteFilePermissions);
 
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
