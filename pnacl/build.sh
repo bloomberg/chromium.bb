@@ -2926,6 +2926,7 @@ newlib-install() {
   pushd "${NEWLIB_INSTALL_DIR}"
   mkdir -p lib include
   mv -f pnacl/lib/* lib
+  rm -rf  include/sys include/machine
   mv -f pnacl/include/* include
   rmdir pnacl/lib
   rmdir pnacl/include
