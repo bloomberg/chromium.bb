@@ -1576,11 +1576,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion39ToCurrent) {
     EXPECT_TRUE(meta_table.GetValue(
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
-
-    std::string default_search_provider_backup_unused;
-    EXPECT_FALSE(meta_table.GetValue(
-        "Default Search Provider Backup",
-        &default_search_provider_backup_unused));
   }
 }
 
@@ -1661,11 +1656,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion39WithBackupToCurrent) {
     EXPECT_TRUE(meta_table.GetValue(
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
-
-    std::string default_search_provider_backup_unused;
-    EXPECT_FALSE(meta_table.GetValue(
-        "Default Search Provider Backup",
-        &default_search_provider_backup_unused));
   }
 }
 #endif  // !defined(GOOGLE_CHROME_BUILD)
@@ -1746,11 +1736,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion40ToCurrent) {
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
     EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
-
-    std::string default_search_provider_backup_unused;
-    EXPECT_FALSE(meta_table.GetValue(
-        "Default Search Provider Backup",
-        &default_search_provider_backup_unused));
   }
 }
 
@@ -1783,11 +1768,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion41ToCurrent) {
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
     EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
-
-    std::string default_search_provider_backup;
-    EXPECT_FALSE(meta_table.GetValue(
-        "Default Search Provider Backup",
-        &default_search_provider_backup));
   }
 
   // Load the database via the WebDatabase class and migrate the database to
@@ -1831,11 +1811,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion41ToCurrent) {
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
     EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
-
-    std::string default_search_provider_backup_unused;
-    EXPECT_FALSE(meta_table.GetValue(
-        "Default Search Provider Backup",
-        &default_search_provider_backup_unused));
   }
 }
 
@@ -1869,27 +1844,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion42ToCurrent) {
         &default_search_provider_id_backup_signature));
     EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
 
-    std::string default_search_provider_backup;
-    EXPECT_TRUE(meta_table.GetValue(
-        "Default Search Provider Backup",
-        &default_search_provider_backup));
-    EXPECT_EQ("2"
-              "Google"
-              "google.com"
-              "http://www.google.com/favicon.ico"
-              "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
-                  "{google:originalQueryForSuggestion}sourceid=chrome&"
-                  "ie={inputEncoding}&q={searchTerms}"
-              "100"
-              "UTF-8"
-              "1"
-              "{google:baseSuggestURL}search?client=chrome&hl={language}&"
-                  "q={searchTerms}"
-              "1162620"
-              "{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&"
-                  "ie={inputEncoding}&ion=1{searchTerms}&nord=10"
-              "{1234-5678-90AB-CDEF}",
-              default_search_provider_backup);
     EXPECT_FALSE(connection.DoesTableExist("keywords_backup"));
   }
 
@@ -1934,11 +1888,6 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion42ToCurrent) {
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
     EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
-
-    std::string default_search_provider_backup_unused;
-    EXPECT_FALSE(meta_table.GetValue(
-        "Default Search Provider Backup",
-        &default_search_provider_backup_unused));
 
     EXPECT_TRUE(connection.DoesTableExist("keywords_backup"));
     sql::Statement s(
@@ -2057,10 +2006,5 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion43ToCurrent) {
         "Default Search Provider ID Backup Signature",
         &default_search_provider_id_backup_signature));
     EXPECT_FALSE(default_search_provider_id_backup_signature.empty());
-
-    std::string default_search_provider_backup_unused;
-    EXPECT_FALSE(meta_table.GetValue(
-        "Default Search Provider Backup",
-        &default_search_provider_backup_unused));
   }
 }
