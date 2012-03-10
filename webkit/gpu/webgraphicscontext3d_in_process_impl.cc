@@ -125,13 +125,14 @@ WebGraphicsContext3DInProcessImpl::CreateForWebView(
   if (!gfx::GLSurface::InitializeOneOff())
     return NULL;
 
-  gfx::GLShareGroup* share_group = 0;
+  gfx::GLShareGroup* share_group = NULL;
 
   if (attributes.shareResources) {
     WebGraphicsContext3DInProcessImpl* context_impl =
       g_all_shared_contexts.Pointer()->empty() ?
         NULL : *g_all_shared_contexts.Pointer()->begin();
-    share_group = context_impl->gl_context_->share_group();
+    if (context_impl)
+        share_group = context_impl->gl_context_->share_group();
   }
 
   // This implementation always renders offscreen regardless of whether
