@@ -419,7 +419,7 @@ int GDataRootDirectory::GetCacheState(const std::string& res_id,
 
   DVLOG(1) << "Cache state for res_id " << res_id
            << ", md5 " << entry->md5
-            << ": " << (void*) cache_state;
+            << ": " << cache_state;
 
   return cache_state;
 }
