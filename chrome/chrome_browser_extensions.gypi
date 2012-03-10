@@ -10,9 +10,6 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
-        'autofill_regexes',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
-        'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -24,38 +21,20 @@
         'debugger',
         'in_memory_url_index_cache_proto',
         'installer_util',
-        'safe_browsing_proto',
-        'safe_browsing_report_proto',
-        # TODO(sync): Make browser not depend on syncapi_core directly.
-        'syncapi_core',
-        'syncapi_service',
-        'feedback_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
-        '../media/media.gyp:media',
         '../net/net.gyp:net',
-        '../ppapi/ppapi_internal.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
-        '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/bzip2/bzip2.gyp:bzip2',
-        '../third_party/cld/cld.gyp:cld',
-        '../third_party/expat/expat.gyp:expat',
-        '../third_party/hunspell/hunspell.gyp:hunspell',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        '../third_party/libjingle/libjingle.gyp:libjingle',
-        '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
-        '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/npapi/npapi.gyp:npapi',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
-        '../ui/gfx/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_2x',
         '../ui/ui.gyp:ui_resources_standard',
-        '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:blob',
         '../webkit/support/webkit_support.gyp:database',
@@ -69,17 +48,9 @@
         '..',
         '<(INTERMEDIATE_DIR)',
       ],
-      'defines': [
-        '<@(nacl_defines)',
-      ],
-      'direct_dependent_settings': {
-        'defines': [
-          '<@(nacl_defines)',
-        ],
-      },
       'sources': [
-        # All .cc, .h, .m, and .mm files under browser except for tests and
-        # mocks.
+        # All .cc, .h, .m, and .mm files under browser/extensions except for
+        # tests and mocks.
         'browser/extensions/api/api_function.cc',
         'browser/extensions/api/api_function.h',
         'browser/extensions/api/api_resource.cc',
@@ -468,20 +439,6 @@
         'browser/extensions/webstore_installer.h',
       ],
       'conditions': [
-        ['debug_devtools==1', {
-          'defines': [
-            'DEBUG_DEVTOOLS=1',
-          ],
-        }],
-        ['safe_browsing==1', {
-          'defines': [
-            'ENABLE_SAFE_BROWSING',
-          ],
-        }, {  # safe_browsing==0
-          'dependencies!': [
-            'safe_browsing_report_proto',
-          ],
-        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', 'browser/extensions/api/terminal/terminal_extension_helper.cc'],
@@ -507,42 +464,9 @@
             'browser/extensions/default_apps.h',
           ],
         }],
-        ['use_aura==1', {
-          'dependencies': [
-            '../ui/aura/aura.gyp:aura',
-            '../ash/ash.gyp:ash',
-            '../ui/gfx/compositor/compositor.gyp:compositor',
-          ],
-        }],
-        ['ui_compositor_image_transport==1', {
-          'dependencies': [
-            '../ui/gfx/gl/gl.gyp:gl',
-          ],
-        }],
         ['use_virtual_keyboard==0', {
           'sources/': [
             ['exclude', '^browser/extensions/extension_input_ui_api.*'],
-          ],
-        }],
-        ['os_posix == 1 and OS != "mac" and OS != "android"', {
-          'link_settings': {
-            'libraries': [
-              '-lXss',
-            ],
-          },
-          'conditions': [
-            ['linux_breakpad==1', {
-              'dependencies': [
-                '../breakpad/breakpad.gyp:breakpad_client',
-                # make sure file_version_info_linux.h is generated first.
-                'common',
-              ],
-              'include_dirs': [
-                # breakpad_linux.cc uses generated file_version_info_linux.h.
-                '<(SHARED_INTERMEDIATE_DIR)',
-                '../breakpad/src',
-              ],
-            }],
           ],
         }],
         ['OS=="linux" and use_aura==1', {
@@ -564,60 +488,12 @@
             '../dbus/dbus.gyp:dbus',
             '../third_party/undoview/undoview.gyp:undoview',
           ],
-          'conditions': [
-            ['OS=="linux"', {
-              'link_settings': {
-                'libraries': [
-                  # For dlsym() in 'browser/zygote_main_linux.cc'
-                  '-ldl',
-                ],
-              },
-            }],
-            ['use_gnome_keyring==1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gnome_keyring',
-              ],
-            }],
-          ],
-        }],
-        ['OS=="mac"', {
-          'include_dirs': [
-            '../third_party/apple',
-            '../third_party/GTM',
-            '../third_party/GTM/AppKit',
-            '../third_party/GTM/DebugUtils',
-            '../third_party/GTM/Foundation',
-          ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Accelerate.framework',
-              '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',
-              '$(SDKROOT)/System/Library/Frameworks/AudioUnit.framework',
-              '$(SDKROOT)/System/Library/Frameworks/DiskArbitration.framework',
-              '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
-              '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-              '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
-            ],
-          },
-          'dependencies': [
-            '../base/base.gyp:closure_blocks_leopard_compat',
-            '../third_party/icon_family/icon_family.gyp:icon_family',
-          ],
         }],
         ['OS=="win"', {
-          'include_dirs': [
-            '<(DEPTH)/third_party/wtl/include',
-          ],
           'dependencies': [
-            '../google_update/google_update.gyp:google_update',
             '../rlz/rlz.gyp:rlz_lib',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-            '../ui/views/views.gyp:views',
-          ],
-          'export_dependent_settings': [
-            '../ui/views/views.gyp:views',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -629,9 +505,6 @@
         }, {  # 'OS!="win"
           'conditions': [
             ['OS=="linux" and toolkit_views==1',{
-              'dependencies': [
-                '../ui/views/views.gyp:views',
-              ],
               'include_dirs': [
                 '<(INTERMEDIATE_DIR)',
                 '<(INTERMEDIATE_DIR)/chrome',
@@ -686,13 +559,6 @@
                   'include_dirs': [
                     '../third_party/'
                   ],
-                }],
-                ['system_libcros==1', {
-                  'link_settings': {
-                    'libraries': [
-                      '-lcrosapi',
-                    ],
-                  },
                 }],
               ],
             }],

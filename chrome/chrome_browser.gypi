@@ -79,8 +79,9 @@
         ],
       },
       'sources': [
-        # All .cc, .h, .m, and .mm files under browser except for tests and
-        # mocks.
+        # All .cc, .h, .m, and .mm files under browser except for:
+        # * tests and mocks.
+        # * code below browser/extensions
         'browser/about_flags.cc',
         'browser/about_flags.h',
         'browser/accessibility/accessibility_extension_api.cc',
