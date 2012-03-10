@@ -19,7 +19,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_service.h"
 
-using namespace extension_function_test_utils;
+using extension_function_test_utils::RunFunctionAndReturnError;
+using extension_function_test_utils::RunFunctionAndReturnResult;
 
 namespace {
 

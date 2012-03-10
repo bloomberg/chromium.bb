@@ -16,10 +16,14 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "googleurl/src/gurl.h"
 
+using extensions::api::permissions::Permissions;
 using extensions::PermissionsUpdater;
-using extensions::permissions_api_helpers::PackPermissionSet;
-using extensions::permissions_api_helpers::UnpackPermissionSet;
-using namespace extensions::api::permissions;
+
+namespace Contains = extensions::api::permissions::Contains;
+namespace GetAll = extensions::api::permissions::GetAll;
+namespace Remove = extensions::api::permissions::Remove;
+namespace Request  = extensions::api::permissions::Request;
+namespace helpers = extensions::permissions_api_helpers;
 
 namespace {
 
@@ -46,7 +50,7 @@ bool ContainsPermissionsFunction::RunImpl() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
 
   scoped_refptr<ExtensionPermissionSet> permissions =
-      UnpackPermissionSet(params->permissions, &error_);
+      helpers::UnpackPermissionSet(params->permissions, &error_);
   if (!permissions.get())
     return false;
 
@@ -57,7 +61,7 @@ bool ContainsPermissionsFunction::RunImpl() {
 
 bool GetAllPermissionsFunction::RunImpl() {
   scoped_ptr<Permissions> permissions =
-      PackPermissionSet(GetExtension()->GetActivePermissions());
+      helpers::PackPermissionSet(GetExtension()->GetActivePermissions());
   result_.reset(GetAll::Result::Create(*permissions));
   return true;
 }
@@ -67,7 +71,7 @@ bool RemovePermissionsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   scoped_refptr<ExtensionPermissionSet> permissions =
-      UnpackPermissionSet(params->permissions, &error_);
+      helpers::UnpackPermissionSet(params->permissions, &error_);
   if (!permissions.get())
     return false;
 
@@ -124,7 +128,8 @@ bool RequestPermissionsFunction::RunImpl() {
   scoped_ptr<Request::Params> params(Request::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  requested_permissions_ = UnpackPermissionSet(params->permissions, &error_);
+  requested_permissions_ =
+      helpers::UnpackPermissionSet(params->permissions, &error_);
   if (!requested_permissions_.get())
     return false;
 

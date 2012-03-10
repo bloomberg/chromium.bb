@@ -20,7 +20,11 @@
 
 namespace extensions {
 
-using namespace settings_namespace;
+using settings_namespace::FromString;
+using settings_namespace::LOCAL;
+using settings_namespace::Namespace;
+using settings_namespace::SYNC;
+using settings_namespace::ToString;
 
 namespace {
 

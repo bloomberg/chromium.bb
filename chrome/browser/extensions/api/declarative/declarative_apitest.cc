@@ -14,7 +14,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 
-using namespace extensions;
+using extensions::RulesRegistry;
+using extensions::RulesRegistryService;
+using extensions::TestRulesRegistry;
 
 namespace {
 const char kTestEvent[] = "webRequest.onRequest";

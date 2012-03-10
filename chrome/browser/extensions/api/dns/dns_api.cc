@@ -15,7 +15,9 @@
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
-using namespace extensions::api::experimental;
+using extensions::api::experimental::ResolveCallbackResolveInfo;
+
+namespace Resolve = extensions::api::experimental::Resolve;
 
 namespace extensions {
 

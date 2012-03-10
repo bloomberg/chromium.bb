@@ -35,6 +35,20 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 
+using content::RenderThread;
+using extensions::MiscellaneousBindings;
+using extensions::SchemaGeneratedBindings;
+using WebKit::WebDataSource;
+using WebKit::WebDocument;
+using WebKit::WebFrame;
+using WebKit::WebSecurityPolicy;
+using WebKit::WebString;
+using WebKit::WebScopedUserGesture;
+using WebKit::WebVector;
+using WebKit::WebView;
+
+namespace util = extensions::custom_bindings_util;
+
 namespace {
 
 static const int64 kInitialExtensionIdleHandlerDelayMs = 5*1000;
@@ -47,18 +61,6 @@ ChromeV8Context::ContextType ExtensionGroupToContextType(int extension_group) {
 }
 
 }
-
-using namespace extensions;
-
-using WebKit::WebDataSource;
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebSecurityPolicy;
-using WebKit::WebString;
-using WebKit::WebScopedUserGesture;
-using WebKit::WebVector;
-using WebKit::WebView;
-using content::RenderThread;
 
 ExtensionDispatcher::ExtensionDispatcher()
     : is_webkit_initialized_(false),
@@ -125,8 +127,7 @@ void ExtensionDispatcher::WebKitInitialized() {
   RegisterExtension(new ChromeV8Extension(
       "extensions/apitest.js", IDR_EXTENSION_APITEST_JS, NULL), true);
 
-  std::vector<v8::Extension*> custom_bindings =
-      custom_bindings_util::GetAll(this);
+  std::vector<v8::Extension*> custom_bindings = util::GetAll(this);
   for (std::vector<v8::Extension*>::iterator it = custom_bindings.begin();
       it != custom_bindings.end(); ++it) {
     RegisterExtension(*it, true);
@@ -323,8 +324,7 @@ bool ExtensionDispatcher::AllowScriptExtension(
           UserScriptSlave::GetDataSourceURLForFrame(frame)))) {
     // If the extension is a custom API binding, only allow if the extension
     // has permission to use the API.
-    std::string custom_binding_api_name =
-        custom_bindings_util::GetAPIName(v8_extension_name);
+    std::string custom_binding_api_name = util::GetAPIName(v8_extension_name);
     if (!custom_binding_api_name.empty()) {
       std::string extension_id = GetExtensionID(frame, world_id);
       const Extension* extension = extensions_.GetByID(extension_id);
@@ -340,8 +340,7 @@ bool ExtensionDispatcher::AllowScriptExtension(
         CHECK_EQ("invalid", extension_id);
         return false;
       }
-      return custom_bindings_util::AllowAPIInjection(
-          custom_binding_api_name, *extension, this);
+      return util::AllowAPIInjection(custom_binding_api_name, *extension, this);
     }
 
     return true;

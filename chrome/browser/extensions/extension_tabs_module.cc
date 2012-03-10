@@ -69,8 +69,12 @@
 #include "chrome/browser/ui/views/ash/panel_view_aura.h"
 #endif
 
-namespace keys = extension_tabs_module_constants;
+namespace Get = extensions::api::windows::Get;
+namespace GetAll = extensions::api::windows::GetAll;
+namespace GetCurrent = extensions::api::windows::GetCurrent;
+namespace GetLastFocused = extensions::api::windows::GetLastFocused;
 namespace errors = extension_manifest_errors;
+namespace keys = extension_tabs_module_constants;
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -78,7 +82,6 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::RenderViewHost;
 using content::WebContents;
-using namespace extensions::api::windows;
 
 const int CaptureVisibleTabFunction::kDefaultQuality = 90;
 

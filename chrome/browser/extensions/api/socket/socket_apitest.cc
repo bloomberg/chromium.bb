@@ -15,7 +15,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "net/test/test_server.h"
 
-using namespace extension_function_test_utils;
+namespace utils = extension_function_test_utils;
 
 namespace {
 
@@ -43,15 +43,15 @@ class SocketApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
   scoped_refptr<extensions::SocketCreateFunction> socket_create_function(
       new extensions::SocketCreateFunction());
-  scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
       socket_create_function,
       GenerateCreateFunctionArgs("udp", kHostname, kPort),
-      browser(), NONE));
+      browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
   int socketId = -1;
@@ -62,15 +62,15 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPCreateGood) {
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
   scoped_refptr<extensions::SocketCreateFunction> socket_create_function(
       new extensions::SocketCreateFunction());
-  scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
       socket_create_function,
       GenerateCreateFunctionArgs("udp", kHostname, kPort),
-      browser(), NONE));
+      browser(), utils::NONE));
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, result->GetType());
   DictionaryValue *value = static_cast<DictionaryValue*>(result.get());
   int socketId = -1;
@@ -81,17 +81,17 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketTCPCreateGood) {
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketCreateBad) {
   scoped_refptr<extensions::SocketCreateFunction> socket_create_function(
       new extensions::SocketCreateFunction());
-  scoped_refptr<Extension> empty_extension(CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
 
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);
 
   // TODO(miket): this test currently passes only because of artificial code
   // that doesn't run in production. Fix this when we're able to.
-  RunFunctionAndReturnError(
+  utils::RunFunctionAndReturnError(
       socket_create_function,
       GenerateCreateFunctionArgs("xxxx", kHostname, kPort),
-      browser(), NONE);
+      browser(), utils::NONE);
 }
 
 IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {

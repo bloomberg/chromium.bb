@@ -16,8 +16,8 @@
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
-
-using namespace extension_function_test_utils;
+using extension_function_test_utils::CreateEmptyExtension;
+using extension_function_test_utils::RunFunctionAndReturnResult;
 
 namespace {
 

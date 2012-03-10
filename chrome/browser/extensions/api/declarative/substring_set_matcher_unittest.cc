@@ -10,7 +10,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using namespace extensions;
+using extensions::SubstringPattern;
+using extensions::SubstringSetMatcher;
 
 TEST(SubstringSetMatcherTest, SubstringPattern) {
   SubstringPattern r1("Test", 2);

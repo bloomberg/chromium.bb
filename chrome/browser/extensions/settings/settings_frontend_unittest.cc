@@ -21,8 +21,8 @@ using content::BrowserThread;
 
 namespace extensions {
 
-using namespace settings_namespace;
-using namespace settings_test_util;
+namespace settings = settings_namespace;
+namespace util = settings_test_util;
 
 namespace {
 
@@ -66,13 +66,13 @@ scoped_ptr<Value> CreateMegabyte() {
 class ExtensionSettingsFrontendTest : public testing::Test {
  public:
    ExtensionSettingsFrontendTest()
-      : storage_factory_(new ScopedSettingsStorageFactory()),
+      : storage_factory_(new util::ScopedSettingsStorageFactory()),
         ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    profile_.reset(new MockProfile(temp_dir_.path()));
+    profile_.reset(new util::MockProfile(temp_dir_.path()));
     ResetFrontend();
   }
 
@@ -89,9 +89,9 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   }
 
   ScopedTempDir temp_dir_;
-  scoped_ptr<MockProfile> profile_;
+  scoped_ptr<util::MockProfile> profile_;
   scoped_ptr<SettingsFrontend> frontend_;
-  scoped_refptr<ScopedSettingsStorageFactory> storage_factory_;
+  scoped_refptr<util::ScopedSettingsStorageFactory> storage_factory_;
 
  private:
   MessageLoop message_loop_;
@@ -108,7 +108,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
-  SettingsStorage* storage = GetStorage(id, frontend_.get());
+  SettingsStorage* storage = util::GetStorage(id, frontend_.get());
 
   // The correctness of Get/Set/Remove/Clear is tested elsewhere so no need to
   // be too rigorous.
@@ -125,7 +125,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   }
 
   ResetFrontend();
-  storage = GetStorage(id, frontend_.get());
+  storage = util::GetStorage(id, frontend_.get());
 
   {
     SettingsStorage::ReadResult result = storage->Get();
@@ -139,7 +139,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_PACKAGED_APP);
 
-  SettingsStorage* storage = GetStorage(id, frontend_.get());
+  SettingsStorage* storage = util::GetStorage(id, frontend_.get());
 
   {
     StringValue bar("bar");
@@ -152,7 +152,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   MessageLoop::current()->RunAllPending();
 
   // The storage area may no longer be valid post-uninstall, so re-request.
-  storage = GetStorage(id, frontend_.get());
+  storage = util::GetStorage(id, frontend_.get());
   {
     SettingsStorage::ReadResult result = storage->Get();
     ASSERT_FALSE(result.HasError());
@@ -165,7 +165,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
-  SettingsStorage* storage = GetStorage(id, frontend_.get());
+  SettingsStorage* storage = util::GetStorage(id, frontend_.get());
 
   {
     StringValue bar("bar");
@@ -199,7 +199,7 @@ TEST_F(ExtensionSettingsFrontendTest,
 
   storage_factory_->Reset(new NullSettingsStorageFactory());
 
-  SettingsStorage* storage = GetStorage(id, frontend_.get());
+  SettingsStorage* storage = util::GetStorage(id, frontend_.get());
   ASSERT_TRUE(storage != NULL);
 
   EXPECT_TRUE(storage->Get().HasError());
@@ -211,7 +211,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   // storage areas start working.
   storage_factory_->Reset(new SettingsLeveldbStorage::Factory());
 
-  storage = GetStorage(id, frontend_.get());
+  storage = util::GetStorage(id, frontend_.get());
   ASSERT_TRUE(storage != NULL);
 
   EXPECT_TRUE(storage->Get().HasError());
@@ -231,8 +231,10 @@ TEST_F(ExtensionSettingsFrontendTest,
   profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
-  SettingsStorage* sync_storage = GetStorage(id, SYNC, frontend_.get());
-  SettingsStorage* local_storage = GetStorage(id, LOCAL, frontend_.get());
+  SettingsStorage* sync_storage =
+      util::GetStorage(id, settings::SYNC, frontend_.get());
+  SettingsStorage* local_storage =
+      util::GetStorage(id, settings::LOCAL, frontend_.get());
 
   // Sync storage should run out after ~100K.
   scoped_ptr<Value> kilobyte = CreateKilobyte();
@@ -307,9 +309,9 @@ TEST_F(ExtensionSettingsFrontendTest,
       id, Extension::TYPE_EXTENSION, permissions);
 
   frontend_->RunWithStorage(
-      id, SYNC, base::Bind(&UnlimitedSyncStorageTestCallback));
+      id, settings::SYNC, base::Bind(&UnlimitedSyncStorageTestCallback));
   frontend_->RunWithStorage(
-      id, LOCAL, base::Bind(&UnlimitedLocalStorageTestCallback));
+      id, settings::LOCAL, base::Bind(&UnlimitedLocalStorageTestCallback));
 
   MessageLoop::current()->RunAllPending();
 }

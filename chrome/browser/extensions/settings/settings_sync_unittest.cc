@@ -24,7 +24,7 @@ using content::BrowserThread;
 
 namespace extensions {
 
-using namespace settings_test_util;
+namespace util = settings_test_util;
 
 namespace {
 
@@ -180,11 +180,11 @@ class ExtensionSettingsSyncTest : public testing::Test {
   ExtensionSettingsSyncTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()),
-        storage_factory_(new ScopedSettingsStorageFactory()) {}
+        storage_factory_(new util::ScopedSettingsStorageFactory()) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    profile_.reset(new MockProfile(temp_dir_.path()));
+    profile_.reset(new util::MockProfile(temp_dir_.path()));
     storage_factory_->Reset(new SettingsLeveldbStorage::Factory());
     frontend_.reset(
         SettingsFrontend::Create(storage_factory_.get(), profile_.get()));
@@ -201,7 +201,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   SettingsStorage* AddExtensionAndGetStorage(
       const std::string& id, Extension::Type type) {
     profile_->GetMockExtensionService()->AddExtensionWithId(id, type);
-    return GetStorage(id, frontend_.get());
+    return util::GetStorage(id, frontend_.get());
   }
 
   // Gets the SyncableService for the given sync type.
@@ -232,9 +232,9 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   ScopedTempDir temp_dir_;
   MockSyncChangeProcessor sync_;
-  scoped_ptr<MockProfile> profile_;
+  scoped_ptr<util::MockProfile> profile_;
   scoped_ptr<SettingsFrontend> frontend_;
-  scoped_refptr<ScopedSettingsStorageFactory> storage_factory_;
+  scoped_refptr<util::ScopedSettingsStorageFactory> storage_factory_;
 };
 
 // Get a semblance of coverage for both EXTENSION_SETTINGS and APP_SETTINGS

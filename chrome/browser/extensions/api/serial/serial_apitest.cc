@@ -14,8 +14,6 @@
 
 using content::BrowserThread;
 
-using namespace extension_function_test_utils;
-
 namespace {
 
 class SerialApiTest : public ExtensionApiTest {

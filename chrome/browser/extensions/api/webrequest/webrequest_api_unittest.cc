@@ -35,6 +35,22 @@
 namespace helpers = extension_webrequest_api_helpers;
 namespace keys = extension_webrequest_api_constants;
 
+using helpers::CalculateOnAuthRequiredDelta;
+using helpers::CalculateOnBeforeRequestDelta;
+using helpers::CalculateOnBeforeSendHeadersDelta;
+using helpers::CalculateOnHeadersReceivedDelta;
+using helpers::CharListToString;
+using helpers::EventLogEntries;
+using helpers::EventResponseDelta;
+using helpers::EventResponseDeltas;
+using helpers::EventResponseDeltas;
+using helpers::InDecreasingExtensionInstallationTimeOrder;
+using helpers::MergeCancelOfResponses;
+using helpers::MergeOnBeforeRequestResponses;
+using helpers::ResponseHeader;
+using helpers::ResponseHeaders;
+using helpers::StringToCharList;
+
 namespace {
 static void EventHandledOnIOThread(
     void* profile,
@@ -806,7 +822,6 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST(ExtensionWebRequestHelpersTest,
      TestInDecreasingExtensionInstallationTimeOrder) {
-  using namespace extension_webrequest_api_helpers;
   linked_ptr<EventResponseDelta> a(
       new EventResponseDelta("ext_1", base::Time::FromInternalValue(0)));
   linked_ptr<EventResponseDelta> b(
@@ -817,7 +832,6 @@ TEST(ExtensionWebRequestHelpersTest,
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
-  using namespace extension_webrequest_api_helpers;
   ListValue list_value;
   list_value.Append(Value::CreateIntegerValue('1'));
   list_value.Append(Value::CreateIntegerValue('2'));
@@ -837,7 +851,6 @@ TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeRequestDelta) {
-  using namespace extension_webrequest_api_helpers;
   const bool cancel = true;
   const GURL localhost("http://localhost");
   scoped_ptr<EventResponseDelta> delta(
@@ -849,7 +862,6 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeRequestDelta) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
-  using namespace extension_webrequest_api_helpers;
   const bool cancel = true;
   std::string value;
   net::HttpRequestHeaders old_headers;
@@ -910,7 +922,6 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
-  using namespace extension_webrequest_api_helpers;
   const bool cancel = true;
   char base_headers_string[] =
       "HTTP/1.0 200 OK\r\n"
@@ -947,7 +958,6 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
-  using namespace extension_webrequest_api_helpers;
   const bool cancel = true;
 
   string16 username = ASCIIToUTF16("foo");
@@ -966,7 +976,6 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeCancelOfResponses) {
-  using namespace extension_webrequest_api_helpers;
   EventResponseDeltas deltas;
   EventLogEntries event_log;
   bool canceled = false;
@@ -992,7 +1001,6 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeCancelOfResponses) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
-  using namespace extension_webrequest_api_helpers;
   EventResponseDeltas deltas;
   EventLogEntries event_log;
   std::set<std::string> conflicting_extensions;
@@ -1072,7 +1080,6 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses) {
 // This tests that we can redirect to data:// urls, which is considered
 // a kind of cancelling requests.
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
-  using namespace extension_webrequest_api_helpers;
   EventResponseDeltas deltas;
   EventLogEntries event_log;
   std::set<std::string> conflicting_extensions;
@@ -1136,7 +1143,6 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeRequestResponses2) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
-  using namespace extension_webrequest_api_helpers;
   net::HttpRequestHeaders base_headers;
   base_headers.AddHeaderFromString("key1: value 1");
   base_headers.AddHeaderFromString("key2: value 2");
@@ -1233,7 +1239,6 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
-  using namespace extension_webrequest_api_helpers;
     EventLogEntries event_log;
     std::set<std::string> conflicting_extensions;
     std::string header_value;
@@ -1318,7 +1323,6 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
 // Check that we do not delete too much
 TEST(ExtensionWebRequestHelpersTest,
      TestMergeOnHeadersReceivedResponsesDeletion) {
-  using namespace extension_webrequest_api_helpers;
     EventLogEntries event_log;
     std::set<std::string> conflicting_extensions;
     std::string header_value;
@@ -1362,7 +1366,6 @@ TEST(ExtensionWebRequestHelpersTest,
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
-  using namespace extension_webrequest_api_helpers;
   EventLogEntries event_log;
   std::set<std::string> conflicting_extensions;
   EventResponseDeltas deltas;
