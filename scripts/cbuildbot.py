@@ -979,7 +979,7 @@ def main(argv):
   with cleanup.EnforcedCleanupSection() as critical_section:
     with sudo.SudoKeepAlive():
       with cros_lib.AllowDisabling(options.cgroups,
-                                   cgroups.ContainChildren, 'cbuildbot'):
+                                   cgroups.SimpleContainChildren, 'cbuildbot'):
         # Mark everything between EnforcedCleanupSection and here as having to
         # be rolled back via the contextmanager cleanup handlers.  This ensures
         # that sudo bits cannot outlive cbuildbot, that anything cgroups

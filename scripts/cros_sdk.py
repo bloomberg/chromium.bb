@@ -326,7 +326,7 @@ Action taken is the following:
   lock_path = os.path.join(lock_path,
                            '.%s_lock' % os.path.basename(chroot_path))
   with sudo.SudoKeepAlive():
-    with cgroups.ContainChildren('cros_sdk'):
+    with cgroups.SimpleContainChildren('cros_sdk'):
       _CreateLockFile(lock_path)
       with locking.FileLock(lock_path, 'chroot lock') as lock:
         if options.delete:

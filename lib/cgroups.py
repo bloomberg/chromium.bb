@@ -462,7 +462,7 @@ class Cgroup(object):
       self.TransferCurrentPid()
 
   @contextlib.contextmanager
-  def ContainChildren(self):
+  def ContainChildren(self, pool_name=None):
     """Context manager for containing children processes.
 
     This manager creates a job pool derived from this instance, transfers
@@ -474,8 +474,14 @@ class Cgroup(object):
 
     Upon __exit__, transfer the current process back to this group, then
     sigterm (progressing to sigkill) any immediate children in the pool,
-    finally removing the pool if possible."""
-    node = self.AddGroup(str(os.getpid()), autoclean=True)
+    finally removing the pool if possible.
+
+    If pool_name is given, that name is used rather than os.getpid() for
+    the job pool created.
+    """
+    if pool_name is None:
+      pool_name = str(os.getpid())
+    node = self.AddGroup(pool_name, autoclean=True)
     try:
       with self.TemporarilySwitchToGroup(node):
         yield
@@ -614,7 +620,7 @@ class Cgroup(object):
     return _cros_node.AddGroup(target, autoclean=(target!=process_name))
 
 
-def ContainChildren(process_name, nesting=True):
+def SimpleContainChildren(process_name, nesting=True):
   """Convenience context manager to create a cgroup for children containment
 
   See Cgroup.CreateProcessGroup and Cgroup.ContainChildren for specifics.
@@ -622,7 +628,8 @@ def ContainChildren(process_name, nesting=True):
   """
   node = Cgroup.CreateProcessGroup(process_name, nesting=nesting)
   if node is not None:
-    return node.ContainChildren()
+    name = '%s:%i' % (process_name, os.getpid())
+    return node.ContainChildren(name)
   return cros_lib.NoOpContextManager()
 
 # Note that it's fairly important that any module level defined cgroups like
