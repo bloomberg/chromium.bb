@@ -4558,7 +4558,6 @@
                   'app/nibs/ExtensionInstallPromptInline.xib',
                   'app/nibs/ExtensionInstallPromptNoWarnings.xib',
                   'app/nibs/ExtensionInstalledBubble.xib',
-                  'app/nibs/ExtensionInstalledBubbleBundle.xib',
                   'app/nibs/FirstRunBubble.xib',
                   'app/nibs/FirstRunDialog.xib',
                   'app/nibs/FullscreenExitBubble.xib',
