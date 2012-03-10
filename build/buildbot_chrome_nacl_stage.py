@@ -206,12 +206,7 @@ def BuildAndTest(options):
       'disable_dynamic_plugin_loading=1',
       'chrome_browser_path=%s' % chrome_filename,
   ]
-  if options.integration_bot:
-    # On the NaCl/Chromium integration bot, the IRT library downloaded
-    # by Chromium's DEPS file typically comes from an older version of
-    # NaCl than the one checked out by gclient.
-    cmd.append('override_chrome_irt=1')
-  else:
+  if not options.integration_bot:
     cmd.append('disable_flaky_tests=1')
   cmd.append('chrome_browser_tests')
   if options.integration_bot:
