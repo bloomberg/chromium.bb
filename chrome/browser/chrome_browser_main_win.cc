@@ -240,7 +240,10 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
   HRESULT hr = register_application_restart(
       command_line.GetCommandLineString().c_str(),
       RESTART_NO_CRASH | RESTART_NO_HANG | RESTART_NO_PATCH);
-  DCHECK(SUCCEEDED(hr)) << "RegisterApplicationRestart failed.";
+  if (FAILED(hr)) {
+    NOTREACHED() << "RegisterApplicationRestart failed. hr: " << hr <<
+                    ", command_line: " << command_line.GetCommandLineString();
+  }
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
