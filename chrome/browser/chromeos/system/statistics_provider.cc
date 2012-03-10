@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -166,6 +167,15 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
   std::string channel;
   if (GetMachineStatistic(kChromeOSReleaseTrack, &channel)) {
       chrome::VersionInfo::SetChannel(channel);
+      // Set the product channel for crash reports.  We can't just do this in
+      // ChromeBrowserMainParts::PreCreateThreads like we do for Linux because
+      // the FILE thread hasn't been created yet there so we can't possibly
+      // have read this yet.  Note that this string isn't exactly the same as
+      // 'channel', it's been parsed to be consistent with other platforms
+      // (eg. "canary-channel" becomes "canary", "testimage-channel" becomes
+      // "unknown").
+      child_process_logging::SetChannel(
+          chrome::VersionInfo::GetVersionStringModifier());
   }
 #endif
 }
