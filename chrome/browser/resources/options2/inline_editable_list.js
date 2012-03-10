@@ -356,7 +356,7 @@ cr.define('options', function() {
       var itemAncestor = findAncestor(document.activeElement, function(node) {
         return node instanceof InlineEditableItem;
       });
-      if (itemAncestor);
+      if (itemAncestor)
         document.activeElement.blur();
     });
   }

@@ -534,7 +534,7 @@ cr.define('options', function() {
      * The parent of this cookie tree node.
      * @type {?CookieTreeNode|CookieListItem}
      */
-    get parent(parent) {
+    get parent() {
       // See below for an explanation of this special case.
       if (typeof this.parent_ == 'number')
         return this.list_.getListItemByIndex(this.parent_);
