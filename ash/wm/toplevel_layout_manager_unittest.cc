@@ -4,7 +4,6 @@
 
 #include "ash/wm/toplevel_layout_manager.h"
 
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -13,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/screen_aura.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/aura/window.h"
@@ -33,7 +33,7 @@ class ToplevelLayoutManagerTest : public test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
-    Shell::GetInstance()->SetScreenWorkAreaInsets(
+    Shell::GetRootWindow()->SetScreenWorkAreaInsets(
         gfx::Insets(1, 2, 3, 4));
     Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
     aura::Window* default_container = Shell::GetInstance()->GetContainer(
@@ -105,14 +105,16 @@ TEST_F(ToplevelLayoutManagerTest,
        ResizeMaximizedWindowOnWorkAreaInsetsChange) {
   gfx::Rect bounds(100, 100, 200, 200);
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
-  Shell::GetInstance()->SetScreenWorkAreaInsets(gfx::Insets(0, 0, 30, 0));
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
+        gfx::Insets(0, 0, 30, 0));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   // Maximized window fills the work area.
   EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window.get()),
             window->bounds());
 
   // Change work area insets.
-  Shell::GetInstance()->SetScreenWorkAreaInsets(gfx::Insets(0, 0, 60, 0));
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
+        gfx::Insets(0, 0, 60, 0));
   // Maximized window fills the changed work area.
   EXPECT_EQ(gfx::Screen::GetMonitorWorkAreaNearestWindow(window.get()),
             window->bounds());

@@ -5,10 +5,10 @@
 #include "ash/wm/shelf_layout_manager.h"
 
 #include "ash/launcher/launcher.h"
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "base/auto_reset.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/screen_aura.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -43,7 +43,7 @@ ShelfLayoutManager::ShelfLayoutManager(views::Widget* launcher,
 
 ShelfLayoutManager::~ShelfLayoutManager() {
   // Without a shelf we don't need special insets anymore.
-  Shell::GetInstance()->SetScreenWorkAreaInsets(gfx::Insets());
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(gfx::Insets());
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -58,7 +58,7 @@ void ShelfLayoutManager::LayoutShelf() {
   status_->SetBounds(target_bounds.status_bounds);
   Shell::GetInstance()->launcher()->SetStatusWidth(
       target_bounds.status_bounds.width());
-  Shell::GetInstance()->SetScreenWorkAreaInsets(
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
       target_bounds.work_area_insets);
 }
 
@@ -150,7 +150,7 @@ void ShelfLayoutManager::CalculateTargetBounds(bool visible,
 void ShelfLayoutManager::OnImplicitAnimationsCompleted() {
   TargetBounds target_bounds;
   CalculateTargetBounds(visible_, &target_bounds);
-  Shell::GetInstance()->SetScreenWorkAreaInsets(
+  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
       target_bounds.work_area_insets);
 }
 

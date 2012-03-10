@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
@@ -20,6 +19,7 @@
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/compositor/layer.h"
@@ -288,7 +288,7 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
 
 gfx::Rect WorkspaceManager::GetWorkAreaBounds() {
   gfx::Rect bounds(workspace_size_);
-  bounds.Inset(Shell::GetInstance()->screen()->work_area_insets());
+  bounds.Inset(Shell::GetRootWindow()->screen()->work_area_insets());
   return bounds;
 }
 

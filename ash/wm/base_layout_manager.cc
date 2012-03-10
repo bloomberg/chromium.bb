@@ -20,7 +20,6 @@ namespace internal {
 // BaseLayoutManager, public:
 
 BaseLayoutManager::BaseLayoutManager() {
-  Shell::GetInstance()->AddShellObserver(this);
   Shell::GetRootWindow()->AddRootWindowObserver(this);
 }
 
@@ -28,7 +27,6 @@ BaseLayoutManager::~BaseLayoutManager() {
   for (WindowSet::const_iterator i = windows_.begin(); i != windows_.end(); ++i)
     (*i)->RemoveObserver(this);
   Shell::GetRootWindow()->RemoveRootWindowObserver(this);
-  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -71,9 +69,6 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
 void BaseLayoutManager::OnRootWindowResized(const gfx::Size& new_size) {
   AdjustWindowSizesForScreenChange();
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// BaseLayoutManager, ash::ShellObserver overrides:
 
 void BaseLayoutManager::OnScreenWorkAreaInsetsChanged() {
   AdjustWindowSizesForScreenChange();

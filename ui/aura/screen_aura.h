@@ -1,28 +1,26 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SCREEN_ASH_H_
-#define ASH_SCREEN_ASH_H_
+#ifndef UI_AURA_SCREEN_AURA_H_
+#define UI_AURA_SCREEN_AURA_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "ash/ash_export.h"
+#include "ui/aura/aura_export.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 
 namespace aura {
-class RootWindow;
-}
 
-namespace ash {
+class RootWindow;
 
 // Aura implementation of gfx::Screen. Implemented here to avoid circular
 // dependencies.
-class ASH_EXPORT ScreenAsh : public gfx::Screen {
+class AURA_EXPORT ScreenAura : public gfx::Screen {
  public:
-  explicit ScreenAsh(aura::RootWindow* root_window);
-  virtual ~ScreenAsh();
+  explicit ScreenAura(RootWindow* root_window);
+  virtual ~ScreenAura();
 
   void set_work_area_insets(const gfx::Insets& insets) {
     work_area_insets_ = insets;
@@ -52,11 +50,11 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   // Insets for the work area.
   gfx::Insets work_area_insets_;
 
-  aura::RootWindow* root_window_;
+  RootWindow* root_window_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenAsh);
+  DISALLOW_COPY_AND_ASSIGN(ScreenAura);
 };
 
-}  // namespace ash
+}  // namespace aura
 
-#endif  // ASH_SCREEN_ASH_H_
+#endif  // UI_AURA_SCREEN_AURA_H_

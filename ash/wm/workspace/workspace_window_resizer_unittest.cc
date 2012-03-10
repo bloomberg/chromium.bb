@@ -4,11 +4,11 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
-#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/string_number_conversions.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/screen_aura.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 
@@ -51,7 +51,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     root->SetBounds(gfx::Rect(0, 0, 800, kRootHeight));
     gfx::Rect root_bounds(root->bounds());
     EXPECT_EQ(kRootHeight, root_bounds.height());
-    Shell::GetInstance()->SetScreenWorkAreaInsets(gfx::Insets());
+    root->SetScreenWorkAreaInsets(gfx::Insets());
     window_.reset(new aura::Window(&delegate_));
     window_->Init(ui::Layer::LAYER_NOT_DRAWN);
     window_->SetParent(Shell::GetInstance()->GetRootWindow());
@@ -546,7 +546,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_2_REMEMBER) {
 TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
   aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
   root->SetBounds(gfx::Rect(0, 0, 600, 800));
-  Shell::GetInstance()->SetScreenWorkAreaInsets(gfx::Insets());
+  root->SetScreenWorkAreaInsets(gfx::Insets());
 
   window_->SetBounds(gfx::Rect( 300, 100, 300, 200));
   window2_->SetBounds(gfx::Rect(300, 300, 200, 150));
@@ -588,7 +588,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3) {
 TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_RememberHeight) {
   aura::RootWindow* root = Shell::GetInstance()->GetRootWindow();
   root->SetBounds(gfx::Rect(0, 0, 600, 800));
-  Shell::GetInstance()->SetScreenWorkAreaInsets(gfx::Insets());
+  root->SetScreenWorkAreaInsets(gfx::Insets());
 
   window_->SetBounds(gfx::Rect( 300, 100, 300, 200));
   window2_->SetBounds(gfx::Rect(300, 300, 200, 150));

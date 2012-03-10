@@ -98,8 +98,6 @@
         'launcher/view_model.h',
         'launcher/view_model_utils.cc',
         'launcher/view_model_utils.h',
-        'screen_ash.cc',
-        'screen_ash.h',
         'screenshot_delegate.h',
         'shell.cc',
         'shell.h',

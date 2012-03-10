@@ -14,9 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
 #include "ui/gfx/size.h"
-#include "ui/gfx/insets.h"
 
 class CommandLine;
 
@@ -47,9 +45,7 @@ class NestedDispatcherController;
 class NetworkController;
 class PowerButtonController;
 class PowerStatusController;
-class ScreenAsh;
 class ShellDelegate;
-class ShellObserver;
 class SystemTrayDelegate;
 class SystemTray;
 class VideoDetector;
@@ -156,13 +152,6 @@ class ASH_EXPORT Shell {
   // Rotate focus through containers that can receive focus.
   void RotateFocus(Direction direction);
 
-  // Sets the screen's work area insets, this notifies observers too.
-  void SetScreenWorkAreaInsets(const gfx::Insets& insets);
-
-  // Add/remove observer.
-  void AddShellObserver(ShellObserver* observer);
-  void RemoveShellObserver(ShellObserver* observer);
-
 #if !defined(OS_MACOSX)
   AcceleratorController* accelerator_controller() {
     return accelerator_controller_.get();
@@ -208,8 +197,6 @@ class ASH_EXPORT Shell {
 
   Launcher* launcher() { return launcher_.get(); }
 
-  const ScreenAsh* screen() { return screen_; }
-
   internal::ShelfLayoutManager* shelf() const { return shelf_; }
 
   SystemTray* tray() const { return tray_.get(); }
@@ -247,7 +234,6 @@ class ASH_EXPORT Shell {
   static bool initially_hide_cursor_;
 
   scoped_ptr<aura::RootWindow> root_window_;
-  ScreenAsh* screen_;
 
   internal::RootWindowEventFilter* root_filter_;  // not owned
 
@@ -301,8 +287,6 @@ class ASH_EXPORT Shell {
   // mode. Shell does not own the shelf. Instead, it is owned by container of
   // the status area.
   internal::ShelfLayoutManager* shelf_;
-
-  ObserverList<ShellObserver> observers_;
 
   // Can change at runtime.
   BackgroundMode desktop_background_mode_;
