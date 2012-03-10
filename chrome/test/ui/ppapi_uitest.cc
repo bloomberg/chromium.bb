@@ -618,7 +618,10 @@ TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
 #endif
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendInInit)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingData)
+#if !defined(OS_WIN)
+// Times out on Windows XP: http://crbug.com/117673
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingArrayBuffer)
+#endif
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_MessageEvent)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_NoHandler)
 
@@ -756,7 +759,10 @@ TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreHostsEqual)
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_Describe)
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_ReplacePort)
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetAnyAddress)
+#if !defined(OS_WIN)
+// Fails on Windows 7: http://crbug.com/117673
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_DescribeIPv6)
+#endif
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetFamily)
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetPort)
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetAddress)
@@ -832,7 +838,10 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BufferedAmount)
 TEST_PPAPI_IN_PROCESS_WITH_WS(MAYBE_WebSocket_CcInterfaces)
+#if !defined(OS_WIN)
+// Crashes on Windows 7: http://crbug.com/117673
 TEST_PPAPI_IN_PROCESS(WebSocket_UtilityInvalidConnect)
+#endif
 TEST_PPAPI_IN_PROCESS(WebSocket_UtilityProtocols)
 TEST_PPAPI_IN_PROCESS(WebSocket_UtilityGetURL)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityValidConnect)
@@ -943,7 +952,10 @@ TEST_PPAPI_OUT_OF_PROCESS(View_ClipChange);
 TEST_PPAPI_NACL_VIA_HTTP(View_ClipChange);
 
 TEST_PPAPI_IN_PROCESS(ResourceArray_Basics)
+#if !defined(OS_WIN)
+// Crashes on Windows 7: http://crbug.com/117673
 TEST_PPAPI_IN_PROCESS(ResourceArray_OutOfRangeAccess)
+#endif
 TEST_PPAPI_IN_PROCESS(ResourceArray_EmptyArray)
 TEST_PPAPI_IN_PROCESS(ResourceArray_InvalidElement)
 TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_Basics)
@@ -952,7 +964,10 @@ TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_EmptyArray)
 TEST_PPAPI_OUT_OF_PROCESS(ResourceArray_InvalidElement)
 
 TEST_PPAPI_IN_PROCESS(FlashMessageLoop_Basics)
+#if !defined(OS_WIN)
+// Crashes on Windows 7: http://crbug.com/117673
 TEST_PPAPI_IN_PROCESS(FlashMessageLoop_RunWithoutQuit)
+#endif
 TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_Basics)
 TEST_PPAPI_OUT_OF_PROCESS(FlashMessageLoop_RunWithoutQuit)
 
