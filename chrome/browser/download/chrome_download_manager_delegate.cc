@@ -434,24 +434,28 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     state.suggested_path = state.force_file_name;
   }
 
-  if (!state.prompt_user_for_save_location &&
-      state.force_file_name.empty() &&
-      IsDangerousFile(*download, state, visited_referrer_before)) {
-    state.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
-  }
+  // If the download hasn't already been marked dangerous (could be
+  // DANGEROUS_URL), check if it is a dangerous file.
+  if (state.danger == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
+    if (!state.prompt_user_for_save_location &&
+        state.force_file_name.empty() &&
+        IsDangerousFile(*download, state, visited_referrer_before)) {
+      state.danger = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
+    }
 
 #if defined(ENABLE_SAFE_BROWSING)
-  DownloadProtectionService* service = GetDownloadProtectionService();
-  // Return false if this type of files is handled by the enhanced SafeBrowsing
-  // download protection.
-  if (service && service->enabled() &&
-      service->IsSupportedFileType(state.suggested_path.BaseName())) {
-    // TODO(noelutz): if the user changes the extension name in the UI to
-    // something like .exe SafeBrowsing will currently *not* check if the
-    // download is malicious.
-    state.danger = content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
-  }
+    DownloadProtectionService* service = GetDownloadProtectionService();
+    // Return false if this type of files is handled by the enhanced
+    // SafeBrowsing download protection.
+    if (service && service->enabled() &&
+        service->IsSupportedFileType(state.suggested_path.BaseName())) {
+      // TODO(noelutz): if the user changes the extension name in the UI to
+      // something like .exe SafeBrowsing will currently *not* check if the
+      // download is malicious.
+      state.danger = content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
+    }
 #endif
+  }
 
   // We need to move over to the download thread because we don't want to stat
   // the suggested path on the UI thread.
