@@ -34,6 +34,13 @@ enum ASH_EXPORT LauncherItemType {
   TYPE_BROWSER_SHORTCUT,
 };
 
+// Represents the status of pinned or running app launcher items.
+enum ASH_EXPORT LauncherItemStatus {
+  STATUS_CLOSED,
+  STATUS_RUNNING,
+  STATUS_ACTIVE
+};
+
 struct ASH_EXPORT LauncherItem {
   LauncherItem();
   explicit LauncherItem(LauncherItemType type);
@@ -50,6 +57,9 @@ struct ASH_EXPORT LauncherItem {
 
   // Assigned by the model when the item is added.
   LauncherID id;
+
+  // Running status.
+  LauncherItemStatus status;
 };
 
 typedef std::vector<LauncherItem> LauncherItems;

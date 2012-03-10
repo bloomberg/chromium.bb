@@ -57,7 +57,7 @@ void LauncherUpdater::Init() {
         type_ == TYPE_PANEL ? ChromeLauncherDelegate::APP_TYPE_PANEL
         : ChromeLauncherDelegate::APP_TYPE_WINDOW;
     item_id_ = launcher_delegate_->CreateAppLauncherItem(
-        this, app_id_, app_type);
+        this, app_id_, app_type, ash::STATUS_RUNNING);
   } else {
     // Determine if we have any tabs that should get launcher items.
     std::vector<TabContentsWrapper*> app_tabs;
@@ -297,6 +297,7 @@ void LauncherUpdater::UpdateAppTabState(TabContentsWrapper* tab,
             launcher_delegate_->GetAppID(tab),
             ChromeLauncherDelegate::APP_TYPE_TAB);
         RegisterAppItem(item_id_, tab);
+        launcher_delegate_->SetItemStatus(item_id_, ash::STATUS_RUNNING);
       }
       item_id_ = -1;
     } else {
@@ -309,7 +310,8 @@ void LauncherUpdater::AddAppItem(TabContentsWrapper* tab) {
   ash::LauncherID id = launcher_delegate_->CreateAppLauncherItem(
       this,
       launcher_delegate_->GetAppID(tab),
-      ChromeLauncherDelegate::APP_TYPE_TAB);
+      ChromeLauncherDelegate::APP_TYPE_TAB,
+      ash::STATUS_RUNNING);
   RegisterAppItem(id, tab);
 }
 

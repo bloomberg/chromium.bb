@@ -4,7 +4,7 @@
 
 #include "ash/launcher/launcher_view.h"
 
-#include "ash/launcher/app_launcher_button.h"
+#include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_window_cycler.h"
@@ -50,6 +50,7 @@ static const int kMinimumDragDistance = 8;
 // Size given to the buttons on the launcher.
 static const int kButtonWidth = 48;
 static const int kButtonHeight = 48;
+static const int kButtonSpacing = 8;
 
 namespace {
 
@@ -127,6 +128,23 @@ class FadeInAnimationDelegate :
   DISALLOW_COPY_AND_ASSIGN(FadeInAnimationDelegate);
 };
 
+void ReflectItemStatus(const ash::LauncherItem& item,
+                       LauncherButton* button) {
+  switch (item.status) {
+    case STATUS_CLOSED:
+      button->ClearState(LauncherButton::STATE_ACTIVE);
+      button->ClearState(LauncherButton::STATE_RUNNING);
+      break;
+    case STATUS_RUNNING:
+      button->ClearState(LauncherButton::STATE_ACTIVE);
+      button->AddState(LauncherButton::STATE_RUNNING);
+      break;
+    case STATUS_ACTIVE:
+      button->AddState(LauncherButton::STATE_ACTIVE);
+      button->ClearState(LauncherButton::STATE_RUNNING);
+      break;
+  }
+}
 }  // namespace
 
 // AnimationDelegate used when inserting a new item. This steadily decreased the
@@ -184,6 +202,18 @@ class LauncherView::StartFadeAnimationDelegate :
 
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
+
+int LauncherView::TestAPI::GetButtonCount() {
+  return launcher_view_->view_model_->view_size();
+}
+
+LauncherButton* LauncherView::TestAPI::GetButton(int index) {
+  if (index == 0)
+    return NULL;
+
+  return static_cast<LauncherButton*>(
+      launcher_view_->view_model_->view_at(index));
+}
 
 LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
     : model_(model),
@@ -252,7 +282,7 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     view_model_->set_ideal_bounds(i, gfx::Rect(
         x, (kPreferredHeight - pref.height()) / 2, pref.width(),
         pref.height()));
-    x += pref.width();
+    x += pref.width() + kButtonSpacing;
   }
 
   bounds->overflow_bounds.set_size(gfx::Size(kButtonWidth, kButtonHeight));
@@ -302,22 +332,25 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
   views::View* view = NULL;
   switch (item.type) {
     case TYPE_TABBED: {
-      TabbedLauncherButton* button = new TabbedLauncherButton(this, this);
-      button->SetTabImage(item.image, item.num_tabs);
+      TabbedLauncherButton* button = TabbedLauncherButton::Create(this, this);
+      button->SetTabImage(item.image);
       button->set_context_menu_controller(this);
+      ReflectItemStatus(item, button);
       view = button;
       break;
     }
 
     case TYPE_APP: {
-      AppLauncherButton* button = new AppLauncherButton(this, this);
-      button->SetAppImage(item.image);
+      LauncherButton* button = LauncherButton::Create(this, this);
+      button->SetImage(item.image);
+      ReflectItemStatus(item, button);
       view = button;
       button->set_context_menu_controller(this);
       break;
     }
 
     case TYPE_APP_LIST: {
+      // TODO[dave] turn this into a LauncherButton too.
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       views::ImageButton* button = new views::ImageButton(this);
       button->SetImage(
@@ -335,11 +368,11 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
 
     case TYPE_BROWSER_SHORTCUT: {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      AppLauncherButton* button = new AppLauncherButton(this, this);
+      LauncherButton* button = LauncherButton::Create(this, this);
       int image_id = delegate_ ?
           delegate_->GetBrowserShortcutResourceId() :
           IDR_AURA_LAUNCHER_BROWSER_SHORTCUT;
-      button->SetAppImage(*rb.GetImageNamed(image_id).ToSkBitmap());
+      button->SetImage(*rb.GetImageNamed(image_id).ToSkBitmap());
       view = button;
       cycler_.reset(new LauncherWindowCycler(delegate_));
       break;
@@ -551,17 +584,19 @@ void LauncherView::LauncherItemChanged(int model_index,
     case TYPE_TABBED: {
       TabbedLauncherButton* button = static_cast<TabbedLauncherButton*>(view);
       gfx::Size pref = button->GetPreferredSize();
-      button->SetTabImage(item.image, item.num_tabs);
+      button->SetTabImage(item.image);
       if (pref != button->GetPreferredSize())
         AnimateToIdealBounds();
       else
         button->SchedulePaint();
+      ReflectItemStatus(item, button);
       break;
     }
 
     case TYPE_APP: {
-      AppLauncherButton* button = static_cast<AppLauncherButton*>(view);
-      button->SetAppImage(item.image);
+      LauncherButton* button = static_cast<LauncherButton*>(view);
+      ReflectItemStatus(item, button);
+      button->SetImage(item.image);
       button->SchedulePaint();
       break;
     }

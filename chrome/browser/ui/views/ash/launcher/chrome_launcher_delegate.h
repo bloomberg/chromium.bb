@@ -81,7 +81,11 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // existing pinned app that isn't running on the launcher, its id is returned.
   ash::LauncherID CreateAppLauncherItem(LauncherUpdater* updater,
                                         const std::string& app_id,
-                                        AppType app_type);
+                                        AppType app_type,
+                                        ash::LauncherItemStatus status);
+
+  // Updates the running status of an item.
+  void SetItemStatus(ash::LauncherID id, ash::LauncherItemStatus status);
 
   // Converts an app item to a tabbed item.
   void ConvertAppToTabbed(ash::LauncherID id);

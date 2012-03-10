@@ -107,7 +107,7 @@ void ChromeLauncherDelegate::Init() {
           app_type = APP_TYPE_PANEL;
         else
           app_type = APP_TYPE_TAB;
-        CreateAppLauncherItem(NULL, app_id, app_type);
+        CreateAppLauncherItem(NULL, app_id, app_type, ash::STATUS_CLOSED);
       }
     }
   }
@@ -135,6 +135,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateTabbedLauncherItem(
   }
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item(ash::TYPE_TABBED);
+  item.status = ash::STATUS_RUNNING;
   model_->Add(index, item);
   DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
   id_to_item_map_[id].item_type = TYPE_TABBED_BROWSER;
@@ -145,7 +146,8 @@ ash::LauncherID ChromeLauncherDelegate::CreateTabbedLauncherItem(
 ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
     LauncherUpdater* updater,
     const std::string& app_id,
-    AppType app_type) {
+    AppType app_type,
+    ash::LauncherItemStatus status) {
   // See if we have a closed item that matches the app.
   if (updater) {
     for (IDToItemMap::iterator i = id_to_item_map_.begin();
@@ -153,6 +155,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
       if (i->second.updater == NULL && i->second.app_id == app_id &&
           i->second.app_type == app_type) {
         i->second.updater = updater;
+        SetItemStatus(i->first, status);
         return i->first;
       }
     }
@@ -182,6 +185,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
   ash::LauncherID id = model_->next_id();
   ash::LauncherItem item(ash::TYPE_APP);
   item.image = Extension::GetDefaultIcon(true);
+  item.status = status;
   model_->Add(insert_index, item);
   DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
   id_to_item_map_[id].item_type = TYPE_APP;
@@ -193,6 +197,14 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
   if (app_type != APP_TYPE_PANEL)
     app_icon_loader_->FetchImage(app_id);
   return id;
+}
+
+void ChromeLauncherDelegate::SetItemStatus(ash::LauncherID id,
+                                           ash::LauncherItemStatus status) {
+  int index = model_->ItemIndexByID(id);
+  ash::LauncherItem item = model_->items()[index];
+  item.status = status;
+  model_->Set(index, item);
 }
 
 void ChromeLauncherDelegate::ConvertAppToTabbed(ash::LauncherID id) {
@@ -225,6 +237,8 @@ void ChromeLauncherDelegate::LauncherItemClosed(ash::LauncherID id) {
   if (id_to_item_map_[id].pinned) {
     // The item is pinned, leave it in the launcher.
     id_to_item_map_[id].updater = NULL;
+    printf("ChromeLauncherDelegate::LauncherItemClosed\n");
+    SetItemStatus(id, ash::STATUS_CLOSED);
   } else {
     id_to_item_map_.erase(id);
     model_->RemoveItemAt(model_->ItemIndexByID(id));

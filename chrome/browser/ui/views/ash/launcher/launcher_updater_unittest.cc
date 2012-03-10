@@ -453,12 +453,15 @@ TEST_F(LauncherUpdaterTest, Pin) {
     EXPECT_FALSE(launcher_delegate_->IsPinned(id));
     launcher_delegate_->Pin(id);
     EXPECT_TRUE(launcher_delegate_->IsPinned(id));
+    EXPECT_EQ(ash::STATUS_RUNNING,
+              launcher_model_->items()[initial_size].status);
   }
 
   // Should still have the item.
   ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
   EXPECT_TRUE(launcher_delegate_->IsPinned(id));
   EXPECT_TRUE(GetUpdaterByID(id) == NULL);
+  EXPECT_EQ(ash::STATUS_CLOSED, launcher_model_->items()[initial_size].status);
 
   // Create another app tab, it shouldn't get the same id.
   {
