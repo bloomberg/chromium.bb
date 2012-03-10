@@ -13,7 +13,7 @@ import sys
 import tempfile
 import functools
 
-import chromite.lib.cros_build_lib as cros_lib
+from chromite.lib import cros_build_lib as cros_lib
 
 
 class PatchReporter(object):

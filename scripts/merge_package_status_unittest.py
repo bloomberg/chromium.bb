@@ -15,9 +15,9 @@ import unittest
 
 import mox
 
-import chromite.lib.cros_test_lib as test_lib
-import chromite.lib.table as table
-import merge_package_status as mps
+from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import table
+from chromite.scripts import merge_package_status as mps
 
 # pylint: disable=W0212,R0904
 

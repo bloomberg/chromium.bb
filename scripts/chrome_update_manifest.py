@@ -14,11 +14,11 @@ import shutil
 import StringIO
 import tempfile
 
-import chromite.buildbot.constants as constants
-import chromite.buildbot.manifest_version as manifest_version
-import chromite.buildbot.repository as repository
-import chromite.lib.cros_build_lib as cros_lib
-import chromite.scripts.chrome_set_ver as chrome_set_ver
+from chromite.buildbot import constants
+from chromite.buildbot import manifest_version
+from chromite.buildbot import repository
+from chromite.lib import cros_build_lib as cros_lib
+from chromite.scripts import chrome_set_ver
 
 _CHROMIUM_ROOT = 'chromium'
 _CHROMIUM_SRC_ROOT = os.path.join(_CHROMIUM_ROOT, 'src')

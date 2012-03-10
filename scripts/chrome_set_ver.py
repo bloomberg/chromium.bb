@@ -10,8 +10,8 @@ import os
 import re
 import sys
 
-import chromite.buildbot.repository as repository
-import chromite.lib.cros_build_lib as cros_lib
+from chromite.buildbot import repository
+from chromite.lib import cros_build_lib as cros_lib
 
 
 _CHROMIUM_ROOT = 'chromium'

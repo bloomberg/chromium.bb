@@ -7,19 +7,19 @@
 """Unit tests for cros_portage_upgrade.py."""
 
 import filecmp
+import mox
 import os
 import shutil
 import unittest
 
-import gdata.projecthosting.client as gdata_ph_client
 import gdata.service
-import gdata.spreadsheet.service as gdata_ss_service
-import mox
+from gdata.projecthosting import client as gdata_ph_client
+from gdata.spreadsheet import service as gdata_ss_service
 
-import chromite.scripts.check_gdata_token as cgt
-import chromite.lib.cros_build_lib as build_lib
-import chromite.lib.cros_test_lib as test_lib
-import chromite.lib.gdata_lib as gdata_lib
+from chromite.lib import cros_build_lib as build_lib
+from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import gdata_lib
+from chromite.scripts import check_gdata_token as cgt
 
 # pylint: disable=W0212,R0904,E1120,E1101
 

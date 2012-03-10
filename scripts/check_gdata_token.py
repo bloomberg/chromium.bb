@@ -11,9 +11,9 @@ import os
 import shutil
 import sys
 
-import chromite.buildbot.constants as constants
-import chromite.lib.cros_build_lib as build_lib
-import chromite.lib.operation as operation
+from chromite.buildbot import constants
+from chromite.lib import cros_build_lib as build_lib
+from chromite.lib import operation
 
 MODULE = os.path.splitext(os.path.basename(__file__))[0]
 oper = operation.Operation(MODULE)

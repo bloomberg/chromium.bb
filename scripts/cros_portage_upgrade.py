@@ -16,10 +16,10 @@ import shutil
 import sys
 import tempfile
 
-import chromite.lib.cros_build_lib as cros_lib
-import chromite.lib.operation as operation
-import chromite.lib.upgrade_table as utable
-import merge_package_status as mps
+from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import operation
+from chromite.lib import upgrade_table as utable
+from chromite.scripts import merge_package_status as mps
 
 # pylint: disable=E1101,W0201
 

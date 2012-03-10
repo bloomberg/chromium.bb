@@ -9,10 +9,10 @@ import optparse
 import os
 import sys
 
-import chromite.lib.cros_build_lib as cros_lib
-import chromite.lib.gdata_lib as gdata_lib
-import chromite.lib.operation as operation
-import chromite.lib.upgrade_table as utable
+from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import gdata_lib
+from chromite.lib import operation
+from chromite.lib import upgrade_table as utable
 
 # pylint: disable=W0201,R0904
 

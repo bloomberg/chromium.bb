@@ -10,8 +10,8 @@ import os
 import shutil
 import sys
 
-import chromite.lib.cros_build_lib as cros_lib
-import chromite.lib.operation as operation
+from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import operation
 
 oper = operation.Operation('refresh_package_status')
 oper.verbose = True # Without verbose Info messages don't show up.

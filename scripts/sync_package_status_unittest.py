@@ -12,10 +12,10 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-import chromite.lib.cros_test_lib as test_lib
-import chromite.lib.gdata_lib as gdata_lib
-import chromite.lib.upgrade_table as utable
-import sync_package_status as sps
+from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import gdata_lib
+from chromite.lib import upgrade_table as utable
+from chromite.scripts import sync_package_status as sps
 
 # pylint: disable=W0212,R0904
 

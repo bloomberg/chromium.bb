@@ -11,8 +11,8 @@ import optparse
 import os
 import sys
 
-import chromite.lib.cros_build_lib as cros_build_lib
-import chromite.buildbot.constants as constants
+from chromite.buildbot import constants
+from chromite.lib import cros_build_lib
 
 # Some sanity checks first.
 if not cros_build_lib.IsInsideChroot():

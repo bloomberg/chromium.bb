@@ -12,9 +12,9 @@ import os
 import re
 import sys
 
-import chromite.lib.operation as operation
-import chromite.lib.table as table
-import chromite.lib.upgrade_table as utable
+from chromite.lib import operation
+from chromite.lib import table
+from chromite.lib import upgrade_table as utable
 
 COL_PACKAGE = utable.UpgradeTable.COL_PACKAGE
 COL_SLOT = utable.UpgradeTable.COL_SLOT

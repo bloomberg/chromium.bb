@@ -14,7 +14,7 @@ import shutil
 import sys
 import tempfile
 
-import chromite.lib.table as table
+from chromite.lib import table
 
 class UpgradeTable(table.Table):
   """Class to represent upgrade data in memory, can be written to csv."""

@@ -9,11 +9,11 @@ import optparse
 import os
 import sys
 
-import chromite.lib.gdata_lib as gdata_lib
-import chromite.lib.table as table
-import chromite.lib.operation as operation
-import chromite.lib.upgrade_table as utable
-import merge_package_status as mps
+from chromite.lib import gdata_lib
+from chromite.lib import table
+from chromite.lib import operation
+from chromite.lib import upgrade_table as utable
+from chromite.scripts import merge_package_status as mps
 
 REAL_SS_KEY = '0AsXDKtaHikmcdEp1dVN1SG1yRU1xZEw1Yjhka2dCSUE'
 TEST_SS_KEY = '0AsXDKtaHikmcdDlQMjI3ZDdPVGc4Rkl3Yk5OLWxjR1E'

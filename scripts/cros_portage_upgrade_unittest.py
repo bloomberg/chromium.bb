@@ -9,6 +9,7 @@
 from __future__ import print_function
 import exceptions
 import filecmp
+import mox
 import os
 import re
 import shutil
@@ -16,17 +17,16 @@ import sys
 import tempfile
 import unittest
 
-import mox
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-import chromite.lib.cros_build_lib as cros_lib
-import chromite.lib.cros_test_lib as test_lib
-import chromite.lib.upgrade_table as utable
-import chromite.scripts.cros_portage_upgrade as cpu
-import chromite.scripts.parallel_emerge as parallel_emerge
-import portage.package.ebuild.config as portcfg
-import portage.tests.resolver.ResolverPlayground as respgnd
+from chromite.lib import cros_build_lib as cros_lib
+from chromite.lib import cros_test_lib as test_lib
+from chromite.lib import upgrade_table as utable
+from chromite.scripts import cros_portage_upgrade as cpu
+from chromite.scripts import parallel_emerge
+from portage.package.ebuild import config as portcfg
+from portage.tests.resolver import ResolverPlayground as respgnd
 
 # pylint: disable=W0212,R0904,W0102,W0201,E1120,E1101
 DEFAULT_PORTDIR = '/usr/portage'

@@ -18,7 +18,7 @@ import xml.dom.minidom
 import gdata.projecthosting.client
 import gdata.spreadsheet.service
 
-import chromite.lib.operation as operation
+from chromite.lib import operation
 
 # pylint: disable=W0201,E0203
 

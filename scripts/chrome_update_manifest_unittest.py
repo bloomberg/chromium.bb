@@ -17,9 +17,9 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-import chromite.lib.cros_build_lib as cros_lib
-import chromite.buildbot.manifest_version as manifest_version
-import chromite.scripts.chrome_update_manifest as chrome_update_manifest
+from chromite.lib import cros_build_lib as cros_lib
+from chromite.buildbot import manifest_version
+from chromite.scripts import chrome_update_manifest
 
 # pylint: disable=W0212,R0904
 
