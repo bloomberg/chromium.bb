@@ -150,8 +150,10 @@ void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
   gfx::Point parent_mouse_location(gfx::Screen::GetCursorScreenPoint());
+  aura::RootWindow* root_window = source->GetRootWindow();
+  DCHECK(root_window);
   aura::Window::ConvertPointToWindow(
-      Shell::GetRootWindow(), source->parent(), &parent_mouse_location);
+      root_window, source->parent(), &parent_mouse_location);
   window_resizer_.reset(
       CreateWindowResizer(source, parent_mouse_location, HTCAPTION));
 #if !defined(OS_MACOSX)
@@ -171,7 +173,6 @@ void ToplevelWindowEventFilter::EndMoveLoop() {
     window_resizer_.reset();
   }
   MessageLoopForUI::current()->Quit();
-  Shell::GetRootWindow()->PostNativeEvent(ui::CreateNoopEvent());
 }
 
 // static
