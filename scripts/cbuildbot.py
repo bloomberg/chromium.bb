@@ -45,6 +45,7 @@ _PATH_TO_CBUILDBOT = 'chromite/bin/cbuildbot'
 _DISTRIBUTED_TYPES = [constants.COMMIT_QUEUE_TYPE, constants.PFQ_TYPE,
                       constants.CANARY_TYPE, constants.CHROME_PFQ_TYPE,
                       constants.PALADIN_TYPE]
+_BUILDBOT_REQUIRED_BINARIES = ('pbzip2',)
 
 
 def _PrintValidConfigs(trybot_only=True):
@@ -923,6 +924,21 @@ def main(argv):
     if not cgroups.Cgroup.CgroupsSupported():
       parser.error('Option --buildbot was given, but this system does not '
                    'support cgroups.   Failing.')
+
+    missing = []
+    for program in _BUILDBOT_REQUIRED_BINARIES:
+      ret = cros_lib.RunCommand('which %s' % program, shell=True,
+                                redirect_stderr=True, redirect_stdout=True,
+                                error_code_ok=True, print_cmd=False)
+      if ret.returncode != 0:
+        missing.append(program)
+
+    if missing:
+      parser.error("Option --buildbot requires the following binaries which "
+                   "couldn't be found in $PATH: %s"
+                   % (', '.join(missing)))
+
+
 
   if options.reference_repo:
     options.reference_repo = os.path.abspath(options.reference_repo)
