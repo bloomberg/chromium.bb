@@ -64,7 +64,7 @@ typedef ucontext ucontext_t;
 #include "base/vdso_support.h"
 #endif
 
-#include "gperftools/stacktrace.h"
+#include "google/stacktrace.h"
 #if defined(KEEP_SHADOW_STACKS)
 #include "linux_shadow_stacks.h"
 #endif  // KEEP_SHADOW_STACKS
@@ -241,14 +241,9 @@ static void **NextStackFrame(void **old_sp, const void *uc) {
     // In the non-strict mode, allow discontiguous stack frames.
     // (alternate-signal-stacks for example).
     if (new_sp == old_sp) return NULL;
-    if (new_sp > old_sp) {
-      // And allow frames upto about 1MB.
-      const uintptr_t delta = (uintptr_t)new_sp - (uintptr_t)old_sp;
-      const uintptr_t acceptable_delta = 1000000;
-      if (delta > acceptable_delta) {
-        return NULL;
-      }
-    }
+    // And allow frames upto about 1MB.
+    if ((new_sp > old_sp)
+        && ((uintptr_t)new_sp - (uintptr_t)old_sp > 1000000)) return NULL;
   }
   if ((uintptr_t)new_sp & (sizeof(void *) - 1)) return NULL;
 #ifdef __i386__

@@ -40,8 +40,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>   /* for size_t */
-#include <gperftools/malloc_extension_c.h>
-#include <gperftools/malloc_hook_c.h>
+#include <google/malloc_extension_c.h>
+#include <google/malloc_hook_c.h>
 
 #define FAIL(msg) do {                          \
   fprintf(stderr, "FATAL ERROR: %s\n", msg);    \
@@ -125,14 +125,6 @@ void TestMallocExtension(void) {
   }
   if (MallocExtension_GetAllocatedSize(x) < 10) {
     FAIL("GetEstimatedAllocatedSize returned a bad value (too small)");
-  }
-  if (MallocExtension_GetOwnership(x) != MallocExtension_kOwned) {
-    FAIL("DidAllocatePtr returned a bad value (kNotOwned)");
-  }
-  /* TODO(csilvers): this relies on undocumented behavior that
-     GetOwnership works on stack-allocated variables.  Use a better test. */
-  if (MallocExtension_GetOwnership(hist) != MallocExtension_kNotOwned) {
-    FAIL("DidAllocatePtr returned a bad value (kOwned)");
   }
 
   free(x);

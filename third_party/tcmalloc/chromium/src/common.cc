@@ -58,9 +58,9 @@ static inline int LgFloor(size_t n) {
 
 int AlignmentForSize(size_t size) {
   int alignment = kAlignment;
-  if (size > kMaxSize) {
-    // Cap alignment at kPageSize for large sizes.
-    alignment = kPageSize;
+  if (size >= 2048) {
+    // Cap alignment at 256 for large sizes.
+    alignment = 256;
   } else if (size >= 128) {
     // Space wasted due to alignment is at most 1/8, i.e., 12.5%.
     alignment = (1 << LgFloor(size)) / 8;
@@ -68,10 +68,6 @@ int AlignmentForSize(size_t size) {
     // We need an alignment of at least 16 bytes to satisfy
     // requirements for some SSE types.
     alignment = 16;
-  }
-  // Maximum alignment allowed is page size alignment.
-  if (alignment > kPageSize) {
-    alignment = kPageSize;
   }
   CHECK_CONDITION(size < 16 || alignment >= 16);
   CHECK_CONDITION((alignment & (alignment - 1)) == 0);
@@ -103,35 +99,32 @@ int SizeMap::NumMoveSize(size_t size) {
 void SizeMap::Init() {
   // Do some sanity checking on add_amount[]/shift_amount[]/class_array[]
   if (ClassIndex(0) < 0) {
-    Log(kCrash, __FILE__, __LINE__,
-        "Invalid class index for size 0", ClassIndex(0));
+    CRASH("Invalid class index %d for size 0\n", ClassIndex(0));
   }
   if (ClassIndex(kMaxSize) >= sizeof(class_array_)) {
-    Log(kCrash, __FILE__, __LINE__,
-        "Invalid class index for kMaxSize", ClassIndex(kMaxSize));
+    CRASH("Invalid class index %d for kMaxSize\n", ClassIndex(kMaxSize));
   }
 
   // Compute the size classes we want to use
   int sc = 1;   // Next size class to assign
   int alignment = kAlignment;
   CHECK_CONDITION(kAlignment <= 16);
+  int last_lg = -1;
   for (size_t size = kMinClassSize; size <= kMaxSize; size += alignment) {
-    alignment = AlignmentForSize(size);
+    int lg = LgFloor(size);
+    if (lg > last_lg) {
+      // Increase alignment every so often to reduce number of size classes.
+      alignment = AlignmentForSize(size);
+      last_lg = lg;
+    }
     CHECK_CONDITION((size % alignment) == 0);
 
-    int blocks_to_move = NumMoveSize(size) / 4;
-    size_t psize = 0;
-    do {
+    // Allocate enough pages so leftover is less than 1/8 of total.
+    // This bounds wasted space to at most 12.5%.
+    size_t psize = kPageSize;
+    while ((psize % size) > (psize >> 3)) {
       psize += kPageSize;
-      // Allocate enough pages so leftover is less than 1/8 of total.
-      // This bounds wasted space to at most 12.5%.
-      while ((psize % size) > (psize >> 3)) {
-        psize += kPageSize;
-      }
-      // Continue to add pages until there are at least as many objects in
-      // the span as are needed when moving objects from the central
-      // freelists and spans to the thread caches.
-    } while ((psize / size) < (blocks_to_move));
+    }
     const size_t my_pages = psize >> kPageShift;
 
     if (sc > 1 && my_pages == class_to_pages_[sc-1]) {
@@ -153,8 +146,8 @@ void SizeMap::Init() {
     sc++;
   }
   if (sc != kNumClasses) {
-    Log(kCrash, __FILE__, __LINE__,
-        "wrong number of size classes: (found vs. expected )", sc, kNumClasses);
+    CRASH("wrong number of size classes: found %d instead of %d\n",
+          sc, int(kNumClasses));
   }
 
   // Initialize the mapping arrays
@@ -171,23 +164,41 @@ void SizeMap::Init() {
   for (size_t size = 0; size <= kMaxSize; size++) {
     const int sc = SizeClass(size);
     if (sc <= 0 || sc >= kNumClasses) {
-      Log(kCrash, __FILE__, __LINE__,
-          "Bad size class (class, size)", sc, size);
+      CRASH("Bad size class %d for %" PRIuS "\n", sc, size);
     }
     if (sc > 1 && size <= class_to_size_[sc-1]) {
-      Log(kCrash, __FILE__, __LINE__,
-          "Allocating unnecessarily large class (class, size)", sc, size);
+      CRASH("Allocating unnecessarily large class %d for %" PRIuS
+            "\n", sc, size);
     }
     const size_t s = class_to_size_[sc];
-    if (size > s || s == 0) {
-      Log(kCrash, __FILE__, __LINE__,
-          "Bad (class, size, requested)", sc, s, size);
+    if (size > s) {
+      CRASH("Bad size %" PRIuS " for %" PRIuS " (sc = %d)\n", s, size, sc);
+    }
+    if (s == 0) {
+      CRASH("Bad size %" PRIuS " for %" PRIuS " (sc = %d)\n", s, size, sc);
     }
   }
 
   // Initialize the num_objects_to_move array.
   for (size_t cl = 1; cl  < kNumClasses; ++cl) {
     num_objects_to_move_[cl] = NumMoveSize(ByteSizeForClass(cl));
+  }
+}
+
+void SizeMap::Dump(TCMalloc_Printer* out) {
+  // Dump class sizes and maximum external wastage per size class
+  for (size_t cl = 1; cl  < kNumClasses; ++cl) {
+    const int alloc_size = class_to_pages_[cl] << kPageShift;
+    const int alloc_objs = alloc_size / class_to_size_[cl];
+    const int min_used = (class_to_size_[cl-1] + 1) * alloc_objs;
+    const int max_waste = alloc_size - min_used;
+    out->printf("SC %3d [ %8d .. %8d ] from %8d ; %2.0f%% maxwaste\n",
+                int(cl),
+                int(class_to_size_[cl-1] + 1),
+                int(class_to_size_[cl]),
+                int(class_to_pages_[cl] << kPageShift),
+                max_waste * 100.0 / alloc_size
+                );
   }
 }
 

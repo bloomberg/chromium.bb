@@ -122,8 +122,8 @@
 #include "base/low_level_alloc.h"
 #include "malloc_hook-inl.h"
 
-#include <gperftools/stacktrace.h>
-#include <gperftools/malloc_hook.h>
+#include <google/stacktrace.h>
+#include <google/malloc_hook.h>
 
 // MREMAP_FIXED is a linux extension.  How it's used in this file,
 // setting it to 0 is equivalent to saying, "This feature isn't
@@ -145,8 +145,6 @@ SpinLock MemoryRegionMap::owner_lock_(  // ACQUIRED_AFTER(lock_)
     SpinLock::LINKER_INITIALIZED);
 int MemoryRegionMap::recursion_count_ = 0;  // GUARDED_BY(owner_lock_)
 pthread_t MemoryRegionMap::lock_owner_tid_;  // GUARDED_BY(owner_lock_)
-int64 MemoryRegionMap::map_size_ = 0;
-int64 MemoryRegionMap::unmap_size_ = 0;
 
 // ========================================================================= //
 
@@ -464,7 +462,6 @@ void MemoryRegionMap::RecordRegionAddition(const void* start, size_t size) {
               reinterpret_cast<void*>(region.caller()));
   // Note: none of the above allocates memory.
   Lock();  // recursively lock
-  map_size_ += size;
   InsertRegionLocked(region);
     // This will (eventually) allocate storage for and copy over the stack data
     // from region.call_stack_data_ that is pointed by region.call_stack().
@@ -576,7 +573,6 @@ void MemoryRegionMap::RecordRegionRemoval(const void* start, size_t size) {
               reinterpret_cast<void*>(end_addr),
               regions_->size());
   if (VLOG_IS_ON(12))  LogAllLocked();
-  unmap_size_ += size;
   Unlock();
 }
 
@@ -586,8 +582,8 @@ void MemoryRegionMap::MmapHook(const void* result,
                                int fd, off_t offset) {
   // TODO(maxim): replace all 0x%"PRIxS" by %p when RAW_VLOG uses a safe
   // snprintf reimplementation that does not malloc to pretty-print NULL
-  RAW_VLOG(10, "MMap = 0x%"PRIxPTR" of %"PRIuS" at %"PRIu64" "
-              "prot %d flags %d fd %d offs %"PRId64,
+  RAW_VLOG(10, "MMap = 0x%"PRIxPTR" of %"PRIuS" at %llu "
+              "prot %d flags %d fd %d offs %lld",
               reinterpret_cast<uintptr_t>(result), size,
               reinterpret_cast<uint64>(start), prot, flags, fd,
               static_cast<int64>(offset));

@@ -45,7 +45,7 @@ extern "C" {
 #include <string.h>   // for memset()
 #include <libunwind.h>
 }
-#include "gperftools/stacktrace.h"
+#include "google/stacktrace.h"
 #include "base/logging.h"
 
 // Sometimes, we can try to get a stack trace from within a stack

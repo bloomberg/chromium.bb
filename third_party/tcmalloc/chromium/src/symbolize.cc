@@ -48,16 +48,8 @@
 #ifdef HAVE_POLL_H
 #include <poll.h>
 #endif
-#ifdef __MACH__
-#include <mach-o/dyld.h>   // for GetProgramInvocationName()
-#include <limits.h>        // for PATH_MAX
-#endif
-#if defined(__CYGWIN__) || defined(__CYGWIN32__)
-#include <io.h>            // for get_osfhandle()
-#endif
 #include <string>
 #include "base/commandlineflags.h"
-#include "base/logging.h"
 #include "base/sysinfo.h"
 
 using std::string;
@@ -73,36 +65,6 @@ DEFINE_string(symbolize_pprof,
 // a more-permanent copy that won't ever get destroyed.
 static string* g_pprof_path = new string(FLAGS_symbolize_pprof);
 
-// Returns NULL if we're on an OS where we can't get the invocation name.
-// Using a static var is ok because we're not called from a thread.
-static char* GetProgramInvocationName() {
-#if defined(HAVE_PROGRAM_INVOCATION_NAME)
-  extern char* program_invocation_name;  // gcc provides this
-  return program_invocation_name;
-#elif defined(__MACH__)
-  // We don't want to allocate memory for this since we may be
-  // calculating it when memory is corrupted.
-  static char program_invocation_name[PATH_MAX];
-  if (program_invocation_name[0] == '\0') {  // first time calculating
-    uint32_t length = sizeof(program_invocation_name);
-    if (_NSGetExecutablePath(program_invocation_name, &length))
-      return NULL;
-  }
-  return program_invocation_name;
-#else
-  return NULL;   // figure out a way to get argv[0]
-#endif
-}
-
-// Prints an error message when you can't run Symbolize().
-static void PrintError(const char* reason) {
-  RAW_LOG(ERROR,
-          "*** WARNING: Cannot convert addresses to symbols in output below.\n"
-          "*** Reason: %s\n"
-          "*** If you cannot fix this, try running pprof directly.\n",
-          reason);
-}
-
 void SymbolTable::Add(const void* addr) {
   symbolization_table_[addr] = "";
 }
@@ -117,24 +79,14 @@ const char* SymbolTable::GetSymbol(const void* addr) {
 // Note that the forking/etc is not thread-safe or re-entrant.  That's
 // ok for the purpose we need -- reporting leaks detected by heap-checker
 // -- but be careful if you decide to use this routine for other purposes.
-// Returns number of symbols read on error.  If can't symbolize, returns 0
-// and emits an error message about why.
 int SymbolTable::Symbolize() {
 #if !defined(HAVE_UNISTD_H)  || !defined(HAVE_SYS_SOCKET_H) || !defined(HAVE_SYS_WAIT_H)
-  PrintError("Perftools does not know how to call a sub-process on this O/S");
   return 0;
+#elif !defined(HAVE_PROGRAM_INVOCATION_NAME)
+  return 0;   // TODO(csilvers): get argv[0] somehow
 #else
-  const char* argv0 = GetProgramInvocationName();
-  if (argv0 == NULL) {  // can't call symbolize if we can't figure out our name
-    PrintError("Cannot figure out the name of this executable (argv0)");
-    return 0;
-  }
-  if (access(g_pprof_path->c_str(), R_OK) != 0) {
-    PrintError("Cannot find 'pprof' (is PPROF_PATH set correctly?)");
-    return 0;
-  }
-
   // All this work is to do two-way communication.  ugh.
+  extern char* program_invocation_name;  // gcc provides this
   int *child_in = NULL;   // file descriptors
   int *child_out = NULL;  // for now, we don't worry about child_err
   int child_fds[5][2];    // socketpair may be called up to five times below
@@ -150,7 +102,6 @@ int SymbolTable::Symbolize() {
       for (int j = 0; j < i; j++) {
         close(child_fds[j][0]);
         close(child_fds[j][1]);
-        PrintError("Cannot create a socket pair");
         return 0;
       }
     } else {
@@ -176,7 +127,6 @@ int SymbolTable::Symbolize() {
       close(child_in[1]);
       close(child_out[0]);
       close(child_out[1]);
-      PrintError("Unknown error calling fork()");
       return 0;
     }
     case 0: {  // child
@@ -192,15 +142,13 @@ int SymbolTable::Symbolize() {
       unsetenv("HEAPCHECK");
       unsetenv("PERFTOOLS_VERBOSE");
       execlp(g_pprof_path->c_str(), g_pprof_path->c_str(),
-             "--symbols", argv0, NULL);
+             "--symbols", program_invocation_name, NULL);
       _exit(3);  // if execvp fails, it's bad news for us
     }
     default: {  // parent
       close(child_in[0]);   // child uses the 0's, parent uses the 1's
       close(child_out[0]);  // child uses the 0's, parent uses the 1's
 #ifdef HAVE_POLL_H
-      // Waiting for 1ms seems to give the OS time to notice any errors.
-      poll(0, 0, 1);
       // For maximum safety, we check to make sure the execlp
       // succeeded before trying to write.  (Otherwise we'll get a
       // SIGPIPE.)  For systems without poll.h, we'll just skip this
@@ -208,17 +156,10 @@ int SymbolTable::Symbolize() {
       struct pollfd pfd = { child_in[1], POLLOUT, 0 };
       if (!poll(&pfd, 1, 0) || !(pfd.revents & POLLOUT) ||
           (pfd.revents & (POLLHUP|POLLERR))) {
-        PrintError("Cannot run 'pprof' (is PPROF_PATH set correctly?)");
         return 0;
       }
 #endif
-#if defined(__CYGWIN__) || defined(__CYGWIN32__)
-      // On cygwin, DumpProcSelfMaps() takes a HANDLE, not an fd.  Convert.
-      const HANDLE symbols_handle = (HANDLE) get_osfhandle(child_in[1]);
-      DumpProcSelfMaps(symbols_handle);
-#else
       DumpProcSelfMaps(child_in[1]);  // what pprof expects on stdin
-#endif
 
       // Allocate 24 bytes = ("0x" + 8 bytes + "\n" + overhead) for each
       // address to feed to pprof.
@@ -244,7 +185,6 @@ int SymbolTable::Symbolize() {
                               kSymbolBufferSize - total_bytes_read);
         if (bytes_read < 0) {
           close(child_out[1]);
-          PrintError("Cannot read data from pprof");
           return 0;
         } else if (bytes_read == 0) {
           close(child_out[1]);
@@ -274,7 +214,6 @@ int SymbolTable::Symbolize() {
       return num_symbols;
     }
   }
-  PrintError("Unkown error (should never occur!)");
   return 0;  // shouldn't be reachable
 #endif
 }
