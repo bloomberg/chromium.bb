@@ -366,6 +366,21 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_gles2',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+        'ppapi.gyp:ppapi_gles2',
+        'ppapi.gyp:ppapi_egl',
+      ],
+      'include_dirs': [
+        'lib/gl/include',
+      ],
+      'sources': [
+        'examples/gles2/gles2.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_video_decode',
       'dependencies': [
         'ppapi_example_skeleton',
