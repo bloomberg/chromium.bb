@@ -369,11 +369,6 @@ bool KeywordTable::MigrateToVersion39AddSyncGUIDColumn() {
 }
 
 bool KeywordTable::MigrateToVersion44AddDefaultSearchProviderBackup() {
-  // Old meta table key that was used to store backup value for the default
-  // search provider on versions 39 to 42.
-  static const char kDefaultSearchBackupKey[] =
-      "Default Search Provider Backup";
-  meta_table_->DeleteKey(kDefaultSearchBackupKey);
   // Don't update signature if it's present and valid.
   if (IsBackupSignatureValid())
     return true;
