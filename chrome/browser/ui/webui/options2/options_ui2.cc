@@ -315,7 +315,6 @@ void OptionsUI::InitializeHandlers() {
     return;
   initialized_handlers_ = true;
 
-  std::vector<WebUIMessageHandler*>::iterator iter;
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->Initialize();
 }
