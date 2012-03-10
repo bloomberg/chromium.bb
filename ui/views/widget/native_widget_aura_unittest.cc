@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/root_view.h"
@@ -34,6 +35,7 @@ class NativeWidgetAuraTest : public testing::Test {
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
     root_window_.reset(new aura::RootWindow);
+    gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
     root_window_->SetBounds(gfx::Rect(0, 0, 640, 480));
     root_window_->SetHostSize(gfx::Size(640, 480));
     test_stacking_client_.reset(

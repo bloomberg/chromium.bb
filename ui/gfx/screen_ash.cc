@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,9 +9,8 @@
 
 namespace gfx {
 
-// gfx can't depend upon aura, otherwise we have circular dependencies. So,
-// gfx::Screen is pluggable for aura and Desktop plugs in the real
-// implementation.
+// gfx can't depend upon ash, otherwise we have circular dependencies. So,
+// gfx::Screen is pluggable and Desktop plugs in the real implementation.
 
 // static
 Screen* Screen::instance_ = NULL;
