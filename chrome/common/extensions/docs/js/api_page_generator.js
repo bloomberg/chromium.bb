@@ -48,6 +48,7 @@ var MODULE_SCHEMAS = [
   '../api/experimental.socket.json',
   '../api/experimental.speechInput.json',
   '../api/experimental.topSites.json',
+  '../api/experimental.webRequest.json',
   '../api/extension.json',
   '../api/fileBrowserHandler.json',
   '../api/fileBrowserPrivate.json',

@@ -19,7 +19,7 @@ using extensions::RulesRegistryService;
 using extensions::TestRulesRegistry;
 
 namespace {
-const char kTestEvent[] = "webRequest.onRequest";
+const char kTestEvent[] = "experimental.webRequest.onRequest";
 }  // namespace
 
 class DeclarativeApiTest : public ExtensionApiTest {

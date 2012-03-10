@@ -1,0 +1,53 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+  {
+    "namespace": "experimental.webRequest",
+    "types": [
+      {
+        "id": "RequestMatcher",
+        "type": "object",
+        "description": "Matches network events by various criteria. Experimental junk, do not use!",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Matches for a full URL",
+            "optional": true
+          },
+          "instanceType": { "type": "string", "enum": ["experimental.webRequest.RequestMatcher"] }
+        }
+      },
+      {
+        "id": "CancelRequest",
+        "description": "Declarative event action that cancels a network request. Experimental junk, do not use!",
+        "type": "object",
+        "properties": {
+          "instanceType": { "type": "string", "enum": ["experimental.webRequest.CancelRequest"] }
+        }
+      },
+      {
+        "id": "ModifyRequest",
+        "description": "Declarative event action that modifies a network request. Experimental junk, do not use!",
+        "type": "object",
+        "properties": {
+          "instanceType": { "type": "string", "enum": ["experimental.webRequest.ModifyRequest"] }
+        }
+      }
+    ],
+    "functions": [
+    ],
+    "events": [
+      {
+        "name": "onRequest",
+        "options": {
+          "supportsListeners": false,
+          "supportsRules": true,
+          "conditions": ["RequestMatcher"],
+          "actions": ["CancelRequest", "ModifyRequest"]
+        }
+      }
+    ]
+  }
+]

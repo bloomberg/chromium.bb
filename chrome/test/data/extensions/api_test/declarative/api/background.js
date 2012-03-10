@@ -6,7 +6,7 @@ var declarative = chrome.experimental.declarative;
 
 function createTestCondition(opt_testParameter) {
   var result = {
-    "instanceType": "webRequest.RequestMatcher"
+    "instanceType": "experimental.webRequest.RequestMatcher"
   };
   if (opt_testParameter) {
     result["url"] = opt_testParameter;
@@ -16,14 +16,14 @@ function createTestCondition(opt_testParameter) {
 
 function createTestAction() {
   var result = {
-    "instanceType": "webRequest.CancelRequest"
+    "instanceType": "experimental.webRequest.CancelRequest"
   };
   return result;
 }
 
 function createTestAction2() {
   var result = {
-    "instanceType": "webRequest.ModifyRequest"
+    "instanceType": "experimental.webRequest.ModifyRequest"
   };
   return result;
 }
@@ -77,7 +77,7 @@ var invalidRule1 = {
   "actions": [{"key": "value"}]
 };
 
-var testEvent = chrome.webRequest.onRequest;
+var testEvent = chrome.experimental.webRequest.onRequest;
 
 chrome.test.runTests([
   // Add adding two simple rules and check that their optional fields are set

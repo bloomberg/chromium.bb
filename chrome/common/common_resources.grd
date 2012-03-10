@@ -40,6 +40,7 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SOCKET" file="extensions\api\experimental.socket.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT" file="extensions\api\experimental.speechInput.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_TOPSITES" file="extensions\api\experimental.topSites.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_WEBREQUEST" file="extensions\api\experimental.webRequest.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXTENSION" file="extensions\api\extension.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER" file="extensions\api\fileBrowserHandler.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE" file="extensions\api\fileBrowserPrivate.json" type="BINDATA" />

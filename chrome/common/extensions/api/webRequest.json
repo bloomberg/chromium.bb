@@ -79,38 +79,6 @@
             }
           }
         }
-      },
-      {
-        "nodoc": true,
-        "id": "RequestMatcher",
-        "type": "object",
-        "description": "Matches network events by various criteria. Experimental junk, do not use!",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "Matches for a full URL",
-            "optional": true
-          },
-          "instanceType": { "type": "string", "enum": ["webRequest.RequestMatcher"] }
-        }
-      },
-      {
-        "nodoc": true,
-        "id": "CancelRequest",
-        "description": "Declarative event action that cancels a network request. Experimental junk, do not use!",
-        "type": "object",
-        "properties": {
-          "instanceType": { "type": "string", "enum": ["webRequest.CancelRequest"] }
-        }
-      },
-      {
-        "nodoc": true,
-        "id": "ModifyRequest",
-        "description": "Declarative event action that modifies a network request. Experimental junk, do not use!",
-        "type": "object",
-        "properties": {
-          "instanceType": { "type": "string", "enum": ["webRequest.ModifyRequest"] }
-        }
       }
     ],
     "functions": [
@@ -554,16 +522,6 @@
             "description": "A set of filters that restricts the events that will be sent to this listener."
           }
         ]
-      },
-      {
-        "name": "onRequest",
-        "nodoc": true,
-        "options": {
-          "supportsListeners": false,
-          "supportsRules": true,
-          "conditions": ["RequestMatcher"],
-          "actions": ["CancelRequest", "ModifyRequest"]
-        }
       }
     ]
   }
