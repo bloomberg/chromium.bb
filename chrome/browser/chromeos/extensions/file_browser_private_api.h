@@ -458,6 +458,12 @@ class GetFileLocationsFunction : public FileBrowserFunction {
 
 // Get gdata files for the given list of file URLs. Initiate downloading of
 // gdata files if these are not cached. Return a list of local file names.
+// This function puts empty strings instead of local paths for files could
+// not be obtained. For instance, this can happen if the user specifies a new
+// file name to save a file on gdata. There may be other reasons to fail. The
+// file manager should check if the local paths returned from getGDataFiles()
+// contain empty paths.
+// TODO(satorux): Should we propagate error types to the JavasScript layer?
 class GetGDataFilesFunction : public FileBrowserFunction {
  public:
   GetGDataFilesFunction();

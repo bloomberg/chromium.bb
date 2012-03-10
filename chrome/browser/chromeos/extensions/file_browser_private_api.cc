@@ -2200,16 +2200,15 @@ void GetGDataFilesFunction::OnFileReady(
     const FilePath& local_path) {
   FilePath gdata_path = remaining_gdata_paths_.front();
 
-  if (error != base::PLATFORM_FILE_OK) {
-    // TODO(satorux): What should we do if some files succeeded but some
-    // failed? For now we consider it a failure if any of the files failed.
-    LOG(ERROR) << "Failed to get " << gdata_path.value();
-    SendResponse(false);
-    return;
+  if (error == base::PLATFORM_FILE_OK) {
+    local_paths_->Append(Value::CreateStringValue(local_path.value()));
+    DVLOG(1) << "Got " << gdata_path.value() << " as " << local_path.value();
+  } else {
+    local_paths_->Append(Value::CreateStringValue(""));
+    DVLOG(1) << "Failed to get " << gdata_path.value()
+             << " with error code: " << error;
   }
 
-  local_paths_->Append(Value::CreateStringValue(local_path.value()));
-  DVLOG(1) << "Got " << gdata_path.value() << " as " << local_path.value();
   remaining_gdata_paths_.pop();
 
   // Start getting the next file.

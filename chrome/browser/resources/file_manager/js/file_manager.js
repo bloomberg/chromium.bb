@@ -3892,13 +3892,17 @@ FileManager.prototype = {
             chrome.fileBrowserPrivate.getGDataFiles(
               [fileUrl],
               function(localPaths) {
-                // Add "localPath" parameter to the gdata file URL.
-                fileUrl += '?localPath=' + encodeURIComponent(localPaths[0]);
-                console.log(fileUrl);
+                // localPath can be empty if the file is not present, which
+                // can happen if the user specifies a new file name to save a
+                // file on gdata.
+                if (localPaths[0]) {
+                  // Add "localPath" parameter to the gdata file URL.
+                  fileUrl += '?localPath=' + encodeURIComponent(localPaths[0]);
+                }
                 // Call doSelectFile_ on a timeout, as it's unsafe to
                 // close a window from a callback.
                 setTimeout(self.doSelectFile_.bind(
-                  self, fileUrl, filterIndex), 0);
+                    self, fileUrl, filterIndex), 0);
               });
           } else if (location == 'local') {
             setTimeout(self.doSelectFile_.bind(self, fileUrl, filterIndex), 0);
@@ -3951,8 +3955,10 @@ FileManager.prototype = {
                 // Add "localPath" parameter to the gdata file URLs.
                 for (var i = 0; i < gdataFileIndexes.length; ++i) {
                   var gdataIndex = gdataFileIndexes[i];
-                  fileUrls[gdataIndex] += '?localPath=' +
-                    encodeURIComponent(localPaths[i]);
+                  if (localPaths[i]) {
+                    fileUrls[gdataIndex] += '?localPath=' +
+                        encodeURIComponent(localPaths[i]);
+                  }
                 }
               });
           } else {  // All files are local.
