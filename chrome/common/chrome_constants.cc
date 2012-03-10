@@ -156,6 +156,9 @@ const FilePath::CharType kLoginDataFileName[] = FPL("Login Data");
 const FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 const FilePath::CharType kServiceStateFileName[] = FPL("Service State");
+#if defined(OS_CHROMEOS)
+const FilePath::CharType kGDataCacheDirname[] = FPL("GCache");
+#endif  // defined(OS_CHROMEOS)
 
 // File name of the Pepper Flash plugin on different platforms.
 const FilePath::CharType kPepperFlashPluginFilename[] =

@@ -527,6 +527,8 @@
         'browser/chromeos/gdata/gdata_file_system.h',
         'browser/chromeos/gdata/gdata_file_system_proxy.cc',
         'browser/chromeos/gdata/gdata_file_system_proxy.h',
+        'browser/chromeos/gdata/gdata_files.cc',
+        'browser/chromeos/gdata/gdata_files.h',
         'browser/chromeos/gdata/gdata_operation_registry.cc',
         'browser/chromeos/gdata/gdata_operation_registry.h',
         'browser/chromeos/gdata/gdata_parser.cc',

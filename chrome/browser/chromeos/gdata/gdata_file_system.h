@@ -7,6 +7,8 @@
 
 #include <map>
 #include <string>
+#include <sys/stat.h>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,170 +17,18 @@
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/gdata/gdata.h"
+#include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "net/base/net_errors.h"
 
 namespace gdata {
 
 class DocumentsService;
-class GDataDirectory;
+
 class GDataDownloadObserver;
-class GDataFile;
-
-// Base class for representing files and directories in gdata virtual file
-// system.
-class GDataFileBase {
- public:
-  explicit GDataFileBase(GDataDirectory* parent);
-  virtual ~GDataFileBase();
-  // Converts DocumentEntry into GDataFileBase.
-  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
-                                          DocumentEntry* doc);
-  virtual GDataFile* AsGDataFile();
-  virtual GDataDirectory* AsGDataDirectory();
-  GDataDirectory* parent() { return parent_; }
-  const base::PlatformFileInfo& file_info() const { return file_info_; }
-  const FilePath::StringType& file_name() const { return file_name_; }
-  const FilePath::StringType& original_file_name() const {
-    return original_file_name_;
-  }
-  void set_file_name(const FilePath::StringType& name) { file_name_ = name; }
-
-  // The content URL is used for downloading regular files as is.
-  const GURL& content_url() const { return content_url_; }
-
-  // The self URL is used for removing files and hosted documents.
-  const GURL& self_url() const { return self_url_; }
-
-  // Returns virtual file path representing this file system entry. This path
-  // corresponds to file path expected by public methods of GDataFileSyste
-  // class.
-  FilePath GetFilePath();
-
- protected:
-  base::PlatformFileInfo file_info_;
-  FilePath::StringType file_name_;
-  FilePath::StringType original_file_name_;
-  // Files with the same original name will be uniquely identified with this
-  // field so we can represent them with unique URLs/paths in File API layer.
-  // For example, two files in the same directory with the same name "Foo"
-  // will show up in the virtual directory as "Foo" and "Foo (2)".
-  GURL self_url_;
-  GURL content_url_;
-  GDataDirectory* parent_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GDataFileBase);
-};
-
-typedef std::map<FilePath::StringType, GDataFileBase*> GDataFileCollection;
-
-// Represents "file" in in a GData virtual file system. On gdata feed side,
-// this could be either a regular file or a server side document.
-class GDataFile : public GDataFileBase {
- public:
-  // This is used as a bitmask for the cache state.
-  enum CacheState {
-    CACHE_STATE_NONE    = 0x0,
-    CACHE_STATE_PINNED  = 0x1 << 0,
-    CACHE_STATE_PRESENT = 0x1 << 1,
-    CACHE_STATE_DIRTY   = 0x1 << 2,
-  };
-
-  explicit GDataFile(GDataDirectory* parent);
-  virtual ~GDataFile();
-  virtual GDataFile* AsGDataFile() OVERRIDE;
-
-  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
-                                          DocumentEntry* doc);
-
-  DocumentEntry::EntryKind kind() const { return kind_; }
-  const GURL& thumbnail_url() const { return thumbnail_url_; }
-  const GURL& edit_url() const { return edit_url_; }
-  const std::string& content_mime_type() const { return content_mime_type_; }
-  const std::string& etag() const { return etag_; }
-  const std::string& resource() const { return resource_id_; }
-  const std::string& id() const { return id_; }
-  const std::string& file_md5() const { return file_md5_; }
-  // Returns a bitmask of CacheState enum values.
-  int cache_state() const { return cache_state_; }
-  bool is_hosted_document() const { return is_hosted_document_; }
-
- private:
-  // Content URL for files.
-  DocumentEntry::EntryKind kind_;
-  GURL thumbnail_url_;
-  GURL edit_url_;
-  std::string content_mime_type_;
-  std::string etag_;
-  std::string resource_id_;
-  std::string id_;
-  std::string file_md5_;
-  int cache_state_;
-  bool is_hosted_document_;
-
-  DISALLOW_COPY_AND_ASSIGN(GDataFile);
-};
-
-// Represents "directory" in a GData virtual file system. Maps to gdata
-// collection element.
-class GDataDirectory : public GDataFileBase {
- public:
-  explicit GDataDirectory(GDataDirectory* parent);
-  virtual ~GDataDirectory();
-  virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
-
-  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
-                                          DocumentEntry* doc);
-
-  // Adds child file to the directory and takes over the ownership of |file|
-  // object. The method will also do name deduplication to ensure that the
-  // exposed presentation path does not have naming conflicts. Two files with
-  // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  void AddFile(GDataFileBase* file);
-
-  // Removes the file from its children list.
-  bool RemoveFile(GDataFileBase* file);
-
-  // Checks if directory content needs to be retrieved again. If it does,
-  // the function will return URL for next feed in |next_feed_url|.
-  bool NeedsRefresh(GURL* next_feed_url);
-
-  // Removes children elements.
-  void RemoveChildren();
-
-  // Last refresh time.
-  const base::Time& refresh_time() const { return refresh_time_; }
-  void set_refresh_time(const base::Time& time) { refresh_time_ = time; }
-  // Url for this feed.
-  const GURL& start_feed_url() const { return start_feed_url_; }
-  void set_start_feed_url(const GURL& url) { start_feed_url_ = url; }
-  // Continuing feed's url.
-  const GURL& next_feed_url() const { return next_feed_url_; }
-  void set_next_feed_url(const GURL& url) { next_feed_url_ = url; }
-  // Upload url is an entry point for initialization of file upload.
-  // It corresponds to resumable-create-media link from gdata feed.
-  const GURL& upload_url() const { return upload_url_; }
-  void set_upload_url(const GURL& url) { upload_url_ = url; }
-  // Collection of children GDataFileBase items.
-  const GDataFileCollection& children() const { return children_; }
-
- private:
-  base::Time refresh_time_;
-  // Url for this feed.
-  GURL start_feed_url_;
-  // Continuing feed's url.
-  GURL next_feed_url_;
-  // Upload url, corresponds to resumable-create-media link for feed
-  // representing this directory.
-  GURL upload_url_;
-  // Collection of children GDataFileBase items.
-  GDataFileCollection children_;
-
-  DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
-};
 
 // Delegate class used to deal with results of virtual directory request
 // to FindFileByPath() method. This class is refcounted since we pass it
@@ -210,6 +60,10 @@ class FindFileDelegate : public base::RefCountedThreadSafe<FindFileDelegate> {
   virtual void OnError(base::PlatformFileError error) = 0;
 };
 
+// Callback for completion of cache operation.
+typedef base::Callback<void(net::Error error,
+                            const std::string& res_id,
+                            const std::string& md5)> CacheOperationCallback;
 
 // GData file system abstraction layer.
 // GDataFileSystem is per-profie, hence inheriting ProfileKeyedService.
@@ -319,7 +173,7 @@ class GDataFileSystem : public ProfileKeyedService {
  private:
   friend class GDataUploader;
   friend class GDataFileSystemFactory;
-  friend class GDataFileSystemTest;
+  friend class GDataFileSystemTestBase;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
                            FindFirstMissingParentDirectory);
 
@@ -348,6 +202,11 @@ class GDataFileSystem : public ProfileKeyedService {
     const bool is_exclusive;
     const bool is_recursive;
     FileOperationCallback callback;
+  };
+
+  enum CacheType {  // This indexes into |cache_paths_| vector.
+    CACHE_TYPE_BLOBS = 0,
+    CACHE_TYPE_META,
   };
 
   explicit GDataFileSystem(Profile* profile,
@@ -460,7 +319,9 @@ class GDataFileSystem : public ProfileKeyedService {
       FilePath* first_missing_parent_path);
 
   // Returns root GCache directory. Should match <user_profile_dir>/GCache/v1/.
-  FilePath GetGCacheDirectoryPath() const;
+  FilePath GetGCacheDirectoryPath() const {
+    return gdata_cache_path_;
+  }
 
   // Saves collected root feeds in GCache directory under
   // <user_profile_dir>/GCache/v1/meta/last_feed.json.
@@ -475,7 +336,112 @@ class GDataFileSystem : public ProfileKeyedService {
 
   void NotifyDirectoryChanged(const FilePath& directory_path);
 
-    scoped_ptr<GDataDirectory> root_;
+  // Cache entry points from within GDataFileSystem.
+  // The functionalities of GData blob cache include:
+  // - stores downloaded gdata files on disk, indexed by the resource_id and md5
+  //   of the gdata file.
+  // - provides absolute path for files to be cached or cached.
+  // - updates the cached file on disk after user has edited it locally
+  // - handles eviction when disk runs out of space
+  // - uploads dirty files to gdata server.
+  // - etc.
+
+  // Initializes cache.
+  void InitializeCache();
+
+  // Returns absolute path of the file if it were cached or to be cached.
+  FilePath GetCacheFilePath(const std::string& res_id,
+                            const std::string& md5);
+
+  // Stores |source_path| corresponding to |res_id| and |md5| to cache.
+  // Returns false immediately if cache has not been initialized i.e. the cache
+  // directory and its sub-directories have not been created or the blobs sub-
+  // directory has not been scanned to initialize the cache map.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called.
+  // TODO(kuan): When URLFetcher can save response to a specified file (as
+  // opposed to only temporary file currently), remove |source_path| parameter.
+  bool StoreToCache(const std::string& res_id,
+                    const std::string& md5,
+                    const FilePath& temp_file,
+                    const CacheOperationCallback& callback);
+
+  // Checks if file corresponding to |resource_id| and |md5| exist on disk and
+  // can be accessed i.e. not corrupted by previous file operations that didn't
+  // complete for whatever reasons.
+  // Returns false if cache has not been initialized.
+  // Otherwise, if file exists on disk and is accessible, |path| contains its
+  // absolute path, else |path| is empty.
+  bool GetFromCache(const std::string& res_id,
+                    const std::string& md5,
+                    FilePath* path);
+
+  // Removes all files corresponding to |resource_id| from cache.
+  // Returns false if cache has not been initialized.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called.
+  bool RemoveFromCache(const std::string& res_id,
+                       const CacheOperationCallback& callback);
+
+  // Pin file corresponding to |resource_id| and |md5| by setting the
+  // appropriate file attributes.
+  // We'll try not to evict pinned cache files unless there's not enough space
+  // on disk and pinned files are the only ones left.
+  // If the file to be pinned is not stored in the cache,
+  // net::ERR_FILE_NOT_FOUND will be passed to the |callback|.
+  // Returns false if cache has not been initialized.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called.
+  bool Pin(const std::string& res_id,
+           const std::string& md5,
+           const CacheOperationCallback& callback);
+
+  // Unpin file corresponding to |resource_id| and |md5| by setting the
+  // appropriate file attributes.
+  // Unpinned files would be evicted when space on disk runs out.
+  // Returns false if cache has not been initialized.
+  // Upon completion, |callback| is invoked on the thread where this method was
+  // called.
+  bool Unpin(const std::string& res_id,
+             const std::string& md5,
+             const CacheOperationCallback& callback);
+
+  // Cache callbacks from cache tasks that were run on IO thread pool.
+
+  // Callback for InitializeCache that updates the necessary data members with
+  // results from InitializeCacheOnIoThreadPool.
+  void OnCacheInitialized(net::Error error,
+                          bool initialized,
+                          const GDataRootDirectory::CacheMap& cache_map);
+
+  // Callback for StoreToCache that updates the data members with results from
+  // StoreToCacheOnIOThreadPool.
+  void OnStoredToCache(net::Error error,
+                       const std::string& res_id,
+                       const std::string& md5,
+                       mode_t mode_bits,
+                       const CacheOperationCallback& callback);
+
+  // Default callback for RemoveFromCache.
+  void OnRemovedFromCache(net::Error error,
+                          const std::string& res_id,
+                          const std::string& md5);
+
+  // Callback for any method that needs to modify cache status, e.g. Pin and
+  // Unpin.
+  void OnCacheStatusModified(net::Error error,
+                             const std::string& res_id,
+                             const std::string& md5,
+                             mode_t mode_bits,
+                             const CacheOperationCallback& callback);
+
+  // Cache internal helper functions.
+
+  // Checks if cache has been initialized, safe because it's with locking.
+  bool SafeIsCacheInitialized();
+
+  scoped_ptr<GDataRootDirectory> root_;
+
   base::Lock lock_;
 
   // The profile hosts the GDataFileSystem.
@@ -488,6 +454,16 @@ class GDataFileSystem : public ProfileKeyedService {
   scoped_ptr<GDataUploader> gdata_uploader_;
   // Downloads observer.
   scoped_ptr<GDataDownloadObserver> gdata_download_observer_;
+
+  // Base path for GData cache, e.g. <user_profile_dir>/user/GCache/v1.
+  FilePath gdata_cache_path_;
+
+  // Paths for all subdirectories of GCache, one for each CacheType enum.
+  std::vector<FilePath> cache_paths_;
+
+  // True if cache has been initialized properly, determined in
+  // OnCacheInitialized callback for GDataCache::Initialize.
+  bool cache_initialized_;
 
   base::WeakPtrFactory<GDataFileSystem> weak_ptr_factory_;
 };

@@ -63,7 +63,7 @@
             "$t": "0"
          },
          "gd$resourceId": {
-            "$t": "folder:1_folder_resouce_id"
+            "$t": "folder:1_folder_resource_id"
          },
          "id": {
             "$t": "https://1_folder_id"
@@ -143,7 +143,7 @@
             "$t": "0"
          },
          "gd$resourceId": {
-            "$t": "folder:slash_dir_folder_resouce_id"
+            "$t": "folder:slash_dir_folder_resource_id"
          },
          "id": {
             "$t": "https://slash_dir_folder_id"
@@ -228,7 +228,7 @@
             "$t": "892721"
          },
          "gd$resourceId": {
-            "$t": "file:2_file_resouce_id"
+            "$t": "file:2_file_resource_id"
          },
          "id": {
             "$t": "2_file_id"
@@ -317,7 +317,7 @@
             "$t": "892721"
          },
          "gd$resourceId": {
-            "$t": "file:slash_file_resouce_id"
+            "$t": "file:slash_file_resource_id"
          },
          "id": {
             "$t": "slash_file_id"
@@ -406,10 +406,10 @@
             "$t": "892721"
          },
          "gd$resourceId": {
-            "$t": "file:2_file_resouce_id"
+            "$t": "file:3_file_resource_id"
          },
          "id": {
-            "$t": "2_file_id"
+            "$t": "3_file_id"
          },
          "link": [ {
             "href": "https://file_link_alternate",
@@ -495,10 +495,10 @@
             "$t": "892721"
          },
          "gd$resourceId": {
-            "$t": "file:2_file_resouce_id"
+            "$t": "file:4_file_resource_id"
          },
          "id": {
-            "$t": "2_file_id"
+            "$t": "4_file_id"
          },
          "link": [ {
             "href": "https://file_link_alternate",
@@ -579,10 +579,10 @@
             "$t": "0"
          },
          "gd$resourceId": {
-            "$t": "document:3_document_resource_id"
+            "$t": "document:5_document_resource_id"
          },
          "id": {
-            "$t": "3_document_id"
+            "$t": "5_document_id"
          },
          "link": [ {
             "href": "https://3_document_alternate_link",

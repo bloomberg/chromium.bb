@@ -491,7 +491,7 @@ void FilePropertiesDelegate::OnFileFound(gdata::GDataFile* file) {
   thumbnail_url_ = file->thumbnail_url();
   edit_url_ = file->edit_url();
   content_url_ = file->content_url();
-  cache_state_ = file->cache_state();
+  cache_state_ = file->GetCacheState();
   is_hosted_document_ = file->is_hosted_document();
 }
 
