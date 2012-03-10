@@ -28,24 +28,18 @@ Manifest::~Manifest() {
 bool Manifest::ValidateManifest(string16* error) const {
   for (DictionaryValue::key_iterator key = value_->begin_keys();
        key != value_->end_keys(); ++key) {
-    scoped_ptr<Feature> feature =
-        ManifestFeatureProvider::GetDefaultInstance()->GetFeature(*key);
-    if (!feature.get()) {
+    bool was_known = false;
+    if (!CanAccessKey(*key, &was_known)) {
       // When validating the extension manifests, we ignore keys that are not
       // recognized for forward compatibility.
-      // TODO(aa): Consider having an error here in the case of strict error
-      // checking to let developers know when they screw up.
-      continue;
-    }
+      if (!was_known) {
+        // TODO(aa): Consider having an error here in the case of strict error
+        // checking to let developers know when they screw up.
+        continue;
+      }
 
-    Feature::Availability result = feature->IsAvailable(
-        extension_id_, GetType(), Feature::ConvertLocation(location_),
-        GetManifestVersion());
-    if (result != Feature::IS_AVAILABLE) {
       *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kFeatureNotAllowed,
-          *key,
-          feature->GetErrorMessage(result));
+          errors::kFeatureNotAllowed, *key);
       return false;
     }
   }
@@ -54,7 +48,7 @@ bool Manifest::ValidateManifest(string16* error) const {
 }
 
 bool Manifest::HasKey(const std::string& key) const {
-  return CanAccessKey(key) && value_->HasKey(key);
+  return CanAccessKey(key, NULL) && value_->HasKey(key);
 }
 
 bool Manifest::Get(
@@ -146,18 +140,22 @@ bool Manifest::IsHostedApp() const {
 bool Manifest::CanAccessPath(const std::string& path) const {
   std::vector<std::string> components;
   base::SplitString(path, '.', &components);
-  return CanAccessKey(components[0]);
+  return CanAccessKey(components[0], NULL);
 }
 
-bool Manifest::CanAccessKey(const std::string& key) const {
+bool Manifest::CanAccessKey(const std::string& key, bool *was_known) const {
   scoped_ptr<Feature> feature =
       ManifestFeatureProvider::GetDefaultInstance()->GetFeature(key);
   if (!feature.get())
     return false;
 
-  return Feature::IS_AVAILABLE == feature->IsAvailable(
-      extension_id_, GetType(), Feature::ConvertLocation(location_),
-      GetManifestVersion());
+  if (was_known)
+    *was_known = true;
+
+  return feature->IsAvailable(extension_id_,
+                              GetType(),
+                              Feature::ConvertLocation(location_),
+                              GetManifestVersion());
 }
 
 }  // namespace extensions
