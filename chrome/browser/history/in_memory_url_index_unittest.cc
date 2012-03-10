@@ -229,7 +229,7 @@ void InMemoryURLIndexTest::CheckTerm(
     string16 term) const {
   URLIndexPrivateData::SearchTermCacheMap::const_iterator cache_iter(
       cache.find(term));
-  ASSERT_NE(cache.end(), cache_iter)
+  ASSERT_TRUE(cache.end() != cache_iter)
       << "Cache does not contain '" << term << "' but should.";
   URLIndexPrivateData::SearchTermCacheItem cache_item = cache_iter->second;
   EXPECT_TRUE(cache_item.used_)
@@ -244,7 +244,7 @@ void ExpectMapOfContainersIdentical(const T& expected, const T& actual) {
   for (typename T::const_iterator expected_iter = expected.begin();
        expected_iter != expected.end(); ++expected_iter) {
     typename T::const_iterator actual_iter = actual.find(expected_iter->first);
-    ASSERT_NE(actual.end(), actual_iter);
+    ASSERT_TRUE(actual.end() != actual_iter);
     typename T::mapped_type const& expected_values(expected_iter->second);
     typename T::mapped_type const& actual_values(actual_iter->second);
     ASSERT_EQ(expected_values.size(), actual_values.size());
