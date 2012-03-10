@@ -443,6 +443,7 @@ RenderViewImpl::RenderViewImpl(
       cached_has_main_frame_vertical_scrollbar_(false),
       context_has_swapbuffers_complete_callback_(false),
       queried_for_swapbuffers_complete_callback_(false),
+      context_is_web_graphics_context_3d_command_buffer_impl_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
@@ -1573,6 +1574,7 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
 
     if (!context->Initialize(attributes))
       return NULL;
+    context_is_web_graphics_context_3d_command_buffer_impl_ = true;
     return context.release();
   }
 }
@@ -2135,15 +2137,17 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->AddAudioRenderer(audio_renderer);
   }
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
   // Currently only cros/arm has any HW video decode support in
   // GpuVideoDecodeAccelerator so we don't even try to use it on other
   // platforms.  This is a startup-time optimization.  When new VDA
   // implementations are added, relax the #if above.
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  // Note we don't actually use the result of this blind down-cast unless it's
+  // valid (not NULL and of the right type).
   WebGraphicsContext3DCommandBufferImpl* context3d =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(
           webview()->graphicsContext3D());
-  if (context3d) {
+  if (context_is_web_graphics_context_3d_command_buffer_impl_ && context3d) {
     MessageLoop* factories_loop =
         RenderThreadImpl::current()->compositor_thread() ?
         RenderThreadImpl::current()->compositor_thread()->GetWebThread()
