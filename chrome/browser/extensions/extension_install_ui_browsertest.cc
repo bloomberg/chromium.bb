@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1,
                                                 browser()->profile()));
 
-  if (NewTabUI::ShouldShowAppsPage()) {
+  if (NewTabUI::ShouldShowApps()) {
     EXPECT_EQ(num_tabs + 1, browser()->tab_count());
     WebContents* web_contents = browser()->GetSelectedWebContents();
     ASSERT_TRUE(web_contents);
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                                                 incognito_profile));
 
   EXPECT_EQ(num_incognito_tabs, incognito_browser->tab_count());
-  if (NewTabUI::ShouldShowAppsPage()) {
+  if (NewTabUI::ShouldShowApps()) {
     EXPECT_EQ(num_normal_tabs + 1, browser()->tab_count());
     WebContents* web_contents = browser()->GetSelectedWebContents();
     ASSERT_TRUE(web_contents);

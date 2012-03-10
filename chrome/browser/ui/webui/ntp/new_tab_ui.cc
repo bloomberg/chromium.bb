@@ -124,7 +124,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
       web_ui->AddMessageHandler(new NewTabPageSyncHandler());
 #endif
 
-    if (ShouldShowAppsPage()) {
+    if (ShouldShowApps()) {
       ExtensionService* service = GetProfile()->GetExtensionService();
       // We might not have an ExtensionService (on ChromeOS when not logged in
       // for example).
@@ -292,7 +292,7 @@ bool NewTabUI::ShouldShowAppInstallHint() {
 }
 
 // static
-bool NewTabUI::ShouldShowAppsPage() {
+bool NewTabUI::ShouldShowApps() {
 #if defined(USE_ASH)
   // Ash shows apps in app list thus should not show apps page in NTP4.
   return false;

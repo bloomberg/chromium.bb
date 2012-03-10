@@ -153,7 +153,7 @@ cr.define('ntp', function() {
       this.shownPage = templateData.shown_page_type;
       this.shownPageIndex = templateData.shown_page_index;
 
-      if (templateData.showAppsPage) {
+      if (templateData.showApps) {
         // Request data on the apps so we can fill them in.
         // Note that this is kicked off asynchronously.  'getAppsCallback' will
         // be invoked at some point after this function returns.
@@ -165,8 +165,7 @@ cr.define('ntp', function() {
           this.shownPageIndex = 0;
         }
 
-        // Mark section ready asynchronously soon after.
-        window.setTimeout(this.markSectionReady_.bind(this), 0);
+        document.body.classList.add('bare-minimum');
       }
 
       document.addEventListener('keydown', this.onDocKeyDown_.bind(this));
@@ -255,6 +254,8 @@ cr.define('ntp', function() {
      *     position indices.
      */
     appMoved: function(appData) {
+      assert(templateData.showApps);
+
       var app = $(appData.id);
       assert(app, 'trying to move an app that doesn\'t exist');
       app.remove(false);
@@ -272,6 +273,8 @@ cr.define('ntp', function() {
      * @param {boolean} fromPage True if the removal was from the current page.
      */
     appRemoved: function(appData, isUninstall, fromPage) {
+      assert(templateData.showApps);
+
       var app = $(appData.id);
       assert(app, 'trying to remove an app that doesn\'t exist');
 
@@ -299,6 +302,8 @@ cr.define('ntp', function() {
      *        applications.
      */
     getAppsCallback: function(data) {
+      assert(templateData.showApps);
+
       var startTime = Date.now();
 
       // Remember this to select the correct card when done rebuilding.
@@ -382,20 +387,6 @@ cr.define('ntp', function() {
 
       logEvent('apps.layout: ' + (Date.now() - startTime));
 
-      this.markSectionReady_();
-    },
-
-    /**
-     * Marks section ready.
-     * @private
-     */
-   markSectionReady_: function() {
-      // Tell the slider about the pages.
-      this.updateSliderCards();
-      // Mark the current page.
-      this.cardSlider.currentCardValue.navigationDot.classList.add('selected');
-
-      document.documentElement.classList.remove('starting-up');
       cr.dispatchSimpleEvent(document, 'sectionready', true, true);
     },
 
@@ -406,6 +397,8 @@ cr.define('ntp', function() {
      *     the app.
      */
     appAdded: function(appData, opt_highlight) {
+      assert(templateData.showApps);
+
       if (appData.id == this.highlightAppId) {
         opt_highlight = true;
         this.highlightAppId = null;
@@ -436,6 +429,8 @@ cr.define('ntp', function() {
      *     applications.
      */
     appsPrefChangedCallback: function(data) {
+      assert(templateData.showApps);
+
       for (var i = 0; i < data.apps.length; ++i) {
         $(data.apps[i].id).appData = data.apps[i];
       }
@@ -479,10 +474,12 @@ cr.define('ntp', function() {
      * of a moving or insert tile.
      */
     enterRearrangeMode: function() {
-      var tempPage = new ntp.AppsPage();
-      tempPage.classList.add('temporary');
-      var pageName = localStrings.getString('appDefaultPageName');
-      this.appendTilePage(tempPage, pageName, true);
+      if (templateData.showApps) {
+        var tempPage = new ntp.AppsPage();
+        tempPage.classList.add('temporary');
+        var pageName = localStrings.getString('appDefaultPageName');
+        this.appendTilePage(tempPage, pageName, true);
+      }
 
       if (ntp.getCurrentlyDraggingTile().firstChild.canBeRemoved())
         $('footer').classList.add('showing-trash-mode');
@@ -495,13 +492,16 @@ cr.define('ntp', function() {
      */
     leaveRearrangeMode: function() {
       var tempPage = document.querySelector('.tile-page.temporary');
-      var dot = tempPage.navigationDot;
-      if (!tempPage.tileCount && tempPage != this.cardSlider.currentCardValue) {
-        this.removeTilePageAndDot_(tempPage, true);
-      } else {
-        tempPage.classList.remove('temporary');
-        this.saveAppPageName(tempPage,
-                             localStrings.getString('appDefaultPageName'));
+      if (tempPage) {
+        var dot = tempPage.navigationDot;
+        if (!tempPage.tileCount &&
+            tempPage != this.cardSlider.currentCardValue) {
+          this.removeTilePageAndDot_(tempPage, true);
+        } else {
+          tempPage.classList.remove('temporary');
+          this.saveAppPageName(tempPage,
+                               localStrings.getString('appDefaultPageName'));
+        }
       }
 
       $('footer').classList.remove('showing-trash-mode');

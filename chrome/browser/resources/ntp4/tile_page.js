@@ -1036,7 +1036,18 @@ cr.define('ntp', function() {
       // bug where repositioning tiles will cause the scroll position to reset.
       this.tileGrid_.style.minHeight = (this.clientHeight -
           this.tileGrid_.offsetTop - this.content_.offsetTop -
-          this.extraBottomPadding) + 'px';
+          this.extraBottomPadding -
+          (this.footerNode_ ? this.footerNode_.clientHeight : 0)) + 'px';
+    },
+
+     /**
+      * Places an element at the bottom of the content div. Used in bare-minimum
+      * mode to hold #footer.
+      * @param {HTMLElement} footerNode The node to append to content.
+      */
+    appendFooter: function(footerNode) {
+      this.footerNode_ = footerNode;
+      this.content_.appendChild(footerNode);
     },
 
     /**

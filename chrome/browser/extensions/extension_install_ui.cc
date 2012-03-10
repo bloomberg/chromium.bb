@@ -301,7 +301,7 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
 
   if (extension->is_app() &&
       !use_bubble_for_apps &&
-      NewTabUI::ShouldShowAppsPage()) {
+      NewTabUI::ShouldShowApps()) {
     ExtensionInstallUI::OpenAppInstalledNTP(browser, extension->id());
     return;
   }

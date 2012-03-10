@@ -106,6 +106,10 @@ html[dir='rtl'] #notification-container {
   width: 100%;
 }
 
+body.bare-minimum #card-slider-frame {
+  bottom: 0;
+}
+
 #page-list {
   /* fill the apps-frame */
   display: -webkit-box;
@@ -143,6 +147,7 @@ html[dir='rtl'] #attribution {
   bottom: 0;
   font-size: 0.9em;
   font-weight: bold;
+  overflow: hidden;
   position: fixed;
   width: 100%;
   z-index: 5;
@@ -167,6 +172,29 @@ html[dir='rtl'] #attribution {
 
 #logo-img {
   margin-top: 4px;
+}
+
+body.bare-minimum #footer {
+  background: transparent;
+  bottom: auto;
+  position: absolute;
+  right: 0;
+}
+
+html[dir='rtl'] body.bare-minimum #footer {
+  left: 0;
+  right: auto;
+}
+
+body.bare-minimum #footer-border,
+body.bare-minimum #logo-img,
+body.bare-minimum #dot-list {
+  visibility: hidden;
+}
+
+html[dir='ltr'] body.bare-minimum .footer-menu-button:last-of-type {
+  /* Scrollbar pushes us left; push back. */
+  -webkit-padding-end: 0;
 }
 
 .starting-up * {

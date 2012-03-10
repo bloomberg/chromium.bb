@@ -350,7 +350,7 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
   localized_strings.SetBoolean("isSuggestionsPageEnabled",
       NewTabUI::IsSuggestionsPageEnabled());
-  localized_strings.SetBoolean("showAppsPage", NewTabUI::ShouldShowAppsPage());
+  localized_strings.SetBoolean("showApps", NewTabUI::ShouldShowApps());
 
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",

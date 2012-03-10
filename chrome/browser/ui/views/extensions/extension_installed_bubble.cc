@@ -189,7 +189,7 @@ class InstalledBubbleContent : public views::View,
   // Implements the views::LinkListener interface.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE {
     GetWidget()->Close();
-    if (NewTabUI::ShouldShowAppsPage()) {
+    if (NewTabUI::ShouldShowApps()) {
       ExtensionInstallUI::OpenAppInstalledNTP(browser_, extension_id_);
     } else {
 #if defined(USE_ASH)

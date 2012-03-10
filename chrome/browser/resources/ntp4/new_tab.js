@@ -68,12 +68,17 @@ cr.define('ntp', function() {
    * @extends {PageListView}
    */
   function NewTabView() {
+    var pageSwitcherStart = null;
+    var pageSwitcherEnd = null;
+    if (templateData.showApps) {
+      pageSwitcherStart = getRequiredElement('page-switcher-start');
+      pageSwitcherEnd = getRequiredElement('page-switcher-end');
+    }
     this.initialize(getRequiredElement('page-list'),
                     getRequiredElement('dot-list'),
                     getRequiredElement('card-slider-frame'),
                     getRequiredElement('trash'),
-                    getRequiredElement('page-switcher-start'),
-                    getRequiredElement('page-switcher-end'));
+                    pageSwitcherStart, pageSwitcherEnd);
   }
 
   NewTabView.prototype = {
@@ -94,6 +99,7 @@ cr.define('ntp', function() {
   function onLoad() {
     cr.enablePlatformSpecificCSSRules();
 
+    sectionsToWaitFor = templateData.showApps ? 2 : 1;
     measureNavDots();
 
     // Load the current theme colors.
@@ -113,7 +119,12 @@ cr.define('ntp', function() {
                      ntp.OtherSessionsMenuButton);
     }
 
-    newTabView.appendTilePage(new ntp.MostVisitedPage(),
+    var mostVisited = new ntp.MostVisitedPage();
+    // Move the footer into the most visited page if we are in "bare minimum"
+    // mode.
+    if (document.body.classList.contains('bare-minimum'))
+      mostVisited.appendFooter(getRequiredElement('footer'));
+    newTabView.appendTilePage(mostVisited,
                               localStrings.getString('mostvisited'),
                               false);
     chrome.send('getMostVisited');
@@ -211,6 +222,16 @@ cr.define('ntp', function() {
                   [rect.left, rect.top, rect.width, rect.height]);
     });
     chrome.send('initializeSyncLogin');
+
+    doWhenAllSectionsReady(function() {
+      // Tell the slider about the pages.
+      newTabView.updateSliderCards();
+      // Mark the current page.
+      newTabView.cardSlider.currentCardValue.navigationDot.classList.add(
+          'selected');
+
+      document.documentElement.classList.remove('starting-up');
+    });
   }
 
   /**
@@ -228,7 +249,7 @@ cr.define('ntp', function() {
    * The number of sections to wait on.
    * @type {number}
    */
-  var sectionsToWaitFor = 2;
+  var sectionsToWaitFor = -1;
 
   /**
    * Queued callbacks which lie in wait for all sections to be ready.
