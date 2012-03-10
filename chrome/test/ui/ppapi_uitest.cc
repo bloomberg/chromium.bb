@@ -859,7 +859,10 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBufferedAmount)
 #endif
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_IsWebSocket)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UninitializedPropertiesAccess)
+#if !defined(OS_WIN)
+// Crashes on Windows 7: http://crbug.com/117673
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_InvalidConnect)
+#endif
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_Protocols)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_GetURL)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_ValidConnect)
