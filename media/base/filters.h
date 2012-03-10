@@ -122,10 +122,10 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
  public:
   // Initialize a VideoDecoder with the given DemuxerStream, executing the
   // callback upon completion.
-  // stats_callback is used to update global pipeline statistics.
+  // statistics_cb is used to update global pipeline statistics.
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& callback,
-                          const StatisticsCallback& stats_callback) = 0;
+                          const StatisticsCB& statistics_cb) = 0;
 
   // Request a frame to be decoded and returned via the provided callback.
   // Only one read may be in flight at any given time.
@@ -137,7 +137,7 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // the stream. NULL video frames indicate an aborted read. This can happen if
   // the DemuxerStream gets flushed and doesn't have any more data to return.
   typedef base::Callback<void(scoped_refptr<VideoFrame>)> ReadCB;
-  virtual void Read(const ReadCB& callback) = 0;
+  virtual void Read(const ReadCB& read_cb) = 0;
 
   // Returns the natural width and height of decoded video in pixels.
   //
@@ -177,7 +177,7 @@ class MEDIA_EXPORT VideoRenderer : public Filter {
   // callback upon completion.
   virtual void Initialize(VideoDecoder* decoder,
                           const PipelineStatusCB& callback,
-                          const StatisticsCallback& stats_callback,
+                          const StatisticsCB& statistics_cb,
                           const VideoTimeCB& time_cb) = 0;
 
   // Returns true if this filter has received and processed an end-of-stream

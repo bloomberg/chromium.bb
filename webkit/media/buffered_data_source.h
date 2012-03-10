@@ -40,7 +40,7 @@ class BufferedDataSource : public WebDataSource {
       int64 position,
       size_t size,
       uint8* data,
-      const media::DataSource::ReadCallback& read_cb) OVERRIDE;
+      const media::DataSource::ReadCB& read_cb) OVERRIDE;
   virtual bool GetSize(int64* size_out) OVERRIDE;
   virtual bool IsStreaming() OVERRIDE;
   virtual void SetPreload(media::Preload preload) OVERRIDE;
@@ -151,7 +151,7 @@ class BufferedDataSource : public WebDataSource {
   media::PipelineStatusCB initialize_cb_;
 
   // Read parameters received from the Read() method call.
-  media::DataSource::ReadCallback read_cb_;
+  media::DataSource::ReadCB read_cb_;
   int64 read_position_;
   int read_size_;
   uint8* read_buffer_;

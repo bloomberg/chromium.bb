@@ -123,14 +123,14 @@ void SimpleDataSource::Initialize(
 void SimpleDataSource::Read(int64 position,
                             size_t size,
                             uint8* data,
-                            const DataSource::ReadCallback& read_callback) {
+                            const DataSource::ReadCB& read_cb) {
   DCHECK_GE(size_, 0);
   if (position >= size_) {
-    read_callback.Run(0);
+    read_cb.Run(0);
   } else {
     size_t copied = std::min(size, static_cast<size_t>(size_ - position));
     memcpy(data, data_.c_str() + position, copied);
-    read_callback.Run(copied);
+    read_cb.Run(copied);
   }
 }
 

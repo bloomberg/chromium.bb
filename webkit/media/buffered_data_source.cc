@@ -147,7 +147,7 @@ void BufferedDataSource::SetBitrate(int bitrate) {
 // media::DataSource implementation.
 void BufferedDataSource::Read(
     int64 position, size_t size, uint8* data,
-    const media::DataSource::ReadCallback& read_cb) {
+    const media::DataSource::ReadCB& read_cb) {
   DVLOG(1) << "Read: " << position << " offset, " << size << " bytes";
   DCHECK(!read_cb.is_null());
 

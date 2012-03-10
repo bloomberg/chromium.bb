@@ -45,7 +45,7 @@ class SimpleDataSource
   virtual void Read(int64 position,
                     size_t size,
                     uint8* data,
-                    const DataSource::ReadCallback& read_callback) OVERRIDE;
+                    const DataSource::ReadCB& read_cb) OVERRIDE;
   virtual bool GetSize(int64* size_out) OVERRIDE;
   virtual bool IsStreaming() OVERRIDE;
   virtual void SetPreload(media::Preload preload) OVERRIDE;

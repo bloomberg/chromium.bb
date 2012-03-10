@@ -34,20 +34,20 @@ CaptureVideoDecoder::~CaptureVideoDecoder() {}
 
 void CaptureVideoDecoder::Initialize(
     media::DemuxerStream* demuxer_stream,
-    const media::PipelineStatusCB& filter_callback,
-    const media::StatisticsCallback& stat_callback) {
+    const media::PipelineStatusCB& pipeline_status_cb,
+    const media::StatisticsCB& statistics_cb) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&CaptureVideoDecoder::InitializeOnDecoderThread,
                  this, make_scoped_refptr(demuxer_stream),
-                 filter_callback, stat_callback));
+                 pipeline_status_cb, statistics_cb));
 }
 
-void CaptureVideoDecoder::Read(const ReadCB& callback) {
+void CaptureVideoDecoder::Read(const ReadCB& read_cb) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&CaptureVideoDecoder::ReadOnDecoderThread,
-                 this, callback));
+                 this, read_cb));
 }
 
 const gfx::Size& CaptureVideoDecoder::natural_size() {
@@ -135,23 +135,23 @@ void CaptureVideoDecoder::OnDeviceInfoReceived(
 
 void CaptureVideoDecoder::InitializeOnDecoderThread(
     media::DemuxerStream* demuxer_stream,
-    const media::PipelineStatusCB& filter_callback,
-    const media::StatisticsCallback& stat_callback) {
+    const media::PipelineStatusCB& pipeline_status_cb,
+    const media::StatisticsCB& statistics_cb) {
   DVLOG(1) << "InitializeOnDecoderThread";
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
   capture_engine_ = vc_manager_->AddDevice(video_stream_id_, this);
 
-  statistics_callback_ = stat_callback;
-  filter_callback.Run(media::PIPELINE_OK);
+  statistics_cb_ = statistics_cb;
+  pipeline_status_cb.Run(media::PIPELINE_OK);
   state_ = kNormal;
   capture_engine_->StartCapture(this, capability_);
 }
 
-void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& callback) {
+void CaptureVideoDecoder::ReadOnDecoderThread(const ReadCB& read_cb) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   CHECK(read_cb_.is_null());
-  read_cb_ = callback;
+  read_cb_ = read_cb;
 }
 
 void CaptureVideoDecoder::PlayOnDecoderThread(const base::Closure& callback) {

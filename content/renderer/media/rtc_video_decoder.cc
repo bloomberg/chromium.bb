@@ -24,9 +24,9 @@ using media::DemuxerStream;
 using media::FilterStatusCB;
 using media::kNoTimestamp;
 using media::PIPELINE_OK;
-using media::StatisticsCallback;
+using media::PipelineStatusCB;
+using media::StatisticsCB;
 using media::VideoDecoder;
-using media::VideoFrame;
 
 RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
                                  const std::string& url)
@@ -40,20 +40,20 @@ RTCVideoDecoder::RTCVideoDecoder(MessageLoop* message_loop,
 RTCVideoDecoder::~RTCVideoDecoder() {}
 
 void RTCVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 const media::PipelineStatusCB& filter_callback,
-                                 const StatisticsCallback& stat_callback) {
+                                 const PipelineStatusCB& pipeline_status_cb,
+                                 const StatisticsCB& statistics_cb) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&RTCVideoDecoder::Initialize, this,
                    make_scoped_refptr(demuxer_stream),
-                   filter_callback, stat_callback));
+                   pipeline_status_cb, statistics_cb));
     return;
   }
 
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   state_ = kNormal;
-  filter_callback.Run(PIPELINE_OK);
+  pipeline_status_cb.Run(PIPELINE_OK);
 
   // TODO(acolwell): Implement stats.
 }
@@ -204,11 +204,11 @@ bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   //
   // TODO(scherkus): migrate this to proper buffer recycling.
   scoped_refptr<media::VideoFrame> video_frame =
-      VideoFrame::CreateFrame(VideoFrame::YV12,
-                              visible_size_.width(),
-                              visible_size_.height(),
-                              timestamp - start_time_,
-                              base::TimeDelta::FromMilliseconds(0));
+      media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
+                                     visible_size_.width(),
+                                     visible_size_.height(),
+                                     timestamp - start_time_,
+                                     base::TimeDelta::FromMilliseconds(0));
   last_frame_timestamp_ = timestamp;
 
   // Aspect ratio unsupported; DCHECK when there are non-square pixels.

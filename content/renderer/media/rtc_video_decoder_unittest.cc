@@ -30,14 +30,14 @@ using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using ::testing::WithArg;
 using ::testing::Invoke;
-using media::MockStatisticsCallback;
+using media::MockStatisticsCB;
 using media::MockVideoRenderer;
 using media::MockFilterHost;
 using media::NewExpectedClosure;
 using media::NewExpectedStatusCB;
 using media::PipelineStatistics;
 using media::PIPELINE_OK;
-using media::StatisticsCallback;
+using media::StatisticsCB;
 
 namespace {
 
@@ -150,12 +150,12 @@ class RTCVideoDecoderTest : public testing::Test {
   void InitializeDecoderSuccessfully() {
     // Test successful initialization.
     decoder_->Initialize(
-        NULL, NewExpectedStatusCB(PIPELINE_OK), NewStatisticsCallback());
+        NULL, NewExpectedStatusCB(PIPELINE_OK), NewStatisticsCB());
     message_loop_.RunAllPending();
   }
 
-  StatisticsCallback NewStatisticsCallback() {
-    return base::Bind(&MockStatisticsCallback::OnStatistics,
+  StatisticsCB NewStatisticsCB() {
+    return base::Bind(&MockStatisticsCB::OnStatistics,
                       base::Unretained(&stats_callback_object_));
   }
 
@@ -164,7 +164,7 @@ class RTCVideoDecoderTest : public testing::Test {
   // Fixture members.
   scoped_refptr<RTCVideoDecoder> decoder_;
   scoped_refptr<MockVideoRenderer> renderer_;
-  MockStatisticsCallback stats_callback_object_;
+  MockStatisticsCB stats_callback_object_;
   StrictMock<MockFilterHost> host_;
   MessageLoop message_loop_;
   media::VideoDecoder::ReadCB read_cb_;

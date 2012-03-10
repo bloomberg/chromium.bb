@@ -66,9 +66,9 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   // VideoDecoder implementation.
   virtual void Initialize(DemuxerStream* demuxer_stream,
-                          const PipelineStatusCB& callback,
-                          const StatisticsCallback& stats_callback) OVERRIDE;
-  virtual void Read(const ReadCB& callback) OVERRIDE;
+                          const PipelineStatusCB& pipeline_status_cb,
+                          const StatisticsCB& statistics_cb) OVERRIDE;
+  virtual void Read(const ReadCB& read_cb) OVERRIDE;
   virtual const gfx::Size& natural_size() OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
   virtual void PrepareForShutdownHack() OVERRIDE;
@@ -134,7 +134,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Return a shared-memory segment to the available pool.
   void PutSHM(SHMBuffer* shm_buffer);
 
-  StatisticsCallback statistics_callback_;
+  StatisticsCB statistics_cb_;
 
   // TODO(scherkus): I think this should be calculated by VideoRenderers based
   // on information provided by VideoDecoders (i.e., aspect ratio).

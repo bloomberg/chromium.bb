@@ -142,18 +142,18 @@ void GpuVideoDecoder::Flush(const base::Closure& callback)  {
 }
 
 void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
-                                 const PipelineStatusCB& callback,
-                                 const StatisticsCallback& stats_callback) {
+                                 const PipelineStatusCB& pipeline_status_cb,
+                                 const StatisticsCB& statistics_cb) {
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
         &GpuVideoDecoder::Initialize, this,
-        make_scoped_refptr(demuxer_stream), callback, stats_callback));
+        make_scoped_refptr(demuxer_stream), pipeline_status_cb, statistics_cb));
     return;
   }
 
   DCHECK(!demuxer_stream_);
   if (!demuxer_stream) {
-    callback.Run(PIPELINE_ERROR_DECODE);
+    pipeline_status_cb.Run(PIPELINE_ERROR_DECODE);
     return;
   }
 
@@ -162,18 +162,18 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   // decoder objects.
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid video stream - " << config.AsHumanReadableString();
-    callback.Run(PIPELINE_ERROR_DECODE);
+    pipeline_status_cb.Run(PIPELINE_ERROR_DECODE);
     return;
   }
 
   vda_ = factories_->CreateVideoDecodeAccelerator(config.profile(), this);
   if (!vda_) {
-    callback.Run(DECODER_ERROR_NOT_SUPPORTED);
+    pipeline_status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
   demuxer_stream_ = demuxer_stream;
-  statistics_callback_ = stats_callback;
+  statistics_cb_ = statistics_cb;
 
   demuxer_stream_->EnableBitstreamConverter();
 
@@ -181,24 +181,24 @@ void GpuVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   config_frame_duration_ = GetFrameDuration(config);
 
   DVLOG(1) << "GpuVideoDecoder::Initialize() succeeded.";
-  callback.Run(PIPELINE_OK);
+  pipeline_status_cb.Run(PIPELINE_OK);
 }
 
-void GpuVideoDecoder::Read(const ReadCB& callback) {
+void GpuVideoDecoder::Read(const ReadCB& read_cb) {
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Read, this, callback));
+        &GpuVideoDecoder::Read, this, read_cb));
     return;
   }
 
   if (!vda_) {
-    callback.Run(VideoFrame::CreateEmptyFrame());
+    read_cb.Run(VideoFrame::CreateEmptyFrame());
     return;
   }
 
   DCHECK(pending_reset_cb_.is_null());
   DCHECK(pending_read_cb_.is_null());
-  pending_read_cb_ = callback;
+  pending_read_cb_ = read_cb;
 
   if (!ready_video_frames_.empty()) {
     EnqueueFrameAndTriggerFrameDelivery(NULL);
@@ -470,7 +470,7 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
   if (buffer->GetDataSize()) {
     PipelineStatistics statistics;
     statistics.video_bytes_decoded = buffer->GetDataSize();
-    statistics_callback_.Run(statistics);
+    statistics_cb_.Run(statistics);
   }
   bitstream_buffers_in_decoder_.erase(it);
 

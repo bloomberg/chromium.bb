@@ -99,7 +99,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     decoder_ = new CaptureVideoDecoder(message_loop_proxy_,
                                        kVideoStreamId, vc_manager_, capability);
     decoder_->set_host(&host_);
-    EXPECT_CALL(statistics_callback_object_, OnStatistics(_))
+    EXPECT_CALL(statistics_cb_object_, OnStatistics(_))
         .Times(AnyNumber());
 
     read_cb_ = base::Bind(&CaptureVideoDecoderTest::FrameReady,
@@ -113,9 +113,9 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     message_loop_->RunAllPending();
   }
 
-  media::StatisticsCallback NewStatisticsCallback() {
-    return base::Bind(&media::MockStatisticsCallback::OnStatistics,
-                      base::Unretained(&statistics_callback_object_));
+  media::StatisticsCB NewStatisticsCB() {
+    return base::Bind(&media::MockStatisticsCB::OnStatistics,
+                      base::Unretained(&statistics_cb_object_));
   }
 
   void Initialize() {
@@ -137,7 +137,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
 
     decoder_->Initialize(NULL,
                          media::NewExpectedStatusCB(media::PIPELINE_OK),
-                         NewStatisticsCallback());
+                         NewStatisticsCB());
     message_loop_->RunAllPending();
   }
 
@@ -176,7 +176,7 @@ class CaptureVideoDecoderTest : public ::testing::Test {
   scoped_refptr<CaptureVideoDecoder> decoder_;
   scoped_refptr<MockVideoCaptureImplManager> vc_manager_;
   scoped_ptr<MockVideoCaptureImpl> vc_impl_;
-  media::MockStatisticsCallback statistics_callback_object_;
+  media::MockStatisticsCB statistics_cb_object_;
   StrictMock<media::MockFilterHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
