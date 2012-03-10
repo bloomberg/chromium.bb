@@ -71,6 +71,8 @@ LauncherButton::LauncherButton(views::ButtonListener* listener,
 }
 
 LauncherButton::~LauncherButton() {
+  if (!bar_->parent())
+    delete bar_;
 }
 
 void LauncherButton::SetImage(const SkBitmap& image) {
