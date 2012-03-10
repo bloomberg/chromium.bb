@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,7 +69,7 @@ class WebstoreInstaller : public content::NotificationObserver,
 
  private:
   // Starts downloading the extension to |file_path|.
-  void StartDownload(FilePath file_path);
+  void StartDownload(const FilePath& file_path);
 
   // Reports an install |error| to the delegate for the given extension if this
   // managed its installation. This also removes the associated PendingInstall.

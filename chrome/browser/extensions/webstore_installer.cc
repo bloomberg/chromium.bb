@@ -75,9 +75,9 @@ GURL GetWebstoreInstallURL(
 }
 
 // Must be executed on the FILE thread.
-void GetDownloadFilePath(const FilePath& download_directory,
-                         const std::string& id,
-                         const base::Callback<void(FilePath)>& callback) {
+void GetDownloadFilePath(
+    const FilePath& download_directory, const std::string& id,
+    const base::Callback<void(const FilePath&)>& callback) {
   const FilePath& directory(g_download_directory_for_tests ?
       *g_download_directory_for_tests : download_directory);
 
@@ -188,7 +188,7 @@ void WebstoreInstaller::SetDownloadDirectoryForTests(FilePath* directory) {
   g_download_directory_for_tests = directory;
 }
 
-void WebstoreInstaller::StartDownload(FilePath file) {
+void WebstoreInstaller::StartDownload(const FilePath& file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (file.empty()) {
