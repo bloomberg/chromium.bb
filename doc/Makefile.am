@@ -143,7 +143,6 @@ htmldoc_DATA =		\
 if USEDOCBOOK
 BUILT_SOURCES +=		\
 	$(LOCAL_SGML_FILES)	\
-	func.refs		\
 	$(NULL)
 noinst_PROGRAMS +=	\
 	edit-sgml	\
