@@ -43,7 +43,7 @@ readonly THIRD_PARTY_ELFUTILS="${ROOT_DIR}/../../../third_party/elfutils"
 CFLAGS="${CFLAGS:-}"
 # Extra headers for the pnacl/darwin build
 if ${EXTRA_HEADERS}; then
-  CFLAGS+=" -I${ROOT_DIR}"/include
+  CFLAGS+=" -I${ROOT_DIR}/include -DHAVE_UNDEF"
 fi
 
 readonly BUILD_ENV=(CC="${CC} ${CFLAGS}"
@@ -62,6 +62,7 @@ UntarAndPatch() {
   pushd "${SOURCE_DIR}"
   patch -p1 < "${THIRD_PARTY_ELFUTILS}"/elfutils-portability.patch
   patch -p1 < "${ROOT_DIR}"/elfutils-pnacl.patch
+  patch -p1 < "${ROOT_DIR}"/elfutils-mem.patch
   popd
 }
 
@@ -92,6 +93,13 @@ BuildLibElf() {
   RunMake libelf.a
   RunMake install-includeHEADERS
   RunMake install-libLIBRARIES
+  # Install elf.h also
+  cp -f "${SOURCE_DIR}"/libelf/elf.h "${INSTALL_DIR}"/include
+
+  # elf.h needs features.h
+  if ${EXTRA_HEADERS} ; then
+    cp "${ROOT_DIR}"/include/features.h "${INSTALL_DIR}"/include
+  fi
 }
 
 BuildLibElf

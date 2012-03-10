@@ -1,6 +1,6 @@
-diff -ur elfutils-orig/config/config.sub elfutils-0.153/config/config.sub
---- elfutils-orig/config/config.sub	2012-02-23 03:41:51.000000000 -0800
-+++ elfutils-0.153/config/config.sub	2012-02-25 05:10:25.422312372 -0800
+diff -ur elfutils-0.153/config/config.sub elfutils-0.153-new/config/config.sub
+--- elfutils-0.153/config/config.sub	2012-02-23 03:41:51.000000000 -0800
++++ elfutils-0.153-new/config/config.sub	2012-03-08 23:26:06.514327401 -0800
 @@ -1437,6 +1437,8 @@
  		;;
  	-none)
@@ -10,9 +10,9 @@ diff -ur elfutils-orig/config/config.sub elfutils-0.153/config/config.sub
  	*)
  		# Get rid of the `-' at the beginning of $os.
  		os=`echo $os | sed 's/[^-]*-//'`
-diff -ur elfutils-orig/lib/crc32_file.c elfutils-0.153/lib/crc32_file.c
---- elfutils-orig/lib/crc32_file.c	2010-09-29 08:07:37.000000000 -0700
-+++ elfutils-0.153/lib/crc32_file.c	2012-03-01 16:33:27.882053329 -0800
+diff -ur elfutils-0.153/lib/crc32_file.c elfutils-0.153-new/lib/crc32_file.c
+--- elfutils-0.153/lib/crc32_file.c	2010-09-29 08:07:37.000000000 -0700
++++ elfutils-0.153-new/lib/crc32_file.c	2012-03-08 23:26:06.514327401 -0800
 @@ -68,7 +68,7 @@
        void *mapped = mmap (NULL, mapsize, PROT_READ, MAP_PRIVATE, fd, 0);
        if (mapped == MAP_FAILED && errno == ENOMEM)
@@ -22,205 +22,9 @@ diff -ur elfutils-orig/lib/crc32_file.c elfutils-0.153/lib/crc32_file.c
  	  mapsize = ((mapsize / 2) + pagesize - 1) & -pagesize;
  	  while (mapsize >= pagesize
  		 && (mapped = mmap (NULL, mapsize, PROT_READ, MAP_PRIVATE,
-diff -ur elfutils-orig/lib/fixedsizehash.h elfutils-0.153/lib/fixedsizehash.h
---- elfutils-orig/lib/fixedsizehash.h	2010-09-29 08:07:37.000000000 -0700
-+++ elfutils-0.153/lib/fixedsizehash.h	2012-03-01 16:39:20.110890022 -0800
-@@ -56,6 +56,7 @@
- 
- #include <system.h>
- 
-+#define __CONCAT(x,y) x ## y
- #define CONCAT(t1,t2) __CONCAT (t1,t2)
- 
- /* Before including this file the following macros must be defined:
-diff -ur elfutils-orig/lib/system.h elfutils-0.153/lib/system.h
---- elfutils-orig/lib/system.h	2012-02-22 04:30:17.000000000 -0800
-+++ elfutils-0.153/lib/system.h	2012-03-01 16:33:09.741598519 -0800
-@@ -49,7 +49,6 @@
- #ifndef LIB_SYSTEM_H
- #define LIB_SYSTEM_H	1
- 
--#include <argp.h>
- #include <stddef.h>
- #include <stdint.h>
- #include <endian.h>
-@@ -83,6 +82,7 @@
- 
- #define gettext_noop(Str) Str
- 
-+#define TEMP_FAILURE_RETRY(x)  (x)
- 
- #define pwrite_retry(fd, buf,  len, off) \
-   TEMP_FAILURE_RETRY (pwrite (fd, buf, len, off))
-diff -ur elfutils-orig/libelf/elf32_checksum.c elfutils-0.153/libelf/elf32_checksum.c
---- elfutils-orig/libelf/elf32_checksum.c	2011-07-19 12:55:12.000000000 -0700
-+++ elfutils-0.153/libelf/elf32_checksum.c	2012-03-01 16:57:23.508090314 -0800
-@@ -57,6 +57,9 @@
- #include <stdbool.h>
- #include <stddef.h>
- #include <string.h>
-+#if defined(__pnacl__) || defined(__APPLE__)
-+#include <byteorder.h>
-+#endif
- 
- #include "gelf.h"
- #include "libelfP.h"
-diff -ur elfutils-orig/libelf/elf32_updatefile.c elfutils-0.153/libelf/elf32_updatefile.c
---- elfutils-orig/libelf/elf32_updatefile.c	2012-02-16 04:52:01.000000000 -0800
-+++ elfutils-0.153/libelf/elf32_updatefile.c	2012-02-25 17:16:58.367769136 -0800
-@@ -311,6 +311,9 @@
- 	  Elf_Data_List *dl = &scn->data_list;
- 	  bool scn_changed = false;
- 
-+#define fill_mmap(offset)  (fprintf(stderr, "fill_mmap used\n"), (void)(offset))
-+
-+#if 0
- 	  void fill_mmap (size_t offset)
- 	  {
- 	    size_t written = 0;
-@@ -331,6 +334,7 @@
- 			scn_start + offset - fill_start);
- 	      }
- 	  }
-+#endif
- 
- 	  if (scn->data_list_rear != NULL)
- 	    do
-@@ -451,13 +455,14 @@
-   elf->flags &= ~ELF_F_DIRTY;
- 
-   /* Make sure the content hits the disk.  */
-+#if 0
-   char *msync_start = ((char *) elf->map_address
- 		       + (elf->start_offset & ~(sysconf (_SC_PAGESIZE) - 1)));
-   char *msync_end = ((char *) elf->map_address
- 		     + elf->start_offset + ehdr->e_shoff
- 		     + ehdr->e_shentsize * shnum);
-   (void) msync (msync_start, msync_end - msync_start, MS_SYNC);
--
-+#endif
-   return 0;
- }
- 
-diff -ur elfutils-orig/libelf/elf32_xlatetof.c elfutils-0.153/libelf/elf32_xlatetof.c
---- elfutils-orig/libelf/elf32_xlatetof.c	2010-09-29 08:07:37.000000000 -0700
-+++ elfutils-0.153/libelf/elf32_xlatetof.c	2012-03-01 16:57:35.038380050 -0800
-@@ -55,6 +55,9 @@
- #include <assert.h>
- #include <endian.h>
- #include <string.h>
-+#if defined(__pnacl__) || defined(__APPLE__)
-+#include <byteorder.h>
-+#endif
- 
- #include "libelfP.h"
- 
-diff -ur elfutils-orig/libelf/elf_begin.c elfutils-0.153/libelf/elf_begin.c
---- elfutils-orig/libelf/elf_begin.c	2012-02-16 04:52:01.000000000 -0800
-+++ elfutils-0.153/libelf/elf_begin.c	2012-02-25 17:09:36.506388187 -0800
-@@ -796,7 +796,7 @@
-     }
- 
-   /* Copy the raw name over to a NUL terminated buffer.  */
--  *((char *) __mempcpy (elf->state.ar.raw_name, ar_hdr->ar_name, 16)) = '\0';
-+  *((char *) mempcpy (elf->state.ar.raw_name, ar_hdr->ar_name, 16)) = '\0';
- 
-   elf_ar_hdr = &elf->state.ar.elf_ar_hdr;
- 
-@@ -888,7 +888,7 @@
-       const char *string = ar_hdr->FIELD;				      \
-       if (ar_hdr->FIELD[sizeof (ar_hdr->FIELD) - 1] != ' ')		      \
- 	{								      \
--	  *((char *) __mempcpy (buf, ar_hdr->FIELD, sizeof (ar_hdr->FIELD)))  \
-+	  *((char *) mempcpy (buf, ar_hdr->FIELD, sizeof (ar_hdr->FIELD)))  \
- 	    = '\0';							      \
- 	  string = buf;							      \
- 	}								      \
-@@ -1028,18 +1028,9 @@
-       return NULL;
-     }
- 
--  Elf *lock_dup_elf ()
--  {
--    /* We need wrlock to dup an archive.  */
--    if (ref->kind == ELF_K_AR)
--      {
--	rwlock_unlock (ref->lock);
--	rwlock_wrlock (ref->lock);
--      }
--
--    /* Duplicate the descriptor.  */
--    return dup_elf (fildes, cmd, ref);
--  }
-+  #define lock_dup_elf() \
-+    ( (ref->kind == ELF_K_AR ? (rwlock_unlock (ref->lock), rwlock_wrlock (ref->lock), 0) : 0), \
-+      dup_elf (fildes, cmd, ref) )
- 
-   switch (cmd)
-     {
-diff -ur elfutils-orig/libelf/elf_end.c elfutils-0.153/libelf/elf_end.c
---- elfutils-orig/libelf/elf_end.c	2010-09-29 08:07:37.000000000 -0700
-+++ elfutils-0.153/libelf/elf_end.c	2012-03-01 16:55:35.235369361 -0800
-@@ -55,6 +55,13 @@
- #include <assert.h>
- #include <stddef.h>
- #include <stdlib.h>
-+
-+/* This is needed by sys/mman.h. This may be a bug in Newlib */
-+#ifdef __pnacl__
-+#include <machine/types.h>
-+typedef _off_t off_t;
-+#endif
-+
- #include <sys/mman.h>
- 
- #include "libelfP.h"
-diff -ur elfutils-orig/libelf/elf_getarsym.c elfutils-0.153/libelf/elf_getarsym.c
---- elfutils-orig/libelf/elf_getarsym.c	2012-02-16 04:52:01.000000000 -0800
-+++ elfutils-0.153/libelf/elf_getarsym.c	2012-03-01 16:57:12.777820677 -0800
-@@ -54,6 +54,9 @@
- 
- #include <assert.h>
- #include <byteswap.h>
-+#if defined(__pnacl__) || defined(__APPLE__)
-+#include <byteorder.h>
-+#endif
- #include <endian.h>
- #include <errno.h>
- #include <stdint.h>
-diff -ur elfutils-orig/libelf/elf.h elfutils-0.153/libelf/elf.h
---- elfutils-orig/libelf/elf.h	2011-07-19 13:42:41.000000000 -0700
-+++ elfutils-0.153/libelf/elf.h	2012-02-25 05:24:44.013855451 -0800
-@@ -21,6 +21,7 @@
- #ifndef _ELF_H
- #define	_ELF_H 1
- 
-+#include <sys/cdefs.h>
- #include <features.h>
- 
- __BEGIN_DECLS
-diff -ur elfutils-orig/libelf/libelf.h elfutils-0.153/libelf/libelf.h
---- elfutils-orig/libelf/libelf.h	2011-07-19 13:42:41.000000000 -0700
-+++ elfutils-0.153/libelf/libelf.h	2012-02-25 05:29:03.020348847 -0800
-@@ -52,6 +52,16 @@
- 
- #include <sys/types.h>
- 
-+#ifdef __pnacl__
-+#include <machine/types.h>
-+typedef __loff_t loff_t;
-+typedef _off64_t off64_t;
-+#endif
-+
-+#if defined(__APPLE__) || defined(__CYGWIN__)
-+typedef int64_t loff_t;
-+typedef int64_t off64_t;
-+#endif
- /* Get the ELF types.  */
- #include <elf.h>
- 
---- elfutils-orig/lib/eu-config.h	2012-03-03 01:11:58.493856074 -0800
-+++ elfutils-0.153/lib/eu-config.h	2012-03-03 01:13:46.976621949 -0800
+diff -ur elfutils-0.153/lib/eu-config.h elfutils-0.153-new/lib/eu-config.h
+--- elfutils-0.153/lib/eu-config.h	2012-03-08 23:25:36.043524209 -0800
++++ elfutils-0.153-new/lib/eu-config.h	2012-03-08 23:26:06.594329510 -0800
 @@ -75,9 +75,16 @@
  /* gettext helper macro.  */
  #define N_(Str) Str
@@ -257,4 +61,336 @@ diff -ur elfutils-orig/libelf/libelf.h elfutils-0.153/libelf/libelf.h
  # define INTDECL(name) _INTDECL(name)
  # define _INTDECL(name) \
    extern __typeof__ (name) __##name##_internal attribute_hidden;
-
+diff -ur elfutils-0.153/lib/fixedsizehash.h elfutils-0.153-new/lib/fixedsizehash.h
+--- elfutils-0.153/lib/fixedsizehash.h	2010-09-29 08:07:37.000000000 -0700
++++ elfutils-0.153-new/lib/fixedsizehash.h	2012-03-08 23:26:06.564328720 -0800
+@@ -56,6 +56,7 @@
+ 
+ #include <system.h>
+ 
++#define __CONCAT(x,y) x ## y
+ #define CONCAT(t1,t2) __CONCAT (t1,t2)
+ 
+ /* Before including this file the following macros must be defined:
+diff -ur elfutils-0.153/lib/system.h elfutils-0.153-new/lib/system.h
+--- elfutils-0.153/lib/system.h	2012-02-22 04:30:17.000000000 -0800
++++ elfutils-0.153-new/lib/system.h	2012-03-08 23:26:06.594329510 -0800
+@@ -49,7 +49,6 @@
+ #ifndef LIB_SYSTEM_H
+ #define LIB_SYSTEM_H	1
+ 
+-#include <argp.h>
+ #include <stddef.h>
+ #include <stdint.h>
+ #include <endian.h>
+@@ -83,6 +82,7 @@
+ 
+ #define gettext_noop(Str) Str
+ 
++#define TEMP_FAILURE_RETRY(x)  (x)
+ 
+ #define pwrite_retry(fd, buf,  len, off) \
+   TEMP_FAILURE_RETRY (pwrite (fd, buf, len, off))
+diff -ur elfutils-0.153/libelf/elf32_checksum.c elfutils-0.153-new/libelf/elf32_checksum.c
+--- elfutils-0.153/libelf/elf32_checksum.c	2011-07-19 12:55:12.000000000 -0700
++++ elfutils-0.153-new/libelf/elf32_checksum.c	2012-03-08 23:26:06.594329510 -0800
+@@ -57,6 +57,9 @@
+ #include <stdbool.h>
+ #include <stddef.h>
+ #include <string.h>
++#if defined(__pnacl__) || defined(__APPLE__)
++#include <byteorder.h>
++#endif
+ 
+ #include "gelf.h"
+ #include "libelfP.h"
+diff -ur elfutils-0.153/libelf/elf32_getphdr.c elfutils-0.153-new/libelf/elf32_getphdr.c
+--- elfutils-0.153/libelf/elf32_getphdr.c	2012-02-16 04:52:01.000000000 -0800
++++ elfutils-0.153-new/libelf/elf32_getphdr.c	2012-03-09 00:35:58.704719990 -0800
+@@ -61,6 +61,9 @@
+ #include <system.h>
+ #include "libelfP.h"
+ #include "common.h"
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ #ifndef LIBELFBITS
+ # define LIBELFBITS 32
+diff -ur elfutils-0.153/libelf/elf32_getshdr.c elfutils-0.153-new/libelf/elf32_getshdr.c
+--- elfutils-0.153/libelf/elf32_getshdr.c	2012-02-16 04:52:01.000000000 -0800
++++ elfutils-0.153-new/libelf/elf32_getshdr.c	2012-03-09 00:35:51.404527842 -0800
+@@ -60,6 +60,9 @@
+ #include <system.h>
+ #include "libelfP.h"
+ #include "common.h"
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ #ifndef LIBELFBITS
+ # define LIBELFBITS 32
+diff -ur elfutils-0.153/libelf/elf32_updatefile.c elfutils-0.153-new/libelf/elf32_updatefile.c
+--- elfutils-0.153/libelf/elf32_updatefile.c	2012-02-16 04:52:01.000000000 -0800
++++ elfutils-0.153-new/libelf/elf32_updatefile.c	2012-03-09 00:36:34.735668290 -0800
+@@ -64,7 +64,9 @@
+ 
+ #include <system.h>
+ #include "libelfP.h"
+-
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ #ifndef LIBELFBITS
+ # define LIBELFBITS 32
+@@ -451,13 +453,14 @@
+   elf->flags &= ~ELF_F_DIRTY;
+ 
+   /* Make sure the content hits the disk.  */
++#if 0
+   char *msync_start = ((char *) elf->map_address
+ 		       + (elf->start_offset & ~(sysconf (_SC_PAGESIZE) - 1)));
+   char *msync_end = ((char *) elf->map_address
+ 		     + elf->start_offset + ehdr->e_shoff
+ 		     + ehdr->e_shentsize * shnum);
+   (void) msync (msync_start, msync_end - msync_start, MS_SYNC);
+-
++#endif
+   return 0;
+ }
+ 
+diff -ur elfutils-0.153/libelf/elf32_updatenull.c elfutils-0.153-new/libelf/elf32_updatenull.c
+--- elfutils-0.153/libelf/elf32_updatenull.c	2011-07-19 13:42:41.000000000 -0700
++++ elfutils-0.153-new/libelf/elf32_updatenull.c	2012-03-09 00:35:42.464292519 -0800
+@@ -61,6 +61,9 @@
+ 
+ #include "libelfP.h"
+ #include "elf-knowledge.h"
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ #ifndef LIBELFBITS
+ # define LIBELFBITS 32
+diff -ur elfutils-0.153/libelf/elf32_xlatetof.c elfutils-0.153-new/libelf/elf32_xlatetof.c
+--- elfutils-0.153/libelf/elf32_xlatetof.c	2010-09-29 08:07:37.000000000 -0700
++++ elfutils-0.153-new/libelf/elf32_xlatetof.c	2012-03-08 23:26:06.594329510 -0800
+@@ -55,6 +55,9 @@
+ #include <assert.h>
+ #include <endian.h>
+ #include <string.h>
++#if defined(__pnacl__) || defined(__APPLE__)
++#include <byteorder.h>
++#endif
+ 
+ #include "libelfP.h"
+ 
+diff -ur elfutils-0.153/libelf/elf_begin.c elfutils-0.153-new/libelf/elf_begin.c
+--- elfutils-0.153/libelf/elf_begin.c	2012-02-16 04:52:01.000000000 -0800
++++ elfutils-0.153-new/libelf/elf_begin.c	2012-03-09 00:36:27.785485377 -0800
+@@ -67,6 +67,9 @@
+ #include <system.h>
+ #include "libelfP.h"
+ #include "common.h"
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ 
+ /* Create descriptor for archive in memory.  */
+@@ -796,7 +799,7 @@
+     }
+ 
+   /* Copy the raw name over to a NUL terminated buffer.  */
+-  *((char *) __mempcpy (elf->state.ar.raw_name, ar_hdr->ar_name, 16)) = '\0';
++  *((char *) mempcpy (elf->state.ar.raw_name, ar_hdr->ar_name, 16)) = '\0';
+ 
+   elf_ar_hdr = &elf->state.ar.elf_ar_hdr;
+ 
+@@ -888,7 +891,7 @@
+       const char *string = ar_hdr->FIELD;				      \
+       if (ar_hdr->FIELD[sizeof (ar_hdr->FIELD) - 1] != ' ')		      \
+ 	{								      \
+-	  *((char *) __mempcpy (buf, ar_hdr->FIELD, sizeof (ar_hdr->FIELD)))  \
++	  *((char *) mempcpy (buf, ar_hdr->FIELD, sizeof (ar_hdr->FIELD)))  \
+ 	    = '\0';							      \
+ 	  string = buf;							      \
+ 	}								      \
+@@ -1028,18 +1031,9 @@
+       return NULL;
+     }
+ 
+-  Elf *lock_dup_elf ()
+-  {
+-    /* We need wrlock to dup an archive.  */
+-    if (ref->kind == ELF_K_AR)
+-      {
+-	rwlock_unlock (ref->lock);
+-	rwlock_wrlock (ref->lock);
+-      }
+-
+-    /* Duplicate the descriptor.  */
+-    return dup_elf (fildes, cmd, ref);
+-  }
++  #define lock_dup_elf() \
++    ( (ref->kind == ELF_K_AR ? (rwlock_unlock (ref->lock), rwlock_wrlock (ref->lock), 0) : 0), \
++      dup_elf (fildes, cmd, ref) )
+ 
+   switch (cmd)
+     {
+diff -ur elfutils-0.153/libelf/elf_end.c elfutils-0.153-new/libelf/elf_end.c
+--- elfutils-0.153/libelf/elf_end.c	2010-09-29 08:07:37.000000000 -0700
++++ elfutils-0.153-new/libelf/elf_end.c	2012-03-08 23:26:06.594329510 -0800
+@@ -55,6 +55,13 @@
+ #include <assert.h>
+ #include <stddef.h>
+ #include <stdlib.h>
++
++/* This is needed by sys/mman.h. This may be a bug in Newlib */
++#ifdef __pnacl__
++#include <machine/types.h>
++typedef _off_t off_t;
++#endif
++
+ #include <sys/mman.h>
+ 
+ #include "libelfP.h"
+diff -ur elfutils-0.153/libelf/elf_getarsym.c elfutils-0.153-new/libelf/elf_getarsym.c
+--- elfutils-0.153/libelf/elf_getarsym.c	2012-02-16 04:52:01.000000000 -0800
++++ elfutils-0.153-new/libelf/elf_getarsym.c	2012-03-09 00:35:18.583663901 -0800
+@@ -54,6 +54,9 @@
+ 
+ #include <assert.h>
+ #include <byteswap.h>
++#if defined(__pnacl__) || defined(__APPLE__)
++#include <byteorder.h>
++#endif
+ #include <endian.h>
+ #include <errno.h>
+ #include <stdint.h>
+@@ -64,7 +67,9 @@
+ #include <system.h>
+ #include <dl-hash.h>
+ #include "libelfP.h"
+-
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ Elf_Arsym *
+ elf_getarsym (elf, ptr)
+diff -ur elfutils-0.153/libelf/elf_getdata.c elfutils-0.153-new/libelf/elf_getdata.c
+--- elfutils-0.153/libelf/elf_getdata.c	2011-07-19 13:42:41.000000000 -0700
++++ elfutils-0.153-new/libelf/elf_getdata.c	2012-03-09 00:35:27.583900824 -0800
+@@ -61,7 +61,9 @@
+ #include <system.h>
+ #include "common.h"
+ #include "elf-knowledge.h"
+-
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ #define TYPEIDX(Sh_Type) \
+   (Sh_Type >= SHT_NULL && Sh_Type < SHT_NUM				      \
+diff -ur elfutils-0.153/libelf/elf_getdata_rawchunk.c elfutils-0.153-new/libelf/elf_getdata_rawchunk.c
+--- elfutils-0.153/libelf/elf_getdata_rawchunk.c	2011-07-19 13:42:41.000000000 -0700
++++ elfutils-0.153-new/libelf/elf_getdata_rawchunk.c	2012-03-09 00:36:21.215312460 -0800
+@@ -60,6 +60,9 @@
+ #include <system.h>
+ #include "libelfP.h"
+ #include "common.h"
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ Elf_Data *
+ elf_getdata_rawchunk (elf, offset, size, type)
+diff -ur elfutils-0.153/libelf/elf_getshdrstrndx.c elfutils-0.153-new/libelf/elf_getshdrstrndx.c
+--- elfutils-0.153/libelf/elf_getshdrstrndx.c	2012-02-16 04:52:01.000000000 -0800
++++ elfutils-0.153-new/libelf/elf_getshdrstrndx.c	2012-03-09 00:35:35.514109572 -0800
+@@ -61,7 +61,9 @@
+ #include <system.h>
+ #include "libelfP.h"
+ #include "common.h"
+-
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ int
+ elf_getshdrstrndx (elf, dst)
+diff -ur elfutils-0.153/libelf/elf.h elfutils-0.153-new/libelf/elf.h
+--- elfutils-0.153/libelf/elf.h	2011-07-19 13:42:41.000000000 -0700
++++ elfutils-0.153-new/libelf/elf.h	2012-03-08 23:26:06.594329510 -0800
+@@ -21,6 +21,7 @@
+ #ifndef _ELF_H
+ #define	_ELF_H 1
+ 
++#include <sys/cdefs.h>
+ #include <features.h>
+ 
+ __BEGIN_DECLS
+diff -ur elfutils-0.153/libelf/elf_readall.c elfutils-0.153-new/libelf/elf_readall.c
+--- elfutils-0.153/libelf/elf_readall.c	2011-07-19 13:42:41.000000000 -0700
++++ elfutils-0.153-new/libelf/elf_readall.c	2012-03-09 00:36:07.144942139 -0800
+@@ -59,7 +59,9 @@
+ #include <system.h>
+ #include "libelfP.h"
+ #include "common.h"
+-
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ static void
+ set_address (Elf *elf, size_t offset)
+diff -ur elfutils-0.153/libelf/elf_update.c elfutils-0.153-new/libelf/elf_update.c
+--- elfutils-0.153/libelf/elf_update.c	2010-09-29 08:07:37.000000000 -0700
++++ elfutils-0.153-new/libelf/elf_update.c	2012-03-09 00:36:13.775116642 -0800
+@@ -58,7 +58,9 @@
+ #include <sys/stat.h>
+ 
+ #include "libelfP.h"
+-
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ static off_t
+ write_file (Elf *elf, off_t size, int change_bo, size_t shnum)
+diff -ur elfutils-0.153/libelf/libelf.h elfutils-0.153-new/libelf/libelf.h
+--- elfutils-0.153/libelf/libelf.h	2011-07-19 13:42:41.000000000 -0700
++++ elfutils-0.153-new/libelf/libelf.h	2012-03-08 23:26:06.594329510 -0800
+@@ -52,6 +52,16 @@
+ 
+ #include <sys/types.h>
+ 
++#ifdef __pnacl__
++#include <machine/types.h>
++typedef __loff_t loff_t;
++typedef _off64_t off64_t;
++#endif
++
++#if defined(__APPLE__) || defined(__CYGWIN__)
++typedef int64_t loff_t;
++typedef int64_t off64_t;
++#endif
+ /* Get the ELF types.  */
+ #include <elf.h>
+ 
+diff -ur elfutils-0.153/libelf/nlist.c elfutils-0.153-new/libelf/nlist.c
+--- elfutils-0.153/libelf/nlist.c	2010-09-29 08:07:37.000000000 -0700
++++ elfutils-0.153-new/libelf/nlist.c	2012-03-09 00:36:43.355895147 -0800
+@@ -59,7 +59,9 @@
+ #include <unistd.h>
+ 
+ #include "libelfP.h"
+-
++#ifdef HAVE_UNDEF
++#include <undef.h>
++#endif
+ 
+ struct hashentry
+ {

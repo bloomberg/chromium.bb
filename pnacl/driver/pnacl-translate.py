@@ -13,7 +13,7 @@ import driver_tools
 import pathtools
 import shutil
 from driver_env import env
-from driver_log import Log
+from driver_log import Log, TempFiles
 import re
 
 EXTRA_ENV = {
@@ -122,7 +122,8 @@ EXTRA_ENV = {
   'LLC_MCPU_X8632'  : 'pentium4',
   'LLC_MCPU_X8664'  : 'core2',
 
-  'RUN_LLC'       : '${LLC} ${LLC_FLAGS} ${input} -o ${output}',
+  'RUN_LLC'       : '${LLC} ${LLC_FLAGS} ${input} -o ${output} ' +
+                    '-metadata-out ${output}.meta',
   'STREAM_BITCODE' : '0',
 }
 
@@ -379,6 +380,9 @@ def RunLD(infile, outfile):
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
   args += env.get('LD_FLAGS')
+  # If there is bitcode, there is also a metadata file.
+  if infile:
+    args += ['--metadata', '%s.meta' % infile]
   driver_tools.RunDriver('nativeld', args)
 
 def RunLLC(infile, outfile, filetype):
@@ -396,6 +400,9 @@ def RunLLC(infile, outfile, filetype):
     driver_tools.SetBitcodeMetadata(infile, is_shared, soname, needed)
   else:
     driver_tools.RunWithLog("${RUN_LLC}")
+    # As a side effect, this creates a temporary file
+    if not env.getbool('SAVE_TEMPS'):
+      TempFiles.add(outfile + '.meta')
     env.pop()
   return 0
 

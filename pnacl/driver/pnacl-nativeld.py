@@ -49,6 +49,10 @@ EXTRA_ENV = {
                   '${#SONAME ? -soname=${SONAME}} ' +
                   '${STATIC ? -static} ${SHARED ? -shared} ${RELOCATABLE ? -r}',
 
+  # This may contain the metadata file, which is passed to LD with --metadata.
+  # It must be passed at the end of the link line.
+  'METADATA_FILE': '',
+
   'EMITMODE'         : '${RELOCATABLE ? relocatable : ' +
                        '${STATIC ? static : ' +
                        '${SHARED ? shared : dynamic}}}',
@@ -84,7 +88,8 @@ EXTRA_ENV = {
   'LIBS_X8632'       : '${BASE_LIB_NATIVE}x86-32',
   'LIBS_X8664'       : '${BASE_LIB_NATIVE}x86-64',
 
-  'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}"',
+  'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}" ' +
+             '${#METADATA_FILE ? --metadata ${METADATA_FILE}}',
 }
 
 def PassThrough(*args):
@@ -95,6 +100,8 @@ LDPatterns = [
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
   ( ('(--add-extra-dt-needed=.*)'), PassThrough),
+  ( ('--metadata', '(.+)'),         "env.set('METADATA_FILE', $0)"),
+
   ( '-shared',         "env.set('SHARED', '1')"),
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
@@ -252,8 +259,8 @@ def MakeSelUniversalScriptForLD(ld_flags,
 
     script.append('readonly_file objfile %s' % main_input)
     script.append(('rpc RunWithDefaultCommandLine ' +
-                   'h(objfile) h(nexefile) i(%d) s("%s") s("%s") *' %
-                   (is_shared_library, soname, needed)))
+                   'h(objfile) h(nexefile) i(%d) s("%s") s("%s") *'
+                   % (is_shared_library, soname, needed)))
   else:
     # Join all the arguments.
     # Based on the format of RUN_LD, the order of arguments is:
@@ -268,6 +275,14 @@ def MakeSelUniversalScriptForLD(ld_flags,
     for f in files:
       basename = pathtools.basename(f)
       command_line = command_line + basename + kTerminator
+
+    # TODO(pdox): Enable this.
+    # Add the metadata file
+    #metadata_file = env.getone('METADATA_FILE')
+    #if metadata_file:
+    #  command_line = command_line + '--metadata' + kTerminator
+    #  command_line = command_line + metadata_file + kTerminator
+
     command_line_escaped = command_line.replace(kTerminator, '\\x00')
     # Assume that the commandline captures all necessary metadata for now.
     script.append('rpc Run h(nexefile) C(%d,%s) *' %

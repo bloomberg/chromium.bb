@@ -286,10 +286,10 @@ if ${PNACL_IN_CROS_CHROOT}; then
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-8f47af0cdc7d}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-e98aba8087a7}
 
 readonly NEWLIB_REV=346ea38d142f
-readonly BINUTILS_REV=d4c1303aa8e2
+readonly BINUTILS_REV=8040f022bb25
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
 readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-147864}
@@ -1236,6 +1236,7 @@ llvm() {
 
   assert-dir "${srcdir}" "You need to checkout LLVM."
 
+  libelf-host
   if llvm-needs-configure; then
     llvm-clean
     llvm-configure
@@ -1288,14 +1289,19 @@ llvm-configure() {
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
+  # Provide libelf (host version)
+  local cppflags
+  cppflags+=" -I${TC_BUILD_LIBELF}/install/include"
+  cppflags+=" -L${TC_BUILD_LIBELF}/install/lib"
+
   llvm-link-clang
   # The --with-binutils-include is to allow llvm to build the gold plugin
   local binutils_include="${TC_SRC_BINUTILS}/binutils-2.20/include"
   RunWithLog "llvm.configure" \
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
-             CC="${CC}" \
-             CXX="${CXX}" \
+             CC="${CC} ${cppflags}" \
+             CXX="${CXX} ${cppflags}" \
              ${srcdir}/configure \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
@@ -1347,6 +1353,7 @@ llvm-make() {
     env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS="${MAKE_OPTS}" \
            NACL_SANDBOX=0 \
+           NACL_SB_JIT=0 \
            CC="${CC}" \
            CXX="${CXX}" \
            make ${MAKE_OPTS} all
@@ -1363,7 +1370,13 @@ llvm-install() {
   spushd "${TC_BUILD_LLVM}"
   llvm-link-clang
   RunWithLog llvm.install \
-       make ${MAKE_OPTS} install
+    env -i PATH=/usr/bin/:/bin \
+           MAKE_OPTS="${MAKE_OPTS}" \
+           NACL_SANDBOX=0 \
+           NACL_SB_JIT=0 \
+           CC="${CC}" \
+           CXX="${CXX}" \
+           make ${MAKE_OPTS} install
   spopd
 
   llvm-install-plugin
@@ -2118,7 +2131,6 @@ binutils() {
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
-  libelf-host
   if binutils-needs-configure; then
     binutils-clean
     binutils-configure
@@ -2383,14 +2395,19 @@ llvm-sb-setup() {
     nonsrpc) ;;
   esac
 
+  # Provide libelf (sandboxed version)
+  local cppflags
+  cppflags+=" -I${TC_BUILD_LIBELF_SB}/install/include"
+  cppflags+=" -L${TC_BUILD_LIBELF_SB}/install/lib"
+
   LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized \
   --target=${CROSS_TARGET_ARM}"
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="$(GetTool cc ${SB_LIBMODE}) ${flags}" \
-    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags}" \
+    CC="$(GetTool cc ${SB_LIBMODE}) ${flags} ${cppflags}" \
+    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags} ${cppflags}" \
     LD="$(GetTool ld ${SB_LIBMODE}) ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
@@ -2447,6 +2464,7 @@ llvm-sb() {
   local srcdir="${TC_SRC_LLVM}"
   assert-dir "${srcdir}" "You need to checkout llvm."
 
+  libelf-sb
   if llvm-sb-needs-configure ; then
     llvm-sb-clean
     llvm-sb-configure
@@ -2454,12 +2472,7 @@ llvm-sb() {
     SkipBanner "LLVM-SB" "configure ${SB_ARCH} ${SB_SRPCMODE}"
   fi
 
-  if llvm-sb-needs-make; then
-    llvm-sb-make
-  else
-    SkipBanner "LLVM-SB" "make"
-  fi
-
+  llvm-sb-make
   llvm-sb-install
 }
 
@@ -2512,12 +2525,6 @@ llvm-sb-configure() {
   spopd
 }
 
-llvm-sb-needs-make() {
-  llvm-sb-setup "$@"
-  ts-modified "${TC_SRC_LLVM}" "${LLVM_SB_OBJDIR}"
-  return $?
-}
-
 # llvm-sb-make - Make llvm tools (sandboxed)
 llvm-sb-make() {
   llvm-sb-setup "$@"
@@ -2528,16 +2535,15 @@ llvm-sb-make() {
   spushd "${objdir}"
   ts-touch-open "${objdir}"
 
-  local build_with_srpc=0
-  if [ "${SB_SRPCMODE}" == "srpc" ]; then
-    build_with_srpc=1
+  local isjit=0
+  if ${SB_JIT}; then
+    isjit=1
   fi
-
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS="llc lli"\
       NACL_SANDBOX=1 \
-      NACL_SRPC=${build_with_srpc} \
+      NACL_SB_JIT=${isjit} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
       make ${MAKE_OPTS} tools-only
@@ -2700,7 +2706,6 @@ binutils-sb() {
   local srcdir="${TC_SRC_BINUTILS}"
   assert-dir "${srcdir}" "You need to checkout binutils."
 
-  libelf-sb
   if binutils-sb-needs-configure ; then
     binutils-sb-clean
     binutils-sb-configure
