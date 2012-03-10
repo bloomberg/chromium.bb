@@ -180,6 +180,10 @@ class ObfuscatedFileEnumerator
     return current_.file_info.is_directory();
   }
 
+  virtual bool IsLink() OVERRIDE {
+    return false;
+  }
+
  private:
   typedef FileSystemDirectoryDatabase::FileId FileId;
   typedef FileSystemDirectoryDatabase::FileInfo FileInfo;

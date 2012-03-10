@@ -37,12 +37,14 @@ class FileSystemFileUtil {
 
     virtual int64 Size() = 0;
     virtual bool IsDirectory() = 0;
+    virtual bool IsLink() = 0;
   };
 
   class EmptyFileEnumerator : public AbstractFileEnumerator {
     virtual FilePath Next() OVERRIDE { return FilePath(); }
     virtual int64 Size() OVERRIDE { return 0; }
     virtual bool IsDirectory() OVERRIDE { return false; }
+    virtual bool IsLink() OVERRIDE { return false; }
   };
 
   virtual ~FileSystemFileUtil();

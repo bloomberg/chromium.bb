@@ -34,6 +34,7 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual FilePath Next() OVERRIDE;
   virtual int64 Size() OVERRIDE;
   virtual bool IsDirectory() OVERRIDE;
+  virtual bool IsLink() OVERRIDE;
 
  private:
   file_util::FileEnumerator file_enum_;
@@ -59,6 +60,10 @@ int64 LocalFileEnumerator::Size() {
 
 bool LocalFileEnumerator::IsDirectory() {
   return file_util::FileEnumerator::IsDirectory(file_util_info_);
+}
+
+bool LocalFileEnumerator::IsLink() {
+  return file_util::FileEnumerator::IsLink(file_util_info_);
 }
 
 LocalFileUtil::LocalFileUtil(FileSystemFileUtil* underlying_file_util)
