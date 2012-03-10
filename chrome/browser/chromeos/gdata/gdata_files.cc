@@ -345,8 +345,8 @@ void GDataRootDirectory::SetCacheMap(const CacheMap& new_cache_map)  {
 }
 
 void GDataRootDirectory::UpdateCacheMap(const std::string& res_id,
-                                                const std::string& md5,
-                                                mode_t mode_bits) {
+                                        const std::string& md5,
+                                        mode_t mode_bits) {
   // GDataFileSystem has already locked.
 
   CacheEntry* entry = NULL;
@@ -357,14 +357,14 @@ void GDataRootDirectory::UpdateCacheMap(const std::string& res_id,
     cache_map_.insert(std::make_pair(res_id, entry));
     DVLOG(1) << "Added res=" << res_id
              << ", md5=" << md5
-             << ", mode=" << (void*) mode_bits;
+             << ", mode=" << mode_bits;
   } else {  // Resource already exists, update its entry info.
     entry = iter->second;
     entry->md5 = md5;
     entry->mode_bits = mode_bits;
     DVLOG(1) << "Updated res=" << res_id
              << ", md5=" << md5
-             << ", mode=" << (void*) mode_bits;
+             << ", mode=" << mode_bits;
   }
 }
 
