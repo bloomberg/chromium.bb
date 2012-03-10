@@ -197,6 +197,41 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
   }
 }
 
+TEST(MetricsLogManagerTest, StoreStagedLogTypes) {
+  // Ensure that types are preserved when storing staged logs.
+  {
+    MetricsLogManager log_manager;
+    DummyLogSerializer* serializer = new DummyLogSerializer;
+    log_manager.set_log_serializer(serializer);
+
+    MetricsLogBase* log = new MetricsLogBase("id", 0, "version");
+    log_manager.BeginLoggingWithLog(log, MetricsLogManager::ONGOING_LOG);
+    log_manager.FinishCurrentLog();
+    log_manager.StageNextLogForUpload();
+    log_manager.StoreStagedLogAsUnsent();
+    log_manager.PersistUnsentLogs();
+
+    EXPECT_EQ(0U, serializer->TypeCount(MetricsLogManager::INITIAL_LOG));
+    EXPECT_EQ(1U, serializer->TypeCount(MetricsLogManager::ONGOING_LOG));
+  }
+
+  {
+    MetricsLogManager log_manager;
+    DummyLogSerializer* serializer = new DummyLogSerializer;
+    log_manager.set_log_serializer(serializer);
+
+    MetricsLogBase* log = new MetricsLogBase("id", 0, "version");
+    log_manager.BeginLoggingWithLog(log, MetricsLogManager::INITIAL_LOG);
+    log_manager.FinishCurrentLog();
+    log_manager.StageNextLogForUpload();
+    log_manager.StoreStagedLogAsUnsent();
+    log_manager.PersistUnsentLogs();
+
+    EXPECT_EQ(1U, serializer->TypeCount(MetricsLogManager::INITIAL_LOG));
+    EXPECT_EQ(0U, serializer->TypeCount(MetricsLogManager::ONGOING_LOG));
+  }
+}
+
 TEST(MetricsLogManagerTest, LargeLogDiscarding) {
   MetricsLogManager log_manager;
   DummyLogSerializer* serializer = new DummyLogSerializer;

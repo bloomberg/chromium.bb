@@ -60,9 +60,12 @@ void MetricsLogManager::StageNextLogForUpload() {
   std::vector<SerializedLog>* source_list =
       unsent_initial_logs_.empty() ? &unsent_ongoing_logs_
                                    : &unsent_initial_logs_;
+  LogType source_type = (source_list == &unsent_ongoing_logs_) ? ONGOING_LOG
+                                                               : INITIAL_LOG;
   DCHECK(!source_list->empty());
   DCHECK(staged_log_text_.empty());
   staged_log_text_.swap(source_list->back());
+  staged_log_type_ = source_type;
   source_list->pop_back();
 }
 
