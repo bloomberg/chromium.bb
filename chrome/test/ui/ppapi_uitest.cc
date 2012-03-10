@@ -2,22 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/timer.h"
 #include "build/build_config.h"
-#include "content/public/common/content_switches.h"
-#include "content/common/pepper_plugin_registry.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/ui/ui_test.h"
+#include "content/common/pepper_plugin_registry.h"
+#include "content/public/browser/dom_operation_notification_details.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 #include "webkit/plugins/plugin_switches.h"
+
+using content::DomOperationNotificationDetails;
+using content::RenderViewHost;
 
 namespace {
 
@@ -30,20 +40,93 @@ const char library_name[] = "ppapi_tests.plugin";
 const char library_name[] = "libppapi_tests.so";
 #endif
 
+// The large timeout was causing the cycle time for the whole test suite
+// to be too long when a tiny bug caused all tests to timeout.
+// http://crbug.com/108264
+static int kTimeoutMs = 90000;
+//static int kTimeoutMs = TestTimeouts::large_test_timeout_ms());
+
+class TestFinishObserver : public content::NotificationObserver {
+ public:
+  explicit TestFinishObserver(RenderViewHost* render_view_host, int timeout_s)
+      : finished_(false), waiting_(false), timeout_s_(timeout_s) {
+    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
+                   content::Source<RenderViewHost>(render_view_host));
+    timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(timeout_s),
+                 this, &TestFinishObserver::OnTimeout);
+  }
+
+  bool WaitForFinish() {
+    if (!finished_) {
+      waiting_ = true;
+      ui_test_utils::RunMessageLoop();
+      waiting_ = false;
+    }
+    return finished_;
+  }
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
+    DCHECK(type == content::NOTIFICATION_DOM_OPERATION_RESPONSE);
+    content::Details<DomOperationNotificationDetails> dom_op_details(details);
+    // We might receive responses for other script execution, but we only
+    // care about the test finished message.
+    std::string response;
+    TrimString(dom_op_details->json, "\"", &response);
+    if (response == "...") {
+      timer_.Stop();
+      timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(timeout_s_),
+                   this, &TestFinishObserver::OnTimeout);
+    } else {
+      result_ = response;
+      finished_ = true;
+      if (waiting_)
+        MessageLoopForUI::current()->Quit();
+    }
+  }
+
+  std::string result() const { return result_; }
+
+  void Reset() {
+    finished_ = false;
+    waiting_ = false;
+    result_.clear();
+  }
+
+ private:
+  void OnTimeout() {
+    MessageLoopForUI::current()->Quit();
+  }
+
+  bool finished_;
+  bool waiting_;
+  int timeout_s_;
+  std::string result_;
+  content::NotificationRegistrar registrar_;
+  base::RepeatingTimer<TestFinishObserver> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFinishObserver);
+};
+
 }  // namespace
 
-class PPAPITestBase : public UITest {
+class PPAPITestBase : public InProcessBrowserTest {
  public:
   PPAPITestBase() {
+    EnableDOMAutomation();
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // The test sends us the result via a cookie.
-    launch_arguments_.AppendSwitch(switches::kEnableFileCookies);
+    command_line->AppendSwitch(switches::kEnableFileCookies);
 
     // Some stuff is hung off of the testing interface which is not enabled
     // by default.
-    launch_arguments_.AppendSwitch(switches::kEnablePepperTesting);
+    command_line->AppendSwitch(switches::kEnablePepperTesting);
 
     // Smooth scrolling confuses the scrollbar test.
-    launch_arguments_.AppendSwitch(switches::kDisableSmoothScrolling);
+    command_line->AppendSwitch(switches::kDisableSmoothScrolling);
   }
 
   virtual std::string BuildQuery(const std::string& base,
@@ -69,13 +152,8 @@ class PPAPITestBase : public UITest {
   }
 
   void RunTest(const std::string& test_case) {
-    scoped_refptr<TabProxy> tab = GetActiveTab();
-    EXPECT_TRUE(tab.get());
-    if (!tab.get())
-      return;
     GURL url = GetTestFileUrl(test_case);
-    EXPECT_TRUE(tab->NavigateToURLBlockUntilNavigationsComplete(url, 1));
-    RunTestURL(tab, url);
+    RunTestURL(url);
   }
 
   void RunTestViaHTTP(const std::string& test_case) {
@@ -119,10 +197,8 @@ class PPAPITestBase : public UITest {
     ASSERT_TRUE(test_server.Start());
     std::string query = BuildQuery("files/test_case.html?", test_case);
 
-    scoped_refptr<TabProxy> tab = GetActiveTab();
     GURL url = test_server.GetURL(query);
-    EXPECT_TRUE(tab->NavigateToURLBlockUntilNavigationsComplete(url, 1));
-    RunTestURL(tab, url);
+    RunTestURL(url);
   }
 
   void RunTestWithWebSocketServer(const std::string& test_case) {
@@ -146,42 +222,20 @@ class PPAPITestBase : public UITest {
  protected:
   // Runs the test for a tab given the tab that's already navigated to the
   // given URL.
-  void RunTestURL(scoped_refptr<TabProxy> tab, const GURL& test_url) {
-    ASSERT_TRUE(tab.get());
-
-    // The large timeout was causing the cycle time for the whole test suite
-    // to be too long when a tiny bug caused all tests to timeout.
-    // http://crbug.com/108264
-    int timeout_ms = 90000;
-    //int timeout_ms = TestTimeouts::large_test_timeout_ms());
-
+  void RunTestURL(const GURL& test_url) {
     // See comment above TestingInstance in ppapi/test/testing_instance.h.
-    // Basically it sets a series of numbered cookies. The value of "..." means
-    // it's still working and we should continue to wait, any other value
-    // indicates completion (in this case it will start with "PASS" or "FAIL").
-    // This keeps us from timing out on cookie waits for long tests.
-    int progress_number = 0;
-    std::string progress;
-    while (true) {
-      std::string cookie_name = StringPrintf("PPAPI_PROGRESS_%d",
-                                             progress_number);
-      progress = WaitUntilCookieNonEmpty(tab.get(), test_url,
-                                         cookie_name.c_str(), timeout_ms);
-      if (progress != "...")
-        break;
-      progress_number++;
-    }
+    // Basically it sends messages using the DOM automation controller. The
+    // value of "..." means it's still working and we should continue to wait,
+    // any other value indicates completion (in this case it will start with
+    // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
+    TestFinishObserver observer(
+        browser()->GetSelectedWebContents()->GetRenderViewHost(), kTimeoutMs);
 
-    if (progress_number == 0) {
-      // Failing the first time probably means the plugin wasn't loaded.
-      ASSERT_FALSE(progress.empty())
-          << "Plugin couldn't be loaded. Make sure the PPAPI test plugin is "
-          << "built, in the right place, and doesn't have any missing symbols.";
-    } else {
-      ASSERT_FALSE(progress.empty()) << "Test timed out.";
-    }
+    ui_test_utils::NavigateToURL(browser(), test_url);
 
-    EXPECT_STREQ("PASS", progress.c_str());
+    ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
+
+    EXPECT_STREQ("PASS", observer.result().c_str());
   }
 };
 
@@ -190,20 +244,24 @@ class PPAPITestBase : public UITest {
 class PPAPITest : public PPAPITestBase {
  public:
   PPAPITest() {
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PPAPITestBase::SetUpCommandLine(command_line);
+
     // Append the switch to register the pepper plugin.
     // library name = <out dir>/<test_name>.<library_extension>
     // MIME type = application/x-ppapi-<test_name>
     FilePath plugin_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_EXE, &plugin_dir));
+    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
 
     FilePath plugin_lib = plugin_dir.Append(library_name);
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
     FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL(";application/x-ppapi-tests"));
-    launch_arguments_.AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                         pepper_plugin);
-    launch_arguments_.AppendSwitchASCII(switches::kAllowNaClSocketAPI,
-                                        "127.0.0.1");
+    command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
+                                     pepper_plugin);
+    command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   }
 
   std::string BuildQuery(const std::string& base,
@@ -218,8 +276,14 @@ class PPAPITest : public PPAPITestBase {
 class OutOfProcessPPAPITest : public PPAPITest {
  public:
   OutOfProcessPPAPITest() {
+    
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PPAPITest::SetUpCommandLine(command_line);
+
     // Run PPAPI out-of-process to exercise proxy implementations.
-    launch_arguments_.AppendSwitch(switches::kPpapiOutOfProcess);
+    command_line->AppendSwitch(switches::kPpapiOutOfProcess);
   }
 };
 
@@ -227,14 +291,18 @@ class OutOfProcessPPAPITest : public PPAPITest {
 class PPAPINaClTest : public PPAPITestBase {
  public:
   PPAPINaClTest() {
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PPAPITestBase::SetUpCommandLine(command_line);
+
     FilePath plugin_lib;
     EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
 
     // Enable running NaCl outside of the store.
-    launch_arguments_.AppendSwitch(switches::kEnableNaCl);
-    launch_arguments_.AppendSwitchASCII(switches::kAllowNaClSocketAPI,
-                                        "127.0.0.1");
+    command_line->AppendSwitch(switches::kEnableNaCl);
+    command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   }
 
   // Append the correct mode and testcase string
@@ -248,12 +316,17 @@ class PPAPINaClTest : public PPAPITestBase {
 class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
  public:
   PPAPINaClTestDisallowedSockets() {
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    PPAPITestBase::SetUpCommandLine(command_line);
+
     FilePath plugin_lib;
     EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
     EXPECT_TRUE(file_util::PathExists(plugin_lib));
 
     // Enable running NaCl outside of the store.
-    launch_arguments_.AppendSwitch(switches::kEnableNaCl);
+    command_line->AppendSwitch(switches::kEnableNaCl);
   }
 
   // Append the correct mode and testcase string
@@ -270,31 +343,31 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
 // Use these macros to run the tests for a specific interface.
 // Most interfaces should be tested with both macros.
 #define TEST_PPAPI_IN_PROCESS(test_name) \
-    TEST_F(PPAPITest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
       RunTest(STRIP_PREFIXES(test_name)); \
     }
 #define TEST_PPAPI_OUT_OF_PROCESS(test_name) \
-    TEST_F(OutOfProcessPPAPITest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, test_name) { \
       RunTest(STRIP_PREFIXES(test_name)); \
     }
 
 // Similar macros that test over HTTP.
 #define TEST_PPAPI_IN_PROCESS_VIA_HTTP(test_name) \
-    TEST_F(PPAPITest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 #define TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(test_name) \
-    TEST_F(OutOfProcessPPAPITest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 
 // Similar macros that test with WebSocket server
 #define TEST_PPAPI_IN_PROCESS_WITH_WS(test_name) \
-    TEST_F(PPAPITest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPITest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 #define TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(test_name) \
-    TEST_F(OutOfProcessPPAPITest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 
@@ -307,19 +380,19 @@ class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
 
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
-    TEST_F(PPAPINaClTest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 
 // NaCl based PPAPI tests with disallowed socket API
 #define TEST_PPAPI_NACL_VIA_HTTP_DISALLOWED_SOCKETS(test_name) \
-    TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTestDisallowedSockets, test_name) { \
       RunTestViaHTTP(STRIP_PREFIXES(test_name)); \
     }
 
 // NaCl based PPAPI tests with WebSocket server
 #define TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(test_name) \
-    TEST_F(PPAPINaClTest, test_name) { \
+    IN_PROC_BROWSER_TEST_F(PPAPINaClTest, test_name) { \
       RunTestWithWebSocketServer(STRIP_PREFIXES(test_name)); \
     }
 #endif
@@ -500,7 +573,7 @@ TEST_PPAPI_NACL_VIA_HTTP(PaintAggregator)
 // TODO(danakj): http://crbug.com/115286
 TEST_PPAPI_IN_PROCESS(DISABLED_Scrollbar)
 // http://crbug.com/89961
-TEST_F(OutOfProcessPPAPITest, FAILS_Scrollbar) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FAILS_Scrollbar) {
   RunTest("Scrollbar");
 }
 // TODO(danakj): http://crbug.com/115286
@@ -631,10 +704,10 @@ TEST_PPAPI_NACL_VIA_HTTP(FileSystem)
 #define MAYBE_OutOfProcessFlashFullscreen FlashFullscreen
 #endif
 
-TEST_F(PPAPITest, MAYBE_FlashFullscreen) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_FlashFullscreen) {
   RunTestViaHTTP("FlashFullscreen");
 }
-TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessFlashFullscreen) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_OutOfProcessFlashFullscreen) {
   RunTestViaHTTP("FlashFullscreen");
 }
 
@@ -659,17 +732,17 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 
 // Flaky on Mac + Linux, maybe http://codereview.chromium.org/7094008
 // Not implemented out of process: http://crbug.com/106129
-TEST_F(PPAPITest, MAYBE_DirectoryReader) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_DirectoryReader) {
   RunTestViaHTTP("DirectoryReader");
 }
 
 #if defined(ENABLE_P2P_APIS)
 // Flaky. http://crbug.com/84294
-TEST_F(PPAPITest, DISABLED_Transport) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, DISABLED_Transport) {
   RunTest("Transport");
 }
 // http://crbug.com/89961
-TEST_F(OutOfProcessPPAPITest, DISABLED_Transport) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_Transport) {
   RunTestViaHTTP("Transport");
 }
 #endif // ENABLE_P2P_APIS
@@ -724,7 +797,7 @@ TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NetAddressPrivateUntrusted_GetPort)
 TEST_PPAPI_NACL_VIA_HTTP(NetAddressPrivateUntrusted_GetAddress)
 
 // PPB_TCPSocket_Private currently isn't supported in-process.
-TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {
   RunTestViaHTTP("TCPSocketPrivate");
 }
 
@@ -818,50 +891,50 @@ TEST_PPAPI_NACL_VIA_HTTP(View_CreateVisible);
 // This test ensures that plugins created in a background tab have their
 // initial visibility set to false. We don't bother testing in-process for this
 // custom test since the out of process code also exercises in-process.
-TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
+
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
   // Make a second tab in the foreground.
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  ASSERT_TRUE(tab.get());
-  scoped_refptr<BrowserProxy> browser(tab->GetParentBrowser());
-  ASSERT_TRUE(browser.get());
   GURL url = GetTestFileUrl("View_CreatedInvisible");
-  ASSERT_TRUE(browser->AppendBackgroundTab(url));
-
-  // Tab 1 will be the one we appended after the default tab 0.
-  RunTestURL(tab, url);
+  browser::NavigateParams params(browser(), url, content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_BACKGROUND_TAB;
+  ui_test_utils::NavigateToURL(&params);
 }
-// This test messes with tab visibility so is custom.
-TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
-  GURL url = GetTestFileUrl("View_PageHideShow");
-  scoped_refptr<TabProxy> tab = GetActiveTab();
-  ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->NavigateToURLBlockUntilNavigationsComplete(url, 1));
 
-  // The plugin will be loaded in the foreground tab and will set the
-  // "created" cookie.
-  std::string true_str("TRUE");
-  std::string progress = WaitUntilCookieNonEmpty(tab.get(), url,
-      "TestPageHideShow:Created",
+// This test messes with tab visibility so is custom.
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
+  // The plugin will be loaded in the foreground tab and will send us a message.
+  TestFinishObserver observer(
+      browser()->GetSelectedWebContents()->GetRenderViewHost(),
       TestTimeouts::action_max_timeout_ms());
-  ASSERT_EQ(true_str, progress);
+
+  GURL url = GetTestFileUrl("View_PageHideShow");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
+  EXPECT_STREQ("TestPageHideShow:Created", observer.result().c_str());
+  observer.Reset();
 
   // Make a new tab to cause the original one to hide, this should trigger the
   // next phase of the test.
-  scoped_refptr<BrowserProxy> browser(tab->GetParentBrowser());
-  ASSERT_TRUE(browser.get());
-  ASSERT_TRUE(browser->AppendTab(GURL(chrome::kAboutBlankURL)));
+  browser::NavigateParams params(
+      browser(), GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  ui_test_utils::NavigateToURL(&params);
 
   // Wait until the test acks that it got hidden.
-  progress = WaitUntilCookieNonEmpty(tab.get(), url, "TestPageHideShow:Hidden",
-      TestTimeouts::action_max_timeout_ms());
-  ASSERT_EQ(true_str, progress);
-
-  // Switch back to the test tab.
-  ASSERT_TRUE(browser->ActivateTab(0));
+  ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
+  EXPECT_STREQ("TestPageHideShow:Hidden", observer.result().c_str());
 
   // Wait for the test completion event.
-  RunTestURL(tab, url);
+  observer.Reset();
+
+  // Switch back to the test tab.
+  browser()->ActivateTabAt(0, true);
+
+  ASSERT_TRUE(observer.WaitForFinish()) << "Test timed out.";
+  EXPECT_STREQ("PASS", observer.result().c_str());
 }
+
 TEST_PPAPI_IN_PROCESS(View_SizeChange);
 TEST_PPAPI_OUT_OF_PROCESS(View_SizeChange);
 TEST_PPAPI_NACL_VIA_HTTP(View_SizeChange);
