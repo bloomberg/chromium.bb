@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
@@ -39,8 +40,11 @@ class CrosDBusServiceImpl : public CrosDBusService {
     if (service_started_)
       return;
 
+    bus_->RequestOwnership(kLibCrosServiceName,
+                           base::Bind(&CrosDBusServiceImpl::OnOwnership,
+                                      base::Unretained(this)));
+
     exported_object_ = bus_->GetExportedObject(
-        kLibCrosServiceName,
         dbus::ObjectPath(kLibCrosServicePath));
 
     for (size_t i = 0; i < service_providers_.size(); ++i)
@@ -61,6 +65,12 @@ class CrosDBusServiceImpl : public CrosDBusService {
   // Returns true if the current thread is on the origin thread.
   bool OnOriginThread() {
     return base::PlatformThread::CurrentId() == origin_thread_id_;
+  }
+
+  // Called when an ownership request is completed.
+  void OnOwnership(const std::string& service_name,
+                   bool success) {
+    LOG_IF(ERROR, !success) << "Failed to own: " << service_name;
   }
 
   bool service_started_;

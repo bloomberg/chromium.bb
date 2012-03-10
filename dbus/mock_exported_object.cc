@@ -7,9 +7,8 @@
 namespace dbus {
 
 MockExportedObject::MockExportedObject(Bus* bus,
-                                       const std::string& service_name,
                                        const ObjectPath& object_path)
-    : ExportedObject(bus, service_name, object_path) {
+    : ExportedObject(bus, object_path) {
 }
 
 MockExportedObject::~MockExportedObject() {

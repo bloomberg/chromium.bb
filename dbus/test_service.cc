@@ -95,11 +95,19 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
   dbus::MessageWriter writer(&signal);
   writer.AppendString(message);
 
+  bus_->RequestOwnership("org.chromium.TestService",
+                         base::Bind(&TestService::OnOwnership,
+                                    base::Unretained(this)));
+
   // Use "/" just like dbus-send does.
   ExportedObject* root_object =
-      bus_->GetExportedObject("org.chromium.TestService",
-                              dbus::ObjectPath("/"));
+      bus_->GetExportedObject(dbus::ObjectPath("/"));
   root_object->SendSignal(&signal);
+}
+
+void TestService::OnOwnership(const std::string& service_name,
+                              bool success) {
+  LOG_IF(ERROR, !success) << "Failed to own: " << service_name;
 }
 
 void TestService::OnExported(const std::string& interface_name,
@@ -125,8 +133,11 @@ void TestService::Run(MessageLoop* message_loop) {
   bus_options.dbus_thread_message_loop_proxy = dbus_thread_message_loop_proxy_;
   bus_ = new Bus(bus_options);
 
+  bus_->RequestOwnership("org.chromium.TestService",
+                         base::Bind(&TestService::OnOwnership,
+                                    base::Unretained(this)));
+
   exported_object_ = bus_->GetExportedObject(
-      "org.chromium.TestService",
       dbus::ObjectPath("/org/chromium/TestObject"));
 
   int num_methods = 0;

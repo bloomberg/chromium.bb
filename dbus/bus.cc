@@ -233,20 +233,18 @@ ObjectProxy* Bus::GetObjectProxyWithOptions(const std::string& service_name,
   return object_proxy.get();
 }
 
-ExportedObject* Bus::GetExportedObject(const std::string& service_name,
-                                       const ObjectPath& object_path) {
+ExportedObject* Bus::GetExportedObject(const ObjectPath& object_path) {
   AssertOnOriginThread();
 
   // Check if we already have the requested exported object.
-  const std::string key = service_name + object_path.value();
-  ExportedObjectTable::iterator iter = exported_object_table_.find(key);
+  ExportedObjectTable::iterator iter = exported_object_table_.find(object_path);
   if (iter != exported_object_table_.end()) {
     return iter->second;
   }
 
   scoped_refptr<ExportedObject> exported_object =
-      new ExportedObject(this, service_name, object_path);
-  exported_object_table_[key] = exported_object;
+      new ExportedObject(this, object_path);
+  exported_object_table_[object_path] = exported_object;
 
   return exported_object.get();
 }
@@ -339,7 +337,40 @@ void Bus::ShutdownOnDBusThreadAndBlock() {
   LOG_IF(ERROR, !signaled) << "Failed to shutdown the bus";
 }
 
-bool Bus::RequestOwnership(const std::string& service_name) {
+void Bus::RequestOwnership(const std::string& service_name,
+                           OnOwnershipCallback on_ownership_callback) {
+  AssertOnOriginThread();
+
+  PostTaskToDBusThread(FROM_HERE, base::Bind(
+      &Bus::RequestOwnershipInternal,
+      this, service_name, on_ownership_callback));
+}
+
+void Bus::RequestOwnershipInternal(const std::string& service_name,
+                                   OnOwnershipCallback on_ownership_callback) {
+  AssertOnDBusThread();
+
+  bool success = Connect();
+  if (success)
+    success = RequestOwnershipAndBlock(service_name);
+
+  PostTaskToOriginThread(FROM_HERE,
+                         base::Bind(&Bus::OnOwnership,
+                                    this,
+                                    on_ownership_callback,
+                                    service_name,
+                                    success));
+}
+
+void Bus::OnOwnership(OnOwnershipCallback on_ownership_callback,
+                      const std::string& service_name,
+                      bool success) {
+  AssertOnOriginThread();
+
+  on_ownership_callback.Run(service_name, success);
+}
+
+bool Bus::RequestOwnershipAndBlock(const std::string& service_name) {
   DCHECK(connection_);
   // dbus_bus_request_name() is a blocking call.
   AssertOnDBusThread();

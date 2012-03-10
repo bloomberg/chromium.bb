@@ -176,6 +176,12 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // Connect() is called.
   explicit Bus(const Options& options);
 
+  // Called when an ownership request is complete.
+  // Parameters:
+  // - the requested service name.
+  // - whether ownership has been obtained or not.
+  typedef base::Callback<void (const std::string&, bool)> OnOwnershipCallback;
+
   // Gets the object proxy for the given service name and the object path.
   // The caller must not delete the returned object.
   //
@@ -204,12 +210,11 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
       const ObjectPath& object_path,
       int options);
 
-  // Gets the exported object for the given service name and the object
-  // path. The caller must not delete the returned object.
+  // Gets the exported object for the given object path.
+  // The caller must not delete the returned object.
   //
   // Returns an existing exported object if the bus object already owns
-  // the exported object for the given service name and the object path.
-  // Never returns NULL.
+  // the exported object for the given object path. Never returns NULL.
   //
   // The bus will own all exported objects created by the bus, to ensure
   // that the exported objects are unregistered at the shutdown time of
@@ -219,8 +224,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // send signal from them.
   //
   // Must be called in the origin thread.
-  virtual ExportedObject* GetExportedObject(const std::string& service_name,
-                                            const ObjectPath& object_path);
+  virtual ExportedObject* GetExportedObject(const ObjectPath& object_path);
 
   // Shuts down the bus and blocks until it's done. More specifically, this
   // function does the following:
@@ -255,11 +259,21 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // BLOCKING CALL.
   virtual bool Connect();
 
+  // Requests the ownership of the service name given by |service_name|.
+  // See also RequestOwnershipAndBlock().
+  //
+  // |on_ownership_callback| is called when the service name is obtained
+  // or failed to be obtained, in the origin thread.
+  //
+  // Must be called in the origin thread.
+  virtual void RequestOwnership(const std::string& service_name,
+                                OnOwnershipCallback on_ownership_callback);
+
   // Requests the ownership of the given service name.
   // Returns true on success, or the the service name is already obtained.
   //
   // BLOCKING CALL.
-  virtual bool RequestOwnership(const std::string& service_name);
+  virtual bool RequestOwnershipAndBlock(const std::string& service_name);
 
   // Releases the ownership of the given service name.
   // Returns true on success.
@@ -409,6 +423,15 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // Helper function used for ShutdownOnDBusThreadAndBlock().
   void ShutdownOnDBusThreadAndBlockInternal();
 
+  // Helper function used for RequestOwnership().
+  void RequestOwnershipInternal(const std::string& service_name,
+                                OnOwnershipCallback on_ownership_callback);
+
+  // Called when the ownership request is completed.
+  void OnOwnership(OnOwnershipCallback on_ownership_callback,
+                   const std::string& service_name,
+                   bool success);
+
   // Processes the all incoming data to the connection, if any.
   //
   // BLOCKING CALL.
@@ -478,7 +501,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // ExportedObjectTable is used to hold the exported objects created by
   // the bus object. Key is a concatenated string of service name +
   // object path, like "org.chromium.TestService/org/chromium/TestObject".
-  typedef std::map<std::string,
+  typedef std::map<const dbus::ObjectPath,
                    scoped_refptr<dbus::ExportedObject> > ExportedObjectTable;
   ExportedObjectTable exported_object_table_;
 

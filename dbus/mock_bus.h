@@ -26,13 +26,15 @@ class MockBus : public Bus {
                ObjectProxy*(const std::string& service_name,
                             const ObjectPath& object_path,
                             int options));
-  MOCK_METHOD2(GetExportedObject, ExportedObject*(
-      const std::string& service_name,
+  MOCK_METHOD1(GetExportedObject, ExportedObject*(
       const ObjectPath& object_path));
   MOCK_METHOD0(ShutdownAndBlock, void());
   MOCK_METHOD0(ShutdownOnDBusThreadAndBlock, void());
   MOCK_METHOD0(Connect, bool());
-  MOCK_METHOD1(RequestOwnership, bool(const std::string& service_name));
+  MOCK_METHOD2(RequestOwnership, void(
+      const std::string& service_name,
+      OnOwnershipCallback on_ownership_callback));
+  MOCK_METHOD1(RequestOwnershipAndBlock, bool(const std::string& service_name));
   MOCK_METHOD1(ReleaseOwnership, bool(const std::string& service_name));
   MOCK_METHOD0(SetUpAsyncOperations, bool());
   MOCK_METHOD3(SendWithReplyAndBlock, DBusMessage*(DBusMessage* request,

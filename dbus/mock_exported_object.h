@@ -18,7 +18,6 @@ namespace dbus {
 class MockExportedObject : public ExportedObject {
  public:
   MockExportedObject(Bus* bus,
-                     const std::string& service_name,
                      const ObjectPath& object_path);
   virtual ~MockExportedObject();
 

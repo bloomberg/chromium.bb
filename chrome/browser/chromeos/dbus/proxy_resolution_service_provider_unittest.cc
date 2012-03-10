@@ -80,7 +80,6 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     // org.chromium.CrosDBusService.
     mock_exported_object_ =
         new dbus::MockExportedObject(mock_bus_.get(),
-                                     kLibCrosServiceName,
                                      dbus::ObjectPath(kLibCrosServicePath));
 
     // |mock_exported_object_|'s ExportMethod() will use

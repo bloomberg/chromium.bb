@@ -89,21 +89,18 @@ TEST(BusTest, GetExportedObject) {
   scoped_refptr<dbus::Bus> bus = new dbus::Bus(options);
 
   dbus::ExportedObject* object_proxy1 =
-      bus->GetExportedObject("org.chromium.TestService",
-                             dbus::ObjectPath("/org/chromium/TestObject"));
+      bus->GetExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy1);
 
   // This should return the same object.
   dbus::ExportedObject* object_proxy2 =
-      bus->GetExportedObject("org.chromium.TestService",
-                             dbus::ObjectPath("/org/chromium/TestObject"));
+      bus->GetExportedObject(dbus::ObjectPath("/org/chromium/TestObject"));
   ASSERT_TRUE(object_proxy2);
   EXPECT_EQ(object_proxy1, object_proxy2);
 
   // This should not.
   dbus::ExportedObject* object_proxy3 =
       bus->GetExportedObject(
-          "org.chromium.TestService",
           dbus::ObjectPath("/org/chromium/DifferentTestObject"));
   ASSERT_TRUE(object_proxy3);
   EXPECT_NE(object_proxy1, object_proxy3);

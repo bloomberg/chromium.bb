@@ -35,10 +35,8 @@ std::string GetAbsoluteMethodName(
 }  // namespace
 
 ExportedObject::ExportedObject(Bus* bus,
-                               const std::string& service_name,
                                const ObjectPath& object_path)
     : bus_(bus),
-      service_name_(service_name),
       object_path_(object_path),
       object_is_registered_(false) {
 }
@@ -64,8 +62,6 @@ bool ExportedObject::ExportMethodAndBlock(
   if (!bus_->Connect())
     return false;
   if (!bus_->SetUpAsyncOperations())
-    return false;
-  if (!bus_->RequestOwnership(service_name_))
     return false;
   if (!Register())
     return false;

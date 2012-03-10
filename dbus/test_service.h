@@ -76,6 +76,10 @@ class TestService : public base::Thread {
   // Helper function for ShutdownAndBlock().
   void ShutdownAndBlockInternal();
 
+  // Called when an ownership request is completed.
+  void OnOwnership(const std::string& service_name,
+                   bool success);
+
   // Called when a method is exported.
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,

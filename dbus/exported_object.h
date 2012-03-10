@@ -35,9 +35,7 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
  public:
   // Client code should use Bus::GetExportedObject() instead of this
   // constructor.
-  ExportedObject(Bus* bus,
-                 const std::string& service_name,
-                 const ObjectPath& object_path);
+  ExportedObject(Bus* bus, const ObjectPath& object_path);
 
   // Called to send a response from an exported method. Response* is the
   // response message. Callers should pass a NULL Response* in the event
@@ -157,7 +155,6 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
                                   void* user_data);
 
   scoped_refptr<Bus> bus_;
-  std::string service_name_;
   ObjectPath object_path_;
   bool object_is_registered_;
 

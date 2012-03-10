@@ -48,13 +48,12 @@ class CrosDBusServiceTest : public testing::Test {
     // org.chromium.CrosDBusService.
     mock_exported_object_ =
         new dbus::MockExportedObject(mock_bus_.get(),
-                                     kLibCrosServiceName,
                                      dbus::ObjectPath(kLibCrosServicePath));
 
     // |mock_bus_|'s GetExportedObject() will return mock_exported_object_|
     // for the given service name and the object path.
     EXPECT_CALL(*mock_bus_, GetExportedObject(
-        kLibCrosServiceName, dbus::ObjectPath(kLibCrosServicePath)))
+        dbus::ObjectPath(kLibCrosServicePath)))
         .WillOnce(Return(mock_exported_object_.get()));
 
     // Create a mock proxy resolution service.
