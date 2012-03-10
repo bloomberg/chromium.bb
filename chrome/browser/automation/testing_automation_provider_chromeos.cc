@@ -62,6 +62,14 @@ DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
   return item;
 }
 
+DictionaryValue* GetWifiInfoDict(const chromeos::WifiNetwork* wifi) {
+  DictionaryValue* item = GetNetworkInfoDict(wifi);
+  item->SetInteger("strength", wifi->strength());
+  item->SetBoolean("encrypted", wifi->encrypted());
+  item->SetString("encryption", wifi->GetEncryptionString());
+  return item;
+}
+
 base::Value* GetProxySetting(Browser* browser,
                              const std::string& setting_name) {
   std::string setting_path = "cros.session.proxy.";
@@ -421,10 +429,7 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
     for (chromeos::WifiNetworkVector::const_iterator iter =
          wifi_networks.begin(); iter != wifi_networks.end(); ++iter) {
       const chromeos::WifiNetwork* wifi = *iter;
-      DictionaryValue* item = GetNetworkInfoDict(wifi);
-      item->SetInteger("strength", wifi->strength());
-      item->SetBoolean("encrypted", wifi->encrypted());
-      item->SetString("encryption", wifi->GetEncryptionString());
+      DictionaryValue* item = GetWifiInfoDict(wifi);
       items->Set(wifi->service_path(), item);
     }
     return_value->Set("wifi_networks", items);
@@ -460,14 +465,15 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
   // Remembered Wifi Networks.
   const chromeos::WifiNetworkVector& remembered_wifi =
       network_library->remembered_wifi_networks();
-  ListValue* items = new ListValue;
+  DictionaryValue* remembered_wifi_items = new DictionaryValue;
   for (chromeos::WifiNetworkVector::const_iterator iter =
        remembered_wifi.begin(); iter != remembered_wifi.end();
        ++iter) {
       const chromeos::WifiNetwork* wifi = *iter;
-      items->Append(base::Value::CreateStringValue(wifi->service_path()));
+      DictionaryValue* item = GetWifiInfoDict(wifi);
+      remembered_wifi_items->Set(wifi->service_path(), item);
   }
-  return_value->Set("remembered_wifi", items);
+  return_value->Set("remembered_wifi", remembered_wifi_items);
 
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }

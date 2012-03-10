@@ -661,6 +661,7 @@
   # require custom setup on ChromeOS.
   'CHROMEOS_POLICY': {
     'chromeos': [
+      'chromeos_onc',
       'policy',
       'policy_prefs_ui',
     ],

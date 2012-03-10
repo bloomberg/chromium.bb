@@ -322,7 +322,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'Did not find suid-root python at %s' % PyUITest.SuidPythonPath()
     file_path = os.path.join(os.path.dirname(__file__), 'chromeos',
                              'suid_actions.py')
-    args = [PyUITest.SuidPythonPath(), file_path, '--action=CleanFlimflamDir']
+    args = [PyUITest.SuidPythonPath(), file_path, '--action=%s' % action]
     proc = subprocess.Popen(
         args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
@@ -3893,12 +3893,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       Sample:
       { u'cellular_available': True,
         u'cellular_enabled': False,
-        u'connected_ethernet': u'/profile/default/ethernet_abcd',
-        u'connected_wifi': u'/profile/default/wifi_abcd_1234_managed_none',
+        u'connected_ethernet': u'/service/ethernet_abcd',
+        u'connected_wifi': u'/service/wifi_abcd_1234_managed_none',
         u'ethernet_available': True,
         u'ethernet_enabled': True,
         u'ethernet_networks':
-            { u'/profile/default/ethernet_abcd':
+            { u'/service/ethernet_abcd':
                 { u'device_path': u'/device/abcdeth',
                   u'ip_address': u'11.22.33.44',
                   u'name': u'',
@@ -3906,12 +3906,20 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                   u'/profile/default/ethernet_abcd',
                   u'status': u'Connected'}},
         u'ip_address': u'11.22.33.44',
-        u'remembered_wifi': [ u'/profile/default/ethernet_abcd',
-                              u'/profile/default/ethernet_efgh'],
+        u'remembered_wifi':
+            { u'/service/wifi_abcd_1234_managed_none':
+                { u'device_path': u'',
+                  u'encrypted': False,
+                  u'encryption': u'',
+                  u'ip_address': '',
+                  u'name': u'WifiNetworkName1',
+                  u'status': u'Unknown',
+                  u'strength': 0},
+            },
         u'wifi_available': True,
         u'wifi_enabled': True,
         u'wifi_networks':
-            { u'/profile/default/wifi_abcd_1234_managed_none':
+            { u'/service/wifi_abcd_1234_managed_none':
                 { u'device_path': u'/device/abcdwifi',
                   u'encrypted': False,
                   u'encryption': u'',
@@ -3919,13 +3927,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                   u'name': u'WifiNetworkName1',
                   u'status': u'Connected',
                   u'strength': 76},
-              u'/profile/default/wifi_abcd_1234_managed_802_1x':
-                  { u'device_path': u'/device/abcdwifi',
-                    u'encrypted': True,
+              u'/service/wifi_abcd_1234_managed_802_1x':
+                  { u'encrypted': True,
                     u'encryption': u'8021X',
                     u'ip_address': u'',
                     u'name': u'WifiNetworkName2',
-                    u'service_path':
                     u'status': u'Idle',
                     u'strength': 79}}}
 
@@ -3939,8 +3945,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     # Remembered networks do not have /service/ prepended to the service path
     # even though wifi_networks does.  We want this prepended to allow for
     # consistency and easy string comparison with wifi_networks.
-    network_info['remembered_wifi'] = ['/service/' + service for service in
-                                       network_info['remembered_wifi']]
+    remembered_wifi = {}
+    network_info['remembered_wifi'] = dict([('/service/' + k, v) for k, v in
+      network_info['remembered_wifi'].iteritems()])
+
     return network_info
 
   def NetworkScan(self):

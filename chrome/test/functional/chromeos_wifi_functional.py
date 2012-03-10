@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,7 +17,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
   These tests should be run within vacinity of the power strip where the wifi
   routers are attached.
   """
- 
+
   def setUp(self):
     chromeos_network.PyNetworkUITest.setUp(self)
     if self.GetLoginInfo().get('is_logged_in'):
@@ -45,7 +45,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
 
   def _VerifyIfConnectedToNetwork(self, network_ssid, status='Online state'):
     """Verify if we are connected to the network.
-    
+
     The test calling this function will fail for one of these three reasons:
     1. The server path for the SSID is not found.
     2. If we are not connected to the network.
@@ -114,7 +114,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
   def testConnectToSharedOpenNetwork(self):
     """Can connect to a shared open network.
 
-    Verify that the connected network is in the remembered network list 
+    Verify that the connected network is in the remembered network list
     for all the users.
     """
     router_name = 'Trendnet_639gr_4'
@@ -152,7 +152,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     """Can connect to a non-shared hidden network.
 
     Verify that it is not shared with other users.
-    """  
+    """
     router_name = 'Linksys_WRT54GL'
     test_utils.LoginToDevice(self)
     router = self._SetupRouter(router_name)
@@ -170,7 +170,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
 
   def testConnectToEncryptedNetworkInLoginScreen(self):
     """Can connect to encrypted network in login screen.
- 
+
     Verify that this network is in the remembered list after login.
     """
     router_name = 'Belkin_G'
@@ -181,7 +181,7 @@ class ChromeosWifiFunctional(chromeos_network.PyNetworkUITest):
     self.assertFalse(error, 'Failed to connect to wifi network %s. '
                             'Reason: %s.' % (router['ssid'], error))
     service_path = self.GetServicePath(router['ssid'])
-    self._VerifyIfConnectedToNetwork(router['ssid'], 'Connected')   
+    self._VerifyIfConnectedToNetwork(router['ssid'], 'Connected')
     test_utils.LoginToDevice(self)
     self.assertTrue(service_path in self.NetworkScan()['remembered_wifi'],
                     msg='Network is not added to the remembered list.')

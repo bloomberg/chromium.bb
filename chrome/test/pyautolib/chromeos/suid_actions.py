@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -39,18 +39,23 @@ class SuidAction(object):
     return 0
 
   ## Actions ##
-
   def CleanFlimflamDir(self):
-    """Clean the contents of /home/chronos/user/flimflam."""
-    flimflam_dir = '/home/chronos/user/flimflam'
-    if not os.path.exists(flimflam_dir):
-      return
-    for item in os.listdir(flimflam_dir):
-      path = os.path.join(flimflam_dir, item)
-      if os.path.isdir(path):
-        shutil.rmtree(path)
-      else:
-        os.remove(path)
+    """Clean the contents of all flimflam profiles."""
+    flimflam_dir = ['/home/chronos/user/flimflam',
+                    '/var/cache/flimflam']
+    os.system('stop flimflam')
+    try:
+      for profile in flimflam_dir:
+        if not os.path.exists(profile):
+          continue
+        for item in os.listdir(profile):
+          path = os.path.join(profile, item)
+          if os.path.isdir(path):
+            shutil.rmtree(path)
+          else:
+            os.remove(path)
+    finally:
+      os.system('start flimflam')
 
 
 if __name__ == '__main__':
