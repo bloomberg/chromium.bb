@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,8 +59,15 @@ class MyScriptableObject : public pp::deprecated::ScriptableObject {
   }
 
   virtual bool HasProperty(const pp::Var& name, pp::Var* exception) {
-    if (name.is_string() && name.AsString() == "blah")
-      return true;
+    if (name.is_string()) {
+      if (name.AsString() == "blah") {
+        return true;
+      } else if (name.AsString() == "removePluginWhenHasPropertyCalled") {
+        pp::Var script("var plugin = document.getElementById('plugin');"
+                       "plugin.parentElement.removeChild(plugin);");
+        instance_->ExecuteScript(script);
+      }
+    }
     return false;
   }
 
@@ -473,7 +480,8 @@ int gettimeofday(struct timeval *tv, struct timezone*) {
 };
 
 void FlushCallback(void* data, int32_t result) {
-  static_cast<MyInstance*>(data)->OnFlush();
+  if (result == PP_OK)
+    static_cast<MyInstance*>(data)->OnFlush();
 }
 
 class MyModule : public pp::Module {

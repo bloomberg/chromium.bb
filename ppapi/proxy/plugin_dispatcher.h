@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
@@ -41,7 +42,9 @@ struct InstanceData {
   PP_CompletionCallback mouse_lock_callback;
 };
 
-class PPAPI_PROXY_EXPORT PluginDispatcher : public Dispatcher {
+class PPAPI_PROXY_EXPORT PluginDispatcher
+    : public Dispatcher,
+      public base::SupportsWeakPtr<PluginDispatcher> {
  public:
   class PPAPI_PROXY_EXPORT PluginDelegate : public ProxyChannel::Delegate {
    public:

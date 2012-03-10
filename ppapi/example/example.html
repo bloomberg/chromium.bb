@@ -6,9 +6,13 @@
 isPluginDefaultSize = true;
 
 function Test() {
-    plugin = document.getElementById('plugin');
-    // Confirm that this no longer segfaults.
-    alert(plugin.toString(new Array(10)));
+  var plugin = document.getElementById('plugin');
+  // Confirm that this no longer segfaults.
+  alert(plugin.toString(new Array(10)));
+
+  // Confirm that the renderer doesn't crash when the plugin module goes away
+  // while waiting for the reply to the HasPropery sync message.
+  plugin.removePluginWhenHasPropertyCalled;
 }
 
 function SetPluginSize(width, height) {

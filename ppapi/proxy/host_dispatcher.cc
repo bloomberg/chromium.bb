@@ -72,7 +72,7 @@ HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
     g_module_to_dispatcher = new ModuleToDispatcherMap;
   (*g_module_to_dispatcher)[pp_module_] = this;
 
-  SetSerializationRules(new HostVarSerializationRules(module));
+  SetSerializationRules(new HostVarSerializationRules);
 
   ppb_proxy_ = reinterpret_cast<const PPB_Proxy_Private*>(
       local_get_interface(PPB_PROXY_PRIVATE_INTERFACE));

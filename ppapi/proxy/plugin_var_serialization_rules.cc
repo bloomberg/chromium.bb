@@ -15,8 +15,10 @@
 namespace ppapi {
 namespace proxy {
 
-PluginVarSerializationRules::PluginVarSerializationRules()
-    : var_tracker_(PluginGlobals::Get()->plugin_var_tracker()) {
+PluginVarSerializationRules::PluginVarSerializationRules(
+    const base::WeakPtr<PluginDispatcher>& dispatcher)
+    : var_tracker_(PluginGlobals::Get()->plugin_var_tracker()),
+      dispatcher_(dispatcher) {
 }
 
 PluginVarSerializationRules::~PluginVarSerializationRules() {
@@ -29,14 +31,13 @@ PP_Var PluginVarSerializationRules::SendCallerOwned(const PP_Var& var) {
   return var;
 }
 
-PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(
-    const PP_Var& var,
-    Dispatcher* dispatcher) {
+PP_Var PluginVarSerializationRules::BeginReceiveCallerOwned(const PP_Var& var) {
   if (var.type == PP_VARTYPE_OBJECT) {
-    DCHECK(dispatcher->IsPlugin());
-    return var_tracker_->TrackObjectWithNoReference(
-        var, static_cast<PluginDispatcher*>(dispatcher));
+    return dispatcher_ ?
+        var_tracker_->TrackObjectWithNoReference(var, dispatcher_) :
+        PP_MakeUndefined();
   }
+
   return var;
 }
 
@@ -49,8 +50,7 @@ void PluginVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
   }
 }
 
-PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
-                                                   Dispatcher* dispatcher) {
+PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var) {
   // Overview of sending an object with "pass ref" from the browser to the
   // plugin:
   //                                  Example 1             Example 2
@@ -68,9 +68,9 @@ PP_Var PluginVarSerializationRules::ReceivePassRef(const PP_Var& var,
   // folded in to its set of refs it maintains (with one ref representing all
   // of them in the browser).
   if (var.type == PP_VARTYPE_OBJECT) {
-    DCHECK(dispatcher->IsPlugin());
-    return var_tracker_->ReceiveObjectPassRef(
-        var, static_cast<PluginDispatcher*>(dispatcher));
+    return dispatcher_ ?
+        var_tracker_->ReceiveObjectPassRef(var, dispatcher_) :
+        PP_MakeUndefined();
   }
 
   // Other types are unchanged.
@@ -99,15 +99,14 @@ PP_Var PluginVarSerializationRules::BeginSendPassRef(const PP_Var& var) {
   return var;
 }
 
-void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var,
-                                                 Dispatcher* dispatcher) {
+void PluginVarSerializationRules::EndSendPassRef(const PP_Var& var) {
   // See BeginSendPassRef for an example of why we release our ref here.
   // The var we have in our inner class has been converted to a host object
   // by BeginSendPassRef. This means it's not a normal var valid in the plugin,
   // so we need to use the special ReleaseHostObject.
   if (var.type == PP_VARTYPE_OBJECT) {
-    var_tracker_->ReleaseHostObject(
-        static_cast<PluginDispatcher*>(dispatcher), var);
+    if (dispatcher_)
+      var_tracker_->ReleaseHostObject(dispatcher_, var);
   } else if (var.type >= PP_VARTYPE_STRING) {
     var_tracker_->ReleaseVar(var);
   }

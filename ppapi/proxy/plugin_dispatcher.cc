@@ -65,7 +65,7 @@ PluginDispatcher::PluginDispatcher(base::ProcessHandle remote_process_handle,
       plugin_delegate_(NULL),
       received_preferences_(false),
       plugin_dispatcher_id_(0) {
-  SetSerializationRules(new PluginVarSerializationRules);
+  SetSerializationRules(new PluginVarSerializationRules(AsWeakPtr()));
 
   if (!g_live_dispatchers)
     g_live_dispatchers = new DispatcherSet;

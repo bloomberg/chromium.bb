@@ -4,21 +4,16 @@
 
 #include "ppapi/proxy/host_var_serialization_rules.h"
 
-#include "base/logging.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
-#include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 
 using ppapi::PpapiGlobals;
-using ppapi::StringVar;
 using ppapi::VarTracker;
 
 namespace ppapi {
 namespace proxy {
 
-HostVarSerializationRules::HostVarSerializationRules(PP_Module pp_module)
-    : pp_module_(pp_module) {
+HostVarSerializationRules::HostVarSerializationRules() {
 }
 
 HostVarSerializationRules::~HostVarSerializationRules() {
@@ -28,9 +23,7 @@ PP_Var HostVarSerializationRules::SendCallerOwned(const PP_Var& var) {
   return var;
 }
 
-PP_Var HostVarSerializationRules::BeginReceiveCallerOwned(
-    const PP_Var& var,
-    Dispatcher* /* dispatcher */) {
+PP_Var HostVarSerializationRules::BeginReceiveCallerOwned(const PP_Var& var) {
   return var;
 }
 
@@ -41,9 +34,7 @@ void HostVarSerializationRules::EndReceiveCallerOwned(const PP_Var& var) {
   }
 }
 
-PP_Var HostVarSerializationRules::ReceivePassRef(
-    const PP_Var& var,
-    Dispatcher* /* dispatcher */) {
+PP_Var HostVarSerializationRules::ReceivePassRef(const PP_Var& var) {
   // See PluginVarSerialization::BeginSendPassRef for an example.
   if (var.type == PP_VARTYPE_OBJECT)
     PpapiGlobals::Get()->GetVarTracker()->AddRefVar(var);
@@ -54,8 +45,7 @@ PP_Var HostVarSerializationRules::BeginSendPassRef(const PP_Var& var) {
   return var;
 }
 
-void HostVarSerializationRules::EndSendPassRef(const PP_Var& /* var */,
-                                               Dispatcher* /* dispatcher */) {
+void HostVarSerializationRules::EndSendPassRef(const PP_Var& /* var */) {
   // See PluginVarSerialization::ReceivePassRef for an example. We don't need
   // to do anything here.
 }

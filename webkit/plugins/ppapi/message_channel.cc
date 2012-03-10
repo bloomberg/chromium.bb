@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,9 +46,14 @@ const char kPostMessage[] = "postMessage";
 
 // Helper function to get the MessageChannel that is associated with an
 // NPObject*.
-MessageChannel& ToMessageChannel(NPObject* object) {
-  return *(static_cast<MessageChannel::MessageChannelNPObject*>(object)->
-      message_channel);
+MessageChannel* ToMessageChannel(NPObject* object) {
+  return static_cast<MessageChannel::MessageChannelNPObject*>(object)->
+      message_channel;
+}
+
+NPObject* ToPassThroughObject(NPObject* object) {
+  MessageChannel* channel = ToMessageChannel(object);
+  return channel ? channel->passthrough_object() : NULL;
 }
 
 // Helper function to determine if a given identifier is equal to kPostMessage.
@@ -173,7 +178,7 @@ bool MessageChannelHasMethod(NPObject* np_obj, NPIdentifier name) {
     return true;
 
   // Other method names we will pass to the passthrough object, if we have one.
-  NPObject* passthrough = ToMessageChannel(np_obj).passthrough_object();
+  NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough)
     return WebBindings::hasMethod(NULL, passthrough, name);
   return false;
@@ -187,14 +192,18 @@ bool MessageChannelInvoke(NPObject* np_obj, NPIdentifier name,
 
   // We only handle a function called postMessage.
   if (IdentifierIsPostMessage(name) && (arg_count == 1)) {
-    MessageChannel& message_channel(ToMessageChannel(np_obj));
-    PP_Var argument(NPVariantToPPVar(message_channel.instance(), &args[0]));
-    message_channel.PostMessageToNative(argument);
-    PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(argument);
-    return true;
+    MessageChannel* message_channel = ToMessageChannel(np_obj);
+    if (message_channel) {
+      PP_Var argument(NPVariantToPPVar(message_channel->instance(), &args[0]));
+      message_channel->PostMessageToNative(argument);
+      PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(argument);
+      return true;
+    } else {
+      return false;
+    }
   }
   // Other method calls we will pass to the passthrough object, if we have one.
-  NPObject* passthrough = ToMessageChannel(np_obj).passthrough_object();
+  NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough) {
     return WebBindings::invoke(NULL, passthrough, name, args, arg_count,
                                result);
@@ -210,7 +219,7 @@ bool MessageChannelInvokeDefault(NPObject* np_obj,
     return false;
 
   // Invoke on the passthrough object, if we have one.
-  NPObject* passthrough = ToMessageChannel(np_obj).passthrough_object();
+  NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough) {
     return WebBindings::invokeDefault(NULL, passthrough, args, arg_count,
                                       result);
@@ -223,7 +232,7 @@ bool MessageChannelHasProperty(NPObject* np_obj, NPIdentifier name) {
     return false;
 
   // Invoke on the passthrough object, if we have one.
-  NPObject* passthrough = ToMessageChannel(np_obj).passthrough_object();
+  NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough)
     return WebBindings::hasProperty(NULL, passthrough, name);
   return false;
@@ -239,7 +248,7 @@ bool MessageChannelGetProperty(NPObject* np_obj, NPIdentifier name,
     return false;
 
   // Invoke on the passthrough object, if we have one.
-  NPObject* passthrough = ToMessageChannel(np_obj).passthrough_object();
+  NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough)
     return WebBindings::getProperty(NULL, passthrough, name, result);
   return false;
@@ -255,7 +264,7 @@ bool MessageChannelSetProperty(NPObject* np_obj, NPIdentifier name,
     return false;
 
   // Invoke on the passthrough object, if we have one.
-  NPObject* passthrough = ToMessageChannel(np_obj).passthrough_object();
+  NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough)
     return WebBindings::setProperty(NULL, passthrough, name, variant);
   return false;
@@ -268,7 +277,7 @@ bool MessageChannelEnumerate(NPObject *np_obj, NPIdentifier **value,
 
   // Invoke on the passthrough object, if we have one, to enumerate its
   // properties.
-  NPObject* passthrough = ToMessageChannel(np_obj).passthrough_object();
+  NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough) {
     bool success = WebBindings::enumerate(NULL, passthrough, value, count);
     if (success) {
@@ -312,8 +321,7 @@ NPClass message_channel_class = {
 }  // namespace
 
 // MessageChannel --------------------------------------------------------------
-MessageChannel::MessageChannelNPObject::MessageChannelNPObject()
-    : message_channel(NULL) {
+MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {
 }
 
 MessageChannel::MessageChannelNPObject::~MessageChannelNPObject() {}
@@ -328,7 +336,7 @@ MessageChannel::MessageChannel(PluginInstance* instance)
   NPObject* obj = WebBindings::createObject(NULL, &message_channel_class);
   DCHECK(obj);
   np_object_ = static_cast<MessageChannel::MessageChannelNPObject*>(obj);
-  np_object_->message_channel = this;
+  np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {

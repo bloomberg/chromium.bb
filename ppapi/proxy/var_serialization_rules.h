@@ -5,7 +5,7 @@
 #ifndef PPAPI_PROXY_VAR_SERIALIZATION_RULES_H_
 #define PPAPI_PROXY_VAR_SERIALIZATION_RULES_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_var.h"
 
 #include <string>
@@ -13,12 +13,10 @@
 namespace ppapi {
 namespace proxy {
 
-class Dispatcher;
-
 // Encapsulates the rules for serializing and deserializing vars to and from
 // the local process. The renderer and the plugin process each have separate
 // bookkeeping rules.
-class VarSerializationRules {
+class VarSerializationRules : public base::RefCounted<VarSerializationRules> {
  public:
   virtual ~VarSerializationRules() {}
 
@@ -45,8 +43,7 @@ class VarSerializationRules {
   // the object or string that was added to the tracker. (Note, if the recipient
   // took a reference to the Var, it will remain in the tracker after
   // EndReceiveCallerOwned).
-  virtual PP_Var BeginReceiveCallerOwned(const PP_Var& var,
-                                         Dispatcher* dispatcher) = 0;
+  virtual PP_Var BeginReceiveCallerOwned(const PP_Var& var) = 0;
   virtual void EndReceiveCallerOwned(const PP_Var& var) = 0;
 
   // Passing refs -------------------------------------------------------------
@@ -64,8 +61,7 @@ class VarSerializationRules {
   // SendPassRef in the remote process. The return value is the var valid in
   // the host process for object vars. Otherwise, the return value is a var
   // which is valid in the local process.
-  virtual PP_Var ReceivePassRef(const PP_Var& var,
-                                Dispatcher* dispatcher) = 0;
+  virtual PP_Var ReceivePassRef(const PP_Var& var) = 0;
 
   // Prepares a var to be sent to the remote side. One local reference will
   // be passed to the remote side. Call Begin* before doing the send and End*
@@ -75,7 +71,7 @@ class VarSerializationRules {
   // valid for the host process. Otherwise, it is a var that is valid in the
   // local process. This same var must be passed to EndSendPassRef.
   virtual PP_Var BeginSendPassRef(const PP_Var& var) = 0;
-  virtual void EndSendPassRef(const PP_Var& var, Dispatcher* dispatcher) = 0;
+  virtual void EndSendPassRef(const PP_Var& var) = 0;
 
   // ---------------------------------------------------------------------------
 

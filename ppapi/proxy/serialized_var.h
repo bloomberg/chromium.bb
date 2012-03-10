@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/proxy/var_serialization_rules.h"
 
 class PickleIterator;
 
@@ -110,10 +111,8 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     void WriteToMessage(IPC::Message* m) const;
     bool ReadFromMessage(const IPC::Message* m, PickleIterator* iter);
 
-    // Sets the cleanup mode. See the CleanupMode enum below. These functions
-    // are not just a simple setter in order to require that the appropriate
-    // data is set along with the corresponding mode.
-    void SetCleanupModeToEndSendPassRef(Dispatcher* dispatcher);
+    // Sets the cleanup mode. See the CleanupMode enum below.
+    void SetCleanupModeToEndSendPassRef();
     void SetCleanupModeToEndReceiveCallerOwned();
 
    private:
@@ -132,7 +131,7 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     // Rules for serializing and deserializing vars for this process type.
     // This may be NULL, but must be set before trying to serialize to IPC when
     // sending, or before converting back to a PP_Var when receiving.
-    VarSerializationRules* serialization_rules_;
+    scoped_refptr<VarSerializationRules> serialization_rules_;
 
     // If this is set to VARTYPE_STRING and the 'value.id' is 0, then the
     // string_from_ipc_ holds the string. This means that the caller hasn't
@@ -145,10 +144,6 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     PP_Var var_;
 
     CleanupMode cleanup_mode_;
-
-    // The dispatcher saved for the call to EndSendPassRef for the cleanup.
-    // This is only valid when cleanup_mode == END_SEND_PASS_REF.
-    Dispatcher* dispatcher_for_end_send_pass_ref_;
 
 #ifndef NDEBUG
     // When being sent or received over IPC, we should only be serialized or
@@ -206,6 +201,10 @@ class PPAPI_PROXY_EXPORT SerializedVarSendInput : public SerializedVar {
 //     Send(new MyFunctionMsg(&result));
 //     return result.Return(dispatcher());
 //   }
+//
+// TODO(yzshen): Move the dispatcher parameter to the constructor and store a
+// VarSerializationRules reference instead, in case the dispatcher is destroyed
+// while waiting for reply to the sync message.
 class PPAPI_PROXY_EXPORT ReceiveSerializedVarReturnValue
     : public SerializedVar {
  public:
@@ -246,8 +245,6 @@ class PPAPI_PROXY_EXPORT ReceiveSerializedException : public SerializedVar {
   bool IsThrown() const;
 
  private:
-  Dispatcher* dispatcher_;
-
   // The input/output exception we're wrapping. May be NULL.
   PP_Var* exception_;
 
@@ -310,12 +307,6 @@ class PPAPI_PROXY_EXPORT SerializedVarReceiveInput {
 
  private:
   const SerializedVar& serialized_;
-
-  // Since the SerializedVar is const, we can't set its dispatcher (which is
-  // OK since we don't need to). But since we need it for our own uses, we
-  // track it here. Will be NULL before Get() is called.
-  Dispatcher* dispatcher_;
-  PP_Var var_;
 };
 
 // For receiving an input vector of vars from the remote side.
@@ -451,4 +442,3 @@ class PPAPI_PROXY_EXPORT SerializedVarTestReader : public SerializedVar {
 }  // namespace ppapi
 
 #endif  // PPAPI_PROXY_SERIALIZED_VAR_H_
-

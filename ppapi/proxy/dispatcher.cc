@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 void Dispatcher::SetSerializationRules(
     VarSerializationRules* var_serialization_rules) {
-  serialization_rules_.reset(var_serialization_rules);
+  serialization_rules_ = var_serialization_rules;
 }
 
 void Dispatcher::OnInvalidMessageReceived() {
