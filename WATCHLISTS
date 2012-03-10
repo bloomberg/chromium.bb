@@ -253,7 +253,8 @@
       'filepath': 'chrome/browser/ui/panels/.*',
     },
     'accelerator_table': {
-      'filepath': 'chrome/browser/ui/views/accelerator_table.cc',
+      'filepath': 'ash/accelerators/accelerator_table\.cc' \
+                  '|chrome/browser/ui/views/accelerator_table\.cc',
     },
     'downloads_ui': {
       'filepath': 'chrome/browser/resources/.*downloads\..*' \
@@ -422,7 +423,7 @@
                'jianli@chromium.org', 'dslomov@chromium.org'],
     'importer': ['tfarina@chromium.org'],
     'views': ['tfarina@chromium.org'],
-    'accelerator_table': ['mazda@chromium.org',
+    'accelerator_table': ['mazda+watch@chromium.org',
                           'derat+watch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
     'x11': ['derat+watch@chromium.org',
