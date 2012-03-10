@@ -42,7 +42,7 @@
 // ATTRIBUTE_NOINLINE.
 
 #include <config.h>
-#include <google/stacktrace.h>
+#include <gperftools/stacktrace.h>
 #include "stacktrace_config.h"
 #include "base/basictypes.h"
 

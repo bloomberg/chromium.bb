@@ -88,7 +88,6 @@ class ThreadCache {
   void Deallocate(void* ptr, size_t size_class);
 
   void Scavenge();
-  void Print(TCMalloc_Printer* out) const;
 
   int GetSamplePeriod();
 
@@ -124,10 +123,6 @@ class ThreadCache {
   // The storage of both parameters must be zero intialized.
   // REQUIRES: Static::pageheap_lock is held.
   static void GetThreadStats(uint64_t* total_bytes, uint64_t* class_count);
-
-  // Write debugging statistics to 'out'.
-  // REQUIRES: Static::pageheap_lock is held.
-  static void PrintThreads(TCMalloc_Printer* out);
 
   // Sets the total thread cache size to new_size, recomputing the
   // individual thread cache sizes as necessary.
@@ -212,6 +207,11 @@ class ThreadCache {
       length_--;
       if (length_ < lowater_) lowater_ = length_;
       return FL_Pop(&list_);
+    }
+
+    void* Next() {
+      if (list_ == NULL) return NULL;
+      return FL_Next(list_);
     }
 
     void PushRange(int N, void *start, void *end) {
@@ -366,6 +366,12 @@ inline void ThreadCache::Deallocate(void* ptr, size_t cl) {
   FreeList* list = &list_[cl];
   size_ += Static::sizemap()->ByteSizeForClass(cl);
   ssize_t size_headroom = max_size_ - size_ - 1;
+
+  // This catches back-to-back frees of allocs in the same size
+  // class. A more comprehensive (and expensive) test would be to walk
+  // the entire freelist. But this might be enough to find some bugs.
+  ASSERT(ptr != list->Next());
+
   list->Push(ptr);
   ssize_t list_headroom =
       static_cast<ssize_t>(list->max_length()) - list->length();

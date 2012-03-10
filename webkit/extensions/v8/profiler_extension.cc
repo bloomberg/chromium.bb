@@ -8,7 +8,7 @@
 #include "v8/include/v8.h"
 
 #if defined(USE_TCMALLOC) && defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "third_party/tcmalloc/chromium/src/google/profiler.h"
+#include "third_party/tcmalloc/chromium/src/gperftools/profiler.h"
 #endif
 
 const char kProfilerExtensionName[] = "v8/Profiler";

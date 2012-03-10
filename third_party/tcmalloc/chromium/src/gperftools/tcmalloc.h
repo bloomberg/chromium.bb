@@ -29,11 +29,16 @@
  *
  * ---
  * Author: Sanjay Ghemawat <opensource@google.com>
- *         .h.in file by Craig Silverstein <opensource@google.com>
+ *         .h file by Craig Silverstein <opensource@google.com>
  */
 
 #ifndef TCMALLOC_TCMALLOC_H_
 #define TCMALLOC_TCMALLOC_H_
+
+#include <stddef.h>                     // for size_t
+#ifdef HAVE_SYS_CDEFS_H
+#include <sys/cdefs.h>   // where glibc defines __THROW
+#endif
 
 // __THROW is defined in glibc systems.  It means, counter-intuitively,
 // "This function will never throw an exception."  It's an optional
@@ -43,10 +48,10 @@
 #endif
 
 // Define the version number so folks can check against it
-#define TC_VERSION_MAJOR  @TC_VERSION_MAJOR@
-#define TC_VERSION_MINOR  @TC_VERSION_MINOR@
-#define TC_VERSION_PATCH  "@TC_VERSION_PATCH@"
-#define TC_VERSION_STRING "google-perftools @TC_VERSION_MAJOR@.@TC_VERSION_MINOR@@TC_VERSION_PATCH@"
+#define TC_VERSION_MAJOR  2
+#define TC_VERSION_MINOR  0
+#define TC_VERSION_PATCH  ""
+#define TC_VERSION_STRING "gperftools 2.0"
 
 #include <stdlib.h>   // for struct mallinfo, if it's defined
 
@@ -60,7 +65,9 @@
 #endif
 
 #ifdef __cplusplus
-#include <new>          // for std::nothrow_t
+namespace std {
+struct nothrow_t;
+}
 
 extern "C" {
 #endif
@@ -85,7 +92,7 @@ extern "C" {
 
   PERFTOOLS_DLL_DECL void tc_malloc_stats(void) __THROW;
   PERFTOOLS_DLL_DECL int tc_mallopt(int cmd, int value) __THROW;
-#if 0
+#ifdef HAVE_STRUCT_MALLINFO
   PERFTOOLS_DLL_DECL struct mallinfo tc_mallinfo(void) __THROW;
 #endif
 
