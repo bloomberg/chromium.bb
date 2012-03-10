@@ -30,15 +30,11 @@ include_rules = [
   "-content/browser",
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
-  "+content/browser/accessibility/browser_accessibility.h",
-  "+content/browser/accessibility/browser_accessibility_manager.h",
   "+content/browser/browser_url_handler.h",
   "+content/browser/cert_store.h",
-  "+content/browser/download/download_file_manager.h",
   "+content/browser/download/download_persistent_store_info.h",
   "+content/browser/download/download_state_info.h",
   "+content/browser/download/download_types.h",
-  "+content/browser/find_pasteboard.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
   "+content/browser/load_notification_details.h",
   "+content/browser/net/browser_online_state_observer.h",

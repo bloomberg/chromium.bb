@@ -43,7 +43,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/net/url_request_slow_download_job.h"
@@ -72,61 +71,6 @@ const FilePath kGoodCrxPath(FILE_PATH_LITERAL("extensions/good.crx"));
 
 const char kLargeThemeCrxId[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const FilePath kLargeThemePath(FILE_PATH_LITERAL("extensions/theme2.crx"));
-
-// Collect the information from FILE and IO threads needed for the Cancel
-// Test, specifically the number of outstanding requests on the
-// ResourceDispatcherHost and the number of pending downloads on the
-// DownloadFileManager.
-class CancelTestDataCollector
-    : public base::RefCountedThreadSafe<CancelTestDataCollector> {
- public:
-  CancelTestDataCollector()
-      : slow_download_job_pending_requests_(0),
-        dfm_pending_downloads_(0) { }
-
-  void WaitForDataCollected() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&CancelTestDataCollector::IOInfoCollector, this));
-    ui_test_utils::RunMessageLoop();
-  }
-
-  int slow_download_job_pending_requests() const {
-    return slow_download_job_pending_requests_;
-  }
-
-  int dfm_pending_downloads() const { return dfm_pending_downloads_; }
-
- protected:
-  friend class base::RefCountedThreadSafe<CancelTestDataCollector>;
-
-  virtual ~CancelTestDataCollector() {}
-
- private:
-
-  void IOInfoCollector() {
-    download_file_manager_ =
-        ResourceDispatcherHost::Get()->download_file_manager();
-    slow_download_job_pending_requests_ =
-        URLRequestSlowDownloadJob::NumberOutstandingRequests();
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&CancelTestDataCollector::FileInfoCollector, this));
-  }
-
-  void FileInfoCollector() {
-    dfm_pending_downloads_ = download_file_manager_->NumberOfActiveDownloads();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
-  }
-
-  DownloadFileManager* download_file_manager_;
-  int slow_download_job_pending_requests_;
-  int dfm_pending_downloads_;
-
-  DISALLOW_COPY_AND_ASSIGN(CancelTestDataCollector);
-};
 
 class PickSuggestedFileDelegate : public ChromeDownloadManagerDelegate {
  public:
@@ -850,9 +794,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   ui_test_utils::NavigateToURL(browser(), same_site_url);
 
   // Make sure the initial navigation didn't trigger a download.
-  scoped_refptr<CancelTestDataCollector> info(new CancelTestDataCollector());
-  info->WaitForDataCollected();
-  EXPECT_EQ(0, info->dfm_pending_downloads());
+  EXPECT_TRUE(DownloadManager::EnsureNoPendingDownloadsForTesting());
 
   // Disable downloads for the tab.
   content::NavigationController* controller =
@@ -894,8 +836,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   CheckDownloadUI(browser(), false, false, FilePath());
 
   // Verify that there's no pending download.
-  info->WaitForDataCollected();
-  EXPECT_EQ(0, info->dfm_pending_downloads());
+  EXPECT_TRUE(DownloadManager::EnsureNoPendingDownloadsForTesting());
 }
 
 // Download a 0-size file with a content-disposition header, verify that the
@@ -1332,9 +1273,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
   observer2->WaitForFinished();  // Wait for the third request.
 
   // Get the important info from other threads and check it.
-  scoped_refptr<CancelTestDataCollector> info(new CancelTestDataCollector());
-  info->WaitForDataCollected();
-  EXPECT_EQ(0, info->dfm_pending_downloads());
+  EXPECT_TRUE(DownloadManager::EnsureNoPendingDownloadsForTesting());
 
   CheckDownloadUI(browser(), true, true, FilePath());
 
@@ -1395,10 +1334,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   flush_observer->WaitForFlush();
 
   // Get the important info from other threads and check it.
-  scoped_refptr<CancelTestDataCollector> info(new CancelTestDataCollector());
-  info->WaitForDataCollected();
-  EXPECT_EQ(0, info->slow_download_job_pending_requests());
-  EXPECT_EQ(0, info->dfm_pending_downloads());
+  EXPECT_TRUE(DownloadManager::EnsureNoPendingDownloadsForTesting());
 
   // Using "DownloadItem::Remove" follows the discard dangerous download path,
   // which completely removes the browser from the shelf and closes the shelf

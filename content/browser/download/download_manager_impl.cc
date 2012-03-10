@@ -22,6 +22,7 @@
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/net/url_request_slow_download_job.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -121,6 +122,30 @@ class MapValueIteratorAdapter {
   // Allow copy and assign.
 };
 
+void EnsureNoPendingDownloadsOnFile(scoped_refptr<DownloadFileManager> dfm,
+                                    bool* result) {
+  if (dfm->NumberOfActiveDownloads())
+    *result = false;
+  BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+}
+
+void EnsureNoPendingDownloadsOnIO(bool* result) {
+  if (URLRequestSlowDownloadJob::NumberOutstandingRequests()) {
+    *result = false;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+    return;
+  }
+
+  scoped_refptr<DownloadFileManager> download_file_manager =
+      ResourceDispatcherHost::Get()->download_file_manager();
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&EnsureNoPendingDownloadsOnFile,
+                 download_file_manager, result));
+}
+
 }  // namespace
 
 namespace content {
@@ -130,6 +155,16 @@ DownloadManager* DownloadManager::Create(
     content::DownloadManagerDelegate* delegate,
     net::NetLog* net_log) {
   return new DownloadManagerImpl(delegate, net_log);
+}
+
+bool DownloadManager::EnsureNoPendingDownloadsForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  bool result = true;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&EnsureNoPendingDownloadsOnIO, &result));
+  MessageLoop::current()->Run();
+  return result;
 }
 
 }  // namespace content
@@ -1164,6 +1199,7 @@ void DownloadManagerImpl::DownloadOpened(DownloadItem* download) {
   download_stats::RecordOpensOutstanding(num_unopened);
 }
 
-void DownloadManagerImpl::SetFileManager(DownloadFileManager* file_manager) {
+void DownloadManagerImpl::SetFileManagerForTesting(
+      DownloadFileManager* file_manager) {
   file_manager_ = file_manager;
 }

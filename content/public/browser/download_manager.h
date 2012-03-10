@@ -43,8 +43,6 @@
 #include "net/base/net_log.h"
 #include "net/base/net_errors.h"
 
-class DownloadFileManager;
-class DownloadManagerTest;
 class DownloadRequestHandle;
 class GURL;
 class TabContents;
@@ -67,6 +65,10 @@ class CONTENT_EXPORT DownloadManager
   static DownloadManager* Create(
       DownloadManagerDelegate* delegate,
       net::NetLog* net_log);
+
+  // A method that can be used in tests to ensure that all the internal download
+  // classes have no pending downloads.
+  static bool EnsureNoPendingDownloadsForTesting();
 
   // Shutdown the download manager. Must be called before destruction.
   virtual void Shutdown() = 0;
@@ -259,25 +261,7 @@ class CONTENT_EXPORT DownloadManager
   virtual void SetDownloadManagerDelegate(
       content::DownloadManagerDelegate* delegate) = 0;
 
- protected:
-  // These functions are here for unit tests.
-
-  // Called back after a target path for the file to be downloaded to has been
-  // determined, either automatically based on the suggested file name, or by
-  // the user in a Save As dialog box.
-  virtual void ContinueDownloadWithPath(DownloadItem* download,
-                                        const FilePath& chosen_file) = 0;
-
-  // Retrieves the download from the |download_id|.
-  // Returns NULL if the download is not active.
-  virtual DownloadItem* GetActiveDownload(int32 download_id) = 0;
-
-  virtual void SetFileManager(DownloadFileManager* file_manager) = 0;
-
  private:
-  // For testing.
-  friend class ::DownloadManagerTest;
-
   friend class base::RefCountedThreadSafe<
       DownloadManager, content::BrowserThread::DeleteOnUIThread>;
   friend struct content::BrowserThread::DeleteOnThread<

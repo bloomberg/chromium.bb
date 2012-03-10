@@ -213,7 +213,7 @@ class DownloadManagerTest : public testing::Test {
   DownloadManagerTest()
       : browser_context(new TestBrowserContext()),
         download_manager_delegate_(new TestDownloadManagerDelegate()),
-        download_manager_(DownloadManager::Create(
+        download_manager_(new DownloadManagerImpl(
             download_manager_delegate_.get(), NULL)),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
@@ -288,7 +288,7 @@ class DownloadManagerTest : public testing::Test {
  protected:
   scoped_ptr<TestBrowserContext> browser_context;
   scoped_ptr<TestDownloadManagerDelegate> download_manager_delegate_;
-  scoped_refptr<DownloadManager> download_manager_;
+  scoped_refptr<DownloadManagerImpl> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -299,7 +299,7 @@ class DownloadManagerTest : public testing::Test {
     if (!file_manager_) {
       file_manager_ = new DownloadFileManager(NULL,
                                               new MockDownloadFileFactory);
-      download_manager_->SetFileManager(file_manager_);
+      download_manager_->SetFileManagerForTesting(file_manager_);
     }
     return file_manager_;
   }

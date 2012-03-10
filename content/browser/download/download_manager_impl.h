@@ -114,6 +114,9 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void AssertStateConsistent(
       content::DownloadItem* download) const OVERRIDE;
 
+  // For unit tests only.
+  void SetFileManagerForTesting(DownloadFileManager* file_manager);
+
  private:
   typedef std::set<content::DownloadItem*> DownloadSet;
   typedef base::hash_map<int64, content::DownloadItem*> DownloadMap;
@@ -148,12 +151,12 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by
   // the user in a Save As dialog box.
-  virtual void ContinueDownloadWithPath(content::DownloadItem* download,
-                                        const FilePath& chosen_file) OVERRIDE;
+  void ContinueDownloadWithPath(content::DownloadItem* download,
+                                const FilePath& chosen_file);
 
   // Retrieves the download from the |download_id|.
   // Returns NULL if the download is not active.
-  virtual content::DownloadItem* GetActiveDownload(int32 download_id) OVERRIDE;
+  content::DownloadItem* GetActiveDownload(int32 download_id);
 
   // Removes |download| from the active and in progress maps.
   // Called when the download is cancelled or has an error.
@@ -178,9 +181,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Called when Save Page As entry is committed to the persistent store.
   void OnSavePageItemAddedToPersistentStore(int32 download_id, int64 db_handle);
-
-  // For unit tests only.
-  virtual void SetFileManager(DownloadFileManager* file_manager) OVERRIDE;
 
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in
