@@ -92,10 +92,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
   if (!factory)
     return false;
 
-  // The noExtensions and canRecoverFromContextLoss flags are
-  // currently used as hints that we are creating a context on
-  // behalf of WebGL or accelerated 2D canvas, respectively.
-  if (attributes.noExtensions || !attributes.canRecoverFromContextLoss)
+  if (attributes.preferDiscreteGPU)
     gpu_preference_ = gfx::PreferDiscreteGpu;
 
   bool retry = false;
