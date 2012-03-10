@@ -29,6 +29,7 @@ TestingInstance::TestingInstance(PP_Instance instance)
     : pp::InstancePrivate(instance),
 #endif
       current_case_(NULL),
+      progress_cookie_number_(0),
       executed_tests_(false),
       nacl_mode_(false) {
   callback_factory_.Initialize(this);
@@ -232,10 +233,10 @@ void TestingInstance::LogHTML(const std::string& html) {
 
 void TestingInstance::ReportProgress(const std::string& progress_value) {
   // Use streams since nacl doesn't compile base yet (for StringPrintf).
-  std::ostringstream script;
-  script << "window.domAutomationController.setAutomationId(0);" <<
-            "window.domAutomationController.send(\"" << progress_value << "\")";
-  EvalScript(script.str());
+  std::ostringstream cookie_name;
+  cookie_name << "PPAPI_PROGRESS_" << progress_cookie_number_;
+  SetCookie(cookie_name.str(), progress_value);
+  progress_cookie_number_++;
 }
 
 class Module : public pp::Module {

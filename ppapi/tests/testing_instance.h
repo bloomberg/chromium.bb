@@ -19,19 +19,20 @@ class TestCase;
 
 // How signaling works:
 //
-// We want to signal to the Chrome browser test harness
+// We want to signal to the Chrome UI test harness
 // (chrome/test/ui/ppapi_uitest.cc) that we're making progress and when we're
-// done. This is done using the DOM controlller. The browser test waits for a
-// message from it. We don't want to have a big wait for all tests in a TestCase
-// since they can take a while and it might timeout.  So we send it pings
-// between each test to tell it that we're still running tests and aren't stuck.
+// done. The easiest thing in the UI test infrastructure is to wait for a
+// cookie to become nonempty. We don't want to have a big wait for all tests in
+// a TestCase since they can take a while and it might timeout.  So we set a
+// series of cookies with an incrementing number in the name.
 //
-// If the value of the message is "..." then that tells the test runner that
-// the test is progressing. It then waits for the next message until it either
-// times out or the value is something other than "...". In this case, the value
-// will be either "PASS" or "FAIL [optional message]" corresponding to the
-// outcome of the entire test case. Timeout will be treated just like a failure
-// of the entire test case and the test will be terminated.
+// If the value of the cookie is "..." then that tells the test runner that
+// the test is progressing. It then waits for the next numbered cookie until
+// it either times out or the value is something other than "...". In this
+// case, the value will be either "PASS" or "FAIL [optional message]"
+// corresponding to the outcome of the entire test case. Timeout will be
+// treated just like a failure of the entire test case and the test will be
+// terminated.
 //
 // In trusted builds, we use InstancePrivate and allow tests that use
 // synchronous scripting. NaCl does not support synchronous scripting.
@@ -88,8 +89,6 @@ pp::InstancePrivate {
   // Sets the given cookie in the current document.
   void SetCookie(const std::string& name, const std::string& value);
 
-  void ReportProgress(const std::string& progress_value);
-
  private:
   void ExecuteTests(int32_t unused);
 
@@ -116,6 +115,8 @@ pp::InstancePrivate {
   // Appends the given HTML string to the console in the document.
   void LogHTML(const std::string& html);
 
+  void ReportProgress(const std::string& progress_value);
+
   pp::CompletionCallbackFactory<TestingInstance> callback_factory_;
 
   // Owning pointer to the current test case. Valid after Init has been called.
@@ -124,6 +125,10 @@ pp::InstancePrivate {
   // A filter to use when running tests. This is passed to 'RunTests', which
   // runs only tests whose name contains test_filter_ as a substring.
   std::string test_filter_;
+
+  // The current step we're on starting at 0. This is incremented every time we
+  // report progress via a cookie. See comment above the class.
+  int progress_cookie_number_;
 
   // Set once the tests are run so we know not to re-run when the view is sized.
   bool executed_tests_;

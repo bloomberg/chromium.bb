@@ -93,8 +93,9 @@ std::string TestView::TestPageHideShow() {
   ASSERT_FALSE(page_visibility_log_.empty());
   ASSERT_TRUE(page_visibility_log_[0]);
 
-  // Now that we're alive, tell the test knows it can change our visibility.
-  instance_->ReportProgress("TestPageHideShow:Created");
+  // Now that we're alive, set a cookie so the UI test knows it can change our
+  // visibility.
+  instance_->SetCookie("TestPageHideShow:Created", "TRUE");
 
   // Wait until we get a hide event, being careful to handle spurious
   // notifications of ViewChanged.
@@ -115,8 +116,8 @@ std::string TestView::TestPageHideShow() {
         "tab, waiting 2 more secs, and closing the new tab.";
   }
 
-  // Tell the test so it can show us again.
-  instance_->ReportProgress("TestPageHideShow:Hidden");
+  // Set a cookie so the UI test knows it can show us again.
+  instance_->SetCookie("TestPageHideShow:Hidden", "TRUE");
 
   // Wait until we get a show event.
   begin_time = pp::Module::Get()->core()->GetTime();

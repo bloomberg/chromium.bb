@@ -288,6 +288,16 @@ namespace chrome {
 ChromeContentBrowserClient::ChromeContentBrowserClient() {
   for (size_t i = 0; i < arraysize(kPredefinedAllowedSocketOrigins); ++i)
     allowed_socket_origins_.insert(kPredefinedAllowedSocketOrigins[i]);
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string allowed_list =
+      command_line.GetSwitchValueASCII(switches::kAllowNaClSocketAPI);
+  if (!allowed_list.empty()) {
+    StringTokenizer t(allowed_list, ",");
+    while (t.GetNext()) {
+      allowed_socket_origins_.insert(t.token());
+    }
+  }
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
@@ -1521,19 +1531,6 @@ bool ChromeContentBrowserClient::AllowSocketAPI(
   std::string host = url.host();
   if (allowed_socket_origins_.count(host))
     return true;
-
-  // Need to check this now and not on construction because otherwise it won't
-  // work with browser_tests.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string allowed_list =
-      command_line.GetSwitchValueASCII(switches::kAllowNaClSocketAPI);
-  if (!allowed_list.empty()) {
-    StringTokenizer t(allowed_list, ",");
-    while (t.GetNext()) {
-      if (t.token() == host)
-        return true;
-    }
-  }
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (!profile || !profile->GetExtensionService())
