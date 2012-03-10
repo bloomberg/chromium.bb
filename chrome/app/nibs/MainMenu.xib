@@ -3277,7 +3277,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">BrowserCrApplication</string>
-					<string key="superclassName">CrApplication</string>
+					<string key="superclassName">NSApplication</string>
 					<object class="NSMutableDictionary" key="actions">
 						<string key="NS.key.0">cancelTerminate:</string>
 						<string key="NS.object.0">id</string>
