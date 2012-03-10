@@ -128,22 +128,23 @@ int GetDirectoryWriteAgeInHours(const wchar_t* path) {
 // If system_level_toast is true, appends --system-level-toast.
 // If handle to experiment result key was given at startup, re-add it.
 // Does not wait for the process to terminate.
-bool LaunchSetup(CommandLine cmd_line,
+// |cmd_line| may be modified as a result of this call.
+bool LaunchSetup(CommandLine* cmd_line,
                  const installer::Product& product,
                  bool system_level_toast) {
   const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
 
   // Propagate --verbose-logging to the invoked setup.exe.
   if (current_cmd_line.HasSwitch(installer::switches::kVerboseLogging))
-    cmd_line.AppendSwitch(installer::switches::kVerboseLogging);
+    cmd_line->AppendSwitch(installer::switches::kVerboseLogging);
 
   // Pass along product-specific options.
-  product.AppendProductFlags(&cmd_line);
+  product.AppendProductFlags(cmd_line);
 
   // Re-add the system level toast flag.
   if (system_level_toast) {
-    cmd_line.AppendSwitch(installer::switches::kSystemLevel);
-    cmd_line.AppendSwitch(installer::switches::kSystemLevelToast);
+    cmd_line->AppendSwitch(installer::switches::kSystemLevel);
+    cmd_line->AppendSwitch(installer::switches::kSystemLevelToast);
 
     // Re-add the toast result key. We need to do this because Setup running as
     // system passes the key to Setup running as user, but that child process
@@ -152,23 +153,23 @@ bool LaunchSetup(CommandLine cmd_line,
     std::string key(installer::switches::kToastResultsKey);
     std::string toast_key = current_cmd_line.GetSwitchValueASCII(key);
     if (!toast_key.empty()) {
-      cmd_line.AppendSwitchASCII(key, toast_key);
+      cmd_line->AppendSwitchASCII(key, toast_key);
 
       // Use handle inheritance to make sure the duplicated toast results key
       // gets inherited by the child process.
       base::LaunchOptions options;
       options.inherit_handles = true;
-      return base::LaunchProcess(cmd_line, options, NULL);
+      return base::LaunchProcess(*cmd_line, options, NULL);
     }
   }
 
-  return base::LaunchProcess(cmd_line, base::LaunchOptions(), NULL);
+  return base::LaunchProcess(*cmd_line, base::LaunchOptions(), NULL);
 }
 
 // For System level installs, setup.exe lives in the system temp, which
 // is normally c:\windows\temp. In many cases files inside this folder
 // are not accessible for execution by regular user accounts.
-// This function changes the permisions so that any authenticated user
+// This function changes the permissions so that any authenticated user
 // can launch |exe| later on. This function should only be called if the
 // code is running at the system level.
 bool FixDACLsForExecute(const FilePath& exe) {
@@ -794,7 +795,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
                              base::IntToString(flavor));
   cmd_line.AppendSwitchASCII(installer::switches::kExperimentGroup,
                              WideToASCII(base_group));
-  LaunchSetup(cmd_line, product, system_level);
+  LaunchSetup(&cmd_line, product, system_level);
 }
 
 // User qualifies for the experiment. To test, use --try-chrome-again=|flavor|

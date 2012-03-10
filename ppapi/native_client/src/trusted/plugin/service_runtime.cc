@@ -657,7 +657,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
 }
 
 bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
-                           ErrorInfo* error_info, nacl::string url) {
+                           ErrorInfo* error_info, const nacl::string& url) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_desc=%p)\n",
                  reinterpret_cast<void*>(nacl_desc)));
 
