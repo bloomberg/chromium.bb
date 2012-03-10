@@ -670,9 +670,7 @@ class InputMethodManagerImpl
         input_method_ids_to_switch.push_back("mozc-jp");
         input_method_ids_to_switch.push_back("xkb:jp::jpn");
         break;
-      case ui::VKEY_HANGUL:
-        input_method_ids_to_switch.push_back("mozc-hangul");
-        break;
+      case ui::VKEY_HANGUL:  // Hangul (or right Alt) key on Korean keyboard
       case ui::VKEY_SPACE:  // Shift+Space
         input_method_ids_to_switch.push_back("mozc-hangul");
         input_method_ids_to_switch.push_back("xkb:kr:kr104:kor");

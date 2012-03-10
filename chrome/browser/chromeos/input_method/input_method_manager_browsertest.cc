@@ -122,6 +122,19 @@ IN_PROC_BROWSER_TEST_F(InputMethodManagerTest, TestSwitchInputMethod) {
   EXPECT_TRUE(manager_->SwitchInputMethod(
       ui::Accelerator(ui::VKEY_DBE_DBCSCHAR, false, false, false)));
   EXPECT_EQ("xkb:jp::jpn", manager_->current_input_method().id());
+
+  // Do the same tests for Korean.
+  manager_->EnableInputMethods("ko", kKeyboardLayoutsOnly, "xkb:us::eng");
+  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
+  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_TRUE(manager_->SwitchInputMethod(
+      ui::Accelerator(ui::VKEY_HANGUL, false, false, false)));
+  EXPECT_EQ("xkb:kr:kr104:kor", manager_->current_input_method().id());
+  manager_->SwitchToPreviousInputMethod();
+  EXPECT_EQ("xkb:us::eng", manager_->current_input_method().id());
+  EXPECT_TRUE(manager_->SwitchInputMethod(
+      ui::Accelerator(ui::VKEY_SPACE, true, false, false)));
+  EXPECT_EQ("xkb:kr:kr104:kor", manager_->current_input_method().id());
 }
 
 }  // namespace input_method
