@@ -39,6 +39,7 @@ ImageLoadingTracker::ImageInfo::~ImageInfo() {
 
 ImageLoadingTracker::PendingLoadInfo::PendingLoadInfo()
   : extension(NULL),
+    cache(CACHE),
     pending_count(0) {
 }
 
