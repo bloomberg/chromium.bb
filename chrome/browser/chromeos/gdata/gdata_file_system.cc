@@ -244,6 +244,7 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   file->etag_ = doc->etag();
   file->resource_id_ = doc->resource_id();
   file->id_ = doc->id();
+  file->is_hosted_document_ = doc->is_hosted_document();
   file->file_info_.last_modified = doc->updated_time();
   file->file_info_.last_accessed = doc->updated_time();
   file->file_info_.creation_time = doc->published_time();
@@ -256,8 +257,8 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   if (alternate_link)
     file->edit_url_ = alternate_link->href();
 
-  // TODO(gspencer): Add support for fetching cache state from the cache,
-  // when the cache code is done.
+  // TODO(gspencer): Add support for fetching cache state
+  // (pinned/dirty/present) from the cache, when the cache code is done.
 
   return file;
 }
@@ -267,7 +268,8 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
 GDataFile::GDataFile(GDataDirectory* parent)
     : GDataFileBase(parent),
       kind_(gdata::DocumentEntry::UNKNOWN),
-      cache_state_(CACHE_STATE_NONE) {
+      cache_state_(CACHE_STATE_NONE),
+      is_hosted_document_(false) {
   DCHECK(parent);
 }
 

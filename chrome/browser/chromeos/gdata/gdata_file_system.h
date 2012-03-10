@@ -103,7 +103,8 @@ class GDataFile : public GDataFileBase {
   const std::string& id() const { return id_; }
   const std::string& file_md5() const { return file_md5_; }
   // Returns a bitmask of CacheState enum values.
-  const int cache_state() const { return cache_state_; }
+  int cache_state() const { return cache_state_; }
+  bool is_hosted_document() const { return is_hosted_document_; }
 
  private:
   // Content URL for files.
@@ -116,6 +117,7 @@ class GDataFile : public GDataFileBase {
   std::string id_;
   std::string file_md5_;
   int cache_state_;
+  bool is_hosted_document_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataFile);
 };

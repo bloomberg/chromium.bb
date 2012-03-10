@@ -402,15 +402,19 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
+  // Returns the number of expected args for this function.
+  virtual size_t NumExpectedArgs() const;
+
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getGDataFileProperties");
 };
 
-// Pin multiple files in the cache, returning a list of file properties with the
-// updated cache state.  The returned array is the same length as the input list
-// of file URLs.  If a particular file has an error, then return a dictionary
-// with the key "error" set to the error number (base::PlatformFileError) for
-// that entry in the returned list.
+// Pin/unpin multiple files in the cache, returning a list of file
+// properties with the updated cache state.  The returned array is the
+// same length as the input list of file URLs.  If a particular file
+// has an error, then return a dictionary with the key "error" set to
+// the error number (base::PlatformFileError) for that entry in the
+// returned list.
 class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
  public:
   PinGDataFileFunction();
@@ -418,8 +422,14 @@ class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
  protected:
   virtual ~PinGDataFileFunction();
 
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+  // SetGDataFilePinnedFunction overrides
+  virtual size_t NumExpectedArgs() const OVERRIDE;
+
  private:
-  // Actually do the pinning of each file.
+  // Actually do the pinning/unpinning of each file.
   virtual bool DoOperation(const FilePath& path) OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.pinGDataFile");

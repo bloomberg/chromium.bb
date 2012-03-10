@@ -433,13 +433,16 @@ class FilePropertiesDelegate : public gdata::FindFileDelegate {
   GURL edit_url_;
   GURL content_url_;
   int cache_state_;
+  bool is_hosted_document_;
   base::PlatformFileError error_;
 };
 
 // FilePropertiesDelegate class implementation.
 
 FilePropertiesDelegate::FilePropertiesDelegate()
-  : cache_state_(0), error_(base::PLATFORM_FILE_OK) {
+  : cache_state_(0),
+    is_hosted_document_(false),
+    error_(base::PLATFORM_FILE_OK) {
 }
 
 FilePropertiesDelegate::~FilePropertiesDelegate() { }
@@ -453,6 +456,7 @@ void FilePropertiesDelegate::CopyProperties(
   DCHECK(!property_dict->HasKey("isPinned"));
   DCHECK(!property_dict->HasKey("isPresent"));
   DCHECK(!property_dict->HasKey("isDirty"));
+  DCHECK(!property_dict->HasKey("isHosted"));
   DCHECK(!property_dict->HasKey("errorCode"));
 
   if (error_ != base::PLATFORM_FILE_OK) {
@@ -478,6 +482,8 @@ void FilePropertiesDelegate::CopyProperties(
   property_dict->SetBoolean(
       "isDirty",
       static_cast<bool>(cache_state_ & gdata::GDataFile::CACHE_STATE_DIRTY));
+
+  property_dict->SetBoolean("isHosted", is_hosted_document_);
 }
 
 void FilePropertiesDelegate::OnFileFound(gdata::GDataFile* file) {
@@ -486,6 +492,7 @@ void FilePropertiesDelegate::OnFileFound(gdata::GDataFile* file) {
   edit_url_ = file->edit_url();
   content_url_ = file->content_url();
   cache_state_ = file->cache_state();
+  is_hosted_document_ = file->is_hosted_document();
 }
 
 void FilePropertiesDelegate::OnDirectoryFound(const FilePath&,
@@ -2005,7 +2012,7 @@ bool GetGDataFilePropertiesFunction::DoOperation(const FilePath& /*path*/) {
 
 bool GetGDataFilePropertiesFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (args_->GetSize() != 1)
+  if (args_->GetSize() != NumExpectedArgs())
     return false;
 
   ListValue* path_list = NULL;
@@ -2052,14 +2059,33 @@ bool GetGDataFilePropertiesFunction::RunImpl() {
   return true;
 }
 
+size_t GetGDataFilePropertiesFunction::NumExpectedArgs() const {
+  return 1u;
+}
+
+
 PinGDataFileFunction::PinGDataFileFunction() {
 }
 
 PinGDataFileFunction::~PinGDataFileFunction() {
 }
 
+bool PinGDataFileFunction::RunImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (args_->GetSize() != NumExpectedArgs())
+    return false;
+  // TODO(gspencer): use 'args_->GetBoolean(1, &set_pin_)' to get
+  // whether or not we are pinning or unpinning.  (and set_pin_ should be
+  // a bool member variable.)
+  return GetGDataFilePropertiesFunction::RunImpl();
+}
+
+size_t PinGDataFileFunction::NumExpectedArgs() const {
+  return 2u;
+}
+
 bool PinGDataFileFunction::DoOperation(const FilePath& /*path*/) {
-  // TODO(gspencer): Actually pin the file here.
+  // TODO(gspencer): Actually pin/unpin the file here, depending on set_pin_.
   return true;
 }
 
