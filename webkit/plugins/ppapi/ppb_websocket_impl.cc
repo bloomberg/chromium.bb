@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -386,11 +385,12 @@ PP_Bool PPB_WebSocket_Impl::GetCloseWasClean() {
 }
 
 PP_Var PPB_WebSocket_Impl::GetExtensions() {
-  // TODO(toyoshim): For now, always returns empty string because WebKit side
-  // doesn't support it yet.
-  if (!extensions_)
+  // Check mandatory interfaces.
+  if (!websocket_.get())
     return empty_string_->GetPPVar();
-  return extensions_->GetPPVar();
+
+  std::string extensions = websocket_->extensions().utf8();
+  return StringVar::StringToPPVar(extensions);
 }
 
 PP_Var PPB_WebSocket_Impl::GetProtocol() {

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_websocket.idl modified Wed Feb 15 11:18:43 2012. */
+/* From ppb_websocket.idl modified Thu Mar  8 05:35:06 2012. */
 
 #ifndef PPAPI_C_PPB_WEBSOCKET_H_
 #define PPAPI_C_PPB_WEBSOCKET_H_
@@ -385,7 +385,6 @@ struct PPB_WebSocket_1_0 {
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
    * connection is established, the var's data is an empty string. Returns a
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
-   * Currently the var's data for valid resources are always an empty string.
    */
   struct PP_Var (*GetExtensions)(PP_Resource web_socket);
   /**

@@ -391,7 +391,6 @@ interface PPB_WebSocket {
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
    * connection is established, the var's data is an empty string. Returns a
    * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
-   * Currently the var's data for valid resources are always an empty string.
    */
   PP_Var GetExtensions([in] PP_Resource web_socket);
 

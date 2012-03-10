@@ -27,7 +27,7 @@
 // LayoutTests/http/tests/websocket/tests/hybi/*_wsh.
 // pywebsocket server itself is launched in ppapi_ui_test.cc.
 const char kEchoServerURL[] =
-    "ws://localhost:8880/websocket/tests/hybi/echo";
+    "ws://localhost:8880/websocket/tests/hybi/echo-with-no-extension";
 
 const char kCloseServerURL[] =
     "ws://localhost:8880/websocket/tests/hybi/close";
@@ -416,6 +416,8 @@ std::string TestWebSocket::TestValidConnect() {
   PP_Resource ws = Connect(kEchoServerURL, &result, NULL);
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
+  PP_Var extensions = websocket_interface_->GetExtensions(ws);
+  ASSERT_TRUE(AreEqualWithString(extensions, ""));
   core_interface_->ReleaseResource(ws);
 
   PASS();
@@ -748,7 +750,6 @@ std::string TestWebSocket::TestCcInterfaces() {
   ASSERT_EQ(PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, ws.GetCloseCode());
   ASSERT_TRUE(AreEqualWithString(ws.GetCloseReason().pp_var(), reason.c_str()));
   ASSERT_EQ(true, ws.GetCloseWasClean());
-  ASSERT_TRUE(AreEqualWithString(ws.GetExtensions().pp_var(), ""));
   ASSERT_TRUE(AreEqualWithString(ws.GetProtocol().pp_var(), ""));
   ASSERT_EQ(PP_WEBSOCKETREADYSTATE_CLOSED, ws.GetReadyState());
   ASSERT_TRUE(AreEqualWithString(ws.GetURL().pp_var(), kCloseServerURL));
@@ -837,6 +838,7 @@ std::string TestWebSocket::TestUtilityValidConnect() {
   const std::vector<WebSocketEvent>& events = websocket.GetSeenEvents();
   ASSERT_EQ(1U, events.size());
   ASSERT_EQ(WebSocketEvent::EVENT_OPEN, events[0].event_type);
+  ASSERT_TRUE(AreEqualWithString(websocket.GetExtensions().pp_var(), ""));
 
   PASS();
 }
