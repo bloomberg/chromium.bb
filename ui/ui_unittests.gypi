@@ -48,6 +48,7 @@
         'ui_test_support',
       ],
       'sources': [
+        'base/accelerators/accelerator_manager_unittest.cc',
         'base/animation/animation_container_unittest.cc',
         'base/animation/animation_unittest.cc',
         'base/animation/multi_animation_unittest.cc',
