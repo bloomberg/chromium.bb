@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ std::string TestFlash::TestGetProxyForURL() {
 
 std::string TestFlash::TestMessageLoop() {
   pp::CompletionCallback callback =
-      callback_factory_.NewRequiredCallback(&TestFlash::QuitMessageLoopTask);
+      callback_factory_.NewCallback(&TestFlash::QuitMessageLoopTask);
   pp::Module::Get()->core()->CallOnMainThread(0, callback);
   flash_interface_->RunMessageLoop(instance_->pp_instance());
 

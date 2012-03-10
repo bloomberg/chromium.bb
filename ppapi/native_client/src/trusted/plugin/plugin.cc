@@ -1496,7 +1496,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
       return;
     } else {
       pp::CompletionCallback open_callback =
-          callback_factory_.NewRequiredCallback(&Plugin::NexeFileDidOpen);
+          callback_factory_.NewCallback(&Plugin::NexeFileDidOpen);
       // Will always call the callback on success or failure.
       CHECK(
           nexe_downloader_.Open(program_url,
@@ -1538,7 +1538,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
   if (is_data_uri) {
     pp::CompletionCallback open_callback =
-        callback_factory_.NewRequiredCallback(&Plugin::NaClManifestBufferReady);
+        callback_factory_.NewCallback(&Plugin::NaClManifestBufferReady);
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_BUFFER,
@@ -1546,7 +1546,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
                                 NULL));
   } else {
     pp::CompletionCallback open_callback =
-        callback_factory_.NewRequiredCallback(&Plugin::NaClManifestFileDidOpen);
+        callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
     // Will always call the callback on success or failure.
     CHECK(nexe_downloader_.Open(nmf_resolved_url.AsString(),
                                 DOWNLOAD_TO_FILE,
@@ -1614,9 +1614,8 @@ bool Plugin::StreamAsFile(const nacl::string& url,
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
-  pp::CompletionCallback open_callback =
-      callback_factory_.NewRequiredCallback(
-          &Plugin::UrlDidOpenForStreamAsFile, downloader, callback);
+  pp::CompletionCallback open_callback = callback_factory_.NewCallback(
+      &Plugin::UrlDidOpenForStreamAsFile, downloader, callback);
   // Untrusted loads are always relative to the page's origin.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
@@ -1646,10 +1645,9 @@ void Plugin::XYZZY(const nacl::string& url,
                            pp::VarPrivate js_callback) {
   UNREFERENCED_PARAMETER(url);
   UNREFERENCED_PARAMETER(js_callback);
-  pp::CompletionCallback open_callback =
-      callback_factory_.NewRequiredCallback(pmem,
-          reinterpret_cast<plugin::FileDownloader*>(NULL),
-          js_callback);
+  pp::CompletionCallback open_callback = callback_factory_.NewCallback(pmem,
+      reinterpret_cast<plugin::FileDownloader*>(NULL),
+      js_callback);
   static_cast<void>(open_callback);
 }
 #endif  // HACK_FOR_MACOS_HANG_REMOVED

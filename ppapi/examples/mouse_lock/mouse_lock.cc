@@ -51,8 +51,7 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
         pp::MouseInputEvent mouse_event(event);
         if (mouse_event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
             !mouse_locked_) {
-          LockMouse(
-              callback_factory_.NewRequiredCallback(&MyInstance::DidLockMouse));
+          LockMouse(callback_factory_.NewCallback(&MyInstance::DidLockMouse));
         }
         return true;
       }
@@ -69,12 +68,10 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
         pp::KeyboardInputEvent key_event(event);
         // Lock the mouse when the Enter key is pressed.
         if (key_event.GetKeyCode() == 13) {
-          if (mouse_locked_) {
+          if (mouse_locked_)
             UnlockMouse();
-          } else {
-            LockMouse(callback_factory_.NewRequiredCallback(
-                &MyInstance::DidLockMouse));
-          }
+          else
+            LockMouse(callback_factory_.NewCallback(&MyInstance::DidLockMouse));
           return true;
         }
         return false;
@@ -135,7 +132,7 @@ class MyInstance : public pp::Instance, public pp::MouseLock {
       device_context_.ReplaceContents(&image);
       waiting_for_flush_completion_ = true;
       device_context_.Flush(
-          callback_factory_.NewRequiredCallback(&MyInstance::DidFlush));
+          callback_factory_.NewCallback(&MyInstance::DidFlush));
     }
   }
 

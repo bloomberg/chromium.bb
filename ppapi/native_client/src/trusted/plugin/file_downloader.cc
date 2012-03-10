@@ -122,7 +122,7 @@ bool FileDownloader::Open(
   // synchronously all other internal callbacks that eventually result in the
   // invocation of the user callback. The user code will not be reentered.
   pp::CompletionCallback onload_callback =
-      callback_factory_.NewRequiredCallback(start_notify);
+      callback_factory_.NewCallback(start_notify);
   int32_t pp_error = url_loader_.Open(url_request, onload_callback);
   PLUGIN_PRINTF(("FileDownloader::Open (pp_error=%"NACL_PRId32")\n", pp_error));
   CHECK(pp_error == PP_OK_COMPLETIONPENDING);

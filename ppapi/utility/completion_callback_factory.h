@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ namespace pp {
 ///     }
 ///
 ///    void ProcessFile(const FileRef& file) {
-///       CompletionCallback cc = factory_.NewRequiredCallback(
+///       CompletionCallback cc = factory_.NewCallback(
 ///           &MyHandler::DidOpen);
 ///       int32_t rv = fio_.Open(file, PP_FileOpenFlag_Read, cc);
 ///       CHECK(rv == PP_OK_COMPLETIONPENDING);
@@ -147,7 +147,6 @@ class CompletionCallbackFactory {
   /// NewCallback allocates a new, single-use <code>CompletionCallback</code>.
   /// The <code>CompletionCallback</code> must be run in order for the memory
   /// allocated by the methods to be freed.
-  /// NewCallback() is equivalent to NewRequiredCallback() below.
   ///
   /// @param[in] method The method to be invoked upon completion of the
   /// operation.
@@ -157,22 +156,6 @@ class CompletionCallbackFactory {
   CompletionCallback NewCallback(Method method) {
     PP_DCHECK(object_);
     return NewCallbackHelper(Dispatcher0<Method>(method));
-  }
-
-  /// NewRequiredCallback() allocates a new, single-use
-  /// <code>CompletionCallback</code> that will always run. The
-  /// <code>CompletionCallback</code> must be run in order for the memory
-  /// allocated by the methods to be freed.
-  ///
-  /// @param[in] method The method to be invoked upon completion of the
-  /// operation.
-  ///
-  /// @return A <code>CompletionCallback</code>.
-  template <typename Method>
-  CompletionCallback NewRequiredCallback(Method method) {
-    CompletionCallback cc = NewCallback(method);
-    cc.set_flags(cc.flags() & ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
-    return cc;
   }
 
   /// NewOptionalCallback() allocates a new, single-use
@@ -196,7 +179,6 @@ class CompletionCallbackFactory {
   /// NewCallback() allocates a new, single-use <code>CompletionCallback</code>.
   /// The <code>CompletionCallback</code> must be run in order for the memory
   /// allocated by the methods to be freed.
-  /// NewCallback() is equivalent to NewRequiredCallback() below.
   ///
   /// @param[in] method The method to be invoked upon completion of the
   /// operation. Method should be of type:
@@ -210,26 +192,6 @@ class CompletionCallbackFactory {
   CompletionCallback NewCallback(Method method, const A& a) {
     PP_DCHECK(object_);
     return NewCallbackHelper(Dispatcher1<Method, A>(method, a));
-  }
-
-  /// NewRequiredCallback() allocates a new, single-use
-  /// <code>CompletionCallback</code> that will always run. The
-  /// <code>CompletionCallback</code> must be run in order for the memory
-  /// allocated by the methods to be freed.
-  ///
-  /// @param[in] method The method to be invoked upon completion of the
-  /// operation. Method should be of type:
-  /// <code>void (T::*)(int32_t result, const A& a)</code>
-  ///
-  /// @param[in] a Passed to <code>method</code> when the completion callback
-  /// runs.
-  ///
-  /// @return A <code>CompletionCallback</code>.
-  template <typename Method, typename A>
-  CompletionCallback NewRequiredCallback(Method method, const A& a) {
-    CompletionCallback cc = NewCallback(method, a);
-    cc.set_flags(cc.flags() & ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
-    return cc;
   }
 
   /// NewOptionalCallback() allocates a new, single-use
@@ -258,7 +220,6 @@ class CompletionCallbackFactory {
   /// <code>CompletionCallback</code>.
   /// The <code>CompletionCallback</code> must be run in order for the memory
   /// allocated by the methods to be freed.
-  /// NewCallback() is equivalent to NewRequiredCallback() below.
   ///
   /// @param method The method taking the callback. Method should be of type:
   /// <code>void (T::*)(int32_t result, const A& a, const B& b)</code>
@@ -274,29 +235,6 @@ class CompletionCallbackFactory {
   CompletionCallback NewCallback(Method method, const A& a, const B& b) {
     PP_DCHECK(object_);
     return NewCallbackHelper(Dispatcher2<Method, A, B>(method, a, b));
-  }
-
-  /// NewRequiredCallback() allocates a new, single-use
-  /// <code>CompletionCallback</code> that will always run. The
-  /// <code>CompletionCallback</code> must be run in order for the memory
-  /// allocated by the methods to be freed.
-  ///
-  /// @param method The method taking the callback. Method should be of type:
-  /// <code>void (T::*)(int32_t result, const A& a, const B& b)</code>
-  ///
-  /// @param[in] a Passed to <code>method</code> when the completion callback
-  /// runs.
-  ///
-  /// @param[in] b Passed to <code>method</code> when the completion callback
-  /// runs.
-  ///
-  /// @return A <code>CompletionCallback</code>.
-  template <typename Method, typename A, typename B>
-  CompletionCallback NewRequiredCallback(Method method, const A& a,
-                                         const B& b) {
-    CompletionCallback cc = NewCallback(method, a, b);
-    cc.set_flags(cc.flags() & ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
-    return cc;
   }
 
   /// NewOptionalCallback() allocates a new, single-use
@@ -329,7 +267,6 @@ class CompletionCallbackFactory {
   /// <code>CompletionCallback</code>.
   /// The <code>CompletionCallback</code> must be run in order for the memory
   /// allocated by the methods to be freed.
-  /// NewCallback() is equivalent to NewRequiredCallback() below.
   ///
   /// @param method The method taking the callback. Method should be of type:
   /// <code>
@@ -351,34 +288,6 @@ class CompletionCallbackFactory {
                                  const C& c) {
     PP_DCHECK(object_);
     return NewCallbackHelper(Dispatcher3<Method, A, B, C>(method, a, b, c));
-  }
-
-  /// NewRequiredCallback() allocates a new, single-use
-  /// <code>CompletionCallback</code> that will always run. The
-  /// <code>CompletionCallback</code> must be run in order for the memory
-  /// allocated by the methods to be freed.
-  ///
-  /// @param method The method taking the callback. Method should be of type:
-  /// <code>
-  /// void (T::*)(int32_t result, const A& a, const B& b, const C& c)
-  /// </code>
-  ///
-  /// @param[in] a Passed to <code>method</code> when the completion callback
-  /// runs.
-  ///
-  /// @param[in] b Passed to <code>method</code> when the completion callback
-  /// runs.
-  ///
-  /// @param[in] c Passed to <code>method</code> when the completion callback
-  /// runs.
-  ///
-  /// @return A <code>CompletionCallback</code>.
-  template <typename Method, typename A, typename B, typename C>
-  CompletionCallback NewRequiredCallback(Method method, const A& a,
-                                         const B& b, const C& c) {
-    CompletionCallback cc = NewCallback(method, a, b, c);
-    cc.set_flags(cc.flags() & ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL);
-    return cc;
   }
 
   /// NewOptionalCallback() allocates a new, single-use

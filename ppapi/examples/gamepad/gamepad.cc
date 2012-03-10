@@ -78,7 +78,7 @@ class MyInstance : public pp::Instance {
     if (!image.is_null()) {
       device_context_.ReplaceContents(&image);
       device_context_.Flush(
-          callback_factory_.NewRequiredCallback(&MyInstance::OnFlush));
+          callback_factory_.NewCallback(&MyInstance::OnFlush));
     } else {
       printf("NullImage\n");
     }

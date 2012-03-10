@@ -31,9 +31,8 @@ void TestFlashMessageLoop::RunTests(const std::string& filter) {
 std::string TestFlashMessageLoop::TestBasics() {
   message_loop_ = new pp::flash::MessageLoop(instance_);
 
-  pp::CompletionCallback callback =
-      callback_factory_.NewRequiredCallback(
-          &TestFlashMessageLoop::QuitMessageLoopTask);
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
+      &TestFlashMessageLoop::QuitMessageLoopTask);
   pp::Module::Get()->core()->CallOnMainThread(0, callback);
   int32_t result = message_loop_->Run();
 
@@ -48,9 +47,8 @@ std::string TestFlashMessageLoop::TestBasics() {
 std::string TestFlashMessageLoop::TestRunWithoutQuit() {
   message_loop_ = new pp::flash::MessageLoop(instance_);
 
-  pp::CompletionCallback callback =
-      callback_factory_.NewRequiredCallback(
-          &TestFlashMessageLoop::DestroyMessageLoopResourceTask);
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
+      &TestFlashMessageLoop::DestroyMessageLoopResourceTask);
   pp::Module::Get()->core()->CallOnMainThread(0, callback);
   int32_t result = message_loop_->Run();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -140,8 +140,7 @@ int PepperTransportSocketAdapter::Connect(
     return result;
 
   result = transport_->Connect(
-      callback_factory_.NewRequiredCallback(
-          &PepperTransportSocketAdapter::OnConnect));
+      callback_factory_.NewCallback(&PepperTransportSocketAdapter::OnConnect));
   DCHECK_EQ(result, PP_OK_COMPLETIONPENDING);
 
   return net::ERR_IO_PENDING;

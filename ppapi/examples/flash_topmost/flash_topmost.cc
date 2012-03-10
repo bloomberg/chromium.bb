@@ -45,7 +45,7 @@ class MyInstance : public pp::Instance {
   void ScheduleNextTimer() {
     pp::Module::Get()->core()->CallOnMainThread(
         kTimerInterval,
-        callback_factory_.NewRequiredCallback(&MyInstance::OnTimer),
+        callback_factory_.NewCallback(&MyInstance::OnTimer),
         0);
   }
 
@@ -76,7 +76,7 @@ class MyInstance : public pp::Instance {
       device_context_.ReplaceContents(&image);
       waiting_for_flush_completion_ = true;
       device_context_.Flush(
-          callback_factory_.NewRequiredCallback(&MyInstance::DidFlush));
+          callback_factory_.NewCallback(&MyInstance::DidFlush));
     }
   }
 
