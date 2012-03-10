@@ -42,6 +42,7 @@ class AudioController;
 class BrightnessController;
 class Launcher;
 class NestedDispatcherController;
+class NetworkController;
 class PowerButtonController;
 class PowerStatusController;
 class ShellDelegate;
@@ -184,6 +185,9 @@ class ASH_EXPORT Shell {
   BrightnessController* brightness_controller() const {
     return brightness_controller_;
   }
+  NetworkController* network_controller() const {
+    return network_controller_;
+  }
   PowerStatusController* power_status_controller() const {
     return power_status_controller_;
   }
@@ -264,6 +268,7 @@ class ASH_EXPORT Shell {
   // These controllers are not owned by the shell.
   AudioController* audio_controller_;
   BrightnessController* brightness_controller_;
+  NetworkController* network_controller_;
   PowerStatusController* power_status_controller_;
 
   // An event filter that pre-handles all key events to send them to an IME.

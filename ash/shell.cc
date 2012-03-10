@@ -17,9 +17,10 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/audio/tray_volume.h"
 #include "ash/system/brightness/tray_brightness.h"
-#include "ash/system/settings/tray_settings.h"
+#include "ash/system/network/tray_network.h"
 #include "ash/system/power/power_status_controller.h"
 #include "ash/system/power/tray_power_date.h"
+#include "ash/system/settings/tray_settings.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_empty.h"
@@ -265,6 +266,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShutDown() OVERRIDE {}
   virtual void SignOut() OVERRIDE {}
   virtual void RequestLockScreen() OVERRIDE {}
+  virtual NetworkIconInfo GetMostRelevantNetworkIcon() {
+    return NetworkIconInfo();
+  }
 
   bool muted_;
   float volume_;
@@ -306,6 +310,7 @@ Shell::Shell(ShellDelegate* delegate)
       delegate_(delegate),
       audio_controller_(NULL),
       brightness_controller_(NULL),
+      network_controller_(NULL),
       power_status_controller_(NULL),
       shelf_(NULL),
       desktop_background_mode_(BACKGROUND_IMAGE),
@@ -457,13 +462,16 @@ void Shell::Init() {
     internal::TrayVolume* tray_volume = new internal::TrayVolume();
     internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
     internal::TrayPowerDate* tray_power_date = new internal::TrayPowerDate();
+    internal::TrayNetwork* tray_network = new internal::TrayNetwork;
     audio_controller_ = tray_volume;
     brightness_controller_ = tray_brightness;
+    network_controller_ = tray_network;
     power_status_controller_ = tray_power_date;
 
     tray_->AddTrayItem(new internal::TrayUser());
     tray_->AddTrayItem(new internal::TrayEmpty());
     tray_->AddTrayItem(tray_power_date);
+    tray_->AddTrayItem(tray_network);
     tray_->AddTrayItem(tray_volume);
     tray_->AddTrayItem(tray_brightness);
     tray_->AddTrayItem(new internal::TraySettings());

@@ -7,10 +7,18 @@
 #pragma once
 
 #include "ash/system/user/login_status.h"
+#include "base/string16.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class SkBitmap;
 
 namespace ash {
+
+struct NetworkIconInfo {
+  SkBitmap image;
+  string16 name;
+  string16 description;
+};
 
 class SystemTrayDelegate {
  public:
@@ -51,6 +59,11 @@ class SystemTrayDelegate {
 
   // Attempts to lock the screen.
   virtual void RequestLockScreen() = 0;
+
+  // Returns information about the most relevant network. Relevance is
+  // determined by the implementor (e.g. a connecting network may be more
+  // relevant over a connected network etc.)
+  virtual NetworkIconInfo GetMostRelevantNetworkIcon() = 0;
 };
 
 }  // namespace ash
