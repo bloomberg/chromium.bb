@@ -156,21 +156,21 @@ if CROSS_COMPILING
 else
 .fncs.sgml: edit-sgml$(EXEEXT) $(srcdir)/func.sgml
 	-@rm $@
-	$(AM_V_GEN) $(builddir)/edit-sgml$(EXEEXT) $(srcdir)/func.sgml < '$<' > $*.sgml
+	$(AM_V_GEN) $(builddir)/edit-sgml$(EXEEXT) $(srcdir)/func.sgml < '$*.fncs' > $*.sgml
 endif
 .sgml.txt: $(DOCS_DEPS)
 	-@rm $@
-	$(AM_V_GEN) $(DOC2TXT) $<
+	$(AM_V_GEN) $(DOC2TXT) $*.sgml
 .sgml.pdf: $(DOCS_DEPS)
 	-@rm $@
-	$(AM_V_GEN) $(DOC2PDF) $<
+	$(AM_V_GEN) $(DOC2PDF) $*.sgml
 .sgml.html: $(DOCS_DEPS)
 	-@rm $@
-	$(AM_V_GEN) $(DOC2HTML) -u $< > $@
+	$(AM_V_GEN) $(DOC2HTML) -u $*.sgml > $@
 ##
 fonts-conf.5: local-fontconfig-user.sgml version.sgml confdir.sgml
 	-@rm $@
-	$(AM_V_GEN) $(DOC2MAN) $< && \
+	$(AM_V_GEN) $(DOC2MAN) local-fontconfig-user.sgml && \
 	rm manpage.*
 ##
 $(man3_MANS): func.refs
@@ -187,16 +187,16 @@ func.refs: local-fontconfig-devel.sgml $(DOCS_DEPS)
 	rm devel-man/manpage.* &&		\
 	rmdir devel-man
 confdir.sgml: $(srcdir)/confdir.sgml.in
-	$(AM_V_GEN) sed -e 's,@CONFDIR\@,${CONFDIR},' $< | awk '{if (NR > 1) printf("\n"); printf("%s", $$0);}' > $@
+	$(AM_V_GEN) sed -e 's,@CONFDIR\@,${CONFDIR},' $(srcdir)/$@.in | awk '{if (NR > 1) printf("\n"); printf("%s", $$0);}' > $@
 ##
 $(HTML_DIR)/*: $(HTML_DIR)
 $(HTML_DIR): local-fontconfig-devel.sgml $(DOCS_DEPS)
 	-@rm -r $@
 	$(AM_V_GEN) $(DOC2HTML) -V '%use-id-as-filename%' -o $@ local-fontconfig-devel.sgml
 local-fontconfig-user.sgml: $(srcdir)/fontconfig-user.sgml
-	$(AM_V_GEN) $(LN_S) $< $@
+	$(AM_V_GEN) $(LN_S) $(srcdir)/fontconfig-user.sgml $@
 local-fontconfig-devel.sgml: $(srcdir)/fontconfig-devel.sgml
-	$(AM_V_GEN) $(LN_S) $< $@
+	$(AM_V_GEN) $(LN_S) $(srcdir)/fontconfig-devel.sgml $@
 #
 all-local: $(BUILT_DOCS) $(HTML_DIR)/*
 clean-local:

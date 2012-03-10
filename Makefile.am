@@ -89,7 +89,7 @@ fonts.conf: fonts.conf.in Makefile
 		-e 's,@FC_FONTPATH\@,$(FC_FONTPATH),g' \
 		-e 's,@PACKAGE\@,$(PACKAGE),g' \
 		-e 's,@VERSION\@,$(VERSION),g' \
-		$< > $@.tmp && \
+		$(srcdir)/$@.in > $@.tmp && \
 	mv $@.tmp $@
 
 install-data-local: fonts.conf
