@@ -7,20 +7,21 @@
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "net/base/net_util.h"
 
 using content::BrowserThread;
 using content::DownloadManager;
 using content::DownloadItem;
 
 namespace gdata {
-
 namespace {
 
 // Threshold file size after which we stream the file.
 const int64 kStreamingFileSize = 1 << 20;  // 1MB
 
-// Key for DownloadItem::ExternalData.
+// Keys for DownloadItem::ExternalData.
 const char kUploadingKey[] = "Uploading";
+const char kGDataPathKey[] = "GDataPath";
 
 // External Data stored in DownloadItem for ongoing uploads.
 class UploadingExternalData : public DownloadItem::ExternalData {
@@ -32,6 +33,18 @@ class UploadingExternalData : public DownloadItem::ExternalData {
 
  private:
   GURL file_url_;
+};
+
+// External Data stored in DownloadItem for gdata path.
+class GDataExternalData : public DownloadItem::ExternalData {
+ public:
+  explicit GDataExternalData(const FilePath& path) : file_path_(path) {}
+  virtual ~GDataExternalData() {}
+
+  const FilePath& file_path() const { return file_path_; }
+
+ private:
+  FilePath file_path_;
 };
 
 // Extracts UploadingExternalData* from |download|.
@@ -63,6 +76,22 @@ void GDataDownloadObserver::Initialize(GDataUploader* gdata_uploader,
   download_manager_ = download_manager;
   if (download_manager_)
     download_manager_->AddObserver(this);
+}
+
+void GDataDownloadObserver::SetGDataPath(DownloadItem* download,
+                                         const FilePath& path) {
+  if (download)
+      download->SetExternalData(&kGDataPathKey,
+                                new GDataExternalData(path));
+}
+
+FilePath GDataDownloadObserver::GetGDataPath(DownloadItem* download) {
+  GDataExternalData* data = static_cast<GDataExternalData*>(
+      download->GetExternalData(&kGDataPathKey));
+  // If data is NULL, we've somehow lost the gdata path selected
+  // by the file picker.
+  DCHECK(data);
+  return data ? util::ExtractGDataPath(data->file_path()) : FilePath();
 }
 
 void GDataDownloadObserver::ManagerGoingDown(
@@ -141,8 +170,7 @@ void GDataDownloadObserver::UploadDownloadItem(DownloadItem* download) {
   if (!ShouldUpload(download))
     return;
 
-  UploadFileInfo* upload_file_info = new UploadFileInfo();
-  upload_file_info->Init(download);
+  UploadFileInfo* upload_file_info = CreateUploadFileInfo(download);
   // Set the UploadingKey in |download|.
   download->SetExternalData(&kUploadingKey,
       new UploadingExternalData(upload_file_info->file_url));
@@ -168,10 +196,35 @@ bool GDataDownloadObserver::ShouldUpload(DownloadItem* download) {
   // Upload if the item is in pending_downloads_,
   // is complete or large enough to stream, and,
   // is not already being uploaded.
-  return pending_downloads_.find(download) != pending_downloads_.end() &&
+  return pending_downloads_.count(download) != 0 &&
          (download->IsComplete() ||
              download->GetReceivedBytes() > kStreamingFileSize) &&
          GetUploadingExternalData(download) == NULL;
+}
+
+UploadFileInfo* GDataDownloadObserver::CreateUploadFileInfo(
+    DownloadItem* download) {
+  UploadFileInfo* upload_file_info = new UploadFileInfo();
+
+  // GetFullPath will be a temporary location if we're streaming.
+  upload_file_info->file_path = download->GetFullPath();
+  upload_file_info->file_url = net::FilePathToFileURL(
+      upload_file_info->file_path);
+  upload_file_info->file_size = download->GetReceivedBytes();
+
+  // Extract the final path from DownloadItem.
+  upload_file_info->gdata_path = GetGDataPath(download);
+
+  // Use the file name as the title.
+  upload_file_info->title = upload_file_info->gdata_path.BaseName().value();
+  upload_file_info->content_type = download->GetMimeType();
+  // GData api handles -1 as unknown file length.
+  upload_file_info->content_length = download->IsInProgress() ?
+                                     -1 : download->GetReceivedBytes();
+
+  upload_file_info->download_complete = !download->IsInProgress();
+
+  return upload_file_info;
 }
 
 }  // namespace gdata

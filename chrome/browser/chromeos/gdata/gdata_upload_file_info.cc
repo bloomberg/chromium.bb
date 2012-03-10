@@ -5,9 +5,6 @@
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 
 #include "base/string_number_conversions.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "content/public/browser/download_item.h"
-#include "net/base/net_util.h"
 
 namespace gdata {
 
@@ -19,25 +16,6 @@ UploadFileInfo::UploadFileInfo()
       start_range(0),
       end_range(-1),
       download_complete(false) {
-}
-
-void UploadFileInfo::Init(content::DownloadItem* download) {
-  // GetFullPath will be a temporary location if we're streaming.
-  file_path = download->GetFullPath();
-  file_url = net::FilePathToFileURL(file_path);
-  file_size = download->GetReceivedBytes();
-
-  // Extract the final path from DownloadItem.
-  gdata_path = util::GetGDataPath(download);
-
-  // Use the file name as the title.
-  title = gdata_path.BaseName().value();
-  content_type = download->GetMimeType();
-  // GData api handles -1 as unknown file length.
-  content_length = download->IsInProgress() ?
-                 -1 : download->GetReceivedBytes();
-
-  download_complete = !download->IsInProgress();
 }
 
 UploadFileInfo::~UploadFileInfo() {

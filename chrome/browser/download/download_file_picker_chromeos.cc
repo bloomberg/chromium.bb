@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 
 using content::BrowserThread;
@@ -65,7 +66,7 @@ void DownloadFilePickerChromeOS::FileSelected(const FilePath& path,
       content::DownloadItem* download =
           download_manager_->GetActiveDownloadItem(download_id_);
       if (download) {
-        gdata::util::SetGDataPath(download, path);
+        gdata::GDataDownloadObserver::SetGDataPath(download, path);
         download->SetDisplayName(path.BaseName());
 
         // Swap the gdata path with a local path. Local path must be created

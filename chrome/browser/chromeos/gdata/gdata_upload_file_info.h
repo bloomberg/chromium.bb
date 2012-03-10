@@ -29,9 +29,6 @@ struct UploadFileInfo {
   UploadFileInfo();
   ~UploadFileInfo();
 
-  // Initialize from a DownloadItem.
-  void Init(content::DownloadItem* download);
-
   // Useful for printf debugging.
   std::string DebugString() const;
 

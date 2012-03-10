@@ -14,6 +14,7 @@
 namespace gdata {
 
 class GDataUploader;
+struct UploadFileInfo;
 
 // Observes downloads to temporary local gdata folder. Schedules these
 // downloads for upload to gdata service.
@@ -27,7 +28,18 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   void Initialize(GDataUploader* gdata_uploader,
                   content::DownloadManager* download_manager);
 
+  // Sets gdata path, for example, '/special/gdata/MyFolder/MyFile',
+  // to external data in |download|.
+  static void SetGDataPath(content::DownloadItem* download,
+                           const FilePath& gdata_path);
+
  private:
+  // Gets the gdata_path from external data in |download|.
+  // GetGDataPath may return an empty path in case SetGDataPath was not
+  // previously called or there was some other internal error
+  // (there is a DCHECK for this).
+  static FilePath GetGDataPath(content::DownloadItem* download);
+
   // DownloadManager overrides.
   virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;
@@ -49,6 +61,9 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
 
   // Checks if this DownloadItem should be uploaded.
   bool ShouldUpload(content::DownloadItem* download);
+
+  // Creates UploadFileInfo and initializes it using DownloadItem*.
+  UploadFileInfo* CreateUploadFileInfo(content::DownloadItem* download);
 
   // Private data.
   // Use GDataUploader to trigger file uploads.

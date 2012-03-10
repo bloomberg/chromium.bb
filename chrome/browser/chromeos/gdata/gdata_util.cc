@@ -26,23 +26,8 @@ const char kGDataMountPointPath[] = "/special/gdata";
 
 const FilePath::CharType kGDataDownloadPath[] = ".gdata";
 
-// Key for DownloadItem::ExternalData.
-const char kGDataPathKey[] = "GDataPath";
-
 const FilePath::CharType* kGDataMountPointPathComponents[] = {
   "/", "special", "gdata"
-};
-
-// External Data stored in DownloadItem for gdata path.
-class GDataExternalData : public DownloadItem::ExternalData {
- public:
-  explicit GDataExternalData(const FilePath& path) : file_path_(path) {}
-  virtual ~GDataExternalData() {}
-
-  const FilePath& file_path() const { return file_path_; }
-
- private:
-  FilePath file_path_;
 };
 
 }  // namespace
@@ -83,23 +68,6 @@ FilePath ExtractGDataPath(const FilePath& path) {
 FilePath GetGDataTempDownloadFolderPath() {
   return download_util::GetDefaultDownloadDirectory().Append(
       kGDataDownloadPath);
-}
-
-// Store |path| in DownloadItem external data with key GDataPath.
-void SetGDataPath(DownloadItem* download, const FilePath& path) {
-  if (download)
-      download->SetExternalData(&kGDataPathKey,
-                                new GDataExternalData(path));
-}
-
-// Return path stored in DownloadItem external data with key GDataPath.
-FilePath GetGDataPath(DownloadItem* download) {
-  GDataExternalData* data = static_cast<GDataExternalData*>(
-      download->GetExternalData(&kGDataPathKey));
-  // If data is NULL, we've somehow lost the gdata path selected
-  // by the file picker.
-  DCHECK(data);
-  return data ? ExtractGDataPath(data->file_path()) : FilePath();
 }
 
 }  // namespace util
