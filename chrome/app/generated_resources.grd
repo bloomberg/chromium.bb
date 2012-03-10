@@ -14420,12 +14420,6 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_RESET_ZOOM" desc="The text in the keyboard overlay to explain the shortcut.">
         Reset zoom
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_RESIZE_LEFT" desc="The text in the keyboard overlay to explain the shortcut (resize the focused window towards the left).">
-        Resize left
-      </message>
-      <message name="IDS_KEYBOARD_OVERLAY_RESIZE_RIGHT" desc="The text in the keyboard overlay to explain the shortcut (resize the focused window towards the right).">
-        Resize right
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_SAVE" desc="The text in the keyboard overlay to explain the shortcut.">
         Save
       </message>
