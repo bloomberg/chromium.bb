@@ -926,6 +926,9 @@ class GetTrySlavesExecuter(object):
         if item != item.strip():
           raise PresubmitFailure(
               'Try slave names cannot start/end with whitespace')
+        if ',' in item:
+          raise PresubmitFailure(
+              'Do not use \',\' separated builder or test names: %s' % item)
     else:
       result = []
     return result

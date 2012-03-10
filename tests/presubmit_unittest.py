@@ -792,6 +792,25 @@ def CheckChangeOnCommit(input_api, output_api):
                                               self.fake_root_dir, None, None,
                                               False, output))
 
+  def testGetTrySlavesExecuter_ok(self):
+    script_text = (
+        'def GetPreferredTrySlaves():\n'
+        '  return ["foo", "bar"]\n')
+    results = presubmit.GetTrySlavesExecuter.ExecPresubmitScript(
+        script_text, 'path', 'project', None)
+    self.assertEquals(['foo', 'bar'], results)
+
+  def testGetTrySlavesExecuter_comma(self):
+    script_text = (
+        'def GetPreferredTrySlaves():\n'
+        '  return ["foo,bar"]\n')
+    try:
+      presubmit.GetTrySlavesExecuter.ExecPresubmitScript(
+          script_text, 'path', 'project', None)
+      self.fail()
+    except presubmit.PresubmitFailure:
+      pass
+
   def testMainUnversioned(self):
     # OptParser calls presubmit.os.path.exists and is a pain when mocked.
     self.UnMock(presubmit.os.path, 'exists')

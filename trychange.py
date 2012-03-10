@@ -805,6 +805,16 @@ def TryChange(argv,
             sys.stdout)
       except ImportError:
         pass
+      if options.testfilter:
+        bots = set()
+        for bot in options.bot:
+          assert ',' not in bot
+          if bot.endswith(':compile'):
+            # Skip over compile-only builders for now.
+            continue
+          bots.add(bot.split(':', 1)[0])
+        options.bot = list(bots)
+
       # If no bot is specified, either the default pool will be selected or the
       # try server will refuse the job. Either case we don't need to interfere.
 
