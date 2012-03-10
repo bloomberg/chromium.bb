@@ -14,6 +14,7 @@
 #include "base/file_version_info.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -34,11 +35,19 @@
 #include "chrome_frame/utils.h"
 #include "ui/base/ui_base_switches.h"
 
+namespace {
+
 #ifdef NDEBUG
 int64 kAutomationServerReasonableLaunchDelay = 1000;  // in milliseconds
 #else
 int64 kAutomationServerReasonableLaunchDelay = 1000 * 10;
 #endif
+
+const char kChromeShutdownDelaySeconds[] = "30";
+const char kWithDelayFieldTrialName[] = "WithShutdownDelay";
+const char kNoDelayFieldTrialName[] = "NoShutdownDelay";
+
+}  // namespace
 
 class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
@@ -291,6 +300,10 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
     if (IsAccessibleMode())
       command_line->AppendSwitch(switches::kForceRendererAccessibility);
 
+    if (params->send_shutdown_delay_switch())
+      command_line->AppendSwitchASCII(switches::kChromeFrameShutdownDelay,
+                                      kChromeShutdownDelaySeconds);
+
     DVLOG(1) << "Profile path: " << params->profile_path().value();
     command_line->AppendSwitchPath(switches::kUserDataDir,
                                    params->profile_path());
@@ -335,9 +348,19 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
     if (launch_result_ == AUTOMATION_SUCCESS) {
       UMA_HISTOGRAM_TIMES(
           "ChromeFrame.AutomationServerLaunchSuccessTime", delta);
+      UMA_HISTOGRAM_TIMES(
+          base::FieldTrial::MakeName(
+              "ChromeFrame.AutomationServerLaunchSuccessTime",
+              "ChromeShutdownDelay"),
+          delta);
     } else {
       UMA_HISTOGRAM_TIMES(
           "ChromeFrame.AutomationServerLaunchFailedTime", delta);
+      UMA_HISTOGRAM_TIMES(
+          base::FieldTrial::MakeName(
+              "ChromeFrame.AutomationServerLaunchFailedTime",
+              "ChromeShutdownDelay"),
+          delta);
     }
 
     UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.LaunchResult",
@@ -526,7 +549,9 @@ ChromeFrameAutomationClient::ChromeFrameAutomationClient()
       url_fetcher_(NULL),
       url_fetcher_flags_(PluginUrlRequestManager::NOT_THREADSAFE),
       navigate_after_initialization_(false),
-      route_all_top_level_navigations_(false) {
+      route_all_top_level_navigations_(false),
+      send_shutdown_delay_switch_(true) {
+  InitializeFieldTrials();
 }
 
 ChromeFrameAutomationClient::~ChromeFrameAutomationClient() {
@@ -665,7 +690,8 @@ bool ChromeFrameAutomationClient::InitiateNavigation(
       FilePath profile_path;
       chrome_launch_params_ = new ChromeFrameLaunchParams(parsed_url,
           referrer_gurl, profile_path, L"", SimpleResourceLoader::GetLanguage(),
-          false, false, route_all_top_level_navigations_);
+          false, false, route_all_top_level_navigations_,
+          send_shutdown_delay_switch_);
     } else {
       chrome_launch_params_->set_referrer(referrer_gurl);
       chrome_launch_params_->set_url(parsed_url);
@@ -999,6 +1025,31 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
               &ChromeFrameAutomationClient::ProcessUrlRequestMessage),
           base::Unretained(this), tab, msg, true));
   return true;
+}
+
+void ChromeFrameAutomationClient::InitializeFieldTrials() {
+  static base::FieldTrial* trial = NULL;
+  if (!trial) {
+    // Do one-time initialization of the field trial here.
+    // TODO(robertshield): End the field trial before March 7th 2013.
+    scoped_refptr<base::FieldTrial> new_trial = new base::FieldTrial(
+        "ChromeShutdownDelay", 1000, kWithDelayFieldTrialName, 2013, 3, 7);
+
+    // Be consistent for this client. Note that this will only have an effect
+    // once the client id is persisted. See http://crbug.com/117188
+    new_trial->UseOneTimeRandomization();
+
+    new_trial->AppendGroup(kNoDelayFieldTrialName, 500);    // 50% without.
+
+    trial = new_trial.get();
+  }
+
+  // Take action depending of which group we randomly land in.
+  if (trial->group_name() == kWithDelayFieldTrialName)
+    send_shutdown_delay_switch_ = true;
+  else
+    send_shutdown_delay_switch_ = false;
+
 }
 
 // These are invoked in channel's background thread.

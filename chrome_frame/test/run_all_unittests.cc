@@ -5,6 +5,7 @@
 #include <atlbase.h>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/process_util.h"
 #include "base/test/test_suite.h"
 #include "base/threading/platform_thread.h"
@@ -47,6 +48,10 @@ int main(int argc, char **argv) {
   base::PlatformThread::SetName("ChromeFrame tests");
 
   _set_purecall_handler(PureCall);
+
+  // Set up a FieldTrialList to keep any field trials we have going in
+  // Chrome Frame happy.
+  base::FieldTrialList field_trial_list("42");
 
   base::TestSuite test_suite(argc, argv);
 

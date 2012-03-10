@@ -20,6 +20,7 @@ namespace {
 const wchar_t* kAllowedSwitches[] = {
   L"automation-channel",
   L"chrome-frame",
+  L"chrome-frame-shutdown-delay",
   L"chrome-version",
   L"disable-background-mode",
   L"disable-popup-blocking",

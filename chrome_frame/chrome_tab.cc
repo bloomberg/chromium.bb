@@ -16,6 +16,7 @@
 #include "base/file_version_info.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -38,6 +39,7 @@
 #include "chrome_frame/chrome_protocol.h"
 #include "chrome_frame/dll_redirector.h"
 #include "chrome_frame/exception_barrier.h"
+#include "chrome_frame/metrics_service.h"
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
 #include "googleurl/src/url_util.h"
@@ -194,7 +196,7 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
 ChromeTabModule _AtlModule;
 
 base::AtExitManager* g_exit_manager = NULL;
-
+base::FieldTrialList* g_field_trial_list = NULL;
 
 HRESULT RefreshElevationPolicy() {
   const wchar_t kIEFrameDll[] = L"ieframe.dll";
@@ -858,14 +860,24 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
                                  NULL, 0)) {
       logging::LogEventProvider::Initialize(kChromeFrameProvider);
     }
+
+    // Initialize the field test infrastructure. Must be done somewhere that
+    // can only get called once. For Chrome Frame, that is here.
+    g_field_trial_list = new base::FieldTrialList(
+        MetricsService::GetClientID());
   } else if (reason == DLL_PROCESS_DETACH) {
+    delete g_field_trial_list;
+    g_field_trial_list = NULL;
+
     DllRedirector* dll_redirector = DllRedirector::GetInstance();
     DCHECK(dll_redirector);
-
     dll_redirector->UnregisterAsFirstCFModule();
+
     g_patch_helper.UnpatchIfNeeded();
+
     delete g_exit_manager;
     g_exit_manager = NULL;
+
     ShutdownCrashReporting();
   }
   return _AtlModule.DllMain(reason, reserved);
