@@ -4,11 +4,6 @@
 # http://code.google.com/p/drmemory/issues/detail?id=318
 AudioRendererHostTest.*
 
-# Hits a DCHECK, and then a DR assertion while printing the backtrace.
-# http://code.google.com/p/drmemory/issues/detail?id=826
-WebsiteSettingsModelTest.HTTPConnection
-WebsiteSettingsModelTest.HTTPSConnection
-
 ##################################################
 # un-analyzed Dr. Memory bugs:
 
@@ -30,3 +25,7 @@ ServiceProcessStateTest.ForceShutdown
 
 # fails sporadically: http://crbug.com/108205
 MultiProcessLockTest.RecursiveLock
+
+# Poor isolation, DCHECKs when no MessageLoop exists.  Breaks when sharded.
+# http://crbug.com/117679
+WebsiteSettingsModelTest.*
