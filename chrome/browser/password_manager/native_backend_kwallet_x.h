@@ -70,7 +70,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   // write a 64-bit quantity, but we support trying to read it as either size
   // when reading old pickles that fail to deserialize using the native size.
   static bool DeserializeValueSize(const std::string& signon_realm,
-                                   const Pickle& pickle,
                                    const PickleIterator& iter,
                                    bool size_32, bool warn_only,
                                    PasswordFormList* forms);
@@ -142,8 +141,7 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
 
   // Convenience function to read a GURL from a Pickle. Assumes the URL has
   // been written as a UTF-8 string. Returns true on success.
-  static bool ReadGURL(const Pickle& pickle, PickleIterator* iter,
-                       bool warn_only, GURL* url);
+  static bool ReadGURL(PickleIterator* iter, bool warn_only, GURL* url);
 
   // In case the fields in the pickle ever change, version them so we can try to
   // read old pickles. (Note: do not eat old pickles past the expiration date.)

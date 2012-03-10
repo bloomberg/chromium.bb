@@ -680,7 +680,6 @@ bool NativeBackendKWallet::CheckSerializedValue(const uint8_t* byte_array,
 }
 
 bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
-                                                const Pickle& pickle,
                                                 const PickleIterator& init_iter,
                                                 bool size_32, bool warn_only,
                                                 PasswordFormList* forms) {
@@ -689,14 +688,14 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
   uint64_t count = 0;
   if (size_32) {
     uint32_t count_32 = 0;
-    if (!pickle.ReadUInt32(&iter, &count_32)) {
+    if (!iter.ReadUInt32(&count_32)) {
       LOG(ERROR) << "Failed to deserialize KWallet entry "
                  << "(realm: " << signon_realm << ")";
       return false;
     }
     count = count_32;
   } else {
-    if (!pickle.ReadUInt64(&iter, &count)) {
+    if (!iter.ReadUInt64(&count)) {
       LOG(ERROR) << "Failed to deserialize KWallet entry "
                  << "(realm: " << signon_realm << ")";
       return false;
@@ -726,18 +725,18 @@ bool NativeBackendKWallet::DeserializeValueSize(const std::string& signon_realm,
     int64 date_created = 0;
     // Note that these will be read back in the order listed due to
     // short-circuit evaluation. This is important.
-    if (!pickle.ReadInt(&iter, &scheme) ||
-        !ReadGURL(pickle, &iter, warn_only, &form->origin) ||
-        !ReadGURL(pickle, &iter, warn_only, &form->action) ||
-        !pickle.ReadString16(&iter, &form->username_element) ||
-        !pickle.ReadString16(&iter, &form->username_value) ||
-        !pickle.ReadString16(&iter, &form->password_element) ||
-        !pickle.ReadString16(&iter, &form->password_value) ||
-        !pickle.ReadString16(&iter, &form->submit_element) ||
-        !pickle.ReadBool(&iter, &form->ssl_valid) ||
-        !pickle.ReadBool(&iter, &form->preferred) ||
-        !pickle.ReadBool(&iter, &form->blacklisted_by_user) ||
-        !pickle.ReadInt64(&iter, &date_created)) {
+    if (!iter.ReadInt(&scheme) ||
+        !ReadGURL(&iter, warn_only, &form->origin) ||
+        !ReadGURL(&iter, warn_only, &form->action) ||
+        !iter.ReadString16(&form->username_element) ||
+        !iter.ReadString16(&form->username_value) ||
+        !iter.ReadString16(&form->password_element) ||
+        !iter.ReadString16(&form->password_value) ||
+        !iter.ReadString16(&form->submit_element) ||
+        !iter.ReadBool(&form->ssl_valid) ||
+        !iter.ReadBool(&form->preferred) ||
+        !iter.ReadBool(&form->blacklisted_by_user) ||
+        !iter.ReadInt64(&date_created)) {
       if (warn_only) {
         LOG(WARNING) << "Failed to deserialize version 0 KWallet entry "
                      << "(realm: " << signon_realm << ") with native "
@@ -762,7 +761,7 @@ void NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
   PickleIterator iter(pickle);
 
   int version = -1;
-  if (!pickle.ReadInt(&iter, &version) ||
+  if (!iter.ReadInt(&version) ||
       version < 0 || version > kPickleVersion) {
     LOG(ERROR) << "Failed to deserialize KWallet entry "
                << "(realm: " << signon_realm << ")";
@@ -771,26 +770,26 @@ void NativeBackendKWallet::DeserializeValue(const std::string& signon_realm,
 
   if (version == kPickleVersion) {
     // In current pickles, we expect 64-bit sizes. Failure is an error.
-    DeserializeValueSize(signon_realm, pickle, iter, false, false, forms);
+    DeserializeValueSize(signon_realm, iter, false, false, forms);
     return;
   }
 
   const size_t saved_forms_size = forms->size();
   const bool size_32 = sizeof(size_t) == sizeof(uint32_t);
-  if (!DeserializeValueSize(signon_realm, pickle, iter, size_32, true, forms)) {
+  if (!DeserializeValueSize(signon_realm, iter, size_32, true, forms)) {
     // We failed to read the pickle using the native architecture of the system.
     // Try again with the opposite architecture. Note that we do this even on
     // 32-bit machines, in case we're reading a 64-bit pickle. (Probably rare,
     // since mostly we expect upgrades, not downgrades, but both are possible.)
     forms->resize(saved_forms_size);
-    DeserializeValueSize(signon_realm, pickle, iter, !size_32, false, forms);
+    DeserializeValueSize(signon_realm, iter, !size_32, false, forms);
   }
 }
 
-bool NativeBackendKWallet::ReadGURL(const Pickle& pickle, PickleIterator* iter,
-                                    bool warn_only, GURL* url) {
+bool NativeBackendKWallet::ReadGURL(
+    PickleIterator* iter, bool warn_only, GURL* url) {
   std::string url_string;
-  if (!pickle.ReadString(iter, &url_string)) {
+  if (!iter->ReadString(&url_string)) {
     if (!warn_only)
       LOG(ERROR) << "Failed to deserialize URL.";
     *url = GURL();
