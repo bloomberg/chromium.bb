@@ -1,20 +1,38 @@
-<!-- 
-This HTML file contains a div for a player which is used for playback testing 
-(chrome/test/functional/media_playbackbacktime.py).
-The query string should contain the following information: 
-   tag (optional): HTML video/audio tag (default is video).
-   media (required): media file name.
-   t (optional): if specified, disables the media cache.
-   jerky (optional): if specified, show the predefined pattern for jerky test.
+<!-- Used by tests which only need a basic playback. -->
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <title>Basic Media Playback Test</title>
+  </head>
 
-   Example: "media_playback.html?tag=video&media=foo.webm&t=t&jerky=True"
--->
-<html>
-<body onload='setPattern();'>
-<div id='player_container'></div>
-<script type='text/javascript' src='player.js'></script>
-<script>
-  setTimeout(playMedia, 1000);
-</script>
-</body>
+  <body>
+    <div><video autoplay preload></video></div>
+  </body>
+
+  <script type="text/javascript">
+    var div = document.querySelector('div');
+    var video = document.querySelector('video');
+
+    video.addEventListener('playing', function(event) {
+      // Notify PyAuto that the video has started playing..
+      window.domAutomationController.send(true);
+    }, false);
+
+    function startTest(url) {
+      video.src = url;
+    }
+
+    function stopTest() {
+      video.src = '';
+      window.domAutomationController.send(true);
+    }
+
+    function initializeTest(width, height) {
+      // Setup calibration area for Jerky tool.
+      div.style.width = width + 'px';
+      div.style.height = height + 'px';
+      div.style.backgroundColor = '#333333';
+      window.domAutomationController.send(true);
+    }
+  </script>
 </html>
