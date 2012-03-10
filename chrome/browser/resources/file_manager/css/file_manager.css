@@ -810,9 +810,13 @@ input.rename {
 .file-checkbox {
   -webkit-margin-end: 0;
   -webkit-margin-start: 0;
-  opacity: 0.3;
   position: relative;
   z-index: 2;
+}
+
+.file-checkbox,
+.pin {
+  opacity: 0.3;
 }
 
 #select-all-checkbox {
@@ -830,15 +834,20 @@ li.thumbnail-item .file-checkbox {
   -webkit-margin-start: 7px;
   margin-top: 6px;
   opacity: 0;
+  background-color: green;
 }
 
 li.table-row:hover .file-checkbox,
+li.table-row:hover .pin,
 li.thumbnail-item:hover .file-checkbox {
   opacity: 0.5;
 }
 
 .file-checkbox:hover,
+.pin:hover,
 li.table-row[selected] .file-checkbox,
+li.table-row[selected] .pin,
+li.table-row .pin:checked,
 li.thumbnail-item[selected] .file-checkbox {
   opacity: 1 !important;
 }
@@ -1077,4 +1086,20 @@ li.table-row {
 
 menu.file-context-menu {
   z-index: 4;
+}
+
+input.common.pin[type="checkbox"]:checked::after {
+  content: url('../images/pin.png');
+  left: 3px;
+  top: -4px;
+}
+
+div.offline {
+  -webkit-box-pack: center;
+  display: -webkit-box;
+}
+
+div.offline > * {
+  -webkit-box-align: center;
+  display: -webkit-box;
 }

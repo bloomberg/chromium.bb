@@ -1903,6 +1903,8 @@ FileManager.prototype = {
 
     var checkbox = doc.createElement('input');
     checkbox.type = 'checkbox';
+    checkbox.className = 'common pin';
+    checkbox.tabIndex = -1;
     checkbox.addEventListener('click',
                               this.onPinClick_.bind(this, checkbox, entry));
 
@@ -1910,7 +1912,6 @@ FileManager.prototype = {
       checkbox.checked = entry.gdata_.isPinned;
       div.appendChild(checkbox);
     });
-    // this.updateDate_(div, entry);
     return div;
   };
 
