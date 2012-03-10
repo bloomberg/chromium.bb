@@ -41,6 +41,19 @@ class Feature {
     CHROMEOS_PLATFORM
   };
 
+  // Whether a feature is available in a given situation or not, and if not,
+  // why not.
+  enum Availability {
+    IS_AVAILABLE,
+    NOT_FOUND_IN_WHITELIST,
+    INVALID_TYPE,
+    INVALID_CONTEXT,
+    INVALID_LOCATION,
+    INVALID_PLATFORM,
+    INVALID_MIN_MANIFEST_VERSION,
+    INVALID_MAX_MANIFEST_VERSION
+  };
+
   Feature();
   ~Feature();
 
@@ -75,13 +88,13 @@ class Feature {
 
   // Returns true if the feature is available to the specified extension. Use
   // this overload for features that are not associated with a specific context.
-  bool IsAvailable(const Extension* extension) {
+  Availability IsAvailable(const Extension* extension) {
     return IsAvailable(extension, UNSPECIFIED_CONTEXT);
   }
 
   // Returns true if the feature is available to the specified extension, in the
   // specified context type.
-  bool IsAvailable(const Extension* extension, Context context) {
+  Availability IsAvailable(const Extension* extension, Context context) {
     return IsAvailable(extension->id(), extension->GetType(),
                        ConvertLocation(extension->location()), context,
                        GetCurrentPlatform(),
@@ -91,8 +104,9 @@ class Feature {
   // Returns true if the feature is available to extensions with the specified
   // properties. Use this overload for features that are not associated with a
   // specific context, and when a full Extension object is not available.
-  bool IsAvailable(const std::string& extension_id, Extension::Type type,
-                   Location location, int manifest_version) {
+  Availability IsAvailable(const std::string& extension_id,
+                           Extension::Type type, Location location,
+                           int manifest_version) {
     return IsAvailable(extension_id, type, location, UNSPECIFIED_CONTEXT,
                        GetCurrentPlatform(), manifest_version);
   }
@@ -100,9 +114,13 @@ class Feature {
   // Returns true if the feature is available to extensions with the specified
   // properties, in the specified context type, and on the specified platform.
   // This overload is mainly used for testing.
-  bool IsAvailable(const std::string& extension_id, Extension::Type type,
-                   Location location, Context context,
-                   Platform platform, int manifest_version);
+  Availability IsAvailable(const std::string& extension_id,
+                           Extension::Type type, Location location,
+                           Context context, Platform platform,
+                           int manifest_version);
+
+  // Returns an error message for an Availability code.
+  std::string GetErrorMessage(Availability result);
 
  private:
   // For clarify and consistency, we handle the default value of each of these
