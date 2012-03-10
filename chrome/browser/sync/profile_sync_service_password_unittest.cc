@@ -29,7 +29,6 @@
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
@@ -40,6 +39,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/test/notification_observer_mock.h"
 #include "content/test/test_browser_thread.h"
+#include "sync/protocol/password_specifics.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/forms/password_form.h"
 

@@ -20,9 +20,9 @@
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/polling_constants.h"
+#include "chrome/browser/sync/engine/sync_scheduler.h"
 #include "chrome/browser/sync/engine/syncapi_internal.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
-#include "chrome/browser/sync/engine/sync_scheduler.h"
 #include "chrome/browser/sync/internal_api/base_node.h"
 #include "chrome/browser/sync/internal_api/change_reorder_buffer.h"
 #include "chrome/browser/sync/internal_api/configure_reason.h"
@@ -42,9 +42,7 @@
 #include "chrome/browser/sync/js/js_sync_manager_observer.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_observer.h"
-#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
@@ -53,6 +51,8 @@
 #include "chrome/browser/sync/util/get_session_name.h"
 #include "chrome/browser/sync/util/time.h"
 #include "net/base/network_change_notifier.h"
+#include "sync/protocol/encryption.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 using base::TimeDelta;
 using browser_sync::AllStatus;

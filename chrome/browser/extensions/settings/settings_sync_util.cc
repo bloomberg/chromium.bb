@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 
-#include "base/values.h"
 #include "base/json/json_writer.h"
-#include "chrome/browser/sync/protocol/app_setting_specifics.pb.h"
-#include "chrome/browser/sync/protocol/extension_setting_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
+#include "base/values.h"
+#include "sync/protocol/app_setting_specifics.pb.h"
+#include "sync/protocol/extension_setting_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace extensions {
 

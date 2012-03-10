@@ -11,8 +11,8 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace sync_pb {
 class EntitySpecifics;

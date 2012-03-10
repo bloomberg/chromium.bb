@@ -28,15 +28,15 @@
 #include "base/time.h"
 #include "chrome/browser/sync/internal_api/includes/report_unrecoverable_error_function.h"
 #include "chrome/browser/sync/internal_api/includes/unrecoverable_error_handler.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
-#include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/util/immutable.h"
 #include "chrome/browser/sync/util/time.h"
 #include "chrome/browser/sync/util/weak_handle.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace base {
 class DictionaryValue;

@@ -40,7 +40,6 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
@@ -55,6 +54,7 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/public/browser/notification_source.h"
 #include "content/test/test_browser_thread.h"
+#include "sync/protocol/autofill_specifics.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;

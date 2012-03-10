@@ -10,7 +10,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/internal_api/includes/test_unrecoverable_error_handler.h"
-#include "chrome/browser/sync/protocol/encryption.pb.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -18,6 +17,7 @@
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
+#include "sync/protocol/encryption.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

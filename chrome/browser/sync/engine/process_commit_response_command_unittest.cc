@@ -7,14 +7,14 @@
 #include "base/location.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/sync/engine/process_commit_response_command.h"
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

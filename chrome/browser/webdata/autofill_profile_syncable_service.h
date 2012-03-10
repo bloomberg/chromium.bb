@@ -18,12 +18,12 @@
 #include "chrome/browser/sync/api/sync_data.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/api/syncable_service.h"
-#include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "sync/protocol/autofill_specifics.pb.h"
 
 class AutofillProfile;
 class AutofillTable;

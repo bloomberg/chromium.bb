@@ -12,8 +12,8 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
 
 namespace browser_sync {
 

@@ -14,10 +14,10 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/proto_enum_conversions.h"
 #include "chrome/browser/sync/util/data_type_histogram.h"
 #include "chrome/browser/sync/util/logging.h"
+#include "sync/protocol/sync.pb.h"
 
 using base::TimeDelta;
 using base::TimeTicks;

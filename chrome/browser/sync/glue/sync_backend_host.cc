@@ -30,8 +30,6 @@
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
-#include "chrome/browser/sync/protocol/encryption.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/browser/sync/util/nigori.h"
@@ -46,6 +44,8 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "sync/protocol/encryption.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
 static const FilePath::CharType kSyncDataFolderName[] =

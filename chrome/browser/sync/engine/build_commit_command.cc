@@ -11,11 +11,11 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/util/time.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
 
 using std::set;
 using std::string;

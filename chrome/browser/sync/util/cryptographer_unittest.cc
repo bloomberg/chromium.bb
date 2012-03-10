@@ -8,10 +8,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/syncable/model_type_test_util.h"
 #include "chrome/browser/sync/test/fake_encryptor.h"
+#include "sync/protocol/nigori_specifics.pb.h"
+#include "sync/protocol/password_specifics.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

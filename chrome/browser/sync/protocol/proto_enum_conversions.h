@@ -8,8 +8,8 @@
 
 // Keep this file in sync with the .proto files in this directory.
 
-#include "chrome/browser/sync/protocol/session_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
+#include "sync/protocol/session_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 // Utility functions to get the string equivalent for some sync proto
 // enums.

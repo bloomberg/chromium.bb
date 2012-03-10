@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -17,7 +17,7 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace sync_api {
 

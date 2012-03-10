@@ -315,10 +315,7 @@ bool TestServer::SetPythonPath() {
   }
 
   AppendToPythonPath(pyproto_dir);
-  AppendToPythonPath(pyproto_dir.AppendASCII("chrome")
-                       .AppendASCII("browser")
-                       .AppendASCII("sync")
-                       .AppendASCII("protocol"));
+  AppendToPythonPath(pyproto_dir.AppendASCII("sync").AppendASCII("protocol"));
   AppendToPythonPath(pyproto_dir.AppendASCII("chrome")
                        .AppendASCII("browser")
                        .AppendASCII("policy")

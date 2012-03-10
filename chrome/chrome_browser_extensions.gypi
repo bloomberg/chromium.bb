@@ -10,6 +10,7 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',

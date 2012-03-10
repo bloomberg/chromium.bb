@@ -12,7 +12,7 @@
         'app/policy/cloud_policy_codegen.gyp:policy',
         'autofill_regexes',
         'browser_extensions',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'cert_logger_proto',
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',

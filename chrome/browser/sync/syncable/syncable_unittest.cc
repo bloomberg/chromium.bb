@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/internal_api/includes/test_unrecoverable_error_handler.h"
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_change_delegate.h"
 #include "chrome/browser/sync/syncable/on_disk_directory_backing_store.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/sync/test/fake_encryptor.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
 #include "chrome/browser/sync/test/null_transaction_observer.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 

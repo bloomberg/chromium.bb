@@ -306,12 +306,12 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../third_party/sqlite/sqlite.gyp:sqlite',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'sync',
         'sync_notifier',
       ],
       'export_dependent_settings': [
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
       # This target exports a hard dependency because syncapi.h includes
@@ -340,12 +340,12 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
       # Even though this target depends on sync_proto, it doesn't
@@ -510,12 +510,12 @@
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
       ],
       'export_dependent_settings': [
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
       ],
       # This target exports a hard dependency because its header files include
       # protobuf header files from sync_proto.

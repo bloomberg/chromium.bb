@@ -11,8 +11,6 @@
 #include "chrome/browser/sync/engine/nigori_util.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
@@ -21,6 +19,8 @@
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/fake_encryptor.h"
 #include "chrome/browser/sync/util/cryptographer.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/password_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

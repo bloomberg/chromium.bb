@@ -12,10 +12,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "sync/protocol/preference_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 using syncable::PREFERENCES;
 

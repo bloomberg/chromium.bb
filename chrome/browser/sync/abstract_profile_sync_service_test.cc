@@ -8,11 +8,11 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
+#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/util/cryptographer.h"
+#include "sync/protocol/sync.pb.h"
 
 using browser_sync::TestIdFactory;
 using content::BrowserThread;

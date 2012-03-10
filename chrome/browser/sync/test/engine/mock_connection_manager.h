@@ -17,9 +17,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
+#include "sync/protocol/sync.pb.h"
 
 class MockConnectionManager : public browser_sync::ServerConnectionManager {
  public:

@@ -23,8 +23,8 @@
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_setting_change.h"
-#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/protector/protector_service.h"
+#include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -33,8 +33,6 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/sync/api/sync_change.h"
-#include "chrome/browser/sync/protocol/search_engine_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -44,6 +42,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "net/base/net_util.h"
+#include "sync/protocol/search_engine_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;

@@ -38,7 +38,7 @@
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
         'browser',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'chrome_resources.gyp:theme_resources',
@@ -537,7 +537,7 @@
       'target_name': 'interactive_ui_tests',
       'type': 'executable',
       'dependencies': [
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -2520,7 +2520,7 @@
       ],
       'dependencies': [
         'browser',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -3226,7 +3226,7 @@
       'msvs_cygwin_dirs': ['<(DEPTH)/third_party/cygwin'],
       'dependencies': [
         'browser',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -3629,7 +3629,7 @@
       'target_name': 'sync_unit_tests',
       'type': 'executable',
       'sources': [
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/test.pb.cc',
+        '<(protoc_out_dir)//sync/protocol/test.pb.cc',
         '../base/test/run_all_unittests.cc',
         'app/breakpad_mac_stubs.mm',
         'browser/sync/api/sync_change_unittest.cc',
@@ -3717,7 +3717,7 @@
         '_USE_32BIT_TIME_T',
       ],
       'dependencies': [
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         '../base/base.gyp:test_support_base',
         '../jingle/jingle.gyp:notifier_test_util',
         '../net/net.gyp:net',
@@ -3783,7 +3783,7 @@
       'type': 'executable',
       'dependencies': [
         'browser',
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -3957,7 +3957,7 @@
       'target_name': 'sync_performance_tests',
       'type': 'executable',
       'dependencies': [
-        'browser/sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/protocol/sync_proto.gyp:sync_proto',
         'chrome',
         'test_support_common',
         '../skia/skia.gyp:skia',

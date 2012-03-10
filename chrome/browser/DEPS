@@ -18,6 +18,7 @@ include_rules = [
   "+sandbox/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+skia/ext",
   "+skia/include",
+  "+sync/protocol",  # Sync protobuf files.
   "+third_party/cros",
   "+third_party/cros_system_api",
   "+webkit/database",

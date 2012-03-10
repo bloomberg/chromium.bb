@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/engine/clear_data_command.h"
-#include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "chrome/browser/sync/test/sessions/test_scoped_session_event_listener.h"
+#include "sync/protocol/autofill_specifics.pb.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/preference_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace browser_sync {
 

@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/browser/sync/protocol/password_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
+#include "sync/protocol/password_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 using browser_sync::Cryptographer;
 

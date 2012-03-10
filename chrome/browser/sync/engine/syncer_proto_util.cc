@@ -10,14 +10,14 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/protocol/sync_enums.pb.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/time.h"
+#include "sync/protocol/sync.pb.h"
+#include "sync/protocol/sync_enums.pb.h"
 
 using browser_sync::SyncProtocolErrorType;
 using std::string;

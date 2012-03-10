@@ -11,7 +11,6 @@
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "sync/protocol/sync.pb.h"
 
 using content::BrowserThread;
 

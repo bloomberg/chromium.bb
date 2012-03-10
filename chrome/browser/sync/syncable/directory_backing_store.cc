@@ -18,15 +18,15 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/time.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 using std::string;
 

@@ -15,9 +15,9 @@
 #include "chrome/browser/sync/engine/net/url_translator.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncproto.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_status_code.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace browser_sync {
 

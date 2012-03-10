@@ -8,9 +8,9 @@
 #include "base/string_number_conversions.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
-#include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
+#include "sync/protocol/extension_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

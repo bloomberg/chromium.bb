@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/browser/sync/internal_api/base_node.h"
 #include "chrome/browser/sync/protocol/proto_value_conversions.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "sync/protocol/sync.pb.h"
 
 void SyncData::ImmutableSyncEntityTraits::InitializeWrapper(
     Wrapper* wrapper) {

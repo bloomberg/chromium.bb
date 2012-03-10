@@ -33,9 +33,9 @@
         'typed_url_specifics.proto',
       ],
       'variables': {
-        'proto_out_dir': 'chrome/browser/sync/protocol',
+        'proto_out_dir': 'sync/protocol',
       },
-      'includes': ['../../../../build/protoc.gypi'],
+      'includes': ['../../build/protoc.gypi'],
     },
   ],
 }

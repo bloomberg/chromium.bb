@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
-#include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/sync/engine/nigori_util.h"
+#include "chrome/browser/sync/util/cryptographer.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncable {

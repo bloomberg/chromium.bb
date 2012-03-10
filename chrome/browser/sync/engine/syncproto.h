@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,9 +8,9 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCPROTO_H_
 #pragma once
 
-#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace browser_sync {
 

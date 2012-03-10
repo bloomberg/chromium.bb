@@ -16,7 +16,7 @@
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/glue/model_associator.h"
-#include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
+#include "sync/protocol/typed_url_specifics.pb.h"
 
 class GURL;
 class MessageLoop;

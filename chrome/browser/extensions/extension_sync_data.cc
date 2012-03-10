@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/sync/protocol/app_specifics.pb.h"
-#include "chrome/browser/sync/protocol/extension_specifics.pb.h"
-#include "chrome/browser/sync/protocol/sync.pb.h"
+#include "sync/protocol/app_specifics.pb.h"
+#include "sync/protocol/extension_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 ExtensionSyncData::ExtensionSyncData()
     : uninstalled_(false),
