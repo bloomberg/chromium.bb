@@ -40,7 +40,7 @@ $(TARG):$(ORTH) fc-lang.c $(STMPL)
 	@echo Warning: cannot rebuild $(TARG) when cross-compiling
 else
 $(TARG):$(ORTH) fc-lang${EXEEXT} $(STMPL)
-	-rm $(TARG)
+	-@rm $(TARG)
 	$(AM_V_GEN) $(builddir)/fc-lang${EXEEXT} -d ${srcdir} $(ORTH) < $(STMPL) > $(TARG).tmp && \
 	mv $(TARG).tmp $(TARG)
 endif

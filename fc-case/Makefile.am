@@ -46,7 +46,7 @@ $(TARG): $(STMPL) fc-case.c $(SCASEFOLDING)
 	@echo Warning: cannot rebuild $(TARG) when cross-compiling
 else
 $(TARG): $(STMPL) fc-case$(EXEEXT) $(SCASEFOLDING)
-	-rm $(TARG)
+	-@rm $(TARG)
 	$(AM_V_GEN) $(builddir)/fc-case$(EXEEXT) $(SCASEFOLDING) < $(STMPL) > $(TARG).tmp && \
 	mv $(TARG).tmp $(TARG)
 endif
