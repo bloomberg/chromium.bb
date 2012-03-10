@@ -49,13 +49,21 @@ class _Lock(cros_build_lib.MasterPidContextManager):
       fcntl.lockf(self.fd, flags|fcntl.LOCK_NB)
       return
     except EnvironmentError, e:
-      if e.errno != errno.EAGAIN:
+      if e.errno == errno.EDEADLOCK:
+        self.unlock()
+      elif e.errno != errno.EAGAIN:
         raise
     if self.description:
       message = '%s: blocking while %s' % (self.description, message)
     if self._verbose:
       cros_build_lib.Info(message)
-    fcntl.lockf(self.fd, flags)
+    try:
+      fcntl.lockf(self.fd, flags)
+    except EnvironmentError, e:
+      if e.errno != errno.EDEADLOCK:
+        raise
+      self.unlock()
+      fcntl.lockf(self.fd, flags)
 
   def read_lock(self, message="taking read lock"):
     """
@@ -74,6 +82,12 @@ class _Lock(cros_build_lib.MasterPidContextManager):
   def write_lock(self, message="taking write lock"):
     """
     Take a write lock (exclusive), upgrading from read if required.
+
+    Note that if the lock state is being upgraded from read to write,
+    a deadlock potential exists- as such we *will* release the lock
+    to work around it.  Any consuming code should not assume that
+    transitioning from shared to exclusive means no one else has
+    gotten at the critical resource in between for this reason.
 
     Args:
       message: A description of what/why this lock is being taken.
