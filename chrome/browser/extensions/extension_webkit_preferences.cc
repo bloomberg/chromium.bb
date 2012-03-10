@@ -26,14 +26,6 @@ void SetPreferences(const Extension* extension,
     // Tabs aren't typically allowed to close windows. But extensions shouldn't
     // be subject to that.
     webkit_prefs->allow_scripts_to_close_windows = true;
-
-    // Disable anything that requires the GPU process for background pages.
-    // See http://crbug.com/64512 and http://crbug.com/64841.
-    if (render_view_type == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      webkit_prefs->experimental_webgl_enabled = false;
-      webkit_prefs->accelerated_compositing_enabled = false;
-      webkit_prefs->accelerated_2d_canvas_enabled = false;
-    }
   }
 
   if (extension->is_platform_app()) {

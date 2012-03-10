@@ -129,9 +129,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
   ExtensionHost* host = FindHostWithPath(manager, "/backgroundpage.html", 1);
   WebPreferences prefs =
       host->render_view_host()->GetDelegate()->GetWebkitPrefs();
-  ASSERT_FALSE(prefs.experimental_webgl_enabled);
-  ASSERT_FALSE(prefs.accelerated_compositing_enabled);
-  ASSERT_FALSE(prefs.accelerated_2d_canvas_enabled);
+  ASSERT_TRUE(prefs.experimental_webgl_enabled);
+  ASSERT_TRUE(prefs.accelerated_compositing_enabled);
+  ASSERT_TRUE(prefs.accelerated_2d_canvas_enabled);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionCrash25562) {
