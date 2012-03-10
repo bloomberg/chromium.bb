@@ -2312,22 +2312,12 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  /* make sure that the thread start function is in the text region */
-  if ((uintptr_t) prog_ctr >= natp->nap->dynamic_text_end) {
-    NaClLog(LOG_ERROR, "bad pc start\n");
+  if (!NaClIsValidJumpTarget(natp->nap, (uintptr_t) prog_ctr)) {
+    NaClLog(LOG_ERROR, "NaClCommonSysThread_Create: Bad function pointer\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
-  /* make sure that the thread start function is aligned */
-  /* TODO(robertm): there should be a function for this test */
 
-#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
-  if (0 != ((natp->nap->bundle_size - 1) & (uintptr_t) prog_ctr)) {
-    NaClLog(LOG_ERROR, "bad pc alignment\n");
-    retval = -NACL_ABI_EINVAL;
-    goto cleanup;
-  }
-#endif
   /* we do not enforce stack alignment, just check for validity */
   sys_stack = NaClUserToSysAddr(natp->nap, (uintptr_t) stack_ptr);
   if (kNaClBadAddress == sys_stack) {

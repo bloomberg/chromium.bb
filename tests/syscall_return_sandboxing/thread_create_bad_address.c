@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -43,7 +43,7 @@ int main() {
   assert(rc == 0);
 
   rc = NACL_SYSCALL(thread_create)(func_addr + 1, stack_top, tls, 0);
-  assert(rc == -EINVAL);
+  assert(rc == -EFAULT);
 
   /* Addresses above 1GB are outside of our address space. */
   bad_func_addr = (char *) 0x40000000;
