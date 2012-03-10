@@ -87,7 +87,6 @@
         'gfx/image/image_unittest_util.h',
         'gfx/image/image_unittest_util.cc',
         'gfx/insets_unittest.cc',
-        'gfx/linux_util_unittest.cc',
         'gfx/rect_unittest.cc',
         'gfx/run_all_unittests.cc',
         'gfx/screen_unittest.cc',
@@ -135,6 +134,7 @@
         ['OS == "linux"', {
           'sources': [
             'gfx/platform_font_pango_unittest.cc',
+            'gfx/linux_util_unittest.cc',
           ],
         }],
         ['OS == "linux" and toolkit_views==1', {
