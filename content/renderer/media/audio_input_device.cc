@@ -204,16 +204,16 @@ void AudioInputDevice::OnVolume(double volume) {
 
 void AudioInputDevice::OnStateChanged(AudioStreamState state) {
   DCHECK(message_loop()->BelongsToCurrentThread());
+
+  // Do nothing if the stream has been closed.
+  if (!stream_id_)
+    return;
+
   switch (state) {
     // TODO(xians): This should really be kAudioStreamStopped since the stream
     // has been closed at this point.
     case kAudioStreamPaused:
       // TODO(xians): Should we just call ShutDownOnIOThread here instead?
-
-      // Do nothing if the stream has been closed.
-      if (!stream_id_)
-        return;
-
       filter_->RemoveDelegate(stream_id_);
 
       audio_thread_.Stop(MessageLoop::current());

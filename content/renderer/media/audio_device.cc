@@ -197,6 +197,12 @@ void AudioDevice::SetVolumeOnIOThread(double volume) {
 }
 
 void AudioDevice::OnStateChanged(AudioStreamState state) {
+  DCHECK(message_loop()->BelongsToCurrentThread());
+
+  // Do nothing if the stream has been closed.
+  if (!stream_id_)
+    return;
+
   if (state == kAudioStreamError) {
     DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
     callback_->OnRenderError();
