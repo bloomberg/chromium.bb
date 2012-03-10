@@ -755,7 +755,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_Transport) {
 TEST_PPAPI_IN_PROCESS(UMA)
 
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreEqual)
+#if !defined(OS_WIN)
+// Fails on Windows 7: http://crbug.com/117673
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreHostsEqual)
+#endif
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_Describe)
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_ReplacePort)
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetAnyAddress)
@@ -850,7 +853,10 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityValidClose)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityGetProtocol)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityTextSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBinarySendReceive)
+#if !defined(OS_WIN)
+// Crashes on Windows 7: http://crbug.com/117673
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBufferedAmount)
+#endif
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_IsWebSocket)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UninitializedPropertiesAccess)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_InvalidConnect)
