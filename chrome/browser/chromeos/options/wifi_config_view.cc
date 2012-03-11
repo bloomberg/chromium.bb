@@ -307,6 +307,19 @@ string16 WifiConfigView::GetTitle() {
   return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS);
 }
 
+views::View* WifiConfigView::GetInitiallyFocusedView() {
+  // Return a reasonable widget for initial focus,
+  // depending on what we're showing.
+  if (ssid_textfield_)
+    return ssid_textfield_;
+  else if (eap_method_combobox_)
+    return eap_method_combobox_;
+  else if (passphrase_textfield_ && passphrase_textfield_->enabled())
+    return passphrase_textfield_;
+  else
+    return NULL;
+}
+
 bool WifiConfigView::CanLogin() {
   static const size_t kMinWirelessPasswordLen = 5;
 
@@ -1139,13 +1152,9 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 }
 
 void WifiConfigView::InitFocus() {
-  // Set focus to a reasonable widget, depending on what we're showing.
-  if (ssid_textfield_)
-    ssid_textfield_->RequestFocus();
-  else if (eap_method_combobox_)
-    eap_method_combobox_->RequestFocus();
-  else if (passphrase_textfield_ && passphrase_textfield_->enabled())
-    passphrase_textfield_->RequestFocus();
+  views::View* view_to_focus = GetInitiallyFocusedView();
+  if (view_to_focus)
+    view_to_focus->RequestFocus();
 }
 
 void WifiConfigView::ParseWiFiUIProperty(

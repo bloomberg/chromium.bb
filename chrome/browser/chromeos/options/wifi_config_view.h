@@ -62,6 +62,7 @@ class WifiConfigView : public ChildNetworkConfigView,
 
   // ChildNetworkConfigView:
   virtual string16 GetTitle() OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;
   virtual void Cancel() OVERRIDE;

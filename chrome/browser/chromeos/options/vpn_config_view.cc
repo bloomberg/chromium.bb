@@ -150,6 +150,24 @@ string16 VPNConfigView::GetTitle() {
     return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_JOIN_VPN);
 }
 
+views::View* VPNConfigView::GetInitiallyFocusedView() {
+  // Put focus in the first editable field.
+  if (server_textfield_)
+    return server_textfield_;
+  else if (service_textfield_)
+    return service_textfield_;
+  else if (provider_type_combobox_)
+    return provider_type_combobox_;
+  else if (psk_passphrase_textfield_ && psk_passphrase_textfield_->enabled())
+    return psk_passphrase_textfield_;
+  else if (user_cert_combobox_ && user_cert_combobox_->enabled())
+    return user_cert_combobox_;
+  else if (server_ca_cert_combobox_ && server_ca_cert_combobox_->enabled())
+    return server_ca_cert_combobox_;
+  else
+    return NULL;
+}
+
 bool VPNConfigView::CanLogin() {
   // Username is always required.
   if (GetUsername().empty())
@@ -294,19 +312,9 @@ void VPNConfigView::Cancel() {
 }
 
 void VPNConfigView::InitFocus() {
-  // Put focus in the first editable field.
-  if (server_textfield_)
-    server_textfield_->RequestFocus();
-  else if (service_textfield_)
-    service_textfield_->RequestFocus();
-  else if (provider_type_combobox_)
-    provider_type_combobox_->RequestFocus();
-  else if (psk_passphrase_textfield_ && psk_passphrase_textfield_->enabled())
-    psk_passphrase_textfield_->RequestFocus();
-  else if (user_cert_combobox_ && user_cert_combobox_->enabled())
-    user_cert_combobox_->RequestFocus();
-  else if (server_ca_cert_combobox_ && server_ca_cert_combobox_->enabled())
-    server_ca_cert_combobox_->RequestFocus();
+  views::View* view_to_focus = GetInitiallyFocusedView();
+  if (view_to_focus)
+    view_to_focus->RequestFocus();
 }
 
 const std::string VPNConfigView::GetService() const {

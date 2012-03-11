@@ -57,6 +57,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual views::View* GetExtraView() OVERRIDE;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE;
 
   // views::WidgetDelegate methods.
   virtual ui::ModalType GetModalType() const OVERRIDE;
@@ -116,6 +117,9 @@ class ChildNetworkConfigView : public views::View {
   // Called to get title for parent NetworkConfigView dialog box.
   virtual string16 GetTitle() = 0;
 
+  // Returns view that should be focused on dialog activation.
+  virtual views::View* GetInitiallyFocusedView() = 0;
+
   // Called to determine if "Connect" button should be enabled.
   virtual bool CanLogin() = 0;
 
@@ -126,8 +130,8 @@ class ChildNetworkConfigView : public views::View {
   // Called when "Cancel" button is clicked.
   virtual void Cancel() = 0;
 
-  // Called to set initial focus in a reasonable widget.  Must be done
-  // post-construction after the view has a parent window.
+  // Called to set focus when view is recreated with the same dialog
+  // being active. For example, clicking on "Advanced" button.
   virtual void InitFocus() = 0;
 
   // Minimum with of input fields / combo boxes.

@@ -100,6 +100,10 @@ views::View* NetworkConfigView::GetExtraView() {
   return advanced_button_container_;
 }
 
+views::View* NetworkConfigView::GetInitiallyFocusedView() {
+  return child_config_view_->GetInitiallyFocusedView();
+}
+
 ui::ModalType NetworkConfigView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
@@ -169,7 +173,6 @@ void NetworkConfigView::ViewHierarchyChanged(
   // a HWND to parent native child controls to.
   if (is_add && child == this) {
     AddChildView(child_config_view_);
-    child_config_view_->InitFocus();
   }
 }
 
