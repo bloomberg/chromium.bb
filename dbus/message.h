@@ -200,16 +200,17 @@ class Response : public Message {
   // must delete the returned object. Useful for testing.
   static Response* CreateEmpty();
 
- private:
+ protected:
   // Creates a Response message. The internal raw message is NULL.
   Response();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(Response);
 };
 
 // ErrorResponse is a type of message used to return an error to the
 // caller of a method.
-class ErrorResponse: public Message {
+class ErrorResponse: public Response {
  public:
   // Returns a newly created Response from the given raw message of the
   // type DBUS_MESSAGE_TYPE_METHOD_RETURN. The caller must delete the

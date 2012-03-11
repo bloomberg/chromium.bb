@@ -404,7 +404,7 @@ Response* Response::CreateEmpty() {
 // ErrorResponse implementation.
 //
 
-ErrorResponse::ErrorResponse() : Message() {
+ErrorResponse::ErrorResponse() : Response() {
 }
 
 ErrorResponse* ErrorResponse::FromRawMessage(DBusMessage* raw_message) {
