@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,7 @@ void NaClBrokerService::OnLoaderLaunched(const std::wstring& channel_id,
 }
 
 void NaClBrokerService::OnLoaderDied() {
+  DCHECK(loaders_running_ > 0);
   --loaders_running_;
   // Stop the broker only if there are no loaders running or being launched.
   NaClBrokerHost* broker_host = GetBrokerHost();

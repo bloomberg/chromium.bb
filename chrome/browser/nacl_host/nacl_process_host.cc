@@ -250,10 +250,6 @@ NaClProcessHost::~NaClProcessHost() {
     LOG(ERROR) << message;
   }
 
-#if defined(OS_WIN)
-  NaClBrokerService::GetInstance()->OnLoaderDied();
-#endif
-
   for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
     if (nacl::Close(internal_->sockets_for_renderer[i]) != 0) {
       LOG(ERROR) << "nacl::Close() failed";
@@ -272,13 +268,11 @@ NaClProcessHost::~NaClProcessHost() {
     chrome_render_message_filter_->Send(reply_msg_);
   }
 #if defined(OS_WIN)
-  if (!RunningOnWOW64()) {
+  if (RunningOnWOW64()) {
+    NaClBrokerService::GetInstance()->OnLoaderDied();
+  } else {
     debug_context_->SetChildProcessHost(NULL);
   }
-#endif
-
-#if defined(OS_WIN)
-  NaClBrokerService::GetInstance()->OnLoaderDied();
 #endif
 }
 
