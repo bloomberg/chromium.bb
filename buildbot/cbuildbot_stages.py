@@ -1226,30 +1226,34 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
         background.RunParallelSteps(steps)
 
-    BuildAndArchiveArtifacts()
+    def PushImage():
+      # Now that all data has been generated, we can upload the final result to
+      # the image server.
+      # TODO: When we support branches fully, the friendly name of the branch
+      # needs to be used with PushImages
+      if not debug and config['push_image']:
+        commands.PushImages(buildroot,
+                            board=board,
+                            branch_name='master',
+                            archive_url=upload_url,
+                            profile=self._options.profile or config['profile'])
 
-    # Now that all data has been generated, we can upload the final result to
-    # the image server.
-    # TODO: When we support branches fully, the friendly name of the branch
-    # needs to be used with PushImages
-    if not debug and config['push_image']:
-      commands.PushImages(buildroot,
-                          board=board,
-                          branch_name='master',
-                          archive_url=upload_url,
-                          profile=self._options.profile or
-                            self._build_config['profile'])
+    def MarkAsLatest():
+      # Update and upload LATEST file.
+      version = self.GetVersion()
+      if version:
+        commands.UpdateLatestFile(self._bot_archive_root, version)
+        commands.UploadArchivedFile(self._bot_archive_root,
+                                    self._GetGSUtilArchiveDir(), 'LATEST',
+                                    debug)
 
-    # Update and upload LATEST file.
-    version = self.GetVersion()
-    if version:
-      commands.UpdateLatestFile(self._bot_archive_root, version)
-
-    commands.UploadArchivedFile(self._bot_archive_root,
-                                self._GetGSUtilArchiveDir(), 'LATEST', debug)
-
-    commands.RemoveOldArchives(self._bot_archive_root,
-                               self._options.max_archive_builds)
+    try:
+      BuildAndArchiveArtifacts()
+      PushImage()
+      MarkAsLatest()
+    finally:
+      commands.RemoveOldArchives(self._bot_archive_root,
+                                 self._options.max_archive_builds)
 
   def _HandleStageException(self, exception):
     # Tell the HWTestStage not to wait for artifacts to be uploaded
