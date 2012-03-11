@@ -444,7 +444,7 @@ ljmpw Mp, 0x66 0xff /5, nacl-forbidden
 ljmp Mp, 0xff /5, ia32 nacl-forbidden
 ljmpq Mp, 0xff /5, amd64 nacl-forbidden
 ######## LAHF ##################################################################
-# LAHF is always awailable in 16bit/32bit mode, but not always in 64bit mode
+# LAHF is always available in 16bit/32bit mode, but not always in 64bit mode
 lahf, 0x9f, ia32
 lahf, 0x9f, amd64 Fn8000_0001_ECX_LahfSahf nacl-forbidden
 ######## LDS/LES/LFS/LGS/LSS (AMD version) #####################################

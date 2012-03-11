@@ -120,25 +120,34 @@ TESTS64 += x87
 #     TESTS64=jump_outside mmx movs_test prefix-2 prefix-single strings sse
 
 # These tests pass.
-TESTS32 =  bt
+TESTS32 =  addr16
+TESTS32 += bt
+TESTS32 += crosses_block
+TESTS32 += cs-twobyte
+TESTS32 += direct-call-16
 TESTS32 += direct-call-32
+TESTS32 += direct-cond-jump-16
 TESTS32 += direct-cond-jump-32
+TESTS32 += direct-jump-16
 TESTS32 += direct-jump-32
 TESTS32 += foof-bug
 TESTS32 += fpu
 TESTS32 += hlt
+TESTS32 += jmp-ind-beg
 TESTS32 += legacy
-TESTS32 += lock-66-test
 TESTS32 += predef-nop
 TESTS32 += ret
 TESTS32 += x87
 
-# suspicious:
-#     TESTS32=direct-call-16
-#     TESTS32=direct-cond-jump-16
-#     TESTS32=direct-jump-16
-# need more investigation:
-#     TESTS32=addr16 crosses_block cs-twobyte jmp-ind-beg load-segment nop-misses tls
+# http://code.google.com/p/nativeclient/issues/detail?id=2624
+#     TESTS32 = load-segment
+# http://code.google.com/p/nativeclient/issues/detail?id=2625
+#     TESTS32 = nop-misses
+# recent validator difference:
+# http://code.google.com/p/nativeclient/issues/detail?id=2518
+#     TESTS32 = lock-66-test
+# http://code.google.com/p/nativeclient/issues/detail?id=2629
+#     TESTS32 = tls
 
 # The list of tests having both .hex and .rval files, acquired by
 # scanning native_client/src/trusted/validator_x86/testdata/64/.

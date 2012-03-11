@@ -55,7 +55,7 @@ def ParseSfiBasedTest(test_name):
   offset = None
   for line in open(test_name + '.rval', 'r').readlines():
     ln = line.rstrip()
-    off_m = re.match(r'VALIDATOR: ([0-9a-z]+):', ln)
+    off_m = re.match(r'VALIDATOR: ([0-9a-f]+):', ln)
     if off_m:
       seen_offset = True
       prev_offset = offset
@@ -72,11 +72,32 @@ def ParseSegmentBasedTest(test_name):
   err_offsets = {}
   for line in open(test_name + '.nval', 'r').readlines():
     ln = line.rstrip()
-    off_m = re.match(r'VALIDATOR: ([0-9a-z]+): (Illegal|Undefined) instruction',
-                     ln)
+    off_m = re.compile(r'''VALIDATOR:[ ]
+                       ([0-9a-f]+):[ ]  # offset
+                       # Possible messages:
+                       ((Illegal|Undefined)[ ]instruction|
+                        Bad[ ]prefix[ ]usage|
+                        Unsafe[ ]indirect[ ]jump
+                       )
+                       ''',
+                       re.VERBOSE).match(ln)
     if off_m:
       offset = int(off_m.group(1), 16)
-      err_offsets.setdefault(offset, []).append('validation error')
+      if offset not in err_offsets:
+        err_offsets[offset] = ['validation error']
+    bundle_m = re.match(r'VALIDATOR: ([0-9a-f]+): Bad basic block alignment',
+                        ln)
+    if bundle_m:
+      offset = int(bundle_m.group(1), 16)
+      if test_name[12:] == 'crosses_block':
+        # Ugly special case for the test 'crosses_block' that places the bundle
+        # boundary immediately after the masking instruction of the indirect
+        # call.  For the old validator it is an 'indivisible' sequence that is
+        # divided.  For the DFA-based validator the error is only in the
+        # following call that does not see the preceding masking operation.
+        continue
+      err_offsets.setdefault(offset, []).insert(0, 'crosses boundary')
+
   return err_offsets
 
 
