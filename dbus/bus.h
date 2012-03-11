@@ -396,7 +396,7 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   virtual void PostDelayedTaskToDBusThread(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      int delay_ms);
+      base::TimeDelta delay);
 
   // Returns true if the bus has the D-Bus thread.
   virtual bool HasDBusThread();

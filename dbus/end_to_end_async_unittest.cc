@@ -314,7 +314,7 @@ TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {
   // Post a delayed task to quit the message loop.
   message_loop_.PostDelayedTask(FROM_HERE,
                                 MessageLoop::QuitClosure(),
-                                TestTimeouts::tiny_timeout_ms());
+                                TestTimeouts::tiny_timeout());
   message_loop_.Run();
   // We cannot tell if the empty callback is called, but at least we can
   // check if the test does not crash.

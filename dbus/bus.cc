@@ -117,7 +117,7 @@ class Timeout : public base::RefCountedThreadSafe<Timeout> {
     bus->PostDelayedTaskToDBusThread(FROM_HERE,
                                      base::Bind(&Timeout::HandleTimeout,
                                                 this),
-                                     GetIntervalInMs());
+                                     GetInterval());
     monitoring_is_active_ = true;
   }
 
@@ -128,9 +128,10 @@ class Timeout : public base::RefCountedThreadSafe<Timeout> {
     monitoring_is_active_ = false;
   }
 
-  // Returns the interval in milliseconds.
-  int GetIntervalInMs() {
-    return dbus_timeout_get_interval(raw_timeout_);
+  // Returns the interval.
+  base::TimeDelta GetInterval() {
+    return base::TimeDelta::FromMilliseconds(
+        dbus_timeout_get_interval(raw_timeout_));
   }
 
   // Cleans up the raw_timeout and marks that timeout is completed.
@@ -642,16 +643,16 @@ void Bus::PostTaskToDBusThread(const tracked_objects::Location& from_here,
 void Bus::PostDelayedTaskToDBusThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
-    int delay_ms) {
+    base::TimeDelta delay) {
   if (dbus_thread_message_loop_proxy_.get()) {
     if (!dbus_thread_message_loop_proxy_->PostDelayedTask(
-            from_here, task, delay_ms)) {
+            from_here, task, delay)) {
       LOG(WARNING) << "Failed to post a task to the D-Bus thread message loop";
     }
   } else {
     DCHECK(origin_message_loop_proxy_.get());
     if (!origin_message_loop_proxy_->PostDelayedTask(
-            from_here, task, delay_ms)) {
+            from_here, task, delay)) {
       LOG(WARNING) << "Failed to post a task to the origin message loop";
     }
   }

@@ -243,7 +243,7 @@ void TestService::AsyncEcho(
                                              base::Unretained(this),
                                              method_call,
                                              response_sender),
-                                  TestTimeouts::tiny_timeout_ms());
+                                  TestTimeouts::tiny_timeout());
 }
 
 void TestService::BrokenMethod(

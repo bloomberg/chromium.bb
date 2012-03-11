@@ -67,7 +67,7 @@ class MockBus : public Bus {
   MOCK_METHOD3(PostDelayedTaskToDBusThread, void(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      int delay_ms));
+      base::TimeDelta delay));
   MOCK_METHOD0(HasDBusThread, bool());
   MOCK_METHOD0(AssertOnOriginThread, void());
   MOCK_METHOD0(AssertOnDBusThread, void());
