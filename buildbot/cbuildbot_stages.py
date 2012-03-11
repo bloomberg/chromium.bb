@@ -1037,10 +1037,9 @@ class ArchiveStage(BoardSpecificBuilderStage):
       test_tarball = self._test_results_queue.get()
       if test_tarball:
         cros_lib.Info('Found test results tarball at %s...' % test_tarball)
+        yield test_tarball
       else:
         cros_lib.Info('No test results.')
-        return
-      yield test_tarball
 
   def _SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""
