@@ -99,22 +99,37 @@ chrome.fileBrowserPrivate = {
     if (!callback)
       throw new Error('Missing callback');
 
+    var emptyIcon = 'data:image/gif;base64,' +
+        'R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw%3D%3D';
+
     var tasks =
     [ { taskId: extensionId + '|play',
-        title: 'Play',
+        title: 'Listen',
         regexp: /\.(flac|m4a|mp3|oga|ogg|wav)$/i,
-        iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg=='
+        iconUrl: emptyIcon
       },
       { taskId: extensionId + '|mount-archive',
         title: 'Mount',
         regexp: /\.(rar|tar|tar.bz2|tar.gz|tbz|tbz2|tgz|zip)$/i,
-        iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg=='
+        iconUrl: emptyIcon
       },
       {
         taskId: extensionId + '|gallery',
-        title: 'View and Edit',
+        title: 'View',
         regexp: /\.(bmp|gif|jpe?g|png|webp|3gp|avi|m4v|mov|mp4|mpeg4?|mpg4?|ogm|ogv|ogx|webm)$/i,
-        iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAOCAYAAAAmL5yKAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sEEBcOAw9XftIAAADFSURBVCjPrZKxCsIwEIa/FHFwsvYxROjSQXAoqLiIL+xgBtvZ91A6uOnQc2hT0zRqkR4c3P25+/PfJTCwLU6wEpgBWkDXuInDPSwF5r7mJIeNQFTnIiCeONpVdYlLoK9wEUhNg8+B9FDVaZcgCKAovjTXfvPJFwGZtKW60pt8bOGBzfLouemnFY/MAs8wDeEI4NzaybewBu4AysKVgrK0gfe5iB9vjdAUqQ/S1Y/R3IX9Zc1zxc7zxe2/0Iskt7AsG0hhx14W8XV43FgV4gAAAABJRU5ErkJggg=='
+        iconUrl: emptyIcon
+      },
+      {
+        taskId: extensionId + '|view-txt',
+        title: 'View',
+        regexp: /\.txt$/i,
+        iconUrl: emptyIcon
+      },
+      {
+        taskId: extensionId + '|view-pdf',
+        title: 'View',
+        regexp: /\.pdf$/i,
+        iconUrl: emptyIcon
       }
     ];
 
@@ -286,6 +301,7 @@ chrome.fileBrowserPrivate = {
 
       GDATA_DIRECTORY_LABEL: 'GData',
       ENABLE_GDATA: '1',
+      PDF_VIEW_ENABLED: 'true',
 
       ROOT_DIRECTORY_LABEL: 'Files',
       DOWNLOADS_DIRECTORY_LABEL: 'Downloads',

@@ -4,8 +4,6 @@
 
 // Setting the src of an img to an empty string can crash the browser, so we
 // use an empty 1x1 gif instead.
-const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
-        + 'R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw%3D%3D';
 
 /**
  * FileManager constructor.
@@ -2282,11 +2280,11 @@ FileManager.prototype = {
           if (str('PDF_VIEW_ENABLED') == 'false') continue;
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('ACTION_OPEN');
+          task.title = str('ACTION_VIEW');
         } else if (task_parts[1] == 'view-txt') {
           task.iconUrl =
               chrome.extension.getURL('images/icon_preview_16x16.png');
-          task.title = str('ACTION_OPEN');
+          task.title = str('ACTION_VIEW');
         } else if (task_parts[1] == 'install-crx') {
           // TODO(dgozman): change to the right icon.
           task.iconUrl =
@@ -2647,7 +2645,7 @@ FileManager.prototype = {
     this.updateLocation_(false /*push*/, dirPath);
 
     galleryFrame.onload = function() {
-      self.document_.title = str('GALLERY');
+      self.document_.title = str('ACTION_VIEW');
       galleryFrame.contentWindow.ImageUtil.metrics = metrics;
       galleryFrame.contentWindow.FileType = FileType;
       galleryFrame.contentWindow.util = util;
