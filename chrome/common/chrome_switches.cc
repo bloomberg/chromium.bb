@@ -798,6 +798,11 @@ const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 // Enables multiprofile Chrome.
 const char kMultiProfiles[]                 = "multi-profiles";
 
+// Native Client GDB debugger for loader. It needs switches calculated
+// at run time in order to work correctly. That's why NaClLoadCmdPrefix
+// flag can't be used.
+const char kNaClGdb[]                       = "nacl-gdb";
+
 // On POSIX only: the contents of this flag are prepended to the nacl-loader
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kNaClLoaderCmdPrefix[]           = "nacl-loader-cmd-prefix";

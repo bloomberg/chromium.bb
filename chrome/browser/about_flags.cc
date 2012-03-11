@@ -249,6 +249,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableNaClExceptionHandling)
   },
   {
+    "nacl-gdb",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_NACL_GDB_NAME,
+    IDS_FLAGS_NACL_GDB_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kNaClGdb)
+  },
+  {
     "extension-apis",  // FLAGS:RECORD_UMA
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_NAME,
     IDS_FLAGS_EXPERIMENTAL_EXTENSION_APIS_DESCRIPTION,

@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
@@ -187,19 +188,28 @@ class NaClBrowser {
   // Make sure the IRT gets opened and follow up with the reply when it's ready.
   bool MakeIrtAvailable(const base::Closure& reply);
 
+  // Path to IRT. Available even before IRT is loaded.
+  const FilePath& GetIrtFilePath();
+
  private:
   base::PlatformFile irt_platform_file_;
+
+  FilePath irt_filepath_;
 
   friend struct DefaultSingletonTraits<NaClBrowser>;
 
   NaClBrowser()
-      : irt_platform_file_(base::kInvalidPlatformFileValue)
-  {}
+      : irt_platform_file_(base::kInvalidPlatformFileValue),
+        irt_filepath_() {
+    InitIrtFilePath();
+  }
 
   ~NaClBrowser() {
     if (irt_platform_file_ != base::kInvalidPlatformFileValue)
       base::ClosePlatformFile(irt_platform_file_);
   }
+
+  void InitIrtFilePath();
 
   void OpenIrtLibraryFile();
 
@@ -354,6 +364,22 @@ bool NaClProcessHost::Launch(
   return true;
 }
 
+scoped_ptr<CommandLine> NaClProcessHost::LaunchWithNaClGdb(FilePath nacl_gdb,
+                                                           CommandLine* line) {
+  CommandLine* cmd_line = new CommandLine(nacl_gdb);
+  // We can't use PrependWrapper because our parameters contain spaces.
+  cmd_line->AppendArg("--eval-command");
+  const FilePath::StringType& irt_path =
+      NaClBrowser::GetInstance()->GetIrtFilePath().value();
+  cmd_line->AppendArgNative(FILE_PATH_LITERAL("nacl-irt ") + irt_path);
+  cmd_line->AppendArg("--args");
+  const CommandLine::StringVector& argv = line->argv();
+  for (size_t i = 0; i < argv.size(); i++) {
+    cmd_line->AppendArgNative(argv[i]);
+  }
+  return scoped_ptr<CommandLine>(cmd_line);
+}
+
 bool NaClProcessHost::LaunchSelLdr() {
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())
@@ -386,6 +412,16 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (exe_path.empty())
     return false;
 
+#if defined(OS_WIN)
+  // On Windows 64-bit NaCl loader is called nacl64.exe instead of chrome.exe
+  if (RunningOnWOW64()) {
+    FilePath module_path;
+    if (!PathService::Get(base::FILE_MODULE, &module_path))
+      return false;
+    exe_path = module_path.DirName().Append(chrome::kNaClAppName);
+  }
+#endif
+
   scoped_ptr<CommandLine> cmd_line(new CommandLine(exe_path));
   nacl::CopyNaClCommandLineArguments(cmd_line.get());
 
@@ -397,6 +433,23 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   if (!nacl_loader_prefix.empty())
     cmd_line->PrependWrapper(nacl_loader_prefix);
+
+  FilePath nacl_gdb = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+      switches::kNaClGdb);
+  if (!nacl_gdb.empty()) {
+    cmd_line->AppendSwitch(switches::kNoSandbox);
+    scoped_ptr<CommandLine> gdb_cmd_line(
+        LaunchWithNaClGdb(nacl_gdb, cmd_line.get()));
+    // We can't use process_->Launch() because OnProcessLaunched will be called
+    // with process_->GetData().handle filled by handle of gdb process. This
+    // handle will be used to duplicate handles for NaCl process and as
+    // a result NaCl process will not be able to use them.
+    //
+    // So we don't fill process_->GetData().handle and wait for
+    // OnChannelConnected to get handle of NaCl process from its pid. Then we
+    // call OnProcessLaunched.
+    return base::LaunchProcess(*gdb_cmd_line, base::LaunchOptions(), NULL);
+  }
 
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
@@ -457,15 +510,7 @@ const FilePath::StringType NaClIrtName() {
 
 }  // namespace
 
-// This only ever runs on the BrowserThread::FILE thread.
-// If multiple tasks are posted, the later ones are no-ops.
-void NaClBrowser::OpenIrtLibraryFile() {
-  if (irt_platform_file_ != base::kInvalidPlatformFileValue)
-    // We've already run.
-    return;
-
-  FilePath irt_filepath;
-
+void NaClBrowser::InitIrtFilePath() {
   // Allow the IRT library to be overridden via an environment
   // variable.  This allows the NaCl/Chromium integration bot to
   // specify a newly-built IRT rather than using a prebuilt one
@@ -475,7 +520,7 @@ void NaClBrowser::OpenIrtLibraryFile() {
   if (irt_path_var != NULL) {
     FilePath::StringType path_string(
         irt_path_var, const_cast<const char*>(strchr(irt_path_var, '\0')));
-    irt_filepath = FilePath(path_string);
+    irt_filepath_ = FilePath(path_string);
   } else {
     FilePath plugin_dir;
     if (!PathService::Get(chrome::DIR_INTERNAL_PLUGINS, &plugin_dir)) {
@@ -483,18 +528,30 @@ void NaClBrowser::OpenIrtLibraryFile() {
       return;
     }
 
-    irt_filepath = plugin_dir.Append(NaClIrtName());
+    irt_filepath_ = plugin_dir.Append(NaClIrtName());
   }
+}
+
+const FilePath& NaClBrowser::GetIrtFilePath() {
+  return irt_filepath_;
+}
+
+// This only ever runs on the BrowserThread::FILE thread.
+// If multiple tasks are posted, the later ones are no-ops.
+void NaClBrowser::OpenIrtLibraryFile() {
+  if (irt_platform_file_ != base::kInvalidPlatformFileValue)
+    // We've already run.
+    return;
 
   base::PlatformFileError error_code;
-  irt_platform_file_ = base::CreatePlatformFile(irt_filepath,
+  irt_platform_file_ = base::CreatePlatformFile(irt_filepath_,
                                                 base::PLATFORM_FILE_OPEN |
                                                 base::PLATFORM_FILE_READ,
                                                 NULL,
                                                 &error_code);
   if (error_code != base::PLATFORM_FILE_OK) {
     LOG(ERROR) << "Failed to open NaCl IRT file \""
-               << irt_filepath.LossyDisplayName()
+               << irt_filepath_.LossyDisplayName()
                << "\": " << error_code;
   }
 }
@@ -533,6 +590,24 @@ bool NaClProcessHost::IsHardwareExceptionHandlingEnabled() {
 }
 
 void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
+  // Set process handle, if it was not set previously.
+  // This is needed when NaCl process is launched with nacl-gdb.
+  if (process_->GetData().handle == base::kNullProcessHandle) {
+    base::ProcessHandle process;
+    DCHECK(!CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+        switches::kNaClGdb).empty());
+    if (base::OpenProcessHandleWithAccess(
+            peer_pid,
+            base::kProcessAccessDuplicateHandle |
+            base::kProcessAccessQueryLimitedInfomation |
+            base::kProcessAccessWaitForTermination,
+            &process)) {
+      process_->SetHandle(process);
+      OnProcessLaunched();
+    } else {
+      LOG(ERROR) << "Failed to get process handle";
+    }
+  }
   if (!IsHardwareExceptionHandlingEnabled()) {
     return;
   }

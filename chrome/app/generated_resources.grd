@@ -4760,6 +4760,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NACL_EXCEPTION_HANDLING_DESCRIPTION" desc="Description of the 'Enable Native Client hardware exception handling' lab.">
         Enable support for Native Client hardware exception handling.
       </message>
+      <message name="IDS_FLAGS_NACL_GDB_NAME" desc="Name of the 'Debug Native Client applications at startup' lab">
+        Debug Native Client applications at startup.
+      </message>
+      <message name="IDS_FLAGS_NACL_GDB_DESCRIPTION" desc="Description of the 'Debug Native Client applications at startup' lab.">
+        Set path to nacl-gdb debugger. It will be attached to NaCl applications at startup.
+      </message>
       <message name="IDS_FLAGS_DISABLE_SHORTCUTS_PROVIDER" desc="Name of the 'Disable better ranking of previously selected shortcuts in omnibox' lab.">
         Disable 'shortcuts' in the omnibox.
       </message>

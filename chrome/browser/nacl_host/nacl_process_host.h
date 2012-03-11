@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_child_process_host_delegate.h"
 
 class ChromeRenderMessageFilter;
+class CommandLine;
 
 namespace content {
 class BrowserChildProcessHost;
@@ -55,6 +56,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // depends on chrome.gyp (circular dependency).
   struct NaClInternal;
 
+  // Create command line for launching loader under nacl-gdb.
+  scoped_ptr<CommandLine> LaunchWithNaClGdb(FilePath nacl_gdb,
+                                            CommandLine* line);
   bool LaunchSelLdr();
 
   // BrowserChildProcessHostDelegate implementation:
