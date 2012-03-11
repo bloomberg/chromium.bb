@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+/*
+ * This file contains "borrowed" copy of standard styles. To simplify merging,
+ * when altering, please preserve original property value by adding comments.
+ */
 input.common[type="checkbox"], input.common[type="radio"] {
   -webkit-appearance: none;
   width: 13px;
@@ -15,7 +19,7 @@ input.common[type="checkbox"], input.common[type="radio"] {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   cursor: default;
-  position: relative;
+/*  position: relative;*/
 }
 
 input.common[type="checkbox"]:checked::after {
