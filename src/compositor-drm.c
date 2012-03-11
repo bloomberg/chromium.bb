@@ -1396,20 +1396,18 @@ update_outputs(struct drm_compositor *ec, struct udev_device *drm_device)
 static int
 udev_event_is_hotplug(struct drm_compositor *ec, struct udev_device *device)
 {
-	struct udev_list_entry *list, *hotplug_entry;
 	const char *sysnum;
+	const char *val;
 
 	sysnum = udev_device_get_sysnum(device);
 	if (!sysnum || atoi(sysnum) != ec->drm.id)
 		return 0;
 
-	list = udev_device_get_properties_list_entry(device);
-
-	hotplug_entry = udev_list_entry_get_by_name(list, "HOTPLUG");
-	if (hotplug_entry == NULL)
+	val = udev_device_get_property_value(device, "HOTPLUG");
+	if (!val)
 		return 0;
 
-	return strcmp(udev_list_entry_get_value(hotplug_entry), "1") == 0;
+	return strcmp(val, "1") == 0;
 }
 
 static int
