@@ -58,12 +58,6 @@ class AccessibleChecker {
   AccessibleChecker(
       wstring expected_name,
       wstring expected_role,
-      int32 expected_ia2_role,
-      wstring expected_value);
-  AccessibleChecker(
-      wstring expected_name,
-      int32 expected_role,
-      int32 expected_ia2_role,
       wstring expected_value);
 
   // Append an AccessibleChecker that verifies accessibility information for
@@ -84,7 +78,6 @@ class AccessibleChecker {
  private:
   void CheckAccessibleName(IAccessible* accessible);
   void CheckAccessibleRole(IAccessible* accessible);
-  void CheckIA2Role(IAccessible* accessible);
   void CheckAccessibleValue(IAccessible* accessible);
   void CheckAccessibleState(IAccessible* accessible);
   void CheckAccessibleChildren(IAccessible* accessible);
@@ -97,9 +90,6 @@ class AccessibleChecker {
 
   // Expected accessible role. Checked against IAccessible::get_accRole.
   CComVariant role_;
-
-  // Expected IAccessible2 role. Checked against IAccessible2::role.
-  int32 ia2_role_;
 
   // Expected accessible value. Checked against IAccessible::get_accValue.
   wstring value_;
@@ -242,24 +232,10 @@ AccessibleChecker::AccessibleChecker(
     state_(-1) {
 }
 
-AccessibleChecker::AccessibleChecker(wstring expected_name,
-                                     int32 expected_role,
-                                     int32 expected_ia2_role,
-                                     wstring expected_value) :
-    name_(expected_name),
-    role_(expected_role),
-    ia2_role_(expected_ia2_role),
-    value_(expected_value),
-    state_(-1) {
-}
-
-AccessibleChecker::AccessibleChecker(wstring expected_name,
-                                     wstring expected_role,
-                                     int32 expected_ia2_role,
-                                     wstring expected_value) :
+AccessibleChecker::AccessibleChecker(
+    wstring expected_name, wstring expected_role, wstring expected_value) :
     name_(expected_name),
     role_(expected_role.c_str()),
-    ia2_role_(expected_ia2_role),
     value_(expected_value),
     state_(-1) {
 }
@@ -272,7 +248,6 @@ void AccessibleChecker::AppendExpectedChild(
 void AccessibleChecker::CheckAccessible(IAccessible* accessible) {
   CheckAccessibleName(accessible);
   CheckAccessibleRole(accessible);
-  CheckIA2Role(accessible);
   CheckAccessibleValue(accessible);
   CheckAccessibleState(accessible);
   CheckAccessibleChildren(accessible);
@@ -308,16 +283,6 @@ void AccessibleChecker::CheckAccessibleRole(IAccessible* accessible) {
       accessible->get_accRole(CreateI4Variant(CHILDID_SELF), &var_role);
   ASSERT_EQ(S_OK, hr);
   EXPECT_TRUE(role_ == var_role);
-}
-
-void AccessibleChecker::CheckIA2Role(IAccessible* accessible) {
-  base::win::ScopedComPtr<IAccessible2> accessible2;
-  HRESULT hr = QueryIAccessible2(accessible, accessible2.Receive());
-  ASSERT_EQ(S_OK, hr);
-  long ia2_role = 0;
-  hr = accessible2->role(&ia2_role);
-  ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(ia2_role_, ia2_role);
 }
 
 void AccessibleChecker::CheckAccessibleValue(IAccessible* accessible) {
@@ -402,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Check the browser's copy of the renderer accessibility tree.
   AccessibleChecker button_checker(L"push", ROLE_SYSTEM_PUSHBUTTON, L"push");
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
-  AccessibleChecker body_checker(L"", L"body", IA2_ROLE_SECTION, L"");
+  AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document2_checker(
     L"Accessibility Win Test", ROLE_SYSTEM_DOCUMENT, L"");
   body_checker.AppendExpectedChild(&button_checker);
@@ -449,8 +414,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   AccessibleChecker list_item_checker(L"", ROLE_SYSTEM_LISTITEM, L"");
   list_item_checker.SetExpectedState(
       STATE_SYSTEM_READONLY);
-  AccessibleChecker radio_group_checker(L"", ROLE_SYSTEM_GROUPING,
-      IA2_ROLE_SECTION, L"");
+  AccessibleChecker radio_group_checker(L"", ROLE_SYSTEM_GROUPING, L"");
   radio_group_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   list_item_checker.AppendExpectedChild(&list_marker_checker);
@@ -501,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Check the browser's copy of the renderer accessibility tree.
   AccessibleChecker checkbox_checker(L"", ROLE_SYSTEM_CHECKBUTTON, L"");
   checkbox_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
-  AccessibleChecker body_checker(L"", L"body", IA2_ROLE_SECTION, L"");
+  AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   body_checker.AppendExpectedChild(&checkbox_checker);
   document_checker.AppendExpectedChild(&body_checker);
@@ -656,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   AccessibleChecker text_field_checker(L"", ROLE_SYSTEM_TEXT, L"old value");
   text_field_checker.SetExpectedState(STATE_SYSTEM_FOCUSABLE);
-  AccessibleChecker body_checker(L"", L"body", IA2_ROLE_SECTION, L"");
+  AccessibleChecker body_checker(L"", L"body", L"");
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
   body_checker.AppendExpectedChild(&text_field_checker);
   document_checker.AppendExpectedChild(&body_checker);
@@ -709,86 +673,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   RecursiveFindNodeInAccessibilityTree(
       browser_accessible.get(), ROLE_SYSTEM_DOCUMENT, L"MyDocument", 0, &found);
   ASSERT_EQ(found, true);
-}
-
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestToggleButtonRoleAndStates) {
-  ui_test_utils::WindowedNotificationObserver tree_updated_observer1(
-      content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-      content::NotificationService::AllSources());
-  AccessibleChecker* button_checker;
-  std::string button_html("data:text/html,");
-  AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  AccessibleChecker body_checker(L"", L"body", IA2_ROLE_SECTION, L"");
-  document_checker.AppendExpectedChild(&body_checker);
-
-// Temporary macro
-#define ADD_BUTTON(html, ia2_role, state) \
-    button_html += html; \
-    button_checker = new AccessibleChecker(L"x", ROLE_SYSTEM_PUSHBUTTON, \
-      ia2_role, L""); \
-    button_checker->SetExpectedState(state); \
-    body_checker.AppendExpectedChild(button_checker)
-
-  // If aria-pressed is 'undefined', empty or not present, use PUSHBUTTON
-  // Otherwise use TOGGLE_BUTTON, even if the value is invalid.
-  // The spec does this in an attempt future-proof in case new values are added.
-  ADD_BUTTON("<span role='button' aria-pressed='false'>x</span>",
-      IA2_ROLE_TOGGLE_BUTTON, 0);
-  ADD_BUTTON("<span role='button' aria-pressed='true'>x</span>",
-      IA2_ROLE_TOGGLE_BUTTON, STATE_SYSTEM_PRESSED);
-  ADD_BUTTON("<span role='button' aria-pressed='mixed'>x</span>",
-      IA2_ROLE_TOGGLE_BUTTON, STATE_SYSTEM_MIXED);
-  ADD_BUTTON("<span role='button' aria-pressed='xyz'>x</span>",
-    IA2_ROLE_TOGGLE_BUTTON, 0);
-  ADD_BUTTON("<span role='button' aria-pressed=''>x</span>",
-      ROLE_SYSTEM_PUSHBUTTON, 0);
-  ADD_BUTTON("<span role='button' aria-pressed>x</span>",
-      ROLE_SYSTEM_PUSHBUTTON, 0);
-  ADD_BUTTON("<span role='button' aria-pressed='undefined'>x</span>",
-      ROLE_SYSTEM_PUSHBUTTON, 0);
-  ADD_BUTTON("<span role='button'>x</span>", ROLE_SYSTEM_PUSHBUTTON, 0);
-  ADD_BUTTON("<input type='button' aria-pressed='true' value='x'/>",
-      IA2_ROLE_TOGGLE_BUTTON, STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_PRESSED);
-  ADD_BUTTON("<input type='button' aria-pressed='false' value='x'/>",
-      IA2_ROLE_TOGGLE_BUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<input type='button' aria-pressed='mixed' value='x'>",
-      IA2_ROLE_TOGGLE_BUTTON, STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_MIXED);
-  ADD_BUTTON("<input type='button' aria-pressed='xyz' value='x'/>",
-      IA2_ROLE_TOGGLE_BUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<input type='button' aria-pressed='' value='x'/>",
-      ROLE_SYSTEM_PUSHBUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<input type='button' aria-pressed value='x'>",
-      ROLE_SYSTEM_PUSHBUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<input type='button' aria-pressed='undefined' value='x'>",
-      ROLE_SYSTEM_PUSHBUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<input type='button' value='x'>",
-      ROLE_SYSTEM_PUSHBUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<button aria-pressed='true'>x</button>",
-      IA2_ROLE_TOGGLE_BUTTON, STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_PRESSED);
-  ADD_BUTTON("<button aria-pressed='false'>x</button>",
-      IA2_ROLE_TOGGLE_BUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<button aria-pressed='mixed'>x</button>", IA2_ROLE_TOGGLE_BUTTON,
-      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_MIXED);
-  ADD_BUTTON("<button aria-pressed='xyz'>x</button>", IA2_ROLE_TOGGLE_BUTTON,
-      STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<button aria-pressed=''>x</button>",
-      ROLE_SYSTEM_PUSHBUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<button aria-pressed>x</button>",
-      ROLE_SYSTEM_PUSHBUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<button aria-pressed='undefined'>x</button>",
-      ROLE_SYSTEM_PUSHBUTTON, STATE_SYSTEM_FOCUSABLE);
-  ADD_BUTTON("<button>x</button>", ROLE_SYSTEM_PUSHBUTTON,
-      STATE_SYSTEM_FOCUSABLE);
-#undef ADD_BUTTON    // Temporary macro
-
-  const GURL tree_url(button_html);
-  browser()->OpenURL(OpenURLParams(tree_url, Referrer(), CURRENT_TAB,
-    content::PAGE_TRANSITION_TYPED, false));
-  GetRendererAccessible();
-  tree_updated_observer1.Wait();
-
-  document_checker.CheckAccessible(GetRendererAccessible());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
