@@ -3,15 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * A base class for metadata providers. Implementing in-memory caching.
+ * A base class for metadata provider. Implementing in-memory caching.
  */
 function MetadataCache() {
   this.cache_ = {};
 }
-
-MetadataCache.prototype.isSupported = function(url) {
-  return true;
-};
 
 MetadataCache.prototype.doFetch = function(url) {
   throw new Error('MetadataCache.doFetch not implemented');
@@ -21,12 +17,11 @@ MetadataCache.prototype.fetch = function(url, callback) {
   var cacheValue = this.cache_[url];
 
   if (!cacheValue) {
-    // This is the first time anyone's asked, go get it.
-    if (this.isSupported(url)) {
-      this.cache_[url] = [callback];
-      this.doFetch(url);
-    } else {
+    // This is the first time anyone has asked, go get it.
+    this.cache_[url] = [callback];
+    if (!this.doFetch(url)) {
       // Fetch failed, return an empty map, no caching needed.
+      delete this.cache_[url];
       setTimeout(callback, 0, {});
     }
     return;
@@ -40,7 +35,7 @@ MetadataCache.prototype.fetch = function(url, callback) {
 
   if (cacheValue instanceof Object) {
     // We already know the answer, let the caller know in a fresh call stack.
-    setTimeout(function() { callback(cacheValue) }, 0);
+    setTimeout(callback, 0, cacheValue);
     return;
   }
 
@@ -75,10 +70,37 @@ MetadataCache.prototype.reset = function(url) {
 };
 
 /**
- * Create metadata provider for local files.
+ * Base class for metadata fetchers.
+ *
+ * @param {function(string, Object)} resultCallback
+ * @param {string} urlPrefix.
  */
-function MetadataProvider() {
-  MetadataCache.call(this);
+function MetadataFetcher(resultCallback, urlPrefix) {
+  this.resultCallback_ = resultCallback;
+  this.urlPrefix_ = urlPrefix;
+}
+
+MetadataFetcher.prototype.processResult = function(url, metadata) {
+  this.resultCallback_(url, metadata);
+};
+
+MetadataFetcher.prototype.isInitialized = function() {
+  return true;
+};
+
+MetadataFetcher.prototype.supports = function(url) {
+  return url.indexOf(this.urlPrefix_) == 0;
+};
+
+MetadataFetcher.prototype.doFetch = function(url) {
+  console.error('MetadataFetcher.doFetch not implemented');
+};
+
+/**
+ * Create metadata cache for local files.
+ */
+function LocalMetadataFetcher(resultCallback, rootUrl) {
+  MetadataFetcher.apply(this, arguments);
 
   // Pass all URLs to the metadata reader until we have a correct filter.
   this.urlFilter = /.*/;
@@ -93,22 +115,28 @@ function MetadataProvider() {
   this.dispatcher_.postMessage({verb: 'init'});
   // Initialization is not complete until the Worker sends back the
   // 'initialized' message.  See below.
+  this.initialized_ = false;
 }
 
-MetadataProvider.prototype = { __proto__: MetadataCache.prototype };
+LocalMetadataFetcher.prototype = { __proto__: MetadataFetcher.prototype };
 
-MetadataProvider.prototype.isSupported = function(url) {
-  return url.match(this.urlFilter);
+LocalMetadataFetcher.prototype.supports = function(url) {
+  return MetadataFetcher.prototype.supports.apply(this, arguments) &&
+      url.match(this.urlFilter);
 };
 
-MetadataProvider.prototype.doFetch = function(url) {
+LocalMetadataFetcher.prototype.doFetch = function(url) {
   this.dispatcher_.postMessage({verb: 'request', arguments: [url]});
+};
+
+LocalMetadataFetcher.prototype.isInitialized = function() {
+  return this.initialized_;
 };
 
 /**
  * Dispatch a message from a metadata reader to the appropriate on* method.
  */
-MetadataProvider.prototype.onMessage_ = function(event) {
+LocalMetadataFetcher.prototype.onMessage_ = function(event) {
   var data = event.data;
 
   var methodName =
@@ -125,39 +153,48 @@ MetadataProvider.prototype.onMessage_ = function(event) {
 /**
  * Handles the 'initialized' message from the metadata reader Worker.
  */
-MetadataProvider.prototype.onInitialized_ = function(regexp) {
+LocalMetadataFetcher.prototype.onInitialized_ = function(regexp) {
   this.urlFilter = regexp;
+
+  // Tests can monitor for this state with
+  // ExtensionTestMessageListener listener("worker-initialized");
+  // ASSERT_TRUE(listener.WaitUntilSatisfied());
+  // Automated tests need to wait for this, otherwise we crash in
+  // browser_test cleanup because the worker process still has
+  // URL requests in-flight.
+  chrome.test.sendMessage('worker-initialized');
+  this.initialized_ = true;
 };
 
-MetadataProvider.prototype.onResult_ = function(url, metadata) {
+LocalMetadataFetcher.prototype.onResult_ = function(url, metadata) {
   this.processResult(url, metadata);
 };
 
-MetadataProvider.prototype.onError_ = function(url, step, error, metadata) {
+LocalMetadataFetcher.prototype.onError_ = function(url, step, error, metadata) {
   console.warn('metadata: ' + url + ': ' + step + ': ' + error);
   this.processResult(url, metadata || {});
 };
 
-MetadataProvider.prototype.onLog_ = function(arglist) {
+LocalMetadataFetcher.prototype.onLog_ = function(arglist) {
   console.log.apply(console, ['metadata:'].concat(arglist));
 };
 
 /**
- * Create a metadata provider for GData files.
+ * Create a metadata fetcher for GData files.
  *
  * Instead of reading the file contents it gets the metadata from GData API.
  */
-function GDataMetadataProvider() {
-  MetadataCache.call(this);
+function GDataMetadataFetcher(resultCallback, rootUrl) {
+  MetadataFetcher.apply(this, arguments);
 }
 
-GDataMetadataProvider.prototype = { __proto__: MetadataCache.prototype };
+GDataMetadataFetcher.prototype = { __proto__: MetadataFetcher.prototype };
 
-GDataMetadataProvider.prototype.doFetch = function(url) {
+GDataMetadataFetcher.prototype.doFetch = function(url) {
   function convertMetadata(result) {
     return {
       thumbnailURL: result.thumbnailUrl,
-      thumbnailOnly: true,  // Temporary, unless we learn to fetch the content.
+      contentURL: (result.contentUrl || '').replace(/\?.*$/gi, ''),
       fileSize: 0  // TODO(kaznacheev) Get the correct size from File API.
     }
   }
@@ -166,4 +203,45 @@ GDataMetadataProvider.prototype.doFetch = function(url) {
     function(results) {
       this.processResult(url, convertMetadata(results[0]));
     }.bind(this));
+};
+
+/**
+ * Create universal metadata provider.
+ *
+ * @param {string} rootUrl The file system root url.
+ * @constructor
+ */
+function MetadataProvider(rootUrl) {
+  MetadataCache.call(this);
+
+  var resultCallback = this.processResult.bind(this);
+
+  // TODO(kaznacheev): We use 'gdata' literal here because
+  // DirectoryModel.GDATA_DIRECTORY definition might be not available.
+  // Consider extracting this definition into some common js file.
+  this.fetchers_ = [
+    new GDataMetadataFetcher(resultCallback, rootUrl + 'gdata' + '/'),
+    new LocalMetadataFetcher(resultCallback, rootUrl)
+  ];
+}
+
+MetadataProvider.prototype = { __proto__: MetadataCache.prototype };
+
+MetadataProvider.prototype.isInitialized = function() {
+  for (var i = 0; i != this.fetchers_.length; i++) {
+    if (!this.fetchers_[i].isInitialized())
+      return false;
+  }
+  return true;
+};
+
+MetadataProvider.prototype.doFetch = function(url) {
+  for (var i = 0; i != this.fetchers_.length; i++) {
+    var fetcher = this.fetchers_[i];
+    if (fetcher.supports(url)) {
+      fetcher.doFetch(url);
+      return true;
+    }
+  }
+  return false;
 };

@@ -555,8 +555,13 @@ FileManager.prototype = {
 
     this.refocus();
 
-    this.localMetadataProvider_ = this.createLocalMetadataProvider_();
-    this.gdataMetadataProvider_ = new GDataMetadataProvider();
+    this.metadataProvider_ =
+        new MetadataProvider(this.filesystem_.root.toURL());
+
+    // PyAuto tests monitor this state by polling this variable
+    this.__defineGetter__('workerInitialized_', function() {
+       return self.getMetadataProvider().isInitialized();
+    });
 
     this.table_.list.endBatchUpdates();
     this.grid_.endBatchUpdates();
@@ -2189,47 +2194,13 @@ FileManager.prototype = {
   };
 
 
-  FileManager.prototype.createLocalMetadataProvider_ = function() {
-    // Subclass MetadataProvider to notify tests when the initialization
-    // is complete.
-
-    var fileManager = this;
-
-    function TestAwareMetadataProvider () {
-      MetadataProvider.apply(this, arguments);
-    }
-
-    TestAwareMetadataProvider.prototype = {
-      __proto__: MetadataProvider.prototype,
-
-      onInitialized_: function() {
-        MetadataProvider.prototype.onInitialized_.apply(this, arguments);
-
-        // We're ready to run.  Tests can monitor for this state with
-        // ExtensionTestMessageListener listener("worker-initialized");
-        // ASSERT_TRUE(listener.WaitUntilSatisfied());
-        // Automated tests need to wait for this, otherwise we crash in
-        // browser_test cleanup because the worker process still has
-        // URL requests in-flight.
-        chrome.test.sendMessage('worker-initialized');
-        // PyAuto tests monitor this state by polling this variable
-        fileManager.workerInitialized_ = true;
-      }
-    };
-
-    return new TestAwareMetadataProvider();
-  };
-
   FileManager.prototype.isOnGData = function() {
     return this.directoryModel_ &&
         this.directoryModel_.rootPath == '/' + DirectoryModel.GDATA_DIRECTORY;
   };
 
   FileManager.prototype.getMetadataProvider = function() {
-    if (this.isOnGData())
-      return this.gdataMetadataProvider_;
-    else
-      return this.localMetadataProvider_;
+    return this.metadataProvider_;
   };
 
   /**

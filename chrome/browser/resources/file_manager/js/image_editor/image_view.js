@@ -180,21 +180,19 @@ ImageView.prototype.load = function(
     if (metadata.thumbnailURL) {
       video.setAttribute('poster', metadata.thumbnailURL);
     }
-    if (!metadata.thumbnailOnly) {
-      video.src = source;
-      video.load();
-    }
-    displayMainImage(ImageView.LOAD_TYPE_TOTAL, video);
+    video.src = metadata.contentURL || source;
+    video.load();
+    displayMainImage(ImageView.LOAD_TYPE_TOTAL, slide, video);
     return;
   }
   var readyContent = this.getReadyContent(id, source);
   if (readyContent) {
-    displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL, readyContent);
+    displayMainImage(ImageView.LOAD_TYPE_CACHED_FULL, slide, readyContent);
   } else {
     var cachedScreen = this.screenCache_.getItem(id);
     if (cachedScreen) {
       // We have a cached screen-scale canvas, use it instead of a thumbnail.
-      displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, cachedScreen);
+      displayThumbnail(ImageView.LOAD_TYPE_CACHED_SCREEN, slide, cachedScreen);
       // As far as the user can tell the image is loaded. We still need to load
       // the full res image to make editing possible, but we can report now.
       ImageUtil.metrics.recordInterval(ImageUtil.getMetricName('DisplayTime'));
@@ -202,48 +200,51 @@ ImageView.prototype.load = function(
       this.imageLoader_.load(
           metadata.thumbnailURL,
           metadata.thumbnailTransform,
-          displayThumbnail.bind(null, ImageView.LOAD_TYPE_FILE));
+          displayThumbnail.bind(null, ImageView.LOAD_TYPE_FILE, slide));
     } else {
-      loadMainImage(ImageView.LOAD_TYPE_FILE, 0);
+      loadMainImage(ImageView.LOAD_TYPE_FILE, slide, source, 0);
     }
   }
 
-  function displayThumbnail(loadType, canvas) {
+  function displayThumbnail(loadType, slide, canvas) {
     // The thumbnail may have different aspect ratio than the main image.
     // Force the main image proportions to avoid flicker.
     var time = Date.now();
 
     var mainImageLoadDelay = ImageView.ANIMATION_WAIT_INTERVAL;
+    var mainImageSlide = slide;
 
     // Do not do slide-in animation when scrolling very fast.
     if (self.lastLoadTime_ &&
         (time - self.lastLoadTime_) < ImageView.FAST_SCROLL_INTERVAL) {
-      slide = 0;
+      mainImageSlide = 0;
     }
     self.lastLoadTime_ = time;
 
-    if (metadata.thumbnailOnly) {
+    var contentURL;
+    if (metadata.contentURL) {
+      contentURL = metadata.contentURL;
       // We do not know the main image size, but chances are that it is large
       // enough. Show the thumbnail at the maximum possible scale.
       var bounds = self.viewport_.getScreenBounds();
       var scale = Math.min (bounds.width / canvas.width,
                             bounds.height / canvas.height);
       self.replace(canvas, slide, canvas.width * scale, canvas.height * scale);
-      if (opt_callback) opt_callback(ImageView.LOAD_TYPE_TOTAL);
-      return;
+    } else {
+      contentURL = source;
+      self.replace(canvas, slide, metadata.width, metadata.height);
     }
-
-    self.replace(canvas, slide, metadata.width, metadata.height);
-    if (!slide) mainImageLoadDelay = 0;
-    slide = 0;
-    loadMainImage(loadType, mainImageLoadDelay);
+    if (!mainImageSlide) mainImageLoadDelay = 0;
+    mainImageSlide = 0;
+    loadMainImage(loadType, mainImageSlide, contentURL, mainImageLoadDelay);
   }
 
-  function loadMainImage(loadType, delay) {
-    if (self.prefetchLoader_.isLoading(source)) {
+  function loadMainImage(loadType, slide, contentURL, delay) {
+    if (self.prefetchLoader_.isLoading(contentURL)) {
       // The image we need is already being prefetched. Initiating another load
       // would be a waste. Hijack the load instead by overriding the callback.
-      self.prefetchLoader_.setCallback(displayMainImage.bind(null, loadType));
+      self.prefetchLoader_.setCallback(
+          displayMainImage.bind(null, loadType, slide));
 
       // Swap the loaders so that the self.isLoading works correctly.
       var temp = self.prefetchLoader_;
@@ -254,13 +255,13 @@ ImageView.prototype.load = function(
     self.prefetchLoader_.cancel();  // The prefetch was doing something useless.
 
     self.imageLoader_.load(
-        source,
+        contentURL,
         metadata.imageTransform,
-        displayMainImage.bind(null, loadType),
+        displayMainImage.bind(null, loadType, slide),
         delay);
   }
 
-  function displayMainImage(loadType, content) {
+  function displayMainImage(loadType, slide, content) {
     self.replace(content, slide);
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('LoadMode'),
         loadType, ImageView.LOAD_TYPE_TOTAL);

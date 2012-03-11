@@ -19,7 +19,8 @@
     "chrome://resources/",
     "tabs",
     "clipboardWrite",
-    "clipboardRead"
+    "clipboardRead",
+    "https://*.googleusercontent.com/"
   ],
   "app": {
     "launch": {

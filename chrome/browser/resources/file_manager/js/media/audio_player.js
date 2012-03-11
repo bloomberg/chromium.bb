@@ -13,11 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /**
  * @param {HTMLElement} container
+ * @param {string} filesystemRootURL
  * @constructor
  */
-function AudioPlayer(container) {
+function AudioPlayer(container, filesystemRootURL) {
   this.container_ = container;
-  this.metadataProvider_ = new MetadataProvider();
+  this.metadataProvider_ = new MetadataProvider(filesystemRootURL);
   this.currentTrack_ = -1;
   this.playlistGeneration_ = 0;
 
@@ -57,12 +58,15 @@ AudioPlayer.load = function() {
   document.ondragstart = function(e) { e.preventDefault() };
   document.oncontextmenu = function(e) { e.preventDefault(); };
 
-  var player = new AudioPlayer(document.querySelector('.audio-player'));
-  function getPlaylist() {
-    chrome.mediaPlayerPrivate.getPlaylist(player.load.bind(player));
-  }
-  getPlaylist();
-  chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);
+  chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
+    var player = new AudioPlayer(document.querySelector('.audio-player'),
+        filesystem.root.toURL());
+    function getPlaylist() {
+      chrome.mediaPlayerPrivate.getPlaylist(player.load.bind(player));
+    }
+    getPlaylist();
+    chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);
+  });
 };
 
 AudioPlayer.prototype.load = function(playlist) {
@@ -102,27 +106,23 @@ AudioPlayer.prototype.load = function(playlist) {
   this.container_.classList.add('noart');
 
   // Load the selected track metadata first, then load the rest.
-  this.loadMetadata_(playlist.position);
+  this.displayMetadata_(playlist.position);
   for (i = 0; i != this.urls_.length; i++) {
     if (i != playlist.position)
-      this.loadMetadata_(i);
+      this.displayMetadata_(i);
   }
 };
 
-AudioPlayer.prototype.loadMetadata_ = function(track) {
-  this.metadataProvider_.fetch(
+AudioPlayer.prototype.displayMetadata_ = function(track) {
+  this.fetchMetadata_(
       this.urls_[track],
-      function(generation, metadata) {
-        // Do nothing if another load happened since the metadata request.
-        if (this.playlistGeneration_ != generation)
-          return;
-
+      function(metadata) {
         if (metadata.thumbnailURL) {
           this.container_.classList.remove('noart');
         }
         this.trackListItems_[track].setMetadata(metadata);
         this.trackStackItems_[track].setMetadata(metadata);
-      }.bind(this, this.playlistGeneration_));
+      }.bind(this));
 };
 
 AudioPlayer.prototype.select_ = function(newTrack) {
@@ -134,10 +134,23 @@ AudioPlayer.prototype.select_ = function(newTrack) {
   this.currentTrack_ = newTrack;
   this.scrollToCurrent_(false);
 
-  var media = this.audioControls_.getMedia();
-  media.src = this.urls_[this.currentTrack_];
-  media.load();
-  this.audioControls_.play();
+  var url = this.urls_[this.currentTrack_];
+  this.fetchMetadata_(url, function(metadata) {
+    var media = this.audioControls_.getMedia();
+    media.src = metadata.contentURL || url;
+    media.load();
+    this.audioControls_.play();
+  }.bind(this));
+};
+
+AudioPlayer.prototype.fetchMetadata_ = function(url, callback) {
+  this.metadataProvider_.fetch(
+      url,
+      function(generation, metadata) {
+        // Do nothing if another load happened since the metadata request.
+        if (this.playlistGeneration_ == generation)
+          callback(metadata);
+      }.bind(this, this.playlistGeneration_));
 };
 
 AudioPlayer.prototype.changeSelectionInList_ = function(oldTrack, newTrack) {
