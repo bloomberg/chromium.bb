@@ -335,6 +335,7 @@
       'tests/test_paint_aggregator.cc',
       'tests/test_post_message.cc',
       'tests/test_scrollbar.cc',
+      'tests/test_tcp_server_socket_private_disallowed.cc',
       'tests/test_tcp_socket_private_disallowed.cc',
       'tests/test_udp_socket_private_disallowed.cc',
       'tests/test_url_loader.cc',
