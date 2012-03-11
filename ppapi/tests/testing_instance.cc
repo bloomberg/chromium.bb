@@ -172,7 +172,10 @@ void TestingInstance::ExecuteTests(int32_t unused) {
 }
 
 TestCase* TestingInstance::CaseForTestName(const std::string& name) {
-  std::string case_name = name.substr(0, name.find_first_of('_'));
+  std::string case_name = name;
+  if (case_name.find("SLOW_") == 0)
+    case_name = case_name.substr(5);
+  case_name = case_name.substr(0, case_name.find_first_of('_'));
   TestCaseFactory* iter = TestCaseFactory::head_;
   while (iter != NULL) {
     if (case_name == iter->name_)

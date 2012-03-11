@@ -618,11 +618,7 @@ TEST_PPAPI_OUT_OF_PROCESS(PostMessage_NonMainThread)
 #endif
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendInInit)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingData)
-#if defined(OS_WIN)  // TODO(jam)
-//TEST_PPAPI_NACL_VIA_HTTP(SLOW_PostMessage_SendingArrayBuffer)
-#else
-TEST_PPAPI_NACL_VIA_HTTP(PostMessage_SendingArrayBuffer)
-#endif
+TEST_PPAPI_NACL_VIA_HTTP(SLOW_PostMessage_SendingArrayBuffer)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_MessageEvent)
 TEST_PPAPI_NACL_VIA_HTTP(PostMessage_NoHandler)
 
