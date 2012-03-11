@@ -201,8 +201,8 @@ bool SortByLastUsedTimestampDesc(const LastUsedHandler& a,
 
 // TODO(zelidrag): Wire this with ICU to make this sort I18N happy.
 bool SortByTaskName(const LastUsedHandler& a, const LastUsedHandler& b) {
-  return base::strcasecmp(a.handler->title().data(),
-                          b.handler->title().data()) > 0;
+  return base::strcasecmp(a.handler->title().c_str(),
+                          b.handler->title().c_str()) > 0;
 }
 
 void SortLastUsedHandlerList(LastUsedHandlerList *list) {
@@ -272,8 +272,8 @@ bool FindCommonTasks(Profile* profile,
        iter != common_tasks.end(); ++iter) {
     // Get timestamp of when this task was used last time.
     int last_used_timestamp = 0;
-    prefs_tasks->GetInteger(MakeTaskID((*iter)->extension_id().data(),
-                                       (*iter)->id().data()),
+    prefs_tasks->GetInteger(MakeTaskID((*iter)->extension_id().c_str(),
+                                       (*iter)->id().c_str()),
                             &last_used_timestamp);
     URLPatternSet matching_patterns = GetAllMatchingPatterns(*iter, files_list);
     named_action_list->push_back(LastUsedHandler(last_used_timestamp, *iter,
@@ -809,8 +809,8 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
     const Extension* extension = service->GetExtensionById(extension_id, false);
     CHECK(extension);
     DictionaryValue* task = new DictionaryValue();
-    task->SetString("taskId", MakeTaskID(extension_id.data(),
-                                         handler->id().data()));
+    task->SetString("taskId", MakeTaskID(extension_id.c_str(),
+                                         handler->id().c_str()));
     task->SetString("title", handler->title());
     task->Set("patterns", URLPatternSetToStringList(iter->patterns));
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
@@ -1533,9 +1533,10 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
   }
 
 #if defined(OS_CHROMEOS)
-  FilePath::StringType source_file = files[0].value();
+  FilePath source_file = files[0];
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-  disk_mount_manager->MountPath(source_file.data(),
+  // MountPath() takes a std::string.
+  disk_mount_manager->MountPath(source_file.AsUTF8Unsafe(),
       DiskMountManager::MountTypeFromString(mount_type_str));
 #endif  // defined(OS_CHROMEOS)
 
