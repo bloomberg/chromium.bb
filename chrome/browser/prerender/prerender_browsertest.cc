@@ -713,7 +713,6 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
       const GURL& destination_url,
       const std::deque<FinalStatus>& expected_final_status_queue,
       int expected_number_of_loads) {
-    // TODO(cbentzel): Remove dest_url_?
     dest_url_ = destination_url;
 
     std::vector<net::TestServer::StringPair> replacement_text;
