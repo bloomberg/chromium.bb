@@ -119,7 +119,7 @@ deps = {
     'src/third_party/webrtc':
         Var('git_url') + '/external/webrtc/src.git@2c41f67dadcc8717802a371281c1f917ea5286b6',
     'src/third_party/yasm/source/patched-yasm':
-        Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@7a86dad4f92f20bf5d9542b2420a870c034d698e',
+        Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@3c5fb45a0ef38ca08793c28dad3cf5be29b25f7f',
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@95640e3a20adea634b4df4ccf8c93f411184c438',
     'src/tools/gyp':
