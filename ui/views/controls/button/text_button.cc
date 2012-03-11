@@ -517,10 +517,9 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 #if defined(OS_WIN)
       // TODO(erg): Either port DrawStringWithHalo to linux or find an
       // alternative here.
-      canvas->AsCanvasSkia()->DrawStringWithHalo(
-          text_, font_, text_color, color_highlight_, text_bounds.x(),
-          text_bounds.y(), text_bounds.width(), text_bounds.height(),
-          draw_string_flags);
+      canvas->DrawStringWithHalo(text_, font_, text_color, color_highlight_,
+          text_bounds.x(), text_bounds.y(), text_bounds.width(),
+          text_bounds.height(), draw_string_flags);
 #else
       canvas->DrawStringInt(text_,
                             font_,
@@ -532,8 +531,7 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                             draw_string_flags);
 #endif
     } else if (has_text_halo_) {
-      canvas->AsCanvasSkia()->DrawStringWithHalo(
-          text_, font_, text_color, text_halo_color_,
+      canvas->DrawStringWithHalo(text_, font_, text_color, text_halo_color_,
           text_bounds.x(), text_bounds.y(), text_bounds.width(),
           text_bounds.height(), draw_string_flags);
     } else if (has_shadow_) {

@@ -92,10 +92,9 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     // foreground and background colors are for the text to draw the correct
     // halo. Instead, just draw black on white, which will look good in most
     // cases.
-    canvas->AsCanvasSkia()->DrawStringWithHalo(
-        title(), font, 0x00000000, 0xFFFFFFFF, text_bounds.x(),
-        text_bounds.y(), text_bounds.width(), text_bounds.height(),
-        GetRootMenuItem()->GetDrawStringFlags());
+    canvas->DrawStringWithHalo(title(), font, 0x00000000, 0xFFFFFFFF,
+        text_bounds.x(), text_bounds.y(), text_bounds.width(),
+        text_bounds.height(), GetRootMenuItem()->GetDrawStringFlags());
   } else {
     canvas->DrawStringInt(title(), font, fg_color,
                           text_bounds.x(), text_bounds.y(), text_bounds.width(),

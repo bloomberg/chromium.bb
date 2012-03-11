@@ -78,7 +78,7 @@ class Tab : public View {
     paint.setColor(kTabBorderColor);
     paint.setStrokeWidth(kTabBorderThickness * 2);
 
-    canvas->AsCanvasSkia()->sk_canvas()->drawPath(path, paint);
+    canvas->sk_canvas()->drawPath(path, paint);
   }
 
   void PaintTabTitle(gfx::Canvas* canvas, bool selected) {
@@ -162,8 +162,7 @@ class TabStrip : public View {
     paint.setStrokeWidth(kTabBorderThickness);
     SkScalar line_y = SkIntToScalar(height()) - kTabBorderThickness;
     SkScalar line_width = SkIntToScalar(width());
-    canvas->AsCanvasSkia()->sk_canvas()->drawLine(0, line_y, line_width, line_y,
-                                                  paint);
+    canvas->sk_canvas()->drawLine(0, line_y, line_width, line_y, paint);
   }
 
  private:

@@ -477,8 +477,8 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
   }
 
 #if defined(OS_WIN)
-  canvas->AsCanvasSkia()->DrawFadeTruncatingString(title,
-      gfx::CanvasSkia::TruncateFadeTail, 0, *font_, title_color, title_bounds);
+  canvas->DrawFadeTruncatingString(title, gfx::Canvas::TruncateFadeTail, 0,
+                                   *font_, title_color, title_bounds);
 #else
   canvas->DrawStringInt(title, *font_, title_color,
                         title_bounds.x(), title_bounds.y(),

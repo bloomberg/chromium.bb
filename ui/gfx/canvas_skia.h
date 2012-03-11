@@ -294,8 +294,6 @@ class UI_EXPORT CanvasSkia {
 #endif
 
   // TODO(tfarina): Remove these. And stick with sk_canvas() only.
-  CanvasSkia* AsCanvasSkia();
-  const CanvasSkia* AsCanvasSkia() const;
   SkCanvas* GetSkCanvas();
   const SkCanvas* GetSkCanvas() const;
   SkCanvas* sk_canvas() const { return canvas_; }

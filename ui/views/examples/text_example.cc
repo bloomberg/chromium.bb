@@ -103,18 +103,18 @@ class TextExample::TextExampleView : public View {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
 #if defined(OS_WIN)
     if (fade_) {
-      gfx::Rect rect(0, 0, width(), height());
       size_t characters_to_truncate_from_head =
-          gfx::CanvasSkia::TruncateFadeHeadAndTail ? 10 : 0;
-      canvas->AsCanvasSkia()->DrawFadeTruncatingString(text_, fade_mode_,
-          characters_to_truncate_from_head, font_, SK_ColorDKGRAY, rect);
+          gfx::Canvas::TruncateFadeHeadAndTail ? 10 : 0;
+      canvas->DrawFadeTruncatingString(text_, fade_mode_,
+          characters_to_truncate_from_head, font_, SK_ColorDKGRAY,
+          GetLocalBounds());
       return;
     }
 #endif
 
     if (halo_) {
-      canvas->AsCanvasSkia()->DrawStringWithHalo(text_, font_, SK_ColorDKGRAY,
-          SK_ColorWHITE, 0, 0, width(), height(), text_flags_);
+      canvas->DrawStringWithHalo(text_, font_, SK_ColorDKGRAY, SK_ColorWHITE, 0,
+          0, width(), height(), text_flags_);
     } else {
       canvas->DrawStringInt(text_, font_, SK_ColorDKGRAY, 0, 0, width(),
           height(), text_flags_);

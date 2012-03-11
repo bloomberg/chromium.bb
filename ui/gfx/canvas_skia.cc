@@ -370,14 +370,6 @@ void CanvasSkia::Transform(const ui::Transform& transform) {
   canvas_->concat(transform.matrix());
 }
 
-CanvasSkia* CanvasSkia::AsCanvasSkia() {
-  return this;
-}
-
-const CanvasSkia* CanvasSkia::AsCanvasSkia() const {
-  return this;
-}
-
 SkCanvas* CanvasSkia::GetSkCanvas() {
   return canvas_;
 }

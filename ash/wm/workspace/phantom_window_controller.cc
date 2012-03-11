@@ -30,9 +30,7 @@ class BackgroundPainter : public views::Painter {
 
   // views::Painter overrides:
   virtual void Paint(gfx::Canvas* canvas, const gfx::Size& size) OVERRIDE {
-    canvas->AsCanvasSkia()->DrawDashedRect(
-        gfx::Rect(0, 0, size.width(), size.height()),
-        SkColorSetARGB(128, 0, 0, 0));
+    canvas->DrawDashedRect(gfx::Rect(size), SkColorSetARGB(128, 0, 0, 0));
   }
 
  private:

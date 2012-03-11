@@ -250,8 +250,7 @@ void InfoBarView::PaintChildren(gfx::Canvas* canvas) {
   // broken on non-Windows platforms (crbug.com/75154). For now, just clip to
   // the bar bounds.
   //
-  // gfx::CanvasSkia* canvas_skia = canvas->AsCanvasSkia();
-  // canvas_skia->clipPath(fill_path_);
+  // canvas->sk_canvas()->clipPath(fill_path_);
   DCHECK_EQ(total_height(), height())
       << "Infobar piecewise heights do not match overall height";
   canvas->ClipRect(gfx::Rect(0, arrow_height(), width(), bar_height()));
