@@ -356,8 +356,7 @@ void WindowTypeLauncher::ExecuteCommand(int id) {
 
 #if !defined(OS_MACOSX)
 void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
-                                                const gfx::Point& p,
-                                                bool is_mouse_gesture) {
+                                                const gfx::Point& point) {
   MenuItemView* root = new MenuItemView(this);
   root->AppendMenuItem(COMMAND_NEW_WINDOW,
                        ASCIIToUTF16("New Window"),
@@ -367,7 +366,7 @@ void WindowTypeLauncher::ShowContextMenuForView(views::View* source,
                        MenuItemView::NORMAL);
   // MenuRunner takes ownership of root.
   menu_runner_.reset(new MenuRunner(root));
-  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(p, gfx::Size(0, 0)),
+  if (menu_runner_->RunMenuAt(GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
         MenuItemView::TOPLEFT,
         MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
     return;

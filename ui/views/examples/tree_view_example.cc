@@ -123,8 +123,7 @@ bool TreeViewExample::CanEdit(TreeView* tree_view,
 }
 
 void TreeViewExample::ShowContextMenuForView(View* source,
-                                             const gfx::Point& p,
-                                             bool is_mouse_gesture) {
+                                             const gfx::Point& point) {
   ui::SimpleMenuModel context_menu_model(this);
   context_menu_model.AddItem(ID_EDIT, ASCIIToUTF16("Edit"));
   context_menu_model.AddItem(ID_REMOVE, ASCIIToUTF16("Remove"));
@@ -132,7 +131,7 @@ void TreeViewExample::ShowContextMenuForView(View* source,
   views::MenuModelAdapter menu_adapter(&context_menu_model);
   context_menu_runner_.reset(new views::MenuRunner(menu_adapter.CreateMenu()));
   if (context_menu_runner_->RunMenuAt(source->GetWidget(), NULL,
-      gfx::Rect(p, gfx::Size()), views::MenuItemView::TOPLEFT, 0) ==
+      gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPLEFT, 0) ==
       views::MenuRunner::MENU_DELETED)
     return;
 }

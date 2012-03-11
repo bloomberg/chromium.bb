@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,15 +28,10 @@ class View;
 // implementation for mouse processing.
 class VIEWS_EXPORT ContextMenuController {
  public:
-  // Invoked to show the context menu for the source view. If |is_mouse_gesture|
-  // is true, |p| is the location of the mouse. If |is_mouse_gesture| is false,
-  // this method was not invoked by a mouse gesture and |p| is the recommended
-  // location to show the menu at.
-  //
-  // |p| is in screen coordinates.
+  // Invoked to show the context menu for |source|.
+  // |point| is in screen coordinates.
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) = 0;
+                                      const gfx::Point& point) = 0;
 
  protected:
   virtual ~ContextMenuController() {}

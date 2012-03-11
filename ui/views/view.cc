@@ -992,7 +992,7 @@ void View::ShowContextMenu(const gfx::Point& p, bool is_mouse_gesture) {
   if (!context_menu_controller_)
     return;
 
-  context_menu_controller_->ShowContextMenuForView(this, p, is_mouse_gesture);
+  context_menu_controller_->ShowContextMenuForView(this, p);
 }
 
 // Drag and drop ---------------------------------------------------------------

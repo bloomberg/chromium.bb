@@ -508,10 +508,9 @@ void BaseTab::ButtonPressed(views::Button* sender, const views::Event& event) {
 }
 
 void BaseTab::ShowContextMenuForView(views::View* source,
-                                     const gfx::Point& p,
-                                     bool is_mouse_gesture) {
+                                     const gfx::Point& point) {
   if (controller() && !closing())
-    controller()->ShowContextMenuForTab(this, p);
+    controller()->ShowContextMenuForTab(this, point);
 }
 
 int BaseTab::loading_animation_frame() const {

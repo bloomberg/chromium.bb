@@ -57,8 +57,7 @@ class TreeViewExample : public ExampleBase,
 
   // ContextMenuController:
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+                                      const gfx::Point& point) OVERRIDE;
 
   // SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;

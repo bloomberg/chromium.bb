@@ -60,8 +60,7 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
  private:
   // views::ContextMenuController overrides:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+                                      const gfx::Point& point) OVERRIDE;
 
   AppListItemModel* model_;
 

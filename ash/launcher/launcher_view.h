@@ -139,8 +139,7 @@ class ASH_EXPORT LauncherView : public views::View,
 
   // Overriden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+                                      const gfx::Point& point) OVERRIDE;
 
   // The model; owned by Launcher.
   LauncherModel* model_;

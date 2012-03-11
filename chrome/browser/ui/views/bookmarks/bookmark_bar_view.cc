@@ -800,7 +800,7 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
 
 void BookmarkBarView::ShowContextMenu(const gfx::Point& p,
                                       bool is_mouse_gesture) {
-  ShowContextMenuForView(this, p, is_mouse_gesture);
+  ShowContextMenuForView(this, p);
 }
 
 void BookmarkBarView::OnThemeChanged() {
@@ -1049,9 +1049,8 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }
 
-void BookmarkBarView::ShowContextMenuForView(View* source,
-                                             const gfx::Point& p,
-                                             bool is_mouse_gesture) {
+void BookmarkBarView::ShowContextMenuForView(views::View* source,
+                                             const gfx::Point& point) {
   if (!model_->IsLoaded()) {
     // Don't do anything if the model isn't loaded.
     return;
@@ -1084,7 +1083,7 @@ void BookmarkBarView::ShowContextMenuForView(View* source,
       (parent->child_count() == 1);
   context_menu_.reset(new BookmarkContextMenu(GetWidget(), profile,
       browser_->GetSelectedWebContents(), parent, nodes, close_on_remove));
-  context_menu_->RunMenuAt(p);
+  context_menu_->RunMenuAt(point);
 }
 
 void BookmarkBarView::Observe(int type,

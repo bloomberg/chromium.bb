@@ -76,8 +76,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
 
   // ContextMenuController overrides:
   virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+                                      const gfx::Point& point) OVERRIDE;
 
   // Overridden from DragController:
   virtual void WriteDragDataForView(View* sender,

@@ -462,20 +462,19 @@ WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
 
 // views::ContextMenuController implementation.
 void BrowserView::ShowContextMenuForView(views::View* source,
-                                         const gfx::Point& p,
-                                         bool is_mouse_gesture) {
+                                         const gfx::Point& point) {
   // Only show context menu if point is in unobscured parts of browser, i.e.
   // if NonClientHitTest returns :
   // - HTCAPTION: in title bar or unobscured part of tabstrip
   // - HTNOWHERE: as the name implies.
-  gfx::Point point_in_parent_coords(p);
+  gfx::Point point_in_parent_coords(point);
   views::View::ConvertPointToView(NULL, parent(), &point_in_parent_coords);
   int hit_test = NonClientHitTest(point_in_parent_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
     // rebuild menu so it reflects current application state
     InitSystemMenu();
     if (system_menu_runner_->RunMenuAt(source->GetWidget(), NULL,
-            gfx::Rect(p, gfx::Size(0,0)), views::MenuItemView::TOPLEFT,
+            gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPLEFT,
             views::MenuRunner::HAS_MNEMONICS) ==
         views::MenuRunner::MENU_DELETED)
       return;

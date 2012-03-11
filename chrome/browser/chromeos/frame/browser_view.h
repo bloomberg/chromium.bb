@@ -79,8 +79,7 @@ class BrowserView : public ::BrowserView,
 
   // views::ContextMenuController implementation.
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+                                      const gfx::Point& point) OVERRIDE;
 
   // views::MenuListener implementation.
   virtual void OnMenuOpened() OVERRIDE;

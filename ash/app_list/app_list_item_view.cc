@@ -128,8 +128,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void AppListItemView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& p,
-                                             bool is_mouse_gesture) {
+                                             const gfx::Point& point) {
   ui::MenuModel* menu_model = model_->GetContextMenuModel();
   if (!menu_model)
     return;
@@ -139,7 +138,7 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
       new views::MenuRunner(new views::MenuItemView(&menu_adapter)));
   menu_adapter.BuildMenu(context_menu_runner_->GetMenu());
   if (context_menu_runner_->RunMenuAt(
-          GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
+          GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
           views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;

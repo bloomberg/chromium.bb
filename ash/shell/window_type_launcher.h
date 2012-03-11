@@ -62,8 +62,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
 
   // Override from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+                                      const gfx::Point& point) OVERRIDE;
 #endif  // !defined(OS_MACOSX)
 
   views::NativeTextButton* create_button_;

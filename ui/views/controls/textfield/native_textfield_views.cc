@@ -295,13 +295,11 @@ gfx::NativeCursor NativeTextfieldViews::GetCursor(const MouseEvent& event) {
 /////////////////////////////////////////////////////////////////
 // NativeTextfieldViews, ContextMenuController overrides:
 void NativeTextfieldViews::ShowContextMenuForView(View* source,
-                                                  const gfx::Point& p,
-                                                  bool is_mouse_gesture) {
+                                                  const gfx::Point& point) {
   UpdateContextMenu();
-  if (context_menu_runner_->RunMenuAt(
-          GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
-          views::MenuItemView::TOPLEFT, MenuRunner::HAS_MNEMONICS) ==
-      MenuRunner::MENU_DELETED)
+  if (context_menu_runner_->RunMenuAt(GetWidget(), NULL,
+          gfx::Rect(point, gfx::Size()), views::MenuItemView::TOPLEFT,
+          MenuRunner::HAS_MNEMONICS) == MenuRunner::MENU_DELETED)
     return;
 }
 

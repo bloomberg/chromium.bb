@@ -277,17 +277,17 @@ class TaskManagerView : public views::ButtonListener,
   // resources in the resource display.
   static void Show(bool highlight_background_resources);
 
-  // views::View
+  // views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
                                     views::View* child) OVERRIDE;
 
-  // ButtonListener implementation.
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // views::DialogDelegate
+  // views::DialogDelegateView:
   virtual bool CanResize() const OVERRIDE;
   virtual bool CanMaximize() const OVERRIDE;
   virtual bool ExecuteWindowsCommand(int command_id) OVERRIDE;
@@ -297,24 +297,23 @@ class TaskManagerView : public views::ButtonListener,
   virtual void WindowClosing() OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
-  // views::TableViewObserver implementation.
+  // views::TableViewObserver:
   virtual void OnSelectionChanged() OVERRIDE;
   virtual void OnDoubleClick() OVERRIDE;
   virtual void OnKeyDown(ui::KeyboardCode keycode) OVERRIDE;
 
-  // views::LinkListener implementation.
+  // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // Called by the column picker to pick up any new stat counters that
   // may have appeared since last time.
   void UpdateStatsCounters();
 
-  // views::ContextMenuController
+  // views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+                                      const gfx::Point& point) OVERRIDE;
 
-  // views::Menu::Delegate
+  // views::Menu::Delegate:
   virtual bool IsItemChecked(int id) const OVERRIDE;
   virtual void ExecuteCommand(int id) OVERRIDE;
 
@@ -708,8 +707,7 @@ void TaskManagerView::LinkClicked(views::Link* source, int event_flags) {
 }
 
 void TaskManagerView::ShowContextMenuForView(views::View* source,
-                                             const gfx::Point& p,
-                                             bool is_mouse_gesture) {
+                                             const gfx::Point& point) {
   UpdateStatsCounters();
   scoped_ptr<views::Menu> menu(views::Menu::Create(
       this, views::Menu::TOPLEFT, source->GetWidget()->GetNativeView()));
@@ -718,7 +716,7 @@ void TaskManagerView::ShowContextMenuForView(views::View* source,
     menu->AppendMenuItem(i->id, l10n_util::GetStringUTF16(i->id),
         views::Menu::CHECKBOX);
   }
-  menu->RunMenuAt(p.x(), p.y());
+  menu->RunMenuAt(point.x(), point.y());
 }
 
 bool TaskManagerView::IsItemChecked(int id) const {

@@ -707,8 +707,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
 }
 
 void LauncherView::ShowContextMenuForView(views::View* source,
-                                          const gfx::Point& p,
-                                          bool is_mouse_gesture) {
+                                          const gfx::Point& point) {
   int view_index = view_model_->GetIndexOfView(source);
   // May be -1 while in the process of animating closed.
   if (view_index == -1 || !delegate_)
@@ -727,7 +726,7 @@ void LauncherView::ShowContextMenuForView(views::View* source,
   // NOTE: if you convert to HAS_MNEMONICS be sure and update menu building
   // code.
   if (launcher_menu_runner_->RunMenuAt(
-          source->GetWidget(), NULL, gfx::Rect(p, gfx::Size()),
+          source->GetWidget(), NULL, gfx::Rect(point, gfx::Size()),
           views::MenuItemView::TOPLEFT, 0) == views::MenuRunner::MENU_DELETED)
     return;
 #endif

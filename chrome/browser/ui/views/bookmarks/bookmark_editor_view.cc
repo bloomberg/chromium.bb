@@ -279,9 +279,8 @@ void BookmarkEditorView::Close() {
   GetWidget()->Close();
 }
 
-void BookmarkEditorView::ShowContextMenuForView(View* source,
-                                                const gfx::Point& p,
-                                                bool is_mouse_gesture) {
+void BookmarkEditorView::ShowContextMenuForView(views::View* source,
+                                                const gfx::Point& point) {
   DCHECK(source == tree_view_);
   if (!tree_view_->GetSelectedNode())
     return;
@@ -300,7 +299,7 @@ void BookmarkEditorView::ShowContextMenuForView(View* source,
         IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM);
     context_menu_.reset(new views::Menu2(context_menu_contents_.get()));
   }
-  context_menu_->RunContextMenuAt(p);
+  context_menu_->RunContextMenuAt(point);
 #endif
 }
 

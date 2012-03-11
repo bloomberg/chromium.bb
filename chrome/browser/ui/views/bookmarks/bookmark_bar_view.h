@@ -233,8 +233,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // ContextMenuController
   virtual void ShowContextMenuForView(views::View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+                                      const gfx::Point& point) OVERRIDE;
 
   // NotificationService:
   virtual void Observe(int type,

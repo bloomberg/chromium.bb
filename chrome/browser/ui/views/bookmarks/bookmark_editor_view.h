@@ -126,9 +126,8 @@ class BookmarkEditorView : public BookmarkEditor,
   void Close();
 
   // views::ContextMenuController:
-  virtual void ShowContextMenuForView(View* source,
-                                      const gfx::Point& p,
-                                      bool is_mouse_gesture) OVERRIDE;
+  virtual void ShowContextMenuForView(views::View* source,
+                                      const gfx::Point& point) OVERRIDE;
 
  private:
   friend class BookmarkEditorViewTest;
