@@ -292,6 +292,18 @@ cr.define('options', function() {
   };
 
   /**
+   * Cancels (closes) the overlay, due to the user pressing <Esc>.
+   */
+  OptionsPage.cancelOverlay = function() {
+    var overlay = this.getVisibleOverlay_();
+    // Let the overlay handle the <Esc> if it wants to.
+    if (overlay.handleCancel)
+      overlay.handleCancel();
+    else
+      this.closeOverlay();
+  }
+
+  /**
    * Hides the visible overlay. Does not affect the history state.
    * @private
    */
@@ -540,8 +552,8 @@ cr.define('options', function() {
     for (var i = 0; i < containers.length; i++) {
       var overlay = containers[i];
       cr.ui.overlay.setupOverlay(overlay);
-      overlay.addEventListener('closeOverlay',
-                               OptionsPage.closeOverlay.bind(OptionsPage));
+      overlay.addEventListener('cancelOverlay',
+                               OptionsPage.cancelOverlay.bind(OptionsPage));
     }
   };
 

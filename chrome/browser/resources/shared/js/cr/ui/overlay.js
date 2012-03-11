@@ -41,7 +41,7 @@ cr.define('cr.ui.overlay', function() {
         if (!overlay)
           return;
 
-        cr.dispatchSimpleEvent(overlay, 'closeOverlay');
+        cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
       }
     });
   }

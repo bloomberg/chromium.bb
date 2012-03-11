@@ -20,7 +20,7 @@ cr.define('extensions', function() {
     initializePage: function() {
       var overlay = $('overlay');
       cr.ui.overlay.setupOverlay(overlay);
-      overlay.addEventListener('closeOverlay', this.handleDismiss_.bind(this));
+      overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
 
       $('packExtensionDismiss').addEventListener('click',
           this.handleDismiss_.bind(this));

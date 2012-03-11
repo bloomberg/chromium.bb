@@ -3,31 +3,42 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  var OptionsPage = options.OptionsPage;
+  var SettingsDialog = options.SettingsDialog;
 
+  /*
+   * InstantConfirmOverlay class
+   * Dialog to confirm that the user really wants to enable Chrome Instant.
+   * @extends {SettingsDialog}
+   */
   function InstantConfirmOverlay() {
-    OptionsPage.call(this, 'instantConfirm',
-                     templateData.instantConfirmTitle,
-                     'instantConfirmOverlay');
+    SettingsDialog.call(this,
+                        'instantConfirm',
+                        templateData.instantConfirmTitle,
+                        'instantConfirmOverlay',
+                        $('instantConfirmOk'),
+                        $('instantConfirmCancel'));
   };
 
   cr.addSingletonGetter(InstantConfirmOverlay);
 
   InstantConfirmOverlay.prototype = {
-    __proto__: OptionsPage.prototype,
+    __proto__: SettingsDialog.prototype,
 
+    /** @inheritDoc */
     initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
+      SettingsDialog.prototype.initializePage.call(this);
+    },
 
-      $('instantConfirmCancel').onclick = function() {
-        OptionsPage.closeOverlay();
-        $('instant-enabled-control').checked = false;
-      };
+    /** @inheritDoc */
+    handleConfirm: function() {
+      SettingsDialog.prototype.handleConfirm.call(this);
+      chrome.send('enableInstant');
+    },
 
-      $('instantConfirmOk').onclick = function() {
-        OptionsPage.closeOverlay();
-        chrome.send('enableInstant');
-      };
+    /** @inheritDoc */
+    handleCancel: function() {
+      SettingsDialog.prototype.handleCancel.call(this);
+      $('instant-enabled-control').checked = false;
     },
   };
 
