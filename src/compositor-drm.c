@@ -50,6 +50,7 @@ struct drm_compositor {
 	struct wl_event_source *udev_drm_source;
 
 	struct {
+		int id;
 		int fd;
 	} drm;
 	struct gbm_device *gbm;
@@ -759,12 +760,20 @@ static int
 init_egl(struct drm_compositor *ec, struct udev_device *device)
 {
 	EGLint major, minor;
-	const char *extensions, *filename;
+	const char *extensions, *filename, *sysnum;
 	int fd;
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
+
+	sysnum = udev_device_get_sysnum(device);
+	if (sysnum)
+		ec->drm.id = atoi(sysnum);
+	if (!sysnum || ec->drm.id < 0) {
+		fprintf(stderr, "cannot get device sysnum\n");
+		return -1;
+	}
 
 	filename = udev_device_get_devnode(device);
 	fd = open(filename, O_RDWR | O_CLOEXEC);
@@ -1385,9 +1394,14 @@ update_outputs(struct drm_compositor *ec, struct udev_device *drm_device)
 }
 
 static int
-udev_event_is_hotplug(struct udev_device *device)
+udev_event_is_hotplug(struct drm_compositor *ec, struct udev_device *device)
 {
 	struct udev_list_entry *list, *hotplug_entry;
+	const char *sysnum;
+
+	sysnum = udev_device_get_sysnum(device);
+	if (!sysnum || atoi(sysnum) != ec->drm.id)
+		return 0;
 
 	list = udev_device_get_properties_list_entry(device);
 
@@ -1406,7 +1420,7 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 
 	event = udev_monitor_receive_device(ec->udev_monitor);
 
-	if (udev_event_is_hotplug(event))
+	if (udev_event_is_hotplug(ec, event))
 		update_outputs(ec, event);
 
 	udev_device_unref(event);
