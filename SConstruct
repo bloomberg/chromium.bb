@@ -662,11 +662,6 @@ MAJOR_TEST_SUITES = set([
   'chrome_browser_tests',
   # Tests written using Chrome's PyAuto test jig
   'pyauto_tests',
-  # dynamic_library_browser_tests is separate from chrome_browser_tests
-  # because it currently requires different HTML/Javascript to run a
-  # dynamically-linked executable.  Once this is addressed, the two suites
-  # can be merged.
-  'dynamic_library_browser_tests',
   'huge_tests',
   'memcheck_bot_tests',
   'tsan_bot_tests',
@@ -841,7 +836,6 @@ Alias('medium_tests', [])
 Alias('large_tests', [])
 Alias('pepper_browser_tests', [])
 Alias('chrome_browser_tests', [])
-Alias('dynamic_library_browser_tests', [])
 Alias('pyauto_tests', [])
 
 Alias('unit_tests', 'small_tests')

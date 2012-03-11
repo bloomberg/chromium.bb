@@ -7,8 +7,6 @@ import os
 
 Import('env')
 
-if 'TRUSTED_ENV' not in env:
-  Return()
 if env.Bit('nacl_static_link'):
   Return()
 
@@ -42,6 +40,6 @@ browser_dlopen_node = env.PPAPIBrowserTester(
     nmfs=['browser_dlopen_test.nmf'],
     map_files=browser_dlopen_file_mapping)
 
-env.AddNodeToTestSuite(browser_dlopen_node, ['dynamic_library_browser_tests'],
+env.AddNodeToTestSuite(browser_dlopen_node, ['chrome_browser_tests'],
                        'run_browser_dlopen_test',
                        is_broken=env.PPAPIBrowserTesterIsBroken())
