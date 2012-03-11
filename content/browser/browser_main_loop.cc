@@ -20,6 +20,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/in_process_webkit/webkit_thread.h"
+#include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/trace_controller.h"
@@ -330,6 +331,7 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   audio_manager_.reset(AudioManager::Create());
+  online_state_observer_.reset(new BrowserOnlineStateObserver);
 
 #if defined(OS_WIN)
   system_message_window_.reset(new SystemMessageWindowWin);

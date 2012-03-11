@@ -67,7 +67,6 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -145,8 +144,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   extension_event_router_forwarder_ = new ExtensionEventRouterForwarder;
 
   ExtensionTabIdMap::GetInstance()->Init();
-
-  online_state_observer_.reset(new BrowserOnlineStateObserver);
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {

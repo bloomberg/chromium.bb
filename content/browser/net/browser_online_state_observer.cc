@@ -6,7 +6,6 @@
 
 #include "content/common/view_messages.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "net/base/network_change_notifier.h"
 
 BrowserOnlineStateObserver::BrowserOnlineStateObserver() {
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);

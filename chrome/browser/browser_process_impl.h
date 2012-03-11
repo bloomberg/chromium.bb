@@ -26,7 +26,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "ipc/ipc_message.h"
 
-class BrowserOnlineStateObserver;
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
@@ -254,9 +253,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #if defined(OS_CHROMEOS)
   scoped_ptr<browser::OomPriorityManager> oom_priority_manager_;
 #endif
-
-  // Per-process listener for online state changes.
-  scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
 
 #if !defined(OS_CHROMEOS)
   scoped_ptr<ComponentUpdateService> component_updater_;

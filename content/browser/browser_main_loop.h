@@ -11,6 +11,7 @@
 #include "content/browser/browser_process_sub_thread.h"
 
 class AudioManager;
+class BrowserOnlineStateObserver;
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
@@ -85,6 +86,8 @@ class BrowserMainLoop {
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<AudioManager> audio_manager_;
+  // Per-process listener for online state changes.
+  scoped_ptr<BrowserOnlineStateObserver> online_state_observer_;
 #if defined(OS_WIN)
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
 #elif defined(OS_LINUX)
