@@ -50,8 +50,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_persistent_store_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -523,7 +523,7 @@ HistoryService::Handle HistoryService::QueryURL(
 // 'downloads' table.
 HistoryService::Handle HistoryService::CreateDownload(
     int32 id,
-    const DownloadPersistentStoreInfo& create_info,
+    const content::DownloadPersistentStoreInfo& create_info,
     CancelableRequestConsumerBase* consumer,
     const HistoryService::DownloadCreateCallback& callback) {
   return Schedule(PRIORITY_NORMAL, &HistoryBackend::CreateDownload, consumer,
@@ -556,7 +556,8 @@ void HistoryService::CleanUpInProgressEntries() {
 
 // Handle updates for a particular download. This is a 'fire and forget'
 // operation, so we don't need to be called back.
-void HistoryService::UpdateDownload(const DownloadPersistentStoreInfo& data) {
+void HistoryService::UpdateDownload(
+    const content::DownloadPersistentStoreInfo& data) {
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::UpdateDownload, data);
 }
 

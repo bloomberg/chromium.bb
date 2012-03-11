@@ -1,15 +1,10 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Download struct used for informing and querying the download system's
-// persitent store.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_PERSISTENT_STORE_INFO_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_PERSISTENT_STORE_INFO_H_
+#ifndef CONTENT_PUBlIC_BROWSER_DOWNLOAD_PERSISTENT_STORE_INFO_H_
+#define CONTENT_PUBlIC_BROWSER_DOWNLOAD_PERSISTENT_STORE_INFO_H_
 #pragma once
-
-#include <vector>
 
 #include "base/file_path.h"
 #include "base/time.h"
@@ -17,8 +12,6 @@
 #include "googleurl/src/gurl.h"
 
 namespace content {
-class DownloadItem;
-}
 
 // Contains the information that is stored in the download system's persistent
 // store (or refers to it).  Managed by the DownloadItem.  When used to create a
@@ -76,4 +69,6 @@ struct CONTENT_EXPORT DownloadPersistentStoreInfo {
   bool opened;
 };
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_PERSISTENT_STORE_INFO_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBlIC_BROWSER_DOWNLOAD_PERSISTENT_STORE_INFO_H_

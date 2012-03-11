@@ -26,7 +26,6 @@
 #include "sql/init_status.h"
 
 class BookmarkService;
-struct DownloadPersistentStoreInfo;
 class FilePath;
 class GURL;
 class HistoryURLProvider;
@@ -38,6 +37,10 @@ class Profile;
 namespace base {
 class Thread;
 class Time;
+}
+
+namespace content {
+struct DownloadPersistentStoreInfo;
 }
 
 namespace history {
@@ -410,7 +413,7 @@ class HistoryService : public CancelableRequestProvider,
   // 'info' contains all the download's creation state, and 'callback' runs
   // when the history service request is complete.
   Handle CreateDownload(int32 id,
-                        const DownloadPersistentStoreInfo& info,
+                        const content::DownloadPersistentStoreInfo& info,
                         CancelableRequestConsumerBase* consumer,
                         const DownloadCreateCallback& callback);
 
@@ -423,8 +426,9 @@ class HistoryService : public CancelableRequestProvider,
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
-  typedef base::Callback<void(std::vector<DownloadPersistentStoreInfo>*)>
-      DownloadQueryCallback;
+  typedef base::Callback<void(
+      std::vector<content::DownloadPersistentStoreInfo>*)>
+          DownloadQueryCallback;
 
   // Begins a history request to retrieve the state of all downloads in the
   // history db. 'callback' runs when the history service request is complete,
@@ -440,7 +444,7 @@ class HistoryService : public CancelableRequestProvider,
   // Called to update the history service about the current state of a download.
   // This is a 'fire and forget' query, so just pass the relevant state info to
   // the database with no need for a callback.
-  void UpdateDownload(const DownloadPersistentStoreInfo& data);
+  void UpdateDownload(const content::DownloadPersistentStoreInfo& data);
 
   // Called to update the history service about the path of a download.
   // This is a 'fire and forget' query.

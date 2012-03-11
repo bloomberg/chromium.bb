@@ -14,9 +14,9 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "content/browser/download/download_persistent_store_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_persistent_store_info.h"
 #include "sql/statement.h"
 
 // TODO(benjhayden): Change this to DCHECK when we have more debugging
@@ -30,6 +30,7 @@
 #define CHECK_96627 CHECK
 
 using content::DownloadItem;
+using content::DownloadPersistentStoreInfo;
 
 namespace history {
 

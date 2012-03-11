@@ -67,7 +67,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void OnPersistentStoreQueryComplete(
-      std::vector<DownloadPersistentStoreInfo>* entries) OVERRIDE;
+      std::vector<content::DownloadPersistentStoreInfo>* entries) OVERRIDE;
   virtual void OnItemAddedToPersistentStore(int32 download_id,
                                             int64 db_handle) OVERRIDE;
   virtual int InProgressCount() const OVERRIDE;

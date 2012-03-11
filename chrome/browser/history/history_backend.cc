@@ -29,7 +29,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/download/download_persistent_store_info.h"
+#include "content/public/browser/download_persistent_store_info.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -1161,7 +1161,8 @@ void HistoryBackend::CleanUpInProgressEntries() {
 }
 
 // Update a particular download entry.
-void HistoryBackend::UpdateDownload(const DownloadPersistentStoreInfo& data) {
+void HistoryBackend::UpdateDownload(
+    const content::DownloadPersistentStoreInfo& data) {
   if (db_.get())
     db_->UpdateDownload(data);
 }
@@ -1177,7 +1178,7 @@ void HistoryBackend::UpdateDownloadPath(const FilePath& path,
 void HistoryBackend::CreateDownload(
     scoped_refptr<DownloadCreateRequest> request,
     int32 id,
-    const DownloadPersistentStoreInfo& history_info) {
+    const content::DownloadPersistentStoreInfo& history_info) {
   int64 db_handle = 0;
   if (!request->canceled()) {
     if (db_.get())

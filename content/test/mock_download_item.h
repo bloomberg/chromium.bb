@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
-#include "content/browser/download/download_persistent_store_info.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_persistent_store_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/download_persistent_store_info.h"
+#include "content/public/browser/download_persistent_store_info.h"
 
-#include "content/public/browser/download_item.h"
+namespace content {
 
 DownloadPersistentStoreInfo::DownloadPersistentStoreInfo()
     : received_bytes(0),
@@ -39,3 +39,5 @@ DownloadPersistentStoreInfo::DownloadPersistentStoreInfo(
 
 DownloadPersistentStoreInfo::~DownloadPersistentStoreInfo() {
 }
+
+}  // namespace content

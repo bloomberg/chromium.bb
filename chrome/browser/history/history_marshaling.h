@@ -61,7 +61,7 @@ typedef CancelableRequest1<HistoryService::DownloadNextIdCallback,
 
 
 typedef CancelableRequest1<HistoryService::DownloadQueryCallback,
-                           std::vector<DownloadPersistentStoreInfo> >
+                           std::vector<content::DownloadPersistentStoreInfo> >
     DownloadQueryRequest;
 
 typedef CancelableRequest<HistoryService::DownloadCreateCallback>

@@ -43,12 +43,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_mock_http_job.h"
 #include "content/browser/net/url_request_slow_download_job.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -61,6 +61,7 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::DownloadPersistentStoreInfo;
 using content::WebContents;
 
 namespace {

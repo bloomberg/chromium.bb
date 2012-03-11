@@ -86,7 +86,7 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(Delegate* delegate,
                    content::DownloadId download_id,
-                   const DownloadPersistentStoreInfo& info,
+                   const content::DownloadPersistentStoreInfo& info,
                    const net::BoundNetLog& bound_net_log);
 
   // Constructing for a regular download.
@@ -195,7 +195,8 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   virtual const std::string& GetLastModifiedTime() const OVERRIDE;
   virtual const std::string& GetETag() const OVERRIDE;
   virtual content::DownloadInterruptReason GetLastReason() const OVERRIDE;
-  virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const OVERRIDE;
+  virtual content::DownloadPersistentStoreInfo
+      GetPersistentStoreInfo() const OVERRIDE;
   virtual DownloadStateInfo GetStateInfo() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;

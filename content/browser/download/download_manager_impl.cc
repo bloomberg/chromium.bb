@@ -20,7 +20,6 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
-#include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/net/url_request_slow_download_job.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -31,6 +30,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -50,6 +50,7 @@
 using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
+using content::DownloadPersistentStoreInfo;
 using content::WebContents;
 
 namespace {

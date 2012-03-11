@@ -20,10 +20,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/net/url_request_slow_download_job.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/download_persistent_store_info.h"
 #include "net/base/data_url.h"
 #include "net/base/net_util.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -31,6 +31,7 @@
 using content::BrowserThread;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::DownloadPersistentStoreInfo;
 
 namespace {
 

@@ -30,7 +30,6 @@ class DownloadFileManager;
 class FilePath;
 class GURL;
 struct DownloadCreateInfo;
-struct DownloadPersistentStoreInfo;
 
 namespace base {
 class Time;
@@ -43,6 +42,7 @@ class BrowserContext;
 class DownloadId;
 class DownloadManager;
 class WebContents;
+struct DownloadPersistentStoreInfo;
 
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download. Multiple views, such as a tab's download shelf and the

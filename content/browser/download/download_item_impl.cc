@@ -21,12 +21,12 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
-#include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_persistent_store_info.h"
 #include "net/base/net_util.h"
 
 using content::BrowserThread;
@@ -34,6 +34,7 @@ using content::DownloadFile;
 using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::DownloadPersistentStoreInfo;
 using content::WebContents;
 
 // A DownloadItem normally goes through the following states:
