@@ -280,7 +280,8 @@ btr Ib Ev, 0x0f 0xba /6, nacl-ia32-forbidden
 bts Gv Ev, 0x0f 0xab, nacl-forbidden
 bts Ib Ev, 0x0f 0xba /5, nacl-ia32-forbidden
 ######## CALL (Near) ###########################################################
-call Jz, 0xe8
+call Jw, data16 0xe8, nacl-forbidden
+call Jd, 0xe8
 # “call” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
@@ -424,7 +425,8 @@ js Jb, 0x78
 js Jw, data16 0x0f 0x88, nacl-forbidden
 js Jd, 0x0f 0x88
 ######## JMP (Near) ############################################################
-jmp Jz, 0xe9
+jmp Jw, data16 0xe9, nacl-forbidden
+jmp Jd, 0xe9
 jmp Jb, 0xeb
 # “jmp” does not require rex prefix and always uses 64bit addresses in x86-64
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
