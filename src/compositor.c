@@ -604,11 +604,13 @@ weston_surface_unmap(struct weston_surface *surface)
 	surface->output = NULL;
 	wl_list_remove(&surface->link);
 	wl_list_remove(&surface->layer_link);
-	weston_compositor_repick(surface->compositor);
 
 	if (device->keyboard_focus == &surface->surface)
 		wl_input_device_set_keyboard_focus(device, NULL,
 						   weston_compositor_get_time());
+	if (device->pointer_focus == &surface->surface)
+		wl_input_device_set_pointer_focus(device, NULL, 0, 0,
+						  weston_compositor_get_time());
 
 	weston_compositor_schedule_repaint(surface->compositor);
 }
@@ -820,11 +822,8 @@ out:
 WL_EXPORT void
 weston_surface_restack(struct weston_surface *surface, struct wl_list *below)
 {
-	struct weston_compositor *compositor = surface->compositor;
-
 	wl_list_remove(&surface->layer_link);
 	wl_list_insert(below, &surface->layer_link);
-	weston_compositor_repick(compositor);
 	weston_surface_damage_below(surface);
 	weston_surface_damage(surface);
 }
@@ -964,6 +963,9 @@ weston_output_repaint(struct weston_output *output, int msecs)
 
 	output->repaint_needed = 0;
 
+	weston_compositor_repick(ec);
+	wl_event_loop_dispatch(ec->input_loop, 0);
+
 	wl_list_for_each_safe(cb, cnext, &output->frame_callback_list, link) {
 		wl_callback_send_done(&cb->resource, msecs);
 		wl_resource_destroy(&cb->resource, 0);
@@ -991,7 +993,6 @@ weston_output_finish_frame(struct weston_output *output, int msecs)
 		wl_display_get_event_loop(compositor->wl_display);
 	int fd;
 
-	wl_event_loop_dispatch(compositor->input_loop, 0);
 	if (output->repaint_needed) {
 		weston_output_repaint(output, msecs);
 		return;
@@ -1270,7 +1271,7 @@ surface_set_input_region(struct wl_client *client,
 					  surface->geometry.height);
 	}
 
-	weston_compositor_repick(surface->compositor);
+	weston_compositor_schedule_repaint(surface->compositor);
 }
 
 const static struct wl_surface_interface surface_interface = {

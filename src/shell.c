@@ -1055,7 +1055,6 @@ resume_desktop(struct wl_shell *shell)
 	wl_list_insert(&shell->panel_layer.link, &shell->toplevel_layer.link);
 
 	shell->locked = false;
-	weston_compositor_repick(shell->compositor);
 	shell->compositor->idle_time = shell->compositor->option_idle_time;
 	weston_compositor_wake(shell->compositor);
 	weston_compositor_damage_all(shell->compositor);
@@ -1440,7 +1439,7 @@ lock(struct weston_shell *base)
 	}
 
 	/* reset pointer foci */
-	weston_compositor_repick(shell->compositor);
+	weston_compositor_schedule_repaint(shell->compositor);
 
 	/* reset keyboard foci */
 	time = weston_compositor_get_time();
@@ -1584,7 +1583,6 @@ map(struct weston_shell *base, struct weston_surface *surface,
 
 	if (surface_type != SHELL_SURFACE_NONE) {
 		weston_surface_assign_output(surface);
-		weston_compositor_repick(compositor);
 		if (surface_type == SHELL_SURFACE_MAXIMIZED)
 			surface->output = shsurf->output;
 	}
@@ -1651,7 +1649,6 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 	/* XXX: would a fullscreen surface need the same handling? */
 	if (surface->output) {
 		weston_surface_assign_output(surface);
-		weston_compositor_repick(surface->compositor);
 
 		if (surface_type == SHELL_SURFACE_SCREENSAVER)
 			surface->output = shsurf->output;
