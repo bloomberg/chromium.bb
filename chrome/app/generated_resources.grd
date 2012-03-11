@@ -12423,14 +12423,20 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_KEY">
         enter
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
-        Please confirm this passkey is shown on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when the external device has no display or means of input.">
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PIN_CODE_REQUEST" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.0 and older device has no display or means of input.">
         Please enter the PIN for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a wireless keyboard.">
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.1 and later device has no display or means of input, and does not support SSP.">
+        Please enter the passkey for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PIN_CODE_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.0 and older wireless keyboard.">
+        Please enter this PIN code on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.1 and later wireless keyboard.">
         Please enter this passkey on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
+        Please confirm this passkey is shown on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
       </message>
       <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTION_FAILED_NO_DEVICE">
         Unable to connect. Please check that "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>" is powered and in range.

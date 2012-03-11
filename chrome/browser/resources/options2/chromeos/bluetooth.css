@@ -138,3 +138,7 @@
               inset 0 -1px 1px 1px #eee;
   color: #222;
 }
+
+.bluetooth-keyboard-button.key-pin {
+  color: #222;
+}

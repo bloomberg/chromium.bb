@@ -91,15 +91,21 @@ void BluetoothOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("bluetoothRejectPasskey",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY));
-  localized_strings->SetString("bluetoothConfirmPasskey",
+  localized_strings->SetString("bluetoothEnterPinCode",
       l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST));
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PIN_CODE_REQUEST));
   localized_strings->SetString("bluetoothEnterPasskey",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST));
+  localized_strings->SetString("bluetoothRemotePinCode",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PIN_CODE_REQUEST));
   localized_strings->SetString("bluetoothRemotePasskey",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST));
+  localized_strings->SetString("bluetoothConfirmPasskey",
+      l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST));
   localized_strings->SetString("bluetoothDismissError",
       l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR));
@@ -246,12 +252,12 @@ void BluetoothOptionsHandler::SendDeviceNotification(
       js_properties);
 }
 
-void BluetoothOptionsHandler::RequestConfirmation(
+void BluetoothOptionsHandler::DisplayPinCode(
     const BluetoothDevice* device,
-    int passkey) {
+    const std::string& pincode) {
   DictionaryValue params;
-  params.SetString("pairing", "bluetoothConfirmPasskey");
-  params.SetInteger("passkey", passkey);
+  params.SetString("pairing", "bluetoothRemotePinCode");
+  params.SetString("pincode", pincode);
   SendDeviceNotification(device, &params);
 }
 
@@ -266,10 +272,26 @@ void BluetoothOptionsHandler::DisplayPasskey(
   SendDeviceNotification(device, &params);
 }
 
+void BluetoothOptionsHandler::RequestPinCode(
+    const BluetoothDevice* device) {
+  DictionaryValue params;
+  params.SetString("pairing", "bluetoothEnterPinCode");
+  SendDeviceNotification(device, &params);
+}
+
 void BluetoothOptionsHandler::RequestPasskey(
     const BluetoothDevice* device) {
   DictionaryValue params;
   params.SetString("pairing", "bluetoothEnterPasskey");
+  SendDeviceNotification(device, &params);
+}
+
+void BluetoothOptionsHandler::RequestConfirmation(
+    const BluetoothDevice* device,
+    int passkey) {
+  DictionaryValue params;
+  params.SetString("pairing", "bluetoothConfirmPasskey");
+  params.SetInteger("passkey", passkey);
   SendDeviceNotification(device, &params);
 }
 

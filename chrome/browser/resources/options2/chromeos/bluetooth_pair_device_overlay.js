@@ -12,9 +12,11 @@ cr.define('options', function() {
    * @enum {string}
    */
   var PAIRING = {
-    CONFIRM_PASSKEY: 'bluetoothConfirmPasskey',
+    ENTER_PIN_CODE: 'bluetoothEnterPinCode',
     ENTER_PASSKEY: 'bluetoothEnterPasskey',
+    REMOTE_PIN_CODE: 'bluetoothRemotePinCode',
     REMOTE_PASSKEY: 'bluetoothRemotePasskey',
+    CONFIRM_PASSKEY: 'bluetoothConfirmPasskey',
     ERROR_NO_DEVICE: 'bluetoothErrorNoDevice',
     ERROR_INCORRECT_PIN: 'bluetoothErrorIncorrectPin',
     ERROR_CONNECTION_TIMEOUT: 'bluetoothErrorTimeout',
@@ -60,6 +62,7 @@ cr.define('options', function() {
      *         connected: boolean,
      *         pairing: string|undefined,
      *         passkey: number|undefined,
+     *         pincode: string|undefined,
      *         entered: number|undefined}}
      * @private.
      */
@@ -136,6 +139,15 @@ cr.define('options', function() {
           this.displayElements_(['bluetooth-pairing-passkey-display',
                                  'bluetooth-pair-device-cancel-button']);
         }
+      } else if (this.device_.pincode) {
+        this.updatePinCode_();
+        this.displayElements_(['bluetooth-pairing-passkey-display',
+                               'bluetooth-pair-device-cancel-button']);
+      } else if (this.device_.pairing == PAIRING.ENTER_PIN_CODE) {
+        // Prompting the user to enter a PIN code.
+        this.displayElements_(['bluetooth-pairing-passkey-entry',
+                               'bluetooth-pair-device-connect-button',
+                               'bluetooth-pair-device-cancel-button']);
       } else if (this.device_.pairing == PAIRING.ENTER_PASSKEY) {
         // Prompting the user to enter a passkey.
         this.displayElements_(['bluetooth-pairing-passkey-entry',
@@ -181,7 +193,6 @@ cr.define('options', function() {
 
     /**
      * Formats an element for displaying the passkey.
-     * @return {Element} Element containing the passkey.
      */
     updatePasskey_: function() {
       var passkeyEl = $('bluetooth-pairing-passkey-display');
@@ -204,6 +215,35 @@ cr.define('options', function() {
         var keyEl = document.createElement('span');
         keyEl.textContent = label;
         keyEl.className = keyClass;
+        keyEl.id = 'bluetooth-enter-key';
+        passkeyEl.appendChild(keyEl);
+      }
+      passkeyEl.hidden = false;
+    },
+
+    /**
+     * Formats an element for displaying the PIN code.
+     */
+    updatePinCode_: function() {
+      var passkeyEl = $('bluetooth-pairing-passkey-display');
+      var keyClass = this.device_.pairing == PAIRING.REMOTE_PIN_CODE ?
+          'bluetooth-keyboard-button' : 'bluetooth-passkey-char';
+      this.clearElement_(passkeyEl);
+      var key = String(this.device_.pincode);
+      for (var i = 0; i < key.length; i++) {
+        var keyEl = document.createElement('span');
+        keyEl.textContent = key.charAt(i);
+        keyEl.className = keyClass;
+        keyEl.classList.add('key-pin');
+        passkeyEl.appendChild(keyEl);
+      }
+      if (this.device_.pairing == PAIRING.REMOTE_PIN_CODE) {
+        // Add enter key.
+        var label = templateData['bluetoothEnterKey'];
+        var keyEl = document.createElement('span');
+        keyEl.textContent = label;
+        keyEl.className = keyClass;
+        keyEl.classList.add('key-pin');
         keyEl.id = 'bluetooth-enter-key';
         passkeyEl.appendChild(keyEl);
       }

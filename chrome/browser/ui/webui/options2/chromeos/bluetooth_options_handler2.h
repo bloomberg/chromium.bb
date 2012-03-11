@@ -77,13 +77,12 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   void SendDeviceNotification(const BluetoothDevice* device,
                               base::DictionaryValue* params);
 
-  // Displays a passkey for a device, requesting user confirmation that the
-  // key matches an expected value (value displayed on a smartphone for
-  // example).
+  // Displays a PIN code for a device, which is being typed remotely. This
+  // method is used for pairing Bluetooth 2.0 and older keyboards.
   // |device| is the Bluetooth device being paired.
-  // |passkey| is the passkey to display for confirmation.
-  void RequestConfirmation(const BluetoothDevice* device,
-                           int passkey);
+  // |pincode| is the required pincode.
+  void DisplayPinCode(const BluetoothDevice* device,
+                      const std::string& pincode);
 
   // Displays a passkey for a device, which is being typed remotely. During
   // the pairing process, this method may be called repeatedly to track the
@@ -97,12 +96,26 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
                       int passkey,
                       int entered);
 
+  // Displays a blank field for entering a PIN code.  The PIN code may be
+  // a set value specified by the manufacturer of the Bluetooth device, or
+  // on a remote display.
+  // |device| is the Bluetooth device being paired.
+  void RequestPinCode(const BluetoothDevice* device);
+
   // Displays a blank field for entering a passkey.  The passkey may be
   // a set value specified by the manufacturer of the Bluetooth device, or
   // on a remote display.  The validation is asychronous, and a call is made
   // to |ValidatePasskeyCallback| when the passkey entry is complete.
   // |device| is the Bluetooth device being paired.
   void RequestPasskey(const BluetoothDevice* device);
+
+  // Displays a passkey for a device, requesting user confirmation that the
+  // key matches an expected value (value displayed on a smartphone for
+  // example).
+  // |device| is the Bluetooth device being paired.
+  // |passkey| is the passkey to display for confirmation.
+  void RequestConfirmation(const BluetoothDevice* device,
+                           int passkey);
 
   // Displays an error that occurred during the pairing or connection process.
   // |device| is the Bluetooth device being paired or connected.
