@@ -40,8 +40,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/load_notification_details.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
+#include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -68,17 +68,18 @@
 #include "ui/views/layout/grid_layout.h"
 
 using content::BrowserThread;
+using content::LoadNotificationDetails;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
-using content::SSLStatus;
 using content::RenderViewHost;
+using content::SSLStatus;
 using content::WebContents;
 using ui::ViewProp;
 using WebKit::WebCString;
-using WebKit::WebString;
 using WebKit::WebReferrerPolicy;
 using WebKit::WebSecurityPolicy;
+using WebKit::WebString;
 
 static const char kWindowObjectKey[] = "ChromeWindowObject";
 
@@ -809,12 +810,11 @@ void ExternalTabContainer::Observe(
     case content::NOTIFICATION_LOAD_STOP: {
         const LoadNotificationDetails* load =
             content::Details<LoadNotificationDetails>(details).ptr();
-        if (load != NULL &&
-            content::PageTransitionIsMainFrame(load->origin())) {
+        if (load && content::PageTransitionIsMainFrame(load->origin)) {
           TRACE_EVENT_END_ETW("ExternalTabContainer::Navigate", 0,
-                              load->url().spec());
+                              load->url.spec());
           automation_->Send(new AutomationMsg_TabLoaded(tab_handle_,
-                                                        load->url()));
+                                                        load->url));
         }
         break;
       }

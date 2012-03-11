@@ -177,8 +177,8 @@
 #include "chrome/common/metrics/metrics_log_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/load_notification_details.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -200,6 +200,7 @@
 using base::Time;
 using content::BrowserThread;
 using content::ChildProcessData;
+using content::LoadNotificationDetails;
 using content::PluginService;
 
 namespace {
@@ -1338,10 +1339,10 @@ void MetricsService::LogLoadComplete(
   const content::Details<LoadNotificationDetails> load_details(details);
   int controller_id = window_map_[details.map_key()];
   log_manager_.current_log()->RecordLoadEvent(controller_id,
-                                              load_details->url(),
-                                              load_details->origin(),
-                                              load_details->session_index(),
-                                              load_details->load_time());
+                                              load_details->url,
+                                              load_details->origin,
+                                              load_details->session_index,
+                                              load_details->load_time);
 }
 
 void MetricsService::IncrementPrefValue(const char* path) {

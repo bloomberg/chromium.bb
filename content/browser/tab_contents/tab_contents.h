@@ -31,20 +31,20 @@
 #endif
 
 class InterstitialPageImpl;
-class LoadNotificationDetails;
 class SavePackage;
 class SessionStorageNamespaceImpl;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 class DownloadItem;
-class SiteInstance;
 class JavaScriptDialogCreator;
 class RenderViewHost;
 class RenderViewHostImpl;
+class SiteInstance;
 class WebContentsDelegate;
 class WebContentsObserver;
 class WebContentsView;
+struct LoadNotificationDetails;
 }
 
 namespace webkit_glue {
@@ -451,7 +451,7 @@ class CONTENT_EXPORT TabContents
   // |details| is used to provide details on the load that just finished
   // (but can be null if not applicable). Can be overridden.
   void SetIsLoading(bool is_loading,
-                    LoadNotificationDetails* details);
+                    content::LoadNotificationDetails* details);
 
   // Called by derived classes to indicate that we're no longer waiting for a
   // response. This won't actually update the throbber, but it will get picked

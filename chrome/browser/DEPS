@@ -36,7 +36,6 @@ include_rules = [
   "+content/browser/download/download_state_info.h",
   "+content/browser/download/download_types.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
-  "+content/browser/load_notification_details.h",
   "+content/browser/net/url_request_failed_dns_job.h",
   "+content/browser/net/url_request_mock_http_job.h",
   "+content/browser/net/url_request_slow_download_job.h",

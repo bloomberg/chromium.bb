@@ -25,7 +25,6 @@
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/intents/web_intents_dispatcher_impl.h"
 #include "content/browser/load_from_memory_cache_details.h"
-#include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -45,6 +44,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialogs.h"
+#include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -119,13 +119,14 @@ using content::DownloadManager;
 using content::GlobalRequestID;
 using content::HostZoomMap;
 using content::InterstitialPage;
+using content::LoadNotificationDetails;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::OpenURLParams;
 using content::RenderViewHost;
-using content::RenderViewHostImpl;
 using content::RenderViewHostDelegate;
+using content::RenderViewHostImpl;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
