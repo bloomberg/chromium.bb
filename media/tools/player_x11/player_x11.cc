@@ -124,9 +124,13 @@ bool InitPipeline(MessageLoop* message_loop,
   collection->SetDemuxerFactory(scoped_ptr<media::DemuxerFactory>(
       new media::FFmpegDemuxerFactory(data_source, message_loop)));
   collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
-      message_loop_factory->GetMessageLoop("AudioDecoderThread")));
+      base::Bind(&media::MessageLoopFactory::GetMessageLoop,
+                 base::Unretained(message_loop_factory),
+                 "AudioDecoderThread")));
   collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
-      message_loop_factory->GetMessageLoop("VideoDecoderThread")));
+      base::Bind(&media::MessageLoopFactory::GetMessageLoop,
+                 base::Unretained(message_loop_factory),
+                 "VideoDecoderThread")));
 
   // Create our video renderer and save a reference to it for painting.
   g_video_renderer = new media::VideoRendererBase(

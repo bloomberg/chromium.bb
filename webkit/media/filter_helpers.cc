@@ -4,6 +4,7 @@
 
 #include "webkit/media/filter_helpers.h"
 
+#include "base/bind.h"
 #include "media/base/filter_collection.h"
 #include "media/base/message_loop_factory.h"
 #include "media/filters/chunk_demuxer_factory.h"
@@ -21,9 +22,13 @@ static void AddDefaultDecodersToCollection(
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection) {
   filter_collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
-      message_loop_factory->GetMessageLoop("AudioDecoderThread")));
+      base::Bind(&media::MessageLoopFactory::GetMessageLoop,
+                 base::Unretained(message_loop_factory),
+                 "AudioDecoderThread")));
   filter_collection->AddVideoDecoder(new media::FFmpegVideoDecoder(
-      message_loop_factory->GetMessageLoop("VideoDecoderThread")));
+      base::Bind(&media::MessageLoopFactory::GetMessageLoop,
+                 base::Unretained(message_loop_factory),
+                 "VideoDecoderThread")));
 }
 
 bool BuildMediaStreamCollection(const WebKit::WebURL& url,

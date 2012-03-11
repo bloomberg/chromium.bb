@@ -4,6 +4,7 @@
 
 #include "media/tools/player_wtl/movie.h"
 
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
@@ -80,9 +81,13 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
   collection->SetDemuxerFactory(scoped_ptr<DemuxerFactory>(
       new FFmpegDemuxerFactory(data_source, pipeline_loop)));
   collection->AddAudioDecoder(new FFmpegAudioDecoder(
-      message_loop_factory_->GetMessageLoop("AudioDecoderThread")));
+      base::Bind(&MessageLoopFactory::GetMessageLoop,
+                 base::Unretained(message_loop_factory_.get()),
+                 "AudioDecoderThread")));
   collection->AddVideoDecoder(new FFmpegVideoDecoder(
-      message_loop_factory_->GetMessageLoop("VideoDecoderThread")));
+      base::Bind(&MessageLoopFactory::GetMessageLoop,
+                 base::Unretained(message_loop_factory_.get()),
+                 "VideoDecoderThread")));
 
   // TODO(vrk): Re-enabled audio. (crbug.com/112159)
   collection->AddAudioRenderer(new media::NullAudioRenderer());
