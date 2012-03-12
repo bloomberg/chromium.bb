@@ -677,3 +677,8 @@ RendererWebKitPlatformSupportImpl::createMediaStreamCenter(
     return NULL;
   return render_thread->CreateMediaStreamCenter(client);
 }
+
+GpuChannelHostFactory*
+RendererWebKitPlatformSupportImpl::GetGpuChannelHostFactory() {
+  return RenderThreadImpl::current();
+}

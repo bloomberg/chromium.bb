@@ -12,12 +12,6 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sync_message_filter.h"
 
-GpuChannelHostFactory* GpuChannelHostFactory::instance_ = NULL;
-
-GpuChannelHostFactory::~GpuChannelHostFactory() {
-  DCHECK(!instance_);
-}
-
 using base::AutoLock;
 using base::MessageLoopProxy;
 

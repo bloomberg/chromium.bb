@@ -61,12 +61,21 @@ WebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
             attributes, false);
   } else {
     base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
+    GpuChannelHostFactory* factory = GetGpuChannelHostFactory();
+    if (!factory)
+      return NULL;
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-        new WebGraphicsContext3DCommandBufferImpl(0, GURL(), null_client));
+        new WebGraphicsContext3DCommandBufferImpl(
+            0, GURL(), factory, null_client));
     if (!context->Initialize(attributes))
       return NULL;
     return context.release();
   }
+}
+
+GpuChannelHostFactory* WebKitPlatformSupportImpl::GetGpuChannelHostFactory() {
+  NOTREACHED();
+  return NULL;
 }
 
 }  // namespace content

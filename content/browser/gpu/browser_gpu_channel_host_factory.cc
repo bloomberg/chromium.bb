@@ -15,6 +15,8 @@
 
 namespace content {
 
+BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
+
 BrowserGpuChannelHostFactory::CreateRequest::CreateRequest()
     : event(false, false),
       route_id(MSG_ROUTING_NONE) {
@@ -32,27 +34,22 @@ BrowserGpuChannelHostFactory::EstablishRequest::~EstablishRequest() {
 }
 
 void BrowserGpuChannelHostFactory::Initialize() {
-  new BrowserGpuChannelHostFactory();
+  instance_ = new BrowserGpuChannelHostFactory();
 }
 
 void BrowserGpuChannelHostFactory::Terminate() {
-  delete instance();
-}
-
-BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::Get() {
-  return static_cast<BrowserGpuChannelHostFactory*>(instance());
+  delete instance_;
+  instance_ = NULL;
 }
 
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       shutdown_event_(new base::WaitableEvent(true, false)),
       gpu_host_id_(0) {
-  set_instance(this);
 }
 
 BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
   shutdown_event_->Signal();
-  set_instance(NULL);
 }
 
 bool BrowserGpuChannelHostFactory::IsMainThread() {

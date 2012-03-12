@@ -184,7 +184,6 @@ void RenderThreadImpl::Init() {
 #endif
 
   lazy_tls.Pointer()->Set(this);
-  GpuChannelHostFactory::set_instance(this);
 
 #if defined(OS_WIN)
   // If you are running plugins in this thread you need COM active but in
@@ -282,7 +281,6 @@ RenderThreadImpl::~RenderThreadImpl() {
   if (webkit_platform_support_.get())
     WebKit::shutdown();
 
-  GpuChannelHostFactory::set_instance(NULL);
   lazy_tls.Pointer()->Set(NULL);
 
   // TODO(port)

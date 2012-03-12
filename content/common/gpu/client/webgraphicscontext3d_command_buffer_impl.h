@@ -24,6 +24,7 @@
 #endif
 
 class GpuChannelHost;
+class GpuChannelHostFactory;
 
 namespace gpu {
 namespace gles2 {
@@ -61,6 +62,7 @@ class WebGraphicsContext3DCommandBufferImpl
   WebGraphicsContext3DCommandBufferImpl(
       int surface_id,
       const GURL& active_url,
+      GpuChannelHostFactory* factory,
       const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client);
   virtual ~WebGraphicsContext3DCommandBufferImpl();
 
@@ -508,6 +510,9 @@ class WebGraphicsContext3DCommandBufferImpl
   void OnMemoryAllocationChanged(const GpuMemoryAllocation& allocation);
 
   bool initialize_failed_;
+
+  // The channel factory to talk to the GPU process
+  GpuChannelHostFactory* factory_;
 
   // The context we use for OpenGL rendering.
   ContentGLContext* context_;

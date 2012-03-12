@@ -1570,7 +1570,7 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
 
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(
-            surface, url, swap_client));
+            surface, url, RenderThreadImpl::current(), swap_client));
 
     if (!context->Initialize(attributes))
       return NULL;

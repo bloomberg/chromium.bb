@@ -51,8 +51,7 @@ struct GpuListenerInfo {
 
 class CONTENT_EXPORT GpuChannelHostFactory {
  public:
-  virtual ~GpuChannelHostFactory();
-  static GpuChannelHostFactory* instance() { return instance_; }
+  virtual ~GpuChannelHostFactory() {}
 
   virtual bool IsMainThread() = 0;
   virtual bool IsIOThread() = 0;
@@ -64,14 +63,6 @@ class CONTENT_EXPORT GpuChannelHostFactory {
       int32 surface_id, const GPUCreateCommandBufferConfig& init_params) = 0;
   virtual GpuChannelHost* EstablishGpuChannelSync(
       content::CauseForGpuLaunch) = 0;
-
- protected:
-  static void set_instance(GpuChannelHostFactory* instance) {
-    instance_ = instance;
-  }
-
- private:
-  static GpuChannelHostFactory* instance_;
 };
 
 // Encapsulates an IPC channel between the client and one GPU process.

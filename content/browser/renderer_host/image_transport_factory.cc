@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "content/common/gpu/client/command_buffer_proxy.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -25,6 +26,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
+
+using content::BrowserGpuChannelHostFactory;
 
 namespace {
 
@@ -233,9 +236,10 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = true;
+    GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
         new WebGraphicsContext3DCommandBufferImpl(
-            data->surface_id, GURL(), data->swap_client->AsWeakPtr()));
+            data->surface_id, GURL(), factory, data->swap_client->AsWeakPtr()));
     if (!context->Initialize(attrs))
       return NULL;
     return context.release();
@@ -362,10 +366,11 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
     data->swap_client.reset(new CompositorSwapClient(compositor, this));
 
+    GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
     WebKit::WebGraphicsContext3D::Attributes attrs;
     attrs.shareResources = true;
     data->shared_context.reset(new WebGraphicsContext3DCommandBufferImpl(
-          data->surface_id, GURL(), data->swap_client->AsWeakPtr()));
+          data->surface_id, GURL(), factory, data->swap_client->AsWeakPtr()));
     if (!data->shared_context->Initialize(attrs)) {
       // If we can't recreate contexts, we won't be able to show the UI. Better
       // crash at this point.

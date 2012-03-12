@@ -48,8 +48,10 @@ void ClearSharedContexts() {
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     int surface_id,
     const GURL& active_url,
+    GpuChannelHostFactory* factory,
     const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client)
     : initialize_failed_(false),
+      factory_(factory),
       context_(NULL),
       gl_(NULL),
       host_(NULL),
@@ -88,8 +90,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
     const WebGraphicsContext3D::Attributes& attributes) {
   DCHECK(!context_);
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
-  GpuChannelHostFactory* factory = GpuChannelHostFactory::instance();
-  if (!factory)
+  if (!factory_)
     return false;
 
   if (attributes.preferDiscreteGPU)
@@ -99,7 +100,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
 
   // Note similar code in Pepper PlatformContext3DImpl::Init.
   do {
-    host_ = factory->EstablishGpuChannelSync(
+    host_ = factory_->EstablishGpuChannelSync(
         content::
         CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
     if (!host_)
@@ -1113,8 +1114,7 @@ void WebGraphicsContext3DCommandBufferImpl::deleteTexture(WebGLId texture) {
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::ShouldUseSwapClient() {
-  GpuChannelHostFactory* factory = GpuChannelHostFactory::instance();
-  return factory && factory->IsMainThread() && swap_client_.get();
+  return factory_ && factory_->IsMainThread() && swap_client_.get();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {

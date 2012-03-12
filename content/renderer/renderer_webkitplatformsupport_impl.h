@@ -97,6 +97,9 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebMediaStreamCenter* createMediaStreamCenter(
       WebKit::WebMediaStreamCenterClient* client) OVERRIDE;
 
+ protected:
+  virtual GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
+
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 

@@ -10,6 +10,8 @@
 #include "content/common/content_export.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
+class GpuChannelHostFactory;
+
 namespace content {
 
 // This is a specialization of WebKitPlatformSupportImpl that implements the
@@ -32,6 +34,9 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
       webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
+
+ protected:
+  virtual GpuChannelHostFactory* GetGpuChannelHostFactory();
 };
 
 }  // namespace content

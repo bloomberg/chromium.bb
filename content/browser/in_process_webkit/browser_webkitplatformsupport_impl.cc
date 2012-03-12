@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/common/indexed_db/indexed_db_key.h"
@@ -175,4 +176,9 @@ BrowserWebKitPlatformSupportImpl::injectIDBKeyIntoSerializedValue(
     const WebKit::WebString& keyPath) {
   return IndexedDBKeyUtilityClient::InjectIDBKeyIntoSerializedValue(
       IndexedDBKey(key), content::SerializedScriptValue(value), keyPath);
+}
+
+GpuChannelHostFactory*
+BrowserWebKitPlatformSupportImpl::GetGpuChannelHostFactory() {
+  return content::BrowserGpuChannelHostFactory::instance();
 }
