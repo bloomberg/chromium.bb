@@ -1,2 +1,2 @@
-AXWebArea|(null)||
-AXGroup|AXLandmarkApplication||
+AXWebArea subrole=(null) title='' value=''
+    AXGroup subrole=AXLandmarkApplication title='' value=''
