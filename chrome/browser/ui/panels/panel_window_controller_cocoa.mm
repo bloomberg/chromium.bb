@@ -369,9 +369,7 @@ enum {
     return NO;
   }
 
-  // The tab strip is empty, it's ok to close the window.
-  // Ensure focus goes to previous active browser window.
-  [BrowserWindowUtils selectPreviousActiveBrowserWindow:browser];
+  // the tab strip is empty, it's ok to close the window
   return YES;
 }
 
@@ -651,4 +649,5 @@ enum {
   // cases when minimized Panel is getting keyboard input, invisibly.
   return canBecomeKeyWindow_;
 }
+
 @end

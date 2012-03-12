@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,15 +39,6 @@ struct NativeWebKeyboardEvent;
                    withTabStrip:(NSView*)tabStripView;
 
 + (void)activateWindowForController:(NSWindowController*)controller;
-
-// Some browser windows (Panels) use a different NSWindowLevel, causing the
-// system to prefer them over other windows when selecting the next window
-// to give focus to after a browser window is closed.
-// This method selects the previous active browser window instead.
-// |closedBrowser| is the browser that is being closed. Used to ensure it
-// is excluded from the selection process.
-// Does nothing if no previous active window is found.
-+ (void)selectPreviousActiveBrowserWindow:(Browser*)closedBrowser;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_WINDOW_UTILS_H_

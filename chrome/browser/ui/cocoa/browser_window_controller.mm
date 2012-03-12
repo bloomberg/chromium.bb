@@ -547,10 +547,6 @@ enum {
   // have to save the window position before we call orderOut:.
   [self saveWindowPositionIfNeeded];
 
-  // Ensure focus goes to previous active browser window when this
-  // window is ordered out.
-  [BrowserWindowUtils selectPreviousActiveBrowserWindow:browser_.get()];
-
   if (!browser_->tabstrip_model()->empty()) {
     // Tab strip isn't empty.  Hide the frame (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut

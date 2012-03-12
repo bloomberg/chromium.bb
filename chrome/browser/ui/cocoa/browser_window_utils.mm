@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
@@ -188,22 +186,4 @@ const CGFloat kPatternVerticalOffsetNoTabStrip = 3;
   SetFrontProcessWithOptions(&psn, kSetFrontProcessFrontWindowOnly);
 }
 
-+ (void)selectPreviousActiveBrowserWindow:(Browser*)closedBrowser {
-  if (![NSApp isActive] || closedBrowser != BrowserList::GetLastActive())
-    return;
-
-  // Select previous active window if this is the current active window.
-  // Otherwise, OSX will always give focus to a Panel window after this one
-  // is closed because Panels have a higher priority NSWindowLevel.
-  BrowserList::const_reverse_iterator iter = BrowserList::begin_last_active();
-  BrowserList::const_reverse_iterator end = BrowserList::end_last_active();
-  for (; iter != end; ++iter) {
-    Browser* browser = *iter;
-    if (browser != closedBrowser &&
-        [browser->window()->GetNativeHandle() canBecomeKeyWindow]) {
-      browser->window()->Activate();
-      return;
-    }
-  }
-}
 @end

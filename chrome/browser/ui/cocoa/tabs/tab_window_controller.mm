@@ -87,8 +87,11 @@
 
 - (void)removeOverlay {
   [self setUseOverlay:NO];
-  if (closeDeferred_)
+  if (closeDeferred_) {
+    // See comment in BrowserWindowCocoa::Close() about orderOut:.
+    [[self window] orderOut:self];
     [[self window] performClose:self];  // Autoreleases the controller.
+  }
 }
 
 - (void)showOverlay {
