@@ -91,7 +91,8 @@ struct SizedResult {
 
   // Returns the maximum number of results for a given buffer size.
   static uint32 ComputeMaxResults(size_t size_of_buffer) {
-    return (size_of_buffer - sizeof(uint32)) / sizeof(T);  // NOLINT
+    return (size_of_buffer >= sizeof(uint32)) ?
+        ((size_of_buffer - sizeof(uint32)) / sizeof(T)) : 0;  // NOLINT
   }
 
   // Set the size for a given number of results.
