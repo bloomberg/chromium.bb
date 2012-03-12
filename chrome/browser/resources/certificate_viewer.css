@@ -1,22 +1,33 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
 /* Using 100% width within body should exclude margins. */
-body {
-  bottom: 0;
-  left: 0;
-  margin: 8px 0 0 0;
-  position: absolute;
-  right: 0;
-  top: 0;
+html, body {
+  height: 100%;
+  width: 100%;
 }
 
-.title {
-  display: inline-block;
+body {
+  -webkit-box-sizing: border-box;
+  margin: 0;
+  padding-top: 8px;
+}
+
+h3 {
+  font-size: 100%;
   font-weight: bold;
-  padding-bottom: 2px;
-  padding-top: 15px;
+  margin-top: 20px;
+}
+
+#usages-title {
+  /* Workaround until webkit bug https://bugs.webkit.org/show_bug.cgi?id=80537
+   * is resolved. */
+  padding-top: 20px;
 }
 
 #tabbox {
-  -webkit-box-flex: 1;
+  height: 100%;
   width: 100%;
 }
 
@@ -27,7 +38,6 @@ body {
 #usages,
 #cert-field-value {
   -webkit-padding-start: 15px;
-  padding-top: 5px;
   white-space: pre-wrap;
 }
 
@@ -35,12 +45,11 @@ body {
   display: table;
 }
 
-.group,
-.detail {
+.groups > * {
   display: table-row;
 }
 
-.detail div {
+.groups > div > div {
   -webkit-padding-start: 15px;
   padding-top: 3px;
 }
