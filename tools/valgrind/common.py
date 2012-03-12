@@ -1,8 +1,9 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import logging
+import platform
 import os
 import signal
 import subprocess
@@ -134,6 +135,42 @@ def IsWindows():
   return sys.platform == 'cygwin' or sys.platform.startswith('win')
 
 
+def WindowsVersionName():
+  """Returns the name of the Windows version if it is known, or None.
+
+  Possible return values are: xp, vista, 7, 8, or None
+  """
+  if sys.platform == 'cygwin':
+    # Windows version number is hiding in system name.  Looks like:
+    # CYGWIN_NT-6.1-WOW64
+    try:
+      version_str = platform.uname()[0].split('-')[1]
+    except:
+      return None
+  elif sys.platform.startswith('win'):
+    # Normal Windows version string.  Mine: 6.1.7601
+    version_str = platform.version()
+  else:
+    return None
+
+  parts = version_str.split('.')
+  try:
+    major = int(parts[0])
+    minor = int(parts[1])
+  except:
+    return None  # Can't parse, unknown version.
+
+  if major == 5:
+    return 'xp'
+  elif major == 6 and minor == 0:
+    return 'vista'
+  elif major == 6 and minor == 1:
+    return '7'
+  elif major == 6 and minor == 2:
+    return '8'  # Future proof.  ;)
+  return None
+
+
 def PlatformNames():
   """Return an array of string to be used in paths for the platform
   (e.g. suppressions, gtest filters, ignore files etc.)
@@ -144,7 +181,11 @@ def PlatformNames():
   if IsMac():
     return ['mac']
   if IsWindows():
-    return ['win32']
+    names = ['win32']
+    version_name = WindowsVersionName()
+    if version_name is not None:
+      names.append('win-%s' % version_name)
+    return names
   raise NotImplementedError('Unknown platform "%s".' % sys.platform)
 
 
