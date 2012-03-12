@@ -43,16 +43,16 @@ void ReadCustomDataTypes(const void* data,
   SkippablePickle pickle(data, data_length);
   PickleIterator iter(pickle);
 
-  size_t size = 0;
-  if (!pickle.ReadSize(&iter, &size))
+  uint64 size = 0;
+  if (!pickle.ReadUInt64(&iter, &size))
     return;
 
   // Keep track of the original elements in the types vector. On failure, we
   // truncate the vector to the original size since we want to ignore corrupt
   // custom data pickles.
-  size_t original_size = types->size();
+  uint64 original_size = types->size();
 
-  for (size_t i = 0; i < size; ++i) {
+  for (uint64 i = 0; i < size; ++i) {
     types->push_back(string16());
     if (!pickle.ReadString16(&iter, &types->back()) ||
         !pickle.SkipString16(&iter)) {
@@ -69,11 +69,11 @@ void ReadCustomDataForType(const void* data,
   SkippablePickle pickle(data, data_length);
   PickleIterator iter(pickle);
 
-  size_t size = 0;
-  if (!pickle.ReadSize(&iter, &size))
+  uint64 size = 0;
+  if (!pickle.ReadUInt64(&iter, &size))
     return;
 
-  for (size_t i = 0; i < size; ++i) {
+  for (uint64 i = 0; i < size; ++i) {
     string16 deserialized_type;
     if (!pickle.ReadString16(&iter, &deserialized_type))
       return;
@@ -92,11 +92,11 @@ void ReadCustomDataIntoMap(const void* data,
   Pickle pickle(reinterpret_cast<const char*>(data), data_length);
   PickleIterator iter(pickle);
 
-  size_t size = 0;
-  if (!pickle.ReadSize(&iter, &size))
+  uint64 size = 0;
+  if (!pickle.ReadUInt64(&iter, &size))
     return;
 
-  for (size_t i = 0; i < size; ++i) {
+  for (uint64 i = 0; i < size; ++i) {
     string16 type;
     if (!pickle.ReadString16(&iter, &type)) {
       // Data is corrupt, return an empty map.
@@ -115,7 +115,7 @@ void ReadCustomDataIntoMap(const void* data,
 
 void WriteCustomDataToPickle(const std::map<string16, string16>& data,
                              Pickle* pickle) {
-  pickle->WriteSize(data.size());
+  pickle->WriteUInt64(data.size());
   for (std::map<string16, string16>::const_iterator it = data.begin();
        it != data.end();
        ++it) {
