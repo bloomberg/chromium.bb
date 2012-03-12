@@ -1,8 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/base/test_switches.h"
+
+// Also emit full event trace logs for successful tests.
+const char switches::kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
 
 // Extra flags that the test should pass to launched browser process.
 const char switches::kExtraChromeFlags[] = "extra-chrome-flags";
