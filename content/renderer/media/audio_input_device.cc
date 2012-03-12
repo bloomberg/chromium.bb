@@ -74,6 +74,7 @@ AudioInputDevice::~AudioInputDevice() {
 
 void AudioInputDevice::Start() {
   DVLOG(1) << "Start()";
+  CHECK(callback_);
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::InitializeOnIOThread, this));
 }
@@ -87,7 +88,11 @@ void AudioInputDevice::SetDevice(int session_id) {
 void AudioInputDevice::Stop() {
   DVLOG(1) << "Stop()";
 
-  audio_thread_.Stop(MessageLoop::current());
+  {
+    base::AutoLock auto_lock(audio_thread_lock_);
+    callback_ = NULL;  // After Stop() returns, we must never deref callback_.
+    audio_thread_.Stop(MessageLoop::current());
+  }
 
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::ShutDownOnIOThread, this));
@@ -180,8 +185,10 @@ void AudioInputDevice::OnStreamCreated(
   DCHECK(length);
   DVLOG(1) << "OnStreamCreated (stream_id=" << stream_id_ << ")";
 
+  base::AutoLock auto_lock(audio_thread_lock_);
+
   // Takes care of the case when Stop() is called before OnStreamCreated().
-  if (!stream_id_) {
+  if (!stream_id_ || !callback_) {
     base::SharedMemory::CloseHandle(handle);
     // Close the socket handler.
     base::SyncSocket socket(socket_handle);

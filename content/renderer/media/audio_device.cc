@@ -99,7 +99,11 @@ void AudioDevice::Start() {
 }
 
 void AudioDevice::Stop() {
-  audio_thread_.Stop(MessageLoop::current());
+  {
+    base::AutoLock auto_lock(audio_thread_lock_);
+    callback_ = NULL;  // After Stop() returns, we must never deref callback_.
+    audio_thread_.Stop(MessageLoop::current());
+  }
 
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&AudioDevice::ShutDownOnIOThread, this));
@@ -205,7 +209,8 @@ void AudioDevice::OnStateChanged(AudioStreamState state) {
 
   if (state == kAudioStreamError) {
     DLOG(WARNING) << "AudioDevice::OnStateChanged(kError)";
-    callback_->OnRenderError();
+    if (callback_)
+      callback_->OnRenderError();
   }
 }
 
@@ -225,8 +230,10 @@ void AudioDevice::OnStreamCreated(
   DCHECK_GE(socket_handle, 0);
 #endif
 
+  base::AutoLock auto_lock(audio_thread_lock_);
+
   // Takes care of the case when Stop() is called before OnStreamCreated().
-  if (!stream_id_) {
+  if (!stream_id_ || !callback_) {
     base::SharedMemory::CloseHandle(handle);
     // Close the socket handler.
     base::SyncSocket socket(socket_handle);

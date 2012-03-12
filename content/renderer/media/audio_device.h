@@ -176,6 +176,9 @@ class CONTENT_EXPORT AudioDevice
   // Our audio thread callback class.  See source file for details.
   class AudioThreadCallback;
 
+  // In order to avoid a race between OnStreamCreated and Stop(), we use this
+  // guard to control stopping and starting the audio thread.
+  base::Lock audio_thread_lock_;
   AudioDeviceThread audio_thread_;
   scoped_ptr<AudioDevice::AudioThreadCallback> audio_callback_;
 
