@@ -6,3 +6,13 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
+
+BUGYANGGUO LINUX X86_64 : fast/repaint/moving-shadow-on-container.html = TEXT
+BUGYANGGUO LINUX X86_64 : fast/repaint/moving-shadow-on-path.html = TEXT
+BUGYANGGUO LINUX X86_64 : svg/css/stars-with-shadow.html = TEXT
+BUGYANGGUO MAC : fast/repaint/moving-shadow-on-container.html = TEXT
+BUGYANGGUO MAC : fast/repaint/moving-shadow-on-path.html = TEXT
+BUGYANGGUO MAC : svg/css/stars-with-shadow.html = TEXT
+BUGYANGGUO WIN : fast/repaint/moving-shadow-on-container.html = TEXT
+BUGYANGGUO WIN : fast/repaint/moving-shadow-on-path.html = TEXT
+BUGYANGGUO WIN : svg/css/stars-with-shadow.html = TEXT
