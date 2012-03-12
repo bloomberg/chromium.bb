@@ -339,6 +339,20 @@ LRESULT TabContentsViewWin::OnDestroy(
 LRESULT TabContentsViewWin::OnWindowPosChanged(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(lparam);
+  if (window_pos->flags & SWP_HIDEWINDOW) {
+    tab_contents_->HideContents();
+    return 0;
+  }
+
+  // The TabContents was shown by a means other than the user selecting a
+  // Tab, e.g. the window was minimized then restored.
+  if (window_pos->flags & SWP_SHOWWINDOW)
+    tab_contents_->ShowContents();
+
+  // Unless we were specifically told not to size, cause the renderer to be
+  // sized to the new bounds, which forces a repaint. Not required for the
+  // simple minimize-restore case described above, for example, since the
+  // size hasn't changed.
   if (window_pos->flags & SWP_NOSIZE)
     return 0;
 
