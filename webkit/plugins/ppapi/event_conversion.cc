@@ -73,6 +73,7 @@ InputEventData GetEventWithCommonFieldsAndType(const WebInputEvent& web_event) {
   InputEventData result;
   result.event_type = ConvertEventTypes(web_event.type);
   result.event_time_stamp = EventTimeToPPTimeTicks(web_event.timeStampSeconds);
+  result.usb_key_code = 0;
   return result;
 }
 

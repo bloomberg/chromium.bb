@@ -158,7 +158,7 @@ class SandboxIPCProcess  {
   void HandleFontMatchRequest(int fd, const Pickle& pickle, PickleIterator iter,
                               std::vector<int>& fds) {
     bool filefaceid_valid;
-    uint32_t filefaceid;
+    uint32_t filefaceid = 0;
 
     if (!pickle.ReadBool(&iter, &filefaceid_valid))
       return;
