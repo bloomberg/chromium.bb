@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "content/browser/tab_contents/web_drag_dest_delegate.h"
+#include "content/public/browser/web_drag_dest_delegate.h"
 
 class TabContentsWrapper;
 

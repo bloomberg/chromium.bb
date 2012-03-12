@@ -8,9 +8,9 @@
 #include <shlobj.h>
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/tab_contents/web_drag_dest_delegate.h"
 #include "content/browser/tab_contents/web_drag_utils_win.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_drag_dest_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"

@@ -48,7 +48,6 @@ include_rules = [
   "+content/browser/tab_contents/web_contents_drag_win.h",
   "+content/browser/tab_contents/web_contents_view_android.h",
   "+content/browser/tab_contents/web_contents_view_mac.h",
-  "+content/browser/tab_contents/web_drag_dest_delegate.h",
   "+content/browser/tab_contents/web_drag_dest_gtk.h",
   "+content/browser/tab_contents/web_drag_dest_win.h",
   "+content/browser/tab_contents/web_drag_source_gtk.h",
