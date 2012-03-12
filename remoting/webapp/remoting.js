@@ -53,6 +53,14 @@ remoting.init = function() {
 
   window.addEventListener('blur', pluginLostFocus_, false);
 
+  if (isHostModeSupported_()) {
+    var noShare = document.getElementById('chrome-os-no-share');
+    noShare.parentNode.removeChild(noShare);
+  } else {
+    var button = document.getElementById('share-button');
+    button.disabled = true;
+  }
+
   // Parse URL parameters.
   var urlParams = getUrlParameters_();
   if ('mode' in urlParams) {
@@ -64,17 +72,16 @@ remoting.init = function() {
   }
 
   // No valid URL parameters, start up normally.
+  remoting.initDaemonUi();
+};
+
+// initDaemonUi is called if the app is not starting up in session mode, and
+// also if the user cancels the connection in session mode.
+remoting.initDaemonUi = function () {
   remoting.daemonPlugin = new remoting.DaemonPlugin();
   remoting.daemonPlugin.updateDom();
   remoting.setMode(getAppStartupMode_());
   remoting.askPinDialog = new remoting.AskPinDialog(remoting.daemonPlugin);
-  if (isHostModeSupported_()) {
-    var noShare = document.getElementById('chrome-os-no-share');
-    noShare.parentNode.removeChild(noShare);
-  } else {
-    var button = document.getElementById('share-button');
-    button.disabled = true;
-  }
 };
 
 /**

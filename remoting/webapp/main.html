@@ -115,7 +115,7 @@ found in the LICENSE file.
         <h2 i18n-content="MODE_ME2ME"></h2>
         <div id="host-list"></div>
         <div id="host-list-error" class="error-state"></div>
-        <div id="daemon-control" data-daemon-state="enabled disabled">
+        <div id="daemon-control" data-daemon-state="enabled disabled" hidden>
           <table class="host-list-table">
             <!-- TODO(jamiewalch): Rewrite this using flex boxes and apply the
                  host-offline style if the daemon is not running -->
@@ -126,7 +126,7 @@ found in the LICENSE file.
               <td class="host-list-label">
                 <span id="this-computer-name"
                       data-daemon-state="enabled">
-                  Spongebob Squaretrousers
+                  My computer <!-- Placeholder until daemon mode is finished -->
                 </span>
                 <span i18n-content="HOME_DAEMON_START_MESSAGE"
                       data-daemon-state="disabled">

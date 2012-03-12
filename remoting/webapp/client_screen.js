@@ -87,8 +87,12 @@ remoting.cancelConnect = function() {
     remoting.clientSession.removePlugin();
     remoting.clientSession = null;
   }
-  remoting.setMode(remoting.AppMode.HOME);
-  document.getElementById('access-code-entry').value = '';
+  if (remoting.currentConnectionType == remoting.ConnectionType.Me2Me) {
+    remoting.initDaemonUi();
+  } else {
+    remoting.setMode(remoting.AppMode.HOME);
+    document.getElementById('access-code-entry').value = '';
+  }
 };
 
 /**
