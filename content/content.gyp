@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -136,9 +136,16 @@
       {'target_name': 'content',
        'type': 'shared_library',
        'variables': { 'enable_wexit_time_destructors': 1, },
-        'dependencies': [
-          'content_resources.gyp:content_resources',
-        ],
+       'dependencies': [
+         'content_resources.gyp:content_resources',
+       ],
+       'conditions': [
+         ['OS=="mac"', {
+           'dependencies': [
+             '<(DEPTH)/third_party/mach_override/mach_override.gyp:mach_override',
+           ],
+         }],
+       ],
        'includes': [
         'content_app.gypi',
         'content_browser.gypi',
