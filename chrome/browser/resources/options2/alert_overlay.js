@@ -44,6 +44,14 @@ cr.define('options', function() {
       };
     },
 
+    /** @inheritDoc */
+    get nestingLevel() {
+      // AlertOverlay is special in that it is not tied to one page or overlay.
+      // Set the nesting level arbitrarily high so as to always be recognized as
+      // the top-most visible page.
+      return 99;
+    },
+
     /**
      * Handle the 'ok' button.  Clear the overlay and call the ok callback if
      * available.
