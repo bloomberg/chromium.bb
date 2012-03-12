@@ -727,6 +727,8 @@ TEST_F(GDataFileSystemTest, Unpin) {
 TEST_F(GDataFileSystemTest, GetGDataFileInfoFromPath) {
   LoadRootFeedDocument("root_feed.json");
 
+  // Lock to call GetGDataFileInfoFromPath.
+  base::AutoLock lock(file_system_->lock_);
   GDataFileBase* file_info = file_system_->GetGDataFileInfoFromPath(
       FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")));
   ASSERT_TRUE(file_info != NULL);
@@ -736,6 +738,41 @@ TEST_F(GDataFileSystemTest, GetGDataFileInfoFromPath) {
   GDataFileBase* non_existent = file_system_->GetGDataFileInfoFromPath(
       FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")));
   ASSERT_TRUE(non_existent == NULL);
+}
+
+TEST_F(GDataFileSystemTest, GetFromCacheForPath) {
+  LoadRootFeedDocument("root_feed.json");
+
+  // First make sure the file exists in GData.
+  FilePath gdata_file_path = FilePath(FILE_PATH_LITERAL("gdata/File 1.txt"));
+  GDataFile* file = NULL;
+  {  // Lock to call GetGDataFileInfoFromPath.
+    base::AutoLock lock(file_system_->lock_);
+    GDataFileBase* file_info =
+        file_system_->GetGDataFileInfoFromPath(gdata_file_path);
+    ASSERT_TRUE(file_info != NULL);
+    file = file_info->AsGDataFile();
+    ASSERT_TRUE(file != NULL);
+  }
+
+  // A file that exists in GData but not in cache.
+  FilePath cache_file_path = file_system_->GetFromCacheForPath(gdata_file_path);
+  EXPECT_TRUE(cache_file_path.empty());
+
+  // Store a file corresponding to resource and md5 of "gdata/File 1.txt" to
+  // cache.
+  TestStoreToCache(file->resource(), file->file_md5(),
+                   GetTestFilePath("root_feed.json"));
+
+  // Now the file should exist in cache.
+  cache_file_path = file_system_->GetFromCacheForPath(gdata_file_path);
+  EXPECT_EQ(file_system_->GetCacheFilePath(file->resource(), file->file_md5()),
+            cache_file_path);
+
+  // A file that doesn't exist in gdata.
+  cache_file_path = file_system_->GetFromCacheForPath(
+      FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")));
+  EXPECT_TRUE(cache_file_path.empty());
 }
 
 // Create a directory through the document service

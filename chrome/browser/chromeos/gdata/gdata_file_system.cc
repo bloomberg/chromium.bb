@@ -611,6 +611,7 @@ void GDataFileSystem::RefreshDirectoryAndContinueSearch(
 void GDataFileSystem::Remove(const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
+  base::AutoLock lock(lock_);
   GDataFileBase* file_info = GetGDataFileInfoFromPath(file_path);
   if (!file_info) {
     if (!callback.is_null()) {
@@ -696,6 +697,7 @@ void GDataFileSystem::CreateDirectory(
 
 void GDataFileSystem::GetFile(const FilePath& file_path,
                               const GetFileCallback& callback) {
+  base::AutoLock lock(lock_);
   GDataFileBase* file_info = GetGDataFileInfoFromPath(file_path);
   if (!file_info) {
     if (!callback.is_null()) {
@@ -846,7 +848,7 @@ void GDataFileSystem::UnsafeFindFileByPath(
 
 GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
     const FilePath& file_path) {
-  base::AutoLock lock(lock_);
+  lock_.AssertAcquired();
   // Find directory element within the cached file system snapshot.
   scoped_refptr<ReadOnlyFindFileDelegate> find_delegate(
       new ReadOnlyFindFileDelegate());
@@ -855,6 +857,30 @@ GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
     return NULL;
 
   return find_delegate->file();
+}
+
+FilePath GDataFileSystem::GetFromCacheForPath(const FilePath& gdata_file_path) {
+  FilePath cache_file_path;
+  std::string resource;
+  std::string md5;
+
+  {  // Lock to use GetGDataFileInfoFromPath and returned pointer, but need to
+     // release before GetFromCache.
+    base::AutoLock lock(lock_);
+    GDataFileBase* file_base = GetGDataFileInfoFromPath(gdata_file_path);
+
+    if (!file_base || !file_base->AsGDataFile())
+      return cache_file_path;
+
+    GDataFile* file = file_base->AsGDataFile();
+    resource = file->resource();
+    md5 = file->file_md5();
+  }
+
+  if (!GetFromCache(resource, md5, &cache_file_path))
+    cache_file_path.clear();
+
+  return cache_file_path;
 }
 
 void GDataFileSystem::OnCreateDirectoryCompleted(

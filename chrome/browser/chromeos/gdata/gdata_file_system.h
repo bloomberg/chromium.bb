@@ -170,12 +170,21 @@ class GDataFileSystem : public ProfileKeyedService {
   // Returns NULL if it does not find the file.
   GDataFileBase* GetGDataFileInfoFromPath(const FilePath& file_path);
 
+  // Returns absolute path of cache file corresponding to |gdata_file_path|.
+  // Returns empty FilePath if cache has not been initialized or file doesn't
+  // exist in GData or cache.
+  FilePath GetFromCacheForPath(const FilePath& gdata_file_path);
+
  private:
   friend class GDataUploader;
   friend class GDataFileSystemFactory;
   friend class GDataFileSystemTestBase;
   FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
                            FindFirstMissingParentDirectory);
+  FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
+                           GetGDataFileInfoFromPath);
+  FRIEND_TEST_ALL_PREFIXES(GDataFileSystemTest,
+                           GetFromCacheForPath);
 
   // Defines possible search results of FindFirstMissingParentDirectory().
   enum FindMissingDirectoryResult {
@@ -318,11 +327,6 @@ class GDataFileSystem : public ProfileKeyedService {
       GURL* last_dir_content_url,
       FilePath* first_missing_parent_path);
 
-  // Returns root GCache directory. Should match <user_profile_dir>/GCache/v1/.
-  FilePath GetGCacheDirectoryPath() const {
-    return gdata_cache_path_;
-  }
-
   // Saves collected root feeds in GCache directory under
   // <user_profile_dir>/GCache/v1/meta/last_feed.json.
   void SaveRootFeeds(scoped_ptr<base::ListValue> feed_vector);
@@ -346,7 +350,9 @@ class GDataFileSystem : public ProfileKeyedService {
   // - uploads dirty files to gdata server.
   // - etc.
 
-  // Initializes cache.
+  // Initializes cache, including creating cache directory and its sub-
+  // directories, scanning blobs directory to populate cache map with existing
+  // cache files and their status, etc.
   void InitializeCache();
 
   // Returns absolute path of the file if it were cached or to be cached.
