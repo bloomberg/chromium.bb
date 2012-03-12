@@ -1040,6 +1040,8 @@ class ExecuteTasksFileBrowserFunction::Executor: public FileTaskExecutor {
   scoped_refptr<ExecuteTasksFileBrowserFunction> function_;
 };
 
+ExecuteTasksFileBrowserFunction::ExecuteTasksFileBrowserFunction() {}
+
 bool ExecuteTasksFileBrowserFunction::RunImpl() {
   // First param is task id that was to the extension with getFileTasks call.
   std::string task_id;
@@ -1075,6 +1077,8 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
   result_.reset(new base::FundamentalValue(true));
   return true;
 }
+
+FileTaskExecutor::~FileTaskExecutor() {}
 
 bool FileTaskExecutor::InitiateFileTaskExecution(
     const std::string& task_id, const std::vector<GURL>& file_urls) {
