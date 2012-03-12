@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/test/test_renderer_host.h"
 
 typedef BrowserWithTestWindowTest BrowserListTest;
 
@@ -31,7 +32,7 @@ size_t CountAllTabs() {
 
 // Helper function to navigate to the print preview page.
 void NavigateToPrintUrl(TabContentsWrapper* tab, int page_id) {
-  static_cast<content::TestRenderViewHost*>(
+  content::RenderViewHostTester::For(
       tab->web_contents()->GetRenderViewHost())->SendNavigate(
           page_id, GURL(chrome::kChromeUIPrintURL));
 }

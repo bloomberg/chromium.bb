@@ -22,6 +22,7 @@ using content::DevToolsAgentHostRegistry;
 using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::DevToolsManagerImpl;
+using content::RenderViewHostImplTestHarness;
 using content::WebContents;
 
 namespace {
@@ -111,9 +112,9 @@ class DevToolsManagerTestBrowserClient
 
 }  // namespace
 
-class DevToolsManagerTest : public RenderViewHostTestHarness {
+class DevToolsManagerTest : public RenderViewHostImplTestHarness {
  public:
-  DevToolsManagerTest() : RenderViewHostTestHarness() {
+  DevToolsManagerTest() {
   }
 
  protected:
@@ -180,7 +181,7 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
 }
 
 TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
-  content::TestRenderViewHost* inspected_rvh = rvh();
+  content::TestRenderViewHost* inspected_rvh = test_rvh();
   inspected_rvh->set_render_view_created(true);
   EXPECT_FALSE(contents()->GetDelegate());
   TestWebContentsDelegate delegate;

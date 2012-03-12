@@ -8,14 +8,11 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/message_loop.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/mock_render_process_host.h"
-#include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/page_transition_types.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "content/test/test_renderer_host.h"
 
 // This file provides a testing framework for mocking out the RenderProcessHost
 // layer. It allows you to test RenderViewHost, TabContents,
@@ -24,19 +21,7 @@
 //
 // To use, derive your test base class from RenderViewHostTestHarness.
 
-#if defined(USE_AURA)
-namespace aura {
-class RootWindow;
-namespace test {
-class TestStackingClient;
-}
-}
-#endif
-
 namespace content {
-class BrowserContext;
-class NavigationController;
-class RenderProcessHostFactory;
 class SiteInstance;
 }
 
@@ -44,7 +29,6 @@ namespace gfx {
 class Rect;
 }
 
-class TestTabContents;
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
@@ -197,37 +181,56 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 // TODO(brettw) this should use a TestTabContents which should be generalized
 // from the TabContents test. We will probably also need that class' version of
 // CreateRenderViewForRenderManager when more complicate tests start using this.
-class TestRenderViewHost : public RenderViewHostImpl {
+//
+// Note that users outside of content must use this class by getting
+// the separate content::RenderViewHostTester interface via
+// RenderViewHostTester::For(rvh) on the RenderViewHost they want to
+// drive tests on.
+//
+// Users within content may directly static_cast from a
+// RenderViewHost* to a TestRenderViewHost*.
+//
+// The reasons we do it this way rather than extending the parallel
+// inheritance hierarchy we have for RenderWidgetHost/RenderViewHost
+// vs. RenderWidgetHostImpl/RenderViewHostImpl are:
+//
+// a) Extending the parallel class hierarchy further would require
+// more classes to use virtual inheritance.  This is a complexity that
+// is better to avoid, especially when it would be introduced in the
+// production code solely to facilitate testing code.
+//
+// b) While users outside of content only need to drive tests on a
+// RenderViewHost, content needs a test version of the full
+// RenderViewHostImpl so that it can test all methods on that concrete
+// class (e.g. overriding a method such as
+// RenderViewHostImpl::CreateRenderView).  This would have complicated
+// the dual class hierarchy even further.
+//
+// The reason we do it this way instead of using composition is
+// similar to (b) above, essentially it gets very tricky.  By using
+// the split interface we avoid complexity within content and maintain
+// reasonable utility for embedders.
+class TestRenderViewHost
+    : public RenderViewHostImpl,
+      public RenderViewHostTester {
  public:
-  // If the given TabContnets has a pending RVH, returns it, otherwise NULL.
-  static TestRenderViewHost* GetPendingForController(
-      NavigationController* controller);
-
   TestRenderViewHost(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
                      int routing_id);
   virtual ~TestRenderViewHost();
 
-  // Testing functions ---------------------------------------------------------
-
-  // Calls the RenderViewHosts' private OnMessageReceived function with the
-  // given message.
-  bool TestOnMessageReceived(const IPC::Message& msg);
-
-  // Calls OnMsgNavigate on the RenderViewHost with the given information,
-  // setting the rest of the parameters in the message to the "typical" values.
-  // This is a helper function for simulating the most common types of loads.
-  void SendNavigate(int page_id, const GURL& url);
-
-  // Calls OnMsgNavigate on the RenderViewHost with the given information,
-  // including a custom PageTransition.  Sets the rest of the
-  // parameters in the message to the "typical" values. This is a helper
-  // function for simulating the most common types of loads.
-  void SendNavigateWithTransition(int page_id, const GURL& url,
-                                  PageTransition transition);
-
-  // Calls OnMsgShouldCloseACK on the RenderViewHost with the given parameter.
-  void SendShouldCloseACK(bool proceed);
+  // RenderViewHostTester implementation.  Note that CreateRenderView
+  // is not specified since it is synonymous with the one from
+  // RenderViewHostImpl, see below.
+  virtual void SendNavigate(int page_id, const GURL& url) OVERRIDE;
+  virtual void SendNavigateWithTransition(int page_id, const GURL& url,
+                                          PageTransition transition) OVERRIDE;
+  virtual void SendShouldCloseACK(bool proceed) OVERRIDE;
+  virtual void SetContentsMimeType(const std::string& mime_type) OVERRIDE;
+  virtual void SimulateSwapOutACK() OVERRIDE;
+  virtual void SimulateWasHidden() OVERRIDE;
+  virtual void SimulateWasRestored() OVERRIDE;
+  virtual bool TestOnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void TestOnMsgStartDragging(const WebDropData& drop_data);
 
@@ -266,24 +269,11 @@ class TestRenderViewHost : public RenderViewHostImpl {
   // False by default.
   void set_simulate_fetch_via_proxy(bool proxy);
 
-  // If set, future loads will have |mime_type| set as the mime type.
-  // If not set, the mime type will default to "text/html".
-  void set_contents_mime_type(const std::string& mime_type);
-
   // RenderViewHost overrides --------------------------------------------------
 
   virtual bool CreateRenderView(const string16& frame_name,
                                 int32 max_page_id) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
-
-  // This removes the need to expose
-  // RenderViewHostImpl::is_swapped_out() outside of content.
-  static bool IsRenderViewHostSwappedOut(RenderViewHost* rwh);
-
-  // This removes the need to expose
-  // RenderViewHostImpl::set_send_accessibility_updated_notifications()
-  // outside of content.
-  static void EnableAccessibilityUpdatedNotifications(RenderViewHost* rwh);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
@@ -298,7 +288,7 @@ class TestRenderViewHost : public RenderViewHostImpl {
   // See set_simulate_fetch_via_proxy() above.
   bool simulate_fetch_via_proxy_;
 
-  // See set_contents_mime_type() above.
+  // See SetContentsMimeType() above.
   std::string contents_mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
@@ -308,97 +298,20 @@ class TestRenderViewHost : public RenderViewHostImpl {
 #pragma warning(pop)
 #endif
 
+// Adds methods to get straight at the impl classes.
+class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {
+ public:
+  RenderViewHostImplTestHarness();
+  virtual ~RenderViewHostImplTestHarness();
+
+  TestRenderViewHost* test_rvh();
+  TestRenderViewHost* pending_test_rvh();
+  TestRenderViewHost* active_test_rvh();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostImplTestHarness);
+};
+
 }  // namespace content
-
-// TestRenderViewHostFactory ---------------------------------------------------
-
-// Manages creation of the RenderViewHosts using our special subclass. This
-// automatically registers itself when it goes in scope, and unregisters itself
-// when it goes out of scope. Since you can't have more than one factory
-// registered at a time, you can only have one of these objects at a time.
-class TestRenderViewHostFactory : public RenderViewHostFactory {
- public:
-  explicit TestRenderViewHostFactory(
-      content::RenderProcessHostFactory* rph_factory);
-  virtual ~TestRenderViewHostFactory();
-
-  virtual void set_render_process_host_factory(
-      content::RenderProcessHostFactory* rph_factory);
-  virtual content::RenderViewHost* CreateRenderViewHost(
-      content::SiteInstance* instance,
-      content::RenderViewHostDelegate* delegate,
-      int routing_id,
-      content::SessionStorageNamespace* session_storage) OVERRIDE;
-
- private:
-  // This is a bit of a hack. With the current design of the site instances /
-  // browsing instances, it's difficult to pass a RenderProcessHostFactory
-  // around properly.
-  //
-  // Instead, we set it right before we create a new RenderViewHost, which
-  // happens before the RenderProcessHost is created. This way, the instance
-  // has the correct factory and creates our special RenderProcessHosts.
-  content::RenderProcessHostFactory* render_process_host_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRenderViewHostFactory);
-};
-
-// RenderViewHostTestHarness ---------------------------------------------------
-
-class RenderViewHostTestHarness : public testing::Test {
- public:
-  RenderViewHostTestHarness();
-  virtual ~RenderViewHostTestHarness();
-
-  content::NavigationController& controller();
-  virtual TestTabContents* contents();
-  content::TestRenderViewHost* rvh();
-  content::TestRenderViewHost* pending_rvh();
-  content::TestRenderViewHost* active_rvh();
-  content::BrowserContext* browser_context();
-  MockRenderProcessHost* process();
-
-  // Frees the current tab contents for tests that want to test destruction.
-  void DeleteContents();
-
-  // Sets the current tab contents for tests that want to alter it. Takes
-  // ownership of the TestTabContents passed.
-  virtual void SetContents(TestTabContents* contents);
-
-  // Creates a new TestTabContents. Ownership passes to the caller.
-  TestTabContents* CreateTestTabContents();
-
-  // Cover for |contents()->NavigateAndCommit(url)|. See
-  // TestTabContents::NavigateAndCommit for details.
-  void NavigateAndCommit(const GURL& url);
-
-  // Simulates a reload of the current page.
-  void Reload();
-
- protected:
-  // testing::Test
-  virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
-
-  // This browser context will be created in SetUp if it has not already been
-  // created.  This allows tests to override the browser context if they so
-  // choose in their own SetUp function before calling the base class's (us)
-  // SetUp().
-  scoped_ptr<content::BrowserContext> browser_context_;
-
-  MessageLoopForUI message_loop_;
-
-  MockRenderProcessHostFactory rph_factory_;
-  TestRenderViewHostFactory rvh_factory_;
-
- private:
-  scoped_ptr<TestTabContents> contents_;
-#if defined(USE_AURA)
-  scoped_ptr<aura::RootWindow> root_window_;
-  scoped_ptr<aura::test::TestStackingClient> test_stacking_client_;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
-};
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_TEST_RENDER_VIEW_HOST_H_

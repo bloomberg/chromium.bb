@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -24,6 +23,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
+#include "content/test/test_renderer_host.h"
 #include "net/base/cert_status_flags.h"
 #include "net/test/test_server.h"
 
@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   // Wait until we hear the load failure, and make sure we haven't swapped out
   // the previous page.  Prevents regression of http://crbug.com/82667.
   load_failed_observer.Wait();
-  EXPECT_FALSE(content::TestRenderViewHost::IsRenderViewHostSwappedOut(
+  EXPECT_FALSE(content::RenderViewHostTester::IsRenderViewHostSwappedOut(
       tab->GetRenderViewHost()));
 
   // We should be back at the original good page.

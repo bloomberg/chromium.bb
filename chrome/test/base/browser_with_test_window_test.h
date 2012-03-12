@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class GURL;
@@ -60,11 +60,6 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
-
-  // Returns the current RenderViewHost for the current tab as a
-  // TestRenderViewHost.
-  content::TestRenderViewHost* TestRenderViewHostForTab(
-      content::WebContents* web_contents);
 
  protected:
   TestBrowserWindow* window() const { return window_.get(); }
@@ -121,8 +116,9 @@ class BrowserWithTestWindowTest : public testing::Test {
   scoped_ptr<TestBrowserWindow> window_;
   scoped_ptr<Browser> browser_;
 
-  MockRenderProcessHostFactory rph_factory_;
-  TestRenderViewHostFactory rvh_factory_;
+  // The existence of this object enables tests via
+  // RenderViewHostTester.
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 
 #if defined(USE_AURA)
   scoped_ptr<aura::RootWindow> root_window_;

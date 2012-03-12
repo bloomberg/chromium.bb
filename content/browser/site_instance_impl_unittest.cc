@@ -9,6 +9,7 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/mock_content_browser_client.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -189,10 +190,9 @@ class TestSiteInstance : public SiteInstanceImpl {
 
 // Test to ensure no memory leaks for SiteInstance objects.
 TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
-  // The existence of these factories will cause TabContents to create our test
-  // one instead of the real one.
-  MockRenderProcessHostFactory rph_factory;
-  TestRenderViewHostFactory rvh_factory(&rph_factory);
+  // The existence of this object will cause TabContents to create our
+  // test one instead of the real one.
+  content::RenderViewHostTestEnabler rvh_test_enabler;
   int site_delete_counter = 0;
   int browsing_delete_counter = 0;
   const GURL url("test:foo");

@@ -16,9 +16,10 @@
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/test_renderer_host.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,6 +39,7 @@ using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using content::BrowserThread;
+using content::RenderViewHostTester;
 
 namespace {
 const bool kFalse = false;
@@ -657,7 +659,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   // same domain as the previous URL, otherwise it will create a new
   // RenderViewHost that won't have the mime type set.
   url = GURL("http://host.com/xhtml");
-  rvh()->set_contents_mime_type("application/xhtml+xml");
+  rvh_tester()->SetContentsMimeType("application/xhtml+xml");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
   NavigateAndCommit(url);
@@ -689,7 +691,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
   // same domain as the previous URL, otherwise it will create a new
   // RenderViewHost that won't have the mime type set.
   url = GURL("http://host2.com/image.jpg");
-  rvh()->set_contents_mime_type("image/jpeg");
+  rvh_tester()->SetContentsMimeType("image/jpeg");
   ExpectPreClassificationChecks(url, NULL, NULL, NULL, NULL, NULL, NULL);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();

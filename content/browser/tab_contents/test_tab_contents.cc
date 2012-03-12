@@ -38,9 +38,12 @@ TestTabContents::TestTabContents(content::BrowserContext* browser_context,
 TestTabContents::~TestTabContents() {
 }
 
-TestRenderViewHost* TestTabContents::pending_rvh() const {
-  return static_cast<TestRenderViewHost*>(
-      render_manager_.pending_render_view_host_);
+RenderViewHost* TestTabContents::pending_rvh() const {
+  return render_manager_.pending_render_view_host_;
+}
+
+TestRenderViewHost* TestTabContents::pending_test_rvh() const {
+  return static_cast<TestRenderViewHost*>(pending_rvh());
 }
 
 void TestTabContents::TestDidNavigate(RenderViewHost* render_view_host,
@@ -115,7 +118,7 @@ void TestTabContents::CommitPendingNavigation() {
   // navigate.
   ProceedWithCrossSiteNavigation();
   RenderViewHost* old_rvh = render_manager_.current_host();
-  TestRenderViewHost* rvh = pending_rvh();
+  TestRenderViewHost* rvh = static_cast<TestRenderViewHost*>(pending_rvh());
   if (!rvh)
     rvh = static_cast<TestRenderViewHost*>(old_rvh);
 

@@ -13,18 +13,23 @@
 class SiteInstanceImpl;
 
 namespace content {
+class RenderViewHost;
 class TestRenderViewHost;
 }
 
-// Subclass TabContents to ensure it creates TestRenderViewHosts and does
-// not do anything involving views.
+// Subclass TabContents to ensure it creates TestRenderViewHosts
+// and does not do anything involving views.
 class TestTabContents : public TabContents {
  public:
   TestTabContents(content::BrowserContext* browser_context,
                   content::SiteInstance* instance);
   virtual ~TestTabContents();
 
-  content::TestRenderViewHost* pending_rvh() const;
+  content::RenderViewHost* pending_rvh() const;
+
+  // TODO(joi): Make sure this one is hidden once TestTabContents
+  // hides internal types from embedders.
+  content::TestRenderViewHost* pending_test_rvh() const;
 
   // State accessor.
   bool cross_navigation_pending() {

@@ -15,8 +15,9 @@
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
+using content::RenderViewHostImplTestHarness;
 
-class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
+class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
  public:
   RenderWidgetHostViewMacTest() : old_rwhv_(NULL), rwhv_mac_(NULL) {}
 
@@ -35,7 +36,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
   }
   virtual void TearDown() {
     // See comment in SetUp().
-    rvh()->SetView(old_rwhv_);
+    test_rvh()->SetView(old_rwhv_);
 
     // Make sure the rwhv_mac_ is gone once the superclass's |TearDown()| runs.
     rwhv_cocoa_.reset();

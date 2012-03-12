@@ -17,6 +17,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/test/test_renderer_host.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
@@ -26,16 +27,15 @@
 
 using content::BrowserThread;
 using content::NavigationController;
-using content::TestRenderViewHost;
+using content::RenderViewHost;
+using content::RenderViewHostTester;
 using content::WebContents;
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
     : ui_thread_(BrowserThread::UI, message_loop()),
       file_thread_(BrowserThread::FILE, message_loop()),
       file_user_blocking_thread_(
-          BrowserThread::FILE_USER_BLOCKING, message_loop()),
-      rph_factory_(),
-      rvh_factory_(&rph_factory_) {
+          BrowserThread::FILE_USER_BLOCKING, message_loop()) {
 #if defined(OS_WIN)
   OleInitialize(NULL);
 #endif
@@ -80,11 +80,6 @@ BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
 #endif
 }
 
-TestRenderViewHost* BrowserWithTestWindowTest::TestRenderViewHostForTab(
-    WebContents* web_contents) {
-  return static_cast<TestRenderViewHost*>(web_contents->GetRenderViewHost());
-}
-
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
   browser::NavigateParams params(browser, url, content::PAGE_TRANSITION_TYPED);
   params.tabstrip_index = 0;
@@ -98,41 +93,40 @@ void BrowserWithTestWindowTest::CommitPendingLoad(
   if (!controller->GetPendingEntry())
     return;  // Nothing to commit.
 
-  TestRenderViewHost* old_rvh =
-      TestRenderViewHostForTab(controller->GetWebContents());
+  RenderViewHost* old_rvh =
+      controller->GetWebContents()->GetRenderViewHost();
 
-  TestRenderViewHost* pending_rvh = TestRenderViewHost::GetPendingForController(
+  RenderViewHost* pending_rvh = RenderViewHostTester::GetPendingForController(
       controller);
   if (pending_rvh) {
     // Simulate the ShouldClose_ACK that is received from the current renderer
     // for a cross-site navigation.
     DCHECK_NE(old_rvh, pending_rvh);
-    old_rvh->SendShouldCloseACK(true);
+    RenderViewHostTester::For(old_rvh)->SendShouldCloseACK(true);
   }
   // Commit on the pending_rvh, if one exists.
-  TestRenderViewHost* test_rvh = pending_rvh ? pending_rvh : old_rvh;
+  RenderViewHost* test_rvh = pending_rvh ? pending_rvh : old_rvh;
+  RenderViewHostTester* test_rvh_tester = RenderViewHostTester::For(test_rvh);
 
   // For new navigations, we need to send a larger page ID. For renavigations,
   // we need to send the preexisting page ID. We can tell these apart because
   // renavigations will have a pending_entry_index while new ones won't (they'll
   // just have a standalong pending_entry that isn't in the list already).
   if (controller->GetPendingEntryIndex() >= 0) {
-    test_rvh->SendNavigateWithTransition(
+    test_rvh_tester->SendNavigateWithTransition(
         controller->GetPendingEntry()->GetPageID(),
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   } else {
-    test_rvh->SendNavigateWithTransition(
+    test_rvh_tester->SendNavigateWithTransition(
         controller->GetWebContents()->
             GetMaxPageIDForSiteInstance(test_rvh->GetSiteInstance()) + 1,
         controller->GetPendingEntry()->GetURL(),
         controller->GetPendingEntry()->GetTransitionType());
   }
 
-  // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
-  // without making any network requests.
   if (pending_rvh)
-    old_rvh->OnSwapOutACK();
+    RenderViewHostTester::For(old_rvh)->SimulateSwapOutACK();
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommit(

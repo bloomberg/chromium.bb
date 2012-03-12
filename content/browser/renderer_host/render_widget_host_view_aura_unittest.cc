@@ -13,10 +13,11 @@
 #include "ui/base/ui_base_types.h"
 
 using content::RenderWidgetHostView;
+using content::RenderViewHostImplTestHarness;
 
 // This approach (of using RenderViewHostTestHarness's RenderViewHost for a new
 // RenderWidgetHostView) is borrowed from RenderWidgetHostViewMacTest.
-class RenderWidgetHostViewAuraTest : public RenderViewHostTestHarness {
+class RenderWidgetHostViewAuraTest : public RenderViewHostImplTestHarness {
  public:
   RenderWidgetHostViewAuraTest() : old_rwhv_(NULL) {}
 
@@ -34,7 +35,7 @@ class RenderWidgetHostViewAuraTest : public RenderViewHostTestHarness {
     rwhv_aura_->Destroy();
     // Destroying RWHV sets the host's view to NULL, so destroying view first,
     // then set the view.
-    rvh()->SetView(old_rwhv_);
+    test_rvh()->SetView(old_rwhv_);
     RenderViewHostTestHarness::TearDown();
   }
 

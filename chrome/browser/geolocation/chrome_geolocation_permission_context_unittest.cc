@@ -26,9 +26,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/test/mock_geolocation.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::RenderViewHostTester;
 using content::WebContents;
 
 // ClosedDelegateTracker ------------------------------------------------------
@@ -207,7 +209,7 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
       WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   new_tab->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  static_cast<content::TestRenderViewHost*>(new_tab->GetRenderViewHost())->
+  RenderViewHostTester::For(new_tab->GetRenderViewHost())->
       SendNavigate(extra_tabs_.size() + 1, url);
   extra_tabs_.push_back(new TabContentsWrapper(new_tab));
 }

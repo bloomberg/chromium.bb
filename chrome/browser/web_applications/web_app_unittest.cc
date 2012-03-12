@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -34,7 +35,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
   web_app_info.description = description;
   web_app_info.app_url = url;
 
-  rvh()->TestOnMessageReceived(
+  rvh_tester()->TestOnMessageReceived(
       ExtensionHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
   ShellIntegration::ShortcutInfo info;
   web_app::GetShortcutInfoForTab(contents_wrapper(), &info);

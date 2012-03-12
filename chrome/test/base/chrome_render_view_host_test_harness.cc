@@ -12,6 +12,8 @@
 #include "ui/aura/root_window.h"
 #endif
 
+using content::RenderViewHostTester;
+
 ChromeRenderViewHostTestHarness::ChromeRenderViewHostTestHarness()
     : RenderViewHostTestHarness() {
 }
@@ -21,6 +23,10 @@ ChromeRenderViewHostTestHarness::~ChromeRenderViewHostTestHarness() {
 
 TestingProfile* ChromeRenderViewHostTestHarness::profile() {
   return static_cast<TestingProfile*>(browser_context_.get());
+}
+
+RenderViewHostTester* ChromeRenderViewHostTestHarness::rvh_tester() {
+  return RenderViewHostTester::For(rvh());
 }
 
 void ChromeRenderViewHostTestHarness::SetUp() {

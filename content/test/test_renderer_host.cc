@@ -1,0 +1,211 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "content/test/test_renderer_host.h"
+
+#include "content/browser/renderer_host/mock_render_process_host.h"
+#include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/site_instance_impl.h"
+#include "content/browser/tab_contents/navigation_entry_impl.h"
+#include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/test/test_browser_context.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/root_window.h"
+#include "ui/aura/test/test_stacking_client.h"
+#endif
+
+namespace content {
+
+// Manages creation of the RenderViewHosts using our special subclass. This
+// automatically registers itself when it goes in scope, and unregisters itself
+// when it goes out of scope. Since you can't have more than one factory
+// registered at a time, you can only have one of these objects at a time.
+//
+// This is an implementation detail of this file and used only via
+// RenderViewHostTestEnabler.
+class TestRenderViewHostFactory : public RenderViewHostFactory {
+ public:
+  explicit TestRenderViewHostFactory(
+      content::RenderProcessHostFactory* rph_factory);
+  virtual ~TestRenderViewHostFactory();
+
+  virtual void set_render_process_host_factory(
+      content::RenderProcessHostFactory* rph_factory);
+  virtual content::RenderViewHost* CreateRenderViewHost(
+      content::SiteInstance* instance,
+      content::RenderViewHostDelegate* delegate,
+      int routing_id,
+      content::SessionStorageNamespace* session_storage) OVERRIDE;
+
+ private:
+  // This is a bit of a hack. With the current design of the site instances /
+  // browsing instances, it's difficult to pass a RenderProcessHostFactory
+  // around properly.
+  //
+  // Instead, we set it right before we create a new RenderViewHost, which
+  // happens before the RenderProcessHost is created. This way, the instance
+  // has the correct factory and creates our special RenderProcessHosts.
+  content::RenderProcessHostFactory* render_process_host_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestRenderViewHostFactory);
+};
+
+TestRenderViewHostFactory::TestRenderViewHostFactory(
+    content::RenderProcessHostFactory* rph_factory)
+    : render_process_host_factory_(rph_factory) {
+  RenderViewHostFactory::RegisterFactory(this);
+}
+
+TestRenderViewHostFactory::~TestRenderViewHostFactory() {
+  RenderViewHostFactory::UnregisterFactory();
+}
+
+void TestRenderViewHostFactory::set_render_process_host_factory(
+    content::RenderProcessHostFactory* rph_factory) {
+  render_process_host_factory_ = rph_factory;
+}
+
+content::RenderViewHost* TestRenderViewHostFactory::CreateRenderViewHost(
+    SiteInstance* instance,
+    RenderViewHostDelegate* delegate,
+    int routing_id,
+    SessionStorageNamespace* session_storage) {
+  // See declaration of render_process_host_factory_ below.
+  static_cast<SiteInstanceImpl*>(instance)->
+      set_render_process_host_factory(render_process_host_factory_);
+  return new TestRenderViewHost(instance, delegate, routing_id);
+}
+
+// static
+RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
+  return static_cast<TestRenderViewHost*>(host);
+}
+
+// static
+void RenderViewHostTester::EnableAccessibilityUpdatedNotifications(
+    RenderViewHost* host) {
+  static_cast<RenderViewHostImpl*>(
+      host)->set_send_accessibility_updated_notifications(true);
+}
+
+// static
+RenderViewHost* RenderViewHostTester::GetPendingForController(
+    NavigationController* controller) {
+  TabContents* tab_contents = static_cast<TabContents*>(
+      controller->GetWebContents());
+  return tab_contents->GetRenderManagerForTesting()->pending_render_view_host();
+}
+
+// static
+bool RenderViewHostTester::IsRenderViewHostSwappedOut(RenderViewHost* rvh) {
+  return static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out();
+}
+
+RenderViewHostTestEnabler::RenderViewHostTestEnabler()
+    : rph_factory_(new MockRenderProcessHostFactory()),
+      rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())) {
+}
+
+RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
+}
+
+RenderViewHostTestHarness::RenderViewHostTestHarness()
+    : contents_(NULL) {
+}
+
+RenderViewHostTestHarness::~RenderViewHostTestHarness() {
+}
+
+NavigationController& RenderViewHostTestHarness::controller() {
+  return contents()->GetController();
+}
+
+TestTabContents* RenderViewHostTestHarness::contents() {
+  return contents_.get();
+}
+
+RenderViewHost* RenderViewHostTestHarness::rvh() {
+  return contents()->GetRenderViewHost();
+}
+
+RenderViewHost* RenderViewHostTestHarness::pending_rvh() {
+  return contents()->GetRenderManagerForTesting()->pending_render_view_host();
+}
+
+RenderViewHost* RenderViewHostTestHarness::active_rvh() {
+  return pending_rvh() ? pending_rvh() : rvh();
+}
+
+BrowserContext* RenderViewHostTestHarness::browser_context() {
+  return browser_context_.get();
+}
+
+MockRenderProcessHost* RenderViewHostTestHarness::process() {
+  return static_cast<MockRenderProcessHost*>(active_rvh()->GetProcess());
+}
+
+void RenderViewHostTestHarness::DeleteContents() {
+  SetContents(NULL);
+}
+
+void RenderViewHostTestHarness::SetContents(TestTabContents* contents) {
+  contents_.reset(contents);
+}
+
+TestTabContents* RenderViewHostTestHarness::CreateTestTabContents() {
+  // See comment above browser_context_ decl for why we check for NULL here.
+  if (!browser_context_.get())
+    browser_context_.reset(new TestBrowserContext());
+
+  // This will be deleted when the TabContents goes away.
+  SiteInstance* instance = SiteInstance::Create(browser_context_.get());
+
+  return new TestTabContents(browser_context_.get(), instance);
+}
+
+void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
+  contents()->NavigateAndCommit(url);
+}
+
+void RenderViewHostTestHarness::Reload() {
+  NavigationEntry* entry = controller().GetLastCommittedEntry();
+  DCHECK(entry);
+  controller().Reload(false);
+  static_cast<TestRenderViewHost*>(
+      rvh())->SendNavigate(entry->GetPageID(), entry->GetURL());
+}
+
+void RenderViewHostTestHarness::SetUp() {
+#if defined(USE_AURA)
+  root_window_.reset(new aura::RootWindow);
+  test_stacking_client_.reset(
+      new aura::test::TestStackingClient(root_window_.get()));
+#endif
+  SetContents(CreateTestTabContents());
+}
+
+void RenderViewHostTestHarness::TearDown() {
+  SetContents(NULL);
+#if defined(USE_AURA)
+  test_stacking_client_.reset();
+  root_window_.reset();
+#endif
+
+  // Make sure that we flush any messages related to TabContents destruction
+  // before we destroy the browser context.
+  MessageLoop::current()->RunAllPending();
+
+  // Release the browser context on the UI thread.
+  message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
+  message_loop_.RunAllPending();
+}
+
+void RenderViewHostTestHarness::SetRenderProcessHostFactory(
+    RenderProcessHostFactory* factory) {
+    rvh_test_enabler_.rvh_factory_->set_render_process_host_factory(factory);
+}
+
+}  // namespace content

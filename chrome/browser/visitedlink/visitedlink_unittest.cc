@@ -22,10 +22,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/test_renderer_host.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using content::RenderViewHostTester;
 
 namespace {
 
@@ -566,7 +568,7 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
         file_thread_(BrowserThread::FILE, &message_loop_) {}
   virtual ~VisitedLinkEventsTest() {}
   virtual void SetUp() {
-    rvh_factory_.set_render_process_host_factory(&vc_rph_factory_);
+    SetRenderProcessHostFactory(&vc_rph_factory_);
     browser_context_.reset(new VisitCountingProfile());
     ChromeRenderViewHostTestHarness::SetUp();
   }
@@ -649,7 +651,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 
 TEST_F(VisitedLinkEventsTest, Basics) {
   VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
-  rvh()->CreateRenderView(string16(), -1);
+  rvh_tester()->CreateRenderView(string16(), -1);
 
   // Add a few URLs.
   master->AddURL(GURL("http://acidtests.org/"));
@@ -673,10 +675,10 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
   VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
-  rvh()->CreateRenderView(string16(), -1);
+  rvh_tester()->CreateRenderView(string16(), -1);
 
   // Simulate tab becoming inactive.
-  rvh()->WasHidden();
+  rvh_tester()->SimulateWasHidden();
 
   // Add a few URLs.
   master->AddURL(GURL("http://acidtests.org/"));
@@ -690,14 +692,14 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(0, profile()->reset_event_count());
 
   // Simulate the tab becoming active.
-  rvh()->WasRestored();
+  rvh_tester()->SimulateWasRestored();
 
   // We should now have 3 add events, still no reset events.
   EXPECT_EQ(1, profile()->add_event_count());
   EXPECT_EQ(0, profile()->reset_event_count());
 
   // Deactivate the tab again.
-  rvh()->WasHidden();
+  rvh_tester()->SimulateWasHidden();
 
   // Add a bunch of URLs (over 50) to exhaust the link event buffer.
   for (int i = 0; i < 100; i++)
@@ -710,7 +712,7 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   EXPECT_EQ(0, profile()->reset_event_count());
 
   // Activate the tab.
-  rvh()->WasRestored();
+  rvh_tester()->SimulateWasRestored();
 
   // We should have only one more reset event.
   EXPECT_EQ(1, profile()->add_event_count());

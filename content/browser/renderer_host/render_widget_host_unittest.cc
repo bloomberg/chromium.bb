@@ -8,6 +8,7 @@
 #include "base/timer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"

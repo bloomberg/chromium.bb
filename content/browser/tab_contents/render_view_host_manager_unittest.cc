@@ -5,6 +5,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/mock_content_browser_client.h"
+#include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
@@ -35,6 +36,7 @@ using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::RenderViewHost;
 using content::RenderViewHostImpl;
+using content::RenderViewHostImplTestHarness;
 using content::SiteInstance;
 using content::TestRenderViewHost;
 using content::WebContents;
@@ -120,7 +122,8 @@ class RenderViewHostManagerTestBrowserClient
 
 }  // namespace
 
-class RenderViewHostManagerTest : public RenderViewHostTestHarness {
+class RenderViewHostManagerTest
+    : public RenderViewHostImplTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
     RenderViewHostTestHarness::SetUp();
@@ -144,7 +147,7 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
     // for us.
     controller().LoadURL(
         url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
-    TestRenderViewHost* old_rvh = rvh();
+    TestRenderViewHost* old_rvh = test_rvh();
 
     // Simulate the ShouldClose_ACK that is received from the current renderer
     // for a cross-site navigation.
@@ -154,7 +157,7 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
     // Commit the navigation with a new page ID.
     int32 max_page_id = contents()->GetMaxPageIDForSiteInstance(
         active_rvh()->GetSiteInstance());
-    active_rvh()->SendNavigate(max_page_id + 1, url);
+    active_test_rvh()->SendNavigate(max_page_id + 1, url);
 
     // Simulate the SwapOut_ACK that fires if you commit a cross-site navigation
     // without making any network requests.
@@ -337,13 +340,13 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   controller().LoadURL(
       kUrl, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   // Simulate response from RenderView for FirePageBeforeUnload.
-  rvh()->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
+  test_rvh()->TestOnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       rvh()->GetRoutingID(), true, base::TimeTicks(), base::TimeTicks()));
   ASSERT_TRUE(pending_rvh());  // New pending RenderViewHost will be created.
   RenderViewHost* last_rvh = pending_rvh();
   int32 new_id = contents()->GetMaxPageIDForSiteInstance(
       active_rvh()->GetSiteInstance()) + 1;
-  pending_rvh()->SendNavigate(new_id, kUrl);
+  pending_test_rvh()->SendNavigate(new_id, kUrl);
   EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
   ASSERT_TRUE(controller().GetLastCommittedEntry());
   EXPECT_TRUE(kUrl == controller().GetLastCommittedEntry()->GetURL());
@@ -360,7 +363,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // The same RenderViewHost should be reused.
   EXPECT_FALSE(pending_rvh());
   EXPECT_TRUE(last_rvh == rvh());
-  rvh()->SendNavigate(new_id, kUrl);  // The same page_id returned.
+  test_rvh()->SendNavigate(new_id, kUrl);  // The same page_id returned.
   EXPECT_EQ(controller().GetLastCommittedEntryIndex(), 1);
   EXPECT_FALSE(controller().GetPendingEntry());
   // New message should be sent out to make sure to enter view-source mode.
@@ -753,9 +756,9 @@ TEST_F(RenderViewHostManagerTest, NavigateAfterMissingSwapOutACK) {
 
   // Navigate to two pages.
   contents()->NavigateAndCommit(kUrl1);
-  TestRenderViewHost* rvh1 = rvh();
+  TestRenderViewHost* rvh1 = test_rvh();
   contents()->NavigateAndCommit(kUrl2);
-  TestRenderViewHost* rvh2 = rvh();
+  TestRenderViewHost* rvh2 = test_rvh();
 
   // Now go back, but suppose the SwapOut_ACK isn't received.  This shouldn't
   // happen, but we have seen it when going back quickly across many entries

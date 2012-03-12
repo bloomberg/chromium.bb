@@ -96,6 +96,8 @@
         'test/test_navigation_observer.h',
         'test/test_notification_tracker.cc',
         'test/test_notification_tracker.h',
+        'test/test_renderer_host.cc',
+        'test/test_renderer_host.h',
         'test/test_url_fetcher_factory.cc',
         'test/test_url_fetcher_factory.h',
         'test/test_web_contents_view.cc',
