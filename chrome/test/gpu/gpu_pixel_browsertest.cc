@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
+#include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -116,6 +117,10 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     ref_img_revision_no_older_than_ = ref_img_update_revision;
     ObtainLocalRefImageFilePath();
 
+#if defined(OS_WIN)
+    ASSERT_TRUE(tracing::BeginTracing("-test_*"));
+#endif
+
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
     ui_test_utils::DOMMessageQueue message_queue;
@@ -148,7 +153,17 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     SkBitmap bitmap;
     ASSERT_TRUE(TabSnapShotToImage(&bitmap));
-    ASSERT_TRUE(CompareImages(bitmap, ignore_bottom_corners));
+    bool is_image_same = CompareImages(bitmap, ignore_bottom_corners);
+    EXPECT_TRUE(is_image_same);
+
+#if defined(OS_WIN)
+    // For debugging the flaky test, this prints out a trace of what happened on
+    // failure.
+    std::string trace_events;
+    ASSERT_TRUE(tracing::EndTracing(&trace_events));
+    if (!is_image_same)
+      fprintf(stderr, "\n\nTRACE JSON:\n\n%s\n\n", trace_events.c_str());
+#endif
   }
 
   const FilePath& test_data_dir() const {
