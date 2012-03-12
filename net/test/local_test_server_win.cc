@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/test/test_server.h"
+#include "net/test/local_test_server.h"
 
 #include <windows.h>
 #include <wincrypt.h>
@@ -29,8 +29,8 @@ namespace {
 // Used as a crude timeout mechanism by ReadData().
 void UnblockPipe(HANDLE handle, DWORD size, bool* unblocked) {
   std::string unblock_data(size, '\0');
-  // Unblock the ReadFile in TestServer::WaitToStart by writing to the pipe.
-  // Make sure the call succeeded, otherwise we are very likely to hang.
+  // Unblock the ReadFile in LocalTestServer::WaitToStart by writing to the
+  // pipe. Make sure the call succeeded, otherwise we are very likely to hang.
   DWORD bytes_written = 0;
   LOG(WARNING) << "Timeout reached; unblocking pipe by writing "
                << size << " bytes";
@@ -84,7 +84,7 @@ bool ReadData(HANDLE read_fd, HANDLE write_fd,
 
 namespace net {
 
-bool TestServer::LaunchPython(const FilePath& testserver_path) {
+bool LocalTestServer::LaunchPython(const FilePath& testserver_path) {
   FilePath python_exe;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &python_exe))
     return false;
@@ -149,7 +149,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   return true;
 }
 
-bool TestServer::WaitToStart() {
+bool LocalTestServer::WaitToStart() {
   base::win::ScopedHandle read_fd(child_read_fd_.Take());
   base::win::ScopedHandle write_fd(child_write_fd_.Take());
 
@@ -176,3 +176,4 @@ bool TestServer::WaitToStart() {
 }
 
 }  // namespace net
+

@@ -4,7 +4,10 @@
 
 #include "content/common/net/url_fetcher_impl.h"
 
+#include <string>
+
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "base/synchronization/waitable_event.h"

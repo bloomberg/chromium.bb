@@ -14,6 +14,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "net/base/net_util.h"
 
 namespace {
 

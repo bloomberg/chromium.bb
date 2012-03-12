@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/test/test_server.h"
+#include "net/test/local_test_server.h"
 
 #include <poll.h>
 
@@ -76,7 +76,7 @@ bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
 
     base::Time current_time = base::Time::Now();
     base::TimeDelta elapsed_time_cycle = current_time - previous_time;
-    DCHECK(elapsed_time_cycle.InMilliseconds() >= 0);
+    DCHECK_GE(elapsed_time_cycle.InMilliseconds(), 0);
     *remaining_time -= elapsed_time_cycle;
     previous_time = current_time;
 
@@ -93,7 +93,7 @@ bool ReadData(int fd, ssize_t bytes_max, uint8* buffer,
 
 namespace net {
 
-bool TestServer::LaunchPython(const FilePath& testserver_path) {
+bool LocalTestServer::LaunchPython(const FilePath& testserver_path) {
   CommandLine python_command(FilePath(FILE_PATH_LITERAL("python")));
   python_command.AppendArgPath(testserver_path);
   if (!AddCommandLineArguments(&python_command))
@@ -116,7 +116,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
 
   // Try to kill any orphaned testserver processes that may be running.
   OrphanedTestServerFilter filter(testserver_path.value(),
-                                  base::IntToString(host_port_pair_.port()));
+                                  base::IntToString(GetPort()));
   if (!base::KillProcesses("python", -1, &filter)) {
     LOG(WARNING) << "Failed to clean up older orphaned testserver instances.";
   }
@@ -132,7 +132,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   return true;
 }
 
-bool TestServer::WaitToStart() {
+bool LocalTestServer::WaitToStart() {
   file_util::ScopedFD child_fd_closer(child_fd_closer_.release());
 
   base::TimeDelta remaining_time = base::TimeDelta::FromMilliseconds(
