@@ -91,6 +91,10 @@ void ScalingFilterInterpreter::ScaleGesture(Gesture* gs) {
       gs->details.scroll.dx = gs->details.scroll.dx * screen_x_scale_;
       gs->details.scroll.dy = gs->details.scroll.dy * screen_y_scale_;
       break;
+    case kGestureTypeFling:
+      gs->details.fling.vx = gs->details.fling.vx * screen_x_scale_;
+      gs->details.fling.vy = gs->details.fling.vy * screen_y_scale_;
+      break;
     default:
       break;
   }

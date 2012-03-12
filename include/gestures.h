@@ -86,6 +86,9 @@ struct HardwareState {
   struct FingerState* fingers;
 };
 
+#define GESTURES_FLING_START 0  // Scroll end/fling begin
+#define GESTURES_FLING_TAP_DOWN 1  // Finger touched down/fling end
+
 // Gesture sub-structs
 typedef struct {
   float dx, dy;
@@ -98,6 +101,11 @@ typedef struct {
   unsigned down;  // bit field, use GESTURES_BUTTON_*
   unsigned up;  // bit field, use GESTURES_BUTTON_*
 } GestureButtonsChange;
+typedef struct {
+  // fling velocity (valid when fling_state is GESTURES_FLING_START):
+  float vx, vy;
+  unsigned fling_state:1;  // GESTURES_FLING_START or GESTURES_FLING_TAP_DOWN
+} GestureFling;
 enum GestureType {
 #ifdef GESTURES_INTERNAL
   kGestureTypeNull = -1,  // internal to Gestures library only
@@ -106,6 +114,7 @@ enum GestureType {
   kGestureTypeMove,
   kGestureTypeScroll,
   kGestureTypeButtonsChange,
+  kGestureTypeFling,
 };
 
 #ifdef __cplusplus
@@ -113,6 +122,7 @@ enum GestureType {
 extern const GestureMove kGestureMove;
 extern const GestureScroll kGestureScroll;
 extern const GestureButtonsChange kGestureButtonsChange;
+extern const GestureFling kGestureFling;
 #endif  // __cplusplus
 
 struct Gesture {
@@ -141,6 +151,13 @@ struct Gesture {
     details.buttons.down = down;
     details.buttons.up = up;
   }
+  Gesture(const GestureFling&,
+          stime_t start, stime_t end, float vx, float vy, unsigned state)
+      : start_time(start), end_time(end), type(kGestureTypeFling) {
+    details.fling.vx = vx;
+    details.fling.vy = vy;
+    details.fling.fling_state = state;
+  }
 #endif  // __cplusplus
 
   stime_t start_time, end_time;
@@ -149,6 +166,7 @@ struct Gesture {
     GestureMove move;
     GestureScroll scroll;
     GestureButtonsChange buttons;
+    GestureFling fling;
   } details;
 };
 

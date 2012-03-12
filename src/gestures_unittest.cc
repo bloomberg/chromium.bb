@@ -120,6 +120,23 @@ TEST(GesturesTest, GestureEqTest) {
   EXPECT_TRUE(buttons != buttons_ne2);
   EXPECT_TRUE(buttons != buttons_ne3);
 
+  Gesture fling(kGestureFling, 1.0, 2.0, 3.0, 4.0, GESTURES_FLING_START);
+  Gesture fling2(kGestureFling, 1.0, 2.0, 3.0, 4.0, GESTURES_FLING_TAP_DOWN);
+  Gesture fling_ne0(kGestureFling, 1.0, 2.0, 5.0, 4.0, GESTURES_FLING_START);
+  Gesture fling_ne1(kGestureFling, 1.0, 2.0, 3.0, 5.0, GESTURES_FLING_START);
+  Gesture fling_ne2(kGestureFling, 5.0, 2.0, 3.0, 4.0, GESTURES_FLING_START);
+  Gesture fling_ne3(kGestureFling, 1.0, 5.0, 3.0, 4.0, GESTURES_FLING_START);
+  EXPECT_TRUE(fling == fling2);
+  EXPECT_FALSE(fling == fling_ne0);
+  EXPECT_FALSE(fling == fling_ne1);
+  EXPECT_FALSE(fling == fling_ne2);
+  EXPECT_FALSE(fling == fling_ne3);
+  EXPECT_FALSE(fling != fling2);
+  EXPECT_TRUE(fling != fling_ne0);
+  EXPECT_TRUE(fling != fling_ne1);
+  EXPECT_TRUE(fling != fling_ne2);
+  EXPECT_TRUE(fling != fling_ne3);
+
   Gesture contact_initiated;
   contact_initiated.type = kGestureTypeContactInitiated;
   Gesture contact_initiated2;

@@ -120,12 +120,14 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   FingerState fs[] = {
     { 0, 0, 0, 0, 1, 0, 150, 4000, 1 },
     { 0, 0, 0, 0, 2, 0, 550, 2000, 1 },
+    { 0, 0, 0, 0, 3, 0, 250, 3000, 1 },
     { 0, 0, 0, 0, 3, 0, 250, 3000, 1 }
   };
   HardwareState hs[] = {
     { 10000, 0, 1, 1, &fs[0] },
     { 54000, 0, 1, 1, &fs[1] },
-    { 98000, 0, 1, 1, &fs[2] }
+    { 98000, 0, 1, 1, &fs[2] },
+    { 99000, 0, 1, 1, &fs[3] },
   };
 
   // Set up expected translated coordinates
@@ -141,6 +143,10 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
       vector<pair<float, float> >(1, make_pair(
           static_cast<float>(100.0 * (250.0 - 133.0) / (10279.0 - 133.0)),
           static_cast<float>(60.0 * (3000.0 - 728.0) / (5822.0 - 728.0)))));
+  base_interpreter->expected_coordinates_.push_back(
+      vector<pair<float, float> >(1, make_pair(
+          static_cast<float>(100.0 * (250.0 - 133.0) / (10279.0 - 133.0)),
+          static_cast<float>(60.0 * (3000.0 - 728.0) / (5822.0 - 728.0)))));
 
   base_interpreter->expected_pressures_.push_back(
       fs[0].pressure * kPressureScale + kPressureTranslate);
@@ -148,6 +154,8 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
       fs[1].pressure * kPressureScale + kPressureTranslate);
   base_interpreter->expected_pressures_.push_back(
       fs[2].pressure * kPressureScale + kPressureTranslate);
+  base_interpreter->expected_pressures_.push_back(
+      fs[3].pressure * kPressureScale + kPressureTranslate);
 
 
   // Set up gestures to return
@@ -162,6 +170,12 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
                                                      0,  // end time
                                                      4.1,  // dx
                                                      -10.3));  // dy
+  base_interpreter->return_values_.push_back(Gesture(kGestureFling,
+                                                     0,  // start time
+                                                     0,  // end time
+                                                     201.8,  // dx
+                                                     -112.4,  // dy
+                                                     GESTURES_FLING_START));
   base_interpreter->return_values_.push_back(Gesture());  // Null type
 
   Gesture* out = interpreter.SyncInterpret(&hs[0], NULL);
@@ -176,6 +190,12 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   EXPECT_EQ(kGestureTypeScroll, out->type);
   EXPECT_FLOAT_EQ(4.1 * 133.0 / 25.4, out->details.scroll.dx);
   EXPECT_FLOAT_EQ(-10.3 * 133.0 / 25.4, out->details.scroll.dy);
+  out = interpreter.SyncInterpret(&hs[3], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
+  EXPECT_EQ(kGestureTypeFling, out->type);
+  EXPECT_FLOAT_EQ(201.8 * 133.0 / 25.4, out->details.fling.vx);
+  EXPECT_FLOAT_EQ(-112.4 * 133.0 / 25.4, out->details.fling.vy);
+  EXPECT_EQ(GESTURES_FLING_START, out->details.fling.fling_state);
 
   // Test if we will drop the low pressure event.
   FingerState fs2[] = {

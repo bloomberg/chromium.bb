@@ -49,6 +49,7 @@ class ActivityReplay {
   bool ParseGestureMove(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGestureScroll(DictionaryValue* entry, Gesture* out_gs);
   bool ParseGestureButtonsChange(DictionaryValue* entry, Gesture* out_gs);
+  bool ParseGestureFling(DictionaryValue* entry, Gesture* out_gs);
   bool ParsePropChange(DictionaryValue* entry);
 
   bool ReplayPropChange(const ActivityLog::PropChangeEntry& entry);

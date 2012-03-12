@@ -115,6 +115,7 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
   size_t max_segs = kMaxCurveSegs;
   float x_scale = 1.0;
   float y_scale = 1.0;
+  float mag = 0.0;
 
   switch (gs->type) {
     case kGestureTypeMove:
@@ -132,9 +133,16 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
       x_scale = point_x_out_scale_.val_;
       y_scale = point_y_out_scale_.val_;
       break;
+    case kGestureTypeFling:  // fall through
     case kGestureTypeScroll:
-      dx = &gs->details.scroll.dx;
-      dy = &gs->details.scroll.dy;
+      if (gs->type == kGestureTypeFling) {
+        float vx = gs->details.fling.vx;
+        float vy = gs->details.fling.vy;
+        mag = sqrtf(vx * vx + vy * vy);
+      } else {
+        dx = &gs->details.scroll.dx;
+        dy = &gs->details.scroll.dy;
+      }
       if (sensitivity_.val_ >= 1 && sensitivity_.val_ <= 5) {
         segs = curves_[sensitivity_.val_ - 1];
       } else {
@@ -151,9 +159,11 @@ void AccelFilterInterpreter::ScaleGesture(Gesture* gs) {
       return;
   }
 
-  if (dt < 0.00001)
-    return;  // Avoid division by 0
-  float mag = sqrtf(*dx * *dx + *dy * *dy) / dt;
+  if (dx != NULL && dy != NULL) {
+    if (dt < 0.00001)
+      return;  // Avoid division by 0
+    mag = sqrtf(*dx * *dx + *dy * *dy) / dt;
+  }
   if (mag < 0.00001)
     return;  // Avoid division by 0
   for (size_t i = 0; i < max_segs; ++i) {

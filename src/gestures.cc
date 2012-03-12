@@ -64,7 +64,7 @@ bool HardwareState::SameFingersAs(const HardwareState& that) const {
 
 string Gesture::String() const {
   switch (type) {
-    default:
+    case kGestureTypeNull:
       return "(Gesture type: null)";
     case kGestureTypeContactInitiated:
       return StringPrintf("(Gesture type: contactInitiated "
@@ -81,15 +81,21 @@ string Gesture::String() const {
       return StringPrintf("(Gesture type: buttons start: %f stop: "
                           "%f down: %d up: %d)", start_time, end_time,
                           details.buttons.down, details.buttons.up);
+    case kGestureTypeFling:
+      return StringPrintf("(Gesture type: fling start: %f stop: "
+                          "%f vx: %f vy: %f state: %s)", start_time, end_time,
+                          details.fling.vx, details.fling.vy,
+                          details.fling.fling_state == GESTURES_FLING_START ?
+                          "start" : "tapdown");
   }
+  return "(Gesture type: unknown)";
 }
 
 bool Gesture::operator==(const Gesture& that) const {
   if (type != that.type)
     return false;
   switch (type) {
-    default:  // fall through
-      return true;
+    case kGestureTypeNull:  // fall through
     case kGestureTypeContactInitiated:
       return true;
     case kGestureTypeMove:
@@ -107,7 +113,13 @@ bool Gesture::operator==(const Gesture& that) const {
           gestures::DoubleEq(end_time, that.end_time) &&
           details.buttons.down == that.details.buttons.down &&
           details.buttons.up == that.details.buttons.up;
+    case kGestureTypeFling:
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time) &&
+          gestures::FloatEq(details.fling.vx, that.details.fling.vx) &&
+          gestures::FloatEq(details.fling.vy, that.details.fling.vy);
   }
+  return true;
 }
 
 GestureInterpreter* NewGestureInterpreterImpl(int version) {

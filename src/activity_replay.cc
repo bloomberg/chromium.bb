@@ -315,6 +315,9 @@ bool ActivityReplay::ParseGesture(DictionaryValue* entry) {
   } else if (gesture_type == ActivityLog::kValueGestureTypeButtonsChange) {
     if (!ParseGestureButtonsChange(entry, &gs))
       return false;
+  } else if (gesture_type == ActivityLog::kValueGestureTypeFling) {
+    if (!ParseGestureFling(entry, &gs))
+      return false;
   } else {
     gs.type = kGestureTypeNull;
   }
@@ -371,6 +374,29 @@ bool ActivityReplay::ParseGestureButtonsChange(DictionaryValue* entry,
     return false;
   }
   out_gs->details.buttons.up = temp;
+  return true;
+}
+
+bool ActivityReplay::ParseGestureFling(DictionaryValue* entry,
+                                       Gesture* out_gs) {
+  out_gs->type = kGestureTypeFling;
+  double dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureFlingVX, &dbl)) {
+    Err("can't parse fling vx");
+    return false;
+  }
+  out_gs->details.fling.vx = dbl;
+  if (!entry->GetDouble(ActivityLog::kKeyGestureFlingVY, &dbl)) {
+    Err("can't parse fling vy");
+    return false;
+  }
+  out_gs->details.fling.vy = dbl;
+  int state;
+  if (!entry->GetInteger(ActivityLog::kKeyGestureFlingState, &state)) {
+    Err("can't parse scroll is_scroll_begin");
+    return false;
+  }
+  out_gs->details.fling.fling_state = state;
   return true;
 }
 
