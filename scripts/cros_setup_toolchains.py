@@ -23,11 +23,19 @@ if not cros_build_lib.IsInsideChroot():
 import portage
 
 
-EMERGE_CMD = os.path.join(os.path.dirname(__file__), 'parallel_emerge')
+EMERGE_CMD = os.path.join(os.path.dirname(__file__),
+                          '../bin', 'parallel_emerge')
 PACKAGE_STABLE = '[stable]'
 PACKAGE_NONE = '[none]'
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
-TOOLCHAIN_PACKAGES = ('gcc', 'glibc', 'binutils', 'linux-headers', 'gdb')
+# NOTE: gdb is only built using --ex-gdb through crossdev.
+CROSSDEV_PACKAGES = ['gcc', 'libc', 'binutils', 'kernel']
+TOOLCHAIN_PACKAGES = CROSSDEV_PACKAGES + ['gdb']
+
+
+CHROMIUMOS_OVERLAY = '/usr/local/portage/chromiumos'
+STABLE_OVERLAY = '/usr/local/portage/stable'
+CROSSDEV_OVERLAY = '/usr/local/portage/crossdev'
 
 
 # TODO: The versions are stored here very much like in setup_board.
@@ -35,13 +43,11 @@ TOOLCHAIN_PACKAGES = ('gcc', 'glibc', 'binutils', 'linux-headers', 'gdb')
 # This is done essentially by messing with GetDesiredPackageVersions()
 DEFAULT_VERSION = PACKAGE_STABLE
 DEFAULT_TARGET_VERSION_MAP = {
-  'linux-headers' : '3.1',
   'binutils' : '2.21-r4',
 }
 TARGET_VERSION_MAP = {
   'arm-none-eabi' : {
-    'glibc' : PACKAGE_NONE,
-    'linux-headers' : PACKAGE_NONE,
+    'kernel' : PACKAGE_NONE,
     'gdb' : PACKAGE_NONE,
   },
   'host' : {
@@ -56,19 +62,17 @@ CONFIG_TARGET_SUFFIXES = {
     'x86_64-cros-linux-gnu' : '-gold',
   },
 }
-# FIXME(zbehan): This is used to override the above. Before we compile
-# cross-glibc, we need to set the cross-binutils to GNU ld. Ebuilds should
-# handle this by themselves.
-CONFIG_TARGET_SUFFIXES_nongold = {
-  'binutils' : {
-    'i686-pc-linux-gnu' : '',
-    'x86_64-cros-linux-gnu' : '',
-  },
-}
 # Global per-run cache that will be filled ondemand in by GetPackageMap()
 # function as needed.
 target_version_map = {
 }
+
+
+# Global variable cache. It has to be a descendant of 'object', rather than
+# instance thereof, because attributes cannot be set on 'object' instances.
+class VariableCache(object):
+  pass
+VAR_CACHE = VariableCache()
 
 
 def GetPackageMap(target):
@@ -101,38 +105,72 @@ def GetPackageMap(target):
   return result
 
 
-# Helper functions:
-def GetPortageCategory(target, package):
-  """Creates a package name for the given target.
+def GetHostTuple():
+  """Returns compiler tuple for the host system.
 
-  The function provides simple abstraction around the confusing fact that
-  cross packages all live under a single category, while host packages have
-  categories varied. This lets us further identify packages solely by the
-  (target, package) pair and worry less about portage names.
-
-  args:
-    target, package - the target/package to operate on eg. i686-pc-linux-gnu,gcc
-
-  returns string with the portage category
+  Caches the result, because the command can be fairly expensive, and never
+  changes throughout a single run.
   """
-  HOST_MAP = {
-    'gcc' : 'sys-devel',
-    'gdb' : 'sys-devel',
-    'glibc' : 'sys-libs',
-    'binutils' : 'sys-devel',
-    'linux-headers' : 'sys-kernel',
-  }
+  CACHE_ATTR = '_host_tuple'
 
+  val = getattr(VAR_CACHE, CACHE_ATTR, None)
+  if val is None:
+    val = cros_build_lib.RunCommand(['portageq', 'envvar', 'CHOST'],
+                      print_cmd=False, redirect_stdout=True).output
+    setattr(VAR_CACHE, CACHE_ATTR, val)
+  return val
+
+
+def GetCrossdevConf(target):
+  """Returns a map of crossdev provided variables about a tuple."""
+  CACHE_ATTR = '_target_tuple_map'
+
+  val = getattr(VAR_CACHE, CACHE_ATTR, {})
+  if not target in val:
+    # Find out the crossdev tuple.
+    target_tuple = target
+    if target == 'host':
+      target_tuple = GetHostTuple()
+    # Catch output of crossdev.
+    out = cros_build_lib.RunCommand(['crossdev', '--show-target-cfg',
+                                     '--ex-gdb', target_tuple],
+              print_cmd=False, redirect_stdout=True).output.splitlines()
+    # List of tuples split at the first '=', converted into dict.
+    val[target] = dict([x.split('=', 1) for x in out])
+    setattr(VAR_CACHE, CACHE_ATTR, {})
+  return val[target]
+
+
+# Portage helper functions:
+def GetPortagePackage(target, package):
+  """Returns a package name for the given target."""
+  conf = GetCrossdevConf(target)
+  # Portage category:
   if target == 'host':
-    return HOST_MAP[package]
+    category = conf[package + '_category']
   else:
-    return 'cross-' + target
+    category = conf['category']
+  # Portage package:
+  pn = conf[package + '_pn']
+  # Final package name:
+  assert(category)
+  assert(pn)
+  return '%s/%s' % (category, pn)
+
+
+def GetPortageKeyword(target):
+  """Returns a portage friendly keyword for a given target."""
+  return GetCrossdevConf(target)['arch']
 
 
 def GetHostTarget():
   """Returns a string for the host target tuple."""
   return portage.settings['CHOST']
 
+
+def IsPackageDisabled(target, package):
+  """Returns if the given package is not used for the target."""
+  return GetDesiredPackageVersions(target, package) == [PACKAGE_NONE]
 
 # Tree interface functions. They help with retrieving data about the current
 # state of the tree:
@@ -169,34 +207,13 @@ def GetInstalledPackageVersions(target, package):
 
   returns the list of versions of the package currently installed.
   """
-  category = GetPortageCategory(target, package)
   versions = []
   # This is the package name in terms of portage.
-  atom = '%s/%s' % (category, package)
+  atom = GetPortagePackage(target, package)
   for pkg in portage.db['/']['vartree'].dbapi.match(atom):
     version = portage.versions.cpv_getversion(pkg)
     versions.append(version)
   return versions
-
-
-def GetPortageKeyword(_target):
-  """Returns a portage friendly keyword for a given target."""
-  # NOTE: This table is part of the one found in crossdev.
-  PORTAGE_KEYWORD_MAP = {
-    'x86_64-' : 'amd64',
-    'i686-' : 'x86',
-    'arm' : 'arm',
-  }
-  if _target == 'host':
-    target = GetHostTarget()
-  else:
-    target = _target
-
-  for prefix, arch in PORTAGE_KEYWORD_MAP.iteritems():
-    if target.startswith(prefix):
-      return arch
-  else:
-    raise RuntimeError("Unknown target: " + _target)
 
 
 def GetStablePackageVersion(target, package):
@@ -207,10 +224,9 @@ def GetStablePackageVersion(target, package):
 
   returns a string containing the latest version.
   """
-  category = GetPortageCategory(target, package)
   keyword = GetPortageKeyword(target)
   extra_env = {'ACCEPT_KEYWORDS' : '-* ' + keyword}
-  atom = '%s/%s' % (category, package)
+  atom = GetPortagePackage(target, package)
   cpv = cros_build_lib.RunCommand(['portageq', 'best_visible', '/', atom],
                                   print_cmd=False, redirect_stdout=True,
                                   extra_env=extra_env).output.splitlines()[0]
@@ -278,8 +294,9 @@ def TargetIsInitialized(target):
   # Check if packages for the given target all have a proper version.
   try:
     for package in TOOLCHAIN_PACKAGES:
-      if not GetInstalledPackageVersions(target, package) and \
-        GetDesiredPackageVersions(target, package) != [PACKAGE_NONE]:
+      # Do we even want this package && is it initialized?
+      if not IsPackageDisabled(target, package) and \
+          not GetInstalledPackageVersions(target, package):
         return False
     return True
   except cros_build_lib.RunCommandError:
@@ -347,8 +364,10 @@ def CreatePackageKeywords(target):
 
   with open(maskfile, 'w') as f:
     for pkg in TOOLCHAIN_PACKAGES:
-      f.write('%s/%s %s ~%s\n' %
-              (GetPortageCategory(target, pkg), pkg, keyword, keyword))
+      if IsPackageDisabled(target, pkg):
+        continue
+      f.write('%s %s ~%s\n' %
+              (GetPortagePackage(target, pkg), keyword, keyword))
 
 
 # Main functions performing the actual update steps.
@@ -360,32 +379,33 @@ def InitializeCrossdevTargets(targets, usepkg):
   """
   print 'The following targets need to be re-initialized:'
   print targets
-  CROSSDEV_FLAG_MAP = {
-    'gcc' : '--gcc',
-    'glibc' : '--libc',
-    'linux-headers' : '--kernel',
-    'binutils' : '--binutils',
-  }
 
   for target in targets:
-    cmd = ['sudo', 'FEATURES=splitdebug', 'crossdev', '-v', '-t', target]
+    cmd = ['sudo', 'FEATURES=splitdebug', 'crossdev', '--show-fail-log',
+           '-t', target]
     # Pick stable by default, and override as necessary.
     cmd.extend(['-P', '--oneshot'])
     if usepkg:
       cmd.extend(['-P', '--getbinpkg',
                   '-P', '--usepkgonly',
                   '--without-headers'])
-    cmd.append('--ex-gdb')
+
+    cmd.extend(['--overlays', '%s %s' % (CHROMIUMOS_OVERLAY, STABLE_OVERLAY)])
+    cmd.extend(['--ov-output', CROSSDEV_OVERLAY])
 
     # HACK(zbehan): arm-none-eabi uses newlib which doesn't like headers-only.
     if target == 'arm-none-eabi':
       cmd.append('--without-headers')
 
-    for pkg in CROSSDEV_FLAG_MAP:
+    if not IsPackageDisabled(target, 'gdb'):
+      cmd.append('--ex-gdb')
+
+    for pkg in CROSSDEV_PACKAGES:
+      if IsPackageDisabled(target, pkg):
+        continue
       # The first of the desired versions is the "primary" one.
       version = GetDesiredPackageVersions(target, pkg)[0]
-      if version != PACKAGE_NONE:
-        cmd.extend([CROSSDEV_FLAG_MAP[pkg], version])
+      cmd.extend(['--%s' % pkg, version])
     cros_build_lib.RunCommand(cmd)
 
 
@@ -412,12 +432,13 @@ def UpdateTargets(targets, usepkg):
     packagemasks = {}
     for package in TOOLCHAIN_PACKAGES:
       # Portage name for the package
-      pkg = GetPortageCategory(target, package) + '/' + package
+      if IsPackageDisabled(target, package):
+        continue
+      pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(target, package)
       desired = GetDesiredPackageVersions(target, package)
-      if desired != [PACKAGE_NONE]:
-        desired_num = VersionListToNumeric(target, package, desired)
-        mergemap[pkg] = set(desired_num).difference(current)
+      desired_num = VersionListToNumeric(target, package, desired)
+      mergemap[pkg] = set(desired_num).difference(current)
 
       # Pick the highest version for mask.
       packagemasks[pkg] = portage.versions.best(desired_num)
@@ -439,11 +460,6 @@ def UpdateTargets(targets, usepkg):
   print 'Updating packages:'
   print packages
 
-  # FIXME(zbehan): Override gold if we're doing source builds. See comment
-  # at the constant definition.
-  if not usepkg:
-    SelectActiveToolchains(targets, CONFIG_TARGET_SUFFIXES_nongold)
-
   cmd = ['sudo', '-E', 'FEATURES=splitdebug', EMERGE_CMD,
        '--oneshot', '--update']
   if usepkg:
@@ -458,7 +474,9 @@ def CleanTargets(targets):
   unmergemap = {}
   for target in targets:
     for package in TOOLCHAIN_PACKAGES:
-      pkg = GetPortageCategory(target, package) + '/' + package
+      if IsPackageDisabled(target, package):
+        continue
+      pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(target, package)
       desired = GetDesiredPackageVersions(target, package)
       desired_num = VersionListToNumeric(target, package, desired)
@@ -538,11 +556,6 @@ def UpdateToolchains(usepkg, deleteold, targets):
   crossdev_targets = \
       [t for t in targets if not TargetIsInitialized(t) and not 'host' == t]
   if crossdev_targets:
-    try:
-      SelectActiveToolchains(crossdev_targets, CONFIG_TARGET_SUFFIXES_nongold)
-    except cros_build_lib.RunCommandError:
-      # This can fail if the target has never been initialized before.
-      pass
     InitializeCrossdevTargets(crossdev_targets, usepkg)
 
   # Now update all packages, including host.
@@ -568,7 +581,8 @@ def main(argv):
                     help=('Unmerge deprecated packages.'))
   parser.add_option('-t', '--targets',
                     dest='targets', default='all',
-                    help=('Comma separated list of targets. Default: all'))
+                    help=('Comma separated list of tuples. '
+                          'Special keyword \'host\' is allowed. Default: all.'))
 
   (options, _remaining_arguments) = parser.parse_args(argv)
 
