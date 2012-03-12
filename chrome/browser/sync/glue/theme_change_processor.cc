@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/theme_util.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
@@ -88,7 +89,8 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
       changes.Get()[change_count - 1];
   if (change.action != sync_api::ChangeRecord::ACTION_UPDATE &&
       change.action != sync_api::ChangeRecord::ACTION_DELETE) {
-    std::string err = "strange theme change.action " + change.action;
+    std::string err = "strange theme change.action " +
+        base::IntToString(change.action);
     error_handler()->OnUnrecoverableError(FROM_HERE, err);
     return;
   }
