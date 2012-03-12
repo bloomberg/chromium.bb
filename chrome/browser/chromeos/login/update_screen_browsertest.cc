@@ -86,7 +86,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
-    update_screen_->screen_observer_ = (WizardController::default_controller());
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
   }

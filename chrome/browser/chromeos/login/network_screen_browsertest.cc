@@ -123,7 +123,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
-    network_screen_->screen_observer_ = WizardController::default_controller();
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
   }
