@@ -42,8 +42,6 @@ struct MasterPrefs {
   bool homepage_defined;
   int do_import_items;
   int dont_import_items;
-  bool run_search_engine_experiment;
-  bool randomize_search_engine_experiment;
   bool make_chrome_default;
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;

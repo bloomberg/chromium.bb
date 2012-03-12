@@ -398,8 +398,6 @@ MasterPrefs::MasterPrefs()
       homepage_defined(false),
       do_import_items(0),
       dont_import_items(0),
-      run_search_engine_experiment(false),
-      randomize_search_engine_experiment(false),
       make_chrome_default(false) {
 }
 
