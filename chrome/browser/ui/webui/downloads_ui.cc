@@ -71,6 +71,7 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
                              IDS_DOWNLOAD_LINK_REMOVE);
 
   source->set_json_path("strings.js");
+  source->add_resource_path("downloads.css", IDR_DOWNLOADS_CSS);
   source->add_resource_path("downloads.js", IDR_DOWNLOADS_JS);
   source->set_default_resource(IDR_DOWNLOADS_HTML);
 

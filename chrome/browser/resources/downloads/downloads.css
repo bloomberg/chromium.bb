@@ -1,13 +1,7 @@
-<!DOCTYPE HTML>
-<html i18n-values="dir:textdirection;">
-<head>
-<meta charset="utf-8">
-<title i18n-content="title"></title>
-<link rel="icon" href="../../app/theme/downloads_favicon.png">
-<link rel="stylesheet" href="old_webui.css">
-<link rel="stylesheet" href="shared/css/chrome_shared.css">
-<link rel="stylesheet" href="shared/css/widgets.css">
-<style>
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
 #downloads-summary {
   background-color: rgb(235, 239, 249);
@@ -30,11 +24,11 @@ html[dir=rtl] #downloads-actions {
 }
 
 #downloads-actions > a {
-  margin-left: 10px;
+  -webkit-margin-start: 10px;
 }
 
 #downloads-actions > a:first-child {
-  margin-left: 0;
+  -webkit-margin-start: 0;
 }
 
 #downloads-display {
@@ -84,7 +78,8 @@ html[dir=rtl] .icon {
 .download.otr > .safe,
 .download.otr > .show-dangerous {
   -webkit-transition: opacity 150ms;
-  background: url('shared/images/otr_icon_standalone.png') no-repeat 100% 100%;
+  background: url('../shared/images/otr_icon_standalone.png')
+              no-repeat 100% 100%;
   opacity: .66;
 }
 
@@ -112,11 +107,11 @@ html[dir=rtl] .progress {
 }
 
 .progress.background {
-  background: url('../../app/theme/download_progress_background32.png');
+  background: url('chrome://theme/IDR_DOWNLOAD_PROGRESS_BACKGROUND_32');
 }
 
 .progress.foreground {
-  background: url('../../app/theme/download_progress_foreground32.png');
+  background: url('chrome://theme/IDR_DOWNLOAD_PROGRESS_FOREGROUND_32');
 }
 
 .name {
@@ -127,7 +122,6 @@ html[dir=rtl] .progress {
 }
 
 .download .status {
-  display: inline;
   color: #999;
   white-space: nowrap;
 }
@@ -145,43 +139,11 @@ html[dir=rtl] .progress {
 }
 
 .controls a {
+  -webkit-margin-end: 16px;
   color: #777;
-  margin-right: 16px;
 }
 
 #downloads-pagination {
+  -webkit-margin-start: 18px;
   padding-top: 24px;
-  margin-left: 18px;
 }
-
-</style>
-<script src="chrome://resources/js/local_strings.js"></script>
-</head>
-<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-<div class="header">
-  <a id="search-link" href="">
-    <img src="shared/images/downloads_section.png"
-         width="67" height="67" class="logo" border="0" /></a>
-  <form id="search-form" method="post" action="" class="form">
-    <input type="text" name="term" id="term" />
-    <input id="search-submit"
-           type="submit" name="submit" i18n-values="value:searchbutton" />
-  </form>
-</div>
-<div class="main">
-  <div id="downloads-summary">
-    <span id="downloads-summary-text" i18n-content="downloads">Downloads</span>
-    <span id="downloads-actions">
-      <a id="open-downloads-folder" href=""
-         i18n-content="open_downloads_folder">Open downloads folder</a>
-      <a id="clear-all" href="" i18n-content="clear_all">Clear All</a>
-    </span>
-  </div>
-  <div id="downloads-display"></div>
-</div>
-<script src="chrome://downloads/downloads.js"></script>
-<script src="chrome://downloads/strings.js"></script>
-<script src="chrome://resources/js/i18n_template.js"></script>
-<script src="chrome://resources/js/i18n_process.js"></script>
-</body>
-</html>

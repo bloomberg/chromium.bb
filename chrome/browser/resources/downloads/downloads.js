@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-///////////////////////////////////////////////////////////////////////////////
-// Helper functions
-function $(o) {return document.getElementById(o);}
+// TODO(jhawkins): Use hidden instead of showInline* and display:none.
 
 /**
  * Sets the display style of a node.
@@ -59,6 +57,7 @@ function createButton(onclick, value) {
 // Downloads
 /**
  * Class to hold all the information about the visible downloads.
+ * @constructor
  */
 function Downloads() {
   this.downloads_ = {};
@@ -97,7 +96,7 @@ Downloads.prototype.updated = function(download) {
     }
     this.updateDateDisplay_();
   }
-}
+};
 
 /**
  * Set our display search text.
@@ -105,7 +104,7 @@ Downloads.prototype.updated = function(download) {
  */
 Downloads.prototype.setSearchText = function(searchText) {
   this.searchText_ = searchText;
-}
+};
 
 /**
  * Update the summary block above the results
@@ -127,11 +126,12 @@ Downloads.prototype.updateSummary = function() {
   if (!hasDownloads) {
     this.node_.textContent = localStrings.getString('noresults');
   }
-}
+};
 
 /**
  * Update the date visibility in our nodes so that no date is
  * repeated.
+ * @private
  */
 Downloads.prototype.updateDateDisplay_ = function() {
   var dateContainers = document.getElementsByClassName('date-container');
@@ -145,7 +145,7 @@ Downloads.prototype.updateDateDisplay_ = function() {
       container.style.display = 'block';
     }
   }
-}
+};
 
 /**
  * Remove a download.
@@ -155,7 +155,7 @@ Downloads.prototype.remove = function(id) {
   this.node_.removeChild(this.downloads_[id].node);
   delete this.downloads_[id];
   this.updateDateDisplay_();
-}
+};
 
 /**
  * Clear all downloads and reset us back to a null state.
@@ -165,7 +165,7 @@ Downloads.prototype.clear = function() {
     this.downloads_[id].clear();
     this.remove(id);
   }
-}
+};
 
 /**
  * Schedule icon load.
@@ -198,18 +198,19 @@ Downloads.prototype.scheduleIconLoad = function(elem, iconURL) {
   // Start loading if none scheduled yet
   if (!this.isIconLoading_)
     loadNext();
-}
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Download
 /**
  * A download and the DOM representation for that download.
  * @param {Object} download A backend download object (see downloads_ui.cc)
+ * @constructor
  */
 function Download(download) {
   // Create DOM
-  this.node = createElementWithClassName('div','download' +
-                                         (download.otr ? ' otr' : ''));
+  this.node = createElementWithClassName(
+      'div', 'download' + (download.otr ? ' otr' : ''));
 
   // Dates
   this.dateContainer_ = createElementWithClassName('div', 'date-container');
@@ -238,7 +239,7 @@ function Download(download) {
     this.nodeProgressForeground_ =
         createElementWithClassName('div', 'progress foreground');
     this.nodeProgressForeground_.style.webkitMask =
-        '-webkit-canvas(canvas_'+download.id+')';
+        '-webkit-canvas(canvas_' + download.id + ')';
     this.safe_.appendChild(this.nodeProgressForeground_);
   }
 
@@ -265,14 +266,14 @@ function Download(download) {
   this.safe_.appendChild(nodeURLDiv);
 
   this.nodeURL_ = createElementWithClassName('a', 'src-url');
-  this.nodeURL_.target = "_blank";
+  this.nodeURL_.target = '_blank';
   nodeURLDiv.appendChild(this.nodeURL_);
 
   // Controls.
   this.nodeControls_ = createElementWithClassName('div', 'controls');
   this.safe_.appendChild(this.nodeControls_);
 
-  // We don't need "show in folder" in chromium os. See download_ui.cc and
+  // We don't need 'show in folder' in chromium os. See download_ui.cc and
   // http://code.google.com/p/chromium-os/issues/detail?id=916.
   var showinfolder = localStrings.getString('control_showinfolder');
   if (showinfolder) {
@@ -327,36 +328,36 @@ function Download(download) {
  * DownloadsDOMHandler::CreateDownloadItemValue
  */
 Download.States = {
-  IN_PROGRESS : "IN_PROGRESS",
-  CANCELLED : "CANCELLED",
-  COMPLETE : "COMPLETE",
-  PAUSED : "PAUSED",
-  DANGEROUS : "DANGEROUS",
-  INTERRUPTED : "INTERRUPTED",
-}
+  IN_PROGRESS: 'IN_PROGRESS',
+  CANCELLED: 'CANCELLED',
+  COMPLETE: 'COMPLETE',
+  PAUSED: 'PAUSED',
+  DANGEROUS: 'DANGEROUS',
+  INTERRUPTED: 'INTERRUPTED',
+};
 
 /**
  * Explains why a download is in DANGEROUS state.
  */
 Download.DangerType = {
-  NOT_DANGEROUS: "NOT_DANGEROUS",
-  DANGEROUS_FILE: "DANGEROUS_FILE",
-  DANGEROUS_URL: "DANGEROUS_URL",
-  DANGEROUS_CONTENT: "DANGEROUS_CONTENT"
-}
+  NOT_DANGEROUS: 'NOT_DANGEROUS',
+  DANGEROUS_FILE: 'DANGEROUS_FILE',
+  DANGEROUS_URL: 'DANGEROUS_URL',
+  DANGEROUS_CONTENT: 'DANGEROUS_CONTENT'
+};
 
 /**
  * Constants for the progress meter.
  */
 Download.Progress = {
-  width : 48,
-  height : 48,
-  radius : 24,
-  centerX : 24,
-  centerY : 24,
-  base : -0.5 * Math.PI,
-  dir : false,
-}
+  width: 48,
+  height: 48,
+  radius: 24,
+  centerX: 24,
+  centerY: 24,
+  base: -0.5 * Math.PI,
+  dir: false,
+};
 
 /**
  * Updates the download to reflect new data.
@@ -474,7 +475,7 @@ Download.prototype.update = function(download) {
     this.danger_.style.display = 'none';
     this.safe_.style.display = 'block';
   }
-}
+};
 
 /**
  * Removes applicable bits from the DOM in preparation for deletion.
@@ -491,9 +492,10 @@ Download.prototype.clear = function() {
   this.dangerDiscard_.onclick = null;
 
   this.node.innerHTML = '';
-}
+};
 
 /**
+ * @private
  * @return {string} User-visible status update text.
  */
 Download.prototype.getStatusText_ = function() {
@@ -515,74 +517,82 @@ Download.prototype.getStatusText_ = function() {
       return this.fileExternallyRemoved_ ?
           localStrings.getString('status_removed') : '';
   }
-}
+};
 
 /**
  * Tells the backend to initiate a drag, allowing users to drag
  * files from the download page and have them appear as native file
  * drags.
+ * @private
  */
 Download.prototype.drag_ = function() {
   chrome.send('drag', [this.id_.toString()]);
   return false;
-}
+};
 
 /**
  * Tells the backend to open this file.
+ * @private
  */
 Download.prototype.openFile_ = function() {
   chrome.send('openFile', [this.id_.toString()]);
   return false;
-}
+};
 
 /**
  * Tells the backend that the user chose to save a dangerous file.
+ * @private
  */
 Download.prototype.saveDangerous_ = function() {
   chrome.send('saveDangerous', [this.id_.toString()]);
   return false;
-}
+};
 
 /**
  * Tells the backend that the user chose to discard a dangerous file.
+ * @private
  */
 Download.prototype.discardDangerous_ = function() {
   chrome.send('discardDangerous', [this.id_.toString()]);
   downloads.remove(this.id_);
   return false;
-}
+};
 
 /**
  * Tells the backend to show the file in explorer.
+ * @private
  */
 Download.prototype.show_ = function() {
   chrome.send('show', [this.id_.toString()]);
   return false;
-}
+};
 
 /**
  * Tells the backend to pause this download.
+ * @private
  */
 Download.prototype.togglePause_ = function() {
   chrome.send('togglepause', [this.id_.toString()]);
   return false;
-}
+};
 
 /**
  * Tells the backend to remove this download from history and download shelf.
+ * @private
  */
  Download.prototype.remove_ = function() {
   chrome.send('remove', [this.id_.toString()]);
   return false;
-}
+};
 
 /**
  * Tells the backend to cancel this download.
+ * @private
  */
 Download.prototype.cancel_ = function() {
   chrome.send('cancel', [this.id_.toString()]);
   return false;
-}
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Page:
@@ -607,6 +617,28 @@ function load() {
   $('term').focus();
   $('term').setAttribute('aria-labelledby', 'search-submit');
   setSearch('');
+
+  var clearAllLink = $('clear-all');
+  clearAllLink.onclick = clearAll;
+  clearAllLink.oncontextmenu = function() { return false; };
+
+  // TODO(jhawkins): Use a link-button here.
+  var openDownloadsFolderLink = $('open-downloads-folder');
+  openDownloadsFolderLink.onclick =
+      chrome.send.bind(chrome, 'openDownloadsFolder');
+  openDownloadsFolderLink.oncontextmenu = function() { return false; };
+
+  $('search-link').onclick = function(e) {
+    setSearch('');
+    e.preventDefault();
+    return false;
+  };
+
+  $('search-form').onsubmit = function(e) {
+    setSearch(this.term.value);
+    e.preventDefault();
+    return false;
+  };
 }
 
 function setSearch(searchText) {
@@ -620,13 +652,7 @@ function clearAll() {
   fifo_results.length = 0;
   downloads.clear();
   downloads.setSearchText('');
-  chrome.send('clearAll', []);
-  return false;
-}
-
-function openDownloadsFolder() {
-  chrome.send('openDownloadsFolder');
-  return false;
+  chrome.send('clearAll');
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -676,20 +702,3 @@ function tryDownloadUpdatedPeriodically() {
 
 // Add handlers to HTML elements.
 window.addEventListener('DOMContentLoaded', load);
-
-var clearAllLink = $('clear-all');
-clearAllLink.onclick = function () { clearAll(''); };
-clearAllLink.oncontextmenu = function() { return false; };
-
-var openDownloadsFolderLink = $('open-downloads-folder');
-openDownloadsFolderLink.onclick = openDownloadsFolder;
-openDownloadsFolderLink.oncontextmenu = function() { return false; };
-
-$('search-link').onclick = function () {
-  setSearch('');
-  return false;
-};
-$('search-form').onsubmit = function () {
-  setSearch(this.term.value);
-  return false;
-};
