@@ -293,7 +293,8 @@ views::View* TrayPowerDate::CreateTrayView(user::LoginStatus status) {
 views::View* TrayPowerDate::CreateDefaultView(user::LoginStatus status) {
   date_.reset(new tray::DateView(base::k24HourClock,
                                  tray::DateView::DATE));
-  date_->set_actionable(true);
+  if (status != user::LOGGED_IN_NONE)
+    date_->set_actionable(true);
 
   power_.reset(new tray::PowerPopupView());
 
