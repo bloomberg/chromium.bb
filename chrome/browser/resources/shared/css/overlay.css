@@ -22,8 +22,12 @@
 
 /* The foreground dialog. */
 .overlay .page {
+  -webkit-box-orient: vertical;
   background: white;
   box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 3px 57px rgba(0, 0, 0, 0.3);
+  display: -webkit-box;
+  height: 90%;
+  max-height: 640px;
   min-width: 400px;
   padding: 0;
   position: relative;
@@ -64,6 +68,8 @@
 }
 
 .overlay .page .content-area {
+  -webkit-box-flex: 1;
+  overflow: auto;
   padding: 10px 15px 5px;
 }
 
