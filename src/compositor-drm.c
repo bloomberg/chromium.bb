@@ -1227,7 +1227,7 @@ create_sprites(struct drm_compositor *ec)
 		sprite->compositor = ec;
 		sprite->count_formats = plane->count_formats;
 		memcpy(sprite->formats, plane->formats,
-		       plane->count_formats);
+		       plane->count_formats * sizeof(plane->formats[0]));
 		drmModeFreePlane(plane);
 
 		wl_list_insert(&ec->sprite_list, &sprite->link);
