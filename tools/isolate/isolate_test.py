@@ -44,9 +44,10 @@ class Isolate(unittest.TestCase):
       return (min_mode | 0111) if filename.endswith('.py') else min_mode
     expected = {
       u'command':
-        [unicode(sys.executable), u'isolate_test.py'] +
+        [unicode(sys.executable)] +
           [unicode(x) for x in args],
       u'files': dict((unicode(f), {u'mode': mode(f)}) for f in files),
+      u'relative_cwd': u'.',
     }
     if with_hash:
       for filename in expected[u'files']:
@@ -88,7 +89,10 @@ class Isolate(unittest.TestCase):
     out = out[:out.index('')]
     modes = [re.match(r'^  (\w+) .+', l) for l in out]
     modes = tuple(m.group(1) for m in modes if m)
-    self.assertEquals(self.isolate.VALID_MODES, modes)
+    # Keep the list hard coded.
+    expected = ('check', 'hashtable', 'remap', 'run')
+    self.assertEquals(expected, modes)
+    self.assertEquals(expected, modes)
     for mode in modes:
       self.assertTrue(hasattr(self, 'test_%s' % mode), mode)
     self._expected_tree([])
@@ -100,7 +104,8 @@ class Isolate(unittest.TestCase):
     ]
     self._execute(cmd)
     self._expected_tree(['result'])
-    self._expected_result(False, ['isolate_test.py'], [], False)
+    self._expected_result(
+        False, ['isolate_test.py'], ['./isolate_test.py'], False)
 
   def test_check_non_existant(self):
     cmd = [
@@ -136,7 +141,7 @@ class Isolate(unittest.TestCase):
     ]
     self._execute(cmd)
     files = ['isolate_test.py', 'data/test_file1.txt', 'data/test_file2.txt']
-    data = self._expected_result(True, files, [], False)
+    data = self._expected_result(True, files, ['./isolate_test.py'], False)
     self._expected_tree(
         [f['sha-1'] for f in data['files'].itervalues()] + ['result'])
 
@@ -148,7 +153,8 @@ class Isolate(unittest.TestCase):
     ]
     self._execute(cmd)
     self._expected_tree(['isolate_test.py', 'result'])
-    self._expected_result(False, ['isolate_test.py'], [], False)
+    self._expected_result(
+        False, ['isolate_test.py'], ['./isolate_test.py'], False)
 
   def test_run(self):
     cmd = [
@@ -159,7 +165,9 @@ class Isolate(unittest.TestCase):
     ]
     self._execute(cmd)
     self._expected_tree(['result'])
-    self._expected_result(False, ['isolate_test.py'], ['--ok'], False)
+    # cmd[0] is not generated from infiles[0] so it's not using a relative path.
+    self._expected_result(
+        False, ['isolate_test.py'], ['isolate_test.py', '--ok'], False)
 
   def test_run_fail(self):
     cmd = [

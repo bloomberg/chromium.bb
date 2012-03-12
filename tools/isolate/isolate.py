@@ -28,9 +28,6 @@ import tempfile
 
 import tree_creator
 
-# Needs to be coherent with the file's docstring above.
-VALID_MODES = ('check', 'hashtable', 'remap', 'run')
-
 
 def relpath(path, root):
   """os.path.relpath() that keeps trailing slash."""
@@ -75,8 +72,17 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
   infiles = tree_creator.expand_directories(
         indir, infiles, lambda x: re.match(r'.*\.(svn|pyc)$', x))
 
+  # Note the relative current directory.
+  # In general, this path will be the path containing the gyp file where the
+  # target was defined. This relative directory may be created implicitely if a
+  # file from this directory is needed to run the test. Otherwise it won't be
+  # created and the process creation will fail. It's up to the caller to create
+  # this directory manually before starting the test.
+  relative_cwd = os.path.relpath(os.getcwd(), indir)
+
   if not cmd:
-    cmd = [infiles[0]]
+    # Note that it is exactly the reverse of relative_cwd.
+    cmd = [os.path.join(os.path.relpath(indir, os.getcwd()), infiles[0])]
   if cmd[0].endswith('.py'):
     cmd.insert(0, sys.executable)
 
@@ -86,26 +92,27 @@ def isolate(outdir, resultfile, indir, infiles, mode, read_only, cmd):
 
   if not outdir:
     outdir = os.path.dirname(resultfile)
-  result = mode_fn(outdir, indir, dictfiles, read_only, cmd)
+  result = mode_fn(outdir, indir, dictfiles, read_only, cmd, relative_cwd)
 
   if result == 0:
     # Saves the resulting file.
     out = {
       'command': cmd,
+      'relative_cwd': relative_cwd,
       'files': dictfiles,
     }
     with open(resultfile, 'wb') as f:
-      json.dump(out, f)
+      json.dump(out, f, indent=2, sort_keys=True)
   return result
 
 
-def MODEcheck(outdir, indir, dictfiles, read_only, cmd):
+def MODEcheck(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
   """No-op."""
   return 0
 
 
-def MODEhashtable(outdir, indir, dictfiles, read_only, cmd):
-  """Ignores cmd and read_only."""
+def MODEhashtable(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
+  """Ignores read_only, cmd and relative_cwd."""
   for relfile, properties in dictfiles.iteritems():
     infile = os.path.join(indir, relfile)
     outfile = os.path.join(outdir, properties['sha-1'])
@@ -118,8 +125,8 @@ def MODEhashtable(outdir, indir, dictfiles, read_only, cmd):
   return 0
 
 
-def MODEremap(outdir, indir, dictfiles, read_only, cmd):
-  """Ignores cmd."""
+def MODEremap(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
+  """Ignores cmd and relative_cwd."""
   if not outdir:
     outdir = tempfile.mkdtemp(prefix='isolate')
   tree_creator.recreate_tree(
@@ -129,18 +136,19 @@ def MODEremap(outdir, indir, dictfiles, read_only, cmd):
   return 0
 
 
-def MODErun(outdir, indir, dictfiles, read_only, cmd):
-  """Ignores outdir."""
+def MODErun(outdir, indir, dictfiles, read_only, cmd, relative_cwd):
+  """Ignores outdir and always uses a temporary directory."""
   outdir = None
   try:
     outdir = tempfile.mkdtemp(prefix='isolate')
     tree_creator.recreate_tree(
         outdir, indir, dictfiles.keys(), tree_creator.HARDLINK)
+    cwd = os.path.join(outdir, relative_cwd)
+    if not os.path.isdir(cwd):
+      os.makedirs(cwd)
     if read_only:
       tree_creator.make_writable(outdir, True)
 
-    # Rebase the command to the right path.
-    cwd = os.path.join(outdir, os.path.relpath(os.getcwd(), indir))
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     return subprocess.call(cmd, cwd=cwd)
   finally:
@@ -149,7 +157,14 @@ def MODErun(outdir, indir, dictfiles, read_only, cmd):
     tree_creator.rmtree(outdir)
 
 
+def get_valid_modes():
+  """Returns the modes that can be used."""
+  return sorted(
+      i[4:] for i in dir(sys.modules[__name__]) if i.startswith('MODE'))
+
+
 def main():
+  valid_modes = get_valid_modes()
   parser = optparse.OptionParser(
       usage='%prog [options] [inputs] -- [command line]',
       description=sys.modules[__name__].__doc__)
@@ -158,8 +173,8 @@ def main():
   parser.add_option(
       '-v', '--verbose', action='count', default=0, help='Use multiple times')
   parser.add_option(
-      '--mode', choices=VALID_MODES,
-      help='Determines the action to be taken: %s' % ', '.join(VALID_MODES))
+      '--mode', choices=valid_modes,
+      help='Determines the action to be taken: %s' % ', '.join(valid_modes))
   parser.add_option(
       '--result', metavar='FILE',
       help='Output file containing the json information about inputs')

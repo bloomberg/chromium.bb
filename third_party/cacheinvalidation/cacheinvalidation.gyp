@@ -212,5 +212,31 @@
         'cacheinvalidation',
       ],
     },
+    {
+      'target_name': 'cacheinvalidation_unittests_run',
+      'type': 'none',
+      'dependencies': [
+        'cacheinvalidation_unittests',
+      ],
+      'actions': [
+        {
+          'action_name': 'isolate',
+          'inputs': [
+            '<(PRODUCT_DIR)/cacheinvalidation_unittests<(EXECUTABLE_SUFFIX)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/cacheinvalidation_unittests.results',
+          ],
+          'action': [
+            'python',
+            '<(DEPTH)/tools/isolate/isolate.py',
+            '--mode=<(tests_run)',
+            '--root', '<(DEPTH)',
+            '--result', '<@(_outputs)',
+            '<@(_inputs)',
+          ],
+        },
+      ],
+    },
   ],
 }
