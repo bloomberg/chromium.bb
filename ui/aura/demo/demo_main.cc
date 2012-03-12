@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -71,6 +72,27 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(DemoWindowDelegate);
 };
 
+class DemoStackingClient : public aura::client::StackingClient {
+ public:
+  explicit DemoStackingClient(aura::RootWindow* root_window)
+      : root_window_(root_window) {
+    aura::client::SetStackingClient(this);
+  }
+
+  virtual ~DemoStackingClient() {
+    aura::client::SetStackingClient(NULL);
+  }
+
+  // Overridden from aura::client::StackingClient:
+  virtual aura::Window* GetDefaultParent(aura::Window* window) OVERRIDE {
+    return root_window_;
+  }
+
+ private:
+  aura::RootWindow* root_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(DemoStackingClient);
+};
 
 }  // namespace
 
@@ -89,6 +111,8 @@ int main(int argc, char** argv) {
   ui::CompositorTestSupport::Initialize();
 
   scoped_ptr<aura::RootWindow> root_window(new aura::RootWindow);
+  scoped_ptr<DemoStackingClient> stacking_client(new DemoStackingClient(
+      root_window.get()));
 
   // Create a hierarchy of test windows.
   DemoWindowDelegate window_delegate1(SK_ColorBLUE);
