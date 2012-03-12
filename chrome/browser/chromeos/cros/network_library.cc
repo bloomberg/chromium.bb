@@ -1259,6 +1259,12 @@ bool CellularNetwork::SupportsActivation() const {
   return SupportsDataPlan();
 }
 
+bool CellularNetwork::NeedsActivation() const {
+  return (activation_state() != ACTIVATION_STATE_ACTIVATED &&
+          activation_state() != ACTIVATION_STATE_UNKNOWN) ||
+          needs_new_plan();
+}
+
 bool CellularNetwork::SupportsDataPlan() const {
   // TODO(nkostylev): Are there cases when only one of this is defined?
   return !usage_url().empty() || !payment_url().empty();

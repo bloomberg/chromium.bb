@@ -1222,6 +1222,9 @@ class CellularNetwork : public WirelessNetwork {
   // Current implementation returns same as SupportsDataPlan().
   bool SupportsActivation() const;
 
+  // Returns whether the network needs to be activated.
+  bool NeedsActivation() const;
+
   // Returns true if one of the usage_url_ / payment_url_ (or both) is defined.
   bool SupportsDataPlan() const;
 

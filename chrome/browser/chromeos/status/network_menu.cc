@@ -87,6 +87,15 @@ void SetMenuMargins(views::MenuItemView* menu_item_view, int top, int bottom) {
   }
 }
 
+// Activate a cellular network.
+void ActivateCellular(const chromeos::CellularNetwork* cellular) {
+  DCHECK(cellular);
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;
+  browser->OpenMobilePlanTabAndActivate();
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -202,14 +211,11 @@ class NetworkMenuModel : public ui::MenuModel {
  private:
   // Show a NetworkConfigView modal dialog instance.
   void ShowNetworkConfigView(NetworkConfigView* view) const;
-  // Activate a cellular network.
-  void ActivateCellular(const CellularNetwork* cellular) const;
   // Open a dialog to set up and connect to a network.
   void ShowOther(ConnectionType type) const;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuModel);
 };
-
 
 class MoreMenuModel : public NetworkMenuModel {
  public:
@@ -281,14 +287,7 @@ void NetworkMenuModel::ConnectToNetworkAt(int index,
       // Connect or reconnect.
       if (auto_connect >= 0)
         wifi->SetAutoConnect(auto_connect ? true : false);
-      if (wifi->connecting_or_connected()) {
-        // Show the config settings for the active network.
-        owner_->ShowTabbedNetworkSettings(wifi);
-      } else {
-        wifi->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
-                                           owner_,
-                                           wifi));
-      }
+      owner_->ConnectToNetwork(wifi);
     } else {
       // If we are attempting to connect to a network that no longer exists,
       // display a notification.
@@ -300,18 +299,7 @@ void NetworkMenuModel::ConnectToNetworkAt(int index,
     CellularNetwork* cellular = cros->FindCellularNetworkByPath(
         service_path);
     if (cellular) {
-      if ((cellular->activation_state() != ACTIVATION_STATE_ACTIVATED &&
-           cellular->activation_state() != ACTIVATION_STATE_UNKNOWN) ||
-          cellular->needs_new_plan()) {
-        ActivateCellular(cellular);
-      } else if (cellular->connecting_or_connected()) {
-        // Cellular network is connecting or connected,
-        // so we show the config settings for the cellular network.
-        owner_->ShowTabbedNetworkSettings(cellular);
-      } else {
-        // Clicked on a disconnected cellular network, so connect to it.
-        cros->ConnectToCellularNetwork(cellular);
-      }
+      owner_->ConnectToNetwork(cellular);
     } else {
       // If we are attempting to connect to a network that no longer exists,
       // display a notification.
@@ -328,22 +316,65 @@ void NetworkMenuModel::ConnectToNetworkAt(int index,
   } else if (flags & FLAG_VPN) {
     VirtualNetwork* vpn = cros->FindVirtualNetworkByPath(service_path);
     if (vpn) {
-      // Connect or reconnect.
-      if (vpn->connecting_or_connected()) {
-        // Show the config settings for the connected network.
-        if (cros->connected_network())
-          owner_->ShowTabbedNetworkSettings(cros->connected_network());
-      } else {
-        vpn->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
-                                          owner_,
-                                          vpn));
-      }
+      owner_->ConnectToNetwork(vpn);
     } else {
       // If we are attempting to connect to a network that no longer exists,
       // display a notification.
       LOG(WARNING) << "VPN does not exist to connect to: " << service_path;
       // TODO(stevenjb): Show notification.
     }
+  }
+}
+
+void NetworkMenu::ConnectToNetwork(Network* network) {
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  switch (network->type()) {
+    case TYPE_ETHERNET: {
+      ShowTabbedNetworkSettings(network);
+      break;
+    }
+    case TYPE_WIFI: {
+      WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
+      if (wifi->connecting_or_connected()) {
+        ShowTabbedNetworkSettings(wifi);
+      } else {
+        wifi->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
+                                           weak_pointer_factory_.GetWeakPtr(),
+                                           wifi));
+      }
+      break;
+    }
+
+    case TYPE_CELLULAR: {
+      CellularNetwork* cell = static_cast<CellularNetwork*>(network);
+      if (cell->NeedsActivation()) {
+        ActivateCellular(cell);
+      } else if (cell->connecting_or_connected()) {
+        // Cellular network is connecting or connected,
+        // so we show the config settings for the cellular network.
+        ShowTabbedNetworkSettings(cell);
+      } else {
+        // Clicked on a disconnected cellular network, so connect to it.
+        cros->ConnectToCellularNetwork(cell);
+      }
+      break;
+    }
+
+    case TYPE_VPN: {
+      VirtualNetwork* vpn = static_cast<VirtualNetwork*>(network);
+      // Connect or reconnect.
+      if (vpn->connecting_or_connected()) {
+        ShowTabbedNetworkSettings(vpn);
+      } else {
+        vpn->AttemptConnection(base::Bind(&NetworkMenu::DoConnect,
+                                          weak_pointer_factory_.GetWeakPtr(),
+                                          vpn));
+      }
+      break;
+    }
+
+    default:
+      break;
   }
 }
 
@@ -451,9 +482,8 @@ void NetworkMenuModel::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_ETHERNET) {
-    if (cros->ethernet_connected()) {
+    if (cros->ethernet_connected())
       owner_->ShowTabbedNetworkSettings(cros->ethernet_network());
-    }
   } else if (flags & (FLAG_WIFI | FLAG_ADD_WIFI |
                       FLAG_CELLULAR | FLAG_ADD_CELLULAR |
                       FLAG_VPN | FLAG_ADD_VPN)) {
@@ -480,14 +510,6 @@ void NetworkMenuModel::ShowNetworkConfigView(NetworkConfigView* view) const {
       owner_->delegate()->GetNativeWindow(), view, STYLE_GENERIC);
   window->SetAlwaysOnTop(true);
   window->Show();
-}
-
-void NetworkMenuModel::ActivateCellular(const CellularNetwork* cellular) const {
-  DCHECK(cellular);
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;
-  browser->OpenMobilePlanTabAndActivate();
 }
 
 void NetworkMenuModel::ShowOther(ConnectionType type) const {
@@ -1040,6 +1062,14 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network* network) const {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
+
+  // In case of a VPN, show the config settings for the connected network.
+  if (network->type() == chromeos::TYPE_VPN) {
+    network = CrosLibrary::Get()->GetNetworkLibrary()->connected_network();
+    if (!network)
+      return;
+  }
+
   std::string network_name(network->name());
   if (network_name.empty() && network->type() == chromeos::TYPE_ETHERNET) {
     network_name = l10n_util::GetStringUTF8(

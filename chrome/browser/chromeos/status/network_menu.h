@@ -95,6 +95,10 @@ class NetworkMenu {
   // Setters.
   void set_min_width(int min_width) { min_width_ = min_width; }
 
+  // Attempts to connect to the specified network. If the network is already
+  // connected, or is connecting, then it shows the settings for the network.
+  void ConnectToNetwork(Network* network);
+
   // Used in a closure for doing actual network connection.
   void DoConnect(Network* network);
 
