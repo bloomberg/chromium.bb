@@ -898,8 +898,6 @@ cr.define('options', function() {
     setMetricsReportingCheckboxState_: function(checked, disabled) {
       $('metricsReportingEnabled').checked = checked;
       $('metricsReportingEnabled').disabled = disabled;
-      if (disabled)
-        $('metricsReportingEnabledText').className = 'disable-services-span';
     },
 
     /**

@@ -329,25 +329,18 @@
         </label>
       </div>
 </if>
-<if expr="pp_ifdef('_google_chrome') and pp_ifdef('chromeos')">
       <div id="metricsReportingSetting" class="checkbox">
         <label>
+<if expr="pp_ifdef('_google_chrome') and pp_ifdef('chromeos')">
           <input id="metricsReportingEnabled"
               pref="cros.metrics.reportingEnabled" type="checkbox">
-          <span id="metricsReportingEnabledText"
-              i18n-content="enableLogging">
-          </span>
-        </label>
-      </div>
 </if>
 <if expr="pp_ifdef('_google_chrome') and not pp_ifdef('chromeos')">
-      <div id="metricsReportingSetting" class="checkbox">
-        <label>
           <input id="metricsReportingEnabled" type="checkbox">
+</if>
           <span i18n-content="enableLogging"></span>
         </label>
       </div>
-</if>
     </div>
   </section>
   <!-- By default, the bluetooth section is hidden.  It is only
