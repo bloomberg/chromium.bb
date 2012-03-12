@@ -151,7 +151,6 @@ def PreFlightRinse(buildroot):
   """Cleans up any leftover state from previous runs."""
   _BuildRootGitCleanup(buildroot)
   _CleanUpMountPoints(buildroot)
-  cros_lib.SudoRunCommand(['killall', 'kvm'], error_ok=True)
 
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
