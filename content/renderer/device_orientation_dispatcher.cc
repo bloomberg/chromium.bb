@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,10 @@ bool OrientationsEqual(const DeviceOrientationMsg_Updated_Params& a,
     return false;
   if (a.can_provide_gamma && a.gamma != b->gamma())
     return false;
+  if (a.can_provide_absolute != b->canProvideAbsolute())
+    return false;
+  if (a.can_provide_absolute && a.absolute != b->absolute())
+    return false;
 
   return true;
 }
@@ -80,11 +84,13 @@ void DeviceOrientationDispatcher::OnDeviceOrientationUpdated(
     return;
 
   last_orientation_.reset(new WebKit::WebDeviceOrientation(p.can_provide_alpha,
-                                                           p.alpha,
-                                                           p.can_provide_beta,
-                                                           p.beta,
-                                                           p.can_provide_gamma,
-                                                           p.gamma));
+                                                       p.alpha,
+                                                       p.can_provide_beta,
+                                                       p.beta,
+                                                       p.can_provide_gamma,
+                                                       p.gamma,
+                                                       p.can_provide_absolute,
+                                                       p.absolute));
 
   controller_->didChangeDeviceOrientation(*last_orientation_);
 }

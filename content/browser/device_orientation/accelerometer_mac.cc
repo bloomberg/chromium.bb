@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -310,6 +310,7 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
   orientation->alpha_ = 0.0;
   orientation->beta_  = kRad2deg * atan2(-axis_value[1], axis_value[2]);
   orientation->gamma_ = kRad2deg * asin(axis_value[0]);
+  orientation->absolute_ = false;
 
   // Make sure that the interval boundaries comply with the specification. At
   // this point, beta is [-180, 180] and gamma is [-90, 90], but the spec has
@@ -331,6 +332,7 @@ bool AccelerometerMac::GetOrientation(Orientation* orientation) {
   orientation->can_provide_alpha_ = false;
   orientation->can_provide_beta_  = true;
   orientation->can_provide_gamma_ = true;
+  orientation->can_provide_absolute_ = false;
 
   return true;
 }

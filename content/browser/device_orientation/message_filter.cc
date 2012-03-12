@@ -67,6 +67,8 @@ void MessageFilter::ObserverDelegate::OnOrientationUpdate(
   params.beta = orientation.beta_;
   params.can_provide_gamma = orientation.can_provide_gamma_;
   params.gamma = orientation.gamma_;
+  params.can_provide_absolute = orientation.can_provide_absolute_;
+  params.absolute = orientation.absolute_;
 
   sender_->Send(new DeviceOrientationMsg_Updated(render_view_id_, params));
 }

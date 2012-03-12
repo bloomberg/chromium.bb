@@ -189,7 +189,9 @@ bool ProviderImpl::SignificantlyDifferent(const Orientation& o1,
       IsElementSignificantlyDifferent(o1.can_provide_gamma_,
                                          o2.can_provide_gamma_,
                                          o1.gamma_,
-                                         o2.gamma_);
+                                         o2.gamma_) ||
+      (o1.can_provide_absolute_ != o2.can_provide_absolute_
+       || o1.absolute_ != o2.absolute_);
 }
 
 base::TimeDelta ProviderImpl::SamplingInterval() const {

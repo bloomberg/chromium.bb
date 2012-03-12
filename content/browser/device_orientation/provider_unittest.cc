@@ -34,12 +34,16 @@ class UpdateChecker : public Provider::Observer {
     EXPECT_EQ(expected.can_provide_alpha_, orientation.can_provide_alpha_);
     EXPECT_EQ(expected.can_provide_beta_,  orientation.can_provide_beta_);
     EXPECT_EQ(expected.can_provide_gamma_, orientation.can_provide_gamma_);
+    EXPECT_EQ(expected.can_provide_absolute_,
+              orientation.can_provide_absolute_);
     if (expected.can_provide_alpha_)
       EXPECT_EQ(expected.alpha_, orientation.alpha_);
     if (expected.can_provide_beta_)
       EXPECT_EQ(expected.beta_, orientation.beta_);
     if (expected.can_provide_gamma_)
       EXPECT_EQ(expected.gamma_, orientation.gamma_);
+    if (expected.can_provide_absolute_)
+      EXPECT_EQ(expected.absolute_, orientation.absolute_);
 
     --(*expectations_count_ptr_);
 
@@ -196,7 +200,7 @@ TEST_F(DeviceOrientationProviderTest, BasicPushTest) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
   Init(MockOrientationFactory::CreateDataFetcher);
-  const Orientation kTestOrientation(true, 1, true, 2, true, 3);
+  const Orientation kTestOrientation(true, 1, true, 2, true, 3, true, true);
 
   scoped_ptr<UpdateChecker> checker(new UpdateChecker(&pending_expectations_));
   checker->AddExpectation(kTestOrientation);
@@ -212,9 +216,9 @@ TEST_F(DeviceOrientationProviderTest, MultipleObserversPushTest) {
       new MockOrientationFactory());
   Init(MockOrientationFactory::CreateDataFetcher);
   const Orientation kTestOrientations[] = {
-    Orientation(true, 1, true, 2, true, 3),
-    Orientation(true, 4, true, 5, true, 6),
-    Orientation(true, 7, true, 8, true, 9)};
+    Orientation(true, 1, true, 2, true, 3, true, true),
+    Orientation(true, 4, true, 5, true, 6, true, false),
+    Orientation(true, 7, true, 8, true, 9, false, true)};
 
   scoped_ptr<UpdateChecker> checker_a(
       new UpdateChecker(&pending_expectations_));
@@ -258,8 +262,8 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_ObserverNotRemoved) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
   Init(MockOrientationFactory::CreateDataFetcher);
-  const Orientation kTestOrientation(true, 1, true, 2, true, 3);
-  const Orientation kTestOrientation2(true, 4, true, 5, true, 6);
+  const Orientation kTestOrientation(true, 1, true, 2, true, 3, true, true);
+  const Orientation kTestOrientation2(true, 4, true, 5, true, 6, true, false);
 
   scoped_ptr<UpdateChecker> checker(new UpdateChecker(&pending_expectations_));
   checker->AddExpectation(kTestOrientation);
@@ -284,7 +288,7 @@ TEST_F(DeviceOrientationProviderTest, MAYBE_StartFailing) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
   Init(MockOrientationFactory::CreateDataFetcher);
-  const Orientation kTestOrientation(true, 1, true, 2, true, 3);
+  const Orientation kTestOrientation(true, 1, true, 2, true, 3, true, true);
 
   scoped_ptr<UpdateChecker> checker_a(new UpdateChecker(
       &pending_expectations_));
@@ -312,8 +316,8 @@ TEST_F(DeviceOrientationProviderTest, StartStopStart) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
   Init(MockOrientationFactory::CreateDataFetcher);
-  const Orientation kTestOrientation(true, 1, true, 2, true, 3);
-  const Orientation kTestOrientation2(true, 4, true, 5, true, 6);
+  const Orientation kTestOrientation(true, 1, true, 2, true, 3, true, true);
+  const Orientation kTestOrientation2(true, 4, true, 5, true, 6, true, false);
 
   scoped_ptr<UpdateChecker> checker_a(new UpdateChecker(
       &pending_expectations_));
@@ -346,15 +350,18 @@ TEST_F(DeviceOrientationProviderTest, SignificantlyDifferent) {
   const double kSignificantDifference = 30;
   const double kAlpha = 4, kBeta = 5, kGamma = 6;
 
-  const Orientation first_orientation(true, kAlpha, true, kBeta, true, kGamma);
+  const Orientation first_orientation(true, kAlpha, true, kBeta, true, kGamma,
+                                      true, true);
 
   const Orientation second_orientation(true, kAlpha + kInsignificantDifference,
                                        true, kBeta + kInsignificantDifference,
-                                       true, kGamma + kInsignificantDifference);
+                                       true, kGamma + kInsignificantDifference,
+                                       true, false);
 
   const Orientation third_orientation(true, kAlpha + kSignificantDifference,
                                       true, kBeta + kSignificantDifference,
-                                      true, kGamma + kSignificantDifference);
+                                      true, kGamma + kSignificantDifference,
+                                      false, true);
 
   scoped_ptr<UpdateChecker> checker_a(new UpdateChecker(
       &pending_expectations_));
