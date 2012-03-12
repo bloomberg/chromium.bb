@@ -12615,6 +12615,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY" desc="In settings Internet options, the title for security tab.">
         Security
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PROXY" desc="In settings Internet options, the title for proxy tab.">
+        Proxy
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings Internet options, the label for the network id.">
         SSID:
       </message>

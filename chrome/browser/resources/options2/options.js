@@ -24,7 +24,6 @@ var PasswordManager = options.PasswordManager;
 var Preferences = options.Preferences;
 var PreferredNetworks = options.PreferredNetworks;
 var ManageProfileOverlay = options.ManageProfileOverlay;
-var ProxyOptions = options.ProxyOptions;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
 var SessionRestoreOverlay = options.SessionRestoreOverlay;
@@ -137,8 +136,6 @@ function load() {
                                 [$('pointer-settings-button')]);
     OptionsPage.registerOverlay(PreferredNetworks.getInstance(),
                                 BrowserOptions.getInstance());
-    OptionsPage.registerOverlay(ProxyOptions.getInstance(),
-                                DetailsInternetPage.getInstance());
     OptionsPage.registerOverlay(
         new OptionsPage('languageChewing',
                         templateData.languageChewingPageTabTitle,

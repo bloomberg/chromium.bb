@@ -42,7 +42,6 @@
   <link rel="stylesheet" href="chromeos/internet_detail.css">
   <link rel="stylesheet" href="chromeos/internet_options_page.css">
   <link rel="stylesheet" href="chromeos/pointer_overlay.css">
-  <link rel="stylesheet" href="chromeos/proxy.css">
 </if>
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_virtual_keyboard')">
   <link rel="stylesheet" href="chromeos/virtual_keyboard.css">
@@ -134,9 +133,6 @@
   </if>
 </div>
 <div id="overlay-container-3" class="overlay transparent" hidden>
-  <if expr="pp_ifdef('chromeos')">
-    <include src="chromeos/proxy.html">
-  </if>
 </div>
 
 <div id="main-content">

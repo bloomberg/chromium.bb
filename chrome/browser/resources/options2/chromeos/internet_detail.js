@@ -17,6 +17,22 @@ cr.define('options.internet', function() {
     }
   }
 
+  /**
+   * Monitor pref change of given element.
+   * @param {Element} el Target element.
+   */
+  function observePrefsUI(el) {
+    Preferences.getInstance().addEventListener(el.pref, handlePrefUpdate);
+  }
+
+  /**
+   * UI pref change handler.
+   * @param {Event} e The update event.
+   */
+  function handlePrefUpdate(e) {
+    DetailsInternetPage.prototype.updateControls;
+  }
+
   /////////////////////////////////////////////////////////////////////////////
   // DetailsInternetPage class:
 
@@ -32,6 +48,12 @@ cr.define('options.internet', function() {
 
   DetailsInternetPage.prototype = {
     __proto__: OptionsPage.prototype,
+
+    /**
+     * Indicates if the list of proxy exceptions has been initialized.
+     * @type {boolean}
+     */
+    proxyListInitialized_: false,
 
     /**
      * Initializes DetailsInternetPage page.
@@ -177,13 +199,54 @@ cr.define('options.internet', function() {
       $('change-pin').addEventListener('click', function(event) {
         chrome.send('changePin');
       });
+
+      // Proxy
+      options.proxyexceptions.ProxyExceptions.decorate($('ignoredHostList'));
+      $('removeHost').addEventListener('click',
+                                       this.handleRemoveProxyExceptions_);
+      $('addHost').addEventListener('click', this.handleAddProxyException_);
+      $('directProxy').addEventListener('click', this.disableManualProxy_);
+      $('manualProxy').addEventListener('click', this.enableManualProxy_);
+      $('autoProxy').addEventListener('click', this.disableManualProxy_);
+      $('proxyAllProtocols').addEventListener('click',
+                                              this.toggleSingleProxy_);
+      observePrefsUI($('directProxy'));
+      observePrefsUI($('manualProxy'));
+      observePrefsUI($('autoProxy'));
+      observePrefsUI($('proxyAllProtocols'));
+    },
+
+    /**
+     * Handler for "add" event fired from userNameEdit.
+     * @param {Event} e Add event fired from userNameEdit.
+     * @private
+     */
+    handleAddProxyException_: function(e) {
+      var exception = $('newHost').value;
+      $('newHost').value = '';
+
+      exception = exception.trim();
+      if (exception)
+        $('ignoredHostList').addException(exception);
+    },
+
+    /**
+     * Handler for when the remove button is clicked
+     * @param {Event} e The click event.
+     * @private
+     */
+    handleRemoveProxyExceptions_: function(e) {
+      var selectedItems = $('ignoredHostList').selectedItems;
+      for (var x = 0; x < selectedItems.length; x++) {
+        $('ignoredHostList').removeException(selectedItems[x]);
+      }
     },
 
     /**
      * Update details page controls.
      * @private
      */
-    updateControls_: function() {
+    updateControls: function() {
       // Only show ipconfig section if network is connected OR if nothing on
       // this device is connected. This is so that you can fix the ip configs
       // if you can't connect to any network.
@@ -219,106 +282,105 @@ cr.define('options.internet', function() {
       updateHidden('#detailsInternetPage .shared-network', !this.shared);
       updateHidden('#detailsInternetPage .prefer-network',
                    !this.showPreferred);
-    }
+
+      // Proxy
+      this.updateProxyBannerVisibility_();
+      this.toggleSingleProxy_();
+      if ($('manualProxy').checked)
+        this.enableManualProxy_();
+      else
+        this.disableManualProxy_();
+      if (!this.proxyListInitialized_ && this.visible) {
+        this.proxyListInitialized_ = true;
+        $('ignoredHostList').redraw();
+      }
+    },
+
+    /**
+     * Updates info banner visibility state. This function shows the banner
+     * if proxy is managed or shared-proxies is off for shared network.
+     * @private
+     */
+    updateProxyBannerVisibility_: function() {
+      var bannerDiv = $('info-banner');
+      // Show banner and determine its message if necessary.
+      var controlledBy = $('directProxy').controlledBy;
+      if (controlledBy == '') {
+        bannerDiv.hidden = true;
+      } else {
+        bannerDiv.hidden = false;
+        // controlledBy must match strings loaded in proxy_handler.cc and
+        // set in proxy_cros_settings_provider.cc.
+        $('banner-text').textContent = localStrings.getString(controlledBy);
+      }
+    },
+
+    /**
+     * Handler for when the user clicks on the checkbox to allow a
+     * single proxy usage.
+     * @private
+     * @param {Event} e Click Event.
+     */
+    toggleSingleProxy_: function(e) {
+      if ($('proxyAllProtocols').checked) {
+        $('multiProxy').hidden = true;
+        $('singleProxy').hidden = false;
+      } else {
+        $('multiProxy').hidden = false;
+        $('singleProxy').hidden = true;
+      }
+    },
+
+    /**
+     * Handler for selecting a radio button that will disable the manual
+     * controls.
+     * @private
+     * @param {Event} e Click event.
+     */
+    disableManualProxy_: function(e) {
+      $('advancedConfig').hidden = true;
+      $('proxyAllProtocols').disabled = true;
+      $('proxyHostName').disabled = true;
+      $('proxyHostPort').disabled = true;
+      $('proxyHostSingleName').disabled = true;
+      $('proxyHostSinglePort').disabled = true;
+      $('secureProxyHostName').disabled = true;
+      $('secureProxyPort').disabled = true;
+      $('ftpProxy').disabled = true;
+      $('ftpProxyPort').disabled = true;
+      $('socksHost').disabled = true;
+      $('socksPort').disabled = true;
+      $('proxyConfig').disabled = $('autoProxy').disabled ||
+                                  !$('autoProxy').checked;
+    },
+
+    /**
+     * Handler for selecting a radio button that will enable the manual
+     * controls.
+     * @private
+     * @param {Event} e Click event.
+     */
+    enableManualProxy_: function(e) {
+      $('advancedConfig').hidden = false;
+      $('ignoredHostList').redraw();
+      var all_disabled = $('manualProxy').disabled;
+      $('newHost').disabled = all_disabled;
+      $('removeHost').disabled = all_disabled;
+      $('addHost').disabled = all_disabled;
+      $('proxyAllProtocols').disabled = all_disabled;
+      $('proxyHostName').disabled = all_disabled;
+      $('proxyHostPort').disabled = all_disabled;
+      $('proxyHostSingleName').disabled = all_disabled;
+      $('proxyHostSinglePort').disabled = all_disabled;
+      $('secureProxyHostName').disabled = all_disabled;
+      $('secureProxyPort').disabled = all_disabled;
+      $('ftpProxy').disabled = all_disabled;
+      $('ftpProxyPort').disabled = all_disabled;
+      $('socksHost').disabled = all_disabled;
+      $('socksPort').disabled = all_disabled;
+      $('proxyConfig').disabled = true;
+    },
   };
-
-  /**
-   * Whether the underlying network is connected. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'connected',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the underlying network is wifi. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'wireless',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the underlying network shared wifi. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'shared',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the underlying network is a vpn. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'vpn',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the underlying network is ethernet. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'ethernet',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the underlying network is cellular. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'cellular',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the network is loading cell plan. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'cellplanloading',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the network has cell plan(s). Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'hascellplan',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the network has no cell plan. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'nocellplan',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether the network is gsm. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'gsm',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  /**
-   * Whether show password details for network. Only used for display purpose.
-   * @type {boolean}
-   */
-  cr.defineProperty(DetailsInternetPage, 'password',
-      cr.PropertyKind.JS,
-      DetailsInternetPage.prototype.updateControls_);
-
-  // TODO(xiyuan): Check to see if it is safe to remove these attributes.
-  cr.defineProperty(DetailsInternetPage, 'hasactiveplan',
-      cr.PropertyKind.JS);
-  cr.defineProperty(DetailsInternetPage, 'activated',
-      cr.PropertyKind.JS);
-  cr.defineProperty(DetailsInternetPage, 'connecting',
-      cr.PropertyKind.JS);
-  cr.defineProperty(DetailsInternetPage, 'connected',
-      cr.PropertyKind.JS);
 
   return {
     DetailsInternetPage: DetailsInternetPage

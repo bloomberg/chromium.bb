@@ -82,9 +82,6 @@ cr.define('options', function() {
       if (!servicePath || !servicePath.length ||
           !networkType || !networkType.length)
         return;
-      var networkName = params.networkName;
-      if (networkName)
-        options.ProxyOptions.getInstance().setNetworkName(networkName);
       chrome.send('buttonClickCallback',
           [networkType, servicePath, 'options']);
     },
@@ -315,6 +312,7 @@ cr.define('options', function() {
 
     // TODO(chocobo): Is this hack to cache the data here reasonable?
     $('connectionState').data = data;
+
     $('buyplanDetails').hidden = true;
     $('activateDetails').hidden = true;
     $('viewAccountDetails').hidden = true;
@@ -327,6 +325,7 @@ cr.define('options', function() {
     detailsPage.deviceConnected = data.deviceConnected;
     detailsPage.connecting = data.connecting;
     detailsPage.connected = data.connected;
+    detailsPage.showProxy = data.showProxy;
     $('connectionState').textContent = data.connectionState;
 
     var inetAddress = '';
@@ -350,10 +349,6 @@ cr.define('options', function() {
     // Hide the dhcp/static radio if needed.
     $('ipTypeDHCPDiv').hidden = !data.showStaticIPConfig;
     $('ipTypeStaticDiv').hidden = !data.showStaticIPConfig;
-
-    // Hide change-proxy-button and change-proxy-section if not showing proxy.
-    $('change-proxy-button').hidden = !data.showProxy;
-    $('change-proxy-section').hidden = !data.showProxy;
 
     var ipConfigList = $('ipConfigList');
     options.internet.IPConfigList.decorate(ipConfigList);
@@ -581,6 +576,8 @@ cr.define('options', function() {
         }
       }
     }
+
+    detailsPage.updateControls();
 
     // Don't show page name in address bar and in history to prevent people
     // navigate here by hand and solve issue with page session restore.

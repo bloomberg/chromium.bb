@@ -26,7 +26,6 @@
   <include src="chromeos/bluetooth_add_device_overlay.js"></include>
   <include src="chromeos/bluetooth_pair_device_overlay.js"></include>
   <include src="chromeos/accounts_options.js"></include>
-  <include src="chromeos/proxy_options.js"></include>
   <include src="chromeos/proxy_rules_list.js"></include>
   <include src="chromeos/accounts_user_list.js"></include>
   <include src="chromeos/accounts_user_name_edit.js"></include>
