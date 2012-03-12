@@ -61,8 +61,7 @@ class TestPresubmit(unittest.TestCase):
             local_path='chrome/common/extensions/docs/static/foo.html')])
     expected_warning = (
         'This change modifies the extension docs but the generated docs '
-        'have not been updated properly. See %s for more info. '
-        '(Report problems to tessamac@chromium.org.)\n'
+        'have not been updated properly. See %s for more info.\n'
         ' - Changes to %s not reflected in generated doc.\n'
         ' - Changes to sample %s have not been re-zipped.\n'
         ' - Docs out of sync with %s changes.\n'
@@ -81,8 +80,7 @@ class TestPresubmit(unittest.TestCase):
         FakeAffectedFile(local_path='chrome/common/extensions/docs/bar.html')])
     expected_warning = (
         'This change modifies the extension docs but the generated docs '
-        'have not been updated properly. See %s for more info. '
-        '(Report problems to tessamac@chromium.org.)\n'
+        'have not been updated properly. See %s for more info.\n'
         ' - Changes to generated doc %s not reflected in non-generated files.\n'
         ' - Changes to generated doc %s not reflected in non-generated files.\n'
         'First build DumpRenderTree, then update the docs by running:\n  %s' %

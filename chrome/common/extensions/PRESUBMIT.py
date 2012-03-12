@@ -21,8 +21,7 @@ EXCEPTIONS = ['README', 'README.txt', 'OWNERS']
 README = os.path.join(DOC_DIR, 'README.txt')
 REBUILD_WARNING = (
     'This change modifies the extension docs but the generated docs have '
-    'not been updated properly. See %s for more info. '
-    '(Report problems to tessamac@chromium.org.)' % README)
+    'not been updated properly. See %s for more info.' % README)
 BUILD_SCRIPT = os.path.join(BUILD_DIR, 'build.py')
 REBUILD_INSTRUCTIONS = (
     'First build DumpRenderTree, then update the docs by running:\n  %s' %
