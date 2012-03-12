@@ -159,10 +159,8 @@ class GpuMainThread : public base::Thread {
 
  protected:
   virtual void Init() {
-    // TODO: Currently, ChildProcess supports only a single static instance,
-    // which is a problem in --single-process mode, where both gpu and renderer
-    // should be able to create separate instances.
-    if (GpuProcess::current()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU)) {
       child_thread_ = new GpuChildThread(channel_id_);
     } else {
       gpu_process_ = new GpuProcess();
