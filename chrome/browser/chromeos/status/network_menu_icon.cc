@@ -634,11 +634,8 @@ void NetworkMenuIcon::SetConnectingIconAndText() {
   icon_->set_icon(*images[index]);
   icon_->SetBadges(connecting_network_);
   if (mode_ == MENU_MODE) {
-    const int tooltip_id = connecting_network_->configuring()
-        ? IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP
-        : IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP;
     text_ = l10n_util::GetStringFUTF16(
-        tooltip_id,
+        IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
         UTF8ToUTF16(connecting_network_->name()));
   } else {
     text_ = UTF8ToUTF16(connecting_network_->name());
