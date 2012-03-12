@@ -159,6 +159,17 @@ bool HttpServerPropertiesManager::SetSpdySettings(
   return persist;
 }
 
+bool HttpServerPropertiesManager::SetSpdySetting(
+    const net::HostPortPair& host_port_pair,
+    const spdy::SpdySetting& setting) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  bool persist = http_server_properties_impl_->SetSpdySetting(
+      host_port_pair, setting);
+  if (persist)
+    ScheduleUpdatePrefsOnIO();
+  return persist;
+}
+
 void HttpServerPropertiesManager::ClearSpdySettings() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   http_server_properties_impl_->ClearSpdySettings();
@@ -302,10 +313,8 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnUI() {
           continue;
         }
 
-        spdy::SettingsFlagsAndId flags_and_id(0);
-        flags_and_id.set_id(id);
-        flags_and_id.set_flags(spdy::SETTINGS_FLAG_PERSISTED);
-
+        spdy::SettingsFlagsAndId flags_and_id(
+            spdy::SETTINGS_FLAG_PERSISTED, id);
         spdy_settings.push_back(spdy::SpdySetting(flags_and_id, value));
       }
 

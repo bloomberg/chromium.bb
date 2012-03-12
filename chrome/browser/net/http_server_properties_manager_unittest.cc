@@ -281,11 +281,33 @@ TEST_F(HttpServerPropertiesManagerTest, SetSpdySettings) {
   // Add SpdySettings for mail.google.com:443.
   net::HostPortPair spdy_server_mail("mail.google.com", 443);
   spdy::SpdySettings spdy_settings;
-  spdy::SettingsFlagsAndId id1(0);
-  id1.set_flags(spdy::SETTINGS_FLAG_PLEASE_PERSIST);
-  id1.set_id(1234);
+  spdy::SettingsFlagsAndId id1(spdy::SETTINGS_FLAG_PLEASE_PERSIST, 1234);
   spdy_settings.push_back(std::make_pair(id1, 31337));
   http_server_props_manager_->SetSpdySettings(spdy_server_mail, spdy_settings);
+
+  // Run the task.
+  loop_.RunAllPending();
+
+  spdy::SpdySettings spdy_settings_ret =
+      http_server_props_manager_->GetSpdySettings(spdy_server_mail);
+  ASSERT_EQ(1U, spdy_settings_ret.size());
+  spdy::SpdySetting spdy_setting1_ret = spdy_settings_ret.front();
+  spdy::SettingsFlagsAndId id1_ret(spdy_setting1_ret.first);
+  EXPECT_EQ(1234U, id1_ret.id());
+  EXPECT_EQ(spdy::SETTINGS_FLAG_PERSISTED, id1_ret.flags());
+  EXPECT_EQ(31337U, spdy_setting1_ret.second);
+
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+}
+
+TEST_F(HttpServerPropertiesManagerTest, SetSpdySetting) {
+  ExpectPrefsUpdate();
+
+  // Add SpdySetting for mail.google.com:443.
+  net::HostPortPair spdy_server_mail("mail.google.com", 443);
+  spdy::SettingsFlagsAndId id1(spdy::SETTINGS_FLAG_PLEASE_PERSIST, 1234);
+  http_server_props_manager_->SetSpdySetting(
+      spdy_server_mail, std::make_pair(id1, 31337));
 
   // Run the task.
   loop_.RunAllPending();
@@ -359,9 +381,7 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
       spdy_server_mail, 443, net::NPN_SPDY_2);
 
   spdy::SpdySettings spdy_settings;
-  spdy::SettingsFlagsAndId id1(0);
-  id1.set_flags(spdy::SETTINGS_FLAG_PLEASE_PERSIST);
-  id1.set_id(1234);
+  spdy::SettingsFlagsAndId id1(spdy::SETTINGS_FLAG_PLEASE_PERSIST, 1234);
   spdy_settings.push_back(std::make_pair(id1, 31337));
   http_server_props_manager_->SetSpdySettings(spdy_server_mail, spdy_settings);
 

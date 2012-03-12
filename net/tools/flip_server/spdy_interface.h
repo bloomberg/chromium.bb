@@ -68,13 +68,13 @@ class SpdySM : public spdy::BufferedSpdyFramerVisitorInterface,
       const spdy::SpdyRstStreamControlFrame& frame) OVERRIDE;
   virtual void OnGoAway(const spdy::SpdyGoAwayControlFrame& frame) OVERRIDE {}
   virtual void OnPing(const spdy::SpdyPingControlFrame& frame) OVERRIDE {}
-  virtual void OnSettings(
-      const spdy::SpdySettingsControlFrame& frame) OVERRIDE {}
   virtual void OnWindowUpdate(
       const spdy::SpdyWindowUpdateControlFrame& frame) OVERRIDE {}
   virtual void OnStreamFrameData(spdy::SpdyStreamId stream_id,
                                  const char* data,
                                  size_t len) OVERRIDE;
+  virtual void OnSetting(
+      spdy::SpdySettingsIds id, uint8 flags, uint32 value)  OVERRIDE {}
   virtual void OnSynStream(
       const spdy::SpdySynStreamControlFrame& frame,
       const linked_ptr<spdy::SpdyHeaderBlock>& headers) OVERRIDE;

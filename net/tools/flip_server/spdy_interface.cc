@@ -319,10 +319,10 @@ void SpdySM::ResetForNewConnection() {
 // Send a settings frame
 int SpdySM::PostAcceptHook() {
   SpdySettings settings;
-  SettingsFlagsAndId settings_id(SETTINGS_MAX_CONCURRENT_STREAMS);
+  SettingsFlagsAndId settings_id(0, SETTINGS_MAX_CONCURRENT_STREAMS);
   settings.push_back(SpdySetting(settings_id, 100));
   SpdySettingsControlFrame* settings_frame =
-      SpdyFramer::CreateSettings(settings);
+      buffered_spdy_framer_->CreateSettings(settings);
 
   VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Sending Settings Frame";
   EnqueueDataFrame(new SpdyFrameDataFrame(settings_frame));

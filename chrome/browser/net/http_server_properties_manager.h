@@ -117,6 +117,12 @@ class HttpServerPropertiesManager
       const net::HostPortPair& host_port_pair,
       const spdy::SpdySettings& settings) OVERRIDE;
 
+  // Saves an individual setting for a host. Returns true if SpdySetting is
+  // persisted.
+  virtual bool SetSpdySetting(
+      const net::HostPortPair& host_port_pair,
+      const spdy::SpdySetting& setting) OVERRIDE;
+
   // Clears all spdy_settings.
   virtual void ClearSpdySettings() OVERRIDE;
 

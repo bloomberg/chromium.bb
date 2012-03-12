@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,8 @@ void SpdySettingsStorage::Set(const HostPortPair& host_port_pair,
   for (it = settings.begin(); it != settings.end(); ++it) {
     spdy::SettingsFlagsAndId id = it->first;
     if (id.flags() & spdy::SETTINGS_FLAG_PLEASE_PERSIST) {
-      id.set_flags(spdy::SETTINGS_FLAG_PERSISTED);
-      persistent_settings.push_back(std::make_pair(id, it->second));
+      spdy::SettingsFlagsAndId new_id(spdy::SETTINGS_FLAG_PERSISTED, id.id());
+      persistent_settings.push_back(std::make_pair(new_id, it->second));
     }
   }
 
