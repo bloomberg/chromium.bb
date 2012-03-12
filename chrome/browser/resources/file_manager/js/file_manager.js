@@ -634,6 +634,9 @@ FileManager.prototype = {
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('copy',
                                     this.copySelectionToClipboard_.bind(this));
+    // Disable the default browser context menu.
+    this.document_.addEventListener('contextmenu',
+                                    function (e) { e.preventDefault() });
 
     // We need to store a reference to the function returned by bind. Later, in
     // canPaste function, we need to temporarily remove this event handler and
