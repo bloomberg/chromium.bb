@@ -6,13 +6,17 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 const int kSlideValueChangeDurationMS = 150;
@@ -62,6 +66,14 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   } else {
     SchedulePaint();
   }
+  if (GetWidget()) {
+    GetWidget()->NotifyAccessibilityEvent(
+        this, ui::AccessibilityTypes::EVENT_VALUE_CHANGED, true);
+  }
+}
+
+void Slider::SetAccessibleName(const string16& name) {
+  accessible_name_ = name;
 }
 
 gfx::Size Slider::GetPreferredSize() {
@@ -145,6 +157,13 @@ bool Slider::OnMouseDragged(const views::MouseEvent& event) {
 void Slider::AnimationProgressed(const ui::Animation* animation) {
   animating_value_ = animation->CurrentValueBetween(animating_value_, value_);
   SchedulePaint();
+}
+
+void Slider::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_SLIDER;
+  state->name = accessible_name_;
+  state->value = UTF8ToUTF16(
+      base::StringPrintf("%d%%", (int)(value_ * 100 + 0.5)));
 }
 
 }  // namespace views

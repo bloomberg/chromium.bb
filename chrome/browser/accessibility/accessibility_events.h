@@ -314,4 +314,23 @@ class AccessibilityMenuItemInfo : public AccessibilityControlInfo {
   int item_count_;
 };
 
+// Accessibility information about a slider passed to onControlFocused
+// and onControlAction event listeners.
+class AccessibilitySliderInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilitySliderInfo(Profile* profile,
+                          const std::string& name,
+                          const std::string& context,
+                          const std::string& value);
+
+  virtual const char* type() const OVERRIDE;
+
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
+
+  const std::string& value() const { return value_; }
+
+ private:
+  std::string value_;
+};
+
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENTS_H_

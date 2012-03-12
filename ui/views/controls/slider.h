@@ -48,6 +48,8 @@ class VIEWS_EXPORT Slider : public View,
   float value() const { return value_; }
   void SetValue(float value);
 
+  void SetAccessibleName(const string16& name);
+
  private:
   void SetValueInternal(float value, SliderChangeReason reason);
 
@@ -56,6 +58,7 @@ class VIEWS_EXPORT Slider : public View,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
   // ui::AnimationDelegate overrides:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -68,6 +71,7 @@ class VIEWS_EXPORT Slider : public View,
   float value_;
   float animating_value_;
   bool value_is_valid_;
+  string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(Slider);
 };

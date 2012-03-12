@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,6 +164,9 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
     break;
   case ui::AccessibilityTypes::ROLE_RADIOBUTTON:
     // Not used anymore?
+  case ui::AccessibilityTypes::ROLE_SLIDER:
+    SendSliderNotification(view, type, profile);
+    break;
   default:
     // If this is encountered, please file a bug with the role that wasn't
     // caught so we can add accessibility extension API support.
@@ -298,6 +301,25 @@ void AccessibilityEventRouterViews::SendWindowNotification(
     window_text = UTF16ToUTF8(state.name);
 
   AccessibilityWindowInfo info(profile, window_text);
+  SendAccessibilityNotification(type, &info);
+}
+
+// static
+void AccessibilityEventRouterViews::SendSliderNotification(
+    views::View* view,
+    int type,
+    Profile* profile) {
+  ui::AccessibleViewState state;
+  view->GetAccessibleState(&state);
+
+  std::string name = UTF16ToUTF8(state.name);
+  std::string value = UTF16ToUTF8(state.value);
+  std::string context = GetViewContext(view);
+  AccessibilitySliderInfo info(
+      profile,
+      name,
+      context,
+      value);
   SendAccessibilityNotification(type, &info);
 }
 

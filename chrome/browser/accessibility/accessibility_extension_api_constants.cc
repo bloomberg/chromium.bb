@@ -20,6 +20,7 @@ const char kSelectionEndKey[] = "details.selectionEnd";
 const char kCheckedKey[] = "details.isChecked";
 const char kHasSubmenuKey[] = "details.hasSubmenu";
 const char kMessageKey[] = "message";
+const char kStringValueKey[] = "details.stringValue";
 
 // Events.
 const char kOnWindowOpened[] = "experimental.accessibility.onWindowOpened";
@@ -39,6 +40,7 @@ const char kTypeListBox[] = "listbox";
 const char kTypeMenu[] = "menu";
 const char kTypeMenuItem[] = "menuitem";
 const char kTypeRadioButton[] = "radiobutton";
+const char kTypeSlider[] = "slider";
 const char kTypeTab[] = "tab";
 const char kTypeTextBox[] = "textbox";
 const char kTypeWindow[] = "window";

@@ -241,3 +241,21 @@ void AccessibilityMenuItemInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetInteger(keys::kItemIndexKey, item_index_);
   dict->SetInteger(keys::kItemCountKey, item_count_);
 }
+
+AccessibilitySliderInfo::AccessibilitySliderInfo(Profile* profile,
+                                                 const std::string& name,
+                                                 const std::string& context,
+                                                 const std::string& value)
+    : AccessibilityControlInfo(profile, name),
+      value_(value) {
+  set_context(context);
+}
+
+const char* AccessibilitySliderInfo::type() const {
+  return keys::kTypeSlider;
+}
+
+void AccessibilitySliderInfo::SerializeToDict(DictionaryValue *dict) const {
+  AccessibilityControlInfo::SerializeToDict(dict);
+  dict->SetString(keys::kStringValueKey, value_);
+}

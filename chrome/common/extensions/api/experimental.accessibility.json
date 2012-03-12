@@ -15,7 +15,7 @@
           "type": {
             "type": "string",
             "description": "The type of this object, which determines the contents of 'details'.",
-            "enum": ["button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "tab", "textbox", "window"]
+            "enum": ["button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "slider", "tab", "textbox", "window"]
           },
           "name": {
             "type": "string",
@@ -35,6 +35,7 @@
               { "$ref": "MenuDetails" },
               { "$ref": "MenuItemDetails" },
               { "$ref": "RadioButtonDetails" },
+              { "$ref": "SliderDetails" },
               { "$ref": "TabDetails" },
               { "$ref": "TextBoxDetails" }
             ]
@@ -94,6 +95,14 @@
           "isChecked": {"type": "boolean", "description": "True if this radio button is checked."},
           "itemCount": {"type": "integer", "description": "The number of radio buttons in this group."},
           "itemIndex": {"type": "integer", "description": "The 0-based index of this radio button in this group."}
+        }
+      },
+      {
+        "id": "SliderDetails",
+        "type": "object",
+        "description": "Information about the state of a slider.",
+        "properties": {
+          "stringValue": {"type": "string", "description": "The value of the slider as a string."}
         }
       },
       {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -830,7 +830,7 @@ int32 NativeViewAccessibilityWin::MSAAEvent(AccessibilityTypes::Event event) {
 int32 NativeViewAccessibilityWin::MSAARole(AccessibilityTypes::Role role) {
   switch (role) {
     case AccessibilityTypes::ROLE_ALERT:
-return ROLE_SYSTEM_ALERT;
+      return ROLE_SYSTEM_ALERT;
     case AccessibilityTypes::ROLE_APPLICATION:
       return ROLE_SYSTEM_APPLICATION;
     case AccessibilityTypes::ROLE_BUTTONDROPDOWN:
@@ -877,6 +877,8 @@ return ROLE_SYSTEM_ALERT;
       return ROLE_SYSTEM_SCROLLBAR;
     case AccessibilityTypes::ROLE_SEPARATOR:
       return ROLE_SYSTEM_SEPARATOR;
+    case AccessibilityTypes::ROLE_SLIDER:
+      return ROLE_SYSTEM_SLIDER;
     case AccessibilityTypes::ROLE_STATICTEXT:
       return ROLE_SYSTEM_STATICTEXT;
     case AccessibilityTypes::ROLE_TEXT:

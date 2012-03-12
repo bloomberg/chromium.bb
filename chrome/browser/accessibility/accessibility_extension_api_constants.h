@@ -24,6 +24,7 @@ extern const char kSelectionEndKey[];
 extern const char kCheckedKey[];
 extern const char kHasSubmenuKey[];
 extern const char kMessageKey[];
+extern const char kStringValueKey[];
 
 // Events.
 extern const char kOnWindowOpened[];
@@ -43,6 +44,7 @@ extern const char kTypeListBox[];
 extern const char kTypeMenu[];
 extern const char kTypeMenuItem[];
 extern const char kTypeRadioButton[];
+extern const char kTypeSlider[];
 extern const char kTypeTab[];
 extern const char kTypeTextBox[];
 extern const char kTypeVolume[];
