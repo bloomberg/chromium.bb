@@ -120,12 +120,16 @@ MediaStreamManager::MediaStreamManager(AudioManager* audio_manager)
 
 MediaStreamManager::~MediaStreamManager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (video_capture_manager_.get())
+    video_capture_manager_->Unregister();
+  if (audio_input_device_manager_.get())
+    audio_input_device_manager_->Unregister();
 }
 
 VideoCaptureManager* MediaStreamManager::video_capture_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!video_capture_manager_.get()) {
-    video_capture_manager_.reset(new VideoCaptureManager());
+    video_capture_manager_ = new VideoCaptureManager();
     video_capture_manager_->Register(this);
   }
   return video_capture_manager_.get();
@@ -134,8 +138,7 @@ VideoCaptureManager* MediaStreamManager::video_capture_manager() {
 AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!audio_input_device_manager_.get()) {
-    audio_input_device_manager_.reset(
-        new AudioInputDeviceManager(audio_manager_));
+    audio_input_device_manager_ =  new AudioInputDeviceManager(audio_manager_);
     audio_input_device_manager_->Register(this);
   }
   return audio_input_device_manager_.get();

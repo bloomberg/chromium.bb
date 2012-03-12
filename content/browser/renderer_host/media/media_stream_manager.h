@@ -141,8 +141,8 @@ class CONTENT_EXPORT MediaStreamManager
                         std::string* label);
 
   scoped_ptr<MediaStreamDeviceSettings> device_settings_;
-  scoped_ptr<VideoCaptureManager> video_capture_manager_;
-  scoped_ptr<AudioInputDeviceManager> audio_input_device_manager_;
+  scoped_refptr<VideoCaptureManager> video_capture_manager_;
+  scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
 
   // Keeps track of device types currently being enumerated to not enumerate
   // when not necessary.

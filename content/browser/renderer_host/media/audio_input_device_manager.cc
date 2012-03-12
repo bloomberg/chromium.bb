@@ -64,7 +64,7 @@ void AudioInputDeviceManager::EnumerateDevices() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&AudioInputDeviceManager::DevicesEnumeratedOnIOThread,
-                 base::Unretained(this),
+                 this,
                  devices));
 }
 
@@ -87,7 +87,7 @@ int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&AudioInputDeviceManager::OpenedOnIOThread,
-                                     base::Unretained(this),
+                                     this,
                                      session_id));
 
   return session_id;
@@ -112,7 +112,7 @@ void AudioInputDeviceManager::Close(int session_id) {
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&AudioInputDeviceManager::ClosedOnIOThread,
-                                     base::Unretained(this),
+                                     this,
                                      session_id));
 }
 

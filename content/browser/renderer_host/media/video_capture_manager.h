@@ -14,6 +14,7 @@
 #include <list>
 #include <map>
 
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
@@ -27,7 +28,9 @@ class VideoCaptureControllerEventHandler;
 namespace media_stream {
 
 // VideoCaptureManager opens/closes and start/stops video capture devices.
-class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
+class CONTENT_EXPORT VideoCaptureManager
+    : public base::RefCountedThreadSafe<VideoCaptureManager>,
+      public MediaStreamProvider {
  public:
   // Calling |Start| of this id will open the first device, even though open has
   // not been called. This is used to be able to use video capture devices
@@ -35,7 +38,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   enum { kStartOpenSessionId = 1 };
 
   VideoCaptureManager();
-  virtual ~VideoCaptureManager();
 
   // Implements MediaStreamProvider.
   virtual void Register(MediaStreamProviderListener* listener) OVERRIDE;
@@ -83,6 +85,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
       VideoCaptureControllerEventHandler* handler);
 
  private:
+  friend class base::RefCountedThreadSafe<VideoCaptureManager>;
+  virtual ~VideoCaptureManager();
+
   typedef std::list<VideoCaptureControllerEventHandler*> Handlers;
   struct Controller;
 

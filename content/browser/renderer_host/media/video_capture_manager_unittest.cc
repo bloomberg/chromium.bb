@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
@@ -87,7 +88,7 @@ class VideoCaptureManagerTest : public testing::Test {
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
-    vcm_.reset(new media_stream::VideoCaptureManager());
+    vcm_ = new media_stream::VideoCaptureManager();
     vcm_->UseFakeDevice();
     vcm_->Register(listener_.get());
     frame_observer_.reset(new MockFrameObserver());
@@ -118,10 +119,10 @@ class VideoCaptureManagerTest : public testing::Test {
     message_loop_->PostTask(
         FROM_HERE, base::Bind(&PostQuitOnVideoCaptureManagerThread,
                               message_loop_.get(),
-                              vcm_.get()));
+                              vcm_));
     message_loop_->Run();
   }
-  scoped_ptr<media_stream::VideoCaptureManager> vcm_;
+  scoped_refptr<media_stream::VideoCaptureManager> vcm_;
   scoped_ptr<media_stream::MockMediaStreamProviderListener> listener_;
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;

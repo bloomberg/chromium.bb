@@ -14,6 +14,7 @@
 
 #include <map>
 
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
@@ -26,7 +27,9 @@ namespace media_stream {
 
 class AudioInputDeviceManagerEventHandler;
 
-class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
+class CONTENT_EXPORT AudioInputDeviceManager
+    : public base::RefCountedThreadSafe<AudioInputDeviceManager>,
+      public MediaStreamProvider {
  public:
   // Calling Start() with this kFakeOpenSessionId will open the default device,
   // even though Open() has not been called. This is used to be able to use the
@@ -37,7 +40,6 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   static const char kInvalidDeviceId[];
 
   explicit AudioInputDeviceManager(AudioManager* audio_manager);
-  virtual ~AudioInputDeviceManager();
 
   // MediaStreamProvider implementation, called on IO thread.
   virtual void Register(MediaStreamProviderListener* listener) OVERRIDE;
@@ -54,6 +56,9 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   void Stop(int session_id);
 
  private:
+  friend class base::RefCountedThreadSafe<AudioInputDeviceManager>;
+  virtual ~AudioInputDeviceManager();
+
   // Executed on IO thread to call Listener.
   void DevicesEnumeratedOnIOThread(StreamDeviceInfoArray* devices);
   void OpenedOnIOThread(int session_id);

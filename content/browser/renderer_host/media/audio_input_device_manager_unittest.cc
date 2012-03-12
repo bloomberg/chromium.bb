@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "content/browser/browser_thread_impl.h"
@@ -106,7 +107,7 @@ class AudioInputDeviceManagerTest : public testing::Test {
                                            message_loop_.get()));
     audio_manager_.reset(AudioManager::Create());
 
-    manager_.reset(new AudioInputDeviceManager(audio_manager_.get()));
+    manager_ = new AudioInputDeviceManager(audio_manager_.get());
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get());
 
@@ -126,7 +127,7 @@ class AudioInputDeviceManagerTest : public testing::Test {
 
   scoped_ptr<MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
-  scoped_ptr<AudioInputDeviceManager> manager_;
+  scoped_refptr<AudioInputDeviceManager> manager_;
   scoped_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;
   scoped_ptr<AudioManager> audio_manager_;
 
