@@ -115,13 +115,12 @@ class BrowserCloseTest : public InProcessBrowserTest {
     DownloadManager* download_manager =
         browser->profile()->GetDownloadManager();
     scoped_ptr<DownloadTestObserver> observer(
-        new DownloadTestObserver(
-            download_manager, num_downloads,
-            DownloadItem::IN_PROGRESS,
-            true,  // Bail on select file.
-            DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
+        new DownloadTestObserverInProgress(download_manager,
+                                           num_downloads,
+                                           true));  // Bail on select file.
 
     // Set of that number of downloads.
+    size_t count_downloads = num_downloads;
     while (num_downloads--)
       ui_test_utils::NavigateToURLWithDisposition(
           browser, url, NEW_BACKGROUND_TAB,
@@ -129,6 +128,8 @@ class BrowserCloseTest : public InProcessBrowserTest {
 
     // Wait for them.
     observer->WaitForFinished();
+    EXPECT_EQ(count_downloads,
+              observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
   }
 
   // All all downloads created in CreateStalledDownloads() to

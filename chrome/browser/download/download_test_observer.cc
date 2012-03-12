@@ -19,9 +19,9 @@ using content::DownloadManager;
 // These functions take scoped_refptr's to DownloadManager because they
 // are posted to message queues, and hence may execute arbitrarily after
 // their actual posting.  Once posted, there is no connection between
-// these routines and the DownloadTestObserver class from which they came,
-// so the DownloadTestObserver's reference to the DownloadManager cannot
-// be counted on to keep the DownloadManager around.
+// these routines and the DownloadTestObserver class from which
+// they came, so the DownloadTestObserver's reference to the
+// DownloadManager cannot be counted on to keep the DownloadManager around.
 
 // Fake user click on "Accept".
 void AcceptDangerousDownload(scoped_refptr<DownloadManager> download_manager,
@@ -42,21 +42,15 @@ void DenyDangerousDownload(scoped_refptr<DownloadManager> download_manager,
 DownloadTestObserver::DownloadTestObserver(
     DownloadManager* download_manager,
     size_t wait_count,
-    DownloadItem::DownloadState download_finished_state,
     bool finish_on_select_file,
     DangerousDownloadAction dangerous_download_action)
     : download_manager_(download_manager),
       wait_count_(wait_count),
       finished_downloads_at_construction_(0),
       waiting_(false),
-      download_finished_state_(download_finished_state),
       finish_on_select_file_(finish_on_select_file),
       select_file_dialog_seen_(false),
       dangerous_download_action_(dangerous_download_action) {
-  download_manager_->AddObserver(this);  // Will call initial ModelChanged().
-  finished_downloads_at_construction_ = finished_downloads_.size();
-  EXPECT_NE(DownloadItem::REMOVING, download_finished_state)
-      << "Waiting for REMOVING is not supported.  Try COMPLETE.";
 }
 
 DownloadTestObserver::~DownloadTestObserver() {
@@ -65,6 +59,12 @@ DownloadTestObserver::~DownloadTestObserver() {
     (*it)->RemoveObserver(this);
 
   download_manager_->RemoveObserver(this);
+}
+
+void DownloadTestObserver::Init() {
+  download_manager_->AddObserver(this);  // Will call initial ModelChanged().
+  finished_downloads_at_construction_ = finished_downloads_.size();
+  states_observed_.clear();
 }
 
 void DownloadTestObserver::WaitForFinished() {
@@ -129,9 +129,8 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
     }
   }
 
-  if (download->GetState() == download_finished_state_) {
+  if (IsDownloadInFinalState(download))
     DownloadInFinalState(download);
-  }
 }
 
 void DownloadTestObserver::ModelChanged(DownloadManager* manager) {
@@ -182,14 +181,27 @@ size_t DownloadTestObserver::NumDangerousDownloadsSeen() const {
   return dangerous_downloads_seen_.size();
 }
 
+size_t DownloadTestObserver::NumDownloadsSeenInState(
+    content::DownloadItem::DownloadState state) const {
+  StateMap::const_iterator it = states_observed_.find(state);
+
+  if (it == states_observed_.end())
+    return 0;
+
+  return it->second;
+}
+
 void DownloadTestObserver::DownloadInFinalState(DownloadItem* download) {
   if (finished_downloads_.find(download) != finished_downloads_.end()) {
-    // We've already seen terminal state on this download.
+    // We've already seen the final state on this download.
     return;
   }
 
   // Record the transition.
   finished_downloads_.insert(download);
+
+  // Record the state.
+  states_observed_[download->GetState()]++;  // Initializes to 0 the first time.
 
   SignalIfFinished();
 }
@@ -197,6 +209,55 @@ void DownloadTestObserver::DownloadInFinalState(DownloadItem* download) {
 void DownloadTestObserver::SignalIfFinished() {
   if (waiting_ && IsFinished())
     MessageLoopForUI::current()->Quit();
+}
+
+DownloadTestObserverTerminal::DownloadTestObserverTerminal(
+    content::DownloadManager* download_manager,
+    size_t wait_count,
+    bool finish_on_select_file,
+    DangerousDownloadAction dangerous_download_action)
+        : DownloadTestObserver(download_manager,
+                               wait_count,
+                               finish_on_select_file,
+                               dangerous_download_action) {
+  // You can't rely on overriden virtual functions in a base class constructor;
+  // the virtual function table hasn't been set up yet.  So, we have to do any
+  // work that depends on those functions in the derived class constructor
+  // instead.  In this case, it's because of |IsDownloadInFinalState()|.
+  Init();
+}
+
+DownloadTestObserverTerminal::~DownloadTestObserverTerminal() {
+}
+
+
+bool DownloadTestObserverTerminal::IsDownloadInFinalState(
+    content::DownloadItem* download) {
+  return (download->GetState() != DownloadItem::IN_PROGRESS);
+}
+
+DownloadTestObserverInProgress::DownloadTestObserverInProgress(
+    content::DownloadManager* download_manager,
+    size_t wait_count,
+    bool finish_on_select_file)
+        : DownloadTestObserver(download_manager,
+                               wait_count,
+                               finish_on_select_file,
+                               ON_DANGEROUS_DOWNLOAD_ACCEPT) {
+  // You can't override virtual functions in a base class constructor; the
+  // virtual function table hasn't been set up yet.  So, we have to do any
+  // work that depends on those functions in the derived class constructor
+  // instead.  In this case, it's because of |IsDownloadInFinalState()|.
+  Init();
+}
+
+DownloadTestObserverInProgress::~DownloadTestObserverInProgress() {
+}
+
+
+bool DownloadTestObserverInProgress::IsDownloadInFinalState(
+    content::DownloadItem* download) {
+  return (download->GetState() == DownloadItem::IN_PROGRESS);
 }
 
 DownloadTestFlushObserver::DownloadTestFlushObserver(

@@ -13,12 +13,12 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
-// Construction of this class defines a system state, based on some number
-// of downloads being seen in a particular state + other events that
-// may occur in the download system.  That state will be recorded if it
-// occurs at any point after construction.  When that state occurs, the class
-// is considered finished.  Callers may either probe for the finished state, or
-// wait on it.
+// Detects changes to the downloads after construction.
+// Finishes when one of the following happens:
+//   - A specified number of downloads change to a terminal state (defined
+//     in derived classes).
+//   - Specific events, such as a select file dialog.
+// Callers may either probe for the finished state, or wait on it.
 //
 // TODO(rdsmith): Detect manager going down, remove pointer to
 // DownloadManager, transition to finished.  (For right now we
@@ -36,17 +36,13 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
   };
 
   // Create an object that will be considered finished when |wait_count|
-  // download items have entered state |download_finished_state|.
+  // download items have entered a terminal state.
   // If |finish_on_select_file| is true, the object will also be
   // considered finished if the DownloadManager raises a
   // SelectFileDialogDisplayed() notification.
-
-  // TODO(rdsmith): Consider rewriting the interface to take a list of events
-  // to treat as completion events.
   DownloadTestObserver(
       content::DownloadManager* download_manager,
       size_t wait_count,
-      content::DownloadItem::DownloadState download_finished_state,
       bool finish_on_select_file,
       DangerousDownloadAction dangerous_download_action);
 
@@ -55,7 +51,7 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
   // State accessors.
   bool select_file_dialog_seen() const { return select_file_dialog_seen_; }
 
-  // Wait for whatever state was specified in the constructor.
+  // Wait for the requested number of downloads to enter a terminal state.
   void WaitForFinished();
 
   // Return true if everything's happened that we're configured for.
@@ -73,8 +69,21 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
 
   size_t NumDangerousDownloadsSeen() const;
 
+  size_t NumDownloadsSeenInState(
+      content::DownloadItem::DownloadState state) const;
+
+ protected:
+  // Only to be called by derived classes' constructors.
+  virtual void Init();
+
+  // Called to see if a download item is in a final state.
+  virtual bool IsDownloadInFinalState(content::DownloadItem* download) = 0;
+
  private:
   typedef std::set<content::DownloadItem*> DownloadSet;
+
+  // Maps states to the number of times they have been encountered
+  typedef std::map<content::DownloadItem::DownloadState, size_t> StateMap;
 
   // Called when we know that a download item is in a final state.
   // Note that this is not the same as it first transitioning in to the
@@ -97,6 +106,12 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
   // on a DownloadItem, we'll stop observing it.
   DownloadSet downloads_observed_;
 
+  // The map of states to the number of times they have been observed since
+  // we started looking.
+  // Recorded at the time downloads_observed_ is recorded, but cleared in the
+  // constructor to exclude pre-existing states.
+  StateMap states_observed_;
+
   // The number of downloads to wait on completing.
   size_t wait_count_;
 
@@ -114,9 +129,6 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
   // all downloads completing.
   bool waiting_;
 
-  // The state on which to consider the DownloadItem finished.
-  content::DownloadItem::DownloadState download_finished_state_;
-
   // True if we should transition the DownloadTestObserver to finished if
   // the select file dialog comes up.
   bool finish_on_select_file_;
@@ -131,6 +143,52 @@ class DownloadTestObserver : public content::DownloadManager::Observer,
   std::set<int32> dangerous_downloads_seen_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserver);
+};
+
+class DownloadTestObserverTerminal : public DownloadTestObserver {
+ public:
+  // Create an object that will be considered finished when |wait_count|
+  // download items have entered a terminal state (any but IN_PROGRESS).
+  // If |finish_on_select_file| is true, the object will also be
+  // considered finished if the DownloadManager raises a
+  // SelectFileDialogDisplayed() notification.
+  DownloadTestObserverTerminal(
+      content::DownloadManager* download_manager,
+      size_t wait_count,
+      bool finish_on_select_file,
+      DangerousDownloadAction dangerous_download_action);
+
+  virtual ~DownloadTestObserverTerminal();
+
+ private:
+  virtual bool IsDownloadInFinalState(content::DownloadItem* download) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverTerminal);
+};
+
+// Detects changes to the downloads after construction.
+// Finishes when a specified number of downloads change to the
+// IN_PROGRESS state, or a Select File Dialog has appeared.
+// Dangerous downloads are accepted.
+// Callers may either probe for the finished state, or wait on it.
+class DownloadTestObserverInProgress : public DownloadTestObserver {
+ public:
+  // Create an object that will be considered finished when |wait_count|
+  // download items have entered state |IN_PROGRESS|.
+  // If |finish_on_select_file| is true, the object will also be
+  // considered finished if the DownloadManager raises a
+  // SelectFileDialogDisplayed() notification.
+  DownloadTestObserverInProgress(
+      content::DownloadManager* download_manager,
+      size_t wait_count,
+      bool finish_on_select_file);
+
+  virtual ~DownloadTestObserverInProgress();
+
+ private:
+  virtual bool IsDownloadInFinalState(content::DownloadItem* download) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInProgress);
 };
 
 // The WaitForFlush() method on this class returns after:

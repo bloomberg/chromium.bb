@@ -59,12 +59,14 @@ class DownloadExtensionTest : public InProcessBrowserTest {
       size_t count, DownloadManager::DownloadVector* items) {
     for (size_t i = 0; i < count; ++i) {
       scoped_ptr<DownloadTestObserver> observer(
-          CreateDownloadObserver(1, DownloadItem::IN_PROGRESS));
+          CreateInProgressDownloadObserver(1));
       GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
       ui_test_utils::NavigateToURLWithDisposition(
           browser(), slow_download_url, CURRENT_TAB,
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
       observer->WaitForFinished();
+      EXPECT_EQ(
+          1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
       // We don't expect a select file dialog.
       CHECK(!observer->select_file_dialog_seen());
     }
@@ -74,7 +76,7 @@ class DownloadExtensionTest : public InProcessBrowserTest {
 
   DownloadItem* CreateSlowTestDownload() {
     scoped_ptr<DownloadTestObserver> observer(
-        CreateDownloadObserver(1, DownloadItem::IN_PROGRESS));
+        CreateInProgressDownloadObserver(1));
     GURL slow_download_url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
     DownloadManager* manager = GetDownloadManager();
 
@@ -87,6 +89,7 @@ class DownloadExtensionTest : public InProcessBrowserTest {
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
     observer->WaitForFinished();
+    EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
     // We don't expect a select file dialog.
     if (observer->select_file_dialog_seen())
       return NULL;
@@ -108,20 +111,26 @@ class DownloadExtensionTest : public InProcessBrowserTest {
 
   void FinishPendingSlowDownloads() {
     scoped_ptr<DownloadTestObserver> observer(
-        CreateDownloadObserver(1, DownloadItem::COMPLETE));
+        CreateDownloadObserver(1));
     GURL finish_url(URLRequestSlowDownloadJob::kFinishDownloadUrl);
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), finish_url, NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     observer->WaitForFinished();
+    EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   }
 
-  DownloadTestObserver* CreateDownloadObserver(
-      size_t download_count,
-      DownloadItem::DownloadState finished_state) {
-    return new DownloadTestObserver(
-        GetDownloadManager(), download_count, finished_state, true,
+  DownloadTestObserver* CreateDownloadObserver(size_t download_count) {
+    return new DownloadTestObserverTerminal(
+        GetDownloadManager(), download_count, true,
         DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+  }
+
+  DownloadTestObserver* CreateInProgressDownloadObserver(
+      size_t download_count) {
+    return new DownloadTestObserverInProgress(GetDownloadManager(),
+                                              download_count,
+                                              true);
   }
 
   bool RunFunction(UIThreadExtensionFunction* function,
