@@ -23,6 +23,34 @@
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/codec/png_codec.h"
 
+namespace {
+
+// Checks whether the given URL should count as one of the "current" pages.
+// Returns true for all pages except dev tools and settings.
+bool ShouldAddPage(const GURL& url) {
+  if (url.is_empty())
+    return false;
+
+  if (url.SchemeIs(chrome::kChromeDevToolsScheme))
+    return false;
+
+  if (url.SchemeIs(chrome::kChromeUIScheme)) {
+    if (url.host() == chrome::kChromeUISettingsHost)
+      return false;
+
+    // For a settings page, the path will start with "/settings" not "settings"
+    // so find() will return 1, not 0.
+    if (url.host() == chrome::kChromeUIUberHost &&
+        url.path().find(chrome::kChromeUISettingsHost) == 1) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
+
 struct CustomHomePagesTableModel::Entry {
   Entry() : title_handle(0) {}
 
@@ -154,14 +182,8 @@ void CustomHomePagesTableModel::SetToCurrentlyOpenPages() {
 
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
       const GURL url = browser->GetWebContentsAt(tab_index)->GetURL();
-      // TODO(tbreisacher) remove kChromeUISettingsHost  once options is deleted
-      // and replaced by options2
-      if (!url.is_empty() &&
-          !(url.SchemeIs(chrome::kChromeUIScheme) &&
-            (url.host() == chrome::kChromeUISettingsHost ||
-             url.host() == chrome::kChromeUIUberHost))) {
+      if (ShouldAddPage(url))
         Add(add_index++, url);
-      }
     }
   }
 }
