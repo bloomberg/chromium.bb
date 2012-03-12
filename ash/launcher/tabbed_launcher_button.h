@@ -18,13 +18,23 @@ class MultiAnimation;
 }
 
 namespace ash {
+
+class LauncherItem;
+
 namespace internal {
 
 // Button used for items on the launcher corresponding to tabbed windows.
 class TabbedLauncherButton : public LauncherButton {
  public:
+  // Indicates if this button is incognito or not.
+  enum IncognitoState {
+    STATE_INCOGNITO,
+    STATE_NOT_INCOGNITO,
+  };
+
   static TabbedLauncherButton* Create(views::ButtonListener* listener,
-                                      LauncherButtonHost* host);
+                                      LauncherButtonHost* host,
+                                      IncognitoState is_incognito);
   virtual ~TabbedLauncherButton();
 
   // Notification that the images are about to change. Kicks off an animation.
@@ -35,7 +45,8 @@ class TabbedLauncherButton : public LauncherButton {
 
  protected:
   TabbedLauncherButton(views::ButtonListener* listener,
-                       LauncherButtonHost* host);
+                       LauncherButtonHost* host,
+                       IncognitoState is_incognito);
   // View override.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
@@ -47,7 +58,7 @@ class TabbedLauncherButton : public LauncherButton {
   class IconView : public LauncherButton::IconView,
                    public ui::AnimationDelegate {
    public:
-    explicit IconView(TabbedLauncherButton* host);
+    IconView(TabbedLauncherButton* host, IncognitoState is_incognito);
     virtual ~IconView();
 
     // ui::AnimationDelegateImpl overrides:
@@ -78,8 +89,10 @@ class TabbedLauncherButton : public LauncherButton {
 
     // Background images. Which one is chosen depends on the type of the window.
     static SkBitmap* browser_image_;
+    static SkBitmap* incognito_browser_image_;
     // TODO[dave] implement panel specific image.
     static SkBitmap* browser_panel_image_;
+    static SkBitmap* incognito_browser_panel_image_;
 
     DISALLOW_COPY_AND_ASSIGN(IconView);
   };
@@ -87,6 +100,10 @@ class TabbedLauncherButton : public LauncherButton {
   IconView* tabbed_icon_view() {
     return static_cast<IconView*>(icon_view());
   }
+
+  // Indicates if the tabbed browser associated with this is an incognito
+  // window.
+  const IncognitoState is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedLauncherButton);
 };

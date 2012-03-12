@@ -332,7 +332,13 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
   views::View* view = NULL;
   switch (item.type) {
     case TYPE_TABBED: {
-      TabbedLauncherButton* button = TabbedLauncherButton::Create(this, this);
+      TabbedLauncherButton* button =
+          TabbedLauncherButton::Create(
+              this,
+              this,
+              item.is_incognito ?
+                  TabbedLauncherButton::STATE_INCOGNITO :
+                  TabbedLauncherButton::STATE_NOT_INCOGNITO);
       button->SetTabImage(item.image);
       button->set_context_menu_controller(this);
       ReflectItemStatus(item, button);
