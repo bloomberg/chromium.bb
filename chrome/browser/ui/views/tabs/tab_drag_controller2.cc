@@ -611,13 +611,26 @@ void TabDragController2::ContinueDragging() {
       // Hide it so users don't see this.
       browser_view->GetWidget()->Hide();
       browser_view->GetWidget()->EndMoveLoop();
+
+      // Ideally we would always swap the tabs now, but on windows it seems that
+      // running the move loop implicitly activates the window when done,
+      // leading to all sorts of flicker. So, on windows, instead we process
+      // the move after the loop completes. But on chromeos, we can do tab
+      // swapping now to avoid the tab flashing issue(crbug.com/116329).
+#if defined(OS_CHROMEOS)
+      is_dragging_window_ = false;
+      Detach();
+      gfx::Point screen_point(GetCursorScreenPoint());
+      Attach(target_tabstrip, screen_point);
+      // Move the tabs into position.
+      MoveAttached(screen_point);
+      attached_tabstrip_->GetWidget()->Activate();
+#else
       tab_strip_to_attach_to_after_exit_ = target_tabstrip;
+#endif
+
       waiting_for_run_loop_to_exit_ = true;
       end_run_loop_behavior_ = END_RUN_LOOP_CONTINUE_DRAGGING;
-      // Ideally we would swap the tabs now, but on windows it seems that
-      // running the move loop implicitly activates the window when done,
-      // leading to all sorts of flicker. So, instead we process the move after
-      // the loop completes.
       return;
     }
     Detach();
