@@ -32,8 +32,8 @@
     }
 
     function run_detached_dom_test2() {
-      // Detach the dom tree that was just created.
-      document.body.removeChild(document.body.firstChild);
+      // Detach the dom tree that was just created (at child index 1).
+      document.body.removeChild(document.body.childNodes[1]);
       setTimeout('run_detached_dom_test()', 500)
     }
 

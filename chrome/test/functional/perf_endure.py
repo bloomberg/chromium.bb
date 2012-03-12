@@ -250,20 +250,19 @@ class ChromeEndureControlTest(ChromeEndureBaseTest):
   _webapp_name = 'Control'
   _tab_title_substring = 'Chrome Endure Control Test'
 
-  def testControlAttachDetachDOMTree(self):
-    """Continually attach and detach a DOM tree from a basic document."""
-    test_description = 'AttachDetachDOMTree'
-
-    url = self.GetHttpURLForDataPath('chrome_endure', 'endurance_control.html')
-    self.NavigateToURL(url)
+  # TODO(dennisjeffrey): Make this function available to the other Chrome Endure
+  # tests so that we can remove duplicated code in those other tests as well.
+  # Ideally, tests shouldn't have knowledge about the details of how the test
+  # harness runs; the only main difference between the tests is that they
+  # navigate to different URLs, and perform different scenarios on them.
+  def _RunControlTest(self, test_description, data_file_url, do_scenario):
+    """Runs a general control test."""
+    self.NavigateToURL(data_file_url)
     loaded_tab_title = self.GetActiveTabTitle()
     self.assertTrue(self._tab_title_substring in loaded_tab_title,
                     msg='Loaded tab title does not contain "%s": "%s"' %
                         (self._tab_title_substring, loaded_tab_title))
 
-    # This test performs no interaction with the webpage.  It simply sleeps
-    # and periodically checks to see whether it's time to take performance
-    # measurements.
     self._test_start_time = time.time()
     last_perf_stats_time = time.time()
     self._GetPerformanceStats(self._webapp_name, test_description,
@@ -278,15 +277,51 @@ class ChromeEndureControlTest(ChromeEndureBaseTest):
                                   self._tab_title_substring)
 
       if iteration_num % 10 == 0:
-        remaining_time = self._test_length_sec - (
-                             time.time() - self._test_start_time)
+        remaining_time = self._test_length_sec - (time.time() -
+                                                  self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
-      time.sleep(5)
+      do_scenario()
 
     self._GetPerformanceStats(self._webapp_name, test_description,
                               self._tab_title_substring)
+
+  def testControlAttachDetachDOMTree(self):
+    """Continually attach and detach a DOM tree from a basic document."""
+    test_description = 'AttachDetachDOMTree'
+    url = self.GetHttpURLForDataPath('chrome_endure', 'endurance_control.html')
+
+    def scenario():
+      # This test performs no interaction with the webpage.  It simply sleeps
+      # and periodically checks to see whether it's time to take performance
+      # measurements.
+      time.sleep(5)
+
+    self._RunControlTest(test_description, url, scenario)
+
+
+  def testControlAttachDetachDOMTreeWebDriver(self):
+    """Use WebDriver to attach and detach a DOM tree from a basic document."""
+    test_description = 'AttachDetachDOMTreeWebDriver'
+    url = self.GetHttpURLForDataPath('chrome_endure',
+                                     'endurance_control_webdriver.html')
+
+    driver = self.NewWebDriver()
+    wait = WebDriverWait(driver, timeout=60)
+
+    def scenario(driver, wait):
+      # Interact with the control test webpage for the duration of the test.
+      # Here, we repeat the following sequence of interactions: click the
+      # "attach" button to attach a large DOM tree (with event listeners) to the
+      # document, wait half a second, click "detach" to detach the DOM tree from
+      # the document, wait half a second.
+      self._ClickElementByXpath(driver, wait, 'id("attach")')
+      time.sleep(0.5)
+      self._ClickElementByXpath(driver, wait, 'id("detach")')
+      time.sleep(0.5)
+
+    self._RunControlTest(test_description, url, lambda: scenario(driver, wait))
 
 
 class ChromeEndureGmailTest(ChromeEndureBaseTest):
@@ -362,8 +397,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
                                   self._tab_title_substring)
 
       if iteration_num % 10 == 0:
-        remaining_time = self._test_length_sec - (
-                             time.time() - self._test_start_time)
+        remaining_time = self._test_length_sec - (time.time() -
+                                                  self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
@@ -422,8 +457,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
                                   self._tab_title_substring)
 
       if iteration_num % 10 == 0:
-        remaining_time = self._test_length_sec - (
-                             time.time() - self._test_start_time)
+        remaining_time = self._test_length_sec - (time.time() -
+                                                  self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
@@ -483,8 +518,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
                                   self._tab_title_substring)
 
       if iteration_num % 10 == 0:
-        remaining_time = self._test_length_sec - (
-                             time.time() - self._test_start_time)
+        remaining_time = self._test_length_sec - (time.time() -
+                                                  self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
@@ -541,8 +576,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
                                   self._tab_title_substring)
 
       if iteration_num % 10 == 0:
-        remaining_time = self._test_length_sec - (
-                             time.time() - self._test_start_time)
+        remaining_time = self._test_length_sec - (time.time() -
+                                                  self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
@@ -608,8 +643,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
                                   self._tab_title_substring)
 
       if iteration_num % 10 == 0:
-        remaining_time = self._test_length_sec - (
-                             time.time() - self._test_start_time)
+        remaining_time = self._test_length_sec - (time.time() -
+                                                  self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
@@ -695,8 +730,8 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
                                   self._tab_title_substring)
 
       if iteration_num % 10 == 0:
-        remaining_time = self._test_length_sec - (
-                             time.time() - self._test_start_time)
+        remaining_time = self._test_length_sec - (time.time() -
+                                                  self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
@@ -774,8 +809,8 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
                                   self._tab_title_substring)
 
       if iteration_num % 10 == 0:
-        remaining_time = self._test_length_sec - (
-                             time.time() - self._test_start_time)
+        remaining_time = self._test_length_sec - (time.time() -
+                                                  self._test_start_time)
         logging.info('Chrome interaction #%d. Time remaining in test: %d sec.' %
                      (iteration_num, remaining_time))
 
