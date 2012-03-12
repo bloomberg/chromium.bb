@@ -296,10 +296,8 @@ global_handler(struct wl_display *display, uint32_t id,
 	}
 }
 
-static const GOptionEntry option_entries[] = {
-	{ "demo", 0, 0, G_OPTION_ARG_NONE, &demo_mode,
-		"Run as a regular application, not a screensaver.", NULL },
-	{ NULL }
+static const struct weston_option wscreensaver_options[] = {
+	{ WESTON_OPTION_BOOLEAN, "demo", 0, &demo_mode },
 };
 
 int main(int argc, char *argv[])
@@ -309,7 +307,10 @@ int main(int argc, char *argv[])
 
 	init_frand();
 
-	d = display_create(&argc, &argv, option_entries);
+	argc = parse_options(wscreensaver_options,
+			     ARRAY_LENGTH(wscreensaver_options), argc, argv);
+
+	d = display_create(argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return EXIT_FAILURE;

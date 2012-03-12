@@ -2362,10 +2362,8 @@ terminal_run(struct terminal *terminal, const char *path)
 	return 0;
 }
 
-static const GOptionEntry option_entries[] = {
-	{ "fullscreen", 'f', 0, G_OPTION_ARG_NONE,
-	  &option_fullscreen, "Run in fullscreen mode" },
-	{ NULL }
+static const struct weston_option terminal_options[] = {
+	{ WESTON_OPTION_BOOLEAN, "fullscreen", 'f', &option_fullscreen },
 };
 
 int main(int argc, char *argv[])
@@ -2374,7 +2372,10 @@ int main(int argc, char *argv[])
 	struct terminal *terminal;
 	const char *shell;
 
-	d = display_create(&argc, &argv, option_entries);
+	argc = parse_options(terminal_options,
+			     ARRAY_LENGTH(terminal_options), argc, argv);
+
+	d = display_create(argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

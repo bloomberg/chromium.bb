@@ -24,9 +24,9 @@
 #define _WINDOW_H_
 
 #include <xkbcommon/xkbcommon.h>
-#include <glib.h>
 #include <wayland-client.h>
 #include <cairo.h>
+#include "../shared/config-parser.h"
 
 struct window;
 struct widget;
@@ -47,7 +47,7 @@ struct rectangle {
 };
 
 struct display *
-display_create(int *argc, char **argv[], const GOptionEntry *option_entries);
+display_create(int argc, char *argv[]);
 
 void
 display_destroy(struct display *display);

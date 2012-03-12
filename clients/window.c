@@ -231,14 +231,10 @@ const char *option_xkb_layout = "us";
 const char *option_xkb_variant = "";
 const char *option_xkb_options = "";
 
-static const GOptionEntry xkb_option_entries[] = {
-	{ "xkb-layout", 0, 0, G_OPTION_ARG_STRING,
-	  &option_xkb_layout, "XKB Layout" },
-	{ "xkb-variant", 0, 0, G_OPTION_ARG_STRING,
-	  &option_xkb_variant, "XKB Variant" },
-	{ "xkb-options", 0, 0, G_OPTION_ARG_STRING,
-	  &option_xkb_options, "XKB Options" },
-	{ NULL }
+static const struct weston_option xkb_options[] = {
+	{ WESTON_OPTION_STRING, "xkb-layout", 0, &option_xkb_layout },
+	{ WESTON_OPTION_STRING, "xkb-variant", 0, &option_xkb_variant },
+	{ WESTON_OPTION_STRING, "xkb-options", 0, &option_xkb_options },
 };
 
 static const cairo_user_data_key_t surface_data_key;
@@ -2921,32 +2917,14 @@ handle_display_data(struct task *task, uint32_t events)
 }
 
 struct display *
-display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
+display_create(int argc, char *argv[])
 {
 	struct display *d;
-	GOptionContext *context;
-	GOptionGroup *xkb_option_group;
-	GError *error;
 
 	g_type_init();
 
-	context = g_option_context_new(NULL);
-	if (option_entries)
-		g_option_context_add_main_entries(context, option_entries, "Wayland View");
-
-	xkb_option_group = g_option_group_new("xkb",
-					      "Keyboard options",
-					      "Show all XKB options",
-					      NULL, NULL);
-	g_option_group_add_entries(xkb_option_group, xkb_option_entries);
-	g_option_context_add_group (context, xkb_option_group);
-
-	if (!g_option_context_parse(context, argc, argv, &error)) {
-		fprintf(stderr, "option parsing failed: %s\n", error->message);
-		exit(EXIT_FAILURE);
-	}
-
-        g_option_context_free(context);
+	argc = parse_options(xkb_options,
+			     ARRAY_LENGTH(xkb_options), argc, argv);
 
 	d = malloc(sizeof *d);
 	if (d == NULL)

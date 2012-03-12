@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 	struct display *d;
 	struct timeval tv;
 
-	d = display_create(&argc, &argv, NULL);
+	d = display_create(argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

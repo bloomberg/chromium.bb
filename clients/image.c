@@ -220,17 +220,13 @@ image_create(struct display *display, const char *filename)
 	return image;
 }
 
-static const GOptionEntry option_entries[] = {
-	{ NULL }
-};
-
 int
 main(int argc, char *argv[])
 {
 	struct display *d;
 	int i;
 
-	d = display_create(&argc, &argv, option_entries);
+	d = display_create(argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

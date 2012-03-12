@@ -42,15 +42,12 @@
 #include <math.h>
 #include <linux/input.h>
 #include <dlfcn.h>
-#include <getopt.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <execinfo.h>
 
 #include <wayland-server.h>
 #include "compositor.h"
-
-static const char *option_socket_name = NULL;
 
 static struct wl_list child_process_list;
 static jmp_buf segv_jmp_buf;
@@ -2460,57 +2457,28 @@ int main(int argc, char *argv[])
 	struct wl_event_source *signals[4];
 	struct wl_event_loop *loop;
 	struct sigaction segv_action;
-	int o, xserver = 0;
 	void *shell_module, *backend_module;
 	int (*shell_init)(struct weston_compositor *ec);
 	struct weston_compositor
-		*(*backend_init)(struct wl_display *display, char *options);
-	char *backend = NULL;
-	char *backend_options = "";
-	char *shell = NULL;
-	char *p;
-	int option_idle_time = 300;
+		*(*backend_init)(struct wl_display *display,
+				 int argc, char *argv[]);
 	int i;
+	char *backend = NULL;
+	char *shell = NULL;
+	int32_t idle_time = 300;
+	int32_t xserver;
+	char *socket_name = NULL;
 
-	static const char opts[] = "B:b:o:S:i:s:x";
-	static const struct option longopts[ ] = {
-		{ "backend", 1, NULL, 'B' },
-		{ "backend-options", 1, NULL, 'o' },
-		{ "socket", 1, NULL, 'S' },
-		{ "idle-time", 1, NULL, 'i' },
-		{ "shell", 1, NULL, 's' },
-		{ "xserver", 0, NULL, 'x' },
-		{ NULL, }
+	const struct weston_option core_options[] = {
+		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
+		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
+		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
+		{ WESTON_OPTION_STRING, "shell", 's', &shell },
+		{ WESTON_OPTION_BOOLEAN, "xserver", 0, &xserver },
 	};
 
-	while (o = getopt_long(argc, argv, opts, longopts, &o), o > 0) {
-		switch (o) {
-		case 'B':
-			backend = optarg;
-			break;
-		case 'o':
-			backend_options = optarg;
-			break;
-		case 'S':
-			option_socket_name = optarg;
-			break;
-		case 'i':
-			option_idle_time = strtol(optarg, &p, 0);
-			if (*p != '\0') {
-				fprintf(stderr,
-					"invalid idle time option: %s\n",
-					optarg);
-				exit(EXIT_FAILURE);
-			}
-			break;
-		case 's':
-			shell = optarg;
-			break;
-		case 'x':
-			xserver = 1;
-			break;
-		}
-	}
+	argc = parse_options(core_options,
+			     ARRAY_LENGTH(core_options), argc, argv);
 
 	display = wl_display_create();
 
@@ -2553,14 +2521,19 @@ int main(int argc, char *argv[])
 	if (!shell_init)
 		exit(EXIT_FAILURE);
 
-	ec = backend_init(display, backend_options);
+	ec = backend_init(display, argc, argv);
 	if (ec == NULL) {
 		fprintf(stderr, "failed to create compositor\n");
 		exit(EXIT_FAILURE);
 	}
 
-	ec->option_idle_time = option_idle_time;
-	ec->idle_time = option_idle_time;
+	for (i = 1; argv[i]; i++)
+		fprintf(stderr, "unhandled option: %s\n", argv[i]);
+	if (argv[1])
+		exit(EXIT_FAILURE);
+
+	ec->option_idle_time = idle_time;
+	ec->idle_time = idle_time;
 
 #ifdef BUILD_XSERVER_LAUNCHER
 	if (xserver)
@@ -2570,7 +2543,7 @@ int main(int argc, char *argv[])
 	if (shell_init(ec) < 0)
 		exit(EXIT_FAILURE);
 
-	if (wl_display_add_socket(display, option_socket_name)) {
+	if (wl_display_add_socket(display, socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
 	}

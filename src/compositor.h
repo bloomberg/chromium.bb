@@ -34,6 +34,7 @@
 #include <EGL/eglext.h>
 
 #include "matrix.h"
+#include "../shared/config-parser.h"
 
 struct weston_transform {
 	struct weston_matrix matrix;
@@ -551,5 +552,8 @@ weston_surface_set_color(struct weston_surface *surface,
 
 void
 weston_surface_destroy(struct weston_surface *surface);
+
+struct weston_compositor *
+backend_init(struct wl_display *display, int argc, char *argv[]);
 
 #endif

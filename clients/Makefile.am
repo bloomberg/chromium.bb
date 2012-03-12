@@ -57,8 +57,9 @@ libtoytoolkit_a_SOURCES =			\
 	cairo-util.c				\
 	cairo-util.h
 
-toolkit_libs =					\
-	libtoytoolkit.a				\
+toolkit_libs =						\
+	libtoytoolkit.a					\
+	../shared/libconfig-parser.la			\
 	$(CLIENT_LIBS) $(CAIRO_EGL_LIBS) -lrt -lm
 
 flower_SOURCES = flower.c

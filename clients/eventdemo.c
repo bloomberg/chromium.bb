@@ -315,36 +315,20 @@ eventdemo_create(struct display *d)
 }
 /**
  * \brief command line options for eventdemo
- *
- * see
- * http://developer.gimp.org/api/2.0/glib/glib-Commandline-option-parser.html
  */
-static const GOptionEntry option_entries[] = {
-	{"title", 0, 0, G_OPTION_ARG_STRING,
-	 &title, "Set the window title to TITLE", "TITLE"},
-	{"width", 'w', 0, G_OPTION_ARG_INT,
-	 &width, "Set the window's width to W", "W"},
-	{"height", 'h', 0, G_OPTION_ARG_INT,
-	 &height, "Set the window's height to H", "H"},
-	{"maxwidth", 0, 0, G_OPTION_ARG_INT,
-	 &width_max, "Set the window's maximum width to W", "W"},
-	{"maxheight", 0, 0, G_OPTION_ARG_INT,
-	 &height_max, "Set the window's maximum height to H", "H"},
-	{"noborder", 'b', 0, G_OPTION_ARG_NONE,
-	 &noborder, "Don't draw window borders", 0},
-	{"log-redraw", 0, 0, G_OPTION_ARG_NONE,
-	 &log_redraw, "Log redraw events to stdout", 0},
-	{"log-resize", 0, 0, G_OPTION_ARG_NONE,
-	 &log_resize, "Log resize events to stdout", 0},
-	{"log-focus", 0, 0, G_OPTION_ARG_NONE,
-	 &log_focus, "Log keyboard focus events to stdout", 0},
-	{"log-key", 0, 0, G_OPTION_ARG_NONE,
-	 &log_key, "Log key events to stdout", 0},
-	{"log-button", 0, 0, G_OPTION_ARG_NONE,
-	 &log_button, "Log button events to stdout", 0},
-	{"log-motion", 0, 0, G_OPTION_ARG_NONE,
-	 &log_motion, "Log motion events to stdout", 0},
-	{NULL}
+static const struct weston_option eventdemo_options[] = {
+	{ WESTON_OPTION_STRING, "title", 0, &title },
+	{ WESTON_OPTION_INTEGER, "width", 'w', &width },
+	{ WESTON_OPTION_INTEGER, "height", 'h', &height },
+	{ WESTON_OPTION_INTEGER, "max-width", 0, &width_max },
+	{ WESTON_OPTION_INTEGER, "max-height", 0, &height_max },
+	{ WESTON_OPTION_BOOLEAN, "no-border", 'b', &noborder },
+	{ WESTON_OPTION_BOOLEAN, "log-redraw", '0', &log_redraw },
+	{ WESTON_OPTION_BOOLEAN, "log-resize", '0', &log_resize },
+	{ WESTON_OPTION_BOOLEAN, "log-focus", '0', &log_focus },
+	{ WESTON_OPTION_BOOLEAN, "log-key", '0', &log_key },
+	{ WESTON_OPTION_BOOLEAN, "log-button", '0', &log_button },
+	{ WESTON_OPTION_BOOLEAN, "log-motion", '0', &log_motion },
 };
 
 /**
@@ -357,8 +341,11 @@ main(int argc, char *argv[])
 	struct display *d;
 	struct eventdemo *e;
 
+	argc = parse_options(eventdemo_options,
+			     ARRAY_LENGTH(eventdemo_options), argc, argv);
+
 	/* Connect to the display and have the arguments parsed */
-	d = display_create(&argc, &argv, option_entries);
+	d = display_create(argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

@@ -817,36 +817,19 @@ x11_compositor_create(struct wl_display *display,
 	return &c->base;
 }
 
-struct weston_compositor *
-backend_init(struct wl_display *display, char *options);
-
 WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, char *options)
+backend_init(struct wl_display *display, int argc, char *argv[])
 {
-	int width = 1024, height = 640, fullscreen = 0, count = 1, i;
-	char *p, *value;
+	int width = 1024, height = 640, fullscreen = 0, count = 1;
 
-	static char * const tokens[] = {
-		"width", "height", "fullscreen", "output-count", NULL
+	const struct weston_option x11_options[] = {
+		{ WESTON_OPTION_INTEGER, "width", 0, &width },
+		{ WESTON_OPTION_INTEGER, "height", 0, &height },
+		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &fullscreen },
+		{ WESTON_OPTION_INTEGER, "output-count", 0, &count },
 	};
-	
-	p = options;
-	while (i = getsubopt(&p, tokens, &value), i != -1) {
-		switch (i) {
-		case 0:
-			width = strtol(value, NULL, 0);
-			break;
-		case 1:
-			height = strtol(value, NULL, 0);
-			break;
-		case 2:
-			fullscreen = 1;
-			break;
-		case 3:
-			count = strtol(value, NULL, 0);
-			break;
-		}
-	}
+
+	parse_options(x11_options, ARRAY_LENGTH(x11_options), argc, argv);
 
 	return x11_compositor_create(display,
 				     width, height, count, fullscreen);

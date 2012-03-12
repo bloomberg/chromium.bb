@@ -51,5 +51,23 @@ parse_config_file(const char *path,
 char *
 config_file_path(const char *name);
 
+enum weston_option_type {
+	WESTON_OPTION_INTEGER,
+	WESTON_OPTION_UNSIGNED_INTEGER,
+	WESTON_OPTION_STRING,
+	WESTON_OPTION_BOOLEAN,
+};
+
+struct weston_option {
+	enum weston_option_type type;
+	const char *name;
+	int short_name;
+	void *data;
+};
+
+int
+parse_options(const struct weston_option *options,
+	      int count, int argc, char *argv[]);
+
 #endif /* CONFIGPARSER_H */
 

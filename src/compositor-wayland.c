@@ -721,31 +721,20 @@ wayland_compositor_create(struct wl_display *display,
 	return &c->base;
 }
 
-struct weston_compositor *
-backend_init(struct wl_display *display, char *options);
-
 WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, char *options)
+backend_init(struct wl_display *display, int argc, char *argv[])
 {
-	int width = 1024, height = 640, i;
-	char *p, *value, *display_name = NULL;
+	int width = 1024, height = 640;
+	char *display_name = NULL;
 
-	static char * const tokens[] = { "width", "height", "display", NULL };
-	
-	p = options;
-	while (i = getsubopt(&p, tokens, &value), i != -1) {
-		switch (i) {
-		case 0:
-			width = strtol(value, NULL, 0);
-			break;
-		case 1:
-			height = strtol(value, NULL, 0);
-			break;
-		case 2:
-			display_name = strdup(value);
-			break;
-		}
-	}
+	const struct weston_option wayland_options[] = {
+		{ WESTON_OPTION_INTEGER, "width", 0, &width },
+		{ WESTON_OPTION_INTEGER, "height", 0, &height },
+		{ WESTON_OPTION_STRING, "display", 0, &display_name },
+	};
+
+	parse_options(wayland_options,
+		      ARRAY_LENGTH(wayland_options), argc, argv);
 
 	return wayland_compositor_create(display, width, height, display_name);
 }

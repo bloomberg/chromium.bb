@@ -663,34 +663,19 @@ wfd_compositor_create(struct wl_display *display,
 	return &ec->base;
 }
 
-struct weston_compositor *
-backend_init(struct wl_display *display, char *options);
-
 WL_EXPORT struct weston_compositor *
-backend_init(struct wl_display *display, char *options)
+backend_init(struct wl_display *display, int argc, char *argv[])
 {
-	int connector = 0, i;
+	int connector = 0, tty = 0;
 	const char *seat;
-	char *p, *value;
-	int tty = 0;
 
-	static char * const tokens[] = { "connector", "seat", "tty", NULL };
-	
-	p = options;
-	seat = default_seat;
-	while (i = getsubopt(&p, tokens, &value), i != -1) {
-		switch (i) {
-		case 0:
-			connector = strtol(value, NULL, 0);
-			break;
-		case 1:
-			seat = value;
-			break;
-		case 2:
-			tty = strtol(value, NULL, 0);
-			break;
-		}
-	}
+	const struct weston_option wfd_options[] = {
+		{ WESTON_OPTION_INTEGER, "connector", 0, &connector },
+		{ WESTON_OPTION_STRING, "seat", 0, &seat },
+		{ WESTON_OPTION_INTEGER, "tty", 0, &tty },
+	};
+
+	parse_options(&wfd_options, ARRAY_LENGTH(wfd_options), argc, argv);
 
 	return wfd_compositor_create(display, connector, seat, tty);
 }

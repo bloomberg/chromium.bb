@@ -252,10 +252,8 @@ view_create(struct display *display,
 
 static int option_fullscreen;
 
-static const GOptionEntry option_entries[] = {
-	{ "fullscreen", 'f', 0, G_OPTION_ARG_NONE,
-	  &option_fullscreen, "Run in fullscreen mode" },
-	{ NULL }
+static const struct weston_option view_options[] = {
+	{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &option_fullscreen },
 };
 
 int
@@ -264,7 +262,10 @@ main(int argc, char *argv[])
 	struct display *d;
 	int i;
 
-	d = display_create(&argc, &argv, option_entries);
+	argc = parse_options(view_options,
+			     ARRAY_LENGTH(view_options), argc, argv);
+
+	d = display_create(argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
