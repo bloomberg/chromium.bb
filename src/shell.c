@@ -1840,6 +1840,9 @@ switcher_next(struct switcher *switcher)
 	if (next == NULL)
 		next = first;
 
+	if (next == NULL)
+		return;
+
 	wl_list_remove(&switcher->listener.link);
 	wl_list_insert(next->surface.resource.destroy_listener_list.prev,
 		       &switcher->listener.link);
@@ -1871,7 +1874,8 @@ switcher_destroy(struct switcher *switcher, uint32_t time)
 		weston_surface_damage(surface);
 	}
 
-	activate(compositor->shell, switcher->current, device, time);
+	if (switcher->current)
+		activate(compositor->shell, switcher->current, device, time);
 	wl_list_remove(&switcher->listener.link);
 	wl_input_device_end_keyboard_grab(&device->input_device, time);
 	free(switcher);
