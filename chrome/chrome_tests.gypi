@@ -2436,6 +2436,15 @@
           'sources!': [
             'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/shell_integration_unittest.cc',
+
+            # No service process (which also requires multiprocess lock)
+            'common/multi_process_lock_unittest.cc',
+            'common/service_process_util_unittest.cc',
+
+            # Sync setup uses native ui.
+            'browser/sync/sync_setup_wizard_unittest.cc',
+            'browser/ui/webui/sync_setup_handler_unittest.cc',
+
             'browser/ui/window_sizer_unittest.cc',
           ],
           'sources/': [
