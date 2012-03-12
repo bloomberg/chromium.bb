@@ -178,7 +178,7 @@ static bool PaintViewIntoCanvas(WebView* view,
 // bitmap are all the same brightness.
 static double CalculateBoringScore(SkBitmap* bitmap) {
   int histogram[256] = {0};
-  color_utils::BuildLumaHistogram(bitmap, histogram);
+  color_utils::BuildLumaHistogram(*bitmap, histogram);
 
   int color_count = *std::max_element(histogram, histogram + 256);
   int pixel_count = bitmap->width() * bitmap->height();

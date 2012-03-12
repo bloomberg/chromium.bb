@@ -24,7 +24,7 @@ typedef testing::Test ThumbnailGeneratorTest;
 
 TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_Empty) {
   SkBitmap bitmap;
-  EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(&bitmap));
+  EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(bitmap));
 }
 
 TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_SingleColor) {
@@ -36,7 +36,7 @@ TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_SingleColor) {
   SkBitmap bitmap =
       skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
   // The thumbnail should deserve the highest boring score.
-  EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(&bitmap));
+  EXPECT_DOUBLE_EQ(1.0, ThumbnailGenerator::CalculateBoringScore(bitmap));
 }
 
 TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_TwoColors) {
@@ -54,7 +54,7 @@ TEST_F(ThumbnailGeneratorTest, CalculateBoringScore_TwoColors) {
   ASSERT_EQ(kSize.width(), bitmap.width());
   ASSERT_EQ(kSize.height(), bitmap.height());
   // The thumbnail should be less boring because two colors are used.
-  EXPECT_DOUBLE_EQ(0.5, ThumbnailGenerator::CalculateBoringScore(&bitmap));
+  EXPECT_DOUBLE_EQ(0.5, ThumbnailGenerator::CalculateBoringScore(bitmap));
 }
 
 TEST_F(ThumbnailGeneratorTest, GetClippedBitmap_TallerThanWide) {

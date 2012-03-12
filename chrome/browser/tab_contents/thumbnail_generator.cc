@@ -375,14 +375,14 @@ void ThumbnailGenerator::WebContentsDisconnected(WebContents* contents) {
   }
 }
 
-double ThumbnailGenerator::CalculateBoringScore(SkBitmap* bitmap) {
-  if (bitmap->isNull() || bitmap->empty())
+double ThumbnailGenerator::CalculateBoringScore(const SkBitmap& bitmap) {
+  if (bitmap.isNull() || bitmap.empty())
     return 1.0;
   int histogram[256] = {0};
   color_utils::BuildLumaHistogram(bitmap, histogram);
 
   int color_count = *std::max_element(histogram, histogram + 256);
-  int pixel_count = bitmap->width() * bitmap->height();
+  int pixel_count = bitmap.width() * bitmap.height();
   return static_cast<double>(color_count) / pixel_count;
 }
 
@@ -457,7 +457,7 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
 }
 
 void ThumbnailGenerator::UpdateThumbnail(
-    WebContents* web_contents, SkBitmap thumbnail,
+    WebContents* web_contents, const SkBitmap& thumbnail,
     const ThumbnailGenerator::ClipResult& clip_result) {
 
   Profile* profile =
@@ -470,7 +470,7 @@ void ThumbnailGenerator::UpdateThumbnail(
   ThumbnailScore score;
   score.at_top =
       (web_contents->GetRenderViewHost()->GetLastScrollOffset().y() == 0);
-  score.boring_score = ThumbnailGenerator::CalculateBoringScore(&thumbnail);
+  score.boring_score = ThumbnailGenerator::CalculateBoringScore(thumbnail);
   score.good_clipping =
       (clip_result == ThumbnailGenerator::kTallerThanWide ||
        clip_result == ThumbnailGenerator::kNotClipped);

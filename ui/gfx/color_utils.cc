@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -242,18 +242,18 @@ SkColor GetAverageColorOfFavicon(SkBitmap* favicon, SkAlpha alpha) {
       SkColorSetARGB(alpha, 0, 0, 0);
 }
 
-void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]) {
-  SkAutoLockPixels bitmap_lock(*bitmap);
-  if (!bitmap->getPixels())
+void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]) {
+  SkAutoLockPixels bitmap_lock(bitmap);
+  if (!bitmap.getPixels())
     return;
 
   // Assume ARGB_8888 format.
-  DCHECK(bitmap->getConfig() == SkBitmap::kARGB_8888_Config);
+  DCHECK(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
 
-  int pixel_width = bitmap->width();
-  int pixel_height = bitmap->height();
+  int pixel_width = bitmap.width();
+  int pixel_height = bitmap.height();
   for (int y = 0; y < pixel_height; ++y) {
-    SkColor* current_color = static_cast<uint32_t*>(bitmap->getAddr32(0, y));
+    SkColor* current_color = static_cast<uint32_t*>(bitmap.getAddr32(0, y));
     for (int x = 0; x < pixel_width; ++x, ++current_color)
       histogram[GetLuminanceForColor(*current_color)]++;
   }

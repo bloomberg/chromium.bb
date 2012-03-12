@@ -109,7 +109,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // 0,1 ranged percentage of pixels that are the most common
   // luma. Higher boring scores indicate that a higher percentage of a
   // bitmap are all the same brightness.
-  static double CalculateBoringScore(SkBitmap* bitmap);
+  static double CalculateBoringScore(const SkBitmap& bitmap);
 
   // Gets the clipped bitmap from |bitmap| per the aspect ratio of the
   // desired width and the desired height. For instance, if the input
@@ -125,8 +125,9 @@ class ThumbnailGenerator : public content::NotificationObserver,
   void UpdateThumbnailIfNecessary(content::WebContents* webb_contents);
 
   // Update the thumbnail of the given tab.
-  void UpdateThumbnail(content::WebContents* web_contents, SkBitmap bitmap,
-      const ThumbnailGenerator::ClipResult& clip_result);
+  void UpdateThumbnail(content::WebContents* web_contents,
+                       const SkBitmap& bitmap,
+                       const ThumbnailGenerator::ClipResult& clip_result);
 
   // Returns true if we should update the thumbnail of the given URL.
   static bool ShouldUpdateThumbnail(Profile* profile,

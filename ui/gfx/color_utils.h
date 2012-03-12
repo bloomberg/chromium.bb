@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ SkColor GetAverageColorOfFavicon(SkBitmap* bitmap, SkAlpha alpha);
 
 // Builds a histogram based on the Y' of the Y'UV representation of
 // this image.
-UI_EXPORT void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]);
+UI_EXPORT void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]);
 
 // Returns a blend of the supplied colors, ranging from |background| (for
 // |alpha| == 0) to |foreground| (for |alpha| == 255). The alpha channels of
