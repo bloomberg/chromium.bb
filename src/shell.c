@@ -1927,6 +1927,7 @@ backlight_binding(struct wl_input_device *device, uint32_t time,
 {
 	struct weston_compositor *compositor = data;
 	struct weston_output *output;
+	long backlight_new = 0;
 
 	/* TODO: we're limiting to simple use cases, where we assume just
 	 * control on the primary display. We'd have to extend later if we
@@ -1939,13 +1940,17 @@ backlight_binding(struct wl_input_device *device, uint32_t time,
 	if (!output->set_backlight)
 		return;
 
-	if ((key == KEY_F9 || key == KEY_BRIGHTNESSDOWN) &&
-	    output->backlight_current > 1)
-		output->backlight_current--;
-	else if ((key == KEY_F10 || key == KEY_BRIGHTNESSUP) &&
-	    output->backlight_current < 10)
-		output->backlight_current++;
+	if (key == KEY_F9 || key == KEY_BRIGHTNESSDOWN)
+		backlight_new = output->backlight_current - 25;
+	else if (key == KEY_F10 || key == KEY_BRIGHTNESSUP)
+		backlight_new = output->backlight_current + 25;
 
+	if (backlight_new < 5)
+		backlight_new = 5;
+	if (backlight_new > 255)
+		backlight_new = 255;
+
+	output->backlight_current = backlight_new;
 	output->set_backlight(output, output->backlight_current);
 }
 

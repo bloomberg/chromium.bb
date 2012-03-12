@@ -97,7 +97,7 @@ struct weston_output {
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
 
-	/* backlight values are on 1-10 range, where higher is brighter */
+	/* backlight values are on 0-255 range, where higher is brighter */
 	uint32_t backlight_current;
 	void (*set_backlight)(struct weston_output *output, uint32_t value);
 	void (*set_dpms)(struct weston_output *output, enum dpms_enum level);

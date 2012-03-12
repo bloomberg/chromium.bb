@@ -927,7 +927,7 @@ sprite_handle_pending_buffer_destroy(struct wl_listener *listener,
 	sprite->pending_surface = NULL;
 }
 
-/* returns a value between 1-10 range, where higher is brighter */
+/* returns a value between 0-255 range, where higher is brighter */
 static uint32_t
 drm_get_backlight(struct drm_output *output)
 {
@@ -936,13 +936,13 @@ drm_get_backlight(struct drm_output *output)
 	brightness = backlight_get_brightness(output->backlight);
 	max_brightness = backlight_get_max_brightness(output->backlight);
 
-	/* convert it on a scale of 1 to 10 */
-	norm = 1 + ((brightness) * 9)/(max_brightness);
+	/* convert it on a scale of 0 to 255 */
+	norm = (brightness * 255)/(max_brightness);
 
 	return (uint32_t) norm;
 }
 
-/* values accepted are between 1-10 range */
+/* values accepted are between 0-255 range */
 static void
 drm_set_backlight(struct weston_output *output_base, uint32_t value)
 {
@@ -952,13 +952,13 @@ drm_set_backlight(struct weston_output *output_base, uint32_t value)
 	if (!output->backlight)
 		return;
 
-	if (value < 1 || value > 10)
+	if (value < 0 || value > 255)
 		return;
 
 	max_brightness = backlight_get_max_brightness(output->backlight);
 
 	/* get denormalized value */
-	new_brightness = ((value - 1) * (max_brightness)) / 9;
+	new_brightness = (value * max_brightness) / 255;
 
 	backlight_set_brightness(output->backlight, new_brightness);
 }
