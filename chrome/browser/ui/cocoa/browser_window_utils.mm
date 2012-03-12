@@ -200,7 +200,6 @@ const CGFloat kPatternVerticalOffsetNoTabStrip = 3;
   for (; iter != end; ++iter) {
     Browser* browser = *iter;
     if (browser != closedBrowser &&
-        !browser->window()->IsMinimized() &&
         [browser->window()->GetNativeHandle() canBecomeKeyWindow]) {
       browser->window()->Activate();
       return;
