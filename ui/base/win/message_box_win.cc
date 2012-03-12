@@ -1,15 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/message_box_win.h"
+#include "ui/base/win/message_box_win.h"
 
-#include <windows.h>
-
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/string16.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace ui {
 

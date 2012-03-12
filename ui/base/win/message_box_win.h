@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MESSAGE_BOX_WIN_H_
-#define UI_BASE_MESSAGE_BOX_WIN_H_
+#ifndef UI_BASE_WIN_MESSAGE_BOX_WIN_H_
+#define UI_BASE_WIN_MESSAGE_BOX_WIN_H_
 #pragma once
 
 #include <windows.h>
@@ -24,4 +24,4 @@ UI_EXPORT int MessageBox(HWND hwnd,
 
 }  // namespace ui
 
-#endif  // UI_BASE_MESSAGE_BOX_WIN_H_
+#endif  // UI_BASE_WIN_MESSAGE_BOX_WIN_H_
