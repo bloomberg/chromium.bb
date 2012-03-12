@@ -41,7 +41,7 @@ cr.define('ntp', function() {
       this.anchorType = cr.ui.AnchorType.ABOVE;
       this.invertLeftRight = true;
 
-      this.hidden = false;
+      this.classList.remove('invisible');
       this.showPromo_();
 
       chrome.send('getForeignSessions');

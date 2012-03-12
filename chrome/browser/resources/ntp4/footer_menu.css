@@ -21,12 +21,6 @@
   padding-top: 0;
 }
 
-.enable-cws-experiment .footer-menu-button {
-  -webkit-margin-end: 0;
-  -webkit-padding-end: 16px;
-  position: relative;
-}
-
 .footer-menu-button:hover:not([menu-shown]) {
   color: #666;
 }
@@ -41,21 +35,6 @@
 
 .footer-menu-button[menu-shown] .disclosure-triangle {
   background-color: #555;
-}
-
-/* Reserve space for the menu button even when it's hidden. */
-.footer-menu-button.invisible,
-#footer.showing-trash-mode .footer-menu-button {
-  visibility: hidden;
-}
-
-#footer.showing-trash-mode .footer-menu-button {
-  -webkit-transition-delay: 0;
-  opacity: 0;
-}
-
-.footer-menu-button > * {
-  vertical-align: middle;
 }
 
 .footer-menu {
@@ -140,18 +119,4 @@ html[dir='rtl'] .footer-menu-item {
   display: inline-block;
   height: 9px;
   width: 9px;
-}
-
-#vertical-separator {
-  background-color: #B2B2B2;
-  display: none;
-  height: 20px;
-  left: 15px;
-  position: relative;
-  right: 15px;
-  width: 1px;
-}
-
-.enable-cws-experiment #vertical-separator {
-  display: inline-block;
 }

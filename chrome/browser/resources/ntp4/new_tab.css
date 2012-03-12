@@ -365,7 +365,7 @@ html[dir='rtl'] #footer.showing-trash-mode #trash.drag-target .lid {
 
 #chrome-web-store-title {
   -webkit-padding-end: 36px;
-  -webkit-padding-start: 16px;
+  -webkit-padding-start: 15px;
   background: url('chrome://theme/IDR_WEBSTORE_ICON_24') right 50% no-repeat;
   display: inline-block;
   line-height: 49px;
@@ -384,12 +384,43 @@ html[dir='rtl'] #chrome-web-store-title {
   display: inline-block;
 }
 
-/* Reserve space for the menu button even when it's hidden. */
-#footer.showing-trash-mode #chrome-web-store-href {
+#vertical-separator {
+  background-color: rgb(178, 178, 178);
+  display: none;
+  height: 20px;
+  margin: 0;
+  vertical-align: middle;
+  width: 1px;
+}
+
+/* Show the separator only if one of the menus is visible. */
+.enable-cws-experiment
+    .footer-menu-button:not(.invisible) ~ #vertical-separator {
+  display: inline-block;
+}
+
+/* In trash mode, hide the menus and web store link. */
+#footer.showing-trash-mode #chrome-web-store-href,
+#footer.showing-trash-mode .menu-container {
+  -webkit-transition-delay: 0;
+  opacity: 0;
   visibility: hidden;
 }
 
-#footer.showing-trash-mode #chrome-web-store-href {
-  -webkit-transition-delay: 0;
-  opacity: 0;
+#footer .menu-container {
+  -webkit-flex-align: center;
+  /* Put menus in a flexbox so the order can easily be swapped. */
+  display: -webkit-flexbox;
+  height: 100%;
+  margin: 0;
+}
+
+/* Put the recently closed menu to the left when it's not visible. */
+#recently-closed-menu-button.invisible {
+  -webkit-flex-order: -1;
+  visibility: hidden;
+}
+
+#other-sessions-menu-button.invisible {
+  display: none;
 }
