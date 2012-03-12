@@ -1245,9 +1245,6 @@ are declared in build/common.gypi.
       <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_MESSAGE" desc="The text of the home page change notification.">
         Arrr! Something tried to commandeer your home page!
       </message>
-      <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_NO_BACKUP_MESSAGE" desc="The text of the home page change notification when the previous setting is lost.">
-        Arrr! Something tried to commandeer your home page! We weren't sure what to do, so we set it to the New Tab page.
-      </message>
       <message name="IDS_KEEP_HOMEPAGE" desc="The title of the button that confirms staying with the previous home page setting.">
         Keep using <ph name="PREV_HOMEPAGE">$1<ex>My Awesome Blog</ex></ph>
       </message>
@@ -1259,6 +1256,34 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_SELECT_HOMEPAGE" desc="The title of the button that opens a settings page, allowing user to select the home page to use.">
         Select home page...
+      </message>
+
+      <message name="IDS_STARTUP_SETTINGS_CHANGE_TITLE" desc="The title of the bubble and the wrench menu item with a startup settings change notification.">
+        Attempted startup settings change
+      </message>
+      <message name="IDS_STARTUP_SETTINGS_CHANGE_BUBBLE_MESSAGE" desc="The text of the startup settings change notification.">
+        Arrr! Something tried to commandeer your startup settings!
+      </message>
+      <message name="IDS_KEEP_STARTUP_SETTINGS_RESTORE" desc="The title of the button that confirms staying with the previous startup settings to restore the session.">
+        Keep restoring open pages
+      </message>
+      <message name="IDS_KEEP_STARTUP_SETTINGS_NTP" desc="The title of the button that confirms staying with the previous startup settings to open the NTP.">
+        Keep opening the New Tab Page
+      </message>
+      <message name="IDS_KEEP_STARTUP_SETTINGS_URLS" desc="The title of the button that confirms staying with the previous startup settings to open a specific page.">
+        Keep opening <ph name="DOMAIN">$1<ex>google.com</ex></ph>
+      </message>
+      <message name="IDS_CHANGE_STARTUP_SETTINGS_RESTORE" desc="The title of the button that accepts new startup settings to restore the session.">
+        Change to restoring open pages
+      </message>
+      <message name="IDS_CHANGE_STARTUP_SETTINGS_NTP" desc="The title of the button that accepts new startup settings to open the NTP.">
+        Change to opening the New Tab Page
+      </message>
+      <message name="IDS_CHANGE_STARTUP_SETTINGS_URLS" desc="The title of the button that accepts new startup settings to open a specific page.">
+        Change to opening <ph name="URL">$1<ex>google.com</ex></ph>
+      </message>
+      <message name="IDS_SELECT_STARTUP_SETTINGS" desc="The title of the button that opens a settings page, allowing user to select the startup settings to use.">
+        Select startup settings...
       </message>
 
       <message name="IDS_KEEP_SETTING" desc="The title of the button that confirms staying with the previous setting.">

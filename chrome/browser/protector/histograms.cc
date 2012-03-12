@@ -31,6 +31,15 @@ const char kProtectorHistogramSearchProviderRestored[] =
 const char kProtectorHistogramSearchProviderTimeout[] =
     "Protector.SearchProvider.Timeout";
 
+const char kProtectorHistogramStartupSettingsApplied[] =
+    "Protector.StartupSettings.Applied";
+const char kProtectorHistogramStartupSettingsChanged[] =
+    "Protector.StartupSettings.Changed";
+const char kProtectorHistogramStartupSettingsDiscarded[] =
+    "Protector.StartupSettings.Discarded";
+const char kProtectorHistogramStartupSettingsTimeout[] =
+    "Protector.StartupSettings.Timeout";
+
 const int kProtectorMaxSearchProviderID = SEARCH_ENGINE_MAX;
 
 int GetSearchProviderHistogramID(const TemplateURL* turl) {

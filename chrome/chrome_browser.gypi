@@ -1807,6 +1807,7 @@
         'browser/protector/protector_service.h',
         'browser/protector/protector_service_factory.cc',
         'browser/protector/protector_service_factory.h',
+        'browser/protector/session_startup_change.cc',
         'browser/protector/settings_change_global_error.cc',
         'browser/protector/settings_change_global_error.h',
         'browser/protector/settings_change_global_error_delegate.h',

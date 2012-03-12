@@ -15,6 +15,7 @@
 class Browser;
 class Profile;
 class TemplateURL;
+struct SessionStartupPref;
 
 namespace protector {
 
@@ -86,6 +87,12 @@ class BaseSettingChange {
 BaseSettingChange* CreateDefaultSearchProviderChange(
     const TemplateURL* actual,
     TemplateURL* backup);
+
+// Allocates and initializes BaseSettingChange implementation for session
+// startup setting. Reports corresponding histograms.
+BaseSettingChange* CreateSessionStartupChange(
+    const SessionStartupPref& actual,
+    const SessionStartupPref& backup);
 
 }  // namespace protector
 

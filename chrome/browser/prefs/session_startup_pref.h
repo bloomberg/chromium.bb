@@ -28,7 +28,10 @@ struct SessionStartupPref {
 
     // Indicates the user wants to restore a specific set of URLs. The URLs
     // are contained in urls.
-    URLS
+    URLS,
+
+    // Number of values in this enum.
+    TYPE_COUNT
   };
 
   static void RegisterUserPrefs(PrefService* prefs);
