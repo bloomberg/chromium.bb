@@ -49,6 +49,9 @@ TBDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   dalecurtis: Allow frame size changes for multithreaded decode.  Doesn't work
   for all codecs (H264, MPEG, RV40), but works for the ones we want.
 
+599888a48040f4086c9086aae958b7231b37afcc
+  thakis: Fixes yasm alignment issue for text sections.
+
 Patches still existing from the pre-GIT workflow:
 
 to_upstream/
