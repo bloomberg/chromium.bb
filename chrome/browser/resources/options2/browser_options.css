@@ -334,5 +334,5 @@ input[type='range'] {
 }
 
 #advanced-settings.sliding {
-  -webkit-transition: height 500ms linear;
+  -webkit-transition: height 200ms;
 }
