@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
-#include "content/browser/net/url_request_abort_on_end_job.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/test/net/url_request_abort_on_end_job.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

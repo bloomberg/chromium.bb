@@ -10,11 +10,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/net/url_request_mock_link_doctor_job.h"
 #include "chrome/common/chrome_paths.h"
-#include "content/browser/net/url_request_failed_dns_job.h"
-#include "content/browser/net/url_request_mock_http_job.h"
-#include "content/browser/net/url_request_slow_download_job.h"
-#include "content/browser/net/url_request_slow_http_job.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/test/net/url_request_failed_dns_job.h"
+#include "content/test/net/url_request_mock_http_job.h"
+#include "content/test/net/url_request_slow_download_job.h"
+#include "content/test/net/url_request_slow_http_job.h"
 #include "net/url_request/url_request_filter.h"
 
 using content::BrowserThread;

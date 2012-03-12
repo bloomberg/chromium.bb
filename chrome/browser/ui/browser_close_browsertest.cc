@@ -22,9 +22,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/net/url_request_slow_download_job.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/test/net/url_request_slow_download_job.h"
 
 using content::BrowserThread;
 using content::DownloadItem;

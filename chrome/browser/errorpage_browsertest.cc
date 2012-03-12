@@ -9,9 +9,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/net/url_request_failed_dns_job.h"
-#include "content/browser/net/url_request_mock_http_job.h"
 #include "content/public/browser/web_contents.h"
+#include "content/test/net/url_request_failed_dns_job.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "content/test/test_navigation_observer.h"
 
 using content::BrowserThread;

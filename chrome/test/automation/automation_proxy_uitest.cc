@@ -32,7 +32,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/browser/net/url_request_slow_http_job.h"
+#include "content/test/net/url_request_slow_http_job.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"

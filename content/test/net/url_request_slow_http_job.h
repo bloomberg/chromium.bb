@@ -4,12 +4,12 @@
 //
 // A URLRequestMockHTTPJob class that inserts a time delay in processing.
 
-#ifndef CONTENT_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
-#define CONTENT_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
+#ifndef CONTENT_TEST_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
+#define CONTENT_TEST_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
 #pragma once
 
 #include "base/timer.h"
-#include "content/browser/net/url_request_mock_http_job.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "content/common/content_export.h"
 
 class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
@@ -37,4 +37,4 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   base::OneShotTimer<URLRequestSlowHTTPJob> delay_timer_;
 };
 
-#endif  // CONTENT_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
+#endif  // CONTENT_TEST_NET_URL_REQUEST_SLOW_HTTP_JOB_H_

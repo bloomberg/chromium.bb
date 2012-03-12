@@ -389,16 +389,6 @@
     'browser/mime_registry_message_filter.h',
     'browser/net/browser_online_state_observer.cc',
     'browser/net/browser_online_state_observer.h',
-    # TODO:  These should be moved to test_support (see below), but
-    # are currently used by production code in automation_provider.cc.
-    'browser/net/url_request_failed_dns_job.cc',
-    'browser/net/url_request_failed_dns_job.h',
-    'browser/net/url_request_mock_http_job.cc',
-    'browser/net/url_request_mock_http_job.h',
-    'browser/net/url_request_slow_download_job.cc',
-    'browser/net/url_request_slow_download_job.h',
-    'browser/net/url_request_slow_http_job.cc',
-    'browser/net/url_request_slow_http_job.h',
     'browser/notification_service_impl.cc',
     'browser/notification_service_impl.h',
     'browser/plugin_data_remover_impl.cc',
@@ -701,6 +691,16 @@
     'browser/zygote_host_impl_linux.cc',
     'browser/zygote_host_impl_linux.h',
     'browser/zygote_main_linux.cc',
+    # TODO:  These should be moved to test_support (see below), but
+    # are currently used by production code in automation_provider.cc.
+    'test/net/url_request_failed_dns_job.cc',
+    'test/net/url_request_failed_dns_job.h',
+    'test/net/url_request_mock_http_job.cc',
+    'test/net/url_request_mock_http_job.h',
+    'test/net/url_request_slow_download_job.cc',
+    'test/net/url_request_slow_download_job.h',
+    'test/net/url_request_slow_http_job.cc',
+    'test/net/url_request_slow_http_job.h',
     '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources.h',
     '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources_map.cc',
     '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/devtools_resources_map.h',

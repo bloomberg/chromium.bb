@@ -22,13 +22,13 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/net/url_request_mock_http_job.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_persistent_store_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;

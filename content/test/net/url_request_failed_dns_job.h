@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 // This class simulates what wininet does when a dns lookup fails.
 
-#ifndef CONTENT_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
-#define CONTENT_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
+#ifndef CONTENT_TEST_NET_URL_REQUEST_FAILED_DNS_JOB_H_
+#define CONTENT_TEST_NET_URL_REQUEST_FAILED_DNS_JOB_H_
 #pragma once
 
 #include "base/memory/weak_ptr.h"
@@ -35,4 +35,4 @@ class URLRequestFailedDnsJob : public net::URLRequestJob {
   base::WeakPtrFactory<URLRequestFailedDnsJob> weak_factory_;
 };
 
-#endif  // CONTENT_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
+#endif  // CONTENT_TEST_NET_URL_REQUEST_FAILED_DNS_JOB_H_

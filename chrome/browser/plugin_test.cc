@@ -36,7 +36,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/browser/net/url_request_mock_http_job.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_util.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"

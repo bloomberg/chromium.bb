@@ -13,7 +13,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
-#include "content/browser/net/url_request_mock_http_job.h"
+#include "content/test/net/url_request_mock_http_job.h"
 #include "net/url_request/url_request_test_util.h"
 
 namespace {

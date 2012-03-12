@@ -28,8 +28,8 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/npapi_test_helper.h"
-#include "content/browser/net/url_request_mock_http_job.h"
 #include "content/public/common/content_switches.h"
+#include "content/test/net/url_request_mock_http_job.h"
 
 using npapi_test::kTestCompleteCookie;
 using npapi_test::kTestCompleteSuccess;

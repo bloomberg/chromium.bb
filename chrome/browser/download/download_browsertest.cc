@@ -44,8 +44,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/net/url_request_mock_http_job.h"
-#include "content/browser/net/url_request_slow_download_job.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_persistent_store_info.h"
@@ -54,6 +52,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/test/net/url_request_mock_http_job.h"
+#include "content/test/net/url_request_slow_download_job.h"
 #include "content/test/test_navigation_observer.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -699,7 +699,23 @@ class DownloadTest : public InProcessBrowserTest {
     }
   }
 
+  bool EnsureNoPendingDownloads() {
+    bool result = true;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
+    MessageLoop::current()->Run();
+    return result && DownloadManager::EnsureNoPendingDownloadsForTesting();
+  }
+
  private:
+  static void EnsureNoPendingDownloadJobsOnIO(bool* result) {
+    if (URLRequestSlowDownloadJob::NumberOutstandingRequests())
+      *result = false;
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
+  }
+
   // Location of the test data.
   FilePath test_dir_;
 
@@ -813,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   ui_test_utils::NavigateToURL(browser(), same_site_url);
 
   // Make sure the initial navigation didn't trigger a download.
-  EXPECT_TRUE(DownloadManager::EnsureNoPendingDownloadsForTesting());
+  EXPECT_TRUE(EnsureNoPendingDownloads());
 
   // Disable downloads for the tab.
   content::NavigationController* controller =
@@ -855,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   CheckDownloadUI(browser(), false, false, FilePath());
 
   // Verify that there's no pending download.
-  EXPECT_TRUE(DownloadManager::EnsureNoPendingDownloadsForTesting());
+  EXPECT_TRUE(EnsureNoPendingDownloads());
 }
 
 // Download a 0-size file with a content-disposition header, verify that the
@@ -1293,7 +1309,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
   EXPECT_EQ(1u, observer2->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 
   // Get the important info from other threads and check it.
-  EXPECT_TRUE(DownloadManager::EnsureNoPendingDownloadsForTesting());
+  EXPECT_TRUE(EnsureNoPendingDownloads());
 
   CheckDownloadUI(browser(), true, true, FilePath());
 
@@ -1354,7 +1370,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   flush_observer->WaitForFlush();
 
   // Get the important info from other threads and check it.
-  EXPECT_TRUE(DownloadManager::EnsureNoPendingDownloadsForTesting());
+  EXPECT_TRUE(EnsureNoPendingDownloads());
 
   // Using "DownloadItem::Remove" follows the discard dangerous download path,
   // which completely removes the browser from the shelf and closes the shelf

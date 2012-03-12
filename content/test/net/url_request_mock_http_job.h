@@ -4,8 +4,8 @@
 //
 // A net::URLRequestJob class that pulls the content and http headers from disk.
 
-#ifndef CONTENT_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
-#define CONTENT_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
+#ifndef CONTENT_TEST_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
+#define CONTENT_TEST_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
 #pragma once
 
 #include <string>
@@ -49,4 +49,4 @@ class CONTENT_EXPORT URLRequestMockHTTPJob : public net::URLRequestFileJob {
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
 };
 
-#endif  // CONTENT_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
+#endif  // CONTENT_TEST_NET_URL_REQUEST_MOCK_HTTP_JOB_H_

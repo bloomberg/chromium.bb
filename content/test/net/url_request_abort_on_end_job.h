@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 // This class simulates what wininet does when a dns lookup fails.
 
-#ifndef CONTENT_BROWSER_NET_URL_REQUEST_ABORT_ON_END_JOB_H_
-#define CONTENT_BROWSER_NET_URL_REQUEST_ABORT_ON_END_JOB_H_
+#ifndef CONTENT_TEST_NET_URL_REQUEST_ABORT_ON_END_JOB_H_
+#define CONTENT_TEST_NET_URL_REQUEST_ABORT_ON_END_JOB_H_
 #pragma once
 
 #include <string>
@@ -47,5 +47,5 @@ class URLRequestAbortOnEndJob : public net::URLRequestJob {
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestAbortOnEndJob);
 };
-#endif
 
+#endif  // CONTENT_TEST_NET_URL_REQUEST_ABORT_ON_END_JOB_H_

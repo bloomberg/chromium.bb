@@ -21,7 +21,6 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/net/url_request_slow_download_job.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -134,14 +133,7 @@ void EnsureNoPendingDownloadsOnFile(scoped_refptr<DownloadFileManager> dfm,
         BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
 }
 
-void EnsureNoPendingDownloadsOnIO(bool* result) {
-  if (URLRequestSlowDownloadJob::NumberOutstandingRequests()) {
-    *result = false;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
-    return;
-  }
-
+void EnsureNoPendingDownloadJobsOnIO(bool* result) {
   scoped_refptr<DownloadFileManager> download_file_manager =
       ResourceDispatcherHostImpl::Get()->download_file_manager();
   BrowserThread::PostTask(
@@ -166,7 +158,7 @@ bool DownloadManager::EnsureNoPendingDownloadsForTesting() {
   bool result = true;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&EnsureNoPendingDownloadsOnIO, &result));
+      base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
   MessageLoop::current()->Run();
   return result;
 }

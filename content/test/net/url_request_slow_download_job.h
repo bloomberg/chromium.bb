@@ -6,8 +6,8 @@
 // downloads that pause after the first N bytes, to be completed by sending a
 // request to |kFinishDownloadUrl|.
 
-#ifndef CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
-#define CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#ifndef CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#define CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 #pragma once
 
 #include <set>
@@ -94,4 +94,4 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   base::WeakPtrFactory<URLRequestSlowDownloadJob> weak_factory_;
 };
 
-#endif  // CONTENT_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#endif  // CONTENT_TEST_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
