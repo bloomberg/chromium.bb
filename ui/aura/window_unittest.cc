@@ -576,6 +576,11 @@ TEST_F(WindowTest, ChangeCaptureWhileMouseDown) {
   CaptureWindowDelegateImpl delegate2;
   scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
       &delegate2, 0, gfx::Rect(20, 20, 20, 20), NULL));
+
+  // Execute the scheduled draws so that mouse events are not
+  // aggregated.
+  RunAllPendingInMessageLoop();
+
   EXPECT_FALSE(window->HasCapture());
 
   // Do a capture.

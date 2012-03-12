@@ -231,6 +231,9 @@ TEST_F(DragDropControllerTest, DragDropInSingleViewTest) {
     if (i > 0)
       UpdateDragData(&data);
     generator.MoveMouseBy(0, 1);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
   }
 
   generator.ReleaseLeftButton();
@@ -310,6 +313,9 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsSingleWidgetTest) {
     if (i > 0)
       UpdateDragData(&data);
     generator.MoveMouseBy(1, 0);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
   }
 
   generator.ReleaseLeftButton();
@@ -366,6 +372,9 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
     if (i > 0)
       UpdateDragData(&data);
     generator.MoveMouseBy(1, 0);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
   }
 
   generator.ReleaseLeftButton();
@@ -415,6 +424,9 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
     if (i > 0)
       UpdateDragData(&data);
     generator.MoveMouseBy(0, 1);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
   }
 
   drag_view->parent()->RemoveChildView(drag_view.get());
@@ -423,6 +435,9 @@ TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
   for (int i = 0; i < num_drags_2; ++i) {
     UpdateDragData(&data);
     generator.MoveMouseBy(0, 1);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
   }
 
   generator.ReleaseLeftButton();
@@ -468,6 +483,9 @@ TEST_F(DragDropControllerTest, DragCopiesDataToClipboardTest) {
   generator.PressLeftButton();
   generator.MoveMouseBy(0, drag_view->VerticalDragThreshold() + 1);
 
+  // Execute any scheduled draws to process deferred mouse events.
+  RunAllPendingInMessageLoop();
+
   EXPECT_TRUE(cb->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
       ui::Clipboard::BUFFER_STANDARD));
   cb->ReadAsciiText(ui::Clipboard::BUFFER_STANDARD, &result);
@@ -495,6 +513,10 @@ TEST_F(DragDropControllerTest, WindowDestroyedDuringDragDrop) {
     if (i > 0)
       UpdateDragData(&data);
     generator.MoveMouseBy(0, 1);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    RunAllPendingInMessageLoop();
+
     if (i > drag_view->VerticalDragThreshold())
       EXPECT_EQ(window, GetDragWindow());
   }

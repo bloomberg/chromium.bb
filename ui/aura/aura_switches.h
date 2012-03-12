@@ -11,6 +11,7 @@
 namespace switches {
 
 // Please keep alphabetized.
+AURA_EXPORT extern const char kAuraDisableHoldMouseMoves[];
 AURA_EXPORT extern const char kAuraHostWindowSize[];
 AURA_EXPORT extern const char kAuraHostWindowUseFullscreen[];
 

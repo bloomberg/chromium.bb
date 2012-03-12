@@ -190,6 +190,16 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void ToggleFullScreen();
 #endif
 
+  // These methods are used to defer the processing of mouse events related
+  // to resize. A client (typically a RenderWidgetHostViewAura) can call
+  // HoldMouseMoves when an resize is initiated and then ReleaseMouseMoves
+  // once the resize is completed.
+  //
+  // More than one hold can be invoked and each hold must be cancelled by a
+  // release before we resume normal operation.
+  void HoldMouseMoves();
+  void ReleaseMouseMoves();
+
   // Overridden from Window:
   virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
@@ -246,6 +256,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Initializes the root window.
   void Init();
+
+  // We hold and aggregregate mouse drags as a way of throttling resizes
+  // when HoldMouseMoves() is called. The following methods are used to
+  // dispatch held and newly incoming mouse events, typically when an event
+  // other than a mouse drag needs dispatching or a matching ReleaseMouseMoves()
+  // is called.
+  bool DispatchMouseEventImpl(MouseEvent* event);
+  void DispatchHeldMouseMove();
 
   // Parses the switch describing the initial size for the host window and
   // returns bounds for the window.
@@ -313,6 +331,15 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool synthesize_mouse_move_;
   bool waiting_on_compositing_end_;
   bool draw_on_compositing_end_;
+
+  bool defer_draw_scheduling_;
+
+  // How many holds are outstanding. We try to defer dispatching mouse moves
+  // while the count is > 0.
+  int mouse_move_hold_count_;
+  bool should_hold_mouse_moves_;
+  bool release_mouse_moves_after_draw_;
+  scoped_ptr<MouseEvent> held_mouse_move_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindow);
 };

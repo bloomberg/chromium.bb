@@ -425,6 +425,10 @@ TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
   aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
   generator.PressLeftButton();
   generator.MoveMouseTo(generator.current_location().Add(gfx::Point(11, 21)));
+
+  // Execute any scheduled draws so that pending mouse events are processed.
+  RunAllPendingInMessageLoop();
+
   EXPECT_EQ(11, target->bounds().x());
   EXPECT_EQ(21, target->bounds().y());
   // We only snap moves to the grid on release.
@@ -449,6 +453,10 @@ TEST_F(ToplevelWindowEventFilterTest, MAYBE_EscapeReverts) {
   aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
   generator.PressLeftButton();
   generator.MoveMouseTo(generator.current_location().Add(gfx::Point(10, 11)));
+
+  // Execute any scheduled draws so that pending mouse events are processed.
+  RunAllPendingInMessageLoop();
+
   EXPECT_EQ("0,0 110x111", target->bounds().ToString());
   generator.PressKey(ui::VKEY_ESCAPE, 0);
   generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
