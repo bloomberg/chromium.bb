@@ -148,14 +148,14 @@ void WebIntentPickerController::Observe(
   ClosePicker();
 }
 
-void WebIntentPickerController::OnServiceChosen(size_t index,
+void WebIntentPickerController::OnServiceChosen(const GURL& url,
                                                 Disposition disposition) {
   switch (disposition) {
     case WebIntentPickerModel::DISPOSITION_INLINE:
       // Set the model to inline disposition. It will notify the picker which
       // will respond (via OnInlineDispositionWebContentsCreated) with the
       // WebContents to dispatch the intent to.
-      picker_model_->SetInlineDisposition(index);
+      picker_model_->SetInlineDisposition(url);
       break;
 
     case WebIntentPickerModel::DISPOSITION_WINDOW: {
@@ -164,16 +164,13 @@ void WebIntentPickerController::OnServiceChosen(size_t index,
       // during the lifetime of the service url context, and that may mean we
       // need to pass more information into the injector to find the picker
       // again and close it.
-      const WebIntentPickerModel::InstalledService& installed_service =
-          picker_model_->GetInstalledServiceAt(index);
-
       int index = TabStripModel::kNoTab;
       Browser* browser = Browser::GetBrowserForController(
           &wrapper_->web_contents()->GetController(), &index);
       TabContentsWrapper* contents = Browser::TabContentsFactory(
           browser->profile(),
           tab_util::GetSiteInstanceForNewTab(
-              NULL, browser->profile(), installed_service.url),
+              NULL, browser->profile(), url),
           MSG_ROUTING_NONE, NULL, NULL);
 
       intents_dispatcher_->DispatchIntent(contents->web_contents());
@@ -183,7 +180,7 @@ void WebIntentPickerController::OnServiceChosen(size_t index,
       // Since we're passing in a target_contents, it assumes that we will
       // navigate the page ourselves, though.
       browser::NavigateParams params(browser,
-                                     installed_service.url,
+                                     url,
                                      content::PAGE_TRANSITION_AUTO_BOOKMARK);
       params.target_contents = contents;
       params.disposition = NEW_FOREGROUND_TAB;
@@ -191,7 +188,7 @@ void WebIntentPickerController::OnServiceChosen(size_t index,
       browser::Navigate(&params);
 
       service_tab_->GetController().LoadURL(
-          installed_service.url, content::Referrer(),
+          url, content::Referrer(),
           content::PAGE_TRANSITION_AUTO_BOOKMARK, std::string());
 
       ClosePicker();
@@ -206,16 +203,8 @@ void WebIntentPickerController::OnServiceChosen(size_t index,
 
 void WebIntentPickerController::OnInlineDispositionWebContentsCreated(
     content::WebContents* web_contents) {
-  if (web_contents) {
+  if (web_contents)
     intents_dispatcher_->DispatchIntent(web_contents);
-  } else {
-    // TODO(binji): web_contents should never be NULL; it is in this case
-    // because views doesn't have an implementation for inline disposition yet.
-    // Remove this else when it does. In the meantime, just reforward as if it
-    // were the window disposition.
-    OnServiceChosen(picker_model_->inline_disposition_index(),
-                    WebIntentPickerModel::DISPOSITION_WINDOW);
-  }
 }
 
 void WebIntentPickerController::OnCancelled() {

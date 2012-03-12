@@ -152,7 +152,6 @@ class ServiceButtonsView : public views::View,
     // Called when a service button is clicked. |index| is the index of the
     // service button in the model.
     virtual void OnServiceButtonClicked(
-        size_t index,
         const WebIntentPickerModel::InstalledService& service) = 0;
 
    protected:
@@ -225,8 +224,7 @@ void ServiceButtonsView::Update() {
 void ServiceButtonsView::ButtonPressed(views::Button* sender,
                                        const views::Event& event) {
   size_t index = static_cast<size_t>(sender->tag());
-  delegate_->OnServiceButtonClicked(index,
-                                    model_->GetInstalledServiceAt(index));
+  delegate_->OnServiceButtonClicked(model_->GetInstalledServiceAt(index));
 }
 
 gfx::Size ServiceButtonsView::GetPreferredSize() {
@@ -455,11 +453,11 @@ class WebIntentPickerViews : public views::ButtonListener,
                                 size_t index) OVERRIDE;
   virtual void OnExtensionIconChanged(WebIntentPickerModel* model,
                                       const string16& extension_id) OVERRIDE;
-  virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE;
+  virtual void OnInlineDisposition(WebIntentPickerModel* model,
+                                   const GURL& url) OVERRIDE;
 
   // ServiceButtonsView::Delegate implementation.
   virtual void OnServiceButtonClicked(
-      size_t index,
       const WebIntentPickerModel::InstalledService& service) OVERRIDE;
 
   // SuggestedExtensionsView::Delegate implementation.
@@ -603,10 +601,7 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 }
 
 void WebIntentPickerViews::OnInlineDisposition(
-    WebIntentPickerModel* model) {
-  const WebIntentPickerModel::InstalledService& installed_service =
-      model->GetInstalledServiceAt(model->inline_disposition_index());
-
+    WebIntentPickerModel* model, const GURL& url) {
   WebContents* web_contents = WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
@@ -619,7 +614,7 @@ void WebIntentPickerViews::OnInlineDisposition(
   TabContentsContainer* tab_contents_container = new TabContentsContainer;
 
   web_contents->GetController().LoadURL(
-      installed_service.url,
+      url,
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
       std::string());
@@ -639,9 +634,8 @@ void WebIntentPickerViews::OnInlineDisposition(
 }
 
 void WebIntentPickerViews::OnServiceButtonClicked(
-    size_t index,
     const WebIntentPickerModel::InstalledService& service) {
-  delegate_->OnServiceChosen(index, service.disposition);
+  delegate_->OnServiceChosen(service.url, service.disposition);
 }
 
 void WebIntentPickerViews::OnExtensionInstallClicked(

@@ -12,8 +12,7 @@
 #include "ui/gfx/image/image.h"
 
 WebIntentPickerModel::WebIntentPickerModel()
-    : observer_(NULL),
-      inline_disposition_index_(std::string::npos) {
+    : observer_(NULL) {
 }
 
 WebIntentPickerModel::~WebIntentPickerModel() {
@@ -40,7 +39,7 @@ void WebIntentPickerModel::RemoveInstalledServiceAt(size_t index) {
 
 void WebIntentPickerModel::Clear() {
   DestroyAll();
-  inline_disposition_index_ = std::string::npos;
+  inline_disposition_url_ = GURL::EmptyGURL();
   if (observer_)
     observer_->OnModelChanged(this);
 }
@@ -107,15 +106,14 @@ void WebIntentPickerModel::SetSuggestedExtensionIconWithId(
   }
 }
 
-void WebIntentPickerModel::SetInlineDisposition(size_t index) {
-  DCHECK(index < installed_services_.size());
-  inline_disposition_index_ = index;
+void WebIntentPickerModel::SetInlineDisposition(const GURL& url) {
+  inline_disposition_url_ = url;
   if (observer_)
-    observer_->OnInlineDisposition(this);
+    observer_->OnInlineDisposition(this, url);
 }
 
 bool WebIntentPickerModel::IsInlineDisposition() const {
-  return inline_disposition_index_ != std::string::npos;
+  return !inline_disposition_url_.is_empty();
 }
 
 void WebIntentPickerModel::DestroyAll() {

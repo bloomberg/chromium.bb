@@ -152,11 +152,9 @@ void WebIntentPickerCocoa::OnExtensionIconChanged(
   // TODO(binji): implement.
 }
 
-void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
+void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model,
+                                               const GURL& url) {
   DCHECK(browser_);
-  const WebIntentPickerModel::InstalledService& installed_service =
-      model->GetInstalledServiceAt(model->inline_disposition_index());
-
   content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
@@ -168,7 +166,7 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model) {
   delegate_->OnInlineDispositionWebContentsCreated(web_contents);
 
   inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
-      installed_service.url,
+      url,
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
       std::string());
@@ -191,6 +189,7 @@ void WebIntentPickerCocoa::OnServiceChosen(size_t index) {
   const WebIntentPickerModel::InstalledService& installed_service =
       model_->GetInstalledServiceAt(index);
   service_invoked = true;
-  delegate_->OnServiceChosen(index, installed_service.disposition);
+  delegate_->OnServiceChosen(installed_service.url,
+                             installed_service.disposition);
 }
 

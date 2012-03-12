@@ -151,11 +151,8 @@ void WebIntentPickerGtk::OnExtensionIconChanged(WebIntentPickerModel* model,
   UpdateSuggestedExtensions();
 }
 
-void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model) {
-  const WebIntentPickerModel::InstalledService& installed_service =
-      model->GetInstalledServiceAt(model->inline_disposition_index());
-  const GURL& url = installed_service.url;
-
+void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
+                                             const GURL& url) {
   content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
@@ -286,7 +283,7 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
   const WebIntentPickerModel::InstalledService& installed_service =
       model_->GetInstalledServiceAt(index);
 
-  delegate_->OnServiceChosen(static_cast<size_t>(index),
+  delegate_->OnServiceChosen(installed_service.url,
                              installed_service.disposition);
 }
 

@@ -116,15 +116,15 @@ class WebIntentPickerModel {
   void SetSuggestedExtensionIconWithId(const string16& id,
                                        const gfx::Image& image);
 
-  // Set the picker to display the intent service at |index| inline.
-  void SetInlineDisposition(size_t index);
+  // Set the picker to display the intent service with |url| inline.
+  void SetInlineDisposition(const GURL& url);
 
   // Returns true if the picker is currently displaying an inline service.
   bool IsInlineDisposition() const;
 
-  // Returns the index of the intent service that is being displayed inline, or
-  // std::string::npos if none.
-  size_t inline_disposition_index() const { return inline_disposition_index_; }
+  // Returns the url of the intent service that is being displayed inline, or
+  // GURL::EmptyGURL() if none.
+  GURL inline_disposition_url() const { return inline_disposition_url_; }
 
  private:
   // Delete all elements in |installed_services_| and |suggested_extensions_|.
@@ -142,9 +142,9 @@ class WebIntentPickerModel {
   // The observer to send notifications to, or NULL if none.
   WebIntentPickerModelObserver* observer_;
 
-  // The index of the intent service that is being displayed inline, or
-  // std::string::npos if none.
-  size_t inline_disposition_index_;
+  // The url of the intent service that is being displayed inline, or
+  // GURL::EmptyGURL() if none.
+  GURL inline_disposition_url_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerModel);
 };

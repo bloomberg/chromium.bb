@@ -21,7 +21,7 @@ class MockIntentPickerDelegate : public WebIntentPickerDelegate {
  public:
   virtual ~MockIntentPickerDelegate() {}
 
-  MOCK_METHOD2(OnServiceChosen, void(size_t index, Disposition disposition));
+  MOCK_METHOD2(OnServiceChosen, void(const GURL& url, Disposition disposition));
   MOCK_METHOD1(OnInlineDispositionWebContentsCreated,
       void(content::WebContents* web_contents));
   MOCK_METHOD0(OnCancelled, void());
@@ -167,11 +167,12 @@ TEST_F(WebIntentPickerSheetControllerTest, CloseWillClose) {
 
 TEST_F(WebIntentPickerSheetControllerTest, DontCancelAfterServiceInvokation) {
   CreateBubble();
-  model_.AddInstalledService(string16(), GURL(),
+  GURL url;
+  model_.AddInstalledService(string16(), url,
       WebIntentPickerModel::DISPOSITION_WINDOW);
 
   EXPECT_CALL(delegate_, OnServiceChosen(
-      0, WebIntentPickerModel::DISPOSITION_WINDOW));
+      url, WebIntentPickerModel::DISPOSITION_WINDOW));
   EXPECT_CALL(delegate_, OnCancelled()).Times(0);
   EXPECT_CALL(delegate_, OnClosing());
 

@@ -126,7 +126,8 @@ class WebIntentPickerMock : public WebIntentPicker,
     num_extension_icons_changed_++;
   }
 
-  virtual void OnInlineDisposition(WebIntentPickerModel* model) OVERRIDE {}
+  virtual void OnInlineDisposition(
+      WebIntentPickerModel* model, const GURL& url) OVERRIDE {}
   virtual void Close() OVERRIDE {}
 
   virtual void OnPendingAsyncCompleted() OVERRIDE {
@@ -240,8 +241,8 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     controller_->OnSendReturnMessage(reply_type);
   }
 
-  void OnServiceChosen(size_t index, Disposition disposition) {
-    controller_->OnServiceChosen(index, disposition);
+  void OnServiceChosen(const GURL& url, Disposition disposition) {
+    controller_->OnServiceChosen(url, disposition);
   }
 
   void OnCancelled() {
@@ -283,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
 
-  OnServiceChosen(1, WebIntentPickerModel::DISPOSITION_WINDOW);
+  OnServiceChosen(kServiceURL2, WebIntentPickerModel::DISPOSITION_WINDOW);
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL2),
             browser()->GetSelectedWebContents()->GetURL());
@@ -344,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   IntentsDispatcherMock dispatcher(intent);
   controller_->SetIntentsDispatcher(&dispatcher);
 
-  OnServiceChosen(0, WebIntentPickerModel::DISPOSITION_WINDOW);
+  OnServiceChosen(kServiceURL1, WebIntentPickerModel::DISPOSITION_WINDOW);
   ASSERT_EQ(3, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL1),
             browser()->GetSelectedWebContents()->GetURL());

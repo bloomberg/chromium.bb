@@ -65,7 +65,8 @@ class WebIntentPickerController : public content::NotificationObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // WebIntentPickerDelegate implementation.
-  virtual void OnServiceChosen(size_t index, Disposition disposition) OVERRIDE;
+  virtual void OnServiceChosen(const GURL& url,
+                               Disposition disposition) OVERRIDE;
   virtual void OnInlineDispositionWebContentsCreated(
       content::WebContents* web_contents) OVERRIDE;
   virtual void OnCancelled() OVERRIDE;

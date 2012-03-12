@@ -8,6 +8,7 @@
 
 #include "base/string16.h"
 
+class GURL;
 class WebIntentPickerModel;
 
 // Observer for changes to the WebIntentPickerModel.
@@ -26,7 +27,8 @@ class WebIntentPickerModelObserver {
                                       const string16& extension_id) = 0;
 
   // Called when the inline disposition should be displayed for |model|.
-  virtual void OnInlineDisposition(WebIntentPickerModel* model) = 0;
+  virtual void OnInlineDisposition(WebIntentPickerModel* model,
+                                   const GURL& url) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_INTENTS_WEB_INTENT_PICKER_MODEL_OBSERVER_H_

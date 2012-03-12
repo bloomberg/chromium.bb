@@ -35,7 +35,8 @@ class WebIntentPickerModelObserverMock : public WebIntentPickerModelObserver {
                void(WebIntentPickerModel* model, size_t index));
   MOCK_METHOD2(OnExtensionIconChanged,
                void(WebIntentPickerModel* model, const string16& extension_id));
-  MOCK_METHOD1(OnInlineDisposition, void(WebIntentPickerModel* model));
+  MOCK_METHOD2(OnInlineDisposition,
+               void(WebIntentPickerModel* model, const GURL& url));
 };
 
 class WebIntentPickerModelTest : public testing::Test {
@@ -155,20 +156,20 @@ TEST_F(WebIntentPickerModelTest, SetSuggestedExtensionIconWithId) {
 
 TEST_F(WebIntentPickerModelTest, SetInlineDisposition) {
   EXPECT_CALL(observer_, OnModelChanged(&model_)).Times(3);
-  EXPECT_CALL(observer_, OnInlineDisposition(&model_)).Times(1);
+  EXPECT_CALL(observer_, OnInlineDisposition(&model_, testing::_)).Times(1);
 
   EXPECT_FALSE(model_.IsInlineDisposition());
-  EXPECT_EQ(std::string::npos, model_.inline_disposition_index());
+  EXPECT_EQ(GURL::EmptyGURL(), model_.inline_disposition_url());
 
   model_.AddInstalledService(kTitle1, kUrl1, kWindowDisposition);
   model_.AddInstalledService(kTitle2, kUrl2, kInlineDisposition);
-  model_.SetInlineDisposition(1);
+  model_.SetInlineDisposition(kUrl2);
 
   EXPECT_TRUE(model_.IsInlineDisposition());
-  EXPECT_EQ(1U, model_.inline_disposition_index());
+  EXPECT_EQ(kUrl2, model_.inline_disposition_url());
 
   model_.Clear();
 
   EXPECT_FALSE(model_.IsInlineDisposition());
-  EXPECT_EQ(std::string::npos, model_.inline_disposition_index());
+  EXPECT_EQ(GURL::EmptyGURL(), model_.inline_disposition_url());
 }
