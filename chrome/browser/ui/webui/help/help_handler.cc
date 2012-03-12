@@ -319,7 +319,8 @@ void HelpHandler::SetPromotionState(VersionUpdater::PromotionState state) {
   }
 
   scoped_ptr<Value> state_value(Value::CreateStringValue(state_str));
-  web_ui()->CallJavascriptFunction("HelpPage.setPromotionState", *state_value);
+  web_ui()->CallJavascriptFunction("help.HelpPage.setPromotionState",
+                                   *state_value);
 }
 #endif  // defined(OS_MACOSX)
 
