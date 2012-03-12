@@ -1373,7 +1373,6 @@
         'browser/chromeos/login/signed_settings_helper_unittest.cc',
         'browser/chromeos/login/signed_settings_cache_unittest.cc',
         'browser/chromeos/login/signed_settings_unittest.cc',
-        'browser/chromeos/login/user_manager_unittest.cc',
         'browser/chromeos/mobile_config_unittest.cc',
         'browser/chromeos/network_message_observer_unittest.cc',
         'browser/chromeos/notifications/desktop_notifications_unittest.cc',

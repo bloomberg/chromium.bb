@@ -58,12 +58,12 @@ class UserManager {
 
   virtual ~UserManager();
 
-  // Returns a list of users who have logged into this device previously. This
-  // is sorted by last login date with the most recent user at the beginning.
+  // Returns a list of the users who have logged into this device previously.
+  // It is sorted in order of recency, with most recent at the beginning.
   virtual const UserList& GetUsers() const = 0;
 
-  // Indicates that a user with the given email has just logged in. The
-  // persistent list is updated accordingly if the user is not ephemeral.
+  // Indicates that a user with the given email has just logged in.
+  // The persistent list will be updated accordingly.
   virtual void UserLoggedIn(const std::string& email) = 0;
 
   // Indicates that user just logged on as the demo user.
@@ -82,12 +82,10 @@ class UserManager {
   // picture.
   virtual void RemoveUserFromList(const std::string& email) = 0;
 
-  // Returns true if a user with the given email address is found in the
-  // persistent list or currently logged in as ephemeral.
+  // Returns true if given user has logged into the device before.
   virtual bool IsKnownUser(const std::string& email) const = 0;
 
-  // Returns the user with the given email address if found in the persistent
-  // list or currently logged in as ephemeral. Returns |NULL| otherwise.
+  // Returns a user with given email or |NULL| if no such user exists.
   virtual const User* FindUser(const std::string& email) const = 0;
 
   // Returns the logged-in user.
@@ -147,9 +145,6 @@ class UserManager {
 
   // Returns true if current user is not existing one (hasn't signed in before).
   virtual bool IsCurrentUserNew() const = 0;
-
-  // Returns true if the current user is ephemeral.
-  virtual bool IsCurrentUserEphemeral() const = 0;
 
   // Returns true if user is signed in.
   virtual bool IsUserLoggedIn() const = 0;
