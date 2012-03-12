@@ -25,6 +25,7 @@
         '../ui/aura/aura.gyp:aura',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/gfx/compositor/compositor.gyp:compositor',
+        '../ui/oak/oak.gyp:oak',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
         '../ui/ui.gyp:ui_resources_standard',

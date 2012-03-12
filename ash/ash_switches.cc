@@ -10,6 +10,9 @@ namespace switches {
 // Use the in-progress uber system tray.
 const char kAshUberTray[] = "ash-uber-tray";
 
+// Enables the Oak tree viewer.
+const char kAshEnableOak[] = "ash-enable-oak";
+
 // Use Google-style dialog box frames.
 const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
 

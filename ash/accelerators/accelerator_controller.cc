@@ -5,6 +5,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
 #include "ash/ime_control_delegate.h"
 #include "ash/launcher/launcher.h"
@@ -17,6 +18,7 @@
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -25,6 +27,7 @@
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/screen_rotation.h"
+#include "ui/oak/oak.h"
 
 namespace {
 
@@ -259,6 +262,10 @@ bool AcceleratorController::AcceleratorPressed(
     case VOLUME_UP:
       if (volume_control_delegate_.get())
         return volume_control_delegate_->HandleVolumeUp(accelerator);
+      break;
+    case SHOW_OAK:
+      if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshEnableOak))
+        oak::ShowOakWindow();
       break;
     case NEXT_IME:
       if (ime_control_delegate_.get())

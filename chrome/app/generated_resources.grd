@@ -5227,6 +5227,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ASH_UBER_TRAY_DESCRIPTION" desc="Description of the flag to enable the uber tray in ash.">
         Enables the in-progress uber tray for ash. Replaces the existing status view.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ASH_OAK_NAME" desc="Name of the flag to enable the oak tree viewer in ash.">
+        Enable Oak.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ASH_OAK_DESCRIPTION" desc="Description of the flag to enable the oak tree viewer in ash.">
+        Enables the Oak tree viewer in ash. Allows inspection of window, layer and view hierarchies and their properties. Press Ctrl+Shift+F1 to access.
+      </message>
       <message name="IDS_FLAGS_ENABLE_DEVTOOLS_EXPERIMENTS_NAME" desc="Name for the flag to enable experiments in Developer Tools">
         Enable Developer Tools experiments.
       </message>

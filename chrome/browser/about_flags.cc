@@ -582,6 +582,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(ash::switches::kAshUberTray),
   },
+  {
+    "enable-ash-oak",
+    IDS_FLAGS_ENABLE_ASH_OAK_NAME,
+    IDS_FLAGS_ENABLE_ASH_OAK_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableOak),
+  },
 #endif
   {
     "enable-devtools-experiments",
