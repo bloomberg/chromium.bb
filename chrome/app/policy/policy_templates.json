@@ -112,7 +112,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 128
+#   For your editing convenience: highest ID currently used: 129
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2408,6 +2408,18 @@
       'id': 128,
       'caption': '''Wipe user data on sign-out''',
       'desc': '''Determines whether Chrome OS keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.''',
+    },
+    {
+      'name': 'EnableOnlineRevocationChecks',
+      'type': 'main',
+      'supported_on': ['chrome.*:19-', 'chrome_os:0.19-'],
+      'features': {'dynamic_refresh': True},
+      'example_value': False,
+      'id': 129,
+      'caption': '''Whether online OCSP/CRL checks are performed''',
+      'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behaviour is restored and online OCSP/CRL checks will be performed.
+
+      If the policy is not set, or is set to false, then Chrome will not perform online revocation checks in Chrome 19 and later.''',
     },
   ],
   'messages': {

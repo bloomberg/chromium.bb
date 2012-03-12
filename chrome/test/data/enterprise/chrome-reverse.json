@@ -26,6 +26,7 @@
   "EnableMemoryInfo": true,
   "EnableOriginBoundCerts": true,
   "DisableSSLRecordSplitting": true,
+  "EnableOnlineRevocationChecks": true,
   "HomepageIsNewTabPage": false,
   "HomepageLocation": "http://chromium.org",
   "IncognitoEnabled": false,

@@ -89,6 +89,7 @@ class PolicyPrefsTestCases(object):
     'ProxySettings': ({}, [], []),
     'EnableOriginBoundCerts': (False, [], [ 'win', 'mac', 'linux' ]),
     'DisableSSLRecordSplitting': (False, []),
+    'EnableOnlineRevocationChecks': (False, []),
     'AuthSchemes': ('AuthSchemes', []),
     'DisableAuthNegotiateCnameLookup': (True, []),
     'EnableAuthNegotiatePort': (False, []),

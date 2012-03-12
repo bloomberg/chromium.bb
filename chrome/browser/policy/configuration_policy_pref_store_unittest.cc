@@ -221,6 +221,8 @@ INSTANTIATE_TEST_CASE_P(
                       prefs::kEnableOriginBoundCerts),
         PolicyAndPref(key::kDisableSSLRecordSplitting,
                       prefs::kDisableSSLRecordSplitting),
+        PolicyAndPref(key::kEnableOnlineRevocationChecks,
+                      prefs::kCertRevocationCheckingEnabled),
         PolicyAndPref(key::kDisableAuthNegotiateCnameLookup,
                       prefs::kDisableAuthNegotiateCnameLookup),
         PolicyAndPref(key::kEnableAuthNegotiatePort,
