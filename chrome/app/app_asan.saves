@@ -18,6 +18,9 @@ _NXArgv
 
 # AddressSanitizer-specific symbols.
 ___asan_init
+___asan_set_death_callback
+___asan_set_error_report_callback
+___asan_handle_no_return
 ___asan_register_global
 ___asan_register_globals
 ___asan_unregister_globals
