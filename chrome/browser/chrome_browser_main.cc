@@ -1815,11 +1815,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       // If we're running tests (ui_task is non-null), then we don't want to
       // call FetchLanguageListFromTranslateServer
       if (parameters().ui_task == NULL && translate_manager_ != NULL) {
-        // TODO(willchan): Get rid of this after TranslateManager doesn't use
-        // the default request context. http://crbug.com/89396.
-        // This is necessary to force |default_request_context_| to be
-        // initialized.
-        profile_->GetRequestContext();
         translate_manager_->FetchLanguageListFromTranslateServer(
             profile_->GetPrefs());
       }
