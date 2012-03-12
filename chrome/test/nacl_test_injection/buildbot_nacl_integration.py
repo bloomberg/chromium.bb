@@ -80,6 +80,10 @@ def Main(args):
   if sys.platform in ('win32', 'cygwin'):
     tests_to_disable.append('run_ppapi_ppp_input_event_browser_test')
 
+  # TODO(mseaborn): Remove this when exception handling works inside
+  # Chromium.  See http://code.google.com/p/nativeclient/issues/detail?id=2602
+  tests_to_disable.append('run_inbrowser_exception_test')
+
   script_dir = os.path.dirname(os.path.abspath(__file__))
   test_dir = os.path.dirname(script_dir)
   chrome_dir = os.path.dirname(test_dir)
