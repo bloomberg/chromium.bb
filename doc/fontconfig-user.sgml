@@ -309,8 +309,8 @@ information.  If it starts with '~', it refers to a file in the users
 home directory.  This file is used to hold information about fonts that
 isn't present in the per-directory cache files.  It is automatically
 maintained by the fontconfig library.  The default for this file 
-is ``~/.fonts.cache-<literal>&lt;version&gt;</literal>'', where <literal>&lt;version&gt;</literal> is the font configuration
-file version number (currently 2).
+is ``~/.fontconfig/&lt;hash value&gt;-&lt;architecture&gt;.cache-<literal>&lt;version&gt;</literal>'', where <literal>&lt;version&gt;</literal> is the font configuration
+file version number (currently 3).
   </para></refsect2>
   <refsect2><title><literal>&lt;include ignore_missing="no"&gt;</literal></title><para>
 This element contains the name of an additional configuration file or
@@ -686,7 +686,7 @@ is the conventional location for per-user font configuration, although the
 actual location is specified in the global fonts.conf file.
   </para>
   <para>
-<emphasis> ~/.fonts.cache-*</emphasis>
+<emphasis> ~/.fontconfig/*.cache-*</emphasis>
 is the conventional repository of font information that isn't found in the
 per-directory caches.  This file is automatically maintained by fontconfig.
   </para>
