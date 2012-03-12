@@ -177,11 +177,7 @@ void DownloadFileManager::StartDownload(
   DCHECK(info);
 
   DownloadManager* manager = request_handle.GetDownloadManager();
-  if (!manager) {
-    request_handle.CancelRequest();
-    delete info;
-    return;
-  }
+  DCHECK(manager);  // Checked in |DownloadResourceHandler::StartOnUIThread()|.
 
   // |bound_net_log| will be used for logging the both the download item's and
   // the download file's events.

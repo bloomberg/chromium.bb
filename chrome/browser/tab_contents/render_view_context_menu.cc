@@ -1525,7 +1525,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
                        false,  // Don't prefer_cache
                        -1,  // No POST id
                        save_info,
-                       source_web_contents_);
+                       source_web_contents_,
+                       DownloadManager::OnStartedCallback());
       break;
     }
 
@@ -1553,7 +1554,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
                        true,  // prefer_cache
                        post_id,
                        save_info,
-                       source_web_contents_);
+                       source_web_contents_,
+                       DownloadManager::OnStartedCallback());
       break;
     }
 

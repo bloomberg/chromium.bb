@@ -57,11 +57,12 @@ namespace {
 
 // Param structs exist because base::Bind can only handle 6 args.
 struct URLParams {
-  URLParams(const GURL& url, const GURL& referrer, int64 post_id)
-    : url_(url), referrer_(referrer), post_id_(post_id) {}
+  URLParams(const GURL& url, const GURL& referrer, int64 post_id, bool cache)
+    : url_(url), referrer_(referrer), post_id_(post_id), prefer_cache_(cache) {}
   GURL url_;
   GURL referrer_;
   int64 post_id_;
+  bool prefer_cache_;
 };
 
 struct RenderParams {
@@ -71,12 +72,13 @@ struct RenderParams {
   int render_view_id_;
 };
 
-void BeginDownload(const URLParams& url_params,
-                   bool prefer_cache,
-                   const DownloadSaveInfo& save_info,
-                   ResourceDispatcherHostImpl* resource_dispatcher_host,
-                   const RenderParams& render_params,
-                   content::ResourceContext* context) {
+void BeginDownload(
+    const URLParams& url_params,
+    const DownloadSaveInfo& save_info,
+    ResourceDispatcherHostImpl* resource_dispatcher_host,
+    const RenderParams& render_params,
+    content::ResourceContext* context,
+    const content::DownloadManager::OnStartedCallback& callback) {
   scoped_ptr<net::URLRequest> request(
       new net::URLRequest(url_params.url_, resource_dispatcher_host));
   request->set_referrer(url_params.referrer_.spec());
@@ -85,7 +87,7 @@ void BeginDownload(const URLParams& url_params,
     // when retrieving data from cache. This is done because we don't want
     // to do a re-POST without user consent, and currently don't have a good
     // plan on how to display the UI for that.
-    DCHECK(prefer_cache);
+    DCHECK(url_params.prefer_cache_);
     request->set_method("POST");
     scoped_refptr<net::UploadData> upload_data = new net::UploadData();
     upload_data->set_identifier(url_params.post_id_);
@@ -96,9 +98,9 @@ void BeginDownload(const URLParams& url_params,
       context,
       render_params.render_process_id_,
       render_params.render_view_id_,
-      prefer_cache,
+      url_params.prefer_cache_,
       save_info,
-      ResourceDispatcherHostImpl::DownloadStartedCallback());
+      callback);
 }
 
 class MapValueIteratorAdapter {
@@ -858,7 +860,8 @@ void DownloadManagerImpl::DownloadUrl(
     bool prefer_cache,
     int64 post_id,
     const DownloadSaveInfo& save_info,
-    WebContents* web_contents) {
+    WebContents* web_contents,
+    const OnStartedCallback& callback) {
   ResourceDispatcherHostImpl* resource_dispatcher_host =
       ResourceDispatcherHostImpl::Get();
   DCHECK(resource_dispatcher_host);
@@ -870,13 +873,13 @@ void DownloadManagerImpl::DownloadUrl(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
           &BeginDownload,
-          URLParams(url, referrer, post_id),
-          prefer_cache,
+          URLParams(url, referrer, post_id, prefer_cache),
           save_info,
           resource_dispatcher_host,
           RenderParams(web_contents->GetRenderProcessHost()->GetID(),
                        web_contents->GetRenderViewHost()->GetRoutingID()),
-          web_contents->GetBrowserContext()->GetResourceContext()));
+          web_contents->GetBrowserContext()->GetResourceContext(),
+          callback));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {

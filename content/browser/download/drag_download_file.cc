@@ -141,7 +141,8 @@ void DragDownloadFile::InitiateDownload() {
                                  false,
                                  -1,
                                  save_info,
-                                 web_contents_);
+                                 web_contents_,
+                                 DownloadManager::OnStartedCallback());
 }
 
 void DragDownloadFile::DownloadCompleted(bool is_successful) {

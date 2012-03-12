@@ -360,3 +360,43 @@ void DownloadTestFlushObserver::PingIOThread(int cycle) {
         BrowserThread::UI, FROM_HERE, MessageLoop::QuitClosure());
   }
 }
+
+DownloadTestItemCreationObserver::DownloadTestItemCreationObserver()
+    : download_id_(content::DownloadId::Invalid()),
+      error_(net::OK),
+      called_back_count_(0),
+      waiting_(false) {
+}
+
+DownloadTestItemCreationObserver::~DownloadTestItemCreationObserver() {
+}
+
+void DownloadTestItemCreationObserver::WaitForDownloadItemCreation() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (called_back_count_ == 0) {
+    waiting_ = true;
+    ui_test_utils::RunMessageLoop();
+    waiting_ = false;
+  }
+}
+
+void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
+    content::DownloadId download_id, net::Error error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  download_id_ = download_id;
+  error_ = error;
+  ++called_back_count_;
+  DCHECK_EQ(1u, called_back_count_);
+
+  if (waiting_)
+    MessageLoopForUI::current()->Quit();
+}
+
+const content::DownloadManager::OnStartedCallback
+    DownloadTestItemCreationObserver::callback() {
+  return base::Bind(
+      &DownloadTestItemCreationObserver::DownloadItemCreationCallback, this);
+}
+

@@ -295,6 +295,18 @@ void OnSwapOutACKHelper(int render_process_id, int render_view_id) {
     rvh->OnSwapOutACK();
 }
 
+net::Error CallbackAndReturn(
+    const DownloadResourceHandler::OnStartedCallback& started_cb,
+    net::Error net_error) {
+  if (started_cb.is_null())
+    return net_error;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(started_cb, content::DownloadId::Invalid(), net_error));
+
+  return net_error;
+}
+
 }  // namespace
 
 // static
@@ -452,7 +464,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
     const DownloadSaveInfo& save_info,
     const DownloadStartedCallback& started_callback) {
   if (is_shutdown_)
-    return net::ERR_INSUFFICIENT_RESOURCES;
+    return CallbackAndReturn(started_callback, net::ERR_INSUFFICIENT_RESOURCES);
 
   const GURL& url = request->original_url();
 #if defined(OS_CHROMEOS)
@@ -481,11 +493,13 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
           CanRequestURL(child_id, url)) {
     VLOG(1) << "Denied unauthorized download request for "
             << url.possibly_invalid_spec();
-    return net::ERR_ACCESS_DENIED;
+    return CallbackAndReturn(started_callback, net::ERR_ACCESS_DENIED);
   }
 
   request_id_--;
 
+  // From this point forward, the |DownloadResourceHandler| is responsible for
+  // |started_callback|.
   scoped_refptr<ResourceHandler> handler(
       CreateResourceHandlerForDownload(request.get(), context, child_id,
                                        route_id, request_id_, save_info,

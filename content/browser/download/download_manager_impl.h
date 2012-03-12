@@ -63,7 +63,8 @@ class CONTENT_EXPORT DownloadManagerImpl
                            bool prefer_cache,
                            int64 post_id,
                            const DownloadSaveInfo& save_info,
-                           content::WebContents* web_contents) OVERRIDE;
+                           content::WebContents* web_contents,
+                           const OnStartedCallback& callback) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void OnPersistentStoreQueryComplete(

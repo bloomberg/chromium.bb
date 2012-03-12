@@ -13,6 +13,7 @@
 #include "base/timer.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/resource_handler.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/global_request_id.h"
 #include "net/base/net_errors.h"
@@ -32,8 +33,7 @@ class URLRequest;
 // Forwards data to the download thread.
 class DownloadResourceHandler : public ResourceHandler {
  public:
-  typedef base::Callback<void(content::DownloadId, net::Error)>
-      OnStartedCallback;
+  typedef content::DownloadManager::OnStartedCallback OnStartedCallback;
 
   static const size_t kLoadsToWrite = 100;  // number of data buffers queued
 

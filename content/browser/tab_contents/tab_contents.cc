@@ -2496,7 +2496,8 @@ void TabContents::SaveURL(const GURL& url,
                    true,  // prefer_cache
                    post_id,
                    save_info,
-                   this);
+                   this,
+                   DownloadManager::OnStartedCallback());
 }
 
 void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {

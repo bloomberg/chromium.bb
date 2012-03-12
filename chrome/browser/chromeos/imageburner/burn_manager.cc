@@ -374,7 +374,8 @@ void Downloader::OnFileStreamCreated(const GURL& url,
         false,
         -1,
         save_info,
-        web_contents);
+        web_contents,
+        DownloadManager::OnStartedCallback());
   } else {
     DownloadStarted(false, url);
   }

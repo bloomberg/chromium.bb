@@ -37,6 +37,20 @@ using content::DownloadManager;
 using content::ResourceDispatcherHostImpl;
 using content::ResourceRequestInfoImpl;
 
+namespace {
+
+void CallStartedCBOnUIThread(
+    const DownloadResourceHandler::OnStartedCallback& started_cb,
+    DownloadId id,
+    net::Error error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (started_cb.is_null())
+    return;
+  started_cb.Run(id, error);
+}
+
+}  // namespace
+
 DownloadResourceHandler::DownloadResourceHandler(
     int render_process_host_id,
     int render_view_id,
@@ -162,10 +176,11 @@ bool DownloadResourceHandler::OnResponseStarted(
 }
 
 void DownloadResourceHandler::CallStartedCB(DownloadId id, net::Error error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (started_cb_.is_null())
     return;
-  started_cb_.Run(id, error);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&CallStartedCBOnUIThread, started_cb_, id, error));
   started_cb_.Reset();
 }
 
@@ -301,10 +316,7 @@ void DownloadResourceHandler::OnResponseCompletedInternal(
   download_stats::RecordAcceptsRanges(accept_ranges_, bytes_read_);
 
   // If the callback was already run on the UI thread, this will be a noop.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadResourceHandler::CallStartedCB, this,
-                 download_id_, error_code));
+  CallStartedCB(download_id_, error_code);
 
   // We transfer ownership to |DownloadFileManager| to delete |buffer_|,
   // so that any functions queued up on the FILE thread are executed
@@ -329,6 +341,7 @@ void DownloadResourceHandler::StartOnUIThread(
   if (!download_manager) {
     // NULL in unittests or if the page closed right after starting the
     // download.
+    CallStartedCB(download_id_, net::ERR_ACCESS_DENIED);
     return;
   }
   DownloadId download_id = download_manager->delegate()->GetNextId();
@@ -385,6 +398,10 @@ void DownloadResourceHandler::CheckWriteProgress() {
 }
 
 DownloadResourceHandler::~DownloadResourceHandler() {
+  // This won't do anything if the callback was called before.
+  // If it goes through, it will likely be because OnWillStart() returned
+  // false somewhere in the chain of resource handlers.
+  CallStartedCB(download_id_, net::ERR_ACCESS_DENIED);
 }
 
 void DownloadResourceHandler::StartPauseTimer() {
@@ -405,7 +422,9 @@ std::string DownloadResourceHandler::DebugString() const {
                             " render_view_id_ = " "%d"
                             " save_info_.file_path = \"%" PRFilePath "\""
                             " }",
-                            request_->url().spec().c_str(),
+                            request_ ?
+                                request_->url().spec().c_str() :
+                                "<NULL request>",
                             download_id_.local(),
                             global_id_.child_id,
                             global_id_.request_id,

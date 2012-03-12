@@ -647,6 +647,8 @@ class DownloadTest : public InProcessBrowserTest {
     GetDownloads(browser(), &download_items);
     ASSERT_TRUE(download_items.empty());
 
+    NullSelectFile(browser());
+
     std::string server_path = "files/downloads/";
     server_path += download_info.url_name;
     GURL url = test_server()->GetURL(server_path);
@@ -657,7 +659,7 @@ class DownloadTest : public InProcessBrowserTest {
         new DownloadTestObserverTerminal(
             download_manager,
             1,
-            true,                   // Bail on select file
+            false,  // Don't bail on select file.
             DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
 
     if (download_info.download_method == DOWNLOAD_DIRECT) {
@@ -667,8 +669,27 @@ class DownloadTest : public InProcessBrowserTest {
       DownloadSaveInfo save_info;
       save_info.prompt_for_save_location = false;
 
+      scoped_refptr<DownloadTestItemCreationObserver> creation_observer(
+          new DownloadTestItemCreationObserver);
+
       DownloadManagerForBrowser(browser())->DownloadUrl(
-          url, GURL(""), "", false, -1, save_info, web_contents);
+          url, GURL(""), "", false, -1, save_info, web_contents,
+          creation_observer->callback());
+
+      // Wait until the item is created, or we have determined that it
+      // won't be.
+      creation_observer->WaitForDownloadItemCreation();
+
+      int32 invalid_id = content::DownloadId::Invalid().local();
+      EXPECT_EQ(download_info.show_download_item,
+                creation_observer->succeeded());
+      if (download_info.show_download_item) {
+        EXPECT_EQ(net::OK, creation_observer->error());
+        EXPECT_NE(invalid_id, creation_observer->download_id().local());
+      } else {
+        EXPECT_NE(net::OK, creation_observer->error());
+        EXPECT_EQ(invalid_id, creation_observer->download_id().local());
+      }
     } else {
       // Navigate to URL normally, wait until done.
       ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
@@ -1816,7 +1837,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   DownloadSaveInfo save_info;
   save_info.prompt_for_save_location = true;
   DownloadManagerForBrowser(browser())->DownloadUrl(
-      url, GURL(""), "", false, -1, save_info, web_contents);
+      url, GURL(""), "", false, -1, save_info, web_contents,
+      DownloadManager::OnStartedCallback());
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
   CheckDownloadStates(1, DownloadItem::COMPLETE);
@@ -1845,7 +1867,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
 
   DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   DownloadManagerForBrowser(browser())->DownloadUrl(
-      url, GURL(""), "", false, -1, save_info, web_contents);
+      url, GURL(""), "", false, -1, save_info, web_contents,
+      DownloadManager::OnStartedCallback());
   observer->WaitForFinished();
   EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
 

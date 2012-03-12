@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/message_loop_helpers.h"
@@ -60,6 +61,9 @@ class WebContents;
 class CONTENT_EXPORT DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager> {
  public:
+  // NOTE: If there is an error, the DownloadId will be invalid.
+  typedef base::Callback<void(DownloadId, net::Error)> OnStartedCallback;
+
   virtual ~DownloadManager() {}
 
   static DownloadManager* Create(
@@ -179,13 +183,16 @@ class CONTENT_EXPORT DownloadManager
   // saved, and whether the user should be prompted about the download.
   // |web_contents| is the web page that the download is done in context of,
   // and must be non-NULL.
+  // |callback| will be called when the download starts, or if an error
+  // occurs that prevents a download item from being created.
   virtual void DownloadUrl(const GURL& url,
                            const GURL& referrer,
                            const std::string& referrer_encoding,
                            bool prefer_cache,
                            int64 post_id,
                            const DownloadSaveInfo& save_info,
-                           content::WebContents* web_contents) = 0;
+                           content::WebContents* web_contents,
+                           const OnStartedCallback& callback) = 0;
 
   // Allow objects to observe the download creation process.
   virtual void AddObserver(Observer* observer) = 0;

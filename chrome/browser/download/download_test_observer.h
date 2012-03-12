@@ -7,11 +7,13 @@
 #pragma once
 
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "net/base/net_errors.h"
 
 // Detects changes to the downloads after construction.
 // Finishes when one of the following happens:
@@ -237,6 +239,44 @@ class DownloadTestFlushObserver
   bool waiting_for_zero_inprogress_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestFlushObserver);
+};
+
+// Waits for a callback indicating that the DownloadItem is about to be created,
+// or that an error occurred and it won't be created.
+class DownloadTestItemCreationObserver
+    : public base::RefCountedThreadSafe<DownloadTestItemCreationObserver> {
+ public:
+  DownloadTestItemCreationObserver();
+
+  void WaitForDownloadItemCreation();
+
+  content::DownloadId download_id() const { return download_id_; }
+  net::Error error() const { return error_; }
+  bool started() const { return called_back_count_ > 0; }
+  bool succeeded() const { return started() && (error_ == net::OK); }
+
+  const content::DownloadManager::OnStartedCallback callback();
+
+ private:
+  friend class base::RefCountedThreadSafe<DownloadTestItemCreationObserver>;
+
+  ~DownloadTestItemCreationObserver();
+
+  void DownloadItemCreationCallback(content::DownloadId download_id,
+                                    net::Error error);
+
+  // The download creation information we received.
+  content::DownloadId download_id_;
+
+  net::Error error_;
+
+  // Count of callbacks.
+  size_t called_back_count_;
+
+  // We are in the message loop.
+  bool waiting_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadTestItemCreationObserver);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TEST_OBSERVER_H_

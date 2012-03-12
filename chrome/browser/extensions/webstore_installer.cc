@@ -215,7 +215,8 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
         download_util::INITIATED_BY_WEBSTORE_INSTALLER);
   profile_->GetDownloadManager()->DownloadUrl(
       download_url_, referrer, "",
-      false, -1, save_info, controller_->GetWebContents());
+      false, -1, save_info, controller_->GetWebContents(),
+      content::DownloadManager::OnStartedCallback());
 }
 
 void WebstoreInstaller::ReportFailure(const std::string& error) {
