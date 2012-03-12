@@ -207,10 +207,27 @@ static void SetupPangoLayoutWithoutFont(
     base::i18n::TextDirection text_direction,
     int flags) {
   cairo_font_options_t* cairo_font_options = GetCairoFontOptions();
+
+  // If we got an explicit request to turn off subpixel rendering, disable it on
+  // a copy of the static font options object.
+  bool copied_cairo_font_options = false;
+  if ((flags & Canvas::NO_SUBPIXEL_RENDERING) &&
+      (cairo_font_options_get_antialias(cairo_font_options) ==
+       CAIRO_ANTIALIAS_SUBPIXEL)) {
+    cairo_font_options = cairo_font_options_copy(cairo_font_options);
+    copied_cairo_font_options = true;
+    cairo_font_options_set_antialias(cairo_font_options, CAIRO_ANTIALIAS_GRAY);
+  }
+
   // This needs to be done early on; it has no effect when called just before
   // pango_cairo_show_layout().
   pango_cairo_context_set_font_options(
       pango_layout_get_context(layout), cairo_font_options);
+
+  if (copied_cairo_font_options) {
+    cairo_font_options_destroy(cairo_font_options);
+    cairo_font_options = NULL;
+  }
 
   // Callers of DrawStringInt handle RTL layout themselves, so tell pango to not
   // scope out RTL characters.

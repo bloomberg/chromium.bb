@@ -429,6 +429,10 @@ gfx::Rect Label::GetTextBounds() const {
 int Label::ComputeDrawStringFlags() const {
   int flags = 0;
 
+  // We can't use subpixel rendering if the background is non-opaque.
+  if (SkColorGetA(background_color_) != 0xFF)
+    flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
+
   if (directionality_mode_ == AUTO_DETECT_DIRECTIONALITY) {
     base::i18n::TextDirection direction =
         base::i18n::GetFirstStrongCharacterDirection(GetText());

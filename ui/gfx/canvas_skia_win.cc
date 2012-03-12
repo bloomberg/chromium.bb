@@ -186,7 +186,7 @@ void DrawTextAndClearBackground(SkCanvas* bmp_canvas,
   FillRect(hdc, &draw_rect, fill_brush);
   SelectObject(hdc, old_brush);
 
-  // Set black text with trasparent background.
+  // Set black text with transparent background.
   SetBkMode(hdc, TRANSPARENT);
   SetTextColor(hdc, 0);
 

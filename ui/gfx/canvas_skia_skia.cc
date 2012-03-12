@@ -135,6 +135,9 @@ void UpdateRenderText(const gfx::Rect& rect,
   else
     render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
+  if (flags & gfx::Canvas::NO_SUBPIXEL_RENDERING)
+    render_text->set_background_is_transparent(true);
+
   gfx::StyleRange style;
   style.foreground = color;
   style.font_style = font.GetStyle();
