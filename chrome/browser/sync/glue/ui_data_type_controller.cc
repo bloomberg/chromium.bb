@@ -143,6 +143,8 @@ void UIDataTypeController::Associate() {
 void UIDataTypeController::StartFailed(StartResult result,
                                        const SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (IsUnrecoverableResult(result))
+    RecordUnrecoverableError(FROM_HERE, "StartFailed");
   StopModels();
   if (result == ASSOCIATION_FAILED) {
     state_ = DISABLED;
@@ -235,14 +237,6 @@ void UIDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
   RecordUnrecoverableError(from_here, message);
   sync_service_->OnDisableDatatype(type(), from_here, message);
-}
-
-void UIDataTypeController::RecordUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures", type(),
-                            syncable::MODEL_TYPE_COUNT);
 }
 
 void UIDataTypeController::RecordAssociationTime(base::TimeDelta time) {
