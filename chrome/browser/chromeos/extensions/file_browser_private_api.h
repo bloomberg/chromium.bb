@@ -89,6 +89,8 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
 // TODO(kaznacheev): Move this definition to file_task_util.h
 class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
  public:
+  virtual ~FileTaskExecutor() {}
+
   // Initiates execution of file handler task identified with |task_id| for
   // each element of |file_urls|.
   bool InitiateFileTaskExecution(const std::string& task_id,
@@ -124,6 +126,9 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
 
 // Implements the chrome.fileBrowserPrivate.executeTask method.
 class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
+ public:
+  ExecuteTasksFileBrowserFunction() {}
+
  protected:
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -132,7 +137,6 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
   class Executor;
   scoped_refptr<FileTaskExecutor> executor_;
 
- public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.executeTask");
 };
 
