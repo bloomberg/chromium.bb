@@ -41,7 +41,12 @@
 
 #include <wayland-egl.h>
 
+#ifdef USE_CAIRO_GLESV2
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+#else
 #include <GL/gl.h>
+#endif
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
@@ -2814,6 +2819,12 @@ init_egl(struct display *d)
 	EGLint major, minor;
 	EGLint n;
 
+#ifdef USE_CAIRO_GLESV2
+#  define GL_BIT EGL_OPENGL_ES2_BIT
+#else
+#  define GL_BIT EGL_OPENGL_BIT
+#endif
+
 	static const EGLint argb_cfg_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PIXMAP_BIT,
 		EGL_RED_SIZE, 1,
@@ -2821,7 +2832,7 @@ init_egl(struct display *d)
 		EGL_BLUE_SIZE, 1,
 		EGL_ALPHA_SIZE, 1,
 		EGL_DEPTH_SIZE, 1,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+		EGL_RENDERABLE_TYPE, GL_BIT,
 		EGL_NONE
 	};
 
