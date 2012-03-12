@@ -104,7 +104,7 @@ EXTRA_ENV = {
 
   # LLC flags which set the target and output type.
   # These are handled separately by libLTO.
-  'LLC_FLAGS_TARGET' : '-march=${LLC_MARCH} -mcpu=${LLC_MCPU_%ARCH%} ' +
+  'LLC_FLAGS_TARGET' : '-mcpu=${LLC_MCPU_%ARCH%} ' +
                        '-mtriple=${TRIPLE} -filetype=${filetype}',
   # Additional non-default flags go here.
   'LLC_FLAGS_EXTRA' : '',
