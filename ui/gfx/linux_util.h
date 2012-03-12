@@ -6,8 +6,6 @@
 #define UI_GFX_LINUX_UTIL_H_
 #pragma once
 
-#include <stdint.h>
-
 #include <string>
 
 #include "ui/base/ui_export.h"
@@ -26,11 +24,6 @@ UI_EXPORT std::string RemoveWindowsStyleAccelerators(const std::string& label);
 // ConvertAcceleratorsFromWindowsStyle() will return the original string (except
 // with "_" characters doubled, to escape them for GTK).
 UI_EXPORT std::string EscapeWindowsStyleAccelerators(const std::string& label);
-
-// Makes a copy of |pixels| with the ordering changed from BGRA to RGBA.
-// The caller is responsible for free()ing the data. If |stride| is 0, it's
-// assumed to be 4 * |width|.
-uint8_t* BGRAToRGBA(const uint8_t* pixels, int width, int height, int stride);
 
 }  // namespace gfx
 
