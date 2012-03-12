@@ -1,5 +1,12 @@
-Breakpad actually lives in src (pulled via svn:externals from code.google.com).
+Name: Breakpad, An open-source multi-platform crash reporting system
+Short Name: breakpad
+URL: http://code.google.com/p/google-breakpad/
+License: New BSD, plus MIT/X derivate for libcurl
+Security Critical: no
 
 This directory contains Chrome's version of Breakpad's Visual Studio build
 files (*.vcproj) and a compiled version of Breakpad's symupload.exe utility
 for Windows.
+
+Part of the upstream Breakpad project is pulled into the src/ subdirectory via
+DEPS.
