@@ -444,7 +444,7 @@ void ProfileImpl::InitExtensions(bool extensions_enabled) {
   extension_info_map_ = new ExtensionInfoMap();
   extension_process_manager_.reset(ExtensionProcessManager::Create(this));
   extension_event_router_.reset(new ExtensionEventRouter(this));
-  extension_message_service_ = new ExtensionMessageService(this);
+  extension_message_service_.reset(new ExtensionMessageService(this));
   extension_navigation_observer_.reset(new ExtensionNavigationObserver(this));
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
@@ -625,9 +625,6 @@ ProfileImpl::~ProfileImpl() {
   // FaviconService depends on HistoryServce so make sure we delete
   // HistoryService first.
   favicon_service_.reset();
-
-  if (extension_message_service_)
-    extension_message_service_->DestroyingProfile();
 
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();

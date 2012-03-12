@@ -218,7 +218,7 @@ class ProfileImpl : public Profile,
   // resource requests from extension processes and those require access
   // to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-  scoped_refptr<ExtensionMessageService> extension_message_service_;
+  scoped_ptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<ExtensionEventRouter> extension_event_router_;
   scoped_ptr<ExtensionNavigationObserver> extension_navigation_observer_;
   scoped_refptr<ExtensionSpecialStoragePolicy>

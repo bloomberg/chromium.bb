@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,14 +11,13 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ipc/ipc_message.h"
 
 class Profile;
 
 namespace content {
+class RenderProcessHost;
 class WebContents;
 }
 
@@ -40,15 +39,10 @@ class WebContents;
 //
 // Terminology:
 // channel: connection between two ports
-// port: an IPC::Message::Sender interface and an optional routing_id (in the
-// case that the port is a tab).  The Sender is usually either a
+// port: an IPC::Message::Process interface and an optional routing_id (in the
+// case that the port is a tab).  The Process is usually either a
 // RenderProcessHost or a RenderViewHost.
-
-// TODO(mpcomplete): Remove refcounting and make Profile the sole owner of this
-// class. Then we can get rid of ProfileDestroyed().
-class ExtensionMessageService
-    : public base::RefCounted<ExtensionMessageService>,
-      public content::NotificationObserver {
+class ExtensionMessageService : public content::NotificationObserver {
  public:
   // A messaging channel. Note that the opening port can be the same as the
   // receiver, if an extension background page wants to talk to its tab (for
@@ -65,9 +59,7 @@ class ExtensionMessageService
   static void AllocatePortIdPair(int* port1, int* port2);
 
   explicit ExtensionMessageService(Profile* profile);
-
-  // Notification that our owning profile is going away.
-  void DestroyingProfile();
+  virtual ~ExtensionMessageService();
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is
@@ -86,28 +78,6 @@ class ExtensionMessageService
       int tab_id, const std::string& extension_id,
       const std::string& channel_name);
 
-  // Given an extension ID, opens a channel between the given
-  // automation "port" or DevTools service and that extension. the
-  // channel will be open to the extension process hosting the
-  // background page and tool strip.
-  //
-  // Returns a port ID to be used for posting messages between the
-  // processes, or -1 if the extension doesn't exist.
-  int OpenSpecialChannelToExtension(
-      const std::string& extension_id, const std::string& channel_name,
-      const std::string& tab_json, IPC::Message::Sender* source);
-
-  // Given an extension ID, opens a channel between the given DevTools
-  // service and the content script for that extension running in the
-  // designated tab.
-  //
-  // Returns a port ID identifying the DevTools end of the channel, to
-  // be used for posting messages. May return -1 on failure, although
-  // the code doesn't detect whether the extension actually exists.
-  int OpenSpecialChannelToTab(
-      const std::string& extension_id, const std::string& channel_name,
-      content::WebContents* target_web_contents, IPC::Message::Sender* source);
-
   // Closes the message channel associated with the given port, and notifies
   // the other side.
   void CloseChannel(int port_id);
@@ -116,17 +86,14 @@ class ExtensionMessageService
   void PostMessageFromRenderer(int port_id, const std::string& message);
 
  private:
-  friend class base::RefCounted<ExtensionMessageService>;
   friend class MockExtensionMessageService;
 
   // A map of channel ID to its channel object.
   typedef std::map<int, MessageChannel*> MessageChannelMap;
 
-  virtual ~ExtensionMessageService();
-
   // Common among Open(Special)Channel* variants.
   bool OpenChannelImpl(
-      IPC::Message::Sender* source,
+      content::RenderProcessHost* source,
       const std::string& tab_json,
       const MessagePort& receiver, int receiver_port_id,
       const std::string& source_extension_id,
@@ -141,10 +108,8 @@ class ExtensionMessageService
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // An IPC sender that might be in our list of channels has closed.
-  void OnSenderClosed(IPC::Message::Sender* sender);
-
-  Profile* profile_;
+  // A process that might be in our list of channels has closed.
+  void OnProcessClosed(content::RenderProcessHost* process);
 
   content::NotificationRegistrar registrar_;
 
