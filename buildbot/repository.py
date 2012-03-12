@@ -62,7 +62,7 @@ def IsARepoRoot(root):
   return os.path.isdir(repo_dir)
 
 
-def RepoSyncUsingSSH(git_repo):
+def RepoSyncUsingSSH(git_repo, detach=False):
   """Fetch the latest code for the given directory using repo sync over ssh.
 
   Args:
@@ -73,7 +73,10 @@ def RepoSyncUsingSSH(git_repo):
                        'url.%s.insteadof' % constants.GERRIT_SSH_URL,
                        constants.GIT_HTTP_URL], cwd=git_repo)
   try:
-    cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo)
+    if detach:
+      cros_lib.RunCommand(['repo', 'sync', '-d', '.'], cwd=git_repo)
+    else:
+      cros_lib.RunCommand(['repo', 'sync', '.'], cwd=git_repo)
   finally:
     cros_lib.RunCommand(['git',
                          'config',

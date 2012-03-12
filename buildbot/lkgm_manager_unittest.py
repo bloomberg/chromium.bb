@@ -253,7 +253,8 @@ class LKGMManagerTest(mox.MoxTestBase):
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(
         mox.StrContains(most_recent_candidate.VersionString())).AndRaise(
-            manifest_version.GitCommandException('Push failed'))
+        cros_lib.RunCommandError(mox.IgnoreArg(), mox.IgnoreArg(),
+                                 mox.IgnoreArg()))
 
     lkgm_manager.LKGMManager.SetInFlight(most_recent_candidate.VersionString())
     lkgm_manager.LKGMManager.PushSpecChanges(

@@ -247,8 +247,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
         self.PublishManifest(new_manifest, version)
         self.current_version = version
         return self.GetLocalManifest(version)
-      except (cros_lib.RunCommandError,
-              manifest_version.GitCommandException) as e:
+      except cros_lib.RunCommandError as e:
         err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
         logging.error(err_msg)
         last_error = err_msg
@@ -300,8 +299,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           self.cros_source.Sync(manifest)
           self._GenerateBlameListSinceLKGM()
           return manifest
-        except (cros_lib.RunCommandError,
-                manifest_version.GitCommandException) as e:
+        except cros_lib.RunCommandError as e:
           err_msg = 'Failed to set LKGM Candidate inflight. error: %s' % e
           logging.error(err_msg)
           last_error = err_msg
@@ -370,8 +368,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
             'Automatic: %s promoting %s to LKGM' % (self.build_name,
                                                     self.current_version))
         return
-      except (manifest_version.GitCommandException,
-              cros_lib.RunCommandError) as e:
+      except cros_lib.RunCommandError as e:
         last_error = 'Failed to promote manifest. error: %s' % e
         logging.error(last_error)
         logging.error('Retrying to promote manifest:  Retry %d/%d', attempt + 1,

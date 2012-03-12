@@ -30,11 +30,6 @@ class VersionUpdateException(Exception):
   pass
 
 
-class GitCommandException(Exception):
-  """Exception gets thrown for a git command that fails to execute."""
-  pass
-
-
 class StatusUpdateException(Exception):
   """Exception gets thrown for failure to update the status"""
   pass
@@ -45,50 +40,55 @@ class GenerateBuildSpecException(Exception):
   pass
 
 
-def _GitCleanDirectory(directory):
-  """"Clean git repo chanages.
+def _GitCleanAndCheckoutOrigin(git_repo, sync=False):
+  """Remove all local changes and checkout the origin.
 
-  raises: GitCommandException: when fails to clean.
+  All local changes in the supplied repo will be removed. The branch will
+  also be switched to a detached head pointing at the origin.
+
+  Args:
+    git_repo: Directory of git repository.
+    sync: Update origin before checking it out. In this case, if we have
+      pushed changes via ssh, we must also sync via ssh to ensure any
+      changes that have pushed will be sync'd.
   """
-  try:
-    cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=directory)
-    cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=directory)
-  except cros_lib.RunCommandError, e:
-    err_msg = 'Failed to clean git "%s" %s' % (directory, e.message)
-    logging.error(err_msg)
-    raise GitCommandException(err_msg)
+  cros_lib.RunCommand(['git', 'clean', '-d', '-f'], cwd=git_repo)
+  cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], cwd=git_repo)
+  if repository.InARepoRepository(git_repo, require_project=True):
+    if sync:
+      repository.RepoSyncUsingSSH(git_repo, detach=True)
+    else:
+      cros_lib.RunCommand(['repo', 'sync', '-d', '-l', '.'], cwd=git_repo)
+  else:
+    if sync:
+      cros_lib.RunCommand(['git', 'remote', 'update'], cwd=git_repo)
+    cros_lib.RunCommand(['git', 'checkout', 'origin/master'], cwd=git_repo)
 
 
 def CreatePushBranch(git_repo):
-  """Prepare a git/repo repository for making changes. It should
-     be up to date and have no files modified when you call this.
+  """Set up a clean push branch in the specified git repo.
+
+  Before calling this function, you should clean the directory of any stale
+  commits using _GitCleanAndCheckoutOrigin(...) or RefreshManifestCheckout(...).
+
   Args:
-    git_repo: git repo to push
-  Raises:
-    cros_lib.GitCommandException
+    git_repo: Directory of git repository.
   """
-  _GitCleanDirectory(git_repo)
-  try:
-    if repository.InARepoRepository(git_repo, require_project=True):
-      cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH, '.'],
-                          cwd=git_repo, error_ok=True)
-      repository.RepoSyncUsingSSH(git_repo)
-      cros_lib.RunCommand(['repo', 'start', PUSH_BRANCH, '.'], cwd=git_repo)
-    else:
-      cros_lib.RunCommand(['git', 'checkout', 'origin/master'], cwd=git_repo)
-      cros_lib.RunCommand(['git', 'checkout', '-B', PUSH_BRANCH, '-t',
-                           'origin/master'], cwd=git_repo)
-  except cros_lib.RunCommandError, e:
-    err_msg = 'Failed to prep for edit in %s with %s' % (git_repo, e.message)
-    logging.error(err_msg)
-    git_status = cros_lib.RunCommand(['git', 'status'], cwd=git_repo)
-    logging.error('Current repo %s status: %s', git_repo, git_status)
-    _GitCleanDirectory(git_repo)
-    raise GitCommandException(err_msg)
+  if repository.InARepoRepository(git_repo, require_project=True):
+    cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH, '.'],
+                        cwd=git_repo, error_code_ok=True)
+    cros_lib.RunCommand(['repo', 'start', PUSH_BRANCH, '.'], cwd=git_repo)
+  else:
+    cros_lib.RunCommand(['git', 'checkout', '-B', PUSH_BRANCH, '-t',
+                         'origin/master'], cwd=git_repo)
 
 
 def RefreshManifestCheckout(manifest_dir, manifest_repo):
-  """Checks out manifest versions into the manifest directory."""
+  """Checks out manifest-versions into the manifest directory.
+
+  If a repository is already present, it will be cleansed of any local
+  changes and restored to its pristine state, checking out the origin.
+  """
   reinitialize = True
   if os.path.exists(manifest_dir):
     result = cros_lib.RunCommand(['git', 'config', 'remote.origin.url'],
@@ -97,9 +97,11 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
     if (result.returncode == 0 and
         result.output.rstrip() == manifest_repo):
       logging.info('Updating manifest-versions checkout.')
-      result = cros_lib.RunCommand(['git', 'pull', '--force'],
-                                   cwd=manifest_dir, error_code_ok=True)
-      if result.returncode == 0:
+      try:
+        _GitCleanAndCheckoutOrigin(manifest_dir, sync=True)
+      except cros_lib.RunCommandError:
+        logging.warning('Could not update manifest-versions checkout.')
+      else:
         reinitialize = False
 
   if reinitialize:
@@ -109,44 +111,30 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
 
 
 def _PushGitChanges(git_repo, message, dry_run=True):
-  """Do the final commit into the git repo
+  """Push the final commit into the git repo.
+
   Args:
     git_repo: git repo to push
     message: Commit message
     dry_run: If true, don't actually push changes to the server
-  raises: GitCommandException
   """
+  remote, push_branch = cros_lib.GetPushBranch(PUSH_BRANCH, cwd=git_repo)
+  cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
+
+  # It's possible that while we are running on dry_run, someone has already
+  # committed our change.
   try:
-    remote, push_branch = cros_lib.GetPushBranch(PUSH_BRANCH, cwd=git_repo)
-    cros_lib.RunCommand(['git', 'add', '-A'], cwd=git_repo)
+    cros_lib.RunCommand(['git', 'commit', '-m', message], cwd=git_repo)
+  except cros_lib.RunCommandError:
+    if dry_run:
+      return
+    raise
 
-    # It's possible that while we are running on dry_run, someone has already
-    # committed our change.
-    try:
-      cros_lib.RunCommand(['git', 'commit', '-am', message], cwd=git_repo)
-    except cros_lib.RunCommandError:
-      if dry_run:
-        return
-      else:
-        raise
+  push_cmd = ['git', 'push', remote, '%s:%s' % (PUSH_BRANCH, push_branch)]
+  if dry_run:
+    push_cmd.extend(['--dry-run', '--force'])
 
-    push_cmd = ['git', 'push', remote, '%s:%s' % (PUSH_BRANCH, push_branch)]
-    if dry_run: push_cmd.extend(['--dry-run', '--force'])
-    cros_lib.RunCommand(push_cmd, cwd=git_repo)
-  except cros_lib.RunCommandError, e:
-    err_msg = 'Failed to commit to %s' % e.message
-    logging.error(err_msg)
-    git_status = cros_lib.RunCommand(['git', 'status'], cwd=git_repo)
-    logging.error('Current repo %s status:\n%s', git_repo, git_status)
-    _GitCleanDirectory(git_repo)
-    raise GitCommandException(err_msg)
-  finally:
-    if repository.InARepoRepository(git_repo, require_project=True):
-      # Needed for chromeos version file.  Otherwise on increment, we leave
-      # local commit behind in tree.
-      cros_lib.RunCommand(['repo', 'abandon', PUSH_BRANCH], cwd=git_repo,
-                          error_ok=True)
-      repository.RepoSyncUsingSSH(git_repo)
+  cros_lib.RunCommand(push_cmd, cwd=git_repo)
 
 
 def _RemoveDirs(dir_name):
@@ -320,12 +308,17 @@ class VersionInfo(object):
 
     repo_dir = os.path.dirname(self.version_file)
 
-    CreatePushBranch(repo_dir)
+    try:
+      CreatePushBranch(repo_dir)
 
-    shutil.copyfile(temp_file, self.version_file)
-    os.unlink(temp_file)
+      shutil.copyfile(temp_file, self.version_file)
+      os.unlink(temp_file)
 
-    _PushGitChanges(repo_dir, message, dry_run=dry_run)
+      _PushGitChanges(repo_dir, message, dry_run=dry_run)
+    finally:
+      # Update to the remote version that contains our changes. This is needed
+      # to ensure that we don't build a release using a local commit.
+      _GitCleanAndCheckoutOrigin(repo_dir, sync=True)
 
     return self.VersionString()
 
@@ -594,13 +587,13 @@ class BuildSpecsManager(object):
       Raises:
         GenerateBuildSpecException in case of failure to generate a buildspec
     """
+    self.RefreshManifestCheckout()
+
     last_error = None
     for index in range(0, retries + 1):
       try:
         self.CheckoutSourceCode()
 
-        # Refresh the manifest checkout.
-        self.RefreshManifestCheckout()
         version_info = self.GetCurrentVersionInfo()
         self.InitializeManifestVariables(version_info)
 
@@ -620,11 +613,14 @@ class BuildSpecsManager(object):
 
         self.current_version = version
         return self.GetLocalManifest(version)
-      except (GitCommandException, cros_lib.RunCommandError) as e:
+      except cros_lib.RunCommandError as e:
         last_error = 'Failed to generate buildspec. error: %s' % e
         logging.error(last_error)
         logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
                       retries)
+
+        # Cleanse any failed local changes.
+        self.RefreshManifestCheckout()
     else:
       raise GenerateBuildSpecException(last_error)
 
@@ -664,10 +660,11 @@ class BuildSpecsManager(object):
       success: True for success, False for failure
       retries: Number of retries for updating the status
     """
+    self.RefreshManifestCheckout()
+
     last_error = None
     for index in range(0, retries + 1):
       try:
-        self.RefreshManifestCheckout()
         CreatePushBranch(self.manifest_dir)
         status = self.STATUS_PASSED if success else self.STATUS_FAILED
         commit_message = ('Automatic checkin: status=%s build_version %s for '
@@ -680,13 +677,16 @@ class BuildSpecsManager(object):
           self._SetFailed()
 
         self.PushSpecChanges(commit_message)
-      except (GitCommandException, cros_lib.RunCommandError) as e:
+      except cros_lib.RunCommandError as e:
         last_error = ('Failed to update the status for %s with the '
                       'following error %s' % (self.build_name,
                                               e.message))
         logging.error(last_error)
         logging.error('Retrying to generate buildspec:  Retry %d/%d', index + 1,
                       retries)
+
+        # Cleanse any failed local changes.
+        self.RefreshManifestCheckout()
       else:
         return
     else:
