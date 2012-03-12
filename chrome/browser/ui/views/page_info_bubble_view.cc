@@ -13,10 +13,11 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/cert_store.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "net/base/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
@@ -117,7 +118,7 @@ PageInfoBubbleView::PageInfoBubbleView(views::View* anchor_view,
 
   if (cert_id_ > 0) {
     scoped_refptr<net::X509Certificate> cert;
-    CertStore::GetInstance()->RetrieveCert(cert_id_, &cert);
+    content::CertStore::GetInstance()->RetrieveCert(cert_id_, &cert);
     // When running with fake certificate (Chrome Frame), we have no os
     // certificate, so there is no cert to show. Don't bother showing the cert
     // info link in that case.

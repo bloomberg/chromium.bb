@@ -9,10 +9,10 @@
 #include "googleurl/src/gurl.h"
 
 namespace content {
+class CertStore;
 struct SSLStatus;
 }
 
-class CertStore;
 class Profile;
 class TabContentsWrapper;
 
@@ -58,7 +58,7 @@ class WebsiteSettingsModel {
   WebsiteSettingsModel(Profile* profile,
                        const GURL& url,
                        const content::SSLStatus& ssl,
-                       CertStore* cert_store);
+                       content::CertStore* cert_store);
 
   virtual ~WebsiteSettingsModel();
 
@@ -110,7 +110,7 @@ class WebsiteSettingsModel {
   string16 organization_name_;
 
   // The |CertStore| provides all X509Certificates.
-  CertStore* cert_store_;
+  content::CertStore* cert_store_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsModel);
 };

@@ -7,7 +7,7 @@
 #include "base/at_exit.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/cert_store.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/ssl_connection_status_flags.h"
@@ -38,12 +38,11 @@ int SetSSLCipherSuite(int connection_status, int cipher_suite) {
   return cipher_suite | connection_status;
 }
 
-class MockCertStore : public CertStore {
+class MockCertStore : public content::CertStore {
  public:
   virtual ~MockCertStore() {}
   MOCK_METHOD2(StoreCert, int(net::X509Certificate*, int));
   MOCK_METHOD2(RetrieveCert, bool(int, scoped_refptr<net::X509Certificate>*));
-  MOCK_METHOD1(RemoveCertsForRenderProcesHost, void(int));
 };
 
 class WebsiteSettingsModelTest : public testing::Test {

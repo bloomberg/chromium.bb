@@ -7,7 +7,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/time_format.h"
-#include "content/browser/cert_store.h"
+#include "content/public/browser/cert_store.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -283,7 +283,8 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
     if (cert_status & kErrorFlags[i]) {
       count++;
       if (!cert.get()) {
-        bool r = CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
+        bool r = content::CertStore::GetInstance()->RetrieveCert(
+            cert_id, &cert);
         DCHECK(r);
       }
       if (errors)

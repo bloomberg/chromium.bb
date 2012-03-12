@@ -23,7 +23,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/cert_store.h"
+#include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/download/download_file_manager.h"

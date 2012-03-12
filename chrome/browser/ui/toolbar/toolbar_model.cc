@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/cert_store.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -123,7 +123,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
         return SECURITY_WARNING;
       }
       if ((ssl.cert_status & net::CERT_STATUS_IS_EV) &&
-          CertStore::GetInstance()->RetrieveCert(ssl.cert_id, NULL))
+          content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, NULL))
         return EV_SECURE;
       return SECURE;
 
@@ -150,7 +150,7 @@ string16 ToolbarModel::GetEVCertName() const {
   scoped_refptr<net::X509Certificate> cert;
   // Note: Navigation controller and active entry are guaranteed non-NULL or
   // the security level would be NONE.
-  CertStore::GetInstance()->RetrieveCert(
+  content::CertStore::GetInstance()->RetrieveCert(
       GetNavigationController()->GetVisibleEntry()->GetSSL().cert_id, &cert);
   return GetEVCertName(*cert);
 }

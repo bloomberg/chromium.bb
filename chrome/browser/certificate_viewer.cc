@@ -4,11 +4,12 @@
 
 #include "chrome/browser/certificate_viewer.h"
 
-#include "content/browser/cert_store.h"
+#include "content/public/browser/cert_store.h"
+#include "net/base/x509_certificate.h"
 
 void ShowCertificateViewerByID(gfx::NativeWindow parent, int cert_id) {
   scoped_refptr<net::X509Certificate> cert;
-  CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
+  content::CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
   if (!cert.get()) {
     // The certificate was not found. Could be that the renderer crashed before
     // we displayed the page info.

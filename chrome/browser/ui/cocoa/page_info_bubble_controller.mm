@@ -20,7 +20,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/cert_store.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -405,7 +405,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
   // By default, assume that we don't have certificate information to show.
   scoped_refptr<net::X509Certificate> cert;
-  CertStore::GetInstance()->RetrieveCert(certID_, &cert);
+  content::CertStore::GetInstance()->RetrieveCert(certID_, &cert);
 
   // Don't bother showing certificates if there isn't one.
   if (!cert.get() || !cert->os_cert_handle()) {

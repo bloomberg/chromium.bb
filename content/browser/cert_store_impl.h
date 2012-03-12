@@ -2,57 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_CERT_STORE_H_
-#define CONTENT_BROWSER_CERT_STORE_H_
+#ifndef CONTENT_BROWSER_CERT_STORE_IMPL_H_
+#define CONTENT_BROWSER_CERT_STORE_IMPL_H_
 #pragma once
 
 #include <map>
 
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "content/common/content_export.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/x509_certificate.h"
 
-// The purpose of the cert store is to provide an easy way to store/retrieve
-// X509Certificate objects.  When stored, an X509Certificate object is
-// associated with a RenderProcessHost.  If all the RenderProcessHosts
-// associated with the cert have exited, the cert is removed from the store.
-// This class is used by the SSLManager to keep track of the certs associated
-// to loaded resources.
-// It can be accessed from the UI and IO threads (it is thread-safe).
-// Note that the cert ids will overflow if we register more than 2^32 - 1 certs
-// in 1 browsing session (which is highly unlikely to happen).
-
-class CONTENT_EXPORT CertStore : public content::NotificationObserver {
+class CertStoreImpl : public content::CertStore,
+                      public content::NotificationObserver {
  public:
   // Returns the singleton instance of the CertStore.
-  static CertStore* GetInstance();
+  static CertStoreImpl* GetInstance();
 
-  // Stores the specified cert and returns the id associated with it.  The cert
-  // is associated to the specified RenderProcessHost.
-  // When all the RenderProcessHosts associated with a cert have exited, the
-  // cert is removed from the store.
-  // Note: ids starts at 1.
-  virtual int StoreCert(net::X509Certificate* cert, int render_process_host_id);
-
-  // Tries to retrieve the previously stored cert associated with the specified
-  // |cert_id|. Returns whether the cert could be found, and, if |cert| is
-  // non-NULL, copies it in.
+  // CertStore implementation:
+  virtual int StoreCert(net::X509Certificate* cert,
+                        int render_process_host_id) OVERRIDE;
   virtual bool RetrieveCert(int cert_id,
-                            scoped_refptr<net::X509Certificate>* cert);
+                            scoped_refptr<net::X509Certificate>* cert) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
  protected:
-  CertStore();
-  virtual ~CertStore();
+  CertStoreImpl();
+  virtual ~CertStoreImpl();
 
  private:
-  friend struct DefaultSingletonTraits<CertStore>;
+  friend struct DefaultSingletonTraits<CertStoreImpl>;
 
   void RegisterForNotification();
 
@@ -83,7 +67,7 @@ class CONTENT_EXPORT CertStore : public content::NotificationObserver {
   //                     cert_to_id_.
   base::Lock cert_lock_;
 
-  DISALLOW_COPY_AND_ASSIGN(CertStore);
+  DISALLOW_COPY_AND_ASSIGN(CertStoreImpl);
 };
 
-#endif  // CONTENT_BROWSER_CERT_STORE_H_
+#endif  // CONTENT_BROWSER_CERT_STORE_IMPL_H_

@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "content/browser/cert_store.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -26,7 +26,7 @@
 WebsiteSettingsModel::WebsiteSettingsModel(Profile* profile,
                                            const GURL& url,
                                            const content::SSLStatus& ssl,
-                                           CertStore* cert_store)
+                                           content::CertStore* cert_store)
     : site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       cert_store_(cert_store)  {

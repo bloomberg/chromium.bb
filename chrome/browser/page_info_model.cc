@@ -16,7 +16,7 @@
 #include "chrome/browser/page_info_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "content/browser/cert_store.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -63,7 +63,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
   }
 
   if (ssl.cert_id &&
-      CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert) &&
+      content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, &cert) &&
       (!net::IsCertStatusError(ssl.cert_status) ||
        net::IsCertStatusMinorError(ssl.cert_status))) {
     // There are no major errors. Check for minor errors.

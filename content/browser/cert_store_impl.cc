@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/cert_store.h"
+#include "content/browser/cert_store_impl.h"
 
 #include <algorithm>
 #include <functional>
@@ -26,26 +26,31 @@ struct MatchSecond {
   T value;
 };
 
-//  static
-CertStore* CertStore::GetInstance() {
-  return Singleton<CertStore>::get();
+// static
+content::CertStore* content::CertStore::GetInstance() {
+  return CertStoreImpl::GetInstance();
 }
 
-CertStore::CertStore() : next_cert_id_(1) {
+//  static
+CertStoreImpl* CertStoreImpl::GetInstance() {
+  return Singleton<CertStoreImpl>::get();
+}
+
+CertStoreImpl::CertStoreImpl() : next_cert_id_(1) {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     RegisterForNotification();
   } else {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&CertStore::RegisterForNotification,
+        base::Bind(&CertStoreImpl::RegisterForNotification,
                    base::Unretained(this)));
   }
 }
 
-CertStore::~CertStore() {
+CertStoreImpl::~CertStoreImpl() {
 }
 
-void CertStore::RegisterForNotification() {
+void CertStoreImpl::RegisterForNotification() {
   // We watch for RenderProcess termination, as this is how we clear
   // certificates for now.
   // TODO(jcampan): we should be listening to events such as resource cached/
@@ -58,7 +63,7 @@ void CertStore::RegisterForNotification() {
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-int CertStore::StoreCert(net::X509Certificate* cert, int process_id) {
+int CertStoreImpl::StoreCert(net::X509Certificate* cert, int process_id) {
   DCHECK(cert);
   base::AutoLock auto_lock(cert_lock_);
 
@@ -98,8 +103,8 @@ int CertStore::StoreCert(net::X509Certificate* cert, int process_id) {
   return cert_id;
 }
 
-bool CertStore::RetrieveCert(int cert_id,
-                             scoped_refptr<net::X509Certificate>* cert) {
+bool CertStoreImpl::RetrieveCert(int cert_id,
+                                 scoped_refptr<net::X509Certificate>* cert) {
   base::AutoLock auto_lock(cert_lock_);
 
   CertMap::iterator iter = id_to_cert_.find(cert_id);
@@ -110,7 +115,7 @@ bool CertStore::RetrieveCert(int cert_id,
   return true;
 }
 
-void CertStore::RemoveCertInternal(int cert_id) {
+void CertStoreImpl::RemoveCertInternal(int cert_id) {
   CertMap::iterator cert_iter = id_to_cert_.find(cert_id);
   DCHECK(cert_iter != id_to_cert_.end());
 
@@ -122,7 +127,7 @@ void CertStore::RemoveCertInternal(int cert_id) {
   id_to_cert_.erase(cert_iter);
 }
 
-void CertStore::RemoveCertsForRenderProcesHost(int process_id) {
+void CertStoreImpl::RemoveCertsForRenderProcesHost(int process_id) {
   base::AutoLock auto_lock(cert_lock_);
 
   // We iterate through all the cert ids for that process.
@@ -162,9 +167,9 @@ void CertStore::RemoveCertsForRenderProcesHost(int process_id) {
     process_id_to_cert_id_.erase(process_ids.first, process_ids.second);
 }
 
-void CertStore::Observe(int type,
-                        const content::NotificationSource& source,
-                        const content::NotificationDetails& details) {
+void CertStoreImpl::Observe(int type,
+                            const content::NotificationSource& source,
+                            const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
          type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED);
   content::RenderProcessHost* rph =
