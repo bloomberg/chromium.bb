@@ -102,7 +102,7 @@ cr.define('extensions', function() {
         localStrings.getString('ok'),
         '',
         function() {
-          ExtensionSettings.showOverlay($('packExtensionOverlay'));
+          ExtensionSettings.showOverlay(null);
         },
         null);
     ExtensionSettings.showOverlay($('alertOverlay'));
