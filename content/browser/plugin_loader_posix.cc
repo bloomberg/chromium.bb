@@ -164,19 +164,27 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
 
   PluginServiceImpl::GetInstance()->GetPluginList()->SetPlugins(
       loaded_plugins_);
-  for (std::vector<PendingCallback>::iterator it = callbacks_.begin();
-       it != callbacks_.end();
-       ++it) {
-    it->target_loop->PostTask(FROM_HERE,
-        base::Bind(it->callback, loaded_plugins_));
+
+  // Only call the first callback with loaded plugins because there may be
+  // some extra plugin paths added since the first callback is added.
+  if (!callbacks_.empty()) {
+    PendingCallback callback = callbacks_.front();
+    callbacks_.pop_front();
+    callback.target_loop->PostTask(
+        FROM_HERE,
+        base::Bind(callback.callback, loaded_plugins_));
   }
-  callbacks_.clear();
 
   HISTOGRAM_TIMES("PluginLoaderPosix.LoadDone",
                   (base::TimeTicks::Now() - load_start_time_)
                       * base::Time::kMicrosecondsPerMillisecond);
   load_start_time_ = base::TimeTicks();
 
+  if (!callbacks_.empty()) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+        base::Bind(&PluginLoaderPosix::GetPluginsToLoad, this));
+    return false;
+  }
   return true;
 }
 

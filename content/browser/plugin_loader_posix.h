@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_PLUGIN_LOADER_POSIX_H_
 #define CONTENT_BROWSER_PLUGIN_LOADER_POSIX_H_
 
+#include <deque>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -113,7 +114,7 @@ class CONTENT_EXPORT PluginLoaderPosix
 
   // The callback and message loop on which the callback will be run when the
   // plugin loading process has been completed.
-  std::vector<PendingCallback> callbacks_;
+  std::deque<PendingCallback> callbacks_;
 
   // The time at which plugin loading started.
   base::TimeTicks load_start_time_;

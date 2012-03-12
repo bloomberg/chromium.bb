@@ -114,14 +114,21 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
   EXPECT_EQ(2u, plugin_loader()->number_of_pending_callbacks());
 
-  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(1);
+  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal()).Times(2);
   message_loop()->RunAllPending();
-
-  plugin_loader()->canonical_list()->clear();
-  plugin_loader()->canonical_list()->push_back(plugin1_.path);
 
   EXPECT_EQ(0, did_callback);
 
+  plugin_loader()->canonical_list()->clear();
+  plugin_loader()->canonical_list()->push_back(plugin1_.path);
+  plugin_loader()->TestOnPluginLoaded(0, plugin1_);
+  message_loop()->RunAllPending();
+
+  EXPECT_EQ(1, did_callback);
+  EXPECT_EQ(1u, plugin_loader()->number_of_pending_callbacks());
+
+  plugin_loader()->canonical_list()->clear();
+  plugin_loader()->canonical_list()->push_back(plugin1_.path);
   plugin_loader()->TestOnPluginLoaded(0, plugin1_);
   message_loop()->RunAllPending();
 
