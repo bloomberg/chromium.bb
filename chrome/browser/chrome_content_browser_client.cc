@@ -99,6 +99,7 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_POSIX)
@@ -158,6 +159,20 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
   if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
           browser_context, *url))
     return false;
+
+#if defined(OS_CHROMEOS)
+  // Special case : in ChromeOS in Guest mode bookmarks and history are
+  // disabled for security reasons. New tab page explains the reasons, so
+  // we redirect user to new tab page.
+  if (chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
+    if (url->SchemeIs(chrome::kChromeUIScheme) &&
+        (url->DomainIs(chrome::kChromeUIBookmarksHost) ||
+         url->DomainIs(chrome::kChromeUIHistoryHost))) {
+      // Rewrite with new tab URL
+      *url = GURL(chrome::kChromeUINewTabURL);
+    }
+  }
+#endif
 
   // Special case the new tab page. In older versions of Chrome, the new tab
   // page was hosted at chrome-internal:<blah>. This might be in people's saved

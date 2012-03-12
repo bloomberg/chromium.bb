@@ -28,6 +28,10 @@
 #include "chrome/browser/defaults.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace extensions {
 
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
@@ -257,7 +261,13 @@ void ComponentLoader::AddOrReloadEnterpriseWebStore() {
 }
 
 void ComponentLoader::AddDefaultComponentExtensions() {
+#if defined(OS_CHROMEOS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
+    Add(IDR_BOOKMARKS_MANIFEST,
+        FilePath(FILE_PATH_LITERAL("bookmark_manager")));
+#else
   Add(IDR_BOOKMARKS_MANIFEST, FilePath(FILE_PATH_LITERAL("bookmark_manager")));
+#endif
 
 #if defined(FILE_MANAGER_EXTENSION)
   AddFileManagerExtension();
