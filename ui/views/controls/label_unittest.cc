@@ -841,4 +841,18 @@ TEST(LabelTest, DrawMultiLineStringInRTL) {
   base::i18n::SetICUDefaultLocale(locale);
 }
 
+// Check that we disable subpixel rendering when a transparent background is
+// being used.
+TEST(LabelTest, DisableSubpixelRendering) {
+  Label label;
+  label.SetBackgroundColor(SK_ColorWHITE);
+  EXPECT_EQ(
+      0, label.ComputeDrawStringFlags() & gfx::Canvas::NO_SUBPIXEL_RENDERING);
+
+  label.SetBackgroundColor(SkColorSetARGB(64, 255, 255, 255));
+  EXPECT_EQ(
+      gfx::Canvas::NO_SUBPIXEL_RENDERING,
+      label.ComputeDrawStringFlags() & gfx::Canvas::NO_SUBPIXEL_RENDERING);
+}
+
 }  // namespace views

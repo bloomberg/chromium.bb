@@ -219,6 +219,9 @@ class VIEWS_EXPORT Label : public View {
   FRIEND_TEST_ALL_PREFIXES(LabelTest, DrawMultiLineStringInRTL);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, AutoDetectDirectionality);
 
+  // Calls ComputeDrawStringFlags().
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, DisableSubpixelRendering);
+
   static gfx::Font GetDefaultFont();
 
   void Init(const string16& text, const gfx::Font& font);
