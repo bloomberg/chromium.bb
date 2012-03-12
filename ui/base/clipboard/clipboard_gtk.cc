@@ -23,7 +23,6 @@
 #include "ui/base/gtk/scoped_gobject.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/gfx/linux_util.h"
 #include "ui/gfx/size.h"
 
 namespace ui {
