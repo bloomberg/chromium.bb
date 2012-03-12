@@ -25,7 +25,7 @@ AC_CHECK_FUNC([dlopen], [],
 AC_SUBST(DLOPEN_LIBS)
 
 PKG_CHECK_MODULES(COMPOSITOR,
-		  [wayland-server egl >= 7.10 glesv2 pixman-1 libpng])
+		  [wayland-server egl >= 7.10 glesv2])
 
 AC_CHECK_PROG(RSVG_CONVERT, rsvg-convert, rsvg-convert)
 AM_CONDITIONAL(HAVE_RSVG_CONVERT, test -n "$RSVG_CONVERT")
@@ -104,6 +104,26 @@ if test x$cairo_modules = xcairo-glesv2; then
   AC_DEFINE([USE_CAIRO_GLESV2], [1], [Use the GLESv2 GL cairo backend])
 fi
 
+PKG_CHECK_MODULES(PIXMAN, [pixman-1])
+PKG_CHECK_MODULES(PNG, [libpng])
+PKG_CHECK_MODULES(WEBP, [libwebp], [have_webp=yes], [have_webp=no])
+AS_IF([test "x$have_webp" = "xyes"],
+      [AC_DEFINE([HAVE_WEBP], [1], [Have webp])])
+IMAGE_LIBS="$PIXMAN_LIBS $PNG_LIBS $WEBP_LIBS"
+IMAGE_CFLAGS="$PIXMAN_CFLAGS $PNG_CFLAGS $WEBP_CFLAGS"
+AC_SUBST(IMAGE_LIBS)
+AC_SUBST(IMAGE_CFLAGS)
+
+AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
+if test x$have_jpeglib = xyes; then
+  IMAGE_LIBS="$IMAGE_LIBS -ljpeg"
+else
+  AC_ERROR([libjpeg not found])
+fi
+
+COMPOSITOR_LIBS="$COMPOSITOR_LIBS $IMAGE_LIBS"
+COMPOSITOR_CFLAGS="$COMPOSITOR_CFLAGS $IMAGE_CFLAGS"
+
 AC_ARG_ENABLE(simple-clients, [  --enable-simple-clients],, enable_simple_clients=yes)
 AM_CONDITIONAL(BUILD_SIMPLE_CLIENTS, test x$enable_simple_clients = xyes)
 if test x$enable_simple_clients = xyes; then
@@ -117,29 +137,18 @@ AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients = xyes)
 if test x$enable_clients = xyes; then
   AC_DEFINE([BUILD_CLIENTS], [1], [Build the Wayland clients])
 
-  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 cairo >= 1.10.0 gdk-pixbuf-2.0 glib-2.0 gobject-2.0 gio-2.0 xkbcommon libpng])
+  PKG_CHECK_MODULES(CLIENT, [wayland-client wayland-egl egl >= 7.10 cairo >= 1.10.0 xkbcommon])
 
-  PKG_CHECK_MODULES(POPPLER, [poppler-glib],
+  CLIENT_CFLAGS="$CLIENT_CFLAGS $IMAGE_CFLAGS"
+  CLIENT_LIBS="$CLIENT_LIBS $IMAGE_LIBS"
+
+  PKG_CHECK_MODULES(POPPLER, [poppler-glib glib-2.0 gobject-2.0 gio-2.0 ],
 			     [have_poppler=yes], [have_poppler=no])
   PKG_CHECK_MODULES(CAIRO_EGL, [cairo-egl >= 1.11.3 $cairo_modules],
 		    [have_cairo_egl=yes], [have_cairo_egl=no])
   AS_IF([test "x$have_cairo_egl" = "xyes"],
         [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
         [AC_MSG_WARN([Cairo-EGL not found - clients will use cairo image])])
-
-  PKG_CHECK_MODULES(WEBP, [libwebp], [have_webp=yes], [have_webp=no])
-  AS_IF([test "x$have_webp" = "xyes"],
-        [AC_DEFINE([HAVE_WEBP], [1], [Have webp])])
-  CLIENT_LIBS="$CLIENT_LIBS $WEBP_LIBS"
-  CLIENT_CFLAGS="$CLIENT_CFLAGS $WEBP_CFLAGS"
-
-  AC_CHECK_LIB([jpeg], [jpeg_CreateDecompress], have_jpeglib=yes)
-  if test x$have_jpeglib = xyes; then
-    CLIENT_LIBS="$CLIENT_LIBS -ljpeg"
-  else
-    AC_ERROR([libjpeg not found])
-  fi
-
 fi
 
 AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")

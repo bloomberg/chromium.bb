@@ -35,9 +35,10 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <sys/mman.h>
 #include <sys/epoll.h>
+
+#include <pixman.h>
 
 #include <wayland-egl.h>
 
@@ -405,45 +406,14 @@ display_create_egl_image_surface_from_file(struct display *display,
 					   struct rectangle *rect)
 {
 	cairo_surface_t *surface;
-	GdkPixbuf *pixbuf;
-	GError *error = NULL;
-	int stride, i;
-	unsigned char *pixels, *p, *end;
+	pixman_image_t *image;
 	struct egl_image_surface_data *data;
 
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
-						   rect->width, rect->height,
-						   FALSE, &error);
-	if (error != NULL)
-		return NULL;
-
-	if (!gdk_pixbuf_get_has_alpha(pixbuf) ||
-	    gdk_pixbuf_get_n_channels(pixbuf) != 4) {
-		g_object_unref(pixbuf);
-		return NULL;
-	}
-
-
-	stride = gdk_pixbuf_get_rowstride(pixbuf);
-	pixels = gdk_pixbuf_get_pixels(pixbuf);
-
-	for (i = 0; i < rect->height; i++) {
-		p = pixels + i * stride;
-		end = p + rect->width * 4;
-		while (p < end) {
-			unsigned int t;
-
-			MULT(p[0], p[0], p[3], t);
-			MULT(p[1], p[1], p[3], t);
-			MULT(p[2], p[2], p[3], t);
-			p += 4;
-
-		}
-	}
+	image = load_image(filename);
 
 	surface = display_create_egl_image_surface(display, 0, rect);
 	if (surface == NULL) {
-		g_object_unref(pixbuf);
+		pixman_image_unref(image);
 		return NULL;
 	}
 
@@ -452,10 +422,11 @@ display_create_egl_image_surface_from_file(struct display *display,
 	cairo_device_acquire(display->argb_device);
 	glBindTexture(GL_TEXTURE_2D, data->texture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, rect->width, rect->height,
-			GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+			GL_RGBA, GL_UNSIGNED_BYTE,
+			pixman_image_get_data(image));
 	cairo_device_release(display->argb_device);
 
-	g_object_unref(pixbuf);
+	pixman_image_unref(image);
 
 	return surface;
 }
@@ -557,55 +528,23 @@ display_create_shm_surface_from_file(struct display *display,
 				     struct rectangle *rect)
 {
 	cairo_surface_t *surface;
-	GdkPixbuf *pixbuf;
-	GError *error = NULL;
-	int stride, i;
-	unsigned char *pixels, *p, *end, *dest_data;
-	int dest_stride;
-	uint32_t *d;
+	pixman_image_t *image;
+	void *dest;
+	int size;
 
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
-						   rect->width, rect->height,
-						   FALSE, &error);
-	if (error != NULL)
-		return NULL;
-
-	if (!gdk_pixbuf_get_has_alpha(pixbuf) ||
-	    gdk_pixbuf_get_n_channels(pixbuf) != 4) {
-		g_object_unref(pixbuf);
-		return NULL;
-	}
-
-	stride = gdk_pixbuf_get_rowstride(pixbuf);
-	pixels = gdk_pixbuf_get_pixels(pixbuf);
+	image = load_image(filename);
 
 	surface = display_create_shm_surface(display, rect, 0);
 	if (surface == NULL) {
-		g_object_unref(pixbuf);
+		pixman_image_unref(image);
 		return NULL;
 	}
 
-	dest_data = cairo_image_surface_get_data (surface);
-	dest_stride = cairo_image_surface_get_stride (surface);
+	size = pixman_image_get_stride(image) * pixman_image_get_height(image);
+	dest = cairo_image_surface_get_data(surface);
+	memcpy(dest, pixman_image_get_data(image), size);
 
-	for (i = 0; i < rect->height; i++) {
-		d = (uint32_t *) (dest_data + i * dest_stride);
-		p = pixels + i * stride;
-		end = p + rect->width * 4;
-		while (p < end) {
-			unsigned int t;
-			unsigned char a, r, g, b;
-
-			a = p[3];
-			MULT(r, p[0], a, t);
-			MULT(g, p[1], a, t);
-			MULT(b, p[2], a, t);
-			p += 4;
-			*d++ = (a << 24) | (r << 16) | (g << 8) | b;
-		}
-	}
-
-	g_object_unref(pixbuf);
+	pixman_image_unref(image);
 
 	return surface;
 }
@@ -2920,8 +2859,6 @@ struct display *
 display_create(int argc, char *argv[])
 {
 	struct display *d;
-
-	g_type_init();
 
 	argc = parse_options(xkb_options,
 			     ARRAY_LENGTH(xkb_options), argc, argv);

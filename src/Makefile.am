@@ -16,7 +16,6 @@ weston_LDADD =								\
 weston_SOURCES =			\
 	compositor.c				\
 	compositor.h				\
-	image-loader.c				\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
@@ -52,7 +51,8 @@ module_LTLIBRARIES =				\
 if ENABLE_X11_COMPOSITOR
 x11_backend = x11-backend.la
 x11_backend_la_LDFLAGS = -module -avoid-version
-x11_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(X11_COMPOSITOR_LIBS)
+x11_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(X11_COMPOSITOR_LIBS) \
+	../shared/libconfig-parser.la
 x11_backend_la_CFLAGS = $(X11_COMPOSITOR_CFLAGS) $(GCC_CFLAGS)
 x11_backend_la_SOURCES = compositor-x11.c
 endif

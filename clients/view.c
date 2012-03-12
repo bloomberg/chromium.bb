@@ -262,6 +262,8 @@ main(int argc, char *argv[])
 	struct display *d;
 	int i;
 
+	g_type_init();
+
 	argc = parse_options(view_options,
 			     ARRAY_LENGTH(view_options), argc, argv);
 

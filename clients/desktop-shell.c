@@ -384,7 +384,7 @@ background_draw(struct widget *widget, void *data)
 	widget_get_allocation(widget, &allocation);
 	image = NULL;
 	if (key_background_image)
-		image = load_image(key_background_image);
+		image = load_cairo_surface(key_background_image);
 
 	if (strcmp(key_background_type, "scale") == 0)
 		type = BACKGROUND_SCALE;

@@ -21,6 +21,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "compositor.h"
 #include "screenshooter-server-protocol.h"
@@ -39,6 +40,8 @@ screenshooter_shoot(struct wl_client *client,
 {
 	struct weston_output *output = output_resource->data;
 	struct wl_buffer *buffer = buffer_resource->data;
+	uint8_t *tmp, *d, *s;
+	int32_t stride, i;
 
 	if (!wl_buffer_is_shm(buffer))
 		return;
@@ -47,10 +50,27 @@ screenshooter_shoot(struct wl_client *client,
 	    buffer->height < output->current->height)
 		return;
 
+	stride = wl_shm_buffer_get_stride(buffer);
+	tmp = malloc(stride * buffer->height);
+	if (tmp == NULL) {
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glReadPixels(0, 0, output->current->width, output->current->height,
-		     GL_RGBA, GL_UNSIGNED_BYTE,
-		     wl_shm_buffer_get_data(buffer));
+		     GL_RGBA, GL_UNSIGNED_BYTE, tmp);
+
+	d = wl_shm_buffer_get_data(buffer);
+	s = tmp + stride * (buffer->height - 1);
+
+	for (i = 0; i < buffer->height; i++) {
+		memcpy(d, s, stride);
+		d += stride;
+		s -= stride;
+	}
+
+	free(tmp);
 }
 
 struct screenshooter_interface screenshooter_implementation = {

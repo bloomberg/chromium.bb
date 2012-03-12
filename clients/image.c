@@ -26,130 +26,35 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <libgen.h>
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
 #include <cairo.h>
-#include <glib.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include <wayland-client.h>
 
 #include "window.h"
+#include "cairo-util.h"
 
 struct image {
 	struct window *window;
 	struct widget *widget;
 	struct display *display;
-	gchar *filename;
+	char *filename;
+	cairo_surface_t *image;
 };
-
-static void
-set_source_pixbuf(cairo_t         *cr,
-		  const GdkPixbuf *pixbuf,
-		  double           src_x,
-		  double           src_y,
-		  double           src_width,
-		  double           src_height)
-{
-	gint width = gdk_pixbuf_get_width (pixbuf);
-	gint height = gdk_pixbuf_get_height (pixbuf);
-	guchar *gdk_pixels = gdk_pixbuf_get_pixels (pixbuf);
-	int gdk_rowstride = gdk_pixbuf_get_rowstride (pixbuf);
-	int n_channels = gdk_pixbuf_get_n_channels (pixbuf);
-	int cairo_stride;
-	guchar *cairo_pixels;
-	cairo_format_t format;
-	cairo_surface_t *surface;
-	int j;
-
-	if (n_channels == 3)
-		format = CAIRO_FORMAT_RGB24;
-	else
-		format = CAIRO_FORMAT_ARGB32;
-
-	surface = cairo_image_surface_create(format, width, height);
-	if (cairo_surface_status(surface)) {
-		cairo_set_source_surface(cr, surface, 0, 0);
-		return;
-	}
-
-	cairo_stride = cairo_image_surface_get_stride(surface);
-	cairo_pixels = cairo_image_surface_get_data(surface);
-
-	for (j = height; j; j--) {
-		guchar *p = gdk_pixels;
-		guchar *q = cairo_pixels;
-
-		if (n_channels == 3) {
-			guchar *end = p + 3 * width;
-
-			while (p < end) {
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-				q[0] = p[2];
-				q[1] = p[1];
-				q[2] = p[0];
-#else
-				q[1] = p[0];
-				q[2] = p[1];
-				q[3] = p[2];
-#endif
-				p += 3;
-				q += 4;
-			}
-		} else {
-			guchar *end = p + 4 * width;
-			guint t1,t2,t3;
-
-#define MULT(d,c,a,t) G_STMT_START { t = c * a + 0x7f; d = ((t >> 8) + t) >> 8; } G_STMT_END
-
-			while (p < end) {
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-				MULT(q[0], p[2], p[3], t1);
-				MULT(q[1], p[1], p[3], t2);
-				MULT(q[2], p[0], p[3], t3);
-				q[3] = p[3];
-#else
-				q[0] = p[3];
-				MULT(q[1], p[0], p[3], t1);
-				MULT(q[2], p[1], p[3], t2);
-				MULT(q[3], p[2], p[3], t3);
-#endif
-
-				p += 4;
-				q += 4;
-			}
-#undef MULT
-		}
-
-		gdk_pixels += gdk_rowstride;
-		cairo_pixels += cairo_stride;
-	}
-	cairo_surface_mark_dirty(surface);
-
-	cairo_set_source_surface(cr, surface,
-				 src_x + .5 * (src_width - width),
-				 src_y + .5 * (src_height - height));
-	cairo_surface_destroy(surface);
-}
 
 static void
 redraw_handler(struct widget *widget, void *data)
 {
 	struct image *image = data;
 	struct rectangle allocation;
-	GdkPixbuf *pb;
 	cairo_t *cr;
 	cairo_surface_t *surface;
+	double width, height, doc_aspect, window_aspect, scale;
 
 	widget_get_allocation(image->widget, &allocation);
-
-	pb = gdk_pixbuf_new_from_file_at_size(image->filename,
-					      allocation.width,
-					      allocation.height,
-					      NULL);
-	if (pb == NULL)
-		return;
 
 	surface = window_get_surface(image->window);
 	cr = cairo_create(surface);
@@ -163,13 +68,23 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_paint(cr);
-	set_source_pixbuf(cr, pb,
-			  0, 0,
-			  allocation.width, allocation.height);
+
+	width = cairo_image_surface_get_width(image->image);
+	height = cairo_image_surface_get_height(image->image);
+	doc_aspect = width / height;
+	window_aspect = (double) allocation.width / allocation.height;
+	if (doc_aspect < window_aspect)
+		scale = allocation.height / height;
+	else
+		scale = allocation.width / width;
+	cairo_scale(cr, scale, scale);
+	cairo_translate(cr,
+			(allocation.width - width * scale) / 2 / scale,
+			(allocation.height - height * scale) / 2 / scale);
+
+	cairo_set_source_surface(cr, image->image, 0, 0);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_paint(cr);
-
-	g_object_unref(pb);
 
 	cairo_pop_group_to_source(cr);
 	cairo_paint(cr);
@@ -191,20 +106,20 @@ static struct image *
 image_create(struct display *display, const char *filename)
 {
 	struct image *image;
-	gchar *basename;
-	gchar *title;
+	char *b, *copy, title[512];;
 
 	image = malloc(sizeof *image);
 	if (image == NULL)
 		return image;
 	memset(image, 0, sizeof *image);
 
-	basename = g_path_get_basename(filename);
-	title = g_strdup_printf("Wayland Image - %s", basename);
-	g_free(basename);
+	copy = strdup(filename);
+	b = basename(copy);
+	snprintf(title, sizeof title, "Wayland Image - %s", b);
+	free(copy);
 
-	image->filename = g_strdup(filename);
-
+	image->filename = strdup(filename);
+	image->image = load_cairo_surface(filename);
 	image->window = window_create(display);
 	image->widget = frame_create(image->window, image);
 	window_set_title(image->window, title);

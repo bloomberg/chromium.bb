@@ -43,6 +43,7 @@
 #include <EGL/egl.h>
 
 #include "compositor.h"
+#include "../shared/config-parser.h"
 
 struct x11_compositor {
 	struct weston_compositor	 base;
@@ -310,26 +311,29 @@ static void
 x11_output_set_icon(struct x11_compositor *c,
 		    struct x11_output *output, const char *filename)
 {
-	uint32_t *icon, *pixels, stride;
+	uint32_t *icon;
 	int32_t width, height;
+	pixman_image_t *image;
 
-	pixels = weston_load_image(filename, &width, &height, &stride);
-	if (!pixels)
+	image = load_image(filename);
+	if (!image)
 		return;
+	width = pixman_image_get_width(image);
+	height = pixman_image_get_height(image);
 	icon = malloc(width * height * 4 + 8);
 	if (!icon) {
-		free(pixels);
+		pixman_image_unref(image);
 		return;
 	}
 
 	icon[0] = width;
 	icon[1] = height;
-	memcpy(icon + 2, pixels, width * height * 4);
+	memcpy(icon + 2, pixman_image_get_data(image), width * height * 4);
 	xcb_change_property(c->conn, XCB_PROP_MODE_REPLACE, output->window,
 			    c->atom.net_wm_icon, c->atom.cardinal, 32,
 			    width * height + 2, icon);
 	free(icon);
-	free(pixels);
+	pixman_image_unref(image);
 }
 
 static int

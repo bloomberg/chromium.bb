@@ -27,8 +27,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <glib.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <cairo.h>
 
 #include <wayland-client.h>
 #include "screenshooter-client-protocol.h"
@@ -129,18 +128,13 @@ create_shm_buffer(int width, int height, void **data_out)
 static void
 write_png(int width, int height, void *data)
 {
-	GdkPixbuf *pixbuf, *normal;
-	GError *error = NULL;
+	cairo_surface_t *surface;
 
-	g_type_init();
-	pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
-		                          8, width, height, width * 4, NULL,
-	                                  NULL);
-
-	normal = gdk_pixbuf_flip(pixbuf, FALSE);
-	gdk_pixbuf_save(normal, "wayland-screenshot.png", "png", &error, NULL);
-	g_object_unref(normal);
-	g_object_unref(pixbuf);
+	surface = cairo_image_surface_create_for_data(data,
+						      CAIRO_FORMAT_ARGB32,
+						      width, height, width * 4);
+	cairo_surface_write_to_png(surface, "wayland-screenshot.png");
+	cairo_surface_destroy(surface);
 }
 
 int main(int argc, char *argv[])
