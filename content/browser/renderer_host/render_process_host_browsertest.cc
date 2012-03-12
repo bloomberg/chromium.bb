@@ -15,7 +15,6 @@
 #include "content/common/test_url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "net/test/test_server.h"
 
 using content::WebContents;
 
@@ -252,71 +251,4 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
 // parameter instead of direct function call into the class.
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTestWithCommandLine, ProcessOverflow) {
   TestProcessOverflow();
-}
-
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, UnresponsiveCrossSiteNavigation) {
-  WebContents* tab = NULL;
-  WebContents* tab2 = NULL;
-  content::RenderProcessHost* rph = NULL;
-  base::ProcessHandle process = NULL;
-  FilePath doc_root;
-
-  doc_root = doc_root.Append(FILE_PATH_LITERAL("content"));
-  doc_root = doc_root.Append(FILE_PATH_LITERAL("test"));
-  doc_root = doc_root.Append(FILE_PATH_LITERAL("data"));
-
-  // Start two servers to enable cross-site navigations.
-  net::TestServer server(net::TestServer::TYPE_HTTP,
-      net::TestServer::kLocalhost, doc_root);
-  ASSERT_TRUE(server.Start());
-  net::TestServer https_server(net::TestServer::TYPE_HTTPS,
-      net::TestServer::kLocalhost, doc_root);
-  ASSERT_TRUE(https_server.Start());
-
-  GURL infinite_beforeunload_url(
-      server.GetURL("files/infinite_beforeunload.html"));
-  GURL infinite_unload_url(server.GetURL("files/infinite_unload.html"));
-  GURL same_process_url(server.GetURL("files/english_page.html"));
-  GURL new_process_url(https_server.GetURL("files/english_page.html"));
-
-  // Navigate the tab to the page which will lock up the process when we
-  // navigate away from it.
-  ui_test_utils::NavigateToURL(browser(), infinite_unload_url);
-  tab = browser()->GetWebContentsAt(0);
-  rph = tab->GetRenderProcessHost();
-  EXPECT_EQ(tab->GetURL(), infinite_unload_url);
-
-  // Remember the process prior to navigation, as we expect it to get killed.
-  process = rph->GetHandle();
-  ASSERT_TRUE(process);
-
-  ui_test_utils::NavigateToURL(browser(), new_process_url);
-  // This should fail, because the navigation to the new URL would result in
-  // the process getting killed. This is an indirect way to check for the
-  // process having been terminated.
-  EXPECT_FALSE(base::KillProcess(process, 1, false));
-
-  // Now, let's load the unresponsive page in one tab, then open another tab
-  // which will use the same process.
-  ui_test_utils::NavigateToURL(browser(), infinite_beforeunload_url);
-  tab = browser()->GetWebContentsAt(0);
-  rph = tab->GetRenderProcessHost();
-  EXPECT_EQ(tab->GetURL(), infinite_beforeunload_url);
-
-  ui_test_utils::NavigateToURLWithDisposition(browser(), same_process_url,
-      NEW_BACKGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(browser()->tab_count(), 2);
-  tab2 = browser()->GetWebContentsAt(1);
-  ASSERT_TRUE(tab2 != NULL);
-  EXPECT_EQ(tab2->GetURL(), same_process_url);
-  EXPECT_EQ(rph, tab2->GetRenderProcessHost());
-
-  process = rph->GetHandle();
-  ASSERT_TRUE(process);
-
-  // Navigating to the cross site URL will not kill the process, since it will
-  // have more than one tab using it. Kill it to confirm that it is still there,
-  // as well as finish the test faster.
-  ui_test_utils::NavigateToURL(browser(), new_process_url);
-  EXPECT_TRUE(base::KillProcess(process, 1, false));
 }
