@@ -89,7 +89,7 @@ hooks = [
     '--x86-version',
     '7898',
     '--arm-trusted-version',
-    '7003',
+    '7004',
     '--pnacl-version',
     '7898',
     '--keep'
