@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
+#import "chrome/browser/ui/panels/panel_utils_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -409,9 +410,15 @@ enum {
   return windowShim_->panel()->draggable();
 }
 
-- (void)startDrag {
+- (void)startDrag:(NSPoint)mouseLocation {
   animateOnBoundsChange_ = NO;
-  windowShim_->panel()->manager()->StartDragging(windowShim_->panel());
+
+  // Convert from Cocoa's screen coordinates to platform-indepedent screen
+  // coordinates because PanelManager method takes platform-indepedent screen
+  // coordinates.
+  windowShim_->panel()->manager()->StartDragging(
+      windowShim_->panel(),
+      cocoa_utils::ConvertPointFromCocoaCoordinates(mouseLocation));
 }
 
 - (void)endDrag:(BOOL)cancelled {
@@ -419,9 +426,12 @@ enum {
   windowShim_->panel()->manager()->EndDragging(cancelled);
 }
 
-- (void)dragWithDeltaX:(int)deltaX
-                deltaY:(int)deltaY {
-  windowShim_->panel()->manager()->Drag(deltaX, deltaY);
+- (void)drag:(NSPoint)mouseLocation {
+  // Convert from Cocoa's screen coordinates to platform-indepedent screen
+  // coordinates because PanelManager method takes platform-indepedent screen
+  // coordinates.
+  windowShim_->panel()->manager()->Drag(
+      cocoa_utils::ConvertPointFromCocoaCoordinates(mouseLocation));
 }
 
 - (void)setPanelFrame:(NSRect)frame

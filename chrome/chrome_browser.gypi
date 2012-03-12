@@ -3084,6 +3084,8 @@
         'browser/ui/panels/panel_strip.h',
         'browser/ui/panels/panel_titlebar_view_cocoa.h',
         'browser/ui/panels/panel_titlebar_view_cocoa.mm',
+        'browser/ui/panels/panel_utils_cocoa.h',
+        'browser/ui/panels/panel_utils_cocoa.mm',
         'browser/ui/panels/panel_window_controller_cocoa.h',
         'browser/ui/panels/panel_window_controller_cocoa.mm',
         'browser/ui/pdf/pdf_tab_observer.cc',

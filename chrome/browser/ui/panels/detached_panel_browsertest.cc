@@ -55,12 +55,14 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DragDetachedPanel) {
   panel_testing->PressLeftMouseButtonTitlebar(origin);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
-  panel_testing->DragTitlebar(-51, 102);
-  origin.Offset(-51, 102);
+  origin.Offset(-51, -102);
+  panel_testing->DragTitlebar(origin);
+  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
-  panel_testing->DragTitlebar(37, -42);
-  origin.Offset(37, -42);
+  origin.Offset(37, 45);
+  panel_testing->DragTitlebar(origin);
+  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
   panel_testing->FinishDragTitlebar();
@@ -74,15 +76,18 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DragDetachedPanel) {
   panel_testing->PressLeftMouseButtonTitlebar(origin);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
-  panel_testing->DragTitlebar(-51, 102);
-  origin.Offset(-51, 102);
+  origin.Offset(-51, -102);
+  panel_testing->DragTitlebar(origin);
+  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
-  panel_testing->DragTitlebar(37, -42);
-  origin.Offset(37, -42);
+  origin.Offset(37, 45);
+  panel_testing->DragTitlebar(origin);
+  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
   panel_testing->CancelDragTitlebar();
+  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(original_position, panel->GetBounds().origin());
 
   panel_manager->CloseAll();
@@ -118,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CloseDetachedPanelOnDrag) {
 
     // Start dragging a panel.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
-    panel1_testing->DragTitlebar(-51, -102);
+    panel1_testing->DragTitlebar(panel1_new_position);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
@@ -166,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CloseDetachedPanelOnDrag) {
 
     // Start dragging a panel.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
-    panel1_testing->DragTitlebar(-51, -102);
+    panel1_testing->DragTitlebar(panel1_new_position);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
@@ -208,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CloseDetachedPanelOnDrag) {
 
     // Start dragging a panel again.
     panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
-    panel1_testing->DragTitlebar(-51, -102);
+    panel1_testing->DragTitlebar(panel1_new_position);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 

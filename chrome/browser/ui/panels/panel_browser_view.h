@@ -38,8 +38,9 @@ class PanelBrowserView : public BrowserView,
 
   // Called from frame view when titlebar receives a mouse event.
   // Return true if the event is handled.
-  bool OnTitlebarMousePressed(const gfx::Point& location);
-  bool OnTitlebarMouseDragged(const gfx::Point& location);
+  // |mouse_location| is in screen coordinates.
+  bool OnTitlebarMousePressed(const gfx::Point& mouse_location);
+  bool OnTitlebarMouseDragged(const gfx::Point& mouse_location);
   bool OnTitlebarMouseReleased();
   bool OnTitlebarMouseCaptureLost();
 

@@ -178,13 +178,15 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     if (drag_action & DRAG_ACTION_BEGIN) {
       // Trigger the mouse-pressed event.
       // All panels should remain in their original positions.
+      test_dragging_mouse_location_ = panels[drag_index]->GetBounds().origin();
       panel_testing_to_drag->PressLeftMouseButtonTitlebar(
-          panels[drag_index]->GetBounds().origin());
+          test_dragging_mouse_location_);
       EXPECT_EQ(test_begin_bounds, GetPanelBounds(panels));
     }
 
     // Trigger the drag.
-    panel_testing_to_drag->DragTitlebar(delta_x, delta_y);
+    test_dragging_mouse_location_.Offset(delta_x, delta_y);
+    panel_testing_to_drag->DragTitlebar(test_dragging_mouse_location_);
 
     // Compare against expected bounds.
     EXPECT_EQ(AddXDeltaToBounds(test_begin_bounds, expected_delta_x_after_drag),
@@ -405,6 +407,12 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     for (size_t i = 0; i < panels.size(); ++i)
       delete native_panels_testing[i];
   }
+
+ private:
+  // TODO(jianli): This is a temporary workaround to make TestDragging work
+  // with mouse location parameter changes. Fix this when we move drag related
+  // tests to new testing class.
+  gfx::Point test_dragging_mouse_location_;
 };
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
@@ -779,9 +787,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, NotDraggable) {
   scoped_ptr<NativePanelTesting> panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
   gfx::Rect bounds = panel->GetBounds();
-  panel_testing->PressLeftMouseButtonTitlebar(bounds.origin());
+  gfx::Point mouse_location = bounds.origin();
+  panel_testing->PressLeftMouseButtonTitlebar(mouse_location);
   EXPECT_EQ(bounds.x(), panel->GetBounds().x());
-  panel_testing->DragTitlebar(-50, 10);
+  mouse_location.Offset(-50, 10);
+  panel_testing->DragTitlebar(mouse_location);
   EXPECT_EQ(bounds.x(), panel->GetBounds().x());
   panel_testing->FinishDragTitlebar();
   EXPECT_EQ(bounds.x(), panel->GetBounds().x());
@@ -797,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CloseDockedPanelOnDrag) {
   PanelDragController* drag_controller = panel_manager->drag_controller();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
-  // Create 4 detached panels.
+  // Create 4 docked panels.
   // We have:  P4  P3  P2  P1
   Panel* panel1 = CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 100, 100));
   Panel* panel2 = CreatePanelWithBounds("Panel2", gfx::Rect(0, 0, 100, 100));
@@ -820,8 +830,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CloseDockedPanelOnDrag) {
 
     // Start dragging a panel.
     // We have:  P1*  P4  P3  P2
-    panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
-    panel1_testing->DragTitlebar(-500, -5);
+    gfx::Point mouse_location = panel1->GetBounds().origin();
+    panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+    mouse_location.Offset(-500, -5);
+    panel1_testing->DragTitlebar(mouse_location);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
@@ -875,8 +887,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CloseDockedPanelOnDrag) {
 
     // Start dragging a panel.
     // We have:  P1*  P4  P3
-    panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
-    panel1_testing->DragTitlebar(-500, -5);
+    gfx::Point mouse_location = panel1->GetBounds().origin();
+    panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+    mouse_location.Offset(-500, -5);
+    panel1_testing->DragTitlebar(mouse_location);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
 
@@ -924,8 +938,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CloseDockedPanelOnDrag) {
 
     // Start dragging a panel again.
     // We have:  P1*  P4
-    panel1_testing->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin());
-    panel1_testing->DragTitlebar(-500, -5);
+    gfx::Point mouse_location = panel1->GetBounds().origin();
+    panel1_testing->PressLeftMouseButtonTitlebar(mouse_location);
+    mouse_location.Offset(-500, -5);
+    panel1_testing->DragTitlebar(mouse_location);
     EXPECT_TRUE(drag_controller->IsDragging());
     EXPECT_EQ(panel1, drag_controller->dragging_panel());
     EXPECT_EQ(panel1_new_position, panel1->GetBounds().origin());
