@@ -18,9 +18,12 @@
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/signature_util.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/load_flags.h"
@@ -772,6 +775,16 @@ void DownloadProtectionService::RequestFinished(
       download_requests_.find(request);
   DCHECK(it != download_requests_.end());
   download_requests_.erase(*it);
+}
+
+void DownloadProtectionService::ShowDetailsForDownload(
+    const DownloadProtectionService::DownloadInfo& info) {
+  Browser* browser = BrowserList::GetLastActive();
+  DCHECK(browser && browser->is_type_tabbed());
+  content::OpenURLParams params(GURL(chrome::kDownloadScanningLearnMoreURL),
+                                content::Referrer(), NEW_FOREGROUND_TAB,
+                                content::PAGE_TRANSITION_TYPED, false);
+  browser->OpenURL(params);
 }
 
 namespace {

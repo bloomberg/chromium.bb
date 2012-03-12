@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -95,6 +95,11 @@ class DownloadProtectionService {
   // by this service.  In other words: this method returns true if it can
   // protect users against files with that particular extension.
   bool IsSupportedFileType(const FilePath& filename) const;
+
+  // Display more information to the user regarding the download specified by
+  // |info|. This method is invoked when the user requests more information
+  // about a download that was marked as malicious.
+  void ShowDetailsForDownload(const DownloadInfo& info);
 
   // Enables or disables the service.  This is usually called by the
   // SafeBrowsingService, which tracks whether any profile uses these services
