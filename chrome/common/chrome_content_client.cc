@@ -435,13 +435,9 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
   if (LoadFlashBroker(plugin_path, command_line)) {
     // UI job restrictions break windowless Flash, so just pick up single
     // process limit for now.
-    policy->SetJobLevel(sandbox::JOB_LIMITED_USER,
-                        JOB_OBJECT_UILIMIT_DISPLAYSETTINGS |
-                        JOB_OBJECT_UILIMIT_SYSTEMPARAMETERS |
-                        JOB_OBJECT_UILIMIT_DESKTOP |
-                        JOB_OBJECT_UILIMIT_EXITWINDOWS);
+    policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
     policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                          sandbox::USER_LIMITED);
+                          sandbox::USER_INTERACTIVE);
     // Allow the Flash plugin to forward some messages back to Chrome.
     if (base::win::GetVersion() == base::win::VERSION_VISTA) {
       // Per-window message filters required on Win7 or later must be added to:
