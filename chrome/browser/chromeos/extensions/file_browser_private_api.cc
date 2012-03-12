@@ -830,11 +830,10 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   return true;
 }
 
-class
-  ExecuteTasksFileBrowserFunction::ExecuteTasksFileSystemCallbackDispatcher {
+class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
  public:
   static fileapi::FileSystemContext::OpenFileSystemCallback CreateCallback(
-      ExecuteTasksFileBrowserFunction* function,
+      FileTaskExecutor* executor,
       Profile* profile,
       const GURL& source_url,
       const std::string task_id,
@@ -844,7 +843,7 @@ class
     return base::Bind(
         &ExecuteTasksFileSystemCallbackDispatcher::DidOpenFileSystem,
         base::Owned(new ExecuteTasksFileSystemCallbackDispatcher(
-            function, profile, source_url, task_id, handler_extension,
+            executor, profile, source_url, task_id, handler_extension,
             handler_pid, file_urls)));
   }
 
@@ -856,12 +855,12 @@ class
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    ExecuteTasksFileBrowserFunction::FileDefinitionList file_list;
+    FileTaskExecutor::FileDefinitionList file_list;
     for (std::vector<GURL>::iterator iter = origin_file_urls_.begin();
          iter != origin_file_urls_.end();
          ++iter) {
       // Set up file permission access.
-      ExecuteTasksFileBrowserFunction::FileDefinition file;
+      FileTaskExecutor::FileDefinition file;
       if (!SetupFileAccessPermissions(*iter, &file.target_file_url,
                                       &file.virtual_path, &file.is_directory)) {
         continue;
@@ -872,16 +871,16 @@ class
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(
-              &ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread,
-              function_));
+              &FileTaskExecutor::ExecuteFailedOnUIThread,
+              executor_));
       return;
     }
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
-            &ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread,
-            function_,
+            &FileTaskExecutor::ExecuteFileActionsOnUIThread,
+            executor_,
             task_id_,
             file_system_name,
             file_system_root,
@@ -892,27 +891,27 @@ class
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
-            &ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread,
-            function_));
+            &FileTaskExecutor::ExecuteFailedOnUIThread,
+            executor_));
   }
 
  private:
   ExecuteTasksFileSystemCallbackDispatcher(
-      ExecuteTasksFileBrowserFunction* function,
+      FileTaskExecutor* executor,
       Profile* profile,
       const GURL& source_url,
       const std::string& task_id,
       const scoped_refptr<const Extension>& handler_extension,
       int handler_pid,
       const std::vector<GURL>& file_urls)
-      : function_(function),
+      : executor_(executor),
         profile_(profile),
         source_url_(source_url),
         task_id_(task_id),
         handler_extension_(handler_extension),
         handler_pid_(handler_pid),
         origin_file_urls_(file_urls) {
-    DCHECK(function_);
+    DCHECK(executor_);
   }
 
   // Checks legitimacy of file url and grants file RO access permissions from
@@ -1004,7 +1003,7 @@ class
     return true;
   }
 
-  ExecuteTasksFileBrowserFunction* function_;
+  FileTaskExecutor* executor_;
   Profile* profile_;
   // Extension source URL.
   GURL source_url_;
@@ -1015,11 +1014,40 @@ class
   DISALLOW_COPY_AND_ASSIGN(ExecuteTasksFileSystemCallbackDispatcher);
 };
 
+class ExecuteTasksFileBrowserFunction::Executor: public FileTaskExecutor {
+ public:
+  explicit Executor(ExecuteTasksFileBrowserFunction* function)
+    : function_(function)
+  {}
+
+ protected:
+  // FileTaskExecutor overrides.
+  virtual Profile* profile() { return function_->profile(); }
+
+  virtual const GURL& source_url() { return function_->source_url(); }
+
+  virtual Browser* GetCurrentBrowser() {
+    return function_->GetCurrentBrowser();
+  }
+
+  virtual void SendResponse(bool success) {
+    function_->SendResponse(success);
+    // Releasing the function object will release this Executor object.
+    function_ = NULL;
+  }
+
+ private:
+  scoped_refptr<ExecuteTasksFileBrowserFunction> function_;
+};
+
 bool ExecuteTasksFileBrowserFunction::RunImpl() {
   // First param is task id that was to the extension with getFileTasks call.
   std::string task_id;
   if (!args_->GetString(0, &task_id) || !task_id.size())
     return false;
+
+  // TODO(kaznacheev): Crack the task_id here, store it in the Executor
+  // and avoid passing it around.
 
   // The second param is the list of files that need to be executed with this
   // task.
@@ -1030,11 +1058,6 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
   if (!files_list->GetSize())
     return true;
 
-  return InitiateFileTaskExecution(task_id, files_list);
-}
-
-bool ExecuteTasksFileBrowserFunction::InitiateFileTaskExecution(
-    const std::string& task_id, ListValue* files_list) {
   std::vector<GURL> file_urls;
   for (size_t i = 0; i < files_list->GetSize(); i++) {
     std::string origin_file_url;
@@ -1045,6 +1068,16 @@ bool ExecuteTasksFileBrowserFunction::InitiateFileTaskExecution(
     file_urls.push_back(GURL(origin_file_url));
   }
 
+  executor_ = new Executor(this);
+  if (!executor_->InitiateFileTaskExecution(task_id, file_urls))
+    return false;
+
+  result_.reset(new base::FundamentalValue(true));
+  return true;
+}
+
+bool FileTaskExecutor::InitiateFileTaskExecution(
+    const std::string& task_id, const std::vector<GURL>& file_urls) {
   scoped_refptr<const Extension> handler =
       ExtractExtensionFromTaskId(task_id, profile());
   if (!handler.get())
@@ -1058,18 +1091,17 @@ bool ExecuteTasksFileBrowserFunction::InitiateFileTaskExecution(
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(
-          &ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread,
+          &FileTaskExecutor::RequestFileEntryOnFileThread,
           this,
           task_id,
           Extension::GetBaseURLFromExtensionId(handler->id()),
           handler,
           handler_pid,
           file_urls));
-  result_.reset(new base::FundamentalValue(true));
   return true;
 }
 
-void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
+void FileTaskExecutor::RequestFileEntryOnFileThread(
     const std::string& task_id,
     const GURL& handler_base_url,
     const scoped_refptr<const Extension>& handler,
@@ -1082,25 +1114,25 @@ void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
       ExecuteTasksFileSystemCallbackDispatcher::CreateCallback(
           this,
           profile(),
-          source_url_,
+          source_url(),
           task_id,
           handler,
           handler_pid,
           file_urls));
 }
 
-void ExecuteTasksFileBrowserFunction::ExecuteFailedOnUIThread() {
+void FileTaskExecutor::ExecuteFailedOnUIThread() {
   SendResponse(false);
 }
 
 
-void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
+void FileTaskExecutor::ExecuteFileActionsOnUIThread(
     const std::string& task_id,
     const std::string& file_system_name,
     const GURL& file_system_root,
     const FileDefinitionList& file_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service = profile()->GetExtensionService();
   if (!service)
     return;
   // Get task details.
@@ -1120,7 +1152,7 @@ void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
     return;
   }
 
-  ExtensionEventRouter* event_router = profile_->GetExtensionEventRouter();
+  ExtensionEventRouter* event_router = profile()->GetExtensionEventRouter();
   if (!event_router) {
     SendResponse(false);
     return;
@@ -1152,13 +1184,13 @@ void ExecuteTasksFileBrowserFunction::ExecuteFileActionsOnUIThread(
       details->SetInteger("tab_id", ExtensionTabUtil::GetTabId(contents));
   }
 
-  UpdateFileHandlerUsageStats(profile_, task_id);
+  UpdateFileHandlerUsageStats(profile(), task_id);
 
   std::string json_args;
   base::JSONWriter::Write(event_args.get(), false, &json_args);
   event_router->DispatchEventToExtension(
       handler_extension_id, std::string("fileBrowserHandler.onExecute"),
-      json_args, profile_,
+      json_args, profile(),
       GURL());
   SendResponse(true);
 }

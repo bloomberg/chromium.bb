@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -343,6 +344,26 @@ void ViewFolder(const FilePath& dir) {
   OpenFileBrowser(dir);
 }
 
+class StandaloneExecutor : public FileTaskExecutor {
+ public:
+  StandaloneExecutor(Profile * profile, const GURL& source_url)
+    : profile_(profile),
+      source_url_(source_url)
+  {}
+
+ protected :
+  // FileTaskExecutor overrides.
+  virtual Profile* profile() { return profile_; }
+  virtual const GURL& source_url() { return source_url_; }
+  virtual Browser* GetCurrentBrowser() { return BrowserList::GetLastActive(); }
+  virtual void SendResponse(bool) {}
+
+ private:
+
+  Profile* profile_;
+  const GURL source_url_;
+};
+
 bool TryOpeningFileBrowser(const FilePath& full_path) {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
@@ -357,8 +378,9 @@ bool TryOpeningFileBrowser(const FilePath& full_path) {
   if (!GetDefaultFileBrowserHandler(browser->profile(), url, &handler))
     return false;
 
-  if (handler->extension_id() == kFileBrowserDomain) {
-    std::string task_id = handler->id();
+  std::string extension_id = handler->extension_id();
+  std::string task_id = handler->id();
+  if (extension_id == kFileBrowserDomain) {
     // Only two of the built-in File Browser tasks require opening the File
     // Browser tab. Others just end up calling TryViewingFile.
     if (task_id == kFileBrowserGalleryTaskId ||
@@ -367,10 +389,11 @@ bool TryOpeningFileBrowser(const FilePath& full_path) {
       return true;
     }
   } else {
-    // For now we are opening the File Browser which in turn invokes
-    // the default action. This can be avoided.
-    // TODO(kaznacheev): Do what ExecuteTasksFileBrowserFunction does.
-    OpenFileBrowser(full_path);
+    std::vector<GURL> urls;
+    urls.push_back(url);
+    FileTaskExecutor* executor =
+        new StandaloneExecutor(browser->profile(), GURL(kBaseFileBrowserUrl));
+    executor->InitiateFileTaskExecution(extension_id + "|" + task_id, urls);
     return true;
   }
   return false;

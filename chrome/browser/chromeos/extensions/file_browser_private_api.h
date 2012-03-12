@@ -86,11 +86,19 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
 };
 
 
-// Implements the chrome.fileBrowserPrivate.executeTask method.
-class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
+// TODO(kaznacheev): Move this definition to file_task_util.h
+class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
+ public:
+  // Initiates execution of file handler task identified with |task_id| for
+  // each element of |file_urls|.
+  bool InitiateFileTaskExecution(const std::string& task_id,
+                                 const std::vector<GURL>& file_urls);
  protected:
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
+
+   virtual Profile* profile() = 0;
+   virtual const GURL& source_url() = 0;
+   virtual Browser* GetCurrentBrowser() = 0;
+   virtual void SendResponse(bool success) = 0;
 
  private:
   struct FileDefinition {
@@ -100,10 +108,6 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
   };
   typedef std::vector<FileDefinition> FileDefinitionList;
   class ExecuteTasksFileSystemCallbackDispatcher;
-  // Initates execution of context menu tasks identified with |task_id| for
-  // each element of |files_list|.
-  bool InitiateFileTaskExecution(const std::string& task_id,
-                                 base::ListValue* files_list);
   void RequestFileEntryOnFileThread(
       const std::string& task_id,
       const GURL& handler_base_url,
@@ -116,6 +120,19 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
                                     const GURL& file_system_root,
                                     const FileDefinitionList& file_list);
   void ExecuteFailedOnUIThread();
+};
+
+// Implements the chrome.fileBrowserPrivate.executeTask method.
+class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
+ protected:
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  class Executor;
+  scoped_refptr<FileTaskExecutor> executor_;
+
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.executeTask");
 };
 
