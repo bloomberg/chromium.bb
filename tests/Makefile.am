@@ -1,6 +1,6 @@
 if BUILD_TESTS
 
-noinst_PROGRAMS = matrix-test
+noinst_PROGRAMS = matrix-test setbacklight
 
 endif
 
@@ -13,3 +13,10 @@ matrix_test_SOURCES =				\
 	$(top_srcdir)/src/matrix.c		\
 	$(top_srcdir)/src/matrix.h
 matrix_test_LDADD = -lm -lrt
+
+setbacklight_SOURCES =				\
+	setbacklight.c				\
+	$(top_srcdir)/src/libbacklight.c	\
+	$(top_srcdir)/src/libbacklight.h
+
+setbacklight_LDADD = -ludev -ldrm
