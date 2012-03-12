@@ -209,8 +209,8 @@ class CBuildBotTest(mox.MoxTestBase):
                     mox.In(constants.PFQ_TYPE))
     cros_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
-    commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                             constants.PFQ_TYPE, None, buildnumber)
+    commands.UploadPrebuilts(self._buildroot, self._test_board, False,
+                             constants.PFQ_TYPE, None)
     self.mox.VerifyAll()
 
   def testUploadPrivatePrebuilts(self):
@@ -221,8 +221,8 @@ class CBuildBotTest(mox.MoxTestBase):
                     mox.In(constants.PFQ_TYPE))
     cros_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
-    commands.UploadPrebuilts(self._buildroot, self._test_board, 'private',
-                             constants.PFQ_TYPE, None, buildnumber)
+    commands.UploadPrebuilts(self._buildroot, self._test_board, True,
+                             constants.PFQ_TYPE, None)
     self.mox.VerifyAll()
 
   def testChromePrebuilts(self):
@@ -233,8 +233,8 @@ class CBuildBotTest(mox.MoxTestBase):
                     mox.In(constants.CHROME_PFQ_TYPE))
     cros_lib.RunCommand(check, cwd=os.path.dirname(commands.__file__))
     self.mox.ReplayAll()
-    commands.UploadPrebuilts(self._buildroot, self._test_board, 'public',
-                             constants.CHROME_PFQ_TYPE, 'tot', buildnumber)
+    commands.UploadPrebuilts(self._buildroot, self._test_board, False,
+                             constants.CHROME_PFQ_TYPE, 'tot')
     self.mox.VerifyAll()
 
 

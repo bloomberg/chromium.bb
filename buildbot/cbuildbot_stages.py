@@ -10,7 +10,6 @@ import multiprocessing
 import os
 import Queue
 import shutil
-import socket
 import sys
 import tempfile
 import traceback
@@ -777,7 +776,6 @@ class VMTestStage(BoardSpecificBuilderStage):
     try:
       # These directories are used later to archive test artifacts.
       test_results_dir = None
-      tests_passed = False
       test_results_dir = commands.CreateTestRoot(self._build_root)
 
       commands.RunTestSuite(self._build_root,
@@ -788,7 +786,6 @@ class VMTestStage(BoardSpecificBuilderStage):
                             test_type=self._build_config['vm_tests'],
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             build_config=self._bot_id)
-      tests_passed = True
 
     except commands.TestException:
       raise bs.NonBacktraceBuildException()  # Suppress redundant output.
@@ -1277,10 +1274,16 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
     binhost_bucket = self._build_config['binhost_bucket']
     binhost_key = self._build_config['binhost_key']
     binhost_base_url = self._build_config['binhost_base_url']
-    use_binhost_package_file = self._build_config['use_binhost_package_file']
     git_sync = self._build_config['git_sync']
+    private_bucket = overlay_config in ('private', 'both')
     binhosts = []
     extra_args = []
+
+    # Check if we are uploading dev_installer prebuilts.
+    use_binhost_package_file = False
+    if self._build_config['dev_installer_prebuilts']:
+      use_binhost_package_file = True
+      private_bucket = False
 
     if manifest_manager and manifest_manager.current_version:
       version = manifest_manager.current_version
@@ -1337,9 +1340,8 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
 
     # Upload prebuilts.
     commands.UploadPrebuilts(
-        self._build_root, board, overlay_config, prebuilt_type,
-        self._chrome_rev, self._options.buildnumber,
-        binhost_bucket, binhost_key, binhost_base_url,
+        self._build_root, board, private_bucket, prebuilt_type,
+        self._chrome_rev, binhost_bucket, binhost_key, binhost_base_url,
         use_binhost_package_file, git_sync, extra_args)
 
 

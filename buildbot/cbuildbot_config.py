@@ -252,9 +252,8 @@ _settings = dict(
 #                     None default value is used.
   binhost_base_url=None,
 
-# use_binhost_package_file -- Flag that is used to decide whether to use the
-#                             file with the packages to upload to the binhost.
-  use_binhost_package_file=False,
+# Upload dev installer prebuilts.
+  dev_installer_prebuilts=False,
 
 # git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
   git_sync=False,
@@ -678,12 +677,11 @@ _release = full.derive(official, internal,
   push_image=True,
   upload_symbols=True,
   nowithdebug=True,
-  overlays='public',
   binhost_bucket='gs://chromeos-dev-installer',
   binhost_key='RELEASE_BINHOST',
   binhost_base_url=
     'https://commondatastorage.googleapis.com/chromeos-dev-installer',
-  use_binhost_package_file=True,
+  dev_installer_prebuilts=True,
   git_sync=False,
   vm_tests=constants.FULL_AU_TEST_TYPE,
 )

@@ -620,8 +620,8 @@ def AddPackagesForPrebuilt(filename):
     return None
 
 
-def UploadPrebuilts(buildroot, board, overlay_config, category,
-                    chrome_rev, buildnumber,
+def UploadPrebuilts(buildroot, board, private_bucket, category,
+                    chrome_rev,
                     binhost_bucket=None,
                     binhost_key=None,
                     binhost_base_url=None,
@@ -633,13 +633,9 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   Args:
     buildroot: The root directory where the build occurs.
     board: Board type that was built on this machine
-    overlay_config: A string describing which overlays you want.
-                    'private': Just the private overlay.
-                    'public': Just the public overlay.
-                    'both': Both the public and private overlays.
+    private_bucket: True if we are uploading to a private bucket.
     category: Build type. Can be [binary|full|chrome].
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
-    buildnumber:  self explanatory.
     binhost_bucket: bucket for uploading prebuilt packages. If it equals None
                     then the default bucket is used.
     binhost_key: key parameter to pass onto prebuilt.py. If it equals None then
@@ -668,7 +664,7 @@ def UploadPrebuilts(buildroot, board, overlay_config, category,
   else:
     cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
 
-  if overlay_config in ('private', 'both'):
+  if private_bucket:
     cmd.extend(['--private', '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR])
 
   cmd.extend(['--board', board])

@@ -934,14 +934,13 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
     self.ConstructBinhosts()
     commands.UploadPrebuilts(
         self.build_root, self._current_board,
-        self.build_config['overlays'],
+        False,
         self.build_config['build_type'],
         self.options.chrome_rev,
-        self.options.buildnumber,
         self.build_config['binhost_bucket'],
         self.build_config['binhost_key'],
         self.build_config['binhost_base_url'],
-        self.build_config['use_binhost_package_file'],
+        False,
         self.build_config['git_sync'],
         mox.IgnoreArg()).MultipleTimes(mox.IgnoreArg())
 
@@ -956,14 +955,13 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
     self.ConstructBinhosts()
     commands.UploadPrebuilts(
         self.build_root, self._current_board,
-        self.build_config['overlays'],
+        False,
         self.build_config['build_type'],
         self.options.chrome_rev,
-        self.options.buildnumber,
         self.build_config['binhost_bucket'],
         self.build_config['binhost_key'],
         self.build_config['binhost_base_url'],
-        self.build_config['use_binhost_package_file'],
+        False,
         self.build_config['git_sync'],
         mox.IgnoreArg()).MultipleTimes(mox.IgnoreArg())
 
