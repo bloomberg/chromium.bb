@@ -140,10 +140,6 @@ void SystemInitProcess(int init_fd, int child_pid, int proc_fd, int null_fd) {
 
   // Handle dying processes that have been re-parented to the "init" process
   for (;;) {
-    // Wait until we receive a SIGCHLD signal. Our signal handler doesn't
-    // actually need to do anything, though
-    sigwaitinfo(&mask, NULL);
-
     bool retry = false;
     do {
       for (;;) {
@@ -197,5 +193,9 @@ void SystemInitProcess(int init_fd, int child_pid, int proc_fd, int null_fd) {
         }
       }
     } while (retry);
+
+    // Wait until we receive a SIGCHLD signal. Our signal handler doesn't
+    // actually need to do anything, though
+    sigwaitinfo(&mask, NULL);
   }
 }
