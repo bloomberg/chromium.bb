@@ -526,12 +526,11 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 				  &output_base->region);
 	pixman_region32_translate(&src_rect, -es->geometry.x, -es->geometry.y);
 	box = pixman_region32_extents(&src_rect);
-	s->src_x = box->x1;
-	s->src_y = box->y1;
-	s->src_w = box->x2 - box->x1;
-	s->src_h = box->y2 - box->y1;
+	s->src_x = box->x1 << 16;
+	s->src_y = box->y1 << 16;
+	s->src_w = (box->x2 - box->x1) << 16;
+	s->src_h = (box->y2 - box->y1) << 16;
 	pixman_region32_fini(&src_rect);
-
 
 	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
 		       &s->pending_destroy_listener.link);
