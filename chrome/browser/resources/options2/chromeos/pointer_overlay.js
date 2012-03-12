@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const SettingsDialog = options.SettingsDialog;
+  /** @const */ var SettingsDialog = options.SettingsDialog;
 
   /**
    * PointerOverlay class

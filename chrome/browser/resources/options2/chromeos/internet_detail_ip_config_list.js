@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options.internet', function() {
-  const InlineEditableItem = options.InlineEditableItem;
-  const InlineEditableItemList = options.InlineEditableItemList;
+  /** @const */ var InlineEditableItem = options.InlineEditableItem;
+  /** @const */ var InlineEditableItemList = options.InlineEditableItemList;
 
   /**
    * Creates a new ip config list item.

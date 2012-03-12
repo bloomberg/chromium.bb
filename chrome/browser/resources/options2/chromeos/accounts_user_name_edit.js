@@ -1,25 +1,34 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 cr.define('options.accounts', function() {
-  const Event = cr.Event;
+  /** @const */ var Event = cr.Event;
 
-  // Email alias only, assuming it's a gmail address.
-  //   e.g. 'john'
-  //        {name: 'john', email: 'john@gmail.com'}
-  const format1String =
+  /**
+   * Email alias only, assuming it's a gmail address.
+   *   e.g. 'john'
+   *        {name: 'john', email: 'john@gmail.com'}
+   * @const
+   */
+  var format1String =
       '^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)\\s*$';
-  // Email address only.
-  //   e.g. 'john@chromium.org'
-  //        {name: 'john', email: 'john@chromium.org'}
-  const format2String =
+  /**
+   * Email address only.
+   *   e.g. 'john@chromium.org'
+   *        {name: 'john', email: 'john@chromium.org'}
+   * @const
+   */
+  var format2String =
       '^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)@' +
       '([A-Za-z0-9\-]{2,63}\\..+)\\s*$';
-  // Full format.
-  //   e.g. '"John Doe" <john@chromium.org>'
-  //        {name: 'John doe', email: 'john@chromium.org'}
-  const format3String =
+  /**
+   * Full format.
+   *   e.g. '"John Doe" <john@chromium.org>'
+   *        {name: 'John doe', email: 'john@chromium.org'}
+   * @const
+   */
+  var format3String =
       '^\\s*"{0,1}([^"]+)"{0,1}\\s*' +
       '<([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+@' +
       '[A-Za-z0-9\-]{2,63}\\..+)>\\s*$';
@@ -63,9 +72,9 @@ cr.define('options.accounts', function() {
      * @return {{name: string, email: string}} User info parsed from the string.
      */
     parse: function(str) {
-      const format1 = new RegExp(format1String);
-      const format2 = new RegExp(format2String);
-      const format3 = new RegExp(format3String);
+      /** @const */ var format1 = new RegExp(format1String);
+      /** @const */ var format2 = new RegExp(format2String);
+      /** @const */ var format3 = new RegExp(format3String);
 
       var matches = format1.exec(str);
       if (matches) {

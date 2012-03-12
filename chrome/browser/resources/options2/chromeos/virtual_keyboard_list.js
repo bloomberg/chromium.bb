@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
-  const VirtualKeyboardOptions = options.VirtualKeyboardOptions;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var List = cr.ui.List;
+  /** @const */ var ListItem = cr.ui.ListItem;
+  /** @const */ var VirtualKeyboardOptions = options.VirtualKeyboardOptions;
 
-  const localStrings = new LocalStrings();
+  /** @const */ var localStrings = new LocalStrings();
 
   /**
    * Creates a virtual keyboard list item.

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options.system.bluetooth', function() {
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const DeletableItem = options.DeletableItem;
-  const DeletableItemList = options.DeletableItemList;
+  /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
+  /** @const */ var DeletableItem = options.DeletableItem;
+  /** @const */ var DeletableItemList = options.DeletableItemList;
 
   /**
    * Bluetooth settings constants.

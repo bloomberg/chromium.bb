@@ -11,8 +11,9 @@ cr.define('options', function() {
   /**
    * Array of button URLs used on this page.
    * @type {Array.<string>}
+   * @const
    */
-  const ButtonImageUrls = [
+  var ButtonImageUrls = [
     ButtonImages.TAKE_PHOTO,
     ButtonImages.CHOOSE_FILE
   ];
