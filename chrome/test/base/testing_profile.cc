@@ -599,6 +599,10 @@ void TestingProfile::CreateRequestContext() {
 }
 
 void TestingProfile::ResetRequestContext() {
+  // Any objects holding live URLFetchers should be deleted before the request
+  // context is shut down.
+  template_url_fetcher_.reset();
+
   request_context_ = NULL;
 }
 
