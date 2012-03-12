@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/global_request_id.h"
@@ -14,13 +14,13 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 
-using content::GlobalRequestID;
+namespace content {
 
 SyncResourceHandler::SyncResourceHandler(
     ResourceMessageFilter* filter,
     const GURL& url,
     IPC::Message* result_message,
-    ResourceDispatcherHost* resource_dispatcher_host)
+    ResourceDispatcherHostImpl* resource_dispatcher_host)
     : read_buffer_(new net::IOBuffer(kReadBufSize)),
       filter_(filter),
       result_message_(result_message),
@@ -40,7 +40,7 @@ bool SyncResourceHandler::OnUploadProgress(int request_id,
 bool SyncResourceHandler::OnRequestRedirected(
     int request_id,
     const GURL& new_url,
-    content::ResourceResponse* response,
+    ResourceResponse* response,
     bool* defer) {
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
@@ -61,7 +61,7 @@ bool SyncResourceHandler::OnRequestRedirected(
 
 bool SyncResourceHandler::OnResponseStarted(
     int request_id,
-    content::ResourceResponse* response) {
+    ResourceResponse* response) {
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
   if (rdh_->delegate())
@@ -128,3 +128,5 @@ void SyncResourceHandler::OnRequestClosed() {
   result_message_->set_reply_error();
   filter_->Send(result_message_);
 }
+
+}  // namespace content

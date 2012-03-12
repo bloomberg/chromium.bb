@@ -18,7 +18,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -34,10 +34,10 @@ using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadManager;
+using content::ResourceDispatcherHostImpl;
 using content::ResourceRequestInfoImpl;
 
 DownloadResourceHandler::DownloadResourceHandler(
-    ResourceDispatcherHost* rdh,
     int render_process_host_id,
     int render_view_id,
     int request_id,
@@ -55,7 +55,6 @@ DownloadResourceHandler::DownloadResourceHandler(
       started_cb_(started_cb),
       save_info_(save_info),
       buffer_(new content::DownloadBuffer),
-      rdh_(rdh),
       is_paused_(false),
       last_buffer_size_(0),
       bytes_read_(0) {
@@ -95,7 +94,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   set_content_length(response->content_length);
 
   const ResourceRequestInfoImpl* request_info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request_);
 
   // Deleted in DownloadManager.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo(
@@ -114,7 +113,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->remote_address = request_->GetSocketAddress().host();
   download_stats::RecordDownloadMimeType(info->mime_type);
 
-  DownloadRequestHandle request_handle(rdh_, global_id_.child_id,
+  DownloadRequestHandle request_handle(global_id_.child_id,
                                        render_view_id_, global_id_.request_id);
 
   // Get the last modified time and etag.
@@ -155,7 +154,9 @@ bool DownloadResourceHandler::OnResponseStarted(
   // We can't start saving the data before we create the file on disk and have a
   // download id. The request will be un-paused in
   // DownloadFileManager::CreateDownloadFile.
-  rdh_->PauseRequest(global_id_.child_id, global_id_.request_id, true);
+  ResourceDispatcherHostImpl::Get()->PauseRequest(global_id_.child_id,
+                                                  global_id_.request_id,
+                                                  true);
 
   return true;
 }
@@ -376,8 +377,9 @@ void DownloadResourceHandler::CheckWriteProgress() {
     StartPauseTimer();
 
   if (is_paused_ != should_pause) {
-    rdh_->PauseRequest(global_id_.child_id, global_id_.request_id,
-                       should_pause);
+    ResourceDispatcherHostImpl::Get()->PauseRequest(global_id_.child_id,
+                                                    global_id_.request_id,
+                                                    should_pause);
     is_paused_ = should_pause;
   }
 }

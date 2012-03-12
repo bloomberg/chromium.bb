@@ -23,7 +23,7 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/net/url_request_slow_download_job.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,6 +51,7 @@ using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadItem;
 using content::DownloadPersistentStoreInfo;
+using content::ResourceDispatcherHostImpl;
 using content::WebContents;
 
 namespace {
@@ -74,7 +75,7 @@ struct RenderParams {
 void BeginDownload(const URLParams& url_params,
                    bool prefer_cache,
                    const DownloadSaveInfo& save_info,
-                   ResourceDispatcherHost* resource_dispatcher_host,
+                   ResourceDispatcherHostImpl* resource_dispatcher_host,
                    const RenderParams& render_params,
                    content::ResourceContext* context) {
   scoped_ptr<net::URLRequest> request(
@@ -92,11 +93,13 @@ void BeginDownload(const URLParams& url_params,
     request->set_upload(upload_data);
   }
   resource_dispatcher_host->BeginDownload(
-      request.Pass(), prefer_cache, save_info,
-      DownloadResourceHandler::OnStartedCallback(),
+      request.Pass(),
+      context,
       render_params.render_process_id_,
       render_params.render_view_id_,
-      context);
+      prefer_cache,
+      save_info,
+      ResourceDispatcherHostImpl::DownloadStartedCallback());
 }
 
 class MapValueIteratorAdapter {
@@ -140,7 +143,7 @@ void EnsureNoPendingDownloadsOnIO(bool* result) {
   }
 
   scoped_refptr<DownloadFileManager> download_file_manager =
-      ResourceDispatcherHost::Get()->download_file_manager();
+      ResourceDispatcherHostImpl::Get()->download_file_manager();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&EnsureNoPendingDownloadsOnFile,
@@ -319,10 +322,10 @@ bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
 
   browser_context_ = browser_context;
 
-  // In test mode, there may be no ResourceDispatcherHost.  In this case it's
-  // safe to avoid setting |file_manager_| because we only call a small set of
-  // functions, none of which need it.
-  ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
+  // In test mode, there may be no ResourceDispatcherHostImpl.  In this case
+  // it's safe to avoid setting |file_manager_| because we only call a small
+  // set of functions, none of which need it.
+  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   if (rdh) {
     file_manager_ = rdh->download_file_manager();
     DCHECK(file_manager_);
@@ -864,8 +867,9 @@ void DownloadManagerImpl::DownloadUrl(
     int64 post_id,
     const DownloadSaveInfo& save_info,
     WebContents* web_contents) {
-  ResourceDispatcherHost* resource_dispatcher_host =
-      ResourceDispatcherHost::Get();
+  ResourceDispatcherHostImpl* resource_dispatcher_host =
+      ResourceDispatcherHostImpl::Get();
+  DCHECK(resource_dispatcher_host);
 
   // We send a pointer to content::ResourceContext, instead of the usual
   // reference, so that a copy of the object isn't made.

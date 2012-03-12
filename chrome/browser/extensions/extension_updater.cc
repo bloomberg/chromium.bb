@@ -36,9 +36,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "crypto/sha2.h"
@@ -638,20 +638,18 @@ class SafeManifestParser : public UtilityProcessHostClient {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
-            base::Bind(
-                &SafeManifestParser::ParseInSandbox, this,
-                ResourceDispatcherHost::Get()))) {
+            base::Bind(&SafeManifestParser::ParseInSandbox, this))) {
       NOTREACHED();
     }
   }
 
   // Creates the sandboxed utility process and tells it to start parsing.
-  void ParseInSandbox(ResourceDispatcherHost* rdh) {
+  void ParseInSandbox() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     // TODO(asargent) we shouldn't need to do this branch here - instead
     // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
-    bool use_utility_process = rdh &&
+    bool use_utility_process = content::ResourceDispatcherHost::Get() &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
     if (use_utility_process) {
       UtilityProcessHost* host = UtilityProcessHost::Create(

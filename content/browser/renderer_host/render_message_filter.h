@@ -19,7 +19,7 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
@@ -38,6 +38,7 @@ struct WebScreenInfo;
 namespace content {
 class BrowserContext;
 class ResourceContext;
+class ResourceDispatcherHostImpl;
 }
 
 namespace base {
@@ -230,7 +231,7 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed
   // by the BrowserProcess, which has a wider scope than we do.
-  ResourceDispatcherHost* resource_dispatcher_host_;
+  content::ResourceDispatcherHostImpl* resource_dispatcher_host_;
   PluginServiceImpl* plugin_service_;
 
   // The browser context associated with our renderer process.  This should only

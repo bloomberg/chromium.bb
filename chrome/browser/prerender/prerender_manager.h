@@ -155,6 +155,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // they time out, but new ones will not be generated.
   void set_enabled(bool enabled);
 
+  // Controls if we launch or squash prefetch requests as they arrive from
+  // renderers.
+  static bool IsPrefetchEnabled();
+  static void SetIsPrefetchEnabled(bool enabled);
+
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
   static bool IsPrerenderingPossible();
@@ -395,6 +400,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // manager. The value can change dynamically during the lifetime
   // of the PrerenderManager.
   bool enabled_;
+
+  static bool is_prefetch_enabled_;
 
   // The profile that owns this PrerenderManager.
   Profile* profile_;

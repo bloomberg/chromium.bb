@@ -9,8 +9,8 @@
 //
 // See http://dev.chromium.org/developers/design-documents/multi-process-resource-loading
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_IMPL_H_
 #pragma once
 
 #include <map>
@@ -27,6 +27,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
@@ -40,30 +41,46 @@ struct DownloadSaveInfo;
 struct ResourceHostMsg_Request;
 struct ViewMsg_SwapOut_Params;
 
-namespace content {
-class ResourceContext;
-class ResourceDispatcherHostDelegate;
-class ResourceRequestInfoImpl;
-struct GlobalRequestID;
-}
-
 namespace net {
 class CookieList;
 class URLRequestJobFactory;
-}  // namespace net
+}
 
 namespace webkit_blob {
 class ShareableFileReference;
 }
 
-class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
- public:
-  ResourceDispatcherHost();
-  virtual ~ResourceDispatcherHost();
+namespace content {
+class ResourceContext;
+class ResourceDispatcherHostDelegate;
+class ResourceRequestInfoImpl;
+struct GlobalRequestID;
 
-  // Returns the current ResourceDispatcherHost. May return NULL if it hasn't
-  // been created yet.
-  static ResourceDispatcherHost* Get();
+class CONTENT_EXPORT ResourceDispatcherHostImpl
+    : public ResourceDispatcherHost,
+      public net::URLRequest::Delegate {
+ public:
+  ResourceDispatcherHostImpl();
+  virtual ~ResourceDispatcherHostImpl();
+
+  // Returns the current ResourceDispatcherHostImpl. May return NULL if it
+  // hasn't been created yet.
+  static ResourceDispatcherHostImpl* Get();
+
+  // ResourceDispatcherHost implementation:
+  virtual void SetDelegate(ResourceDispatcherHostDelegate* delegate) OVERRIDE;
+  virtual void SetAllowCrossOriginAuthPrompt(bool value) OVERRIDE;
+  virtual void CancelRequestsForContext(ResourceContext* context) OVERRIDE;
+  virtual net::Error BeginDownload(
+      scoped_ptr<net::URLRequest> request,
+      ResourceContext* context,
+      int child_id,
+      int route_id,
+      bool prefer_cache,
+      const DownloadSaveInfo& save_info,
+      const DownloadStartedCallback& started_callback) OVERRIDE;
+  virtual void ClearLoginDelegateForRequest(net::URLRequest* request) OVERRIDE;
+  virtual void MarkAsTransferredNavigation(net::URLRequest* request) OVERRIDE;
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
@@ -75,26 +92,13 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
                          ResourceMessageFilter* filter,
                          bool* message_was_ok);
 
-  // Initiates a download by explicit request of the renderer, e.g. due to
-  // alt-clicking a link.  If the download is started, |started_cb| will be
-  // called on the UI thread with the DownloadId; otherwise an error code will
-  // be returned.
-  net::Error BeginDownload(
-      scoped_ptr<net::URLRequest> request,
-      bool prefer_cache,
-      const DownloadSaveInfo& save_info,
-      const DownloadResourceHandler::OnStartedCallback& started_cb,
-      int child_id,
-      int route_id,
-      content::ResourceContext* context);
-
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).
   void BeginSaveFile(const GURL& url,
                      const GURL& referrer,
                      int child_id,
                      int route_id,
-                     content::ResourceContext* context);
+                     ResourceContext* context);
 
   // Cancels the given request if it still exists. We ignore cancels from the
   // renderer in the event of a download.
@@ -167,11 +171,6 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // acts like CancelRequestsForProcess when route_id is -1.
   void CancelRequestsForRoute(int child_id, int route_id);
 
-  // Force cancels any pending requests for the given |context|. This is
-  // necessary to ensure that before |context| goes away, all requests
-  // for it are dead.
-  void CancelRequestsForContext(content::ResourceContext* context);
-
   // net::URLRequest::Delegate
   virtual void OnReceivedRedirect(net::URLRequest* request,
                                   const GURL& new_url,
@@ -190,24 +189,9 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   void OnUserGesture(TabContents* tab);
 
-  // Helper functions to get the dispatcher's request info for the request.
-  // If the dispatcher didn't create the request then NULL is returned.
-  static content::ResourceRequestInfoImpl* InfoForRequest(
-      net::URLRequest* request);
-  static const content::ResourceRequestInfoImpl* InfoForRequest(
-      const net::URLRequest* request);
-
-  // Extracts the render view/process host's identifiers from the given request
-  // and places them in the given out params (both required). If there are no
-  // such IDs associated with the request (such as non-page-related requests),
-  // this function will return false and both out params will be -1.
-  static bool RenderViewForRequest(const net::URLRequest* request,
-                                   int* render_process_host_id,
-                                   int* render_view_host_id);
-
   // Retrieves a net::URLRequest.  Must be called from the IO thread.
   net::URLRequest* GetURLRequest(
-      const content::GlobalRequestID& request_id) const;
+      const GlobalRequestID& request_id) const;
 
   void RemovePendingRequest(int child_id, int request_id);
 
@@ -240,41 +224,22 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Needed for the sync IPC message dispatcher macros.
   bool Send(IPC::Message* message);
 
-  // Controls if we launch or squash prefetch requests as they arrive
-  // from renderers.
-  static bool is_prefetch_enabled();
-  static void set_is_prefetch_enabled(bool value);
-
-  // Controls whether third-party sub-content can pop-up HTTP basic auth
+  // Indicates whether third-party sub-content can pop-up HTTP basic auth
   // dialog boxes.
   bool allow_cross_origin_auth_prompt();
-  void set_allow_cross_origin_auth_prompt(bool value);
 
-  // This does not take ownership of the delegate. It is expected that the
-  // delegate have a longer lifetime than the ResourceDispatcherHost.
-  void set_delegate(content::ResourceDispatcherHostDelegate* delegate) {
-    delegate_ = delegate;
-  }
-  content::ResourceDispatcherHostDelegate* delegate() {
+  ResourceDispatcherHostDelegate* delegate() {
     return delegate_;
   }
 
-  // Marks the request as "parked". This happens if a request is
-  // redirected cross-site and needs to be resumed by a new render view.
-  void MarkAsTransferredNavigation(
-      const content::GlobalRequestID& transferred_request_id,
-      net::URLRequest* transferred_request);
-
   scoped_refptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
-      content::ResourceContext* context,
+      ResourceContext* context,
       int child_id,
       int route_id,
       int request_id,
       const DownloadSaveInfo& save_info,
       const DownloadResourceHandler::OnStartedCallback& started_cb);
-
-  static void ClearLoginDelegate(net::URLRequest* request);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
@@ -288,16 +253,24 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   friend class ShutdownTask;
 
+  // Extracts the render view/process host's identifiers from the given request
+  // and places them in the given out params (both required). If there are no
+  // such IDs associated with the request (such as non-page-related requests),
+  // this function will return false and both out params will be -1.
+  static bool RenderViewForRequest(const net::URLRequest* request,
+                                   int* render_process_host_id,
+                                   int* render_view_host_id);
+
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
 
   void StartRequest(net::URLRequest* request);
 
   // Returns true if the request is paused.
-  bool PauseRequestIfNeeded(content::ResourceRequestInfoImpl* info);
+  bool PauseRequestIfNeeded(ResourceRequestInfoImpl* info);
 
   // Resumes the given request by calling OnResponseStarted or OnReadCompleted.
-  void ResumeRequest(const content::GlobalRequestID& request_id);
+  void ResumeRequest(const GlobalRequestID& request_id);
 
   // Internal function to start reading for the first time.
   void StartReading(net::URLRequest* request);
@@ -346,7 +319,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // It may be enhanced in the future to provide some kind of prioritization
   // mechanism. We should also consider a hashtable or binary tree if it turns
   // out we have a lot of things here.
-  typedef std::map<content::GlobalRequestID, net::URLRequest*>
+  typedef std::map<GlobalRequestID, net::URLRequest*>
       PendingRequestList;
 
   // Deletes the pending request identified by the iterator passed in.
@@ -377,7 +350,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   void UpdateLoadStates();
 
   // Checks the upload state and sends an update if one is necessary.
-  void MaybeUpdateUploadProgress(content::ResourceRequestInfoImpl *info,
+  void MaybeUpdateUploadProgress(ResourceRequestInfoImpl *info,
                                  net::URLRequest *request);
 
   // Resumes or cancels (if |cancel_requests| is true) any blocked requests.
@@ -407,12 +380,12 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.
-  content::ResourceRequestInfoImpl* CreateRequestInfo(
+  ResourceRequestInfoImpl* CreateRequestInfo(
       ResourceHandler* handler,
       int child_id,
       int route_id,
       bool download,
-      content::ResourceContext* context);
+      ResourceContext* context);
 
   // Returns true if |request| is in |pending_requests_|.
   bool IsValidRequest(net::URLRequest* request);
@@ -441,7 +414,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // This happens if a request is redirected cross-site and needs to be resumed
   // by a new render view.
   bool IsTransferredNavigation(
-      const content::GlobalRequestID& transferred_request_id) const;
+      const GlobalRequestID& transferred_request_id) const;
 
   PendingRequestList pending_requests_;
 
@@ -456,7 +429,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // A timer that periodically calls UpdateLoadStates while pending_requests_
   // is not empty.
-  base::RepeatingTimer<ResourceDispatcherHost> update_load_states_timer_;
+  base::RepeatingTimer<ResourceDispatcherHostImpl> update_load_states_timer_;
 
   // We own the download file writing thread and manager
   scoped_refptr<DownloadFileManager> download_file_manager_;
@@ -474,7 +447,7 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   int request_id_;
 
   // For running tasks.
-  base::WeakPtrFactory<ResourceDispatcherHost> weak_factory_;
+  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_factory_;
 
   // True if the resource dispatcher host has been shut down.
   bool is_shutdown_;
@@ -507,18 +480,18 @@ class CONTENT_EXPORT ResourceDispatcherHost : public net::URLRequest::Delegate {
   // to the source of the message.
   ResourceMessageFilter* filter_;
 
-  content::ResourceDispatcherHostDelegate* delegate_;
+  ResourceDispatcherHostDelegate* delegate_;
 
-  static bool is_prefetch_enabled_;
   bool allow_cross_origin_auth_prompt_;
 
   // Maps the request ID of request that is being transferred to a new RVH
   // to the respective request.
-  typedef std::map<content::GlobalRequestID, net::URLRequest*>
-      TransferredNavigations;
+  typedef std::map<GlobalRequestID, net::URLRequest*> TransferredNavigations;
   TransferredNavigations transferred_navigations_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);
+  DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_RENDERER_HOST_RESOURCE_DISPATCHER_HOST_IMPL_H_

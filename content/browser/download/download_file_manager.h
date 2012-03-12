@@ -5,7 +5,7 @@
 // The DownloadFileManager owns a set of DownloadFile objects, each of which
 // represent one in progress download and performs the disk IO for that
 // download. The DownloadFileManager itself is a singleton object owned by the
-// ResourceDispatcherHost.
+// ResourceDispatcherHostImpl.
 //
 // The DownloadFileManager uses the file_thread for performing file write
 // operations, in order to avoid disk activity on either the IO (network) thread
@@ -58,7 +58,6 @@
 struct DownloadCreateInfo;
 class DownloadRequestHandle;
 class FilePath;
-class ResourceDispatcherHost;
 
 namespace content {
 class DownloadBuffer;
@@ -89,8 +88,7 @@ class CONTENT_EXPORT DownloadFileManager
   // Takes ownership of the factory.
   // Passing in a NULL for |factory| will cause a default
   // |DownloadFileFactory| to be used.
-  DownloadFileManager(ResourceDispatcherHost* rdh,
-                      DownloadFileFactory* factory);
+  explicit DownloadFileManager(DownloadFileFactory* factory);
 
   // Called on shutdown on the UI thread.
   void Shutdown();
@@ -191,7 +189,6 @@ class CONTENT_EXPORT DownloadFileManager
   // is controlled from the FILE thread, and posts updates to the UI thread.
   base::RepeatingTimer<DownloadFileManager> update_timer_;
 
-  ResourceDispatcherHost* resource_dispatcher_host_;
   scoped_ptr<DownloadFileFactory> download_file_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileManager);

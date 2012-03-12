@@ -22,7 +22,7 @@
 #include "content/browser/in_process_webkit/webkit_thread.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/trace_controller.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/sandbox_policy.h"
@@ -592,7 +592,7 @@ void BrowserMainLoop::InitializeMainThread() {
 
 void BrowserMainLoop::BrowserThreadsStarted() {
   // RDH needs the IO thread to be created.
-  resource_dispatcher_host_.reset(new ResourceDispatcherHost());
+  resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl());
 
 #if defined(OS_LINUX)
   // MediaDeviceNotificationsLinux needs the File Thread.

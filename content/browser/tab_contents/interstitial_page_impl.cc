@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
@@ -48,6 +48,7 @@ using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
+using content::ResourceDispatcherHostImpl;
 using content::SiteInstance;
 using content::WebContents;
 using content::WebContentsView;
@@ -56,22 +57,19 @@ using WebKit::WebDragOperationsMask;
 
 namespace {
 
-void ResourceRequestHelper(ResourceDispatcherHost* resource_dispatcher_host,
+void ResourceRequestHelper(ResourceDispatcherHostImpl* rdh,
                            int process_id,
                            int render_view_host_id,
                            ResourceRequestAction action) {
   switch (action) {
     case BLOCK:
-      resource_dispatcher_host->BlockRequestsForRoute(
-          process_id, render_view_host_id);
+      rdh->BlockRequestsForRoute(process_id, render_view_host_id);
       break;
     case RESUME:
-      resource_dispatcher_host->ResumeBlockedRequestsForRoute(
-          process_id, render_view_host_id);
+      rdh->ResumeBlockedRequestsForRoute(process_id, render_view_host_id);
       break;
     case CANCEL:
-      resource_dispatcher_host->CancelBlockedRequestsForRoute(
-          process_id, render_view_host_id);
+      rdh->CancelBlockedRequestsForRoute(process_id, render_view_host_id);
       break;
     default:
       NOTREACHED();
@@ -649,11 +647,11 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
   // The tab might not have a render_view_host if it was closed (in which case,
   // we have taken care of the blocked requests when processing
   // NOTIFY_RENDER_WIDGET_HOST_DESTROYED.
-  // Also we need to test there is a ResourceDispatcherHost, as when unit-tests
-  // we don't have one.
+  // Also we need to test there is a ResourceDispatcherHostImpl, as when unit-
+  // tests we don't have one.
   RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(original_child_id_,
                                                        original_rvh_id_);
-  if (!rvh || !ResourceDispatcherHost::Get())
+  if (!rvh || !ResourceDispatcherHostImpl::Get())
     return;
 
   BrowserThread::PostTask(
@@ -661,7 +659,7 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
       FROM_HERE,
       base::Bind(
           &ResourceRequestHelper,
-          ResourceDispatcherHost::Get(),
+          ResourceDispatcherHostImpl::Get(),
           original_child_id_,
           original_rvh_id_,
           action));

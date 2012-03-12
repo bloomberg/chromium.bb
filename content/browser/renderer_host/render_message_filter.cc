@@ -26,6 +26,7 @@
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/desktop_notification_messages.h"
@@ -74,6 +75,7 @@ using content::BrowserMessageFilter;
 using content::BrowserThread;
 using content::ChildProcessHostImpl;
 using content::PluginServiceFilter;
+using content::ResourceDispatcherHostImpl;
 using content::UserMetricsAction;
 using net::CookieStore;
 
@@ -269,7 +271,7 @@ RenderMessageFilter::RenderMessageFilter(
     content::BrowserContext* browser_context,
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper)
-    : resource_dispatcher_host_(ResourceDispatcherHost::Get()),
+    : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
       browser_context_(browser_context),
       request_context_(request_context),
@@ -688,18 +690,17 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const string16& suggested_name) {
   DownloadSaveInfo save_info;
   save_info.suggested_name = suggested_name;
-  scoped_ptr<net::URLRequest> request(
-      new net::URLRequest(url, resource_dispatcher_host_));
+  scoped_ptr<net::URLRequest> request(new net::URLRequest(url, NULL));
   request->set_referrer(referrer.spec());
   download_stats::RecordDownloadSource(download_stats::INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),
-      false,
-      save_info,
-      DownloadResourceHandler::OnStartedCallback(),
+      resource_context_,
       render_process_id_,
       message.routing_id(),
-      resource_context_);
+      false,
+      save_info,
+      ResourceDispatcherHostImpl::DownloadStartedCallback());
 }
 
 void RenderMessageFilter::OnCheckNotificationPermission(

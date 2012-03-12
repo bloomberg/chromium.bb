@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 
 #include <vector>
 
@@ -13,7 +13,7 @@
 #include "base/process_util.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
@@ -33,14 +33,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
-using content::BrowserThreadImpl;
-using content::ChildProcessHostImpl;
-using content::GlobalRequestID;
-
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.
+
+namespace content {
 
 namespace {
 
@@ -464,7 +460,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   BrowserThreadImpl io_thread_;
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<ForwardingFilter> filter_;
-  ResourceDispatcherHost host_;
+  ResourceDispatcherHostImpl host_;
   ResourceIPCAccumulator accum_;
   std::string response_headers_;
   std::string response_data_;
@@ -631,7 +627,7 @@ TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
   TestResourceDispatcherHostDelegate delegate;
   delegate.set_defer_start(true);
   delegate.set_url_request_user_data(new TestUserData(&was_deleted));
-  host_.set_delegate(&delegate);
+  host_.SetDelegate(&delegate);
 
   MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
   CancelRequest(1);
@@ -944,11 +940,13 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 // Test the private helper method "CalculateApproximateMemoryCost()".
 TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequest req(GURL("http://www.google.com"), NULL);
-  EXPECT_EQ(4427, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
+  EXPECT_EQ(4427,
+            ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
 
   // Add 9 bytes of referrer.
   req.set_referrer("123456789");
-  EXPECT_EQ(4436, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
+  EXPECT_EQ(4436,
+            ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
 
   // Add 33 bytes of upload content.
   std::string upload_content;
@@ -957,7 +955,8 @@ TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   req.AppendBytesToUpload(upload_content.data(), upload_content.size());
 
   // Since the upload throttling is disabled, this has no effect on the cost.
-  EXPECT_EQ(4436, ResourceDispatcherHost::CalculateApproximateMemoryCost(&req));
+  EXPECT_EQ(4436,
+            ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(&req));
 }
 
 // Test the private helper method "IncrementOutstandingRequestsMemoryCost()".
@@ -1001,7 +1000,7 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   // Expected cost of each request as measured by
   // ResourceDispatcherHost::CalculateApproximateMemoryCost().
   int kMemoryCostOfTest2Req =
-      ResourceDispatcherHost::kAvgBytesPerOutstandingRequest +
+      ResourceDispatcherHostImpl::kAvgBytesPerOutstandingRequest +
       std::string("GET").size() +
       net::URLRequestTestJob::test_url_2().spec().size();
 
@@ -1338,8 +1337,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
 
   GlobalRequestID global_request_id(filter_->child_id(), request_id);
-  host_.MarkAsTransferredNavigation(global_request_id,
-                                    host_.GetURLRequest(global_request_id));
+  host_.MarkAsTransferredNavigation(host_.GetURLRequest(global_request_id));
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(filter_->child_id(), request_id);
@@ -1392,3 +1390,5 @@ TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
   EXPECT_EQ(net::URLRequestStatus::FAILED, status.status());
   EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME, status.error());
 }
+
+}  // namespace content

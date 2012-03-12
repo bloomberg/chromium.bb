@@ -14,7 +14,6 @@
 
 class DelayedResourceQueue;
 class DownloadRequestLimiter;
-class ResourceDispatcherHost;
 class SafeBrowsingService;
 class UserScriptListener;
 
@@ -29,10 +28,8 @@ class ChromeResourceDispatcherHostDelegate
  public:
   // This class does not take ownership of the tracker but merely holds a
   // reference to it to avoid accessing g_browser_process.
-  // Both |resource_dispatcher_host| and |prerender_tracker| must outlive
-  // |this|.
-  ChromeResourceDispatcherHostDelegate(
-      ResourceDispatcherHost* resource_dispatcher_host,
+  // |prerender_tracker| must outlive |this|.
+  explicit ChromeResourceDispatcherHostDelegate(
       prerender::PrerenderTracker* prerender_tracker);
   virtual ~ChromeResourceDispatcherHostDelegate();
 
@@ -90,7 +87,6 @@ class ChromeResourceDispatcherHostDelegate
       ResourceType::Type resource_type,
       ScopedVector<content::ResourceThrottle>* throttles);
 
-  ResourceDispatcherHost* resource_dispatcher_host_;
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<SafeBrowsingService> safe_browsing_;
   scoped_refptr<UserScriptListener> user_script_listener_;

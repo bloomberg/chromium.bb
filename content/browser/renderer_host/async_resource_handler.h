@@ -11,8 +11,10 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
-class ResourceDispatcherHost;
 class ResourceMessageFilter;
+
+namespace content {
+class ResourceDispatcherHostImpl;
 class SharedIOBuffer;
 
 // Used to complete an asynchronous resource request in response to resource
@@ -22,7 +24,7 @@ class AsyncResourceHandler : public ResourceHandler {
   AsyncResourceHandler(ResourceMessageFilter* filter,
                        int routing_id,
                        const GURL& url,
-                       ResourceDispatcherHost* resource_dispatcher_host);
+                       ResourceDispatcherHostImpl* rdh);
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id,
@@ -30,10 +32,10 @@ class AsyncResourceHandler : public ResourceHandler {
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& new_url,
-                                   content::ResourceResponse* response,
+                                   ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response) OVERRIDE;
+                                 ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
                            bool* defer) OVERRIDE;
@@ -58,7 +60,7 @@ class AsyncResourceHandler : public ResourceHandler {
   scoped_refptr<SharedIOBuffer> read_buffer_;
   scoped_refptr<ResourceMessageFilter> filter_;
   int routing_id_;
-  ResourceDispatcherHost* rdh_;
+  ResourceDispatcherHostImpl* rdh_;
 
   // |next_buffer_size_| is the size of the buffer to be allocated on the next
   // OnWillRead() call.  We exponentially grow the size of the buffer allocated
@@ -73,5 +75,7 @@ class AsyncResourceHandler : public ResourceHandler {
 
   DISALLOW_COPY_AND_ASSIGN(AsyncResourceHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_ASYNC_RESOURCE_HANDLER_H_

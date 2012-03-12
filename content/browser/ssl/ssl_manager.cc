@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/load_from_memory_cache_details.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
@@ -22,18 +22,19 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/ssl_status.h"
+#include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
+using content::ResourceDispatcherHostImpl;
 using content::ResourceRequestInfoImpl;
 using content::SSLStatus;
 using content::WebContents;
 
 // static
-void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
-                                       net::URLRequest* request,
+void SSLManager::OnSSLCertificateError(net::URLRequest* request,
                                        const net::SSLInfo& ssl_info,
                                        bool fatal) {
   DVLOG(1) << "OnSSLCertificateError() cert_error: "
@@ -41,15 +42,15 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
            << " url: " << request->url().spec()
            << " cert_status: " << std::hex << ssl_info.cert_status;
 
-  ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request);
 
   // A certificate error occurred.  Construct a SSLCertErrorHandler object and
   // hand it over to the UI thread for processing.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&SSLCertErrorHandler::Dispatch,
-                 new SSLCertErrorHandler(rdh,
+                 new SSLCertErrorHandler(ResourceDispatcherHostImpl::Get(),
                                          request,
                                          info->GetResourceType(),
                                          ssl_info,

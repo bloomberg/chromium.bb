@@ -15,7 +15,7 @@
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
@@ -24,11 +24,10 @@
 
 using content::BrowserThread;
 using content::RenderViewHostImpl;
+using content::ResourceDispatcherHostImpl;
 
-SaveFileManager::SaveFileManager(ResourceDispatcherHost* rdh)
-    : next_id_(0),
-      resource_dispatcher_host_(rdh) {
-  DCHECK(resource_dispatcher_host_);
+SaveFileManager::SaveFileManager()
+    : next_id_(0) {
 }
 
 SaveFileManager::~SaveFileManager() {
@@ -56,7 +55,7 @@ SaveFile* SaveFileManager::LookupSaveFile(int save_id) {
 }
 
 // Called on the IO thread when
-// a) The ResourceDispatcherHost has decided that a request is savable.
+// a) The ResourceDispatcherHostImpl has decided that a request is savable.
 // b) The resource does not come from the network, but we still need a
 // save ID for for managing the status of the saving operation. So we
 // file a request from the file thread to the IO thread to generate a
@@ -359,11 +358,11 @@ void SaveFileManager::OnSaveURL(
     int render_view_id,
     content::ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  resource_dispatcher_host_->BeginSaveFile(url,
-                                           referrer,
-                                           render_process_host_id,
-                                           render_view_id,
-                                           context);
+  ResourceDispatcherHostImpl::Get()->BeginSaveFile(url,
+                                                   referrer,
+                                                   render_process_host_id,
+                                                   render_view_id,
+                                                   context);
 }
 
 void SaveFileManager::OnRequireSaveJobFromOtherSource(
@@ -381,9 +380,9 @@ void SaveFileManager::OnRequireSaveJobFromOtherSource(
 void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,
                                                int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  resource_dispatcher_host_->CancelRequest(render_process_id,
-                                           request_id,
-                                           false);
+  ResourceDispatcherHostImpl::Get()->CancelRequest(render_process_id,
+                                                   request_id,
+                                                   false);
 }
 
 // Notifications sent from the UI thread and run on the file thread.

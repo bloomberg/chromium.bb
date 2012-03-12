@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 
 class LoadFromMemoryCacheDetails;
 class NavigationControllerImpl;
-class ResourceDispatcherHost;
 class ResourceRedirectDetails;
 class ResourceRequestDetails;
 class SSLPolicy;
@@ -50,8 +49,7 @@ class SSLManager : public content::NotificationObserver {
   // |ContinueDespiteLastError| on the net::URLRequest.
   //
   // Called on the IO thread.
-  static void OnSSLCertificateError(ResourceDispatcherHost* resource_dispatcher,
-                                    net::URLRequest* request,
+  static void OnSSLCertificateError(net::URLRequest* request,
                                     const net::SSLInfo& ssl_info,
                                     bool fatal);
 

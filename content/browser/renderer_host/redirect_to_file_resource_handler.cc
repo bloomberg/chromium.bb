@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -28,7 +28,7 @@ static const int kReadBufSize = 32768;
 RedirectToFileResourceHandler::RedirectToFileResourceHandler(
     ResourceHandler* next_handler,
     int process_id,
-    ResourceDispatcherHost* host)
+    ResourceDispatcherHostImpl* host)
     : LayeredResourceHandler(next_handler),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       host_(host),

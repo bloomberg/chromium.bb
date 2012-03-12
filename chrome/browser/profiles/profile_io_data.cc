@@ -41,12 +41,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "net/base/origin_bound_cert_service.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
@@ -66,6 +66,7 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ResourceContext;
+using content::ResourceDispatcherHost;
 using content::ResourceRequestInfoImpl;
 
 namespace {
@@ -163,7 +164,7 @@ class ChromeBlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
   virtual scoped_refptr<webkit_blob::BlobData>
       LookupBlobData(net::URLRequest* request) const {
     const ResourceRequestInfoImpl* info =
-        ResourceDispatcherHost::InfoForRequest(request);
+        ResourceRequestInfoImpl::ForRequest(request);
     if (!info)
       return NULL;
     return info->requested_blob_data();

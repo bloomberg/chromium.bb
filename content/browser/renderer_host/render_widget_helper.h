@@ -28,7 +28,10 @@ namespace base {
 class TimeDelta;
 }
 
-class ResourceDispatcherHost;
+namespace content {
+class ResourceDispatcherHostImpl;
+}
+
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewMsg_SwapOut_Params;
 
@@ -97,7 +100,7 @@ class RenderWidgetHelper
   RenderWidgetHelper();
 
   void Init(int render_process_id,
-            ResourceDispatcherHost* resource_dispatcher_host);
+            content::ResourceDispatcherHostImpl* resource_dispatcher_host);
 
   // Gets the next available routing id.  This is thread safe.
   int GetNextRoutingID();
@@ -212,7 +215,7 @@ class RenderWidgetHelper
   // The next routing id to use.
   base::AtomicSequenceNumber next_routing_id_;
 
-  ResourceDispatcherHost* resource_dispatcher_host_;
+  content::ResourceDispatcherHostImpl* resource_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHelper);
 };

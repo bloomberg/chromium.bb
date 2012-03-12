@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
@@ -39,7 +39,7 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
     ResourceHandler* handler,
     int render_process_host_id,
     int render_view_id,
-    ResourceDispatcherHost* resource_dispatcher_host)
+    ResourceDispatcherHostImpl* rdh)
     : LayeredResourceHandler(handler),
       render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id),
@@ -49,7 +49,7 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       completed_during_transition_(false),
       completed_status_(),
       response_(NULL),
-      rdh_(resource_dispatcher_host) {
+      rdh_(rdh) {
 }
 
 bool CrossSiteResourceHandler::OnRequestRedirected(
@@ -80,8 +80,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
     DLOG(WARNING) << "Request wasn't found";
     return false;
   }
-  ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
 
   // If this is a download, just pass the response through without doing a
   // cross-site check.  The renderer will see it is a download and abort the
@@ -171,7 +170,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
 
   // Remove ourselves from the ExtraRequestInfo.
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+      ResourceRequestInfoImpl::ForRequest(request);
   info->set_cross_site_handler(NULL);
 
   // If the response completed during the transition, notify the next
@@ -203,7 +202,7 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
     return;
   }
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+      ResourceRequestInfoImpl::ForRequest(request);
   info->set_cross_site_handler(this);
 
   if (has_started_response_) {

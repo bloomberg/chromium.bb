@@ -9,9 +9,8 @@
 #include "content/browser/renderer_host/layered_resource_handler.h"
 #include "net/url_request/url_request_status.h"
 
-class ResourceDispatcherHost;
-
 namespace content {
+class ResourceDispatcherHostImpl;
 struct GlobalRequestID;
 
 // Ensures that cross-site responses are delayed until the onunload handler of
@@ -24,15 +23,15 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   CrossSiteResourceHandler(ResourceHandler* handler,
                            int render_process_host_id,
                            int render_view_id,
-                           ResourceDispatcherHost* resource_dispatcher_host);
+                           ResourceDispatcherHostImpl* rdh);
 
   // ResourceHandler implementation:
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& new_url,
-                                   content::ResourceResponse* response,
+                                   ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response) OVERRIDE;
+                                 ResourceResponse* response) OVERRIDE;
   virtual bool OnReadCompleted(int request_id,
                                int* bytes_read) OVERRIDE;
   virtual bool OnResponseCompleted(int request_id,
@@ -50,8 +49,8 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   // telling the old RenderViewHost to run its onunload handler.
   void StartCrossSiteTransition(
       int request_id,
-      content::ResourceResponse* response,
-      const content::GlobalRequestID& global_id);
+      ResourceResponse* response,
+      const GlobalRequestID& global_id);
 
   int render_process_host_id_;
   int render_view_id_;
@@ -61,8 +60,8 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   bool completed_during_transition_;
   net::URLRequestStatus completed_status_;
   std::string completed_security_info_;
-  content::ResourceResponse* response_;
-  ResourceDispatcherHost* rdh_;
+  ResourceResponse* response_;
+  ResourceDispatcherHostImpl* rdh_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteResourceHandler);
 };

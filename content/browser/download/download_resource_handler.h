@@ -19,7 +19,6 @@
 
 class DownloadFileManager;
 class DownloadRequestHandle;
-class ResourceDispatcherHost;
 struct DownloadCreateInfo;
 
 namespace content {
@@ -39,8 +38,7 @@ class DownloadResourceHandler : public ResourceHandler {
   static const size_t kLoadsToWrite = 100;  // number of data buffers queued
 
   // started_cb will be called exactly once on the UI thread.
-  DownloadResourceHandler(ResourceDispatcherHost* rdh,
-                          int render_process_host_id,
+  DownloadResourceHandler(int render_process_host_id,
                           int render_view_id,
                           int request_id,
                           const GURL& url,
@@ -120,7 +118,6 @@ class DownloadResourceHandler : public ResourceHandler {
   OnStartedCallback started_cb_;
   DownloadSaveInfo save_info_;
   scoped_refptr<content::DownloadBuffer> buffer_;
-  ResourceDispatcherHost* rdh_;
   bool is_paused_;
   base::OneShotTimer<DownloadResourceHandler> pause_timer_;
 

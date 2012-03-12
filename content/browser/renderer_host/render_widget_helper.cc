@@ -11,12 +11,13 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
 using content::RenderViewHostImpl;
+using content::ResourceDispatcherHostImpl;
 
 // A helper used with DidReceiveUpdateMsg that we hold a pointer to in
 // pending_paints_.
@@ -80,7 +81,7 @@ RenderWidgetHelper::~RenderWidgetHelper() {
 
 void RenderWidgetHelper::Init(
     int render_process_id,
-    ResourceDispatcherHost* resource_dispatcher_host) {
+    ResourceDispatcherHostImpl* resource_dispatcher_host) {
   render_process_id_ = render_process_id;
   resource_dispatcher_host_ = resource_dispatcher_host;
 }

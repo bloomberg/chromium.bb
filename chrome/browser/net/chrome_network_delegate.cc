@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
@@ -36,6 +35,7 @@
 
 using content::BrowserThread;
 using content::RenderViewHost;
+using content::ResourceRequestInfo;
 
 namespace {
 
@@ -87,9 +87,12 @@ void NotifyEPMRequestStatus(RequestStatus status,
 
 void ForwardRequestStatus(
     RequestStatus status, net::URLRequest* request, void* profile_id) {
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  if (!info)
+    return;
+
   int process_id, render_view_id;
-  if (ResourceDispatcherHost::RenderViewForRequest(
-          request, &process_id, &render_view_id)) {
+  if (info->GetAssociatedRenderView(&process_id, &render_view_id)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&NotifyEPMRequestStatus,
                    status, profile_id, process_id, render_view_id));

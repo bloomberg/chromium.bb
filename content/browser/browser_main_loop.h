@@ -15,7 +15,6 @@ class BrowserOnlineStateObserver;
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
-class ResourceDispatcherHost;
 class SystemMessageWindowWin;
 
 namespace base {
@@ -33,6 +32,7 @@ class BrowserShutdownImpl;
 class BrowserThreadImpl;
 struct MainFunctionParams;
 class MediaDeviceNotificationsLinux;
+class ResourceDispatcherHostImpl;
 class WebKitThread;
 
 // Implements the main browser loop stages called from |BrowserMain()|.
@@ -104,7 +104,7 @@ class BrowserMainLoop {
   scoped_ptr<BrowserThreadImpl> main_thread_;
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
-  scoped_ptr<ResourceDispatcherHost> resource_dispatcher_host_;
+  scoped_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
   scoped_ptr<BrowserProcessSubThread> db_thread_;

@@ -22,10 +22,10 @@
 
 class DownloadFileIconExtractor;
 class DownloadQuery;
-class ResourceDispatcherHost;
 
 namespace content {
 class ResourceContext;
+class ResourceDispatcherHost;
 }
 
 // Functions in the chrome.experimental.downloads namespace facilitate
@@ -135,7 +135,7 @@ class DownloadsDownloadFunction : public AsyncDownloadsFunction {
     base::ListValue* extra_headers;
     std::string method;
     std::string post_body;
-    ResourceDispatcherHost* rdh;
+    content::ResourceDispatcherHost* rdh;
     content::ResourceContext* resource_context;
     int render_process_host_id;
     int render_view_host_routing_id;

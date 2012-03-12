@@ -26,7 +26,7 @@
 #include "content/browser/download/save_item.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -48,6 +48,7 @@ using base::Time;
 using content::BrowserThread;
 using content::DownloadItem;
 using content::NavigationEntry;
+using content::ResourceDispatcherHostImpl;
 using content::WebContents;
 using WebKit::WebPageSerializerClient;
 
@@ -250,7 +251,7 @@ void SavePackage::Cancel(bool user_action) {
 // Init() can be called directly, or indirectly via GetSaveInfo(). In both
 // cases, we need file_manager_ to be initialized, so we do this first.
 void SavePackage::InternalInit() {
-  ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
+  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   if (!rdh) {
     NOTREACHED();
     return;

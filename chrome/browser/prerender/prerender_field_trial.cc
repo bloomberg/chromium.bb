@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 
 namespace prerender {
 
@@ -37,8 +36,7 @@ void SetupPrefetchFieldTrial() {
                            "ContentPrefetchPrefetchOff", 2012, 6, 30));
   const int kPrefetchOnGroup = trial->AppendGroup("ContentPrefetchPrefetchOn",
                                                   prefetch_probability);
-  ResourceDispatcherHost::set_is_prefetch_enabled(
-      trial->group() == kPrefetchOnGroup);
+  PrerenderManager::SetIsPrefetchEnabled(trial->group() == kPrefetchOnGroup);
 }
 
 void SetupPrerenderFieldTrial() {
@@ -161,15 +159,15 @@ void ConfigurePrefetchAndPrerender(const CommandLine& command_line) {
       SetupPrerenderFieldTrial();
       break;
     case PRERENDER_OPTION_DISABLED:
-      ResourceDispatcherHost::set_is_prefetch_enabled(false);
+      PrerenderManager::SetIsPrefetchEnabled(false);
       PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
       break;
     case PRERENDER_OPTION_ENABLED:
-      ResourceDispatcherHost::set_is_prefetch_enabled(true);
+      PrerenderManager::SetIsPrefetchEnabled(true);
       PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
       break;
     case PRERENDER_OPTION_PREFETCH_ONLY:
-      ResourceDispatcherHost::set_is_prefetch_enabled(true);
+      PrerenderManager::SetIsPrefetchEnabled(true);
       PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
       break;
     default:

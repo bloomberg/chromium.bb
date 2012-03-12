@@ -17,8 +17,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/url_fetcher.h"
@@ -37,7 +37,6 @@ class WebResourceService::UnpackerClient : public UtilityProcessHostClient {
  public:
   explicit UnpackerClient(WebResourceService* web_resource_service)
     : web_resource_service_(web_resource_service),
-      resource_dispatcher_host_(ResourceDispatcherHost::Get()),
       got_response_(false) {
   }
 
@@ -45,11 +44,11 @@ class WebResourceService::UnpackerClient : public UtilityProcessHostClient {
     AddRef();  // balanced in Cleanup.
 
     // TODO(willchan): Look for a better signal of whether we're in a unit test
-    // or not. Using |resource_dispatcher_host_| for this is pretty lame.
-    // If we don't have a resource_dispatcher_host_, assume we're in
-    // a test and run the unpacker directly in-process.
+    // or not. Using |ResourceDispatcherHost::Get()| for this is pretty lame.
+    // If we don't have a ResourceDispatcherHost, assume we're in a test and
+    // run the unpacker directly in-process.
     bool use_utility_process =
-        resource_dispatcher_host_ != NULL &&
+        content::ResourceDispatcherHost::Get() &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
     if (use_utility_process) {
       BrowserThread::ID thread_id;
@@ -122,9 +121,6 @@ class WebResourceService::UnpackerClient : public UtilityProcessHostClient {
   }
 
   scoped_refptr<WebResourceService> web_resource_service_;
-
-  // Owned by the global browser process.
-  ResourceDispatcherHost* resource_dispatcher_host_;
 
   // True if we got a response from the utility process and have cleaned up
   // already.

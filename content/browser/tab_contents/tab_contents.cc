@@ -27,7 +27,7 @@
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/interstitial_page_impl.h"
@@ -130,6 +130,7 @@ using content::RenderViewHostImpl;
 using content::RenderWidgetHost;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
+using content::ResourceDispatcherHostImpl;
 using content::SessionStorageNamespace;
 using content::SiteInstance;
 using content::SSLStatus;
@@ -2316,7 +2317,7 @@ void TabContents::OnUserGesture() {
   // Notify observers.
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidGetUserGesture());
 
-  ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
+  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   if (rdh)  // NULL in unittests.
     rdh->OnUserGesture(this);
 }

@@ -16,7 +16,6 @@
 #include "content/public/browser/utility_process_host_client.h"
 
 class Extension;
-class ResourceDispatcherHost;
 
 namespace base {
 class DictionaryValue;
@@ -99,10 +98,10 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   static const uint32 kCurrentVersion = 2;
 
   // Unpacks the extension in |crx_path| into a temporary directory and calls
-  // |client| with the result. If |rdh| is provided, unpacking is done in a
-  // sandboxed subprocess. Otherwise, it is done in-process.
+  // |client| with the result. If |run_out_of_process| is provided, unpacking
+  // is done in a sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedExtensionUnpacker(const FilePath& crx_path,
-                             ResourceDispatcherHost* rdh,
+                             bool run_out_of_process,
                              Extension::Location location,
                              int creation_flags,
                              SandboxedExtensionUnpackerClient* client);
@@ -221,8 +220,8 @@ class SandboxedExtensionUnpacker : public content::UtilityProcessHostClient {
   // Our client's thread. This is the thread we respond on.
   content::BrowserThread::ID thread_identifier_;
 
-  // ResourceDispatcherHost to pass to the utility process.
-  ResourceDispatcherHost* rdh_;
+  // True if unpacking should be done by the utility process.
+  bool run_out_of_process_;
 
   // Our client.
   scoped_refptr<SandboxedExtensionUnpackerClient> client_;

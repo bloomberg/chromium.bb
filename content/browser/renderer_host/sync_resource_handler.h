@@ -11,7 +11,6 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/public/common/resource_response.h"
 
-class ResourceDispatcherHost;
 class ResourceMessageFilter;
 
 namespace IPC {
@@ -22,6 +21,9 @@ namespace net {
 class IOBuffer;
 }
 
+namespace content {
+class ResourceDispatcherHostImpl;
+
 // Used to complete a synchronous resource request in response to resource load
 // events from the resource dispatcher host.
 class SyncResourceHandler : public ResourceHandler {
@@ -29,17 +31,17 @@ class SyncResourceHandler : public ResourceHandler {
   SyncResourceHandler(ResourceMessageFilter* filter,
                       const GURL& url,
                       IPC::Message* result_message,
-                      ResourceDispatcherHost* resource_dispatcher_host);
+                      ResourceDispatcherHostImpl* resource_dispatcher_host);
 
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& new_url,
-                                   content::ResourceResponse* response,
+                                   ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 content::ResourceResponse* response) OVERRIDE;
+                                 ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
                            bool* defer) OVERRIDE;
@@ -61,10 +63,12 @@ class SyncResourceHandler : public ResourceHandler {
 
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  content::SyncLoadResult result_;
+  SyncLoadResult result_;
   scoped_refptr<ResourceMessageFilter> filter_;
   IPC::Message* result_message_;
-  ResourceDispatcherHost* rdh_;
+  ResourceDispatcherHostImpl* rdh_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_SYNC_RESOURCE_HANDLER_H_

@@ -19,7 +19,6 @@
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -65,9 +64,8 @@ DownloadFile* DownloadFileFactoryImpl::CreateFile(
 
 }  // namespace
 
-DownloadFileManager::DownloadFileManager(ResourceDispatcherHost* rdh,
-                                         DownloadFileFactory* factory)
-    : resource_dispatcher_host_(rdh), download_file_factory_(factory) {
+DownloadFileManager::DownloadFileManager(DownloadFileFactory* factory)
+    : download_file_factory_(factory) {
   if (download_file_factory_ == NULL)
     download_file_factory_.reset(new DownloadFileFactoryImpl);
 }

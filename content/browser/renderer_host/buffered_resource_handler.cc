@@ -14,7 +14,7 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/plugin_service_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/renderer_host/x509_user_cert_resource_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,9 +61,10 @@ void RecordSnifferMetrics(bool sniffing_blocked,
 
 }  // namespace
 
-BufferedResourceHandler::BufferedResourceHandler(ResourceHandler* handler,
-                                                 ResourceDispatcherHost* host,
-                                                 net::URLRequest* request)
+BufferedResourceHandler::BufferedResourceHandler(
+    ResourceHandler* handler,
+    ResourceDispatcherHostImpl* host,
+    net::URLRequest* request)
     : LayeredResourceHandler(handler),
       host_(host),
       request_(request),
@@ -118,7 +119,7 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
 
 bool BufferedResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request_);
 
   if (sniff_content_) {
     if (KeepBuffering(*bytes_read))
@@ -257,7 +258,7 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
 
 bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request_);
   std::string mime_type;
   request_->GetMimeType(&mime_type);
 
@@ -281,8 +282,9 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id) {
     }
 
     X509UserCertResourceHandler* x509_cert_handler =
-        new X509UserCertResourceHandler(host_, request_,
-                                        info->GetChildID(), info->GetRouteID());
+        new X509UserCertResourceHandler(request_,
+                                        info->GetChildID(),
+                                        info->GetRouteID());
     if (!UseAlternateResourceHandler(request_id, x509_cert_handler))
       return false;
   }
@@ -331,7 +333,7 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
 
   // We don't want to keep buffering as our buffer will fill up.
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request_);
   host_->PauseRequest(info->GetChildID(), info->GetRequestID(), true);
 
   // Get the plugins asynchronously.
@@ -367,7 +369,7 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   // Finally, check the plugin list.
   bool allow_wildcard = false;
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request_);
   bool stale = false;
   webkit::WebPluginInfo plugin;
   bool found = PluginServiceImpl::GetInstance()->GetPluginInfo(
@@ -401,7 +403,7 @@ bool BufferedResourceHandler::UseAlternateResourceHandler(
   // from the extra request info because the CrossSiteResourceHandler (part of
   // the original ResourceHandler chain) will be deleted by the next statement.
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request_);
   info->set_cross_site_handler(NULL);
 
   // This is handled entirely within the new ResourceHandler, so just reset the
@@ -417,7 +419,7 @@ bool BufferedResourceHandler::UseAlternateResourceHandler(
 bool BufferedResourceHandler::ForwardPendingEventsToNextHandler(
     int request_id) {
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request_);
   if (info->pause_count())
     return true;
 
@@ -461,7 +463,7 @@ void BufferedResourceHandler::OnPluginsLoaded(
     return;
 
   ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request_);
+      ResourceRequestInfoImpl::ForRequest(request_);
   int child_id = info->GetChildID();
   int request_id = info->GetRequestID();
 

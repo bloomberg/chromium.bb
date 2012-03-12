@@ -139,8 +139,7 @@ class DownloadFileManagerTest : public testing::Test {
     download_manager_ = new MockDownloadManager();
     request_handle_.reset(new MockDownloadRequestHandle(download_manager_));
     download_file_factory_ = new MockDownloadFileFactory;
-    download_file_manager_ =
-        new DownloadFileManager(NULL, download_file_factory_);
+    download_file_manager_ = new DownloadFileManager(download_file_factory_);
   }
 
   virtual void TearDown() {

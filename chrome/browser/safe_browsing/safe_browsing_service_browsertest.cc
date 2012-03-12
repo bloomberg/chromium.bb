@@ -25,7 +25,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/test/test_browser_thread.h"
@@ -471,15 +470,15 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
   class SetPrefetchForTest {
    public:
     explicit SetPrefetchForTest(bool prefetch)
-        : old_prefetch_state_(ResourceDispatcherHost::is_prefetch_enabled()),
+        : old_prefetch_state_(prerender::PrerenderManager::IsPrefetchEnabled()),
           old_prerender_mode_(prerender::PrerenderManager::GetMode()) {
-      ResourceDispatcherHost::set_is_prefetch_enabled(prefetch);
+      prerender::PrerenderManager::SetIsPrefetchEnabled(prefetch);
       prerender::PrerenderManager::SetMode(
           prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
     }
 
     ~SetPrefetchForTest() {
-      ResourceDispatcherHost::set_is_prefetch_enabled(old_prefetch_state_);
+      prerender::PrerenderManager::SetIsPrefetchEnabled(old_prefetch_state_);
       prerender::PrerenderManager::SetMode(old_prerender_mode_);
     }
    private:

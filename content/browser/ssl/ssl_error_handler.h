@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,11 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
-class ResourceDispatcherHost;
 class SSLCertErrorHandler;
+
+namespace content {
+class ResourceDispatcherHostImpl;
+}
 
 namespace net {
 class URLRequest;
@@ -83,7 +86,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   friend class base::RefCountedThreadSafe<SSLErrorHandler>;
 
   // Construct on the IO thread.
-  SSLErrorHandler(ResourceDispatcherHost* resource_dispatcher_host,
+  SSLErrorHandler(content::ResourceDispatcherHostImpl* host,
                   net::URLRequest* request,
                   ResourceType::Type resource_type);
 
@@ -102,8 +105,8 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // Should only be accessed from the IO thread.
   content::GlobalRequestID request_id_;
 
-  // The ResourceDispatcherHost we are associated with.
-  ResourceDispatcherHost* resource_dispatcher_host_;
+  // The ResourceDispatcherHostImpl we are associated with.
+  content::ResourceDispatcherHostImpl* resource_dispatcher_host_;
 
  private:
   // Completes the CancelRequest operation on the IO thread.

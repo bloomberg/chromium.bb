@@ -39,11 +39,11 @@
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
@@ -432,7 +432,7 @@ bool DownloadsDownloadFunction::ParseArgs() {
       }
     }
   }
-  iodata_->rdh = ResourceDispatcherHost::Get();
+  iodata_->rdh = content::ResourceDispatcherHost::Get();
   iodata_->resource_context = profile()->GetResourceContext();
   iodata_->render_process_host_id = render_view_host()->GetProcess()->GetID();
   iodata_->render_view_host_routing_id = render_view_host()->GetRoutingID();
@@ -458,8 +458,7 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
   save_info.suggested_name = iodata_->filename;
   save_info.prompt_for_save_location = iodata_->save_as;
 
-  scoped_ptr<net::URLRequest> request(
-      new net::URLRequest(iodata_->url, iodata_->rdh));
+  scoped_ptr<net::URLRequest> request(new net::URLRequest(iodata_->url, NULL));
   request->set_method(iodata_->method);
   if (iodata_->extra_headers != NULL) {
     for (size_t index = 0; index < iodata_->extra_headers->GetSize(); ++index) {
@@ -495,12 +494,12 @@ void DownloadsDownloadFunction::BeginDownloadOnIOThread() {
 
   net::Error error = iodata_->rdh->BeginDownload(
       request.Pass(),
-      false,  // prefer_cache
-      save_info,
-      base::Bind(&DownloadsDownloadFunction::OnStarted, this),
+      iodata_->resource_context,
       iodata_->render_process_host_id,
       iodata_->render_view_host_routing_id,
-      iodata_->resource_context);
+      false,  // prefer_cache
+      save_info,
+      base::Bind(&DownloadsDownloadFunction::OnStarted, this));
   iodata_.reset();
 
   if (error != net::OK) {

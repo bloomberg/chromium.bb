@@ -12,10 +12,9 @@
 #include "content/public/browser/resource_throttle_controller.h"
 #include "googleurl/src/gurl.h"
 
-class ResourceDispatcherHost;
-
 namespace content {
 
+class ResourceDispatcherHostImpl;
 class ResourceThrottle;
 struct ResourceResponse;
 
@@ -24,7 +23,7 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
                                   public ResourceThrottleController {
  public:
   // Takes ownership of the ResourceThrottle instances.
-  ThrottlingResourceHandler(ResourceDispatcherHost* host,
+  ThrottlingResourceHandler(ResourceDispatcherHostImpl* host,
                             ResourceHandler* next_handler,
                             int child_id,
                             int request_id,
@@ -59,7 +58,7 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   };
   DeferredStage deferred_stage_;
 
-  ResourceDispatcherHost* host_;
+  ResourceDispatcherHostImpl* host_;
   int child_id_;
   int request_id_;
 

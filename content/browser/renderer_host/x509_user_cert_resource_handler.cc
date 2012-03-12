@@ -6,7 +6,6 @@
 
 #include "base/string_util.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/resource_response.h"
@@ -19,10 +18,10 @@
 #include "net/url_request/url_request_status.h"
 
 X509UserCertResourceHandler::X509UserCertResourceHandler(
-    ResourceDispatcherHost* host, net::URLRequest* request,
-    int render_process_host_id, int render_view_id)
-    : host_(host),
-      request_(request),
+    net::URLRequest* request,
+    int render_process_host_id,
+    int render_view_id)
+    : request_(request),
       content_length_(0),
       read_buffer_(NULL),
       resource_buffer_(NULL),

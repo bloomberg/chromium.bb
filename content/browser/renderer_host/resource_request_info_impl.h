@@ -19,7 +19,6 @@
 #include "net/base/load_states.h"
 #include "webkit/glue/resource_type.h"
 
-class ResourceDispatcherHost;
 class ResourceHandler;
 class SSLClientAuthHandler;
 
@@ -30,6 +29,7 @@ class BlobData;
 namespace content {
 class CrossSiteResourceHandler;
 class ResourceContext;
+class ResourceDispatcherHostImpl;
 class ResourceDispatcherHostLoginDelegate;
 
 // Holds the data ResourceDispatcherHost associates with each request.
@@ -37,6 +37,14 @@ class ResourceDispatcherHostLoginDelegate;
 class ResourceRequestInfoImpl : public ResourceRequestInfo,
                                 public base::SupportsUserData::Data {
  public:
+  // Returns the ResourceRequestInfoImpl associated with the given URLRequest.
+  CONTENT_EXPORT static ResourceRequestInfoImpl* ForRequest(
+      net::URLRequest* request);
+
+  // And, a const version for cases where you only need read access.
+  static const ResourceRequestInfoImpl* ForRequest(
+      const net::URLRequest* request);
+
   // This will take a reference to the handler.
   CONTENT_EXPORT ResourceRequestInfoImpl(
       ResourceHandler* handler,
@@ -171,7 +179,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   void set_requested_blob_data(webkit_blob::BlobData* data);
 
  private:
-  friend class ::ResourceDispatcherHost;
+  friend class ResourceDispatcherHostImpl;
 
   // Request is temporarily not handling network data. Should be used only
   // by the ResourceDispatcherHost, not the event handlers (accessors are

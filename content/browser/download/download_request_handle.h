@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 
-class ResourceDispatcherHost;
 class TabContents;
 
 namespace content {
@@ -57,8 +56,7 @@ class CONTENT_EXPORT DownloadRequestHandle
   DownloadRequestHandle();
 
   // Note that |rdh| is required to be non-null.
-  DownloadRequestHandle(ResourceDispatcherHost* rdh,
-                        int child_id,
+  DownloadRequestHandle(int child_id,
                         int render_view_id,
                         int request_id);
 
@@ -71,9 +69,6 @@ class CONTENT_EXPORT DownloadRequestHandle
   virtual std::string DebugString() const OVERRIDE;
 
  private:
-  // The resource dispatcher host.
-  ResourceDispatcherHost* rdh_;
-
   // The ID of the child process that started the download.
   int child_id_;
 

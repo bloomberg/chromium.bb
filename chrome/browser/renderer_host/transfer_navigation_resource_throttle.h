@@ -14,8 +14,6 @@ namespace net {
 class URLRequest;
 }
 
-class ResourceDispatcherHost;
-
 // This ResourceThrottle checks whether a navigation redirect will cause a
 // renderer process swap. When that happens, we remember the request so
 // that we can transfer it to be handled by the new renderer. This fixes

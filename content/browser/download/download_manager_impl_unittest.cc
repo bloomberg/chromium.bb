@@ -297,8 +297,7 @@ class DownloadManagerTest : public testing::Test {
 
   DownloadFileManager* file_manager() {
     if (!file_manager_) {
-      file_manager_ = new DownloadFileManager(NULL,
-                                              new MockDownloadFileFactory);
+      file_manager_ = new DownloadFileManager(new MockDownloadFileFactory);
       download_manager_->SetFileManagerForTesting(file_manager_);
     }
     return file_manager_;

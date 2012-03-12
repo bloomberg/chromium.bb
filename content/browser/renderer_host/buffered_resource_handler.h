@@ -10,8 +10,6 @@
 
 #include "content/browser/renderer_host/layered_resource_handler.h"
 
-class ResourceDispatcherHost;
-
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -21,12 +19,13 @@ struct WebPluginInfo;
 }
 
 namespace content {
+class ResourceDispatcherHostImpl;
 
 // Used to buffer a request until enough data has been received.
 class BufferedResourceHandler : public LayeredResourceHandler {
  public:
   BufferedResourceHandler(ResourceHandler* handler,
-                          ResourceDispatcherHost* host,
+                          ResourceDispatcherHostImpl* host,
                           net::URLRequest* request);
 
   // ResourceHandler implementation:
@@ -81,7 +80,7 @@ class BufferedResourceHandler : public LayeredResourceHandler {
   void OnPluginsLoaded(const std::vector<webkit::WebPluginInfo>& plugins);
 
   scoped_refptr<ResourceResponse> response_;
-  ResourceDispatcherHost* host_;
+  ResourceDispatcherHostImpl* host_;
   net::URLRequest* request_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   scoped_refptr<net::IOBuffer> my_buffer_;

@@ -13,8 +13,6 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
-class ResourceDispatcherHost;
-
 namespace net {
 class IOBuffer;
 class URLRequest;
@@ -27,8 +25,7 @@ class URLRequestStatus;
 
 class X509UserCertResourceHandler : public ResourceHandler {
  public:
-  X509UserCertResourceHandler(ResourceDispatcherHost* host,
-                              net::URLRequest* request,
+  X509UserCertResourceHandler(net::URLRequest* request,
                               int render_process_host_id,
                               int render_view_id);
 
@@ -74,7 +71,6 @@ class X509UserCertResourceHandler : public ResourceHandler {
   void AssembleResource();
 
   GURL url_;
-  ResourceDispatcherHost* host_;
   net::URLRequest* request_;
   size_t content_length_;
   content::ContentVector buffer_;

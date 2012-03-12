@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"

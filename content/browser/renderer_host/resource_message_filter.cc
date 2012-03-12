@@ -1,14 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/resource_message_filter.h"
 
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 
 using content::BrowserMessageFilter;
+using content::ResourceDispatcherHostImpl;
 
 ResourceMessageFilter::ResourceMessageFilter(
     int child_id,
@@ -31,12 +32,12 @@ void ResourceMessageFilter::OnChannelClosing() {
 
   // Unhook us from all pending network requests so they don't get sent to a
   // deleted object.
-  ResourceDispatcherHost::Get()->CancelRequestsForProcess(child_id_);
+  ResourceDispatcherHostImpl::Get()->CancelRequestsForProcess(child_id_);
 }
 
 bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message,
                                               bool* message_was_ok) {
-  return ResourceDispatcherHost::Get()->OnMessageReceived(
+  return ResourceDispatcherHostImpl::Get()->OnMessageReceived(
       message, this, message_was_ok);
 }
 

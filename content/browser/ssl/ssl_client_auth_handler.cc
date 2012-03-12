@@ -5,7 +5,6 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 
 #include "base/bind.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -15,6 +14,7 @@
 #include "net/url_request/url_request_context.h"
 
 using content::BrowserThread;
+using content::ResourceRequestInfo;
 using content::ResourceRequestInfoImpl;
 
 SSLClientAuthHandler::SSLClientAuthHandler(
@@ -38,12 +38,13 @@ void SSLClientAuthHandler::OnRequestCancelled() {
 
 void SSLClientAuthHandler::SelectCertificate() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(request_);
 
   int render_process_host_id;
   int render_view_host_id;
-  if (!ResourceDispatcherHost::RenderViewForRequest(request_,
-                                                    &render_process_host_id,
-                                                    &render_view_host_id))
+  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderView(
+          &render_process_host_id,
+          &render_view_host_id))
     NOTREACHED();
 
   // If the RVH does not exist by the time this task gets run, then the task
@@ -78,7 +79,7 @@ void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
     request_->ContinueWithCertificate(cert);
 
     ResourceRequestInfoImpl* info =
-        ResourceDispatcherHost::InfoForRequest(request_);
+        ResourceRequestInfoImpl::ForRequest(request_);
     if (info)
       info->set_ssl_client_auth_handler(NULL);
 

@@ -4,9 +4,9 @@
 
 #include "content/browser/renderer_host/resource_request_details.h"
 
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/browser/worker_host/worker_service_impl.h"
+#include "net/url_request/url_request.h"
 
 using content::ResourceRequestInfoImpl;
 using content::WorkerServiceImpl;
@@ -24,7 +24,7 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
       ssl_cert_status_(request->ssl_info().cert_status),
       socket_address_(request->GetSocketAddress()) {
   const ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+      ResourceRequestInfoImpl::ForRequest(request);
   resource_type_ = info->GetResourceType();
   frame_id_ = info->GetFrameID();
 

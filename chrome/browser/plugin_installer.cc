@@ -16,38 +16,40 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/download/download_types.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 using content::DownloadItem;
+using content::ResourceDispatcherHost;
 
 namespace {
 
-void BeginDownload(const GURL& url,
-                   content::ResourceContext* resource_context,
-                   int render_process_host_id,
-                   int render_view_host_routing_id,
-                   const DownloadResourceHandler::OnStartedCallback& callback) {
+void BeginDownload(
+    const GURL& url,
+    content::ResourceContext* resource_context,
+    int render_process_host_id,
+    int render_view_host_routing_id,
+    const ResourceDispatcherHost::DownloadStartedCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
-  scoped_ptr<net::URLRequest> request(
-      new net::URLRequest(url, rdh));
+  scoped_ptr<net::URLRequest> request(new net::URLRequest(url, NULL));
   net::Error error = rdh->BeginDownload(
       request.Pass(),
-      true,  // prefer_cache
-      DownloadSaveInfo(),
-      callback,
+      resource_context,
       render_process_host_id,
       render_view_host_routing_id,
-      resource_context);
+      true,  // prefer_cache
+      DownloadSaveInfo(),
+      callback);
 
   if (error != net::OK) {
     BrowserThread::PostTask(

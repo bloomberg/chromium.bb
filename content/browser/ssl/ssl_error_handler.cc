@@ -6,33 +6,33 @@
 
 #include "base/bind.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/browser/renderer_host/resource_request_info_impl.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/tab_contents/navigation_controller_impl.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
 using content::RenderViewHostImpl;
-using content::ResourceRequestInfoImpl;
+using content::ResourceDispatcherHostImpl;
+using content::ResourceRequestInfo;
 using content::WebContents;
 
-SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
+SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHostImpl* host,
                                  net::URLRequest* request,
                                  ResourceType::Type resource_type)
     : manager_(NULL),
       request_id_(0, 0),
-      resource_dispatcher_host_(rdh),
+      resource_dispatcher_host_(host),
       request_url_(request->url()),
       resource_type_(resource_type),
       request_has_been_notified_(false) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ResourceRequestInfoImpl* info =
-      ResourceDispatcherHost::InfoForRequest(request);
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   request_id_.child_id = info->GetChildID();
   request_id_.request_id = info->GetRequestID();
 

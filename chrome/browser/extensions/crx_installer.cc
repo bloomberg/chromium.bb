@@ -34,9 +34,9 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -172,7 +172,7 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
   scoped_refptr<SandboxedExtensionUnpacker> unpacker(
       new SandboxedExtensionUnpacker(
           source_file,
-          ResourceDispatcherHost::Get(),
+          content::ResourceDispatcherHost::Get() != NULL,
           install_source_,
           creation_flags_,
           this));

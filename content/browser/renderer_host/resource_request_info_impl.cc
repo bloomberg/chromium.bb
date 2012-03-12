@@ -14,11 +14,13 @@
 
 namespace content {
 
+// ----------------------------------------------------------------------------
+// ResourceRequestInfo
+
 // static
 const ResourceRequestInfo* ResourceRequestInfo::ForRequest(
     const net::URLRequest* request) {
-  return static_cast<const ResourceRequestInfoImpl*>(
-      request->GetUserData(NULL));
+  return ResourceRequestInfoImpl::ForRequest(request);
 }
 
 // static
@@ -62,6 +64,20 @@ bool ResourceRequestInfo::GetRenderViewForRequest(
   return true;
 }
 
+// ----------------------------------------------------------------------------
+// ResourceRequestInfoImpl
+
+// static
+ResourceRequestInfoImpl* ResourceRequestInfoImpl::ForRequest(
+    net::URLRequest* request) {
+  return static_cast<ResourceRequestInfoImpl*>(request->GetUserData(NULL));
+}
+
+// static
+const ResourceRequestInfoImpl* ResourceRequestInfoImpl::ForRequest(
+    const net::URLRequest* request) {
+  return ForRequest(const_cast<net::URLRequest*>(request));
+}
 
 ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     ResourceHandler* handler,

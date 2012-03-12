@@ -4,14 +4,14 @@
 
 #include "content/browser/renderer_host/throttling_resource_handler.h"
 
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
 
 namespace content {
 
 ThrottlingResourceHandler::ThrottlingResourceHandler(
-    ResourceDispatcherHost* host,
+    ResourceDispatcherHostImpl* host,
     ResourceHandler* next_handler,
     int child_id,
     int request_id,

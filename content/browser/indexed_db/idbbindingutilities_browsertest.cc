@@ -6,7 +6,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/common/indexed_db/indexed_db_key.h"

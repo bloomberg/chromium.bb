@@ -13,8 +13,6 @@
 #include "content/browser/renderer_host/layered_resource_handler.h"
 #include "net/url_request/url_request_status.h"
 
-class ResourceDispatcherHost;
-
 namespace net {
 class FileStream;
 class GrowableIOBuffer;
@@ -25,6 +23,7 @@ class ShareableFileReference;
 }
 
 namespace content {
+class ResourceDispatcherHostImpl;
 
 // Redirects network data to a file.  This is intended to be layered in front
 // of either the AsyncResourceHandler or the SyncResourceHandler.
@@ -33,7 +32,7 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
   RedirectToFileResourceHandler(
       ResourceHandler* next_handler,
       int process_id,
-      ResourceDispatcherHost* resource_dispatcher_host);
+      ResourceDispatcherHostImpl* resource_dispatcher_host);
 
   // ResourceHandler implementation:
   virtual bool OnResponseStarted(int request_id,
@@ -63,7 +62,7 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
 
   base::WeakPtrFactory<RedirectToFileResourceHandler> weak_factory_;
 
-  ResourceDispatcherHost* host_;
+  ResourceDispatcherHostImpl* host_;
   int process_id_;
   int request_id_;
 

@@ -45,7 +45,6 @@ include_rules = [
   "+content/browser/renderer_host/render_process_host_browsertest.h",
   "+content/browser/renderer_host/render_view_host_factory.h",
   "+content/browser/renderer_host/render_widget_host_view_mac_delegate.h",
-  "+content/browser/renderer_host/resource_dispatcher_host.h",
   "+content/browser/renderer_host/resource_request_details.h",
   "+content/browser/renderer_host/resource_request_info_impl.h",
   "+content/browser/renderer_host/test_render_view_host.h",

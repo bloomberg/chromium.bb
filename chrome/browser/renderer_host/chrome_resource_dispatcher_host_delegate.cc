@@ -29,14 +29,15 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/ssl_config_service.h"
+#include "net/url_request/url_request.h"
 
 // TODO(oshima): Enable this for other platforms.
 #if defined(OS_CHROMEOS)
@@ -80,10 +81,8 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
 }  // end namespace
 
 ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate(
-    ResourceDispatcherHost* resource_dispatcher_host,
     prerender::PrerenderTracker* prerender_tracker)
-    : resource_dispatcher_host_(resource_dispatcher_host),
-      download_request_limiter_(g_browser_process->download_request_limiter()),
+    : download_request_limiter_(g_browser_process->download_request_limiter()),
       safe_browsing_(g_browser_process->safe_browsing_service()),
       user_script_listener_(new UserScriptListener()),
       prerender_tracker_(prerender_tracker) {
@@ -110,7 +109,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
       return false;
 
     // If prefetch is disabled, kill the request.
-    if (!ResourceDispatcherHost::is_prefetch_enabled())
+    if (!prerender::PrerenderManager::IsPrefetchEnabled())
       return false;
   }
 

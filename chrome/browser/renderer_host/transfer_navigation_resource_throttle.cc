@@ -8,14 +8,18 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/extensions/extension_process_policy.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
+#include "net/url_request/url_request.h"
 
 using content::GlobalRequestID;
+using content::Referrer;
 using content::RenderViewHostDelegate;
+using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 
 namespace {
@@ -23,7 +27,7 @@ namespace {
 void RequestTransferURLOnUIThread(int render_process_id,
                                   int render_view_id,
                                   const GURL& new_url,
-                                  const content::Referrer& referrer,
+                                  const Referrer& referrer,
                                   WindowOpenDisposition window_open_disposition,
                                   int64 frame_id,
                                   const GlobalRequestID& global_request_id) {
@@ -69,19 +73,20 @@ void TransferNavigationResourceThrottle::WillRedirectRequest(
           ExtensionURLInfo(request_->url()), ExtensionURLInfo(new_url))) {
     int render_process_id, render_view_id;
     if (info->GetAssociatedRenderView(&render_process_id, &render_view_id)) {
-      GlobalRequestID global_id(info->GetChildID(), info->GetRequestID());
-      ResourceDispatcherHost::Get()->MarkAsTransferredNavigation(global_id,
-                                                                 request_);
+      ResourceDispatcherHost::Get()->MarkAsTransferredNavigation(request_);
 
+      GlobalRequestID global_id(info->GetChildID(), info->GetRequestID());
       content::BrowserThread::PostTask(
           content::BrowserThread::UI,
           FROM_HERE,
           base::Bind(&RequestTransferURLOnUIThread,
-              render_process_id, render_view_id,
+              render_process_id,
+              render_view_id,
               new_url,
-              content::Referrer(GURL(request_->referrer()),
-                                info->GetReferrerPolicy()),
-              CURRENT_TAB, info->GetFrameID(), global_id));
+              Referrer(GURL(request_->referrer()), info->GetReferrerPolicy()),
+              CURRENT_TAB,
+              info->GetFrameID(),
+              global_id));
 
       *defer = true;
     }

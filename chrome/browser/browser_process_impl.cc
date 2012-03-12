@@ -67,12 +67,12 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -112,6 +112,7 @@ static const int kEndSessionTimeoutSeconds = 10;
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::PluginService;
+using content::ResourceDispatcherHost;
 
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
     : created_metrics_service_(false),
@@ -636,11 +637,10 @@ CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
 }
 
 void BrowserProcessImpl::ResourceDispatcherHostCreated() {
-  ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
-
   resource_dispatcher_host_delegate_.reset(
-      new ChromeResourceDispatcherHostDelegate(rdh, prerender_tracker()));
-  rdh->set_delegate(resource_dispatcher_host_delegate_.get());
+      new ChromeResourceDispatcherHostDelegate(prerender_tracker()));
+  ResourceDispatcherHost::Get()->SetDelegate(
+      resource_dispatcher_host_delegate_.get());
 
   pref_change_registrar_.Add(prefs::kAllowCrossOriginAuthPrompt, this);
   ApplyAllowCrossOriginAuthPromptPolicy();
@@ -841,7 +841,7 @@ void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
 
 void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
   bool value = local_state()->GetBoolean(prefs::kAllowCrossOriginAuthPrompt);
-  ResourceDispatcherHost::Get()->set_allow_cross_origin_auth_prompt(value);
+  ResourceDispatcherHost::Get()->SetAllowCrossOriginAuthPrompt(value);
 }
 
 // Mac is currently not supported.

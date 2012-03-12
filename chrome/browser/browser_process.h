@@ -35,7 +35,6 @@ class NotificationUIManager;
 class PrefService;
 class Profile;
 class ProfileManager;
-class ResourceDispatcherHost;
 class SafeBrowsingService;
 class StatusTray;
 class TabCloseableStateWatcher;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -225,16 +224,16 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
   class SetPrefetchForTest {
    public:
     explicit SetPrefetchForTest(bool prefetch)
-        : old_prefetch_state_(ResourceDispatcherHost::is_prefetch_enabled()),
+        : old_prefetch_state_(prerender::PrerenderManager::IsPrefetchEnabled()),
           old_mode_(prerender::PrerenderManager::GetMode()) {
-      ResourceDispatcherHost::set_is_prefetch_enabled(prefetch);
+      prerender::PrerenderManager::SetIsPrefetchEnabled(prefetch);
       // Disable prerender so this is just a prefetch of the top-level page.
       prerender::PrerenderManager::SetMode(
           prerender::PrerenderManager::PRERENDER_MODE_DISABLED);
     }
 
     ~SetPrefetchForTest() {
-      ResourceDispatcherHost::set_is_prefetch_enabled(old_prefetch_state_);
+      prerender::PrerenderManager::SetIsPrefetchEnabled(old_prefetch_state_);
       prerender::PrerenderManager::SetMode(old_mode_);
     }
    private:

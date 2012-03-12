@@ -15,12 +15,12 @@
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
+#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -36,6 +36,7 @@ using content::BrowserThread;
 using content::NavigationController;
 using content::RenderViewHost;
 using content::RenderViewHostDelegate;
+using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 using content::WebContents;
 using webkit::forms::PasswordForm;
@@ -46,7 +47,7 @@ class LoginHandlerImpl;
 // Should only be called from the IO thread, since it accesses an
 // net::URLRequest.
 void ResetLoginHandlerForRequest(net::URLRequest* request) {
-  ResourceDispatcherHost::ClearLoginDelegate(request);
+  ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(request);
 }
 
 // Get the signon_realm under which this auth info should be stored.

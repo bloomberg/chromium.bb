@@ -24,7 +24,6 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_unpacker.h"
-#include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "crypto/signature_verifier.h"
@@ -165,14 +164,17 @@ bool FindWritableTempLocation(FilePath* temp_dir) {
 
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     const FilePath& crx_path,
-    ResourceDispatcherHost* rdh,
+    bool run_out_of_process,
     Extension::Location location,
     int creation_flags,
     SandboxedExtensionUnpackerClient* client)
     : crx_path_(crx_path),
       thread_identifier_(BrowserThread::ID_COUNT),
-      rdh_(rdh), client_(client), got_response_(false),
-      location_(location), creation_flags_(creation_flags) {
+      run_out_of_process_(run_out_of_process),
+      client_(client),
+      got_response_(false),
+      location_(location),
+      creation_flags_(creation_flags) {
 }
 
 bool SandboxedExtensionUnpacker::CreateTempDirectory() {
@@ -241,7 +243,7 @@ void SandboxedExtensionUnpacker::Start() {
   //
   // TODO(asargent) we shouldn't need to do this branch here - instead
   // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
-  bool use_utility_process = rdh_ &&
+  bool use_utility_process = run_out_of_process_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   if (use_utility_process) {
     // The utility process will have access to the directory passed to

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,10 +11,10 @@
 // and UI.
 //
 // The SaveFileManager itself is a singleton object owned by the
-// ResourceDispatcherHost.
+// ResourceDispatcherHostImpl.
 //
 // The data sent to SaveFileManager have 2 sources, one is from
-// ResourceDispatcherHost, run in network IO thread, the all sub-resources
+// ResourceDispatcherHostImpl, run in network IO thread, the all sub-resources
 // and save-only-HTML pages will be got from network IO. The second is from
 // render process, those html pages which are serialized from DOM will be
 // composed in render process and encoded to its original encoding, then sent
@@ -71,7 +71,6 @@ class FilePath;
 class GURL;
 class SaveFile;
 class SavePackage;
-class ResourceDispatcherHost;
 
 namespace content {
 class ResourceContext;
@@ -84,7 +83,7 @@ class IOBuffer;
 class SaveFileManager
     : public base::RefCountedThreadSafe<SaveFileManager> {
  public:
-  explicit SaveFileManager(ResourceDispatcherHost* rdh);
+  SaveFileManager();
 
   // Lifetime management.
   CONTENT_EXPORT void Shutdown();
@@ -95,7 +94,7 @@ class SaveFileManager
   int GetNextId();
 
   // Save the specified URL. Called on the UI thread and forwarded to the
-  // ResourceDispatcherHost on the IO thread.
+  // ResourceDispatcherHostImpl on the IO thread.
   void SaveURL(const GURL& url,
                const GURL& referrer,
                int render_process_host_id,
@@ -213,7 +212,7 @@ class SaveFileManager
                  content::ResourceContext* context);
   // Handler for a notification sent to the IO thread for generating save id.
   void OnRequireSaveJobFromOtherSource(SaveFileCreateInfo* info);
-  // Call ResourceDispatcherHost's CancelRequest method to execute cancel
+  // Call ResourceDispatcherHostImpl's CancelRequest method to execute cancel
   // action in the IO thread.
   void ExecuteCancelSaveRequest(int render_process_id, int request_id);
 
@@ -223,8 +222,6 @@ class SaveFileManager
   // A map of all saving jobs by using save id.
   typedef base::hash_map<int, SaveFile*> SaveFileMap;
   SaveFileMap save_file_map_;
-
-  ResourceDispatcherHost* resource_dispatcher_host_;
 
   // Tracks which SavePackage to send data to, called only on UI thread.
   // SavePackageMap maps save IDs to their SavePackage.
