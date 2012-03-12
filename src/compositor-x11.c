@@ -762,7 +762,6 @@ x11_compositor_create(struct wl_display *display,
 		      int width, int height, int count, int fullscreen)
 {
 	struct x11_compositor *c;
-	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
 	int i, x;
 
@@ -808,10 +807,9 @@ x11_compositor_create(struct wl_display *display,
 	if (x11_input_create(c) < 0)
 		return NULL;
 
-	loop = wl_display_get_event_loop(c->base.wl_display);
-
 	c->xcb_source =
-		wl_event_loop_add_fd(loop, xcb_get_file_descriptor(c->conn),
+		wl_event_loop_add_fd(c->base.input_loop,
+				     xcb_get_file_descriptor(c->conn),
 				     WL_EVENT_READABLE,
 				     x11_compositor_handle_event, c);
 	wl_event_source_check(c->xcb_source);
