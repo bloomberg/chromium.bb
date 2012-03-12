@@ -215,11 +215,6 @@
     }],
     ['toolkit_uses_gtk == 1', {
       'conditions': [
-        [ 'linux_use_tcmalloc==1', {
-          'dependencies': [
-              '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['input_speech==0', {
           'sources!': [
             'renderer/input_tag_speech_dispatcher.cc',
