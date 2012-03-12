@@ -756,7 +756,7 @@ DirectoryModel.prototype = {
                       onGData, onGDataError);
   },
 
-  updateRoots: function(opt_changeDirectoryTo, opt_callback) {
+  updateRoots: function(opt_changeDirectoryTo) {
     var self = this;
     this.resolveRoots_(function(rootEntries) {
       var dm = self.rootsList_;
@@ -767,8 +767,6 @@ DirectoryModel.prototype = {
 
       if (opt_changeDirectoryTo)
         self.changeDirectory(opt_changeDirectoryTo);
-      if (opt_callback)
-        opt_callback();
     });
   },
 

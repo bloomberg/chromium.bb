@@ -780,12 +780,7 @@ FileManager.prototype = {
 
     // TODO(dgozman): add "Add a drive" item.
     this.rootsList_.dataModel = this.directoryModel_.rootsList;
-    var onRootsUpdated = function(){
-      if (this.directoryModel_.rootsList_.length > 1)
-        this.onToggleSidebar_();
-    }.bind(this);
-    this.directoryModel_.updateRoots(null /* opt_changeDirectoryTo */,
-        onRootsUpdated);
+    this.directoryModel_.updateRoots();
   };
 
   FileManager.prototype.initGData_ = function() {
