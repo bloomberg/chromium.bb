@@ -33,7 +33,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/browser_url_handler.h"
+#include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_view_host_delegate.h"
@@ -634,7 +634,7 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
   // URL.
   GURL rewritten_url(params->url);
   bool reverse_on_redirect = false;
-  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+  content::BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
       &rewritten_url,
       params->browser->profile(),
       &reverse_on_redirect);

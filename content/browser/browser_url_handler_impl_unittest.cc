@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/browser_url_handler.h"
+#include "content/browser/browser_url_handler_impl.h"
 #include "content/test/test_browser_context.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class BrowserURLHandlerTest : public testing::Test {
+class BrowserURLHandlerImplTest : public testing::Test {
 };
 
 // Test URL rewriter that rewrites all "foo://" URLs to "bar://bar".
@@ -28,9 +28,9 @@ static bool BarRewriter(GURL* url, content::BrowserContext* browser_context) {
   return false;
 }
 
-TEST_F(BrowserURLHandlerTest, BasicRewriteAndReverse) {
+TEST_F(BrowserURLHandlerImplTest, BasicRewriteAndReverse) {
   TestBrowserContext browser_context;
-  BrowserURLHandler handler;
+  BrowserURLHandlerImpl handler;
 
   handler.AddHandlerPair(FooRewriter, BarRewriter);
 
@@ -57,21 +57,21 @@ TEST_F(BrowserURLHandlerTest, BasicRewriteAndReverse) {
   ASSERT_EQ(saved_url, url);
 }
 
-TEST_F(BrowserURLHandlerTest, NullHandlerReverse) {
+TEST_F(BrowserURLHandlerImplTest, NullHandlerReverse) {
   TestBrowserContext browser_context;
-  BrowserURLHandler handler;
+  BrowserURLHandlerImpl handler;
 
   GURL url("bar://foo");
   GURL original_url(url);
 
-  handler.AddHandlerPair(BrowserURLHandler::null_handler(), FooRewriter);
+  handler.AddHandlerPair(BrowserURLHandlerImpl::null_handler(), FooRewriter);
   bool reversed = handler.ReverseURLRewrite(&url,
                                             original_url,
                                             &browser_context);
   ASSERT_FALSE(reversed);
   ASSERT_EQ(original_url, url);
 
-  handler.AddHandlerPair(BrowserURLHandler::null_handler(), BarRewriter);
+  handler.AddHandlerPair(BrowserURLHandlerImpl::null_handler(), BarRewriter);
   reversed = handler.ReverseURLRewrite(&url, original_url, &browser_context);
   ASSERT_TRUE(reversed);
   ASSERT_EQ("foo://foo", url.spec());

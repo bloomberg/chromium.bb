@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/browser_url_handler.h"
+#include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/session_storage_namespace_impl.h"
@@ -143,7 +143,7 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
   // used internally.
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
-  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+  BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
       &loaded_url, browser_context, &reverse_on_redirect);
 
   NavigationEntryImpl* entry = new NavigationEntryImpl(
@@ -534,7 +534,7 @@ void NavigationControllerImpl::RemoveEntryAtIndex(int index) {
 void NavigationControllerImpl::UpdateVirtualURLToURL(
     NavigationEntryImpl* entry, const GURL& new_url) {
   GURL new_virtual_url(new_url);
-  if (BrowserURLHandler::GetInstance()->ReverseURLRewrite(
+  if (BrowserURLHandlerImpl::GetInstance()->ReverseURLRewrite(
           &new_virtual_url, entry->GetVirtualURL(), browser_context_)) {
     entry->SetVirtualURL(new_virtual_url);
   }

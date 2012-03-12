@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "content/browser/browser_url_handler.h"
+#include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -101,7 +101,7 @@ void TestTabContents::NavigateAndCommit(const GURL& url) {
       url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
   GURL loaded_url(url);
   bool reverse_on_redirect = false;
-  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
+  BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
       &loaded_url, GetBrowserContext(), &reverse_on_redirect);
 
   // LoadURL created a navigation entry, now simulate the RenderView sending

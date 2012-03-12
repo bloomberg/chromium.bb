@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/browser_url_handler.h"
+#include "content/browser/browser_url_handler_impl.h"
 
 #include "base/string_util.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+
+using content::BrowserURLHandler;
 
 // Handles rewriting view-source URLs for what we'll actually load.
 static bool HandleViewSource(GURL* url,
@@ -70,7 +72,7 @@ static bool HandleDebugUrl(GURL* url,
 
 // static
 BrowserURLHandler* BrowserURLHandler::GetInstance() {
-  return Singleton<BrowserURLHandler>::get();
+  return BrowserURLHandlerImpl::GetInstance();
 }
 
 // static
@@ -79,8 +81,13 @@ BrowserURLHandler::URLHandler BrowserURLHandler::null_handler() {
   return NULL;
 }
 
-BrowserURLHandler::BrowserURLHandler() {
-  AddHandlerPair(&HandleDebugUrl, BrowserURLHandler::null_handler());
+// static
+BrowserURLHandlerImpl* BrowserURLHandlerImpl::GetInstance() {
+  return Singleton<BrowserURLHandlerImpl>::get();
+}
+
+BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
+  AddHandlerPair(&HandleDebugUrl, BrowserURLHandlerImpl::null_handler());
 
   content::GetContentClient()->browser()->BrowserURLHandlerCreated(this);
 
@@ -88,15 +95,15 @@ BrowserURLHandler::BrowserURLHandler() {
   AddHandlerPair(&HandleViewSource, &ReverseViewSource);
 }
 
-BrowserURLHandler::~BrowserURLHandler() {
+BrowserURLHandlerImpl::~BrowserURLHandlerImpl() {
 }
 
-void BrowserURLHandler::AddHandlerPair(URLHandler handler,
-                                       URLHandler reverse_handler) {
+void BrowserURLHandlerImpl::AddHandlerPair(URLHandler handler,
+                                           URLHandler reverse_handler) {
   url_handlers_.push_back(HandlerPair(handler, reverse_handler));
 }
 
-void BrowserURLHandler::RewriteURLIfNecessary(
+void BrowserURLHandlerImpl::RewriteURLIfNecessary(
     GURL* url,
     content::BrowserContext* browser_context,
     bool* reverse_on_redirect) {
@@ -109,7 +116,7 @@ void BrowserURLHandler::RewriteURLIfNecessary(
   }
 }
 
-bool BrowserURLHandler::ReverseURLRewrite(
+bool BrowserURLHandlerImpl::ReverseURLRewrite(
     GURL* url, const GURL& original, content::BrowserContext* browser_context) {
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
     URLHandler reverse_rewriter = *url_handlers_[i].second;

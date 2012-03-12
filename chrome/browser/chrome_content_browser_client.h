@@ -158,7 +158,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                       const std::string& key,
                                       const std::string& value) OVERRIDE;
   virtual void ClearInspectorSettings(content::RenderViewHost* rvh) OVERRIDE;
-  virtual void BrowserURLHandlerCreated(BrowserURLHandler* handler) OVERRIDE;
+  virtual void BrowserURLHandlerCreated(
+      content::BrowserURLHandler* handler) OVERRIDE;
   virtual void ClearCache(content::RenderViewHost* rvh) OVERRIDE;
   virtual void ClearCookies(content::RenderViewHost* rvh) OVERRIDE;
   virtual FilePath GetDefaultDownloadDirectory() OVERRIDE;

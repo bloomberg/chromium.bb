@@ -16,7 +16,6 @@
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
-class BrowserURLHandler;
 class CommandLine;
 class FilePath;
 class GURL;
@@ -28,6 +27,7 @@ struct WebPreferences;
 namespace content {
 class AccessTokenStore;
 class BrowserMainParts;
+class BrowserURLHandler;
 class RenderProcessHost;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;

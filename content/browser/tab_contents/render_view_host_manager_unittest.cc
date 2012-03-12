@@ -4,7 +4,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/browser_url_handler.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance_impl.h"
