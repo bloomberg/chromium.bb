@@ -25,7 +25,7 @@ void ManagedMode::RegisterPrefs(PrefService* prefs) {
 bool ManagedMode::IsInManagedMode() {
   // |g_browser_process| can be NULL during startup.
   if (!g_browser_process)
-    return true;
+    return false;
   return g_browser_process->local_state()->GetBoolean(prefs::kInManagedMode);
 }
 
