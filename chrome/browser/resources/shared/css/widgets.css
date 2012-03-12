@@ -74,8 +74,10 @@ input[type='checkbox'] {
 input[type='radio'] {
   /* OVERRIDE */
   border-radius: 100%;
+  bottom: 3px;
   height: 15px;
   position: relative;
+  vertical-align: middle;
   width: 15px;
 }
 
@@ -240,7 +242,7 @@ select:focus {
 
 .checkbox label input ~ span,
 .radio label input ~ span {
-  -webkit-margin-start: 0.4em;
+  -webkit-margin-start: 0.6em;
   /* Make sure long spans wrap at the same horizontal position they start. */
   display: block;
 }
