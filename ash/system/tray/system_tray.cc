@@ -291,6 +291,7 @@ SystemTray::SystemTray()
   set_border(views::Border::CreateEmptyBorder(0, 0,
         kPaddingFromBottomOfScreen, kPaddingFromRightEdgeOfScreen));
   set_notify_enter_exit_on_child(true);
+  set_focusable(true);
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(container_);
 }
@@ -380,6 +381,18 @@ void SystemTray::ShowItems(std::vector<SystemTrayItem*>& items,
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
 
   bubble_->Show();
+}
+
+bool SystemTray::OnKeyPressed(const views::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE ||
+      event.key_code() == ui::VKEY_RETURN) {
+    if (popup_)
+      popup_->Hide();
+    else
+      ShowItems(items_, false, true);
+    return true;
+  }
+  return false;
 }
 
 bool SystemTray::OnMousePressed(const views::MouseEvent& event) {

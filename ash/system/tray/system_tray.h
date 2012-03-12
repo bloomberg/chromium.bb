@@ -51,6 +51,7 @@ class ASH_EXPORT SystemTray : public views::View,
                  bool activate);
 
   // Overridden from views::View.
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
