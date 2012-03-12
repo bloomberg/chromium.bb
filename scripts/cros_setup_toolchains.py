@@ -7,6 +7,7 @@
 """
 
 import copy
+import errno
 import optparse
 import os
 import sys
@@ -17,6 +18,10 @@ from chromite.lib import cros_build_lib
 # Some sanity checks first.
 if not cros_build_lib.IsInsideChroot():
   print '%s: This needs to be run inside the chroot' % sys.argv[0]
+  sys.exit(1)
+# This has to be always ran as root.
+if not os.getuid() == 0:
+  print "This script must be run as root!"
   sys.exit(1)
 # Only import portage after we've checked that we're inside the chroot.
 # Outside may not have portage, in which case the above may not happen.
@@ -313,10 +318,11 @@ def RemovePackageMask(target):
     target - the target for which to remove the file
   """
   maskfile = os.path.join('/etc/portage/package.mask', 'cross-' + target)
-  # Note: We have to use sudo here, in case the file is created with
-  # root ownership. However, sudo in chroot is always passwordless.
-  cros_build_lib.SudoRunCommand(['rm', '-f', maskfile],
-      redirect_stdout=True, print_cmd=False)
+  try:
+    os.unlink(maskfile)
+  except EnvironmentError as e:
+    if e.errno != errno.ENOENT:
+      raise
 
 
 def CreatePackageMask(target, masks):
@@ -329,12 +335,7 @@ def CreatePackageMask(target, masks):
   """
   maskfile = os.path.join('/etc/portage/package.mask', 'cross-' + target)
   assert not os.path.exists(maskfile)
-  # package.mask/ isn't writable, so we need to create and
-  # chown the file before we use it.
-  cros_build_lib.SudoRunCommand(['touch', maskfile],
-      redirect_stdout=True, print_cmd=False)
-  cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), maskfile],
-      redirect_stdout=True, print_cmd=False)
+  cros_build_lib.SafeMakedirs(os.path.dirname(maskfile))
 
   with open(maskfile, 'w') as f:
     for pkg, m in masks.items():
@@ -353,12 +354,12 @@ def CreatePackageKeywords(target):
     target - target for which to recreate package.keywords
   """
   maskfile = os.path.join('/etc/portage/package.keywords', 'cross-' + target)
-  cros_build_lib.SudoRunCommand(['rm', '-f', maskfile],
-      redirect_stdout=True, print_cmd=False)
-  cros_build_lib.SudoRunCommand(['touch', maskfile],
-      redirect_stdout=True, print_cmd=False)
-  cros_build_lib.SudoRunCommand(['chown', '%d' % os.getuid(), maskfile],
-      redirect_stdout=True, print_cmd=False)
+  try:
+    os.unlink(maskfile)
+  except EnvironmentError as e:
+    if e.errno != errno.ENOENT:
+      raise
+  cros_build_lib.SafeMakedirs(os.path.dirname(maskfile))
 
   keyword = GetPortageKeyword(target)
 
@@ -380,8 +381,9 @@ def InitializeCrossdevTargets(targets, usepkg):
   print 'The following targets need to be re-initialized:'
   print targets
 
+  extra_env = { 'FEATURES' : 'splitdebug' }
   for target in targets:
-    cmd = ['sudo', 'FEATURES=splitdebug', 'crossdev', '--show-fail-log',
+    cmd = ['crossdev', '--show-fail-log',
            '-t', target]
     # Pick stable by default, and override as necessary.
     cmd.extend(['-P', '--oneshot'])
@@ -406,7 +408,7 @@ def InitializeCrossdevTargets(targets, usepkg):
       # The first of the desired versions is the "primary" one.
       version = GetDesiredPackageVersions(target, pkg)[0]
       cmd.extend(['--%s' % pkg, version])
-    cros_build_lib.RunCommand(cmd)
+    cros_build_lib.RunCommand(cmd, extra_env=extra_env)
 
 
 def UpdateTargets(targets, usepkg):
@@ -460,8 +462,7 @@ def UpdateTargets(targets, usepkg):
   print 'Updating packages:'
   print packages
 
-  cmd = ['sudo', '-E', 'FEATURES=splitdebug', EMERGE_CMD,
-       '--oneshot', '--update']
+  cmd = [EMERGE_CMD, '--oneshot', '--update']
   if usepkg:
     cmd.extend(['--getbinpkg', '--usepkgonly'])
 
@@ -491,7 +492,7 @@ def CleanTargets(targets):
   if packages:
     print 'Cleaning packages:'
     print packages
-    cmd = ['sudo', '-E', EMERGE_CMD, '--unmerge']
+    cmd = [EMERGE_CMD, '--unmerge']
     cmd.extend(packages)
     cros_build_lib.RunCommand(cmd)
   else:
@@ -531,35 +532,42 @@ def SelectActiveToolchains(targets, suffixes):
       # Do not gcc-config when the current is live or nothing needs to be done.
       if current != desired and current != '9999':
         cmd = [ package + '-config', desired ]
-        cros_build_lib.SudoRunCommand(cmd, print_cmd=False)
+        cros_build_lib.RunCommand(cmd, print_cmd=False)
 
 
-def UpdateToolchains(usepkg, deleteold, targets):
+def UpdateToolchains(usepkg, deleteold, hostonly, targets_wanted):
   """Performs all steps to create a synchronized toolchain enviroment.
 
   args:
     arguments correspond to the given commandline flags
   """
-  alltargets = GetAllTargets()
-  nonexistant = []
-  if targets == set(['all']):
-    targets = alltargets
-  else:
-    # Verify user input.
-    for target in targets:
-      if target not in alltargets:
-        nonexistant.append(target)
-  if nonexistant:
-    raise Exception("Invalid targets: " + ','.join(nonexistant))
+  targets = set()
+  if not hostonly:
+    # For hostonly, we can skip most of the below logic, much of which won't
+    # work on bare systems where this is useful.
+    alltargets = GetAllTargets()
+    nonexistant = []
+    if targets_wanted == set(['all']):
+      targets = set(alltargets)
+    else:
+      targets = set(targets_wanted)
+      # Verify user input.
+      for target in targets_wanted:
+        if target not in alltargets:
+          nonexistant.append(target)
+    if nonexistant:
+      raise Exception("Invalid targets: " + ','.join(nonexistant))
 
-  # First check and initialize all cross targets that need to be.
-  crossdev_targets = \
-      [t for t in targets if not TargetIsInitialized(t) and not 'host' == t]
-  if crossdev_targets:
-    InitializeCrossdevTargets(crossdev_targets, usepkg)
+    # First check and initialize all cross targets that need to be.
+    crossdev_targets = \
+        [t for t in targets if not TargetIsInitialized(t)]
+    if crossdev_targets:
+      InitializeCrossdevTargets(crossdev_targets, usepkg)
 
-  # Now update all packages, including host.
+  # We want host updated.
   targets.add('host')
+
+  # Now update all packages.
   UpdateTargets(targets, usepkg)
   SelectActiveToolchains(targets, CONFIG_TARGET_SUFFIXES)
 
@@ -583,8 +591,12 @@ def main(argv):
                     dest='targets', default='all',
                     help=('Comma separated list of tuples. '
                           'Special keyword \'host\' is allowed. Default: all.'))
+  parser.add_option('', '--hostonly',
+                    dest='hostonly', default=False, action='store_true',
+                    help=('Only setup the host toolchain. '
+                          'Useful for bootstrapping chroot.'))
 
   (options, _remaining_arguments) = parser.parse_args(argv)
 
   targets = set(options.targets.split(','))
-  UpdateToolchains(options.usepkg, options.deleteold, targets)
+  UpdateToolchains(options.usepkg, options.deleteold, options.hostonly, targets)
