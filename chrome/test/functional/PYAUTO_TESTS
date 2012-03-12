@@ -175,7 +175,11 @@
       '-browsing_data.BrowsingDataTest.testClearAutofillData',
       # codesign tests should run *after* signing. crbug.com/50481
       '-codesign',
-      '-crash_reporter.CrashReporterTest.testRendererCrash',  # crbug.com/69464
+      # crbug.com/117573
+      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
+      '-cookies.CookiesTest.testCookiesHttps',
+      # crbug.com/69464
+      '-crash_reporter.CrashReporterTest.testRendererCrash',
       # crbug.com/75724
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # crbug.com/75724
@@ -247,6 +251,9 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/117573
+      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
+      '-cookies.CookiesTest.testCookiesHttps',
       # crbug.com/85310
       '-instant',
       # crbug.com/91033
@@ -534,12 +541,6 @@
       '-process_count',
       # crbug.com/115646
       '-translate.TranslateTest.testSeveralLanguages',
-      # ==================================================
-      # Disabled tests that need to be investigated/fixed.
-      # ==================================================
-      # crbug.com/117573
-      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
-      '-cookies.CookiesTest.testCookiesHttps',
     ],
 
     'linux': [
@@ -575,9 +576,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/117573
-      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
-      '-cookies.CookiesTest.testCookiesHttps',
       # crbug.com/101787
       '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
       # crbug.com/97179
