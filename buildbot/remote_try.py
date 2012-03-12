@@ -38,12 +38,15 @@ class RemoteTryJob(object):
     self.values['email'] = [cros_lib.GetProjectUserEmail(cwd)]
     # Name of the job that appears on the waterfall.
     self.values['name'] = ','.join(options.gerrit_patches)
-    self.values['gerrit_patches'] = options.gerrit_patches[:]
     self.values['bot'] = bots[:]
     self.description = ('name: %s\n patches: %s\nbots: %s' %
-                        (self.values['name'], self.values['gerrit_patches'],
+                        (self.values['name'], options.gerrit_patches,
                          self.values['bot']))
     self.buildroot = options.buildroot
+    extra_args = []
+    extra_args.append('--gerrit-patches=%s'
+                      % ' '.join(options.gerrit_patches))
+    self.values['extra_args'] = extra_args
     self.tryjob_repo = None
 
   def _Submit(self, dryrun):
