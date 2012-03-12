@@ -13,6 +13,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/gfx/point.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -33,10 +34,8 @@ RenderViewContextMenuViews::~RenderViewContextMenuViews() {
 }
 
 void RenderViewContextMenuViews::RunMenuAt(views::Widget* parent,
-                                           int x,
-                                           int y) {
-  if (menu_runner_->RunMenuAt(parent, NULL,
-          gfx::Rect(gfx::Point(x, y), gfx::Size()),
+                                           const gfx::Point& point) {
+  if (menu_runner_->RunMenuAt(parent, NULL, gfx::Rect(point, gfx::Size()),
           views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
