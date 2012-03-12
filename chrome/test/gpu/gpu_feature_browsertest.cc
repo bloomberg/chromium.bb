@@ -382,6 +382,9 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, FLAKY_RafNoDamage) {
   const FilePath url(FILE_PATH_LITERAL("feature_raf_no_damage.html"));
   RunTest(url, GpuResultFlags(0));
 
+  if (!analyzer_.get())
+    return;
+
   TraceEventVector events;
   size_t num_events = analyzer_->FindEvents(
       Query::MatchBeginName("___RafWithNoDamage___"), &events);
