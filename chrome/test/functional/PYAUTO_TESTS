@@ -175,9 +175,6 @@
       '-browsing_data.BrowsingDataTest.testClearAutofillData',
       # codesign tests should run *after* signing. crbug.com/50481
       '-codesign',
-      # crbug.com/117573
-      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
-      '-cookies.CookiesTest.testCookiesHttps',
       # crbug.com/69464
       '-crash_reporter.CrashReporterTest.testRendererCrash',
       # crbug.com/75724
@@ -251,9 +248,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/117573
-      '-cookies.CookiesTest.testAllowCookiesForASessionUsingExceptions',
-      '-cookies.CookiesTest.testCookiesHttps',
       # crbug.com/85310
       '-instant',
       # crbug.com/91033

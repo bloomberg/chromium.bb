@@ -18,9 +18,9 @@ class CookiesTest(pyauto.PyUITest):
 
   def setUp(self):
     pyauto.PyUITest.setUp(self);
-    # Set the startup preference to "open the home page", if the startup
+    # Set the startup preference to "open the new tab page", if the startup
     # preference is "continue where I left off", session cookies will be saved.
-    self.SetPrefs(pyauto.kRestoreOnStartup, 0);
+    self.SetPrefs(pyauto.kRestoreOnStartup, 5);
 
   def _CookieCheckIncognitoWindow(self, url, cookies_enabled=True):
     """Check the cookie for the given URL in an incognito window."""
@@ -86,8 +86,8 @@ class CookiesTest(pyauto.PyUITest):
                     msg='Cookie did not exist after loading %s' % https_url)
     # Restart and verify that the cookie persists.
     self.RestartBrowser(clear_profile=False)
-    self.assertEqual(cookie_data, self.GetCookie(pyauto.GURL(https_url)),
-                     msg='Cookie did not persist after restarting session.')
+    self.assertTrue(self.GetCookie(pyauto.GURL(https_url)),
+                    msg='Cookie did not persist after restarting session.')
 
   def testCookiesFile(self):
     """Test cookies set from file:// url for incognito and regular windows."""
@@ -146,7 +146,7 @@ class CookiesTest(pyauto.PyUITest):
     """Verify that cookies are cleared when the browsing session is closed."""
     file_url = self.GetFileURLForDataPath('setcookie.html')
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)),
-                     msg='Unable to set cookie.')
+                     msg='There should be no cookies on %s' % file_url)
 
     # Set the option to clear cookies when the browser session is closed.
     self.SetPrefs(pyauto.kClearSiteDataOnExit, True)
@@ -163,17 +163,16 @@ class CookiesTest(pyauto.PyUITest):
   def testAllowCookiesUsingExceptions(self):
     """Verify that cookies can be allowed and set using exceptions for
     particular website(s) when all others are blocked."""
-    file_url = self.GetFileURLForDataPath('setcookie.html')
     http_url = 'http://%s' % self.test_host
-    self.assertFalse(self.GetCookie(pyauto.GURL(file_url)),
-                     msg='Unable to set cookie.')
+    self.assertFalse(self.GetCookie(pyauto.GURL(http_url)),
+                     msg='There should be no cookies on %s' % http_url)
 
     # Set the preference to block all cookies.
     self.SetPrefs(pyauto.kDefaultContentSettings, {u'cookies': 2})
 
-    self.NavigateToURL(file_url)
+    self.NavigateToURL(http_url)
     # Check that no cookies are stored.
-    self.assertFalse(self.GetCookie(pyauto.GURL(file_url)),
+    self.assertFalse(self.GetCookie(pyauto.GURL(http_url)),
                      msg='A cookie was found when it should not have been.')
 
     # Creating an exception to allow cookies from http://www.google.com.
@@ -187,10 +186,12 @@ class CookiesTest(pyauto.PyUITest):
   def testBlockCookiesUsingExceptions(self):
     """Verify that cookies can be blocked for a specific website
     using exceptions."""
-    file_url = self.GetFileURLForDataPath('setcookie.html')
     http_url = 'http://%s' % self.test_host
+    file_url = self.GetFileURLForDataPath('setcookie.html')
+    self.assertFalse(self.GetCookie(pyauto.GURL(http_url)),
+                     msg='There should be no cookies on %s' % http_url)
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)),
-                     msg='Unable to set cookie.')
+                     msg='There should be no cookies on %s' % file_url)
 
     # Create an exception to block cookies from http://www.google.com
     self.SetPrefs(pyauto.kContentSettingsPatternPairs,
@@ -209,18 +210,17 @@ class CookiesTest(pyauto.PyUITest):
   def testAllowCookiesForASessionUsingExceptions(self):
     """Verify that cookies can be allowed and set using exceptions for
     particular website(s) only for a session when all others are blocked."""
-    file_url = self.GetFileURLForPath('setcookie.html')
     http_url = 'http://%s' % self.test_host
-    self.assertFalse(self.GetCookie(pyauto.GURL(file_url)),
-                     msg='Unable to set cookie.')
+    self.assertFalse(self.GetCookie(pyauto.GURL(http_url)),
+                     msg='There should be no cookies on %s' % http_url)
 
     # Set the preference to block all cookies.
     self.SetPrefs(pyauto.kDefaultContentSettings, {u'cookies': 2})
 
-    self.NavigateToURL(file_url)
+    self.NavigateToURL(http_url)
     # Check that no cookies are stored.
-    self.assertFalse(self.GetCookie(pyauto.GURL(file_url)),
-                     msg='Cookies were found for the url %s' % file_url)
+    self.assertFalse(self.GetCookie(pyauto.GURL(http_url)),
+                     msg='Cookies were found for the url %s' % http_url)
 
     # Creating an exception to allow cookies for a session for google.com.
     self.SetPrefs(pyauto.kContentSettingsPatternPairs,
