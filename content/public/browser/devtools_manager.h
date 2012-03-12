@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/console_message_level.h"
 
 class TabContents;
 
@@ -76,6 +77,12 @@ class CONTENT_EXPORT DevToolsManager {
 
   // Starts inspecting element at position (x, y) in the specified page.
   virtual void InspectElement(DevToolsAgentHost* agent_host, int x, int y) = 0;
+
+  // Logs given |message| on behalf of the given |agent_host|.
+  virtual void AddMessageToConsole(DevToolsAgentHost* agent_host,
+                                   ConsoleMessageLevel level,
+                                   const std::string& message) = 0;
+
 };
 
 }  // namespace content

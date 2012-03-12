@@ -567,21 +567,37 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 // DISABLED_PauseInSharedWorkerInitialization
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
                        DISABLED_PauseInSharedWorkerInitialization) {
-    ASSERT_TRUE(test_server()->Start());
-    GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
-    ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(test_server()->Start());
+  GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
+  ui_test_utils::NavigateToURL(browser(), url);
 
-    scoped_refptr<WorkerData> worker_data = WaitForFirstSharedWorker();
-    OpenDevToolsWindowForSharedWorker(worker_data.get());
+  scoped_refptr<WorkerData> worker_data = WaitForFirstSharedWorker();
+  OpenDevToolsWindowForSharedWorker(worker_data.get());
 
-    TerminateWorker(worker_data);
+  TerminateWorker(worker_data);
 
-    // Reload page to restart the worker.
-    ui_test_utils::NavigateToURL(browser(), url);
+  // Reload page to restart the worker.
+  ui_test_utils::NavigateToURL(browser(), url);
 
-    // Wait until worker script is paused on the debugger statement.
-    RunTestFunction(window_, "testPauseInSharedWorkerInitialization");
-    CloseDevToolsWindow();
+  // Wait until worker script is paused on the debugger statement.
+  RunTestFunction(window_, "testPauseInSharedWorkerInitialization");
+  CloseDevToolsWindow();
+}
+
+// Tests DevToolsAgentHost::AddMessageToConsole.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAddMessageToConsole) {
+  OpenDevToolsWindow("about:blank");
+  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+  DevToolsAgentHost* agent_host =
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(inspected_rvh_);
+  devtools_manager->AddMessageToConsole(agent_host,
+                                        content::CONSOLE_MESSAGE_LEVEL_LOG,
+                                        "log");
+  devtools_manager->AddMessageToConsole(agent_host,
+                                        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+                                        "error");
+  RunTestFunction(window_, "checkLogAndErrorMessages");
+  CloseDevToolsWindow();
 }
 
 }  // namespace

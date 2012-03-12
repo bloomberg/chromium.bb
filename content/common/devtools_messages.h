@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,12 +43,31 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/console_message_level.h"
 #include "ipc/ipc_message_macros.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START DevToolsMsgStart
+
+// Singly-included section since need custom serialization.
+#ifndef CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
+#define CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
+
+namespace IPC {
+
+template<>
+struct ParamTraits<content::ConsoleMessageLevel> {
+  typedef content::ConsoleMessageLevel param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+}  // namespace IPC
+
+#endif  // CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
 
 // These are messages sent from DevToolsAgent to DevToolsClient through the
 // browser.
@@ -78,6 +97,11 @@ IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchOnInspectorBackend,
 IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_InspectElement,
                     int /* x */,
                     int /* y */)
+
+// Add message to the devtools console.
+IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_AddMessageToConsole,
+                    content::ConsoleMessageLevel /* level */,
+                    std::string /* message */)
 
 // Notifies worker devtools agent that it should pause worker context
 // when it starts and wait until either DevTools client is attached or

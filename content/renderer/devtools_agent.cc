@@ -15,13 +15,18 @@
 #include "content/renderer/devtools_agent_filter.h"
 #include "content/renderer/devtools_client.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+using WebKit::WebConsoleMessage;
 using WebKit::WebDevToolsAgent;
 using WebKit::WebDevToolsAgentClient;
+using WebKit::WebFrame;
 using WebKit::WebPoint;
 using WebKit::WebString;
 using WebKit::WebCString;
@@ -78,6 +83,8 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
+    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_AddMessageToConsole,
+                        OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(DevToolsMsg_SetupDevToolsClient, OnSetupDevToolsClient)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -161,6 +168,35 @@ void DevToolsAgent::OnInspectElement(int x, int y) {
     web_agent->attach();
     web_agent->inspectElementAt(WebPoint(x, y));
   }
+}
+
+void DevToolsAgent::OnAddMessageToConsole(content::ConsoleMessageLevel level,
+                                          const std::string& message) {
+  WebView* web_view = render_view()->GetWebView();
+  if (!web_view)
+    return;
+
+  WebFrame* main_frame = web_view-> mainFrame();
+  if (!main_frame)
+    return;
+
+  WebConsoleMessage::Level target_level = WebConsoleMessage::LevelLog;
+  switch (level) {
+    case content::CONSOLE_MESSAGE_LEVEL_TIP:
+      target_level = WebConsoleMessage::LevelTip;
+      break;
+    case content::CONSOLE_MESSAGE_LEVEL_LOG:
+      target_level = WebConsoleMessage::LevelLog;
+      break;
+    case content::CONSOLE_MESSAGE_LEVEL_WARNING:
+      target_level = WebConsoleMessage::LevelWarning;
+      break;
+    case content::CONSOLE_MESSAGE_LEVEL_ERROR:
+      target_level = WebConsoleMessage::LevelError;
+      break;
+  }
+  main_frame->addMessageToConsole(
+      WebConsoleMessage(target_level, WebString::fromUTF8(message)));
 }
 
 void DevToolsAgent::OnNavigate() {

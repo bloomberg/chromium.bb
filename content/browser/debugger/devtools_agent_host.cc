@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,14 @@ void DevToolsAgentHost::DipatchOnInspectorBackend(const std::string& message) {
 void DevToolsAgentHost::InspectElement(int x, int y) {
   SendMessageToAgent(new DevToolsAgentMsg_InspectElement(MSG_ROUTING_NONE,
                                                          x, y));
+}
+
+void DevToolsAgentHost::AddMessageToConsole(ConsoleMessageLevel level,
+                                            const std::string& message) {
+  SendMessageToAgent(new DevToolsAgentMsg_AddMessageToConsole(
+      MSG_ROUTING_NONE,
+      level,
+      message));
 }
 
 void DevToolsAgentHost::NotifyCloseListener() {

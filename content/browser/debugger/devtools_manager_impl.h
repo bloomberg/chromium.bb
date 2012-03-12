@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,8 +45,6 @@ class CONTENT_EXPORT DevToolsManagerImpl
   DevToolsManagerImpl();
   virtual ~DevToolsManagerImpl();
 
-  virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
-                                          const std::string& message) OVERRIDE;
   void DispatchOnInspectorFrontend(DevToolsAgentHost* agent_host,
                                    const std::string& message);
 
@@ -61,13 +59,11 @@ class CONTENT_EXPORT DevToolsManagerImpl
   void OnCancelPendingNavigation(RenderViewHost* pending,
                                  RenderViewHost* current);
 
-  // Invoked when a tab is replaced by another tab. This is triggered by
-  // TabStripModel::ReplaceTabContentsAt.
+  // DevToolsManager implementation
+  virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
+                                          const std::string& message) OVERRIDE;
   virtual void TabReplaced(WebContents* old_tab, WebContents* new_tab) OVERRIDE;
-
-  // Closes all open developer tools windows.
   virtual void CloseAllClientHosts() OVERRIDE;
-
   virtual void AttachClientHost(int client_host_cookie,
                                 DevToolsAgentHost* to_agent) OVERRIDE;
   virtual DevToolsClientHost* GetDevToolsClientHostFor(
@@ -80,15 +76,12 @@ class CONTENT_EXPORT DevToolsManagerImpl
   virtual void UnregisterDevToolsClientHostFor(
       DevToolsAgentHost* agent_host) OVERRIDE;
   virtual int DetachClientHost(DevToolsAgentHost* from_agent) OVERRIDE;
-
-  // This method will remove all references from the manager to the
-  // DevToolsClientHost and unregister all listeners related to the
-  // DevToolsClientHost.
   virtual void ClientHostClosing(DevToolsClientHost* host) OVERRIDE;
-
-  // Starts inspecting element at position (x, y) in the specified page.
   virtual void InspectElement(DevToolsAgentHost* agent_host,
                               int x, int y) OVERRIDE;
+  virtual void AddMessageToConsole(DevToolsAgentHost* agent_host,
+                                   ConsoleMessageLevel level,
+                                   const std::string& message) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<DevToolsManagerImpl>;

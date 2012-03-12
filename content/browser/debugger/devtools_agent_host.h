@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/console_message_level.h"
 
 namespace IPC {
 class Message;
@@ -32,6 +33,8 @@ class CONTENT_EXPORT DevToolsAgentHost {
   void Detach();
   void DipatchOnInspectorBackend(const std::string& message);
   void InspectElement(int x, int y);
+  void AddMessageToConsole(ConsoleMessageLevel level,
+                           const std::string& message);
 
   // TODO(yurys): get rid of this method
   virtual void NotifyClientClosing() = 0;

@@ -98,6 +98,12 @@ void DevToolsManagerImpl::InspectElement(DevToolsAgentHost* agent_host,
   agent_host->InspectElement(x, y);
 }
 
+void DevToolsManagerImpl::AddMessageToConsole(DevToolsAgentHost* agent_host,
+                                              ConsoleMessageLevel level,
+                                              const std::string& message) {
+  agent_host->AddMessageToConsole(level, message);
+}
+
 void DevToolsManagerImpl::ClientHostClosing(DevToolsClientHost* client_host) {
   DevToolsAgentHost* agent_host = GetDevToolsAgentHostFor(client_host);
   if (!agent_host) {
