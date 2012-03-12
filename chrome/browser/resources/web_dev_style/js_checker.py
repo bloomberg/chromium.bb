@@ -90,12 +90,17 @@ class JSChecker(object):
     for f in affected_js_files:
       error_lines = []
 
-      # check for getElementById()
+      # check for getElementById() and "const"
       for i, line in enumerate(f.NewContents(), start=1):
         if 'getElementById' in line:
           error_lines.append('  line %d: %s\n%s' % (
               i,
               "Use $('id') instead of document.getElementById('id')",
+              line))
+        if self.input_api.re.search(r'[^@]\bconst\b', line):
+          error_lines.append('  line %d: %s\n%s' % (
+              i,
+              "Use var instead of const.",
               line))
 
       # Use closure_linter to check for several different errors
