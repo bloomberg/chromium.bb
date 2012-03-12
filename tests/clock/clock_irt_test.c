@@ -78,16 +78,16 @@ int main(void) {
     return 1;
   }
 
-  errs += TimeTest(ti.getres, CLOCK_REALTIME,
+  errs += TimeTest(ti.clock_getres, CLOCK_REALTIME,
                    "clock_getres on realtime clock failed",
                    "Realtime clock resolution");
-  errs += TimeTest(ti.getres, CLOCK_MONOTONIC,
+  errs += TimeTest(ti.clock_getres, CLOCK_MONOTONIC,
                    "clock_getres on monotonic clock failed",
                    "Monotonic clock resolution");
-  errs += TimeTest(ti.gettime, CLOCK_REALTIME,
+  errs += TimeTest(ti.clock_gettime, CLOCK_REALTIME,
                    "clock_gettime on realtime clock failed",
                    "Realtime clock value");
-  errs += TimeTest(ti.gettime, CLOCK_MONOTONIC,
+  errs += TimeTest(ti.clock_gettime, CLOCK_MONOTONIC,
                    "clock_gettime on monotonic clock failed",
                    "Monotonic clock value");
   return errs;

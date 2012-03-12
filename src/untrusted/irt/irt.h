@@ -164,8 +164,8 @@ struct nacl_irt_random {
 
 #define NACL_IRT_CLOCK_v0_1 "nacl-irt-clock_get-0.1"
 struct nacl_irt_clock {
-  int (*getres)(clockid_t clk_id, struct timespec *res);
-  int (*gettime)(clockid_t clk_id, struct timespec *tp);
+  int (*clock_getres)(clockid_t clk_id, struct timespec *res);
+  int (*clock_gettime)(clockid_t clk_id, struct timespec *tp);
 };
 
 /*

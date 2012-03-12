@@ -72,5 +72,4 @@ void __libnacl_irt_init(Elf32_auxv_t *auxv) {
   DO_QUERY(NACL_IRT_DYNCODE_v0_1, dyncode);
   DO_QUERY(NACL_IRT_TLS_v0_1, tls);
   DO_QUERY(NACL_IRT_BLOCKHOOK_v0_1, blockhook);
-  DO_QUERY(NACL_IRT_CLOCK_v0_1, clock);
 }

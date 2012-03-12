@@ -4,16 +4,10 @@
  * found in the LICENSE file.
  */
 
-#include <errno.h>
 #include <time.h>
 
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
-int clock_gettime(clockid_t clk_id, struct timespec *res) {
-  int error = __libnacl_irt_clock.gettime(clk_id, res);
-  if (error) {
-    errno = error;
-    return -1;
-  }
-  return 0;
-}
+NACL_OPTIONAL_FN(__libnacl_irt_clock, NACL_IRT_CLOCK_v0_1,
+                 clock_gettime,
+                 (clk_id, tp), (clockid_t clk_id, struct timespec *tp))
