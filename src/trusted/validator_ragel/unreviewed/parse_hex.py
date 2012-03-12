@@ -95,6 +95,7 @@ def ParseSegmentBasedTest(test_name):
         # call.  For the old validator it is an 'indivisible' sequence that is
         # divided.  For the DFA-based validator the error is only in the
         # following call that does not see the preceding masking operation.
+        err_offsets[offset] = ['validation error']
         continue
       err_offsets.setdefault(offset, []).insert(0, 'crosses boundary')
 
