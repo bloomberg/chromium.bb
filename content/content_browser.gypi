@@ -645,8 +645,6 @@
     'browser/tab_contents/navigation_entry_impl.h',
     'browser/tab_contents/popup_menu_helper_mac.h',
     'browser/tab_contents/popup_menu_helper_mac.mm',
-    'browser/tab_contents/provisional_load_details.cc',
-    'browser/tab_contents/provisional_load_details.h',
     'browser/tab_contents/render_view_host_manager.cc',
     'browser/tab_contents/render_view_host_manager.h',
     'browser/tab_contents/tab_contents.cc',

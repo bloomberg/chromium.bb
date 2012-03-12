@@ -32,7 +32,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/tab_contents/interstitial_page_impl.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
-#include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/intents_messages.h"
 #include "content/common/ssl_status_serialization.h"
@@ -1488,21 +1487,6 @@ void TabContents::OnDidFailProvisionalLoadWithError(
 
     render_manager_.RendererAbortedProvisionalLoad(GetRenderViewHost());
   }
-
-  // Send out a notification that we failed a provisional load with an error.
-  ProvisionalLoadDetails details(
-      params.is_main_frame,
-      controller_.IsURLInPageNavigation(validated_url),
-      validated_url,
-      std::string(),
-      false,
-      params.frame_id);
-  details.set_error_code(params.error_code);
-
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      content::Source<NavigationController>(&controller_),
-      content::Details<ProvisionalLoadDetails>(&details));
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,

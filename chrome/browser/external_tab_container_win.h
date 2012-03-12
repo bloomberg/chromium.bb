@@ -194,6 +194,12 @@ class ExternalTabContainer : public content::WebContentsDelegate,
 
   // Overridden from content::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void DidFailProvisionalLoad(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      int error_code,
+      const string16& error_description) OVERRIDE;
 
   // Message handlers
   void OnForwardMessageToExternalHost(const std::string& message,

@@ -14,7 +14,6 @@
 #include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/ssl/ssl_request_info.h"
 #include "content/browser/tab_contents/navigation_entry_impl.h"
-#include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,8 +72,6 @@ SSLManager::SSLManager(NavigationControllerImpl* controller)
   DCHECK(controller_);
 
   // Subscribe to various notifications.
-  registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-                 content::Source<NavigationController>(controller_));
   registrar_.Add(
       this, content::NOTIFICATION_RESOURCE_RESPONSE_STARTED,
       content::Source<WebContents>(controller_->tab_contents()));
@@ -138,9 +135,6 @@ void SSLManager::Observe(int type,
                          const content::NotificationDetails& details) {
   // Dispatch by type.
   switch (type) {
-    case content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR:
-      // Do nothing.
-      break;
     case content::NOTIFICATION_RESOURCE_RESPONSE_STARTED:
       DidStartResourceResponse(
           content::Details<ResourceRequestDetails>(details).ptr());

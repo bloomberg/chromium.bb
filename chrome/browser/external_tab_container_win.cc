@@ -40,7 +40,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_details.h"
@@ -204,8 +203,6 @@ bool ExternalTabContainer::Init(Profile* profile,
   NavigationController* controller =
       &tab_contents_->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::Source<NavigationController>(controller));
-  registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
                  content::Source<NavigationController>(controller));
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::Source<NavigationController>(controller));
@@ -783,6 +780,17 @@ bool ExternalTabContainer::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void ExternalTabContainer::DidFailProvisionalLoad(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const string16& error_description) {
+  automation_->Send(new AutomationMsg_NavigationFailed(
+      tab_handle_, error_code, validated_url));
+  ignore_next_load_notification_ = true;
+}
+
 void ExternalTabContainer::OnForwardMessageToExternalHost(
     const std::string& message,
     const std::string& origin,
@@ -845,15 +853,6 @@ void ExternalTabContainer::Observe(
           automation_->Send(new AutomationMsg_DidNavigate(tab_handle_,
                                                           navigation_info));
       }
-      break;
-    }
-    case content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR: {
-      const ProvisionalLoadDetails* load_details =
-          content::Details<ProvisionalLoadDetails>(details).ptr();
-      automation_->Send(new AutomationMsg_NavigationFailed(
-          tab_handle_, load_details->error_code(), load_details->url()));
-
-      ignore_next_load_notification_ = true;
       break;
     }
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {

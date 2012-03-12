@@ -31,7 +31,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/tab_contents/provisional_load_details.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -252,6 +251,12 @@ class InstantLoader::TabContentsDelegateImpl
 
   // content::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidFailProvisionalLoad(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      int error_code,
+      const string16& error_description) OVERRIDE;
 
  private:
   typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
@@ -307,9 +312,6 @@ InstantLoader::TabContentsDelegateImpl::TabContentsDelegateImpl(
   DCHECK(loader->preview_contents());
   registrar_.Add(this, content::NOTIFICATION_INTERSTITIAL_ATTACHED,
       content::Source<WebContents>(loader->preview_contents()->web_contents()));
-  registrar_.Add(this, content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      content::Source<NavigationController>(
-          &loader->preview_contents()->web_contents()->GetController()));
 }
 
 void InstantLoader::TabContentsDelegateImpl::PrepareForNewLoad() {
@@ -415,15 +417,6 @@ void InstantLoader::TabContentsDelegateImpl::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR:
-      if (content::Details<ProvisionalLoadDetails>(details)->url() ==
-          loader_->url_) {
-        // This typically happens with downloads (which are disabled with
-        // instant active). To ensure the download happens when the user presses
-        // enter we set needs_reload_ to true, which triggers a reload.
-        loader_->needs_reload_ = true;
-      }
-      break;
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
       UnregisterForPaintNotifications();
       PreviewPainted();
@@ -559,6 +552,20 @@ bool InstantLoader::TabContentsDelegateImpl::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void InstantLoader::TabContentsDelegateImpl::DidFailProvisionalLoad(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    int error_code,
+    const string16& error_description) {
+  if (validated_url == loader_->url_) {
+    // This typically happens with downloads (which are disabled with
+    // instant active). To ensure the download happens when the user presses
+    // enter we set needs_reload_ to true, which triggers a reload.
+    loader_->needs_reload_ = true;
+  }
 }
 
 void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(

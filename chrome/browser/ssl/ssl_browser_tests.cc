@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
 #include "net/base/cert_status_flags.h"
@@ -33,6 +34,39 @@ using content::SSLStatus;
 using content::WebContents;
 
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
+
+namespace {
+
+class ProvisionalLoadWaiter : public content::WebContentsObserver {
+ public:
+  explicit ProvisionalLoadWaiter(WebContents* tab)
+    : WebContentsObserver(tab), waiting_(false), seen_(false) {}
+
+  void Wait() {
+    if (seen_)
+      return;
+
+    waiting_ = true;
+    ui_test_utils::RunMessageLoop();
+  }
+
+  void DidFailProvisionalLoad(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      int error_code,
+      const string16& error_description) OVERRIDE {
+    seen_ = true;
+    if (waiting_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+ private:
+  bool waiting_;
+  bool seen_;
+};
+
+}  // namespace
 
 class SSLUITest : public InProcessBrowserTest {
   typedef net::TestServer::HTTPSOptions HTTPSOptions;
@@ -144,7 +178,7 @@ class SSLUITest : public InProcessBrowserTest {
     EXPECT_EQ(expectLoaded, actuallyLoadedContent);
   }
 
-  void ProceedThroughInterstitial(content::WebContents* tab) {
+  void ProceedThroughInterstitial(WebContents* tab) {
     InterstitialPage* interstitial_page = tab->GetInterstitialPage();
     ASSERT_TRUE(interstitial_page);
     ui_test_utils::WindowedNotificationObserver observer(
@@ -383,9 +417,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID, false,
                                  true);  // Interstitial showing
 
-  ui_test_utils::WindowedNotificationObserver load_failed_observer(
-      content::NOTIFICATION_FAIL_PROVISIONAL_LOAD_WITH_ERROR,
-      content::NotificationService::AllSources());
+  ProvisionalLoadWaiter load_failed_observer(tab);
 
   // Simulate user clicking on back button (crbug.com/39248).
   browser()->GoBack(CURRENT_TAB);
