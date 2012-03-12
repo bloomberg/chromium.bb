@@ -29,3 +29,7 @@ MultiProcessLockTest.RecursiveLock
 # Poor isolation, DCHECKs when no MessageLoop exists.  Breaks when sharded.
 # http://crbug.com/117679
 WebsiteSettingsModelTest.*
+
+# fails with gmock errors
+# http://crbug.com/117796
+SyncNewNonFrontendDataTypeControllerTest.StartAfterSyncShutdown
