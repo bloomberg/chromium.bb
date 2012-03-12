@@ -1042,6 +1042,8 @@ class ExecuteTasksFileBrowserFunction::Executor: public FileTaskExecutor {
 
 ExecuteTasksFileBrowserFunction::ExecuteTasksFileBrowserFunction() {}
 
+ExecuteTasksFileBrowserFunction::~ExecuteTasksFileBrowserFunction() {}
+
 bool ExecuteTasksFileBrowserFunction::RunImpl() {
   // First param is task id that was to the extension with getFileTasks call.
   std::string task_id;

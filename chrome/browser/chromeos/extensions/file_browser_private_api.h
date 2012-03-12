@@ -128,6 +128,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
 class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
  public:
   ExecuteTasksFileBrowserFunction();
+  virtual ~ExecuteTasksFileBrowserFunction();
 
  protected:
   // AsyncExtensionFunction overrides.
