@@ -12,7 +12,7 @@ html.loading * {
   -webkit-padding-end: 3px;
   -webkit-padding-start: 4px;
   -webkit-transition: padding 100ms, height 100ms, opacity 100ms;
-  border-bottom: 1px solid rgb(205, 205, 205);
+  border-bottom: 1px solid #eee;
   display: -webkit-box;
   height: 0;
   opacity: 0;
