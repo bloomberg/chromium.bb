@@ -3943,10 +3943,11 @@ FileManager.prototype = {
                         encodeURIComponent(localPaths[i]);
                   }
                 }
+                // Call doSelectFiles_ on a timeout, as it's unsafe to close a
+                // window from a callback.
+                setTimeout(self.doSelectFiles_.bind(self, fileUrls), 0);
               });
           } else {  // All files are local.
-            // Call doSelectFiles_ on a timeout, as it's unsafe to close a
-            // window from a callback.
             setTimeout(self.doSelectFiles_.bind(self, fileUrls), 0);
           }
         });
@@ -3958,7 +3959,7 @@ FileManager.prototype = {
    *
    * @param {Array.<string>} fileUrls Array of filename URLs.
    */
-  FileManager.prototype.doSlectFiles_ = function(fileUrls) {
+  FileManager.prototype.doSelectFiles_ = function(fileUrls) {
     chrome.fileBrowserPrivate.selectFiles(fileUrls);
     this.onUnload_();
     window.close();
