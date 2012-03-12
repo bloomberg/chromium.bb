@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -289,9 +289,10 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
 
 }  // namespace
 
-EventExecutor* EventExecutor::Create(MessageLoop* message_loop,
-                                     Capturer* capturer) {
-  return new EventExecutorMac(message_loop, capturer);
+scoped_ptr<protocol::InputStub> EventExecutor::Create(MessageLoop* message_loop,
+                                                      Capturer* capturer) {
+  return scoped_ptr<protocol::InputStub>(
+      new EventExecutorMac(message_loop, capturer));
 }
 
 }  // namespace remoting

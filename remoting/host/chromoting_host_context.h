@@ -19,7 +19,8 @@ namespace remoting {
 class ChromotingHostContext {
  public:
   // Create a context.
-  explicit ChromotingHostContext(base::MessageLoopProxy* ui_message_loop);
+  ChromotingHostContext(base::MessageLoopProxy* io_message_loop,
+                        base::MessageLoopProxy* ui_message_loop);
   virtual ~ChromotingHostContext();
 
   // TODO(ajwong): Move the Start method out of this class. Then
@@ -31,6 +32,7 @@ class ChromotingHostContext {
 
   virtual JingleThread* jingle_thread();
 
+  virtual base::MessageLoopProxy* io_message_loop();
   virtual base::MessageLoopProxy* ui_message_loop();
   virtual MessageLoop* main_message_loop();
   virtual MessageLoop* encode_message_loop();
@@ -53,6 +55,7 @@ class ChromotingHostContext {
   // This is NOT a Chrome-style UI thread.
   base::Thread desktop_thread_;
 
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   scoped_refptr<base::MessageLoopProxy> ui_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHostContext);

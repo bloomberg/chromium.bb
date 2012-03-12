@@ -114,7 +114,8 @@ bool HostNPScriptObject::Init() {
   DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
   VLOG(2) << "Init";
 
-  host_context_.reset(new ChromotingHostContext(plugin_message_loop_proxy_));
+  host_context_.reset(new ChromotingHostContext(NULL,
+                                                plugin_message_loop_proxy_));
   if (!host_context_->Start()) {
     host_context_.reset();
     return false;
@@ -464,7 +465,7 @@ void HostNPScriptObject::FinishConnectMainThread(
   // TODO(sergeyu): Fix DesktopEnvironment so that it can be created
   // on either the UI or the network thread so that we can avoid
   // jumping to the main thread here.
-  desktop_environment_.reset(DesktopEnvironment::Create(host_context_.get()));
+  desktop_environment_ = DesktopEnvironment::Create(host_context_.get());
 
   FinishConnectNetworkThread(uid, auth_token, auth_service);
 }

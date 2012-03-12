@@ -18,6 +18,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
@@ -85,12 +86,15 @@ class HostProcess {
   HostProcess()
       : message_loop_(MessageLoop::TYPE_UI),
         file_io_thread_("FileIO"),
-        context_(message_loop_.message_loop_proxy()),
         allow_nat_traversal_(true),
         restarting_(false) {
-    context_.Start();
     file_io_thread_.StartWithOptions(
         base::Thread::Options(MessageLoop::TYPE_IO, 0));
+
+    context_.reset(new ChromotingHostContext(
+                           file_io_thread_.message_loop_proxy(),
+                           message_loop_.message_loop_proxy()));
+    context_->Start();
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
 
@@ -187,8 +191,8 @@ class HostProcess {
   }
 
   void OnNatPolicyUpdate(bool nat_traversal_enabled) {
-    if (!context_.network_message_loop()->BelongsToCurrentThread()) {
-      context_.network_message_loop()->PostTask(FROM_HERE, base::Bind(
+    if (!context_->network_message_loop()->BelongsToCurrentThread()) {
+      context_->network_message_loop()->PostTask(FROM_HERE, base::Bind(
           &HostProcess::OnNatPolicyUpdate, base::Unretained(this),
           nat_traversal_enabled));
       return;
@@ -209,19 +213,19 @@ class HostProcess {
   }
 
   void StartHost() {
-    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
     DCHECK(!host_);
 
     if (!signal_strategy_.get()) {
       signal_strategy_.reset(
-          new XmppSignalStrategy(context_.jingle_thread(), xmpp_login_,
+          new XmppSignalStrategy(context_->jingle_thread(), xmpp_login_,
                                  xmpp_auth_token_, xmpp_auth_service_));
       signaling_connector_.reset(
           new SignalingConnector(signal_strategy_.get()));
     }
 
     if (!desktop_environment_.get())
-      desktop_environment_.reset(DesktopEnvironment::Create(&context_));
+      desktop_environment_ = DesktopEnvironment::Create(context_.get());
 
     protocol::NetworkSettings network_settings(allow_nat_traversal_);
     if (!allow_nat_traversal_) {
@@ -230,7 +234,7 @@ class HostProcess {
     }
 
     host_ = new ChromotingHost(
-        &context_, signal_strategy_.get(), desktop_environment_.get(),
+        context_.get(), signal_strategy_.get(), desktop_environment_.get(),
         network_settings);
 
     heartbeat_sender_.reset(
@@ -251,7 +255,7 @@ class HostProcess {
   }
 
   void RestartHost() {
-    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
     if (restarting_)
       return;
@@ -262,7 +266,7 @@ class HostProcess {
   }
 
   void RestartOnHostShutdown() {
-    DCHECK(context_.network_message_loop()->BelongsToCurrentThread());
+    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
     restarting_ = false;
 
@@ -276,7 +280,7 @@ class HostProcess {
 
   MessageLoop message_loop_;
   base::Thread file_io_thread_;
-  ChromotingHostContext context_;
+  scoped_ptr<ChromotingHostContext> context_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   FilePath auth_config_path_;

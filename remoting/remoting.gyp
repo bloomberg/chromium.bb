@@ -234,6 +234,7 @@
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
             '../media/media.gyp:media',
+            '../ipc/ipc.gyp:ipc',
           ],
           'sources': [
             'host/host_event_logger_win.cc',
@@ -279,13 +280,18 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../ipc/ipc.gyp:ipc',
           ],
           'sources': [
             'base/scoped_sc_handle_win.h',
+            'host/chromoting_messages.cc',
+            'host/chromoting_messages.h',
             'host/host_service.rc',
             'host/host_service_resource.h',
             'host/host_service_win.cc',
             'host/host_service_win.h',
+            'host/sas_injector.h',
+            'host/sas_injector_win.cc',
             'host/wts_console_monitor_win.h',
             'host/wts_console_observer_win.h',
             'host/wts_session_process_launcher_win.cc',
@@ -404,6 +410,11 @@
             }],
           ],  # conditions
         }],  # OS=="mac"
+        [ 'OS=="win"', {
+          'dependencies': [
+            '../ipc/ipc.gyp:ipc'
+          ],
+        }],
         ['OS!="win"', {
           'sources!': [
             'host/plugin/host_plugin.def',
@@ -641,6 +652,8 @@
         'host/screen_recorder.h',
         'host/server_log_entry.cc',
         'host/server_log_entry.h',
+        'host/session_event_executor_win.cc',
+        'host/session_event_executor_win.h',
         'host/signaling_connector.cc',
         'host/signaling_connector.h',
         'host/ui_strings.cc',
@@ -689,6 +702,12 @@
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
             ],
           },
+        }],
+        ['OS=="win"', {
+          'sources': [
+            'host/chromoting_messages.cc',
+            'host/chromoting_messages.h',
+          ],
         }],
       ],
     },  # end of target 'remoting_host'
@@ -749,6 +768,13 @@
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
         'host/simple_host_process.cc',
+      ],
+      'conditions': [
+        [ 'OS=="win"', {
+          'dependencies': [
+            '../ipc/ipc.gyp:ipc'
+          ],
+        }],
       ],
     },  # end of target 'remoting_simple_host'
 
@@ -1021,6 +1047,11 @@
         'run_all_unittests.cc',
       ],
       'conditions': [
+        [ 'OS=="win"', {
+          'dependencies': [
+            '../ipc/ipc.gyp:ipc'
+          ],
+        }],
         ['chromeos == 0', {
           'dependencies': [
             'remoting_host'

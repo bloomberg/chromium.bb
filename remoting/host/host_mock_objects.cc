@@ -51,7 +51,7 @@ LocalInputMonitor* LocalInputMonitor::Create() {
 }
 
 MockChromotingHostContext::MockChromotingHostContext()
-    : ChromotingHostContext(base::MessageLoopProxy::current()) {
+    : ChromotingHostContext(NULL, base::MessageLoopProxy::current()) {
 }
 
 MockChromotingHostContext::~MockChromotingHostContext() {}

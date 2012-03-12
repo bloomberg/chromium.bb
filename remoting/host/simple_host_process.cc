@@ -94,7 +94,7 @@ class SimpleHost {
   SimpleHost()
       : message_loop_(MessageLoop::TYPE_UI),
         file_io_thread_("FileIO"),
-        context_(message_loop_.message_loop_proxy()),
+        context_(NULL, message_loop_.message_loop_proxy()),
         fake_(false),
         is_it2me_(false) {
     context_.Start();
@@ -215,13 +215,14 @@ class SimpleHost {
     signaling_connector_.reset(new SignalingConnector(signal_strategy_.get()));
 
     if (fake_) {
-      Capturer* capturer = new CapturerFake();
-      EventExecutor* event_executor =
-          EventExecutor::Create(context_.desktop_message_loop(), capturer);
-      desktop_environment_.reset(
-          new DesktopEnvironment(&context_, capturer, event_executor));
+      scoped_ptr<Capturer> capturer(new CapturerFake());
+      scoped_ptr<protocol::InputStub> event_executor =
+          EventExecutor::Create(
+              context_.desktop_message_loop(), capturer.get());
+      desktop_environment_ = DesktopEnvironment::CreateFake(
+          &context_, capturer.Pass(), event_executor.Pass());
     } else {
-      desktop_environment_.reset(DesktopEnvironment::Create(&context_));
+      desktop_environment_ = DesktopEnvironment::Create(&context_);
     }
 
     host_ = new ChromotingHost(&context_, signal_strategy_.get(),

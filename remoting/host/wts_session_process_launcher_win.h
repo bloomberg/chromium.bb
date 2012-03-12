@@ -15,29 +15,49 @@
 #include "base/timer.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/object_watcher.h"
+#include "ipc/ipc_channel.h"
 
 #include "remoting/host/wts_console_observer_win.h"
 
+namespace base {
+
+class Thread;
+
+} // namespace base
+
+namespace IPC {
+
+class ChannelProxy;
+class Message;
+
+} // namespace IPC
+
 namespace remoting {
 
+class SasInjector;
 class WtsConsoleMonitor;
 
 class WtsSessionProcessLauncher
     : public base::win::ObjectWatcher::Delegate,
+      public IPC::Channel::Listener,
       public WtsConsoleObserver {
  public:
-  // Constructs a WtsSessionProcessLauncher object. |monitor| must outlive this
-  // class. |host_binary| is the name of the executable to be launched in
-  // the console session.
+  // Constructs a WtsSessionProcessLauncher object. |monitor| and |io_thread|
+  // must outlive this object. |host_binary| is the name of the executable to
+  // be launched in the console session.
   WtsSessionProcessLauncher(WtsConsoleMonitor* monitor,
-                            const FilePath& host_binary);
+                            const FilePath& host_binary,
+                            base::Thread* io_thread);
 
   virtual ~WtsSessionProcessLauncher();
 
-  // base::win::ObjectWatcher::Delegate implementation
+  // base::win::ObjectWatcher::Delegate implementation.
   virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
 
-  // WtsConsoleObserver implementation
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // WtsConsoleObserver implementation.
   virtual void OnSessionAttached(uint32 session_id) OVERRIDE;
   virtual void OnSessionDetached() OVERRIDE;
 
@@ -46,6 +66,10 @@ class WtsSessionProcessLauncher
   // Schedules next launch attempt if creation of the process fails for any
   // reason.
   void LaunchProcess();
+
+  // Sends the Secure Attention Sequence to the session represented by
+  // |session_token_|.
+  void OnSendSasToConsole();
 
   // Name of the host executable.
   FilePath host_binary_;
@@ -58,6 +82,10 @@ class WtsSessionProcessLauncher
 
   // Timer used to schedule the next attempt to launch the process.
   base::OneShotTimer<WtsSessionProcessLauncher> timer_;
+
+  // The I/O thread hosts the Chromoting IPC channel and any other code
+  // requiring an I/O message loop.
+  base::Thread* io_thread_;
 
   // This pointer is used to unsubscribe from session attach and detach events.
   WtsConsoleMonitor* monitor_;
@@ -83,6 +111,12 @@ class WtsSessionProcessLauncher
 
   // Current state of the process launcher.
   State state_;
+
+  // The Chromoting IPC channel connecting the service to the per-session
+  // process.
+  scoped_ptr<IPC::ChannelProxy> chromoting_channel_;
+
+  scoped_ptr<SasInjector> sas_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(WtsSessionProcessLauncher);
 };

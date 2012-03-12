@@ -426,14 +426,14 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
 
 }  // namespace
 
-EventExecutor* EventExecutor::Create(MessageLoop* message_loop,
-                                     Capturer* capturer) {
-  EventExecutorLinux* executor = new EventExecutorLinux(message_loop, capturer);
+scoped_ptr<protocol::InputStub> EventExecutor::Create(MessageLoop* message_loop,
+                                                      Capturer* capturer) {
+  scoped_ptr<EventExecutorLinux> executor(
+      new EventExecutorLinux(message_loop, capturer));
   if (!executor->Init()) {
-    delete executor;
-    executor = NULL;
+    executor.reset(NULL);
   }
-  return executor;
+  return executor.PassAs<protocol::InputStub>();
 }
 
 }  // namespace remoting

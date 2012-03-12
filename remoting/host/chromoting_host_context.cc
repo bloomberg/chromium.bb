@@ -13,10 +13,12 @@
 namespace remoting {
 
 ChromotingHostContext::ChromotingHostContext(
+    base::MessageLoopProxy* io_message_loop,
     base::MessageLoopProxy* ui_message_loop)
     : main_thread_("ChromotingMainThread"),
       encode_thread_("ChromotingEncodeThread"),
       desktop_thread_("ChromotingDesktopThread"),
+      io_message_loop_(io_message_loop),
       ui_message_loop_(ui_message_loop) {
 }
 
@@ -31,6 +33,10 @@ bool ChromotingHostContext::Start() {
 
 JingleThread* ChromotingHostContext::jingle_thread() {
   return &jingle_thread_;
+}
+
+base::MessageLoopProxy* ChromotingHostContext::io_message_loop() {
+  return io_message_loop_;
 }
 
 base::MessageLoopProxy* ChromotingHostContext::ui_message_loop() {

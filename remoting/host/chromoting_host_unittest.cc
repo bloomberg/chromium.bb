@@ -88,10 +88,12 @@ class ChromotingHostTest : public testing::Test {
     EXPECT_CALL(context_, ui_message_loop())
         .Times(AnyNumber());
 
-    Capturer* capturer = new CapturerFake();
+    scoped_ptr<Capturer> capturer(new CapturerFake());
     event_executor_ = new MockEventExecutor();
-    desktop_environment_.reset(
-        new DesktopEnvironment(&context_, capturer, event_executor_));
+    desktop_environment_ = DesktopEnvironment::CreateFake(
+        &context_,
+        capturer.Pass(),
+        scoped_ptr<protocol::InputStub>(event_executor_));
 
     host_ = new ChromotingHost(
         &context_, &signal_strategy_, desktop_environment_.get(),

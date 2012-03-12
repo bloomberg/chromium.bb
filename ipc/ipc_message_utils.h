@@ -101,6 +101,7 @@ enum IPCMessageStart {
   ShellMsgStart,
   AccessibilityMsgStart,
   PrerenderMsgStart,
+  ChromotingMsgStart,
   LastIPCMsgStart      // Must come last.
 };
 

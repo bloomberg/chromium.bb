@@ -20,6 +20,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/stringprintf.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 
@@ -44,6 +45,8 @@ const DWORD kServiceStopTimeoutMs = 30 * 1000;
 
 // Session id that does not represent any session.
 const uint32 kInvalidSession = 0xffffffff;
+
+const char kIoThreadName[] = "I/O thread";
 
 // A window class for the session change notifications window.
 static const char kSessionNotificationWindowClass[] =
@@ -351,7 +354,16 @@ int HostService::Run() {
 }
 
 void HostService::RunMessageLoop() {
-  WtsSessionProcessLauncher launcher(this, host_binary_);
+  // Launch the I/O thread.
+  base::Thread io_thread(kIoThreadName);
+  base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
+  if (!io_thread.StartWithOptions(io_thread_options)) {
+    shutting_down_ = true;
+    stopped_event_.Signal();
+    return;
+  }
+
+  WtsSessionProcessLauncher launcher(this, host_binary_, &io_thread);
 
   // Run the service.
   message_loop_->Run();
