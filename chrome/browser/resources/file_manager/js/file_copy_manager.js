@@ -33,6 +33,7 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
   this.completedBytes = 0;
 
   this.deleteAfterCopy = false;
+  this.sourceAndTargetOnGData = false;
 
   // If directory already exists, we try to make a copy named 'dir (X)',
   // where X is a number. When we do this, all subsequent copies from
@@ -53,7 +54,10 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   }
 
   this.originalEntries = entries;
-  util.recurseAndResolveEntries(entries, onEntriesRecursed);
+  // When moving directories, FileEntry.moveTo() is used if both source
+  // and target are on GData. There is no need to recurse into directories.
+  var recurse = !(this.deleteAfterCopy && this.sourceAndTargetOnGData);
+  util.recurseAndResolveEntries(entries, recurse, onEntriesRecursed);
 }
 
 FileCopyManager.Task.prototype.takeNextEntry = function() {
@@ -193,7 +197,8 @@ FileCopyManager.prototype.maybeCancel_ = function() {
 /**
  * Convert string in clipboard to entries and kick off pasting.
  */
-FileCopyManager.prototype.paste = function(clipboard, targetEntry, root) {
+FileCopyManager.prototype.paste = function(clipboard, targetEntry,
+                                           sourceAndTargetOnGData, root) {
   var self = this;
   var results = {
     sourceDirEntry: null,
@@ -213,7 +218,8 @@ FileCopyManager.prototype.paste = function(clipboard, targetEntry, root) {
       self.queueCopy(results.sourceDirEntry,
             targetEntry,
             results.entries,
-            results.isCut);
+            results.isCut,
+            sourceAndTargetOnGData);
     }
 
     function onEntryFound(entry) {
@@ -262,10 +268,12 @@ FileCopyManager.prototype.paste = function(clipboard, targetEntry, root) {
 FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
                                                targetDirEntry,
                                                entries,
-                                               deleteAfterCopy) {
+                                               deleteAfterCopy,
+                                               sourceAndTargetOnGData) {
   var self = this;
   var copyTask = new FileCopyManager.Task(sourceDirEntry, targetDirEntry);
   copyTask.deleteAfterCopy = deleteAfterCopy;
+  copyTask.sourceAndTargetOnGData = sourceAndTargetOnGData;
   copyTask.setEntries(entries, function() {
     self.copyTasks_.push(copyTask);
     if (self.copyTasks_.length == 1) {
@@ -353,8 +361,10 @@ FileCopyManager.prototype.serviceNextTask_ = function(
   function onEntryServiced(targetEntry, size) {
     if (!targetEntry) {
       // All done with the entries in this task.
-      if (task.deleteAfterCopy) {
-        deleteOriginals()
+      // If files are moved within GData, FileEntry.moveTo() is used and
+      // there is no need to delete the original files.
+      if (task.deleteAfterCopy && !task.sourceAndTargetOnGData) {
+        deleteOriginals();
       } else {
         onTaskComplete();
       }
@@ -460,6 +470,23 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     // anything other than NOT_FOUND, that's trouble.
     if (err.code != FileError.NOT_FOUND_ERR)
       return onError('FILESYSTEM_ERROR', err);
+
+    if (task.sourceAndTargetOnGData) {
+      if (task.deleteAfterCopy) {
+        sourceEntry.moveTo(targetDirEntry, targetRelativePath,
+                           onCopyComplete, onError);
+        return;
+      } else {
+        // TODO(benchan): GDataFileSystem has not implemented directory copy,
+        // and thus we only call FileEntry.copyTo() for files. Revisit this
+        // code when GDataFileSystem supports directory copy.
+        if (!sourceEntry.isDirectory) {
+          sourceEntry.copyTo(targetDirEntry, targetRelativePath,
+                             onCopyComplete, onError);
+          return;
+        }
+      }
+    }
 
     if (sourceEntry.isDirectory) {
       targetDirEntry.getDirectory(

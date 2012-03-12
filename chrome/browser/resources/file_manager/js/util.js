@@ -68,11 +68,12 @@ var util = {
   },
 
   /**
-   * Given a list of Entries, recurse any DirectoryEntries, and call back
-   * with a list of all file and directory entries encountered (including the
-   * original set).
+   * Given a list of Entries, recurse any DirectoryEntries if |recurse| is true,
+   * and call back with a list of all file and directory entries encountered
+   * (including the original set).
    */
-  recurseAndResolveEntries: function(entries, successCallback, errorCallback) {
+  recurseAndResolveEntries: function(entries, recurse,
+                                     successCallback, errorCallback) {
     var pendingSubdirectories = 0;
     var pendingFiles = 0;
 
@@ -109,7 +110,9 @@ var util = {
     function tallyEntry(entry) {
       if (entry.isDirectory) {
         dirEntries.push(entry);
-        recurseDirectory(entry);
+        if (recurse) {
+          recurseDirectory(entry);
+        }
       } else {
         fileEntries.push(entry);
         pendingFiles++;

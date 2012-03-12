@@ -1277,26 +1277,28 @@ FileManager.prototype = {
                      status.completedItems < status.totalItems &&
                      (status.totalBytes > 100000000 || status.totalItems > 25);
 
-    if (event.reason == 'BEGIN' && shouldShow) {
-      var self = this;
-      var options = {timeout:0, progress: progress, actions:{}};
-      // We can't cancel the operation when pasting one file.
-      if (status.totalItems > 1) {
-        options.actions[str('CANCEL_LABEL')] = function cancelPaste() {
-          self.copyManager_.requestCancel();
-        };
-      }
-      this.showButter(strf('PASTE_ITEMS_REMAINING', status.pendingItems),
-                           options);
-      return;
-    }
-    if (event.reason == 'PROGRESS' && shouldShow) {
-      var options = {timeout:0, progress: progress};
-      this.updateButter(strf('PASTE_ITEMS_REMAINING', status.pendingItems),
+    if (event.reason == 'BEGIN') {
+      if (shouldShow) {
+        var self = this;
+        var options = {timeout:0, progress: progress, actions:{}};
+        // We can't cancel the operation when pasting one file.
+        if (status.totalItems > 1) {
+          options.actions[str('CANCEL_LABEL')] = function cancelPaste() {
+            self.copyManager_.requestCancel();
+          };
+        }
+        this.showButter(strf('PASTE_ITEMS_REMAINING', status.pendingItems),
                              options);
-      return;
+      }
     }
-    if (event.reason == 'SUCCESS') {
+    else if (event.reason == 'PROGRESS') {
+      if (shouldShow) {
+        var options = {timeout:0, progress: progress};
+        this.updateButter(strf('PASTE_ITEMS_REMAINING', status.pendingItems),
+                               options);
+      }
+    }
+    else if (event.reason == 'SUCCESS') {
       if (this.currentButter_)
         this.hideButter();
 
@@ -1310,6 +1312,13 @@ FileManager.prototype = {
           console.error('Caught exception while inovking callback: ' +
                         callback, ex);
         }
+      }
+      // TODO(benchan): Currently, there is no FileWatcher emulation for
+      // GDataFileSystem, so we need to manually trigger the directory rescan
+      // after paste operations complete. Remove this once we emulate file
+      // watching functionalities in GDataFileSystem.
+      if (this.isOnGData()) {
+        this.directoryModel_.rescanLater();
       }
     } else if (event.reason == 'ERROR') {
       switch (event.error.reason) {
@@ -2936,6 +2945,7 @@ FileManager.prototype = {
       event.clipboardData.setData('fs/isCut', isCut.toString());
       event.clipboardData.setData('fs/sourceDir',
                                   this.directoryModel_.currentEntry.fullPath);
+      event.clipboardData.setData('fs/sourceOnGData', this.isOnGData());
       event.clipboardData.setData('fs/directories', directories);
       event.clipboardData.setData('fs/files', files);
   }
@@ -2976,13 +2986,18 @@ FileManager.prototype = {
 
     var clipboard = {
       isCut: event.clipboardData.getData('fs/isCut'),
-      sourceDir: event.clipboardData.getData('fs/sourcedir'),
+      sourceDir: event.clipboardData.getData('fs/sourceDir'),
+      sourceOnGData: event.clipboardData.getData('fs/sourceOnGData'),
       directories: event.clipboardData.getData('fs/directories'),
       files: event.clipboardData.getData('fs/files')
     };
 
+    // If both source and target are on GData, FileCopyManager uses
+    // FileEntry.copyTo() / FileEntry.moveTo() to copy / move files.
+    var sourceAndTargetOnGData = clipboard.sourceOnGData && this.isOnGData();
     this.copyManager_.paste(clipboard,
                             this.directoryModel_.currentEntry,
+                            sourceAndTargetOnGData,
                             this.filesystem_.root);
 
     var clearClipboard = function (event) {
