@@ -31,6 +31,9 @@ relevant() {
       pnacl_stop_with_pexe=1)
         echo $i
         ;;
+      --nacl_glibc)
+        echo $i
+        ;;
     esac
   done
 }
