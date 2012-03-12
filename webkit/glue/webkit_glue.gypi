@@ -130,6 +130,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/ui/ui.gyp:ui',
         '<(DEPTH)/ui/gfx/gl/gl.gyp:gl',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
@@ -138,8 +139,6 @@
         'webkit_resources',
         'webkit_strings',
         'webkit_user_agent',
-      ],
-      'actions': [
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
