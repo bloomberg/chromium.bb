@@ -436,21 +436,27 @@ CleanupJailSymlinks() {
 # the sandboxed translators for unknown reason.
 # So instead we chose to build 32bit shared images.
 #
+
+#readonly QEMU_TARBALL=$(readlink -f ../third_party/qemu/qemu-1.0.1.tar.gz)
+#readonly QEMU_DIR=qemu-1.0.1
+readonly QEMU_TARBALL=$(readlink -f ../third_party/qemu/qemu-1.0.1.tar.gz)
+readonly QEMU_PATCH=$(readlink -f ../third_party/qemu/qemu-1.0.1.patch_arm)
+readonly QEMU_DIR=qemu-1.0.1
+
 BuildAndInstallQemu() {
   local saved_dir=$(pwd)
   local tmpdir="${TMP}/qemu.nacl"
-  # We have not ported out local patch yet to qemu-1.0
-  local tarball=$(readlink -f ../third_party/qemu/qemu-1.0.tar.gz)
+
   Banner "Building qemu in ${tmpdir}"
   rm -rf ${tmpdir}
   mkdir ${tmpdir}
   cd ${tmpdir}
-  SubBanner "Untaring"
-  tar zxf  ${tarball}
-  cd qemu-1.0
-  # We have not ported out local patch yet to /qemu-1.0-rc1
-  #SubBanner "Patching"
-  #patch -p1 < ${patch}
+  SubBanner "Untaring ${QEMU_TARBALL}"
+  tar zxf  ${QEMU_TARBALL}
+  cd ${QEMU_DIR}
+
+  SubBanner "Patching ${QEMU_PATCH}"
+  patch -p1 < ${QEMU_PATCH}
 
   SubBanner "Configuring"
   env -i PATH=/usr/bin/:/bin \
@@ -472,7 +478,7 @@ BuildAndInstallQemu() {
   env -i PATH=/usr/bin/:/bin \
       V=99 make MAKE_OPTS=${MAKE_OPTS}
 
-  SubBanner "Install"
+  SubBanner "Install ${INSTALL_ROOT}"
   cp arm-linux-user/qemu-arm ${INSTALL_ROOT}
   cd ${saved_dir}
   cp tools/llvm/qemu_tool.sh ${INSTALL_ROOT}
