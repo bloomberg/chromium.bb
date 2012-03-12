@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Definition of helper functions for the Chrome Extensions Proxy Settings API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_HELPERS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_HELPERS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_PROXY_PROXY_API_HELPERS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_PROXY_PROXY_API_HELPERS_H_
 #pragma once
 
 #include <string>
@@ -20,7 +20,8 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace extension_proxy_api_helpers {
+namespace extensions {
+namespace proxy_api_helpers {
 
 // Conversion between PAC scripts and data-encoding URLs containing these
 // PAC scripts. Data-encoding URLs consist of a data:// prefix, a mime-type and
@@ -131,6 +132,7 @@ base::DictionaryValue* CreatePacScriptDict(
 base::ListValue* TokenizeToStringList(const std::string& in,
                                       const std::string& delims);
 
-}  // namespace extension_proxy_api_helpers
+}  // namespace proxy_api_helpers
+}  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROXY_API_HELPERS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_PROXY_PROXY_API_HELPERS_H_

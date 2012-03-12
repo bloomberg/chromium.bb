@@ -1,37 +1,39 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Implementation of the Chrome Extensions Proxy Settings API.
 
-#include "chrome/browser/extensions/extension_proxy_api.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api.h"
 
 #include "base/json/json_writer.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api_helpers.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
-#include "chrome/browser/extensions/extension_proxy_api_constants.h"
-#include "chrome/browser/extensions/extension_proxy_api_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "net/base/net_errors.h"
 
-namespace helpers = extension_proxy_api_helpers;
-namespace keys = extension_proxy_api_constants;
+namespace extensions {
+
+namespace helpers = proxy_api_helpers;
+namespace keys = proxy_api_constants;
 
 // static
-ExtensionProxyEventRouter* ExtensionProxyEventRouter::GetInstance() {
-  return Singleton<ExtensionProxyEventRouter>::get();
+ProxyEventRouter* ProxyEventRouter::GetInstance() {
+  return Singleton<ProxyEventRouter>::get();
 }
 
-ExtensionProxyEventRouter::ExtensionProxyEventRouter() {
+ProxyEventRouter::ProxyEventRouter() {
 }
 
-ExtensionProxyEventRouter::~ExtensionProxyEventRouter() {
+ProxyEventRouter::~ProxyEventRouter() {
 }
 
-void ExtensionProxyEventRouter::OnProxyError(
+void ProxyEventRouter::OnProxyError(
     ExtensionEventRouterForwarder* event_router,
     void* profile,
     int error_code) {
@@ -54,7 +56,7 @@ void ExtensionProxyEventRouter::OnProxyError(
   }
 }
 
-void ExtensionProxyEventRouter::OnPACScriptError(
+void ProxyEventRouter::OnPACScriptError(
     ExtensionEventRouterForwarder* event_router,
     void* profile,
     int line_number,
@@ -182,3 +184,5 @@ Value* ProxyPrefTransformer::BrowserToExtensionPref(const Value* browser_pref) {
   }
   return extension_pref.release();
 }
+
+}  // namespace extensions

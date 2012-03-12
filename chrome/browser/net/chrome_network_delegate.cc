@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_proxy_api.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -49,7 +49,7 @@ void ForwardProxyErrors(net::URLRequest* request,
       case net::ERR_PROXY_AUTH_UNSUPPORTED:
       case net::ERR_PROXY_CONNECTION_FAILED:
       case net::ERR_TUNNEL_CONNECTION_FAILED:
-        ExtensionProxyEventRouter::GetInstance()->OnProxyError(
+        extensions::ProxyEventRouter::GetInstance()->OnProxyError(
             event_router, profile, request->status().error());
     }
   }
@@ -230,7 +230,7 @@ void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
 
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,
                                              const string16& error) {
-  ExtensionProxyEventRouter::GetInstance()->OnPACScriptError(
+  extensions::ProxyEventRouter::GetInstance()->OnPACScriptError(
       event_router_.get(), profile_, line_number, error);
 }
 

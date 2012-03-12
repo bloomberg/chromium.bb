@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_proxy_api_constants.h"
-#include "chrome/browser/extensions/extension_proxy_api_helpers.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api_helpers.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace keys = extension_proxy_api_constants;
+namespace extensions {
+
+namespace keys = proxy_api_constants;
 
 namespace {
 
@@ -43,7 +45,7 @@ DictionaryValue* CreateTestProxyServerDict(const std::string& schema,
 
 }  // namespace
 
-namespace extension_proxy_api_helpers {
+namespace proxy_api_helpers {
 
 TEST(ExtensionProxyApiHelpers, CreateDataURLFromPACScript) {
   std::string out;
@@ -359,4 +361,5 @@ TEST(ExtensionProxyApiHelpers, TokenizeToStringList) {
   EXPECT_TRUE(Value::Equals(&expected, out.get()));
 }
 
-}  // namespace extension_proxy_api_helpers
+}  // namespace proxy_api_helpers
+}  // namespace extensions

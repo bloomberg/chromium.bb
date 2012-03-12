@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 // caught this error before. In all other cases we are dealing with internal
 // errors and log to LOG(ERROR).
 
-#include "chrome/browser/extensions/extension_proxy_api_helpers.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api_helpers.h"
 
 #include "base/base64.h"
 #include "base/basictypes.h"
@@ -19,14 +19,16 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_proxy_api_constants.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "net/proxy/proxy_config.h"
 
-namespace keys = extension_proxy_api_constants;
+namespace extensions {
 
-namespace extension_proxy_api_helpers {
+namespace keys = proxy_api_constants;
+
+namespace proxy_api_helpers {
 
 bool CreateDataURLFromPACScript(const std::string& pac_script,
                                 std::string* pac_script_url_base64_encoded) {
@@ -485,4 +487,5 @@ ListValue* TokenizeToStringList(const std::string& in,
   return out;
 }
 
-}  // namespace extension_proxy_api_helpers
+}  // namespace proxy_api_helpers
+}  // namespace extensions

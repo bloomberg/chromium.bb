@@ -1,14 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Constants for the Chrome Extensions Proxy Settings API.
 
-#include "chrome/browser/extensions/extension_proxy_api_constants.h"
+#include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
 
 #include "base/basictypes.h"
 
-namespace extension_proxy_api_constants {
+namespace extensions {
+namespace proxy_api_constants {
 
 const char kProxyConfigMode[] = "mode";
 const char kProxyConfigPacScript[] = "pacScript";
@@ -50,4 +51,5 @@ COMPILE_ASSERT(arraysize(scheme_name) == SCHEME_MAX + 1,
                scheme_name_array_is_wrong_size);
 COMPILE_ASSERT(SCHEME_ALL == 0, singleProxy_must_be_first_option);
 
-}  // namespace extension_proxy_api_constants
+}  // namespace proxy_api_constants
+}  // extensions
