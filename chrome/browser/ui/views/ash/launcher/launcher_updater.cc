@@ -38,8 +38,6 @@ LauncherUpdater::LauncherUpdater(aura::Window* window,
       launcher_delegate_(delegate),
       type_(type),
       app_id_(app_id),
-      is_incognito_(tab_model->profile()->GetOriginalProfile() !=
-                    tab_model->profile()),
       item_id_(-1) {
 }
 
@@ -274,9 +272,7 @@ void LauncherUpdater::UpdateAppTabState(TabContentsWrapper* tab,
         launcher_delegate_->LauncherItemClosed(launcher_id);
         CreateTabbedItem();
       }
-      ash::LauncherItem item;
-      item.type = ash::TYPE_TABBED;
-      item.is_incognito = is_incognito_;
+      ash::LauncherItem item(ash::TYPE_TABBED);
       item.num_tabs = tab_model_->count();
       launcher_model()->Set(launcher_model()->ItemIndexByID(item_id_), item);
     } else {
@@ -329,10 +325,7 @@ void LauncherUpdater::RegisterAppItem(ash::LauncherID id,
 
 void LauncherUpdater::CreateTabbedItem() {
   DCHECK_EQ(-1, item_id_);
-  item_id_ = launcher_delegate_->CreateTabbedLauncherItem(
-      this,
-      is_incognito_ ? ChromeLauncherDelegate::STATE_INCOGNITO :
-                      ChromeLauncherDelegate::STATE_NOT_INCOGNITO);
+  item_id_ = launcher_delegate_->CreateTabbedLauncherItem(this);
 }
 
 bool LauncherUpdater::ContainsID(ash::LauncherID id, TabContentsWrapper** tab) {

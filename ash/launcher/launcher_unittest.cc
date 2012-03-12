@@ -48,8 +48,7 @@ TEST_F(LauncherTest, LaunchApp) {
   int item_count = model->item_count();
 
   // Add closed app.
-  LauncherItem item;
-  item.type = TYPE_APP;
+  LauncherItem item(TYPE_APP);
   model->Add(item_count, item);
   ASSERT_EQ(++button_count, test.GetButtonCount());
   LauncherButton* button = test.GetButton(button_count - 1);
@@ -87,8 +86,7 @@ TEST_F(LauncherTest, OpenBrowser) {
   int item_count = model->item_count();
 
   // Add running tab.
-  LauncherItem item;
-  item.type = TYPE_TABBED;
+  LauncherItem item(TYPE_TABBED);
   item.status = STATUS_RUNNING;
   model->Add(item_count, item);
   ASSERT_EQ(++button_count, test.GetButtonCount());

@@ -140,8 +140,6 @@
         <include name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="aura/launcher_applist.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="aura/launcher_applist_h.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="aura/launcher_applist_p.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="aura/launcher_incognito_browser.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="aura/launcher_incognito_browser_panel.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="aura/new_browser.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="aura/new_browser_h.png" type="BINDATA" />
         <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="aura/new_browser_p.png" type="BINDATA" />

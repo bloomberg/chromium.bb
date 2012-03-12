@@ -10,16 +10,8 @@
 namespace ash {
 
 LauncherModel::LauncherModel() : next_id_(1) {
-  LauncherItem app_list;
-  app_list.type = TYPE_APP_LIST;
-  app_list.is_incognito = false;
-
-  LauncherItem browser_shortcut;
-  browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
-  browser_shortcut.is_incognito = false;
-
-  Add(0, app_list);
-  Add(1, browser_shortcut);
+  Add(0, LauncherItem(TYPE_APP_LIST));
+  Add(1, LauncherItem(TYPE_BROWSER_SHORTCUT));
 }
 
 LauncherModel::~LauncherModel() {

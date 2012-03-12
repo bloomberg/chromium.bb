@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/launcher/launcher_button_host.h"
-#include "ash/launcher/launcher_types.h"
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/multi_animation.h"
@@ -19,9 +18,7 @@
 namespace ash {
 namespace internal {
 
-TabbedLauncherButton::IconView::IconView(
-    TabbedLauncherButton* host,
-    TabbedLauncherButton::IncognitoState is_incognito)
+TabbedLauncherButton::IconView::IconView(TabbedLauncherButton* host)
     : host_(host),
       show_image_(true) {
   if (!browser_image_) {
@@ -29,19 +26,11 @@ TabbedLauncherButton::IconView::IconView(
 
     browser_image_ = new SkBitmap(
         *rb.GetImageNamed(IDR_AURA_LAUNCHER_BROWSER).ToSkBitmap());
-    incognito_browser_image_ = new SkBitmap(
-        *rb.GetImageNamed(IDR_AURA_LAUNCHER_INCOGNITO_BROWSER).ToSkBitmap());
     browser_panel_image_ = new SkBitmap(
         *rb.GetImageNamed(IDR_AURA_LAUNCHER_BROWSER_PANEL).ToSkBitmap());
-    incognito_browser_panel_image_ = new SkBitmap(
-        *rb.GetImageNamed(
-            IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL).ToSkBitmap());
   }
   set_icon_size(0);
-  if (is_incognito == STATE_NOT_INCOGNITO)
-    LauncherButton::IconView::SetImage(*browser_image_);
-  else
-    LauncherButton::IconView::SetImage(*incognito_browser_image_);
+  LauncherButton::IconView::SetImage(*browser_image_);
 }
 
 TabbedLauncherButton::IconView::~IconView() {
@@ -103,25 +92,19 @@ void TabbedLauncherButton::IconView::OnPaint(gfx::Canvas* canvas) {
 
 // static
 SkBitmap* TabbedLauncherButton::IconView::browser_image_ = NULL;
-SkBitmap* TabbedLauncherButton::IconView::incognito_browser_image_ = NULL;
 SkBitmap* TabbedLauncherButton::IconView::browser_panel_image_ = NULL;
-SkBitmap* TabbedLauncherButton::IconView::incognito_browser_panel_image_ = NULL;
 
 TabbedLauncherButton* TabbedLauncherButton::Create(
     views::ButtonListener* listener,
-    LauncherButtonHost* host,
-    IncognitoState is_incognito) {
-  TabbedLauncherButton* button =
-      new TabbedLauncherButton(listener, host, is_incognito);
+    LauncherButtonHost* host) {
+  TabbedLauncherButton* button = new TabbedLauncherButton(listener, host);
   button->Init();
   return button;
 }
 
 TabbedLauncherButton::TabbedLauncherButton(views::ButtonListener* listener,
-                                           LauncherButtonHost* host,
-                                           IncognitoState is_incognito)
-    : LauncherButton(listener, host),
-      is_incognito_(is_incognito) {
+                                           LauncherButtonHost* host)
+    : LauncherButton(listener, host) {
   set_accessibility_focusable(true);
 }
 
@@ -142,7 +125,7 @@ void TabbedLauncherButton::GetAccessibleState(ui::AccessibleViewState* state) {
 }
 
 LauncherButton::IconView* TabbedLauncherButton::CreateIconView() {
-  return new IconView(this, is_incognito_);
+  return new IconView(this);
 }
 
 }  // namespace internal

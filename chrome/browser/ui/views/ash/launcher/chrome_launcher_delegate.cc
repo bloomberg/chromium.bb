@@ -122,8 +122,7 @@ void ChromeLauncherDelegate::RegisterUserPrefs(PrefService* user_prefs) {
 }
 
 ash::LauncherID ChromeLauncherDelegate::CreateTabbedLauncherItem(
-    LauncherUpdater* updater,
-    IncognitoState is_incognito) {
+    LauncherUpdater* updater) {
   // Tabbed items always get a new item. Put the tabbed item before the app
   // tabs. If there are no app tabs put it at the end.
   int index = static_cast<int>(model_->items().size());
@@ -135,9 +134,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateTabbedLauncherItem(
     }
   }
   ash::LauncherID id = model_->next_id();
-  ash::LauncherItem item;
-  item.type = ash::TYPE_TABBED;
-  item.is_incognito = (is_incognito == STATE_INCOGNITO);
+  ash::LauncherItem item(ash::TYPE_TABBED);
   item.status = ash::STATUS_RUNNING;
   model_->Add(index, item);
   DCHECK(id_to_item_map_.find(id) == id_to_item_map_.end());
@@ -186,9 +183,7 @@ ash::LauncherID ChromeLauncherDelegate::CreateAppLauncherItem(
   int insert_index = min_app_index != item_count ?
       min_app_index : std::min(item_count, min_tab_index + 1);
   ash::LauncherID id = model_->next_id();
-  ash::LauncherItem item;
-  item.type = ash::TYPE_APP;
-  item.is_incognito = false;
+  ash::LauncherItem item(ash::TYPE_APP);
   item.image = Extension::GetDefaultIcon(true);
   item.status = status;
   model_->Add(insert_index, item);
@@ -230,9 +225,7 @@ void ChromeLauncherDelegate::ConvertTabbedToApp(ash::LauncherID id,
   id_to_item_map_[id].app_type = app_type;
   id_to_item_map_[id].app_id = app_id;
 
-  ash::LauncherItem item;
-  item.type = ash::TYPE_APP;
-  item.is_incognito = false;
+  ash::LauncherItem item(ash::TYPE_APP);
   item.id = id;
   model_->Set(model_->ItemIndexByID(id), item);
 

@@ -9,7 +9,13 @@ namespace ash {
 LauncherItem::LauncherItem()
     : type(TYPE_TABBED),
       num_tabs(1),
-      is_incognito(false),
+      id(0),
+      status(STATUS_CLOSED) {
+}
+
+LauncherItem::LauncherItem(LauncherItemType type)
+    : type(type),
+      num_tabs(0),
       id(0),
       status(STATUS_CLOSED) {
 }
