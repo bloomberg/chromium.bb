@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,13 @@ namespace internal {
 
 class DesktopBackgroundView : public views::WidgetDelegateView {
  public:
-  DesktopBackgroundView();
+  DesktopBackgroundView(const SkBitmap& wallpaper);
   virtual ~DesktopBackgroundView();
+
+  // TODO(bshe): Remove this function once issue 117244 is fixed. It is
+  // currently used in DesktopBackgroundController::
+  // OnDesktopBackgroundChanged.
+  void SetWallpaper(const SkBitmap& wallpaper);
 
  private:
   // Overridden from views::View:

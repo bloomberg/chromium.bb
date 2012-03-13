@@ -6,6 +6,9 @@
 
 #include <vector>
 
+#include "ash/shell.h"
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/desktop_background_resources.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -438,6 +441,10 @@ void UserManagerImpl::RemoveUserFromList(const std::string& email) {
       user_to_remove = it;
   }
 
+  DictionaryPrefUpdate prefs_wallpapers_update(prefs,
+                                               UserManager::kUserWallpapers);
+  prefs_wallpapers_update->RemoveWithoutPathExpansion(email, NULL);
+
   DictionaryPrefUpdate prefs_images_update(prefs, UserManager::kUserImages);
   std::string image_path_string;
   prefs_images_update->GetStringWithoutPathExpansion(email, &image_path_string);
@@ -835,6 +842,31 @@ void UserManagerImpl::SetInitialUserImage(const std::string& username) {
   // Choose a random default image.
   int image_id = base::RandInt(0, kDefaultImagesCount - 1);
   SaveUserDefaultImageIndex(username, image_id);
+}
+
+int UserManagerImpl::GetUserWallpaper(const std::string& username) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  PrefService* local_state = g_browser_process->local_state();
+  const DictionaryValue* user_wallpapers =
+      local_state->GetDictionary(UserManager::kUserWallpapers);
+  int index = ash::GetDefaultWallpaperIndex();
+  user_wallpapers->GetIntegerWithoutPathExpansion(username,
+                                                  &index);
+  return index;
+}
+
+void UserManagerImpl::SaveWallpaperDefaultIndex(const std::string& username,
+                                                int wallpaper_index) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  PrefService* local_state = g_browser_process->local_state();
+  DictionaryPrefUpdate wallpapers_update(local_state,
+                                         UserManager::kUserWallpapers);
+  wallpapers_update->SetWithoutPathExpansion(username,
+      new base::FundamentalValue(wallpaper_index));
+  ash::Shell::GetInstance()->desktop_background_controller()->
+      OnDesktopBackgroundChanged(wallpaper_index);
 }
 
 void UserManagerImpl::SetUserImage(const std::string& username,

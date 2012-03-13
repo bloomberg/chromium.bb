@@ -42,6 +42,10 @@
   var KeyboardOverlay = options.KeyboardOverlay;
   var PointerOverlay = options.PointerOverlay;
 </if>
+<if expr="pp_ifdef('use_ash')">
+  <include src="chromeos/set_wallpaper_options.js"></include>
+  var SetWallpaperOptions = options.SetWallpaperOptions;
+</if>
 <if expr="not is_win and not is_macosx">
   <include src="certificate_tree.js"></include>
   <include src="certificate_manager.js"></include>

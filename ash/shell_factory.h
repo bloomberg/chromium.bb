@@ -8,6 +8,8 @@
 
 #include "ash/ash_export.h"
 
+class SkBitmap;
+
 namespace views {
 class View;
 class Widget;
@@ -18,7 +20,7 @@ class Widget;
 namespace ash {
 
 namespace internal {
-views::Widget* CreateDesktopBackground();
+views::Widget* CreateDesktopBackground(const SkBitmap& wallpaper);
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents);
 }  // namespace internal
 

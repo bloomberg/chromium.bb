@@ -77,6 +77,10 @@
 #include "chrome/browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.h"
 #endif
 
+#if defined(USE_ASH)
+#include "chrome/browser/ui/webui/options2/chromeos/set_wallpaper_options_handler2.h"
+#endif
+
 #if defined(USE_NSS)
 #include "chrome/browser/ui/webui/options2/certificate_manager_handler2.h"
 #endif
@@ -225,6 +229,11 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
       new chromeos::options2::ChangePictureOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options2::StatsOptionsHandler());
+#endif
+#if defined(USE_ASH)
+  AddOptionsPageUIHandler(
+      localized_strings,
+      new chromeos::options2::SetWallpaperOptionsHandler());
 #endif
 #if defined(USE_NSS)
   AddOptionsPageUIHandler(localized_strings, new CertificateManagerHandler());

@@ -8,6 +8,9 @@
 
 #include "ash/app_list/app_list.h"
 #include "ash/ash_switches.h"
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/desktop_background/desktop_background_resources.h"
+#include "ash/desktop_background/desktop_background_view.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/input_method_event_filter.h"
@@ -313,7 +316,6 @@ Shell::Shell(ShellDelegate* delegate)
       network_controller_(NULL),
       power_status_controller_(NULL),
       shelf_(NULL),
-      desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
       status_widget_(NULL) {
 }
@@ -483,6 +485,9 @@ void Shell::Init() {
       GetContainer(internal::kShellWindowId_DefaultContainer);
   launcher_.reset(new Launcher(default_container));
 
+  // This controller needs to be set before SetupManagedWindowMode.
+  desktop_background_controller_.reset(new DesktopBackgroundController);
+
   InitLayoutManagers();
 
   if (!command_line->HasSwitch(switches::kAuraNoShadows))
@@ -546,27 +551,6 @@ void Shell::ToggleAppList() {
   app_list_->SetVisible(!app_list_->IsVisible());
 }
 
-void Shell::SetDesktopBackgroundMode(BackgroundMode mode) {
-  if (mode == BACKGROUND_SOLID_COLOR) {
-    // Set a solid black background.
-    // TODO(derat): Remove this in favor of having the compositor only clear the
-    // viewport when there are regions not covered by a layer:
-    // http://crbug.com/113445
-    ui::Layer* background_layer = new ui::Layer(ui::Layer::LAYER_SOLID_COLOR);
-    background_layer->SetColor(SK_ColorBLACK);
-    GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->
-        layer()->Add(background_layer);
-    root_window_layout_->SetBackgroundLayer(background_layer);
-    root_window_layout_->SetBackgroundWidget(NULL);
-  } else {
-    // Create the desktop background image.
-    root_window_layout_->SetBackgroundLayer(NULL);
-    root_window_layout_->SetBackgroundWidget(
-        internal::CreateDesktopBackground());
-  }
-  desktop_background_mode_ = mode;
-}
-
 bool Shell::IsScreenLocked() const {
   const aura::Window* lock_screen_container = GetContainer(
       internal::kShellWindowId_LockScreenContainer);
@@ -626,7 +610,7 @@ void Shell::InitLayoutManagers() {
   launcher_->widget()->Show();
 
   // Create the desktop background image.
-  SetDesktopBackgroundMode(BACKGROUND_IMAGE);
+  desktop_background_controller_->SetDefaultDesktopBackgroundImage();
 }
 
 void Shell::DisableWorkspaceGridLayout() {

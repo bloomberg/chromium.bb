@@ -12583,6 +12583,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
         Require password to wake from sleep
       </message>
+      <message name="IDS_SET_WALLPAPER_BUTTON" desc="The button to set wallpaper.">
+        Set Wallpaper...
+      </message>
+      <message name="IDS_OPTIONS_SET_WALLPAPER_DIALOG_TITLE" desc="Title of the dialog shown when user wants to change his/her wallpaper.">
+        Set Wallpaper
+      </message>
+      <message name="IDS_OPTIONS_SET_WALLPAPER_DIALOG_TEXT" desc="Text with description of what to do on Change Wallpaper dialog.">
+        Choose a picture to display on your background.
+      </message>
       <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user.">
         Change picture...
       </message>
