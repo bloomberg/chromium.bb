@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
+#include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/resource.h"
 
 namespace pp {
@@ -17,6 +18,8 @@ class InstanceHandle;
 class TCPSocketPrivate : public Resource {
  public:
   explicit TCPSocketPrivate(const InstanceHandle& instance);
+
+  TCPSocketPrivate(PassRef, PP_Resource resource);
 
   // Returns true if the required interface is available.
   static bool IsAvailable();

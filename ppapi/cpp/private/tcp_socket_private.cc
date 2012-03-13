@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,10 @@ TCPSocketPrivate::TCPSocketPrivate(const InstanceHandle& instance) {
     PassRefFromConstructor(get_interface<PPB_TCPSocket_Private>()->Create(
         instance.pp_instance()));
   }
+}
+
+TCPSocketPrivate::TCPSocketPrivate(PassRef, PP_Resource resource)
+    : Resource(PASS_REF, resource) {
 }
 
 // static
