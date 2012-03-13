@@ -85,45 +85,6 @@ class GetFileTasksFileBrowserFunction : public AsyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getFileTasks");
 };
 
-
-// TODO(kaznacheev): Move this definition to file_task_util.h
-class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
- public:
-  virtual ~FileTaskExecutor();
-
-  // Initiates execution of file handler task identified with |task_id| for
-  // each element of |file_urls|.
-  bool InitiateFileTaskExecution(const std::string& task_id,
-                                 const std::vector<GURL>& file_urls);
- protected:
-
-   virtual Profile* profile() = 0;
-   virtual const GURL& source_url() = 0;
-   virtual Browser* GetCurrentBrowser() = 0;
-   virtual void SendResponse(bool success) = 0;
-
- private:
-  struct FileDefinition {
-    GURL target_file_url;
-    FilePath virtual_path;
-    bool is_directory;
-  };
-  typedef std::vector<FileDefinition> FileDefinitionList;
-  class ExecuteTasksFileSystemCallbackDispatcher;
-  void RequestFileEntryOnFileThread(
-      const std::string& task_id,
-      const GURL& handler_base_url,
-      const scoped_refptr<const Extension>& handler,
-      int handler_pid,
-      const std::vector<GURL>& file_urls);
-  void RespondFailedOnUIThread(base::PlatformFileError error_code);
-  void ExecuteFileActionsOnUIThread(const std::string& task_id,
-                                    const std::string& file_system_name,
-                                    const GURL& file_system_root,
-                                    const FileDefinitionList& file_list);
-  void ExecuteFailedOnUIThread();
-};
-
 // Implements the chrome.fileBrowserPrivate.executeTask method.
 class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
  public:
@@ -136,7 +97,6 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
 
  private:
   class Executor;
-  scoped_refptr<FileTaskExecutor> executor_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.executeTask");
 };

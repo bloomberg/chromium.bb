@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_handler_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -44,17 +44,13 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::PluginService;
 using content::UserMetricsAction;
+using file_handler_util::FileTaskExecutor;
 
 #define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
 
 const char kFileBrowserGalleryTaskId[] = "gallery";
 const char kFileBrowserMountArchiveTaskId[] = "mount-archive";
-
-// TODO(kaznacheev): Move this declaration to file_browser_handler_util.h once
-// it is created.
-bool GetDefaultFileBrowserHandler(
-    Profile* profile, const GURL& url, const FileBrowserHandler** handler);
 
 namespace file_manager_util {
 namespace {
@@ -346,22 +342,17 @@ void ViewFolder(const FilePath& dir) {
 
 class StandaloneExecutor : public FileTaskExecutor {
  public:
-  StandaloneExecutor(Profile * profile, const GURL& source_url)
-    : profile_(profile),
-      source_url_(source_url)
+  StandaloneExecutor(Profile * profile,
+                     const GURL& source_url,
+                     const std::string& extension_id,
+                     const std::string& action_id)
+    : FileTaskExecutor(profile, source_url, extension_id, action_id)
   {}
 
  protected :
   // FileTaskExecutor overrides.
-  virtual Profile* profile() { return profile_; }
-  virtual const GURL& source_url() { return source_url_; }
-  virtual Browser* GetCurrentBrowser() { return BrowserList::GetLastActive(); }
-  virtual void SendResponse(bool) {}
-
- private:
-
-  Profile* profile_;
-  const GURL source_url_;
+  virtual Browser* browser() { return BrowserList::GetLastActive(); }
+  virtual void Done(bool) {}
 };
 
 bool TryOpeningFileBrowser(const FilePath& full_path) {
@@ -375,25 +366,25 @@ bool TryOpeningFileBrowser(const FilePath& full_path) {
     return false;
 
   const FileBrowserHandler* handler;
-  if (!GetDefaultFileBrowserHandler(browser->profile(), url, &handler))
+  if (!file_handler_util::GetDefaultTask(browser->profile(), url, &handler))
     return false;
 
   std::string extension_id = handler->extension_id();
-  std::string task_id = handler->id();
+  std::string action_id = handler->id();
   if (extension_id == kFileBrowserDomain) {
     // Only two of the built-in File Browser tasks require opening the File
     // Browser tab. Others just end up calling TryViewingFile.
-    if (task_id == kFileBrowserGalleryTaskId ||
-        task_id == kFileBrowserMountArchiveTaskId) {
+    if (action_id == kFileBrowserGalleryTaskId ||
+        action_id == kFileBrowserMountArchiveTaskId) {
       OpenFileBrowser(full_path);
       return true;
     }
   } else {
     std::vector<GURL> urls;
     urls.push_back(url);
-    FileTaskExecutor* executor =
-        new StandaloneExecutor(browser->profile(), GURL(kBaseFileBrowserUrl));
-    executor->InitiateFileTaskExecution(extension_id + "|" + task_id, urls);
+    scoped_refptr<StandaloneExecutor> executor = new StandaloneExecutor(
+        browser->profile(), GURL(kBaseFileBrowserUrl), extension_id, action_id);
+    executor->Execute(urls);
     return true;
   }
   return false;
