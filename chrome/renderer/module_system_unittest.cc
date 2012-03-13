@@ -81,16 +81,17 @@ class ModuleSystemTest : public testing::Test {
   ModuleSystemTest()
       : context_(v8::Context::New()),
         handle_scope_(),
-        assert_natives_(new AssertNatives()),
-        source_map_(new StringSourceMap()),
-        module_system_(new ModuleSystem(source_map_)) {
+        source_map_(new StringSourceMap()) {
     context_->Enter();
+    assert_natives_ = new AssertNatives();
+    module_system_.reset(new ModuleSystem(source_map_));
     module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
         assert_natives_));
     RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");
   }
 
   ~ModuleSystemTest() {
+    context_->Exit();
     context_.Dispose();
   }
 

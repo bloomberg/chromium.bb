@@ -89,12 +89,13 @@ class ModuleSystem : public NativeHandler {
 
   // Throws an exception in the calling JS context.
   v8::Handle<v8::Value> ThrowException(const std::string& message);
+  v8::Handle<v8::Function> GetOrCreateRequire();
+  v8::Handle<v8::Function> CreateRequire();
 
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.
   SourceMap* source_map_;
   NativeHandlerMap native_handler_map_;
-  v8::Handle<v8::Function> require_;
   bool natives_enabled_;
 };
 

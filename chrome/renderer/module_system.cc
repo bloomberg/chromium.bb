@@ -26,12 +26,12 @@ ModuleSystem::~ModuleSystem() {
 }
 
 void ModuleSystem::Require(const std::string& module_name) {
-  EnsureRequireLoaded();
   v8::HandleScope handle_scope;
   v8::Handle<v8::Value> argv[] = {
     v8::String::New(module_name.c_str()),
   };
-  require_->Call(v8::Context::GetCurrent()->Global(), arraysize(argv), argv);
+  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  GetOrCreateRequire()->Call(global, arraysize(argv), argv);
 }
 
 void ModuleSystem::RegisterNativeHandler(const std::string& name,
@@ -45,10 +45,8 @@ void ModuleSystem::RunString(const std::string& code, const std::string& name) {
   RunString(v8::String::New(code.c_str()), v8::String::New(name.c_str()));
 }
 
-void ModuleSystem::EnsureRequireLoaded() {
+v8::Handle<v8::Function> ModuleSystem::CreateRequire() {
   v8::HandleScope handle_scope;
-  if (!require_.IsEmpty())
-    return;
   v8::Handle<v8::Object> bootstrap = NewInstance();
   // NOTE v8 takes ownership of the StaticV8ExternalAsciiStringResource.
   v8::Handle<v8::String> source = v8::String::NewExternal(
@@ -66,8 +64,8 @@ void ModuleSystem::EnsureRequireLoaded() {
   v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
   v8::Handle<v8::Value> require = require_factory->Call(
       global, arraysize(argv), argv);
-  require_ = v8::Handle<v8::Function>::Cast(require);
-  global->SetHiddenValue(v8::String::New("require"), require_);
+  global->SetHiddenValue(v8::String::New("require"), require);
+  return handle_scope.Close(v8::Handle<v8::Function>::Cast(require));
 }
 
 v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
@@ -104,4 +102,19 @@ base::StringPiece ModuleSystem::GetResource(int resourceId) {
 
 v8::Handle<v8::Value> ModuleSystem::ThrowException(const std::string& message) {
   return v8::ThrowException(v8::String::New(message.c_str()));
+}
+
+v8::Handle<v8::Function> ModuleSystem::GetOrCreateRequire() {
+  v8::HandleScope handle_scope;
+  v8::Handle<v8::String> require_string = v8::String::New("require");
+  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  {
+    v8::Handle<v8::Function> require =
+        v8::Handle<v8::Function>::Cast(global->GetHiddenValue(require_string));
+    if (!require.IsEmpty())
+      return handle_scope.Close(require);
+  }
+  v8::Handle<v8::Function> require(CreateRequire());
+  global->SetHiddenValue(require_string, require);
+  return handle_scope.Close(require);
 }
