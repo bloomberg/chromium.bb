@@ -5862,12 +5862,22 @@
    fun:_ZN8chromeos24DesktopNotificationsTest5SetUpEv
 }
 {
-   bug_116996
+   bug_116996_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZNK8chromeos15UserManagerImpl10CreateUserERKSs
+   ...
    fun:_ZN8chromeos15UserManagerImpl12UserLoggedInERKSs
-   fun:_ZN8chromeos59OncNetworkParserUserExpansionTest_GetUserExpandedValue_Test8TestBodyEv
+   fun:_ZN8chromeos*_Test8TestBodyEv
+}
+{
+   bug_116996_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK8chromeos15UserManagerImpl10CreateUserERKSs
+   fun:_ZN8chromeos15UserManagerImpl17EnsureUsersLoadedEv
+   fun:_ZNK8chromeos15UserManagerImpl8GetUsersEv
+   fun:_ZN8chromeos*_Test8TestBodyEv
 }
 {
    bug_117098
