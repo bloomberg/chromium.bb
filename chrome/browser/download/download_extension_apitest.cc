@@ -27,7 +27,7 @@ class DownloadsApiTest : public ExtensionApiTest {
 };
 
 // http://crbug.com/101170
-IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DISABLED_DownloadsApiTest) {
+IN_PROC_BROWSER_TEST_F(DownloadsApiTest, DownloadsApiTest) {
   SetUpTempDownloadsDir();
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("downloads")) << message_;

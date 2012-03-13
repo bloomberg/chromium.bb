@@ -1057,7 +1057,17 @@ void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItem* download) {
 }
 
 int DownloadManagerImpl::InProgressCount() const {
-  return static_cast<int>(in_progress_.size());
+  // Don't use in_progress_.count() because Cancel() leaves items in
+  // in_progress_ if they haven't made it into the persistent store yet.
+  // Need to actually look at each item's state.
+  int count = 0;
+  for (DownloadMap::const_iterator it = in_progress_.begin();
+       it != in_progress_.end(); ++it) {
+    DownloadItem* item = it->second;
+    if (item->IsInProgress())
+      ++count;
+  }
+  return count;
 }
 
 // Clears the last download path, used to initialize "save as" dialogs.

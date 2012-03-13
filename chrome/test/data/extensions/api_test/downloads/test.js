@@ -790,8 +790,9 @@ chrome.test.getConfig(function(testConfig) {
     },
 
     function downloadPauseInvalidType() {
-      assertThrows(('Invalid value for argument 1. Expected \'integer\' ' +
-                    'but got \'string\'.'),
+      assertThrows(('Invocation of form experimental.downloads.pause(string,' +
+                    ' function) doesn\'t match definition experimental.' +
+                    'downloads.pause(integer id, optional function callback)'),
                    downloads.pause,
                    'foo');
     },
@@ -802,8 +803,9 @@ chrome.test.getConfig(function(testConfig) {
     },
 
     function downloadResumeInvalidType() {
-      assertThrows(('Invalid value for argument 1. Expected \'integer\' ' +
-                    'but got \'string\'.'),
+      assertThrows(('Invocation of form experimental.downloads.resume(string,' +
+                    ' function) doesn\'t match definition experimental.' +
+                    'downloads.resume(integer id, optional function callback)'),
                    downloads.resume,
                    'foo');
     },
@@ -816,8 +818,9 @@ chrome.test.getConfig(function(testConfig) {
     },
 
     function downloadCancelInvalidType() {
-      assertThrows(('Invalid value for argument 1. Expected \'integer\' ' +
-                    'but got \'string\'.'),
+      assertThrows(('Invocation of form experimental.downloads.cancel(string,' +
+                    ' function) doesn\'t match definition experimental.' +
+                    'downloads.cancel(integer id, optional function callback)'),
                    downloads.cancel, 'foo');
     },
 
