@@ -1949,6 +1949,7 @@
         'browser/sessions/tab_restore_service_factory.h',
         'browser/shell_integration.cc',
         'browser/shell_integration.h',
+        'browser/shell_integration_android.cc',
         'browser/shell_integration_linux.cc',
         'browser/shell_integration_mac.mm',
         'browser/shell_integration_win.cc',
