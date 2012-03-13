@@ -17,6 +17,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/views/color_constants.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/frame_background.h"
@@ -30,9 +32,6 @@
 #endif
 
 namespace views {
-
-// static
-gfx::Font* CustomFrameView::title_font_ = NULL;
 
 namespace {
 
@@ -73,20 +72,45 @@ const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 #endif
 
+const gfx::Font& GetTitleFont() {
+  static gfx::Font* title_font = NULL;
+  if (!title_font) {
+#if defined(USE_AURA)
+    title_font = new gfx::Font(NativeWidgetAura::GetWindowTitleFont());
+#elif defined(OS_WIN)
+    title_font = new gfx::Font(NativeWidgetWin::GetWindowTitleFont());
+#elif defined(OS_LINUX)
+    // TODO(ben): need to resolve what font this is.
+    title_font = new gfx::Font();
+#endif
+  }
+  return *title_font;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, public:
 
-CustomFrameView::CustomFrameView(Widget* frame)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(close_button_(new ImageButton(this))),
+CustomFrameView::CustomFrameView()
+    : frame_(NULL),
+      minimize_button_(NULL),
+      maximize_button_(NULL),
+      restore_button_(NULL),
+      close_button_(NULL),
       window_icon_(NULL),
       should_show_minmax_buttons_(false),
       should_show_client_edge_(false),
-      frame_(frame),
       frame_background_(new FrameBackground()) {
-  InitClass();
+}
 
+CustomFrameView::~CustomFrameView() {
+}
+
+void CustomFrameView::Init(Widget* frame) {
+  frame_ = frame;
+
+  close_button_ = new ImageButton(this);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
 
@@ -109,9 +133,6 @@ CustomFrameView::CustomFrameView(Widget* frame)
     window_icon_ = new ImageButton(this);
     AddChildView(window_icon_);
   }
-}
-
-CustomFrameView::~CustomFrameView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -177,7 +198,7 @@ void CustomFrameView::GetWindowMask(const gfx::Size& size,
   if (frame_->IsMaximized())
     return;
 
-  views::GetDefaultWindowMask(size, window_mask);
+  GetDefaultWindowMask(size, window_mask);
 }
 
 void CustomFrameView::ResetWindowControls() {
@@ -220,7 +241,7 @@ gfx::Size CustomFrameView::GetPreferredSize() {
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, ButtonListener implementation:
 
-void CustomFrameView::ButtonPressed(Button* sender, const views::Event& event) {
+void CustomFrameView::ButtonPressed(Button* sender, const Event& event) {
   if (sender == close_button_)
     frame_->Close();
   else if (sender == minimize_button_)
@@ -267,7 +288,7 @@ int CustomFrameView::IconSize() const {
   // size are increased.
   return GetSystemMetrics(SM_CYSMICON);
 #else
-  return std::max(title_font_->GetHeight(), kIconMinimumSize);
+  return std::max(GetTitleFont().GetHeight(), kIconMinimumSize);
 #endif
 }
 
@@ -350,7 +371,7 @@ void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   if (!d)
     return;
 
-  canvas->DrawStringInt(d->GetWindowTitle(), *title_font_,
+  canvas->DrawStringInt(d->GetWindowTitle(), GetTitleFont(),
                         SK_ColorWHITE, GetMirroredXForRect(title_bounds_),
                         title_bounds_.y(), title_bounds_.width(),
                         title_bounds_.height());
@@ -434,12 +455,12 @@ void CustomFrameView::LayoutWindowControls() {
   // When the window is restored, we show a maximized button; otherwise, we show
   // a restore button.
   bool is_restored = !is_maximized && !frame_->IsMinimized();
-  views::ImageButton* invisible_button = is_restored ?
-      restore_button_ : maximize_button_;
+  ImageButton* invisible_button = is_restored ? restore_button_
+                                              : maximize_button_;
   invisible_button->SetVisible(false);
 
-  views::ImageButton* visible_button = is_restored ?
-      maximize_button_ : restore_button_;
+  ImageButton* visible_button = is_restored ? maximize_button_
+                                            : restore_button_;
   FramePartBitmap normal_part, hot_part, pushed_part;
   if (should_show_minmax_buttons_) {
     visible_button->SetVisible(true);
@@ -491,7 +512,7 @@ void CustomFrameView::LayoutTitleBar() {
   // Size the title.
   int title_x = frame_->widget_delegate()->ShouldShowWindowIcon() ?
       icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
-  int title_height = title_font_->GetHeight();
+  int title_height = GetTitleFont().GetHeight();
   // We bias the title position so that when the difference between the icon and
   // title heights is odd, the extra pixel of the title is above the vertical
   // midline rather than below.  This compensates for how the icon is already
@@ -528,22 +549,6 @@ ImageButton* CustomFrameView::InitWindowCaptionButton(
                    rb.GetImageNamed(pushed_image_id).ToSkBitmap());
   AddChildView(button);
   return button;
-}
-
-// static
-void CustomFrameView::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-#if defined(USE_AURA)
-    title_font_ = new gfx::Font(NativeWidgetAura::GetWindowTitleFont());
-#elif defined(OS_WIN)
-    title_font_ = new gfx::Font(NativeWidgetWin::GetWindowTitleFont());
-#elif defined(OS_LINUX)
-    // TODO(ben): need to resolve what font this is.
-    title_font_ = new gfx::Font();
-#endif
-    initialized = true;
-  }
 }
 
 }  // namespace views
