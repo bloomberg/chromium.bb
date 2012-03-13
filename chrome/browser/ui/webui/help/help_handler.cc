@@ -137,6 +137,9 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "userAgent", IDS_ABOUT_VERSION_USER_AGENT },
     { "commandLine", IDS_ABOUT_VERSION_COMMAND_LINE },
 #endif
+#if defined(OS_MACOSX)
+    { "promote", IDS_ABOUT_CHROME_PROMOTE_UPDATER },
+#endif
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i) {

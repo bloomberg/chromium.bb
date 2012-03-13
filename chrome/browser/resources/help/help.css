@@ -21,6 +21,7 @@ body {
   margin-top: 30px;
 }
 
+#update-buttons-container,
 #update-status-container {
   margin-top: 5px;
 }
@@ -31,24 +32,15 @@ body {
 
 #update-percentage {
   font-size: 90%;
-  position: absolute;
 }
 
-#relaunch {
-  margin-top: 5px;
-  position: absolute;
+#get-help,
+#promote {
+  -webkit-margin-end: 4px;
 }
 
 #help-container {
   margin-top: 16px;
-}
-
-#update-percentage {
-  -webkit-margin-start: 33px;
-}
-
-#get-help {
-  -webkit-margin-end: 4px;
 }
 
 #product-container {
