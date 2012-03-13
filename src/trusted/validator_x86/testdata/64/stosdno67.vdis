@@ -1,1 +1,1 @@
-0000000000000000: ab                                           [P] dontcare %es:%rdi (s), %eax (u)
+0000000000000000: ab                                           [P] dontcare [%rdi] (s), %eax (u)

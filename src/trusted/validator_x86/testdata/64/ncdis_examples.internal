@@ -1012,174 +1012,174 @@ NaClExpVector[8] = {
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
-0000000000000000: a6                                           cmpsb
+0000000000000000: a6                                           cmpsb [%rdi], [%rsi]
   a6                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b
-    Cmpsb {$Yb}, {$Xb}
-      RegES_EDI               OpUse OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+    Cmpsb $Yb, $Xb
+      RegES_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 66 a7                                        cmpsw
+0000000000000000: 66 a7                                        cmpsw [%rdi], [%rsi]
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OpcodeAllowsData16 OperandSize_w
-    Cmpsw {$Yvw}, {$Xvw}
-      RegES_EDI               OpUse OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+    Cmpsw $Yvw, $Xvw
+      RegES_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: a7                                           cmpsd
+0000000000000000: a7                                           cmpsd [%rdi], [%rsi]
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_v
-    Cmpsd {$Yvd}, {$Xvd}
-      RegES_EDI               OpUse OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+    Cmpsd $Yvd, $Xvd
+      RegES_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 48 a7                                        cmpsq
+0000000000000000: 48 a7                                        cmpsq [%rdi], [%rsi]
   a7                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_o LongMode
-    Cmpsq {$Yvq}, {$Xvq}
-      RegES_EDI               OpUse OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+    Cmpsq $Yvq, $Xvq
+      RegES_EDI               OpUse
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: aa                                           stosb
+0000000000000000: aa                                           stosb [%rdi]
   aa                          386 OpcodeAllowsRep OperandSize_b
-    Stosb {$Yb}, {%al}
-      RegES_EDI               OpSet OpImplicit
+    Stosb $Yb, {%al}
+      RegES_EDI               OpSet
       RegAL                   OpUse OpImplicit
 NaClExpVector[6] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
 };
-0000000000000000: ab                                           stosd
+0000000000000000: ab                                           stosd [%rdi]
   ab                          386 OpcodeAllowsRep OperandSize_v
-    Stosd {$Yvd}, {$rAXvd}
-      RegES_EDI               OpSet OpImplicit
+    Stosd $Yvd, {$rAXvd}
+      RegES_EDI               OpSet
       RegEAX                  OpUse OpImplicit
 NaClExpVector[6] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
-0000000000000000: 66 ab                                        stosw
+0000000000000000: 66 ab                                        stosw [%rdi]
   ab                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w
-    Stosw {$Yvw}, {$rAXvw}
-      RegES_EDI               OpSet OpImplicit
+    Stosw $Yvw, {$rAXvw}
+      RegES_EDI               OpSet
       RegAX                   OpUse OpImplicit
 NaClExpVector[6] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
 };
-0000000000000000: 48 ab                                        stosq
+0000000000000000: 48 ab                                        stosq [%rdi]
   ab                          386 OpcodeAllowsRep OperandSize_o LongMode
-    Stosq {$Yvq}, {$rAXvq}
-      RegES_EDI               OpSet OpImplicit
+    Stosq $Yvq, {$rAXvq}
+      RegES_EDI               OpSet
       RegRAX                  OpUse OpImplicit
 NaClExpVector[6] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
 };
-0000000000000000: a4                                           movsb
+0000000000000000: a4                                           movsb [%rdi], [%rsi]
   a4                          386 OpcodeAllowsRep OperandSize_b
-    Movsb {$Yb}, {$Xb}
-      RegES_EDI               OpSet OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+    Movsb $Yb, $Xb
+      RegES_EDI               OpSet
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 66 a5                                        movsw
+0000000000000000: 66 a5                                        movsw [%rdi], [%rsi]
   a5                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w
-    Movsw {$Yvw}, {$Xvw}
-      RegES_EDI               OpSet OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+    Movsw $Yvw, $Xvw
+      RegES_EDI               OpSet
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: a5                                           movsd
+0000000000000000: a5                                           movsd [%rdi], [%rsi]
   a5                          386 OpcodeAllowsRep OperandSize_v
-    Movsd {$Yvd}, {$Xvd}
-      RegES_EDI               OpSet OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+    Movsd $Yvd, $Xvd
+      RegES_EDI               OpSet
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 48 a5                                        movsq
+0000000000000000: 48 a5                                        movsq [%rdi], [%rsi]
   a5                          386 OpcodeAllowsRep OperandSize_o LongMode
-    Movsq {$Yvq}, {$Xvq}
-      RegES_EDI               OpSet OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+    Movsq $Yvq, $Xvq
+      RegES_EDI               OpSet
+      RegDS_ESI               OpUse
 NaClExpVector[8] = {
-  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
@@ -1206,106 +1206,106 @@ NaClExpVector[4] = {
   { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %rflags, ExprSet },
 };
-0000000000000000: ac                                           lodsb
+0000000000000000: ac                                           lodsb [%rsi]
   ac                          386 OpcodeAllowsRep OperandSize_b
-    Lodsb {%al}, {$Xb}
+    Lodsb {%al}, $Xb
       RegAL                   OpSet OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+      RegDS_ESI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: ad                                           lodsd
+0000000000000000: ad                                           lodsd [%rsi]
   ad                          386 OpcodeAllowsRep OperandSize_v
-    Lodsd {$rAXvd}, {$Xvd}
+    Lodsd {$rAXvd}, $Xvd
       RegEAX                  OpSet OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+      RegDS_ESI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 66 ad                                        lodsw
+0000000000000000: 66 ad                                        lodsw [%rsi]
   ad                          386 OpcodeAllowsRep OpcodeAllowsData16 OperandSize_w
-    Lodsw {$rAXvw}, {$Xvw}
+    Lodsw {$rAXvw}, $Xvw
       RegAX                   OpSet OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+      RegDS_ESI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: 48 ad                                        lodsq
+0000000000000000: 48 ad                                        lodsq [%rsi]
   ad                          386 OpcodeAllowsRep OperandSize_o LongMode
-    Lodsq {$rAXvq}, {$Xvq}
+    Lodsq {$rAXvq}, $Xvq
       RegRAX                  OpSet OpImplicit
-      RegDS_ESI               OpUse OpImplicit
+      RegDS_ESI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrCase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rsi, ExprSize64 },
 };
-0000000000000000: ae                                           scasb
+0000000000000000: ae                                           scasb [%rdi]
   ae                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_b
-    Scasb {%al}, {$Yb}
+    Scasb {%al}, $Yb
       RegAL                   OpUse OpImplicit
-      RegES_EDI               OpUse OpImplicit
+      RegES_EDI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
-0000000000000000: af                                           scasd
+0000000000000000: af                                           scasd [%rdi]
   af                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_v
-    Scasd {$rAXvd}, {$Yvd}
+    Scasd {$rAXvd}, $Yvd
       RegEAX                  OpUse OpImplicit
-      RegES_EDI               OpUse OpImplicit
+      RegES_EDI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
-0000000000000000: 66 af                                        scasw
+0000000000000000: 66 af                                        scasw [%rdi]
   af                          386 OpcodeAllowsRep OpcodeAllowsRepne OpcodeAllowsData16 OperandSize_w
-    Scasw {$rAXvw}, {$Yvw}
+    Scasw {$rAXvw}, $Yvw
       RegAX                   OpUse OpImplicit
-      RegES_EDI               OpUse OpImplicit
+      RegES_EDI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
-0000000000000000: 48 af                                        scasq
+0000000000000000: 48 af                                        scasq [%rdi]
   af                          386 OpcodeAllowsRep OpcodeAllowsRepne OperandSize_o LongMode
-    Scasq {$rAXvq}, {$Yvq}
+    Scasq {$rAXvq}, $Yvq
       RegRAX                  OpUse OpImplicit
-      RegES_EDI               OpUse OpImplicit
+      RegES_EDI               OpUse
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprSize8 | ExprUnsignedInt | ExprImplicit },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
-  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt | ExprImplicit },
+  { OperandReference[1] , 1, ExprSize8 | ExprUnsignedInt },
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrCase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },

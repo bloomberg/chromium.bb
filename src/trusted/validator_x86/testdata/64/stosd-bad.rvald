@@ -1,4 +1,4 @@
-VALIDATOR: 0000000000000004: ab                                           stosd
+VALIDATOR: 0000000000000004: ab                                           stosd [%rdi]
 VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: Checking block alignment and jump targets: 0 to 5
 *** <input> IS UNSAFE ***

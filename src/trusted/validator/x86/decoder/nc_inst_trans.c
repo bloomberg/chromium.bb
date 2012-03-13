@@ -1082,7 +1082,6 @@ static void NaClAppendESI(NaClInstState* state) {
       break;
   }
 }
-
 static void NaClAppendEBX(NaClInstState* state) {
   switch (state->address_size) {
     case 16:

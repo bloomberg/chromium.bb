@@ -89,8 +89,10 @@ static void Usage() {
   fprintf(stderr, "usage: %s [options] [hexbytes]\n", gArgv0);
   fprintf(stderr, "    Compare %s instruction decoders\n",
           target_machine);
-  fprintf(stderr, "    With no argument, enumerate all %s instructions\n",
+  fprintf(stderr, "    With no argument, enumerate all %s instructions.\n",
           target_machine);
+  fprintf(stderr, "    With hexbytes argument, decode and print corresonding "
+          "decodings.\n");;
   fprintf(stderr, "\n");
   fprintf(stderr, "Valid decoders are:\n");
   for (i = 0; i < gCinst._enumerator._num_testers; ++i) {

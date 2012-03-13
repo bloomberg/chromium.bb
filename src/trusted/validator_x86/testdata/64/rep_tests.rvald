@@ -18,17 +18,17 @@ VALIDATOR: 0000000000000015: f2 6c                                        insb
 VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
 VALIDATOR: 0000000000000015: f2 6c                                        insb
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 0000000000000017: a6                                           cmpsb
+VALIDATOR: 0000000000000017: a6                                           cmpsb [%rdi], [%rsi]
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 0000000000000017: a6                                           cmpsb
+VALIDATOR: 0000000000000017: a6                                           cmpsb [%rdi], [%rsi]
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 0000000000000018: f3 a6                                        cmpsb
+VALIDATOR: 0000000000000018: f3 a6                                        cmpsb [%rdi], [%rsi]
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 0000000000000018: f3 a6                                        cmpsb
+VALIDATOR: 0000000000000018: f3 a6                                        cmpsb [%rdi], [%rsi]
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 000000000000001a: f2 a6                                        cmpsb
+VALIDATOR: 000000000000001a: f2 a6                                        cmpsb [%rdi], [%rsi]
 VALIDATOR: ERROR: Segment memory reference not allowed
-VALIDATOR: 000000000000001a: f2 a6                                        cmpsb
+VALIDATOR: 000000000000001a: f2 a6                                        cmpsb [%rdi], [%rsi]
 VALIDATOR: ERROR: Segment memory reference not allowed
 VALIDATOR: Checking block alignment and jump targets: 0 to 1c
 *** <input> IS UNSAFE ***

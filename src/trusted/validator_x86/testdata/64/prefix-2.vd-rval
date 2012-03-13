@@ -2,15 +2,15 @@ VALIDATOR: 0000000000000000: f0 f0 01 04 24                               add [%
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
 VALIDATOR: 0000000000000000: f0 f0 01 04 24                               add [%rsp], %eax
 VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
-VALIDATOR: 000000000000000b: f3 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+VALIDATOR: 000000000000000b: f3 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 000000000000000b: f3 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+VALIDATOR: 000000000000000b: f3 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
 VALIDATOR: ERROR: Duplicating a prefix byte is not allowed by Native Client
-VALIDATOR: 0000000000000014: f2 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+VALIDATOR: 0000000000000014: f2 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 0000000000000014: f2 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+VALIDATOR: 0000000000000014: f2 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
 VALIDATOR: ERROR: Use of REPNE (F2) prefix for instruction not allowed by Native Client
-VALIDATOR: 000000000000001d: f3 f2 ae                                     [P] dontcare %al (u), %es:%rdi (u)
+VALIDATOR: 000000000000001d: f3 f2 ae                                     [P] dontcare %al (u), [%rdi] (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
 VALIDATOR: 0000000000000020: 64 65 89 c0                                  mov %eax, %eax
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
@@ -40,17 +40,17 @@ VALIDATOR: 0000000000000036: f0 36 01 04 24                               add [%
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
 VALIDATOR: 0000000000000036: f0 36 01 04 24                               add [%rsp], %eax
 VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-VALIDATOR: 0000000000000041: 26 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+VALIDATOR: 0000000000000041: 26 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 0000000000000041: 26 f3 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+VALIDATOR: 0000000000000041: 26 f3 ab                                     [P] dontcare [%rdi] (s), %eax (u)
 VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-VALIDATOR: 000000000000004a: f3 26 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+VALIDATOR: 000000000000004a: f3 26 ab                                     [P] dontcare [%rdi] (s), %eax (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 000000000000004a: f3 26 ab                                     [P] dontcare %es:%rdi (s), %eax (u)
+VALIDATOR: 000000000000004a: f3 26 ab                                     [P] dontcare [%rdi] (s), %eax (u)
 VALIDATOR: ERROR: Uses a segment prefix byte not allowed by Native Client
-VALIDATOR: 000000000000005d: 66 f3 ab                                     [P] dontcare %es:%rdi (s), %ax (u)
+VALIDATOR: 000000000000005d: 66 f3 ab                                     [P] dontcare [%rdi] (s), %ax (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 0000000000000066: f3 66 ab                                     [P] dontcare %es:%rdi (s), %ax (u)
+VALIDATOR: 0000000000000066: f3 66 ab                                     [P] dontcare [%rdi] (s), %ax (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
 VALIDATOR: 0000000000000069: 67 f0 01 04 24                               add [%esp], %eax
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
@@ -64,17 +64,17 @@ VALIDATOR: 000000000000006e: f0 67 01 04 24                               add [%
 VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
 VALIDATOR: 000000000000006e: f0 67 01 04 24                               add [%esp], %eax
 VALIDATOR: ERROR: Assignment to non-64 bit memory address
-VALIDATOR: 0000000000000079: 67 f3 ab                                     [P] dontcare %es:%edi (s), %eax (u)
+VALIDATOR: 0000000000000079: 67 f3 ab                                     [P] dontcare [%edi] (s), %eax (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 0000000000000079: 67 f3 ab                                     [P] dontcare %es:%edi (s), %eax (u)
+VALIDATOR: 0000000000000079: 67 f3 ab                                     [P] dontcare [%edi] (s), %eax (u)
 VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
-VALIDATOR: 0000000000000079: 67 f3 ab                                     [P] dontcare %es:%edi (s), %eax (u)
+VALIDATOR: 0000000000000079: 67 f3 ab                                     [P] dontcare [%edi] (s), %eax (u)
 VALIDATOR: ERROR: Assignment to non-64 bit segment address
-VALIDATOR: 0000000000000082: f3 67 ab                                     [P] dontcare %es:%edi (s), %eax (u)
+VALIDATOR: 0000000000000082: f3 67 ab                                     [P] dontcare [%edi] (s), %eax (u)
 VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
-VALIDATOR: 0000000000000082: f3 67 ab                                     [P] dontcare %es:%edi (s), %eax (u)
+VALIDATOR: 0000000000000082: f3 67 ab                                     [P] dontcare [%edi] (s), %eax (u)
 VALIDATOR: ERROR: Use of 67 (ADDR16) prefix not allowed by Native Client
-VALIDATOR: 0000000000000082: f3 67 ab                                     [P] dontcare %es:%edi (s), %eax (u)
+VALIDATOR: 0000000000000082: f3 67 ab                                     [P] dontcare [%edi] (s), %eax (u)
 VALIDATOR: ERROR: Assignment to non-64 bit segment address
 VALIDATOR: 000000000000008a: 48 f0 01 04 24                               add [%rsp], %rax
 VALIDATOR: ERROR: REX prefix byte must appear last

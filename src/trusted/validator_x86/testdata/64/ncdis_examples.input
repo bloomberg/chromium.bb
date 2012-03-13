@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -105,28 +105,28 @@
 -i=86C2                                  #0000000000000000: 86 c2                                        xchg %dl, %al
 -i=864020                                #0000000000000000: 86 40 20                                     xchg [%rax+0x20], %al
 -i=874020                                #0000000000000000: 87 40 20                                     xchg [%rax+0x20], %eax
--i=a6                                    #0000000000000000: a6                                           cmpsb
--i=66a7                                  #0000000000000000: 66 a7                                        cmpsw
--i=a7                                    #0000000000000000: a7                                           cmpsd
--i=48a7                                  #0000000000000000: 48 a7                                        cmpsq
--i=aa                                    #0000000000000000: aa                                           stosb
--i=ab                                    #0000000000000000: ab                                           stosd
--i=66ab                                  #0000000000000000: 66 ab                                        stosw
--i=48ab                                  #0000000000000000: 48 ab                                        stosq
--i=a4                                    #0000000000000000: a4                                           movsb
--i=66a5                                  #0000000000000000: 66 a5                                        movsw
--i=a5                                    #0000000000000000: a5                                           movsd
--i=48a5                                  #0000000000000000: 48 a5                                        movsq
+-i=a6                                    #0000000000000000: a6                                           cmpsb [%rdi], [%rsi]
+-i=66a7                                  #0000000000000000: 66 a7                                        cmpsw [%rdi], [%rsi]
+-i=a7                                    #0000000000000000: a7                                           cmpsd [%rdi], [%rsi]
+-i=48a7                                  #0000000000000000: 48 a7                                        cmpsq [%rdi], [%rsi]
+-i=aa                                    #0000000000000000: aa                                           stosb [%rdi]
+-i=ab                                    #0000000000000000: ab                                           stosd [%rdi]
+-i=66ab                                  #0000000000000000: 66 ab                                        stosw [%rdi]
+-i=48ab                                  #0000000000000000: 48 ab                                        stosq [%rdi]
+-i=a4                                    #0000000000000000: a4                                           movsb [%rdi], [%rsi]
+-i=66a5                                  #0000000000000000: 66 a5                                        movsw [%rdi], [%rsi]
+-i=a5                                    #0000000000000000: a5                                           movsd [%rdi], [%rsi]
+-i=48a5                                  #0000000000000000: 48 a5                                        movsq [%rdi], [%rsi]
 -i=9c                                    #0000000000000000: 9c                                           pushfq
 -i=9d                                    #0000000000000000: 9d                                           popfq
--i=ac                                    #0000000000000000: ac                                           lodsb
--i=ad                                    #0000000000000000: ad                                           lodsd
--i=66ad                                  #0000000000000000: 66 ad                                        lodsw
--i=48ad                                  #0000000000000000: 48 ad                                        lodsq
--i=ae                                    #0000000000000000: ae                                           scasb
--i=af                                    #0000000000000000: af                                           scasd
--i=66af                                  #0000000000000000: 66 af                                        scasw
--i=48af                                  #0000000000000000: 48 af                                        scasq
+-i=ac                                    #0000000000000000: ac                                           lodsb [%rsi]
+-i=ad                                    #0000000000000000: ad                                           lodsd [%rsi]
+-i=66ad                                  #0000000000000000: 66 ad                                        lodsw [%rsi]
+-i=48ad                                  #0000000000000000: 48 ad                                        lodsq [%rsi]
+-i=ae                                    #0000000000000000: ae                                           scasb [%rdi]
+-i=af                                    #0000000000000000: af                                           scasd [%rdi]
+-i=66af                                  #0000000000000000: 66 af                                        scasw [%rdi]
+-i=48af                                  #0000000000000000: 48 af                                        scasq [%rdi]
 -i=C82C0100                              #0000000000000000: c8 2c 01 00                                  enter 0x12c, 0x0
 -i=80E4DF                                #0000000000000000: 80 e4 df                                     and %ah, 0xdf
 -i=222425DF000000                        #0000000000000000: 22 24 25 df 00 00 00                         and %ah, [0xdf]

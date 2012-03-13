@@ -244,6 +244,36 @@ static int NaClPrintDisassembledMemOffset(struct Gio* file,
   return disp_index + NaClExpWidth(vector, disp_index);
 }
 
+/* Retrurns true if the segment register of the indexed segment address is DS,
+ * and DS has been marked (by the instruction) as the default register
+ * for the segment address.
+ */
+static Bool IsSegmentAddressDsRegPair(NaClInstState* state,
+                                      int index) {
+  NaClExpVector* vector = NaClInstStateExpVector(state);
+  NaClExp* segment_address = &vector->node[index];
+  NaClExp* segment_register =
+      &vector->node[NaClGetExpKidIndex(vector, index, 0)];
+  return NaClHasBit(segment_address->flags, NACL_EFLAG(ExprDSrCase)) &&
+      (segment_register->kind == ExprRegister) &&
+      (RegDS == NaClGetExpRegisterInline(segment_register));
+}
+
+/* Retrurns true if the segment register of the index segment address is ES,
+ * and ES has been marked (by the instruction) as the default register
+ * for the segment address.
+ */
+static Bool IsSegmentAddressEsRegPair(NaClInstState* state,
+                                      int index) {
+  NaClExpVector* vector = NaClInstStateExpVector(state);
+  NaClExp* segment_address = &vector->node[index];
+  NaClExp* segment_register =
+      &vector->node[NaClGetExpKidIndex(vector, index, 0)];
+  return NaClHasBit(segment_address->flags, NACL_EFLAG(ExprESrCase)) &&
+      (segment_register->kind == ExprRegister) &&
+      (RegES == NaClGetExpRegisterInline(segment_register));
+}
+
 /* Print out the given (segment address) expression node to the
  * given file. Returns the index of the node following the
  * given (indexed) segment address.
@@ -251,10 +281,33 @@ static int NaClPrintDisassembledMemOffset(struct Gio* file,
 static int NaClPrintDisassembledSegmentAddr(struct Gio* file,
                                             NaClInstState* state,
                                             int index) {
-  assert(ExprSegmentAddress == NaClInstStateExpVector(state)->node[index].kind);
-  index = NaClPrintDisassembledExp(file, state, index + 1);
-  gprintf(file, ":");
-  return NaClPrintDisassembledExp(file, state, index);
+  int memory_address;
+  NaClExpVector* vector = NaClInstStateExpVector(state);
+  assert(ExprSegmentAddress == node->kind);
+  /* If segment register is default. If so, do not print. */
+  if (IsSegmentAddressDsRegPair(state, index) ||
+      IsSegmentAddressEsRegPair(state, index)) {
+    /* Segment register matches default.  Don't print. */
+  } else {
+    /* Print the segment register associated with the segment address. */
+    NaClPrintDisassembledExp(file, state, index + 1);
+    gprintf(file, ":");
+  }
+  memory_address = NaClGetExpKidIndex(vector, index, 1);
+  if (vector->node[memory_address].kind == ExprRegister) {
+    /* Special case segment address, where the register corresponds to
+     * a memory address. Print out the register in '[]' brackets to
+     * communicate that it is a memory reference.
+     */
+    int result;
+    gprintf(file, "[");
+    result = NaClPrintDisassembledExp(file, state, memory_address);
+    gprintf(file, "]");
+    return result;
+  } else {
+    /* print out memory address associated with segment address. */
+    return NaClPrintDisassembledExp(file, state, memory_address);
+  }
 }
 
 /* Print out the given expression node to the given file.

@@ -1,10 +1,10 @@
 0000000000000000: f0 01 04 24                                  add [%rsp], %eax
 0000000000000004: 89 ff                                        mov %edi, %edi
 0000000000000006: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-000000000000000a: f3 ab                                        [P] dontcare %es:%rdi (s), %eax (u)
+000000000000000a: f3 ab                                        [P] dontcare [%rdi] (s), %eax (u)
 000000000000000c: 89 ff                                        mov %edi, %edi
 000000000000000e: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-0000000000000012: f2 ae                                        [P] dontcare %al (u), %es:%rdi (u)
+0000000000000012: f2 ae                                        [P] dontcare %al (u), [%rdi] (u)
 0000000000000014: 66 89 c0                                     mov %ax, %ax
 0000000000000017: 40 eb fd                                     [P] dontcarejump %rip (s), 0x17 (u)
 000000000000001a: 2e 74 02                                     [P] dontcarecondjump %rip (s), 0x1f (u)
@@ -12,7 +12,7 @@
 0000000000000020: f3 50                                        push %rax
 0000000000000022: 89 ff                                        mov %edi, %edi
 0000000000000024: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
-0000000000000028: f2 ab                                        [P] dontcare %es:%rdi (s), %eax (u)
+0000000000000028: f2 ab                                        [P] dontcare [%rdi] (s), %eax (u)
 000000000000002a: 64 89 c0                                     mov %eax, %eax
 000000000000002d: 65 89 c0                                     mov %eax, %eax
 0000000000000030: 2e 89 04 24                                  mov [%rsp], %eax
