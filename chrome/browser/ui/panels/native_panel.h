@@ -88,6 +88,9 @@ class NativePanel {
   // Sets whether the panel app icon is visible (usually refers to the app icons
   // in the desktop bar).
   virtual void SetPanelAppIconVisibility(bool visible) = 0;
+
+  // Sets whether the panel window is always on top.
+  virtual void SetPanelAlwaysOnTop(bool on_top) = 0;
 };
 
 // A NativePanel utility interface used for accessing elements of the

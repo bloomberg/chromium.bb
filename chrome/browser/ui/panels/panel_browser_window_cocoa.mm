@@ -264,6 +264,10 @@ void PanelBrowserWindowCocoa::SetPanelAppIconVisibility(bool visible) {
   // TODO(dimich): to be implemented.
 }
 
+void PanelBrowserWindowCocoa::SetPanelAlwaysOnTop(bool on_top) {
+  [controller_ setAlwaysOnTop:on_top];
+}
+
 void PanelBrowserWindowCocoa::DidCloseNativeWindow() {
   DCHECK(!isClosed());
   panel_->OnNativePanelClosed();

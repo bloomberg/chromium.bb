@@ -396,6 +396,39 @@ Panel* BasePanelBrowserTest::CreatePanel(const std::string& panel_name) {
   return CreatePanelWithParams(params);
 }
 
+Panel* BasePanelBrowserTest::CreateDockedPanel(const std::string& name,
+                                               const gfx::Rect& bounds) {
+  Panel* panel = CreatePanelWithBounds(name, bounds);
+  EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+  return panel;
+}
+
+Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
+                                                 const gfx::Rect& bounds) {
+  Panel* panel = CreatePanelWithBounds(name, bounds);
+  panel->manager()->MovePanelToStrip(panel,
+                                     PanelStrip::DETACHED,
+                                     PanelStrip::DEFAULT_POSITION);
+  EXPECT_EQ(PanelStrip::DETACHED, panel->panel_strip()->type());
+  // The panel is first created as docked panel, which ignores the specified
+  // origin in |bounds|. We need to reposition the panel after it becomes
+  // detached.
+  panel->SetPanelBounds(bounds);
+  WaitForBoundsAnimationFinished(panel);
+  return panel;
+}
+
+Panel* BasePanelBrowserTest::CreateOverflowPanel(const std::string& name,
+                                                 const gfx::Rect& bounds) {
+  // The overflow panel is always shown as inactive even though we pass
+  // SHOW_AS_ACTIVE.
+  CreatePanelParams params(name, bounds, SHOW_AS_ACTIVE);
+  params.expected_active_state = SHOW_AS_INACTIVE;
+  Panel* panel = CreatePanelWithParams(params);
+  WaitForLayoutModeChanged(panel, PanelStrip::IN_OVERFLOW);
+  return panel;
+}
+
 void BasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
   TabContentsWrapper* tab_contents =
       new TabContentsWrapper(new TestTabContents(browser->profile(), NULL));

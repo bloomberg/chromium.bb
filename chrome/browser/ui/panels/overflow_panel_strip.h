@@ -32,7 +32,8 @@ class OverflowPanelStrip : public PanelStrip,
   // PanelStrip OVERRIDES:
   virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
   virtual void RefreshLayout() OVERRIDE;
-  virtual void AddPanel(Panel* panel) OVERRIDE;
+  virtual void AddPanel(Panel* panel,
+                        PositioningMask positioning_mask) OVERRIDE;
   virtual void RemovePanel(Panel* panel) OVERRIDE;
   virtual void CloseAll() OVERRIDE;
   virtual void ResizePanelWindow(
@@ -44,10 +45,16 @@ class OverflowPanelStrip : public PanelStrip,
   virtual void RestorePanel(Panel* panel) OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual bool CanShowPanelAsActive(const Panel* panel) const OVERRIDE;
+  virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
+  virtual void RestorePanelToSavedPlacement() OVERRIDE;
+  virtual void DiscardSavedPanelPlacement()  OVERRIDE;
   virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
-  virtual void StartDraggingPanel(Panel* panel) OVERRIDE;
-  virtual void DragPanel(Panel* panel, int delta_x, int delta_y) OVERRIDE;
-  virtual void EndDraggingPanel(Panel* panel, bool cancelled) OVERRIDE;
+  virtual void StartDraggingPanelWithinStrip(Panel* panel) OVERRIDE;
+  virtual void DragPanelWithinStrip(Panel* panel,
+                                    int delta_x,
+                                    int delta_y) OVERRIDE;
+  virtual void EndDraggingPanelWithinStrip(Panel* panel,
+                                           bool aborted) OVERRIDE;
 
   void OnFullScreenModeChanged(bool is_full_screen);
 

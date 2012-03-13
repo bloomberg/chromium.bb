@@ -81,6 +81,7 @@ enum {
     windowShim_.reset(window);
     animateOnBoundsChange_ = YES;
     canBecomeKeyWindow_ = YES;
+    alwaysOnTop_ = YES;
   }
   contentsController_.reset(
       [[TabContentsController alloc] initWithContents:nil]);
@@ -118,8 +119,7 @@ enum {
   DCHECK(titlebar_view_);
   DCHECK_EQ(self, [window delegate]);
 
-  if (!windowShim_->panel()->manager()->is_full_screen())
-    [window setLevel:NSStatusWindowLevel];
+  [self updateWindowLevel];
 
   if (base::mac::IsOSSnowLeopardOrLater()) {
     [window setCollectionBehavior:
@@ -637,8 +637,7 @@ enum {
 }
 
 - (void)fullScreenModeChanged:(bool)isFullScreen {
-  NSWindow* window = [self window];
-  [window setLevel:(isFullScreen ? NSNormalWindowLevel : NSStatusWindowLevel)];
+  [self updateWindowLevel];
 }
 
 - (BOOL)canBecomeKeyWindow {
@@ -650,4 +649,18 @@ enum {
   return canBecomeKeyWindow_;
 }
 
+- (void)setAlwaysOnTop:(bool)onTop {
+  if (alwaysOnTop_ == onTop)
+    return;
+  alwaysOnTop_ = onTop;
+  [self updateWindowLevel];
+}
+
+- (void)updateWindowLevel {
+  if (![self isWindowLoaded])
+    return;
+  BOOL onTop = alwaysOnTop_ &&
+               !windowShim_->panel()->manager()->is_full_screen();
+  [[self window] setLevel:(onTop ? NSStatusWindowLevel : NSNormalWindowLevel)];
+}
 @end

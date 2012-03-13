@@ -107,6 +107,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual gfx::Size IconOnlySize() const OVERRIDE;
   virtual void EnsurePanelFullyVisible() OVERRIDE;
   virtual void SetPanelAppIconVisibility(bool visible) OVERRIDE;
+  virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
 
  private:
   friend class NativePanelTestingGtk;

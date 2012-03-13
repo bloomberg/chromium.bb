@@ -254,9 +254,13 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, UpdateDraggableStatus) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanel("panel");
   EXPECT_TRUE(panel->draggable());
-  panel_manager->MovePanelToStrip(panel, PanelStrip::IN_OVERFLOW);
+  panel_manager->MovePanelToStrip(panel,
+                                  PanelStrip::IN_OVERFLOW,
+                                  PanelStrip::DEFAULT_POSITION);
   EXPECT_FALSE(panel->draggable());
-  panel_manager->MovePanelToStrip(panel, PanelStrip::DOCKED);
+  panel_manager->MovePanelToStrip(panel,
+                                  PanelStrip::DOCKED,
+                                  PanelStrip::DEFAULT_POSITION);
   EXPECT_TRUE(panel->draggable());
   panel->Close();
 }
@@ -653,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(PanelOverflowBrowserTest, CloseWithDelayedOverflow) {
 
   // Hack. Put the "falsely closed" panel back into the panel strip
   // so we can properly close it to wrap up this test.
-  docked_strip->AddPanel(panel1);
+  docked_strip->AddPanel(panel1, PanelStrip::DEFAULT_POSITION);
 
   panel0->Close();
   panel1->Close();

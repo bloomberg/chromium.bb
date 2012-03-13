@@ -459,7 +459,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragOnePanel) {
   static const int num_panels = 1;
   static const int zero_delta = 0;
-  static const int big_delta = 70;
+  static const int big_delta_x = 70;
+  static const int big_delta_y = 30;  // Do not exceed the threshold to detach.
 
   static const std::vector<int> zero_deltas(num_panels, zero_delta);
   std::vector<int> expected_delta_x_after_drag(num_panels, zero_delta);
@@ -469,36 +470,36 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DragOnePanel) {
       CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
 
   // Drag left.
-  expected_delta_x_after_drag[0] = -big_delta;
+  expected_delta_x_after_drag[0] = -big_delta_x;
   expected_delta_x_after_finish = zero_deltas;
-  TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
+  TestDragging(-big_delta_x, zero_delta, 0, expected_delta_x_after_drag,
                zero_deltas, GetAllPanelBounds(),
                DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
 
   // Drag left and cancel.
-  expected_delta_x_after_drag[0] = -big_delta;
+  expected_delta_x_after_drag[0] = -big_delta_x;
   expected_delta_x_after_finish = zero_deltas;
-  TestDragging(-big_delta, zero_delta, 0, expected_delta_x_after_drag,
+  TestDragging(-big_delta_x, zero_delta, 0, expected_delta_x_after_drag,
                zero_deltas, GetAllPanelBounds(),
                DRAG_ACTION_BEGIN | DRAG_ACTION_CANCEL);
 
   // Drag right.
-  expected_delta_x_after_drag[0] = big_delta;
-  TestDragging(big_delta, zero_delta, 0, expected_delta_x_after_drag,
+  expected_delta_x_after_drag[0] = big_delta_x;
+  TestDragging(big_delta_x, zero_delta, 0, expected_delta_x_after_drag,
                zero_deltas, GetAllPanelBounds(),
                DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
 
   // Drag right and up.  Expect no vertical movement.
-  TestDragging(big_delta, big_delta, 0, expected_delta_x_after_drag,
+  TestDragging(big_delta_x, big_delta_y, 0, expected_delta_x_after_drag,
                zero_deltas, GetAllPanelBounds(),
                DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
 
   // Drag up.  Expect no movement on drag.
-  TestDragging(0, -big_delta, 0, zero_deltas, zero_deltas,
+  TestDragging(0, -big_delta_y, 0, zero_deltas, zero_deltas,
                GetAllPanelBounds(), DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
 
   // Drag down.  Expect no movement on drag.
-  TestDragging(0, big_delta, 0, zero_deltas, zero_deltas,
+  TestDragging(0, big_delta_y, 0, zero_deltas, zero_deltas,
                GetAllPanelBounds(), DRAG_ACTION_BEGIN | DRAG_ACTION_FINISH);
 
   panel1->Close();

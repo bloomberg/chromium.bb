@@ -27,7 +27,8 @@ class DetachedPanelStrip : public PanelStrip {
   // PanelStrip OVERRIDES:
   virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
   virtual void RefreshLayout() OVERRIDE;
-  virtual void AddPanel(Panel* panel) OVERRIDE;
+  virtual void AddPanel(Panel* panel,
+                        PositioningMask positioning_mask) OVERRIDE;
   virtual void RemovePanel(Panel* panel) OVERRIDE;
   virtual void CloseAll() OVERRIDE;
   virtual void ResizePanelWindow(
@@ -39,10 +40,16 @@ class DetachedPanelStrip : public PanelStrip {
   virtual void RestorePanel(Panel* panel) OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual bool CanShowPanelAsActive(const Panel* panel) const OVERRIDE;
+  virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
+  virtual void RestorePanelToSavedPlacement() OVERRIDE;
+  virtual void DiscardSavedPanelPlacement()  OVERRIDE;
   virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
-  virtual void StartDraggingPanel(Panel* panel) OVERRIDE;
-  virtual void DragPanel(Panel* panel, int delta_x, int delta_y) OVERRIDE;
-  virtual void EndDraggingPanel(Panel* panel, bool cancelled) OVERRIDE;
+  virtual void StartDraggingPanelWithinStrip(Panel* panel) OVERRIDE;
+  virtual void DragPanelWithinStrip(Panel* panel,
+                                    int delta_x,
+                                    int delta_y) OVERRIDE;
+  virtual void EndDraggingPanelWithinStrip(Panel* panel,
+                                           bool aborted) OVERRIDE;
 
   bool HasPanel(Panel* panel) const;
 
@@ -50,6 +57,13 @@ class DetachedPanelStrip : public PanelStrip {
   const Panels& panels() const { return panels_; }
 
  private:
+  struct PanelPlacement {
+    Panel* panel;
+    gfx::Point position;
+
+    PanelPlacement() : panel(NULL) { }
+  };
+
   PanelManager* panel_manager_;  // Weak, owns us.
 
   // All panels in the panel strip must fit within this area.
@@ -57,6 +71,9 @@ class DetachedPanelStrip : public PanelStrip {
 
   // Collection of all panels.
   Panels panels_;
+
+  // Used to save the placement information for a panel.
+  PanelPlacement saved_panel_placement_;
 
   DISALLOW_COPY_AND_ASSIGN(DetachedPanelStrip);
 };

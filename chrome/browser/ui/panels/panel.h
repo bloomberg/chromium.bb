@@ -230,6 +230,8 @@ class Panel : public BrowserWindow,
   const gfx::Size& max_size() const { return max_size_; }
   bool auto_resizable() const { return auto_resizable_; }
 
+  bool in_preview_mode() const { return in_preview_mode_; }
+
   bool draggable() const;
 
   // The restored size is the size of the panel when it is expanded.
@@ -258,6 +260,13 @@ class Panel : public BrowserWindow,
 
   // Sets whether the panel app icon is visible in the taskbar.
   void SetAppIconVisibility(bool visible);
+
+  // Sets whether the panel window is always on top.
+  void SetAlwaysOnTop(bool on_top);
+
+  // Sets whether the panel is shown in preview mode. When the panel is
+  // being dragged, it is in preview mode.
+  void SetPreviewMode(bool in_preview_mode);
 
   // Newly created panels may be placed in a temporary layout until their
   // final position is determined.
@@ -312,15 +321,21 @@ class Panel : public BrowserWindow,
   // True if this panel auto resizes based on content.
   bool auto_resizable_;
 
+  // True if this panel should always stay on top of other windows.
+  bool always_on_top_;
+
+  // True if this panel is in preview mode. When in preview mode, panel bounds
+  // should not be affected by layout refresh. This is currently used by drag
+  // controller to add a panel to the strip without causing its bounds to
+  // change.
+  bool in_preview_mode_;
+
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.
   NativePanel* native_panel_;  // Weak, owns us.
 
   ExpansionState expansion_state_;
   ExpansionState old_expansion_state_;
-
-  // Indicates whether the panel app icon is visible in the taskbar.
-  bool app_icon_visible_;
 
   content::NotificationRegistrar registrar_;
 

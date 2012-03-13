@@ -11,12 +11,17 @@
 #include "ui/gfx/point.h"
 
 class Panel;
+class PanelManager;
+class PanelStrip;
+namespace gfx {
+class Rect;
+}
 
 // Responsible for handling drags initiated for all panels, including both
 // intra-strip and inter-strip drags.
 class PanelDragController {
  public:
-  PanelDragController();
+  explicit PanelDragController(PanelManager* panel_manager);
   ~PanelDragController();
 
   // Drags the given panel.
@@ -31,22 +36,51 @@ class PanelDragController {
   bool IsDragging() const { return dragging_panel_ != NULL; }
 
   Panel* dragging_panel() const { return dragging_panel_; }
-  gfx::Point dragging_panel_original_position() const {
-    return dragging_panel_original_position_;
+
+#ifdef UNIT_TEST
+  static int GetDetachDockedPanelThreshold() {
+    return kDetachDockedPanelThreshold;
   }
 
+  static int GetDockDetachedPanelThreshold() {
+    return kDockDetachedPanelThreshold;
+  }
+#endif
+
  private:
+  // Helper methods to figure out if the panel can be dragged to other strip.
+  // Returns target strip/boolean flag, and |new_panel_bounds| if the panel
+  // can enter other strip at |mouse_location|.
+  PanelStrip* ComputeDragTargetStrip(
+      const gfx::Point& mouse_location, gfx::Rect* new_panel_bounds) const;
+  bool CanDragToDockedStrip(
+      const gfx::Point& mouse_location, gfx::Rect* new_panel_bounds) const;
+  bool CanDragToDetachedStrip(
+      const gfx::Point& mouse_location, gfx::Rect* new_panel_bounds) const;
+
+  PanelManager* panel_manager_;  // Weak, owns us.
+
   // Panel currently being dragged.
   Panel* dragging_panel_;
 
-  // Original position, in screen coordinate system, of the panel being dragged.
-  // This is used to get back to the original position when we cancel the
-  // dragging.
-  gfx::Point dragging_panel_original_position_;
+  // The original panel strip when the drag is started.
+  PanelStrip* dragging_panel_original_strip_;
 
   // The mouse location, in screen coordinates, when StartDragging or Drag was
   // pveviously called.
   gfx::Point last_mouse_location_;
+
+  // The offset from mouse location to the panel position when the drag
+  // starts.
+  gfx::Point offset_from_mouse_location_on_drag_start_;
+
+  // The minimum distance that the docked panel gets dragged up in order to
+  // make it free-floating.
+  static const int kDetachDockedPanelThreshold;
+
+  // Indicates how close the bottom of the detached panel is to the bottom of
+  // the docked area such that the detached panel becomes docked.
+  static const int kDockDetachedPanelThreshold;
 
   DISALLOW_COPY_AND_ASSIGN(PanelDragController);
 };

@@ -64,7 +64,9 @@ class PanelManager : public DisplaySettingsProvider::Observer {
   void ResizePanel(Panel* panel, const gfx::Size& new_size);
 
   // Moves the |panel| to a different type of panel strip.
-  void MovePanelToStrip(Panel* panel, PanelStrip::Type new_layout);
+  void MovePanelToStrip(Panel* panel,
+                        PanelStrip::Type new_layout,
+                        PanelStrip::PositioningMask positioning_mask);
 
   // Move all panels up to, and including, the |last_panel_to_move| to overflow.
   void MovePanelsToOverflow(Panel* last_panel_to_move);

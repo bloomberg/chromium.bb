@@ -595,6 +595,7 @@
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
         'browser/ui/panels/detached_panel_browsertest.cc',
         'browser/ui/panels/panel_browsertest.cc',
+        'browser/ui/panels/panel_drag_browsertest.cc',
         'browser/ui/panels/panel_overflow_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',
@@ -699,6 +700,7 @@
           'sources!': [
             'browser/ui/panels/detached_panel_browsertest.cc',
             'browser/ui/panels/panel_browsertest.cc',
+            'browser/ui/panels/panel_drag_browsertest.cc',
             'browser/ui/panels/panel_overflow_browsertest.cc',
           ],
         }],

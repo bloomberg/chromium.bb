@@ -123,6 +123,7 @@ class PanelBrowserView : public BrowserView,
   virtual gfx::Size IconOnlySize() const OVERRIDE;
   virtual void EnsurePanelFullyVisible() OVERRIDE;
   virtual void SetPanelAppIconVisibility(bool visible) OVERRIDE;
+  virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;

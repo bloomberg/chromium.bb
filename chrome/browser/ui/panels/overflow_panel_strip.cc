@@ -78,7 +78,8 @@ void OverflowPanelStrip::UpdateCurrentWidth() {
                                                       : display_area_.width();
 }
 
-void OverflowPanelStrip::AddPanel(Panel* panel) {
+void OverflowPanelStrip::AddPanel(Panel* panel,
+                                  PositioningMask positioning_mask) {
   // TODO(jianli): consider using other container to improve the perf for
   // inserting to the front. http://crbug.com/106222
   DCHECK_NE(this, panel->panel_strip());
@@ -165,7 +166,9 @@ void OverflowPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
 void OverflowPanelStrip::ActivatePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
   // Activating an overflow panel moves it to the docked panel strip.
-  panel_manager_->MovePanelToStrip(panel, PanelStrip::DOCKED);
+  panel_manager_->MovePanelToStrip(panel,
+                                   PanelStrip::DOCKED,
+                                   PanelStrip::DEFAULT_POSITION);
   panel->panel_strip()->ActivatePanel(panel);
 }
 
@@ -176,7 +179,9 @@ void OverflowPanelStrip::MinimizePanel(Panel* panel) {
 
 void OverflowPanelStrip::RestorePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
-  panel_manager_->MovePanelToStrip(panel, PanelStrip::DOCKED);
+  panel_manager_->MovePanelToStrip(panel,
+                                   PanelStrip::DOCKED,
+                                   PanelStrip::DEFAULT_POSITION);
   panel->panel_strip()->RestorePanel(panel);
 }
 
@@ -190,20 +195,35 @@ bool OverflowPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
   return false;
 }
 
+void OverflowPanelStrip::SavePanelPlacement(Panel* panel) {
+  NOTREACHED();
+}
+
+void OverflowPanelStrip::RestorePanelToSavedPlacement() {
+  NOTREACHED();
+}
+
+void OverflowPanelStrip::DiscardSavedPanelPlacement() {
+  NOTREACHED();
+}
+
 bool OverflowPanelStrip::CanDragPanel(const Panel* panel) const {
   // All overflow panels are not draggable.
   return false;
 }
 
-void OverflowPanelStrip::StartDraggingPanel(Panel* panel) {
+void OverflowPanelStrip::StartDraggingPanelWithinStrip(Panel* panel) {
   NOTREACHED();
 }
 
-void OverflowPanelStrip::DragPanel(Panel* panel, int delta_x, int delta_y) {
+void OverflowPanelStrip::DragPanelWithinStrip(Panel* panel,
+                                              int delta_x,
+                                              int delta_y) {
   NOTREACHED();
 }
 
-void OverflowPanelStrip::EndDraggingPanel(Panel* panel, bool cancelled) {
+void OverflowPanelStrip::EndDraggingPanelWithinStrip(Panel* panel,
+                                                     bool aborted) {
   NOTREACHED();
 }
 

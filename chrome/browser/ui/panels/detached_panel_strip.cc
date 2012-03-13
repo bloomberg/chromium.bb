@@ -33,10 +33,14 @@ void DetachedPanelStrip::RefreshLayout() {
   NOTIMPLEMENTED();
 }
 
-void DetachedPanelStrip::AddPanel(Panel* panel) {
+void DetachedPanelStrip::AddPanel(Panel* panel,
+                                  PositioningMask positioning_mask) {
+  // positioning_mask is ignored since the detached panel is free-floating.
   DCHECK_NE(this, panel->panel_strip());
   panel->SetPanelStrip(this);
   panels_.insert(panel);
+
+  panel->SetAlwaysOnTop(false);
 }
 
 void DetachedPanelStrip::RemovePanel(Panel* panel) {
@@ -91,27 +95,46 @@ bool DetachedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
   return true;
 }
 
+void DetachedPanelStrip::SavePanelPlacement(Panel* panel) {
+  DCHECK(!saved_panel_placement_.panel);
+  saved_panel_placement_.panel = panel;
+  saved_panel_placement_.position = panel->GetBounds().origin();
+}
+
+void DetachedPanelStrip::RestorePanelToSavedPlacement() {
+  DCHECK(saved_panel_placement_.panel);
+
+  gfx::Rect new_bounds(saved_panel_placement_.panel->GetBounds());
+  new_bounds.set_origin(saved_panel_placement_.position);
+  saved_panel_placement_.panel->SetPanelBounds(new_bounds);
+
+  DiscardSavedPanelPlacement();
+}
+
+void DetachedPanelStrip::DiscardSavedPanelPlacement() {
+  DCHECK(saved_panel_placement_.panel);
+  saved_panel_placement_.panel = NULL;
+}
+
 bool DetachedPanelStrip::CanDragPanel(const Panel* panel) const {
   // All detached panels are draggable.
   return true;
 }
 
-void DetachedPanelStrip::StartDraggingPanel(Panel* panel) {
+void DetachedPanelStrip::StartDraggingPanelWithinStrip(Panel* panel) {
+  DCHECK(HasPanel(panel));
 }
 
-void DetachedPanelStrip::DragPanel(Panel* panel, int delta_x, int delta_y) {
+void DetachedPanelStrip::DragPanelWithinStrip(Panel* panel,
+                                              int delta_x,
+                                              int delta_y) {
   gfx::Rect new_bounds(panel->GetBounds());
   new_bounds.Offset(delta_x, delta_y);
-  panel->SetPanelBounds(new_bounds);
+  panel->SetPanelBoundsInstantly(new_bounds);
 }
 
-void DetachedPanelStrip::EndDraggingPanel(Panel* panel, bool cancelled) {
-  if (cancelled) {
-    gfx::Rect new_bounds(panel->GetBounds());
-    new_bounds.set_origin(
-        panel_manager_->drag_controller()->dragging_panel_original_position());
-    panel->SetPanelBounds(new_bounds);
-  }
+void DetachedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel,
+                                                     bool aborted) {
 }
 
 bool DetachedPanelStrip::HasPanel(Panel* panel) const {

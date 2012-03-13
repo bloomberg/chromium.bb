@@ -542,17 +542,24 @@ bool PanelBrowserView::EndDragging(bool cancelled) {
 void PanelBrowserView::SetPanelAppIconVisibility(bool visible) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   gfx::NativeWindow native_window = GetNativeHandle();
-  ::ShowWindow(native_window, SW_HIDE);
   int style = ::GetWindowLong(native_window, GWL_EXSTYLE);
+  int new_style = style;
   if (visible)
-    style &= (~WS_EX_TOOLWINDOW);
+    new_style &= (~WS_EX_TOOLWINDOW);
   else
-    style |= WS_EX_TOOLWINDOW;
-  ::SetWindowLong(native_window, GWL_EXSTYLE, style);
-  ::ShowWindow(native_window, SW_SHOWNA);
+    new_style |= WS_EX_TOOLWINDOW;
+  if (style != new_style) {
+    ::ShowWindow(native_window, SW_HIDE);
+    ::SetWindowLong(native_window, GWL_EXSTYLE, new_style);
+    ::ShowWindow(native_window, SW_SHOWNA);
+  }
 #else
   NOTIMPLEMENTED();
 #endif
+}
+
+void PanelBrowserView::SetPanelAlwaysOnTop(bool on_top) {
+  GetWidget()->SetAlwaysOnTop(on_top);
 }
 
 // NativePanelTesting implementation.

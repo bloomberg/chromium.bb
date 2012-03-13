@@ -480,6 +480,10 @@ void PanelBrowserWindowGtk::SetPanelAppIconVisibility(bool visible) {
   return;
 }
 
+void PanelBrowserWindowGtk::SetPanelAlwaysOnTop(bool on_top) {
+  gtk_window_set_keep_above(window(), on_top);
+}
+
 gfx::Size PanelBrowserWindowGtk::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
   gfx::Size frame = GetNonClientFrameSize();

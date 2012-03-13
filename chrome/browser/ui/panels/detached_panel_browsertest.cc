@@ -17,17 +17,9 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
 
   // Create 2 panels.
-  Panel* panel1 = CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 250, 200));
-  Panel* panel2 = CreatePanelWithBounds("Panel2", gfx::Rect(0, 0, 300, 200));
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
+  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(350, 180, 300, 200));
 
-  EXPECT_TRUE(panel1->draggable());
-  EXPECT_TRUE(panel2->draggable());
-
-  // Move panels to detached strip.
-  EXPECT_EQ(2, panel_manager->num_panels());
-  EXPECT_EQ(0, detached_strip->num_panels());
-  panel_manager->MovePanelToStrip(panel1, PanelStrip::DETACHED);
-  panel_manager->MovePanelToStrip(panel2, PanelStrip::DETACHED);
   EXPECT_EQ(2, panel_manager->num_panels());
   EXPECT_EQ(2, detached_strip->num_panels());
 
@@ -43,11 +35,10 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
 IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DragDetachedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
-  // Create one detached panel.
-  Panel* panel = CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 250, 200));
-  panel_manager->MovePanelToStrip(panel, PanelStrip::DETACHED);
+  Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
 
-  // Test that the detached panel can be dragged anywhere.
+  // Test that the detached panel can be dragged almost anywhere except getting
+  // close to the bottom of the docked area to trigger the attach.
   scoped_ptr<NativePanelTesting> panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
   gfx::Point origin = panel->GetBounds().origin();
@@ -57,12 +48,10 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DragDetachedPanel) {
 
   origin.Offset(-51, -102);
   panel_testing->DragTitlebar(origin);
-  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
   origin.Offset(37, 45);
   panel_testing->DragTitlebar(origin);
-  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
   panel_testing->FinishDragTitlebar();
@@ -78,12 +67,10 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DragDetachedPanel) {
 
   origin.Offset(-51, -102);
   panel_testing->DragTitlebar(origin);
-  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
   origin.Offset(37, 45);
   panel_testing->DragTitlebar(origin);
-  WaitForBoundsAnimationFinished(panel);
   EXPECT_EQ(origin, panel->GetBounds().origin());
 
   panel_testing->CancelDragTitlebar();
@@ -99,14 +86,10 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CloseDetachedPanelOnDrag) {
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
 
   // Create 4 detached panels.
-  Panel* panel1 = CreatePanelWithBounds("Panel1", gfx::Rect(0, 0, 100, 100));
-  Panel* panel2 = CreatePanelWithBounds("Panel2", gfx::Rect(0, 0, 110, 110));
-  Panel* panel3 = CreatePanelWithBounds("Panel3", gfx::Rect(0, 0, 120, 120));
-  Panel* panel4 = CreatePanelWithBounds("Panel4", gfx::Rect(0, 0, 130, 130));
-  panel_manager->MovePanelToStrip(panel1, PanelStrip::DETACHED);
-  panel_manager->MovePanelToStrip(panel2, PanelStrip::DETACHED);
-  panel_manager->MovePanelToStrip(panel3, PanelStrip::DETACHED);
-  panel_manager->MovePanelToStrip(panel4, PanelStrip::DETACHED);
+  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(100, 200, 100, 100));
+  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(200, 210, 110, 110));
+  Panel* panel3 = CreateDetachedPanel("3", gfx::Rect(300, 220, 120, 120));
+  Panel* panel4 = CreateDetachedPanel("4", gfx::Rect(400, 230, 130, 130));
   ASSERT_EQ(4, detached_strip->num_panels());
 
   scoped_ptr<NativePanelTesting> panel1_testing(

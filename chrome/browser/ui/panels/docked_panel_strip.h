@@ -42,7 +42,8 @@ class DockedPanelStrip : public PanelStrip,
 
   // Adds a panel to the strip. The panel may be a newly created panel or one
   // that is transitioning from another grouping of panels.
-  virtual void AddPanel(Panel* panel) OVERRIDE;
+  virtual void AddPanel(Panel* panel,
+                        PositioningMask positioning_mask) OVERRIDE;
   virtual void RemovePanel(Panel* panel) OVERRIDE;
   virtual void CloseAll() OVERRIDE;
   virtual void ResizePanelWindow(
@@ -54,10 +55,16 @@ class DockedPanelStrip : public PanelStrip,
   virtual void RestorePanel(Panel* panel) OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual bool CanShowPanelAsActive(const Panel* panel) const OVERRIDE;
+  virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
+  virtual void RestorePanelToSavedPlacement() OVERRIDE;
+  virtual void DiscardSavedPanelPlacement() OVERRIDE;
   virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
-  virtual void StartDraggingPanel(Panel* panel) OVERRIDE;
-  virtual void DragPanel(Panel* panel, int delta_x, int delta_y) OVERRIDE;
-  virtual void EndDraggingPanel(Panel* panel, bool cancelled) OVERRIDE;
+  virtual void StartDraggingPanelWithinStrip(Panel* panel) OVERRIDE;
+  virtual void DragPanelWithinStrip(Panel* panel,
+                                    int delta_x,
+                                    int delta_y) OVERRIDE;
+  virtual void EndDraggingPanelWithinStrip(Panel* panel,
+                                           bool aborted) OVERRIDE;
 
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
@@ -109,8 +116,23 @@ class DockedPanelStrip : public PanelStrip,
     BRING_DOWN
   };
 
+  struct PanelPlacement {
+    Panel* panel;
+    // Used to remember the panel to the left of |panel|, if any, for use when
+    // restoring the position of |panel|. Will be updated if this panel is
+    // closed or moved out of the dock (e.g. to overflow)..
+    Panel* left_panel;
+
+    PanelPlacement() : panel(NULL) { }
+  };
+
   // Overridden from PanelMouseWatcherObserver:
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
+
+  // Helper methods to put the panel to the collection.
+  void InsertNewlyCreatedPanel(Panel* panel);
+  void InsertExistingPanelAtKnownPosition(Panel* panel);
+  void InsertExistingPanelAtDefaultPosition(Panel* panel, bool refresh_bounds);
 
   // Keep track of the minimized panels to control mouse watching.
   void IncrementMinimizedPanels();
@@ -141,8 +163,6 @@ class DockedPanelStrip : public PanelStrip,
   // panels are (at least briefly) visible before entering overflow.
   void DelayedMovePanelToOverflow(Panel* panel);
 
-  Panel* dragging_panel() const;
-
   PanelManager* panel_manager_;  // Weak, owns us.
 
   // All panels in the panel strip must fit within this area.
@@ -161,16 +181,15 @@ class DockedPanelStrip : public PanelStrip,
   // resides.
   Panels::iterator dragging_panel_current_iterator_;
 
-  // Referring to original position in |panels_| where the dragging panel
-  // resides.
-  Panels::iterator dragging_panel_original_iterator_;
-
   // Delayed transitions support. Sometimes transitions between minimized and
   // title-only states are delayed, for better usability with Taskbars/Docks.
   TitlebarAction delayed_titlebar_action_;
 
   // Owned by MessageLoop after posting.
   base::WeakPtrFactory<DockedPanelStrip> titlebar_action_factory_;
+
+  // Used to save the placement information for a panel.
+  PanelPlacement saved_panel_placement_;
 
   static const int kPanelsHorizontalSpacing = 4;
 

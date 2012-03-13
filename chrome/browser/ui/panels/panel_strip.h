@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_STRIP_H_
 #pragma once
 
+#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
 class Panel;
@@ -21,6 +22,17 @@ class PanelStrip {
     IN_OVERFLOW,  // panels that cannot fit in the 'docked' panels area
   };
 
+  // Masks that control how the panel is added and positioned.
+  enum PositioningMask {
+    // The panel is added and placed at default position that is decided by the
+    // strip.
+    DEFAULT_POSITION = 0x0,
+    // The panel is being added based on its current known position.
+    KNOWN_POSITION = 0x1,
+    // Do not update panel bounds. Only valid with DEFAULT_POSITION.
+    DO_NOT_UPDATE_BOUNDS = 0x2
+  };
+
   Type type() const { return type_; }
 
   // Sets the bounds of the panel strip.
@@ -32,7 +44,8 @@ class PanelStrip {
   virtual void RefreshLayout() = 0;
 
   // Adds |panel| to the collection of panels.
-  virtual void AddPanel(Panel* panel) = 0;
+  // |positioning_mask| indicates how |panel| should be added and positioned.
+  virtual void AddPanel(Panel* panel, PositioningMask positioning_mask) = 0;
 
   // Removes |panel| from the collection of panels. Invoked asynchronously
   // after a panel has been closed.
@@ -66,15 +79,36 @@ class PanelStrip {
   // Returns true if |panel| can be shown as active.
   virtual bool CanShowPanelAsActive(const Panel* panel) const = 0;
 
+  // Saves/restores/discards the placement information of |panel|. This is
+  // useful in bringing back the dragging panel to its original positioning
+  // when the drag is cancelled. After the placement information is saved,
+  // the caller should only call one of RestorePanelToSavedPlacement or
+  // DiscardSavedPanelPlacement.
+  virtual void SavePanelPlacement(Panel* panel) = 0;
+  virtual void RestorePanelToSavedPlacement() = 0;
+  virtual void DiscardSavedPanelPlacement() = 0;
+
   // Returns true if |panel| is draggable.
   virtual bool CanDragPanel(const Panel* panel) const = 0;
 
-  // Drags |panel| in the bounds of this strip.
-  virtual void StartDraggingPanel(Panel* panel) = 0;
-  // |delta_x| and |delta_y| denotes how much the mouse has been moved since
-  // last time when DragPanel or StartDraggingPanel is called.
-  virtual void DragPanel(Panel* panel, int delta_x, int delta_y) = 0;
-  virtual void EndDraggingPanel(Panel* panel, bool cancelled) = 0;
+  // Starts dragging |panel| within this strip. The panel should already be
+  // in this strip.
+  virtual void StartDraggingPanelWithinStrip(Panel* panel) = 0;
+
+  // Drags |panel| within this strip.
+  // |delta_x| and |delta_y| represents the offset from the last mouse location
+  // when StartDraggingPanelWithinStrip or DragPanelWithinStrip is called.
+  virtual void DragPanelWithinStrip(Panel* panel, int delta_x, int delta_y) = 0;
+
+  // Ends dragging |panel| within this strip. |aborted| means the drag within
+  // this strip is aborted due to one of the following:
+  // 1) the drag leaves this strip and enters other strip
+  // 2) the drag gets cancelled
+  // If |aborted| is true, |panel| will stay as it is; otherwise, it will be
+  // moved to its finalized position.
+  // The drag controller is responsible for restoring the panel back to its
+  // original strip and position when the drag gets cancelled.
+  virtual void EndDraggingPanelWithinStrip(Panel* panel, bool aborted) = 0;
 
  protected:
   explicit PanelStrip(Type type);

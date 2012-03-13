@@ -69,7 +69,7 @@ PanelManager::PanelManager()
   detached_strip_.reset(new DetachedPanelStrip(this));
   docked_strip_.reset(new DockedPanelStrip(this));
   overflow_strip_.reset(new OverflowPanelStrip(this));
-  drag_controller_.reset(new PanelDragController());
+  drag_controller_.reset(new PanelDragController(this));
   display_settings_provider_.reset(DisplaySettingsProvider::Create(this));
 
   OnDisplayChanged();
@@ -113,7 +113,7 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   int width = browser->override_bounds().width();
   int height = browser->override_bounds().height();
   Panel* panel = new Panel(browser, gfx::Size(width, height));
-  docked_strip_->AddPanel(panel);
+  docked_strip_->AddPanel(panel, PanelStrip::DEFAULT_POSITION);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_ADDED,
@@ -183,8 +183,10 @@ void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
   panel->SetAutoResizable(false);
 }
 
-void PanelManager::MovePanelToStrip(Panel* panel,
-                                    PanelStrip::Type new_layout) {
+void PanelManager::MovePanelToStrip(
+    Panel* panel,
+    PanelStrip::Type new_layout,
+    PanelStrip::PositioningMask positioning_mask) {
   DCHECK(panel);
   PanelStrip* current_strip = panel->panel_strip();
   DCHECK(current_strip);
@@ -206,7 +208,7 @@ void PanelManager::MovePanelToStrip(Panel* panel,
       NOTREACHED();
   }
 
-  target_strip->AddPanel(panel);
+  target_strip->AddPanel(panel, positioning_mask);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
@@ -219,7 +221,9 @@ void PanelManager::MovePanelsToOverflow(Panel* last_panel_to_move) {
   // Move panels to overflow in reverse to maintain their order.
   Panel* bumped_panel;
   while ((bumped_panel = docked_strip_->last_panel())) {
-    MovePanelToStrip(bumped_panel, PanelStrip::IN_OVERFLOW);
+    MovePanelToStrip(bumped_panel,
+                     PanelStrip::IN_OVERFLOW,
+                     PanelStrip::DEFAULT_POSITION);
     if (bumped_panel == last_panel_to_move)
       break;
   }
@@ -232,8 +236,11 @@ void PanelManager::MovePanelsOutOfOverflowIfCanFit() {
 
   Panel* overflow_panel;
   while ((overflow_panel = overflow_strip_->first_panel()) &&
-         docked_strip_->CanFitPanel(overflow_panel))
-    MovePanelToStrip(overflow_panel, PanelStrip::DOCKED);
+         docked_strip_->CanFitPanel(overflow_panel)) {
+    MovePanelToStrip(overflow_panel,
+                     PanelStrip::DOCKED,
+                     PanelStrip::DEFAULT_POSITION);
+  }
 }
 
 bool PanelManager::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {

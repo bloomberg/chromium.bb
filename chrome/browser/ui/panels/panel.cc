@@ -50,9 +50,10 @@ Panel::Panel(Browser* browser, const gfx::Size& requested_size)
       has_temporary_layout_(false),
       restored_size_(requested_size),
       auto_resizable_(false),
+      always_on_top_(false),
+      in_preview_mode_(false),
       expansion_state_(EXPANDED),
-      old_expansion_state_(EXPANDED),
-      app_icon_visible_(true) {
+      old_expansion_state_(EXPANDED) {
 }
 
 Panel::~Panel() {
@@ -153,10 +154,19 @@ void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
 }
 
 void Panel::SetAppIconVisibility(bool visible) {
-  if (app_icon_visible_ == visible)
-    return;
-  app_icon_visible_ = visible;
   native_panel_->SetPanelAppIconVisibility(visible);
+}
+
+void Panel::SetAlwaysOnTop(bool on_top) {
+  if (always_on_top_ == on_top)
+    return;
+  always_on_top_ = on_top;
+  native_panel_->SetPanelAlwaysOnTop(on_top);
+}
+
+void Panel::SetPreviewMode(bool in_preview) {
+  DCHECK_NE(in_preview_mode_, in_preview);
+  in_preview_mode_ = in_preview;
 }
 
 void  Panel::SetPanelStrip(PanelStrip* new_strip) {
