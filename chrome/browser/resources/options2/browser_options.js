@@ -706,6 +706,9 @@ cr.define('options', function() {
     },
 
     maybeShowSessionRestoreDialog_: function() {
+      // Don't show this dialog in Guest mode.
+      if (cr.isChromeOS && AccountsOptions.loggedInAsGuest())
+        return;
       // If either of the needed two preferences hasn't been read yet, the
       // corresponding member variable will be undefined and we won't display
       // the dialog yet.
