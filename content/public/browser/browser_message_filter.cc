@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/process_util.h"
+#include "base/task_runner.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_sync_message.h"
@@ -69,11 +70,26 @@ void BrowserMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
                                                     BrowserThread::ID* thread) {
 }
 
+base::TaskRunner* BrowserMessageFilter::OverrideTaskRunnerForMessage(
+    const IPC::Message& message) {
+  return NULL;
+}
+
 bool BrowserMessageFilter::OnMessageReceived(const IPC::Message& message) {
   BrowserThread::ID thread = BrowserThread::IO;
   OverrideThreadForMessage(message, &thread);
-  if (thread == BrowserThread::IO)
+
+  if (thread == BrowserThread::IO) {
+    scoped_refptr<base::TaskRunner> runner =
+        OverrideTaskRunnerForMessage(message);
+    if (runner) {
+      runner->PostTask(FROM_HERE,
+          base::Bind(base::IgnoreResult(&BrowserMessageFilter::DispatchMessage),
+                     this, message));
+      return true;
+    }
     return DispatchMessage(message);
+  }
 
   if (thread == BrowserThread::UI && !CheckCanDispatchOnUI(message, this))
     return true;

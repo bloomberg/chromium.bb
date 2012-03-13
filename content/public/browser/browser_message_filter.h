@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,10 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
+
+namespace base {
+class TaskRunner;
+}
 
 namespace content {
 
@@ -36,15 +40,26 @@ class CONTENT_EXPORT BrowserMessageFilter :
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // If you want the given message to be dispatched to your OnMessageReceived on
-  // a different thread, change |thread| to the id of the target thread.
-  // If you don't handle this message, or want to keep it on the IO thread, do
-  // nothing.
-  virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        content::BrowserThread::ID* thread);
+  // a different thread, there are two options, either
+  // OverrideThreadForMessage or OverrideTaskRunnerForMessage.
+  // If neither is overriden, the message will be dispatched on the IO thread.
+
+  // If you want the message to be dispatched on a particular well-known
+  // browser thread, change |thread| to the id of the target thread
+  virtual void OverrideThreadForMessage(
+      const IPC::Message& message,
+      BrowserThread::ID* thread);
+
+  // If you want the message to be dispatched via the SequencedWorkerPool,
+  // return a non-null task runner which will target tasks accordingly.
+  // Note: To target the UI thread, please use OverrideThreadForMessage
+  // since that has extra checks to avoid deadlocks.
+  virtual base::TaskRunner* OverrideTaskRunnerForMessage(
+      const IPC::Message& message);
 
   // Override this to receive messages.
   // Your function will normally be called on the IO thread.  However, if your
-  // OverrideThreadForMessage modifies the thread used to dispatch the message,
+  // OverrideXForMessage modifies the thread used to dispatch the message,
   // your function will be called on the requested thread.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) = 0;
