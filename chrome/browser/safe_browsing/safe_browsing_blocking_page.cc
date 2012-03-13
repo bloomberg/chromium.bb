@@ -687,7 +687,7 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&MalwareDetails::FinishCollection, malware_details_.get()),
-        delay_ms);
+        base::TimeDelta::FromMilliseconds(delay_ms));
   }
 }
 

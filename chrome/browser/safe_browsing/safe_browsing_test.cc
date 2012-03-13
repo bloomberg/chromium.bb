@@ -458,7 +458,7 @@ class SafeBrowsingServiceTestHelper
         FROM_HERE,
         base::Bind(&SafeBrowsingServiceTestHelper::CheckStatusOnIOThread,
                    this),
-        wait_time_msec);
+        base::TimeDelta::FromMilliseconds(wait_time_msec));
     // Will continue after OnWaitForStatusUpdateDone().
     ui_test_utils::RunMessageLoop();
   }
@@ -475,7 +475,7 @@ class SafeBrowsingServiceTestHelper
       // Wait and try again if last fetch was failed. The loop will hit the
       // timeout in OutOfProcTestRunner if the fetch can not get success
       // response.
-      base::PlatformThread::Sleep(TestTimeouts::tiny_timeout_ms());
+      base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
     }
   }
 

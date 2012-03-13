@@ -401,7 +401,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
         FROM_HERE,
         base::Bind(&CheckClientDownloadRequest::Cancel,
                    timeout_weakptr_factory_.GetWeakPtr()),
-        service_->download_request_timeout_ms());
+        base::TimeDelta::FromMilliseconds(
+            service_->download_request_timeout_ms()));
   }
 
   // Canceling a request will cause us to always report the result as SAFE

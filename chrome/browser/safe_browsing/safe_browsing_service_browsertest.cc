@@ -221,7 +221,7 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SafeBrowsingService::HandleGetHashResults,
                    sb_service_, check, full_hashes_, cancache),
-        delay_ms_);
+        base::TimeDelta::FromMilliseconds(delay_ms_));
   }
 
   // Prepare the GetFullHash results for the next request.
