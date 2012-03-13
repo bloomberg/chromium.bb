@@ -18,7 +18,7 @@ class PPAPI_SHARED_EXPORT PPB_NetworkList_Private_Shared
     : public ::ppapi::Resource,
       public ::ppapi::thunk::PPB_NetworkList_Private_API {
  public:
-  struct NetworkInfo {
+  struct PPAPI_SHARED_EXPORT NetworkInfo {
     NetworkInfo();
     ~NetworkInfo();
 
