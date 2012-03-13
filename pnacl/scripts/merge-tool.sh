@@ -90,7 +90,6 @@ get-upstream() {
   pnacl-build hg-checkout-upstream
   pnacl-build hg-pull-upstream
   pnacl-build hg-update-upstream
-  pnacl-build hg-info-all
 }
 
 #+ merge-all             - Merge everything
@@ -264,6 +263,7 @@ hg-merge() {
 
   StepBanner "hg-merge" "Merging vendor into ${UPSTREAM_BRANCH}"
   spushd "${TC_SRC_UPSTREAM}"
+  hg parent
   hg "${HG_CONFIG[@]}" -y merge -r vendor 2>&1 | tee "${MERGE_LOG_FILE}"
   local hgret=${PIPESTATUS[0]}
   if [ ${hgret} -ne 0 ] ||
