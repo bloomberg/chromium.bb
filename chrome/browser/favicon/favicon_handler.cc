@@ -445,7 +445,7 @@ int FaviconHandler::ScheduleDownload(
 
 gfx::Image FaviconHandler::ResizeFaviconIfNeeded(const gfx::Image& image) {
   // Get an SkBitmap from the gfx::Image.
-  const SkBitmap& bitmap = image;
+  SkBitmap bitmap = *image.ToSkBitmap();
   int width = bitmap.width();
   int height = bitmap.height();
   if (width > 0 && height > 0) {

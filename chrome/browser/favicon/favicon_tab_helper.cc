@@ -173,7 +173,7 @@ void FaviconTabHelper::DidNavigateMainFrame(
 }
 
 bool FaviconTabHelper::OnMessageReceived(const IPC::Message& message) {
-  bool message_handled = true;
+  bool message_handled = false;   // Allow other handlers to receive these.
   IPC_BEGIN_MESSAGE_MAP(FaviconTabHelper, message)
     IPC_MESSAGE_HANDLER(IconHostMsg_DidDownloadFavicon, OnDidDownloadFavicon)
     IPC_MESSAGE_HANDLER(IconHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)

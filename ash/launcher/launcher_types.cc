@@ -6,6 +6,8 @@
 
 namespace ash {
 
+const int kLauncherPreferredHeight = 48;
+
 LauncherItem::LauncherItem()
     : type(TYPE_TABBED),
       num_tabs(1),

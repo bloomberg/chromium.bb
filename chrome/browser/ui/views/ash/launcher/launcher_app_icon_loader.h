@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_ICON_LOADER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_ICON_LOADER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
+#define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_
 #pragma once
 
 #include <map>
@@ -18,11 +18,11 @@ class Profile;
 
 // Default implementation of LauncherUpdater::AppIconLoader that interacts
 // with the ExtensionService and ImageLoadingTracker to load images.
-class LauncherIconLoader : public ChromeLauncherDelegate::AppIconLoader,
-                           public ImageLoadingTracker::Observer {
+class LauncherAppIconLoader : public ChromeLauncherDelegate::AppIconLoader,
+                              public ImageLoadingTracker::Observer {
  public:
-  LauncherIconLoader(Profile* profile, ChromeLauncherDelegate* host);
-  virtual ~LauncherIconLoader();
+  LauncherAppIconLoader(Profile* profile, ChromeLauncherDelegate* host);
+  virtual ~LauncherAppIconLoader();
 
   // AppIconLoader:
   virtual std::string GetAppID(TabContentsWrapper* tab) OVERRIDE;
@@ -54,7 +54,7 @@ class LauncherIconLoader : public ChromeLauncherDelegate::AppIconLoader,
   // Maps from id from the ImageLoadingTracker to the extension id.
   ImageLoaderIDToExtensionIDMap map_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherIconLoader);
+  DISALLOW_COPY_AND_ASSIGN(LauncherAppIconLoader);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_ICON_LOADER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_LAUNCHER_APP_ICON_LOADER_H_

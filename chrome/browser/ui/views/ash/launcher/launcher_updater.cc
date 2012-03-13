@@ -51,6 +51,11 @@ LauncherUpdater::~LauncherUpdater() {
 
 void LauncherUpdater::Init() {
   tab_model_->AddObserver(this);
+  if (type_ == TYPE_PANEL) {
+    favicon_loader_.reset(
+        new LauncherFaviconLoader(
+            this, tab_model_->GetActiveTabContents()->web_contents()));
+  }
   if (type_ == TYPE_APP || type_ == TYPE_PANEL) {
     // App type never changes, create the launcher item immediately.
     ChromeLauncherDelegate::AppType app_type =
@@ -155,6 +160,14 @@ void LauncherUpdater::TabReplacedAt(TabStripModel* tab_strip_model,
                                     TabContentsWrapper* old_contents,
                                     TabContentsWrapper* new_contents,
                                     int index) {
+  if (type_ == TYPE_PANEL) {
+    DCHECK(index == 0);
+    if (new_contents->web_contents() != old_contents->web_contents()) {
+      favicon_loader_.reset(
+          new LauncherFaviconLoader(this, new_contents->web_contents()));
+    }
+  }
+
   AppTabMap::iterator i = app_map_.find(old_contents);
   if (i != app_map_.end()) {
     AppTabDetails details = i->second;
@@ -185,6 +198,10 @@ void LauncherUpdater::TabDetachedAt(TabContentsWrapper* contents, int index) {
   }
 }
 
+void LauncherUpdater::FaviconUpdated() {
+  UpdateLauncher(tab_model_->GetActiveTabContents());
+}
+
 void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   if (type_ == TYPE_APP)
     return;  // TYPE_APP is entirely maintained by ChromeLauncherDelegate.
@@ -199,13 +216,13 @@ void LauncherUpdater::UpdateLauncher(TabContentsWrapper* tab) {
   ash::LauncherItem item = launcher_model()->items()[item_index];
   if (type_ == TYPE_PANEL) {
     // Update the icon for app panels.
-    // TODO(stevenjb): Get a large favicon for the launcher.
-    if (!tab->favicon_tab_helper()->GetFavicon().empty())
-      item.image = tab->favicon_tab_helper()->GetFavicon();
-    else if (tab->extension_tab_helper()->GetExtensionAppIcon())
-      item.image = *tab->extension_tab_helper()->GetExtensionAppIcon();
-    else
-      item.image = Extension::GetDefaultIcon(true);
+    item.image = favicon_loader_->GetFavicon();
+    if (item.image.empty()) {
+      if (tab->extension_tab_helper()->GetExtensionAppIcon())
+        item.image = *tab->extension_tab_helper()->GetExtensionAppIcon();
+      else
+        item.image = Extension::GetDefaultIcon(true);
+    }
   } else if (launcher_model()->items()[item_index].type == ash::TYPE_APP) {
     // Use the app icon if we can.
     if (tab->extension_tab_helper()->GetExtensionAppIcon())

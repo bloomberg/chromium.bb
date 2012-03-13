@@ -224,6 +224,10 @@ class BrowserView : public BrowserWindow,
     move_observer_ = observer;
   }
 
+#if defined(USE_AURA)
+  LauncherUpdater* icon_updater() const { return icon_updater_.get(); }
+#endif
+
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;

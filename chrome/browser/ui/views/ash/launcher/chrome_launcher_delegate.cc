@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/views/ash/launcher/launcher_app_icon_loader.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_context_menu.h"
-#include "chrome/browser/ui/views/ash/launcher/launcher_icon_loader.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -74,7 +74,7 @@ ChromeLauncherDelegate::ChromeLauncherDelegate(Profile* profile,
   }
   instance_ = this;
   model_->AddObserver(this);
-  app_icon_loader_.reset(new LauncherIconLoader(profile_, this));
+  app_icon_loader_.reset(new LauncherAppIconLoader(profile_, this));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile_));

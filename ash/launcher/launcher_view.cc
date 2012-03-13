@@ -40,10 +40,6 @@ namespace internal {
 // Amount content is inset on the left edge.
 static const int kLeadingInset = 8;
 
-// Height of the LauncherView. Hard coded to avoid resizing as items are
-// added/removed.
-static const int kPreferredHeight = 48;
-
 // Minimum distance before drag starts.
 static const int kMinimumDragDistance = 8;
 
@@ -280,7 +276,7 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   for (int i = 0; i < view_model_->view_size(); ++i) {
     gfx::Size pref(kButtonWidth, kButtonHeight);
     view_model_->set_ideal_bounds(i, gfx::Rect(
-        x, (kPreferredHeight - pref.height()) / 2, pref.width(),
+        x, (kLauncherPreferredHeight - pref.height()) / 2, pref.width(),
         pref.height()));
     x += pref.width() + kButtonSpacing;
   }
@@ -306,7 +302,7 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
         kLeadingInset : view_model_->ideal_bounds(last_visible_index).right();
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(
-        (kPreferredHeight - bounds->overflow_bounds.height()) / 2);
+        (kLauncherPreferredHeight - bounds->overflow_bounds.height()) / 2);
     x = bounds->overflow_bounds.right();
   }
 }
@@ -520,9 +516,10 @@ gfx::Size LauncherView::GetPreferredSize() {
   if (view_model_->view_size() >= 2) {
     // Should always have two items.
     return gfx::Size(view_model_->ideal_bounds(1).right() + kLeadingInset,
-                     kPreferredHeight);
+                     kLauncherPreferredHeight);
   }
-  return gfx::Size(kButtonWidth * 2 + kLeadingInset * 2, kPreferredHeight);
+  return gfx::Size(kButtonWidth * 2 + kLeadingInset * 2,
+                   kLauncherPreferredHeight);
 }
 
 void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

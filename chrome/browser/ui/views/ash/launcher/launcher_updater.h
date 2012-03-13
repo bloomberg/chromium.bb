@@ -14,10 +14,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/views/ash/launcher/launcher_favicon_loader.h"
 #include "ash/launcher/launcher_types.h"
 
 class Browser;
 class ChromeLauncherDelegate;
+class LauncherFaviconLoader;
 class TabContentsWrapper;
 
 namespace ash {
@@ -30,7 +32,8 @@ class Window;
 
 // LauncherUpdater is responsible for keeping the launcher representation of a
 // window up to date as the tab strip changes.
-class LauncherUpdater : public TabStripModelObserver {
+class LauncherUpdater : public TabStripModelObserver,
+                        public LauncherFaviconLoader::Delegate {
  public:
   enum Type {
     TYPE_APP,
@@ -60,7 +63,11 @@ class LauncherUpdater : public TabStripModelObserver {
 
   TabContentsWrapper* GetTab(ash::LauncherID id);
 
-  // TabStripModel overrides:
+  LauncherFaviconLoader* favicon_loader() const {
+    return favicon_loader_.get();
+  }
+
+  // TabStripModelObserver overrides:
   virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index,
@@ -77,6 +84,9 @@ class LauncherUpdater : public TabStripModelObserver {
                              TabContentsWrapper* new_contents,
                              int index) OVERRIDE;
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
+
+  // LauncherFaviconLoader::Delegate overrides:
+  virtual void FaviconUpdated() OVERRIDE;
 
  private:
   // AppTabDetails is used to identify a launcher item that corresponds to an
@@ -142,6 +152,9 @@ class LauncherUpdater : public TabStripModelObserver {
 
   // Used for any app tabs.
   AppTabMap app_map_;
+
+  // Loads launcher sized favicons for panels.
+  scoped_ptr<LauncherFaviconLoader> favicon_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherUpdater);
 };
