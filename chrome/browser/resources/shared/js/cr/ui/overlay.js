@@ -51,10 +51,18 @@ cr.define('cr.ui.overlay', function() {
    * @param {HTMLElement} overlay The .overlay.
    */
   function setupOverlay(overlay) {
-    /* Remove the 'shake' animation any time the overlay is hidden or shown.
+    // Close the overlay on clicking any of the pages' close buttons.
+    var closeButtons = overlay.querySelectorAll('.page .close-button');
+    for (var i = 0; i < closeButtons.length; i++) {
+      closeButtons[i].addEventListener('click', function(e) {
+        cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
+      });
+    }
+
+    /* Remove the 'pulse' animation any time the overlay is hidden or shown.
      */
     overlay.__defineSetter__('hidden', function(value) {
-      this.classList.remove('shake');
+      this.classList.remove('pulse');
       if (value)
         this.setAttribute('hidden', true);
       else
@@ -66,17 +74,17 @@ cr.define('cr.ui.overlay', function() {
 
     /* Shake when the user clicks away. */
     overlay.addEventListener('click', function(e) {
-      // Only shake if the overlay was the target of the click.
+      // Only pulse if the overlay was the target of the click.
       if (this != e.target)
         return;
 
       // This may be null while the overlay is closing.
       var overlayPage = this.querySelector('.page:not([hidden])');
       if (overlayPage)
-        overlayPage.classList.add('shake');
+        overlayPage.classList.add('pulse');
     });
     overlay.addEventListener('webkitAnimationEnd', function(e) {
-      e.target.classList.remove('shake');
+      e.target.classList.remove('pulse');
     });
   }
 

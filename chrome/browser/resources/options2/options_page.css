@@ -188,14 +188,6 @@ html[touch-optimized] body {
   margin-top: 45px;
 }
 
-.overlay .page h1 {
-  background: -webkit-linear-gradient(white, #F8F8F8);
-  border-bottom: 1px solid rgba(188, 193, 208, .5);
-  font-size: 105%;
-  font-weight: bold;
-  padding: 10px 15px 8px 15px;
-}
-
 .page list {
   /* Min height is a multiple of the list item height (32) */
   min-height: 192px;

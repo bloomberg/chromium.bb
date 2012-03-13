@@ -22,9 +22,11 @@
 
 /* The foreground dialog. */
 .overlay .page {
+  -webkit-border-radius: 3px;
   -webkit-box-orient: vertical;
   background: white;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 3px 57px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);
+  color: #333;
   display: -webkit-box;
   height: 90%;
   max-height: 640px;
@@ -33,53 +35,73 @@
   position: relative;
 }
 
-/* keyframes used to shake the overlay */
-@-webkit-keyframes shake {
-  0% {
-    -webkit-transform: translateX(-5px) rotateZ(-0.5deg) translateY(-2px);
+/* keyframes used to pulse the overlay */
+@-webkit-keyframes pulse {
+ 0% {
+   -webkit-transform: scale(1);
+ }
+ 40% {
+   -webkit-transform: scale(1.02);
   }
-  50% {
-    -webkit-transform: translateX(0px) rotateZ(0deg) translateY(0px);
+ 60% {
+   -webkit-transform: scale(1.02);
   }
-  100% {
-    -webkit-transform: translateX(5px) rotateZ(0.5deg) translateY(-2px);
-  }
+ 100% {
+   -webkit-transform: scale(1);
+ }
 }
 
-.overlay .page.shake {
-  -webkit-animation-direction: alternate;
-  -webkit-animation-duration: 60ms;
-  -webkit-animation-iteration-count: 7;
-  -webkit-animation-name: shake;
+.overlay .page.pulse {
+  -webkit-animation-duration: 180ms;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-name: pulse;
   -webkit-animation-timing-function: ease-in-out;
+}
+
+.overlay .page .close-button {
+  background-image: url('chrome://resources/images/x.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 44px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 44px;
+}
+
+html[dir='rtl'] .overlay .page .close-button {
+  left: 0;
+  right: auto;
+}
+
+.overlay .page .close-button:hover {
+  background-image: url('chrome://resources/images/x-hover.png');
 }
 
 .overlay .page h1 {
   -webkit-padding-end: 24px;
   -webkit-user-select: none;
-  background: -webkit-linear-gradient(white, #F8F8F8);
-  border-bottom: 1px solid rgba(188, 193, 208, .5);
   color: #333;
-  font-size: 1.1em;
-  font-weight: bold;
+  /* 120% of the body's font-size of 84% is 16px. This will keep the relative
+   * size between the body and these titles consistent. */
+  font-size: 120%;
   margin: 0;
-  padding: 10px 15px 8px;
+  padding: 14px 17px 0;
   text-shadow: white 0 1px 2px;
 }
 
 .overlay .page .content-area {
   -webkit-box-flex: 1;
   overflow: auto;
-  padding: 10px 15px 5px;
+  padding: 14px 17px 6px;
 }
 
 .overlay .page .action-area {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
-  border-top: 1px solid rgba(188, 193, 208, .5);
   display: -webkit-box;
-  padding: 12px;
+  padding: 14px;
 }
 
 html[dir='rtl'] .overlay .page .action-area {

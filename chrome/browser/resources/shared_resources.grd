@@ -68,6 +68,10 @@ without changes to the corresponding grd file. -->
                file="shared/images/throbber.svg" type="BINDATA" />
       <include name="IDR_SHARED_IMAGES_TRASH"
                file="shared/images/trash.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_X"
+               file="shared/images/x.png" type="BINDATA" />
+      <include name="IDR_SHARED_IMAGES_X_HOVER"
+               file="shared/images/x-hover.png" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR"
                file="shared/js/cr.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_COMMAND_LINE"
