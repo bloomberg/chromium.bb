@@ -34,7 +34,6 @@ include_rules = [
   "+content/browser/download/download_state_info.h",
   "+content/browser/download/download_types.h",
   "+content/browser/geolocation/wifi_data_provider_common.h",
-  "+content/browser/plugin_service_filter.h",
   "+content/browser/renderer_host/mock_render_process_host.h",
   "+content/browser/renderer_host/render_process_host_browsertest.h",
   "+content/browser/renderer_host/render_view_host_factory.h",

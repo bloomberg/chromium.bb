@@ -9,14 +9,14 @@
 #include <map>
 #include <vector>
 
-#include "base/hash_tables.h"
 #include "base/file_path.h"
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "content/browser/plugin_service_filter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/plugin_service_filter.h"
 #include "googleurl/src/gurl.h"
 
 class PluginPrefs;
