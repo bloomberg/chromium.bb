@@ -576,6 +576,7 @@ class Browser : public TabHandlerDelegate,
                     const GURL& url,
                     const content::SSLStatus& ssl,
                     bool show_history);
+  void ShowChromeToMobileBubble();
 
   // Returns true if the Browser supports the specified feature. The value of
   // this varies during the lifetime of the browser. For example, if the window

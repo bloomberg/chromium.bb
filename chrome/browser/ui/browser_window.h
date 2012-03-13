@@ -214,6 +214,9 @@ class BrowserWindow : public BaseWindow {
   // |already_bookmarked| is true if the url is already bookmarked.
   virtual void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) = 0;
 
+  // Shows the Chrome To Mobile bubble.
+  virtual void ShowChromeToMobileBubble() = 0;
+
   // Whether or not the shelf view is visible.
   virtual bool IsDownloadShelfVisible() const = 0;
 

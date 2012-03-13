@@ -6,6 +6,7 @@
 
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
@@ -90,7 +91,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       // to a non-cloudprint-server URL eg. for authentication).
       bool succeeded = false;
       DictionaryValue* response_dict = NULL;
-      CloudPrintHelpers::ParseResponseJSON(data, &succeeded, &response_dict);
+      cloud_print::ParseResponseJSON(data, &succeeded, &response_dict);
       if (response_dict)
         action = delegate_->HandleJSONData(source,
                                            source->GetURL(),
@@ -159,7 +160,7 @@ void CloudPrintURLFetcher::SetupRequestHeaders() {
   std::string headers = delegate_->GetAuthHeader();
   if (!headers.empty())
     headers += "\r\n";
-  headers += kChromeCloudPrintProxyHeader;
+  headers += cloud_print::kChromeCloudPrintProxyHeader;
   if (!additional_headers_.empty()) {
     headers += "\r\n";
     headers += additional_headers_;

@@ -1947,7 +1947,7 @@ void Browser::BookmarkCurrentPage() {
   // bookmark isn't created if the url is invalid.
   if (window_->IsActive() && model->IsBookmarked(url)) {
     // Only show the bubble if the window is active, otherwise we may get into
-    // weird situations were the bubble is deleted as soon as it is shown.
+    // weird situations where the bubble is deleted as soon as it is shown.
     window_->ShowBookmarkBubble(url, was_bookmarked);
   }
 }
@@ -3033,6 +3033,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_EMAIL_PAGE_LOCATION:   EmailPageLocation();              break;
     case IDC_PRINT:                 Print();                          break;
     case IDC_ADVANCED_PRINT:        AdvancedPrint();                  break;
+    case IDC_CHROME_TO_MOBILE_PAGE: ShowChromeToMobileBubble();       break;
     case IDC_ENCODING_AUTO_DETECT:  ToggleEncodingAutoDetect();       break;
     case IDC_ENCODING_UTF8:
     case IDC_ENCODING_UTF16LE:
@@ -4018,6 +4019,13 @@ void Browser::ShowPageInfo(content::WebContents* web_contents,
   } else {
     window()->ShowPageInfo(profile, url, ssl, show_history);
   }
+}
+
+void Browser::ShowChromeToMobileBubble() {
+  // Only show the bubble if the window is active, otherwise we may get into
+  // weird situations where the bubble is deleted as soon as it is shown.
+  if (window_->IsActive())
+    window_->ShowChromeToMobileBubble();
 }
 
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {

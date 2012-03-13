@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,6 @@ const char kPrinterRemoveTagValue[] = "remove_tag";
 const char kMessageTextValue[] = "message";
 
 // Values in the respone JSON from the cloud print server
-const char kPrinterListValue[] = "printers";
-const char kSuccessValue[] = "success";
 const char kNameValue[] = "name";
 const char kIdValue[] = "id";
 const char kTicketUrlValue[] = "ticketUrl";
@@ -34,15 +32,11 @@ const char kProxyTagPrefix[] = "__cp__";
 const char kTagsHashTagName[] = "__cp__tagshash";
 const char kTagDryRunFlag[] = "__cp__dry_run";
 
-
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
 const char kCloudPrintGaiaServiceId[] = "cloudprint";
 const char kSyncGaiaServiceId[] = "chromiumsync";
 const char kProxyAuthUserAgent[] = "ChromiumBrowser";
 const char kCloudPrintPushNotificationsSource[] = "cloudprint.google.com";
-// The cloud print server expects the X-Google-CloudPrint-Proxy header for
-// certain requests.
-const char kChromeCloudPrintProxyHeader[] = "X-CloudPrint-Proxy: Chrome";
 
 // The string to be appended to the user-agent for cloudprint requests.
 const char kCloudPrintUserAgent[] = "GoogleCloudPrintProxy";
@@ -65,4 +59,3 @@ const char kEnumPrintersFailedMessageId[] = "enumfail";
 const char kDefaultCloudPrintOAuthClientId[] =
     "551556820943.apps.googleusercontent.com";
 const char kDefaultCloudPrintOAuthClientSecret[] = "u3/mp8CgLFxh4uiX1855/MHe";
-

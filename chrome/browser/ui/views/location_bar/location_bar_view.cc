@@ -17,6 +17,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/chrome_to_mobile_service.h"
+#include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/location_bar/chrome_to_mobile_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
@@ -135,6 +138,7 @@ LocationBarView::LocationBarView(Browser* browser,
 #endif
       keyword_hint_view_(NULL),
       star_view_(NULL),
+      chrome_to_mobile_view_(NULL),
       mode_(mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
@@ -223,11 +227,23 @@ void LocationBarView::Init() {
     content_blocked_view->SetVisible(false);
   }
 
-  // The star is not visible in popups and in the app launcher.
+  // Hide the star and Chrome To Mobile icons in popups and in the app launcher.
   if (browser_defaults::bookmarks_enabled && (mode_ == NORMAL)) {
     star_view_ = new StarView(browser_->command_updater());
     AddChildView(star_view_);
     star_view_->SetVisible(true);
+
+    // Also disable Chrome To Mobile for off-the-record and non-synced profiles.
+    Profile* profile = browser_->profile();
+    if (!profile->IsOffTheRecord() && profile->IsSyncAccessible()) {
+      chrome_to_mobile_view_ =
+          new ChromeToMobileView(this, browser_->command_updater());
+      AddChildView(chrome_to_mobile_view_);
+      ChromeToMobileService* service =
+          ChromeToMobileServiceFactory::GetForProfile(browser_->profile());
+      service->RequestMobileListUpdate();
+      chrome_to_mobile_view_->SetVisible(!service->mobiles().empty());
+    }
   }
 
   // Initialize the location entry. We do this to avoid a black flash which is
@@ -302,10 +318,18 @@ void LocationBarView::SetAnimationOffset(int offset) {
 void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   bool star_enabled = star_view_ && !model_->input_in_progress() &&
                       edit_bookmarks_enabled_.GetValue();
-  browser_->command_updater()->UpdateCommandEnabled(
-      IDC_BOOKMARK_PAGE, star_enabled);
+  CommandUpdater* command_updater = browser_->command_updater();
+  command_updater->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   if (star_view_)
     star_view_->SetVisible(star_enabled);
+
+  Profile* profile = browser_->profile();
+  bool chrome_to_mobile_enabled = chrome_to_mobile_view_ &&
+      !model_->input_in_progress() && profile->IsSyncAccessible() &&
+      !ChromeToMobileServiceFactory::GetForProfile(profile)->mobiles().empty();
+  command_updater->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
+                                        chrome_to_mobile_enabled);
+
   RefreshContentSettingViews();
   RefreshPageActionViews();
   // Don't Update in app launcher mode so that the location entry does not show
@@ -400,6 +424,13 @@ void LocationBarView::SetStarToggled(bool on) {
 void LocationBarView::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
   browser::ShowBookmarkBubbleView(star_view_, browser_->profile(), url,
                                   newly_bookmarked);
+}
+
+void LocationBarView::ShowChromeToMobileBubble() {
+  ChromeToMobileServiceFactory::GetForProfile(browser_->profile())->
+      RequestMobileListUpdate();
+  browser::ShowChromeToMobileBubbleView(chrome_to_mobile_view_,
+                                        browser_->profile());
 }
 
 gfx::Point LocationBarView::GetLocationEntryOrigin() const {
@@ -526,6 +557,9 @@ void LocationBarView::Layout() {
 
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + kItemPadding;
+  if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible())
+    entry_width -= chrome_to_mobile_view_->GetPreferredSize().width() +
+                   kItemPadding;
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->visible())
@@ -539,7 +573,7 @@ void LocationBarView::Layout() {
   // The gap between the edit and whatever is to its right is shortened.
   entry_width += kEditInternalSpace;
 
-  // Size the EV bubble.  We do this after taking the star/page actions/content
+  // Size the EV bubble after taking star/ChromeToMobile/page actions/content
   // settings out of |entry_width| so we won't take too much space.
   if (ev_bubble_width) {
     // Try to elide the bubble to be no larger than half the total available
@@ -590,6 +624,14 @@ void LocationBarView::Layout() {
     int star_width = star_view_->GetPreferredSize().width();
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
+    offset -= kItemPadding;
+  }
+
+  if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible()) {
+    int icon_width = chrome_to_mobile_view_->GetPreferredSize().width();
+    offset -= icon_width;
+    chrome_to_mobile_view_->SetBounds(offset, location_y,
+                                      icon_width, location_height);
     offset -= kItemPadding;
   }
 
@@ -958,6 +1000,8 @@ void LocationBarView::RefreshPageActionViews() {
     DeletePageActionViews();  // Delete the old views (if any).
 
     page_action_views_.resize(page_actions.size());
+    View* view = chrome_to_mobile_view_ ? chrome_to_mobile_view_ :
+                                          static_cast<View*>(star_view_);
 
     // Add the page actions in reverse order, so that the child views are
     // inserted in left-to-right order for accessibility.
@@ -965,7 +1009,7 @@ void LocationBarView::RefreshPageActionViews() {
       page_action_views_[i] = new PageActionWithBadgeView(
           new PageActionImageView(this, page_actions[i]));
       page_action_views_[i]->SetVisible(false);
-      AddChildViewAt(page_action_views_[i], GetIndexOf(star_view_));
+      AddChildViewAt(page_action_views_[i], GetIndexOf(view));
     }
   }
 

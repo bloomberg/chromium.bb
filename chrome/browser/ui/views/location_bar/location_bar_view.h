@@ -33,6 +33,7 @@
 #endif
 
 class Browser;
+class ChromeToMobileView;
 class ContentSettingImageView;
 class EVBubbleView;
 class ExtensionAction;
@@ -151,6 +152,9 @@ class LocationBarView : public LocationBar,
 
   // Shows the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_bookmarked);
+
+  // Shows the Chrome To Mobile bubble.
+  void ShowChromeToMobileBubble();
 
   // Returns the screen coordinates of the location entry (where the URL text
   // appears, not where the icons are shown).
@@ -408,6 +412,9 @@ class LocationBarView : public LocationBar,
 
   // The star.
   StarView* star_view_;
+
+  // The Chrome To Mobile page action icon view.
+  ChromeToMobileView* chrome_to_mobile_view_;
 
   // The mode that dictates how the bar shows.
   Mode mode_;

@@ -1069,6 +1069,10 @@ void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
   toolbar_->GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);
 }
 
+void BrowserWindowGtk::ShowChromeToMobileBubble() {
+  NOTIMPLEMENTED();
+}
+
 bool BrowserWindowGtk::IsDownloadShelfVisible() const {
   return download_shelf_.get() && download_shelf_->IsShowing();
 }

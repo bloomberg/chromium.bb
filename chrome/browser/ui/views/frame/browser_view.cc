@@ -1126,6 +1126,10 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   GetLocationBarView()->ShowStarBubble(url, !already_bookmarked);
 }
 
+void BrowserView::ShowChromeToMobileBubble() {
+  GetLocationBarView()->ShowChromeToMobileBubble();
+}
+
 void BrowserView::SetDownloadShelfVisible(bool visible) {
   // This can be called from the superclass destructor, when it destroys our
   // child views. At that point, browser_ is already gone.

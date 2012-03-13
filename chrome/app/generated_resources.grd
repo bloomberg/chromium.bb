@@ -5782,6 +5782,9 @@ Because search results are requested even while you're typing your query, your d
       <message name="IDS_ACCNAME_STAR" desc="The accessible name for the bookmark button.">
         Bookmark
       </message>
+      <message name="IDS_ACCNAME_CHROME_TO_MOBILE" desc="The accessible name for the Chrome To Mobile button.">
+        Chrome To Mobile
+      </message>
       <message name="IDS_ACCNAME_FIND" desc="The accessible name for the find button.">
         Find
       </message>
@@ -6981,6 +6984,47 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Choose Another Folder...
         </message>
       </if>
+
+      <!-- Chrome To Mobile bubble messages -->
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SINGLE_TITLE" desc="Title of the bubble when a single mobile device is available.">
+        Send this page to <ph name="DEVICE_NAME">$1<ex>Galaxy Nexus</ex></ph>.
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_MULTI_TITLE" desc="Title of the bubble when multiple mobile devices are available.">
+        Send this page to:
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY" desc="Checkbox for optionally sending an offline copy of the page to the mobile device.">
+        Also send a copy for offline viewing (<ph name="PAGE_SIZE">$1<ex>111kB</ex></ph>)
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_GENERATING" desc="Placeholder PAGE_SIZE text indicating that the offline copy is being generated.">
+        generating...
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_FAILED" desc="Text indicating that the offline copy generation failed.">
+        An error occured while generating the offline copy
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SEND" desc="Button to send the page to the target mobile device.">
+        Send
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_0" desc="First label indicating that the page is being sent to the device.">
+        Sending
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_1" desc="Second label indicating that the page is being sent to the device.">
+        Sending.
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_2" desc="Third label indicating that the page is being sent to the device.">
+        Sending..
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENDING_3" desc="Fourth label indicating that the page is being sent to the device.">
+        Sending...
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_SENT" desc="Label indicating that the page has been sent to the device.">
+        Sent!
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_ERROR" desc="Label indicating that an error has occured.">
+        An error occured while sending the page
+      </message>
+      <message name="IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP" desc="The tooltip for the Chrome To Mobile button.">
+        Send this page to your mobile device
+      </message>
 
       <!-- Application window menu -->
       <if expr="not pp_ifdef('use_titlecase')">

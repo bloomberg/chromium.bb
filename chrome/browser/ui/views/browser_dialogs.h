@@ -50,6 +50,11 @@ void ShowBookmarkBubbleView(views::View* anchor_view,
 void HideBookmarkBubbleView();
 bool IsBookmarkBubbleViewShowing();
 
+// Shows or hides the Chrome To Mobile bubble anchored to the supplied view.
+void ShowChromeToMobileBubbleView(views::View* anchor_view, Profile* profile);
+void HideChromeToMobileBubbleView();
+bool IsChromeToMobileBubbleViewShowing();
+
 // Shows the page info bubble anchored to the supplied view.
 void ShowPageInfoBubble(views::View* anchor_view,
                         Profile* profile,

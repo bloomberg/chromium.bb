@@ -486,6 +486,10 @@ void Panel::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   NOTIMPLEMENTED();
 }
 
+void Panel::ShowChromeToMobileBubble() {
+  NOTIMPLEMENTED();
+}
+
 bool Panel::IsDownloadShelfVisible() const {
   return false;
 }

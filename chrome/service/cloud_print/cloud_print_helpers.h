@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,8 @@ class CloudPrintHelpers {
                                        const std::string& job_id,
                                        cloud_print::PrintJobStatus status);
   static GURL GetUrlForJobStatusUpdate(
-      const GURL& cloud_print_server_url, const std::string& job_id,
+      const GURL& cloud_print_server_url,
+      const std::string& job_id,
       const cloud_print::PrintJobDetails& details);
   static GURL GetUrlForUserMessage(const GURL& cloud_print_server_url,
                                    const std::string& message_id);
@@ -42,22 +43,6 @@ class CloudPrintHelpers {
                                    const std::string& oauth_client_id,
                                    const std::string& proxy_id);
 
-
-  // Parses the response data for any cloud print server request. The method
-  // returns false if there was an error in parsing the JSON. The succeeded
-  // value returns the value of the "success" value in the response JSON.
-  // Returns the response as a dictionary value.
-  static bool ParseResponseJSON(const std::string& response_data,
-                                bool* succeeded,
-                                base::DictionaryValue** response_dict);
-
-  // Prepares one value as part of a multi-part upload request.
-  static void AddMultipartValueForUpload(
-      const std::string& value_name, const std::string& value,
-      const std::string& mime_boundary, const std::string& content_type,
-      std::string* post_data);
-// Create a MIME boundary marker (27 '-' characters followed by 16 hex digits).
-  static void CreateMimeBoundaryForUpload(std::string *out);
   // Generates an MD5 hash of the contents of a string map.
   static std::string GenerateHashOfStringMap(
       const std::map<std::string, std::string>& string_map);

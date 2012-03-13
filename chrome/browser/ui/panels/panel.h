@@ -136,6 +136,7 @@ class Panel : public BrowserWindow,
   virtual void ShowBackgroundPages() OVERRIDE;
   virtual void ShowBookmarkBubble(
       const GURL& url, bool already_bookmarked) OVERRIDE;
+  virtual void ShowChromeToMobileBubble() OVERRIDE;
   virtual bool IsDownloadShelfVisible() const OVERRIDE;
   virtual DownloadShelf* GetDownloadShelf() OVERRIDE;
   virtual void ConfirmBrowserCloseWithPendingDownloads() OVERRIDE;

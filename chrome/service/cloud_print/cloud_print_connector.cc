@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "grit/generated_resources.h"
@@ -177,7 +178,8 @@ CloudPrintConnector::HandlePrinterListResponse(
   // Go through the list of the cloud printers and init print job handlers.
   ListValue* printer_list = NULL;
   // There may be no "printers" value in the JSON
-  if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
+  if (json_data->GetList(cloud_print::kPrinterListValue, &printer_list)
+      && printer_list) {
     for (size_t index = 0; index < printer_list->GetSize(); index++) {
       DictionaryValue* printer_data = NULL;
       if (printer_list->GetDictionary(index, &printer_data)) {
@@ -233,7 +235,7 @@ CloudPrintConnector::HandleRegisterPrinterResponse(
   if (succeeded) {
     ListValue* printer_list = NULL;
     // There should be a "printers" value in the JSON
-    if (json_data->GetList(kPrinterListValue, &printer_list)) {
+    if (json_data->GetList(cloud_print::kPrinterListValue, &printer_list)) {
       DictionaryValue* printer_data = NULL;
       if (printer_list->GetDictionary(0, &printer_data))
         InitJobHandlerForPrinter(printer_data);
@@ -277,15 +279,12 @@ void CloudPrintConnector::ReportUserMessage(const std::string& message_id,
   // This is a fire and forget type of function.
   // Result of this request will be ignored.
   std::string mime_boundary;
-  CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
+  cloud_print::CreateMimeBoundaryForUpload(&mime_boundary);
   GURL url = CloudPrintHelpers::GetUrlForUserMessage(cloud_print_server_url_,
                                                      message_id);
   std::string post_data;
-  CloudPrintHelpers::AddMultipartValueForUpload(kMessageTextValue,
-                                                failure_msg,
-                                                mime_boundary,
-                                                std::string(),
-                                                &post_data);
+  cloud_print::AddMultipartValueForUpload(kMessageTextValue, failure_msg,
+      mime_boundary, std::string(), &post_data);
   // Terminate the request body
   post_data.append("--" + mime_boundary + "--\r\n");
   std::string mime_type("multipart/form-data; boundary=");
@@ -496,40 +495,32 @@ void CloudPrintConnector::OnReceivePrinterCaps(
   DCHECK(IsSamePrinter(info.printer_name, printer_name));
 
   std::string mime_boundary;
-  CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
+  cloud_print::CreateMimeBoundaryForUpload(&mime_boundary);
   std::string post_data;
 
-  CloudPrintHelpers::AddMultipartValueForUpload(kProxyIdValue, proxy_id_,
-                                                mime_boundary,
-                                                std::string(), &post_data);
-  CloudPrintHelpers::AddMultipartValueForUpload(kPrinterNameValue,
-                                                info.printer_name,
-                                                mime_boundary,
-                                                std::string(), &post_data);
-  CloudPrintHelpers::AddMultipartValueForUpload(kPrinterDescValue,
-                                                info.printer_description,
-                                                mime_boundary,
-                                                std::string() , &post_data);
-  CloudPrintHelpers::AddMultipartValueForUpload(
-      kPrinterStatusValue, base::StringPrintf("%d", info.printer_status),
+  cloud_print::AddMultipartValueForUpload(kProxyIdValue, proxy_id_,
+      mime_boundary, std::string(), &post_data);
+  cloud_print::AddMultipartValueForUpload(kPrinterNameValue, info.printer_name,
+      mime_boundary, std::string(), &post_data);
+  cloud_print::AddMultipartValueForUpload(kPrinterDescValue,
+      info.printer_description, mime_boundary, std::string() , &post_data);
+  cloud_print::AddMultipartValueForUpload(kPrinterStatusValue,
+      base::StringPrintf("%d", info.printer_status),
       mime_boundary, std::string(), &post_data);
   // Add printer options as tags.
   CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(info.options,
                                                              mime_boundary,
                                                              &post_data);
 
-  CloudPrintHelpers::AddMultipartValueForUpload(
-      kPrinterCapsValue, caps_and_defaults.printer_capabilities,
-      mime_boundary, caps_and_defaults.caps_mime_type,
-      &post_data);
-  CloudPrintHelpers::AddMultipartValueForUpload(
-      kPrinterDefaultsValue, caps_and_defaults.printer_defaults,
-      mime_boundary, caps_and_defaults.defaults_mime_type,
-      &post_data);
+  cloud_print::AddMultipartValueForUpload(kPrinterCapsValue,
+      caps_and_defaults.printer_capabilities, mime_boundary,
+      caps_and_defaults.caps_mime_type, &post_data);
+  cloud_print::AddMultipartValueForUpload(kPrinterDefaultsValue,
+      caps_and_defaults.printer_defaults, mime_boundary,
+      caps_and_defaults.defaults_mime_type, &post_data);
   // Send a hash of the printer capabilities to the server. We will use this
   // later to check if the capabilities have changed
-  CloudPrintHelpers::AddMultipartValueForUpload(
-      kPrinterCapsHashValue,
+  cloud_print::AddMultipartValueForUpload(kPrinterCapsHashValue,
       base::MD5String(caps_and_defaults.printer_capabilities),
       mime_boundary, std::string(), &post_data);
 
