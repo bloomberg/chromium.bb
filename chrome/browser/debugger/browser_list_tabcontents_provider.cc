@@ -4,10 +4,12 @@
 
 #include "chrome/browser/debugger/browser_list_tabcontents_provider.h"
 
+#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -54,6 +56,24 @@ BrowserListTabContentsProvider::GetInspectableTabs() {
 }
 
 std::string BrowserListTabContentsProvider::GetDiscoveryPageHTML() {
+  std::set<Profile*> profiles;
+  for (BrowserList::const_iterator it = BrowserList::begin(),
+       end = BrowserList::end(); it != end; ++it) {
+    profiles.insert((*it)->GetProfile());
+  }
+  for (std::set<Profile*>::iterator it = profiles.begin();
+       it != profiles.end(); ++it) {
+    history::TopSites* ts = (*it)->GetTopSites();
+    if (ts) {
+      // TopSites updates itself after a delay. Ask TopSites to update itself
+      // when we're about to show the remote debugging landing page.
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI,
+          FROM_HERE,
+          base::Bind(&history::TopSites::SyncWithHistory,
+                     base::Unretained(ts)));
+    }
+  }
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
