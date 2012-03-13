@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/remove_user_delegate.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_downloader.h"
@@ -290,7 +291,9 @@ UserManagerImpl::UserManagerImpl()
       logged_in_user_(NULL),
       is_current_user_owner_(false),
       is_current_user_new_(false),
+      is_current_user_ephemeral_(false),
       is_user_logged_in_(false),
+      ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
       last_image_set_async_(false),
       downloaded_profile_image_data_url_(chrome::kAboutBlankURL) {
@@ -301,6 +304,7 @@ UserManagerImpl::UserManagerImpl()
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
       content::NotificationService::AllSources());
+  RetrieveTrustedDevicePolicies();
 }
 
 UserManagerImpl::~UserManagerImpl() {
@@ -317,43 +321,52 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
   is_user_logged_in_ = true;
 
   if (email == kGuestUser) {
+    is_current_user_ephemeral_ = true;
     GuestUserLoggedIn();
     return;
   }
 
   if (email == kDemoUser) {
+    is_current_user_ephemeral_ = true;
     DemoUserLoggedIn();
     return;
   }
 
-  EnsureUsersLoaded();
-
-  // Clear the prefs view of the users.
-  PrefService* prefs = g_browser_process->local_state();
-  ListPrefUpdate prefs_users_update(prefs, UserManager::kLoggedInUsers);
-  prefs_users_update->Clear();
-
-  // Make sure this user is first.
-  prefs_users_update->Append(Value::CreateStringValue(email));
-  UserList::iterator logged_in_user = users_.end();
-  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
-    std::string user_email = (*it)->email();
-    // Skip the most recent user.
-    if (email != user_email)
-      prefs_users_update->Append(Value::CreateStringValue(user_email));
-    else
-      logged_in_user = it;
-  }
-
-  if (logged_in_user == users_.end()) {
+  if (IsEphemeralUser(email)) {
     is_current_user_new_ = true;
+    is_current_user_ephemeral_ = true;
     logged_in_user_ = CreateUser(email);
+    SetInitialUserImage(email);
   } else {
-    logged_in_user_ = *logged_in_user;
-    users_.erase(logged_in_user);
+    EnsureUsersLoaded();
+
+    // Clear the prefs view of the users.
+    PrefService* prefs = g_browser_process->local_state();
+    ListPrefUpdate prefs_users_update(prefs, UserManager::kLoggedInUsers);
+    prefs_users_update->Clear();
+
+    // Make sure this user is first.
+    prefs_users_update->Append(Value::CreateStringValue(email));
+    UserList::iterator logged_in_user = users_.end();
+    for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
+      std::string user_email = (*it)->email();
+      // Skip the most recent user.
+      if (email != user_email)
+        prefs_users_update->Append(Value::CreateStringValue(user_email));
+      else
+        logged_in_user = it;
+    }
+
+    if (logged_in_user == users_.end()) {
+      is_current_user_new_ = true;
+      logged_in_user_ = CreateUser(email);
+    } else {
+      logged_in_user_ = *logged_in_user;
+      users_.erase(logged_in_user);
+    }
+    // This user must be in the front of the user list.
+    users_.insert(users_.begin(), logged_in_user_);
   }
-  // This user must be in the front of the user list.
-  users_.insert(users_.begin(), logged_in_user_);
 
   NotifyOnLogin();
 
@@ -422,54 +435,7 @@ void UserManagerImpl::RemoveUser(const std::string& email,
 
 void UserManagerImpl::RemoveUserFromList(const std::string& email) {
   EnsureUsersLoaded();
-
-  // Clear the prefs view of the users.
-  PrefService* prefs = g_browser_process->local_state();
-  ListPrefUpdate prefs_users_update(prefs, UserManager::kLoggedInUsers);
-  prefs_users_update->Clear();
-
-  UserList::iterator user_to_remove = users_.end();
-  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
-    std::string user_email = (*it)->email();
-    // Skip user that we would like to delete.
-    if (email != user_email)
-      prefs_users_update->Append(Value::CreateStringValue(user_email));
-    else
-      user_to_remove = it;
-  }
-
-  DictionaryPrefUpdate prefs_images_update(prefs, UserManager::kUserImages);
-  std::string image_path_string;
-  prefs_images_update->GetStringWithoutPathExpansion(email, &image_path_string);
-  prefs_images_update->RemoveWithoutPathExpansion(email, NULL);
-
-  DictionaryPrefUpdate prefs_oauth_update(prefs,
-                                          UserManager::kUserOAuthTokenStatus);
-  int oauth_status;
-  prefs_oauth_update->GetIntegerWithoutPathExpansion(email, &oauth_status);
-  prefs_oauth_update->RemoveWithoutPathExpansion(email, NULL);
-
-  DictionaryPrefUpdate prefs_display_email_update(
-      prefs, UserManager::kUserDisplayEmail);
-  prefs_display_email_update->RemoveWithoutPathExpansion(email, NULL);
-
-  if (user_to_remove != users_.end()) {
-    --display_name_count_[(*user_to_remove)->GetDisplayName()];
-    delete *user_to_remove;
-    users_.erase(user_to_remove);
-  }
-
-  int default_image_id = User::kInvalidImageIndex;
-  if (!image_path_string.empty() &&
-      !IsDefaultImagePath(image_path_string, &default_image_id)) {
-    FilePath image_path(image_path_string);
-    BrowserThread::PostTask(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&UserManagerImpl::DeleteUserImage,
-                   base::Unretained(this),
-                   image_path));
-  }
+  RemoveUserFromListInternal(email);
 }
 
 bool UserManagerImpl::IsKnownUser(const std::string& email) const {
@@ -477,15 +443,9 @@ bool UserManagerImpl::IsKnownUser(const std::string& email) const {
 }
 
 const User* UserManagerImpl::FindUser(const std::string& email) const {
-  // Speed up search by checking the logged-in user first.
   if (logged_in_user_ && logged_in_user_->email() == email)
     return logged_in_user_;
-  const UserList& users = GetUsers();
-  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-    if ((*it)->email() == email)
-      return *it;
-  }
-  return NULL;
+  return FindUserInList(email);
 }
 
 const User& UserManagerImpl::GetLoggedInUser() const {
@@ -505,15 +465,22 @@ void UserManagerImpl::SaveUserOAuthStatus(
     const std::string& username,
     User::OAuthTokenStatus oauth_token_status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrefService* local_state = g_browser_process->local_state();
-  DictionaryPrefUpdate oauth_status_update(local_state,
-                                           UserManager::kUserOAuthTokenStatus);
-  oauth_status_update->SetWithoutPathExpansion(username,
-      new base::FundamentalValue(static_cast<int>(oauth_token_status)));
+
   DVLOG(1) << "Saving user OAuth token status in Local State";
   User* user = const_cast<User*>(FindUser(username));
   if (user)
     user->set_oauth_token_status(oauth_token_status);
+
+  // Do not update local store if the user is ephemeral.
+  if (IsEphemeralUser(username))
+    return;
+
+  PrefService* local_state = g_browser_process->local_state();
+
+  DictionaryPrefUpdate oauth_status_update(local_state,
+                                           UserManager::kUserOAuthTokenStatus);
+  oauth_status_update->SetWithoutPathExpansion(username,
+      new base::FundamentalValue(static_cast<int>(oauth_token_status)));
 }
 
 User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(
@@ -549,6 +516,10 @@ void UserManagerImpl::SaveUserDisplayEmail(const std::string& username,
     return;  // Ignore if there is no such user.
 
   user->set_display_email(display_email);
+
+  // Do not update local store if the user is ephemeral.
+  if (IsEphemeralUser(username))
+    return;
 
   PrefService* local_state = g_browser_process->local_state();
 
@@ -604,7 +575,7 @@ void UserManagerImpl::DownloadProfileImage(const std::string& reason) {
     return;
   }
 
-  if (GetLoggedInUser().email().empty()) {
+  if (IsLoggedInAsGuest()) {
     // This is a guest login so there's no profile image to download.
     return;
   }
@@ -623,6 +594,9 @@ void UserManagerImpl::Observe(int type,
       BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                               base::Bind(&UserManagerImpl::CheckOwnership,
                                          base::Unretained(this)));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&UserManagerImpl::RetrieveTrustedDevicePolicies,
+          base::Unretained(this)));
       break;
     case chrome::NOTIFICATION_PROFILE_ADDED:
       if (IsUserLoggedIn() && !IsLoggedInAsGuest()) {
@@ -667,6 +641,10 @@ void UserManagerImpl::SetCurrentUserIsOwner(bool is_current_user_owner) {
 
 bool UserManagerImpl::IsCurrentUserNew() const {
   return is_current_user_new_;
+}
+
+bool UserManagerImpl::IsCurrentUserEphemeral() const {
+  return is_current_user_ephemeral_;
 }
 
 bool UserManagerImpl::IsUserLoggedIn() const {
@@ -792,6 +770,80 @@ void UserManagerImpl::EnsureUsersLoaded() {
   }
 }
 
+void UserManagerImpl::RetrieveTrustedDevicePolicies() {
+  ephemeral_users_enabled_ = false;
+  owner_email_ = "";
+
+  CrosSettings* cros_settings = CrosSettings::Get();
+  // Schedule a callback if device policy has not yet been verified.
+  if (!cros_settings->GetTrusted(
+      kAccountsPrefEphemeralUsersEnabled,
+      base::Bind(&UserManagerImpl::RetrieveTrustedDevicePolicies,
+                 base::Unretained(this)))) {
+    return;
+  }
+
+  cros_settings->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
+                            &ephemeral_users_enabled_);
+  cros_settings->GetString(kDeviceOwner, &owner_email_);
+
+  // If ephemeral users are enabled, remove all users except the owner.
+  if (ephemeral_users_enabled_) {
+    scoped_ptr<base::ListValue> users(
+        g_browser_process->local_state()->GetList(kLoggedInUsers)->DeepCopy());
+
+    bool changed = false;
+    for (base::ListValue::const_iterator user = users->begin();
+        user != users->end(); ++user) {
+      std::string user_email;
+      (*user)->GetAsString(&user_email);
+      if (user_email != owner_email_) {
+        RemoveUserFromListInternal(user_email);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      // Trigger a redraw of the login window.
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_SYSTEM_SETTING_CHANGED,
+          content::Source<UserManagerImpl>(this),
+          content::NotificationService::NoDetails());
+    }
+  }
+}
+
+bool UserManagerImpl::AreEphemeralUsersEnabled() const {
+  return ephemeral_users_enabled_ &&
+      (g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ||
+      !owner_email_.empty());
+}
+
+bool UserManagerImpl::IsEphemeralUser(const std::string& email) const {
+  // The guest user always is ephemeral.
+  if (email == guest_user_.email())
+    return true;
+
+  // The currently logged-in user is ephemeral iff logged in as ephemeral.
+  if (logged_in_user_ && (email == logged_in_user_->email()))
+    return is_current_user_ephemeral_;
+
+  // Any other user is ephemeral iff ephemeral users are enabled, the user is
+  // not the owner and is not in the persistent list.
+  return AreEphemeralUsersEnabled() &&
+      (email != owner_email_) &&
+      !FindUserInList(email);
+}
+
+const User* UserManagerImpl::FindUserInList(const std::string& email) const {
+  const UserList& users = GetUsers();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    if ((*it)->email() == email)
+      return *it;
+  }
+  return NULL;
+}
+
 void UserManagerImpl::StubUserLoggedIn() {
   logged_in_user_ = &stub_user_;
   stub_user_.SetImage(GetDefaultImage(kStubDefaultImageIndex),
@@ -874,6 +926,10 @@ void UserManagerImpl::SaveUserImageInternal(const std::string& username,
 
   SetUserImage(username, image_index, image);
 
+  // Ignore for ephemeral users.
+  if (IsEphemeralUser(username))
+    return;
+
   FilePath image_path = GetImagePathForUser(username);
   DVLOG(1) << "Saving user image to " << image_path.value();
 
@@ -919,6 +975,10 @@ void UserManagerImpl::SaveImageToLocalState(const std::string& username,
                                             int image_index,
                                             bool is_async) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Ignore for ephemeral users.
+  if (IsEphemeralUser(username))
+    return;
 
   // TODO(ivankr): use unique filenames for user images each time
   // a new image is set so that only the last image update is saved
@@ -1067,6 +1127,54 @@ User* UserManagerImpl::CreateUser(const std::string& email) const {
   // Used to determine whether user's display name is unique.
   ++display_name_count_[user->GetDisplayName()];
   return user;
+}
+
+void UserManagerImpl::RemoveUserFromListInternal(const std::string& email) {
+  // Clear the prefs view of the users.
+  PrefService* prefs = g_browser_process->local_state();
+  ListPrefUpdate prefs_users_update(prefs, kLoggedInUsers);
+  prefs_users_update->Clear();
+
+  UserList::iterator user_to_remove = users_.end();
+  for (UserList::iterator it = users_.begin(); it != users_.end(); ++it) {
+    std::string user_email = (*it)->email();
+    // Skip user that we would like to delete.
+    if (email != user_email)
+      prefs_users_update->Append(Value::CreateStringValue(user_email));
+    else
+      user_to_remove = it;
+  }
+
+  DictionaryPrefUpdate prefs_images_update(prefs, kUserImages);
+  std::string image_path_string;
+  prefs_images_update->GetStringWithoutPathExpansion(email, &image_path_string);
+  prefs_images_update->RemoveWithoutPathExpansion(email, NULL);
+
+  DictionaryPrefUpdate prefs_oauth_update(prefs, kUserOAuthTokenStatus);
+  int oauth_status;
+  prefs_oauth_update->GetIntegerWithoutPathExpansion(email, &oauth_status);
+  prefs_oauth_update->RemoveWithoutPathExpansion(email, NULL);
+
+  DictionaryPrefUpdate prefs_display_email_update(prefs, kUserDisplayEmail);
+  prefs_display_email_update->RemoveWithoutPathExpansion(email, NULL);
+
+  if (user_to_remove != users_.end()) {
+    --display_name_count_[(*user_to_remove)->GetDisplayName()];
+    delete *user_to_remove;
+    users_.erase(user_to_remove);
+  }
+
+  int default_image_id = User::kInvalidImageIndex;
+  if (!image_path_string.empty() &&
+      !IsDefaultImagePath(image_path_string, &default_image_id)) {
+    FilePath image_path(image_path_string);
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&UserManagerImpl::DeleteUserImage,
+                   base::Unretained(this),
+                   image_path));
+  }
 }
 
 }  // namespace chromeos

@@ -269,6 +269,11 @@ void WizardController::ShowUpdateScreen() {
 }
 
 void WizardController::ShowUserImageScreen() {
+  // Skip image selection for ephemeral users.
+  if (chromeos::UserManager::Get()->IsCurrentUserEphemeral()) {
+    OnUserImageSkipped();
+    return;
+  }
   VLOG(1) << "Showing user image screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetUserImageScreen());

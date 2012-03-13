@@ -43,6 +43,7 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
   MOCK_CONST_METHOD0(IsCurrentUserOwner, bool(void));
   MOCK_CONST_METHOD0(IsCurrentUserNew, bool(void));
+  MOCK_CONST_METHOD0(IsCurrentUserEphemeral, bool(void));
   MOCK_CONST_METHOD0(IsUserLoggedIn, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsDemoUser, bool(void));
   MOCK_CONST_METHOD0(IsLoggedInAsGuest, bool(void));

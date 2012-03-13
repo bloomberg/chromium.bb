@@ -71,6 +71,7 @@ class UserManagerImpl : public UserManager,
   virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
   virtual bool IsCurrentUserOwner() const OVERRIDE;
   virtual bool IsCurrentUserNew() const OVERRIDE;
+  virtual bool IsCurrentUserEphemeral() const OVERRIDE;
   virtual bool IsUserLoggedIn() const OVERRIDE;
   virtual bool IsLoggedInAsDemoUser() const OVERRIDE;
   virtual bool IsLoggedInAsGuest() const OVERRIDE;
@@ -96,10 +97,28 @@ class UserManagerImpl : public UserManager,
 
  private:
   friend class UserManagerImplWrapper;
+  friend class UserManagerTest;
 
   // Loads |users_| from Local State if the list has not been loaded yet.
   // Subsequent calls have no effect. Must be called on the UI thread.
   void EnsureUsersLoaded();
+
+  // Retrieves trusted device policies and removes users from the persistent
+  // list if ephemeral users are enabled. Schedules a callback to itself if
+  // trusted device policies are not yet available.
+  void RetrieveTrustedDevicePolicies();
+
+  // Returns true if trusted device policies have successfully been retrieved
+  // and ephemeral users are enabled.
+  bool AreEphemeralUsersEnabled() const;
+
+  // Returns true if the user with the given email address is to be treated as
+  // ephemeral.
+  bool IsEphemeralUser(const std::string& email) const;
+
+  // Returns the user with the given email address if found in the persistent
+  // list. Returns |NULL| otherwise.
+  const User* FindUserInList(const std::string& email) const;
 
   // Makes stub user the current logged-in user (for test paths).
   void StubUserLoggedIn();
@@ -169,11 +188,15 @@ class UserManagerImpl : public UserManager,
   // Creates a new User instance.
   User* CreateUser(const std::string& email) const;
 
+  // Removes the user from the persistent list only. Also removes the user's
+  // picture.
+  void RemoveUserFromListInternal(const std::string& email);
+
   // Loads user image from its file.
   scoped_refptr<UserImageLoader> image_loader_;
 
   // List of all known users. User instances are owned by |this| and deleted
-  // when a user is removed with |RemoveUser|.
+  // when users are removed by |RemoveUserFromListInternal|.
   mutable UserList users_;
 
   // Map of users' display names used to determine which users have unique
@@ -190,8 +213,9 @@ class UserManagerImpl : public UserManager,
   User stub_user_;
 
   // The logged-in user. NULL until a user has logged in, then points to one
-  // of the User instances in |users_| or to the |guest_user_| instance.
-  // In test paths without login points to the |stub_user_| instance.
+  // of the User instances in |users_|, the |guest_user_| instance or an
+  // ephemeral user instance. In test paths without login points to the
+  // |stub_user_| instance.
   User* logged_in_user_;
 
   // Cached flag of whether currently logged-in user is owner or not.
@@ -203,8 +227,22 @@ class UserManagerImpl : public UserManager,
   // login.
   bool is_current_user_new_;
 
+  // Cached flag of whether the currently logged-in user is ephemeral. Storage
+  // of persistent information is avoided for such users by not adding them to
+  // the user list in local state, not downloading their custom user images and
+  // mounting their cryptohomes using tmpfs.
+  bool is_current_user_ephemeral_;
+
   // Cached flag of whether any user is logged in at the moment.
   bool is_user_logged_in_;
+
+  // Cached flag indicating whether ephemeral users are enabled. Defaults to
+  // |false| if the value has not been read from trusted device policy yet.
+  bool ephemeral_users_enabled_;
+
+  // Cached name of device owner. Defaults to empty string if the value has not
+  // been read from trusted device policy yet.
+  std::string owner_email_;
 
   content::NotificationRegistrar registrar_;
 
