@@ -176,11 +176,11 @@ class InputMethodManager {
   // When you would like to set 'panel/custom_font', |section| should
   // be "panel", and |config_name| should be "custom_font".
   // Notice: This function might call the Observer::ActiveInputMethodsChanged()
-  // callback function immediately, before returning from the SetImeConfig
-  // function. See also http://crosbug.com/5217.
-  virtual bool SetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            const ImeConfigValue& value) = 0;
+  // callback function immediately, before returning from the
+  // SetInputMethodConfig function. See also http://crosbug.com/5217.
+  virtual bool SetInputMethodConfig(const std::string& section,
+                                    const std::string& config_name,
+                                    const InputMethodConfigValue& value) = 0;
 
   // Add an input method to insert into the language menu.
   virtual void AddActiveIme(const std::string& id,

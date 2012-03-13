@@ -133,23 +133,23 @@ class SystemKeyEventListenerTest : public InProcessBrowserTest {
 
   // Enables input methods in active_input_methods[].
   void ActivateInputMethods() {
-    input_method::ImeConfigValue value;
-    value.type = input_method::ImeConfigValue::kValueTypeStringList;
+    input_method::InputMethodConfigValue value;
+    value.type = input_method::InputMethodConfigValue::kValueTypeStringList;
     for (size_t i = 0; i < arraysize(active_input_methods); ++i)
       value.string_list_value.push_back(active_input_methods[i]);
-    manager_->SetImeConfig(language_prefs::kGeneralSectionName,
-                           language_prefs::kPreloadEnginesConfigName,
-                           value);
+    manager_->SetInputMethodConfig(language_prefs::kGeneralSectionName,
+                                   language_prefs::kPreloadEnginesConfigName,
+                                   value);
   }
 
   // Disables all input methods except US Qwerty.
   void DeactivateInputMethods() {
-    input_method::ImeConfigValue value;
-    value.type = input_method::ImeConfigValue::kValueTypeStringList;
+    input_method::InputMethodConfigValue value;
+    value.type = input_method::InputMethodConfigValue::kValueTypeStringList;
     value.string_list_value.push_back(active_input_methods[0]);  // Qwerty
-    manager_->SetImeConfig(language_prefs::kGeneralSectionName,
-                           language_prefs::kPreloadEnginesConfigName,
-                           value);
+    manager_->SetInputMethodConfig(language_prefs::kGeneralSectionName,
+                                   language_prefs::kPreloadEnginesConfigName,
+                                   value);
   }
 
   input_method::InputMethodManager* manager_;

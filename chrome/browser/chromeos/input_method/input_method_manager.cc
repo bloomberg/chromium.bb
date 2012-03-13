@@ -281,8 +281,9 @@ class InputMethodManagerImpl
     // Initially active_input_method_ids_ is empty. In this case, just
     // returns the fallback input method descriptor.
     if (result->empty()) {
-      // Since browser_tests call neither SetImeConfig("preload_engines") nor
-      // EnableInputMethod(), this path might be taken.
+      // Since browser_tests call neither
+      // SetInputMethodConfig("preload_engines") nor EnableInputMethod(), this
+      // path might be taken.
       result->push_back(
           InputMethodDescriptor::GetFallbackInputMethodDescriptor());
     }
@@ -360,12 +361,12 @@ class InputMethodManagerImpl
 
     // Update ibus-daemon setting. Here, we don't save the input method list
     // in the user's preferences.
-    ImeConfigValue value;
-    value.type = ImeConfigValue::kValueTypeStringList;
+    InputMethodConfigValue value;
+    value.type = InputMethodConfigValue::kValueTypeStringList;
     value.string_list_value = input_method_ids;
-    SetImeConfig(language_prefs::kGeneralSectionName,
-                 language_prefs::kPreloadEnginesConfigName,
-                 value);
+    SetInputMethodConfig(language_prefs::kGeneralSectionName,
+                         language_prefs::kPreloadEnginesConfigName,
+                         value);
 
     // Finaly, change to the initial input method, as needed.
     if (!initial_input_method_id.empty()) {
@@ -390,9 +391,9 @@ class InputMethodManagerImpl
     return false;
   }
 
-  virtual bool SetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            const ImeConfigValue& value) {
+  virtual bool SetInputMethodConfig(const std::string& section,
+                                    const std::string& config_name,
+                                    const InputMethodConfigValue& value) {
     // If the config change is for preload engines, update the active
     // input methods cache |active_input_method_ids_| here. We need to
     // update the cache before actually flushing the config. since we need
@@ -402,7 +403,7 @@ class InputMethodManagerImpl
     // screen before the input method starts.
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName &&
-        value.type == ImeConfigValue::kValueTypeStringList) {
+        value.type == InputMethodConfigValue::kValueTypeStringList) {
       active_input_method_ids_ = value.string_list_value;
 
       std::map<std::string, InputMethodDescriptor>::const_iterator ix;
@@ -744,7 +745,7 @@ class InputMethodManagerImpl
                               XK_Meta_R,
                               ShiftMask | Mod1Mask,
                               false);
-    // Input method specific hotkeys will be added in SetImeConfig().
+    // Input method specific hotkeys will be added in SetInputMethodConfig().
 #endif
   }
 
@@ -783,10 +784,10 @@ class InputMethodManagerImpl
   // configuration value to be set.
   void MaybeStartInputMethodDaemon(const std::string& section,
                                    const std::string& config_name,
-                                   const ImeConfigValue& value) {
+                                   const InputMethodConfigValue& value) {
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName &&
-        value.type == ImeConfigValue::kValueTypeStringList &&
+        value.type == InputMethodConfigValue::kValueTypeStringList &&
         !value.string_list_value.empty()) {
       // If there is only one input method which is a keyboard layout,
       // we don't start the input method processes.
@@ -853,7 +854,7 @@ class InputMethodManagerImpl
   // updated, if necessary. See also: MaybeStartInputMethodDaemon().
   void MaybeChangeCurrentKeyboardLayout(const std::string& section,
                                         const std::string& config_name,
-                                        const ImeConfigValue& value) {
+                                        const InputMethodConfigValue& value) {
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName) {
       if (value.string_list_value.size() == 1 ||
@@ -921,7 +922,7 @@ class InputMethodManagerImpl
     while (iter != pending_config_requests_.end()) {
       const std::string& section = iter->first.first;
       const std::string& config_name = iter->first.second;
-      ImeConfigValue& value = iter->second;
+      InputMethodConfigValue& value = iter->second;
 
       if (config_name == language_prefs::kPreloadEnginesConfigName &&
           !tentative_current_input_method_id_.empty()) {
@@ -955,7 +956,7 @@ class InputMethodManagerImpl
         tentative_current_input_method_id_.erase();
       }
 
-      if (ibus_controller_->SetImeConfig(section, config_name, value)) {
+      if (ibus_controller_->SetInputMethodConfig(section, config_name, value)) {
         // Check if it's a change in active input methods.
         if (config_name == language_prefs::kPreloadEnginesConfigName) {
           active_input_methods_are_changed = true;
@@ -964,7 +965,7 @@ class InputMethodManagerImpl
         // Successfully sent. Remove the command and proceed to the next one.
         pending_config_requests_.erase(iter++);
       } else {
-        // If SetImeConfig() fails, subsequent calls will likely fail.
+        // If SetInputMethodConfig() fails, subsequent calls will likely fail.
         break;
       }
     }
@@ -985,7 +986,7 @@ class InputMethodManagerImpl
     //    right after this FlushImeConfig() call.
     if (active_input_methods_are_changed) {
       // The |current_input_method_| member might be stale here as
-      // SetImeConfig("preload_engine") call above might change the
+      // SetInputMethodConfig("preload_engine") call above might change the
       // current input method in ibus-daemon (ex. this occurs when the
       // input method currently in use is removed from the options
       // page). However, it should be safe to use the member here,
@@ -1464,16 +1465,17 @@ class InputMethodManagerImpl
   bool should_hide_properties_;
 
   typedef std::pair<std::string, std::string> ConfigKeyType;
-  typedef std::map<ConfigKeyType, ImeConfigValue> InputMethodConfigRequests;
-  // SetImeConfig requests that are not yet completed.
+  typedef std::map<
+    ConfigKeyType, InputMethodConfigValue> InputMethodConfigRequests;
+  // SetInputMethodConfig requests that are not yet completed.
   // Use a map to queue config requests, so we only send the last request for
   // the same config key (i.e. we'll discard ealier requests for the same
   // config key). As we discard old requests for the same config key, the order
   // of requests doesn't matter, so it's safe to use a map.
   InputMethodConfigRequests pending_config_requests_;
 
-  // Values that have been set via SetImeConfig().  We keep a copy available to
-  // resend if the ime restarts and loses its state.
+  // Values that have been set via SetInputMethodConfig().  We keep a copy
+  // available to resend if the ime restarts and loses its state.
   InputMethodConfigRequests current_config_values_;
 
   // This is used to register this object to APP_TERMINATING notification.

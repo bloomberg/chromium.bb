@@ -140,8 +140,9 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
       // keyboard on the screen locker.
       bool should_add_hardware_keyboard = true;
 
-      chromeos::input_method::ImeConfigValue value;
-      value.type = chromeos::input_method::ImeConfigValue::kValueTypeStringList;
+      chromeos::input_method::InputMethodConfigValue value;
+      value.type =
+          chromeos::input_method::InputMethodConfigValue::kValueTypeStringList;
       for (size_t i = 0; i < active_input_method_list->size(); ++i) {
         const std::string& input_method_id =
             active_input_method_list->at(i).id();
@@ -161,7 +162,7 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
       // We don't want to shut down the IME, even if the hardware layout is the
       // only IME left.
       manager->SetEnableAutoImeShutdown(false);
-      manager->SetImeConfig(
+      manager->SetInputMethodConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
           value);
@@ -173,11 +174,12 @@ class ScreenLockObserver : public chromeos::PowerManagerClient::Observer,
       chromeos::input_method::InputMethodManager* manager =
           chromeos::input_method::InputMethodManager::GetInstance();
 
-      chromeos::input_method::ImeConfigValue value;
-      value.type = chromeos::input_method::ImeConfigValue::kValueTypeStringList;
+      chromeos::input_method::InputMethodConfigValue value;
+      value.type =
+          chromeos::input_method::InputMethodConfigValue::kValueTypeStringList;
       value.string_list_value = saved_active_input_method_list_;
       manager->SetEnableAutoImeShutdown(true);
-      manager->SetImeConfig(
+      manager->SetInputMethodConfig(
           chromeos::language_prefs::kGeneralSectionName,
           chromeos::language_prefs::kPreloadEnginesConfigName,
           value);

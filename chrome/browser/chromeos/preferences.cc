@@ -492,44 +492,44 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 void Preferences::SetLanguageConfigBoolean(const char* section,
                                            const char* name,
                                            bool value) {
-  input_method::ImeConfigValue config;
-  config.type = input_method::ImeConfigValue::kValueTypeBool;
+  input_method::InputMethodConfigValue config;
+  config.type = input_method::InputMethodConfigValue::kValueTypeBool;
   config.bool_value = value;
   input_method::InputMethodManager::GetInstance()->
-      SetImeConfig(section, name, config);
+      SetInputMethodConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigInteger(const char* section,
                                            const char* name,
                                            int value) {
-  input_method::ImeConfigValue config;
-  config.type = input_method::ImeConfigValue::kValueTypeInt;
+  input_method::InputMethodConfigValue config;
+  config.type = input_method::InputMethodConfigValue::kValueTypeInt;
   config.int_value = value;
   input_method::InputMethodManager::GetInstance()->
-      SetImeConfig(section, name, config);
+      SetInputMethodConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigString(const char* section,
                                           const char* name,
                                           const std::string& value) {
-  input_method::ImeConfigValue config;
-  config.type = input_method::ImeConfigValue::kValueTypeString;
+  input_method::InputMethodConfigValue config;
+  config.type = input_method::InputMethodConfigValue::kValueTypeString;
   config.string_value = value;
   input_method::InputMethodManager::GetInstance()->
-      SetImeConfig(section, name, config);
+      SetInputMethodConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigStringList(
     const char* section,
     const char* name,
     const std::vector<std::string>& values) {
-  input_method::ImeConfigValue config;
-  config.type = input_method::ImeConfigValue::kValueTypeStringList;
+  input_method::InputMethodConfigValue config;
+  config.type = input_method::InputMethodConfigValue::kValueTypeStringList;
   for (size_t i = 0; i < values.size(); ++i)
     config.string_list_value.push_back(values[i]);
 
   input_method::InputMethodManager::GetInstance()->
-      SetImeConfig(section, name, config);
+      SetInputMethodConfig(section, name, config);
 }
 
 void Preferences::SetLanguageConfigStringListAsCSV(const char* section,

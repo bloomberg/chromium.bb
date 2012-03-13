@@ -109,11 +109,10 @@ struct ImeProperty {
 typedef std::vector<ImeProperty> ImePropertyList;
 
 // A structure which represents a value of an input method configuration item.
-// This struct is used by SetImeConfig().
-// TODO(yusukes): Rename this struct. "InputMethodConfigValue" might be better?
-struct ImeConfigValue {
-  ImeConfigValue();
-  ~ImeConfigValue();
+// This struct is used by SetInputMethodConfig().
+struct InputMethodConfigValue {
+  InputMethodConfigValue();
+  ~InputMethodConfigValue();
 
   // Debug print function.
   std::string ToString() const;
@@ -233,10 +232,9 @@ class IBusController {
   //
   // To set 'panel/custom_font', |section| should be "panel", and
   // |config_name| should be "custom_font".
-  // TODO(yusukes): "SetInputMethodConfig" might be better?
-  virtual bool SetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            const ImeConfigValue& value) = 0;
+  virtual bool SetInputMethodConfig(const std::string& section,
+                                    const std::string& config_name,
+                                    const InputMethodConfigValue& value) = 0;
 
   // Sends a handwriting stroke to ibus-daemon. The std::pair contains x
   // and y coordinates. (0.0, 0.0) represents the top-left corner of a

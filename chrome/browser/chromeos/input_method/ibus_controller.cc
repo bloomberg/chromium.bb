@@ -169,16 +169,16 @@ std::string ImeProperty::ToString() const {
   return stream.str();
 }
 
-ImeConfigValue::ImeConfigValue()
+InputMethodConfigValue::InputMethodConfigValue()
     : type(kValueTypeString),
       int_value(0),
       bool_value(false) {
 }
 
-ImeConfigValue::~ImeConfigValue() {
+InputMethodConfigValue::~InputMethodConfigValue() {
 }
 
-std::string ImeConfigValue::ToString() const {
+std::string InputMethodConfigValue::ToString() const {
   std::stringstream stream;
   stream << "type=" << type;
   switch (type) {
@@ -673,12 +673,12 @@ class IBusControllerImpl : public IBusController {
   }
 
   // IBusController override.
-  virtual bool SetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            const ImeConfigValue& value) {
+  virtual bool SetInputMethodConfig(const std::string& section,
+                                    const std::string& config_name,
+                                    const InputMethodConfigValue& value) {
     // See comments in GetImeConfig() where ibus_config_get_value() is used.
     if (!IBusConnectionsAreAlive()) {
-      LOG(ERROR) << "SetImeConfig: IBus connection is not alive";
+      LOG(ERROR) << "SetInputMethodConfig: IBus connection is not alive";
       return false;
     }
 
@@ -686,7 +686,7 @@ class IBusControllerImpl : public IBusController {
 
     // Sanity check: do not preload unknown/unsupported input methods.
     std::vector<std::string> string_list;
-    if ((value.type == ImeConfigValue::kValueTypeStringList) &&
+    if ((value.type == InputMethodConfigValue::kValueTypeStringList) &&
         (section == kGeneralSectionName) &&
         (config_name == kPreloadEnginesConfigName)) {
       FilterInputMethods(value.string_list_value, &string_list);
@@ -701,16 +701,16 @@ class IBusControllerImpl : public IBusController {
     // Convert the type of |value| from our structure to GVariant.
     GVariant* variant = NULL;
     switch (value.type) {
-      case ImeConfigValue::kValueTypeString:
+      case InputMethodConfigValue::kValueTypeString:
         variant = g_variant_new_string(value.string_value.c_str());
         break;
-      case ImeConfigValue::kValueTypeInt:
+      case InputMethodConfigValue::kValueTypeInt:
         variant = g_variant_new_int32(value.int_value);
         break;
-      case ImeConfigValue::kValueTypeBool:
+      case InputMethodConfigValue::kValueTypeBool:
         variant = g_variant_new_boolean(value.bool_value);
         break;
-      case ImeConfigValue::kValueTypeStringList:
+      case InputMethodConfigValue::kValueTypeStringList:
         GVariantBuilder variant_builder;
         g_variant_builder_init(&variant_builder, G_VARIANT_TYPE("as"));
         DCHECK(!string_list.empty());
@@ -723,7 +723,7 @@ class IBusControllerImpl : public IBusController {
     }
 
     if (!variant) {
-      LOG(ERROR) << "SetImeConfig: variant is NULL";
+      LOG(ERROR) << "SetInputMethodConfig: variant is NULL";
       return false;
     }
     DCHECK(g_variant_is_floating(variant));
@@ -735,14 +735,14 @@ class IBusControllerImpl : public IBusController {
                                 variant,
                                 -1,  // use the default ibus timeout
                                 NULL,  // cancellable
-                                SetImeConfigCallback,
+                                SetInputMethodConfigCallback,
                                 g_object_ref(ibus_config_));
 
     // Since |variant| is floating, ibus_config_set_value_async consumes
     // (takes ownership of) the variable.
 
     if (is_preload_engines) {
-      VLOG(1) << "SetImeConfig: " << section << "/" << config_name
+      VLOG(1) << "SetInputMethodConfig: " << section << "/" << config_name
               << ": " << value.ToString();
     }
     return true;
@@ -1262,9 +1262,9 @@ class IBusControllerImpl : public IBusController {
 
   // A callback function that will be called when ibus_config_set_value_async()
   // request is finished.
-  static void SetImeConfigCallback(GObject* source_object,
-                                   GAsyncResult* res,
-                                   gpointer user_data) {
+  static void SetInputMethodConfigCallback(GObject* source_object,
+                                           GAsyncResult* res,
+                                           gpointer user_data) {
     IBusConfig* config = IBUS_CONFIG(user_data);
     g_return_if_fail(config);
 
@@ -1335,9 +1335,9 @@ class IBusControllerStubImpl : public IBusController {
                                        bool activated) {
   }
 
-  virtual bool SetImeConfig(const std::string& section,
-                            const std::string& config_name,
-                            const ImeConfigValue& value) {
+  virtual bool SetInputMethodConfig(const std::string& section,
+                                    const std::string& config_name,
+                                    const InputMethodConfigValue& value) {
     return true;
   }
 
