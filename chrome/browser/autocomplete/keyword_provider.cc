@@ -246,9 +246,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
     // Prune any extension keywords that are disallowed in incognito mode (if
     // we're incognito), or disabled.
-    if (profile_ &&
-        input.matches_requested() == AutocompleteInput::ALL_MATCHES &&
-        template_url->IsExtensionKeyword()) {
+    if (profile_ && template_url->IsExtensionKeyword()) {
       ExtensionService* service = profile_->GetExtensionService();
       const Extension* extension = service->GetExtensionById(
           template_url->GetExtensionId(), false);
@@ -286,20 +284,21 @@ void KeywordProvider::Start(const AutocompleteInput& input,
                                                keyword.length(),
                                                remaining_input, -1));
 
-    if (profile_ &&
-        input.matches_requested() == AutocompleteInput::ALL_MATCHES &&
-        template_url->IsExtensionKeyword()) {
-      if (template_url->GetExtensionId() != current_keyword_extension_id_)
-        MaybeEndExtensionKeywordMode();
-      if (current_keyword_extension_id_.empty())
-        EnterExtensionKeywordMode(template_url->GetExtensionId());
-      keyword_mode_toggle.StayInKeywordMode();
+    if (profile_ && template_url->IsExtensionKeyword()) {
+      if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
+        if (template_url->GetExtensionId() != current_keyword_extension_id_)
+          MaybeEndExtensionKeywordMode();
+        if (current_keyword_extension_id_.empty())
+          EnterExtensionKeywordMode(template_url->GetExtensionId());
+        keyword_mode_toggle.StayInKeywordMode();
+      }
 
       ApplyDefaultSuggestionForExtensionKeyword(profile_, template_url,
                                                 remaining_input,
                                                 &matches_[0]);
 
-      if (minimal_changes) {
+      if (minimal_changes &&
+          (input.matches_requested() != AutocompleteInput::BEST_MATCH)) {
         // If the input hasn't significantly changed, we can just use the
         // suggestions from last time. We need to readjust the relevance to
         // ensure it is less than the main match's relevance.
@@ -307,7 +306,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
           matches_.push_back(extension_suggest_matches_[i]);
           matches_.back().relevance = matches_[0].relevance - (i + 1);
         }
-      } else {
+      } else if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
         extension_suggest_last_input_ = input;
         extension_suggest_matches_.clear();
 
@@ -364,16 +363,16 @@ void KeywordProvider::FillInURLAndContents(
     const TemplateURL* element,
     AutocompleteMatch* match) {
   DCHECK(!element->short_name().empty());
-  DCHECK(element->url());
-  DCHECK(element->url()->IsValid());
+  const TemplateURLRef* element_ref = element->url();
+  DCHECK(element_ref);
+  DCHECK(element_ref->IsValid());
   int message_id = element->IsExtensionKeyword() ?
       IDS_EXTENSION_KEYWORD_COMMAND : IDS_KEYWORD_SEARCH;
   if (remaining_input.empty()) {
     // Allow extension keyword providers to accept empty string input. This is
     // useful to allow extensions to do something in the case where no input is
     // entered.
-    if (element->url()->SupportsReplacement() &&
-        !element->IsExtensionKeyword()) {
+    if (element_ref->SupportsReplacement() && !element->IsExtensionKeyword()) {
       // No query input; return a generic, no-destination placeholder.
       match->contents.assign(
           l10n_util::GetStringFUTF16(message_id,
@@ -383,7 +382,7 @@ void KeywordProvider::FillInURLAndContents(
           ACMatchClassification(0, ACMatchClassification::DIM));
     } else {
       // Keyword that has no replacement text (aka a shorthand for a URL).
-      match->destination_url = GURL(element->url()->url());
+      match->destination_url = GURL(element_ref->url());
       match->contents.assign(element->short_name());
       AutocompleteMatch::ClassifyLocationInString(0, match->contents.length(),
           match->contents.length(), ACMatchClassification::NONE,
@@ -394,8 +393,8 @@ void KeywordProvider::FillInURLAndContents(
     // keyword template URL.  The escaping here handles whitespace in user
     // input, but we rely on later canonicalization functions to do more
     // fixup to make the URL valid if necessary.
-    DCHECK(element->url()->SupportsReplacement());
-    match->destination_url = GURL(element->url()->
+    DCHECK(element_ref->SupportsReplacement());
+    match->destination_url = GURL(element_ref->
         ReplaceSearchTermsUsingProfile(profile, *element, remaining_input,
             TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
     std::vector<size_t> content_param_offsets;
