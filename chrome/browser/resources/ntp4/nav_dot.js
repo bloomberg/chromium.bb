@@ -43,6 +43,7 @@ cr.define('ntp', function() {
 
       // TODO(estade): should there be some limit to the number of characters?
       this.input_ = this.ownerDocument.createElement('input');
+      this.input_.className = 'custom-appearance';
       this.input_.setAttribute('spellcheck', false);
       this.input_.value = title;
       // Take the input out of the tab-traversal focus order.

@@ -259,11 +259,11 @@ label > input[type=radio]:disabled ~ span {
 
 /* Text inputs ****************************************************************/
 /* TODO(estade): add more types here? */
-input[type='password'],
-input[type='search'],
-input[type='text'],
-input[type='url'],
-input:not([type]) {
+input[type='password']:not(.custom-appearance),
+input[type='search']:not(.custom-appearance),
+input[type='text']:not(.custom-appearance),
+input[type='url']:not(.custom-appearance),
+input:not([type]):not(.custom-appearance) {
   border: 1px solid #bfbfbf;
   border-radius: 2px;
   box-sizing: border-box;
