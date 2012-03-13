@@ -80,6 +80,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/trace_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -102,6 +103,7 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::NavigationController;
 using content::RenderViewHost;
+using content::TraceController;
 using content::WebContents;
 
 namespace {

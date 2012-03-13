@@ -4,11 +4,12 @@
 
 #include "content/browser/trace_message_filter.h"
 
-#include "content/browser/trace_controller.h"
+#include "content/browser/trace_controller_impl.h"
 #include "content/common/child_process_messages.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
+using content::TraceControllerImpl;
 
 TraceMessageFilter::TraceMessageFilter() :
     has_child_(false),
@@ -35,7 +36,7 @@ void TraceMessageFilter::OnChannelClosing() {
     if (is_awaiting_end_ack_)
       OnTraceBufferPercentFullReply(0.0f);
 
-    TraceController::GetInstance()->RemoveFilter(this);
+    TraceControllerImpl::GetInstance()->RemoveFilter(this);
   }
 }
 
@@ -82,7 +83,7 @@ void TraceMessageFilter::SendGetTraceBufferPercentFull() {
 
 void TraceMessageFilter::OnChildSupportsTracing() {
   has_child_ = true;
-  TraceController::GetInstance()->AddFilter(this);
+  TraceControllerImpl::GetInstance()->AddFilter(this);
 }
 
 void TraceMessageFilter::OnEndTracingAck(
@@ -91,24 +92,24 @@ void TraceMessageFilter::OnEndTracingAck(
   // child process is compromised.
   if (is_awaiting_end_ack_) {
     is_awaiting_end_ack_ = false;
-    TraceController::GetInstance()->OnEndTracingAck(known_categories);
+    TraceControllerImpl::GetInstance()->OnEndTracingAck(known_categories);
   }
 }
 
 void TraceMessageFilter::OnTraceDataCollected(const std::string& data) {
   scoped_refptr<base::RefCountedString> data_ptr(new base::RefCountedString());
   data_ptr->data() = data;
-  TraceController::GetInstance()->OnTraceDataCollected(data_ptr);
+  TraceControllerImpl::GetInstance()->OnTraceDataCollected(data_ptr);
 }
 
 void TraceMessageFilter::OnTraceBufferFull() {
-  TraceController::GetInstance()->OnTraceBufferFull();
+  TraceControllerImpl::GetInstance()->OnTraceBufferFull();
 }
 
 void TraceMessageFilter::OnTraceBufferPercentFullReply(float percent_full) {
   if (is_awaiting_bpf_ack_) {
     is_awaiting_bpf_ack_ = false;
-    TraceController::GetInstance()->OnTraceBufferPercentFullReply(
+    TraceControllerImpl::GetInstance()->OnTraceBufferPercentFullReply(
         percent_full);
   }
 }

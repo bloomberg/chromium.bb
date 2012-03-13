@@ -8,8 +8,9 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
-#include "content/browser/trace_controller.h"
+#include "content/public/browser/trace_subscriber.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -17,7 +18,8 @@ namespace content {
 class TraceSubscriberStdioImpl;
 
 // Stdio implementation of TraceSubscriber. Use this to write traces to a file.
-class CONTENT_EXPORT TraceSubscriberStdio : public TraceSubscriber {
+class CONTENT_EXPORT TraceSubscriberStdio
+    : NON_EXPORTED_BASE(public content::TraceSubscriber) {
  public:
   // Creates or overwrites the specified file. Check IsValid() for success.
   explicit TraceSubscriberStdio(const FilePath& path);

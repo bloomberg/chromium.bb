@@ -5,6 +5,7 @@
 #include "content/browser/trace_subscriber_stdio.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
@@ -96,4 +97,3 @@ void TraceSubscriberStdio::OnTraceDataCollected(
 }
 
 }  // namespace content
-

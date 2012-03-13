@@ -28,9 +28,9 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/content_settings.h"
-#include "content/browser/trace_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/trace_subscriber.h"
 #include "ipc/ipc_channel.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -86,7 +86,7 @@ class AutomationProvider
       public base::SupportsWeakPtr<AutomationProvider>,
       public base::RefCountedThreadSafe<
           AutomationProvider, content::BrowserThread::DeleteOnUIThread>,
-      public TraceSubscriber {
+      public content::TraceSubscriber {
  public:
   explicit AutomationProvider(Profile* profile);
 

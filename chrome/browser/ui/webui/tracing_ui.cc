@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -20,11 +21,12 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/trace_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/trace_controller.h"
+#include "content/public/browser/trace_subscriber.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
@@ -35,6 +37,7 @@
 
 using content::BrowserThread;
 using content::GpuDataManager;
+using content::TraceController;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -58,7 +61,7 @@ class TracingMessageHandler
     : public WebUIMessageHandler,
       public SelectFileDialog::Listener,
       public base::SupportsWeakPtr<TracingMessageHandler>,
-      public TraceSubscriber,
+      public content::TraceSubscriber,
       public content::GpuDataManagerObserver {
  public:
   TracingMessageHandler();

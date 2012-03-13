@@ -23,7 +23,7 @@
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
-#include "content/browser/trace_controller.h"
+#include "content/browser/trace_controller_impl.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/sandbox_policy.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -85,6 +85,8 @@
 #ifdef DestroyAll
 #undef DestroyAll
 #endif
+
+using content::TraceControllerImpl;
 
 namespace {
 
@@ -323,8 +325,10 @@ void BrowserMainLoop::MainMessageLoopStart() {
   InitializeMainThread();
 
   // Start tracing to a file if needed.
-  if (base::debug::TraceLog::GetInstance()->IsEnabled())
-    TraceController::GetInstance()->InitStartupTracing(parsed_command_line_);
+  if (base::debug::TraceLog::GetInstance()->IsEnabled()) {
+    TraceControllerImpl::GetInstance()->InitStartupTracing(
+        parsed_command_line_);
+  }
 
   system_monitor_.reset(new base::SystemMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);

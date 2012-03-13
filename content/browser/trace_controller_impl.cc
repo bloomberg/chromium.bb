@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/trace_controller.h"
+#include "content/browser/trace_controller_impl.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -15,8 +15,8 @@
 #include "content/public/common/content_switches.h"
 
 using base::debug::TraceLog;
-using content::BrowserMessageFilter;
-using content::BrowserThread;
+
+namespace content {
 
 namespace {
 
@@ -26,7 +26,7 @@ class AutoStopTraceSubscriberStdio : public content::TraceSubscriberStdio {
       : TraceSubscriberStdio(file_path) {}
 
   static void EndStartupTrace(TraceSubscriberStdio* subscriber) {
-    if (!TraceController::GetInstance()->EndTracingAsync(subscriber))
+    if (!TraceControllerImpl::GetInstance()->EndTracingAsync(subscriber))
       delete subscriber;
     // else, the tracing will end asynchronously in OnEndTracingComplete().
   }
@@ -41,14 +41,11 @@ class AutoStopTraceSubscriberStdio : public content::TraceSubscriberStdio {
 
 }  // namespace
 
-void TraceSubscriber::OnKnownCategoriesCollected(
-      const std::set<std::string>& known_categories) {}
+TraceController* TraceController::GetInstance() {
+  return TraceControllerImpl::GetInstance();
+}
 
-void TraceSubscriber::OnTraceBufferPercentFullReply(float percent_full) {}
-
-TraceSubscriber::~TraceSubscriber() {}
-
-TraceController::TraceController() :
+TraceControllerImpl::TraceControllerImpl() :
     subscriber_(NULL),
     pending_end_ack_count_(0),
     pending_bpf_ack_count_(0),
@@ -56,20 +53,20 @@ TraceController::TraceController() :
     is_tracing_(false),
     is_get_categories_(false) {
   TraceLog::GetInstance()->SetOutputCallback(
-      base::Bind(&TraceController::OnTraceDataCollected,
+      base::Bind(&TraceControllerImpl::OnTraceDataCollected,
                  base::Unretained(this)));
 }
 
-TraceController::~TraceController() {
+TraceControllerImpl::~TraceControllerImpl() {
   if (TraceLog* trace_log = TraceLog::GetInstance())
     trace_log->SetOutputCallback(TraceLog::OutputCallback());
 }
 
-TraceController* TraceController::GetInstance() {
-  return Singleton<TraceController>::get();
+TraceControllerImpl* TraceControllerImpl::GetInstance() {
+  return Singleton<TraceControllerImpl>::get();
 }
 
-void TraceController::InitStartupTracing(const CommandLine& command_line) {
+void TraceControllerImpl::InitStartupTracing(const CommandLine& command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FilePath trace_file = command_line.GetSwitchValuePath(
       switches::kTraceStartupFile);
@@ -105,7 +102,7 @@ void TraceController::InitStartupTracing(const CommandLine& command_line) {
       base::TimeDelta::FromSeconds(delay_secs));
 }
 
-bool TraceController::GetKnownCategoriesAsync(TraceSubscriber* subscriber) {
+bool TraceControllerImpl::GetKnownCategoriesAsync(TraceSubscriber* subscriber) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Known categories come back from child processes with the EndTracingAck
@@ -117,14 +114,14 @@ bool TraceController::GetKnownCategoriesAsync(TraceSubscriber* subscriber) {
   return success;
 }
 
-bool TraceController::BeginTracing(TraceSubscriber* subscriber) {
+bool TraceControllerImpl::BeginTracing(TraceSubscriber* subscriber) {
   std::vector<std::string> include, exclude;
   // By default, exclude all categories that begin with test_
   exclude.push_back("test_*");
   return BeginTracing(subscriber, include, exclude);
 }
 
-bool TraceController::BeginTracing(
+bool TraceControllerImpl::BeginTracing(
     TraceSubscriber* subscriber,
     const std::vector<std::string>& included_categories,
     const std::vector<std::string>& excluded_categories) {
@@ -140,8 +137,8 @@ bool TraceController::BeginTracing(
   return true;
 }
 
-bool TraceController::BeginTracing(TraceSubscriber* subscriber,
-                                   const std::string& categories) {
+bool TraceControllerImpl::BeginTracing(TraceSubscriber* subscriber,
+                                       const std::string& categories) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!can_begin_tracing(subscriber))
@@ -155,7 +152,7 @@ bool TraceController::BeginTracing(TraceSubscriber* subscriber,
   return true;
 }
 
-bool TraceController::EndTracingAsync(TraceSubscriber* subscriber) {
+bool TraceControllerImpl::EndTracingAsync(TraceSubscriber* subscriber) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!can_end_tracing() || subscriber != subscriber_)
@@ -174,8 +171,8 @@ bool TraceController::EndTracingAsync(TraceSubscriber* subscriber) {
     std::vector<std::string> categories;
     TraceLog::GetInstance()->GetKnownCategories(&categories);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::OnEndTracingAck, base::Unretained(this),
-                   categories));
+        base::Bind(&TraceControllerImpl::OnEndTracingAck,
+                   base::Unretained(this), categories));
   }
 
   // Notify all child processes.
@@ -186,7 +183,7 @@ bool TraceController::EndTracingAsync(TraceSubscriber* subscriber) {
   return true;
 }
 
-bool TraceController::GetTraceBufferPercentFullAsync(
+bool TraceControllerImpl::GetTraceBufferPercentFullAsync(
     TraceSubscriber* subscriber) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -201,7 +198,7 @@ bool TraceController::GetTraceBufferPercentFullAsync(
     // Ack asynchronously now, because we don't have any children to wait for.
     float bpf = TraceLog::GetInstance()->GetBufferPercentFull();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::OnTraceBufferPercentFullReply,
+        base::Bind(&TraceControllerImpl::OnTraceBufferPercentFullReply,
                    base::Unretained(this), bpf));
   }
 
@@ -213,7 +210,7 @@ bool TraceController::GetTraceBufferPercentFullAsync(
   return true;
 }
 
-void TraceController::CancelSubscriber(TraceSubscriber* subscriber) {
+void TraceControllerImpl::CancelSubscriber(TraceSubscriber* subscriber) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (subscriber == subscriber_) {
@@ -224,10 +221,10 @@ void TraceController::CancelSubscriber(TraceSubscriber* subscriber) {
   }
 }
 
-void TraceController::AddFilter(TraceMessageFilter* filter) {
+void TraceControllerImpl::AddFilter(TraceMessageFilter* filter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::AddFilter, base::Unretained(this),
+        base::Bind(&TraceControllerImpl::AddFilter, base::Unretained(this),
                    make_scoped_refptr(filter)));
     return;
   }
@@ -238,10 +235,10 @@ void TraceController::AddFilter(TraceMessageFilter* filter) {
   }
 }
 
-void TraceController::RemoveFilter(TraceMessageFilter* filter) {
+void TraceControllerImpl::RemoveFilter(TraceMessageFilter* filter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::RemoveFilter, base::Unretained(this),
+        base::Bind(&TraceControllerImpl::RemoveFilter, base::Unretained(this),
                    make_scoped_refptr(filter)));
     return;
   }
@@ -249,7 +246,7 @@ void TraceController::RemoveFilter(TraceMessageFilter* filter) {
   filters_.erase(filter);
 }
 
-void TraceController::OnTracingBegan(TraceSubscriber* subscriber) {
+void TraceControllerImpl::OnTracingBegan(TraceSubscriber* subscriber) {
   is_tracing_ = true;
 
   subscriber_ = subscriber;
@@ -262,12 +259,12 @@ void TraceController::OnTracingBegan(TraceSubscriber* subscriber) {
   }
 }
 
-void TraceController::OnEndTracingAck(
+void TraceControllerImpl::OnEndTracingAck(
     const std::vector<std::string>& known_categories) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::OnEndTracingAck, base::Unretained(this),
-                   known_categories));
+        base::Bind(&TraceControllerImpl::OnEndTracingAck,
+                   base::Unretained(this), known_categories));
     return;
   }
 
@@ -306,18 +303,18 @@ void TraceController::OnEndTracingAck(
     std::vector<std::string> categories;
     TraceLog::GetInstance()->GetKnownCategories(&categories);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::OnEndTracingAck, base::Unretained(this),
-                   categories));
+        base::Bind(&TraceControllerImpl::OnEndTracingAck,
+                   base::Unretained(this), categories));
   }
 }
 
-void TraceController::OnTraceDataCollected(
+void TraceControllerImpl::OnTraceDataCollected(
     const scoped_refptr<base::RefCountedString>& events_str_ptr) {
   // OnTraceDataCollected may be called from any browser thread, either by the
   // local event trace system or from child processes via TraceMessageFilter.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::OnTraceDataCollected,
+        base::Bind(&TraceControllerImpl::OnTraceDataCollected,
                    base::Unretained(this), events_str_ptr));
     return;
   }
@@ -327,12 +324,12 @@ void TraceController::OnTraceDataCollected(
     subscriber_->OnTraceDataCollected(events_str_ptr);
 }
 
-void TraceController::OnTraceBufferFull() {
+void TraceControllerImpl::OnTraceBufferFull() {
   // OnTraceBufferFull may be called from any browser thread, either by the
   // local event trace system or from child processes via TraceMessageFilter.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::OnTraceBufferFull,
+        base::Bind(&TraceControllerImpl::OnTraceBufferFull,
                    base::Unretained(this)));
     return;
   }
@@ -342,10 +339,10 @@ void TraceController::OnTraceBufferFull() {
   EndTracingAsync(subscriber_);
 }
 
-void TraceController::OnTraceBufferPercentFullReply(float percent_full) {
+void TraceControllerImpl::OnTraceBufferPercentFullReply(float percent_full) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::OnTraceBufferPercentFullReply,
+        base::Bind(&TraceControllerImpl::OnTraceBufferPercentFullReply,
                    base::Unretained(this), percent_full));
     return;
   }
@@ -366,8 +363,9 @@ void TraceController::OnTraceBufferPercentFullReply(float percent_full) {
     // this code only executes if there were child processes.
     float bpf = TraceLog::GetInstance()->GetBufferPercentFull();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceController::OnTraceBufferPercentFullReply,
+        base::Bind(&TraceControllerImpl::OnTraceBufferPercentFullReply,
                    base::Unretained(this), bpf));
   }
 }
 
+}  // namespace content

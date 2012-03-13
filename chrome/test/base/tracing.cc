@@ -4,14 +4,16 @@
 
 #include "chrome/test/base/tracing.h"
 
+#include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/trace_controller.h"
+#include "content/public/browser/trace_controller.h"
+#include "content/public/browser/trace_subscriber.h"
 
 namespace {
 
-class InProcessTraceController : public TraceSubscriber {
+class InProcessTraceController : public content::TraceSubscriber {
  public:
   static InProcessTraceController* GetInstance() {
     return Singleton<InProcessTraceController>::get();
@@ -21,7 +23,8 @@ class InProcessTraceController : public TraceSubscriber {
   virtual ~InProcessTraceController() {}
 
   bool BeginTracing(const std::string& categories) {
-    return TraceController::GetInstance()->BeginTracing(this, categories);
+    return content::TraceController::GetInstance()->BeginTracing(
+        this, categories);
   }
 
   bool EndTracing(std::string* json_trace_output) {
@@ -31,7 +34,7 @@ class InProcessTraceController : public TraceSubscriber {
     trace_buffer_.SetOutputCallback(output.GetCallback());
 
     trace_buffer_.Start();
-    if (!TraceController::GetInstance()->EndTracingAsync(this))
+    if (!content::TraceController::GetInstance()->EndTracingAsync(this))
       return false;
     // Wait for OnEndTracingComplete() to quit the message loop.
     // OnTraceDataCollected may be called multiple times while blocking here.
