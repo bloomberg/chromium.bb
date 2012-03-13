@@ -12,6 +12,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/input_method_event_filter.h"
 #include "ash/launcher/launcher.h"
+#include "ash/screen_ash.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
@@ -306,6 +307,7 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
 
 Shell::Shell(ShellDelegate* delegate)
     : root_window_(new aura::RootWindow),
+      screen_(new ScreenAsh(root_window_.get())),
       root_filter_(NULL),
       delegate_(delegate),
       audio_controller_(NULL),
@@ -316,6 +318,7 @@ Shell::Shell(ShellDelegate* delegate)
       desktop_background_mode_(BACKGROUND_IMAGE),
       root_window_layout_(NULL),
       status_widget_(NULL) {
+  gfx::Screen::SetInstance(screen_);
 }
 
 Shell::~Shell() {
@@ -595,6 +598,22 @@ void Shell::RotateFocus(Direction direction) {
   focus_cycler_->RotateFocus(
       direction == FORWARD ? internal::FocusCycler::FORWARD :
                              internal::FocusCycler::BACKWARD);
+}
+
+void Shell::SetScreenWorkAreaInsets(const gfx::Insets& insets) {
+  if (screen_->work_area_insets() == insets)
+    return;
+  screen_->set_work_area_insets(insets);
+  FOR_EACH_OBSERVER(ShellObserver, observers_,
+                    OnScreenWorkAreaInsetsChanged());
+}
+
+void Shell::AddShellObserver(ShellObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Shell::RemoveShellObserver(ShellObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

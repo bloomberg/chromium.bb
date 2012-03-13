@@ -9,6 +9,7 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
@@ -29,6 +30,7 @@ namespace internal {
 // properly.
 class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
                                      public aura::RootWindowObserver,
+                                     public ash::ShellObserver,
                                      public aura::WindowObserver {
  public:
   typedef std::set<aura::Window*> WindowSet;
@@ -49,6 +51,8 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
 
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const gfx::Size& new_size) OVERRIDE;
+
+  // ash::ShellObserver overrides:
   virtual void OnScreenWorkAreaInsetsChanged() OVERRIDE;
 
   // WindowObserver overrides:

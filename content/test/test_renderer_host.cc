@@ -14,6 +14,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #endif
 
@@ -181,6 +182,7 @@ void RenderViewHostTestHarness::Reload() {
 void RenderViewHostTestHarness::SetUp() {
 #if defined(USE_AURA)
   root_window_.reset(new aura::RootWindow);
+  gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   test_stacking_client_.reset(
       new aura::test::TestStackingClient(root_window_.get()));
 #endif

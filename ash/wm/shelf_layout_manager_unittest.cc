@@ -5,11 +5,11 @@
 #include "ash/wm/shelf_layout_manager.h"
 
 #include "ash/launcher/launcher.h"
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/base/animation/animation_container_element.h"
 #include "ui/gfx/compositor/layer_animator.h"
@@ -51,7 +51,7 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_SetVisible) {
   shelf->LayoutShelf();
   ASSERT_TRUE(shelf->visible());
 
-  const aura::ScreenAura* screen = Shell::GetRootWindow()->screen();
+  const ash::ScreenAsh* screen = Shell::GetInstance()->screen();
   ASSERT_TRUE(screen);
   // Bottom inset should be the max of widget heights.
   EXPECT_EQ(shelf->max_height(), screen->work_area_insets().bottom());
@@ -96,7 +96,7 @@ TEST_F(ShelfLayoutManagerTest, LayoutShelfWhileAnimating) {
   shelf->LayoutShelf();
   ASSERT_TRUE(shelf->visible());
 
-  const aura::ScreenAura* screen = Shell::GetRootWindow()->screen();
+  const ash::ScreenAsh* screen = Shell::GetInstance()->screen();
 
   // Hide the shelf.
   shelf->SetVisible(false);

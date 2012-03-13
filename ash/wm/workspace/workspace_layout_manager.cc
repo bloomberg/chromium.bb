@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
+#include "ash/screen_ash.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace.h"
@@ -12,7 +13,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"

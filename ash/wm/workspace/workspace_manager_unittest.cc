@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_manager.h"
 
+#include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
@@ -15,7 +16,6 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
@@ -174,7 +174,7 @@ TEST_F(WorkspaceManagerTest, ResizeMaximizedWindowOnWorkAreaInsetsChange) {
   EXPECT_EQ(251, w1->bounds().height());
 
   // Maximize the window.
-  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
+  Shell::GetInstance()->SetScreenWorkAreaInsets(
         gfx::Insets(0, 0, 30, 0));
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 
@@ -187,7 +187,7 @@ TEST_F(WorkspaceManagerTest, ResizeMaximizedWindowOnWorkAreaInsetsChange) {
   EXPECT_EQ(GetWorkAreaBounds().height(), w1->bounds().height());
 
   // Change work area insets.
-  Shell::GetRootWindow()->SetScreenWorkAreaInsets(
+  Shell::GetInstance()->SetScreenWorkAreaInsets(
         gfx::Insets(0, 0, 60, 0));
 
   // Should be 1 workspace, TYPE_MAXIMIZED with w1, fills the changed work

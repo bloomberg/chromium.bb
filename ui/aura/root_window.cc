@@ -22,7 +22,6 @@
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/gestures/gesture_recognizer.h"
-#include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -91,7 +90,6 @@ RootWindow::RootWindow()
       mouse_button_flags_(0),
       last_cursor_(kCursorNull),
       cursor_shown_(true),
-      ALLOW_THIS_IN_INITIALIZER_LIST(screen_(new ScreenAura(this))),
       capture_window_(NULL),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
@@ -108,7 +106,6 @@ RootWindow::RootWindow()
       should_hold_mouse_moves_(false),
       release_mouse_moves_after_draw_(false) {
   SetName("RootWindow");
-  gfx::Screen::SetInstance(screen_);
   last_mouse_location_ = host_->QueryMouseLocation();
 
   should_hold_mouse_moves_ = !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -153,14 +150,6 @@ gfx::Size RootWindow::GetHostSize() const {
   gfx::Rect rect(host_->GetSize());
   layer()->transform().TransformRect(&rect);
   return rect.size();
-}
-
-void RootWindow::SetScreenWorkAreaInsets(const gfx::Insets& insets) {
-  if (screen_->work_area_insets() == insets)
-    return;
-  screen_->set_work_area_insets(insets);
-  FOR_EACH_OBSERVER(RootWindowObserver, observers_,
-                    OnScreenWorkAreaInsetsChanged());
 }
 
 void RootWindow::SetCursor(gfx::NativeCursor cursor) {

@@ -1,31 +1,23 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_SCREEN_AURA_H_
-#define UI_AURA_SCREEN_AURA_H_
+#ifndef UI_AURA_TEST_TEST_SCREEN_H_
+#define UI_AURA_TEST_TEST_SCREEN_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "ui/aura/aura_export.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
 
 namespace aura {
-
 class RootWindow;
 
-// Aura implementation of gfx::Screen. Implemented here to avoid circular
-// dependencies.
-class AURA_EXPORT ScreenAura : public gfx::Screen {
+// A minimal, testing Aura implementation of gfx::Screen.
+class TestScreen : public gfx::Screen {
  public:
-  explicit ScreenAura(RootWindow* root_window);
-  virtual ~ScreenAura();
-
-  void set_work_area_insets(const gfx::Insets& insets) {
-    work_area_insets_ = insets;
-  }
-  const gfx::Insets& work_area_insets() const { return work_area_insets_; }
+  explicit TestScreen(aura::RootWindow* root_window);
+  virtual ~TestScreen();
 
  protected:
   virtual gfx::Point GetCursorScreenPointImpl() OVERRIDE;
@@ -45,16 +37,12 @@ class AURA_EXPORT ScreenAura : public gfx::Screen {
   // We currently support only one monitor. These two methods return the bounds
   // and work area.
   gfx::Rect GetBounds();
-  gfx::Rect GetWorkAreaBounds();
 
-  // Insets for the work area.
-  gfx::Insets work_area_insets_;
+  aura::RootWindow* root_window_;
 
-  RootWindow* root_window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenAura);
+  DISALLOW_COPY_AND_ASSIGN(TestScreen);
 };
 
 }  // namespace aura
 
-#endif  // UI_AURA_SCREEN_AURA_H_
+#endif  // UI_AURA_TEST_TEST_SCREEN_H_

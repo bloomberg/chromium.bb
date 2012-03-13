@@ -22,6 +22,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_activation_client.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #endif
 
@@ -50,6 +51,7 @@ void BrowserWithTestWindowTest::SetUp() {
   browser_->SetWindowForTesting(window_.get());
 #if defined(USE_AURA)
   root_window_.reset(new aura::RootWindow);
+  gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
   test_activation_client_.reset(
       new aura::test::TestActivationClient(root_window_.get()));
   test_stacking_client_.reset(
