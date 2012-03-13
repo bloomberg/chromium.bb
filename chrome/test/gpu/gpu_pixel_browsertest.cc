@@ -66,13 +66,28 @@ bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
   return false;
 }
 
+// Write an empty file, whose name indicates the chrome revision when the ref
+// image was generated.
+bool WriteREVFile(const FilePath& file_path) {
+  if (file_util::CreateDirectory(file_path.DirName())) {
+    char one_byte = 0;
+    int bytes_written = file_util::WriteFile(file_path, &one_byte, 1);
+    if (bytes_written == 1)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // Test fixture for GPU image comparison tests.
 // TODO(kkania): Document how to add to/modify these tests.
 class GpuPixelBrowserTest : public InProcessBrowserTest {
  public:
-  GpuPixelBrowserTest() : ref_img_revision_no_older_than_(0) {}
+  GpuPixelBrowserTest()
+      : ref_img_revision_(0),
+        ref_img_revision_no_older_than_(0) {
+  }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -115,7 +130,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
                     const FilePath& url,
                     int64 ref_img_update_revision) {
     ref_img_revision_no_older_than_ = ref_img_update_revision;
-    ObtainLocalRefImageFilePath();
+    ObtainLocalRefImageRevision();
 
 #if defined(OS_WIN)
     ASSERT_TRUE(tracing::BeginTracing("-test_*"));
@@ -174,7 +189,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   FilePath test_data_dir_;
   FilePath generated_img_dir_;
   FilePath ref_img_dir_;
-  FilePath ref_img_path_;
+  int64 ref_img_revision_;
   // The name of the test, with any special prefixes dropped.
   std::string test_name_;
 
@@ -202,28 +217,38 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     bool save_gen = false;
     bool save_diff = false;
     bool rt = true;
-    if (ref_img_path_.empty() ||
-        !ReadPNGFile(ref_img_path_, &ref_bmp_on_disk)) {
+    FilePath img_path = ref_img_dir_.AppendASCII(test_name_ + ".png");
+    if (ref_img_revision_ <= 0 ||
+        !ReadPNGFile(img_path, &ref_bmp_on_disk)) {
       chrome::VersionInfo chrome_version_info;
-      FilePath img_revision_path = ref_img_dir_.AppendASCII(
-          test_name_ + "_" + chrome_version_info.LastChange() + ".png");
-      if (!WritePNGFile(gen_bmp, img_revision_path)) {
+      FilePath rev_path = ref_img_dir_.AppendASCII(
+          test_name_ + "_" + chrome_version_info.LastChange() + ".rev");
+      if (!WritePNGFile(gen_bmp, img_path)) {
         LOG(ERROR) << "Can't save generated image to: "
-                   << img_revision_path.value()
+                   << img_path.value()
                    << " as future reference.";
         rt = false;
       } else {
         LOG(INFO) << "Saved reference image to: "
-                  << img_revision_path.value();
+                  << img_path.value();
       }
-      if (!ref_img_path_.empty()) {
+      if (rt) {
+        if (!WriteREVFile(rev_path)) {
+          LOG(ERROR) << "Can't save revision file to: "
+                     << rev_path.value();
+          rt = false;
+          file_util::Delete(img_path, false);
+        } else {
+          LOG(INFO) << "Saved revision file to: "
+                    << rev_path.value();
+        }
+      }
+      if (ref_img_revision_ > 0) {
         LOG(ERROR) << "Can't read the local ref image: "
-                   << ref_img_path_.value()
+                   << img_path.value()
                    << ", reset it.";
-        file_util::Delete(ref_img_path_, false);
         rt = false;
       }
-      ref_img_path_ = img_revision_path;
       // If we re-generate the ref image, we save the gen and diff images so
       // the ref image can be uploaded to the server and be viewed later.
       save_gen = true;
@@ -279,7 +304,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       }
     }
 
-    std::string ref_img_filename = ref_img_path_.BaseName().MaybeAsASCII();
+    std::string ref_img_filename = img_path.BaseName().MaybeAsASCII();
     if (save_gen) {
       FilePath img_fail_path = generated_img_dir_.AppendASCII(
           "FAIL_" + ref_img_filename);
@@ -350,17 +375,16 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     return true;
   }
 
-  // If no valid local ref image is located, the ref_img_path_ remains
-  // empty.
-  void ObtainLocalRefImageFilePath() {
+  // If no valid local revision file is located, the ref_img_revision_ is 0.
+  void ObtainLocalRefImageRevision() {
     FilePath filter;
-    filter = filter.AppendASCII(test_name_ + "_*.png");
+    filter = filter.AppendASCII(test_name_ + "_*.rev");
     file_util::FileEnumerator locator(ref_img_dir_,
                                       false,  // non recursive
                                       file_util::FileEnumerator::FILES,
                                       filter.value());
     int64 max_revision = 0;
-    std::vector<FilePath> outdated_ref_imgs;
+    std::vector<FilePath> outdated_revs;
     for (FilePath full_path = locator.Next();
          !full_path.empty();
          full_path = locator.Next()) {
@@ -374,14 +398,14 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
         continue;
       if (revision < ref_img_revision_no_older_than_ ||
           revision < max_revision) {
-        outdated_ref_imgs.push_back(full_path);
+        outdated_revs.push_back(full_path);
         continue;
       }
-      ref_img_path_ = full_path;
       max_revision = revision;
     }
-    for (size_t i = 0; i < outdated_ref_imgs.size(); ++i)
-      file_util::Delete(outdated_ref_imgs[i], false);
+    ref_img_revision_ = max_revision;
+    for (size_t i = 0; i < outdated_revs.size(); ++i)
+      file_util::Delete(outdated_revs[i], false);
   }
 
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
