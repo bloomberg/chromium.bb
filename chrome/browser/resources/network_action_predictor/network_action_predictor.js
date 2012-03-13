@@ -56,6 +56,9 @@ function updateDatabaseView(database) {
 
     if (!filter.checked || entry.confidence > 0) {
       var row = document.createElement('tr');
+      row.className = (entry.confidence > 0.8 ? 'action-prerender' :
+                          (entry.confidence > 0.5 ? 'action-preconnect' :
+                              'action-none'));
 
       row.appendChild(document.createElement('td')).textContent =
           entry.user_text;
