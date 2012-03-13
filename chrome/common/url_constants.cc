@@ -420,7 +420,7 @@ void RegisterChromeSchemes() {
 #endif
 
   // This call will also lock the list of standard schemes.
-  RegisterContentSchemes(kSavableSchemes);
+  content::RegisterContentSchemes(kSavableSchemes);
 }
 
 }  // namespace chrome

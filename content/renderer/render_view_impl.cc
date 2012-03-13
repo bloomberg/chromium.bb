@@ -18,8 +18,8 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/string_piece.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -58,7 +58,6 @@
 #include "content/renderer/gpu/compositor_thread.h"
 #include "content/renderer/idle_user_detector.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
-#include "content/renderer/web_intents_host.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_message_filter.h"
@@ -82,6 +81,7 @@
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
 #include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/v8_value_converter_impl.h"
+#include "content/renderer/web_intents_host.h"
 #include "content/renderer/web_ui_bindings.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "content/renderer/websharedworker_proxy.h"
@@ -4251,7 +4251,7 @@ void RenderViewImpl::OnGetAllSavableResourceLinksForCurrentPage(
           webview(),
           page_url,
           &result,
-          chrome::GetSavableSchemes())) {
+          content::GetSavableSchemes())) {
     // If something is wrong when collecting all savable resource links,
     // send empty list to embedder(browser) to tell it failed.
     referrers_list.clear();

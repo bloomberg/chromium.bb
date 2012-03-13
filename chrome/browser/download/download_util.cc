@@ -599,8 +599,8 @@ FilePath GetCrDownloadPath(const FilePath& suggested_path) {
 }
 
 bool IsSavableURL(const GURL& url) {
-  for (int i = 0; chrome::GetSavableSchemes()[i] != NULL; ++i) {
-    if (url.SchemeIs(chrome::GetSavableSchemes()[i])) {
+  for (int i = 0; content::GetSavableSchemes()[i] != NULL; ++i) {
+    if (url.SchemeIs(content::GetSavableSchemes()[i])) {
       return true;
     }
   }

@@ -57,6 +57,10 @@ const char kChromeUIShorthangURL[] = "chrome://shorthang";
 // have a chrome:// scheme that might let it be confused with a WebUI page.
 const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 
+}  // namespace chrome
+
+namespace content {
+
 const char** GetSavableSchemes() {
   return const_cast<const char**>(g_savable_schemes);
 }
@@ -64,9 +68,9 @@ const char** GetSavableSchemes() {
 void RegisterContentSchemes(const char** additional_savable_schemes) {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
   // the new tab page.
-  url_util::AddStandardScheme(kChromeDevToolsScheme);
-  url_util::AddStandardScheme(kChromeUIScheme);
-  url_util::AddStandardScheme(kMetadataScheme);
+  url_util::AddStandardScheme(chrome::kChromeDevToolsScheme);
+  url_util::AddStandardScheme(chrome::kChromeUIScheme);
+  url_util::AddStandardScheme(chrome::kMetadataScheme);
 
   // Prevent future modification of the standard schemes list. This is to
   // prevent accidental creation of data races in the program. AddStandardScheme
@@ -93,4 +97,4 @@ void RegisterContentSchemes(const char** additional_savable_schemes) {
   }
 }
 
-}  // namespace chrome
+}  // namespace content

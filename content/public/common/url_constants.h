@@ -1,8 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-// Contains constants for known URLs and portions thereof.
 
 #ifndef CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 #define CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
@@ -10,12 +8,10 @@
 
 #include "content/common/content_export.h"
 
+// Contains constants for known URLs and portions thereof.
+
 // TODO(jam): rename this to content.
 namespace chrome {
-
-// Null terminated list of schemes that are savable. This function can be
-// invoked on any thread.
-CONTENT_EXPORT const char** GetSavableSchemes();
 
 // Canonical schemes you can use as input to GURL.SchemeIs().
 // TODO(jam): some of these don't below in the content layer, but are accessed
@@ -54,6 +50,15 @@ CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 // Special URL used to start a navigation to an error page.
 extern const char kUnreachableWebDataURL[];
 
+
+}  // namespace chrome
+
+namespace content {
+
+// Null terminated list of schemes that are savable. This function can be
+// invoked on any thread.
+CONTENT_EXPORT const char** GetSavableSchemes();
+
 // Call near the beginning of startup to register the content layer's internal
 // URLs that should be parsed as "standard" with the googleurl library. The
 // embedder can pass a 0-terminated list of additional schemes that should be
@@ -61,6 +66,6 @@ extern const char kUnreachableWebDataURL[];
 CONTENT_EXPORT void RegisterContentSchemes(
     const char** additional_savable_schemes);
 
-}  // namespace chrome
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
