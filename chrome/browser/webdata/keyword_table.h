@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEBDATA_KEYWORD_TABLE_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -80,6 +81,20 @@ class Statement;
 //
 class KeywordTable : public WebDatabaseTable {
  public:
+  typedef std::vector<TemplateURL*> Keywords;
+
+  // Constants exposed for the benefit of test code:
+
+  static const char kDefaultSearchProviderKey[];
+  // Meta table key to store backup value for the default search provider id.
+  static const char kDefaultSearchIDBackupKey[];
+  // Meta table key to store backup value signature for the default search
+  // provider.  The default search provider ID and the |keywords_backup| table
+  // are signed.
+  static const char kBackupSignatureKey[];
+  // Comma-separated list of keyword table column names, in order.
+  static const char kKeywordColumns[];
+
   KeywordTable(sql::Connection* db, sql::MetaTable* meta_table)
       : WebDatabaseTable(db, meta_table) {}
   virtual ~KeywordTable();
@@ -97,7 +112,7 @@ class KeywordTable : public WebDatabaseTable {
   // Loads the keywords into the specified vector. It's up to the caller to
   // delete the returned objects.
   // Returns true on success.
-  bool GetKeywords(std::vector<TemplateURL*>* urls);
+  bool GetKeywords(Keywords* keywords);
 
   // Updates the database values for the specified url.
   // Returns true on success.
@@ -111,9 +126,9 @@ class KeywordTable : public WebDatabaseTable {
   // returned TemplateURL is owned by the caller.
   TemplateURL* GetDefaultSearchProviderBackup();
 
-  // Returns true if the default search provider has been changed out under
-  // us. This can happen if another process modifies our database or the
-  // file was corrupted.
+  // Returns true if the default search provider has been changed out from under
+  // us. This can happen if another process modifies our database or the file
+  // was corrupted.
   bool DidDefaultSearchProviderChange();
 
   // Version of the built-in keywords.
@@ -135,6 +150,10 @@ class KeywordTable : public WebDatabaseTable {
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContentsOrdering);
 
+  // Returns a new TemplateURL from the data in |s|.  The caller owns the
+  // returned pointer.
+  static TemplateURL* GetKeywordDataFromStatement(const sql::Statement& s);
+
   // Returns contents of |keywords_backup| table and default search provider
   // id backup as a string through |data|. Return value is true on success,
   // false otherwise.
@@ -152,9 +171,6 @@ class KeywordTable : public WebDatabaseTable {
   // if signature is valid, false otherwise.
   bool IsBackupSignatureValid();
 
-  // Parses TemplateURL out of SQL statement result.
-  void GetURLFromStatement(const sql::Statement& s, TemplateURL* url);
-
   // Gets a string representation for keyword with id specified.
   // Used to store its result in |meta| table or to compare with another
   // keyword. Returns true on success, false otherwise.
@@ -165,13 +181,6 @@ class KeywordTable : public WebDatabaseTable {
   // Updates default search provider id backup in |meta| table. Returns
   // true on success. The id is returned back via |id| parameter.
   bool UpdateDefaultSearchProviderIDBackup(TemplateURLID* id);
-
-  // Updates default search provider backup with TemplateURL data with
-  // specified id. Returns true on success.
-  // If id is 0, sets an empty string as a backup.
-  // Returns the result through |backup| parameter.
-  bool UpdateDefaultSearchProviderBackup(TemplateURLID id,
-                                         std::string* backup);
 
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
 };

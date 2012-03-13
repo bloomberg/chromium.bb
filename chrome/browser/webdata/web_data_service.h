@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/search_engines/template_url_id.h"
+#include "chrome/browser/webdata/keyword_table.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/init_status.h"
 
@@ -108,7 +109,7 @@ struct WDKeywordsResult {
   WDKeywordsResult();
   ~WDKeywordsResult();
 
-  std::vector<TemplateURL*> keywords;
+  KeywordTable::Keywords keywords;
   // Identifies the ID of the TemplateURL that is the default search. A value of
   // 0 indicates there is no default search provider.
   int64 default_search_provider_id;
@@ -337,7 +338,7 @@ class WebDataService
   void UpdateKeyword(const TemplateURL& url);
 
   // Fetches the keywords.
-  // On success, consumer is notified with WDResult<std::vector<TemplateURL*>.
+  // On success, consumer is notified with WDResult<KeywordTable::Keywords>.
   Handle GetKeywords(WebDataServiceConsumer* consumer);
 
   // Sets the keywords used for the default search provider.
@@ -594,7 +595,7 @@ class WebDataService
   friend class base::DeleteHelper<WebDataService>;
 
   typedef GenericRequest2<std::vector<const TemplateURL*>,
-                          std::vector<TemplateURL*> > SetKeywordsRequest;
+                          KeywordTable::Keywords> SetKeywordsRequest;
 
   // Invoked on the main thread if initializing the db fails.
   void DBInitFailed(sql::InitStatus init_status);

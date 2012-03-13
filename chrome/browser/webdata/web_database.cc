@@ -17,12 +17,14 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-namespace {
-
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 44;
+// static
+const int WebDatabase::kCurrentVersionNumber = 44;
+
+namespace {
+
 const int kCompatibleVersionNumber = 44;
 
 // Change the version number and possibly the compatibility version of

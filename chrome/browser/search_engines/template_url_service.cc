@@ -111,7 +111,7 @@ TemplateURLService::TemplateURLService(Profile* profile)
       load_handle_(0),
       default_search_provider_(NULL),
       is_default_search_managed_(false),
-      next_id_(1),
+      next_id_(kInvalidTemplateURLID + 1),
       time_provider_(&base::Time::Now),
       models_associated_(false),
       processing_syncer_changes_(false),
@@ -130,7 +130,7 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       service_(NULL),
       default_search_provider_(NULL),
       is_default_search_managed_(false),
-      next_id_(1),
+      next_id_(kInvalidTemplateURLID + 1),
       time_provider_(&base::Time::Now),
       models_associated_(false),
       processing_syncer_changes_(false),
@@ -574,7 +574,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       TemplateURL* managed_default = default_from_prefs.release();
       if (managed_default) {
         managed_default->set_created_by_policy(true);
-        managed_default->set_id(0);
+        managed_default->set_id(kInvalidTemplateURLID);
         AddNoNotify(managed_default);
       }
       default_search_provider = managed_default;
@@ -597,7 +597,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     // If the default search provider existed previously, then just
     // set the member variable. Otherwise, we'll set it using the method
     // to ensure that it is saved properly after its id is set.
-    if (default_search_provider && default_search_provider->id() != 0) {
+    if (default_search_provider &&
+        (default_search_provider->id() != kInvalidTemplateURLID)) {
       default_search_provider_ = default_search_provider;
       default_search_provider = NULL;
     }
@@ -778,8 +779,8 @@ SyncError TemplateURLService::ProcessSyncChanges(
       std::string guid = turl->sync_guid();
       if (existing_keyword_turl)
         ResolveSyncKeywordConflict(turl.get(), &new_changes);
-      // Force the local ID to 0 so we can add it.
-      turl->set_id(0);
+      // Force the local ID to kInvalidTemplateURLID so we can add it.
+      turl->set_id(kInvalidTemplateURLID);
       Add(turl.release());
 
       // Possibly set the newly added |turl| as the default search provider.
@@ -903,8 +904,8 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
         // from local_data_map in this case as it may still need to be pushed to
         // the cloud.
         ResolveSyncKeywordConflict(sync_turl.get(), &new_changes);
-        // Force the local ID to 0 so we can add it.
-        sync_turl->set_id(0);
+        // Force the local ID to kInvalidTemplateURLID so we can add it.
+        sync_turl->set_id(kInvalidTemplateURLID);
         Add(sync_turl.release());
 
         // Possibly set the newly added |turl| as the default search provider.
@@ -1124,20 +1125,19 @@ void TemplateURLService::SetTemplateURLs(
   for (std::vector<TemplateURL*>::const_iterator i = urls.begin();
        i != urls.end();
        ++i) {
-    if ((*i)->id() == 0)
-      continue;
-    next_id_ = std::max(next_id_, (*i)->id());
-    AddToMaps(*i);
-    template_urls_.push_back(*i);
+    if ((*i)->id() != kInvalidTemplateURLID) {
+      next_id_ = std::max(next_id_, (*i)->id());
+      AddToMaps(*i);
+      template_urls_.push_back(*i);
+    }
   }
 
   // Next add the new items that don't have id's.
   for (std::vector<TemplateURL*>::const_iterator i = urls.begin();
        i != urls.end();
        ++i) {
-    if ((*i)->id() != 0)
-      continue;
-    AddNoNotify(*i);
+    if ((*i)->id() == kInvalidTemplateURLID)
+      AddNoNotify(*i);
   }
 }
 
@@ -1614,7 +1614,7 @@ void TemplateURLService::SetDefaultSearchProviderNoNotify(
 
 void TemplateURLService::AddNoNotify(TemplateURL* template_url) {
   DCHECK(template_url);
-  DCHECK(template_url->id() == 0);
+  DCHECK_EQ(kInvalidTemplateURLID, template_url->id());
   DCHECK(std::find(template_urls_.begin(), template_urls_.end(), template_url)
          == template_urls_.end());
   template_url->set_id(++next_id_);
@@ -1823,8 +1823,8 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
 
       Remove(local_turl);
 
-      // Force the local ID to 0 so we can add it.
-      scoped_sync_turl->set_id(0);
+      // Force the local ID to kInvalidTemplateURLID so we can add it.
+      scoped_sync_turl->set_id(kInvalidTemplateURLID);
       TemplateURL* temp = scoped_sync_turl.release();
       Add(temp);
       if (delete_default)

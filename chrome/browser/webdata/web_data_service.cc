@@ -158,9 +158,8 @@ void WebDataService::AddKeyword(const TemplateURL& url) {
 }
 
 void WebDataService::RemoveKeyword(const TemplateURL& url) {
-  GenericRequest<TemplateURLID>* request =
-      new GenericRequest<TemplateURLID>(this, GetNextRequestHandle(),
-                                        NULL, url.id());
+  GenericRequest<TemplateURLID>* request = new GenericRequest<TemplateURLID>(
+      this, GetNextRequestHandle(), NULL, url.id());
   RegisterRequest(request);
   ScheduleTask(FROM_HERE,
                Bind(&WebDataService::RemoveKeywordImpl, this, request));
@@ -188,11 +187,8 @@ WebDataService::Handle WebDataService::GetKeywords(
 }
 
 void WebDataService::SetDefaultSearchProvider(const TemplateURL* url) {
-  GenericRequest<TemplateURLID>* request =
-    new GenericRequest<TemplateURLID>(this,
-                                      GetNextRequestHandle(),
-                                      NULL,
-                                      url ? url->id() : 0);
+  GenericRequest<TemplateURLID>* request = new GenericRequest<TemplateURLID>(
+      this, GetNextRequestHandle(), NULL, url ? url->id() : 0);
   RegisterRequest(request);
   ScheduleTask(FROM_HERE, Bind(&WebDataService::SetDefaultSearchProviderImpl,
                                this, request));
@@ -200,7 +196,7 @@ void WebDataService::SetDefaultSearchProvider(const TemplateURL* url) {
 
 void WebDataService::SetBuiltinKeywordVersion(int version) {
   GenericRequest<int>* request =
-    new GenericRequest<int>(this, GetNextRequestHandle(), NULL, version);
+      new GenericRequest<int>(this, GetNextRequestHandle(), NULL, version);
   RegisterRequest(request);
   ScheduleTask(FROM_HERE, Bind(&WebDataService::SetBuiltinKeywordVersionImpl,
                                this, request));
