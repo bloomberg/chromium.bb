@@ -128,6 +128,12 @@
       '-notifications',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
+      # crbug.com/103379
+      '-policy.PolicyTest.testDisable3DAPIs',
+      # crbug.com/96896
+      '-policy.PolicyTest.testEnabledPlugins',
+      # crbug.com/115427
+      '-policy.PolicyTest.testAlwaysAuthorizePlugins',
     ],
 
     'win': [
@@ -161,14 +167,15 @@
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
       # crbug.com/95031
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
-      # crbug.com/103379
-      '-policy.PolicyTest.testDisable3DAPIs',
     ],
 
     'mac': [
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/117317
+      '-policy',
+      '-policy_prefs_ui',
       # Keychain popups make autofill/password tests difficult: crbug.com/49378
       '-autofill',
       # Autofill on Mac. crbug.com/95165
@@ -256,8 +263,6 @@
       '-sync',
       # crbug.com/66072
       '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-      # crbug.com/103379
-      '-policy.PolicyTest.testDisable3DAPIs',
       # crbug.com/109035
       '-youtube.YoutubeTest.testPlayerBytes',
       # crbug.com/109035
@@ -357,8 +362,6 @@
       '-chromeos_browser.ChromeosBrowserTest.testFullScreen',
       # crbug.com/102549
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
-      # crbug.com/103379
-      '-policy.PolicyTest.testDisable3DAPIs',
       # Chrome driver does not work in Chrome OS.
       # crosbug.com/19556
       '-prefs_ui',
@@ -482,16 +485,11 @@
     ],
 
     'win': [
-      'enterprise',
       'gpu',
 
       # ===========================
       # Permanently-disabled tests.
       # ===========================
-      # Can't use automation to change the policy data on Chrome builds.
-      '-policy',
-      '-policy_prefs_ui',
-
       # Preloaded extensions affect process count: crbug.com/94350
       '-process_count',
       # Disable sync.SyncIntegrationTest on the QA bots in FULL,
@@ -510,15 +508,6 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/113090
       '-extensions.ExtensionsTest.testAllowIncognitoExtension',
-      # crbug.com/115427
-      '-enterprise.EnterpriseTest.testAlwaysAuthorizePlugins',
-      # crbug.com/96896
-      '-enterprise.EnterpriseTest.testDisabledPlugins',
-      '-enterprise.EnterpriseTest.testEnabledPlugins',
-      # crbug.com/101787
-      '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
-      # crbug.com/100893
-      '-enterprise.EnterpriseTestReverse.testEnableSPDY',
       # crbug.com/115646
       '-translate.TranslateTest.testSeveralLanguages',
     ],
@@ -527,10 +516,6 @@
       # ===========================
       # Permanently-disabled tests.
       # ===========================
-      # Can't use automation to change the policy data on Chrome builds.
-      '-policy',
-      '-policy_prefs_ui',
-
       # Consistently failing on Mac QA bots only: crbug.com/97810
       '-process_count',
       # crbug.com/115646
@@ -538,7 +523,6 @@
     ],
 
     'linux': [
-      'enterprise',
       # Add back the omnibox tests excluded from the CONTINUOUS suite above
       # because they do not produce omnibox results under virtual X on linux.
       # crbug.com/85310
@@ -560,26 +544,13 @@
       'omnibox.OmniboxTest.testSuggest',
       'omnibox.OmniboxTest.testSuggestPref',
 
-      # ===========================
-      # Permanently-disabled tests.
-      # ===========================
-      # Can't use automation to change the policy data on Chrome builds.
-      '-policy',
-      '-policy_prefs_ui',
-
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/101787
-      '-enterprise.EnterpriseTestReverse.testDefaultSearchProviderDisabled',
-      # crbug.com/97179
-      '-enterprise.EnterpriseTest.testAlwaysAuthorizePlugins',
       # crbug.com/111289
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/100365
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
-      # crbug.com/100893
-      '-enterprise.EnterpriseTestReverse.testEnableSPDY',
       # crbug.com/115917
       '-flash.FlashTest.testFlashLoadsAfterKill',
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
