@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
 
@@ -18,23 +19,31 @@ namespace dom_storage {
 
 // Tasks must run serially with respect to one another, but may
 // execute on different OS threads. The base class is implemented
-// in terms of a MessageLoopProxy for use in testing.
-class DomStorageTaskRunner
-    : public base::RefCountedThreadSafe<DomStorageTaskRunner> {
+// in terms of a MessageLoopProxy.
+class DomStorageTaskRunner : public base::TaskRunner {
  public:
   explicit DomStorageTaskRunner(base::MessageLoopProxy* message_loop);
   virtual ~DomStorageTaskRunner();
 
-  // Schedules a task to be run immediately.
-  virtual bool PostTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task);
+  // The PostTask() method, defined by TaskRunner, schedules a task
+  // to run immediately.
 
   // Schedules a task to be run after a delay.
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
-      base::TimeDelta delay);
+      base::TimeDelta delay) OVERRIDE;
+
+  // DEPRECATED: Only here because base::TaskRunner requires it, implemented
+  // by calling the virtual PostDelayedTask(..., TimeDelta) variant.
+  virtual bool PostDelayedTask(
+      const tracked_objects::Location& from_here,
+      const base::Closure& task,
+      int64 delay_ms) OVERRIDE;
+
+  // Only here because base::TaskRunner requires it, the return
+  // value is hard coded to true.
+  virtual bool RunsTasksOnCurrentThread() const OVERRIDE;
 
  protected:
   const scoped_refptr<base::MessageLoopProxy> message_loop_;
@@ -47,19 +56,17 @@ class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
  public:
   DomStorageWorkerPoolTaskRunner(
       base::SequencedWorkerPool* sequenced_worker_pool,
+      base::SequencedWorkerPool::SequenceToken sequence_token,
       base::MessageLoopProxy* delayed_task_loop);
   virtual ~DomStorageWorkerPoolTaskRunner();
-
-  // Schedules a sequenced worker task to be run immediately.
-  virtual bool PostTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task) OVERRIDE;
 
   // Schedules a sequenced worker task to be run after a delay.
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
       const base::Closure& task,
       base::TimeDelta delay) OVERRIDE;
+
+  base::SequencedWorkerPool::SequenceToken sequence_token() const;
 
  private:
   const scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
@@ -72,7 +79,7 @@ class DomStorageWorkerPoolTaskRunner : public DomStorageTaskRunner {
 class MockDomStorageTaskRunner : public DomStorageTaskRunner {
  public:
   explicit MockDomStorageTaskRunner(base::MessageLoopProxy* message_loop);
-  virtual ~MockDomStorageTaskRunner() { }
+  virtual ~MockDomStorageTaskRunner() {}
 
   virtual bool PostDelayedTask(
       const tracked_objects::Location& from_here,
