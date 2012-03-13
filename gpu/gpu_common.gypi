@@ -130,6 +130,7 @@
         'command_buffer_client',
         'command_buffer_common',
         'command_buffer_service',
+        'gpu',
         'gpu_unittest_utils',
         'gles2_implementation_client_side_arrays',
         'gles2_cmd_helper',

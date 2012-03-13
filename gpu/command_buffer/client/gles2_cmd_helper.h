@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H_
 
+#include "../../gpu_export.h"
 #include "../client/cmd_buffer_helper.h"
 #include "../common/gles2_cmd_format.h"
 
@@ -12,13 +13,10 @@ namespace gpu {
 namespace gles2 {
 
 // A class that helps write GL command buffers.
-class GLES2CmdHelper : public CommandBufferHelper {
+class GPU_EXPORT GLES2CmdHelper : public CommandBufferHelper {
  public:
-  explicit GLES2CmdHelper(CommandBuffer* command_buffer)
-      : CommandBufferHelper(command_buffer) {
-  }
-  virtual ~GLES2CmdHelper() {
-  }
+  explicit GLES2CmdHelper(CommandBuffer* command_buffer);
+  virtual ~GLES2CmdHelper();
 
   // Include the auto-generated part of this class. We split this because it
   // means we can easily edit the non-auto generated parts right here in this
