@@ -1273,7 +1273,8 @@ bool LoginUtilsImpl::ReadOAuth1AccessToken(Profile* user_profile,
                                            std::string* token,
                                            std::string* secret) {
   // Skip reading oauth token if user does not have a valid status.
-  if (UserManager::Get()->GetLoggedInUser().oauth_token_status() !=
+  if (UserManager::Get()->IsUserLoggedIn() &&
+      UserManager::Get()->GetLoggedInUser().oauth_token_status() !=
       User::OAUTH_TOKEN_STATUS_VALID) {
     return false;
   }
