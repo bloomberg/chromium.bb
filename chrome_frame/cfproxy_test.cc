@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/cfproxy_private.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/test_scrubber.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
@@ -143,7 +145,19 @@ struct MockCFProxyTraits : public CFProxyTraits {
 #define API_FIRE_MESSAGE(api, t) InvokeWithoutArgs(CreateFunctor(&api, \
                                        &MockCFProxyTraits::FireMessage, t))
 
-TEST(ChromeProxy, DelegateAddRemove) {
+class ChromeProxyTest : public ::testing::Test {
+ protected:
+  virtual void SetUp() OVERRIDE {
+    chrome_frame_test::OverrideDataDirectoryForThisTest(
+        chrome_frame_test::GetProfilePath(L"").value());
+    params_.profile = "Adam N. Epilinter";
+    params_.timeout = base::TimeDelta::FromSeconds(4);
+  }
+
+  ProxyParams params_;
+};
+
+TEST_F(ChromeProxyTest, DelegateAddRemove) {
   StrictMock<MockCFProxyTraits> api;
   StrictMock<MockChromeProxyDelegate> delegate;
   StrictMock<MockFactory> factory;    // to be destroyed before other mocks
@@ -157,15 +171,12 @@ TEST(ChromeProxy, DelegateAddRemove) {
   EXPECT_CALL(delegate, tab_handle()).WillRepeatedly(Return(0));
   EXPECT_CALL(delegate, Disconnected());
 
-  ProxyParams params;
-  params.profile = "Adam N. Epilinter";
-  params.timeout = base::TimeDelta::FromSeconds(4);
-  factory.GetProxy(&delegate, params);
-  factory.ReleaseProxy(&delegate, params.profile);
+  factory.GetProxy(&delegate, params_);
+  factory.ReleaseProxy(&delegate, params_.profile);
 }
 
 // Not very useful test. Just for illustration. :)
-TEST(ChromeProxy, SharedProxy) {
+TEST_F(ChromeProxyTest, SharedProxy) {
   base::WaitableEvent done1(false, false);
   base::WaitableEvent done2(false, false);
   StrictMock<MockCFProxyTraits> api;
@@ -189,13 +200,9 @@ TEST(ChromeProxy, SharedProxy) {
   EXPECT_CALL(delegate2, Connected(proxy))
       .WillOnce(InvokeWithoutArgs(&done2, &base::WaitableEvent::Signal));
 
-  ProxyParams params;
-  params.profile = "Adam N. Epilinter";
-  params.timeout = base::TimeDelta::FromSeconds(4);
-
-  factory.GetProxy(&delegate1, params);
-  params.timeout = base::TimeDelta::FromSeconds(2);
-  factory.GetProxy(&delegate2, params);
+  factory.GetProxy(&delegate1, params_);
+  params_.timeout = base::TimeDelta::FromSeconds(2);
+  factory.GetProxy(&delegate2, params_);
 
   EXPECT_TRUE(done1.TimedWait(base::TimeDelta::FromSeconds(1)));
   EXPECT_TRUE(done2.TimedWait(base::TimeDelta::FromSeconds(1)));
@@ -203,11 +210,11 @@ TEST(ChromeProxy, SharedProxy) {
   EXPECT_CALL(delegate2, Disconnected());
   EXPECT_CALL(delegate1, Disconnected());
 
-  factory.ReleaseProxy(&delegate2, params.profile);
-  factory.ReleaseProxy(&delegate1, params.profile);
+  factory.ReleaseProxy(&delegate2, params_.profile);
+  factory.ReleaseProxy(&delegate1, params_.profile);
 }
 
-TEST(ChromeProxy, LaunchTimeout) {
+TEST_F(ChromeProxyTest, LaunchTimeout) {
   base::WaitableEvent done(true, false);
   StrictMock<MockCFProxyTraits> api;
   StrictMock<MockChromeProxyDelegate> delegate;
@@ -223,48 +230,42 @@ TEST(ChromeProxy, LaunchTimeout) {
   EXPECT_CALL(delegate, PeerLost(_,
                       ChromeProxyDelegate::CHROME_EXE_LAUNCH_TIMEOUT))
       .WillOnce(InvokeWithoutArgs(&done, &base::WaitableEvent::Signal));
-  ProxyParams params;
-  params.profile = "Adam N. Epilinter";
-  params.timeout = base::TimeDelta::FromMilliseconds(300);
-  factory.GetProxy(&delegate, params);
+  params_.timeout = base::TimeDelta::FromMilliseconds(300);
+  factory.GetProxy(&delegate, params_);
   EXPECT_TRUE(done.TimedWait(base::TimeDelta::FromSeconds(1)));
 
   EXPECT_CALL(delegate, Disconnected());
-  factory.ReleaseProxy(&delegate, params.profile);
+  factory.ReleaseProxy(&delegate, params_.profile);
 }
 
-TEST(ChromeProxy, LaunchChrome) {
+TEST_F(ChromeProxyTest, LaunchChrome) {
   base::WaitableEvent connected(false, false);
   StrictMock<MockChromeProxyDelegate> delegate;
   ChromeProxyFactory factory;
 
-  ProxyParams params;
-  params.profile = "Adam N. Epilinter";
-  params.timeout = base::TimeDelta::FromSeconds(10);
+  params_.timeout = base::TimeDelta::FromSeconds(10);
 
   EXPECT_CALL(delegate, tab_handle()).WillRepeatedly(Return(0));
   EXPECT_CALL(delegate, Connected(NotNull()))
     .WillOnce(InvokeWithoutArgs(&connected, &base::WaitableEvent::Signal));
 
-  factory.GetProxy(&delegate, params);
+  factory.GetProxy(&delegate, params_);
   EXPECT_TRUE(connected.TimedWait(base::TimeDelta::FromSeconds(15)));
 
   EXPECT_CALL(delegate, Disconnected());
-  factory.ReleaseProxy(&delegate, params.profile);
+  factory.ReleaseProxy(&delegate, params_.profile);
 }
 
 // Test that a channel error results in Completed_XYZ(false, ) called if
 // the synchronious XYZ message has been sent.
-TEST(ChromeProxy, ChannelError) {
+TEST_F(ChromeProxyTest, ChannelError) {
   base::WaitableEvent connected(false, false);
   StrictMock<MockCFProxyTraits> api;
   StrictMock<MockChromeProxyDelegate> delegate;
   StrictMock<MockFactory> factory;
   CFProxy* proxy = new CFProxy(&api);
 
-  ProxyParams params;
-  params.profile = "Adam N. Epilinter";
-  params.timeout = base::TimeDelta::FromMilliseconds(300);
+  params_.timeout = base::TimeDelta::FromMilliseconds(300);
 
   testing::InSequence s;
 
@@ -284,7 +285,7 @@ TEST(ChromeProxy, ChannelError) {
   EXPECT_CALL(api, CloseChannel(&api.sender));
   EXPECT_CALL(delegate, PeerLost(_, ChromeProxyDelegate::CHANNEL_ERROR));
 
-  factory.GetProxy(&delegate, params);
+  factory.GetProxy(&delegate, params_);
   EXPECT_TRUE(connected.TimedWait(base::TimeDelta::FromSeconds(15)));
   // Simulate a channel error.
   api.FireError(base::TimeDelta::FromMilliseconds(0));
@@ -292,7 +293,7 @@ TEST(ChromeProxy, ChannelError) {
   // Expectations when the Proxy is destroyed.
   EXPECT_CALL(delegate, tab_handle()).WillOnce(Return(0));
   EXPECT_CALL(delegate, Disconnected());
-  factory.ReleaseProxy(&delegate, params.profile);
+  factory.ReleaseProxy(&delegate, params_.profile);
 }
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
