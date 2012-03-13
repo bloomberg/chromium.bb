@@ -47,10 +47,9 @@ class MessageLoopProxy;
 
 namespace content {
 class BrowserContext;
+class PluginServiceFilter;
 class ResourceContext;
 struct PepperPluginInfo;
-class PluginServiceFilter;
-struct PluginServiceFilterParams;
 }
 
 namespace webkit {
@@ -59,6 +58,15 @@ class PluginGroup;
 class PluginList;
 }
 }
+
+// base::Bind() has limited arity, and the filter-related methods tend to
+// surpass that limit.
+struct PluginServiceFilterParams {
+  int render_process_id;
+  int render_view_id;
+  GURL page_url;
+  content::ResourceContext* resource_context;
+};
 
 class CONTENT_EXPORT PluginServiceImpl
     : NON_EXPORTED_BASE(public content::PluginService),
@@ -175,7 +183,7 @@ class CONTENT_EXPORT PluginServiceImpl
   // Binding directly to GetAllowedPluginForOpenChannelToPlugin() isn't possible
   // because more arity is needed <http://crbug.com/98542>. This just forwards.
   void ForwardGetAllowedPluginForOpenChannelToPlugin(
-      const content::PluginServiceFilterParams& params,
+      const PluginServiceFilterParams& params,
       const GURL& url,
       const std::string& mime_type,
       PluginProcessHost::Client* client,

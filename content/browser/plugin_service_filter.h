@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,17 +14,6 @@ struct WebPluginInfo;
 
 namespace content {
 
-class ResourceContext;
-
-// base::Bind() has limited arity, and the filter-related methods tend to
-// surpass that limit.
-struct PluginServiceFilterParams {
-  int render_process_id;
-  int render_view_id;
-  GURL page_url;
-  ResourceContext* resource_context;
-};
-
 // Callback class to let the client filter the list of all installed plug-ins.
 // This class is called on the FILE thread.
 class PluginServiceFilter {
@@ -33,13 +22,12 @@ class PluginServiceFilter {
 
   // Whether to use |plugin|. The client can return false to disallow the
   // plugin, or return true and optionally change the passed in plugin.
-  virtual bool ShouldUsePlugin(
-      int render_process_id,
-      int render_view_id,
-      const void* context,
-      const GURL& url,
-      const GURL& policy_url,
-      webkit::WebPluginInfo* plugin) = 0;
+  virtual bool ShouldUsePlugin(int render_process_id,
+                               int render_view_id,
+                               const void* context,
+                               const GURL& url,
+                               const GURL& policy_url,
+                               webkit::WebPluginInfo* plugin) = 0;
 };
 
 }  // namespace content

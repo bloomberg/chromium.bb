@@ -328,7 +328,7 @@ void PluginServiceImpl::OpenChannelToNpapiPlugin(
   pending_plugin_clients_.insert(client);
 
   // Make sure plugins are loaded if necessary.
-  content::PluginServiceFilterParams params = {
+  PluginServiceFilterParams params = {
     render_process_id,
     render_view_id,
     page_url,
@@ -368,7 +368,7 @@ void PluginServiceImpl::CancelOpenChannelToNpapiPlugin(
 }
 
 void PluginServiceImpl::ForwardGetAllowedPluginForOpenChannelToPlugin(
-    const content::PluginServiceFilterParams& params,
+    const PluginServiceFilterParams& params,
     const GURL& url,
     const std::string& mime_type,
     PluginProcessHost::Client* client,
