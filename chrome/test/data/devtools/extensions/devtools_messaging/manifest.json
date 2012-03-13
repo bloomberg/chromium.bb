@@ -6,9 +6,5 @@
    "devtools_page": "devtools.html",
    "background":  {
        "scripts": [ "background.js" ]
-   },
-   "web_accessible_resources": [
-     "devtools.html",
-     "devtools.js"
-   ]
+   }
 }
