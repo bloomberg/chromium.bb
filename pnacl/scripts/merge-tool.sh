@@ -90,6 +90,7 @@ get-upstream() {
   pnacl-build hg-checkout-upstream
   pnacl-build hg-pull-upstream
   pnacl-build hg-update-upstream
+  pnacl-build hg-info-all
 }
 
 #+ merge-all             - Merge everything
