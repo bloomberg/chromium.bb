@@ -448,7 +448,7 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
   // Play 2 seconds worth of audio and then quit.
   message_loop_.PostDelayedTask(FROM_HERE,
                                 MessageLoop::QuitClosure(),
-                                2000);
+                                base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 
 
@@ -509,7 +509,7 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
   LOG(INFO) << ">> You should now be able to hear yourself in loopback...";
   message_loop_.PostDelayedTask(FROM_HERE,
                                 MessageLoop::QuitClosure(),
-                                TestTimeouts::action_timeout_ms());
+                                TestTimeouts::action_timeout());
   message_loop_.Run();
 
   EXPECT_EQ(0, base->StopSend(ch));
