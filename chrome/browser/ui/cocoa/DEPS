@@ -1,9 +1,4 @@
 include_rules = [
-  # TODO(joi): Used only by ChromeEventProcessingWindow to determine
-  # type, not call any methods.  Should be able to use something else
-  # to tag the class that doesn't expose any of its implementation.
-  "+content/browser/renderer_host/render_widget_host_view_mac.h",
-
   "+third_party/molokocacao",  # For NSBezierPath additions.
   "+third_party/ocmock",  # For unit tests.
 ]

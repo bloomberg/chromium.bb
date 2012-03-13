@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/accelerated_surface_container_manager_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/edit_command.h"
+#import "content/public/browser/render_widget_host_view_mac_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "ui/base/cocoa/base_view.h"
 #include "webkit/glue/webcursor.h"
@@ -39,7 +40,8 @@ class RenderWidgetHostImpl;
 // but that means that the view needs to own the delegate and will dispose of it
 // when it's removed from the view system.
 @interface RenderWidgetHostViewCocoa
-    : BaseView <RenderWidgetHostViewMacOwner,
+    : BaseView <RenderWidgetHostViewMacBase,
+                RenderWidgetHostViewMacOwner,
                 NSTextInputClient,
                 BrowserAccessibilityDelegateCocoa> {
  @private

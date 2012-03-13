@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/browser_frame_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#import "content/browser/renderer_host/render_widget_host_view_mac.h"
+#import "content/public/browser/render_widget_host_view_mac_base.h"
 
 typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);
 
@@ -67,7 +67,7 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);
   // Give the web site a chance to handle the event. If it doesn't want to
   // handle it, it will call us back with one of the |handle*| methods above.
   NSResponder* r = [self firstResponder];
-  if ([r isKindOfClass:[RenderWidgetHostViewCocoa class]])
+  if ([r conformsToProtocol:@protocol(RenderWidgetHostViewMacBase)])
     return [r performKeyEquivalent:event];
 
   // If the delegate does not implement the BrowserCommandExecutor protocol,
