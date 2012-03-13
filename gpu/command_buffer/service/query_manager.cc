@@ -80,6 +80,7 @@ QueryManager::Query::Query(
       target_(0),
       shm_id_(0),
       shm_offset_(0),
+      submit_count_(0),
       pending_(false) {
   DCHECK(manager);
   manager_->StartTracking(this);

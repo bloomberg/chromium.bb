@@ -34,7 +34,11 @@ class GPU_EXPORT QuerySyncManager {
           shm_offset(offset),
           sync(sync_mem) {
     }
-    QueryInfo() {
+
+    QueryInfo()
+        : shm_id(0),
+          shm_offset(0),
+          sync(NULL) {
     }
 
     int32 shm_id;
