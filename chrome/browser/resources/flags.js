@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ function renderTemplate(flagsExperimentsData) {
   // Add handlers to dynamically created HTML elements.
   var elements = document.getElementsByClassName('experiment-select');
   for (var i = 0; i < elements.length; ++i) {
-    elements[i].onclick = function () {
+    elements[i].onchange = function () {
       handleSelectChoiceExperiment(this, this.selectedIndex);
       return false;
     };
