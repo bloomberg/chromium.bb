@@ -901,25 +901,37 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
                       cwd=scripts_dir)
 
 
-def BuildAutotestTarball(buildroot, board, filename):
+def BuildAutotestTarballs(buildroot, board, tarball_dir):
   """Tar up the autotest artifacts into image_dir.
 
   Args:
     buildroot: Root directory where build occurs.
     board: Board type that was built on this machine.
-    filename: Location for storing autotest tarball
+    tarball_dir: Location for storing autotest tarballs.
 
-  Returns the basename of the autotest tarball.
+  Returns a tuple containing the paths of the autotest and test_suites tarballs.
   """
+  autotest_tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
+  test_suites_tarball = os.path.join(tarball_dir, 'test_suites.tar.bz2')
+
   cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
   pbzip2 = os.path.join(buildroot, 'chroot', 'usr', 'bin', 'pbzip2')
   cmd = ['tar',
          'cf',
-         filename,
+         autotest_tarball,
          '--checkpoint=10000',
          '--use-compress-program=%s' % pbzip2,
          'autotest']
   cros_lib.RunCommand(cmd, cwd=cwd)
+
+  cmd = ['tar',
+         'cf',
+         test_suites_tarball,
+         '--checkpoint=10000',
+         '--use-compress-program=%s' % pbzip2,
+         'autotest/test_suites']
+  cros_lib.RunCommand(cmd, cwd=cwd)
+  return [autotest_tarball, test_suites_tarball]
 
 
 def BuildImageZip(archive_dir, image_dir):

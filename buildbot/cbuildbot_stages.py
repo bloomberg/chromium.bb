@@ -627,8 +627,8 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     if self._options.clobber:
       self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
-    self._autotest_tarball = None
     self._archive_stage = archive_stage
+    self._tarball_dir = None
 
   def _CommunicateImagePath(self):
     """Communicates to archive_stage the image path of this stage."""
@@ -666,14 +666,14 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     os.symlink(latest_image, cbuildbot_image_link)
     self._CommunicateImagePath()
 
-  def _BuildAutotestTarball(self):
+  def _BuildAutotestTarballs(self):
     # Build autotest tarball, which is used in archive step. This is generated
     # here because the test directory is modified during the test phase, and we
     # don't want to include the modifications in the tarball.
-    commands.BuildAutotestTarball(self._build_root,
-                                  self._current_board,
-                                  self._autotest_tarball)
-    self._archive_stage.AutotestTarballReady(self._autotest_tarball)
+    tarballs = commands.BuildAutotestTarballs(self._build_root,
+                                              self._current_board,
+                                              self._tarball_dir)
+    self._archive_stage.AutotestTarballsReady(tarballs)
 
   def _PerformStage(self):
     build_autotest = (self._build_config['build_tests'] and
@@ -696,24 +696,23 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     steps = []
     if build_autotest and (self._build_config['hw_tests'] or
                            self._build_config['archive_build_debug']):
-      tarball_dir = tempfile.mkdtemp(prefix='autotest')
-      self._autotest_tarball = os.path.join(tarball_dir, 'autotest.tar.bz2')
-      steps.append(self._BuildAutotestTarball)
+      self._tarball_dir = tempfile.mkdtemp(prefix='autotest')
+      steps.append(self._BuildAutotestTarballs)
     else:
-      self._archive_stage.AutotestTarballReady(None)
+      self._archive_stage.AutotestTarballsReady(None)
 
     steps.append(self._BuildImages)
     background.RunParallelSteps(steps)
 
     # TODO(sosa): Remove copy once crosbug.com/23690 is closed.
-    if build_autotest and self._build_config['archive_build_debug']:
-      shutil.copyfile(self._autotest_tarball,
+    if self._tarball_dir:
+      shutil.copyfile(os.path.join(self._tarball_dir, 'autotest.tar.bz2'),
                       os.path.join(self.GetImageDirSymlink(),
                                    'autotest.tar.bz2'))
 
   def _HandleStageException(self, exception):
     # In case of an exception, this prevents any consumer from starving.
-    self._archive_stage.AutotestTarballReady(None)
+    self._archive_stage.AutotestTarballsReady(None)
     return super(BuildTargetStage, self)._HandleStageException(exception)
 
 
@@ -805,6 +804,7 @@ class VMTestStage(BoardSpecificBuilderStage):
   def HandleSkip(self):
     self._archive_stage.TestResultsReady(None)
 
+
 class HWTestStage(BoardSpecificBuilderStage, ForgivingBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
@@ -893,7 +893,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
 
     # Queues that are populated by other stages.
     self._version_queue = multiprocessing.Queue()
-    self._autotest_tarball_queue = multiprocessing.Queue()
+    self._autotest_tarballs_queue = multiprocessing.Queue()
     self._test_results_queue = multiprocessing.Queue()
 
   def SetVersion(self, path_to_image):
@@ -906,15 +906,15 @@ class ArchiveStage(BoardSpecificBuilderStage):
     """
     self._version_queue.put(path_to_image)
 
-  def AutotestTarballReady(self, autotest_tarball):
+  def AutotestTarballsReady(self, autotest_tarballs):
     """Tell Archive Stage that autotest tarball is ready.
 
     This must be called in order for archive stage to finish.
 
     Args:
-      autotest_tarball: The filename of the autotest tarball.
+      autotest_tarballs: The paths of the autotest tarballs.
     """
-    self._autotest_tarball_queue.put(autotest_tarball)
+    self._autotest_tarballs_queue.put(autotest_tarballs)
 
   def TestResultsReady(self, test_results):
     """Tell Archive Stage that test results are ready.
@@ -1017,18 +1017,18 @@ class ArchiveStage(BoardSpecificBuilderStage):
     if version:
       return os.path.join(self._bot_archive_root, version)
 
-  def _GetAutotestTarball(self):
-    """Get the path to the autotest tarball."""
-    autotest_tarball = None
+  def _GetAutotestTarballs(self):
+    """Get the paths of the autotest tarballs."""
+    autotest_tarballs = None
     if self._options.build:
-      cros_lib.Info('Waiting for autotest tarball...')
-      autotest_tarball = self._autotest_tarball_queue.get()
-      if autotest_tarball:
-        cros_lib.Info('Found autotest tarball at %s...' % autotest_tarball)
+      cros_lib.Info('Waiting for autotest tarballs ...')
+      autotest_tarballs = self._autotest_tarballs_queue.get()
+      if autotest_tarballs:
+        cros_lib.Info('Found autotest tarballs %r ...' % autotest_tarballs)
       else:
-        cros_lib.Info('No autotest tarball.')
+        cros_lib.Info('No autotest tarballs found.')
 
-    return autotest_tarball
+    return autotest_tarballs
 
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
@@ -1085,7 +1085,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     # otherwise)
     # \- BuildAndArchiveArtifacts
     #    \- ArchiveArtifactsForHWTesting
-    #       \- ArchiveAutotestTarball
+    #       \- ArchiveAutotestTarballs
     #       \- ArchivePayloads
     #    \- ArchiveTestResults
     #    \- ArchiveDebugSymbols
@@ -1094,12 +1094,13 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #       \- BuildAndArchiveFactoryImages
     #       \- ArchiveRegularImages
 
-    def ArchiveAutotestTarball():
-      """Archives the autotest tarball produced in BuildTarget."""
-      autotest_tarball = self._GetAutotestTarball()
-      if autotest_tarball:
-        hw_test_upload_queue.put([commands.ArchiveFile(autotest_tarball,
-                                                       archive_path)])
+    def ArchiveAutotestTarballs():
+      """Archives the autotest tarballs produced in BuildTarget."""
+      autotest_tarballs = self._GetAutotestTarballs()
+      if autotest_tarballs:
+        for tarball in autotest_tarballs:
+          hw_test_upload_queue.put([commands.ArchiveFile(tarball,
+                                                         archive_path)])
 
     def ArchivePayloads():
       """Archives update payloads when they are ready."""
@@ -1212,7 +1213,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
       success = False
       try:
         with bg_task_runner(queue, UploadArtifact, num_upload_processes):
-          steps = [ArchiveAutotestTarball, ArchivePayloads]
+          steps = [ArchiveAutotestTarballs, ArchivePayloads]
           background.RunParallelSteps(steps)
         success = True
       finally:

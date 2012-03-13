@@ -692,7 +692,7 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(background, 'RunParallelSteps')
     background.RunParallelSteps(mox.IgnoreArg()).WithSideEffects(_DoSteps)
 
-    self.mox.StubOutWithMock(commands, 'BuildAutotestTarball')
+    self.mox.StubOutWithMock(commands, 'BuildAutotestTarballs')
     self.mox.StubOutWithMock(os, 'rename')
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
 
@@ -723,8 +723,13 @@ class BuildTargetStageTest(AbstractStageTest):
 
     # Convenience variables.
     fake_autotest_dir = '/fake/autotest'
-    tarball_name = 'autotest.tar.bz2'
-    autotest_tarball_path = os.path.join(fake_autotest_dir, tarball_name)
+    autotest_tarball_name = 'autotest.tar.bz2'
+    test_suites_tarball_name = 'test_suites.tar.bz2'
+    autotest_tarball_path = os.path.join(fake_autotest_dir,
+                                         autotest_tarball_name)
+    test_suites_tarball_path = os.path.join(fake_autotest_dir,
+                                            test_suites_tarball_name)
+    tarballs = autotest_tarball_path, test_suites_tarball_path
 
     commands.Build(self.build_root,
                    self._current_board,
@@ -740,14 +745,14 @@ class BuildTargetStageTest(AbstractStageTest):
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     extra_env=proper_env)
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
-    commands.BuildAutotestTarball(self.build_root, self._current_board,
-                                  autotest_tarball_path)
-    self.archive_stage_mock.AutotestTarballReady(autotest_tarball_path)
+    commands.BuildAutotestTarballs(self.build_root, self._current_board,
+                                   fake_autotest_dir).AndReturn(tarballs)
+    self.archive_stage_mock.AutotestTarballsReady(tarballs)
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
     self.archive_stage_mock.SetVersion(self.latest_cbuildbot)
     shutil.copyfile(autotest_tarball_path,
                     os.path.join(self.images_root, 'latest-cbuildbot',
-                                 tarball_name))
+                                 autotest_tarball_name))
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -765,7 +770,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    skip_toolchain_update=mox.IgnoreArg(),
                    nowithdebug=mox.IgnoreArg(),
                    extra_env={})
-    self.archive_stage_mock.AutotestTarballReady(None)
+    self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
                         extra_env={})
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
@@ -799,7 +804,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    skip_toolchain_update=False,
                    nowithdebug=True,
                    extra_env=proper_env)
-    self.archive_stage_mock.AutotestTarballReady(None)
+    self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
                         extra_env=proper_env)
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
