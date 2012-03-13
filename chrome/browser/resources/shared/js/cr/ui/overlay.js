@@ -21,12 +21,15 @@ cr.define('cr.ui.overlay', function() {
    * Makes initializations which must hook at the document level.
    */
   function globalInitialization() {
-    /* Listen to focus events and make sure focus doesn't move outside of a
-     * visible overlay .page. */
+    // Listen to focus events and make sure focus doesn't move outside of a
+    // visible overlay .page.
     document.addEventListener('focus', function(e) {
       var overlay = getTopOverlay();
-      var page = overlay ? overlay.querySelector('.page:not([hidden])') : null;
-      if (!page || page.contains(e.target))
+      if (!overlay)
+        return;
+
+      var page = overlay.querySelector('.page:not([hidden])');
+      if (page.contains(e.target))
         return;
 
       var focusElement = page.querySelector('button, input, list, select, a');
@@ -34,7 +37,7 @@ cr.define('cr.ui.overlay', function() {
         focusElement.focus();
     }, true);
 
-    /* Close the overlay on escape. */
+    // Close the overlay on escape.
     document.addEventListener('keydown', function(e) {
       if (e.keyCode == 27) {  // Escape
         var overlay = getTopOverlay();
@@ -43,6 +46,15 @@ cr.define('cr.ui.overlay', function() {
 
         cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
       }
+    });
+
+    window.addEventListener('resize', function() {
+      var overlay = getTopOverlay();
+      if (!overlay)
+        return;
+
+      var page = overlay.querySelector('.page:not([hidden])');
+      page.style.maxHeight = Math.min(0.9 * window.innerHeight, 640) + 'px';
     });
   }
 
@@ -59,8 +71,7 @@ cr.define('cr.ui.overlay', function() {
       });
     }
 
-    /* Remove the 'pulse' animation any time the overlay is hidden or shown.
-     */
+    // Remove the 'pulse' animation any time the overlay is hidden or shown.
     overlay.__defineSetter__('hidden', function(value) {
       this.classList.remove('pulse');
       if (value)
@@ -72,7 +83,7 @@ cr.define('cr.ui.overlay', function() {
       return this.hasAttribute('hidden');
     });
 
-    /* Shake when the user clicks away. */
+    // Shake when the user clicks away.
     overlay.addEventListener('click', function(e) {
       // Only pulse if the overlay was the target of the click.
       if (this != e.target)

@@ -14,7 +14,6 @@
   left: 0;
   overflow: auto;
   padding: 20px;
-  padding-bottom: 130px;
   position: fixed;
   right: 0;
   top: 0;
@@ -28,8 +27,6 @@
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);
   color: #333;
   display: -webkit-box;
-  height: 90%;
-  max-height: 640px;
   min-width: 400px;
   padding: 0;
   position: relative;
