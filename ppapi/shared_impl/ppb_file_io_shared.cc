@@ -159,13 +159,13 @@ void PPB_FileIO_Shared::ExecuteReadCallback(int32_t pp_error,
     return;
   }
 
-  char* read_buffer = callbacks_.front().read_buffer;
-  DCHECK(data);
-  DCHECK(read_buffer);
-
   // The result code contains the number of bytes if it's positive.
-  if (pp_error > 0)
+  if (pp_error > 0) {
+    char* read_buffer = callbacks_.front().read_buffer;
+    DCHECK(data);
+    DCHECK(read_buffer);
     memcpy(read_buffer, data, pp_error);
+  }
   RunAndRemoveFirstPendingCallback(pp_error);
 }
 
