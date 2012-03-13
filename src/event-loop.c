@@ -462,8 +462,9 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 		n += source->interface->dispatch(source, &ep[i]);
 	}
 
-	while (n > 0)
+	do {
 		n = post_dispatch_check(loop);
+	} while (n > 0);
 		
 	return 0;
 }
