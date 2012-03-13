@@ -97,7 +97,7 @@ cr.define('options', function() {
     handleUseWhitelistCheckChange_: function(e) {
       // Whitelist existing users when guest login is being disabled.
       if ($('useWhitelistCheck').checked) {
-        chrome.send('whitelistExistingUsers', []);
+        chrome.send('whitelistExistingUsers');
       }
 
       this.updateControls_();

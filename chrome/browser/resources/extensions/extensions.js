@@ -113,7 +113,7 @@ cr.define('extensions', function() {
      * @private
      */
     handleUpdateExtensionNow_: function(e) {
-      chrome.send('extensionSettingsAutoupdate', []);
+      chrome.send('extensionSettingsAutoupdate');
     },
 
     /**
@@ -131,7 +131,7 @@ cr.define('extensions', function() {
         $('extension-settings').classList.remove('dev-mode');
       }
 
-      chrome.send('extensionSettingsToggleDeveloperMode', []);
+      chrome.send('extensionSettingsToggleDeveloperMode');
     },
 
     /**

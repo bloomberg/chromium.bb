@@ -53,7 +53,7 @@ cr.define('options', function() {
     this.backupAllButton = $(id + '-backup-all');
     if (this.backupAllButton !== null) {
       this.backupAllButton.onclick = function(e) {
-        chrome.send('exportAllPersonalCertificates', []);
+        chrome.send('exportAllPersonalCertificates');
       }
     }
 
@@ -65,11 +65,11 @@ cr.define('options', function() {
         }
       } else if (id == 'serverCertsTab') {
         this.importButton.onclick = function(e) {
-          chrome.send('importServerCertificate', []);
+          chrome.send('importServerCertificate');
         }
       } else if (id == 'caCertsTab') {
         this.importButton.onclick = function(e) {
-          chrome.send('importCaCertificate', []);
+          chrome.send('importCaCertificate');
         }
       }
     }

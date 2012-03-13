@@ -180,7 +180,7 @@ cr.define('ntp', function() {
 
       var undoAll = {
         action: function() {
-          chrome.send('clearMostVisitedURLsBlacklist', []);
+          chrome.send('clearMostVisitedURLsBlacklist');
         },
         text: templateData.restoreThumbnailsShort,
       };
