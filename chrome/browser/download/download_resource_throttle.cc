@@ -12,7 +12,8 @@ DownloadResourceThrottle::DownloadResourceThrottle(
     DownloadRequestLimiter* limiter,
     int render_process_id,
     int render_view_id,
-    int request_id)
+    int request_id,
+    const std::string& request_method)
     : querying_limiter_(true),
       request_allowed_(false),
       request_deferred_(false) {
@@ -20,6 +21,7 @@ DownloadResourceThrottle::DownloadResourceThrottle(
       render_process_id,
       render_view_id,
       request_id,
+      request_method,
       base::Bind(&DownloadResourceThrottle::ContinueDownload,
                  AsWeakPtr()));
 }

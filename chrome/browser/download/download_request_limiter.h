@@ -176,6 +176,7 @@ class DownloadRequestLimiter
   void CanDownloadOnIOThread(int render_process_host_id,
                              int render_view_id,
                              int request_id,
+                             const std::string& request_method,
                              const Callback& callback);
 
   // Invoked when the user presses the mouse, enter key or space bar. This may
@@ -218,12 +219,14 @@ class DownloadRequestLimiter
   void CanDownload(int render_process_host_id,
                    int render_view_id,
                    int request_id,
+                   const std::string& request_method,
                    const Callback& callback);
 
   // Does the work of updating the download status on the UI thread and
   // potentially prompting the user.
   void CanDownloadImpl(TabContentsWrapper* originating_tab,
                        int request_id,
+                       const std::string& request_method,
                        const Callback& callback);
 
   // Invoked on the UI thread. Schedules a call to NotifyCallback on the io

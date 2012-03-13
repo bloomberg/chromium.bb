@@ -147,8 +147,9 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool TakeFocus(bool reverse) OVERRIDE;
-  virtual bool CanDownload(content::WebContents* source,
-                           int request_id) OVERRIDE;
+  virtual bool CanDownload(content::RenderViewHost* render_view_host,
+                           int request_id,
+                           const std::string& request_method) OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
   virtual bool HandleContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;

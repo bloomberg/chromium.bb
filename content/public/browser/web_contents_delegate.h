@@ -31,6 +31,7 @@ namespace content {
 class BrowserContext;
 class DownloadItem;
 class JavaScriptDialogCreator;
+class RenderViewHost;
 class WebContents;
 class WebIntentsDispatcher;
 struct ContextMenuParams;
@@ -208,7 +209,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void WebContentsFocused(WebContents* contents) {}
 
   // Asks the delegate if the given tab can download.
-  virtual bool CanDownload(WebContents* source, int request_id);
+  virtual bool CanDownload(RenderViewHost* render_view_host,
+                           int request_id,
+                           const std::string& request_method);
 
   // Notifies the delegate that a download is starting.
   virtual void OnStartDownload(WebContents* source, DownloadItem* download) {}

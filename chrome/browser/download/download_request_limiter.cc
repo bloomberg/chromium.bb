@@ -202,17 +202,20 @@ DownloadRequestLimiter::DownloadStatus
   return state ? state->download_status() : ALLOW_ONE_DOWNLOAD;
 }
 
-void DownloadRequestLimiter::CanDownloadOnIOThread(int render_process_host_id,
-                                                   int render_view_id,
-                                                   int request_id,
-                                                   const Callback& callback) {
+void DownloadRequestLimiter::CanDownloadOnIOThread(
+    int render_process_host_id,
+    int render_view_id,
+    int request_id,
+    const std::string& request_method,
+    const Callback& callback) {
   // This is invoked on the IO thread. Schedule the task to run on the UI
   // thread so that we can query UI state.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadRequestLimiter::CanDownload, this,
-                 render_process_host_id, render_view_id, request_id, callback));
+                 render_process_host_id, render_view_id, request_id,
+                 request_method, callback));
 }
 
 void DownloadRequestLimiter::OnUserGesture(WebContents* tab) {
@@ -250,6 +253,7 @@ DownloadRequestLimiter::TabDownloadState* DownloadRequestLimiter::
 void DownloadRequestLimiter::CanDownload(int render_process_host_id,
                                          int render_view_id,
                                          int request_id,
+                                         const std::string& request_method,
                                          const Callback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -264,12 +268,14 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
   CanDownloadImpl(
       TabContentsWrapper::GetCurrentWrapperForContents(originating_tab),
       request_id,
+      request_method,
       callback);
 }
 
 void DownloadRequestLimiter::CanDownloadImpl(
     TabContentsWrapper* originating_tab,
     int request_id,
+    const std::string& request_method,
     const Callback& callback) {
   DCHECK(originating_tab);
 
@@ -277,7 +283,8 @@ void DownloadRequestLimiter::CanDownloadImpl(
   // to cancel the download operation in chrome and let the host browser
   // take care of it.
   WebContents* tab = originating_tab->web_contents();
-  if (tab->GetDelegate() && !tab->GetDelegate()->CanDownload(tab, request_id)) {
+  if (tab->GetDelegate() && !tab->GetDelegate()->CanDownload(
+      tab->GetRenderViewHost(), request_id, request_method)) {
     ScheduleNotification(callback, false);
     return;
   }

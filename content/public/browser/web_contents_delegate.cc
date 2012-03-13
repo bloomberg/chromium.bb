@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/url_constants.h"
@@ -59,7 +60,9 @@ int WebContentsDelegate::GetExtraRenderViewHeight() const {
   return 0;
 }
 
-bool WebContentsDelegate::CanDownload(WebContents* source, int request_id) {
+bool WebContentsDelegate::CanDownload(RenderViewHost* render_view_host,
+                                      int request_id,
+                                      const std::string& request_method) {
   return true;
 }
 

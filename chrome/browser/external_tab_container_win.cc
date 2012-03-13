@@ -555,7 +555,9 @@ bool ExternalTabContainer::TakeFocus(bool reverse) {
   return true;
 }
 
-bool ExternalTabContainer::CanDownload(WebContents* source, int request_id) {
+bool ExternalTabContainer::CanDownload(RenderViewHost* render_view_host,
+                                       int request_id,
+                                       const std::string& request_method) {
   if (load_requests_via_automation_) {
     if (automation_) {
       // In case the host needs to show UI that needs to take the focus.

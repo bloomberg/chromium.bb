@@ -26,7 +26,8 @@ class DownloadResourceThrottle
   DownloadResourceThrottle(DownloadRequestLimiter* limiter,
                            int render_process_id,
                            int render_view_id,
-                           int request_id);
+                           int request_id,
+                           const std::string& request_method);
 
   // content::ResourceThrottle implementation:
   virtual void WillStartRequest(bool* defer) OVERRIDE;

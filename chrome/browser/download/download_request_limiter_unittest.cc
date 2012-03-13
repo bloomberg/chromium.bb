@@ -41,7 +41,8 @@ class DownloadRequestLimiterTest : public TabContentsWrapperTestHarness {
   void CanDownload() {
     download_request_limiter_->CanDownloadImpl(
         contents_wrapper(),
-        -1,
+        -1,  // request id
+        "GET",  // request method
         base::Bind(&DownloadRequestLimiterTest::ContinueDownload,
                    base::Unretained(this)));
     message_loop_.RunAllPending();

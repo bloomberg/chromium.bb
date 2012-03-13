@@ -203,7 +203,8 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
                                     throttles);
   } else {
     throttles->push_back(new DownloadResourceThrottle(
-        download_request_limiter_, child_id, route_id, request_id));
+        download_request_limiter_, child_id, route_id, request_id,
+        request->method()));
   }
 }
 

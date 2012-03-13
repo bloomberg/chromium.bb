@@ -232,8 +232,9 @@ class InstantLoader::TabContentsDelegateImpl
   // instant result when the drag ends, so that during the drag the page won't
   // move around.
   virtual void DragEnded() OVERRIDE;
-  virtual bool CanDownload(content::WebContents* source,
-                           int request_id) OVERRIDE;
+  virtual bool CanDownload(content::RenderViewHost* render_view_host,
+                           int request_id,
+                           const std::string& request_method) OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE;
@@ -484,8 +485,10 @@ void InstantLoader::TabContentsDelegateImpl::DragEnded() {
   CommitFromMouseReleaseIfNecessary();
 }
 
-bool InstantLoader::TabContentsDelegateImpl::CanDownload(WebContents* source,
-                                                         int request_id) {
+bool InstantLoader::TabContentsDelegateImpl::CanDownload(
+        RenderViewHost* render_view_host,
+        int request_id,
+        const std::string& request_method) {
   // Downloads are disabled.
   return false;
 }

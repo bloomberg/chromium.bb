@@ -135,7 +135,9 @@ class PrerenderContents::TabContentsDelegateImpl
     return false;
   }
 
-  virtual bool CanDownload(WebContents* source, int request_id) OVERRIDE {
+  virtual bool CanDownload(RenderViewHost* render_view_host,
+                           int request_id,
+                           const std::string& request_method) OVERRIDE {
     prerender_contents_->Destroy(FINAL_STATUS_DOWNLOAD);
     // Cancel the download.
     return false;
