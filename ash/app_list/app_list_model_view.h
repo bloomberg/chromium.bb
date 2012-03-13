@@ -15,6 +15,7 @@ class ButtonListener;
 
 namespace ash {
 
+class AppListItemView;
 class AppListModel;
 
 // AppListModelView displays the UI for an AppListModel.
@@ -27,14 +28,22 @@ class AppListModelView : public views::View,
   // Sets |model| to use. Note this does not take ownership of |model|.
   void SetModel(AppListModel* model);
 
+  void SetSelectedItem(AppListItemView* item);
+  void ClearSelectedItem(AppListItemView* item);
+
  private:
   // Updates from model.
   void Update();
 
+  AppListItemView* GetItemViewAtIndex(int index);
+  void SetSelectedItemByIndex(int index);
   int SetTileIconSizeAndGetMaxWidth(int icon_dimension);
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+  virtual bool OnKeyReleased(const views::KeyEvent& event) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from ListModelObserver:
   virtual void ListItemsAdded(int start, int count) OVERRIDE;
@@ -43,6 +52,9 @@ class AppListModelView : public views::View,
 
   AppListModel* model_;  // Owned by parent AppListView.
   views::ButtonListener* listener_;
+
+  int selected_item_index_;
+  int items_per_col_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListModelView);
 };

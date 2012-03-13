@@ -52,7 +52,10 @@ gfx::Size CalculateTileSize(const gfx::Size& content_size, int num_of_tiles) {
 
 AppListModelView::AppListModelView(views::ButtonListener* listener)
     : model_(NULL),
-      listener_(listener) {
+      listener_(listener),
+      selected_item_index_(-1),
+      items_per_col_(0) {
+  set_focusable(true);
 }
 
 AppListModelView::~AppListModelView() {
@@ -71,16 +74,48 @@ void AppListModelView::SetModel(AppListModel* model) {
   Update();
 }
 
+void AppListModelView::SetSelectedItem(AppListItemView* item) {
+  int index = GetIndexOf(item);
+  if (index >= 0)
+    SetSelectedItemByIndex(index);
+}
+
+void AppListModelView::ClearSelectedItem(AppListItemView* item) {
+  int index = GetIndexOf(item);
+  if (index == selected_item_index_)
+    SetSelectedItemByIndex(-1);
+}
+
 void AppListModelView::Update() {
+  selected_item_index_ = -1;
   RemoveAllChildViews(true);
   if (!model_ || model_->item_count() == 0)
     return;
 
   for (int i = 0; i < model_->item_count(); ++i)
-    AddChildView(new AppListItemView(model_->GetItem(i), listener_));
+    AddChildView(new AppListItemView(this, model_->GetItem(i), listener_));
 
   Layout();
   SchedulePaint();
+}
+
+AppListItemView* AppListModelView::GetItemViewAtIndex(int index) {
+  return static_cast<AppListItemView*>(child_at(index));
+}
+
+void AppListModelView::SetSelectedItemByIndex(int index) {
+  if (selected_item_index_ == index)
+    return;
+
+  if (selected_item_index_ >= 0)
+    GetItemViewAtIndex(selected_item_index_)->SetSelected(false);
+
+  if (index < 0 || index >= child_count()) {
+    selected_item_index_ = -1;
+  } else {
+    selected_item_index_ = index;
+    GetItemViewAtIndex(selected_item_index_)->SetSelected(true);
+  }
 }
 
 int AppListModelView::SetTileIconSizeAndGetMaxWidth(int icon_dimension) {
@@ -99,11 +134,14 @@ int AppListModelView::SetTileIconSizeAndGetMaxWidth(int icon_dimension) {
 
 void AppListModelView::Layout() {
   gfx::Rect rect(GetContentsBounds());
-  if (rect.IsEmpty())
+  if (rect.IsEmpty()) {
+    items_per_col_ = 0;
     return;
+  }
 
   // Gets |tile_size| based on content rect and number of tiles.
   gfx::Size tile_size = CalculateTileSize(rect.size(), child_count());
+  items_per_col_ = rect.height() / tile_size.height();
 
   // Sets tile's icons size and caps tile width to the max tile width.
   int max_tile_width = SetTileIconSizeAndGetMaxWidth(
@@ -124,6 +162,52 @@ void AppListModelView::Layout() {
       current_tile.set_y(rect.y());
     }
   }
+}
+
+bool AppListModelView::OnKeyPressed(const views::KeyEvent& event) {
+  bool handled = false;
+  if (selected_item_index_ >= 0)
+    handled = GetItemViewAtIndex(selected_item_index_)->OnKeyPressed(event);
+
+  if (!handled) {
+    switch (event.key_code()) {
+      case ui::VKEY_LEFT:
+        SetSelectedItemByIndex(std::max(selected_item_index_ - items_per_col_,
+                                        0));
+        return true;
+      case ui::VKEY_RIGHT:
+        if (selected_item_index_ < 0) {
+          SetSelectedItemByIndex(0);
+        } else {
+          SetSelectedItemByIndex(std::min(selected_item_index_ + items_per_col_,
+                                          child_count() - 1));
+        }
+        return true;
+      case ui::VKEY_UP:
+        SetSelectedItemByIndex(std::max(selected_item_index_ - 1, 0));
+        return true;
+      case ui::VKEY_DOWN:
+        SetSelectedItemByIndex(std::min(selected_item_index_ + 1,
+                                        child_count() - 1));
+        return true;
+      default:
+        break;
+    }
+  }
+
+  return handled;
+}
+
+bool AppListModelView::OnKeyReleased(const views::KeyEvent& event) {
+  bool handled = false;
+  if (selected_item_index_ >= 0)
+    handled = GetItemViewAtIndex(selected_item_index_)->OnKeyReleased(event);
+
+  return handled;
+}
+
+void AppListModelView::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  // Override to not paint focus frame.
 }
 
 void AppListModelView::ListItemsAdded(int start, int count) {

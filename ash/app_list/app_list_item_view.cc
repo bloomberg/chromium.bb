@@ -5,6 +5,7 @@
 #include "ash/app_list/app_list_item_view.h"
 
 #include "ash/app_list/app_list_item_model.h"
+#include "ash/app_list/app_list_model_view.h"
 #include "ash/app_list/drop_shadow_label.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -24,7 +25,12 @@ namespace {
 const int kIconTitleSpacing = 5;
 
 const SkColor kTitleColor = SK_ColorWHITE;
-const SkColor kHoverColor = SkColorSetARGB(0x33, 0xFF, 0xFF, 0xFF); // 0.2 white
+
+// 0.2 white
+const SkColor kHoverAndPushedColor = SkColorSetARGB(0x33, 0xFF, 0xFF, 0xFF);
+
+// 0.1 white
+const SkColor kSelectedColor = SkColorSetARGB(0x20, 0xFF, 0xFF, 0xFF);
 
 gfx::Font GetTitleFont() {
   static gfx::Font* font = NULL;
@@ -56,12 +62,15 @@ class StaticImageView : public views::ImageView {
 // static
 const char AppListItemView::kViewClassName[] = "ash/app_list/AppListItemView";
 
-AppListItemView::AppListItemView(AppListItemModel* model,
+AppListItemView::AppListItemView(AppListModelView* list_model_view,
+                                 AppListItemModel* model,
                                  views::ButtonListener* listener)
     : CustomButton(listener),
       model_(model),
+      list_model_view_(list_model_view),
       icon_(new StaticImageView),
-      title_(new DropShadowLabel) {
+      title_(new DropShadowLabel),
+      selected_(false) {
   title_->SetFont(GetTitleFont());
   title_->SetBackgroundColor(0);
   title_->SetEnabledColor(kTitleColor);
@@ -75,10 +84,19 @@ AppListItemView::AppListItemView(AppListItemModel* model,
   model_->AddObserver(this);
 
   set_context_menu_controller(this);
+  set_request_focus_on_press(false);
 }
 
 AppListItemView::~AppListItemView() {
   model_->RemoveObserver(this);
+}
+
+void AppListItemView::SetSelected(bool selected) {
+  if (selected == selected_)
+    return;
+
+  selected_ = selected;
+  SchedulePaint();
 }
 
 void AppListItemView::ItemIconChanged() {
@@ -119,11 +137,15 @@ void AppListItemView::Layout() {
 
 void AppListItemView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
+
   if (hover_animation_->is_animating()) {
-    int alpha = SkColorGetA(kHoverColor) * hover_animation_->GetCurrentValue();
-    canvas->FillRect(rect, SkColorSetA(kHoverColor, alpha));
-  } else if (state() == BS_HOT) {
-    canvas->FillRect(rect, kHoverColor);
+    int alpha = SkColorGetA(kHoverAndPushedColor) *
+        hover_animation_->GetCurrentValue();
+    canvas->FillRect(rect, SkColorSetA(kHoverAndPushedColor, alpha));
+  } else if (state() == BS_HOT || state() == BS_PUSHED) {
+    canvas->FillRect(rect, kHoverAndPushedColor);
+  } else if (selected_) {
+    canvas->FillRect(rect, kSelectedColor);
   }
 }
 
@@ -142,6 +164,13 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
           views::MenuItemView::TOPLEFT, views::MenuRunner::HAS_MNEMONICS) ==
       views::MenuRunner::MENU_DELETED)
     return;
+}
+
+void AppListItemView::StateChanged() {
+  if (state() == BS_HOT || state() == BS_PUSHED)
+    list_model_view_->SetSelectedItem(this);
+  else
+    list_model_view_->ClearSelectedItem(this);
 }
 
 }  // namespace ash

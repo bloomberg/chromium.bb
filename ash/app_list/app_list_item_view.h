@@ -7,7 +7,6 @@
 #pragma once
 
 #include "ash/app_list/app_list_item_model_observer.h"
-#include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -23,14 +22,21 @@ class MenuRunner;
 namespace ash {
 
 class AppListItemModel;
+class AppListModelView;
 
-class ASH_EXPORT AppListItemView : public views::CustomButton,
-                                   public views::ContextMenuController,
-                                   public AppListItemModelObserver {
+class AppListItemView : public views::CustomButton,
+                        public views::ContextMenuController,
+                        public AppListItemModelObserver {
  public:
-  AppListItemView(AppListItemModel* model,
+  AppListItemView(AppListModelView* list_model_view,
+                  AppListItemModel* model,
                   views::ButtonListener* listener);
   virtual ~AppListItemView();
+
+  void SetSelected(bool selected);
+  bool selected() const {
+    return selected_;
+  }
 
   AppListItemModel* model() const {
     return model_;
@@ -46,7 +52,7 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
   // Internal class name.
   static const char kViewClassName[];
 
- protected:
+ private:
   // AppListItemModelObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
@@ -57,19 +63,23 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
- private:
   // views::ContextMenuController overrides:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point) OVERRIDE;
 
+  // views::CustomButton overrides:
+  virtual void StateChanged() OVERRIDE;
+
   AppListItemModel* model_;
 
+  AppListModelView* list_model_view_;
   views::ImageView* icon_;
   views::Label* title_;
 
   scoped_ptr<views::MenuRunner> context_menu_runner_;
 
   gfx::Size icon_size_;
+  bool selected_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };
