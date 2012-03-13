@@ -19,6 +19,20 @@ bool TransientChildIsWindowModal(aura::Window* window) {
   return window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW;
 }
 
+aura::Window* GetWindowModalTransientChild(aura::Window* window) {
+  aura::Window::Windows::const_iterator it;
+  for (it = window->transient_children().begin();
+       it != window->transient_children().end();
+       ++it) {
+    if (TransientChildIsWindowModal(*it) && (*it)->IsVisible()) {
+      if (!(*it)->transient_children().empty())
+        return GetWindowModalTransientChild(*it);
+      return *it;
+    }
+  }
+  return NULL;
+}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,17 +49,13 @@ aura::Window* WindowModalityController::GetWindowModalTransient(
   if (!window)
     return NULL;
 
-  aura::Window::Windows::const_iterator it;
-  for (it = window->transient_children().begin();
-       it != window->transient_children().end();
-       ++it) {
-    if (TransientChildIsWindowModal(*it) && (*it)->IsVisible()) {
-      if (!(*it)->transient_children().empty())
-        return GetWindowModalTransient(*it);
-      return *it;
-    }
-  }
-  return NULL;
+  // We always want to check the for the transient child of the activatable
+  // window.
+  window = wm::GetActivatableWindow(window);
+  if (!window)
+    return NULL;
+
+  return GetWindowModalTransientChild(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
