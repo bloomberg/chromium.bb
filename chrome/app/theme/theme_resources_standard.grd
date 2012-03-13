@@ -90,6 +90,8 @@
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" type="BINDATA" />
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" type="BINDATA" />
+      <include name="IDR_MOBILE" file="mobile.png" type="BINDATA" />
+      <include name="IDR_MOBILE_LIT" file="mobile_lit.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_NEWTAB_BUTTON" file="newtab_views.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_P" file="newtab_p_views.png" type="BINDATA" />
