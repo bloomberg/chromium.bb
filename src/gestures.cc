@@ -90,6 +90,9 @@ string Gesture::String() const {
                           details.fling.vx, details.fling.vy,
                           details.fling.fling_state == GESTURES_FLING_START ?
                           "start" : "tapdown");
+    case kGestureTypeSwipe:
+      return StringPrintf("(Gesture type: swipe start: %f stop: %f "
+                          "dx: %f)", start_time, end_time, details.swipe.dx);
   }
   return "(Gesture type: unknown)";
 }
@@ -121,6 +124,10 @@ bool Gesture::operator==(const Gesture& that) const {
           gestures::DoubleEq(end_time, that.end_time) &&
           gestures::FloatEq(details.fling.vx, that.details.fling.vx) &&
           gestures::FloatEq(details.fling.vy, that.details.fling.vy);
+    case kGestureTypeSwipe:
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time) &&
+          gestures::FloatEq(details.swipe.dx, that.details.swipe.dx);
   }
   return true;
 }

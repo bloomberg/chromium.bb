@@ -103,19 +103,27 @@ struct HardwareState {
 typedef struct {
   float dx, dy;
 } GestureMove;
+
 typedef struct{
   float dx, dy;
 } GestureScroll;
+
 typedef struct {
   // If a bit is set in both down and up, client should process down first
   unsigned down;  // bit field, use GESTURES_BUTTON_*
   unsigned up;  // bit field, use GESTURES_BUTTON_*
 } GestureButtonsChange;
+
 typedef struct {
   // fling velocity (valid when fling_state is GESTURES_FLING_START):
   float vx, vy;
   unsigned fling_state:1;  // GESTURES_FLING_START or GESTURES_FLING_TAP_DOWN
 } GestureFling;
+
+typedef struct {
+  float dx;
+} GestureSwipe;
+
 enum GestureType {
 #ifdef GESTURES_INTERNAL
   kGestureTypeNull = -1,  // internal to Gestures library only
@@ -125,6 +133,7 @@ enum GestureType {
   kGestureTypeScroll,
   kGestureTypeButtonsChange,
   kGestureTypeFling,
+  kGestureTypeSwipe,
 };
 
 #ifdef __cplusplus
@@ -133,6 +142,7 @@ extern const GestureMove kGestureMove;
 extern const GestureScroll kGestureScroll;
 extern const GestureButtonsChange kGestureButtonsChange;
 extern const GestureFling kGestureFling;
+extern const GestureSwipe kGestureSwipe;
 #endif  // __cplusplus
 
 struct Gesture {
@@ -168,6 +178,13 @@ struct Gesture {
     details.fling.vy = vy;
     details.fling.fling_state = state;
   }
+  Gesture(const GestureSwipe&,
+          stime_t start, stime_t end, float dx)
+      : start_time(start),
+        end_time(end),
+        type(kGestureTypeSwipe) {
+    details.swipe.dx = dx;
+  }
 #endif  // __cplusplus
 
   stime_t start_time, end_time;
@@ -177,6 +194,7 @@ struct Gesture {
     GestureScroll scroll;
     GestureButtonsChange buttons;
     GestureFling fling;
+    GestureSwipe swipe;
   } details;
 };
 

@@ -20,18 +20,31 @@ inline bool DoubleEq(float a, float b) {
 }
 
 // Returns the square of the distance between the two contacts.
-template<typename ContactType>  // UnmergedContact or FingerState
-static float DistSq(const ContactType& finger_a,
-                    const FingerState& finger_b) {
+template<typename ContactTypeA, typename ContactTypeB>
+float DistSq(const ContactTypeA& finger_a, const ContactTypeB& finger_b) {
   float dx = finger_a.position_x - finger_b.position_x;
   float dy = finger_a.position_y - finger_b.position_y;
   return dx * dx + dy * dy;
 }
 template<typename ContactType>  // UnmergedContact or FingerState
-static float DistSqXY(const ContactType& finger_a, float pos_x, float pos_y) {
+float DistSqXY(const ContactType& finger_a, float pos_x, float pos_y) {
   float dx = finger_a.position_x - pos_x;
   float dy = finger_a.position_y - pos_y;
   return dx * dx + dy * dy;
+}
+
+template<typename ContactType>
+int CompareX(const void* a_ptr, const void* b_ptr) {
+  const ContactType* a = *static_cast<const ContactType* const*>(a_ptr);
+  const ContactType* b = *static_cast<const ContactType* const*>(b_ptr);
+  return a->position_x < b->position_x ? -1 : a->position_x > b->position_x;
+}
+
+template<typename ContactType>
+int CompareY(const void* a_ptr, const void* b_ptr) {
+  const ContactType* a = *static_cast<const ContactType* const*>(a_ptr);
+  const ContactType* b = *static_cast<const ContactType* const*>(b_ptr);
+  return a->position_y < b->position_y ? -1 : a->position_y > b->position_y;
 }
 
 }  // namespace gestures

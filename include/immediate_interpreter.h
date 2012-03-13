@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ namespace gestures {
 // of its abilities.
 
 static const size_t kMaxFingers = 5;
-static const size_t kMaxGesturingFingers = 2;
+static const size_t kMaxGesturingFingers = 3;
 static const size_t kMaxTapFingers = 5;
 
 class ImmediateInterpreter;
@@ -72,17 +72,19 @@ class TapRecord {
 class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FRIEND_TEST(ImmediateInterpreterTest, ChangeTimeoutTest);
   FRIEND_TEST(ImmediateInterpreterTest, ClickTest);
-  FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
-  FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
   FRIEND_TEST(ImmediateInterpreterTest, GetGesturingFingersTest);
+  FRIEND_TEST(ImmediateInterpreterTest, PalmAtEdgeTest);
+  FRIEND_TEST(ImmediateInterpreterTest, PalmTest);
   FRIEND_TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest);
-  FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
+  FRIEND_TEST(ImmediateInterpreterTest, SwipeTest);
+  FRIEND_TEST(ImmediateInterpreterTest, TapRecordTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickEnableTest);
   FRIEND_TEST(ImmediateInterpreterTest, TapToClickKeyboardTest);
-  FRIEND_TEST(ImmediateInterpreterTest, TapRecordTest);
+  FRIEND_TEST(ImmediateInterpreterTest, TapToClickStateMachineTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainReevaluateTest);
   FRIEND_TEST(ImmediateInterpreterTest, ThumbRetainTest);
   friend class TapRecord;
+
  public:
   struct Point {
     Point() : x_(0.0), y_(0.0) {}
@@ -174,6 +176,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // unknown.
   GestureType GetTwoFingerGestureType(const FingerState& finger1,
                                       const FingerState& finger2);
+
+  // Returns the current three-finger gesture, or kGestureTypeNull if no gesture
+  // should be produced.
+  GestureType GetThreeFingerGestureType(const FingerState* const fingers[3]);
 
   const char* TapToClickStateName(TapToClickState state);
 
@@ -272,6 +278,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Time when the last motion (scroll, movement) occurred
   stime_t last_movement_timestamp_;
 
+  // Time when the last swipe gesture was generated
+  stime_t last_swipe_timestamp_;
+
   // If we are currently pointing, scrolling, etc.
   GestureType current_gesture_type_;
 
@@ -329,6 +338,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty two_finger_close_distance_thresh_;
   // Consider scroll vs pointing if finger moves at least this distance [mm]
   DoubleProperty two_finger_scroll_distance_thresh_;
+  // Maximum distance [mm] between the outermost fingers while performing a
+  // three-finger gesture.
+  DoubleProperty three_finger_close_distance_thresh_;
+  // Minimum distance [mm] each of the three fingers must move to perform a
+  // swipe gesture.
+  DoubleProperty three_finger_swipe_distance_thresh_;
   // A finger must change in pressure by less than this amount to trigger motion
   DoubleProperty max_pressure_change_;
   // During a scroll one finger determines scroll speed and direction.

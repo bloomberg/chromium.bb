@@ -1,12 +1,13 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "gestures/include/immediate_interpreter.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <functional>
-#include <math.h>
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
@@ -197,6 +198,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       tap_to_click_state_entered_(0.0),
       tap_record_(this),
       last_movement_timestamp_(0.0),
+      last_swipe_timestamp_(0.0),
       current_gesture_type_(kGestureTypeNull),
       tap_enable_(prop_reg, "Tap Enable", false),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
@@ -226,6 +228,12 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       two_finger_scroll_distance_thresh_(prop_reg,
                                          "Two Finger Scroll Distance Thresh",
                                          2.0),
+      three_finger_close_distance_thresh_(prop_reg,
+                                          "Three Finger Close Distance Thresh",
+                                          50.0),
+      three_finger_swipe_distance_thresh_(prop_reg,
+                                          "Three Finger Swipe Distance Thresh",
+                                          10.0),
       max_pressure_change_(prop_reg, "Max Allowed Pressure Change", 30.0),
       scroll_stationary_finger_max_distance_(
           prop_reg, "Scroll Stationary Finger Max Distance", 1.0),
@@ -509,30 +517,44 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
     current_gesture_type_ = kGestureTypeNull;
   } else if (num_gesturing == 1) {
     current_gesture_type_ = kGestureTypeMove;
-  } else if (num_gesturing == 2) {
+  } else {
     if (hwstate.timestamp - changed_time_ < evaluation_timeout_.val_ ||
         current_gesture_type_ == kGestureTypeNull) {
-      const FingerState* fingers[] = {
-        hwstate.GetFingerState(*gs_fingers.begin()),
-        hwstate.GetFingerState(*(gs_fingers.begin() + 1))
-      };
-      if (!fingers[0] || !fingers[1]) {
-        Err("Unable to find gesturing fingers!");
-        return;
-      }
-      // See if two pointers are close together
-      bool potential_two_finger_gesture =
-          TwoFingersGesturing(*fingers[0],
-                              *fingers[1]);
-      if (!potential_two_finger_gesture) {
-        current_gesture_type_ = kGestureTypeMove;
+      if (num_gesturing == 2) {
+        const FingerState* fingers[] = {
+          hwstate.GetFingerState(*gs_fingers.begin()),
+          hwstate.GetFingerState(*(gs_fingers.begin() + 1))
+        };
+        if (!fingers[0] || !fingers[1]) {
+          Err("Unable to find gesturing fingers!");
+          return;
+        }
+        // See if two pointers are close together
+        bool potential_two_finger_gesture =
+            TwoFingersGesturing(*fingers[0], *fingers[1]);
+        if (!potential_two_finger_gesture) {
+          current_gesture_type_ = kGestureTypeMove;
+        } else {
+          current_gesture_type_ =
+              GetTwoFingerGestureType(*fingers[0], *fingers[1]);
+        }
+      } else if (num_gesturing == 3) {
+        const FingerState* fingers[] = {
+          hwstate.GetFingerState(*gs_fingers.begin()),
+          hwstate.GetFingerState(*(gs_fingers.begin() + 1)),
+          hwstate.GetFingerState(*(gs_fingers.begin() + 2))
+        };
+        if (!fingers[0] || !fingers[1] || !fingers[2]) {
+          Err("Unable to find gesturing fingers!");
+          return;
+        }
+        current_gesture_type_ = GetThreeFingerGestureType(fingers);
+        if (current_gesture_type_ == kGestureTypeSwipe)
+          last_swipe_timestamp_ = hwstate.timestamp;
       } else {
-        current_gesture_type_ = GetTwoFingerGestureType(*fingers[0],
-                                                        *fingers[1]);
+        Log("TODO(adlr): support > 3 finger gestures.");
       }
     }
-  } else {
-    Log("TODO(adlr): support > 2 finger gestures.");
   }
 }
 
@@ -576,14 +598,10 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
     return kGestureTypeNull;
 
   // Compute distance traveled since fingers changed for each finger
-  float dx1 = finger1.position_x -
-      start_positions_[finger1.tracking_id].x_;
-  float dy1 = finger1.position_y -
-      start_positions_[finger1.tracking_id].y_;
-  float dx2 = finger2.position_x -
-      start_positions_[finger2.tracking_id].x_;
-  float dy2 = finger2.position_y -
-      start_positions_[finger2.tracking_id].y_;
+  float dx1 = finger1.position_x - start_positions_[finger1.tracking_id].x_;
+  float dy1 = finger1.position_y - start_positions_[finger1.tracking_id].y_;
+  float dx2 = finger2.position_x - start_positions_[finger2.tracking_id].x_;
+  float dy2 = finger2.position_y - start_positions_[finger2.tracking_id].y_;
 
   float large_dx = MaxMag(dx1, dx2);
   float large_dy = MaxMag(dy1, dy2);
@@ -643,6 +661,54 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
     }
     return kGestureTypeScroll;
   }
+}
+
+GestureType ImmediateInterpreter::GetThreeFingerGestureType(
+    const FingerState* const fingers[3]) {
+  const FingerState* x_fingers[] = { fingers[0], fingers[1], fingers[2] };
+  const FingerState* y_fingers[] = { fingers[0], fingers[1], fingers[2] };
+  qsort(x_fingers, 3, sizeof(*x_fingers), CompareX<FingerState>);
+  qsort(y_fingers, 3, sizeof(*y_fingers), CompareY<FingerState>);
+
+  bool horizontal =
+      (x_fingers[2]->position_x - x_fingers[0]->position_x) >=
+      (y_fingers[2]->position_y - y_fingers[0]->position_y);
+  const FingerState* min_finger = horizontal ? x_fingers[0] : y_fingers[0];
+  const FingerState* center_finger = horizontal ? x_fingers[1] : y_fingers[1];
+  const FingerState* max_finger = horizontal ? x_fingers[2] : y_fingers[2];
+
+  if (DistSq(*min_finger, *max_finger) >
+      three_finger_close_distance_thresh_.val_ *
+      three_finger_close_distance_thresh_.val_) {
+    return kGestureTypeNull;
+  }
+
+  double min_finger_dx =
+      min_finger->position_x - start_positions_[min_finger->tracking_id].x_;
+  double center_finger_dx =
+      center_finger->position_x -
+      start_positions_[center_finger->tracking_id].x_;
+  double max_finger_dx =
+      max_finger->position_x - start_positions_[max_finger->tracking_id].x_;
+
+  // All three fingers must move in the same direction.
+  if ((min_finger_dx > 0 && !(center_finger_dx > 0 && max_finger_dx > 0)) ||
+      (min_finger_dx < 0 && !(center_finger_dx < 0 && max_finger_dx < 0))) {
+    return kGestureTypeNull;
+  }
+
+  // All three fingers must have traveled far enough.
+  if (fabsf(min_finger_dx) < three_finger_swipe_distance_thresh_.val_ ||
+      fabsf(min_finger_dx) < three_finger_swipe_distance_thresh_.val_ ||
+      fabsf(min_finger_dx) < three_finger_swipe_distance_thresh_.val_) {
+    return kGestureTypeNull;
+  }
+
+  // Only produce the swipe gesture once per state change.
+  if (last_swipe_timestamp_ >= changed_time_)
+    return kGestureTypeNull;
+
+  return kGestureTypeSwipe;
 }
 
 const char* ImmediateInterpreter::TapToClickStateName(TapToClickState state) {
@@ -1200,6 +1266,17 @@ void ImmediateInterpreter::FillResultGesture(
                           vy,
                           GESTURES_FLING_START);
       }
+      break;
+    }
+    case kGestureTypeSwipe: {
+      float start_sum_x = 0, end_sum_x = 0;
+      for (set<short, kMaxGesturingFingers>::const_iterator it =
+               fingers.begin(), e = fingers.end(); it != e; ++it) {
+        start_sum_x += start_positions_[*it].x_;
+        end_sum_x += hwstate.GetFingerState(*it)->position_x;
+      }
+      double dx = (end_sum_x - start_sum_x) / fingers.size();
+      result_ = Gesture(kGestureSwipe, changed_time_, hwstate.timestamp, dx);
       break;
     }
     default:
