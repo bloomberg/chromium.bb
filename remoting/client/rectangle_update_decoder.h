@@ -61,8 +61,9 @@ class RectangleUpdateDecoder :
 
   virtual ~RectangleUpdateDecoder();
 
-  // Paint the invalidated region to the next available buffer and return it
+  // Paints the invalidated region to the next available buffer and returns it
   // to the consumer.
+  void SchedulePaint();
   void DoPaint();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
@@ -79,6 +80,9 @@ class RectangleUpdateDecoder :
 
   // The drawing buffers supplied by the frame consumer.
   std::list<pp::ImageData*> buffers_;
+
+  // Flag used to coalesce runs of SchedulePaint()s into a single DoPaint().
+  bool paint_scheduled_;
 };
 
 }  // namespace remoting

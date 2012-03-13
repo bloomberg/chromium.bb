@@ -30,7 +30,8 @@ RectangleUpdateDecoder::RectangleUpdateDecoder(
       consumer_(consumer),
       source_size_(SkISize::Make(0, 0)),
       view_size_(SkISize::Make(0, 0)),
-      clip_area_(SkIRect::MakeEmpty()) {
+      clip_area_(SkIRect::MakeEmpty()),
+      paint_scheduled_(false) {
 }
 
 RectangleUpdateDecoder::~RectangleUpdateDecoder() {
@@ -90,10 +91,21 @@ void RectangleUpdateDecoder::DecodePacket(const VideoPacket* packet,
   }
 
   if (decoder_->DecodePacket(packet) == Decoder::DECODE_DONE)
-    DoPaint();
+    SchedulePaint();
+}
+
+void RectangleUpdateDecoder::SchedulePaint() {
+  if (paint_scheduled_)
+    return;
+  paint_scheduled_ = true;
+  message_loop_->PostTask(
+      FROM_HERE, base::Bind(&RectangleUpdateDecoder::DoPaint, this));
 }
 
 void RectangleUpdateDecoder::DoPaint() {
+  DCHECK(paint_scheduled_);
+  paint_scheduled_ = false;
+
   // If the view size is empty or we have no output buffers ready, return.
   if (buffers_.empty() || view_size_.isEmpty())
     return;
@@ -146,7 +158,7 @@ void RectangleUpdateDecoder::DrawBuffer(pp::ImageData* buffer) {
          clip_area_.height() <= buffer->size().height());
 
   buffers_.push_back(buffer);
-  DoPaint();
+  SchedulePaint();
 }
 
 void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
@@ -159,7 +171,7 @@ void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
 
   if (decoder_.get()) {
     decoder_->Invalidate(view_size_, region);
-    DoPaint();
+    SchedulePaint();
   }
 }
 
@@ -197,6 +209,8 @@ void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
         ++i;
       }
     }
+
+    SchedulePaint();
   }
 }
 
