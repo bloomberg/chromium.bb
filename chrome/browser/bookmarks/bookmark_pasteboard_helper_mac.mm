@@ -39,7 +39,7 @@ NSString* const kChromiumBookmarkId =
 
 // Mac WebKit uses this type, declared in
 // WebKit/mac/History/WebURLsWithTitles.h.
-NSString* const kWebURLsWithTitlesPboardType =
+NSString* const kCrWebURLsWithTitlesPboardType =
     @"WebURLsWithTitlesPboardType";
 
 // Keys for the type of node in BookmarkDictionaryListPboardType.
@@ -99,7 +99,7 @@ bool ReadWebURLsWithTitlesPboardType(
     NSPasteboard* pb,
     std::vector<BookmarkNodeData::Element>& elements) {
   NSArray* bookmarkPairs =
-      [pb propertyListForType:kWebURLsWithTitlesPboardType];
+      [pb propertyListForType:kCrWebURLsWithTitlesPboardType];
   if (![bookmarkPairs isKindOfClass:[NSArray class]])
     return false;
 
@@ -215,7 +215,7 @@ void WriteSimplifiedBookmarkTypes(NSPasteboard* pb,
 
   // Write WebURLsWithTitlesPboardType.
   [pb setPropertyList:[NSArray arrayWithObjects:urls, titles, nil]
-              forType:kWebURLsWithTitlesPboardType];
+              forType:kCrWebURLsWithTitlesPboardType];
 
   // Write NSStringPboardType.
   [pb setString:[urls componentsJoinedByString:@"\n"]
@@ -308,7 +308,7 @@ void WriteToPasteboard(PasteboardType type,
   NSPasteboard* pb = PasteboardFromType(type);
 
   NSArray* types = [NSArray arrayWithObjects:kBookmarkDictionaryListPboardType,
-                                             kWebURLsWithTitlesPboardType,
+                                             kCrWebURLsWithTitlesPboardType,
                                              NSStringPboardType,
                                              NSURLPboardType,
                                              kNSURLTitlePboardType,
@@ -339,7 +339,7 @@ bool PasteboardContainsBookmarks(PasteboardType type) {
 
   NSArray* availableTypes =
       [NSArray arrayWithObjects:kBookmarkDictionaryListPboardType,
-                                kWebURLsWithTitlesPboardType,
+                                kCrWebURLsWithTitlesPboardType,
                                 NSURLPboardType,
                                 nil];
   return [pb availableTypeFromArray:availableTypes] != nil;
