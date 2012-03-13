@@ -548,8 +548,7 @@ void OmniboxPopupViewMac::OpenURLForRow(int row, bool force_background) {
   // relevant match out to make sure it stays alive until the call
   // completes.
   AutocompleteMatch match = model_->result().match_at(row);
-  omnibox_view_->OpenMatch(match, disposition, GURL(), row,
-                           match.keyword);
+  omnibox_view_->OpenMatch(match, disposition, GURL(), row);
 }
 
 void OmniboxPopupViewMac::UserPressedOptIn(bool opt_in) {

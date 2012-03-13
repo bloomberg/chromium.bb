@@ -101,8 +101,7 @@ class OmniboxViewViews
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
-                         size_t selected_line,
-                         const string16& keyword) OVERRIDE;
+                         size_t selected_line) OVERRIDE;
   virtual string16 GetText() const OVERRIDE;
   virtual bool IsEditingOrEmpty() const OVERRIDE;
   virtual int GetIcon() const OVERRIDE;

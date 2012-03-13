@@ -204,6 +204,7 @@ void ShortcutsProviderTest::FillData() {
         shortcuts_provider::SpansFromString(
             ASCIIToUTF16(cur.description_class)));
     shortcut.last_access_time = visit_time;
+    shortcut.number_of_hits = cur.typed_count;
     shortcut.id = cur.guid;
     mock_backend_->AddShortcut(shortcut);
   }
@@ -277,7 +278,7 @@ TEST_F(ShortcutsProviderTest, MultiMatch) {
   RunTest(text, expected_urls, "http://slashdot.org/");
 }
 
-TEST_F(ShortcutsProviderTest, VisitCountMatches) {
+TEST_F(ShortcutsProviderTest, TypedCountMatches) {
   string16 text(ASCIIToUTF16("just"));
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://www.testsite.com/b.html");
@@ -286,7 +287,7 @@ TEST_F(ShortcutsProviderTest, VisitCountMatches) {
   RunTest(text, expected_urls, "http://www.testsite.com/b.html");
 }
 
-TEST_F(ShortcutsProviderTest, TypedCountMatches) {
+TEST_F(ShortcutsProviderTest, FragmentLengthMatches) {
   string16 text(ASCIIToUTF16("just a"));
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://www.testsite.com/d.html");

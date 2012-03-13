@@ -78,14 +78,11 @@ class OmniboxView {
   //
   // |selected_line| is passed to SendOpenNotification(); see comments there.
   //
-  // If the URL was expanded from a keyword, |keyword| is that keyword.
-  //
   // This may close the popup.
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
-                         size_t selected_line,
-                         const string16& keyword) = 0;
+                         size_t selected_line) = 0;
 
   // Returns the current text of the edit control, which could be the
   // "temporary" text set by the popup, the "permanent" text set by the

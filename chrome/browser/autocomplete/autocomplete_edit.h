@@ -248,8 +248,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   void OpenMatch(const AutocompleteMatch& match,
                  WindowOpenDisposition disposition,
                  const GURL& alternate_nav_url,
-                 size_t index,
-                 const string16& keyword);
+                 size_t index);
 
   bool has_focus() const { return has_focus_; }
 

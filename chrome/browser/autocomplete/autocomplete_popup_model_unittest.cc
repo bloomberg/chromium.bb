@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class AutoCompletePopupModelTest : public testing::Test {
+class AutocompletePopupModelTest : public testing::Test {
  public:
-  AutoCompletePopupModelTest() {
+  AutocompletePopupModelTest() {
   }
 
   virtual void SetUp();
@@ -32,7 +32,7 @@ class AutoCompletePopupModelTest : public testing::Test {
   scoped_ptr<AutocompleteEditModel> edit_model_;
 };
 
-void AutoCompletePopupModelTest::SetUp() {
+void AutocompletePopupModelTest::SetUp() {
   profile_.reset(new TestingProfile());
   profile_->CreateTemplateURLService();
   edit_model_.reset(new AutocompleteEditModel(NULL, NULL, profile_.get()));
@@ -60,13 +60,13 @@ void AutoCompletePopupModelTest::SetUp() {
   ASSERT_NE(0, keyword_t_url->id());
 }
 
-void AutoCompletePopupModelTest::TearDown() {
+void AutocompletePopupModelTest::TearDown() {
   profile_.reset();
   model_.reset();
   edit_model_.reset();
 }
 
-AutocompleteMatch AutoCompletePopupModelTest::CreateMatch(
+AutocompleteMatch AutocompletePopupModelTest::CreateMatch(
     const string16& keyword,
     const string16& query_string,
     AutocompleteMatch::Type type) {
@@ -74,23 +74,22 @@ AutocompleteMatch AutoCompletePopupModelTest::CreateMatch(
   match.contents = query_string;
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_.get());
+  match.template_url = template_url_service->GetDefaultSearchProvider();
   if (!keyword.empty()) {
     const TemplateURL* template_url =
         template_url_service->GetTemplateURLForKeyword(keyword);
-    match.template_url =
-        TemplateURL::SupportsReplacement(template_url) ? template_url : NULL;
+    if (TemplateURL::SupportsReplacement(template_url)) {
+      match.template_url = template_url;
+      match.fill_into_edit = keyword + char16(' ');
+    }
   }
-  if (match.template_url)
-    match.fill_into_edit = match.template_url->keyword() + char16(' ');
-  else
-    match.template_url = template_url_service->GetDefaultSearchProvider();
   match.fill_into_edit.append(query_string);
   match.transition = keyword.empty() ?
       content::PAGE_TRANSITION_GENERATED : content::PAGE_TRANSITION_KEYWORD;
   return match;
 }
 
-void AutoCompletePopupModelTest::RunTest(const char* input,
+void AutocompletePopupModelTest::RunTest(const char* input,
                                          AutocompleteMatch::Type type,
                                          const char* keyword) {
   string16 keyword16(ASCIIToUTF16(keyword));
@@ -100,7 +99,7 @@ void AutoCompletePopupModelTest::RunTest(const char* input,
   EXPECT_EQ(keyword16, detected_keyword);
 }
 
-TEST_F(AutoCompletePopupModelTest, GetKeywordForMatch) {
+TEST_F(AutocompletePopupModelTest, GetKeywordForMatch) {
   string16 keyword;
 
   // Possible matches when the input is "tfoo"

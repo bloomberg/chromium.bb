@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -147,6 +147,8 @@ class SearchProvider : public AutocompleteProvider,
     // TODO(pkasting): http://b/1162970  We shouldn't need these.
     const TemplateURL* default_provider_;
     const TemplateURL* keyword_provider_;
+
+    DISALLOW_COPY_AND_ASSIGN(Providers);
   };
 
   struct NavigationResult {
@@ -192,8 +194,8 @@ class SearchProvider : public AutocompleteProvider,
   // NOTE: This does not update |done_|.  Callers must do so.
   void StopSuggest();
 
-  // Creates a URLFetcher requesting suggest results for the specified
-  // TemplateURL. Ownership of the returned URLFetchet passes to the caller.
+  // Creates a URLFetcher requesting suggest results from the specified
+  // |provider|. The caller owns the returned URLFetcher.
   content::URLFetcher* CreateSuggestFetcher(int id,
                                             const TemplateURL& provider,
                                             const string16& text);

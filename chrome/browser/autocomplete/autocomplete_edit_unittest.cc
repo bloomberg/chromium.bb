@@ -26,8 +26,7 @@ class TestingOmniboxView : public OmniboxView {
   virtual void OpenMatch(const AutocompleteMatch& match,
                          WindowOpenDisposition disposition,
                          const GURL& alternate_nav_url,
-                         size_t selected_line,
-                         const string16& keyword) OVERRIDE {}
+                         size_t selected_line) OVERRIDE {}
   virtual string16 GetText() const OVERRIDE { return string16(); }
   virtual bool IsEditingOrEmpty() const OVERRIDE { return true; }
   virtual int GetIcon() const OVERRIDE { return 0; }

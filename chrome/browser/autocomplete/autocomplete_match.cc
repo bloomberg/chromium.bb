@@ -5,6 +5,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "grit/theme_resources.h"
 
 // AutocompleteMatch ----------------------------------------------------------
@@ -147,10 +148,8 @@ bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
   // For equal-relevance matches, we sort alphabetically, so that providers
   // who return multiple elements at the same priority get a "stable" sort
   // across multiple updates.
-  if (elem1.relevance == elem2.relevance)
-    return elem1.contents > elem2.contents;
-
-  return elem1.relevance > elem2.relevance;
+  return (elem1.relevance == elem2.relevance) ?
+      (elem1.contents < elem2.contents) : (elem1.relevance > elem2.relevance);
 }
 
 // static
@@ -159,9 +158,8 @@ bool AutocompleteMatch::DestinationSortFunc(const AutocompleteMatch& elem1,
   // Sort identical destination_urls together.  Place the most relevant matches
   // first, so that when we call std::unique(), these are the ones that get
   // preserved.
-  return (elem1.stripped_destination_url != elem2.stripped_destination_url) ?
-      (elem1.stripped_destination_url < elem2.stripped_destination_url) :
-      MoreRelevant(elem1, elem2);
+  return DestinationsEqual(elem1, elem2) ? MoreRelevant(elem1, elem2) :
+      (elem1.stripped_destination_url < elem2.stripped_destination_url);
 }
 
 // static
@@ -242,11 +240,21 @@ void AutocompleteMatch::ComputeStrippedDestinationURL() {
   }
 }
 
-bool AutocompleteMatch::GetKeyword(string16* keyword) const {
-  const bool is_keyword_hint = associated_keyword.get() != NULL;
-  keyword->assign(is_keyword_hint ? associated_keyword->keyword :
-      this->keyword);
-  return is_keyword_hint;
+void AutocompleteMatch::GetKeywordUIState(string16* keyword,
+                                          bool* is_keyword_hint) const {
+  *is_keyword_hint = associated_keyword.get() != NULL;
+  keyword->assign(*is_keyword_hint ? associated_keyword->keyword :
+      GetSubstitutingExplicitlyInvokedKeyword());
+}
+
+string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword() const {
+  return ((transition == content::PAGE_TRANSITION_KEYWORD) &&
+      TemplateURL::SupportsReplacement(GetTemplateURL())) ?
+      keyword : string16();
+}
+
+const TemplateURL* AutocompleteMatch::GetTemplateURL() const {
+  return template_url;
 }
 
 #ifndef NDEBUG

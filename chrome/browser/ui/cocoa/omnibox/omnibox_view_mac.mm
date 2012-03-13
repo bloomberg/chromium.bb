@@ -292,8 +292,7 @@ void OmniboxViewMac::Update(const WebContents* tab_for_state_restoring) {
 void OmniboxViewMac::OpenMatch(const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,
                                const GURL& alternate_nav_url,
-                               size_t selected_line,
-                               const string16& keyword) {
+                               size_t selected_line) {
   // TODO(shess): Why is the caller passing an invalid url in the
   // first place?  Make sure that case isn't being dropped on the
   // floor.
@@ -301,8 +300,7 @@ void OmniboxViewMac::OpenMatch(const AutocompleteMatch& match,
     return;
   }
 
-  model_->OpenMatch(match, disposition, alternate_nav_url,
-                    selected_line, keyword);
+  model_->OpenMatch(match, disposition, alternate_nav_url, selected_line);
 }
 
 string16 OmniboxViewMac::GetText() const {

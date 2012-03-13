@@ -647,8 +647,7 @@ void OmniboxViewWin::Update(const WebContents* tab_for_state_restoring) {
 void OmniboxViewWin::OpenMatch(const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,
                                const GURL& alternate_nav_url,
-                               size_t selected_line,
-                               const string16& keyword) {
+                               size_t selected_line) {
   if (!match.destination_url.is_valid())
     return;
 
@@ -657,8 +656,7 @@ void OmniboxViewWin::OpenMatch(const AutocompleteMatch& match,
   // here, the user could potentially see a flicker of the current URL before
   // the new one reappears, which would look glitchy.
   ScopedFreeze freeze(this, GetTextObjectModel());
-  model_->OpenMatch(match, disposition, alternate_nav_url,
-                    selected_line, keyword);
+  model_->OpenMatch(match, disposition, alternate_nav_url, selected_line);
 }
 
 string16 OmniboxViewWin::GetText() const {

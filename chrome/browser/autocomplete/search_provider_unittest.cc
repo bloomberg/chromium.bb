@@ -636,8 +636,7 @@ TEST_F(SearchProviderTest, UpdateKeywordDescriptions) {
 
   EXPECT_FALSE(result.match_at(0).description.empty());
   EXPECT_FALSE(result.match_at(1).description.empty());
-  EXPECT_NE(result.match_at(0).description,
-            result.match_at(1).description);
+  EXPECT_NE(result.match_at(0).description, result.match_at(1).description);
 }
 
 // Verifies Navsuggest results don't set a TemplateURL (which instant relies

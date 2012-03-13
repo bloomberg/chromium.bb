@@ -218,12 +218,16 @@ bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
 }
 
 void AutocompleteEditModel::OnChanged() {
-  const AutocompleteMatch current_match = CurrentMatch();
+  // Don't call CurrentMatch() when there's no editing, as in this case we'll
+  // never actually use it.  This avoids running the autocomplete providers (and
+  // any systems they then spin up) during startup.
+  const AutocompleteMatch& current_match = user_input_in_progress_ ?
+      CurrentMatch() : AutocompleteMatch();
 
   NetworkActionPredictor::Action recommended_action =
       NetworkActionPredictor::ACTION_NONE;
   NetworkActionPredictor* network_action_predictor =
-      user_input_in_progress() ?
+      user_input_in_progress_ ?
       NetworkActionPredictorFactory::GetForProfile(profile_) : NULL;
   if (network_action_predictor) {
     network_action_predictor->RegisterTransitionalMatches(user_text_,
@@ -354,7 +358,7 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
   if (sel_min != 0)
     return;
 
-  if (!user_input_in_progress() && is_all_selected) {
+  if (!user_input_in_progress_ && is_all_selected) {
     // The user selected all the text and has not edited it. Use the url as the
     // text so that if the scheme was stripped it's added back, and the url
     // is unescaped (we escape parts of the url for display).
@@ -454,13 +458,9 @@ bool AutocompleteEditModel::CanPasteAndGo(const string16& text) const {
 }
 
 void AutocompleteEditModel::PasteAndGo() {
-  // The final parameter to OpenURL, keyword, is not quite correct here: it's
-  // possible to "paste and go" a string that contains a keyword.  This is
-  // enough of an edge case that we ignore this possibility.
   view_->RevertAll();
   view_->OpenMatch(paste_and_go_match_, CURRENT_TAB,
-      paste_and_go_alternate_nav_url_, AutocompletePopupModel::kNoMatch,
-      string16());
+      paste_and_go_alternate_nav_url_, AutocompletePopupModel::kNoMatch);
 }
 
 void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
@@ -494,26 +494,25 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
     match.transition = content::PAGE_TRANSITION_LINK;
   }
 
-  if (match.template_url && match.template_url->url() &&
-      match.template_url->url()->HasGoogleBaseURLs()) {
+  const TemplateURL* template_url = match.GetTemplateURL();
+  if (template_url && template_url->url() &&
+      template_url->url()->HasGoogleBaseURLs()) {
     GoogleURLTracker::GoogleURLSearchCommitted();
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
     // TODO(pastarmovj): Remove these metrics once we have proven that (close
     // to) none searches that should have RLZ are sent out without one.
-    match.template_url->url()->CollectRLZMetrics();
+    template_url->url()->CollectRLZMetrics();
 #endif
   }
 
   view_->OpenMatch(match, disposition, alternate_nav_url,
-                   AutocompletePopupModel::kNoMatch,
-                   is_keyword_hint_ ? string16() : keyword_);
+                   AutocompletePopupModel::kNoMatch);
 }
 
 void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
                                       WindowOpenDisposition disposition,
                                       const GURL& alternate_nav_url,
-                                      size_t index,
-                                      const string16& keyword) {
+                                      size_t index) {
   // We only care about cases where there is a selection (i.e. the popup is
   // open).
   if (popup_->IsOpen()) {
@@ -545,56 +544,49 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         content::Details<AutocompleteLog>(&log));
   }
 
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  if (template_url_service && !keyword.empty()) {
-    const TemplateURL* const template_url =
-        template_url_service->GetTemplateURLForKeyword(keyword);
+  const TemplateURL* template_url = match.GetTemplateURL();
+  if (template_url) {
+    if (match.transition == content::PAGE_TRANSITION_KEYWORD) {
+      // The user is using a non-substituting keyword or is explicitly in
+      // keyword mode.
 
-    // Special case for extension keywords. Don't increment usage count for
-    // these.
-    if (template_url && template_url->IsExtensionKeyword()) {
-      AutocompleteMatch current_match;
-      GetInfoForCurrentText(&current_match, NULL);
+      // Special case for extension keywords. Don't increment usage count for
+      // these.
+      if (template_url->IsExtensionKeyword()) {
+        AutocompleteMatch current_match;
+        GetInfoForCurrentText(&current_match, NULL);
 
-      const AutocompleteMatch& match =
-          index == AutocompletePopupModel::kNoMatch ?
-              current_match : result().match_at(index);
+        const AutocompleteMatch& match =
+            index == AutocompletePopupModel::kNoMatch ?
+                current_match : result().match_at(index);
 
-      // Strip the keyword + leading space off the input.
-      size_t prefix_length = match.template_url->keyword().length() + 1;
-      ExtensionOmniboxEventRouter::OnInputEntered(
-          profile_, match.template_url->GetExtensionId(),
-          UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
-      view_->RevertAll();
-      return;
-    }
-
-    if (template_url) {
-      content::RecordAction(UserMetricsAction("AcceptedKeyword"));
-      template_url_service->IncrementUsageCount(template_url);
-
-      if (match.transition == content::PAGE_TRANSITION_KEYWORD ||
-          match.transition == content::PAGE_TRANSITION_KEYWORD_GENERATED) {
-        // NOTE: Non-prepopulated engines will all have ID 0, which is fine as
-        // the prepopulate IDs start at 1.  Distribution-specific engines will
-        // all have IDs above the maximum, and will be automatically lumped
-        // together in an "overflow" bucket in the histogram.
-        UMA_HISTOGRAM_ENUMERATION(
-            "Omnibox.SearchEngine", template_url->prepopulate_id(),
-            TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
+        // Strip the keyword + leading space off the input.
+        size_t prefix_length = match.template_url->keyword().length() + 1;
+        ExtensionOmniboxEventRouter::OnInputEntered(profile_,
+            template_url->GetExtensionId(),
+            UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
+        view_->RevertAll();
+        return;
       }
+
+      content::RecordAction(UserMetricsAction("AcceptedKeyword"));
+      TemplateURLService* template_url_service =
+          TemplateURLServiceFactory::GetForProfile(profile_);
+      if (template_url_service)
+        template_url_service->IncrementUsageCount(template_url);
+    } else {
+      DCHECK_EQ(content::PAGE_TRANSITION_GENERATED, match.transition);
+      // NOTE: We purposefully don't increment the usage count of the default
+      // search engine here like we do for explicit keywords above; see comments
+      // in template_url.h.
     }
 
-    // NOTE: We purposefully don't increment the usage count of the default
-    // search engine, if applicable; see comments in template_url.h.
-  }
-
-  if (match.transition == content::PAGE_TRANSITION_GENERATED &&
-      match.template_url) {
-    // See comment above.
-    UMA_HISTOGRAM_ENUMERATION(
-        "Omnibox.SearchEngine", match.template_url->prepopulate_id(),
+    // NOTE: Non-prepopulated engines will all have ID 0, which is fine as
+    // the prepopulate IDs start at 1.  Distribution-specific engines will
+    // all have IDs above the maximum, and will be automatically lumped
+    // together in an "overflow" bucket in the histogram.
+    UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngine",
+        template_url->prepopulate_id(),
         TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
   }
 
@@ -935,7 +927,7 @@ void AutocompleteEditModel::OnResultChanged(bool default_match_changed) {
       // can be many of these as a user types an initial series of characters,
       // the OS DNS cache could suffer eviction problems for minimal gain.
 
-      is_keyword_hint = match->GetKeyword(&keyword);
+      match->GetKeywordUIState(&keyword, &is_keyword_hint);
     }
 
     popup_->OnResultChanged();
@@ -1096,7 +1088,7 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
   if (!tab)
     return false;
 
-  if (user_input_in_progress() && popup_->IsOpen()) {
+  if (user_input_in_progress_ && popup_->IsOpen()) {
     return instant->Update(tab, match, view_->GetText(), UseVerbatimInstant(),
                            suggested_text);
   }

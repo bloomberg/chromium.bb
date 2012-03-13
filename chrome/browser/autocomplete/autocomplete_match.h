@@ -144,12 +144,29 @@ struct AutocompleteMatch {
   // AutocompleteController and does not normally need to be invoked.
   void ComputeStrippedDestinationURL();
 
-  // Gets the selected keyword or keyword hint for this match. Returns
-  // true if |keyword| represents a keyword hint, or false if |keyword|
-  // represents a selected keyword. (|keyword| will always be set [though
-  // possibly to the empty string], and you cannot have both a selected keyword
-  // and a keyword hint simultaneously.)
-  bool GetKeyword(string16* keyword) const;
+  // Gets data relevant to whether there should be any special keyword-related
+  // UI shown for this match.  If this match represents a selected keyword, i.e.
+  // the UI should be "in keyword mode", |keyword| will be set to the keyword
+  // and |is_keyword_hint| will be set to false.  If this match has a non-NULL
+  // |associated_keyword|, i.e. we should show a "Press [tab] to search ___"
+  // hint and allow the user to toggle into keyword mode, |keyword| will be set
+  // to the associated keyword and |is_keyword_hint| will be set to true.  Note
+  // that only one of these states can be in effect at once.  In all other
+  // cases, |keyword| will be cleared, even when our member variable |keyword|
+  // is non-empty.  See also GetSubstitutingExplicitlyInvokedKeyword().
+  void GetKeywordUIState(string16* keyword,
+                         bool* is_keyword_hint) const;
+
+  // Returns |keyword|, but only if it represents a substituting keyword that
+  // the user has explicitly invoked.  If for example this match represents a
+  // search with the default search engine (and the user didn't explicitly
+  // invoke its keyword), this returns the empty string.  The result is that
+  // this function returns a non-empty string in the same cases as when the UI
+  // should show up as being "in keyword mode".
+  string16 GetSubstitutingExplicitlyInvokedKeyword() const;
+
+  // Returns the TemplateURL associated with this match.
+  const TemplateURL* GetTemplateURL() const;
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is

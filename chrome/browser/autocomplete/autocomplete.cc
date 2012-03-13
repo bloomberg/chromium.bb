@@ -917,8 +917,8 @@ void AutocompleteController::Start(
   if (matches_requested == AutocompleteInput::ALL_MATCHES &&
       (text.length() < 6)) {
     base::TimeTicks end_time = base::TimeTicks::Now();
-    std::string name = "Omnibox.QueryTime." + base::IntToString(text.length())
-                       + InstantFieldTrial::GetGroupName(profile_);
+    std::string name = "Omnibox.QueryTime." + base::IntToString(text.length()) +
+        InstantFieldTrial::GetGroupName(profile_);
     base::Histogram* counter = base::Histogram::FactoryGet(
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
@@ -1032,8 +1032,9 @@ void AutocompleteController::UpdateAssociatedKeywords(
   std::set<string16> keywords;
   for (ACMatches::iterator match(result->begin()); match != result->end();
        ++match) {
-    if (!match->keyword.empty()) {
-      keywords.insert(match->keyword);
+    string16 keyword(match->GetSubstitutingExplicitlyInvokedKeyword());
+    if (!keyword.empty()) {
+      keywords.insert(keyword);
     } else {
       string16 keyword = match->associated_keyword.get() ?
           match->associated_keyword->keyword :

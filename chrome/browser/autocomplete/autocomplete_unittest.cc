@@ -205,8 +205,7 @@ void AutocompleteProviderTest::
 
   // Create both a keyword and search provider, and add them in that order.
   // (Order is important; see comments in RunExactKeymatchTest().)
-  AutocompleteProvider* keyword_provider = new KeywordProvider(NULL,
-                                                                &profile_);
+  AutocompleteProvider* keyword_provider = new KeywordProvider(NULL, &profile_);
   keyword_provider->AddRef();
   providers_.push_back(keyword_provider);
   AutocompleteProvider* search_provider = new SearchProvider(NULL, &profile_);
@@ -245,8 +244,7 @@ void AutocompleteProviderTest::
 
   // Create both a keyword and search provider, and add them in that order.
   // (Order is important; see comments in RunExactKeymatchTest().)
-  KeywordProvider* keyword_provider = new KeywordProvider(NULL,
-      &profile_);
+  KeywordProvider* keyword_provider = new KeywordProvider(NULL, &profile_);
   keyword_provider->AddRef();
   providers_.push_back(keyword_provider);
 
@@ -264,10 +262,15 @@ void AutocompleteProviderTest::RunRedundantKeywordTest(
     const KeywordTestData* match_data,
     size_t size) {
   ACMatches matches;
+  TemplateURLService* turl_model =
+      TemplateURLServiceFactory::GetForProfile(&profile_);
   for (size_t i = 0; i < size; ++i) {
     AutocompleteMatch match;
     match.fill_into_edit = match_data[i].fill_into_edit;
+    match.transition = content::PAGE_TRANSITION_KEYWORD;
     match.keyword = match_data[i].keyword;
+    if (!match.keyword.empty())
+      match.template_url = turl_model->GetTemplateURLForKeyword(match.keyword);
     matches.push_back(match);
   }
 
