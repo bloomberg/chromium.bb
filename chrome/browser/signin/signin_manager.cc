@@ -24,11 +24,25 @@
 #include "content/public/browser/notification_service.h"
 #include "net/base/cookie_monster.h"
 
+namespace {
+
 const char kGetInfoEmailKey[] = "email";
 const char kGetInfoServicesKey[] = "allServices";
 const char kGooglePlusServiceKey[] = "googleme";
 
 const char kGoogleAccountsUrl[] = "https://accounts.google.com";
+
+}  // namespace
+
+
+// static
+bool SigninManager::AreSigninCookiesAllowed(Profile* profile) {
+  CookieSettings* cookie_settings =
+      CookieSettings::Factory::GetForProfile(profile);
+  return cookie_settings &&
+      cookie_settings->IsSettingCookieAllowed(GURL(kGoogleAccountsUrl),
+                                              GURL(kGoogleAccountsUrl));
+}
 
 SigninManager::SigninManager()
     : profile_(NULL),
@@ -127,11 +141,7 @@ void SigninManager::StartSignIn(const std::string& username,
   // are not running in ChomiumOS, since it handles pre-login itself, and if
   // cookies are not disabled for Google accounts.
 #if !defined(OS_CHROMEOS)
-  CookieSettings* cookie_settings =
-      CookieSettings::Factory::GetForProfile(profile_);
-  if (cookie_settings &&
-      cookie_settings->IsSettingCookieAllowed(GURL(kGoogleAccountsUrl),
-                                              GURL(kGoogleAccountsUrl))) {
+  if (AreSigninCookiesAllowed(profile_)) {
     TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
     registrar_.Add(this,
                    chrome::NOTIFICATION_TOKEN_AVAILABLE,

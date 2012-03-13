@@ -50,6 +50,10 @@ class SigninManager : public GaiaAuthConsumer,
                       public content::NotificationObserver,
                       public ProfileKeyedService {
  public:
+  // Returns true if the cookie policy for the given profile allows cookies
+  // for the Google signin domain.
+  static bool AreSigninCookiesAllowed(Profile* profile);
+
   SigninManager();
   virtual ~SigninManager();
 

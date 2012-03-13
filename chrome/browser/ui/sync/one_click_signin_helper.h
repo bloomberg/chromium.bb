@@ -26,8 +26,12 @@ class URLRequest;
 class OneClickSigninHelper : public content::WebContentsObserver {
  public:
   // Returns true if the one-click signin feature can be offered at this time.
-  // It can be offered if the contents is not in an incognito window.
-  static bool CanOffer(content::WebContents* web_contents);
+  // It can be offered if the contents is not in an incognito window.  If
+  // |check_connected| is true, then the profile is checked to see if it's
+  // already connected to a google account, in which case a one click signin
+  // should not be offered.
+  static bool CanOffer(content::WebContents* web_contents,
+                       bool check_connected);
 
   // Looks for the X-Google-Accounts-SignIn response header, and if found,
   // tries to display an infobar in the tab contents identified by the

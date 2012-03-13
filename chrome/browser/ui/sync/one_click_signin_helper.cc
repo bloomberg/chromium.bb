@@ -13,7 +13,6 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/sync/one_click_signin_dialog.h"
@@ -141,8 +140,39 @@ void OneClickLoginInfoBarDelegate::RecordHistogramAction(int action) {
 }  // namespace
 
 // static
-bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents) {
-  return !web_contents->GetBrowserContext()->IsOffTheRecord();
+bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
+                                    bool check_connected) {
+  if (!web_contents)
+    return false;
+
+  if (web_contents->GetBrowserContext()->IsOffTheRecord())
+    return false;
+
+  if (!ProfileSyncService::IsSyncEnabled())
+    return false;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile)
+    return false;
+
+  if (!profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled))
+    return false;
+
+  if (!SigninManager::AreSigninCookiesAllowed(profile))
+    return false;
+
+  if (check_connected) {
+    SigninManager* manager =
+        SigninManagerFactory::GetForProfile(profile);
+    if (!manager)
+      return false;
+
+    if (!manager->GetAuthenticatedUsername().empty())
+      return false;
+  }
+
+  return true;
 }
 
 // static
@@ -197,24 +227,7 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
 
   content::WebContents* web_contents = tab_util::GetWebContentsByID(child_id,
                                                                     route_id);
-  if (!web_contents)
-    return;
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile)
-    return;
-
-  if (!ProfileSyncService::IsSyncEnabled())
-    return;
-
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!service)
-    return;
-
-  if (!profile->GetPrefs()->GetBoolean(prefs::kReverseAutologinEnabled) ||
-      service->AreCredentialsAvailable())
+  if (!web_contents || !CanOffer(web_contents, true))
     return;
 
   TabContentsWrapper* wrapper =
