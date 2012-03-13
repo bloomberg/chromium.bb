@@ -71,6 +71,9 @@ class DBusThreadManager {
   // Gets the global instance. Initialize() must be called first.
   static DBusThreadManager* Get();
 
+  // Returns the D-Bus system bus instance, owned by DBusThreadManager.
+  virtual dbus::Bus* GetSystemBus() = 0;
+
   // Returns the bluetooth adapter client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.

@@ -96,6 +96,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
+  virtual dbus::Bus* GetSystemBus() OVERRIDE {
+    return system_bus_.get();
+  }
+
+  // DBusThreadManager override.
   virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE {
     return bluetooth_adapter_client_.get();
   }

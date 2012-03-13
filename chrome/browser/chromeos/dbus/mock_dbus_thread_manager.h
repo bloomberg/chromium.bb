@@ -10,6 +10,12 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace dbus {
+
+class Bus;
+
+}  // namespace dbus
+
 namespace chromeos {
 
 class  MockBluetoothAdapterClient;
@@ -34,6 +40,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockDBusThreadManager();
   virtual ~MockDBusThreadManager();
 
+  MOCK_METHOD0(GetSystemBus, dbus::Bus*(void));
   MOCK_METHOD0(GetBluetoothAdapterClient, BluetoothAdapterClient*(void));
   MOCK_METHOD0(GetBluetoothDeviceClient, BluetoothDeviceClient*(void));
   MOCK_METHOD0(GetBluetoothInputClient, BluetoothInputClient*(void));
