@@ -66,11 +66,6 @@
           '<@(platform_sources)',
         ],
       }],
-      ['target_base=="debug_stub_test"', {
-        'sources': [
-          'debug_stub_test.cc',
-        ],
-      }],
     ],
   },
   'targets': [
@@ -83,17 +78,6 @@
       },
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp',
-      ],
-    },
-    # ---------------------------------------------------------------------
-    {
-      'target_name': 'debug_stub_test',
-      'type': 'executable',
-      'variables': {
-        'target_base': 'debug_stub_test',
-      },
-      'dependencies': [
-        'debug_stub',
       ],
     },
   ],
@@ -110,72 +94,6 @@
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
-          ],
-        },
-        # ---------------------------------------------------------------------
-        {
-          'target_name': 'debug_stub_test64',
-          'type': 'executable',
-          'variables': {
-            'target_base': 'debug_stub_test',
-            'win_target': 'x64',
-          },
-          'dependencies': [
-            'debug_stub64',
-          ],
-        },
-        # ---------------------------------------------------------------------
-        {
-          'target_name': 'run_debug_stub_test',
-          'message': 'running test run_imc_tests',
-          'type': 'none',
-          'dependencies': [
-            'debug_stub_test',
-            'debug_stub_test64',
-          ],
-          'actions': [
-            {
-              'action_name': 'run_debug_stub_test',
-              'msvs_cygwin_shell': 0,
-              'inputs': [
-                '<(DEPTH)/native_client/tests/debug_stub/test_debug_stub.py',
-                '<(PRODUCT_DIR)/debug_stub_test',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/test-output/debug_stub_test.out',
-              ],
-              'action': [
-                '<@(python_exe)',
-                '<(DEPTH)/native_client/tests/debug_stub/test_debug_stub.py',
-                '<(PRODUCT_DIR)/debug_stub_test',
-                '>',
-                '<@(_outputs)',
-              ],
-            },
-           ],
-           'conditions': [
-            ['MSVS_OS_BITS==64', {
-              'actions': [
-                {
-                  'action_name': 'run_debug_stub_test64',
-                  'msvs_cygwin_shell': 0,
-                  'inputs': [
-                    '<(DEPTH)/native_client/tests/debug_stub/test_debug_stub.py',
-                    '<(PRODUCT_DIR)/debug_stub_test',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/test-output/debug_stub_test.out',
-                  ],
-                  'action': [
-                    '<@(python_exe)',
-                    '<(DEPTH)/native_client/tests/debug_stub/test_debug_stub.py',
-                    '<(PRODUCT_DIR)/debug_stub_test64',
-                    '>',
-                    '<@(_outputs)',
-                  ],
-                },
-              ],
-            }],
           ],
         },
       ],
