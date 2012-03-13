@@ -41,27 +41,34 @@ static FontConfigInterface* global_fc_impl = NULL;
 
 void SkiaFontConfigUseDirectImplementation() {
     if (global_fc_impl)
-      delete global_fc_impl;
+        delete global_fc_impl;
     global_fc_impl = new FontConfigDirect;
 }
 
 void SkiaFontConfigSetImplementation(FontConfigInterface* font_config) {
     if (global_fc_impl)
-      delete global_fc_impl;
+        delete global_fc_impl;
     global_fc_impl = font_config;
 }
 
 static FontConfigInterface* GetFcImpl() {
   if (!global_fc_impl)
-    global_fc_impl = new FontConfigDirect;
+      global_fc_impl = new FontConfigDirect;
   return global_fc_impl;
 }
 
-static SkMutex global_fc_map_lock;
-static std::map<uint32_t, SkTypeface *> global_fc_typefaces;
+SK_DECLARE_STATIC_MUTEX(global_remote_font_map_lock);
+static std::map<uint32_t, std::pair<uint8_t*, size_t> >* global_remote_fonts;
 
-static SkMutex global_remote_font_map_lock;
-static std::map<uint32_t, std::pair<uint8_t*, size_t> > global_remote_fonts;
+// Initialize the map declared above. Note that its corresponding mutex must be
+// locked before calling this function.
+static void AllocateGlobalRemoteFontsMapOnce() {
+    if (!global_remote_fonts) {
+        global_remote_fonts =
+            new std::map<uint32_t, std::pair<uint8_t*, size_t> >();
+    }
+}
+
 static unsigned global_next_remote_font_id;
 
 // This is the maximum size of the font cache.
@@ -106,11 +113,12 @@ public:
         const uint32_t id = uniqueID();
         if (IsRemoteFont(UniqueIdToFileFaceId(id))) {
             SkAutoMutexAcquire ac(global_remote_font_map_lock);
+            AllocateGlobalRemoteFontsMapOnce();
             std::map<uint32_t, std::pair<uint8_t*, size_t> >::iterator iter
-                = global_remote_fonts.find(id);
-            if (iter != global_remote_fonts.end()) {
+                = global_remote_fonts->find(id);
+            if (iter != global_remote_fonts->end()) {
                 sk_free(iter->second.first);  // remove the font on memory.
-                global_remote_fonts.erase(iter);
+                global_remote_fonts->erase(iter);
             }
         }
     }
@@ -153,12 +161,6 @@ SkTypeface* SkFontHost::CreateTypeface(const SkTypeface* familyFace,
     const unsigned id = FileFaceIdAndStyleToUniqueId(filefaceid,
                                                      resulting_style);
     SkTypeface* typeface = SkNEW_ARGS(FontConfigTypeface, (resulting_style, id));
-
-    {
-        SkAutoMutexAcquire ac(global_fc_map_lock);
-        global_fc_typefaces[id] = typeface;
-    }
-
     return typeface;
 }
 
@@ -184,13 +186,14 @@ SkTypeface* SkFontHost::CreateTypefaceFromStream(SkStream* stream)
     unsigned id = 0;
     {
         SkAutoMutexAcquire ac(global_remote_font_map_lock);
+        AllocateGlobalRemoteFontsMapOnce();
         id = FileFaceIdAndStyleToUniqueId(
             global_next_remote_font_id | kRemoteFontMask, style);
 
         if (++global_next_remote_font_id >= kRemoteFontMask)
             global_next_remote_font_id = 0;
 
-        if (!global_remote_fonts.insert(
+        if (!global_remote_fonts->insert(
                 std::make_pair(id, std::make_pair(font, length))).second) {
             sk_free(font);
             return NULL;
@@ -294,9 +297,10 @@ SkStream* SkFontHost::OpenStream(uint32_t id)
     if (IsRemoteFont(filefaceid)) {
       // remote font
       SkAutoMutexAcquire ac(global_remote_font_map_lock);
+      AllocateGlobalRemoteFontsMapOnce();
       std::map<uint32_t, std::pair<uint8_t*, size_t> >::const_iterator iter
-          = global_remote_fonts.find(id);
-      if (iter == global_remote_fonts.end())
+          = global_remote_fonts->find(id);
+      if (iter == global_remote_fonts->end())
           return NULL;
       return SkNEW_ARGS(
           SkMemoryStream, (iter->second.first, iter->second.second));

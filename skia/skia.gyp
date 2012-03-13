@@ -771,6 +771,16 @@
         '../third_party/skia/include/core/SkTypes.h',
       ],
       'conditions': [
+        # For POSIX platforms, prefer the Mutex implementation provided by Skia
+        # since it does not generate static initializers.
+        [ 'OS == "android" or OS == "linux" or OS == "mac"', {
+          'defines+': [
+            'SK_USE_POSIX_THREADS',
+          ],
+          'sources!': [
+            'ext/SkThread_chrome.cc',
+          ],
+        }],
         [ 'OS != "android"', {
           'sources/': [
             ['exclude', '_android\\.(cc|cpp)$'],
@@ -778,7 +788,6 @@
           'sources!': [
             # Below files are only used by Android
             '../third_party/skia/src/ports/SkFontHost_gamma.cpp',
-            '../third_party/skia/src/ports/SkThread_pthread.cpp',
           ],
         }],
         [ 'OS != "mac"', {
@@ -875,7 +884,6 @@
                 '../third_party/expat/files/lib',
               ],
               'sources!': [
-                'ext/SkThread_chrome.cc',
                 'ext/vector_platform_device_skia.cc',
                 '../third_party/skia/src/core/SkTypefaceCache.cpp',
                 '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
@@ -925,8 +933,9 @@
         [ 'OS == "win"', {
           'sources!': [
             '../third_party/skia/src/core/SkMMapStream.cpp',
-            '../third_party/skia/src/ports/SkTime_Unix.cpp',
             '../third_party/skia/src/ports/SkFontHost_sandbox_none.cpp',
+            '../third_party/skia/src/ports/SkThread_pthread.cpp',
+            '../third_party/skia/src/ports/SkTime_Unix.cpp',
             'ext/SkThread_chrome.cc',
           ],
           'include_dirs': [

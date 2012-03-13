@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@
 // during malloc(), when SK_MALLOC_THROW is not set (ie., when
 // sk_malloc_flags() would not abort on NULL).
 
-static SkMutex gSkNewHandlerMutex;
+SK_DECLARE_STATIC_MUTEX(gSkNewHandlerMutex);
 
 void sk_throw() {
     SkASSERT(!"sk_throw");
