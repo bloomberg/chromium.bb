@@ -325,7 +325,8 @@ TEST(ImmediateInterpreterTest, ScrollThenFalseTapTest) {
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
   EXPECT_EQ(kGestureTypeScroll, gs->type);
   gs = ii.SyncInterpret(&hardware_states[3], NULL);
-  ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeFling, gs->type);
   gs = ii.SyncInterpret(&hardware_states[4], NULL);
   ASSERT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
   stime_t timeout = -1.0;

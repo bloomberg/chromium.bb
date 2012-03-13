@@ -569,6 +569,17 @@ set<short, kMaxGesturingFingers> ImmediateInterpreter::GetGesturingFingers(
 void ImmediateInterpreter::UpdateCurrentGestureType(
     const HardwareState& hwstate,
     const set<short, kMaxGesturingFingers>& gs_fingers) {
+  // If a scrolling finger just left, do fling
+  if (!prev_scroll_fingers_.empty()) {
+    for (set<short, kMaxGesturingFingers>::const_iterator
+             it = prev_scroll_fingers_.begin(), e = prev_scroll_fingers_.end();
+         it != e; ++it) {
+      if (!hwstate.GetFingerState(*it)) {
+        current_gesture_type_ = kGestureTypeFling;
+        return;
+      }
+    }
+  }
   // When a finger leaves, we hold the gesture processing for
   // change_timeout_ time.
   if (hwstate.timestamp < finger_leave_time_ + change_timeout_.val_) {
@@ -1198,6 +1209,10 @@ void ImmediateInterpreter::FillResultGesture(
       else if (fabsf(dy) > vertical_scroll_snap_slope_.val_ * fabsf(dx))
         dx = 0.0;  // snap to vertical
 
+      prev_scroll_fingers_ = fingers;
+      prev_scroll_dx_ = dx;
+      prev_scroll_dy_ = dy;
+      prev_scroll_dt_ = hwstate.timestamp - prev_state_.timestamp;
       if (max_mag_sq > 0) {
         result_ = Gesture(kGestureScroll,
                           prev_state_.timestamp,
@@ -1208,9 +1223,20 @@ void ImmediateInterpreter::FillResultGesture(
 
       break;
     }
+    case kGestureTypeFling: {
+      result_ = Gesture(kGestureFling,
+                        prev_state_.timestamp,
+                        hwstate.timestamp,
+                        prev_scroll_dx_ / prev_scroll_dt_,
+                        prev_scroll_dy_ / prev_scroll_dt_,
+                        GESTURES_FLING_START);\
+      break;
+    }
     default:
       result_.type = kGestureTypeNull;
   }
+  if (current_gesture_type_ != kGestureTypeScroll)
+    prev_scroll_fingers_.clear();
   current_gesture_type_ = kGestureTypeNull;
 }
 

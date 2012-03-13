@@ -302,6 +302,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // If we are currently pointing, scrolling, etc.
   GestureType current_gesture_type_;
 
+  // If the last time we were called, we did a scroll, it contains the ids
+  // of the scrolling fingers. Otherwise it's empty.
+  set<short, kMaxGesturingFingers> prev_scroll_fingers_;
+  float prev_scroll_dx_, prev_scroll_dy_, prev_scroll_dt_;
+
   // Properties
 
   // Is Tap-To-Click enabled

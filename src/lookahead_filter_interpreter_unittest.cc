@@ -75,7 +75,13 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
     // TM, Tm, WM, Wm, pr, orient, x, y, id
     { 0, 0, 0, 0, 1, 0, 10, 1, 1 },
     { 0, 0, 0, 0, 1, 0, 10, 2, 1 },
-    { 0, 0, 0, 0, 1, 0, 10, 3, 1 }
+    { 0, 0, 0, 0, 1, 0, 10, 3, 1 },
+
+    { 0, 0, 0, 0, 1, 0, 10, 1, 2 },
+    { 0, 0, 0, 0, 1, 0, 10, 2, 2 },
+
+    { 0, 0, 0, 0, 1, 0, 10, 1, 3 },
+    { 0, 0, 0, 0, 1, 0, 10, 2, 3 },
   };
   HardwareState hs[] = {
     // Expect movement to take
@@ -84,14 +90,14 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
     { 1.03, 0, 1, 1, &fs[2] },
 
     // Expect no movement
-    { 1.010, 0, 1, 1, &fs[0] },
-    { 1.030, 0, 1, 1, &fs[1] },
-    { 1.031, 0, 0, 0, NULL },
+    { 2.010, 0, 1, 1, &fs[3] },
+    { 2.030, 0, 1, 1, &fs[4] },
+    { 2.031, 0, 0, 0, NULL },
 
     // Expect movement b/c it's moving really fast
-    { 1.010, 0, 1, 1, &fs[0] },
-    { 1.011, 0, 1, 1, &fs[1] },
-    { 1.030, 0, 0, 0, NULL }
+    { 3.010, 0, 1, 1, &fs[5] },
+    { 3.011, 0, 1, 1, &fs[6] },
+    { 3.030, 0, 0, 0, NULL }
   };
 
   stime_t expected_timeout = 0.0;
@@ -121,7 +127,10 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
     }
     stime_t timeout = -1.0;
     Gesture* out = interpreter->SyncInterpret(&hs[i], &timeout);
-    EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+    if (out) {
+      EXPECT_EQ(kGestureTypeFling, out->type);
+      EXPECT_EQ(GESTURES_FLING_TAP_DOWN, out->details.fling.fling_state);
+    }
     EXPECT_LT(fabs(expected_timeout - timeout), 0.0000001);
     if ((i % 3) != 2) {
       expected_timeout -= hs[i + 1].timestamp - hs[i].timestamp;
@@ -579,7 +588,10 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
   for (size_t i = 0; i < arraysize(hs); i++) {
     stime_t timeout = -1.0;
     Gesture* out = interpreter->SyncInterpret(&hs[i], &timeout);
-    EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
+    if (out) {
+      EXPECT_EQ(kGestureTypeFling, out->type);
+      EXPECT_EQ(GESTURES_FLING_TAP_DOWN, out->details.fling.fling_state);
+    }
     EXPECT_GT(timeout, 0);
   }
   EXPECT_EQ(interpreter->last_id_, 5);
