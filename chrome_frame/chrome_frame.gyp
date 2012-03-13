@@ -193,6 +193,7 @@
         '../chrome/chrome.gyp:browser',
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:renderer',
+        '../chrome/chrome.gyp:test_support_common',
         '../chrome/installer/upgrade_test.gyp:alternate_version_generator_lib',
         '../content/content.gyp:content_gpu',
         '../net/net.gyp:net',
@@ -534,6 +535,7 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../chrome/chrome.gyp:test_support_common',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
